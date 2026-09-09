@@ -4070,7 +4070,7 @@ def is_explicit_antibiotic_order(text):
 
         explicit_command = bool(
             re.search(
-                rf"\b(?:give|administer|infuse|start|initiate|begin)\b[^,;]{{0,65}}\b{aliases}\b",
+                rf"\b(?:give|administer|order|infuse|start|initiate|begin)\b[^,;]{{0,65}}\b{aliases}\b",
                 clause,
             )
             or re.search(
@@ -5403,7 +5403,7 @@ def clinical_interpreter(text):
         or re.search(r"\b\d+(?:\.\d+)?\s*(?:l|lt|liter|litre|liters|litres)\b(?!\s*/?\s*(?:min|minute|minutes|hr|hour|hours)\b)[^.;,]*\biv\b", t)
     )
     explicit_fluid_order = bool(
-        re.search(r"\b(?:give|administer|infuse|bolus|start)\b[^.;]{0,80}\b(?:fluid|fluids|crystalloid|saline|normal\s+saline|ringer|lr|ns|\d+(?:\.\d+)?\s*(?:ml|cc|l|liter|litre))\b", t)
+        re.search(r"\b(?:give|administer|order|infuse|bolus|start)\b[^.;]{0,80}\b(?:fluid|fluids|crystalloid|saline|normal\s+saline|ringer|lr|ns|\d+(?:\.\d+)?\s*(?:ml|cc|l|liter|litre))\b", t)
         or re.search(r"\banother\s+\d+(?:\.\d+)?\s*(?:ml|cc|l|liter|litre)?\s*(?:of\s+)?(?:ns|lr|normal\s+saline|saline|crystalloid|fluid)?\b", t)
     )
     if explicit_fluid_order and (any(w in t for w in fluid_words) or re.search(r"\b(?:lr|ns)\b", t) or implicit_iv_volume):

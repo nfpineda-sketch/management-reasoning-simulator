@@ -95,6 +95,20 @@ assert tr["etomidate_total_mg"] == 8.0, tr
 assert tr["midazolam_total_mg"] == 2.0, tr
 assert tr["cardioversions"] == 1, tr
 assert st.session_state.state["observable"]["rhythm"] == "Sinus rhythm"
+
+# AI-normalized compound orders commonly use "I order". Therapeutic orders
+# must not disappear while diagnostic requests in the same turn execute.
+compound = namespace["clinical_interpreter"](
+    "The heart rate remains unchanged. I order 1000 cc of normal saline IV. "
+    "Reassess blood pressure, heart rate, and perfusion in 15 minutes. "
+    "I request a urinalysis and a chest X-ray. I order ceftriaxone 2 grams IV. "
+    "I request a urine culture and blood cultures."
+)
+compound_types = [action["type"] for action in compound["actions"]]
+assert "fluid" in compound_types, compound
+assert "antibiotics" in compound_types, compound
+assert "urinalysis" in compound_types and "chest_xray" in compound_types, compound
+assert "blood_cultures" in compound_types, compound
 assert st.session_state.state["observable"]["mental_status"] in {"Sedated", "Drowsy"}
 assert after["treatments"]["last_procedural_sedation"][0]["agent"] == "etomidate"
 
