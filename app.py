@@ -3799,6 +3799,20 @@ def parse_delay_min(text):
     """
     t = text.lower().strip()
 
+    # A learner may request a checkpoint without advancing simulated time.
+    # Keep this scoped to reassessment verbs so unrelated uses of "now" or
+    # "immediately" do not become timing instructions.
+    immediate_reassessment = re.search(
+        r"\b(?:reassess|re-assess|reevaluate|re-evaluate|recheck|re-check|observe|check)\b"
+        r"[^.;]{0,300}\b(?:now|immediately)\b",
+        t,
+    ) or re.search(
+        r"\bimmediately\s+(?:reassess|re-assess|reevaluate|re-evaluate|recheck|re-check|observe|check)\b",
+        t,
+    )
+    if immediate_reassessment or re.search(r"\bon\s+immediate\s+reassessment\b", t):
+        return 0
+
     # Event-anchored reassessment is an explicit immediate checkpoint even
     # when the learner does not supply a clock interval.
     if re.search(
@@ -10008,14 +10022,6 @@ if submitted and submission_text.strip():
                     ("On immediate reassessment, " if d == 0 else f"After {d} minutes, ")
                     + format_clinical_update()
                 )
-
-        if result.get("reassess_delay") is not None and not result.get("action_summaries"):
-            d = result["reassess_delay"] or 0
-            add_event(
-                "clinical_update",
-                ("On immediate reassessment, " if d == 0 else f"After {d} minutes, ")
-                + format_clinical_update()
-            )
 
         if result.get("terminal_locked"):
             add_event(

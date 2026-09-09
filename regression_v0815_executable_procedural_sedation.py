@@ -153,6 +153,20 @@ assert canonical_result["elapsed_min"] == 3, canonical_result
 assert canonical_result["reassess_delay"] == 0, canonical_result
 assert st.session_state.state["observable"]["rhythm"] == "Sinus rhythm"
 
+# A standalone immediate reassessment is an executable zero-time checkpoint,
+# not an unsupported prototype action. This is the learner's sequence entry 7.
+immediate_reassessment = (
+    "Reassess rhythm, heart rate, blood pressure, capillary refill, extremity temperature, "
+    "oxygenation, work of breathing, mental status, and urine output now."
+)
+initialize()
+immediate_parsed = namespace["clinical_interpreter"](immediate_reassessment)
+immediate_result = namespace["execute_bundle"](immediate_parsed)
+assert immediate_result["executed"] is True, immediate_result
+assert immediate_result["reassess_delay"] == 0, immediate_result
+assert immediate_result["elapsed_min"] == 0, immediate_result
+assert st.session_state.state["sim_time"] == 0
+
 namespace["record_management_trace"](learner_text, parsed, result, before, after)
 trace_label = namespace["_trace_action_text"](st.session_state.management_trace[-1])
 assert trace_label.index("procedural sedation") < trace_label.index("synchronized cardioversion"), trace_label
