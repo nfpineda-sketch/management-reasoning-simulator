@@ -10023,6 +10023,16 @@ if submitted and submission_text.strip():
                     + format_clinical_update()
                 )
 
+        # A reassessment-only order has no treatment/diagnostic summaries, so
+        # it needs its own learner-facing patient update.
+        if result.get("reassess_delay") is not None and not result.get("action_summaries"):
+            d = result["reassess_delay"] or 0
+            add_event(
+                "clinical_update",
+                ("On immediate reassessment, " if d == 0 else f"After {d} minutes, ")
+                + format_clinical_update()
+            )
+
         if result.get("terminal_locked"):
             add_event(
                 "prototype",
