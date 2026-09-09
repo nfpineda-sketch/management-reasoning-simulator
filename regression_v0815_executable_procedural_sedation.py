@@ -98,6 +98,25 @@ assert st.session_state.state["observable"]["rhythm"] == "Sinus rhythm"
 assert st.session_state.state["observable"]["mental_status"] in {"Sedated", "Drowsy"}
 assert after["treatments"]["last_procedural_sedation"][0]["agent"] == "etomidate"
 
+# Natural canonical English produced from a Spanish learner turn must remain
+# executable, including equivalent "order", "electrical", and "using" syntax.
+canonical_spanish_turn = (
+    "The patient is hypotensive, poorly perfused, and tachycardic. I think the primary problem is "
+    "atrial fibrillation, so I order synchronized electrical cardioversion at 200 J, with sedation "
+    "using etomidate 8 mg and midazolam 2 mg. I expect conversion to sinus rhythm and improvement in "
+    "the signs of perfusion. After cardioversion, reassess the rhythm, heart rate, blood pressure, and perfusion."
+)
+initialize()
+canonical_parsed = namespace["clinical_interpreter"](canonical_spanish_turn)
+canonical_types = [action["type"] for action in canonical_parsed["actions"]]
+assert canonical_types[:2] == ["procedural_sedation", "cardioversion"], canonical_parsed
+assert namespace["reasoning_gate_missing"](canonical_parsed) == [], canonical_parsed
+canonical_result = namespace["execute_bundle"](canonical_parsed)
+assert canonical_result["executed"] is True, canonical_result
+assert canonical_result["elapsed_min"] == 3, canonical_result
+assert canonical_result["reassess_delay"] == 0, canonical_result
+assert st.session_state.state["observable"]["rhythm"] == "Sinus rhythm"
+
 namespace["record_management_trace"](learner_text, parsed, result, before, after)
 trace_label = namespace["_trace_action_text"](st.session_state.management_trace[-1])
 assert trace_label.index("procedural sedation") < trace_label.index("synchronized cardioversion"), trace_label

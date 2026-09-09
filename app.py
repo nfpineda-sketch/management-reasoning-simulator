@@ -3799,6 +3799,15 @@ def parse_delay_min(text):
     """
     t = text.lower().strip()
 
+    # Event-anchored reassessment is an explicit immediate checkpoint even
+    # when the learner does not supply a clock interval.
+    if re.search(
+        r"\b(?:immediately\s+)?after\s+(?:the\s+)?"
+        r"(?:(?:synchronized|synchronised)\s+)?(?:electrical\s+)?cardioversion\b",
+        t,
+    ):
+        return 0
+
     # Minutes: accept min, mins, minute(s), and standalone m after a number.
     m = re.search(
         r"\b(?:in|after|for)?\s*(\d+(?:\.\d+)?)\s*(?:m|min|mins|minute|minutes)\b",
@@ -3986,8 +3995,8 @@ def is_explicit_cardioversion_order(text):
 
         explicit_command = bool(
             re.search(
-                r"\b(?:perform|repeat|attempt|deliver|do|start|initiate)\b[^,]{0,50}\b"
-                r"(?:synchronized\s+|synchronised\s+)?cardioversion\b",
+                r"\b(?:perform|order|repeat|attempt|deliver|do|start|initiate)\b[^,]{0,50}\b"
+                r"(?:synchronized\s+|synchronised\s+)?(?:electrical\s+)?cardioversion\b",
                 clause,
             )
             or re.search(
@@ -4004,7 +4013,7 @@ def is_explicit_cardioversion_order(text):
         )
         compact_energy_order = bool(re.search(
             r"(?:^|,\s*|\band\s+|\bthen\s+)"
-            r"(?:synchronized\s+|synchronised\s+)?cardioversion\s*"
+            r"(?:synchronized\s+|synchronised\s+)?(?:electrical\s+)?cardioversion\s*"
             r"(?:at|with)?\s*\d+(?:\.\d+)?\s*(?:j|joules?)\b",
             clause,
         ))
@@ -5266,11 +5275,11 @@ def parse_procedural_sedation_order(text):
             ))
             explicit_order = bool(re.search(
                 r"\b(?:give|administer|start|use|provide|sedate with|sedation with|"
-                r"premedicate with)\b[^,;.]{0,85}$",
+                r"sedation using|premedicate with)\b[^,;.]{0,85}$",
                 local_prefix,
             ))
             chained_sedation = bool(
-                re.search(r"\b(?:sedation|sedate)\s+with\b", segment[:match.start() - segment_start])
+                re.search(r"\b(?:sedation|sedate)\s+(?:with|using)\b", segment[:match.start() - segment_start])
                 and re.search(r"(?:\+|\band\b)[^,;.]{0,35}$", local_prefix)
             )
             purpose_context = bool(re.search(r"\bfor\s+(?:procedural\s+)?sedation\b", local_tail))
