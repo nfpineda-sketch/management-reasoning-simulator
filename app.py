@@ -7311,6 +7311,12 @@ def recompute_coupled_physiology(state, elapsed_min=1):
         o["mental_status"] = "Sedated"
     else:
         levels = ["Alert", "Drowsy", "Obtunded", "Unresponsive"]
+        # When procedural sedation has just fallen below its active threshold,
+        # ``desired_mental`` may still carry the intervention label "Sedated".
+        # Resume neurologic physiology from Drowsy instead of indexing a label
+        # that intentionally is not part of the perfusion-severity scale.
+        if desired_mental not in levels:
+            desired_mental = "Drowsy"
         current = o["mental_status"] if o["mental_status"] in levels else "Drowsy"
         if levels.index(desired_mental) > levels.index(current):
             # Deterioration is not delayed.

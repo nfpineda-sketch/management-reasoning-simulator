@@ -109,6 +109,15 @@ assert "fluid" in compound_types, compound
 assert "antibiotics" in compound_types, compound
 assert "urinalysis" in compound_types and "chest_xray" in compound_types, compound
 assert "blood_cultures" in compound_types, compound
+
+# Regression for sedation washout: "Sedated" is an intervention label, not a
+# member of the cerebral-perfusion severity scale, and must never raise while
+# time advances between bundled actions.
+initialize()
+st.session_state.state["observable"]["mental_status"] = "Sedated"
+st.session_state.state["hidden"]["procedural_sedation_effect"] = 0.0
+namespace["recompute_coupled_physiology"](st.session_state.state, elapsed_min=1)
+assert st.session_state.state["observable"]["mental_status"] in {"Sedated", "Drowsy", "Alert"}
 assert st.session_state.state["observable"]["mental_status"] in {"Sedated", "Drowsy"}
 assert after["treatments"]["last_procedural_sedation"][0]["agent"] == "etomidate"
 
