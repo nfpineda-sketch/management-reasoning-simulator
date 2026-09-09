@@ -40,6 +40,7 @@ assert 'exact starter "I expect..."' in _INSTRUCTIONS
 assert "Always write canonical_text in English" in _INSTRUCTIONS
 assert '"1rio"/"primario" means "primary"' in _INSTRUCTIONS
 assert "Do not list a missing optional detail as an" in _INSTRUCTIONS
+assert "Preserve each numeric digit string exactly" in _INSTRUCTIONS
 assert client.responses.last_request["text"]["format"]["strict"] is True
 request_payload = json.loads(client.responses.last_request["input"])
 assert request_payload["learner_message"] == "give dilt 5 iv, check hr in 5"
@@ -57,6 +58,8 @@ exec(compile(ast.Module(body=[numeric_node], type_ignores=[]), "app.py", "exec")
 numeric_tokens = numeric_namespace["_numeric_tokens"]
 assert numeric_tokens("problema 1rio; cardioversion 200J; etomidate 8 mg; midazolam 2 mg") == ["200", "8", "2"]
 assert numeric_tokens("primary problem; cardioversion 200 J; etomidate 8 mg; midazolam 2 mg") == ["200", "8", "2"]
+assert numeric_tokens("1000 cc; reassess in 15 minutes; ceftriaxone 2 g") == ["1000", "15", "2"]
+assert numeric_tokens("1,000 cc; reassess in 15 minutes; ceftriaxone 2 g") == ["1000", "15", "2"]
 
 try:
     normalize_with_ai("", {}, api_key="test-only", client=client)

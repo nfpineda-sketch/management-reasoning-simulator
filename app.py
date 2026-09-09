@@ -5802,6 +5802,9 @@ def _numeric_tokens(text):
     }
     tokens = []
     raw = str(text or "")
+    # Formatting-only thousands separators do not change a quantity: 1000 and
+    # 1,000 must compare identically across bilingual normalization.
+    raw = re.sub(r"(?<=\d),(?=\d{3}\b)", "", raw)
     for match in re.finditer(r"(?<![A-Za-z])\d+(?:\.\d+)?", raw):
         suffix_match = re.match(r"[A-Za-z%]+", raw[match.end():])
         if suffix_match and suffix_match.group(0).lower() not in protected_units:

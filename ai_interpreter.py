@@ -52,6 +52,10 @@ Rules:
   variable, or reassessment time that is absent from the learner message.
 - Preserve uncertainty, negation, temporal language, action order, quantities,
   units, routes, and whether an action is proposed, ordered, completed, or avoided.
+- Preserve each numeric digit string exactly: do not add thousands separators
+  and do not convert a quantity to an equivalent scale (for example, keep
+  "1000 cc" rather than changing it to "1 L"). Route abbreviations may be
+  translated (for example, Spanish "EV" to English "IV").
 - Do not convert a retrospective statement into a new order.
 - Do not treat the visible patient state as learner-authored reasoning or an order.
 - Resolve spelling, abbreviations, pronouns, and mixed Spanish/English only when
