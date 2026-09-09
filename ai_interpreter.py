@@ -57,6 +57,11 @@ Rules:
 - Resolve spelling, abbreviations, pronouns, and mixed Spanish/English only when
   the meaning is unambiguous. Otherwise preserve the wording and list the issue in
   ambiguities.
+- Treat common Spanish clinical shorthand as unambiguous when its local meaning
+  is clear: for example, "1rio"/"primario" means "primary", "2rio" means
+  "secondary", "post cardioversion" means "after cardioversion", and
+  "etomidato" means "etomidate". Do not list a missing optional detail as an
+  ambiguity; simply do not invent it.
 - When the learner states an expected effect, canonical_text must express that
   clause with the exact starter "I expect..."; never weaken it to "I hope...".
 - When present, express priority as "My priority is..." and reassessment as
