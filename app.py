@@ -8,9 +8,9 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-st.set_page_config(page_title="Management Reasoning Simulator — MVP v0.8.19", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — MVP v0.8.20", page_icon="🩺", layout="wide")
 
-SIMULATOR_VERSION = "0.8.19"
+SIMULATOR_VERSION = "0.8.20"
 MANAGEMENT_TRACE_DEFINITION = (
     "Management Trace is a time-resolved record of how a learner translates patient state into "
     "management priorities and actions, anticipates their effects, observes the resulting patient "
@@ -292,7 +292,8 @@ INITIAL_STATE = {
         "peripheral_recovery_minutes": 0.0,
         # v0.6.0.11: pressure, forward flow, and tissue perfusion are explicit
         # longitudinally coupled but non-equivalent states.
-        "effective_map": 73.0,
+        # Match the deliberately lower learner-visible PS001 entry pressure.
+        "effective_map": 66.0,
         "pressure_support_state": 0.0,
         "forward_flow_state": 0.46,
         "dobutamine_effect": 0.0,
@@ -300,8 +301,8 @@ INITIAL_STATE = {
         "terminal_collapse": False,
     },
     "observable": {
-        "sbp": 100,
-        "dbp": 60,
+        "sbp": 90,
+        "dbp": 54,
         "hr": 162,
         "rhythm": "AF",
         "spo2": 93,
@@ -366,7 +367,7 @@ PRESENTATION = (
     "70-year-old man with hypertension and type 2 diabetes presents with dizziness, "
     "fatigue, and exertional dyspnea beginning sometime this morning. He cannot identify "
     "the exact onset. He felt normal yesterday and was at his usual baseline. He is alert "
-    "and conversant but appears uncomfortable. Capillary refill is approximately 5 seconds "
+    "and conversant but appears uncomfortable. BP is 90/54 mmHg. Capillary refill is approximately 5 seconds "
     "and his distal extremities are cool. Initial ECG shows atrial fibrillation with rapid "
     "ventricular response without pre-excitation."
 )
@@ -7068,7 +7069,8 @@ def recompute_coupled_physiology(state, elapsed_min=1):
     )
 
     # ---- Blood pressure derived from coupled physiology ----
-    # Calibrated to PS001 baseline ~100/60 at initial hidden-state values.
+    # The untreated PS001 physiology trends toward its prior pressure equilibrium,
+    # while the learner-visible case now deliberately enters at 90/54 mmHg.
     low_output_penalty = (
         44.0 * max(0.0, 0.32 - cardiac_output)
         + 24.0 * h.get("low_flow_burden", 0.0)
@@ -9037,7 +9039,7 @@ def render_event(event):
     st.write(event["text"])
 
 st.title("Management Reasoning Simulator")
-st.caption("MVP v0.8.19 — trajectory-grounded comparison and reliable PDF export")
+st.caption("MVP v0.8.20 — lower-pressure PS001 entry with trajectory-grounded comparison and reliable PDF export")
 
 if not st.session_state.started:
     st.subheader("Select encounter")
@@ -9815,6 +9817,6 @@ with st.expander("Developer: Management Trace", expanded=False):
     else:
         st.caption("No Management Trace events recorded yet.")
 
-st.caption("Management Reasoning Simulator · MVP v0.8.19")
+st.caption("Management Reasoning Simulator · MVP v0.8.20")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

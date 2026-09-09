@@ -1,6 +1,16 @@
-# Management Reasoning Simulator — MVP v0.8.19
+# Management Reasoning Simulator — MVP v0.8.20
 
-## Trajectory-grounded comparison, semantic repair, and reliable PDF export
+## Lower-pressure PS001 entry
+
+PS001 now opens at **90/54 mmHg (MAP 66)** instead of 100/60 mmHg. The initial presentation states the pressure explicitly, and the internal effective-MAP state starts at the same value so the first transition does not rely on a contradictory hidden baseline. All prior semantic reasoning, procedural sedation, trajectory review, and PDF export behavior is preserved.
+
+### What changed in v0.8.20
+
+- PS001 begins at 90/54 mmHg with AF at 162/min, capillary refill of 5 seconds, cool extremities, and alert mental status.
+- The narrative and live monitor now expose the same starting blood pressure.
+- The new starting MAP is protected by a dedicated regression, bringing the active suite to fifty-four scripts.
+
+## Preserved from v0.8.19: trajectory-grounded comparison, semantic repair, and reliable PDF export
 
 This maintenance build repairs the full review/export sequence demonstrated in the supplied v0.8.18 PDF. Expert comparisons now describe the action and patient state that actually occurred at each selected decision rather than selecting a static model by decision number alone. Free-text reasoning remains permissive while preserving the learner's meaning, and the PDF uses bundled embedded fonts with safer page grouping.
 
@@ -204,7 +214,7 @@ This build continues to operationalize `ADAPT & REPEAT`. After completing the re
 If the folder is already unzipped in `~/Downloads`:
 
 ```bash
-cd ~/Downloads/management_reasoning_simulator_v0.8.19
+cd ~/Downloads/management_reasoning_simulator_v0.8.20
 python3 -m pip install -r requirements.txt
 python3 -m streamlit run app.py
 ```
@@ -213,8 +223,8 @@ If only the ZIP is present:
 
 ```bash
 cd ~/Downloads
-unzip management_reasoning_simulator_v0.8.19.zip
-cd management_reasoning_simulator_v0.8.19
+unzip management_reasoning_simulator_v0.8.20.zip
+cd management_reasoning_simulator_v0.8.20
 python3 -m pip install -r requirements.txt
 python3 -m streamlit run app.py
 ```
@@ -224,7 +234,7 @@ Open `http://localhost:8501` if the browser does not open automatically.
 ## Validate
 
 ```bash
-cd ~/Downloads/management_reasoning_simulator_v0.8.19
+cd ~/Downloads/management_reasoning_simulator_v0.8.20
 python3 -m py_compile app.py
 python3 run_regressions.py
 ```
@@ -249,4 +259,4 @@ See `INSTRUCCIONES_DE_PRUEBA.md` for the exact PS001 classroom trajectory, the p
 - Repeat attempts currently use the same deterministic clinical trajectory; controlled variants and between-attempt performance comparison are not yet implemented.
 - Diagnostic values are deterministic outputs of the simulated physiology; they are not a general laboratory model.
 - Explicit extubation, ventilator liberation, neuromuscular blockade, and sedatives other than the modeled etomidate/midazolam procedural regimen remain outside this build.
-- Historical regression scripts are preserved for development lineage; `run_regressions.py` is the maintained active suite for v0.8.19.
+- Historical regression scripts are preserved for development lineage; `run_regressions.py` is the maintained active suite for v0.8.20.
