@@ -110,6 +110,19 @@ assert "antibiotics" in compound_types, compound
 assert "urinalysis" in compound_types and "chest_xray" in compound_types, compound
 assert "blood_cultures" in compound_types, compound
 
+# A sequential bundle phrased as "sedation, followed by cardioversion" is an
+# explicit prospective order, not a retrospective mention.
+followed_by = namespace["clinical_interpreter"](
+    "Administer etomidate 8 mg IV and midazolam 2 mg IV for procedural sedation, "
+    "followed by synchronized electrical cardioversion at 200 J. I expect conversion "
+    "to sinus rhythm. My priority is to improve perfusion. My working model is unstable "
+    "rapid atrial fibrillation. Immediately after cardioversion, reassess rhythm, heart "
+    "rate, blood pressure, mental status, and perfusion."
+)
+followed_types = [action["type"] for action in followed_by["actions"]]
+assert followed_types[:2] == ["procedural_sedation", "cardioversion"], followed_by
+assert namespace["reasoning_gate_missing"](followed_by) == [], followed_by
+
 # Regression for sedation washout: "Sedated" is an intervention label, not a
 # member of the cerebral-perfusion severity scale, and must never raise while
 # time advances between bundled actions.

@@ -4005,6 +4005,11 @@ def is_explicit_cardioversion_order(text):
                 clause,
             )
             or re.search(
+                r"\bfollowed\s+by\s+"
+                r"(?:synchronized\s+|synchronised\s+)?(?:electrical\s+)?cardioversion\b",
+                clause,
+            )
+            or re.search(
                 r"(?:^|,\s*|\band\s+|\bthen\s+|\bso\s+|\bplease\s+|"
                 r"\bi\s+(?:want|will|would\s+like|plan|intend)\s+to\s+)"
                 r"cardiovert\b",
