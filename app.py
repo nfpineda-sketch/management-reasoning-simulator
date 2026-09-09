@@ -8,9 +8,9 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-st.set_page_config(page_title="Management Reasoning Simulator — MVP v0.8.20", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — MVP v0.8.21", page_icon="🩺", layout="wide")
 
-SIMULATOR_VERSION = "0.8.20"
+SIMULATOR_VERSION = "0.8.21"
 MANAGEMENT_TRACE_DEFINITION = (
     "Management Trace is a time-resolved record of how a learner translates patient state into "
     "management priorities and actions, anticipates their effects, observes the resulting patient "
@@ -8836,6 +8836,142 @@ def _vitals_cells(snapshot):
     )
 
 
+def _ecg_interpretation(observable):
+    """Return the learner-facing interpretation paired with the synthetic strip."""
+    rhythm = str(observable.get("rhythm") or "Unknown rhythm")
+    hr = int(round(float(observable.get("hr") or 0)))
+    if not observable.get("pulse_present", True):
+        if rhythm.upper() == "PEA":
+            return f"Organized electrical activity at approximately {hr}/min without a palpable pulse (PEA)."
+        return f"{rhythm} at approximately {hr}/min without a palpable pulse."
+    if rhythm == "Sinus rhythm":
+        return f"Sinus rhythm at approximately {hr}/min; narrow QRS."
+    if rhythm == "AF":
+        rate_label = "rapid ventricular response" if hr >= 110 else "controlled ventricular response"
+        return (
+            f"Atrial fibrillation with {rate_label} at approximately {hr}/min; "
+            "irregularly irregular rhythm, no consistent P waves, narrow QRS, and no pre-excitation."
+        )
+    return f"{rhythm} at approximately {hr}/min."
+
+
+def _ecg_strip_svg(observable, duration_seconds=5.0):
+    """Create a deterministic educational lead-II rhythm strip from visible state.
+
+    The tracing is intentionally synthetic: it depicts only the rhythm, ventricular
+    rate, and narrow-complex morphology already exposed to the learner. It does not
+    invent axis, ischemia, chamber enlargement, or interval abnormalities.
+    """
+    try:
+        hr = float(observable.get("hr") or 80.0)
+    except (TypeError, ValueError):
+        hr = 80.0
+    if not math.isfinite(hr):
+        hr = 80.0
+    hr = max(20.0, min(240.0, hr))
+    duration = max(3.0, min(8.0, float(duration_seconds)))
+    rhythm = str(observable.get("rhythm") or "Unknown rhythm")
+    normalized = rhythm.strip().lower()
+    if normalized == "af":
+        rhythm_key = "af"
+    elif normalized == "sinus rhythm":
+        rhythm_key = "sinus"
+    elif normalized == "pea" or not observable.get("pulse_present", True):
+        rhythm_key = "pea"
+    else:
+        rhythm_key = "organized"
+
+    left, right, baseline = 22.0, 878.0, 108.0
+    plot_width = right - left
+    amplitude = 47.0
+    mean_rr = 60.0 / hr
+
+    beat_centers = []
+    if rhythm_key == "af":
+        beat_time = 0.10
+        beat_index = 0
+        while beat_time < duration + 0.45:
+            variability = (
+                0.95
+                + 0.25 * math.sin((beat_index + 1) * 1.91 + hr * 0.013)
+                + 0.12 * math.sin((beat_index + 1) * 0.73 + 0.4)
+            )
+            beat_time += mean_rr * max(0.62, min(1.38, variability))
+            beat_centers.append(beat_time)
+            beat_index += 1
+    else:
+        beat_time = 0.24
+        while beat_time < duration + 0.45:
+            beat_centers.append(beat_time)
+            beat_time += mean_rr
+
+    def gaussian(value, center, spread):
+        return math.exp(-0.5 * ((value - center) / spread) ** 2)
+
+    points = []
+    samples = max(750, int(duration * 220))
+    for index in range(samples + 1):
+        t = duration * index / samples
+        if rhythm_key == "af":
+            signal = (
+                0.042 * math.sin(2.0 * math.pi * 7.1 * t + 0.3)
+                + 0.026 * math.sin(2.0 * math.pi * 9.3 * t + 1.1)
+            )
+        else:
+            signal = 0.008 * math.sin(2.0 * math.pi * 0.33 * t)
+
+        for center in beat_centers:
+            relative = t - center
+            if relative < -0.24 or relative > 0.48:
+                continue
+            if rhythm_key == "sinus":
+                signal += 0.15 * gaussian(relative, -0.16, 0.032)
+            signal += -0.12 * gaussian(relative, -0.019, 0.009)
+            signal += 1.05 * gaussian(relative, 0.0, 0.010)
+            signal += -0.30 * gaussian(relative, 0.024, 0.012)
+            signal += (0.24 if rhythm_key == "af" else 0.31) * gaussian(relative, 0.19, 0.055)
+
+        x = left + plot_width * t / duration
+        y = baseline - amplitude * signal
+        points.append(f"{x:.1f},{y:.1f}")
+
+    path_data = "M " + " L ".join(points)
+    grid_step = plot_width / (duration * 25.0)
+    major_step = grid_step * 5.0
+    id_suffix = f"{rhythm_key}-{int(round(hr))}"
+    small_grid_id = f"mrs-ecg-small-{id_suffix}"
+    grid_id = f"mrs-ecg-grid-{id_suffix}"
+    interpretation = _ecg_interpretation(observable)
+    accessible_label = escape(f"Synthetic lead II ECG. {interpretation}", quote=True)
+
+    return f"""
+    <div class="mrs-ecg-strip" data-rhythm="{escape(rhythm_key)}" data-rate="{int(round(hr))}">
+      <svg viewBox="0 0 900 228" role="img" aria-label="{accessible_label}"
+           preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="{small_grid_id}" width="{grid_step:.3f}" height="{grid_step:.3f}" patternUnits="userSpaceOnUse">
+            <path d="M {grid_step:.3f} 0 L 0 0 0 {grid_step:.3f}" fill="none" stroke="#f3d6d8" stroke-width="0.55"/>
+          </pattern>
+          <pattern id="{grid_id}" width="{major_step:.3f}" height="{major_step:.3f}" patternUnits="userSpaceOnUse">
+            <rect width="{major_step:.3f}" height="{major_step:.3f}" fill="url(#{small_grid_id})"/>
+            <path d="M {major_step:.3f} 0 L 0 0 0 {major_step:.3f}" fill="none" stroke="#ddaeb2" stroke-width="0.85"/>
+          </pattern>
+        </defs>
+        <rect x="0.5" y="0.5" width="899" height="227" rx="10" fill="#fffdfd" stroke="#d9c3c5"/>
+        <rect x="1" y="1" width="898" height="226" rx="10" fill="url(#{grid_id})"/>
+        <text x="22" y="24" fill="#5b2328" font-family="system-ui, sans-serif" font-size="15" font-weight="700">II</text>
+        <path d="M 26 196 h 11 v -36 h 31 v 36 h 11" fill="none" stroke="#722d35" stroke-width="2"/>
+        <path d="{path_data}" fill="none" stroke="#18212b" stroke-width="2.15" stroke-linejoin="round" stroke-linecap="round"/>
+        <text x="878" y="215" text-anchor="end" fill="#6f6062" font-family="system-ui, sans-serif" font-size="12">25 mm/s · 10 mm/mV · {duration:g} s</text>
+      </svg>
+    </div>
+    <style>
+      .mrs-ecg-strip {{ width: 100%; margin: .15rem 0 .35rem; }}
+      .mrs-ecg-strip svg {{ display: block; width: 100%; height: auto; min-height: 145px; }}
+    </style>
+    """
+
+
 def _vitals_grid_html(snapshot, variant="live"):
     cells = "".join(
         '<div class="mrs-vital-cell">'
@@ -9039,7 +9175,7 @@ def render_event(event):
     st.write(event["text"])
 
 st.title("Management Reasoning Simulator")
-st.caption("MVP v0.8.20 — lower-pressure PS001 entry with trajectory-grounded comparison and reliable PDF export")
+st.caption("MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry")
 
 if not st.session_state.started:
     st.subheader("Select encounter")
@@ -9182,18 +9318,9 @@ with right:
             st.write(f'SpO₂: {o["spo2"]}%')
             st.write(f'CRT: {o["crt"]} s')
     with st.expander("ECG", expanded=True):
-        if not o.get("pulse_present", True):
-            st.write(f'{o["rhythm"]} at approximately {o["hr"]}/min.')
-        elif o["rhythm"] == "Sinus rhythm":
-            st.write(f'Sinus rhythm at approximately {o["hr"]}/min; narrow QRS.')
-        elif o["rhythm"] == "AF":
-            rate_label = "rapid ventricular response" if o["hr"] >= 110 else "controlled ventricular response"
-            st.write(
-                f'Atrial fibrillation with {rate_label} at approximately {o["hr"]}/min; '
-                "narrow complex; no pre-excitation."
-            )
-        else:
-            st.write(f'{o["rhythm"]} at approximately {o["hr"]}/min.')
+        st.markdown(_ecg_strip_svg(o), unsafe_allow_html=True)
+        st.caption("Synthetic educational rhythm strip · Lead II")
+        st.write(_ecg_interpretation(o))
 
     diagnostics = st.session_state.state.get("diagnostics", {}) or {}
     if any(diagnostics.get(k) for k in ["pocus", "lactate", "vbg", "abg", "basic_labs"]):
@@ -9817,6 +9944,6 @@ with st.expander("Developer: Management Trace", expanded=False):
     else:
         st.caption("No Management Trace events recorded yet.")
 
-st.caption("Management Reasoning Simulator · MVP v0.8.20")
+st.caption("Management Reasoning Simulator · MVP v0.8.21")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

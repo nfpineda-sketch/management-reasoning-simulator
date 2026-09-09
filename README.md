@@ -1,6 +1,20 @@
-# Management Reasoning Simulator — MVP v0.8.20
+# Management Reasoning Simulator — MVP v0.8.21
 
-## Lower-pressure PS001 entry
+## Dynamic learner-visible ECG
+
+The ECG panel now includes a responsive, synthetic lead-II rhythm strip that follows the learner-visible patient state. It begins as narrow-complex atrial fibrillation with rapid ventricular response in PS001, remains irregular when rate control slows the ventricular response, changes to sinus rhythm after successful cardioversion, and displays organized electrical activity when the simulated state is PEA.
+
+### What changed in v0.8.21
+
+- The expanded ECG panel displays a five-second lead-II tracing instead of text alone.
+- Rhythm morphology and ventricular rate update after every simulated intervention.
+- AF has irregular R–R intervals, fibrillatory baseline activity, no consistent P waves, and narrow QRS complexes.
+- Sinus rhythm has regular R–R intervals, a P wave before every narrow QRS, and a visible T wave.
+- PEA retains organized electrical activity while explicitly stating that no palpable pulse is present.
+- The tracing includes ECG paper, a calibration pulse, and the labels `25 mm/s` and `10 mm/mV`.
+- The panel identifies the strip as synthetic and educational and does not invent ischemia, axis, chamber enlargement, or interval abnormalities that are not defined by the case.
+
+## Preserved from v0.8.20: lower-pressure PS001 entry
 
 PS001 now opens at **90/54 mmHg (MAP 66)** instead of 100/60 mmHg. The initial presentation states the pressure explicitly, and the internal effective-MAP state starts at the same value so the first transition does not rely on a contradictory hidden baseline. All prior semantic reasoning, procedural sedation, trajectory review, and PDF export behavior is preserved.
 
@@ -214,7 +228,7 @@ This build continues to operationalize `ADAPT & REPEAT`. After completing the re
 If the folder is already unzipped in `~/Downloads`:
 
 ```bash
-cd ~/Downloads/management_reasoning_simulator_v0.8.20
+cd ~/Downloads/management_reasoning_simulator_v0.8.21
 python3 -m pip install -r requirements.txt
 python3 -m streamlit run app.py
 ```
@@ -223,8 +237,8 @@ If only the ZIP is present:
 
 ```bash
 cd ~/Downloads
-unzip management_reasoning_simulator_v0.8.20.zip
-cd management_reasoning_simulator_v0.8.20
+unzip management_reasoning_simulator_v0.8.21.zip
+cd management_reasoning_simulator_v0.8.21
 python3 -m pip install -r requirements.txt
 python3 -m streamlit run app.py
 ```
@@ -234,7 +248,7 @@ Open `http://localhost:8501` if the browser does not open automatically.
 ## Validate
 
 ```bash
-cd ~/Downloads/management_reasoning_simulator_v0.8.20
+cd ~/Downloads/management_reasoning_simulator_v0.8.21
 python3 -m py_compile app.py
 python3 run_regressions.py
 ```
@@ -259,4 +273,4 @@ See `INSTRUCCIONES_DE_PRUEBA.md` for the exact PS001 classroom trajectory, the p
 - Repeat attempts currently use the same deterministic clinical trajectory; controlled variants and between-attempt performance comparison are not yet implemented.
 - Diagnostic values are deterministic outputs of the simulated physiology; they are not a general laboratory model.
 - Explicit extubation, ventilator liberation, neuromuscular blockade, and sedatives other than the modeled etomidate/midazolam procedural regimen remain outside this build.
-- Historical regression scripts are preserved for development lineage; `run_regressions.py` is the maintained active suite for v0.8.20.
+- Historical regression scripts are preserved for development lineage; `run_regressions.py` is the maintained active suite for v0.8.21.
