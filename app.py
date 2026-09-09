@@ -5780,7 +5780,25 @@ def ai_interpretation_enabled():
 
 
 def _numeric_tokens(text):
-    return re.findall(r"(?<![A-Za-z])\d+(?:\.\d+)?", str(text or ""))
+    """Return quantities whose preservation is clinically safety-relevant.
+
+    Spanish ordinal shorthand such as ``1rio``/``2do`` is lexical rather than
+    a clinical quantity and may legitimately disappear during translation.
+    Attached clinical units (for example ``200J`` or ``5min``) remain protected.
+    """
+    protected_units = {
+        "j", "joule", "joules", "mg", "mcg", "ug", "g", "kg",
+        "ml", "l", "cc", "min", "mins", "minute", "minutes",
+        "h", "hr", "hrs", "hour", "hours", "bpm", "mmhg", "%",
+    }
+    tokens = []
+    raw = str(text or "")
+    for match in re.finditer(r"(?<![A-Za-z])\d+(?:\.\d+)?", raw):
+        suffix_match = re.match(r"[A-Za-z%]+", raw[match.end():])
+        if suffix_match and suffix_match.group(0).lower() not in protected_units:
+            continue
+        tokens.append(match.group(0))
+    return tokens
 
 
 def normalize_clinical_turn(text):
