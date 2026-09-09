@@ -17,7 +17,7 @@ Configure the separate Streamlit test app under **Settings → Secrets**:
 
 ```toml
 OPENAI_API_KEY = "your-project-api-key"
-OPENAI_MODEL = "gpt-5-mini"
+OPENAI_MODEL = "gpt-5.6-luna"
 ```
 
 Never commit a real API key to GitHub.

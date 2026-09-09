@@ -55,6 +55,11 @@ Rules:
 - Resolve spelling, abbreviations, pronouns, and mixed Spanish/English only when
   the meaning is unambiguous. Otherwise preserve the wording and list the issue in
   ambiguities.
+- When the learner states an expected effect, canonical_text must express that
+  clause with the exact starter "I expect..."; never weaken it to "I hope...".
+- When present, express priority as "My priority is..." and reassessment as
+  "Reassess [variables] in [time] minutes" so the deterministic parser can retain
+  the learner-authored semantic slots.
 - canonical_text must stand alone and remain semantically equivalent to the
   learner message. The deterministic simulator, not you, decides what executes
   and how physiology changes.
@@ -66,7 +71,7 @@ def normalize_with_ai(
     visible_state: Dict[str, Any],
     *,
     api_key: str,
-    model: str = "gpt-5-mini",
+    model: str = "gpt-5.6-luna",
     client: Any = None,
 ) -> AIInterpretation:
     """Return a schema-constrained normalization or raise ``AIInterpretationError``."""

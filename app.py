@@ -5796,7 +5796,7 @@ def interpret_clinical_input(text):
         deterministic["interpretation_mode"] = "deterministic"
         return deterministic
 
-    model = _runtime_secret("OPENAI_MODEL", "gpt-5-mini")
+    model = _runtime_secret("OPENAI_MODEL", "gpt-5.6-luna")
     visible_state = deepcopy((st.session_state.get("state") or {}).get("observable") or {})
     try:
         normalized = normalize_with_ai(text, visible_state, api_key=api_key, model=model)

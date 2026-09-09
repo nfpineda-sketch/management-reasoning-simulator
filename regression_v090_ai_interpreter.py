@@ -2,7 +2,7 @@
 
 import json
 
-from ai_interpreter import AIInterpretationError, normalize_with_ai
+from ai_interpreter import AIInterpretationError, _INSTRUCTIONS, normalize_with_ai
 
 
 class FakeResponses:
@@ -33,6 +33,7 @@ result = normalize_with_ai(
 )
 assert result.canonical_text.startswith("Give diltiazem 5 mg IV")
 assert result.confidence == "high"
+assert 'exact starter "I expect..."' in _INSTRUCTIONS
 assert client.responses.last_request["text"]["format"]["strict"] is True
 request_payload = json.loads(client.responses.last_request["input"])
 assert request_payload["learner_message"] == "give dilt 5 iv, check hr in 5"
