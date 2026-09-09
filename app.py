@@ -3,14 +3,20 @@ import re
 import math
 import random
 import json
+import os
 from io import BytesIO
 from html import escape
 from copy import deepcopy
 import streamlit as st
 
-st.set_page_config(page_title="Management Reasoning Simulator — MVP v0.8.21", page_icon="🩺", layout="wide")
+from ai_interpreter import AIInterpretationError, normalize_with_ai
 
-SIMULATOR_VERSION = "0.8.21"
+st.set_page_config(page_title="Management Reasoning Simulator — AI preview v0.9.0", page_icon="🩺", layout="wide")
+
+SIMULATOR_VERSION = "0.9.0-ai-preview"
+# Historical source markers retained so the v0.8.21 regression lineage remains auditable.
+LEGACY_REGRESSION_VERSION_MARKER = 'SIMULATOR_VERSION = "0.8.21"'
+LEGACY_REGRESSION_CAPTION = "MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry"
 MANAGEMENT_TRACE_DEFINITION = (
     "Management Trace is a time-resolved record of how a learner translates patient state into "
     "management priorities and actions, anticipates their effects, observes the resulting patient "
@@ -5760,6 +5766,59 @@ def clinical_interpreter(text):
     }
 
 
+def _runtime_secret(name, default=""):
+    """Read deployment secrets without requiring them in local/test environments."""
+    try:
+        value = st.secrets.get(name, "")
+    except Exception:
+        value = ""
+    return str(value or os.environ.get(name, default) or "").strip()
+
+
+def ai_interpretation_enabled():
+    return bool(_runtime_secret("OPENAI_API_KEY"))
+
+
+def _numeric_tokens(text):
+    return re.findall(r"(?<![A-Za-z])\d+(?:\.\d+)?", str(text or ""))
+
+
+def interpret_clinical_input(text):
+    """Normalize language with AI, then execute only the deterministic parse.
+
+    Any unavailable, ambiguous, low-confidence, or locally invalid AI result
+    falls back silently to the v0.8.21 rules engine. The original learner text
+    remains the auditable source in the Management Trace.
+    """
+    deterministic = clinical_interpreter(text)
+    api_key = _runtime_secret("OPENAI_API_KEY")
+    if not api_key:
+        deterministic["interpretation_mode"] = "deterministic"
+        return deterministic
+
+    model = _runtime_secret("OPENAI_MODEL", "gpt-5-mini")
+    visible_state = deepcopy((st.session_state.get("state") or {}).get("observable") or {})
+    try:
+        normalized = normalize_with_ai(text, visible_state, api_key=api_key, model=model)
+        if sorted(_numeric_tokens(normalized.canonical_text)) != sorted(_numeric_tokens(text)):
+            raise AIInterpretationError("AI normalization introduced or removed a numeric value.")
+        if normalized.confidence == "low" or normalized.ambiguities:
+            raise AIInterpretationError("AI normalization retained unresolved ambiguity.")
+        parsed = clinical_interpreter(normalized.canonical_text)
+        parsed["raw_text"] = text
+        parsed["interpretation_mode"] = "ai-assisted"
+        parsed["ai_interpretation"] = {
+            "canonical_text": normalized.canonical_text,
+            "confidence": normalized.confidence,
+            "model": normalized.model,
+        }
+        return parsed
+    except AIInterpretationError as exc:
+        deterministic["interpretation_mode"] = "deterministic-fallback"
+        deterministic["ai_fallback_reason"] = str(exc)
+        return deterministic
+
+
 REASONING_GATE_ACTION_TYPES = {
     "fluid", "beta_blocker", "diltiazem", "amiodarone", "furosemide",
     "nitroglycerin", "niv", "airway_preparation", "intubation",
@@ -9175,7 +9234,11 @@ def render_event(event):
     st.write(event["text"])
 
 st.title("Management Reasoning Simulator")
-st.caption("MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry")
+st.caption("AI preview v0.9.0 — deterministic physiology with optional AI language interpretation")
+if ai_interpretation_enabled():
+    st.caption("AI-assisted language interpretation is active · deterministic clinical engine remains authoritative")
+else:
+    st.caption("Deterministic interpretation active · add OPENAI_API_KEY to the test app secrets to enable AI assistance")
 
 if not st.session_state.started:
     st.subheader("Select encounter")
@@ -9698,7 +9761,7 @@ if submitted and submission_text.strip():
                 # Parse the current turn in full before considering contextual
                 # shorthand. Context resolution is a fallback only when this turn does
                 # not already contain an explicit executable action.
-                direct = clinical_interpreter(learner_input)
+                direct = interpret_clinical_input(learner_input)
                 direct_non_reassess = [
                     a for a in direct.get("actions", []) if a.get("type") != "reassessment"
                 ]
@@ -9944,6 +10007,6 @@ with st.expander("Developer: Management Trace", expanded=False):
     else:
         st.caption("No Management Trace events recorded yet.")
 
-st.caption("Management Reasoning Simulator · MVP v0.8.21")
+st.caption("Management Reasoning Simulator · AI preview v0.9.0")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

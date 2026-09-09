@@ -1,4 +1,26 @@
-# Management Reasoning Simulator — MVP v0.8.21
+# Management Reasoning Simulator — AI preview v0.9.0
+
+## AI integration preview
+
+This branch adds an optional OpenAI language-normalization layer. The model converts
+free-form or mixed-language learner input into conservative canonical clinical text.
+The existing deterministic parser reparses that text, validates supported actions,
+and remains solely responsible for execution and patient physiology.
+
+The integration fails closed: if the API is unavailable, confidence is low,
+ambiguity remains, or a numeric value changes, the application automatically uses
+the deterministic v0.8.21 interpreter. The learner's original text is preserved in
+the Management Trace. Only learner text and the visible patient state are sent to
+the API; hidden physiology and review data are not included.
+
+Configure the separate Streamlit test app under **Settings → Secrets**:
+
+```toml
+OPENAI_API_KEY = "your-project-api-key"
+OPENAI_MODEL = "gpt-5-mini"
+```
+
+Never commit a real API key to GitHub.
 
 ## Dynamic learner-visible ECG
 

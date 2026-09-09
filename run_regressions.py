@@ -58,6 +58,7 @@ ACTIVE_REGRESSIONS = [
     "regression_v0819_trajectory_review_and_pdf.py",
     "regression_v0821_lower_initial_ps001_bp.py",
     "regression_v0821_dynamic_ecg_strip.py",
+    "regression_v090_ai_interpreter.py",
 ]
 
 
