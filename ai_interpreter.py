@@ -45,6 +45,8 @@ medicine simulator. Convert the learner's message into clear canonical English
 while preserving only information the learner explicitly supplied.
 
 Rules:
+- Always write canonical_text in English, regardless of the learner's input
+  language. Accept English, Spanish, or a mixture of both in every turn.
 - Never recommend care, judge correctness, or add an action, drug, dose, route,
   diagnostic test, finding, diagnosis, rationale, expected effect, monitoring
   variable, or reassessment time that is absent from the learner message.

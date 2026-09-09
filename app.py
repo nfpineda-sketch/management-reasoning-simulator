@@ -5783,18 +5783,16 @@ def _numeric_tokens(text):
     return re.findall(r"(?<![A-Za-z])\d+(?:\.\d+)?", str(text or ""))
 
 
-def interpret_clinical_input(text):
-    """Normalize language with AI, then execute only the deterministic parse.
+def normalize_clinical_turn(text):
+    """Return English canonical text plus an auditable interpretation record.
 
     Any unavailable, ambiguous, low-confidence, or locally invalid AI result
-    falls back silently to the v0.8.21 rules engine. The original learner text
-    remains the auditable source in the Management Trace.
+    falls back to the original text. This helper is used before direct orders,
+    pending-order clarifications, and reasoning completions alike.
     """
-    deterministic = clinical_interpreter(text)
     api_key = _runtime_secret("OPENAI_API_KEY")
     if not api_key:
-        deterministic["interpretation_mode"] = "deterministic"
-        return deterministic
+        return text, {"mode": "deterministic"}
 
     model = _runtime_secret("OPENAI_MODEL", "gpt-5.6-luna")
     visible_state = deepcopy((st.session_state.get("state") or {}).get("observable") or {})
@@ -5804,19 +5802,47 @@ def interpret_clinical_input(text):
             raise AIInterpretationError("AI normalization introduced or removed a numeric value.")
         if normalized.confidence == "low" or normalized.ambiguities:
             raise AIInterpretationError("AI normalization retained unresolved ambiguity.")
-        parsed = clinical_interpreter(normalized.canonical_text)
-        parsed["raw_text"] = text
-        parsed["interpretation_mode"] = "ai-assisted"
-        parsed["ai_interpretation"] = {
+        return normalized.canonical_text, {
+            "mode": "ai-assisted",
             "canonical_text": normalized.canonical_text,
             "confidence": normalized.confidence,
             "model": normalized.model,
         }
-        return parsed
     except AIInterpretationError as exc:
-        deterministic["interpretation_mode"] = "deterministic-fallback"
-        deterministic["ai_fallback_reason"] = str(exc)
-        return deterministic
+        return text, {
+            "mode": "deterministic-fallback",
+            "fallback_reason": str(exc),
+        }
+
+
+def _restore_original_turn(parsed, processed_text, original_text):
+    """Keep the learner's literal language in the longitudinal audit trail."""
+    raw = str(parsed.get("raw_text") or "")
+    if processed_text != original_text and raw.endswith(processed_text):
+        raw = raw[: len(raw) - len(processed_text)] + original_text
+    elif not raw:
+        raw = original_text
+    parsed["raw_text"] = raw
+    return parsed
+
+
+def _attach_interpretation_audit(parsed, audit):
+    parsed["interpretation_mode"] = audit.get("mode", "deterministic")
+    if audit.get("mode") == "ai-assisted":
+        parsed["ai_interpretation"] = {
+            key: audit[key] for key in ("canonical_text", "confidence", "model") if audit.get(key)
+        }
+    elif audit.get("fallback_reason"):
+        parsed["ai_fallback_reason"] = audit["fallback_reason"]
+    return parsed
+
+
+def interpret_clinical_input(text):
+    """Backward-compatible direct-turn entry point for tests and integrations."""
+    processed, audit = normalize_clinical_turn(text)
+    parsed = clinical_interpreter(processed)
+    _restore_original_turn(parsed, processed, text)
+    return _attach_interpretation_audit(parsed, audit)
 
 
 REASONING_GATE_ACTION_TYPES = {
@@ -9734,11 +9760,15 @@ if submitted and submission_text.strip():
         learner_input,
     )
     trace_state_before = management_state_snapshot(st.session_state.state)
+    processing_input = learner_input
+    interpretation_audit = {"mode": "guided-form"}
+    if submission_parsed is None:
+        processing_input, interpretation_audit = normalize_clinical_turn(learner_input)
 
     if submission_parsed is not None:
         parsed = submission_parsed
     else:
-        reasoning_resolution = resolve_pending_reasoning(learner_input)
+        reasoning_resolution = resolve_pending_reasoning(processing_input)
         if reasoning_resolution and reasoning_resolution.get("clarification"):
             active_pending = st.session_state.get("pending_reasoning") or {}
             upsert_reasoning_gate_clarification(
@@ -9750,7 +9780,7 @@ if submitted and submission_text.strip():
         if reasoning_resolution and reasoning_resolution.get("parsed"):
             parsed = reasoning_resolution["parsed"]
         else:
-            pending_resolution = try_resolve_pending_action(learner_input)
+            pending_resolution = try_resolve_pending_action(processing_input)
             if pending_resolution and pending_resolution.get("clarification"):
                 add_event("clarification", pending_resolution["clarification"])
                 st.rerun()
@@ -9761,14 +9791,14 @@ if submitted and submission_text.strip():
                 # Parse the current turn in full before considering contextual
                 # shorthand. Context resolution is a fallback only when this turn does
                 # not already contain an explicit executable action.
-                direct = interpret_clinical_input(learner_input)
+                direct = clinical_interpreter(processing_input)
                 direct_non_reassess = [
                     a for a in direct.get("actions", []) if a.get("type") != "reassessment"
                 ]
                 if direct_non_reassess:
                     parsed = direct
                 else:
-                    contextual = parse_contextual_followup(learner_input)
+                    contextual = parse_contextual_followup(processing_input)
                     if contextual:
                         contextual["reasoning"] = direct.get("reasoning", {})
                         reassess = [a for a in direct.get("actions", []) if a.get("type") == "reassessment"]
@@ -9778,6 +9808,9 @@ if submitted and submission_text.strip():
                         parsed = contextual
                     else:
                         parsed = direct
+
+        _restore_original_turn(parsed, processing_input, learner_input)
+        _attach_interpretation_audit(parsed, interpretation_audit)
 
     parsed["reasoning_observations"] = reasoning_state_observations(
         parsed, st.session_state.state
