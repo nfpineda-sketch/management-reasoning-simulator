@@ -4,6 +4,7 @@ import math
 import random
 import json
 import os
+import hmac
 from io import BytesIO
 from html import escape
 from copy import deepcopy
@@ -12,6 +13,39 @@ import streamlit as st
 from ai_interpreter import AIInterpretationError, normalize_with_ai
 
 st.set_page_config(page_title="Management Reasoning Simulator — AI preview v0.9.0", page_icon="🩺", layout="wide")
+
+
+def require_shared_password():
+    """Fail-closed shared-password gate backed by Streamlit Secrets."""
+    try:
+        configured_password = str(st.secrets.get("APP_PASSWORD", "")).strip()
+    except Exception:
+        configured_password = ""
+
+    if not configured_password:
+        st.title("Management Reasoning Simulator")
+        st.error("Access is temporarily closed. The application password has not been configured.")
+        st.stop()
+
+    if st.session_state.get("_shared_access_granted", False):
+        return
+
+    st.title("Management Reasoning Simulator")
+    st.caption("Restricted access")
+    with st.form("shared_password_form"):
+        entered_password = st.text_input("Password", type="password")
+        submitted_password = st.form_submit_button("Enter", type="primary")
+
+    if submitted_password:
+        if hmac.compare_digest(entered_password, configured_password):
+            st.session_state["_shared_access_granted"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    st.stop()
+
+
+require_shared_password()
 
 SIMULATOR_VERSION = "0.9.0-ai-preview"
 # Historical source markers retained so the v0.8.21 regression lineage remains auditable.
