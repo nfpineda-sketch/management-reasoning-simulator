@@ -1,4 +1,29 @@
-# Management Reasoning Simulator — Curriculum pilot v0.11.0
+# Management Reasoning Simulator — Curriculum pilot v0.11.2
+
+## Oxygen order integrity and state-aware review
+
+Explicit oxygen orders retain their device and flow through AI normalization. If
+normalization omits or changes that order, interpretation returns to the original
+entry. Negated and conditional oxygen mentions do not start treatment, and fluid
+volumes are kept separate from oxygen flow.
+
+Review questions respect negated expectations and delayed antimicrobial effects.
+Expert comparisons use the pressure and support recorded at the selected decision;
+they do not automatically recommend increasing norepinephrine at an adequate MAP.
+
+- [Update v0.11.2 locally and understand the cloud account setup](docs/UPDATE_v0.11.2.md)
+
+## Separate resident progress page
+
+Residents start on **Clinical encounters**, where objective tables, assessment
+criteria and faculty progress feedback are not rendered. **My progress**, in the
+dashboard sidebar, opens a separate page with their existing observation counts,
+depth and faculty feedback. The progress menu is absent during an encounter;
+residents can save and return to the dashboard to consult their general progress.
+The encounter's assigned learning focus is disclosed in its post-encounter review.
+Faculty and administrators retain their existing dashboard and assessment controls.
+
+- [Update an existing local installation without replacing accounts or secrets](docs/UPDATE_v0.11.1.md)
 
 ## Longitudinal objective tracking
 

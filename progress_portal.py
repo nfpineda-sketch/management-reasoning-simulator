@@ -243,7 +243,7 @@ def _render_observation_correction(context, progress, user_id, goals):
             _saved(context, "Assessment voided. Its history has been retained and the count updated.")
 
 
-def render_progress_dashboard(context):
+def render_progress_dashboard(context, title="Objective progress"):
     """Render resident-owned progress or faculty cohort review, without assignment controls."""
     if not context:
         return
@@ -251,7 +251,7 @@ def render_progress_dashboard(context):
     try:
         progress = ProgressStore(context["store"])
         user = context["user"]
-        st.subheader("Objective progress")
+        st.subheader(title)
         st.caption("Faculty-reviewed evidence from simulated management. This record does not certify completion of a workplace EPA.")
         if user["role"] == "resident":
             goals = progress.get_progress(context["token"])["objectives"]

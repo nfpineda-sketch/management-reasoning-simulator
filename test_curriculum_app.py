@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 from account_store import AccountStore, hash_password
+from objectives import OBJECTIVES
 
 APP = str(Path(__file__).with_name("app.py"))
 
@@ -37,6 +38,38 @@ def click(at, label):
     assert not at.exception
 
 
+def resident_navigation(at, view=None):
+    navigation = next(widget for widget in at.sidebar.radio if widget.label == "Navigation")
+    assert navigation.key == "_resident_dashboard_view"
+    assert navigation.options == ["Clinical encounters", "My progress"]
+    if view is not None:
+        navigation.set_value(view).run()
+        assert not at.exception
+    return next(widget for widget in at.sidebar.radio if widget.label == "Navigation").value
+
+
+def assert_progress_hidden(at):
+    """Check rendered content, including collapsed history and table widgets."""
+    text = " ".join(
+        str(item.value)
+        for kind in ("title", "header", "subheader", "markdown", "caption")
+        for item in getattr(at, kind)
+    ) + " " + " ".join(item.label for item in at.expander)
+    assert "Objective progress" not in text
+    assert "Observation history" not in text
+    for objective in OBJECTIVES.values():
+        assert objective["title"] not in text
+        assert objective["scope"] not in text
+    assert not any("Objective" in item.value.columns for item in at.dataframe)
+
+
+def assert_active_encounter_private(at):
+    assert not at.session_state.encounter_ended
+    assert not any(widget.label == "Navigation" for widget in at.sidebar.radio)
+    assert not any("Learning focus" in item.label for item in at.expander)
+    assert_progress_hidden(at)
+
+
 def test_existing_shared_gate_remains_closed_until_password(monkeypatch):
     monkeypatch.setenv("MRS_AUTH_MODE", "shared")
     at = AppTest.from_file(APP, default_timeout=20)
@@ -59,8 +92,11 @@ def test_resident_assignment_cardioversion_persistence_and_private_ui(cohort):
     store, admin, token = cohort
     at = open_app(token)
     assert not at.selectbox
+    assert resident_navigation(at) == "Clinical encounters"
+    assert_progress_hidden(at)
     click(at, "Begin Encounter")
     assert not at.exception
+    assert_active_encounter_private(at)
     labels = [exp.label for exp in at.expander]
     assert "ECG" in labels
     assert not any("Developer" in label for label in labels)
@@ -89,9 +125,25 @@ def test_resident_assignment_cardioversion_persistence_and_private_ui(cohort):
     assert new.session_state.rng_counter == saved_rng
     click(new, "Save & return to dashboard")
     assert not new.selectbox
+    assert resident_navigation(new) == "Clinical encounters"
+    assert_progress_hidden(new)
     teacher = open_app(admin)
     assert any(widget.label == "Management challenge" for widget in teacher.selectbox)
     assert any(exp.label == "Resident activity and recorded evidence" for exp in teacher.expander)
+
+
+@pytest.mark.parametrize("role", ["admin", "faculty"])
+def test_staff_dashboard_keeps_objective_progress(cohort, role):
+    store, admin, _ = cohort
+    token = admin
+    if role == "faculty":
+        invite = store.create_invite(admin, "faculty")
+        token = store.register("faculty-one", "local-faculty-password", invite)
+    at = open_app(token)
+    assert not any(widget.label == "Navigation" for widget in at.sidebar.radio)
+    assert any(item.value == "Objective progress" for item in at.subheader)
+    assert any(widget.label == "Management challenge" for widget in at.selectbox)
+    assert any("Objective" in item.value.columns for item in at.dataframe)
 
 
 def test_completed_review_readonly_and_revision_conflict_recovery(cohort):
@@ -181,9 +233,68 @@ def test_full_app_multiobjective_faculty_assessment_and_resident_progress(cohort
     assert not faculty.error
     learner = open_app(resident)
     assert not learner.selectbox
+    assert resident_navigation(learner) == "Clinical encounters"
+    assert_progress_hidden(learner)
+    resident_navigation(learner, "My progress")
+    assert any(item.value == "My progress" for item in learner.subheader)
+    assert not learner.selectbox
     assert not any(b.label in {"Record objective assessment", "Save program target"} for b in learner.button)
+    assert not any(b.label in {"Begin Encounter", "Resume encounter"} for b in learner.button)
     table = learner.dataframe[0].value
     row = table[table["Objective"].str.startswith("C4 ·")].iloc[0]
     assert row["Satisfactory observations"] == "1/1"
     assert row["Status"] == "Confirmed"
     assert any("Test assessment with specific saved reasoning evidence." in str(m.value) for m in learner.markdown)
+
+    # Returning to launch removes prior objective history before a new case.
+    resident_navigation(learner, "Clinical encounters")
+    assert_progress_hidden(learner)
+    click(learner, "Begin Encounter")
+    assert_active_encounter_private(learner)
+    learner.text_area[0].set_value(
+        "My working model is that reduced preload contributes to poor perfusion. "
+        "My priority is to improve perfusion. Give 500 mL normal saline IV. "
+        "I expect improved blood pressure and capillary refill. Reassess blood pressure, "
+        "heart rate, mental status, and perfusion in 5 minutes."
+    )
+    click(learner, "Submit")
+    assert learner.session_state.management_trace
+    assert_active_encounter_private(learner)
+    active_id = learner.session_state["_attempt_id"]
+    saved_state = deepcopy(learner.session_state.state)
+    saved_trace = deepcopy(learner.session_state.management_trace)
+    saved_rng = learner.session_state.rng_counter
+    active_record = store.get_attempt(resident, active_id)
+    recorded_progress = progress.get_progress(resident)
+
+    click(learner, "Save & return to dashboard")
+    assert resident_navigation(learner) == "Clinical encounters"
+    assert_progress_hidden(learner)
+    assert any(b.label == "Resume encounter" for b in learner.button)
+    resident_navigation(learner, "My progress")
+    assert any(item.value == "My progress" for item in learner.subheader)
+    assert not any(b.label in {"Begin Encounter", "Resume encounter"} for b in learner.button)
+    table = learner.dataframe[0].value
+    row = table[table["Objective"].str.startswith("C4 ·")].iloc[0]
+    assert row["Satisfactory observations"] == "1/1"
+    assert row["Status"] == "Confirmed"
+    assert store.get_attempt(resident, active_id) == active_record
+    assert progress.get_progress(resident) == recorded_progress
+
+    resident_navigation(learner, "Clinical encounters")
+    assert_progress_hidden(learner)
+    click(learner, "Resume encounter")
+    assert_active_encounter_private(learner)
+    assert learner.session_state["_attempt_id"] == active_id
+    assert learner.session_state.state == saved_state
+    assert learner.session_state.management_trace == saved_trace
+    assert learner.session_state.rng_counter == saved_rng
+    assert store.get_attempt(resident, active_id) == active_record
+
+    click(learner, "Complete Encounter & Begin Review")
+    assert learner.session_state.encounter_ended
+    assert any(item.label == "Learning focus for this encounter" for item in learner.expander)
+    assert not any(widget.label == "Navigation" for widget in learner.sidebar.radio)
+    assert not any("Objective" in item.value.columns for item in learner.dataframe)
+    assert store.get_attempt(resident, attempt_id)["payload"] == payload
+    assert progress.get_progress(resident) == recorded_progress

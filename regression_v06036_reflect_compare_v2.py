@@ -4,6 +4,9 @@ from pathlib import Path
 src=Path('app.py').read_text()
 tree=ast.parse(src)
 names={'sim_time_label','_trace_time','_reasoning_present','_perfusion_response_direction','_expected_response_prompt','_model_shift_prompt','_critical_adaptation_prompt','_reasoning_data_alignment_prompt','_reflect_compare_items'}
+# Review matching now resolves explicit expectation clauses and antibiotic-only
+# timing using these production helpers. Keep this isolated AST harness complete.
+names.update({'_review_expectation_text', '_immediate_expectation_text', '_action_types_for_event', '_trace_observable_delta'})
 module=ast.Module(body=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in names],type_ignores=[])
 ns={'re': re}
 exec(compile(module,'reflect_extract','exec'),ns)

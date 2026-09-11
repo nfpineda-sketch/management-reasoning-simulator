@@ -144,6 +144,16 @@ def _date(value):
 
 def render_dashboard(context, initial_state, reset_session):
     user, store, token = context["user"], context["store"], context["token"]
+    if user["role"] == "resident":
+        view = st.sidebar.radio(
+            "Navigation", ("Clinical encounters", "My progress"),
+            key="_resident_dashboard_view",
+        )
+        if view == "My progress":
+            # Render only the selected page. Hidden tabs/expanders would still
+            # send objective labels and feedback with the encounter launch UI.
+            render_progress_dashboard(context, title="My progress")
+            return
     attempts = store.list_attempts(token)
     own = [a for a in attempts if a["user_id"] == user["id"]]
     completed = [a for a in own if a["status"] == "completed" and not a["is_sandbox"]]
@@ -187,7 +197,7 @@ def render_dashboard(context, initial_state, reset_session):
                 st.json((record.get("payload") or {}).get("evidence", {}))
                 st.download_button("Download faculty record", json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
                 render_attempt_assessment(context, record)
-    render_progress_dashboard(context)
+        render_progress_dashboard(context)
 
 
 def render_learning_focus(context):

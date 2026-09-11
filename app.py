@@ -17,7 +17,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Curriculum pilot v0.11.0", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Curriculum pilot v0.11.2", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -56,7 +56,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.11.0-curriculum-pilot"
+SIMULATOR_VERSION = "0.11.2-curriculum-pilot"
 
 
 def faculty_access():
@@ -734,6 +734,9 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         "reasoning_observations": deepcopy(parsed.get("reasoning_observations", [])),
         "reasoning_gate": deepcopy(parsed.get("reasoning_gate", {"required": False, "status": "not_required"})),
         "recognized_future_actions": deepcopy(parsed.get("recognized_future_actions", [])),
+        "interpretation_mode": parsed.get("interpretation_mode", "deterministic"),
+        "ai_interpretation": deepcopy(parsed.get("ai_interpretation")),
+        "ai_fallback_reason": parsed.get("ai_fallback_reason"),
         "execution_status": status,
         "clarification": result.get("clarification"),
         "action_summaries": deepcopy(result.get("action_summaries", [])),
@@ -1234,6 +1237,58 @@ def _perfusion_response_direction(event):
     return "unchanged"
 
 
+def _review_expectation_text(text):
+    """Normalize only review matching; retain the learner's original wording."""
+    return str(text or "").lower().translate(str.maketrans("áéíóúüñ’", "aeiouun'"))
+
+
+def _immediate_expectation_text(expected, event):
+    """Keep affirmative effects whose stated horizon fits this observation.
+
+    This is deliberately conservative: an excluded clause cannot be restored
+    through the reassessment list, which describes what to check, not what must
+    improve. Separate clauses preserve immediate effects in compound orders.
+    """
+    normalized = _review_expectation_text(expected)
+    elapsed = event.get("elapsed_minutes")
+    if elapsed is None:
+        start = event.get("decision_time_min", (event.get("state_before") or {}).get("sim_time_min"))
+        end = event.get("response_time_min", (event.get("state_after") or {}).get("sim_time_min"))
+        elapsed = max(0, float(end) - float(start)) if start is not None and end is not None else None
+    clauses = re.split(
+        r"(?<!\d)[.;](?!\d)|\b(?:but|whereas|while|pero|mientras|aunque)\b|"
+        r",\s*(?=(?:without|sin|no\b|not\b|i\b|we\b|and\b|y\b))|"
+        r"\b(?:and|y)\s+(?=(?:i|we|norepinephrine|noradrenalina|oxygen|oxigeno|fluids|liquidos|antibiotics|antibioticos)\b)|"
+        r"\b(?:and|y)\s+(?=(?:improved|better|mejoria)[^.;]*\b(?:now|immediately|promptly|ahora|inmediata\w*)\b)",
+        normalized,
+    )
+    immediate = []
+    for clause in clauses:
+        # A trailing 'without worsening oxygenation' qualifies preservation;
+        # it must not turn oxygenation into an expected improvement.
+        clause = re.split(r"\b(?:without|sin)\b", clause, maxsplit=1)[0].strip()
+        if not clause or re.search(r"\b(?:no|not|never|don't|doesn't|won't|cannot|can't|unlikely)\b", clause):
+            continue
+        horizon = re.search(
+            r"\b(?:in|after|within|en|a los|dentro de)\s+"
+            r"(?:(?:the\s+)?next\s+|la\s+proxima\s+)?"
+            r"(?:(\d+(?:\.\d+)?|one|an?|una?)\s*)?"
+            r"(minutes?|mins?|minutos?|hours?|horas?)\b", clause)
+        if horizon:
+            amount = horizon.group(1) or "1"
+            minutes = (float(amount) if re.fullmatch(r"\d+(?:\.\d+)?", amount) else 1) * (60 if horizon.group(2).startswith(("hour", "hora")) else 1)
+            if elapsed is None or minutes > float(elapsed):
+                continue
+        elif re.search(
+            r"\b(?:gradual\w*|paulatin\w*|eventual\w*|later|delayed|over time|con el tiempo|mas tarde)\b|"
+            r"\b(?:over|during|after|durante|despues de|en)\b[^.;]*\b(?:hours|horas)\b",
+            clause,
+        ):
+            continue
+        immediate.append(clause)
+    return "; ".join(immediate)
+
+
 def _expected_response_prompt(event):
     """Return a target-aware, non-scoring expectation/response prompt."""
     r = event.get("reasoning") or {}
@@ -1243,9 +1298,48 @@ def _expected_response_prompt(event):
     if not expected and not preservation:
         return None
 
-    exp = expected.lower()
-    preservation_text = preservation.lower()
-    priority_text = str(r.get("management_priority", "")).lower()
+    exp = _immediate_expectation_text(expected, event)
+    preservation_text = _review_expectation_text(preservation)
+    target = _review_expectation_text(target)
+    # Bind preservation to its own clause and endpoint. For example, preserving
+    # oxygenation must not convert an explicit BP improvement into a stable-BP
+    # goal, or require the preserved oxygenation to improve.
+    effect_clauses = re.split(
+        r";|\b(?:with|con)\s+(?=(?:maintain\w*|preserv\w*|mantener\w*)\b)|"
+        r"\b(?:and|y)\s+(?=(?:improv\w*|better|mejor\w*|preserv\w*|maintain\w*|unchanged)\b)", exp
+    )
+    preservation_clauses = [clause for clause in effect_clauses if re.search(
+        r"\b(?:maintain\w*|preserv\w*|remain\s+stable|stay\s+stable|unchanged|mantener\w*|estable)\b", clause
+    )]
+    pressure_preservation_target = any(re.search(
+        r"blood pressure|arterial pressure|presion arterial|\b(?:bp|map|pam)\b", clause
+    ) for clause in preservation_clauses)
+    inline_oxygen_preservation = any(re.search(
+        r"oxygen\w*|oxigen\w*|spo2|saturation|saturacion|respirator\w*", clause
+    ) for clause in preservation_clauses)
+    perfusion_preservation = any(re.search(r"perfusion|hemodynamic|hemodinamic", clause)
+                                for clause in preservation_clauses) or bool(re.search(
+                                    r"perfusion|hemodynamic|hemodinamic", preservation_text))
+    exp = "; ".join(clause for clause in effect_clauses if clause not in preservation_clauses)
+    if preservation_clauses and not preservation:
+        preservation = expected
+    # Antimicrobial efficacy cannot be determined from one immediate snapshot.
+    # Apply this only to antibiotic-only treatment, so a simultaneous fluid,
+    # pressor, or respiratory intervention retains its own immediate review.
+    treatment_types = _action_types_for_event(event) - {
+        "reassessment", "pocus", "lactate", "vbg", "abg", "basic_labs",
+        "urinalysis", "chest_xray", "blood_cultures", "temperature", "focused_history",
+    }
+    if expected and treatment_types == {"antibiotics"}:
+        changes = _trace_observable_delta(event.get("state_before"), event.get("state_after"), r)
+        observed = "; ".join(f"{label} {old} to {new}" for label, old, new in changes)
+        return (
+            "Treatment timing and reassessment",
+            f"Your stated expectation was: {expected}. The recorded response was {observed or 'no recorded observable change'}. "
+            "This before/after comparison alone does not establish antimicrobial success or failure. "
+            "How does the expected treatment time course affect your interpretation, and which findings would prompt "
+            "immediate supportive treatment or reassessment of the infectious source?",
+        )
     mechanistic_terms = (
         "preload", "contractility", "cardiac output", "stroke volume",
         "afterload", "vascular tone", "filling", "venous return"
@@ -1267,25 +1361,29 @@ def _expected_response_prompt(event):
     tr_after = astate.get("treatments") or {}
 
     perfusion_target = any(x in exp for x in (
-        "perfusion", "blood pressure", "arterial pressure", "capillary refill", "crt", "hemodynamic"
-    ))
+        "perfusion", "blood pressure", "arterial pressure", "capillary refill", "crt", "hemodynamic",
+        "presion arterial", "relleno capilar", "hemodinamic",
+    )) or bool(re.search(r"\b(?:bp|map|pam)\b", exp)) or pressure_preservation_target or perfusion_preservation
     oxygen_improvement_target = any(x in exp for x in (
-        "oxygen", "spo2", "respiratory"
+        "oxygen", "spo2", "respiratory", "oxigen", "saturacion", "respiratori"
     ))
     oxygen_preservation_target = any(x in preservation_text for x in (
-        "oxygen", "spo2", "saturation", "respiratory"
+        "oxygen", "spo2", "saturation", "respiratory", "oxigen", "saturacion", "respiratori"
+    )) or inline_oxygen_preservation
+    lactate_target = "lactate" in exp or "lactato" in exp
+    # Reassessment can disambiguate an unqualified mechanistic expectation,
+    # but it must not undo excluded time horizons or negated targets.
+    limited_expectation = bool(re.search(
+        r"\b(?:no|not|without|sin|never|don't|doesn't|won't|unlikely|gradual\w*|later|delayed|hours?|horas?|minutes?|minutos?)\b",
+        _review_expectation_text(expected),
     ))
-    lactate_target = "lactate" in exp
-    # Reassessment targets disambiguate a mechanistic or otherwise non-observable
-    # expectation, but they do not add an effect the learner never expected.
-    if expected and not perfusion_target and not oxygen_improvement_target and not lactate_target:
+    if (exp and is_mechanistic and not limited_expectation and not perfusion_target
+            and not oxygen_improvement_target and not lactate_target):
         perfusion_target = any(x in target for x in (
             "perfusion", "blood pressure", "arterial pressure", "capillary refill", "crt", "hemodynamic"
         ))
         oxygen_improvement_target = any(x in target for x in ("oxygen", "spo2", "respiratory"))
         lactate_target = "lactate" in target
-    else:
-        lactate_target = lactate_target or "lactate" in target
     if not perfusion_target and not oxygen_improvement_target and not oxygen_preservation_target and not lactate_target:
         return None
 
@@ -1332,8 +1430,8 @@ def _expected_response_prompt(event):
             )
 
     if perfusion_target:
-        expects_pressure_improvement = any(x in exp for x in ("blood pressure", "arterial pressure", "bp", "map"))
-        expects_crt_improvement = any(x in exp for x in ("capillary refill", "crt"))
+        expects_pressure_improvement = (any(x in exp for x in ("blood pressure", "arterial pressure", "presion arterial")) or bool(re.search(r"\b(?:bp|map|pam)\b", exp))) and not pressure_preservation_target
+        expects_crt_improvement = any(x in exp for x in ("capillary refill", "crt", "relleno capilar"))
         if b.get("sbp") is not None and a.get("sbp") is not None:
             pressure_delta = a["sbp"] - b["sbp"]
             pressure_fact = f"blood pressure {b.get('sbp')}/{b.get('dbp')} to {a.get('sbp')}/{a.get('dbp')}"
@@ -1411,6 +1509,12 @@ def _expected_response_prompt(event):
         )
 
     observed = joined_facts(negative + neutral[:1])
+    if pressure_preservation_target and not re.search(r"improv\w*|increase\w*|shorten\w*|mejor\w*", exp):
+        return (
+            "Preservation goal vs observed response",
+            f"Your stated expectation was: {expected}. The recorded findings were {joined_facts(negative + preservation_failed + neutral[:1])}. "
+            "How did these findings affect your assessment of whether the preservation goal was met and your next priority?",
+        )
     preservation_sentence = ""
     if preservation_failed:
         preservation_sentence = " " + joined_facts(preservation_failed)[:1].upper() + joined_facts(preservation_failed)[1:] + "."
@@ -1421,7 +1525,7 @@ def _expected_response_prompt(event):
             f"You expected {expected} after another fluid bolus. Instead, {observed}.{preservation_sentence} "
             "How did this response affect your assessment of fluid responsiveness and your working model?"
         )
-    if expected:
+    if exp:
         return (
             "Expected effect vs observed response",
             f"You expected {expected}. Those expected improvements were not demonstrated: {observed}."
@@ -1800,7 +1904,7 @@ def _reflect_compare_items(trace):
             candidates.append((2, i, ("decision", i, _trace_time(event.get("decision_time_min", 0)), label, text)))
             covered.add(i)
 
-    # 2) Explicit expected effect not demonstrated by the subsequent response.
+    # 2) Expected-effect/response mismatch or an explicit treatment-timing review.
     for i, event in events:
         if i in covered:
             continue
@@ -1970,11 +2074,18 @@ def _trajectory_expert_model(prompt, event):
     delta_text = "; ".join(
         f"{label} changed from {old} to {new}" for label, old, new in deltas
     ) or "no material observable change was recorded"
-    map_value = int(round((float(observable.get("sbp") or 0) + 2 * float(observable.get("dbp") or 0)) / 3))
+    sbp, dbp = observable.get("sbp"), observable.get("dbp")
+    map_value = (float(sbp) + 2 * float(dbp)) / 3 if sbp is not None and dbp is not None else None
+    # SSC 2026 favors an initial MAP near 65 over higher targets. Adequate
+    # pressure does not exclude hypoperfusion or prove existing support is
+    # unnecessary; assess those questions separately in the frozen state.
+    # https://www.sccm.org/clinical-resources/guidelines/guidelines/surviving-sepsis-campaign-international-guidelines-for-management-of-sepsis-and-septic-shock-2026
+    hypotension = map_value is not None and map_value < 65
     crt = int(observable.get("crt") or 0)
-    severe_shock = map_value < 65 or crt >= 5 or str(observable.get("mental_status") or "").lower() in {
+    impaired_perfusion = crt >= 4 or str(observable.get("mental_status") or "").lower() in {
         "drowsy", "obtunded", "unresponsive"
-    }
+    } or str(observable.get("extremities") or "").lower() in {"cold", "cool", "mottled/cold"}
+    existing_pressure_support = bool((before.get("treatments") or {}).get("norepinephrine_rate", 0))
 
     learner_problem = str(reasoning.get("problem_representation") or "").strip()
     framing = (
@@ -1985,14 +2096,21 @@ def _trajectory_expert_model(prompt, event):
     )
 
     if "fluid" in action_types:
-        if severe_shock:
+        if hypotension:
             priority = (
                 "Restore arterial pressure and tissue perfusion while testing preload responsiveness, without delaying "
                 "vasopressor support or treatment of the underlying cause."
             )
             action = (
                 "Use reassessed crystalloid aliquots with explicit pulmonary stopping criteria and begin vasopressor and "
-                "source-directed treatment concurrently when severe hypotension or neurologic dysfunction is present."
+                "cause-directed treatment concurrently when hypotension persists."
+            )
+        elif impaired_perfusion or map_value is None:
+            priority = "Clarify pressure, tissue perfusion, and preload responsiveness before selecting further circulatory support."
+            action = (
+                "Reassess pressure and tissue-perfusion findings, use POCUS and a dynamic assessment of preload responsiveness "
+                "when available, and give further fluid only for a demonstrated need with explicit stopping criteria. "
+                "Impaired perfusion alone does not establish a need to raise arterial pressure."
             )
         else:
             priority = (
@@ -2008,18 +2126,34 @@ def _trajectory_expert_model(prompt, event):
             "source-directed treatment when vasoplegia or low output is dominant."
         )
     elif "norepinephrine" in action_types or "antibiotics" in action_types:
-        priority = (
-            "Restore perfusion pressure and treat the suspected infectious source while determining whether improved "
-            "pressure also produces improved tissue flow."
-        )
-        action = (
-            "Start or titrate norepinephrine and administer prompt source-directed antimicrobials, then judge the response "
-            "using both MAP and bedside tissue-perfusion markers."
-        )
+        if hypotension:
+            priority = "Restore perfusion pressure while evaluating tissue flow and the cause of the circulatory impairment."
+            action = (
+                "Start or titrate norepinephrine for persistent hypotension, with reassessment of MAP and bedside "
+                "tissue-perfusion markers against an individualized pressure target."
+            )
+        elif map_value is None:
+            priority = "Establish the current arterial pressure and tissue-perfusion state before selecting pressure support."
+            action = "Obtain a reliable blood pressure and reassess perfusion before deciding whether to initiate or change vasopressor support."
+        elif existing_pressure_support:
+            priority = "Distinguish adequate pressure on treatment from adequate tissue flow and reassess the continuing support requirement."
+            action = (
+                "Reassess ongoing pressure support against the individualized MAP target and tissue-perfusion findings. "
+                "An adequate MAP on norepinephrine does not by itself justify either escalation or discontinuation."
+            )
+        else:
+            priority = "Reassess tissue perfusion and the underlying cause while maintaining adequate arterial pressure."
+            action = (
+                "Reassess tissue perfusion, cardiac function, and the clinical trajectory before adding pressure support. "
+                "The recorded arterial pressure alone does not justify starting or increasing norepinephrine."
+            )
         tradeoff = (
-            "Norepinephrine may restore MAP without correcting low forward flow and can worsen peripheral vasoconstriction; "
-            "antimicrobial treatment will not produce an immediate hemodynamic response."
+            "Raising arterial pressure may not correct impaired tissue flow; unnecessary vasoconstriction can add harm."
         )
+        if "antibiotics" in action_types:
+            priority += " Treat the suspected infectious source and assess its clinical course."
+            action += " Administer appropriate source-directed antimicrobials and reassess the source and treatment as further evidence becomes available."
+            tradeoff += " A short-term blood pressure change alone does not establish antimicrobial efficacy or failure."
     elif "cardioversion" in action_types:
         priority = (
             "Test the causal contribution of the rhythm while protecting perfusion, and define success by clinical recovery "
@@ -2065,9 +2199,11 @@ def _trajectory_expert_model(prompt, event):
         action = f"A defensible approach is {action_text}, paired with explicit benefit, harm, and reassessment thresholds."
         tradeoff = "The expected benefit must be weighed against treatment harm and the risk of delaying management of another active problem."
 
+    pressure_label = f"{sbp}/{dbp} mmHg" if map_value is not None else "unavailable"
+    map_label = f"MAP approximately {round(map_value)}" if map_value is not None else "MAP unavailable"
     before_cue = (
-        f"At the decision point: BP {observable.get('sbp')}/{observable.get('dbp')} mmHg "
-        f"(MAP approximately {map_value}), HR {observable.get('hr')}/min in {observable.get('rhythm')}."
+        f"At the decision point: BP {pressure_label} ({map_label}), "
+        f"HR {observable.get('hr')}/min in {observable.get('rhythm')}."
     )
     perfusion_cue = (
         f"Tissue-perfusion findings were capillary refill {observable.get('crt')} seconds, "
@@ -4431,31 +4567,120 @@ def parse_nitroglycerin_rate(text):
     return float(m.group(1)) if m else None
 
 
+def _oxygen_order_clauses(text):
+    """Find locally ordered conventional oxygen, preserving intent and scope.
+
+    Device names in history, monitoring, negated plans, and conditional plans
+    are not new orders. Keep the command's own clause so a fluid quantity or
+    another oxygen device elsewhere in the turn cannot supply its parameters.
+    """
+    raw = str(text or "").lower().replace("₂", "2").replace("’", "'")
+    # Bounded bilingual order vocabulary also protects the raw-text fallback.
+    for pattern, replacement in (
+        (r"\box[ií]geno\b", "oxygen"),
+        (r"\bc[aá]nula\s+nasal\b", "nasal cannula"),
+        (r"\b(?:iniciar|inicia|inicie|comenzar)\b", "start"),
+        (r"\b(?:administrar|administra|administre|aplicar)\b", "administer"),
+        (r"\b(?:colocar|coloca|coloque|poner|pon|ponga)\b", "place"),
+        (r"\b(?:mantener|mantenga|mant[eé]n|continuar|contin[uú]a)\b", "continue"),
+        (r"\bpero\b", "but"),
+        (r"\b(?:si|cuando|considerar|considerar[ií]a|podr[ií]a|deber[ií]a|evitar|suspender|previamente)\b", "if"),
+    ):
+        raw = re.sub(pattern, replacement, raw)
+    aliases = r"(?:oxygen|o2|nas+al\s+can+ula|nc|non-?rebreather|nrb|simple\s+mask|face\s+mask)"
+    commands = r"(?:start|initiate|give|administer|apply|increase|decrease|switch|change|place|put|continue|provide|order|deliver|set|begin|supplement)"
+    boundaries = commands + r"|reassess|recheck|obtain|infuse|bolus|perform|intubate"
+    clauses = []
+    for sentence in re.split(r"\.(?!\d)|[;\n]", raw):
+        mentions = list(re.finditer(rf"\b{aliases}\b", sentence))
+        for mention in mentions:
+            prefix = sentence[:mention.start()]
+            command_matches = list(re.finditer(rf"\b{commands}\b", prefix))
+            command = command_matches[-1] if command_matches else None
+            commanded = bool(command and mention.start() - command.end() <= 65)
+            if commanded:
+                start = command.start()
+            else:
+                compact = re.search(r"(?:^|,|\band\b)\s*$", prefix)
+                if not compact:
+                    continue
+                start = mention.start()
+            tail = sentence[mention.end():]
+            next_command = re.search(rf"\b(?:{boundaries})\b", tail)
+            end = mention.end() + next_command.start() if next_command else len(sentence)
+            # A later independent command owns its negation/condition. Examples:
+            # "start oxygen ... and do not give fluids"; "..., and if BP falls ...".
+            following_clause = re.search(
+                rf"(?:,|\band\b|\bbut\b)\s*(?:and\s+)?"
+                rf"(?=(?:do not|don't|if|unless|when|{boundaries})\b)",
+                sentence[mention.end():end],
+            )
+            if following_clause:
+                end = mention.end() + following_clause.start()
+            clause = sentence[start:end].strip(" ,")
+            preceding = sentence[:start]
+            local_prefix = re.split(r",|\band\b|\bbut\b", preceding)[-1] if commanded else preceding
+            # A leading conditional before the comma still governs its order:
+            # "If saturation falls, start oxygen ...". An explicit "but"
+            # introduces an independent directive.
+            condition_scope = re.split(r"\bbut\b", preceding)[-1]
+            leading_condition = bool(re.match(r"\s*(?:if|unless|when|previously|already)\b", condition_scope))
+            intent_context = local_prefix + clause
+            if leading_condition or "?" in clause or re.search(
+                r"\b(?:do not|don't|didn't|won't|not|no|never|avoid|defer|hold|withhold|stop|"
+                r"if|unless|when|consider|might|may|could|would|should|whether|previously|already|"
+                r"was|were|had|received|receiving)\b", intent_context,
+            ):
+                continue
+            if re.search(r"\b(?:cpap|bipap|niv|nimv|nippv|vmni|noninvasive|non-invasive|ventilat\w*)\b", clause):
+                continue
+            if clause and clause not in clauses:
+                # Oxygen and its device can both match in the same command.
+                if not any(clause in prior for prior in clauses):
+                    clauses.append(clause)
+    return clauses
+
+
 def parse_oxygen_order(text):
-    t = text.lower()
-    device = None
-    flow = None
-
-    if any(k in t for k in ["nonrebreather", "non-rebreather", "nrb"]):
-        device = "Non-rebreather mask"
-    elif re.search(r"\bnas+al\s+can+ula\b", t) or re.search(r"\bnc\b", t):
-        device = "Nasal cannula"
-    elif any(k in t for k in ["simple mask", "face mask"]):
-        device = "Simple face mask"
-
-    m = re.search(r"(\d+(?:\.\d+)?)\s*(?:l|lt|lts|liter|liters|litre|litres)\s*/?\s*(?:min|minute)?", t)
-    if m:
-        flow = float(m.group(1))
-
-    # Conventional default if a non-rebreather is explicitly requested.
-    if device == "Non-rebreather mask" and flow is None:
-        flow = 15.0
-
-    # If oxygen + low flow is specified without a device, infer nasal cannula.
-    if ("oxygen" in t or "o2" in t) and flow is not None and device is None:
-        device = "Nasal cannula" if flow <= 6 else "Simple face mask"
-
+    """Read explicit device/flow only; missing parameters require clarification."""
+    t = str(text or "").lower().replace("₂", "2")
+    device_patterns = (
+        (r"\b(?:non-?rebreather|nrb)\b", "Non-rebreather mask"),
+        (r"\b(?:nas+al\s+can+ula|nc)\b", "Nasal cannula"),
+        (r"\b(?:simple\s+mask|(?:simple\s+)?face\s+mask)\b", "Simple face mask"),
+    )
+    devices = {name for pattern, name in device_patterns if re.search(pattern, t)}
+    device = next(iter(devices)) if len(devices) == 1 else None
+    if len(devices) > 1:
+        destination = re.search(r"\bto\s+(.+)$", t)
+        targets = {name for pattern, name in device_patterns if destination and re.search(pattern, destination.group(1))}
+        device = next(iter(targets)) if len(targets) == 1 else None
+    flows = []
+    for match in re.finditer(
+        r"(?<![\w.\-])(\d+(?:\.\d+)?)\s*(?:liters?|litres?|lts?|l)\b"
+        r"(?:\s*/?\s*(?:minutes?|mins?)\b)?", t,
+    ):
+        if _quantity_is_respiratory_support(t, match.start(), match.end()) or re.fullmatch(
+            r"\s*(?:(?:at|to|use)\s+)?\d+(?:\.\d+)?\s*(?:liters?|litres?|lts?|l)\s*/\s*(?:minutes?|mins?)\s*(?:please)?\s*[.]?", t,
+        ):
+            flows.append(float(match.group(1)))
+    if len(flows) == 1:
+        flow = flows[0]
+    elif len(flows) == 2 and re.search(r"\bfrom\b.+\bto\b", t):
+        flow = flows[-1]
+    else:
+        flow = None
+    if flow is not None and flow <= 0:
+        flow = None
     return device, flow
+
+
+def explicit_oxygen_actions(text):
+    return [
+        {"type": "oxygen", "device": device, "flow_lpm": flow}
+        for clause in _oxygen_order_clauses(text)
+        for device, flow in [parse_oxygen_order(clause)]
+    ]
 
 
 def detect_diltiazem(text):
@@ -4706,11 +4931,19 @@ def try_resolve_pending_action(text):
                     "resolved_from_clarification": True,
                 }}
         resolved = dict(pending)
+        if re.search(
+            r"\b(?:not|no|never|avoid|defer|hold|withhold|stop|if|unless|when|consider|might|may|could|would|previously|already|was|were|received)\b",
+            str(text or ""), re.I,
+        ):
+            return {"clarification": "The oxygen order is still held. Please state the device and flow to use now, without a conditional or retrospective instruction."}
         device, flow = parse_oxygen_order(text)
         if device is None and flow is None:
             return {"clarification": "What oxygen device or flow would you like to use (for example, nasal cannula 4 L/min or non-rebreather mask)?"}
-        resolved["device"] = device or resolved.get("device") or "Nasal cannula"
+        resolved["device"] = device or resolved.get("device")
         resolved["flow_lpm"] = flow if flow is not None else resolved.get("flow_lpm")
+        st.session_state.pending_action = resolved
+        if resolved.get("device") is None:
+            return {"clarification": "Which oxygen device would you like to use?"}
         if resolved.get("flow_lpm") is None:
             return {"clarification": "What oxygen flow would you like to use?"}
         st.session_state.pending_action = None
@@ -5742,22 +5975,7 @@ def clinical_interpreter(text):
                 "operation": op,
             })
 
-    oxygen_device_named = bool(re.search(r"\bnas+al\s+can+ula\b", t)) or any(k in t for k in ["nonrebreather", "non-rebreather", "nrb", "simple mask", "face mask"])
-    oxygen_command = any(
-        not re.search(r"\b(?:cpap|bipap|niv|nimv|nippv|vmni|noninvasive|non-invasive)\b", match.group(0))
-        for match in re.finditer(
-            r"\b(?:start|initiate|give|administer|apply|increase|decrease|switch|change|place|put|continue)\b"
-            r"[^.;]{0,45}\b(?:oxygen|o2)\b",
-            t,
-        )
-    )
-    if oxygen_device_named or oxygen_command:
-        device, flow = parse_oxygen_order(text)
-        actions.append({
-            "type": "oxygen",
-            "device": device,
-            "flow_lpm": flow,
-        })
+    actions.extend(explicit_oxygen_actions(text))
 
     # Procedural sedation is deliberately placed before cardioversion in the
     # executable bundle even when the learner mentions the shock first. This
@@ -5928,6 +6146,8 @@ def normalize_clinical_turn(text):
         normalized = normalize_with_ai(text, visible_state, api_key=api_key, model=model)
         if sorted(_numeric_tokens(normalized.canonical_text)) != sorted(_numeric_tokens(text)):
             raise AIInterpretationError("AI normalization introduced or removed a numeric value.")
+        if explicit_oxygen_actions(text) != explicit_oxygen_actions(normalized.canonical_text):
+            raise AIInterpretationError("AI normalization changed or omitted an explicit oxygen order.")
         if normalized.confidence == "low" or normalized.ambiguities:
             raise AIInterpretationError("AI normalization retained unresolved ambiguity.")
         return normalized.canonical_text, {
@@ -9396,7 +9616,7 @@ def render_event(event):
     st.write(event["text"])
 
 st.title("Management Reasoning Simulator")
-st.caption("Curriculum pilot v0.11.0")
+st.caption("Curriculum pilot v0.11.2")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -10223,6 +10443,6 @@ if faculty_access():
 
 if ACCOUNT_CONTEXT:
     save_session(ACCOUNT_CONTEXT)
-st.caption("Management Reasoning Simulator · Curriculum pilot v0.11.0")
+st.caption("Management Reasoning Simulator · Curriculum pilot v0.11.2")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

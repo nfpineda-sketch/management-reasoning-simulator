@@ -146,6 +146,8 @@ class FakeStreamlit:
         self.session_state = session or {}
         self.rendered = []
         self.selectors = []
+        self.sidebar = self
+        self.navigation = []
 
     def subheader(self, value):
         self.rendered.append(str(value))
@@ -172,6 +174,10 @@ class FakeStreamlit:
         self.selectors.append(str(label))
         return list(options)[0]
 
+    def radio(self, label, options, **kwargs):
+        self.navigation.append((str(label), list(options)))
+        return list(options)[kwargs.get("index", 0)]
+
 
 def runtime_functions(fake_st):
     path = Path(__file__).with_name("curriculum_runtime.py")
@@ -196,6 +202,7 @@ class ObjectiveVisibilityTests(unittest.TestCase):
         st = FakeStreamlit()
         runtime_functions(st)["render_dashboard"](self.context(), {}, lambda: None)
         self.assertEqual(st.selectors, [])
+        self.assertEqual(st.navigation, [("Navigation", ["Clinical encounters", "My progress"])])
         rendered = json.dumps(st.rendered)
         for key, challenge in CHALLENGES.items():
             self.assertNotIn(key, rendered)

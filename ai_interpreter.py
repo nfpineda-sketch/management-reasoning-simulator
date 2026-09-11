@@ -56,6 +56,9 @@ Rules:
   and do not convert a quantity to an equivalent scale (for example, keep
   "1000 cc" rather than changing it to "1 L"). Route abbreviations may be
   translated (for example, Spanish "EV" to English "IV").
+- Keep every explicit oxygen order, its device and flow, and the reassessment
+  clause together. Do not replace an ordered intervention with a description of
+  the current support. Never infer a missing oxygen device or flow rate.
 - Do not convert a retrospective statement into a new order.
 - Do not treat the visible patient state as learner-authored reasoning or an order.
 - Resolve spelling, abbreviations, pronouns, and mixed Spanish/English only when
