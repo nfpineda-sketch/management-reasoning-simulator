@@ -466,8 +466,8 @@ class AccountStore:
                 (attempt_id, actor["id"])).fetchone()
             if row is None:
                 raise AccountError("The encounter was not found or is not available to your account.")
-            if row["status"] != "active" and status != row["status"]:
-                raise AccountError("A closed encounter cannot be reopened or reclassified.")
+            if row["status"] != "active":
+                raise AccountError("A closed encounter is read-only and cannot be reopened or changed.")
             revision = row["revision"] if expected_revision is None else expected_revision
             result = self._execute(connection, """UPDATE mrs_attempts
                 SET payload_json = ?, status = ?, updated_at = ?, revision = revision + 1

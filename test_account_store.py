@@ -133,6 +133,10 @@ class AccountStoreTests(unittest.TestCase):
         self.assertNotEqual(self.attempt(resident), attempt_id)
         with self.assertRaisesRegex(AccountError, "cannot be reopened"):
             self.store.save_attempt(resident, attempt_id, {}, "active", expected_revision=1)
+        frozen = self.store.get_attempt(resident, attempt_id)
+        with self.assertRaisesRegex(AccountError, "read-only"):
+            self.store.save_attempt(resident, attempt_id, {"trace": ["changed after review"]}, "completed", expected_revision=1)
+        self.assertEqual(self.store.get_attempt(resident, attempt_id), frozen)
 
     def test_optimistic_revision_rejects_stale_tabs_without_losing_evidence(self):
         resident = self.enroll()

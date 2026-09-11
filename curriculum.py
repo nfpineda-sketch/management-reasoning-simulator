@@ -41,10 +41,12 @@ def evidence_summary(payload):
     """Presence of explicit records only; no inference of clinical competence."""
     session = payload.get("session", {}) or {}
     trace = session.get("management_trace", []) or []
-    included = [e for e in trace if e.get("execution_status") in {"executed", "terminal_locked", "deferred"}]
+    included = [e for e in trace if e.get("execution_status") in {"executed", "terminal_locked"}]
     field_map = {"working_model": "problem_representation", "management_priority": "management_priority", "expected_effect": "expected_effect"}
     out = {key: [] for key in (*field_map, "reassessment", "reflection")}
     for i, event in enumerate(included, 1):
+        if event.get("execution_status") != "executed":
+            continue
         reasoning = event.get("reasoning", {}) or {}
         for key, field in field_map.items():
             if str(reasoning.get(field) or "").strip():

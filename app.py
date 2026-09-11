@@ -17,7 +17,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Curriculum pilot v0.10.0", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Curriculum pilot v0.11.0", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -56,7 +56,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.10.0-curriculum-pilot"
+SIMULATOR_VERSION = "0.11.0-curriculum-pilot"
 
 
 def faculty_access():
@@ -9396,7 +9396,7 @@ def render_event(event):
     st.write(event["text"])
 
 st.title("Management Reasoning Simulator")
-st.caption("Curriculum pilot v0.10.0")
+st.caption("Curriculum pilot v0.11.0")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -10223,6 +10223,6 @@ if faculty_access():
 
 if ACCOUNT_CONTEXT:
     save_session(ACCOUNT_CONTEXT)
-st.caption("Management Reasoning Simulator · Curriculum pilot v0.10.0")
+st.caption("Management Reasoning Simulator · Curriculum pilot v0.11.0")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

@@ -133,3 +133,57 @@ def test_completed_review_readonly_and_revision_conflict_recovery(cohort):
     assert completed.session_state.state["sim_time"] == 0
     assert completed.session_state.state["seed"] != ss["state"]["seed"]
     assert completed.session_state.carry_forward_plan == ss["adaptation_plan"]
+
+
+def test_full_app_multiobjective_faculty_assessment_and_resident_progress(cohort):
+    """Exercise the real dashboard hooks, forms and persistent resident view."""
+    from test_curriculum_assignment import evidence_payload
+    from progress_store import ProgressStore
+
+    store, admin, resident = cohort
+    resident_id = store.get_user(resident)["id"]
+    attempt_id = store.create_attempt(resident, "R1-03", {"seed": 17})
+    payload = evidence_payload(True)
+    payload["session"]["review_completed"] = True
+    payload["session"]["encounter_ended"] = True
+    store.save_attempt(resident, attempt_id, payload, "completed", 0)
+
+    def widget(at, kind, label):
+        return next(item for item in getattr(at, kind) if item.label == label)
+
+    faculty = open_app(admin)
+    for objective in ("C4", "F1"):
+        widget(faculty, "selectbox", "Objective observed in this encounter").set_value(objective).run()
+        assert not faculty.exception
+        widget(faculty, "checkbox", "Satisfactory demonstration of this simulated component").check()
+        widget(faculty, "selectbox", "Observed depth").set_value("integrated")
+        widget(faculty, "selectbox", "Observed autonomy").set_value("prompted")
+        widget(faculty, "text_input", "Observed clinical context").set_value("Faculty review fixture: rhythm and perfusion.")
+        widget(faculty, "multiselect", "Evidence supporting your judgment").set_value(["trace:0"])
+        widget(faculty, "text_area", "Faculty rationale and feedback").set_value("Test assessment with specific saved reasoning evidence.")
+        click(faculty, "Record objective assessment")
+        assert not faculty.error
+
+    progress = ProgressStore(store)
+    goals = {g["objective_id"]: g for g in progress.get_progress(admin, resident_id)["objectives"]}
+    assert goals["C4"]["count"] == goals["F1"]["count"] == 1
+    assert goals["C4"]["observations"][0]["depth"] == "integrated"
+    assert store.get_attempt(resident, attempt_id)["payload"] == payload
+
+    # Adjust the pilot quota through the admin form, then confirm separately.
+    widget(faculty, "selectbox", "Objective target").set_value("C4").run()
+    widget(faculty, "number_input", "Required satisfactory observations").set_value(1)
+    widget(faculty, "text_area", "Reason for target change").set_value("One-observation test quota.")
+    click(faculty, "Save program target")
+    widget(faculty, "selectbox", "Objective for faculty decision").set_value("C4").run()
+    widget(faculty, "text_area", "Reason for faculty decision").set_value("Formative test confirmation after reviewing the evidence.")
+    click(faculty, "Confirm simulated-component achievement")
+    assert not faculty.error
+    learner = open_app(resident)
+    assert not learner.selectbox
+    assert not any(b.label in {"Record objective assessment", "Save program target"} for b in learner.button)
+    table = learner.dataframe[0].value
+    row = table[table["Objective"].str.startswith("C4 ·")].iloc[0]
+    assert row["Satisfactory observations"] == "1/1"
+    assert row["Status"] == "Confirmed"
+    assert any("Test assessment with specific saved reasoning evidence." in str(m.value) for m in learner.markdown)

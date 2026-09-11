@@ -128,6 +128,18 @@ class AssignmentTests(unittest.TestCase):
         self.assertEqual(result["reflection"], [])
         self.assertEqual(result["working_model"], [1])
 
+    def test_deferred_or_terminal_locked_actions_do_not_supply_executed_evidence(self):
+        payload = evidence_payload(True)
+        event = payload["session"]["management_trace"][0]
+        payload["session"]["management_trace"] = [
+            dict(event, execution_status="deferred"),
+            dict(event, execution_status="terminal_locked"),
+            event,
+        ]
+        result = evidence_summary(payload)["recorded"]
+        self.assertEqual(result["reassessment"], [2])
+        self.assertEqual(result["working_model"], [2])
+
 
 class FakeStreamlit:
     def __init__(self, session=None):
@@ -165,7 +177,9 @@ def runtime_functions(fake_st):
     path = Path(__file__).with_name("curriculum_runtime.py")
     tree = ast.parse(path.read_text())
     selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in {"render_dashboard", "render_learning_focus"}]
-    namespace = {"st": fake_st, "CHALLENGES": CHALLENGES}
+    namespace = {"st": fake_st, "CHALLENGES": CHALLENGES,
+                 "render_progress_dashboard": lambda context: None,
+                 "render_attempt_assessment": lambda context, record: None}
     exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), namespace)
     return namespace
 

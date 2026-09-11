@@ -15,7 +15,7 @@ for node in tree.body:
         if isinstance(target, ast.Name) and target.id in {"SIMULATOR_VERSION", "INITIAL_STATE", "PRESENTATION"}:
             assignments[target.id] = ast.literal_eval(node.value)
 
-assert assignments["SIMULATOR_VERSION"] in {"0.8.21", "0.9.0-ai-preview", "0.10.0-curriculum-pilot"}
+assert assignments["SIMULATOR_VERSION"] in {"0.8.21", "0.9.0-ai-preview", "0.10.0-curriculum-pilot", "0.11.0-curriculum-pilot"}
 state = assignments["INITIAL_STATE"]
 observable = state["observable"]
 

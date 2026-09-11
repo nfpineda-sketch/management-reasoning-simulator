@@ -52,7 +52,7 @@ La fisiología de PS001 tiene simplificaciones heredadas. Por ejemplo, sus regla
 
 Antes de usar estas variantes para evaluar residentes, el equipo docente debe revisar sus trayectorias, calibrar magnitud y demora de las respuestas y acordar criterios para valorar las explicaciones. El simulador textual puede aportar evidencia sobre razonamiento y planificación; no demuestra destreza manual, calidad real de adquisición ecográfica, liderazgo de un equipo clínico ni desempeño independiente con pacientes.
 
-Los próximos incrementos del plan podrán agregar familias clínicas, prerrequisitos revisados por docentes, valoración de calidad de la evidencia y adaptación más fina del recorrido. Ninguna de esas capacidades se considera implementada por incluirla en la matriz.
+v0.11.0 agrega valoración docente y registro longitudinal de componentes simulados por objetivo, con metas y topes; ver [Registro por objetivo](OBJECTIVE_TRACKING.md). Los próximos incrementos del plan podrán agregar familias clínicas, prerrequisitos revisados por docentes y adaptación más fina del recorrido. Ninguna de esas capacidades se considera implementada por incluirla en la matriz.
 
 ## Documentos utilizados
 

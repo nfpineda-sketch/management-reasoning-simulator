@@ -1,8 +1,28 @@
-# Management Reasoning Simulator — Curriculum pilot v0.10.0
+# Management Reasoning Simulator — Curriculum pilot v0.11.0
+
+## Longitudinal objective tracking
+
+Completed resident encounters can now support several separately reviewed
+objectives. Faculty select actual trace evidence, assess the simulated management
+component, and record depth, support needed, context and feedback. Only a
+satisfactory faculty assessment advances its objective's counter, at most once
+per encounter. The counter stops at the configured target; the complete encounter
+record is retained. Repeated submissions and simultaneous reviews cannot add
+extra credit.
+
+Numeric targets and faculty confirmation are separate. Administrators can adjust
+the program targets with a reason; faculty can confirm, reopen or void an
+observation with an audit trail. Reopening preserves the count. The eight initial
+targets were supplied by the program owner and are not represented as verified
+Royal College assessment requirements. These counts cover simulated components,
+not whole workplace EPAs. Trauma and end-of-life objectives are listed for planning
+but cannot receive credit from the currently implemented cases.
+
+- [Objective scope, depth and counting rules](docs/OBJECTIVE_TRACKING.md)
 
 ## Curriculum and individual accounts
 
-This increment adds invitation-based resident, faculty and administrator accounts,
+The curriculum pilot includes invitation-based resident, faculty and administrator accounts,
 persistent encounters, internally assigned learning challenges, and bounded AI
 composition of PS001 variants. Residents see the clinical presentation first;
 the specific objective is disclosed in the post-encounter review. Faculty can
@@ -13,11 +33,11 @@ Account mode is opt-in. The existing `APP_PASSWORD` gate remains the default
 until `MRS_AUTH_MODE = "accounts"` and persistent PostgreSQL storage are configured.
 The stable application on `main` does not need to change.
 
-- [Activation, local startup and verification](docs/SETUP_v0.10.0.md)
+- [Activation, local startup and verification](docs/SETUP_v0.11.0.md)
 - [Curriculum mappings, evidence rules and generation limits](docs/CURRICULUM_PILOT.md)
 
 Three challenges are executable; the proposed 30-challenge curriculum is not yet
-fully implemented. Evidence is descriptive and does not certify competence.
+fully implemented. Faculty review supports formative progress and does not certify workplace competence.
 The generator chooses reviewed software options, stores a frozen specification,
 and falls back to a predefined local variant if the provider fails. Clinical
 profile calibration and deployment-specific PostgreSQL verification remain
