@@ -1,3 +1,15 @@
 __pycache__/
 *.py[cod]
 
+
+.streamlit/secrets.toml
+.env
+.env.*
+*.sqlite
+*.sqlite3
+*.db
+*.db-*
+*.sqlite3-*
+.venv/
+.pytest_cache/
+local-data/

@@ -11,8 +11,13 @@ from copy import deepcopy
 import streamlit as st
 
 from ai_interpreter import AIInterpretationError, normalize_with_ai
+from account_portal import accounts_enabled, require_account_access, render_account_sidebar
+from curriculum_runtime import (
+    save_session, render_dashboard, start_encounter, render_learning_focus,
+    return_to_dashboard,
+)
 
-st.set_page_config(page_title="Management Reasoning Simulator — AI preview v0.9.0", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Curriculum pilot v0.10.0", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -45,9 +50,26 @@ def require_shared_password():
     st.stop()
 
 
-require_shared_password()
+ACCOUNT_CONTEXT = require_account_access() if accounts_enabled() else None
+if ACCOUNT_CONTEXT is None:
+    require_shared_password()
+else:
+    render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.9.0-ai-preview"
+SIMULATOR_VERSION = "0.10.0-curriculum-pilot"
+
+
+def faculty_access():
+    context = globals().get("ACCOUNT_CONTEXT")
+    return bool(context and context["user"]["role"] in {"faculty", "admin"})
+
+
+def rerun_app():
+    context = globals().get("ACCOUNT_CONTEXT")
+    if context:
+        save_session(context)
+    st.rerun()
+
 # Historical source markers retained so the v0.8.21 regression lineage remains auditable.
 LEGACY_REGRESSION_VERSION_MARKER = 'SIMULATOR_VERSION = "0.8.21"'
 LEGACY_REGRESSION_CAPTION = "MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry"
@@ -620,6 +642,7 @@ def management_state_snapshot(state):
     tr = state.get("treatments", {})
     return {
         "case_id": state.get("case_id"),
+        "encounter_variant": (state.get("encounter_spec") or {}).get("generator_version"),
         "sim_time_min": int(state.get("sim_time", 0)),
         "observable": {
             "sbp": o.get("sbp"),
@@ -1681,7 +1704,7 @@ def _ps001_classroom_review_items(events):
     if len(events) < 9:
         return None
     first_state = (events[0][1].get("state_before") or {})
-    if first_state.get("case_id") != "PS001":
+    if first_state.get("case_id") != "PS001" or first_state.get("encounter_variant"):
         return None
 
     action_types = {
@@ -1889,6 +1912,18 @@ def _review_prompt_records(trace):
                 "prompt": prompt_text,
             }
         records.append(record)
+    # A coherent, uncomplicated variant still deserves reflection. Do not
+    # require a mismatch or missing reasoning before opening the learning cycle.
+    if not records:
+        executed = [e for e in trace if e.get("execution_status") in {"executed", "terminal_locked"}]
+        if executed and (executed[-1].get("state_before") or {}).get("encounter_variant"):
+            records.append({
+                "review_id": "decision-" + str(len(executed)),
+                "kind": "decision", "decision": len(executed),
+                "time": _trace_time(executed[-1].get("decision_time_min", 0)),
+                "label": "Review your management model",
+                "prompt": "What response did you expect, what did you observe, and how would those observations influence your next priority?",
+            })
     return records
 
 
@@ -2061,6 +2096,9 @@ def _expert_model_for_prompt(case_id, prompt, trace=None):
     event = _event_for_review_prompt(prompt, trace) if trace is not None else None
     if trace is not None and not event:
         return None
+
+    if event and (event.get("state_before") or {}).get("encounter_variant"):
+        return _trajectory_expert_model(prompt, event)
 
     static_model = None
     if prompt.get("kind") == "decision":
@@ -3253,6 +3291,12 @@ def begin_decision_review(trace, state):
 
 def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     """Start a clean repeat attempt while preserving only the prospective plan."""
+    context = globals().get("ACCOUNT_CONTEXT")
+    if context:
+        save_session(context)
+        choice = (st.session_state.get("encounter_assignment") or {}).get("challenge_id")
+        start_encounter(context, INITIAL_STATE, reset_session, choice, adaptation_plan, prior_attempt_record)
+        return {"adaptation_plan": deepcopy(adaptation_plan)}
     selected = st.session_state.get("selected_case")
     cfg = CASE_CONFIGS[selected]
     current_attempt = max(1, int(st.session_state.get("attempt_number", 1)))
@@ -3370,7 +3414,7 @@ def render_decision_review(trace, final_state):
     with nav_decision:
         if st.button("1 · Decision Review", use_container_width=True, disabled=stage == "decision"):
             st.session_state.review_stage = "decision"
-            st.rerun()
+            rerun_app()
     with nav_comparison:
         if st.button(
             "2 · Expert Comparison",
@@ -3378,7 +3422,7 @@ def render_decision_review(trace, final_state):
             disabled=(stage == "comparison" or not comparison_unlocked),
         ):
             st.session_state.review_stage = "comparison"
-            st.rerun()
+            rerun_app()
     with nav_plan:
         if st.button(
             "3 · Adaptation Plan",
@@ -3386,7 +3430,7 @@ def render_decision_review(trace, final_state):
             disabled=(stage == "adaptation" or not comparison_unlocked),
         ):
             st.session_state.review_stage = "adaptation"
-            st.rerun()
+            rerun_app()
     with nav_summary:
         if st.button(
             "4 · Final Summary",
@@ -3394,7 +3438,7 @@ def render_decision_review(trace, final_state):
             disabled=(stage == "summary" or not comparison_unlocked),
         ):
             st.session_state.review_stage = "summary"
-            st.rerun()
+            rerun_app()
 
     if stage == "decision":
         if not prompts:
@@ -3424,16 +3468,16 @@ def render_decision_review(trace, final_state):
         with previous_col:
             if st.button("Previous decision", use_container_width=True, disabled=active_index == 0):
                 st.session_state.active_review_index = active_index - 1
-                st.rerun()
+                rerun_app()
         with next_col:
             if active_index < len(prompts) - 1:
                 if st.button("Next decision", type="primary", use_container_width=True):
                     st.session_state.active_review_index = active_index + 1
-                    st.rerun()
+                    rerun_app()
             elif comparison_unlocked:
                 if st.button("Continue to Expert Comparison", type="primary", use_container_width=True):
                     st.session_state.review_stage = "comparison"
-                    st.rerun()
+                    rerun_app()
 
         if len(prompts) > 1:
             st.markdown("### Other review points")
@@ -3453,7 +3497,7 @@ def render_decision_review(trace, final_state):
                     st.caption("Saved response preview: " + preview)
                     if st.button("Review this decision", key=f"open_review_{other.get('review_id')}"):
                         st.session_state.active_review_index = index
-                        st.rerun()
+                        rerun_app()
 
         if not comparison_unlocked:
             st.markdown("### Reveal comparison")
@@ -3473,7 +3517,7 @@ def render_decision_review(trace, final_state):
                 st.session_state.expert_comparison_unlocked = True
                 st.session_state.review_stage = "comparison"
                 st.session_state.active_comparison_index = 0
-                st.rerun()
+                rerun_app()
 
     elif stage == "comparison":
         st.markdown("## Expert Comparison")
@@ -3486,7 +3530,7 @@ def render_decision_review(trace, final_state):
             st.info("No faculty-validation expert model is available for these review points.")
             if st.button("Continue to Adaptation Plan", type="primary"):
                 st.session_state.review_stage = "adaptation"
-                st.rerun()
+                rerun_app()
             return
 
         active_index = max(
@@ -3534,7 +3578,7 @@ def render_decision_review(trace, final_state):
         with previous_col:
             if st.button("Previous comparison", use_container_width=True, disabled=active_index == 0):
                 st.session_state.active_comparison_index = active_index - 1
-                st.rerun()
+                rerun_app()
         with next_col:
             next_label = "Continue to Adaptation Plan" if active_index == len(comparison_prompts) - 1 else "Next comparison"
             if st.button(next_label, type="primary", use_container_width=True):
@@ -3542,7 +3586,7 @@ def render_decision_review(trace, final_state):
                     st.session_state.review_stage = "adaptation"
                 else:
                     st.session_state.active_comparison_index = active_index + 1
-                st.rerun()
+                rerun_app()
 
         if len(comparison_prompts) > 1:
             st.markdown("### Other comparison points")
@@ -3556,7 +3600,7 @@ def render_decision_review(trace, final_state):
                     st.caption("Expert model available · faculty-validation draft")
                     if st.button("Compare this decision", key=f"open_comparison_{other.get('review_id')}"):
                         st.session_state.active_comparison_index = index
-                        st.rerun()
+                        rerun_app()
 
     elif stage == "adaptation":
         suggestions = _suggest_adaptation_plan(prompts, responses)
@@ -3589,11 +3633,11 @@ def render_decision_review(trace, final_state):
         with back_col:
             if st.button("Back to Expert Comparison", use_container_width=True):
                 st.session_state.review_stage = "comparison"
-                st.rerun()
+                rerun_app()
         with summary_col:
             if st.button("Continue to Final Summary", type="primary", use_container_width=True):
                 st.session_state.review_stage = "summary"
-                st.rerun()
+                rerun_app()
 
     else:
         st.markdown("## Final Summary")
@@ -3646,15 +3690,15 @@ def render_decision_review(trace, final_state):
         with view_decision:
             if st.button("View Locked Review", use_container_width=True):
                 st.session_state.review_stage = "decision"
-                st.rerun()
+                rerun_app()
         with edit_comparison:
             if st.button("Edit Comparison", use_container_width=True):
                 st.session_state.review_stage = "comparison"
-                st.rerun()
+                rerun_app()
         with edit_plan:
             if st.button("Edit Adaptation Plan", use_container_width=True):
                 st.session_state.review_stage = "adaptation"
-                st.rerun()
+                rerun_app()
 
         st.markdown("### Download complete record")
         summary_payload = _render_export_controls(
@@ -3670,17 +3714,18 @@ def render_decision_review(trace, final_state):
 
         st.markdown("### Adapt & Repeat")
         st.caption(
-            "Start a clean attempt of the same encounter. Only the prospective Adaptation Plan is "
-            "carried forward; the clinical trajectory, Management Trace, self-review, and comparison restart empty."
+            ("Start a new assigned encounter with your Adaptation Plan. The next clinical trajectory and review begin empty."
+             if globals().get("ACCOUNT_CONTEXT") else
+             "Start a clean attempt of the same encounter. Only the prospective Adaptation Plan is carried forward; the clinical trajectory, Management Trace, self-review, and comparison restart empty.")
         )
         if st.button(
-            "Repeat Encounter with This Adaptation Plan",
+            ("Next Encounter with This Adaptation Plan" if globals().get("ACCOUNT_CONTEXT") else "Repeat Encounter with This Adaptation Plan"),
             type="primary",
             use_container_width=True,
             disabled=not st.session_state.review_completed,
         ):
             begin_repeat_encounter(adaptation_plan, summary_payload)
-            st.rerun()
+            rerun_app()
 
 
 def management_trace_rows(trace):
@@ -6247,6 +6292,8 @@ def resolve_pending_reasoning(text):
     held = deepcopy(pending.get("parsed") or {})
     normalized = re.sub(r"[^a-z]+", " ", str(text or "").lower()).strip()
     if normalized == REASONING_GATE_OVERRIDE:
+        if "ACCOUNT_CONTEXT" in globals() and not faculty_access():
+            return {"clarification": "Complete the requested reasoning to continue.", "missing": list(pending.get("missing") or [])}
         held["raw_text"] = (
             str(held.get("raw_text") or "").strip()
             + "\n\nFacilitator override: " + str(text).strip()
@@ -9349,13 +9396,14 @@ def render_event(event):
     st.write(event["text"])
 
 st.title("Management Reasoning Simulator")
-st.caption("AI preview v0.9.0 — deterministic physiology with optional AI language interpretation")
-if ai_interpretation_enabled():
-    st.caption("AI-assisted language interpretation is active · deterministic clinical engine remains authoritative")
-else:
-    st.caption("Deterministic interpretation active · add OPENAI_API_KEY to the test app secrets to enable AI assistance")
+st.caption("Curriculum pilot v0.10.0")
+if faculty_access():
+    st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
 if not st.session_state.started:
+    if ACCOUNT_CONTEXT:
+        render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
+        st.stop()
     st.subheader("Select encounter")
     selected = st.selectbox(
         "Clinical surface",
@@ -9402,7 +9450,46 @@ if not st.session_state.started:
         st.session_state.last_executed_action = None
         st.session_state.started = True
         add_event("presentation", cfg["presentation"], 0)
-        st.rerun()
+        rerun_app()
+    st.stop()
+
+if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
+    st.subheader("Completed encounter review")
+    st.caption("This saved review is read-only. Start a new encounter to apply your Adaptation Plan.")
+    render_learning_focus(ACCOUNT_CONTEXT)
+    frozen_trace = st.session_state.get("encounter_closed_trace") or []
+    frozen_state = st.session_state.get("encounter_closed_state") or {}
+    render_management_trace(frozen_trace)
+    prompts = st.session_state.get("review_prompts") or []
+    responses = st.session_state.get("precomparison_decision_review") or st.session_state.get("decision_review") or {}
+    models = _expert_models_for_prompts(frozen_state.get("case_id"), prompts, frozen_trace)
+    for prompt in prompts:
+        with st.expander(_review_heading(prompt)):
+            st.write(prompt.get("prompt", ""))
+            for field, label in REVIEW_RESPONSE_FIELDS:
+                st.markdown("**" + label + "**")
+                st.write((responses.get(prompt["review_id"]) or {}).get(field, ""))
+            model = models.get(prompt["review_id"]) or {}
+            if model:
+                st.markdown("**Expert comparison · faculty-validation draft**")
+                for field in ("framing", "priority", "action", "tradeoff", "reassessment"):
+                    st.write(str(model.get(field) or ""))
+                for field, label in EXPERT_COMPARISON_FIELDS:
+                    st.markdown("**" + label + "**")
+                    st.write(((st.session_state.get("expert_comparison_responses") or {}).get(prompt["review_id"]) or {}).get(field, ""))
+    plan = st.session_state.get("adaptation_plan") or {}
+    st.subheader("Your Adaptation Plan")
+    for field, label in ADAPTATION_PLAN_FIELDS:
+        st.write(label + ": " + str(plan.get(field) or ""))
+    payload = _render_export_controls(
+        frozen_trace, frozen_state, prompts, responses, plan,
+        st.session_state.get("expert_comparison_responses") or {}, True, "saved",
+    )
+    if st.button("Next Encounter with This Adaptation Plan", type="primary"):
+        begin_repeat_encounter(plan, payload)
+        rerun_app()
+    if st.button("Return to dashboard"):
+        return_to_dashboard(ACCOUNT_CONTEXT, reset_session)
     st.stop()
 
 current_status()
@@ -9636,72 +9723,73 @@ with right:
             )
         if tr.get("disposition"):
             st.write(f'Disposition: {tr.get("disposition")}')
-    with st.expander("Developer state", expanded=False):
-        st.caption("Hidden from learners in production.")
-        st.json({
-            "effective_volume": round(h["effective_volume"], 3),
-            "preload_state": round(h.get("preload_state", h["effective_volume"]), 3),
-            "preload_responsiveness": round(h.get("preload_responsiveness", 0.0), 3),
-            "effective_intravascular_fluid": round(h.get("effective_intravascular_fluid", 0.0), 3),
-            "extravascular_fluid_burden": round(h.get("extravascular_fluid_burden", 0.0), 3),
-            "retained_preload_contribution": round(
-                h.get("effective_intravascular_fluid", 0.0)
-                * (0.18 + 0.20 * h.get("preload_responsiveness", 0.0)),
-                3
-            ),
-            "overfill_burden": round(h.get("overfill_burden", 0.0), 3),
-            "pulmonary_congestion": round(h.get("pulmonary_congestion", 0.0), 3),
-            "pulmonary_clinical_signal": round(pulmonary_clinical_signal(st.session_state.state), 3),
-            "respiratory_failure_severity": round(h.get("respiratory_failure_severity", 0.0), 3),
-            "total_beta_blockade": round(total_beta_blockade(st.session_state.state), 3),
-            "beta_av_nodal_effect": round(beta_av_nodal_effect(st.session_state.state), 3),
-            "beta_myocardial_depression": round(beta_myocardial_depression(st.session_state.state), 3),
-            "af_substrate": round(af_substrate(st.session_state.state), 3),
-            "fluid_clock_integration": "single-pass",
-            "tissue_perfusion": round(h["tissue_perfusion"], 3),
-            "sympathetic_drive": round(h["sympathetic_drive"], 3),
-            "af_recurrence_pressure": round(h.get("af_recurrence_pressure", 0.0), 3),
-            "sinus_stability": round(h.get("sinus_stability", 0.0), 3),
-            "nitroglycerin_effect": round(h.get("nitroglycerin_effect", 0.0), 3),
-            "metoprolol_effect": round(h.get("metoprolol_effect", 0.0), 3),
-            "propranolol_effect": round(h.get("propranolol_effect", 0.0), 3),
-            "metoprolol_depot": round(h.get("metoprolol_depot", 0.0), 3),
-            "propranolol_depot": round(h.get("propranolol_depot", 0.0), 3),
-            "diltiazem_effect": round(h.get("diltiazem_effect", 0.0), 3),
-            "diltiazem_depot": round(h.get("diltiazem_depot", 0.0), 3),
-            "amiodarone_effect": round(h.get("amiodarone_effect", 0.0), 3),
-            "amiodarone_depot": round(h.get("amiodarone_depot", 0.0), 3),
-            "procedural_sedation_effect": round(h.get("procedural_sedation_effect", 0.0), 3),
-            "procedural_sedation_minutes": round(h.get("procedural_sedation_minutes", 0.0), 1),
-            "pulmonary_congestion": round(h["pulmonary_congestion"], 3),
-            "effective_map": round(h.get("effective_map", 0.0), 2),
-            "pressure_support_state": round(h.get("pressure_support_state", 0.0), 3),
-            "vascular_support": round(h.get("vascular_support", 0.0), 3),
-            "forward_flow_state": round(h.get("forward_flow_state", h.get("cardiac_output_index", 0.0)), 3),
-            "dobutamine_effect": round(h.get("dobutamine_effect", 0.0), 3),
-            "dobutamine_minutes": round(h.get("dobutamine_minutes", 0.0), 1),
-            "stroke_volume_efficiency": round(h.get("stroke_volume_efficiency", 0.0), 3),
-            "afterload_factor": round(h.get("afterload_factor", 0.0), 3),
-            "cardiac_output_index": round(h.get("cardiac_output_index", 0.0), 3),
-            "oxygen_delivery": round(h.get("oxygen_delivery", 0.0), 3),
-            "peripheral_flow": round(h.get("peripheral_flow", 0.0), 3),
-            "contractile_reserve": round(h.get("contractile_reserve", 1.0), 3),
-            "low_flow_burden": round(h.get("low_flow_burden", 0.0), 3),
-            "sympathetic_drive": round(h.get("sympathetic_drive", 0.0), 3),
-            "cardiac_arrest": bool(h.get("cardiac_arrest", False)),
-            "terminal_collapse": bool(h.get("terminal_collapse", False)),
-            "fluid_responsiveness": round(h["fluid_responsiveness"], 3),
-            "fluid_tolerance": round(h["fluid_tolerance"], 3),
-            "fluid_load": round(h["fluid_load"], 3),
-            "vasoplegia_severity": round(h.get("vasoplegia_severity", 0.0), 3),
-            "respiratory_failure_severity": round(h["respiratory_failure_severity"], 3),
-            "global_perfusion_failure": round(h["global_perfusion_failure"], 3),
-            "peri_arrest_risk": round(h["peri_arrest_risk"], 3),
-            "cardiac_arrest": h["cardiac_arrest"],
-            "pending_action": st.session_state.get("pending_action"),
-            "pending_reasoning": st.session_state.get("pending_reasoning"),
-            "last_executed_action": st.session_state.get("last_executed_action"),
-        })
+    if faculty_access():
+        with st.expander("Developer state", expanded=False):
+            st.caption("Hidden from learners in production.")
+            st.json({
+                "effective_volume": round(h["effective_volume"], 3),
+                "preload_state": round(h.get("preload_state", h["effective_volume"]), 3),
+                "preload_responsiveness": round(h.get("preload_responsiveness", 0.0), 3),
+                "effective_intravascular_fluid": round(h.get("effective_intravascular_fluid", 0.0), 3),
+                "extravascular_fluid_burden": round(h.get("extravascular_fluid_burden", 0.0), 3),
+                "retained_preload_contribution": round(
+                    h.get("effective_intravascular_fluid", 0.0)
+                    * (0.18 + 0.20 * h.get("preload_responsiveness", 0.0)),
+                    3
+                ),
+                "overfill_burden": round(h.get("overfill_burden", 0.0), 3),
+                "pulmonary_congestion": round(h.get("pulmonary_congestion", 0.0), 3),
+                "pulmonary_clinical_signal": round(pulmonary_clinical_signal(st.session_state.state), 3),
+                "respiratory_failure_severity": round(h.get("respiratory_failure_severity", 0.0), 3),
+                "total_beta_blockade": round(total_beta_blockade(st.session_state.state), 3),
+                "beta_av_nodal_effect": round(beta_av_nodal_effect(st.session_state.state), 3),
+                "beta_myocardial_depression": round(beta_myocardial_depression(st.session_state.state), 3),
+                "af_substrate": round(af_substrate(st.session_state.state), 3),
+                "fluid_clock_integration": "single-pass",
+                "tissue_perfusion": round(h["tissue_perfusion"], 3),
+                "sympathetic_drive": round(h["sympathetic_drive"], 3),
+                "af_recurrence_pressure": round(h.get("af_recurrence_pressure", 0.0), 3),
+                "sinus_stability": round(h.get("sinus_stability", 0.0), 3),
+                "nitroglycerin_effect": round(h.get("nitroglycerin_effect", 0.0), 3),
+                "metoprolol_effect": round(h.get("metoprolol_effect", 0.0), 3),
+                "propranolol_effect": round(h.get("propranolol_effect", 0.0), 3),
+                "metoprolol_depot": round(h.get("metoprolol_depot", 0.0), 3),
+                "propranolol_depot": round(h.get("propranolol_depot", 0.0), 3),
+                "diltiazem_effect": round(h.get("diltiazem_effect", 0.0), 3),
+                "diltiazem_depot": round(h.get("diltiazem_depot", 0.0), 3),
+                "amiodarone_effect": round(h.get("amiodarone_effect", 0.0), 3),
+                "amiodarone_depot": round(h.get("amiodarone_depot", 0.0), 3),
+                "procedural_sedation_effect": round(h.get("procedural_sedation_effect", 0.0), 3),
+                "procedural_sedation_minutes": round(h.get("procedural_sedation_minutes", 0.0), 1),
+                "pulmonary_congestion": round(h["pulmonary_congestion"], 3),
+                "effective_map": round(h.get("effective_map", 0.0), 2),
+                "pressure_support_state": round(h.get("pressure_support_state", 0.0), 3),
+                "vascular_support": round(h.get("vascular_support", 0.0), 3),
+                "forward_flow_state": round(h.get("forward_flow_state", h.get("cardiac_output_index", 0.0)), 3),
+                "dobutamine_effect": round(h.get("dobutamine_effect", 0.0), 3),
+                "dobutamine_minutes": round(h.get("dobutamine_minutes", 0.0), 1),
+                "stroke_volume_efficiency": round(h.get("stroke_volume_efficiency", 0.0), 3),
+                "afterload_factor": round(h.get("afterload_factor", 0.0), 3),
+                "cardiac_output_index": round(h.get("cardiac_output_index", 0.0), 3),
+                "oxygen_delivery": round(h.get("oxygen_delivery", 0.0), 3),
+                "peripheral_flow": round(h.get("peripheral_flow", 0.0), 3),
+                "contractile_reserve": round(h.get("contractile_reserve", 1.0), 3),
+                "low_flow_burden": round(h.get("low_flow_burden", 0.0), 3),
+                "sympathetic_drive": round(h.get("sympathetic_drive", 0.0), 3),
+                "cardiac_arrest": bool(h.get("cardiac_arrest", False)),
+                "terminal_collapse": bool(h.get("terminal_collapse", False)),
+                "fluid_responsiveness": round(h["fluid_responsiveness"], 3),
+                "fluid_tolerance": round(h["fluid_tolerance"], 3),
+                "fluid_load": round(h["fluid_load"], 3),
+                "vasoplegia_severity": round(h.get("vasoplegia_severity", 0.0), 3),
+                "respiratory_failure_severity": round(h["respiratory_failure_severity"], 3),
+                "global_perfusion_failure": round(h["global_perfusion_failure"], 3),
+                "peri_arrest_risk": round(h["peri_arrest_risk"], 3),
+                "cardiac_arrest": h["cardiac_arrest"],
+                "pending_action": st.session_state.get("pending_action"),
+                "pending_reasoning": st.session_state.get("pending_reasoning"),
+                "last_executed_action": st.session_state.get("last_executed_action"),
+            })
 
 st.divider()
 submitted = False
@@ -9810,7 +9898,7 @@ if not st.session_state.encounter_ended:
                     active_pending.get("parsed", held_parsed),
                     guided_resolution.get("missing", []),
                 )
-                st.rerun()
+                rerun_app()
             if guided_resolution and guided_resolution.get("parsed"):
                 submission_parsed = guided_resolution["parsed"]
                 submission_text = guided_resolution.get("transcript") or "Guided reasoning completed."
@@ -9837,7 +9925,7 @@ if not st.session_state.encounter_ended:
             submission_text = natural_text.strip()
             submitted = True
 
-    if pending_reasoning:
+    if pending_reasoning and faculty_access():
         st.caption(
             f"Facilitator override: type `{REASONING_GATE_OVERRIDE}` in the natural-language box."
         )
@@ -9864,7 +9952,7 @@ if submitted and submission_text.strip():
                 active_pending.get("parsed", {}),
                 reasoning_resolution.get("missing", []),
             )
-            st.rerun()
+            rerun_app()
 
         if reasoning_resolution and reasoning_resolution.get("parsed"):
             parsed = reasoning_resolution["parsed"]
@@ -9872,7 +9960,7 @@ if submitted and submission_text.strip():
             pending_resolution = try_resolve_pending_action(processing_input)
             if pending_resolution and pending_resolution.get("clarification"):
                 add_event("clarification", pending_resolution["clarification"])
-                st.rerun()
+                rerun_app()
 
             if pending_resolution and pending_resolution.get("parsed"):
                 parsed = merge_pending_bundle(pending_resolution["parsed"])
@@ -9910,7 +9998,7 @@ if submitted and submission_text.strip():
         st.session_state.last_parse = parsed
         hold_pending_reasoning(parsed, missing_reasoning)
         upsert_reasoning_gate_clarification(parsed, missing_reasoning)
-        st.rerun()
+        rerun_app()
     if gate_status is None and any(
         action.get("type") in REASONING_GATE_ACTION_TYPES
         for action in parsed.get("actions", [])
@@ -10079,7 +10167,7 @@ if submitted and submission_text.strip():
                 "I preserved your input, but this build does not yet execute that action."
             )
 
-    st.rerun()
+    rerun_app()
 
 st.divider()
 
@@ -10090,7 +10178,7 @@ if not st.session_state.encounter_ended:
         disabled=not bool(st.session_state.management_trace),
     ):
         begin_decision_review(st.session_state.management_trace, st.session_state.state)
-        st.rerun()
+        rerun_app()
 else:
     frozen_trace = st.session_state.get("encounter_closed_trace")
     if frozen_trace is None:
@@ -10099,6 +10187,7 @@ else:
         begin_decision_review(st.session_state.management_trace, st.session_state.state)
         frozen_trace = st.session_state.encounter_closed_trace
     frozen_state = st.session_state.get("encounter_closed_state") or management_state_snapshot(st.session_state.state)
+    render_learning_focus(ACCOUNT_CONTEXT)
     st.markdown("## Management Trace")
     st.caption(
         "Your decision pathway through the encounter. This review shows only clinical information "
@@ -10114,23 +10203,26 @@ else:
     render_decision_review(frozen_trace, frozen_state)
 
 st.divider()
-if st.button("Reset scenario", type="secondary"):
-    # Clear all scenario-specific session state and rebuild the initial patient.
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.rerun()
+if ACCOUNT_CONTEXT:
+    if st.button("Save & return to dashboard", type="secondary"):
+        return_to_dashboard(ACCOUNT_CONTEXT, reset_session)
+    if st.button("End this attempt without completing review", type="secondary"):
+        return_to_dashboard(ACCOUNT_CONTEXT, reset_session, abandon=True)
+else:
+    if st.button("Reset scenario", type="secondary"):
+        reset_session()
+        rerun_app()
 
-if st.session_state.last_parse:
-    with st.expander("Developer: last structured interpretation", expanded=False):
-        st.json(st.session_state.last_parse)
-
-with st.expander("Developer: Management Trace", expanded=False):
-    st.caption("Structured longitudinal decision-response log. Hidden from learners in production.")
-    if st.session_state.management_trace:
+if faculty_access():
+    if st.session_state.last_parse:
+        with st.expander("Developer: last structured interpretation", expanded=False):
+            st.json(st.session_state.last_parse)
+    with st.expander("Developer: Management Trace", expanded=False):
+        st.caption("Structured longitudinal decision-response log for faculty inspection.")
         st.json(st.session_state.management_trace)
-    else:
-        st.caption("No Management Trace events recorded yet.")
 
-st.caption("Management Reasoning Simulator · AI preview v0.9.0")
+if ACCOUNT_CONTEXT:
+    save_session(ACCOUNT_CONTEXT)
+st.caption("Management Reasoning Simulator · Curriculum pilot v0.10.0")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

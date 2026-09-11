@@ -1,6 +1,29 @@
-# Management Reasoning Simulator — AI preview v0.9.0
+# Management Reasoning Simulator — Curriculum pilot v0.10.0
 
-## AI integration preview
+## Curriculum and individual accounts
+
+This increment adds invitation-based resident, faculty and administrator accounts,
+persistent encounters, internally assigned learning challenges, and bounded AI
+composition of PS001 variants. Residents see the clinical presentation first;
+the specific objective is disclosed in the post-encounter review. Faculty can
+select any of the three implemented challenges in a sandbox excluded from
+resident progress.
+
+Account mode is opt-in. The existing `APP_PASSWORD` gate remains the default
+until `MRS_AUTH_MODE = "accounts"` and persistent PostgreSQL storage are configured.
+The stable application on `main` does not need to change.
+
+- [Activation, local startup and verification](docs/SETUP_v0.10.0.md)
+- [Curriculum mappings, evidence rules and generation limits](docs/CURRICULUM_PILOT.md)
+
+Three challenges are executable; the proposed 30-challenge curriculum is not yet
+fully implemented. Evidence is descriptive and does not certify competence.
+The generator chooses reviewed software options, stores a frozen specification,
+and falls back to a predefined local variant if the provider fails. Clinical
+profile calibration and deployment-specific PostgreSQL verification remain
+necessary before resident assessment.
+
+## AI language interpretation
 
 This branch adds an optional OpenAI language-normalization layer. The model converts
 free-form or mixed-language learner input into conservative canonical clinical text.
@@ -10,8 +33,10 @@ and remains solely responsible for execution and patient physiology.
 The integration fails closed: if the API is unavailable, confidence is low,
 ambiguity remains, or a numeric value changes, the application automatically uses
 the deterministic v0.8.21 interpreter. The learner's original text is preserved in
-the Management Trace. Only learner text and the visible patient state are sent to
-the API; hidden physiology and review data are not included.
+the Management Trace. For language interpretation, only learner text and the
+visible patient state are sent to the API; hidden physiology and review data are
+not included. The separate encounter-generation request uses an internal learning
+objective and approved profile/scene options, with no resident identity or trace.
 
 Configure the separate Streamlit test app under **Settings → Secrets**:
 
