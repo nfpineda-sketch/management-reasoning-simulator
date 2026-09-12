@@ -188,17 +188,34 @@ def render_dashboard(context, initial_state, reset_session):
                     restore_attempt(context, attempt, reset_session)
                     st.rerun()
     if user["role"] in {"faculty", "admin"}:
-        with st.expander("Resident activity and recorded evidence"):
+        requested = st.query_params.get("faculty_attempt", "")
+        with st.expander("Resident activity and recorded evidence", expanded=bool(requested)):
             resident_attempts = [a for a in attempts if not a["is_sandbox"]]
             st.caption("Single-program pilot. These are activity records and evidence prompts for faculty review, not competency scores.")
             st.dataframe([{"Resident": a["username"], "Challenge": a["challenge_id"], "Status": a["status"], "Updated": _date(a["updated_at"])} for a in resident_attempts], hide_index=True)
             if resident_attempts:
-                selected = st.selectbox("Encounter record", [a["id"] for a in resident_attempts], format_func=lambda key: next(a["username"] + " · " + _date(a["updated_at"]) for a in resident_attempts if a["id"] == key))
+                # A PDF link selects from the already authorized list; it never
+                # fetches an arbitrary ID or bypasses the staff review gates.
+                attempt_ids = [a["id"] for a in resident_attempts]
+                selection_key = "_faculty_encounter_" + user["id"]
+                link_key = selection_key + "_opened_link"
+                if requested and requested != st.session_state.get(link_key):
+                    if requested in attempt_ids:
+                        st.session_state[selection_key] = requested
+                    else:
+                        st.info("The linked encounter is not available to this account. Select an available encounter below.")
+                    st.session_state[link_key] = requested
+                if st.session_state.get(selection_key) not in attempt_ids:
+                    st.session_state[selection_key] = next(
+                        (a["id"] for a in resident_attempts if a["status"] == "completed"), attempt_ids[0])
+                selected = st.selectbox("Encounter record", attempt_ids, key=selection_key,
+                    format_func=lambda key: next(a["username"] + " · " + a["challenge_id"] + " · " + a["status"] + " · " + _date(a["updated_at"]) for a in resident_attempts if a["id"] == key))
                 record = store.get_attempt(token, selected)
-                st.json((record.get("payload") or {}).get("evidence", {}))
-                st.download_button("Download faculty record", json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
                 render_faculty_analysis(context, record)
                 render_attempt_assessment(context, record)
+                with st.expander("Complete encounter record and export"):
+                    st.json((record.get("payload") or {}).get("evidence", {}), expanded=False)
+                    st.download_button("Download faculty record", json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
         render_progress_dashboard(context)
 
 

@@ -16,7 +16,8 @@ from objectives import AUTONOMY_LEVELS, DEPTH_LEVELS, OBJECTIVES, evidence_items
 
 
 SCHEMA_VERSION = "faculty_brief_v1"
-PROMPT_VERSION = "1.0"
+PROMPT_VERSION = "1.1"
+SUPPORTED_PROMPT_VERSIONS = ("1.0", PROMPT_VERSION)
 ASSISTANCE_CONTEXTS = ("unknown", *AUTONOMY_LEVELS)
 SUPPORTED_OBJECTIVES = tuple(k for k, v in OBJECTIVES.items() if v["supported"])
 MAX_INPUT_BYTES = 260_000
@@ -316,8 +317,43 @@ Do not invent actions, doses, clinical thresholds, guidelines, references, or
 clinical recommendations beyond analyzing what is recorded. When clinical
 appropriateness needs external confirmation, ask faculty to verify it instead.
 Do not recommend unsupported objectives or allow favorable outcome to erase
-process concerns. Keep the summary compact and avoid repeated transcript text.
-Feedback is a suggested editable faculty rationale, not a saved evaluation.
+process concerns. Feedback is a suggested editable faculty rationale, not a saved
+evaluation.
+
+Write for a busy faculty member deciding what evidence to verify and what to
+record in the assessment form. Prioritize decision-relevant facts over a complete
+retelling. Use plain clinical language, never internal variable names, JSON field
+names, or raw trace indices in prose; place citations in evidence_refs instead.
+Do not repeat the same warning, provenance statement, or narrative across sections.
+State assistance provenance once in limits; context should describe the clinical
+setting for that objective, not repeat an autonomy disclaimer. Keep a missing
+preparation or other safety concern visible, distinguishing missing documentation
+from evidence of an omission. Concision must not turn an uncertain finding into a
+confident judgment. Group related concerns and place remaining objective-specific
+concerns in the relevant rationale or feedback; do not erase them to meet a limit.
+
+Use these writing budgets:
+- summary: at most 65 words, focused on the overall reasoning pattern and what
+  faculty still needs to verify.
+- strengths: at most 3 distinct items, each at most 20 words.
+- review_points: at most 3 prioritized items, each at most 35 words. Put material
+  safety concerns, uncertain clinical appropriateness, and gaps that could change
+  an assessment ahead of stylistic suggestions.
+- key_decisions: select up to 3 consequential decision points or linked episodes
+  (fewer when the record is limited). Each analysis is at most 65 words, connecting
+  the cue, recorded action, reassessment, and uncertainty. Add one short question
+  that would resolve an assessment uncertainty, not a generic knowledge quiz.
+- each objective: rationale at most 45 words; clinical context at most 15 words;
+  feedback at most 55 words; at most 2 questions of at most 20 words each. Include
+  concrete evidence and any limitation that affects the proposed assessment. Use
+  feedback for an editable observation and next learning step, not a repetition
+  of the rationale. Do not restate the full scope or global disclaimer six times.
+- learning_cycle: at most 40 words; identify later learning separately from
+  reasoning recorded during management.
+- limits: at most 3 items, each at most 25 words. Include assistance provenance
+  and material record limitations once, with no generic legal boilerplate.
+Select only the evidence references needed to support each claim. Keep all six
+objective recommendations distinct, even when the same decision informs several.
 """.strip()
 
 
@@ -334,6 +370,7 @@ def _object(properties):
 
 
 def _analysis_schema(refs):
+    """Storage validation bounds, including previously generated verbose briefs."""
     references = _array({"type": "string", "enum": sorted(refs)}, 20)
     return _object({
         "summary": _string(2500),
@@ -355,6 +392,31 @@ def _analysis_schema(refs):
         "learning_cycle": _string(2500),
         "limits": _array(_string(1200), 10, 1),
     })
+
+
+def _generation_schema(refs):
+    """Tighter new-request bounds without invalidating saved version 1.0 reports.
+
+    Word budgets belong to the writing instructions; these character and item
+    bounds also constrain the provider's structured output and its local check.
+    """
+    schema = _analysis_schema(refs)
+    fields = schema["properties"]
+    fields["summary"] = _string(550)
+    fields["strengths"] = _array(_string(200), 3)
+    fields["review_points"] = _array(_string(320), 3)
+    fields["key_decisions"]["maxItems"] = 3
+    decision = fields["key_decisions"]["items"]["properties"]
+    decision["analysis"] = _string(550)
+    decision["question"] = _string(180)
+    objective = fields["objectives"]["items"]["properties"]
+    objective["rationale"] = _string(400)
+    objective["context"] = _string(160)
+    objective["feedback"] = _string(500)
+    objective["questions"] = _array(_string(180), 2)
+    fields["learning_cycle"] = _string(350)
+    fields["limits"] = _array(_string(220), 3, 1)
+    return schema
 
 
 def _check_schema(value, schema):
@@ -396,7 +458,7 @@ def validate_brief(report, record, assistance_context=None):
                 "generated_at", "model", "assistance_context", "analysis"}
     if not isinstance(report, dict) or set(report) != required:
         raise FacultyAnalysisError("The saved AI brief has an invalid format.")
-    if (report["schema_version"] != SCHEMA_VERSION or report["prompt_version"] != PROMPT_VERSION
+    if (report["schema_version"] != SCHEMA_VERSION or report["prompt_version"] not in SUPPORTED_PROMPT_VERSIONS
             or report["attempt_id"] != record.get("id")
             or type(report["attempt_revision"]) is not int
             or report["attempt_revision"] != record.get("revision")
@@ -448,6 +510,7 @@ def generate_faculty_brief(record, *, api_key, model, assistance_context="unknow
         raise FacultyAnalysisError("OPENAI_API_KEY is not configured for faculty analysis.")
     refs = {row["evidence_ref"] for row in source["decision_events"] if row["evidence_ref"]}
     refs.update(row["evidence_ref"] for row in source["recorded_reflections"])
+    generation_schema = _generation_schema(refs)
     try:
         if client is None:
             from openai import OpenAI
@@ -456,13 +519,14 @@ def generate_faculty_brief(record, *, api_key, model, assistance_context="unknow
             model=model.strip(), instructions=_INSTRUCTIONS,
             input=_canonical(source),
             text={"format": {"type": "json_schema", "name": "faculty_assessment_brief",
-                             "schema": _analysis_schema(refs), "strict": True}},
+                             "schema": generation_schema, "strict": True}},
             max_output_tokens=MAX_OUTPUT_TOKENS, store=False,
         )
         status = getattr(response, "status", "completed")
         if status != "completed" or not isinstance(response.output_text, str) or len(response.output_text) > 100_000:
             raise FacultyAnalysisError("The AI response was incomplete. No assessment was recorded.")
         analysis = json.loads(response.output_text)
+        _check_schema(analysis, generation_schema)
     except FacultyAnalysisError:
         raise
     except Exception as exc:

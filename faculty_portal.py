@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import os
+from urllib.parse import urlsplit
 
 import streamlit as st
+from reportlab.platypus import LayoutError
 
 from account_store import AccountError
 from faculty_analysis import FacultyAnalysisError, generate_faculty_brief, source_fingerprint
@@ -61,6 +63,41 @@ def _reference_text(refs, labels):
     return "; ".join(labels.get(ref, ref) + " (" + ref + ")" for ref in refs)
 
 
+def _public_app_url():
+    """Only a public origin/path may be embedded in a portable faculty PDF."""
+    value = _secret("MRS_PUBLIC_APP_URL", "https://clinical-management-reasoning-ai.streamlit.app/")
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        return None
+    if (parsed.scheme != "https" or not parsed.netloc or parsed.username
+            or parsed.password or parsed.query or parsed.fragment):
+        return None
+    return value
+
+
+def _pdf_download(report, record, *, compact):
+    # A presentation version also invalidates byte caches for existing reports.
+    app_url = _public_app_url()
+    mode = "concise" if compact else "full"
+    pdf_key = ("faculty_pdf_v2", report["brief_id"], mode, app_url)
+    cache_key = repr(pdf_key)
+    if cache_key not in st.session_state:
+        try:
+            st.session_state[cache_key] = render_faculty_brief_pdf(
+                report, record, compact=compact, app_url=app_url)
+        except (ValueError, LayoutError):
+            if compact:
+                st.warning("This report could not be fitted into the concise PDF. Open the full analysis below; you can still review and record assessments.")
+            else:
+                st.warning("The full PDF could not be prepared. The saved analysis and assessment form remain available here.")
+            return
+    label = "Download 2-page faculty brief (PDF)" if compact else "Download full faculty analysis (PDF)"
+    st.download_button(label, st.session_state[cache_key],
+                       file_name="faculty_assessment_" + record["id"][:12] + "_" + mode + ".pdf",
+                       mime="application/pdf", key="download_faculty_" + mode + "_" + record["id"])
+
+
 def render_faculty_analysis(context, record):
     if not context or context["user"]["role"] not in {"faculty", "admin"}:
         return
@@ -98,7 +135,8 @@ def render_faculty_analysis(context, record):
                 return
             st.caption("Generated " + report["generated_at"] + " · " + report["model"])
             analysis = report["analysis"]
-            st.write(analysis["summary"])
+            _pdf_download(report, record, compact=True)
+            st.caption("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification.")
             labels = {item["ref"]: item["label"] for item in evidence_items(record["payload"])}
             st.dataframe([
                 {"Objective": key["objective_id"] + " · " + OBJECTIVES[key["objective_id"]]["title"],
@@ -108,6 +146,9 @@ def render_faculty_analysis(context, record):
                 for key in analysis["objectives"]
             ], hide_index=True, use_container_width=True)
             with st.expander("Read the analysis and debriefing questions"):
+                _pdf_download(report, record, compact=False)
+                st.markdown("**Performance synthesis**")
+                st.write(analysis["summary"])
                 for title, values in (("Strengths", analysis["strengths"]),
                                       ("Points to review", analysis["review_points"])):
                     st.markdown("**" + title + "**")
@@ -129,14 +170,6 @@ def render_faculty_analysis(context, record):
                     st.write(suggestion["feedback"])
                     for question in suggestion["questions"]:
                         st.write("Discuss: " + question)
-            # A per-session byte cache avoids rerendering the same immutable PDF.
-            # Authorization and source binding above are checked on every rerun.
-            pdf_key = "faculty_pdf_" + report["brief_id"]
-            if pdf_key not in st.session_state:
-                st.session_state[pdf_key] = render_faculty_brief_pdf(report, record)
-            st.download_button("Download AI faculty brief (PDF)", st.session_state[pdf_key],
-                               file_name="faculty_assessment_" + record["id"][:12] + ".pdf",
-                               mime="application/pdf", key="download_faculty_" + record["id"])
             st.caption("Select an objective below to load its suggestion as an editable draft. Only Record objective assessment saves your final judgment.")
     except (AccountError, FacultyAnalysisError) as exc:
         st.error(str(exc))

@@ -221,6 +221,58 @@ def test_full_app_faculty_brief_remains_visible_after_every_objective_is_assesse
     assert progress.get_progress(resident) == recorded_progress
 
 
+def test_faculty_pdf_link_selects_encounter_once_and_keeps_review_manual(cohort):
+    from test_curriculum_assignment import evidence_payload
+    from progress_store import ProgressStore
+
+    store, admin, resident = cohort
+    completed = []
+    for challenge in ("R1-04", "R1-03"):
+        attempt = store.create_attempt(resident, challenge, {"seed": 17})
+        payload = evidence_payload(True)
+        payload["session"].update(review_completed=True, encounter_ended=True)
+        store.save_attempt(resident, attempt, payload, "completed", 0)
+        completed.append(attempt)
+    original = store.get_attempt(admin, completed[0])
+    progress = ProgressStore(store).get_progress(resident)
+    faculty = AppTest.from_file(APP, default_timeout=20)
+    faculty.session_state["_account_token"] = admin
+    faculty.query_params["faculty_attempt"] = completed[0]
+    faculty.run()
+    assert not faculty.exception
+    selector = next(item for item in faculty.selectbox if item.label == "Encounter record")
+    assert selector.value == completed[0]
+    assert next(item for item in faculty.expander if item.label == "Resident activity and recorded evidence").proto.expanded
+    assert not next(item for item in faculty.expander if item.label == "Read the recorded evidence").proto.expanded
+    selector.set_value(completed[1]).run()
+    assert next(item for item in faculty.selectbox if item.label == "Encounter record").value == completed[1]
+    assert store.get_attempt(admin, completed[0]) == original
+    assert ProgressStore(store).get_progress(resident) == progress
+
+
+def test_unknown_or_resident_pdf_link_cannot_expose_private_faculty_analysis(cohort):
+    from test_curriculum_assignment import evidence_payload
+
+    store, admin, resident = cohort
+    attempt = store.create_attempt(resident, "R1-04", {"seed": 17})
+    payload = evidence_payload(True)
+    payload["session"].update(review_completed=True, encounter_ended=True)
+    store.save_attempt(resident, attempt, payload, "completed", 0)
+    for token in (admin, resident):
+        page = AppTest.from_file(APP, default_timeout=20)
+        page.session_state["_account_token"] = token
+        page.query_params["faculty_attempt"] = "unavailable-encounter" if token == admin else attempt
+        page.run()
+        assert not page.exception
+        if token == admin:
+            assert any("linked encounter is not available" in item.value for item in page.info)
+            assert next(item for item in page.selectbox if item.label == "Encounter record").value == attempt
+        else:
+            assert not any(item.label == "AI faculty assessment brief" for item in page.expander)
+            assert not any(item.label == "Encounter record" for item in page.selectbox)
+            assert not page.get("download_button")
+
+
 def test_full_app_multiobjective_faculty_assessment_and_resident_progress(cohort):
     """Exercise the real dashboard hooks, forms and persistent resident view."""
     from test_curriculum_assignment import evidence_payload

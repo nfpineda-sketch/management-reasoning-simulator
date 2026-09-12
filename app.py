@@ -56,7 +56,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.12.0-curriculum-pilot"
+SIMULATOR_VERSION = "0.12.1-curriculum-pilot"
 
 
 def faculty_access():

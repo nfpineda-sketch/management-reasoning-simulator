@@ -250,6 +250,44 @@ def test_request_schema_security_boundary_and_single_bounded_call():
     assert all(row["recommendation"] == "insufficient_evidence" for row in envelope["analysis"]["objectives"])
 
 
+def test_new_generation_is_compact_while_a_legacy_verbose_brief_remains_readable():
+    record = sample_record()
+    legacy = sample_brief(record)
+    legacy["prompt_version"] = "1.0"
+    legacy["analysis"]["summary"] = "Recorded reasoning requires faculty review. " * 35
+    legacy["analysis"]["strengths"] *= 6
+    legacy["analysis"]["objectives"][0]["feedback"] = "Review this recorded evidence with the learner. " * 50
+    original = deepcopy(legacy)
+
+    # Changing the generation prompt must not hide or rewrite an existing report.
+    assert validate_brief(legacy, record) == original
+    assert legacy == original
+
+    client = StubClient()
+    current = generate_faculty_brief(record, api_key="key", model="test-model", client=client)
+    schema = client.calls[0]["text"]["format"]["schema"]["properties"]
+    assert current["prompt_version"] == "1.1"
+    assert schema["strengths"]["maxItems"] == 3
+    assert schema["review_points"]["maxItems"] == 3
+    assert schema["key_decisions"]["maxItems"] == 3
+    assert schema["objectives"]["minItems"] == schema["objectives"]["maxItems"] == 6
+
+    # A provider that ignores the new bounds cannot bypass the local check simply
+    # because those values remain valid for older stored reports.
+    with pytest.raises(FacultyAnalysisError, match="overlong"):
+        generate_faculty_brief(record, api_key="key", model="test-model", client=StubClient(legacy["analysis"]))
+
+
+@pytest.mark.parametrize("field", ["strengths", "review_points", "key_decisions"])
+def test_new_generation_rejects_excess_review_items_without_retrying(field):
+    analysis = sample_analysis()
+    analysis[field] = analysis[field] * 4
+    client = StubClient(analysis)
+    with pytest.raises(FacultyAnalysisError, match="number of items"):
+        generate_faculty_brief(sample_record(), api_key="key", model="test-model", client=client)
+    assert len(client.calls) == 1
+
+
 @pytest.mark.parametrize("ref", ["trace:99", "trace:-1", "trace:01", "reflection:missing", "decision:1"])
 def test_fabricated_evidence_refs_rejected(ref):
     record = sample_record()

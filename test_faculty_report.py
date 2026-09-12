@@ -90,7 +90,7 @@ def brief_example():
 def test_brief_pdf_preserves_user_text_provenance_and_distinct_recommendations():
     report, record = brief_example()
     before = deepcopy((report, record))
-    pdf = render_faculty_brief_pdf(report, record)
+    pdf = render_faculty_brief_pdf(report, record, compact=False)
     reader = PdfReader(BytesIO(pdf))
     text = "\n".join(page.extract_text() for page in reader.pages)
     assert len(reader.pages) == 5
@@ -114,7 +114,7 @@ def test_long_feedback_flows_without_lost_text_or_layout_failure():
     long_feedback = "Español & <literal>: reassess pCO₂ and SpO₂. " * 80 + "UNIQUE_END_OF_LONG_FEEDBACK"
     report["analysis"]["objectives"][0]["feedback"] = long_feedback
     report["analysis"]["objectives"][0]["recommendation"] = "needs_improvement"
-    reader = PdfReader(BytesIO(render_faculty_brief_pdf(report, record)))
+    reader = PdfReader(BytesIO(render_faculty_brief_pdf(report, record, compact=False)))
     text = "\n".join(page.extract_text() for page in reader.pages)
     assert len(reader.pages) >= 6
     assert "UNIQUE_END_OF_LONG_FEEDBACK" in text
@@ -136,3 +136,96 @@ def test_renderer_rejects_unresolved_citation():
     report["analysis"]["key_decisions"][0]["evidence_refs"] = ["trace:999"]
     with pytest.raises(ValueError, match="unavailable"):
         render_faculty_brief_pdf(report, record)
+
+
+
+def test_default_concise_pdf_preserves_suggestions_citations_and_faculty_route():
+    report, record = brief_example()
+    report["assistance_context"] = "unknown"
+    report["analysis"]["limits"].insert(0, "Autonomy cannot be assessed because assistance is unknown.")
+    report["analysis"]["objectives"][1]["recommendation"] = "needs_improvement"
+    before = deepcopy((report, record))
+    reader = PdfReader(BytesIO(render_faculty_brief_pdf(
+        report, record, app_url="https://faculty.example/app?token=PRIVATE_TOKEN&other=value#secret",
+    )))
+    text = "\n".join(page.extract_text() for page in reader.pages)
+    assert len(reader.pages) == 2
+    for objective in report["analysis"]["objectives"]:
+        assert objective["objective_id"] in reader.pages[0].extract_text()
+    assert "Satisfactory" in text
+    assert "Needs improvement" in text
+    assert "Insufficient evidence" in " ".join(text.split())
+    assert "D1 00:46" in text
+    assert "Reflection 1" in text
+    assert "Not known / not documented" in text
+    assert text.count("Assistance and autonomy:") == 1
+    assert "Autonomy cannot be assessed because assistance is unknown" not in text
+    assert "selected review priorities" in text
+    assert "Rationale excerpts" in text
+    assert "Full citations, feedback and rationales" in text
+    assert "not image acquisition" in text
+    assert "review and record your assessment" in text
+    assert "Prompt 1.0" in text
+    assert "PRIVATE_TOKEN" not in text
+    assert "DO_NOT_PRINT" not in text
+    links = [
+        str(annotation.get_object()["/A"]["/URI"])
+        for page in reader.pages for annotation in page.get("/Annots", [])
+        if annotation.get_object().get("/A", {}).get("/S") == "/URI"
+    ]
+    assert links == ["https://faculty.example/app?faculty_attempt=synthetic-faculty-report-example"]
+    assert (report, record) == before
+
+
+def test_verbose_legacy_report_fits_two_pages_without_shrinking_or_silent_clause_clipping():
+    report, record = brief_example()
+    report["analysis"]["summary"] *= 8
+    report["analysis"]["learning_cycle"] *= 8
+    for item in report["analysis"]["objectives"]:
+        item["rationale"] = "The learner " + "considered perfusion and oxygenation " * 10 + ". More details. "
+        item["feedback"] = "Preserve the reasoning. " * 150 + "UNIQUE_FULL_ANALYSIS_TAIL"
+    report["analysis"]["review_points"] = [
+        "Review " + "the recorded response and management strategy " * 11 + ". Additional sentence."
+    ] * 5
+    for item in report["analysis"]["key_decisions"]:
+        item["question"] = "How " + "would you reassess the response to treatment " * 6 + "? Extra question?"
+    before = deepcopy((report, record))
+    reader = PdfReader(BytesIO(render_faculty_brief_pdf(report, record)))
+    text = "\n".join(page.extract_text() for page in reader.pages)
+    assert len(reader.pages) == 2
+    assert "1 / 2" in reader.pages[0].extract_text()
+    assert "2 / 2" in reader.pages[1].extract_text()
+    assert "Review the full rationale in the app before judging this objective" in text
+    assert "First 3 of 5 review points" in text
+    assert "read the complete" in text.lower() or "context cannot be safely shortened" in text
+    assert "UNIQUE_FULL_ANALYSIS_TAIL" not in text
+    text_runs = []
+    for page in reader.pages:
+        page.extract_text(visitor_text=lambda value, cm, tm, font, size: text_runs.append((value, size)))
+    # Only running headers/footer may be smaller; main text remains readable.
+    for value, size in text_runs:
+        if "Review the full rationale" in value or "recorded response" in value:
+            assert size >= 9.3
+    full_reader = PdfReader(BytesIO(render_faculty_brief_pdf(report, record, compact=False)))
+    assert "UNIQUE_FULL_ANALYSIS_TAIL" in "\n".join(page.extract_text() for page in full_reader.pages)
+    assert (report, record) == before
+
+
+def test_concise_pdf_keeps_airway_review_concern_and_plain_language():
+    report, record = brief_example()
+    report["analysis"]["review_points"] = [
+        "The record shows procedural sedation was executed while airway_prepared remained false; review preparation and monitoring without inferring unrecorded skill performance."
+    ]
+    text = "\n".join(page.extract_text() for page in PdfReader(BytesIO(
+        render_faculty_brief_pdf(report, record))).pages)
+    assert "airway preparation was not marked as completed" in text
+    assert "without inferring unrecorded skill performance" in text
+    assert "airway_prepared" not in text
+    assert "airway_prepared" in report["analysis"]["review_points"][0]
+
+
+@pytest.mark.parametrize("app_url", ["javascript:alert(1)", "https://user:secret@faculty.example/", "file:///report", "https:///missing-host"])
+def test_concise_pdf_rejects_unsafe_application_urls(app_url):
+    report, record = brief_example()
+    with pytest.raises(ValueError, match="public HTTP"):
+        render_faculty_brief_pdf(report, record, app_url=app_url)

@@ -1,4 +1,4 @@
-# Management Reasoning Simulator — Curriculum pilot v0.12.0
+# Management Reasoning Simulator — Curriculum pilot v0.12.1
 
 ## AI faculty assessment brief
 
@@ -7,7 +7,11 @@ resident encounter with a completed reflection. It summarizes the recorded
 reasoning, cites key decisions, and proposes objective-specific feedback,
 depth, and assistance descriptors. Insufficient evidence remains distinct from
 an unsatisfactory judgment. The brief can be read in the dashboard or downloaded
-as a formatted PDF.
+as a two-page PDF: six provisional objective assessments, selected evidence,
+three review priorities and a link back to the encounter. The complete analysis
+remains available on screen and as a separate full PDF. Existing saved briefs
+use the concise layout without a new AI request. Excerpted legacy text is labeled;
+the full report remains the source for all qualifications and supporting detail.
 
 Suggestions can be loaded into the existing objective form as editable drafts.
 Faculty must resolve unanswered fields, confirm their review, and explicitly
@@ -30,7 +34,7 @@ Immutable private drafts are stored separately in `mrs_faculty_briefs` and tied
 to the completed encounter's source hash and revision. Existing encounters and
 assessment counts are unchanged by this additive schema setup.
 
-- [Use the faculty brief and update locally](docs/UPDATE_v0.12.0.md)
+- [Use the concise faculty brief and update locally](docs/UPDATE_v0.12.1.md)
 
 ## Oxygen order integrity and state-aware review
 

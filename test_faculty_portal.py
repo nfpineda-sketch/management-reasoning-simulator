@@ -120,6 +120,41 @@ def test_resident_never_receives_private_brief_or_draft_controls(cohort):
     assert not app.get("download_button")
 
 
+def test_concise_and_full_downloads_reuse_saved_analysis_without_credit(cohort):
+    attempt_id, report = setup_brief(cohort)
+    app = page(cohort, attempt_id)
+    labels = [item.label for item in app.get("download_button")]
+    assert "Download 2-page faculty brief (PDF)" in labels
+    assert "Download full faculty analysis (PDF)" in labels
+    app.run()
+    assert count(cohort) == 0
+    accounts, storage, users = cohort
+    assert storage.get_latest(users["faculty"]["token"], attempt_id)["brief_id"] == report["brief_id"]
+
+
+def test_compact_layout_failure_preserves_full_report_and_manual_assessment(cohort, monkeypatch):
+    import faculty_portal
+    render = faculty_portal.render_faculty_brief_pdf
+    def oversized(report, record, *, compact=True, app_url=None):
+        if compact:
+            raise ValueError("Content exceeds compact page budget")
+        return render(report, record, compact=False, app_url=app_url)
+    monkeypatch.setattr(faculty_portal, "render_faculty_brief_pdf", oversized)
+    attempt_id, _ = setup_brief(cohort)
+    app = page(cohort, attempt_id)
+    assert any("could not be fitted" in item.value for item in app.warning)
+    assert any(item.label == "Download full faculty analysis (PDF)" for item in app.get("download_button"))
+    assert widget(app, "button", "Record objective assessment")
+    assert count(cohort) == 0
+
+
+@pytest.mark.parametrize("url", ["https://user:password@example.org/", "https://example.org/?token=private", "javascript:alert(1)", "https://example.org/#secret", "https://[invalid/"])
+def test_public_pdf_url_rejects_credentials_and_private_query_parameters(monkeypatch, url):
+    import faculty_portal
+    monkeypatch.setattr(faculty_portal, "_secret", lambda *args: url)
+    assert faculty_portal._public_app_url() is None
+
+
 def test_changing_assistance_invalidates_loaded_draft_and_acknowledgement(cohort):
     attempt_id, _ = setup_brief(cohort, assistance="independent")
     app = page(cohort, attempt_id)

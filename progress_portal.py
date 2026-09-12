@@ -115,7 +115,7 @@ def render_attempt_assessment(context, record):
         if not items:
             st.info("This completed encounter has no eligible recorded decisions or complete reflection to assess.")
             return
-        with st.expander("Read the recorded evidence", expanded=True):
+        with st.expander("Read the recorded evidence", expanded=False):
             _present_evidence(items)
         eligible = []
         for goal in goals:
