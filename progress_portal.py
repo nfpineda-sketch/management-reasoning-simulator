@@ -13,6 +13,7 @@ from objectives import (
     DEPTH_DESCRIPTIONS, AUTONOMY_DESCRIPTIONS, evidence_items,
 )
 from progress_store import ProgressStore
+from faculty_portal import render_suggestion_loader
 
 
 def _date(value):
@@ -140,23 +141,46 @@ def render_attempt_assessment(context, record):
         st.write(objective["scope"])
         st.caption(objective["limitation"])
         st.caption("Only assess what the recorded encounter demonstrates. Unobserved actions and skills outside this scope are not credited.")
-        with st.form(prefix + "_" + objective_id):
-            satisfactory = st.checkbox("Satisfactory demonstration of this simulated component", value=False)
+        widget_prefix = prefix + "_" + objective_id
+        try:
+            draft = render_suggestion_loader(context, record, objective_id, widget_prefix)
+        except AccountError as exc:
+            st.error(str(exc))
+            return
+        with st.form(widget_prefix):
+            decision = None
+            if draft:
+                decision = st.selectbox("Faculty assessment decision", ["Satisfactory", "Needs improvement"],
+                                        index=None, key=widget_prefix + "_decision",
+                                        placeholder="Choose your assessment after reviewing the evidence")
+                satisfactory = decision == "Satisfactory"
+            else:
+                satisfactory = st.checkbox("Satisfactory demonstration of this simulated component", value=False)
             depth = st.selectbox("Observed depth", DEPTH_LEVELS, format_func=str.capitalize,
-                                help="\n\n".join(key.capitalize() + ": " + DEPTH_DESCRIPTIONS[key] for key in DEPTH_LEVELS))
+                                 key=widget_prefix + "_depth", index=None if draft else 0,
+                                 help="\n\n".join(key.capitalize() + ": " + DEPTH_DESCRIPTIONS[key] for key in DEPTH_LEVELS))
             autonomy = st.selectbox("Observed autonomy", AUTONOMY_LEVELS, format_func=str.capitalize,
-                                   help="\n\n".join(key.capitalize() + ": " + AUTONOMY_DESCRIPTIONS[key] for key in AUTONOMY_LEVELS))
+                                    key=widget_prefix + "_autonomy", index=None if draft else 0,
+                                    help="\n\n".join(key.capitalize() + ": " + AUTONOMY_DESCRIPTIONS[key] for key in AUTONOMY_LEVELS))
             st.caption("Depth and autonomy are local observation descriptors, not ACGME milestone levels or residency years.")
-            encounter_context = st.text_input("Observed clinical context", max_chars=500)
+            encounter_context = st.text_input("Observed clinical context", max_chars=500, key=widget_prefix + "_context")
             references = {item["ref"]: item["label"] for item in items}
-            selected_refs = st.multiselect("Evidence supporting your judgment", list(references), format_func=references.get)
+            selected_refs = st.multiselect("Evidence supporting your judgment", list(references), format_func=references.get,
+                                          key=widget_prefix + "_evidence")
             notes = st.text_area("Faculty rationale and feedback", max_chars=4000,
+                                 key=widget_prefix + "_notes",
                                  help="Explain the judgment using the selected evidence, including any limits or areas for improvement.")
+            acknowledged = st.checkbox("I reviewed the AI draft and confirmed the assessment fields", value=False,
+                                        key=widget_prefix + "_ack") if draft else True
             submitted = st.form_submit_button("Record objective assessment")
         if submitted:
+            if draft and (decision is None or depth is None or autonomy is None or not acknowledged):
+                st.error("Choose your assessment, depth and autonomy, and confirm your review of the AI draft before saving.")
+                return
             result = progress.assess(context["token"], record["id"], objective_id, {
                 "satisfactory": satisfactory, "depth": depth, "autonomy": autonomy,
                 "context": encounter_context, "evidence_refs": selected_refs, "notes": notes,
+                **({"ai_brief_id": draft["brief_id"]} if draft else {}),
             })
             messages = {
                 "credited": "Satisfactory observation saved. You can review another objective from this encounter.",

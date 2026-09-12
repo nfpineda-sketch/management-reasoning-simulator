@@ -230,7 +230,7 @@ class ProgressStore:
             definition = _objective(objective_id)
             if not definition["supported"]:
                 raise AccountError("This objective is not supported by the current simulator.")
-            attempt = self._execute(connection, """SELECT a.*, u.role AS owner_role
+            attempt = self._execute(connection, """SELECT a.*, u.username, u.role AS owner_role
                 FROM mrs_attempts a JOIN mrs_users u ON u.id = a.user_id WHERE a.id = ?""",
                 (attempt_id,)).fetchone()
             if (attempt is None or attempt["owner_role"] != "resident" or attempt["is_sandbox"]
@@ -269,6 +269,19 @@ class ProgressStore:
             encoded_evidence = _json(selected)
             if len(encoded_evidence.encode("utf-8")) > 1_000_000:
                 raise AccountError("The selected evidence is too large to save.")
+            ai_brief_id = assessment.get("ai_brief_id")
+            if ai_brief_id is not None:
+                # Attribute an explicitly reviewed draft without treating its
+                # suggestions as the final assessment. Keep the source report
+                # private; learner feedback contains only faculty-saved fields.
+                from faculty_analysis import source_fingerprint
+                ai_brief_id = _text(ai_brief_id, "the saved AI draft reference", 100)
+                brief = self._execute(connection, """SELECT attempt_id, source_hash, attempt_revision
+                    FROM mrs_faculty_briefs WHERE id = ?""", (ai_brief_id,)).fetchone()
+                if (brief is None or brief["attempt_id"] != attempt_id
+                        or brief["attempt_revision"] != attempt["revision"]
+                        or brief["source_hash"] != source_fingerprint(self.accounts._attempt(attempt))):
+                    raise AccountError("The AI draft does not match this completed encounter. Reload its analysis.")
             observation_id = uuid.uuid4().hex
             self._execute(connection, """INSERT INTO mrs_progress_observations
                 (id, attempt_id, user_id, objective_id, assessor_id, satisfactory, depth,
@@ -280,7 +293,8 @@ class ProgressStore:
                  hashlib.sha256(_json(payload).encode("utf-8")).hexdigest(), int(time.time())))
             status = "credited" if assessment["satisfactory"] else "recorded"
             self._audit(connection, actor, status, attempt["user_id"], objective_id, observation_id,
-                        {"target": target, "source_revision": attempt["revision"]})
+                        {"target": target, "source_revision": attempt["revision"],
+                         **({"ai_brief_id": ai_brief_id} if ai_brief_id is not None else {})})
             return {"status": status, "observation_id": observation_id,
                     "count": count + int(assessment["satisfactory"]), "target": target}
 

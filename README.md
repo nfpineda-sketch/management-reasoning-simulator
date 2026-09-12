@@ -1,4 +1,36 @@
-# Management Reasoning Simulator — Curriculum pilot v0.11.2
+# Management Reasoning Simulator — Curriculum pilot v0.12.0
+
+## AI faculty assessment brief
+
+Faculty and administrators can generate a private analysis for a completed
+resident encounter with a completed reflection. It summarizes the recorded
+reasoning, cites key decisions, and proposes objective-specific feedback,
+depth, and assistance descriptors. Insufficient evidence remains distinct from
+an unsatisfactory judgment. The brief can be read in the dashboard or downloaded
+as a formatted PDF.
+
+Suggestions can be loaded into the existing objective form as editable drafts.
+Faculty must resolve unanswered fields, confirm their review, and explicitly
+record the assessment. Generation, downloads and draft loading never change
+progress counters. The final assessment audit retains the source brief ID;
+residents receive only the faculty's saved feedback, not the private AI brief.
+
+The source sent to the analysis model is explicitly allowlisted, preserving
+original learner inputs and chronological visible findings while excluding
+account metadata, engine internals and previous faculty judgments. Reflections
+and later adaptation are distinguished from reasoning during the encounter.
+Assistance must be supplied by faculty; unknown assistance cannot be inferred
+from polished language. The analysis uses the local objective scopes and is
+formative decision support, not an independent clinical or competency assessment.
+
+The existing `OPENAI_API_KEY` is reused. Optional `MRS_FACULTY_MODEL` selects a
+separate analysis model; otherwise `OPENAI_MODEL` is used. Requests are explicit,
+bounded, and never silently retried or replaced with a fabricated report.
+Immutable private drafts are stored separately in `mrs_faculty_briefs` and tied
+to the completed encounter's source hash and revision. Existing encounters and
+assessment counts are unchanged by this additive schema setup.
+
+- [Use the faculty brief and update locally](docs/UPDATE_v0.12.0.md)
 
 ## Oxygen order integrity and state-aware review
 

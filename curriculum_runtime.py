@@ -11,6 +11,7 @@ from account_store import AccountError
 from curriculum import CHALLENGES, assign_challenge, evidence_summary
 from encounter_generator import generate_encounter
 from progress_portal import render_progress_dashboard, render_attempt_assessment
+from faculty_portal import render_faculty_analysis
 
 PAYLOAD_VERSION = "mrs_attempt_v1"
 SESSION_FIELDS = (
@@ -196,6 +197,7 @@ def render_dashboard(context, initial_state, reset_session):
                 record = store.get_attempt(token, selected)
                 st.json((record.get("payload") or {}).get("evidence", {}))
                 st.download_button("Download faculty record", json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
+                render_faculty_analysis(context, record)
                 render_attempt_assessment(context, record)
         render_progress_dashboard(context)
 
