@@ -187,6 +187,40 @@ def test_completed_review_readonly_and_revision_conflict_recovery(cohort):
     assert completed.session_state.carry_forward_plan == ss["adaptation_plan"]
 
 
+def test_full_app_faculty_brief_remains_visible_after_every_objective_is_assessed(cohort):
+    """Previously credited objectives must not hide the independent AI report."""
+    from test_curriculum_assignment import evidence_payload
+    from progress_store import ProgressStore
+
+    store, admin, resident = cohort
+    attempt_id = store.create_attempt(resident, "R1-04", {"seed": 17})
+    payload = evidence_payload(True)
+    payload["session"].update(review_completed=True, encounter_ended=True)
+    store.save_attempt(resident, attempt_id, payload, "completed", 0)
+    progress = ProgressStore(store)
+    for objective_id, definition in OBJECTIVES.items():
+        if definition["supported"]:
+            progress.assess(admin, attempt_id, objective_id, {
+                "satisfactory": True, "depth": "integrated", "autonomy": "guided",
+                "context": "Synthetic completed encounter used for dashboard regression.",
+                "evidence_refs": ["trace:0"],
+                "notes": "Faculty reviewed this simulated component before the AI report was requested.",
+            })
+    original = store.get_attempt(resident, attempt_id)
+    recorded_progress = progress.get_progress(resident)
+
+    faculty = open_app(admin)
+    assert not faculty.error
+    assert any("no additional eligible objectives" in item.value for item in faculty.info)
+    assert any(item.label == "AI faculty assessment brief" for item in faculty.expander)
+    generate = next(item for item in faculty.button if item.label == "Generate AI faculty brief")
+    assert generate.disabled  # The faculty panel remains visible without a configured provider key.
+    assert any(item.label == "Assistance received during this encounter" for item in faculty.selectbox)
+    assert not any(item.label == "Record objective assessment" for item in faculty.button)
+    assert store.get_attempt(resident, attempt_id) == original
+    assert progress.get_progress(resident) == recorded_progress
+
+
 def test_full_app_multiobjective_faculty_assessment_and_resident_progress(cohort):
     """Exercise the real dashboard hooks, forms and persistent resident view."""
     from test_curriculum_assignment import evidence_payload
