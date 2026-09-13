@@ -82,7 +82,7 @@ def test_existing_shared_gate_remains_closed_until_password(monkeypatch):
     assert not at.selectbox
     at.text_input[0].set_value("local-shared-test-only")
     click(at, "Enter")
-    assert any(w.label == "Clinical surface" for w in at.selectbox)
+    assert any(w.label == "Clinical problem" for w in at.selectbox)
     click(at, "Begin Encounter")
     assert at.session_state.state["case_id"] == "PS001"
     assert not any("Developer" in e.label for e in at.expander)

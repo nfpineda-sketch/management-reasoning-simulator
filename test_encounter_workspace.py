@@ -23,7 +23,7 @@ def test_record_preserves_all_content_without_changing_source():
     assert encounter_sections([]) == ([], [], [], [])
 
 
-def test_both_clinical_surfaces_render_handover_and_complete_record(monkeypatch):
+def test_generated_problems_render_handover_and_complete_record(monkeypatch):
     monkeypatch.setenv('MRS_AUTH_MODE', 'shared')
     for index in (0, 1):
         at = AppTest.from_file(str(Path(__file__).with_name('app.py')), default_timeout=20)

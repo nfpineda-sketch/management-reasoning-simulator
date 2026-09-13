@@ -42,8 +42,8 @@ def test_exploration_and_problem_generation_are_isolated_from_treatment(monkeypa
     at.secrets['APP_PASSWORD']='local-test'
     at.session_state['_shared_access_granted']=True
     at.run()
-    launch=next(w for w in at.selectbox if w.label=='Clinical surface')
-    launch.set_value(next(v for v in launch.options if v.startswith('R1-03'))).run()
+    launch=next(w for w in at.selectbox if w.label=='Clinical problem')
+    launch.set_value('R1-03').run()
     next(b for b in at.button if b.label=='Begin Encounter').click().run()
     assert not at.exception
     before=deepcopy(at.session_state.state)

@@ -25,7 +25,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.14.2", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.14.3", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -64,7 +64,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.14.2-clinical-encounter"
+SIMULATOR_VERSION = "0.14.3-clinical-encounter"
 
 
 def faculty_access():
@@ -508,7 +508,7 @@ def clamp(x, lo=0.0, hi=1.0):
 
 def reset_session():
     st.session_state.started = False
-    st.session_state.selected_case = "PS001 · Tachyarrhythmia in an Acutely Ill Patient"
+    st.session_state.selected_case = "R1-03"
     st.session_state.state = deepcopy(INITIAL_STATE)
     st.session_state.events = []
     st.session_state.history = []
@@ -3433,6 +3433,19 @@ def begin_decision_review(trace, state):
     st.session_state.expert_comparison_responses = {}
 
 
+def generate_problem_config(challenge_id):
+    from curriculum import CHALLENGES
+    from encounter_generator import generate_encounter
+    if challenge_id not in CHALLENGES:
+        raise ValueError("Choose an implemented clinical problem.")
+    with st.spinner("Preparing your encounter..."):
+        generated = generate_encounter(challenge_id, INITIAL_STATE,
+            api_key=_runtime_secret("OPENAI_API_KEY"),
+            model=_runtime_secret("MRS_GENERATOR_MODEL") or "gpt-5-mini")
+    return {"state_factory": lambda: deepcopy(generated["state"]),
+            "presentation": generated["presentation"]}
+
+
 def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     """Start a clean repeat attempt while preserving only the prospective plan."""
     context = globals().get("ACCOUNT_CONTEXT")
@@ -3441,8 +3454,9 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
         choice = (st.session_state.get("encounter_assignment") or {}).get("challenge_id")
         start_encounter(context, INITIAL_STATE, reset_session, choice, adaptation_plan, prior_attempt_record)
         return {"adaptation_plan": deepcopy(adaptation_plan)}
-    selected = st.session_state.get("selected_case")
-    cfg = CASE_CONFIGS[selected]
+    selected = (st.session_state.state.get("encounter_spec") or {}).get("challenge_id") or "R1-03"
+    cfg = generate_problem_config(selected)
+    st.session_state.selected_case = selected
     current_attempt = max(1, int(st.session_state.get("attempt_number", 1)))
     carried_plan = {
         field: str((adaptation_plan or {}).get(field) or "").strip()
@@ -9627,7 +9641,7 @@ def render_event(event):
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
     st.write(event["text"])
 
-st.caption("Management Reasoning Simulator · Clinical encounter v0.14.2")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.14.3")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -9635,11 +9649,13 @@ if not st.session_state.started:
     if ACCOUNT_CONTEXT:
         render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
         st.stop()
-    st.subheader("Select encounter")
+    st.subheader("Choose a clinical problem")
+    problem_ids = list(CHALLENGES)
+    previous_problem = st.session_state.get("selected_case")
     selected = st.selectbox(
-        "Clinical surface",
-        list(CASE_CONFIGS.keys()) + [key + " · " + value["title"] for key, value in CHALLENGES.items()],
-        index=(list(CASE_CONFIGS.keys()).index(st.session_state.get("selected_case")) if st.session_state.get("selected_case") in CASE_CONFIGS else 0),
+        "Clinical problem", problem_ids,
+        index=problem_ids.index(previous_problem) if previous_problem in problem_ids else 0,
+        format_func=lambda key: key + " · " + CHALLENGES[key]["title"],
         label_visibility="collapsed",
     )
     st.session_state.selected_case = selected
@@ -9648,15 +9664,7 @@ if not st.session_state.started:
         "Ask for information, order tests, perform interventions, and reassess as the case evolves."
     )
     if st.button("Begin Encounter", type="primary"):
-        if selected in CASE_CONFIGS:
-            cfg = CASE_CONFIGS[selected]
-        else:
-            from encounter_generator import generate_encounter
-            with st.spinner("Preparing your encounter..."):
-                generated = generate_encounter(selected.split(" · ")[0], INITIAL_STATE,
-                    api_key=_runtime_secret("OPENAI_API_KEY"), model=_runtime_secret("MRS_GENERATOR_MODEL") or "gpt-5-mini")
-            cfg = {"state_factory": lambda: deepcopy(generated["state"]), "presentation": generated["presentation"]}
-            st.session_state.selected_case = list(CASE_CONFIGS.keys())[0]
+        cfg = generate_problem_config(selected)
         st.session_state.state = cfg["state_factory"]()
         st.session_state.events = []
         st.session_state.history = []
@@ -10503,6 +10511,6 @@ if faculty_access():
 
 if ACCOUNT_CONTEXT:
     save_session(ACCOUNT_CONTEXT)
-st.caption("Management Reasoning Simulator · Clinical encounter v0.14.2")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.14.3")
 
 # Compatibility marker for v0.6.0.27 regression lineage.
