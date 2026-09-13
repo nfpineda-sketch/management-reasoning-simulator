@@ -118,3 +118,20 @@ def test_unresponsive_patient_cannot_supply_new_history(bedside):
     assert not any(b.label in {'Ask', 'Ask about this topic'} for b in bedside.button)
     assert any('cannot provide a history' in message.value for message in bedside.info)
     assert bedside.session_state.state == live
+
+
+def test_patient_answers_screenshot_question_and_targeted_followup(bedside):
+    before = deepcopy(bedside.session_state.state)
+    widget(bedside.radio, 'Encounter').set_value('Talk').run()
+    widget(bedside.text_input, 'Ask the patient').set_value('How can I help you?').run()
+    widget(bedside.button, 'Ask').click().run()
+    assert not bedside.exception
+    reply = bedside.session_state.events[-1]
+    assert reply['kind'] == 'patient_history'
+    assert 'presents with' in reply['text']
+    assert 'urinate' not in reply['text'] and 'unavailable' not in reply['text']
+    widget(bedside.text_input, 'Ask the patient').set_value('¿Le arde al orinar?').run()
+    widget(bedside.button, 'Ask').click().run()
+    assert not bedside.exception
+    assert 'burned when I urinate' in bedside.session_state.events[-1]['text']
+    assert bedside.session_state.state == before

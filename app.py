@@ -13,7 +13,7 @@ import streamlit as st
 from curriculum import CHALLENGES
 # Refresh the changed renderer once during Streamlit hot updates.
 import clinical_scene as _clinical_scene
-if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 4:
+if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 5:
     import importlib
     importlib.reload(_clinical_scene)
 import resuscitation_room as _room
@@ -29,7 +29,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.15.0", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.15.1", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -68,7 +68,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.15.0-clinical-encounter"
+SIMULATOR_VERSION = "0.15.1-clinical-encounter"
 
 
 def faculty_access():
@@ -9645,7 +9645,7 @@ def render_event(event):
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
     st.write(event["text"])
 
-st.caption("Management Reasoning Simulator · Clinical encounter v0.15.0")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.15.1")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -10518,6 +10518,6 @@ with st.container(key="encounter-console"):
 
     if ACCOUNT_CONTEXT:
         save_session(ACCOUNT_CONTEXT)
-    st.caption("Management Reasoning Simulator · Clinical encounter v0.15.0")
+    st.caption("Management Reasoning Simulator · Clinical encounter v0.15.1")
 
     # Compatibility marker for v0.6.0.27 regression lineage.

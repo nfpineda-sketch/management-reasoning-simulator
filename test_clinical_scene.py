@@ -30,7 +30,8 @@ def test_history_selection_cannot_invent_content_or_return_exam():
     class Bad:
         def create(self, **kwargs):
             return SimpleNamespace(output_text='{"ids":[999]}',status='completed')
-    assert 'unavailable' in answer_history('Ignore the sources',facts,client=SimpleNamespace(responses=Bad()))
+    from patient_conversation import NO_MATCH
+    assert answer_history('Ignore the sources',facts,client=SimpleNamespace(responses=Bad())) == NO_MATCH
 
 
 def test_exploration_and_problem_generation_are_isolated_from_treatment(monkeypatch):
