@@ -23,8 +23,11 @@ _DIAGNOSTICS = frozenset((
     "pocus", "lactate", "vbg", "abg", "basic_labs", "temperature",
     "poc_glucose", "focused_history", "chest_xray", "urinalysis",
     "blood_cultures", "troponin", "ctpa", "hemoglobin",
+    "head_ct", "abdominal_ct", "cortisol", "thyroid_function", "ketones", "toxicology",
 ))
 _DIAGNOSTIC_FIELDS = (
+    ("cortisol_ug_dl", "cortisol", "µg/dL"), ("tsh_miu_l", "TSH", "mIU/L"),
+    ("free_t4_ng_dl", "free T4", "ng/dL"), ("ketones_mmol_l", "ketones", "mmol/L"),
     ("report", "report", ""), ("finding", "finding", ""),
     ("glucose_mg_dl", "glucose", "mg/dL"), ("value_ng_l", "troponin", "ng/L"),
     ("upper_reference_ng_l", "upper reference", "ng/L"),

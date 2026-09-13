@@ -7,7 +7,13 @@ from types import SimpleNamespace
 import pytest
 
 from cognitive_catalog import BIAS_CHALLENGES, BIAS_CONTEXTS, FAMILY_LABELS
-from cognitive_generator import GENERATOR_VERSION, SPEC_VERSION, generate_cognitive_encounter
+from cognitive_generator import GENERATOR_VERSION, SPEC_VERSION, generate_cognitive_encounter as _generate_cognitive_encounter
+
+
+def generate_cognitive_encounter(*args, **kwargs):
+    """Existing-bank regressions explicitly exercise the retained authored sandbox."""
+    kwargs.setdefault("generation_mode", "authored")
+    return _generate_cognitive_encounter(*args, **kwargs)
 
 
 def base_state():

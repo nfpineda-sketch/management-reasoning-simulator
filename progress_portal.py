@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import streamlit as st
 
 from account_store import AccountError
+from competency_mapping import objective_is_eligible
 from objectives import (
     OBJECTIVES, DEPTH_LEVELS, AUTONOMY_LEVELS,
     DEPTH_DESCRIPTIONS, AUTONOMY_DESCRIPTIONS, evidence_items,
@@ -85,11 +86,14 @@ def _progress_table(goals):
         "Objective": _objective_label(goal["objective_id"]),
         "Satisfactory observations": str(goal["count"]) + "/" + str(goal["target"]),
         "Assessed encounters": goal.get("assessed_count", 0),
+        "Needs improvement": goal.get("needs_improvement_count", 0),
         "Status": goal["status"].replace("_", " ").capitalize(),
+        "Follow-up": "Review later concerns" if goal.get("review_recommended") else (
+            str(goal.get("post_confirmation_count", 0)) + " observations since confirmation" if goal.get("post_confirmation_count") else "—"),
         "Scope": goal["scope"] if goal["supported"] else "Not supported by the current encounter engine",
     } for goal in goals], hide_index=True)
     st.caption("These are configurable program targets. One completed encounter may contribute to several objectives. Each objective can receive at most one active observation per encounter. Only faculty-reviewed satisfactory observations increase the counter; depth and autonomy describe that observation without multiplying it.")
-    st.caption("Reaching the numeric target stops additional credit for that objective. The full encounter record remains available. Faculty confirmation is a separate judgment about the simulated component, not certification of a workplace EPA.")
+    st.caption("Observation continues after the target and after faculty confirmation. New strengths and concerns remain in the record; they never automatically award or revoke achievement. Faculty confirmation concerns the simulated component and does not certify a workplace EPA.")
     for goal in goals:
         _render_history(goal)
 
@@ -119,15 +123,13 @@ def render_attempt_assessment(context, record):
             _present_evidence(items)
         eligible = []
         for goal in goals:
-            if not goal["supported"]:
+            if not goal["supported"] or not objective_is_eligible(goal["objective_id"], record):
                 continue
             already_assessed = any(
                 row.get("attempt_id") == record["id"] and not row.get("voided")
                 for row in goal.get("observations", [])
             )
-            if goal.get("confirmed") or goal["count"] >= goal["target"]:
-                st.caption(_objective_label(goal["objective_id"]) + ": the target is closed to additional credit; this encounter's full trace is retained.")
-            elif already_assessed:
+            if already_assessed:
                 st.caption(_objective_label(goal["objective_id"]) + ": an assessment is already recorded for this encounter.")
             else:
                 eligible.append(goal["objective_id"])
@@ -140,6 +142,12 @@ def render_attempt_assessment(context, record):
         objective = OBJECTIVES[objective_id]
         st.write(objective["scope"])
         st.caption(objective["limitation"])
+        if objective.get("observable_behaviors"):
+            with st.expander("Competency evidence to review"):
+                for behavior in objective["observable_behaviors"]:
+                    st.write(behavior)
+                for mapping in objective.get("competency_mapping", []):
+                    st.markdown("[" + mapping["framework"] + " · " + mapping["code"] + "](" + mapping["source_url"] + ")")
         st.caption("Only assess what the recorded encounter demonstrates. Unobserved actions and skills outside this scope are not credited.")
         widget_prefix = prefix + "_" + objective_id
         try:
@@ -185,7 +193,6 @@ def render_attempt_assessment(context, record):
             messages = {
                 "credited": "Satisfactory observation saved. You can review another objective from this encounter.",
                 "recorded": "Assessment and feedback saved without increasing the satisfactory count.",
-                "capped": "The objective is already closed to additional credit. The encounter record is retained.",
                 "duplicate": "This encounter already has an assessment for that objective; no duplicate was added.",
             }
             _saved(context, messages[result["status"]])
@@ -205,16 +212,21 @@ def _render_faculty_decisions(context, progress, user_id, goals):
         st.write(f"Satisfactory observations: {goal['count']}/{goal['target']}")
         st.caption(goal["limitation"])
         if goal.get("confirmed"):
-            st.info("Faculty confirmation is recorded. Reopening retains the observation history and current count. Collecting more credit also requires a target above that count.")
+            st.info("Faculty confirmation is recorded. Continued observations remain available. Review new evidence to maintain confirmation or reopen the objective; both decisions retain its history.")
+            if goal.get("review_recommended"):
+                st.warning(str(goal["post_confirmation_needs_improvement_count"]) + " later observation(s) need improvement. Review the evidence and decide whether the existing confirmation remains appropriate.")
         elif goal["count"] < goal["target"]:
             st.info("The numeric target has not been reached. Confirmation becomes available after the target is reached.")
             return
         with st.form("faculty_decision_" + user_id + "_" + selected):
+            maintain = False
+            if goal.get("confirmed") and goal.get("post_confirmation_count"):
+                maintain = st.checkbox("Maintain confirmation after reviewing the continued evidence", value=False)
             reason = st.text_area("Reason for faculty decision", max_chars=4000)
-            label = "Reopen objective" if goal.get("confirmed") else "Confirm simulated-component achievement"
+            label = ("Record follow-up decision" if goal.get("post_confirmation_count") else "Reopen objective") if goal.get("confirmed") else "Confirm simulated-component achievement"
             submitted = st.form_submit_button(label)
         if submitted:
-            if goal.get("confirmed"):
+            if goal.get("confirmed") and not maintain:
                 progress.reopen(context["token"], user_id, selected, reason)
                 _saved(context, "Objective reopened. Previous observations and the count have been retained.")
             else:
@@ -235,7 +247,7 @@ def _render_target_settings(context, progress):
             target = st.number_input("Required satisfactory observations", min_value=1, max_value=1000,
                                      value=targets[objective_id], step=1)
             reason = st.text_area("Reason for target change", max_chars=4000)
-            st.caption("Targets cannot be lowered below an existing satisfactory count. Increasing a target does not reopen a faculty-confirmed objective; reopen it separately when needed.")
+            st.caption("Targets are review thresholds. Changing them preserves every observation and the recorded faculty decision; counts may exceed targets.")
             submitted = st.form_submit_button("Save program target")
         if submitted:
             progress.set_target(context["token"], objective_id, int(target), reason)

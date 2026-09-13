@@ -1,6 +1,8 @@
 """Render only documented results; missing measurements are never normal values."""
 
 TEST_LABELS = {
+    "head_ct": "Head CT", "abdominal_ct": "Abdominal CT", "cortisol": "Cortisol",
+    "thyroid_function": "Thyroid function", "ketones": "Ketones", "toxicology": "Toxicology",
     "pocus": "POCUS", "ecg": "ECG", "vbg": "Venous blood gas", "abg": "Arterial blood gas",
     "lactate": "Lactate", "basic_labs": "Laboratory results", "poc_glucose": "Bedside glucose",
     "temperature": "Temperature", "chest_xray": "Chest X-ray", "urinalysis": "Urinalysis",
@@ -8,6 +10,8 @@ TEST_LABELS = {
     "hemoglobin": "Hemoglobin",
 }
 FIELDS = {
+    "cortisol_ug_dl": "Cortisol (µg/dL)", "tsh_miu_l": "TSH (mIU/L)",
+    "free_t4_ng_dl": "Free T4 (ng/dL)", "ketones_mmol_l": "Ketones (mmol/L)",
     "lv": "LV", "rv": "RV", "pericardium": "Pericardium", "ivc": "IVC", "lungs": "Lungs",
     "ph": "pH", "pco2_mm_hg": "pCO₂ (mmHg)", "paco2_mm_hg": "PaCO₂ (mmHg)",
     "pao2_mm_hg": "PaO₂ (mmHg)", "bicarbonate_mmol_l": "HCO₃ (mmol/L)",

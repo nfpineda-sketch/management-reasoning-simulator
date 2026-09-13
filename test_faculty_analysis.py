@@ -72,6 +72,35 @@ def sample_analysis():
     }
 
 
+def test_cognitive_challenge_limits_rubric_and_generation_to_matching_competency():
+    record = sample_record()
+    record["challenge_id"] = "R1-05"
+    source = build_analysis_source(record)
+    rows = source["objective_rubric"]
+    assert {row["objective_id"] for row in rows} == set(SUPPORTED_OBJECTIVES) | {"R1-05"}
+    mapped = next(row for row in rows if row["objective_id"] == "R1-05")
+    assert mapped["observable_behaviors"] and mapped["evidence_requirements"]
+    assert {item["framework"] for item in mapped["competency_mapping"]} == {"ACGME", "Royal College"}
+    analysis = sample_analysis()
+    analysis["objectives"].append({**deepcopy(analysis["objectives"][0]), "objective_id": "R1-05"})
+    client = StubClient(analysis)
+    generated = generate_faculty_brief(record, api_key="fixture", model="test-model", client=client)
+    assert len(generated["analysis"]["objectives"]) == 7
+    schema = client.calls[0]["text"]["format"]["schema"]["properties"]["objectives"]
+    assert schema["minItems"] == schema["maxItems"] == 7
+    analysis["objectives"][-1]["objective_id"] = "R2-02"
+    with pytest.raises(FacultyAnalysisError):
+        generate_faculty_brief(record, api_key="fixture", model="test-model", client=StubClient(analysis))
+
+
+def test_legacy_six_objective_draft_stays_readable_for_cognitive_challenge():
+    record = sample_record()
+    record["challenge_id"] = "R1-05"
+    report = sample_brief(record)
+    report["prompt_version"] = "1.1"
+    assert validate_brief(report, record) == report
+
+
 def sample_brief(record=None, context="unknown"):
     record = record or sample_record()
     return {
@@ -266,7 +295,7 @@ def test_new_generation_is_compact_while_a_legacy_verbose_brief_remains_readable
     client = StubClient()
     current = generate_faculty_brief(record, api_key="key", model="test-model", client=client)
     schema = client.calls[0]["text"]["format"]["schema"]["properties"]
-    assert current["prompt_version"] == "1.1"
+    assert current["prompt_version"] == PROMPT_VERSION
     assert schema["strengths"]["maxItems"] == 3
     assert schema["review_points"]["maxItems"] == 3
     assert schema["key_decisions"]["maxItems"] == 3

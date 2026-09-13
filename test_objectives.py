@@ -33,17 +33,27 @@ def reflection(**extra):
     return answers
 
 
-def test_targets_remain_program_config_and_do_not_alias_encounter_challenges():
-    assert {key: value["target"] for key, value in OBJECTIVES.items()} == {
+def test_targets_preserve_legacy_scopes_and_add_explicitly_local_cognitive_objectives():
+    from cognitive_catalog import BIAS_CHALLENGES
+    assert {key: value["target"] for key, value in OBJECTIVES.items() if key not in BIAS_CHALLENGES} == {
         "TD1": 10, "F1": 15, "C1": 40, "C2": 25,
         "C3": 20, "C4": 20, "C14": 50, "C15": 5,
     }
-    assert not OBJECTIVES.keys() & CHALLENGES.keys()
+    assert OBJECTIVES.keys() & CHALLENGES.keys() == BIAS_CHALLENGES.keys()
+    for key in BIAS_CHALLENGES:
+        value = OBJECTIVES[key]
+        assert value["target"] == 3
+        assert value["challenge_id"] == key and value["competency_mapping"]
+        assert value["observable_behaviors"] and value["evidence_requirements"]
     assert {key for key, value in OBJECTIVES.items() if not value["supported"]} == {"C2", "C15"}
-    for value in OBJECTIVES.values():
+    for key, value in OBJECTIVES.items():
         assert value["scope"] and value["limitation"]
-        assert "not independently verified" in value["target_source"]
-        assert value["assessment_scope"] == "simulated_management_component"
+        if key not in BIAS_CHALLENGES:
+            assert "not independently verified" in value["target_source"]
+        else:
+            assert "local" in value["target_source"].lower()
+        assert value["assessment_scope"] == (
+            "simulated_reasoning_component" if key in BIAS_CHALLENGES else "simulated_management_component")
     assert DEPTH_LEVELS == ("foundational", "integrated", "complex")
     assert AUTONOMY_LEVELS == ("guided", "prompted", "independent")
 

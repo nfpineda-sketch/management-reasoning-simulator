@@ -41,5 +41,5 @@ def test_same_history_does_not_determine_rhythm_response():
 def test_other_challenges_keep_legacy_engine_coupling():
     engine=load_engine()
     for challenge in ('R1-04','R2-01'):
-        case=generate_encounter(challenge,engine['INITIAL_STATE'],seed=17)
+        case=generate_encounter(challenge,engine['INITIAL_STATE'],seed=17,generation_mode='authored')
         assert not case['state']['hidden'].get('rhythm_coupling_v2')

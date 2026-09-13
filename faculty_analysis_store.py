@@ -156,3 +156,28 @@ class FacultyBriefStore:
                  report["model"], assistance_context, report["generated_at"], int(time.time()),
                  actor["id"], encoded))
             return {**report, "brief_id": brief_id}
+
+    def get_for_export(self, token, attempt_id, brief_id):
+        """Authorize an exact private PDF source, including cached downloads.
+
+        Knowing an encounter or report ID, or owning the encounter as a resident,
+        never grants access. Only the current database role and frozen source do.
+        """
+        with self.accounts._transaction() as connection:
+            if not self.accounts._sqlite:
+                self._execute(connection, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+            actor = self.accounts._actor(connection, token, STAFF)
+            record = self._record(connection, actor, attempt_id)
+            if not isinstance(brief_id, str) or not brief_id or len(brief_id) > 200:
+                raise AccountError("Choose a saved faculty analysis.")
+            row = self._execute(connection, "SELECT * FROM mrs_faculty_briefs WHERE id = ? AND attempt_id = ?",
+                                (brief_id, attempt_id)).fetchone()
+            if (row is None or row["source_hash"] != source_fingerprint(record)
+                    or row["attempt_revision"] != record["revision"]):
+                raise AccountError("This faculty analysis does not match the completed encounter.")
+            try:
+                report = json.loads(row["report_json"])
+            except (TypeError, ValueError):
+                raise AccountError("The saved faculty analysis could not be read.") from None
+            report = _validated(report, record, row["assistance_context"])
+            return record, {**report, "brief_id": row["id"]}

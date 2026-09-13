@@ -1,15 +1,14 @@
-"""Bounded encounter composition for management and cognitive challenges.
+"""Generate new clinical cases and retain explicit authored sandbox compatibility.
 
-The optional model selects from reviewed *software* profiles and English scene
-options. It cannot supply physiology, diagnoses, treatments, or free-form patient
-facts. These are computationally tested teaching variants, not validated clinical
-models. Cognitive challenges dispatch to distinct authored clinical families;
-the three earlier foundations retain their original circulatory profiles.
-The selected family's state engine is responsible for every intervention.
+The default path authors complete new patient facts, findings and declarative
+trajectories, then independently screens consistency before launch. Diagnoses
+are not selected from a fixed family bank. Runtime treatment/ECG capabilities
+remain explicit and finite. Failure never silently substitutes an authored case.
 
-Save ``spec`` with the attempt; replay must use it rather than call the model
-again. ``spec`` and ``state`` are server-side objects and contain the undisclosed
-curriculum objective. Only ``presentation`` is intended for the learner at entry.
+Explicit profile/family/variant identifiers or generation_mode="authored" retain
+previous software-tested teaching cases for faculty replay/regression. Neither
+path constitutes expert clinical validation. Save spec with the attempt; replay
+uses frozen case data rather than regenerating the patient.
 """
 
 from __future__ import annotations
@@ -23,7 +22,7 @@ import secrets
 from typing import Any
 
 
-GENERATOR_VERSION = "0.16.0"
+GENERATOR_VERSION = "0.17.0"
 SPEC_VERSION = "mrs.ps001.encounter.v1"
 DEFAULT_MODEL = "gpt-5-mini"
 SUPPORTED_CHALLENGES = ("R1-03", "R1-04", "R2-01")
@@ -210,8 +209,12 @@ def generate_encounter(
     client: Any = None,
     family_id: str | None = None,
     variant_id: str | None = None,
+    generation_mode: str = "novel",
+    review_model: str | None = None,
 ) -> dict:
-    """Build a frozen family encounter; provider failure returns a local variant.
+    """Author and review a novel frozen case; failure requires explicit retry.
+
+    Explicit authored identifiers/mode retain the legacy sandbox/replay path.
 
     Fixed profile/family/variant identifiers are intended for a faculty sandbox. Access
     control belongs to the calling service, not to this pure composition module.
@@ -219,12 +222,17 @@ def generate_encounter(
     not guaranteed deterministic. Store the returned specification to replay it.
     """
     from cognitive_catalog import BIAS_CHALLENGES
+    if generation_mode not in {"novel", "authored"}:
+        raise ValueError("Unknown generation mode.")
+    if generation_mode == "novel" and profile_id is None and family_id is None and variant_id is None:
+        from generated_case import generate_ai_encounter
+        return generate_ai_encounter(challenge_id, base_state, api_key, model, seed, client, review_model)
     if challenge_id in BIAS_CHALLENGES:
         if profile_id is not None:
             raise ValueError("Use a clinical family and patient variant for this challenge.")
         from cognitive_generator import generate_cognitive_encounter
         return generate_cognitive_encounter(challenge_id, base_state, api_key, model, seed,
-                                             family_id, variant_id, client)
+                                             family_id, variant_id, client, generation_mode="authored")
     if family_id is not None or variant_id is not None:
         raise ValueError("Clinical-family selection applies to cognitive challenges.")
     if challenge_id not in SUPPORTED_CHALLENGES:

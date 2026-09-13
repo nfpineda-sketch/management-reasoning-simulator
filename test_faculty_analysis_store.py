@@ -10,7 +10,7 @@ import uuid
 import pytest
 
 from account_store import AccountError, AccountStore
-from faculty_analysis import source_fingerprint
+from faculty_analysis import source_fingerprint, SUPPORTED_OBJECTIVES
 from faculty_analysis_store import FacultyBriefStore
 from objectives import OBJECTIVES
 from progress_store import ProgressStore
@@ -64,7 +64,7 @@ def brief(record, assistance_context="unknown"):
                             "depth": None, "autonomy": None, "context": "Synthetic reassessment",
                             "evidence_refs": [], "feedback": "Review a fuller encounter.",
                             "questions": ["What would determine the next action?"]}
-                           for objective_id, definition in OBJECTIVES.items() if definition["supported"]],
+                           for objective_id in SUPPORTED_OBJECTIVES],
             "learning_cycle": "Only the recorded reassessment is available; reflection is not inferred.",
             "limits": ["This generated draft does not register an assessment or establish competence."],
         },
@@ -82,6 +82,29 @@ def rows(accounts):
     with accounts._transaction() as connection:
         return [dict(row) for row in accounts._execute(connection,
             "SELECT * FROM mrs_faculty_briefs ORDER BY created_at, id").fetchall()]
+
+
+def test_private_pdf_source_is_denied_to_owner_other_resident_and_revoked_staff(cohort):
+    accounts, store, users = cohort
+    attempt_id, report = current_brief(cohort)
+    saved = store.save(users["faculty"]["token"], attempt_id, report)
+    record, exported = store.get_for_export(users["faculty"]["token"], attempt_id, saved["brief_id"])
+    assert record["id"] == attempt_id and exported == saved
+    for actor in ("resident", "other"):
+        with pytest.raises(AccountError):
+            store.get_for_export(users[actor]["token"], attempt_id, saved["brief_id"])
+    accounts.update_user(users["admin"]["token"], users["faculty"]["id"], role="resident", training_year=1)
+    with pytest.raises(AccountError):
+        store.get_for_export(users["faculty"]["token"], attempt_id, saved["brief_id"])
+
+
+def test_private_export_cannot_substitute_report_from_another_encounter(cohort):
+    accounts, store, users = cohort
+    attempt_id, report = current_brief(cohort)
+    saved = store.save(users["faculty"]["token"], attempt_id, report)
+    other = completed_attempt(accounts, users["resident"]["token"])
+    with pytest.raises(AccountError, match="does not match"):
+        store.get_for_export(users["faculty"]["token"], other, saved["brief_id"])
 
 
 def test_draft_is_durable_in_new_process_and_never_changes_progress_or_source(cohort):

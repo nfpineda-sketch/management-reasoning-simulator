@@ -50,8 +50,9 @@ class CognitiveCatalogTests(unittest.TestCase):
                 self.assertTrue(set(challenge["evidence_fields"]) <= existing_fields)
                 self.assertGreaterEqual(len(challenge["debrief_questions"]), 2)
                 self.assertTrue(all(q.endswith("?") for q in challenge["debrief_questions"]))
-                self.assertEqual(challenge["acgme"], "Local formative objective")
-                self.assertEqual(challenge["royal_college"], "Local formative objective")
+                self.assertIn("MK2", challenge["acgme"])
+                self.assertTrue(challenge["royal_college"])
+                self.assertTrue(challenge["competency_mapping"])
                 self.assertNotIn(challenge["bias_id"].replace("_", " "), challenge["title"].lower())
                 self.assertNotIn("bias", challenge["title"].lower())
 

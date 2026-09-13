@@ -8,6 +8,7 @@ from pypdf import PdfReader
 
 from faculty_report import render_faculty_brief_pdf
 from objectives import OBJECTIVES
+from faculty_analysis import SUPPORTED_OBJECTIVES, PROMPT_VERSION
 
 
 def brief_example():
@@ -70,7 +71,7 @@ def brief_example():
             "evidence_refs": [reference], "analysis": interpretation, "question": question,
         })
     for objective_id, entry in OBJECTIVES.items():
-        if not entry["supported"]:
+        if objective_id not in SUPPORTED_OBJECTIVES:
             continue
         sufficient = objective_id in {"TD1", "F1", "C1"}
         report["analysis"]["objectives"].append({
@@ -222,6 +223,29 @@ def test_concise_pdf_keeps_airway_review_concern_and_plain_language():
     assert "without inferring unrecorded skill performance" in text
     assert "airway_prepared" not in text
     assert "airway_prepared" in report["analysis"]["review_points"][0]
+
+
+@pytest.mark.parametrize("challenge", ["R1-05", "R1-06", "R2-02", "R2-03", "R1-07", "R2-04", "R2-05", "R3-01"])
+def test_mapped_challenge_brief_remains_two_pages_and_full_report_has_sources(challenge):
+    report, record = brief_example()
+    record["challenge_id"] = challenge
+    report["prompt_version"] = PROMPT_VERSION
+    report["analysis"]["objectives"].append({
+        **deepcopy(report["analysis"]["objectives"][0]),
+        "objective_id": challenge,
+        "rationale": "The recorded decision and later response support review of this challenge-specific reasoning behavior.",
+    })
+    compact = PdfReader(BytesIO(render_faculty_brief_pdf(report, record)))
+    assert len(compact.pages) == 2
+    assert challenge in compact.pages[0].extract_text()
+    assert "Royal College" in compact.pages[1].extract_text()
+    full = PdfReader(BytesIO(render_faculty_brief_pdf(report, record, compact=False)))
+    text = "\n".join(page.extract_text() for page in full.pages)
+    assert "Competency correspondence" in text and "ACGME" in text and "Royal College" in text
+    links = [str(annotation.get_object()["/A"]["/URI"])
+             for page in full.pages for annotation in page.get("/Annots", [])
+             if annotation.get_object().get("/A", {}).get("/S") == "/URI"]
+    assert all(mapping["source_url"] in links for mapping in OBJECTIVES[challenge]["competency_mapping"])
 
 
 @pytest.mark.parametrize("app_url", ["javascript:alert(1)", "https://user:secret@faculty.example/", "file:///report", "https:///missing-host"])

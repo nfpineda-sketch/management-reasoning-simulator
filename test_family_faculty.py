@@ -61,6 +61,21 @@ def test_glucose_is_evidence_only_after_its_documented_measurement():
     }
 
 
+def test_generated_case_diagnostics_are_included_only_when_available():
+    record = sample_record()
+    event = _event(record)
+    for key, scalar in (("cortisol", "cortisol_ug_dl"), ("thyroid_function", "tsh_miu_l"), ("ketones", "ketones_mmol_l")):
+        for side in ("state_before", "state_after"):
+            event[side]["diagnostics"][key] = {"time_min": 2, scalar: 1.5, "private_truth": "DO_NOT_SEND"}
+    event["state_after"]["diagnostics"]["head_ct"] = {"time_min": 2, "report": "Recorded CT result."}
+    event["state_after"]["diagnostics"]["abdominal_ct"] = {"time_min": 50, "report": "FUTURE_RESULT"}
+    selected = build_analysis_source(record)["decision_events"][0]
+    assert "cortisol" not in selected["state_before"]["diagnostics_available"]
+    assert selected["state_after"]["diagnostics_available"]["cortisol"]["cortisol_ug_dl"] == 1.5
+    assert selected["state_after"]["diagnostics_available"]["head_ct"]["report"] == "Recorded CT result."
+    assert "FUTURE_RESULT" not in json.dumps(selected) and "DO_NOT_SEND" not in json.dumps(selected)
+
+
 def test_ctpa_actions_preserve_delivered_report_and_consultation_without_hidden_spec():
     record = sample_record()
     event = _event(record)

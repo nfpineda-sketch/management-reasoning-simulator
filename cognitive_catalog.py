@@ -5,7 +5,7 @@ of a learner. The catalog does not diagnose cognitive bias, grade competence, or
 change patient physiology. Keep this metadata server-side during an encounter.
 """
 
-CATALOG_VERSION = "0.1.0"
+CATALOG_VERSION = "0.2.0"
 
 FAMILY_LABELS = {
     "pneumonia": "Pneumonia with systemic illness",
@@ -54,8 +54,6 @@ BIAS_CHALLENGES = {
             "Which subsequent findings supported or challenged it?",
             "How did that comparison change your next management decision?",
         ),
-        "acgme": "Local formative objective",
-        "royal_college": "Local formative objective",
     },
     "R1-06": {
         "title": "Check whether the problem is fully addressed",
@@ -74,8 +72,6 @@ BIAS_CHALLENGES = {
             "What did you reassess before considering the immediate problem addressed?",
             "What findings would prompt further treatment or observation?",
         ),
-        "acgme": "Local formative objective",
-        "royal_college": "Local formative objective",
     },
     "R2-02": {
         "title": "Seek evidence that challenges the working explanation",
@@ -94,8 +90,6 @@ BIAS_CHALLENGES = {
             "How did you interpret the evidence that fitted it least well?",
             "What did those findings change about your management?",
         ),
-        "acgme": "Local formative objective",
-        "royal_college": "Local formative objective",
     },
     "R2-03": {
         "title": "Distinguish the current patient from recent cases",
@@ -114,8 +108,6 @@ BIAS_CHALLENGES = {
             "What distinguished this patient from those earlier cases?",
             "Which current findings carried the most weight in your management?",
         ),
-        "acgme": "Local formative objective",
-        "royal_college": "Local formative objective",
     },
     "R1-07": {
         "title": "Assess the patient beyond the handover",
@@ -133,8 +125,6 @@ BIAS_CHALLENGES = {
             "What did your own assessment add or change?",
             "How did that affect your immediate priorities?",
         ),
-        "acgme": "Local formative objective",
-        "royal_college": "Local formative objective",
     },
     "R2-04": {
         "title": "Recognize illness outside the usual pattern",
@@ -153,8 +143,6 @@ BIAS_CHALLENGES = {
             "What evidence kept a consequential alternative under consideration?",
             "How did you manage that uncertainty while evaluating the patient?",
         ),
-        "acgme": "Local formative objective",
-        "royal_college": "Local formative objective",
     },
     "R2-05": {
         "title": "Explain what remains after the first finding",
@@ -172,8 +160,6 @@ BIAS_CHALLENGES = {
             "Which abnormalities or immediate needs remained unresolved?",
             "How did you decide whether to continue evaluation or change treatment?",
         ),
-        "acgme": "Local formative objective",
-        "royal_college": "Local formative objective",
     },
     "R3-01": {
         "title": "Choose the next action from the observed response",
@@ -192,7 +178,24 @@ BIAS_CHALLENGES = {
             "What response or potential harm would make you modify that plan?",
             "When was another intervention needed, and when was reassessment appropriate?",
         ),
-        "acgme": "Local formative objective",
-        "royal_college": "Local formative objective",
     },
 }
+
+
+# Curriculum/report consumers receive the same versioned source links used by
+# the faculty assessment catalog. These remain internal during an encounter.
+from competency_mapping import mapping_for_challenge
+
+for _challenge_id, _challenge in BIAS_CHALLENGES.items():
+    _mapping = mapping_for_challenge(_challenge_id)
+    _challenge.update(_mapping)
+    _challenge["acgme"] = "; ".join(
+        link["code"] for link in _mapping["competency_mapping"]
+        if link["framework"] == "ACGME"
+    )
+    _challenge["royal_college"] = "; ".join(
+        dict.fromkeys(link["epa_id"] + " / " + link["code"]
+                      for link in _mapping["competency_mapping"]
+                      if link["framework"] == "Royal College")
+    )
+del _challenge_id, _challenge, _mapping

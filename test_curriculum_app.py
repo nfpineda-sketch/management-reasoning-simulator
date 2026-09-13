@@ -11,8 +11,23 @@ from objectives import OBJECTIVES
 APP = str(Path(__file__).with_name("app.py"))
 
 
+def authored_replay_fixture(monkeypatch):
+    """Exercise persistent legacy records without pretending they are AI authored."""
+    # Load both original aliases before patching either module. Otherwise an
+    # import during setattr retains the replay function after fixture teardown.
+    import curriculum_runtime
+    from encounter_generator import generate_encounter as real_generate
+    def authored_replay(*args, **kwargs):
+        kwargs["generation_mode"] = "authored"
+        kwargs["api_key"] = ""  # Deterministic replay never contacts an AI provider.
+        return real_generate(*args, **kwargs)
+    monkeypatch.setattr("encounter_generator.generate_encounter", authored_replay)
+    monkeypatch.setattr(curriculum_runtime, "generate_encounter", authored_replay)
+
+
 @pytest.fixture
 def cohort(tmp_path, monkeypatch):
+    authored_replay_fixture(monkeypatch)
     url = "sqlite:///" + str(tmp_path / "accounts.sqlite3")
     monkeypatch.setenv("MRS_AUTH_MODE", "accounts")
     monkeypatch.setenv("MRS_DATABASE_URL", url)
@@ -72,6 +87,7 @@ def assert_active_encounter_private(at):
 
 
 def test_existing_shared_gate_remains_closed_until_password(monkeypatch):
+    authored_replay_fixture(monkeypatch)
     monkeypatch.setenv("MRS_AUTH_MODE", "shared")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     at = AppTest.from_file(APP, default_timeout=20)
@@ -220,8 +236,9 @@ def test_full_app_faculty_brief_remains_visible_after_every_objective_is_assesse
     payload["session"].update(review_completed=True, encounter_ended=True)
     store.save_attempt(resident, attempt_id, payload, "completed", 0)
     progress = ProgressStore(store)
+    from competency_mapping import objective_is_eligible
     for objective_id, definition in OBJECTIVES.items():
-        if definition["supported"]:
+        if definition["supported"] and objective_is_eligible(objective_id, store.get_attempt(resident, attempt_id)):
             progress.assess(admin, attempt_id, objective_id, {
                 "satisfactory": True, "depth": "integrated", "autonomy": "guided",
                 "context": "Synthetic completed encounter used for dashboard regression.",

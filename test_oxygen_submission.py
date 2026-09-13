@@ -30,6 +30,9 @@ def submit(at, text):
 
 @pytest.fixture
 def encounter(monkeypatch):
+    # Exercise the authored historical encounter; novel AI launch is tested separately.
+    from test_curriculum_app import authored_replay_fixture
+    authored_replay_fixture(monkeypatch)
     monkeypatch.setenv("MRS_AUTH_MODE", "shared")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     at = AppTest.from_file(APP, default_timeout=20)

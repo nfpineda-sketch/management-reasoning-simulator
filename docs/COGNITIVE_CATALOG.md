@@ -1,8 +1,7 @@
 # Cognitive challenge catalog
 
 This catalog adds eight local formative objectives to the three existing
-management-reasoning objectives. Each new objective can select more than one
-clinical family. A bias label describes the teaching opportunity; it does not
+management-reasoning objectives. Each challenge can now generate a newly authored clinical scenario. A bias label describes the teaching opportunity; it does not
 establish that a learner displayed that bias. Year assignments are local exposure
 settings, not ACGME milestones, Royal College stages, or certification thresholds.
 
@@ -12,9 +11,22 @@ foundations remain selectable and are assigned after the new eligible objectives
 have been encountered. Subsequent assignment retains the existing latest-evidence
 gap and interleaving rules.
 
-## Catalog mapping
+## Current generation
 
-`Yes` means the pairing is declared in `cognitive_catalog.py`. The case bank,
+All eleven challenges use novel AI case authoring by default in v0.17.0. Cases
+are not selected from the table below. The generated case must supply a coherent
+management dilemma, findings and action-dependent trajectory within the supported
+adult treatment and ECG capabilities. A separate automated review and local
+consistency checks gate launch. A failed generation does not launch a bank case.
+
+The eight cognitive challenges have specific primary-source competency mappings
+in [Competency mapping](COMPETENCY_MAPPING.md), including source codes, document
+locations, observable behaviors and limits of the simulated evidence.
+
+## Authored bank retained for replay and regression
+
+The table describes v0.16.0 authored compatibility only; it does not constrain
+new AI-authored diagnoses. `Yes` means the pairing is declared in `cognitive_catalog.py`. The case bank,
 generator, examination, investigations, and treatment engine must support a
 pairing before an encounter can be delivered. This table is not evidence of
 clinical validation or of successful publication.

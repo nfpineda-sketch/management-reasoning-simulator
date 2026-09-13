@@ -548,6 +548,9 @@ def _release_diagnostic(state, summary, available_time):
 
 def execute_family_bundle(state, parsed):
     """Execute a fully validated bundle atomically; all clocks are simulated minutes."""
+    if state.get("engine_family") == "generated":
+        from generated_engine import execute_generated_bundle
+        return execute_generated_bundle(state, parsed)
     if state.get("engine_family") not in FAMILIES:
         return _failure("This encounter does not have a supported clinical trajectory.")
     actions, error = _validate(state, parsed)
@@ -592,6 +595,9 @@ def execute_family_bundle(state, parsed):
 
 def current_findings(state):
     """Current examination with authored case findings and evolving surfaces."""
+    if state.get("engine_family") == "generated":
+        from generated_engine import current_findings as generated_findings
+        return generated_findings(state)
     o = state.get("observable", {})
     findings = deepcopy(_case(state).get("examination", {}))
     findings["General appearance"] = f"{o.get('mental_status', 'Not recorded')}. Respiratory effort: {o.get('work_of_breathing', 'Not recorded')}."
@@ -619,6 +625,9 @@ def current_findings(state):
 
 
 def clinical_update(state):
+    if state.get("engine_family") == "generated":
+        from generated_engine import clinical_update as generated_update
+        return generated_update(state)
     o = state.get("observable", {})
     return (f"BP {o.get('sbp')}/{o.get('dbp')} mmHg · HR {o.get('hr')}/min · "
             f"SpO₂ {o.get('spo2')}% · RR {o.get('respiratory_rate')}/min. "

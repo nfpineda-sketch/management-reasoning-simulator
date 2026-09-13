@@ -177,6 +177,12 @@ def widget(elements, label):
 
 @pytest.fixture
 def shared_app(monkeypatch):
+    # Historical authored-family integration is an explicit replay fixture.
+    from encounter_generator import generate_encounter as real_generate
+    def authored_replay(*args, **kwargs):
+        kwargs["generation_mode"] = "authored"
+        return real_generate(*args, **kwargs)
+    monkeypatch.setattr("encounter_generator.generate_encounter", authored_replay)
     monkeypatch.setenv("MRS_AUTH_MODE", "shared")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     app = AppTest.from_file(str(Path(__file__).with_name("app.py")), default_timeout=30)

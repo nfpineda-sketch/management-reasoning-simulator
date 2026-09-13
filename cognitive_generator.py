@@ -1,8 +1,9 @@
-"""Compose reproducible cognitive challenges from distinct authored ED families.
+"""Generate novel cases by default; preserve explicit authored sandbox replay.
 
-The model chooses a compatible family and patient variant. Clinical facts and
-the executable mechanism come from that variant; the model cannot invent tests,
-drug effects or diagnoses. Save the returned state/spec to replay an encounter.
+The default delegates to generated_case authoring and independent consistency
+screening. Code below that dispatch retains the prior family selector only for
+explicit authored mode or explicit family/variant requests. Learner launches do
+not use this compatibility fallback.
 """
 from copy import deepcopy
 import hashlib
@@ -12,12 +13,20 @@ import secrets
 
 from cognitive_catalog import BIAS_CHALLENGES, BIAS_CONTEXTS, CATALOG_VERSION
 
-GENERATOR_VERSION = "0.16.0"
+GENERATOR_VERSION = "0.17.0"
 SPEC_VERSION = "mrs.cognitive.encounter.v1"
 
 
 def generate_cognitive_encounter(challenge_id, base_state, api_key="", model="",
-                                 seed=None, family_id=None, variant_id=None, client=None):
+                                 seed=None, family_id=None, variant_id=None, client=None,
+                                 generation_mode="novel", review_model=None):
+    if generation_mode not in {"novel", "authored"}:
+        raise ValueError("Unknown generation mode.")
+    if generation_mode == "novel" and family_id is None and variant_id is None:
+        from generated_case import generate_ai_encounter
+        return generate_ai_encounter(challenge_id, base_state, api_key, model, seed, client, review_model)
+    # Explicit authored mode is retained for faculty sandbox/regression replay.
+    # Learner launch always uses the new default and never falls back to this bank.
     from clinical_cases import FAMILIES
     if challenge_id not in BIAS_CHALLENGES:
         raise ValueError("Choose an implemented cognitive challenge.")

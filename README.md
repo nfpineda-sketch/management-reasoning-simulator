@@ -1,23 +1,45 @@
-# Clinical encounter workspace v0.16.0
+# Clinical encounter workspace v0.17.0
 
-The development workspace now includes eight cognitive challenges across eight
-clinical families and sixteen authored patient variants, alongside the three
-existing management foundations. The optional AI selects a compatible patient;
-that patient's history, examinations, investigations, ECG profile, appearance and
-bounded treatment model stay together throughout the encounter. Without the
-provider, a local seeded selection uses the same cases.
+The development app authors a new clinical case with AI from any of the eleven
+management or cognitive challenges. It generates the patient, presenting concern,
+history, examination, investigations, electrical profile and response trajectories
+as one frozen case. A separate automated consistency review and executable-model
+checks must pass before launch. Generation failures stop launch with a retry;
+there is no silent substitution of an authored bank case.
 
-The cognitive learning focus is disclosed after the encounter, with questions
-about the learner's actual decisions and observations. No decision automatically
-establishes a cognitive bias or competence. Quantitative trajectories are teaching
-parameters requiring faculty review, not validated patient predictions.
+The diagnoses are not restricted to the previous eight families. Generation is
+bounded by the adult physiology, treatments and ECG patterns the simulator can
+actually render and execute. Automated checking is not expert clinical validation.
+Existing authored cases remain available internally for saved encounters and tests.
 
-- [Cognitive catalog and family mapping](docs/COGNITIVE_CATALOG.md)
-- [v0.16.0 scope and verification](docs/RELEASE_v0.16.0.md)
+After independent reflection is locked, a learner-facing AI Management Trace
+explains pivotal decisions, the stated model and expectations, observed responses
+and subsequent adaptation. Trend charts and evidence-linked decision cards are
+available on screen and in a PDF. Later reflection is distinguished from reasoning
+recorded during care. The full original encounter remains available separately.
+
+The eight cognitive challenges now have specific, cited ACGME Emergency Medicine
+Milestones and Royal College Emergency Medicine EPA component mappings. These are
+local educational alignments. Faculty confirm assessments; the app does not
+certify a full EPA or infer a cognitive bias from an outcome.
+
+Account-based progress continues after a local target or faculty confirmation.
+Later concerns can prompt faculty review without silently erasing the original
+confirmation. The private faculty analysis and PDF remain unavailable to residents.
+The existing expert-comparison draft remains pending faculty validation.
+
+- [Release scope, setup and verification](docs/RELEASE_v0.17.0.md)
+- [Clinical and cognitive challenges](docs/COGNITIVE_CATALOG.md)
+- [Specific competency mappings and primary sources](docs/COMPETENCY_MAPPING.md)
+- [Continuous observations and faculty review](docs/LONGITUDINAL_PROGRESS.md)
+- [Separate development database and activation status](docs/CLINICAL_DEV_DATABASE.md)
 
 Persistent bedside view: patient, monitor, serial 12-lead ECG, conversation,
-examination, investigations, treatment and reassessment.
-[Local setup](docs/UPDATE_v0.13.0.md).
+examination, investigations, treatment and reassessment. Only the development
+branch `clinical-encounter-v0.13` receives this release.
+
+The sections below describe earlier releases; use the v0.17.0 documents above for
+current generation, account activation and observation behavior.
 
 # Management Reasoning Simulator — Curriculum pilot v0.12.1
 

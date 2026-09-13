@@ -16,7 +16,7 @@ from faculty_portal import render_faculty_analysis
 PAYLOAD_VERSION = "mrs_attempt_v1"
 SESSION_FIELDS = (
     "started", "selected_case", "state", "events", "history", "management_trace",
-    "encounter_ended", "encounter_closed_trace", "encounter_closed_state",
+    "encounter_ended", "encounter_closed_trace", "encounter_closed_state", "encounter_closed_events",
     "encounter_closed_time_min", "review_prompts", "decision_review", "adaptation_plan",
     "adaptation_plan_user_edited", "review_completed", "review_stage", "active_review_index",
     "active_comparison_index", "review_autosave_revision", "expert_comparison_unlocked",
@@ -168,11 +168,11 @@ def render_dashboard(context, initial_state, reset_session):
         st.caption(f"These encounters are excluded from resident progress. {len(CHALLENGES)} challenges are available.")
         faculty_choice = st.selectbox("Management challenge", list(CHALLENGES), format_func=lambda key: key + " · " + CHALLENGES[key]["title"])
         with st.expander("Clinical and cognitive catalog"):
-            from cognitive_catalog import FAMILY_LABELS
             st.dataframe([
                 {"Code": key, "Learning focus": challenge["title"],
                  "Cognitive focus": challenge.get("bias_name", "Management reasoning"),
-                 "Clinical families": "; ".join(FAMILY_LABELS[family] for family in challenge.get("families", ())) or "Existing circulatory encounter"}
+                 "Scenario": "New AI-authored clinical case",
+                 "Competencies": challenge.get("acgme", "Management reasoning")}
                 for key, challenge in CHALLENGES.items()
             ], hide_index=True)
             st.caption("These are formative teaching opportunities. The catalog does not diagnose a learner's cognitive bias or establish competence.")
@@ -180,12 +180,13 @@ def render_dashboard(context, initial_state, reset_session):
     st.caption("Your encounter and reflection are saved to your account. Faculty in this pilot program can review them.")
     active = next((a for a in own if a["status"] == "active"), None)
     if st.button("Resume encounter" if active else "Begin Encounter", type="primary"):
+        from generated_case import GeneratedCaseError
         try:
             if active:
                 restore_attempt(context, active, reset_session)
             else:
                 start_encounter(context, initial_state, reset_session, faculty_choice)
-        except AccountError as exc:
+        except (AccountError, GeneratedCaseError) as exc:
             st.error(str(exc))
             st.stop()
         st.rerun()

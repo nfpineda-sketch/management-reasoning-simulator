@@ -1,4 +1,4 @@
-"""Faculty-reviewed, capped simulator evidence for one teaching program.
+"""Faculty-reviewed longitudinal simulator evidence for one teaching program.
 
 The configured targets are program choices, not certification requirements.
 No encounter or AI output earns credit without an explicit faculty assessment.
@@ -12,6 +12,7 @@ import time
 import uuid
 
 from account_store import AccountError
+from competency_mapping import objective_is_eligible, objective_evidence_is_eligible
 from objectives import AUTONOMY_LEVELS, DEPTH_LEVELS, OBJECTIVES, evidence_items
 
 
@@ -78,7 +79,8 @@ class ProgressStore:
                 confirmed INTEGER NOT NULL CHECK (confirmed IN (0,1)),
                 reason TEXT NOT NULL, actor_id TEXT NOT NULL REFERENCES mrs_users(id),
                 updated_at BIGINT NOT NULL, target_at_confirmation INTEGER,
-                count_at_confirmation INTEGER, PRIMARY KEY (user_id, objective_id)
+                count_at_confirmation INTEGER, observation_ids_json TEXT,
+                PRIMARY KEY (user_id, objective_id)
             )""",
             """CREATE TABLE IF NOT EXISTS mrs_progress_audit (
                 id TEXT PRIMARY KEY, action TEXT NOT NULL,
@@ -102,6 +104,14 @@ class ProgressStore:
             for column in ("target_at_confirmation", "count_at_confirmation"):
                 if column not in columns:
                     self._execute(connection, f"ALTER TABLE mrs_progress_confirmations ADD COLUMN {column} INTEGER")
+            if "observation_ids_json" not in columns:
+                self._execute(connection, "ALTER TABLE mrs_progress_confirmations ADD COLUMN observation_ids_json TEXT")
+            # Snapshot legacy confirmations before accepting continued evidence.
+            # IDs avoid ambiguous comparisons when assessments share a second.
+            for confirmation in self._execute(connection, "SELECT user_id, objective_id FROM mrs_progress_confirmations WHERE observation_ids_json IS NULL").fetchall():
+                ids = self._observation_ids(connection, confirmation["user_id"], confirmation["objective_id"])
+                self._execute(connection, "UPDATE mrs_progress_confirmations SET observation_ids_json = ? WHERE user_id = ? AND objective_id = ?",
+                              (_json(ids), confirmation["user_id"], confirmation["objective_id"]))
             for objective_id, definition in OBJECTIVES.items():
                 self._execute(connection, """INSERT INTO mrs_progress_targets
                     (objective_id, target, revision, updated_by, updated_at)
@@ -138,23 +148,31 @@ class ProgressStore:
             FROM mrs_progress_confirmations c JOIN mrs_users u ON u.id = c.actor_id
             WHERE c.user_id = ? AND c.objective_id = ?""", (user_id, objective_id)).fetchone()
 
+    def _observation_ids(self, connection, user_id, objective_id):
+        return sorted(row["id"] for row in self._execute(connection,
+            "SELECT id FROM mrs_progress_observations WHERE user_id = ? AND objective_id = ? AND voided_at IS NULL",
+            (user_id, objective_id)).fetchall())
+
     def _set_confirmation(self, connection, actor, user_id, objective_id, confirmed, reason):
         if confirmed:
             target = self._target(connection, objective_id)["target"]
             count = self._count(connection, user_id, objective_id)
+            observation_ids = _json(self._observation_ids(connection, user_id, objective_id))
         else:
             previous = self._confirmation(connection, user_id, objective_id)
             target = previous["target_at_confirmation"] if previous else None
             count = previous["count_at_confirmation"] if previous else None
+            observation_ids = previous["observation_ids_json"] if previous else "[]"
         self._execute(connection, """INSERT INTO mrs_progress_confirmations
             (user_id, objective_id, confirmed, reason, actor_id, updated_at,
-             target_at_confirmation, count_at_confirmation)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, objective_id) DO UPDATE SET
+             target_at_confirmation, count_at_confirmation, observation_ids_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, objective_id) DO UPDATE SET
             confirmed = excluded.confirmed, reason = excluded.reason,
             actor_id = excluded.actor_id, updated_at = excluded.updated_at,
             target_at_confirmation = excluded.target_at_confirmation,
-            count_at_confirmation = excluded.count_at_confirmation""",
-            (user_id, objective_id, int(confirmed), reason, actor["id"], int(time.time()), target, count))
+            count_at_confirmation = excluded.count_at_confirmation,
+            observation_ids_json = excluded.observation_ids_json""",
+            (user_id, objective_id, int(confirmed), reason, actor["id"], int(time.time()), target, count, observation_ids))
 
     @staticmethod
     def _observation(row):
@@ -202,6 +220,9 @@ class ProgressStore:
                 count = sum(item["satisfactory"] and not item["voided"] for item in observations)
                 confirmation = self._confirmation(connection, user["id"], objective_id)
                 confirmed = bool(confirmation and confirmation["confirmed"])
+                reviewed_ids = set(json.loads(confirmation["observation_ids_json"] or "[]")) if confirmation else set()
+                continued = [item for item in observations if not item["voided"] and item["id"] not in reviewed_ids] if confirmed else []
+                later_concerns = sum(not item["satisfactory"] for item in continued)
                 objectives.append({
                     **definition, "objective_id": objective_id, "target": target["target"],
                     "target_revision": target["revision"], "count": count,
@@ -214,6 +235,11 @@ class ProgressStore:
                     "confirmation": dict(confirmation) if confirmation else None,
                     "observations": observations,
                     "assessed_count": sum(not item["voided"] for item in observations),
+                    "needs_improvement_count": sum(not item["voided"] and not item["satisfactory"] for item in observations),
+                    "target_reached": count >= target["target"],
+                    "post_confirmation_count": len(continued),
+                    "post_confirmation_needs_improvement_count": later_concerns,
+                    "review_recommended": bool(confirmed and later_concerns),
                 })
             return {"user": user, "objectives": objectives}
 
@@ -222,8 +248,9 @@ class ProgressStore:
 
         Required assessment fields: satisfactory (bool), depth, autonomy,
         context, evidence_refs (nonempty list of evidence_items refs), notes.
-        Results: credited / recorded / capped / duplicate. Once capped or
-        confirmed, no new objective observation is inserted, even unsuccessful.
+        Results: credited / recorded / duplicate. Targets and confirmation never
+        stop new observations. Later concerns remain visible for faculty review;
+        neither improvement nor concern automatically changes confirmation.
         """
         with self.accounts._transaction(write=True) as connection:
             actor = self.accounts._actor(connection, token, STAFF)
@@ -240,6 +267,8 @@ class ProgressStore:
             session = payload.get("session") if isinstance(payload, dict) else None
             if not isinstance(session, dict) or session.get("review_completed") is not True:
                 raise AccountError("Review requires the resident's completed encounter reflection.")
+            if not objective_is_eligible(objective_id, self.accounts._attempt(attempt)):
+                raise AccountError("This objective does not match the saved clinical challenge.")
             existing = self._execute(connection, """SELECT id FROM mrs_progress_observations
                 WHERE attempt_id = ? AND objective_id = ? AND voided_at IS NULL""",
                 (attempt_id, objective_id)).fetchone()
@@ -248,8 +277,6 @@ class ProgressStore:
             if existing:
                 return {"status": "duplicate", "observation_id": existing["id"], "count": count, "target": target}
             confirmation = self._confirmation(connection, attempt["user_id"], objective_id)
-            if count >= target or (confirmation and confirmation["confirmed"]):
-                return {"status": "capped", "count": count, "target": target}
             if not isinstance(assessment, dict) or not isinstance(assessment.get("satisfactory"), bool):
                 raise AccountError("Choose whether the simulated component was demonstrated satisfactorily.")
             if assessment.get("depth") not in DEPTH_LEVELS:
@@ -266,6 +293,8 @@ class ProgressStore:
             if any(ref not in available for ref in refs):
                 raise AccountError("The selected evidence is not present in this completed encounter.")
             selected = [available[ref] for ref in refs]
+            if not objective_evidence_is_eligible(objective_id, selected):
+                raise AccountError("Select a recorded management decision to support this challenge assessment.")
             encoded_evidence = _json(selected)
             if len(encoded_evidence.encode("utf-8")) > 1_000_000:
                 raise AccountError("The selected evidence is too large to save.")
@@ -294,6 +323,8 @@ class ProgressStore:
             status = "credited" if assessment["satisfactory"] else "recorded"
             self._audit(connection, actor, status, attempt["user_id"], objective_id, observation_id,
                         {"target": target, "source_revision": attempt["revision"],
+                         "after_target": count >= target,
+                         "after_confirmation": bool(confirmation and confirmation["confirmed"]),
                          **({"ai_brief_id": ai_brief_id} if ai_brief_id is not None else {})})
             return {"status": status, "observation_id": observation_id,
                     "count": count + int(assessment["satisfactory"]), "target": target}
@@ -309,11 +340,7 @@ class ProgressStore:
             row = self._target(connection, objective_id)
             if row["target"] == target:
                 return {"target": target, "revision": row["revision"], "changed": False}
-            maximum = self._execute(connection, """SELECT COUNT(*) AS n FROM mrs_progress_observations
-                WHERE objective_id = ? AND satisfactory = 1 AND voided_at IS NULL
-                GROUP BY user_id ORDER BY n DESC LIMIT 1""", (objective_id,)).fetchone()
-            if maximum and maximum["n"] > target:
-                raise AccountError("The target cannot be lower than an existing accepted observation count.")
+            # A target is a review threshold, never a limit on accumulated evidence.
             self._execute(connection, """UPDATE mrs_progress_targets SET target = ?,
                 revision = revision + 1, updated_by = ?, updated_at = ? WHERE objective_id = ?""",
                 (target, actor["id"], int(time.time()), objective_id))
@@ -335,18 +362,20 @@ class ProgressStore:
             if count < target:
                 raise AccountError("The numeric target must be reached before faculty confirmation.")
             existing = self._confirmation(connection, user["id"], objective_id)
-            if existing and existing["confirmed"]:
+            current_ids = self._observation_ids(connection, user["id"], objective_id)
+            already_confirmed = bool(existing and existing["confirmed"])
+            if already_confirmed and current_ids == json.loads(existing["observation_ids_json"] or "[]"):
                 return {"status": "confirmed", "changed": False}
             self._set_confirmation(connection, actor, user["id"], objective_id, True, reason)
-            self._audit(connection, actor, "confirmed", user["id"], objective_id,
-                        details={"reason": reason, "count": count, "target": target})
+            self._audit(connection, actor, "confirmation_reviewed" if already_confirmed else "confirmed", user["id"], objective_id,
+                        details={"reason": reason, "count": count, "target": target,
+                                 "observation_ids": current_ids})
             return {"status": "confirmed", "changed": True}
 
     def reopen(self, token, user_id, objective_id, reason):
         """Remove confirmation, retaining all observations and numeric counts.
 
-        Reopening does not itself create capacity. An administrator must raise
-        the program target to collect more observations after the cap is met.
+        Continued observation is always available, including while confirmed.
         """
         with self.accounts._transaction(write=True) as connection:
             actor = self.accounts._actor(connection, token, STAFF)
@@ -379,7 +408,8 @@ class ProgressStore:
             self._audit(connection, actor, "voided", observation["user_id"], observation["objective_id"],
                         observation_id, {"reason": reason})
             confirmation = self._confirmation(connection, observation["user_id"], observation["objective_id"])
-            if confirmation and confirmation["confirmed"]:
+            if (confirmation and confirmation["confirmed"]
+                    and observation["id"] in json.loads(confirmation["observation_ids_json"] or "[]")):
                 self._set_confirmation(connection, actor, observation["user_id"], observation["objective_id"],
                                        False, "Assessment voided: " + reason)
                 self._audit(connection, actor, "reopened_after_void", observation["user_id"],

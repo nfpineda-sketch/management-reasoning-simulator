@@ -23,6 +23,7 @@ from reportlab.platypus import (
 )
 
 from objectives import AUTONOMY_LEVELS, DEPTH_LEVELS, OBJECTIVES, evidence_items
+from faculty_analysis import PROMPT_VERSION, SUPPORTED_OBJECTIVES, supported_objectives
 
 
 NAVY = colors.HexColor("#16324F")
@@ -129,7 +130,7 @@ def _validated_inputs(report, record):
     if not isinstance(analysis, dict):
         raise ValueError("The faculty brief has no analysis.")
     objectives = analysis.get("objectives", [])
-    supported = [key for key, entry in OBJECTIVES.items() if entry["supported"]]
+    supported = list(supported_objectives(record) if report.get("prompt_version") == PROMPT_VERSION else SUPPORTED_OBJECTIVES)
     if not isinstance(objectives, list) or len(objectives) != len(supported) or {
         item.get("objective_id") for item in objectives if isinstance(item, dict)
     } != set(supported):
@@ -295,6 +296,13 @@ def _render_full(report, record, inputs):
             story.append(p("Questions before recording", "subhead"))
             bullets(item.get("questions"))
         story.append(p("Scope limit: " + catalog["limitation"], "small"))
+        if catalog.get("competency_mapping"):
+            story.append(p("Competency correspondence · local simulated evidence", "subhead"))
+            for mapping in catalog["competency_mapping"]:
+                label = mapping["framework"] + " · " + mapping["code"]
+                story.append(Paragraph('<link href="' + escape(mapping["source_url"], {'"': '&quot;'})
+                    + '">' + _xml(label) + '</link>', styles["small"]))
+                story.append(p(mapping.get("source_locator", ""), "small"))
 
     document.build(story, onFirstPage=page_header, onLaterPages=page_header)
     return out.getvalue()
@@ -312,6 +320,14 @@ _COMPACT_TITLES = {
     "C3": "Airway and ventilation",
     "C4": "Procedural sedation",
     "C14": "POCUS in management",
+    "R1-05": "Reconsider the initial model",
+    "R1-06": "Keep alternatives open",
+    "R2-02": "Seek discordant evidence",
+    "R2-03": "Weigh the current evidence",
+    "R1-07": "Reassess the handover frame",
+    "R2-04": "Recognize atypical illness",
+    "R2-05": "Look beyond the first finding",
+    "R3-01": "Justify action or observation",
 }
 
 
@@ -478,7 +494,7 @@ def _render_compact(report, record, inputs, app_url):
                 maximum_sentences=1,
             )
             rows.append([
-                [p(objective_id, "label"), p(_COMPACT_TITLES[objective_id])],
+                [p(objective_id, "label"), p(_COMPACT_TITLES.get(objective_id, OBJECTIVES[objective_id]["title"]))],
                 [Paragraph(_xml(_COMPACT_RECOMMENDATIONS[recommendation]), status_style), Spacer(1, 4),
                  p("Depth: " + (depth.capitalize() if depth in DEPTH_LEVELS else "To establish"), "muted")],
                 [p(rationale), Spacer(1, 5), p(_compact_references(item["evidence_refs"], index), "muted")],
@@ -534,6 +550,10 @@ def _render_compact(report, record, inputs, app_url):
             story.append(p(f"3 of {len(decisions)} decision prompts shown; full analysis contains the rest.", "muted"))
         story.extend([Spacer(1, 2), p("Scope to preserve", "heading")])
         story.append(p("TD1/F1/C1: simulated support, prioritization and reassessment; not real teamwork or full critical-care competence. C3/C4: recorded airway, oxygen and sedation reasoning; not hands-on airway or procedural skill. C14: use of supplied POCUS findings; not image acquisition."))
+        mapped = [key for key in supported if OBJECTIVES[key].get("competency_mapping")]
+        if mapped:
+            story.append(Spacer(1, 5))
+            story.append(p("Challenge " + ", ".join(mapped) + ": assess the recorded reasoning behaviors. ACGME and Royal College correspondence and source locations are in the full PDF; a local observation does not award a Milestone level or EPA.", "muted"))
         limits = analysis.get("limits", [])
         if isinstance(limits, list):
             # Assistance is already shown once in the matrix page. Keep a distinct

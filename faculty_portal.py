@@ -76,11 +76,16 @@ def _public_app_url():
     return value
 
 
-def _pdf_download(report, record, *, compact):
+def _pdf_download(context, report, record, *, compact):
+    # Reauthorize even when PDF bytes already exist in this Streamlit session.
+    # Always render from the separately stored faculty source, never a caller's
+    # learner-owned payload or a stale UI role.
+    record, report = FacultyBriefStore(context["store"]).get_for_export(
+        context["token"], record["id"], report["brief_id"])
     # A presentation version also invalidates byte caches for existing reports.
     app_url = _public_app_url()
     mode = "concise" if compact else "full"
-    pdf_key = ("faculty_pdf_v2", report["brief_id"], mode, app_url)
+    pdf_key = ("faculty_pdf_v3", context["user"]["id"], report["brief_id"], mode, app_url)
     cache_key = repr(pdf_key)
     if cache_key not in st.session_state:
         try:
@@ -135,7 +140,7 @@ def render_faculty_analysis(context, record):
                 return
             st.caption("Generated " + report["generated_at"] + " · " + report["model"])
             analysis = report["analysis"]
-            _pdf_download(report, record, compact=True)
+            _pdf_download(context, report, record, compact=True)
             st.caption("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification.")
             labels = {item["ref"]: item["label"] for item in evidence_items(record["payload"])}
             st.dataframe([
@@ -146,7 +151,7 @@ def render_faculty_analysis(context, record):
                 for key in analysis["objectives"]
             ], hide_index=True, use_container_width=True)
             with st.expander("Read the analysis and debriefing questions"):
-                _pdf_download(report, record, compact=False)
+                _pdf_download(context, report, record, compact=False)
                 st.markdown("**Performance synthesis**")
                 st.write(analysis["summary"])
                 for title, values in (("Strengths", analysis["strengths"]),

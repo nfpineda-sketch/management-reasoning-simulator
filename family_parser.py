@@ -36,6 +36,12 @@ _AGENTS = {
     "diuretic": {"furosemide": r"furosemide|furosemida|lasix"},
 }
 _DIAGNOSTICS = {
+    "head_ct": r"head ct|ct head|brain ct|ct brain|tac(?:\s+de)?\s+cerebro|tc(?:\s+de)?\s+cerebro|tomografia(?:\s+de)?\s+cerebro",
+    "abdominal_ct": r"abdominal ct|ct abdomen|ct of the abdomen|tac(?:\s+de)?\s+abdomen|tc(?:\s+de)?\s+abdomen",
+    "cortisol": r"cortisol",
+    "thyroid_function": r"thyroid function|thyroid tests|tsh|perfil tiroideo|funcion tiroidea",
+    "ketones": r"ketones|beta[- ]hydroxybutyrate|cetonas|cetonemia|beta[- ]hidroxibutirato",
+    "toxicology": r"toxicology|toxicology screen|toxicologia|screening toxicologico",
     "pocus": r"pocus|point[- ]of[- ]care ultrasound|bedside ultrasound|ecografia(?:\s+a pie de cama)?|ultrasonido",
     "lactate": r"lactate|lactato",
     "vbg": r"vbg|venous blood gas|gasometria venosa|gases venosos",

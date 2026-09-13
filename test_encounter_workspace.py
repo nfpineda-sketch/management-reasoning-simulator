@@ -24,6 +24,9 @@ def test_record_preserves_all_content_without_changing_source():
 
 
 def test_generated_problems_render_handover_and_complete_record(monkeypatch):
+    # Exercise the authored historical encounter; novel AI launch is tested separately.
+    from test_curriculum_app import authored_replay_fixture
+    authored_replay_fixture(monkeypatch)
     monkeypatch.setenv('MRS_AUTH_MODE', 'shared')
     for index in (0, 1):
         at = AppTest.from_file(str(Path(__file__).with_name('app.py')), default_timeout=20)

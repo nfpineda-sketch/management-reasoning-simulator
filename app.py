@@ -17,7 +17,7 @@ import patient_appearance as _appearance
 if getattr(_appearance, "APPEARANCE_VERSION", 0) != 3:
     importlib.reload(_appearance)
 import encounter_generator as _encounter_generator
-if getattr(_encounter_generator, "GENERATOR_VERSION", "") != "0.16.0":
+if getattr(_encounter_generator, "GENERATOR_VERSION", "") != "0.17.0":
     importlib.reload(_encounter_generator)
 import clinical_scene as _clinical_scene
 if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 7:
@@ -34,7 +34,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.16.0", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.17.0", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -73,7 +73,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.16.0-clinical-encounter"
+SIMULATOR_VERSION = "0.17.0-clinical-encounter"
 
 
 def faculty_access():
@@ -516,6 +516,9 @@ def clamp(x, lo=0.0, hi=1.0):
     return max(lo, min(hi, x))
 
 def reset_session():
+    for key in list(st.session_state):
+        if str(key).startswith("_learner_trace_"):
+            del st.session_state[key]
     st.session_state.started = False
     st.session_state.selected_case = "R1-05"
     st.session_state.state = deepcopy(INITIAL_STATE)
@@ -527,6 +530,7 @@ def reset_session():
     st.session_state.management_trace = []
     st.session_state.encounter_ended = False
     st.session_state.encounter_closed_trace = None
+    st.session_state.encounter_closed_events = None
     st.session_state.encounter_closed_state = None
     st.session_state.encounter_closed_time_min = None
     st.session_state.review_prompts = []
@@ -660,6 +664,7 @@ def management_state_snapshot(state):
     return {
         "case_id": state.get("case_id"),
         "encounter_variant": (state.get("encounter_spec") or {}).get("generator_version"),
+        "encounter_event_count": len(st.session_state.get("events") or []),
         "sim_time_min": int(state.get("sim_time", 0)),
         "observable": {
             "sbp": o.get("sbp"),
@@ -2314,7 +2319,11 @@ def _expert_comparison_complete(expert_models, comparison_responses):
 
 def _strip_private_review_data(value):
     """Deep-copy learner export data while excluding engine-only physiology."""
-    private_keys = {"physiology", "hidden", "developer_state"}
+    private_keys = {
+        "physiology", "hidden", "developer_state", "encounter_spec", "encounter_facts",
+        "clinical_case", "faculty", "faculty_brief", "faculty_analysis", "faculty_assessment",
+        "teaching_context", "response_rules", "engine_config",
+    }
     if isinstance(value, dict):
         return {
             key: _strip_private_review_data(item)
@@ -3395,7 +3404,7 @@ def _render_export_controls(
         st.session_state.get("prior_attempt_summary"),
     )
     case_id = str((final_state or {}).get("case_id") or "encounter").lower()
-    with st.container(border=True):
+    with st.expander("Complete original encounter record · PDF, Markdown and JSON", expanded=False):
         info, col_pdf, col_md, col_json = st.columns([1.9, 1, 1, 1])
         with info:
             status = "Complete review" if payload.get("review_complete") else "Draft export available"
@@ -3431,12 +3440,32 @@ def _render_export_controls(
     return payload
 
 
+def _render_analyzed_management_trace():
+    """Analyze only frozen decisions and the locked independent reflection."""
+    from management_trace_store import analysis_payload_from_session
+    from management_trace_portal import render_management_trace_analysis
+    if not st.session_state.get("expert_comparison_unlocked"):
+        return
+    context = globals().get("ACCOUNT_CONTEXT")
+    if context:
+        save_session(context)
+    payload = analysis_payload_from_session(dict(st.session_state))
+    return render_management_trace_analysis(
+        payload, api_key=_runtime_secret("OPENAI_API_KEY"),
+        model=_runtime_secret("MRS_TRACE_MODEL") or _runtime_secret("OPENAI_MODEL") or "gpt-5-mini",
+        context=context, case_label=str(st.session_state.get("selected_case") or "Clinical encounter"),
+        review_completed=bool(st.session_state.get("review_completed")),
+        adaptation_plan=st.session_state.get("adaptation_plan") or {},
+    )
+
+
 def begin_decision_review(trace, state):
     """Freeze the encounter and initialize a separate retrospective review layer."""
     frozen_trace = deepcopy(trace or [])
     frozen_state = management_state_snapshot(state)
     st.session_state.encounter_ended = True
     st.session_state.encounter_closed_trace = frozen_trace
+    st.session_state.encounter_closed_events = deepcopy(st.session_state.get("events") or [])
     st.session_state.encounter_closed_state = frozen_state
     st.session_state.encounter_closed_time_min = int(state.get("sim_time", 0))
     st.session_state.review_prompts = _review_prompt_records(frozen_trace)
@@ -3456,12 +3485,17 @@ def begin_decision_review(trace, state):
 def generate_problem_config(challenge_id):
     from curriculum import CHALLENGES
     from encounter_generator import generate_encounter
+    from generated_case import GeneratedCaseError
     if challenge_id not in CHALLENGES:
         raise ValueError("Choose an implemented clinical problem.")
-    with st.spinner("Preparing your encounter..."):
-        generated = generate_encounter(challenge_id, INITIAL_STATE,
-            api_key=_runtime_secret("OPENAI_API_KEY"),
-            model=_runtime_secret("MRS_GENERATOR_MODEL") or "gpt-5-mini")
+    try:
+        with st.spinner("Creating your patient and checking the clinical scenario..."):
+            generated = generate_encounter(challenge_id, INITIAL_STATE,
+                api_key=_runtime_secret("OPENAI_API_KEY"),
+                model=_runtime_secret("MRS_GENERATOR_MODEL") or _runtime_secret("OPENAI_MODEL") or "gpt-5-mini")
+    except GeneratedCaseError as exc:
+        st.error(str(exc))
+        st.stop()
     return {"state_factory": lambda: deepcopy(generated["state"]),
             "presentation": generated["presentation"]}
 
@@ -3472,7 +3506,12 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     if context:
         save_session(context)
         choice = (st.session_state.get("encounter_assignment") or {}).get("challenge_id")
-        start_encounter(context, INITIAL_STATE, reset_session, choice, adaptation_plan, prior_attempt_record)
+        from generated_case import GeneratedCaseError
+        try:
+            start_encounter(context, INITIAL_STATE, reset_session, choice, adaptation_plan, prior_attempt_record)
+        except GeneratedCaseError as exc:
+            st.error(str(exc))
+            st.stop()
         return {"adaptation_plan": deepcopy(adaptation_plan)}
     selected = (st.session_state.state.get("encounter_spec") or {}).get("challenge_id") or "R1-05"
     cfg = generate_problem_config(selected)
@@ -3505,6 +3544,7 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     st.session_state.management_trace = []
     st.session_state.encounter_ended = False
     st.session_state.encounter_closed_trace = None
+    st.session_state.encounter_closed_events = None
     st.session_state.encounter_closed_state = None
     st.session_state.encounter_closed_time_min = None
     st.session_state.review_prompts = []
@@ -3573,6 +3613,7 @@ def render_decision_review(trace, final_state):
     progress_parts.append(f'{progress["plan_fields_filled"]}/{progress["plan_fields_total"]} plan fields')
     st.progress(progress["fraction"], text=" · ".join(progress_parts))
     st.caption("Autosave is active when you leave a field or move to another step.")
+    _render_analyzed_management_trace()
     _render_export_controls(
         trace,
         final_state,
@@ -9699,7 +9740,7 @@ def render_event(event):
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
     st.write(event["text"])
 
-st.caption("Management Reasoning Simulator · Clinical encounter v0.16.0")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.17.0")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -9730,6 +9771,7 @@ if not st.session_state.started:
         st.session_state.management_trace = []
         st.session_state.encounter_ended = False
         st.session_state.encounter_closed_trace = None
+        st.session_state.encounter_closed_events = None
         st.session_state.encounter_closed_state = None
         st.session_state.encounter_closed_time_min = None
         st.session_state.review_prompts = []
@@ -9765,7 +9807,9 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
     render_learning_focus(ACCOUNT_CONTEXT)
     frozen_trace = st.session_state.get("encounter_closed_trace") or []
     frozen_state = st.session_state.get("encounter_closed_state") or {}
-    render_management_trace(frozen_trace)
+    _render_analyzed_management_trace()
+    with st.expander("Original decision-by-decision record", expanded=False):
+        render_management_trace(frozen_trace)
     prompts = st.session_state.get("review_prompts") or []
     responses = st.session_state.get("precomparison_decision_review") or st.session_state.get("decision_review") or {}
     models = _expert_models_for_prompts(frozen_state.get("case_id"), prompts, frozen_trace)
@@ -9798,7 +9842,8 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
         return_to_dashboard(ACCOUNT_CONTEXT, reset_session)
     st.stop()
 
-render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, sim_time_label(st.session_state.state["sim_time"]))
+if not st.session_state.encounter_ended:
+    render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, sim_time_label(st.session_state.state["sim_time"]))
 with st.container(key="encounter-console"):
     if render_bedside_tools(st.session_state.state, st.session_state.events, render_event) and ACCOUNT_CONTEXT:
         save_session(ACCOUNT_CONTEXT)
@@ -10577,18 +10622,11 @@ with st.container(key="encounter-console"):
             frozen_trace = st.session_state.encounter_closed_trace
         frozen_state = st.session_state.get("encounter_closed_state") or management_state_snapshot(st.session_state.state)
         render_learning_focus(ACCOUNT_CONTEXT)
-        st.markdown("## Management Trace")
-        st.caption(
-            "Your decision pathway through the encounter. This review shows only clinical information "
-            "available to you, the reasoning you explicitly stated, your actions, and the observed patient response."
-        )
-        render_management_trace(frozen_trace)
-
-        st.caption(
-            "Management Trace is descriptive. It does not score decisions or add reasoning that was not explicitly stated."
-        )
-
-        st.markdown("---")
+        with st.expander("Original decision-by-decision record", expanded=False):
+            st.caption("Your original orders, stated reasoning and recorded responses remain unchanged.")
+            render_management_trace(frozen_trace)
+        if not st.session_state.get("expert_comparison_unlocked"):
+            st.caption("Complete your independent reflection to receive an analyzed Management Trace with your clinical trajectory and key decisions.")
         render_decision_review(frozen_trace, frozen_state)
 
     st.divider()
@@ -10612,6 +10650,6 @@ with st.container(key="encounter-console"):
 
     if ACCOUNT_CONTEXT:
         save_session(ACCOUNT_CONTEXT)
-    st.caption("Management Reasoning Simulator · Clinical encounter v0.16.0")
+    st.caption("Management Reasoning Simulator · Clinical encounter v0.17.0")
 
     # Compatibility marker for v0.6.0.27 regression lineage.

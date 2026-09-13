@@ -13,13 +13,15 @@ import json
 import math
 
 from objectives import AUTONOMY_LEVELS, DEPTH_LEVELS, OBJECTIVES, evidence_items
+from competency_mapping import objective_is_eligible
 
 
 SCHEMA_VERSION = "faculty_brief_v1"
-PROMPT_VERSION = "1.1"
-SUPPORTED_PROMPT_VERSIONS = ("1.0", PROMPT_VERSION)
+PROMPT_VERSION = "1.2"
+SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", PROMPT_VERSION)
 ASSISTANCE_CONTEXTS = ("unknown", *AUTONOMY_LEVELS)
-SUPPORTED_OBJECTIVES = tuple(k for k, v in OBJECTIVES.items() if v["supported"])
+# Preserve the six-objective legacy envelope for already saved faculty drafts.
+SUPPORTED_OBJECTIVES = ("TD1", "F1", "C1", "C3", "C4", "C14")
 MAX_INPUT_BYTES = 260_000
 MAX_TRACE_EVENTS = 120
 MAX_OUTPUT_TOKENS = 10_000
@@ -29,10 +31,15 @@ class FacultyAnalysisError(ValueError):
     """A safe user-facing failure; raw provider errors must not be displayed."""
 
 
+def supported_objectives(record):
+    return tuple(key for key, value in OBJECTIVES.items()
+                 if value["supported"] and objective_is_eligible(key, record))
+
+
 _OBSERVABLE = frozenset("sbp dbp hr rhythm spo2 crt mental_status extremities respiratory_rate work_of_breathing pulse_present".split())
 _TREATMENTS = frozenset("airway_prepared bag_mask cardioversions cumulative_crystalloid_ml total_crystalloid_ml packed_red_cells_units disposition dobutamine dobutamine_rate dobutamine_units etomidate_total_mg furosemide_total_mg invasive_ventilation midazolam_total_mg nitroglycerin nitroglycerin_rate_mcg_min niv niv_epap_cmh2o niv_fio2_percent niv_ipap_cmh2o niv_mode niv_pressure_cmh2o norepinephrine norepinephrine_rate norepinephrine_units oxygen oxygen_device oxygen_flow_lpm procedural_sedations ventilator_fio2_percent ventilator_mode ventilator_peep_cmh2o".split())
-_DIAGNOSTIC_TYPES = frozenset("pocus lactate vbg abg basic_labs temperature poc_glucose focused_history chest_xray urinalysis blood_cultures troponin ctpa hemoglobin".split())
-_DIAGNOSTIC_FIELDS = frozenset("history finding report time_min collected_at_min value_mmol_l value_ng_l upper_reference_ng_l flag base_excess_mmol_l bicarbonate_mmol_l lactate_mmol_l pco2_mm_hg paco2_mm_hg ph glucose_mg_dl bun_mg_dl creatinine_mg_dl crp_mg_l hemoglobin_g_dl platelets_k_ul potassium_mmol_l sodium_mmol_l wbc_k_ul ivc lungs lv pericardium rv pao2_mm_hg sao2_percent fio2_percent pf_ratio temperature_c value_celsius".split())
+_DIAGNOSTIC_TYPES = frozenset("pocus lactate vbg abg basic_labs temperature poc_glucose focused_history chest_xray urinalysis blood_cultures troponin ctpa hemoglobin head_ct abdominal_ct cortisol thyroid_function ketones toxicology".split())
+_DIAGNOSTIC_FIELDS = frozenset("history finding report time_min collected_at_min value_mmol_l value_ng_l upper_reference_ng_l cortisol_ug_dl tsh_miu_l free_t4_ng_dl ketones_mmol_l flag base_excess_mmol_l bicarbonate_mmol_l lactate_mmol_l pco2_mm_hg paco2_mm_hg ph glucose_mg_dl bun_mg_dl creatinine_mg_dl crp_mg_l hemoglobin_g_dl platelets_k_ul potassium_mmol_l sodium_mmol_l wbc_k_ul ivc lungs lv pericardium rv pao2_mm_hg sao2_percent fio2_percent pf_ratio temperature_c value_celsius".split())
 _ACTION_FIELDS = frozenset("type volume_ml fluid_type cumulative_ml duration_min time_min agent dose dose_mg dose_g route support_type device flow_lpm operation rate units old_rate old_units energy_j diagnostic_type diagnostic service label agent_name rate_mcg_min mode pressure_cmh2o ipap_cmh2o epap_cmh2o fio2_percent ventilator_mode peep_cmh2o destination delay_min focus purpose synchronized cardioversion_success pre_rhythm".split())
 _MEDICATION_FIELDS = frozenset(("agent", "dose", "dose_mg", "route", "units"))
 _REASONING = frozenset("problem_representation management_priority rationale expected_effect preservation_goal reassessment_target".split())
@@ -262,8 +269,9 @@ def build_analysis_source(record, assistance_context="unknown"):
         "recorded_reflections": reflections,
         "later_expert_comparison_responses": comparisons,
         "later_adaptation_plan": _answers(session.get("adaptation_plan"), _PLAN),
-        "objective_rubric": [{"objective_id": key, **{field: definition[field] for field in ("title", "scope", "limitation")}}
-                              for key, definition in OBJECTIVES.items() if definition["supported"]],
+        "objective_rubric": [{"objective_id": key, **{field: OBJECTIVES[key][field] for field in (
+            "title", "scope", "limitation", "observable_behaviors", "evidence_requirements", "competency_mapping")
+            if field in OBJECTIVES[key]}} for key in supported_objectives(record)],
     }
     if len(_canonical(source).encode("utf-8")) > MAX_INPUT_BYTES:
         raise FacultyAnalysisError("This encounter is too large for a single faculty analysis. No request was sent.")
@@ -290,7 +298,11 @@ later expert comparison, and the later plan. Later insight is learning evidence;
 it must not be presented as reasoning demonstrated during the encounter. If the
 timing of reflection is unverified, say so. Do not regenerate an expert answer key.
 
-Use the six supplied objective scopes exactly; cover all six once. Outcome,
+Use exactly the supplied objective scopes; cover each supplied objective once.
+For cognitive challenges assess the observable management behaviors in the
+rubric, not whether the learner possesses a psychological bias. Official
+competency mappings identify relevant behaviors, not EPA achievement or ACGME
+Milestone levels. Do not add other challenge objectives. Outcome,
 keywords, completed fields, polished language, and case completion do not prove
 competence. No score, pass/fail of a workplace EPA, certification, credentialing,
 or numeric observation credit can be assigned by this analysis. This is an AI
@@ -348,12 +360,12 @@ Use these writing budgets:
   feedback at most 55 words; at most 2 questions of at most 20 words each. Include
   concrete evidence and any limitation that affects the proposed assessment. Use
   feedback for an editable observation and next learning step, not a repetition
-  of the rationale. Do not restate the full scope or global disclaimer six times.
+  of the rationale. Do not repeat the full scope or global disclaimer in every row.
 - learning_cycle: at most 40 words; identify later learning separately from
   reasoning recorded during management.
 - limits: at most 3 items, each at most 25 words. Include assistance provenance
   and material record limitations once, with no generic legal boilerplate.
-Select only the evidence references needed to support each claim. Keep all six
+Select only the evidence references needed to support each claim. Keep all supplied
 objective recommendations distinct, even when the same decision informs several.
 """.strip()
 
@@ -370,7 +382,7 @@ def _object(properties):
     return {"type": "object", "properties": properties, "required": list(properties), "additionalProperties": False}
 
 
-def _analysis_schema(refs):
+def _analysis_schema(refs, objective_ids=SUPPORTED_OBJECTIVES):
     """Storage validation bounds, including previously generated verbose briefs."""
     references = _array({"type": "string", "enum": sorted(refs)}, 20)
     return _object({
@@ -382,26 +394,26 @@ def _analysis_schema(refs):
             "analysis": _string(2000), "question": _string(800),
         }), 6, 1),
         "objectives": _array(_object({
-            "objective_id": {"type": "string", "enum": list(SUPPORTED_OBJECTIVES)},
+            "objective_id": {"type": "string", "enum": list(objective_ids)},
             "recommendation": {"type": "string", "enum": ["satisfactory", "needs_improvement", "insufficient_evidence"]},
             "rationale": _string(2000),
             "depth": {"type": ["string", "null"], "enum": [*DEPTH_LEVELS, None]},
             "autonomy": {"type": ["string", "null"], "enum": [*AUTONOMY_LEVELS, None]},
             "context": _string(500), "evidence_refs": references,
             "feedback": _string(4000), "questions": _array(_string(800), 4),
-        }), len(SUPPORTED_OBJECTIVES), len(SUPPORTED_OBJECTIVES)),
+        }), len(objective_ids), len(objective_ids)),
         "learning_cycle": _string(2500),
         "limits": _array(_string(1200), 10, 1),
     })
 
 
-def _generation_schema(refs):
+def _generation_schema(refs, objective_ids=SUPPORTED_OBJECTIVES):
     """Tighter new-request bounds without invalidating saved version 1.0 reports.
 
     Word budgets belong to the writing instructions; these character and item
     bounds also constrain the provider's structured output and its local check.
     """
-    schema = _analysis_schema(refs)
+    schema = _analysis_schema(refs, objective_ids)
     fields = schema["properties"]
     fields["summary"] = _string(550)
     fields["strengths"] = _array(_string(200), 3)
@@ -479,9 +491,10 @@ def validate_brief(report, record, assistance_context=None):
     source = build_analysis_source(record, context)
     refs = {row["evidence_ref"] for row in source["decision_events"] if row["evidence_ref"]}
     refs.update(row["evidence_ref"] for row in source["recorded_reflections"])
-    _check_schema(report["analysis"], _analysis_schema(refs))
+    objective_ids = supported_objectives(record) if report["prompt_version"] == PROMPT_VERSION else SUPPORTED_OBJECTIVES
+    _check_schema(report["analysis"], _analysis_schema(refs, objective_ids))
     analysis = report["analysis"]
-    if {row["objective_id"] for row in analysis["objectives"]} != set(SUPPORTED_OBJECTIVES):
+    if {row["objective_id"] for row in analysis["objectives"]} != set(objective_ids):
         raise FacultyAnalysisError("The AI brief must address each supported objective exactly once.")
     for row in [*analysis["key_decisions"], *analysis["objectives"]]:
         if len(row["evidence_refs"]) != len(set(row["evidence_refs"])):
@@ -511,7 +524,7 @@ def generate_faculty_brief(record, *, api_key, model, assistance_context="unknow
         raise FacultyAnalysisError("OPENAI_API_KEY is not configured for faculty analysis.")
     refs = {row["evidence_ref"] for row in source["decision_events"] if row["evidence_ref"]}
     refs.update(row["evidence_ref"] for row in source["recorded_reflections"])
-    generation_schema = _generation_schema(refs)
+    generation_schema = _generation_schema(refs, supported_objectives(record))
     try:
         if client is None:
             from openai import OpenAI

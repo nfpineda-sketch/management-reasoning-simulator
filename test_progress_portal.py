@@ -104,7 +104,7 @@ def test_resident_progress_is_read_only_and_own_record_only(accounts):
     assert overview.loc[overview["Objective"].str.startswith("TD1"), "Satisfactory observations"].iloc[0] == "1/10"
 
 
-def test_multiple_objectives_are_reviewed_separately_and_capped_form_is_removed(accounts):
+def test_multiple_objectives_are_reviewed_separately_and_duplicate_form_is_removed(accounts):
     attempt_id = completed_attempt(accounts)
     accounts["progress"].set_target(accounts["admin"], "C4", 1, "UI cap regression")
     app = page(accounts, attempt_id=attempt_id)
@@ -113,12 +113,29 @@ def test_multiple_objectives_are_reviewed_separately_and_capped_form_is_removed(
     assert not any(option.startswith(("C2 ·", "C15 ·")) for option in options)
     submit_assessment(app, "C4")
     assert goal(accounts, "C4")["count"] == 1
+
     assert not any(option.startswith("C4 ·") for option in widget(app, "selectbox", "Objective observed in this encounter").options)
     assert any("Satisfactory observation saved" in item.value for item in app.success)
     submit_assessment(app, "C1", satisfactory=False)
     assert goal(accounts, "C1")["count"] == 0
     assert goal(accounts, "C1")["assessed_count"] == 1
     assert goal(accounts, "C4")["count"] == 1
+
+
+def test_later_encounter_keeps_assessment_form_after_confirmation(accounts):
+    first = completed_attempt(accounts)
+    accounts["progress"].set_target(accounts["admin"], "C4", 1, "Continuous observation regression")
+    app = page(accounts, attempt_id=first)
+    submit_assessment(app, "C4")
+    resident_id = accounts["store"].get_user(accounts["resident"])["id"]
+    accounts["progress"].confirm(accounts["admin"], resident_id, "C4", "Initial evidence reviewed")
+    second = completed_attempt(accounts)
+    app = page(accounts, attempt_id=second)
+    assert any(option.startswith("C4 ·") for option in widget(app, "selectbox", "Objective observed in this encounter").options)
+    submit_assessment(app, "C4", satisfactory=False)
+    assert goal(accounts, "C4")["confirmed"]
+    assert goal(accounts, "C4")["review_recommended"]
+    assert goal(accounts, "C4")["assessed_count"] == 2
 
 
 def test_confirmation_and_void_require_explicit_faculty_actions(accounts):

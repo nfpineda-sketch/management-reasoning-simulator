@@ -1,4 +1,4 @@
-"""Behavioral tests for capped faculty-reviewed simulation evidence."""
+"""Behavioral tests for continuous faculty-reviewed simulation evidence."""
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
@@ -55,7 +55,7 @@ def objective(progress, token, objective_id="C4", user_id=None):
                 if item["objective_id"] == objective_id)
 
 
-def test_twenty_observations_reach_cap_across_depths_and_extra_encounter_is_unchanged(cohort):
+def test_twenty_observations_reach_target_and_further_evidence_is_retained(cohort):
     accounts, progress, users = cohort
     resident, faculty = users["resident"]["token"], users["faculty"]["token"]
     for index in range(20):
@@ -68,10 +68,13 @@ def test_twenty_observations_reach_cap_across_depths_and_extra_encounter_is_unch
     assert (value["count"], value["target"], value["status"], value["confirmed"]) == (20, 20, "target_reached", False)
     attempt_id, _ = completed_attempt(accounts, resident, text="Another independent sedation encounter")
     original = accounts.get_attempt(resident, attempt_id)
-    for satisfactory in (True, False):
-        assert progress.assess(faculty, attempt_id, "C4", assessment(satisfactory=satisfactory))["status"] == "capped"
-    assert objective(progress, resident)["count"] == 20
-    assert len(objective(progress, resident)["observations"]) == 20
+    assert progress.assess(faculty, attempt_id, "C4", assessment())["status"] == "credited"
+    assert progress.assess(faculty, attempt_id, "C4", assessment())["status"] == "duplicate"
+    later, _ = completed_attempt(accounts, resident)
+    assert progress.assess(faculty, later, "C4", assessment(satisfactory=False))["status"] == "recorded"
+    assert objective(progress, resident)["count"] == 21
+    assert len(objective(progress, resident)["observations"]) == 22
+    assert objective(progress, resident)["needs_improvement_count"] == 1
     assert accounts.get_attempt(resident, attempt_id) == original
 
 
@@ -231,11 +234,12 @@ def test_numeric_target_and_faculty_confirmation_are_distinct_and_reopen_retains
     assert confirmation["target_at_confirmation"] == confirmation["count_at_confirmation"] == 1
     # Existing confirmation intentionally stays frozen until faculty reopens.
     second, _ = completed_attempt(accounts, resident)
-    assert progress.assess(faculty, second, "C4", assessment())["status"] == "capped"
+    assert progress.assess(faculty, second, "C4", assessment())["status"] == "credited"
+    assert objective(progress, resident)["post_confirmation_count"] == 1
     assert progress.reopen(faculty, user_id, "C4", "Assess maintenance at complex depth")["changed"]
     value = objective(progress, resident)
-    assert value["count"] == 1 and value["status"] == "developing"
-    assert progress.assess(faculty, second, "C4", assessment(depth="complex"))["count"] == 2
+    assert value["count"] == 2 and value["status"] == "target_reached"
+    assert progress.assess(faculty, second, "C4", assessment(depth="complex"))["status"] == "duplicate"
     actions = [item["action"] for item in progress.list_audit(faculty, user_id)]
     assert actions.count("confirmed") == 1 and "reopened" in actions and actions.count("target_changed") == 2
 
@@ -249,9 +253,9 @@ def test_reopen_alone_does_not_silently_reset_or_expand_numeric_target(cohort):
     progress.confirm(faculty, users["resident"]["id"], "C4", "Evidence reviewed")
     progress.reopen(faculty, users["resident"]["id"], "C4", "Plan future retention practice")
     second, _ = completed_attempt(accounts, resident)
-    assert progress.assess(faculty, second, "C4", assessment())["status"] == "capped"
+    assert progress.assess(faculty, second, "C4", assessment())["status"] == "credited"
     value = objective(progress, resident)
-    assert value["count"] == value["target"] == 1 and value["status"] == "target_reached"
+    assert value["count"] == 2 and value["target"] == 1 and value["status"] == "target_reached"
 
 
 def test_void_preserves_history_allows_corrected_review_and_invalidates_confirmation(cohort):
@@ -282,7 +286,7 @@ def test_targets_cannot_truncate_existing_credit_and_changes_are_audited(cohort)
     for _ in range(2):
         attempt_id, _ = completed_attempt(accounts, resident)
         progress.assess(faculty, attempt_id, "C4", assessment())
-    for target in (0, -1, 1001, True, 1.2, "2", 1):
+    for target in (0, -1, 1001, True, 1.2, "2"):
         with pytest.raises(AccountError):
             progress.set_target(admin, "C4", target, "Invalid target")
     change = progress.set_target(admin, "C4", 2, "Program accepts two observations for this pilot")
@@ -293,7 +297,7 @@ def test_targets_cannot_truncate_existing_credit_and_changes_are_audited(cohort)
     assert len(changes) == 1 and changes[0]["details"]["before"] == 20 and changes[0]["details"]["after"] == 2
 
 
-def test_concurrent_graders_cannot_overrun_last_slot(cohort):
+def test_concurrent_graders_preserve_every_new_encounter_after_target(cohort):
     accounts, progress, users = cohort
     admin, faculty, resident = (users[name]["token"] for name in ("admin", "faculty", "resident"))
     progress.set_target(admin, "C4", 2, "Concurrent grading test")
@@ -302,9 +306,9 @@ def test_concurrent_graders_cannot_overrun_last_slot(cohort):
     attempts = [completed_attempt(accounts, resident)[0] for _ in range(4)]
     with ThreadPoolExecutor(max_workers=4) as pool:
         results = list(pool.map(lambda attempt: progress.assess(faculty, attempt, "C4", assessment()), attempts))
-    assert sorted(item["status"] for item in results) == ["capped", "capped", "capped", "credited"]
+    assert [item["status"] for item in results] == ["credited"] * 4
     value = objective(progress, resident)
-    assert value["count"] == 2 and len(value["observations"]) == 2
+    assert value["count"] == 5 and len(value["observations"]) == 5
 
 
 def test_concurrent_duplicate_submissions_create_one_observation(cohort):
@@ -316,13 +320,114 @@ def test_concurrent_duplicate_submissions_create_one_observation(cohort):
     assert objective(progress, users["resident"]["token"])["count"] == 1
 
 
+def test_later_concerns_persist_after_confirmation_until_explicit_faculty_review(cohort):
+    accounts, progress, users = cohort
+    admin, faculty, resident = (users[name]["token"] for name in ("admin", "faculty", "resident"))
+    user_id = users["resident"]["id"]
+    progress.set_target(admin, "C4", 1, "Local pilot")
+    first, _ = completed_attempt(accounts, resident)
+    progress.assess(faculty, first, "C4", assessment())
+    progress.confirm(faculty, user_id, "C4", "Evidence reviewed")
+    initial = objective(progress, resident)["confirmation"]
+    later, _ = completed_attempt(accounts, resident)
+    progress.assess(faculty, later, "C4", assessment(satisfactory=False, notes="Reassessment needs prompting."))
+    recovered, _ = completed_attempt(accounts, resident)
+    progress.assess(faculty, recovered, "C4", assessment())
+    # Restart proves this is per-user durable evidence, not a UI-only warning.
+    progress = ProgressStore(AccountStore(accounts._url, allow_sqlite=True))
+    value = objective(progress, resident)
+    assert value["confirmation"] == initial and value["confirmed"]
+    assert (value["count"], value["assessed_count"], value["target"]) == (2, 3, 1)
+    assert value["post_confirmation_count"] == 2
+    assert value["post_confirmation_needs_improvement_count"] == 1
+    assert value["review_recommended"]
+    with pytest.raises(AccountError):
+        progress.confirm(resident, user_id, "C4", "Self-review")
+    progress.confirm(faculty, user_id, "C4", "Reviewed later evidence and maintained the simulated component confirmation.")
+    value = objective(progress, resident)
+    assert value["confirmed"] and not value["review_recommended"]
+    assert value["post_confirmation_count"] == 0
+    assert value["needs_improvement_count"] == 1 and value["assessed_count"] == 3
+    assert any(item["action"] == "confirmation_reviewed" for item in progress.list_audit(faculty, user_id))
+
+
+def test_program_target_below_accumulated_count_preserves_evidence_and_confirmation(cohort):
+    accounts, progress, users = cohort
+    admin, faculty, resident = (users[name]["token"] for name in ("admin", "faculty", "resident"))
+    for _ in range(3):
+        attempt, _ = completed_attempt(accounts, resident)
+        progress.assess(faculty, attempt, "C4", assessment())
+    progress.set_target(admin, "C4", 1, "Program review threshold is independent of accumulated observations")
+    value = objective(progress, resident)
+    assert value["count"] == value["assessed_count"] == 3
+    assert value["target"] == 1 and value["target_reached"] and not value["confirmed"]
+
+
+def test_mapped_challenge_credit_requires_matching_record_and_real_decision(cohort):
+    accounts, progress, users = cohort
+    resident, faculty = (users[name]["token"] for name in ("resident", "faculty"))
+    original, _ = completed_attempt(accounts, resident)
+    with pytest.raises(AccountError, match="does not match"):
+        progress.assess(faculty, original, "R1-05", assessment())
+    attempt = accounts.create_attempt(resident, "R1-05", {"spec": {"challenge_id": "R1-05"}})
+    accounts.save_attempt(resident, attempt, {"session": {"review_completed": True,
+        "management_trace": [{"execution_status": "executed", "learner_input": "Reassess after the initial intervention."}],
+        "precomparison_decision_review": {"1": {
+            "working_model_update": "My model changed after the response.",
+            "priority_trigger": "The response differed from my expectation.",
+            "alternative_action": "Review the next safe action.",
+            "expected_response_reassessment": "Reassess the response in three minutes."}}}}, "completed")
+    with pytest.raises(AccountError, match="recorded management decision"):
+        progress.assess(faculty, attempt, "R1-05", assessment(evidence_refs=["reflection:1"]))
+    saved = progress.assess(faculty, attempt, "R1-05", assessment(satisfactory=False))
+    assert saved["status"] == "recorded"
+    assert objective(progress, resident, "R1-05")["assessed_count"] == 1
+
+
+def test_existing_confirmation_migrates_before_same_second_continued_evidence(cohort, monkeypatch):
+    accounts, progress, users = cohort
+    admin, faculty, resident = (users[name]["token"] for name in ("admin", "faculty", "resident"))
+    progress.set_target(admin, "C4", 1, "Migration test")
+    first, _ = completed_attempt(accounts, resident)
+    progress.assess(faculty, first, "C4", assessment())
+    progress.confirm(faculty, users["resident"]["id"], "C4", "Legacy confirmation")
+    fixed_time = objective(progress, resident)["confirmation"]["updated_at"]
+    with accounts._transaction(write=True) as connection:
+        accounts._execute(connection, "ALTER TABLE mrs_progress_confirmations DROP COLUMN observation_ids_json")
+    progress = ProgressStore(accounts)
+    monkeypatch.setattr("progress_store.time.time", lambda: fixed_time)
+    later, _ = completed_attempt(accounts, resident)
+    progress.assess(faculty, later, "C4", assessment(satisfactory=False))
+    value = objective(progress, resident)
+    assert value["confirmed"] and value["review_recommended"]
+    assert value["post_confirmation_count"] == 1 and value["assessed_count"] == 2
+
+
+def test_voiding_a_later_observation_keeps_the_prior_confirmation(cohort):
+    accounts, progress, users = cohort
+    admin, faculty, resident = (users[name]["token"] for name in ("admin", "faculty", "resident"))
+    progress.set_target(admin, "C4", 1, "Follow-up correction test")
+    first, _ = completed_attempt(accounts, resident)
+    progress.assess(faculty, first, "C4", assessment())
+    progress.confirm(faculty, users["resident"]["id"], "C4", "Initial confirmation")
+    original_confirmation = objective(progress, resident)["confirmation"]
+    later, _ = completed_attempt(accounts, resident)
+    observation = progress.assess(faculty, later, "C4", assessment(satisfactory=False))
+    progress.void_observation(faculty, observation["observation_id"], "Incorrect later evidence selection")
+    value = objective(progress, resident)
+    assert value["confirmation"] == original_confirmation and value["confirmed"]
+    assert not value["review_recommended"] and len(value["observations"]) == 2
+
+
 def test_targets_match_program_supplied_catalog_without_multiplying_by_depth(cohort):
     _, progress, users = cohort
     values = progress.get_progress(users["resident"]["token"])["objectives"]
-    assert {item["objective_id"]: item["target"] for item in values} == {
-        "TD1": 10, "F1": 15, "C1": 40, "C2": 25, "C3": 20, "C4": 20, "C14": 50, "C15": 5}
+    legacy = {item["objective_id"]: item["target"] for item in values if not item["objective_id"].startswith("R")}
+    assert legacy == {"TD1": 10, "F1": 15, "C1": 40, "C2": 25, "C3": 20, "C4": 20, "C14": 50, "C15": 5}
+    challenges = [item for item in values if item["objective_id"].startswith("R")]
+    assert len(challenges) == 8 and all(item["target"] == 3 for item in challenges)
     assert all(item["count"] == 0 and not item["confirmed"] for item in values)
-    assert all("not independently verified" in item["target_source"] for item in values)
+    assert all("not independently verified" in item["target_source"] for item in values if not item["objective_id"].startswith("R"))
     assert {item["status"] for item in values} == {"not_observed", "not_available"}
     targets = progress.list_targets(users["faculty"]["token"])
     assert {item["objective_id"]: item["target"] for item in targets} == {

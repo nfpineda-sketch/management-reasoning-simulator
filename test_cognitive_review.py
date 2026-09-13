@@ -67,6 +67,9 @@ def test_shared_review_falls_back_when_public_snapshot_omits_private_spec():
 
 
 def test_shared_app_displays_focus_after_its_actual_snapshot_is_frozen(monkeypatch):
+    # Exercise the authored historical encounter; novel AI launch is tested separately.
+    from test_curriculum_app import authored_replay_fixture
+    authored_replay_fixture(monkeypatch)
     monkeypatch.setenv("MRS_AUTH_MODE", "shared")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     app = AppTest.from_file(str(Path(__file__).with_name("app.py")), default_timeout=30)

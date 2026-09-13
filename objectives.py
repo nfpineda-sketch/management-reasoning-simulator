@@ -1,9 +1,11 @@
 """Local simulated-management objectives and recorded evidence for faculty review.
 
-The identifiers link to Royal College EPAs, but these records assess only the
-components that this simulator can demonstrate. They do not attest completion
-of a whole workplace EPA. Targets were supplied by the program owner and have
-not been independently verified as official EPA observation requirements.
+The original clinical identifiers link to Royal College EPAs; the newer R*
+identifiers are local reasoning components mapped to ACGME and Royal College.
+These records assess only components this simulator can demonstrate. They do
+not attest completion of a whole workplace EPA. Original targets were supplied
+by the program owner; newer defaults are identified explicitly as local review
+milestones. Neither is used as an official EPA completion requirement.
 
 These objectives are distinct from the R1-03/R1-04/R2-01 local encounter
 challenges. Neither the counts nor the depth/autonomy tags establish a PGY,
@@ -13,7 +15,7 @@ ACGME milestone level, competence decision, or automatic passing result.
 from copy import deepcopy
 
 
-OBJECTIVE_CATALOG_VERSION = "0.1.0"
+OBJECTIVE_CATALOG_VERSION = "0.2.0"
 TARGET_SOURCE = (
     "Program target supplied by the user; official EPA count not independently verified."
 )
@@ -93,6 +95,13 @@ for _objective in OBJECTIVES.values():
     _objective["target_source"] = TARGET_SOURCE
     _objective["assessment_scope"] = "simulated_management_component"
 del _objective
+
+# The added R* records are local reasoning components with explicit external
+# competency links. They are not new Royal College EPAs or automatic awards.
+from cognitive_catalog import BIAS_CHALLENGES
+from competency_mapping import objective_definitions
+
+OBJECTIVES.update(objective_definitions(BIAS_CHALLENGES))
 
 
 _REVIEW_FIELDS = (

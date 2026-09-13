@@ -35,6 +35,9 @@ def test_history_selection_cannot_invent_content_or_return_exam():
 
 
 def test_exploration_and_problem_generation_are_isolated_from_treatment(monkeypatch):
+    # Exercise the authored historical encounter; novel AI launch is tested separately.
+    from test_curriculum_app import authored_replay_fixture
+    authored_replay_fixture(monkeypatch)
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
     monkeypatch.setenv('MRS_AUTH_MODE','shared')

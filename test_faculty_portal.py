@@ -181,6 +181,29 @@ def test_expired_staff_session_is_handled_before_private_report_access(cohort):
         _staff_record(context, record)
 
 
+def test_private_pdf_download_rechecks_role_even_with_cached_bytes(cohort, monkeypatch):
+    import faculty_portal
+    accounts, _, users = cohort
+    attempt_id, report = setup_brief(cohort)
+    token = users["faculty"]["token"]
+    context = {"store": accounts, "token": token, "user": accounts.get_user(token)}
+    record = accounts.get_attempt(token, attempt_id)
+    cache = {}
+    downloads = []
+    monkeypatch.setattr(faculty_portal.st, "session_state", cache)
+    monkeypatch.setattr(faculty_portal, "render_faculty_brief_pdf", lambda *args, **kwargs: b"%PDF-fixture")
+    monkeypatch.setattr(faculty_portal.st, "download_button", lambda *args, **kwargs: downloads.append(args))
+    faculty_portal._pdf_download(context, report, record, compact=True)
+    assert len(downloads) == 1 and cache
+    accounts.logout(token)
+    with pytest.raises(AccountError):
+        faculty_portal._pdf_download(context, report, record, compact=True)
+    owner_context = {"store": accounts, "token": users["resident"]["token"], "user": context["user"]}
+    with pytest.raises(AccountError):
+        faculty_portal._pdf_download(owner_context, report, record, compact=True)
+    assert len(downloads) == 1
+
+
 def test_brief_reload_error_does_not_relabel_loaded_ai_fields_as_manual(cohort, monkeypatch):
     import faculty_portal
     attempt_id, _ = setup_brief(cohort)

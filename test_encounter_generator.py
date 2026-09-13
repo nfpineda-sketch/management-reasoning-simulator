@@ -51,7 +51,7 @@ class EncounterGenerationTests(unittest.TestCase):
         cls.base = initial_state()
 
     def compose(self, **kwargs):
-        return generator.generate_encounter("R1-03", self.base, seed=17, **kwargs)
+        return generator.generate_encounter("R1-03", self.base, seed=17, generation_mode="authored", **kwargs)
 
     def test_seeded_fallback_is_reproducible_and_detached(self):
         before = deepcopy(self.base)
