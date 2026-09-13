@@ -57,3 +57,21 @@ def test_exploration_and_problem_generation_are_isolated_from_treatment(monkeypa
     next(b for b in at.button if b.label=='Examine patient').click().run()
     assert not at.exception and at.session_state.state==before
     assert at.session_state.events[-1]['kind']=='examination'
+
+
+def test_indented_ecg_is_html_not_markdown_code():
+    from clinical_scene import scene_html
+    from markdown_it import MarkdownIt
+    svg = '''
+    <div class="mrs-ecg-strip">
+      <svg viewBox="0 0 900 228">
+
+        <path d="M 22 106 L 23 104" />
+      </svg>
+    </div>
+    '''
+    rendered = MarkdownIt('commonmark', {'html': True}).render(scene_html(None, '<div>174</div>', svg))
+    assert '<svg viewBox="0 0 900 228">' in rendered
+    assert 'M 22 106 L 23 104' in rendered
+    assert '<pre>' not in rendered and '<code>' not in rendered
+    assert '&lt;svg' not in rendered

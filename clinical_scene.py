@@ -9,6 +9,8 @@ from html import escape
 from PIL import Image
 import streamlit as st
 
+SCENE_RENDER_VERSION = 2
+
 
 def setting(name, default=''):
     try:
@@ -79,6 +81,9 @@ def scene_image(state, events):
 
 
 def scene_html(image_b64, monitor, ecg):
+    # Markdown treats blank lines plus four-space SVG indentation as code.
+    # Compact only markup whitespace before embedding the existing ECG.
+    ecg = "".join(line.strip() for line in ecg.splitlines())
     bg = f'background-image:url(data:image/png;base64,{image_b64});' if image_b64 else ''
     return '''<style>.clinical-scene{position:relative;aspect-ratio:3/2;background:#18252e;background-size:cover;background-position:center;border-radius:14px;overflow:hidden}.scene-monitor{position:absolute;right:2%;top:5%;width:31%;background:#0c1924;border:8px solid #263a48;border-radius:14px;box-shadow:0 8px 24px #0008}.scene-monitor div[style*="font:700"]{font-size:clamp(16px,2.2vw,36px)!important}.scene-monitor svg{min-height:0!important}.scene-monitor .mrs-ecg-strip{margin:0}.scene-time{position:absolute;left:0;right:0;bottom:0;background:#000a;color:#eee;padding:8px 16px;font:13px system-ui}@media(max-width:700px){.clinical-scene{aspect-ratio:auto;min-height:420px;background-size:auto 420px;background-position:left top;padding-top:420px}.scene-monitor{position:relative;right:auto;top:auto;width:96%;margin:2%}.scene-time{top:0;bottom:auto}}</style>'''+f'<div class="clinical-scene" style="{bg}"><div class="scene-monitor">{monitor}{ecg}</div><div class="scene-time">ED / Bed 03 · Arrival photograph · Monitor shows current values</div></div>'
 
