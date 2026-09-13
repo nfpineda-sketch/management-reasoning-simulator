@@ -276,6 +276,14 @@ def generate_encounter(
     state = deepcopy(base_state)
     state["seed"] = encounter_seed
     profile = deepcopy(PROFILES[choice["profile_id"]])
+    if challenge_id == "R1-03":
+        # Generated systemic-illness profiles previously inherited zero
+        # vasoplegia from the legacy classroom surface. Keep this correction
+        # restricted to newly generated R1-03 encounters.
+        profile["hidden"]["vasoplegia_severity"] = {
+            "volume_limited": 0.35, "rhythm_contributor": 0.25, "mixed_low_flow": 0.30,
+        }[choice["profile_id"]]
+        profile["hidden"]["rhythm_coupling_v2"] = True
     state["hidden"].update(profile["hidden"])
     state["observable"].update(profile["observable"])
     observable = state["observable"]

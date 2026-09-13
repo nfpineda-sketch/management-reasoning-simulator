@@ -13,7 +13,7 @@ import streamlit as st
 from curriculum import CHALLENGES
 # Refresh the changed renderer once during Streamlit hot updates.
 import clinical_scene as _clinical_scene
-if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 2:
+if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 3:
     import importlib
     importlib.reload(_clinical_scene)
 from resuscitation_room import render_room
@@ -25,7 +25,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.14.1", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.14.2", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -64,7 +64,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.14.1-clinical-encounter"
+SIMULATOR_VERSION = "0.14.2-clinical-encounter"
 
 
 def faculty_access():
@@ -7331,6 +7331,8 @@ def recompute_coupled_physiology(state, elapsed_min=1):
     h["effective_contractility"] = effective_contractility
 
     rhythm_penalty = (0.055 + 0.075 * h.get("af_burden", 0.0)) if is_af else 0.0
+    if h.get("rhythm_coupling_v2"):
+        rhythm_penalty *= clamp(h.get("af_causal_weight", 0.25) / 0.25, 0.0, 3.0)
 
     # Afterload can support pressure while opposing stroke volume at high vascular tone.
     high_pressor_afterload = 0.055 * max(0.0, norepi - 2.5)
@@ -9625,7 +9627,7 @@ def render_event(event):
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
     st.write(event["text"])
 
-st.caption("Management Reasoning Simulator · Clinical encounter v0.14.1")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.14.2")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -9731,8 +9733,9 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
 
 render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, sim_time_label(st.session_state.state["sim_time"]))
 encounter_mode = st.radio("Encounter", ["Talk", "Examine", "Tests", "Treat"], index=3, horizontal=True, label_visibility="collapsed")
+st.caption("What needs action now? State what you will do first, what can happen in parallel or wait, and what response would change your plan.")
 orders_panel = st.container()
-from clinical_scene import history_facts, answer_history, setting as scene_setting
+from clinical_scene import history_facts, answer_history, associated_symptoms, setting as scene_setting
 if encounter_mode == "Talk" and not st.session_state.encounter_ended:
     presentation = next((e["text"] for e in st.session_state.events if e["kind"] == "presentation"), "")
     facts = history_facts(presentation, st.session_state.state.get("case_id"))
@@ -9748,11 +9751,11 @@ if encounter_mode == "Talk" and not st.session_state.encounter_ended:
         topic = st.selectbox("Explore", ["Presenting symptoms and onset", "Associated symptoms", "Previous health"])
         if st.button("Ask about this topic"):
             if topic == "Associated symptoms":
-                response = " ".join(facts[-2:])
+                response = associated_symptoms(facts)
             elif topic == "Previous health":
                 response = "Hypertension." if st.session_state.state.get("case_id") == "PS002" else "Hypertension and type 2 diabetes."
             else:
-                response = " ".join(facts[:-2])
+                response = " ".join(f for f in facts if not f.startswith(("I ", "It has burned")))
             add_event("you", "Ask about " + topic.lower())
             add_event("patient_history", response)
             rerun_app()
@@ -10500,6 +10503,6 @@ if faculty_access():
 
 if ACCOUNT_CONTEXT:
     save_session(ACCOUNT_CONTEXT)
-st.caption("Management Reasoning Simulator · Clinical encounter v0.14.1")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.14.2")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

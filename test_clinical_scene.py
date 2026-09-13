@@ -52,7 +52,7 @@ def test_exploration_and_problem_generation_are_isolated_from_treatment(monkeypa
     next(b for b in at.button if b.label=='Ask about this topic').click().run()
     assert not at.exception and at.session_state.state==before
     assert at.session_state.events[-1]['kind']=='patient_history'
-    assert 'dysuria' in at.session_state.events[-1]['text']
+    assert 'urinate' in at.session_state.events[-1]['text']
     next(r for r in at.radio if r.label=='Encounter').set_value('Examine').run()
     next(b for b in at.button if b.label=='Examine patient').click().run()
     assert not at.exception and at.session_state.state==before
