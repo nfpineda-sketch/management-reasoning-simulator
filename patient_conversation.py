@@ -18,7 +18,66 @@ def _matches(pattern, text):
     return re.search(pattern, text, re.I) is not None
 
 
-def local_question_ids(question, facts):
+_OPENING_QUESTION = (
+    r'\b(how can i help|what brings you|what brought you|what seems to be|what is wrong|what s wrong|'
+    r'why are you here|what happened|how are you feeling|how do you feel|tell me what|'
+    r'como puedo ayud\w*|en que puedo ayud\w*|que le pasa|que te pasa|que siente|que sientes|'
+    r'que lo trae|que le trae|que te trae|que ocurrio|como se siente|como te sientes)\b'
+)
+
+
+def _authored_question_ids(q, facts, history):
+    """Use recorded topic boundaries for new families; never retrieve diagnoses.
+
+    The author supplies atomic, patient-known source sentences. A broad question
+    receives only its topic, and missing documentation never becomes a denial.
+    """
+    def topic_ids(keys, limit=None):
+        sources = {fact for key in keys for fact in history.get(key, [])}
+        ids = [i for i, fact in enumerate(facts) if fact in sources]
+        return ids if limit is None else ids[:limit]
+
+    # A named symptom takes precedence over a generic opener in a compound
+    # question. These are patient-history topics, not diagnostic classifiers.
+    focused = [
+        (r'\b(urin\w*|dysuria|disuria|orina\w*|miccion\w*|pee\w*|flank)\b', 'urinary_symptoms'),
+        (r'\b(chest|pecho|torac\w*)\b', 'chest_pain'),
+        (r'\b(breath\w*|dyspnea|disnea|respirar|ahogo|wheez\w*|silbid\w*)\b', 'breathing'),
+        (r'\b(bleed\w*|sangr\w*|melena|hematemesis|black stools?|heces negras)\b', 'bleeding'),
+        (r'\b(eat\w*|drink\w*|intake|appetite|apetito|comer|comido|bebido|beber|aliment\w*|ingesta|meals?|comida\w*)\b', 'oral_intake'),
+        (r'\b(opioid\w*|opiate\w*|fentanyl|fentanilo|heroin\w*|morphine|morfina|oxycodone|oxicodona|drug use|consumo de drogas)\b', 'exposure'),
+        (r'\b(neurolog\w*|numb\w*|entumec\w*|tingl\w*|hormigue\w*|focal weakness|debilidad focal|slurred speech|hablar|speech|facial droop|vision loss|perdida de vision)\b', 'neurological_symptoms'),
+        (r'\b(legs?|calf|calves|piernas?|pantorrilla\w*)\b', 'leg_symptoms'),
+    ]
+    keys = [key for pattern, key in focused if _matches(pattern, q) and key in history]
+    if keys:
+        # Insulin/meal questions require both exposure and food facts when
+        # explicitly requested, not only the first matching domain.
+        ids = topic_ids(keys)
+        if _matches(r'\b(insulin\w*|insulina)\b', q):
+            ids += [i for i, fact in enumerate(facts) if _matches(r'\binsulin\w*\b', _normalized(fact))]
+        return list(dict.fromkeys(ids))
+
+    direct_topics = [
+        (r'\b(allerg\w*|alerg\w*)\b', ('allergies',)),
+        (r'\b(medications?|medicines?|medicamentos?|pastill\w*|farmac\w*)\b', ('medications',)),
+        (r'\b(past medical|medical history|previous health|medical conditions|conditions do you have|antecedentes|enfermedades previas)\b', ('medical_history',)),
+        (r'\b(risk factors?|factores de riesgo)\b', ('risk_factors',)),
+        (r'\b(recent exposures?|exposiciones recientes)\b', ('exposure',)),
+    ]
+    direct = [key for pattern, keys in direct_topics if _matches(pattern, q) for key in keys]
+    if direct:
+        return topic_ids(direct)
+    if _matches(r'\b(other|associated|more|otros|mas) (symptoms|sintomas)\b|\banything else\b|\balgo mas\b', q):
+        return topic_ids(('associated_symptoms',), 2)
+    if _matches(r'\b(how long|onset|since when|desde cuando|hace cuanto)\b|\bwhen\b.*\b(begin|began|start\w*)\b|\bcuando\b.*\b(comenz\w*|empez\w*)\b', q):
+        return topic_ids(('onset',), 2)
+    if _matches(_OPENING_QUESTION, q) or q in {'hello', 'hi', 'good morning', 'hola', 'buenos dias'}:
+        return topic_ids(('chief_complaint',), 2)
+    return None
+
+
+def local_question_ids(question, facts, history=None):
     """Conservative high-confidence intent matching; never generate a finding.
 
     None means that local matching cannot establish what the question requests.
@@ -27,6 +86,10 @@ def local_question_ids(question, facts):
     q = ' '.join(_normalized(question).split())
     if not q:
         return None
+    if isinstance(history, dict):
+        ids = _authored_question_ids(q, facts, history)
+        if ids is not None:
+            return ids
     normalized = [_normalized(f) for f in facts]
     # Specific topics take precedence over open-ended phrasing, including when
     # the learner combines an opener and a targeted question.
@@ -46,6 +109,15 @@ def local_question_ids(question, facts):
          r'\b(medications?|medicines?|medicamentos?|allerg\w*|alerg\w*|pastill\w*|farmac\w*)\b'),
         (r'\b(past medical|medical history|previous health|medical conditions|conditions do you have|antecedentes|enfermedades previas|hypertension|diabet\w*)\b',
          r'\b(hypertension|diabet\w*|medical history|antecedentes)\b'),
+        (r'\b(breath\w*|dyspnea|disnea|respirar|ahogo|wheez\w*|silbid\w*)\b',
+         r'\b(breath\w*|dyspnea|wheez\w*|disnea)\b'),
+        (r'\b(insulin\w*|insulina)\b', r'\binsulin\w*\b'),
+        (r'\b(naloxone|naloxona)\b', r'\bnaloxone\b'),
+        (r'\b(opioid\w*|opiate\w*|fentanyl|fentanilo|heroin\w*|morphine|morfina|oxycodone|oxicodona)\b',
+         r'\b(opioid\w*|opiate\w*|fentanyl|heroin\w*|morphine|oxycodone)\b'),
+        (r'\b(travel|flight|flying|viaje\w*|vuelo\w*|immobil\w*|inmovil\w*|surgery|cirugia|bed rest|reposo)\b',
+         r'\b(travel\w*|flight|flying|immobil\w*|surgery|surgical|operation|bed rest)\b'),
+        (r'\b(smok\w*|tobacco|fuma\w*|tabaco)\b', r'\b(smok\w*|tobacco)\b'),
     ]
     selected = []
     recognized = False
@@ -66,11 +138,7 @@ def local_question_ids(question, facts):
                 if _matches(r'\b(onset|morning|yesterday|noticed|began|started|last night|since)\b', f)
                 and not _matches(r'\b(urin\w*|dysuria|chills|fever\w*)\b', f)][:2]
 
-    opener = _matches(
-        r'\b(how can i help|what brings you|what brought you|what seems to be|what is wrong|what s wrong|'
-        r'why are you here|what happened|how are you feeling|how do you feel|tell me what|'
-        r'como puedo ayud\w*|en que puedo ayud\w*|que le pasa|que te pasa|que siente|que sientes|'
-        r'que lo trae|que le trae|que te trae|que ocurrio|como se siente|como te sientes)\b', q)
+    opener = _matches(_OPENING_QUESTION, q)
     if opener or q in {'hello', 'hi', 'good morning', 'hola', 'buenos dias'}:
         presenting = [i for i, f in enumerate(normalized)
                       if _matches(r'\b(presents? with|presented with|presenting|came in|brought in)\b', f)]
@@ -95,13 +163,13 @@ def _failure(category, error=None):
     return NO_MATCH
 
 
-def answer_from_sources(question, facts, api_key='', model='gpt-5-mini', client=None):
+def answer_from_sources(question, facts, api_key='', model='gpt-5-mini', client=None, history=None):
     """Return only supplied source sentences; the provider may select IDs only."""
     if not str(question).strip():
         return 'Ask the patient a question.'
     if not facts:
         return NOT_DOCUMENTED
-    ids = local_question_ids(question, facts)
+    ids = local_question_ids(question, facts, history=history)
     if ids is not None:
         return _join(facts, ids)
     if not api_key and client is None:

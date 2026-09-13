@@ -12,7 +12,7 @@ from copy import deepcopy
 import math
 
 
-VISUAL_CONTRACT_VERSION = 1
+VISUAL_CONTRACT_VERSION = 2
 PERFUSION_CATEGORIES = (
     "preserved", "mildly impaired", "impaired", "severely impaired", "critical",
 )
@@ -21,7 +21,7 @@ VISUAL_CHOICES = {
         "alert", "drowsy", "obtunded", "unresponsive", "sedated", "not recorded",
     ),
     "work_of_breathing": (
-        "normal", "mildly increased", "increased", "moderately increased",
+        "normal", "reduced", "mildly increased", "increased", "moderately increased",
         "markedly increased", "severe", "ventilator-supported", "not recorded",
     ),
     "expression": (

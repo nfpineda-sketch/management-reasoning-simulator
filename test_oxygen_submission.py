@@ -37,6 +37,8 @@ def encounter(monkeypatch):
     at.session_state["_shared_access_granted"] = True
     at.run()
     assert not at.exception
+    # These regressions exercise the original AF encounter's oxygen parser.
+    next(item for item in at.selectbox if item.label == "Clinical problem").set_value("R1-03").run()
     click(at, "Begin Encounter")
     return at
 
@@ -142,7 +144,8 @@ def test_missing_oxygen_parameter_is_held_and_completed_without_default(encounte
     assert not at.session_state.pending_action
 
 
-def test_bare_order_stays_visible_until_reasoning_is_complete(encounter, monkeypatch):
+@pytest.mark.parametrize("scene_failure", [False, True])
+def test_bare_order_stays_visible_until_reasoning_is_complete(encounter, monkeypatch, scene_failure):
     at = encounter
     use_ai(at, monkeypatch, lambda text: text)
     before = deepcopy(at.session_state.state)
@@ -151,9 +154,25 @@ def test_bare_order_stays_visible_until_reasoning_is_complete(encounter, monkeyp
     assert at.session_state.pending_reasoning
     assert not at.session_state.management_trace
     assert any("ORDER HELD" in e["text"] for e in at.session_state.events)
+    if scene_failure:
+        from patient_appearance import appearance_signature
+        # Simulate the background image request finishing unsuccessfully just
+        # as the learner submits. Rendering its status must not discard a form
+        # submission or require the learner to repeat their reasoning.
+        jobs = at.session_state["_scene_jobs"]
+        jobs.pending = None
+        jobs.failed.add(appearance_signature(at.session_state.state))
+        at.session_state["_scene_failure_notified"] = None
     submit(at, ORIGINAL.replace("Start oxygen via nasal cannula at 3 L/min. ", ""))
-    assert at.session_state.state["treatments"]["oxygen_flow_lpm"] == 3
+    assert at.session_state.state["treatments"]["oxygen_flow_lpm"] == 3, {
+        "pending": at.session_state.pending_reasoning,
+        "last_parse": at.session_state.last_parse,
+        "events": at.session_state.events[-2:],
+    }
     assert len(at.session_state.management_trace) == 1
+    at.run()
+    assert len(at.session_state.management_trace) == 1
+    assert at.session_state.state["treatments"]["oxygen_flow_lpm"] == 3
 
 
 def test_bilingual_oxygen_order_preserves_original_parameters(encounter, monkeypatch):

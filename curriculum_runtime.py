@@ -165,8 +165,17 @@ def render_dashboard(context, initial_state, reset_session):
         st.write("Manage the patient, explain your reasoning, and reassess as the encounter evolves. Your learning focus will be discussed after the encounter.")
     else:
         st.subheader("Faculty sandbox")
-        st.caption("These encounters are excluded from resident progress. Three challenges are implemented in this pilot.")
+        st.caption(f"These encounters are excluded from resident progress. {len(CHALLENGES)} challenges are available.")
         faculty_choice = st.selectbox("Management challenge", list(CHALLENGES), format_func=lambda key: key + " · " + CHALLENGES[key]["title"])
+        with st.expander("Clinical and cognitive catalog"):
+            from cognitive_catalog import FAMILY_LABELS
+            st.dataframe([
+                {"Code": key, "Learning focus": challenge["title"],
+                 "Cognitive focus": challenge.get("bias_name", "Management reasoning"),
+                 "Clinical families": "; ".join(FAMILY_LABELS[family] for family in challenge.get("families", ())) or "Existing circulatory encounter"}
+                for key, challenge in CHALLENGES.items()
+            ], hide_index=True)
+            st.caption("These are formative teaching opportunities. The catalog does not diagnose a learner's cognitive bias or establish competence.")
     st.caption("You may enter your reasoning and orders in English or Spanish. Patient information and feedback are in English.")
     st.caption("Your encounter and reflection are saved to your account. Faculty in this pilot program can review them.")
     active = next((a for a in own if a["status"] == "active"), None)
@@ -220,14 +229,23 @@ def render_dashboard(context, initial_state, reset_session):
 
 
 def render_learning_focus(context):
-    if not context or not st.session_state.get("encounter_ended"):
+    if not st.session_state.get("encounter_ended"):
         return
-    assignment = st.session_state.get("encounter_assignment") or {}
-    challenge = CHALLENGES.get(assignment.get("challenge_id"))
+    assignment = (st.session_state.get("encounter_assignment") or {}) if context else {}
+    closed_state = st.session_state.get("encounter_closed_state") or {}
+    state = st.session_state.get("state") or {}
+    # The public frozen management snapshot deliberately omits the private
+    # encounter spec. Shared sessions retain it in their server-side live state.
+    spec = closed_state.get("encounter_spec") or state.get("encounter_spec") or {}
+    challenge = CHALLENGES.get(assignment.get("challenge_id") or spec.get("challenge_id"))
     if challenge:
         with st.expander("Learning focus for this encounter", expanded=True):
             st.write(challenge["title"])
+            if challenge.get("bias_name"):
+                st.write("Cognitive focus: " + challenge["bias_name"])
             st.write(challenge["objective"])
+            for question in challenge.get("debrief_questions", ()):
+                st.write(question)
             st.caption("This local curriculum mapping supports formative faculty review. Completing a case does not establish competence.")
 
 

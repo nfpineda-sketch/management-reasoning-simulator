@@ -44,9 +44,11 @@ def attempt(challenge_id, position, complete_evidence=False, **overrides):
 
 class AssignmentTests(unittest.TestCase):
     def test_only_implemented_challenges_within_assigned_year_are_eligible(self):
-        self.assertEqual(set(eligible_challenges(1)), {"R1-03", "R1-04"})
-        self.assertEqual(set(eligible_challenges(2)), {"R1-03", "R1-04", "R2-01"})
-        self.assertEqual(eligible_challenges(3), eligible_challenges(2))
+        year_one = {"R1-03", "R1-04", "R1-05", "R1-06", "R1-07"}
+        year_two = year_one | {"R2-01", "R2-02", "R2-03", "R2-04", "R2-05"}
+        self.assertEqual(set(eligible_challenges(1)), year_one)
+        self.assertEqual(set(eligible_challenges(2)), year_two)
+        self.assertEqual(set(eligible_challenges(3)), year_two | {"R3-01"})
         for year in (0, 4, -1, True, False, 1.0, 1.9, "1", None):
             with self.subTest(year=year), self.assertRaises(ValueError):
                 eligible_challenges(year)
@@ -54,7 +56,8 @@ class AssignmentTests(unittest.TestCase):
     def test_new_resident_assignment_is_reproducible_and_never_uses_later_year(self):
         for seed in range(30):
             result = assign_challenge(1, [], seed)
-            self.assertIn(result["challenge_id"], {"R1-03", "R1-04"})
+            self.assertIn(result["challenge_id"], eligible_challenges(1))
+            self.assertEqual(CHALLENGES[result["challenge_id"]]["year"], 1)
             self.assertEqual(result, assign_challenge(1, [], seed))
             self.assertEqual(result["reason"], "initial_exposure")
 
@@ -71,22 +74,27 @@ class AssignmentTests(unittest.TestCase):
             self.assertEqual(assign_challenge(2, excluded, seed), assign_challenge(2, [], seed))
 
     def test_initial_exposure_precedes_repeating_an_evidence_gap(self):
-        attempts = [attempt("R1-03", 1), attempt("R1-04", 2)]
+        # Every other eligible challenge has been completed, with evidence gaps.
+        attempts = [attempt(key, index) for index, key in enumerate(
+            (key for key in eligible_challenges(2) if key != "R2-01"), 1)]
         result = assign_challenge(2, attempts, 17)
         self.assertEqual(result["challenge_id"], "R2-01")
         self.assertEqual(result["reason"], "initial_exposure")
 
     def test_revisit_uses_latest_evidence_and_interleaves(self):
-        records = [
-            attempt("R1-03", 1),
-            attempt("R1-03", 2, True),  # Earlier absence is no longer the latest evidence.
-            attempt("R1-04", 3),
-            attempt("R2-01", 4, True),
-        ]
+        records = [attempt(key, index, True) for index, key in enumerate(
+            (key for key in eligible_challenges(2) if key not in {"R1-03", "R1-04", "R2-01"}), 1)]
+        offset = len(records)
+        records.extend([
+            attempt("R1-03", offset + 1),
+            attempt("R1-03", offset + 2, True),  # Earlier absence is no longer the latest evidence.
+            attempt("R1-04", offset + 3),
+            attempt("R2-01", offset + 4, True),
+        ])
         chosen = assign_challenge(2, records, 17)
         self.assertEqual(chosen["challenge_id"], "R1-04")
         self.assertEqual(chosen["reason"], "interleaved_evidence_review")
-        records.append(attempt("R1-04", 5))
+        records.append(attempt("R1-04", offset + 5))
         self.assertNotEqual(assign_challenge(2, records, 17)["challenge_id"], "R1-04")
 
     def test_case_outcome_never_creates_evidence_or_mastery(self):
@@ -144,6 +152,7 @@ class AssignmentTests(unittest.TestCase):
 class FakeStreamlit:
     def __init__(self, session=None):
         self.session_state = session or {}
+        self.query_params = {}
         self.rendered = []
         self.selectors = []
         self.sidebar = self

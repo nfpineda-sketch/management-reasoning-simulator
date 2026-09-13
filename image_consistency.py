@@ -24,7 +24,7 @@ _CONTRACT_KEYS = {
 
 _CHOICES = {
     **VISUAL_CHOICES,
-    "respiratory_support": {"none", "nasal cannula", "non-rebreather mask", "niv", "invasive ventilation"},
+    "respiratory_support": {"none", "nasal cannula", "simple mask", "non-rebreather mask", "niv", "bag-mask ventilation", "invasive ventilation"},
 }
 
 _REASONS = {
@@ -163,12 +163,20 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
         "(visible extremities, only when requested); diaphoresis (visible sweat only as requested); "
         "respiratory_posture (neck/shoulder effort and posture compatible with the requested work_of_breathing, "
         "never an assertion of breathing motion or rate from one frame); respiratory_support "
-        "(exact active interface, no extra or missing interface); identity_and_framing "
+        "(exact active interface, no extra or missing interface; bag-mask ventilation requires a manual "
+        "resuscitation bag connected to a sealed mask and the necessary gloved clinician hands holding "
+        "the mask seal and bag, not a non-rebreather reservoir or a strapped NIV mask); identity_and_framing "
         "(face and hands visible, rightmost third clear for a software monitor, and the same fictional "
         "person, room and camera framing as the reference when provided); no_unrequested_signs "
         "(no invented injury, bleeding, cyanosis, monitoring numbers/text/UI, or other conspicuous "
         "clinical signs outside the contract). If the expected contract does not request pallor, "
-        "do not demand pale skin. When mental_status is alert, do not equate alertness with happiness "
+        "do not demand pale skin. "
+        "Only when bag-mask ventilation is requested, allow the necessary gloved clinician hands and "
+        "mask coverage of the mouth and nose; the eyes and upper face must remain visible for identity "
+        "and engagement. Do not allow additional personnel or bodies. Reduced breathing effort means "
+        "a posture compatible with shallow spontaneous effort, not accessory muscle strain or a claim "
+        "that ventilation is adequate; manual support does not prove recovered respiratory drive. "
+        "When mental_status is alert, do not equate alertness with happiness "
         "or wellness; still check the requested expression. No assumption that more severe suffering "
         "is educationally better: require proportional agreement with the exact contract. When a "
         "field is 'not recorded', do not require or infer a sign from it; preserve the corresponding "

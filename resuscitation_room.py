@@ -8,6 +8,8 @@ def device_labels(t):
     labels = []
     if t.get('invasive_ventilation'):
         labels.append(f"Ventilator · {t.get('ventilator_mode') or 'VC/AC'} · FiO₂ {t.get('ventilator_fio2_percent', 100)}% · PEEP {t.get('ventilator_peep_cmh2o', 8)}")
+    elif t.get('bag_mask'):
+        labels.append('Bag-mask ventilation')
     elif t.get('niv'):
         labels.append(f"{t.get('niv_mode') or 'NIV'} · FiO₂ {t.get('niv_fio2_percent', '—')}%")
     elif t.get('oxygen'):
@@ -45,7 +47,7 @@ def patient_svg(t):
     <circle cx="177" cy="335" r="10" fill="#405565"/><circle cx="333" cy="335" r="10" fill="#405565"/>{mask}{pump}</svg>'''
 
 
-ROOM_RENDER_VERSION = 5
+ROOM_RENDER_VERSION = 6
 
 
 def monitor_html(o, time_label, profile='baseline', seed=0):
@@ -66,10 +68,8 @@ def render_room(state, events, ecg_svg, render_event, time_label):
     from clinical_scene import scene_image, scene_html
     from patient_appearance import appearance_signature, appearance_summary
     image = scene_image(state, events)
-    signature = appearance_signature(state)
-    if st.session_state.get('_scene_failed') and st.session_state.get('_scene_failure_notified') != signature:
-        st.session_state['_scene_failure_notified'] = signature
-        st.rerun()  # Make the retry control visible after a background failure.
+    # A background image failure must never restart the whole app: a full rerun
+    # here consumes form-submit events before the learner's order is processed.
     o = state['observable']
     description = appearance_summary(state) + ' Work of breathing: ' + str(o.get('work_of_breathing', 'Not recorded'))
     profile = state.get('ecg_profile', state.get('encounter_spec', {}).get('ecg_profile', 'baseline'))
@@ -114,7 +114,7 @@ def render_bedside_tools(state, events, render_event):
             if st.button('View recording'):
                 show_ecg(recordings[recording])
     jobs = st.session_state.get('_scene_jobs')
-    if jobs and appearance_signature(state) in jobs.failed and setting('OPENAI_API_KEY'):
+    if jobs and setting('OPENAI_API_KEY'):
         if st.button('Retry patient image'):
             jobs.failed.discard(appearance_signature(state))
             st.rerun()

@@ -1,9 +1,11 @@
-"""Bounded, reproducible encounter composition for the PS001 curriculum pilot.
+"""Bounded encounter composition for management and cognitive challenges.
 
 The optional model selects from reviewed *software* profiles and English scene
 options. It cannot supply physiology, diagnoses, treatments, or free-form patient
 facts. These are computationally tested teaching variants, not validated clinical
-models. The existing state engine remains responsible for every intervention.
+models. Cognitive challenges dispatch to distinct authored clinical families;
+the three earlier foundations retain their original circulatory profiles.
+The selected family's state engine is responsible for every intervention.
 
 Save ``spec`` with the attempt; replay must use it rather than call the model
 again. ``spec`` and ``state`` are server-side objects and contain the undisclosed
@@ -21,7 +23,7 @@ import secrets
 from typing import Any
 
 
-GENERATOR_VERSION = "0.10.1"
+GENERATOR_VERSION = "0.16.0"
 SPEC_VERSION = "mrs.ps001.encounter.v1"
 DEFAULT_MODEL = "gpt-5-mini"
 SUPPORTED_CHALLENGES = ("R1-03", "R1-04", "R2-01")
@@ -206,14 +208,25 @@ def generate_encounter(
     seed: int | None = None,
     profile_id: str | None = None,
     client: Any = None,
+    family_id: str | None = None,
+    variant_id: str | None = None,
 ) -> dict:
-    """Build one frozen PS001 variant; provider failure returns a local variant.
+    """Build a frozen family encounter; provider failure returns a local variant.
 
-    A fixed ``profile_id`` is intended for an authorized faculty sandbox. Access
+    Fixed profile/family/variant identifiers are intended for a faculty sandbox. Access
     control belongs to the calling service, not to this pure composition module.
     ``seed`` reproduces local choices and engine randomness; an AI call itself is
     not guaranteed deterministic. Store the returned specification to replay it.
     """
+    from cognitive_catalog import BIAS_CHALLENGES
+    if challenge_id in BIAS_CHALLENGES:
+        if profile_id is not None:
+            raise ValueError("Use a clinical family and patient variant for this challenge.")
+        from cognitive_generator import generate_cognitive_encounter
+        return generate_cognitive_encounter(challenge_id, base_state, api_key, model, seed,
+                                             family_id, variant_id, client)
+    if family_id is not None or variant_id is not None:
+        raise ValueError("Clinical-family selection applies to cognitive challenges.")
     if challenge_id not in SUPPORTED_CHALLENGES:
         raise ValueError("This challenge does not yet have an executable encounter family.")
     if profile_id is not None and profile_id not in PROFILES:

@@ -1,12 +1,14 @@
-"""Internal assignment and descriptive evidence for the first curriculum pilot.
+"""Internal assignment and descriptive evidence for formative encounters.
 
 Mappings are a local educational design, not certification or official year-level
 equivalences. ACGME milestone levels and Royal College stages are not PGY years.
 """
 import random
 
-CURRICULUM_VERSION = "0.1.0"
-CHALLENGES = {
+from cognitive_catalog import BIAS_CHALLENGES
+
+CURRICULUM_VERSION = "0.2.0"
+_FOUNDATION_CHALLENGES = {
     "R1-03": {
         "title": "Relate tachycardia to the patient's condition", "year": 1,
         "objective": "Explain the proposed contribution of the rhythm and compare the observed response with that explanation.",
@@ -26,6 +28,9 @@ CHALLENGES = {
         "acgme": "PC1; PC4; MK1; MK2", "royal_college": "ME 1.6; ME 2.4",
     },
 }
+# Neutral selectors open on the varied-case catalog. The original foundations
+# remain available for selection, replay, and later automatic exposure.
+CHALLENGES = {**BIAS_CHALLENGES, **_FOUNDATION_CHALLENGES}
 
 
 def eligible_challenges(training_year):
@@ -61,7 +66,8 @@ def evidence_summary(payload):
 def assign_challenge(training_year, attempts, seed):
     """Balance exposure and revisit evidence gaps, without pass/fail automation.
 
-    Initially expose each available challenge. Thereafter choose the largest
+    Initially expose each available challenge, introducing the varied-case
+    cognitive catalog before the older circulatory foundations. Thereafter choose the largest
     gap in the most recent review, interleaving away from the last challenge
     where possible. Sandbox/abandoned/incomplete attempts never confer credit.
     """
@@ -70,7 +76,8 @@ def assign_challenge(training_year, attempts, seed):
     latest = {a["challenge_id"]: a for a in completed}
     unseen = [key for key in eligible if key not in latest]
     if unseen:
-        choices, reason = unseen, "initial_exposure"
+        varied_unseen = [key for key in unseen if key in BIAS_CHALLENGES]
+        choices, reason = varied_unseen or unseen, "initial_exposure"
     else:
         previous = completed[-1]["challenge_id"]
         candidates = [key for key in eligible if key != previous] or eligible

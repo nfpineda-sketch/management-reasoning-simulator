@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 from account_store import AccountStore, hash_password
+from cognitive_catalog import BIAS_CHALLENGES
 from objectives import OBJECTIVES
 
 APP = str(Path(__file__).with_name("app.py"))
@@ -72,6 +73,7 @@ def assert_active_encounter_private(at):
 
 def test_existing_shared_gate_remains_closed_until_password(monkeypatch):
     monkeypatch.setenv("MRS_AUTH_MODE", "shared")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     at = AppTest.from_file(APP, default_timeout=20)
     at.secrets["APP_PASSWORD"] = "local-shared-test-only"
     at.run()
@@ -83,12 +85,14 @@ def test_existing_shared_gate_remains_closed_until_password(monkeypatch):
     at.text_input[0].set_value("local-shared-test-only")
     click(at, "Enter")
     assert any(w.label == "Clinical problem" for w in at.selectbox)
+    assert next(w for w in at.selectbox if w.label == "Clinical problem").value == "R1-05"
     click(at, "Begin Encounter")
-    assert at.session_state.state["case_id"] == "PS001"
+    assert at.session_state.state["case_id"].startswith("CE-")
+    assert at.session_state.state["encounter_spec"]["challenge_id"] == "R1-05"
     assert not any("Developer" in e.label for e in at.expander)
 
 
-def test_resident_assignment_cardioversion_persistence_and_private_ui(cohort):
+def test_resident_assignment_oxygen_persistence_and_private_ui(cohort):
     store, admin, token = cohort
     at = open_app(token)
     assert not at.selectbox
@@ -98,30 +102,48 @@ def test_resident_assignment_cardioversion_persistence_and_private_ui(cohort):
     assert not at.exception
     assert_active_encounter_private(at)
     labels = [exp.label for exp in at.expander]
-    assert "ECG" in labels
+    assert any(button.label == "ECG" for button in at.button)
     assert not any("Developer" in label for label in labels)
+    assigned_state = deepcopy(at.session_state.state)
+    challenge_id = assigned_state["encounter_spec"]["challenge_id"]
+    assert challenge_id in BIAS_CHALLENGES
+    assert BIAS_CHALLENGES[challenge_id]["year"] == 1
+    assert assigned_state["case_id"].startswith("CE-")
     learner_text = " ".join(str(item.value) for item in at.markdown)
     assert "R1-03" not in learner_text and "R1-04" not in learner_text
     assert "volume_limited" not in learner_text and "Learning focus" not in learner_text
+    for key, challenge in BIAS_CHALLENGES.items():
+        assert key not in learner_text
+        assert challenge["bias_name"] not in learner_text
+        assert challenge["objective"] not in learner_text
     text = (
-        "The patient is poorly perfused with rapid atrial fibrillation. My working model is that "
-        "the rhythm contributes to poor perfusion. My priority is to restore rhythm and improve perfusion. "
-        "Administer etomidate 8 mg IV and midazolam 2 mg IV for procedural sedation, followed by "
-        "synchronized electrical cardioversion at 200 J. I expect sinus rhythm and improved perfusion. "
-        "Immediately after cardioversion, reassess rhythm, heart rate, blood pressure, mental status, and perfusion."
+        "My working model is that impaired oxygenation may contribute to the presentation. "
+        "My priority is to support oxygenation while clarifying the cause. "
+        "Administer oxygen by nasal cannula at 2 L/min. I expect improved oxygenation. "
+        "Reassess SpO2, respiratory rate, work of breathing, and mental status in 2 minutes."
     )
     at.text_area[0].set_value(text)
     click(at, "Submit")
-    assert at.session_state.state["treatments"]["cardioversions"] == 1
-    assert at.session_state.state["observable"]["rhythm"] == "Sinus rhythm"
+    assert at.session_state.state["treatments"]["oxygen"] is True
+    assert at.session_state.state["treatments"]["oxygen_device"] == "Nasal cannula"
+    assert at.session_state.state["treatments"]["oxygen_flow_lpm"] == 2
     saved_state = deepcopy(at.session_state.state)
+    saved_trace = deepcopy(at.session_state.management_trace)
+    assert saved_trace and saved_trace[-1]["execution_status"] == "executed"
+    assert any(action.get("device") == "Nasal cannula" and action.get("flow_lpm") == 2
+               for action in saved_trace[-1]["action_summaries"])
+    assert saved_state["case_id"] == assigned_state["case_id"]
+    assert saved_state["encounter_spec"] == assigned_state["encounter_spec"]
     saved_rng = at.session_state.rng_counter
     attempt = store.list_attempts(token)[0]
     assert attempt["payload"]["session"]["state"] == saved_state
+    assert attempt["payload"]["session"]["management_trace"] == saved_trace
     # New browser session obtains the exact frozen case and trace.
     new = open_app(token)
     click(new, "Resume encounter")
     assert new.session_state.state == saved_state
+    assert new.session_state.management_trace == saved_trace
+    assert new.session_state.state["encounter_spec"] == assigned_state["encounter_spec"]
     assert new.session_state.rng_counter == saved_rng
     click(new, "Save & return to dashboard")
     assert not new.selectbox

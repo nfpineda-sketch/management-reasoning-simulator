@@ -14,16 +14,16 @@ from curriculum import CHALLENGES
 # Refresh the changed renderer once during Streamlit hot updates.
 import importlib
 import patient_appearance as _appearance
-if getattr(_appearance, "APPEARANCE_VERSION", 0) != 2:
+if getattr(_appearance, "APPEARANCE_VERSION", 0) != 3:
     importlib.reload(_appearance)
 import encounter_generator as _encounter_generator
-if getattr(_encounter_generator, "GENERATOR_VERSION", "") != "0.10.1":
+if getattr(_encounter_generator, "GENERATOR_VERSION", "") != "0.16.0":
     importlib.reload(_encounter_generator)
 import clinical_scene as _clinical_scene
-if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 6:
+if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 7:
     importlib.reload(_clinical_scene)
 import resuscitation_room as _room
-if getattr(_room, "ROOM_RENDER_VERSION", 0) != 5:
+if getattr(_room, "ROOM_RENDER_VERSION", 0) != 6:
     importlib.reload(_room)
 from resuscitation_room import render_room, render_bedside_tools
 from encounter_workspace import render_encounter_workspace
@@ -34,7 +34,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.15.2", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.16.0", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -73,7 +73,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.15.2-clinical-encounter"
+SIMULATOR_VERSION = "0.16.0-clinical-encounter"
 
 
 def faculty_access():
@@ -517,7 +517,7 @@ def clamp(x, lo=0.0, hi=1.0):
 
 def reset_session():
     st.session_state.started = False
-    st.session_state.selected_case = "R1-03"
+    st.session_state.selected_case = "R1-05"
     st.session_state.state = deepcopy(INITIAL_STATE)
     st.session_state.events = []
     st.session_state.history = []
@@ -705,12 +705,15 @@ def management_state_snapshot(state):
             "niv_epap_cmh2o": tr.get("niv_epap_cmh2o"),
             "niv_fio2_percent": tr.get("niv_fio2_percent"),
             "invasive_ventilation": bool(tr.get("invasive_ventilation")),
+            "bag_mask": bool(tr.get("bag_mask")),
             "ventilator_mode": tr.get("ventilator_mode"),
             "ventilator_fio2_percent": tr.get("ventilator_fio2_percent"),
             "ventilator_peep_cmh2o": tr.get("ventilator_peep_cmh2o"),
             "airway_prepared": bool(tr.get("airway_prepared")),
             "disposition": tr.get("disposition"),
             "cumulative_crystalloid_ml": tr.get("cumulative_crystalloid_ml", 0),
+            "total_crystalloid_ml": tr.get("total_crystalloid_ml", 0),
+            "packed_red_cells_units": tr.get("packed_red_cells_units", 0),
             "furosemide_total_mg": tr.get("furosemide_total_mg", 0.0),
             "cardioversions": tr.get("cardioversions", 0),
             "procedural_sedations": tr.get("procedural_sedations", 0),
@@ -1023,7 +1026,9 @@ def _trace_action_text(event):
     )
     labels = []
     for s in summaries:
-        if "volume_ml" in s:
+        if s.get("label"):
+            labels.append(str(s["label"]))
+        elif "volume_ml" in s:
             labels.append(f'{s["volume_ml"]} mL {s.get("fluid_type", "crystalloid")}')
         elif s.get("agent") == "furosemide":
             labels.append(f'furosemide {s.get("dose_mg", 0):g} mg {s.get("route", "IV")}')
@@ -1886,6 +1891,9 @@ def _reflect_compare_items(trace):
     missing reasoning.
     """
     filtered_events = [e for e in trace if e.get("execution_status") in {"executed", "terminal_locked"}]
+    if filtered_events and str((filtered_events[0].get("state_before") or {}).get("case_id", "")).startswith("CE-"):
+        from cognitive_review import reflection_items
+        return reflection_items(trace)
     events = list(enumerate(filtered_events, 1))
     ps001_selector = globals().get("_ps001_classroom_review_items")
     ps001_classroom_items = ps001_selector(events) if ps001_selector else None
@@ -2081,6 +2089,9 @@ def _trajectory_expert_model(prompt, event):
     if not event:
         return None
     before = event.get("state_before") or {}
+    if str(before.get("case_id", "")).startswith("CE-"):
+        from cognitive_review import trajectory_review
+        return trajectory_review(event, source_decision=prompt.get("decision"))
     after = event.get("state_after") or {}
     observable = before.get("observable") or {}
     reasoning = event.get("reasoning") or {}
@@ -3463,7 +3474,7 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
         choice = (st.session_state.get("encounter_assignment") or {}).get("challenge_id")
         start_encounter(context, INITIAL_STATE, reset_session, choice, adaptation_plan, prior_attempt_record)
         return {"adaptation_plan": deepcopy(adaptation_plan)}
-    selected = (st.session_state.state.get("encounter_spec") or {}).get("challenge_id") or "R1-03"
+    selected = (st.session_state.state.get("encounter_spec") or {}).get("challenge_id") or "R1-05"
     cfg = generate_problem_config(selected)
     st.session_state.selected_case = selected
     current_attempt = max(1, int(st.session_state.get("attempt_number", 1)))
@@ -5750,6 +5761,14 @@ def recognized_unimplemented_medications(text):
 
 
 def clinical_interpreter(text):
+    if (st.session_state.get("state") or {}).get("engine_family"):
+        from family_parser import parse_family_actions
+        parsed = parse_family_actions(text)
+        parsed["reasoning"] = extract_explicit_reasoning(text)
+        unresolved = next((a for a in parsed.get("actions", []) if a.get("type") == "clarification"), None)
+        if unresolved:
+            parsed["clarification"] = unresolved.get("message") or "Please clarify the order."
+        return parsed
     t = text.lower()
     reasoning = extract_explicit_reasoning(text)
 
@@ -6230,6 +6249,8 @@ REASONING_GATE_ACTION_TYPES = {
     "ventilator_adjustment", "ventilator_continuation", "dobutamine",
     "norepinephrine", "oxygen", "procedural_sedation", "cardioversion",
     "antibiotics", "disposition",
+    "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
+    "naloxone", "blood", "anticoagulation", "bag_mask", "consult",
 }
 
 REASONING_GATE_FIELD_LABELS = {
@@ -6252,6 +6273,8 @@ REASONING_GATE_OVERRIDE = "execute without complete reasoning"
 
 def reasoning_gate_missing(parsed):
     """Return prospective reasoning fields missing from a management order."""
+    if parsed.get("clarification"):
+        return []
     actions = parsed.get("actions", []) or []
     requires_gate = any(a.get("type") in REASONING_GATE_ACTION_TYPES for a in actions)
     if not requires_gate:
@@ -6322,11 +6345,17 @@ def _reasoning_gate_action_summary(parsed):
             volume = action.get("volume_ml")
             fluid = action.get("fluid_type") or "crystalloid"
             labels.append(f"{volume:g} mL {fluid}" if volume is not None else fluid)
-        elif atype in {"beta_blocker", "diltiazem", "amiodarone", "furosemide"}:
+        elif atype in {"beta_blocker", "diltiazem", "amiodarone", "furosemide", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "naloxone"}:
             agent = action.get("agent") or atype.replace("_", " ")
             dose = action.get("dose_mg")
             route = action.get("route") or ""
             labels.append(f"{agent} {dose:g} mg {route}".strip() if dose is not None else agent)
+        elif atype in {"dextrose", "anticoagulation", "blood"}:
+            dose = action.get("dose_g") if atype == "dextrose" else action.get("dose") if atype == "anticoagulation" else action.get("units")
+            units = "g" if atype == "dextrose" else action.get("units", "") if atype == "anticoagulation" else "unit(s)"
+            agent = action.get("agent") or atype
+            route = action.get("route") or ""
+            labels.append(f"{agent} {dose:g} {units} {route}".strip() if dose is not None else agent)
         elif atype == "oxygen":
             device = action.get("device") or "oxygen"
             flow = action.get("flow_lpm")
@@ -6342,7 +6371,7 @@ def _reasoning_gate_action_summary(parsed):
             if operation == "stop":
                 labels.append(f"stop {atype}")
             elif rate is not None:
-                labels.append(f"{operation} {atype} {rate:g} mcg/kg/min")
+                labels.append(f"{operation} {atype} {rate:g} {action.get('units') or 'mcg/kg/min'}")
             else:
                 labels.append(f"{operation} {atype}")
         elif atype == "nitroglycerin":
@@ -8747,6 +8776,9 @@ def antibiotics_transition(state, agent="broad-spectrum antibiotics", dose_g=Non
 def format_diagnostic_summary(summary):
     dtype = summary.get("diagnostic_type")
     r = summary.get("result") or {}
+    if r.get("report") or (st.session_state.get("state") or {}).get("engine_family"):
+        from family_reports import format_result
+        return format_result(dtype, r)
     if dtype == "pocus":
         return (
             "POCUS: " + "; ".join([
@@ -8816,6 +8848,9 @@ def merge_pending_bundle(parsed):
 
 def execute_bundle(parsed):
     state = st.session_state.state
+    if state.get("engine_family"):
+        from family_engine import execute_family_bundle
+        return execute_family_bundle(state, parsed)
 
     # Keep the learner input available after collapse, but do not run ordinary
     # intervention/reassessment physiology as though spontaneous circulation persists.
@@ -9589,6 +9624,9 @@ def oxygen_context():
 
 
 def format_clinical_update():
+    if st.session_state.state.get("engine_family"):
+        from family_engine import clinical_update
+        return clinical_update(st.session_state.state)
     o = st.session_state.state["observable"]
     h = st.session_state.state["hidden"]
 
@@ -9661,7 +9699,7 @@ def render_event(event):
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
     st.write(event["text"])
 
-st.caption("Management Reasoning Simulator · Clinical encounter v0.15.2")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.16.0")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -9670,7 +9708,8 @@ if not st.session_state.started:
         render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
         st.stop()
     st.subheader("Choose a clinical problem")
-    problem_ids = list(CHALLENGES)
+    from cognitive_catalog import BIAS_CHALLENGES
+    problem_ids = list(BIAS_CHALLENGES) + [key for key in CHALLENGES if key not in BIAS_CHALLENGES]
     previous_problem = st.session_state.get("selected_case")
     selected = st.selectbox(
         "Clinical problem", problem_ids,
@@ -9766,25 +9805,36 @@ with st.container(key="encounter-console"):
     encounter_mode = st.radio("Encounter", ["Talk", "Examine", "Tests", "Treat"], index=3, horizontal=True, label_visibility="collapsed")
     st.caption("Act · anticipate the response · reassess")
     orders_panel = st.container()
-    from clinical_scene import history_facts, answer_history, associated_symptoms, setting as scene_setting
+    from clinical_scene import history_facts, answer_history, associated_symptoms, history_topics, history_topic_facts, setting as scene_setting
     if encounter_mode == "Talk" and not st.session_state.encounter_ended:
-        if str(st.session_state.state['observable'].get('mental_status', '')).lower() in {'unresponsive', 'obtunded', 'sedated'}:
+        clinical_case = st.session_state.state.get("encounter_spec", {}).get("clinical_case", {})
+        history_source = clinical_case.get("history_source")
+        has_collateral = bool(history_source and str(history_source).strip().lower() not in {"patient", "the patient"})
+        cannot_speak = str(st.session_state.state['observable'].get('mental_status', '')).lower() in {'unresponsive', 'obtunded', 'sedated'}
+        if cannot_speak and not has_collateral:
             st.info('The patient cannot provide a history at present. Review the history already obtained in the clinical chart.')
         else:
+            if history_source:
+                st.caption("History source: " + str(history_source))
+            if cannot_speak:
+                st.info("The patient cannot answer at present. Questions are directed to the available collateral source.")
             presentation = next((e["text"] for e in st.session_state.events if e["kind"] == "presentation"), "")
-            facts = history_facts(presentation, st.session_state.state.get("case_id"))
+            facts = history_facts(presentation, st.session_state.state.get("case_id"), state=st.session_state.state)
             with st.form("patient_conversation"):
-                question = st.text_input("Ask the patient", placeholder="What brought you in today?")
+                question = st.text_input("Ask the available history source" if cannot_speak else "Ask the patient", placeholder="What brought you in today?")
                 ask_patient = st.form_submit_button("Ask")
             if ask_patient and question.strip():
-                answer = answer_history(question, facts, scene_setting("OPENAI_API_KEY"))
+                answer = answer_history(question, facts, scene_setting("OPENAI_API_KEY"), state=st.session_state.state)
                 add_event("you", question)
                 add_event("patient_history", answer)
                 rerun_app()
             with st.expander("History topics"):
-                topic = st.selectbox("Explore", ["Presenting symptoms and onset", "Associated symptoms", "Previous health"])
+                case_topics = history_topics(st.session_state.state)
+                topic = st.selectbox("Explore", case_topics or ["Presenting symptoms and onset", "Associated symptoms", "Previous health"])
                 if st.button("Ask about this topic"):
-                    if topic == "Associated symptoms":
+                    if case_topics:
+                        response = " ".join(history_topic_facts(st.session_state.state, topic))
+                    elif topic == "Associated symptoms":
                         response = associated_symptoms(facts)
                     elif topic == "Previous health":
                         response = "Hypertension." if st.session_state.state.get("case_id") == "PS002" else "Hypertension and type 2 diabetes."
@@ -9794,12 +9844,18 @@ with st.container(key="encounter-console"):
                     add_event("patient_history", response)
                     rerun_app()
     if encounter_mode == "Examine":
-        area = st.selectbox("Examine", ["General appearance", "Breathing", "Peripheral perfusion"])
+        family_findings = {}
+        if st.session_state.state.get("engine_family"):
+            from family_engine import current_findings
+            family_findings = current_findings(st.session_state.state)
+        area = st.selectbox("Examine", list(dict.fromkeys(["General appearance", "Breathing", "Peripheral perfusion"] + list(family_findings))))
         if st.button("Examine patient"):
             observed = st.session_state.state["observable"]
             if area == "General appearance":
                 from patient_appearance import appearance_summary
                 finding = appearance_summary(st.session_state.state)
+            elif area in family_findings:
+                finding = family_findings[area]
             elif area == "Breathing":
                 finding = "Respiratory rate: " + str(observed.get("respiratory_rate", "—")) + "/min. Work of breathing: " + str(observed.get("work_of_breathing", "Not documented"))
             elif not observed.get("pulse_present", True):
@@ -9900,7 +9956,15 @@ with st.container(key="encounter-console"):
                 st.caption("Acquire and compare 12-lead tracings using ECG above.")
 
             diagnostics = st.session_state.state.get("diagnostics", {}) or {}
-            if any(diagnostics.get(k) for k in ["pocus", "lactate", "vbg", "abg", "basic_labs"]):
+            if st.session_state.state.get("engine_family") and diagnostics:
+                from family_reports import TEST_LABELS, format_result
+                with st.expander("Diagnostics", expanded=True):
+                    for test_id, result in diagnostics.items():
+                        if not isinstance(result, dict):
+                            continue
+                        st.markdown(_patient_diagnostic_heading(TEST_LABELS.get(test_id, "Investigation"), result))
+                        st.write(format_result(test_id, result))
+            elif any(diagnostics.get(k) for k in ["pocus", "lactate", "vbg", "abg", "basic_labs"]):
                 with st.expander("Diagnostics", expanded=True):
                     p = diagnostics.get("pocus")
                     if p:
@@ -9957,18 +10021,29 @@ with st.container(key="encounter-console"):
                     st.write(f'SpO₂: {o["spo2"]}%')
                     st.write(f'Respiratory rate: {o.get("respiratory_rate", 22)}/min')
                     st.write(f'Work of breathing: {o.get("work_of_breathing", "Mildly increased")}')
-                stage = congestion_stage(pulmonary_clinical_signal(st.session_state.state))
+                stage = "family" if st.session_state.state.get("engine_family") else congestion_stage(pulmonary_clinical_signal(st.session_state.state))
+                if stage == "family":
+                    from family_engine import current_findings
+                    st.write(current_findings(st.session_state.state).get("Respiratory", "No additional examination finding recorded."))
                 if stage == "none":
                     st.write("Lungs: no new congestion findings")
                 elif stage == "early":
                     st.write("Lungs: scattered new B-lines")
                 elif stage == "moderate":
                     st.write("Lungs: bilateral B-lines with bibasilar crackles")
-                else:
+                elif stage != "family":
                     st.write("Lungs: diffuse bilateral B-lines and crackles")
 
             with st.expander("Current treatments", expanded=True):
                 tr = st.session_state.state["treatments"]
+                if st.session_state.state.get("engine_family"):
+                    if tr.get("packed_red_cells_units"):
+                        st.write(f'Packed red cells delivered: {tr["packed_red_cells_units"]:g} unit(s)')
+                    for medication in tr.get("administered_medications", []):
+                        from family_reports import format_administration
+                        st.write(format_administration(medication))
+                    if tr.get("bag_mask"):
+                        st.write("Bag-mask assisted ventilation")
                 st.write(f'Cumulative crystalloid: {tr["cumulative_crystalloid_ml"]} mL')
                 if tr["metoprolol_total_mg"] > 0:
                     st.write(f'Metoprolol: {tr["metoprolol_total_mg"]:g} mg total')
@@ -10035,7 +10110,7 @@ with st.container(key="encounter-console"):
                     )
                 if tr.get("disposition"):
                     st.write(f'Disposition: {tr.get("disposition")}')
-            if faculty_access():
+            if faculty_access() and not st.session_state.state.get("engine_family"):
                 with st.expander("Developer state", expanded=False):
                     st.caption("Hidden from learners in production.")
                     st.json({
@@ -10284,7 +10359,7 @@ with st.container(key="encounter-console"):
                     direct_non_reassess = [
                         a for a in direct.get("actions", []) if a.get("type") != "reassessment"
                     ]
-                    if direct_non_reassess:
+                    if direct_non_reassess or st.session_state.state.get("engine_family"):
                         parsed = direct
                     else:
                         contextual = parse_contextual_followup(processing_input)
@@ -10356,7 +10431,9 @@ with st.container(key="encounter-console"):
                 # patient state and produce one learner-facing update at the reassessment time.
                 labels = []
                 for s in summaries:
-                    if "volume_ml" in s:
+                    if s.get("label"):
+                        labels.append(str(s["label"]))
+                    elif "volume_ml" in s:
                         labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')
                     elif s.get("agent") == "furosemide":
                         labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}')
@@ -10535,6 +10612,6 @@ with st.container(key="encounter-console"):
 
     if ACCOUNT_CONTEXT:
         save_session(ACCOUNT_CONTEXT)
-    st.caption("Management Reasoning Simulator · Clinical encounter v0.15.2")
+    st.caption("Management Reasoning Simulator · Clinical encounter v0.16.0")
 
     # Compatibility marker for v0.6.0.27 regression lineage.

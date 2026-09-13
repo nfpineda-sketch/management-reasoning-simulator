@@ -13,7 +13,7 @@ from io import BytesIO
 from PIL import Image
 
 
-APPEARANCE_VERSION = 2
+APPEARANCE_VERSION = 3
 MAX_IMAGE_BYTES = 20_000_000
 
 _MENTAL = {
@@ -25,6 +25,7 @@ _MENTAL = {
 }
 _BREATHING = {
     "normal": "No visible increased breathing effort.",
+    "reduced": "Reduced, shallow spontaneous respiratory effort: relaxed neck and shoulders without vigorous accessory muscle use. Do not portray this as restful wellbeing or add labored breathing. A still image cannot establish respiratory rate or adequate ventilation; retain the separately documented gaze and engagement.",
     "mildly increased": "Subtle increased respiratory effort visible around the neck and shoulders.",
     "increased": "Visible increased breathing effort around the neck and shoulders.",
     "moderately increased": "Moderate respiratory effort, with visible accessory muscle use.",
@@ -35,7 +36,9 @@ _BREATHING = {
 _SUPPORT = {
     "none": "No oxygen delivery interface, noninvasive mask or endotracheal tube attached.",
     "nasal cannula": "A nasal cannula with prongs at the nostrils and correctly routed oxygen tubing.",
+    "simple mask": "A simple oxygen face mask over nose and mouth with oxygen tubing and a retaining strap, without a reservoir bag, manual resuscitation bag or NIV breathing circuit.",
     "non-rebreather mask": "A fitted oxygen mask with its attached reservoir bag and oxygen tubing.",
+    "bag-mask ventilation": "A ventilation mask sealed over nose and mouth, attached to a self-inflating manual resuscitation bag and oxygen tubing. Show only the necessary gloved clinician hands maintaining the mask seal and squeezing the bag; no other personnel or bodies. Keep the patient's eyes and upper face visible. This is active manual ventilation, not a loose oxygen mask with a reservoir bag or a strapped NIV mask.",
     "niv": "A fitted noninvasive ventilation face mask with straps and breathing circuit.",
     "invasive ventilation": "A secured oral endotracheal tube connected to a breathing circuit, with no noninvasive mask or cannula.",
 }
@@ -75,10 +78,12 @@ def appearance_state(state):
     tr = state.get("treatments", {})
     if tr.get("invasive_ventilation"):
         support = "invasive ventilation"
+    elif tr.get("bag_mask"):
+        support = "bag-mask ventilation"
     elif tr.get("niv"):
         support = "niv"
     elif tr.get("oxygen"):
-        support = _known(tr.get("oxygen_device"), ("nasal cannula", "non-rebreather mask"))
+        support = _known(tr.get("oxygen_device"), ("nasal cannula", "simple mask", "non-rebreather mask"))
         if support == "not recorded":
             support = "unspecified oxygen device"
     else:
@@ -127,6 +132,11 @@ def appearance_summary(state):
 
 def edit_prompt(state):
     """A source-bounded edit brief; arbitrary state strings never reach the model."""
+    personnel = (
+        "Only the necessary gloved clinician hands maintaining the mask seal and compressing the manual ventilation bag may enter the scene; no extra personnel or bodies. "
+        if appearance_state(state)['respiratory_support'] == 'bag-mask ventilation' else
+        "No extra personnel or clinician hands. "
+    )
     return (
         "Edit this reference photograph of a fictional patient in an emergency department. "
         "It is the SAME patient later in the SAME encounter. Preserve the exact identity, age, "
@@ -137,8 +147,8 @@ def edit_prompt(state):
         "When the requested appearance differs from the reference, adjust eyelids, gaze, facial "
         "engagement and breathing-related posture conservatively, without changing facial identity. "
         "Use ONLY the respiratory interface listed above; remove other respiratory interfaces if present. "
-        "Keep ECG electrodes, cuff and finger oximeter. No extra personnel, procedures, IV infusions "
-        "or equipment. Represent the explicitly requested color, expression and sweat changes even "
+        "Keep ECG electrodes, cuff and finger oximeter. " + personnel +
+        "No unrequested procedures, IV infusions or equipment. Represent the explicitly requested color, expression and sweat changes even "
         "if the reference looked different. Do not infer a diagnosis, unconsciousness cause, pain location, "
         "cyanosis, bleeding, wounds or any unlisted sign. Tactile coldness alone is not a color change. "
         "No labels, text, numeric readings, monitors, ECG traces, icons or UI in the photograph. "

@@ -9,7 +9,70 @@ from html import escape
 from PIL import Image
 import streamlit as st
 
-SCENE_RENDER_VERSION = 6
+SCENE_RENDER_VERSION = 7
+
+# Only recorded patient-history topics are exposed to conversational retrieval.
+# The full case specification also includes diagnoses and teaching objectives.
+HISTORY_TOPIC_LABELS = {
+    'chief_complaint': 'Presenting symptoms',
+    'onset': 'Onset and course',
+    'associated_symptoms': 'Associated symptoms',
+    'medical_history': 'Previous health',
+    'medications': 'Medications',
+    'allergies': 'Allergies',
+    'risk_factors': 'Relevant exposures and risk factors',
+    'chest_pain': 'Chest discomfort',
+    'breathing': 'Breathing symptoms',
+    'bleeding': 'Bleeding symptoms',
+    'oral_intake': 'Eating and drinking',
+    'exposure': 'Recent exposures',
+    'urinary_symptoms': 'Urinary symptoms',
+    'neurological_symptoms': 'Neurological symptoms',
+    'leg_symptoms': 'Leg symptoms',
+}
+
+
+def _clinical_case(state):
+    spec = state.get('encounter_spec') if isinstance(state, dict) else None
+    case = spec.get('clinical_case') if isinstance(spec, dict) else None
+    return case if isinstance(case, dict) else {}
+
+
+def _case_history(state):
+    history = _clinical_case(state).get('history')
+    if not isinstance(history, dict):
+        return {}
+    return {key: [fact.strip() for fact in history[key]
+                  if isinstance(fact, str) and fact.strip() and len(fact) <= 4000]
+            for key in HISTORY_TOPIC_LABELS if isinstance(history.get(key), list)}
+
+
+def history_topics(state):
+    """Available authored topics, without hints about the hidden diagnosis."""
+    return [HISTORY_TOPIC_LABELS[key] for key, facts in _case_history(state).items() if facts]
+
+
+def history_topic_facts(state, topic):
+    """Return isolated source sentences for a topic key or its UI label."""
+    key = next((key for key, label in HISTORY_TOPIC_LABELS.items()
+                if topic in (key, label)), None)
+    return list(_case_history(state).get(key, []))
+
+
+def _patient_description(state):
+    spec = state.get('encounter_spec') or {}
+    if isinstance(spec, dict) and 'clinical_case' in spec:
+        patient = _clinical_case(state).get('patient')
+        if not isinstance(patient, dict):
+            raise ValueError('Patient demographics are not available for this encounter.')
+        age, sex = patient.get('age_years'), patient.get('sex')
+        if type(age) is not int or not 18 <= age <= 110 or sex not in ('male', 'female'):
+            raise ValueError('Patient demographics are not supported for this encounter image.')
+        return f"{age}-year-old {'man' if sex == 'male' else 'woman'}"
+    legacy = {'PS001': '70-year-old man', 'PS002': '64-year-old woman'}
+    if state.get('case_id') not in legacy:
+        raise ValueError('Patient demographics are not available for this encounter.')
+    return legacy[state['case_id']]
 
 
 def setting(name, default=''):
@@ -20,7 +83,7 @@ def setting(name, default=''):
 
 
 def scene_prompt(state):
-    person = '64-year-old woman' if state.get('case_id') == 'PS002' else '70-year-old man'
+    person = _patient_description(state)
     from patient_appearance import appearance_state, appearance_brief
     visible = appearance_state(state)
     return ('Photorealistic emergency department encounter, clinician viewpoint from the foot of a bed. '
@@ -60,7 +123,9 @@ def scene_image(state, events):
     if not arrival:
         return None
     # Invalidate older unscreened pictures on a running session's hot update.
-    key = (st.session_state.get('_attempt_id'), id(arrival),
+    spec = state.get('encounter_spec') or {}
+    patient_identity = (id(arrival), state.get('case_id'), spec.get('content_sha256'))
+    key = (st.session_state.get('_attempt_id'), patient_identity,
            SCENE_RENDER_VERSION, APPEARANCE_VERSION, SCENE_PIPELINE_VERSION)
     if st.session_state.get('_scene_identity') != key or '_scene_jobs' not in st.session_state:
         st.session_state['_scene_identity'] = key
@@ -131,24 +196,36 @@ BEDSPACE_CSS = """
 """
 
 
-def history_facts(presentation, case_id):
+def history_facts(presentation, case_id, *, state=None):
+    if isinstance(state, dict) and 'clinical_case' in (state.get('encounter_spec') or {}):
+        return list(dict.fromkeys(fact for facts in _case_history(state).values() for fact in facts))
     # Every original sentence is retained; no generated clinical content.
     facts = re.split(r'(?<=[.!?])\s+', presentation.strip())
     if case_id == 'PS002':
         facts += ['I have felt feverish and had chills since last night.', 'I have a new cough with phlegm.', 'I have no burning when I urinate or pain in my flank.', 'I have not vomited or noticed any bleeding.']
-    else:
+    elif case_id == 'PS001':
         facts += ['It has burned when I urinate for two days, and I have been going more often.', 'I have had chills.', 'I have not been eating or drinking much.', 'I have felt progressively weaker today.', 'I have no chest pain.', 'I have not noticed gastrointestinal bleeding.', 'I have not had vomiting or diarrhea.', 'I have no cough or focal neurological symptoms.']
     return [f for f in facts if not re.search(r'BP |blood pressure|heart rate|SpO|capillary|extremities|ECG|Respiratory rate|speaking in short|alert|external bleeding|cause of her', f, re.I)]
 
 
-def associated_symptoms(facts):
+def associated_symptoms(facts, *, state=None):
+    if isinstance(state, dict) and 'clinical_case' in (state.get('encounter_spec') or {}):
+        from patient_conversation import NOT_DOCUMENTED
+        return ' '.join(history_topic_facts(state, 'associated_symptoms')[:2]) or NOT_DOCUMENTED
     # Keep an informative positive symptom available immediately, but do not
     # turn a broad question into a complete review of systems or a diagnosis.
     positives = [f for f in facts if f.startswith(("It has burned", "I have had chills", "I have felt feverish", "I have a new cough"))]
     return " ".join(positives[:2])
 
 
-def answer_history(question, facts, api_key='', client=None):
+def answer_history(question, facts, api_key='', client=None, *, state=None):
     from patient_conversation import answer_from_sources
     model = setting('MRS_CONVERSATION_MODEL', setting('OPENAI_MODEL', 'gpt-5-mini')).strip() or 'gpt-5-mini'
-    return answer_from_sources(question, facts, api_key=api_key, model=model, client=client)
+    authored = None
+    if isinstance(state, dict) and 'clinical_case' in (state.get('encounter_spec') or {}):
+        authored = _case_history(state)
+        # Source selection is tied to this encounter even if a caller holds an
+        # older list from a previously viewed patient.
+        facts = history_facts('', state.get('case_id'), state=state)
+    return answer_from_sources(question, facts, api_key=api_key, model=model, client=client,
+                               history=authored)

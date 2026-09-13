@@ -1,6 +1,23 @@
-# Clinical encounter workspace v0.13.0
+# Clinical encounter workspace v0.16.0
 
-Development UI: arrival handover, current exchange, investigation reports, and complete encounter record. [Local setup and scope](docs/UPDATE_v0.13.0.md).
+The development workspace now includes eight cognitive challenges across eight
+clinical families and sixteen authored patient variants, alongside the three
+existing management foundations. The optional AI selects a compatible patient;
+that patient's history, examinations, investigations, ECG profile, appearance and
+bounded treatment model stay together throughout the encounter. Without the
+provider, a local seeded selection uses the same cases.
+
+The cognitive learning focus is disclosed after the encounter, with questions
+about the learner's actual decisions and observations. No decision automatically
+establishes a cognitive bias or competence. Quantitative trajectories are teaching
+parameters requiring faculty review, not validated patient predictions.
+
+- [Cognitive catalog and family mapping](docs/COGNITIVE_CATALOG.md)
+- [v0.16.0 scope and verification](docs/RELEASE_v0.16.0.md)
+
+Persistent bedside view: patient, monitor, serial 12-lead ECG, conversation,
+examination, investigations, treatment and reassessment.
+[Local setup](docs/UPDATE_v0.13.0.md).
 
 # Management Reasoning Simulator — Curriculum pilot v0.12.1
 

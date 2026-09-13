@@ -1,0 +1,682 @@
+"""Authored clinical constraints for the cognitive-challenge encounter generator.
+
+These are fictional teaching cases, not records of real patients or a validated
+physiology model. AI may select and narrate a case within these constraints; it
+must not invent a different diagnosis, contradictory examination, or treatment
+response. Faculty-only fields must never be included in the live handover.
+
+References inform the clinical problem and management priorities. Patient details,
+numerical observations, test values, delays and review questions are authored for
+simulation and are not quoted observations or guideline-prescribed trajectories.
+"""
+from copy import deepcopy
+
+from visual_observations import hypoperfusion_visual_profile
+
+
+CASE_BANK_VERSION = "1.0.0"
+SOURCE_URLS = {
+    "pneumonia": "https://www.idsociety.org/practice-guideline/community-acquired-pneumonia-cap-in-adults",
+    "pulmonary_edema": "https://doi.org/10.1093/eurheartj/ehab368",
+    "acs": "https://www.escardio.org/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/acute-coronary-syndromes/",
+    "pulmonary_embolism": "https://www.escardio.org/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/acute-pulmonary-embolism/",
+    "asthma": "https://ginasthma.org/wp-content/uploads/2026/07/GINA-Summary-Guide-2026-WEB-WMS.pdf",
+    "gi_bleed": "https://pubmed.ncbi.nlm.nih.gov/33929377/",
+    "hypoglycemia": "https://abcd.care/sites/default/files/site_uploads/JBDS_Guidelines_Current/JBDS_01_Hypo_Guideline_with_QR_code_January_2023.pdf",
+    "opioid": "https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/adult-and-pediatric-special-circumstances-of-resuscitation",
+}
+INVESTIGATION_IDS = (
+    "pocus", "lactate", "vbg", "abg", "basic_labs", "temperature",
+    "poc_glucose", "chest_xray", "urinalysis", "blood_cultures",
+    "troponin", "ctpa", "hemoglobin",
+)
+
+
+def _observable(sbp, dbp, hr, spo2, rr, *, wob="Normal", crt=2,
+                extremities="Warm", mental="Alert", temperature=36.8,
+                glucose=110, perfusion="preserved"):
+    return {
+        "sbp": sbp, "dbp": dbp, "hr": hr, "spo2": spo2,
+        "respiratory_rate": rr, "work_of_breathing": wob,
+        "crt": crt, "extremities": extremities, "mental_status": mental,
+        "rhythm": ("Sinus tachycardia" if hr > 100 else
+                   "Sinus bradycardia" if hr < 60 else "Sinus rhythm"),
+        "pulse_present": True, "temperature_c": temperature,
+        "glucose_mg_dl": glucose, "peripheral_perfusion": perfusion,
+    }
+
+
+def _visual(*, shock=False, expression="uncomfortable", skin="natural",
+            sweating="absent"):
+    if shock:
+        profile = hypoperfusion_visual_profile()
+        profile["baseline"]["diaphoresis"] = sweating
+        return profile
+    return {
+        "id": "authored_case_appearance_v1",
+        "baseline": {"expression": expression, "skin_color": skin,
+                     "diaphoresis": sweating, "mottling": False},
+        "perfusion_appearance": {},
+    }
+
+
+def _history(chief, symptoms, medical, medications, onset, risks, **focused):
+    def sentences(value):
+        return [value] if isinstance(value, str) else list(value)
+    history = {
+        "chief_complaint": sentences(chief),
+        "associated_symptoms": sentences(symptoms),
+        "medical_history": sentences(medical),
+        "medications": sentences(medications),
+        "allergies": ["No known medication allergies are reported."],
+        "onset": sentences(onset), "risk_factors": sentences(risks),
+    }
+    history.update({key: sentences(value) for key, value in focused.items()})
+    return history
+
+
+def _gas(ph, co2, oxygen=None):
+    result = {"ph": ph, "paco2_mm_hg" if oxygen is not None else "pco2_mm_hg": co2,
+              "bicarbonate_mmol_l": round(.03 * co2 * 10 ** (ph - 6.1), 1)}
+    if oxygen is not None:
+        result.update({"pao2_mm_hg": oxygen, "fio2_percent": 21})
+    return result
+
+
+def _study(result, duration=5):
+    return {"duration_min": duration,
+            "result": {"report": result} if isinstance(result, str) else result}
+
+
+def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
+                    pocus, chest_xray, troponin=8, sodium=138, potassium=4.1,
+                    bun=18, ctpa=None):
+    # An unauthored study is absent, never silently reported as a negative test.
+    result = {
+        "pocus": _study(pocus, 2),
+        "lactate": _study({"lactate_mmol_l": lactate}),
+        "abg": _study(_gas(*abg)), "vbg": _study(_gas(*vbg)),
+        "basic_labs": _study({
+            "hemoglobin_g_dl": hemoglobin, "wbc_k_ul": wbc,
+            "sodium_mmol_l": sodium, "potassium_mmol_l": potassium,
+            "creatinine_mg_dl": creatinine, "bun_mg_dl": bun,
+            "glucose_mg_dl": o["glucose_mg_dl"],
+        }, 10),
+        "temperature": _study({"temperature_c": o["temperature_c"]}, 1),
+        "poc_glucose": _study({"glucose_mg_dl": o["glucose_mg_dl"]}, 1),
+        "chest_xray": _study(chest_xray, 8),
+        "hemoglobin": _study({"hemoglobin_g_dl": hemoglobin}, 5),
+        "troponin": _study({"value_ng_l": troponin,
+                              "upper_reference_ng_l": 19,
+                              "report": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample."}, 10),
+        "urinalysis": _study("No leukocyte esterase, nitrite or blood detected.", 8),
+        "blood_cultures": _study("Samples collected; culture identification and susceptibility results are pending.", 2),
+    }
+    if ctpa is not None:
+        result["ctpa"] = _study(ctpa, 20)
+    return result
+
+
+def _case(identifier, family, age, sex, comorbidities, presentation, history,
+          examination, observable, investigations, diagnosis, findings, focus,
+          questions, actions, *, ecg="baseline", visual=None, recurrence=False,
+          history_source="Patient"):
+    return {
+        "id": identifier,
+        "patient": {"age_years": age, "sex": sex,
+                    "pronouns": "she/her" if sex == "female" else "he/him",
+                    "comorbidities": list(comorbidities)},
+        "presentation": presentation, "history": history, "history_source": history_source,
+        "examination": examination, "observable": observable,
+        "ecg_profile": ecg, "investigations": investigations,
+        "visual_profile": visual or _visual(),
+        "engine": {
+            "family": family, "definitive_actions": list(actions),
+            "baseline_glucose": observable["glucose_mg_dl"],
+            "baseline_hemoglobin": investigations["hemoglobin"]["result"]["hemoglobin_g_dl"],
+            "baseline_lactate": investigations["lactate"]["result"]["lactate_mmol_l"],
+            "recurrence_risk": recurrence,
+        },
+        "faculty": {"diagnosis": diagnosis, "discriminating_findings": list(findings),
+                    "management_focus": focus, "review_questions": list(questions),
+                    "sources": [SOURCE_URLS[family]]},
+    }
+
+
+FAMILIES = {
+    "pneumonia": {"label": "Infection with respiratory compromise", "variants": []},
+    "pulmonary_edema": {"label": "Acute respiratory distress with congestion", "variants": []},
+    "acs": {"label": "Acute chest or upper-abdominal discomfort", "variants": []},
+    "pulmonary_embolism": {"label": "Acute dyspnea or presyncope", "variants": []},
+    "asthma": {"label": "Worsening breathlessness with airflow limitation", "variants": []},
+    "gi_bleed": {"label": "Weakness or syncope with blood loss", "variants": []},
+    "hypoglycemia": {"label": "Acute altered behavior or consciousness", "variants": []},
+    "opioid": {"label": "Reduced consciousness with slow breathing", "variants": []},
+}
+
+
+# PNEUMONIA: different presentations and demographics, with respiratory findings
+# that remain true even when the arrival story initially emphasizes something else.
+_o = _observable(92, 58, 118, 89, 30, wob="Increased", crt=4,
+                 extremities="Cool", temperature=39.1, glucose=152, perfusion="impaired")
+FAMILIES["pneumonia"]["variants"].append(_case(
+    "pneumonia_46f", "pneumonia", 46, "female", ["rheumatoid arthritis"],
+    "A 46-year-old woman presents with breathlessness and worsening weakness. She is awake and pauses between sentences.",
+    _history("I feel short of breath and too weak to stand for long.",
+        ["I have had a cough with yellow sputum and shaking chills.", "It hurts on the right when I take a deep breath."],
+        "I have rheumatoid arthritis; I have not previously needed oxygen.",
+        "I take methotrexate weekly and folic acid; no antibiotic has been started.",
+        "The cough began three days ago; the breathing and weakness worsened today.",
+        "I receive methotrexate and have eaten and drunk little since yesterday.",
+        chest_pain="The right-sided pain occurs with coughing or deep inspiration, not as a central pressure.",
+        breathing="The shortness of breath is now present while sitting still.",
+        oral_intake="I have had very little to eat or drink since yesterday.",
+        urinary_symptoms="I have no burning or frequency when passing urine.",
+        bleeding="I have not coughed blood, vomited blood or passed black stools."),
+    {"Cardiac": "Rapid regular pulse; no new murmur heard.",
+     "Respiratory": "Increased respiratory effort; focal crackles and bronchial breathing at the right base.",
+     "Abdomen": "Soft; no focal tenderness or guarding.",
+     "Neurological": "Awake, oriented and moving all limbs symmetrically."}, _o,
+    _investigations(_o, lactate=3.8, hemoglobin=12.2, wbc=19.4, creatinine=1.4,
+        abg=(7.42, 31, 58), vbg=(7.38, 38),
+        pocus={"lungs": "Right basal subpleural consolidation with dynamic air bronchograms; no diffuse bilateral B-lines.",
+               "lv": "Preserved contraction.", "rv": "No enlargement."},
+        chest_xray="Right lower-lobe air-space opacity. No pulmonary edema or pneumothorax.", troponin=12),
+    "Community-acquired pneumonia with hypoxemia and impaired perfusion",
+    ["Focal pulmonary findings", "Fever and productive cough", "Hypoxemia and delayed capillary refill"],
+    "Address oxygenation and perfusion while arranging antimicrobial treatment and reassessing response.",
+    ["Which observations required action before diagnostic certainty?", "What changed after support, and what remained untreated?"],
+    ["antibiotics", "oxygen", "fluid"], visual=_visual(shock=True)))
+
+_o = _observable(96, 60, 108, 91, 28, wob="Increased", crt=4,
+                 extremities="Cool", mental="Drowsy", temperature=37.8, glucose=126, perfusion="impaired")
+FAMILIES["pneumonia"]["variants"].append(_case(
+    "pneumonia_83m", "pneumonia", 83, "male", ["hypertension", "hearing impairment"],
+    "An 83-year-old man is brought by his daughter after becoming unusually sleepy and nearly falling at home.",
+    _history("His daughter reports that he has become sleepy and much less steady on his feet.",
+        ["His daughter noticed a new cough and reduced appetite over two days.", "He has been breathing faster today."],
+        "His daughter reports hypertension and hearing impairment; he normally walks independently and converses clearly.",
+        "His daughter lists amlodipine as his only regular prescription.",
+        "The cough began two days ago; sleepiness and near-fall occurred this morning.",
+        "He is independently mobile at baseline and has had poor oral intake during this illness.",
+        breathing="His daughter says the faster breathing began before the near-fall.",
+        oral_intake="His daughter says he has taken only small sips and little food today.",
+        exposure="There was no witnessed head strike, seizure or new sedative exposure.",
+        urinary_symptoms="His daughter reports no preceding urinary complaints."),
+    {"Cardiac": "Rapid regular pulse; no new murmur heard.",
+     "Respiratory": "Tachypnea with focal crackles and reduced air entry at the left base.",
+     "Abdomen": "Soft and non-tender; no suprapubic tenderness.",
+     "Neurological": "Opens eyes to voice, follows simple commands slowly, and moves all limbs without an obvious focal deficit."}, _o,
+    _investigations(_o, lactate=3.1, hemoglobin=13.1, wbc=15.6, creatinine=1.6,
+        abg=(7.41, 33, 62), vbg=(7.37, 40),
+        pocus={"lungs": "Focal left basal consolidation with air bronchograms; no diffuse bilateral B-lines.",
+               "rv": "No enlargement.", "pericardium": "No effusion."},
+        chest_xray="Left lower-lobe consolidation without diffuse edema.", troponin=17),
+    "Pneumonia presenting with acute encephalopathy and impaired perfusion",
+    ["New tachypnea and hypoxemia", "Focal consolidation", "New mental-status change from an independent baseline"],
+    "Stabilize physiology and investigate the new altered state despite a nonspecific arrival complaint.",
+    ["Did the initial story account for the respiratory findings?", "How did you check the response to treatment?"],
+    ["antibiotics", "oxygen", "fluid"], visual=_visual(shock=True)))
+
+
+# PULMONARY EDEMA: hypertensive redistribution versus established congestive HF.
+_o = _observable(218, 116, 126, 81, 38, wob="Severe", temperature=36.6, glucose=148)
+FAMILIES["pulmonary_edema"]["variants"].append(_case(
+    "pulmonary_edema_58m", "pulmonary_edema", 58, "male", ["hypertension"],
+    "A 58-year-old man arrives with rapidly worsening breathlessness. He remains upright and can speak only a few words at a time.",
+    _history("I suddenly cannot catch my breath, especially if I lie back.",
+        ["I woke up gasping and have been coughing up a small amount of frothy sputum.", "I have not had fever or a preceding productive cough."],
+        "I have high blood pressure; I have never been told I have asthma.",
+        "I ran out of my usual antihypertensive medication four days ago.",
+        "Severe breathlessness began about an hour ago and worsened rapidly.",
+        "My blood pressure has been high and I have missed several days of treatment.",
+        breathing="Lying flat makes my breathing markedly worse.",
+        chest_pain="I feel chest tightness with the effort of breathing, without a separate persistent crushing pain.",
+        oral_intake="I have eaten and drunk normally.",
+        urinary_symptoms="I have no urinary burning or frequency."),
+    {"Cardiac": "Rapid regular pulse; elevated jugular venous pressure.",
+     "Respiratory": "Severe respiratory effort with widespread bilateral crackles and some expiratory wheeze.",
+     "Abdomen": "Soft and non-tender.",
+     "Neurological": "Awake, oriented and distressed; answers are brief because of breathlessness."}, _o,
+    _investigations(_o, lactate=2.8, hemoglobin=14.3, wbc=10.8, creatinine=1.2,
+        abg=(7.29, 49, 46), vbg=(7.25, 56),
+        pocus={"lungs": "Diffuse bilateral B-lines with bilateral lung sliding.",
+               "lv": "Moderately reduced systolic contraction.", "rv": "No enlargement.",
+               "pericardium": "No large effusion."},
+        chest_xray="Bilateral perihilar air-space and interstitial opacities with vascular congestion.", troponin=28),
+    "Hypertensive acute cardiogenic pulmonary edema",
+    ["Marked hypertension", "Orthopnea and diffuse congestion", "Severe hypoxemia"],
+    "Support breathing and reduce excessive cardiac loading with close blood-pressure reassessment.",
+    ["How did wheeze fit with the other examination findings?", "Which changes would prompt you to adjust respiratory support or vasodilation?"],
+    ["niv", "nitroglycerin", "diuretic"],
+    visual=_visual(expression="markedly uncomfortable", sweating="marked")))
+
+_o = _observable(164, 92, 114, 84, 32, wob="Markedly increased", crt=3,
+                 extremities="Cool", temperature=36.7, glucose=132, perfusion="mildly impaired")
+FAMILIES["pulmonary_edema"]["variants"].append(_case(
+    "pulmonary_edema_75f", "pulmonary_edema", 75, "female", ["heart failure with reduced ejection fraction", "chronic kidney disease"],
+    "A 75-year-old woman presents with breathlessness that is now preventing her from resting in bed.",
+    _history("My breathing has become so bad that I have to sit up all the time.",
+        ["My ankles have become more swollen and my clothes feel tighter.", "I have no fever, rigors or new sputum."],
+        "I have heart failure with an ejection fraction around 30% and chronic kidney disease.",
+        "I take a loop diuretic and heart-failure medicines, but missed the diuretic for three days while travelling.",
+        "The swelling increased over four days; my breathing became much worse overnight.",
+        "I have known reduced cardiac function and missed my usual diuretic.",
+        breathing="I have slept sitting up for the last two nights.",
+        chest_pain="I have not had a new focal or pressure-like chest pain.",
+        urinary_symptoms="I have passed less urine but have no dysuria."),
+    {"Cardiac": "Regular tachycardia, elevated jugular venous pressure and bilateral pitting ankle edema.",
+     "Respiratory": "Marked respiratory effort with bilateral crackles extending to the mid-zones.",
+     "Abdomen": "Soft; no focal tenderness.",
+     "Neurological": "Awake and oriented, speaking in short phrases."}, _o,
+    _investigations(_o, lactate=2.3, hemoglobin=11.7, wbc=9.3, creatinine=1.8,
+        abg=(7.34, 43, 51), vbg=(7.30, 50), bun=34,
+        pocus={"lungs": "Diffuse bilateral B-lines and small bilateral pleural effusions.",
+               "lv": "Globally reduced systolic contraction.", "pericardium": "No large effusion."},
+        chest_xray="Cardiomegaly, bilateral vascular and interstitial congestion, and small pleural effusions.", troponin=35),
+    "Acute decompensated systolic heart failure with pulmonary edema",
+    ["Orthopnea and edema", "Diffuse B-lines with reduced LV contraction", "Recent interruption of diuretic therapy"],
+    "Treat respiratory distress and congestion, checking renal function, pressure and the evolving response.",
+    ["Which finding supported congestion rather than a need for more fluid?", "What would establish that the response was adequate?"],
+    ["niv", "diuretic", "nitroglycerin"],
+    visual=_visual(expression="markedly uncomfortable", sweating="mild")))
+
+
+# ACS: the diagnostic ECG and biomarker findings are authored, never invented
+# from a cognitive label. Both variants require a definitive-care pathway.
+_o = _observable(100, 64, 58, 96, 22, crt=3, extremities="Cool",
+                 temperature=36.8, glucose=156, perfusion="mildly impaired")
+FAMILIES["acs"]["variants"].append(_case(
+    "acs_54m_inferior", "acs", 54, "male", ["hypertension", "dyslipidemia"],
+    "A 54-year-old man presents with persistent upper-abdominal discomfort and nausea. He looks uncomfortable and sweaty.",
+    _history("I have a heavy discomfort high in my abdomen that will not go away.",
+        ["The discomfort sometimes extends into my chest and jaw.", "I feel nauseated and have broken into a sweat."],
+        "I have high blood pressure and high cholesterol, but no previous heart attack.",
+        "I take losartan and atorvastatin; I have not taken an antiplatelet today.",
+        "The discomfort started 75 minutes ago while walking and has persisted at rest.",
+        "I smoke, and my father had coronary disease in his fifties.",
+        chest_pain="The upper-abdominal heaviness extends behind the sternum and into my jaw; it is not reproduced by touching my chest.",
+        breathing="I feel mildly short of breath, without pleuritic pain.",
+        bleeding="I have no hematemesis or black stool."),
+    {"Cardiac": "Slow regular pulse; no new murmur heard.",
+     "Respiratory": "No increased respiratory effort; lungs are clear on auscultation.",
+     "Abdomen": "Soft, with no focal tenderness or guarding despite the reported discomfort.",
+     "Neurological": "Awake, oriented and moving all limbs normally."}, _o,
+    _investigations(_o, lactate=2.1, hemoglobin=14.1, wbc=10.5, creatinine=1.0,
+        abg=(7.43, 35, 83), vbg=(7.39, 42),
+        pocus={"lv": "Inferior wall contraction is reduced.", "lungs": "No diffuse B-lines.",
+               "rv": "No marked enlargement.", "pericardium": "No effusion."},
+        chest_xray="No focal consolidation or pulmonary edema.", troponin=95),
+    "Inferior ST-elevation myocardial infarction",
+    ["Persistent exertional discomfort with autonomic symptoms", "Inferior ST elevation with reciprocal changes", "Regional LV wall-motion abnormality"],
+    "Recognize the time-critical ischemic pattern and arrange reperfusion while monitoring hemodynamics.",
+    ["How did the pain location influence your initial explanation?", "Which finding changed the urgency of definitive management?"],
+    ["aspirin", "consult", "reperfusion_referral"], ecg="st_elevation_inferior",
+    visual=_visual(skin="mild pallor", sweating="marked")))
+
+_o = _observable(146, 86, 102, 95, 24, wob="Mildly increased", temperature=36.9, glucose=184)
+FAMILIES["acs"]["variants"].append(_case(
+    "acs_66f_nonst", "acs", 66, "female", ["type 2 diabetes", "hypertension"],
+    "A 66-year-old woman reports new breathlessness and a persistent heavy sensation across her upper chest.",
+    _history("I feel unusually short of breath and there is a weight across my upper chest.",
+        ["I have been nauseated and more tired than usual.", "I have not had fever, sputum or pain on deep inspiration."],
+        "I have diabetes and high blood pressure; these symptoms are new for me.",
+        "I take metformin, losartan and a statin.",
+        "The symptoms started about three hours ago during light activity and have not fully resolved.",
+        "I have diabetes and hypertension; my sister has coronary disease.",
+        chest_pain="The heaviness is persistent, not positional and not reproduced by pressing on the chest.",
+        breathing="I become breathless with much less activity than usual.",
+        bleeding="I have no recent bleeding or black stools."),
+    {"Cardiac": "Regular mildly rapid pulse; no new murmur.",
+     "Respiratory": "Mildly increased effort; no focal crackles or wheeze.",
+     "Abdomen": "Soft and non-tender.",
+     "Neurological": "Alert, oriented and conversant."}, _o,
+    _investigations(_o, lactate=1.6, hemoglobin=12.8, wbc=9.6, creatinine=1.1,
+        abg=(7.43, 35, 78), vbg=(7.39, 42),
+        pocus={"lv": "Mild inferolateral regional hypokinesis.", "lungs": "No diffuse B-lines.",
+               "rv": "No enlargement.", "pericardium": "No effusion."},
+        chest_xray="No acute focal pulmonary abnormality.", troponin=180),
+    "Non-ST-elevation acute coronary syndrome",
+    ["Persistent ischemic symptoms", "ST depression", "Elevated troponin requiring contextual and serial assessment"],
+    "Recognize acute ischemia without ST elevation and establish monitored specialist assessment and reassessment.",
+    ["What did the absence of ST elevation establish, and what did it not establish?", "How did ongoing symptoms affect your next action?"],
+    ["aspirin", "consult"], ecg="st_depression",
+    visual=_visual(sweating="mild")))
+
+
+# PE: one normotensive and one hypotensive case. ECG/oxygenation cannot alone
+# exclude PE, and anticoagulation does not immediately normalize RV physiology.
+_o = _observable(110, 70, 124, 90, 30, wob="Increased", crt=3, temperature=37.1, glucose=108)
+FAMILIES["pulmonary_embolism"]["variants"].append(_case(
+    "pulmonary_embolism_33f", "pulmonary_embolism", 33, "female", ["recent ankle fracture repair"],
+    "A 33-year-old woman arrives with sudden breathlessness and sharp right-sided chest discomfort.",
+    _history("I suddenly became short of breath and it hurts on the right when I breathe in.",
+        ["I have felt my heart racing and a little lightheaded.", "I have no fever or productive cough."],
+        "I had surgery for an ankle fracture 12 days ago and have been much less mobile.",
+        "I use an estrogen-containing contraceptive and occasional acetaminophen.",
+        "The breathing and chest discomfort started abruptly about two hours ago.",
+        "I have recent surgery, reduced mobility and use an estrogen-containing contraceptive.",
+        chest_pain="The pain is sharp and worsens with inspiration; it is not relieved by rest.",
+        breathing="The breathlessness started suddenly while I was sitting.",
+        bleeding="I have not coughed blood or had other recent bleeding.",
+        leg_symptoms="My operated leg has been more swollen, including the calf, since yesterday."),
+    {"Cardiac": "Regular tachycardia; no new murmur.",
+     "Respiratory": "Increased effort; breath sounds are equal without focal crackles or wheeze.",
+     "Abdomen": "Soft and non-tender.",
+     "Neurological": "Alert and oriented.",
+     "Extremities": "Unilateral calf swelling and tenderness on the operated side."}, _o,
+    _investigations(_o, lactate=2.0, hemoglobin=12.6, wbc=10.2, creatinine=.8,
+        abg=(7.47, 30, 59), vbg=(7.43, 37),
+        pocus={"rv": "Mild enlargement.", "lv": "Preserved contraction.",
+               "lungs": "Bilateral lung sliding and no diffuse B-lines.",
+               "venous_compression": "Noncompressible proximal vein in the symptomatic leg."},
+        chest_xray="No focal consolidation, edema or pneumothorax.", troponin=31,
+        ctpa="Acute lobar and segmental filling defects in the right and left pulmonary arteries. Mild RV enlargement."),
+    "Acute pulmonary embolism with hypoxemia, initially without hypotension",
+    ["Abrupt pleuritic dyspnea", "Thromboembolic risk factors", "Confirmed pulmonary arterial filling defects"],
+    "Establish the thromboembolic diagnosis and treatment plan while monitoring for deterioration.",
+    ["Which findings were not explained by a reassuring chest radiograph?", "What would change the level of monitoring or escalation?"],
+    ["anticoagulation", "consult", "oxygen"], visual=_visual()))
+
+_o = _observable(86, 54, 132, 88, 32, wob="Markedly increased", crt=5,
+                 extremities="Cool", temperature=36.7, glucose=136, perfusion="impaired")
+FAMILIES["pulmonary_embolism"]["variants"].append(_case(
+    "pulmonary_embolism_61m", "pulmonary_embolism", 61, "male", ["colon cancer receiving chemotherapy"],
+    "A 61-year-old man is brought in after nearly collapsing. He is breathless and says he feels faint even while lying on the trolley.",
+    _history("I suddenly felt breathless and nearly passed out.",
+        ["I have felt my heart racing and had discomfort when taking a deep breath.", "I have no fever, sputum or recent vomiting."],
+        "I am receiving chemotherapy for colon cancer; I have not previously had a clot.",
+        "I receive scheduled chemotherapy and as-needed anti-nausea medication; I do not take an anticoagulant.",
+        "The severe breathlessness and near-collapse began about 45 minutes ago.",
+        "I have active cancer and have spent much of the last week in bed because of fatigue.",
+        chest_pain="There is mild chest discomfort on a deep breath, without a sustained crushing pressure.",
+        bleeding="I have no recent black stool, rectal bleeding or hematemesis.",
+        leg_symptoms="My left calf has been swollen for several days."),
+    {"Cardiac": "Rapid regular pulse; elevated jugular venous pressure.",
+     "Respiratory": "Marked respiratory effort with equal breath sounds and no widespread crackles.",
+     "Abdomen": "Soft, without guarding or focal tenderness.",
+     "Neurological": "Awake and answers appropriately, but reports persistent faintness.",
+     "Extremities": "Left calf swelling and tenderness."}, _o,
+    _investigations(_o, lactate=4.8, hemoglobin=11.6, wbc=8.7, creatinine=1.3,
+        abg=(7.43, 28, 55), vbg=(7.39, 35),
+        pocus={"rv": "Dilated with reduced systolic contraction and septal flattening.",
+               "lv": "Small LV cavity.", "pericardium": "No large effusion.",
+               "lungs": "No diffuse B-lines."},
+        chest_xray="No focal consolidation or pulmonary edema.", troponin=76,
+        ctpa="Extensive acute bilateral main and lobar pulmonary arterial filling defects with RV enlargement and septal flattening."),
+    "High-risk pulmonary embolism with obstructive shock",
+    ["Hypotension with impaired perfusion", "Acute RV pressure overload", "Active cancer and venous thrombosis findings"],
+    "Support the patient and rapidly involve a reperfusion-capable team; reassess transport and imaging feasibility.",
+    ["Could the patient tolerate your proposed diagnostic pathway?", "What required escalation beyond anticoagulation alone?"],
+    ["anticoagulation", "consult", "oxygen"], ecg="right_strain", visual=_visual(shock=True)))
+
+
+# ASTHMA: audible wheeze versus limited air movement and tiring; a quieter chest
+# is not authored as recovery unless the evolving physiology supports recovery.
+_o = _observable(138, 84, 126, 90, 34, wob="Markedly increased", temperature=36.8, glucose=116)
+FAMILIES["asthma"]["variants"].append(_case(
+    "asthma_24f", "asthma", 24, "female", ["asthma", "allergic rhinitis"],
+    "A 24-year-old woman presents with worsening breathlessness and chest tightness. She is sitting forward and speaking in short phrases.",
+    _history("My chest is tight and I cannot get my breathing under control.",
+        ["I have a dry cough and can hear myself wheezing.", "I have no fever, productive sputum, rash or lip swelling."],
+        "I have asthma and allergic rhinitis; I have previously needed an emergency visit but have never been intubated.",
+        "I have used my reliever repeatedly today; my preventer inhaler ran out last week.",
+        "Symptoms worsened over eight hours after a day outdoors with heavy pollen exposure.",
+        "I have been without my inhaled controller and have needed frequent reliever use.",
+        breathing="It is difficult to breathe out, and the reliever only helps briefly.",
+        chest_pain="The sensation is tightness with breathing, not a separate focal or crushing pain.",
+        exposure="There was heavy pollen exposure; no food exposure or new medication preceded the symptoms."),
+    {"Cardiac": "Regular tachycardia; no new murmur.",
+     "Respiratory": "Marked effort, prolonged expiration and widespread expiratory wheeze with reduced air entry. Peak expiratory flow is 35% of her documented personal best.",
+     "Abdomen": "Soft and non-tender.",
+     "Neurological": "Awake, oriented and cooperative, but speech is limited by breathing."}, _o,
+    _investigations(_o, lactate=2.1, hemoglobin=13.0, wbc=9.8, creatinine=.8,
+        abg=(7.45, 31, 59), vbg=(7.41, 38),
+        pocus="Bilateral lung sliding; no focal consolidation, diffuse B-lines, RV enlargement or pericardial effusion.",
+        chest_xray="Hyperinflation without focal consolidation or pneumothorax."),
+    "Acute severe asthma exacerbation",
+    ["Prolonged expiration and widespread wheeze", "Reduced peak expiratory flow", "Controller interruption and repeated reliever use"],
+    "Treat airflow obstruction and inflammation while tracking work of breathing and response.",
+    ["Which changes would indicate relief rather than fatigue?", "How did you decide when to repeat or escalate treatment?"],
+    ["bronchodilator", "steroid", "oxygen"], visual=_visual(expression="markedly uncomfortable")))
+
+_o = _observable(142, 86, 132, 89, 30, wob="Severe", mental="Drowsy", temperature=37.0, glucose=121)
+FAMILIES["asthma"]["variants"].append(_case(
+    "asthma_49m", "asthma", 49, "male", ["asthma", "prior intensive care admission for asthma"],
+    "A 49-year-old man is brought in with persistent breathing difficulty. He appears tired and responds to questions only briefly.",
+    _history("His partner reports worsening breathing difficulty and increasing exhaustion.",
+        ["His partner says the wheeze was louder earlier and he is now finding it difficult to speak.", "There has been a dry cough without fever, purulent sputum or a rash."],
+        "His partner reports asthma and a previous intensive care admission requiring ventilation.",
+        "He uses an inhaled corticosteroid/long-acting bronchodilator and has repeatedly used his rescue inhaler today.",
+        "Breathing worsened through the day after cleaning a dusty storage room; he became sleepier over the last hour.",
+        "He has a previous near-fatal exacerbation and little response to repeated home reliever use.",
+        breathing="His partner says he is moving less air and can no longer complete a sentence.",
+        exposure="Dust exposure preceded the symptoms; there was no witnessed aspiration or new medication.",
+        chest_pain="Before becoming sleepy he described diffuse tightness rather than a focal chest pain."),
+    {"Cardiac": "Regular tachycardia.",
+     "Respiratory": "Severe effort with very poor bilateral air entry and only faint wheeze. He cannot complete a reliable peak-flow maneuver.",
+     "Abdomen": "Soft and non-tender.",
+     "Neurological": "Drowsy, opens eyes to voice and follows simple commands briefly; no lateralizing motor deficit."}, _o,
+    _investigations(_o, lactate=2.6, hemoglobin=14.2, wbc=10.6, creatinine=1.0,
+        abg=(7.30, 51, 57), vbg=(7.26, 58),
+        pocus="Bilateral lung sliding without diffuse B-lines, focal consolidation or large pericardial effusion.",
+        chest_xray="Hyperinflation without pneumothorax or focal air-space opacity."),
+    "Life-threatening asthma with fatigue and hypercapnia",
+    ["Reduced air movement despite persistent effort", "Drowsiness", "Hypercapnia with respiratory acidemia"],
+    "Recognize ventilatory failure and escalate airway support while continuing obstruction-directed treatment.",
+    ["How did you interpret the quieter chest?", "What evidence supported urgent escalation rather than waiting for another routine reassessment?"],
+    ["bronchodilator", "steroid", "oxygen"], visual=_visual(expression="markedly uncomfortable", sweating="mild")))
+
+
+# GI BLEED: relevant blood loss is discoverable through the encounter. A normal
+# pulse-oximeter reading is deliberately retained despite low oxygen-carrying mass.
+_o = _observable(88, 54, 124, 97, 26, crt=5, extremities="Cool",
+                 temperature=36.5, glucose=118, perfusion="impaired")
+FAMILIES["gi_bleed"]["variants"].append(_case(
+    "gi_bleed_57m", "gi_bleed", 57, "male", ["knee osteoarthritis"],
+    "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak.",
+    _history("I nearly passed out when I stood up and still feel very weak.",
+        ["I have had dark, sticky stools since yesterday.", "I have felt mild burning high in my abdomen and become breathless on walking."],
+        "I have knee arthritis and intermittent indigestion; no known liver disease.",
+        "I have taken ibuprofen most days for my knee over the last two weeks.",
+        "The dark stools began yesterday; the near-faint occurred this morning.",
+        "I have used regular anti-inflammatory tablets and have new dark stools.",
+        bleeding="The stools are black and sticky, not just dark brown; I have not vomited blood.",
+        chest_pain="I have no central chest pressure.",
+        oral_intake="I have had less appetite but have not had vomiting or diarrhea.",
+        urinary_symptoms="I have no urinary burning or frequency."),
+    {"Cardiac": "Regular tachycardia with weak peripheral pulses.",
+     "Respiratory": "No increased effort; lungs clear on auscultation despite tachypnea.",
+     "Abdomen": "Mild epigastric tenderness without guarding. Rectal examination reveals black tarry stool.",
+     "Neurological": "Awake and oriented, reporting persistent faintness."}, _o,
+    _investigations(_o, lactate=4.4, hemoglobin=6.7, wbc=11.1, creatinine=1.3, bun=48,
+        abg=(7.37, 31, 91), vbg=(7.33, 38),
+        pocus={"lv": "Small, hyperdynamic LV.", "lungs": "No diffuse B-lines.",
+               "rv": "No enlargement.", "pericardium": "No effusion."},
+        chest_xray="No focal consolidation or pulmonary edema.", troponin=16),
+    "Upper gastrointestinal bleeding with hemorrhagic hypoperfusion",
+    ["Melena", "Low hemoglobin", "Delayed refill and hypotension despite normal oxygen saturation"],
+    "Restore circulating volume and oxygen-carrying capacity while arranging hemostasis and monitoring ongoing blood loss.",
+    ["Did oxygen saturation describe oxygen delivery adequately?", "What separated temporary stabilization from control of the bleeding?"],
+    ["blood", "ppi", "consult"], visual=_visual(shock=True, sweating="mild")))
+
+_o = _observable(98, 62, 112, 96, 24, crt=4, extremities="Cool",
+                 temperature=36.6, glucose=130, perfusion="impaired")
+FAMILIES["gi_bleed"]["variants"].append(_case(
+    "gi_bleed_72f", "gi_bleed", 72, "female", ["previous peptic ulcer", "osteoarthritis"],
+    "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint.",
+    _history("I am unusually tired and keep feeling lightheaded when I move.",
+        ["My stools have become black and sticky over several days.", "I have little abdominal pain and have not vomited blood."],
+        "I had a stomach ulcer years ago and have arthritis.",
+        "I have recently been taking naproxen for arthritis; I am not taking a stomach-protecting medicine.",
+        "Fatigue began four days ago; the lightheadedness is much worse today.",
+        "I have a prior ulcer and recent regular anti-inflammatory use.",
+        bleeding="I have passed black, sticky stool for three days, with another episode this morning.",
+        chest_pain="I have not had new central chest pain.",
+        oral_intake="I have been drinking normally, without diarrhea or repeated vomiting.",
+        urinary_symptoms="I have no urinary symptoms."),
+    {"Cardiac": "Rapid regular pulse; no new murmur.",
+     "Respiratory": "No increased respiratory effort; breath sounds clear bilaterally.",
+     "Abdomen": "Soft without guarding or significant tenderness. Rectal examination reveals melena.",
+     "Neurological": "Alert, oriented and moving all limbs symmetrically."}, _o,
+    _investigations(_o, lactate=3.4, hemoglobin=6.4, wbc=10.3, creatinine=1.2, bun=43,
+        abg=(7.40, 33, 84), vbg=(7.36, 40),
+        pocus={"lv": "Hyperdynamic LV.", "lungs": "No diffuse B-lines.",
+               "rv": "No enlargement.", "pericardium": "No effusion."},
+        chest_xray="No acute cardiopulmonary abnormality.", troponin=17),
+    "Upper gastrointestinal bleeding presenting with symptomatic anemia and hypoperfusion",
+    ["Melena on targeted history and examination", "Severe anemia", "Postural symptoms with delayed refill"],
+    "Recognize clinically important bleeding despite limited pain and establish resuscitation and definitive evaluation.",
+    ["Which findings challenged an explanation based only on fatigue or age?", "What did you need to reassess while arranging hemostasis?"],
+    ["blood", "ppi", "consult"], visual=_visual(shock=True)))
+
+
+# HYPOGLYCEMIA: mentation and sweating are independent of perfusion. The arrival
+# story does not supply the glucose; the learner can obtain it at the bedside.
+_o = _observable(128, 76, 112, 98, 20, mental="Drowsy", temperature=36.7, glucose=34)
+FAMILIES["hypoglycemia"]["variants"].append(_case(
+    "hypoglycemia_28m", "hypoglycemia", 28, "male", ["type 1 diabetes"],
+    "A 28-year-old man is brought from work after becoming confused and having difficulty answering simple questions.",
+    _history("His coworker reports sudden confusion and difficulty finding words.",
+        ["His coworker noticed shaking and sweating before he became confused.", "There was no witnessed seizure, fall or head injury."],
+        "His coworker reports type 1 diabetes; his emergency information confirms this.",
+        "His medication record lists basal and mealtime insulin.",
+        "He was well at the start of work and became confused over the last 20 minutes.",
+        "His coworker reports that he took his usual mealtime insulin but was called away before eating lunch.",
+        oral_intake="His lunch was left uneaten after he took his mealtime insulin.",
+        exposure="His coworker reports no known alcohol or sedative exposure during the shift.",
+        neurological_symptoms="He became confused and had difficulty speaking; no one saw a persistent one-sided weakness."),
+    {"Cardiac": "Regular tachycardia with palpable peripheral pulses.",
+     "Respiratory": "Normal effort; clear bilateral breath sounds.",
+     "Abdomen": "Soft and non-tender.",
+     "Neurological": "Drowsy and confused, but opens eyes to voice; speech is slow and all limbs move symmetrically. Pupils are equal and reactive."}, _o,
+    _investigations(_o, lactate=1.7, hemoglobin=14.8, wbc=8.2, creatinine=.9,
+        abg=(7.41, 39, 96), vbg=(7.37, 46),
+        pocus="Preserved biventricular contraction; no pericardial effusion or diffuse B-lines.",
+        chest_xray="No acute pulmonary abnormality.", troponin=6),
+    "Severe insulin-associated hypoglycemia with neuroglycopenia",
+    ["Low bedside glucose", "Autonomic symptoms before confusion", "Insulin-meal mismatch"],
+    "Correct the reversible metabolic threat and verify neurological and glucose recovery.",
+    ["Which bedside check could change immediate management?", "Did the neurological findings resolve with correction?"],
+    ["dextrose", "reassessment"],
+    visual=_visual(skin="mild pallor", sweating="marked")))
+
+_o = _observable(134, 78, 96, 97, 18, mental="Obtunded", temperature=36.5, glucose=38)
+FAMILIES["hypoglycemia"]["variants"].append(_case(
+    "hypoglycemia_76f", "hypoglycemia", 76, "female", ["type 2 diabetes", "chronic kidney disease"],
+    "A 76-year-old woman is brought by her son because she has become difficult to wake this morning.",
+    _history("Her son reports that she has become unusually difficult to wake.",
+        ["Her son noticed sweating and reduced interaction.", "There was no witnessed seizure or head injury."],
+        "Her son reports type 2 diabetes and chronic kidney disease; she is normally alert and independent at home.",
+        "Her medication list includes glimepiride; she continued taking it despite eating very little.",
+        "Her intake has been poor for two days; she was markedly less responsive this morning.",
+        "She has continued a sulfonylurea during poor intake and has impaired renal function.",
+        oral_intake="Her son reports that she has eaten little for two days but continued her usual tablets.",
+        exposure="Her son reports no new sedatives or known alcohol ingestion.",
+        neurological_symptoms="Her son describes a generalized reduction in responsiveness rather than a witnessed focal weakness."),
+    {"Cardiac": "Regular pulse with preserved peripheral volume.",
+     "Respiratory": "Normal effort and clear bilateral breath sounds.",
+     "Abdomen": "Soft without focal tenderness.",
+     "Neurological": "Opens eyes only briefly to a firm stimulus and localizes with both arms. Pupils are equal and reactive."}, _o,
+    _investigations(_o, lactate=1.8, hemoglobin=11.8, wbc=8.6, creatinine=2.1, bun=36,
+        abg=(7.39, 40, 91), vbg=(7.35, 47),
+        pocus="Preserved biventricular contraction without diffuse B-lines or pericardial effusion.",
+        chest_xray="No focal consolidation or edema.", troponin=12),
+    "Sulfonylurea-associated hypoglycemia with recurrence risk",
+    ["Low bedside glucose", "Continued sulfonylurea with reduced intake", "Impaired renal function"],
+    "Correct glucose, reassess consciousness and plan continued monitoring for recurrent hypoglycemia.",
+    ["Did an initial recovery establish that the cause had ended?", "What informed your monitoring and specialist-support plan?"],
+    ["dextrose", "reassessment"], recurrence=True,
+    visual=_visual(skin="mild pallor", sweating="mild")))
+
+
+# OPIOID: intentionally different contexts without stereotyped appearance.
+# Slow shallow breathing is explicitly authored; no cyanosis is inferred from SpO2.
+_o = _observable(106, 64, 68, 80, 6, wob="Reduced", mental="Obtunded", temperature=36.4, glucose=106)
+FAMILIES["opioid"]["variants"].append(_case(
+    "opioid_35m", "opioid", 35, "male", ["recent lumbar strain"],
+    "A 35-year-old man is brought by a friend because he is difficult to wake and is breathing slowly.",
+    _history("His friend says he became difficult to wake and started breathing very slowly.",
+        ["His friend noticed increasing sleepiness after he took a tablet for back pain.", "There was no witnessed seizure, fall or trauma."],
+        "His friend reports a recent back strain and no known chronic neurological disorder.",
+        "He took a tablet obtained from an acquaintance for pain; its contents are not confirmed.",
+        "Increasing sleepiness began within the last hour after the tablet.",
+        "There is a recent exposure to a medication of uncertain contents.",
+        exposure="His friend reports one pain tablet from an acquaintance; the drug identity and amount are not established.",
+        breathing="His friend counted long pauses between small, shallow breaths.",
+        neurological_symptoms="He became progressively sleepy without a witnessed focal deficit."),
+    {"Cardiac": "Regular palpable pulse.",
+     "Respiratory": "Very slow, shallow breaths with reduced chest excursion; breath sounds are equal when air enters.",
+     "Abdomen": "Soft without focal tenderness.",
+     "Neurological": "Obtunded, with small reactive pupils and brief bilateral withdrawal to firm stimulation; no visible head injury."}, _o,
+    _investigations(_o, lactate=2.6, hemoglobin=14.5, wbc=8.9, creatinine=1.0,
+        abg=(7.21, 69, 45), vbg=(7.17, 76),
+        pocus="Preserved biventricular contraction; no diffuse B-lines or pericardial effusion.",
+        chest_xray="No focal infiltrate or pulmonary edema.", troponin=7),
+    "Opioid toxidrome with respiratory depression following an uncertain tablet exposure",
+    ["Slow shallow ventilation", "Reduced responsiveness with small pupils", "Recent uncertain medication exposure"],
+    "Support ventilation promptly and reassess response to an opioid antagonist without relying on exposure labels alone.",
+    ["What was the immediate physiological threat?", "How did you assess ventilation rather than oxygen saturation alone?"],
+    ["naloxone", "bag_mask", "reassessment"],
+    visual=_visual(expression="passive")))
+
+_o = _observable(104, 62, 62, 84, 8, wob="Reduced", mental="Obtunded", temperature=36.3, glucose=112)
+FAMILIES["opioid"]["variants"].append(_case(
+    "opioid_67f", "opioid", 67, "female", ["chronic musculoskeletal pain", "chronic kidney disease"],
+    "A 67-year-old woman is brought from home with increasing sleepiness and slow breathing noticed by her spouse.",
+    _history("Her spouse reports that she has become increasingly sleepy and is breathing slowly.",
+        ["Her spouse has struggled to keep her awake this morning.", "There was no witnessed seizure, head injury or febrile illness."],
+        "Her spouse reports chronic pain and chronic kidney disease; she normally converses clearly and manages at home.",
+        "Her medication list includes sustained-release morphine; her spouse is uncertain whether today's dose was repeated.",
+        "She became progressively sleepier during the morning after taking her regular medication.",
+        "She receives a long-acting opioid and has impaired renal function.",
+        exposure="Sustained-release morphine is prescribed; a possible repeated dose is unconfirmed, and no intent is established.",
+        breathing="Her spouse noticed unusually slow shallow breathing with occasional pauses.",
+        oral_intake="She has eaten little today because she has been too sleepy."),
+    {"Cardiac": "Regular palpable pulse.",
+     "Respiratory": "Slow shallow breathing with reduced chest excursion; no focal wheeze or crackles.",
+     "Abdomen": "Soft and non-tender.",
+     "Neurological": "Obtunded with small reactive pupils, briefly withdrawing both arms to a firm stimulus."}, _o,
+    _investigations(_o, lactate=2.2, hemoglobin=12.4, wbc=8.1, creatinine=2.2, bun=38,
+        abg=(7.25, 61, 50), vbg=(7.21, 68),
+        pocus="Preserved biventricular contraction without diffuse B-lines or large pericardial effusion.",
+        chest_xray="No focal consolidation or edema.", troponin=11),
+    "Long-acting opioid-associated ventilatory depression with recurrence risk",
+    ["Hypoventilation and reduced responsiveness", "Long-acting opioid exposure", "Impaired renal function"],
+    "Restore ventilation and arrange observation for recurrent respiratory depression after an initial response.",
+    ["What was the endpoint of antagonist treatment?", "Why might an early improvement require continued monitoring?"],
+    ["naloxone", "bag_mask", "reassessment"], recurrence=True,
+    visual=_visual(expression="passive")))
+
+
+_COLLATERAL_SOURCES = {
+    "pneumonia_83m": "Daughter",
+    "asthma_49m": "Partner",
+    "hypoglycemia_28m": "Coworker and emergency medication information",
+    "hypoglycemia_76f": "Son and medication list",
+    "opioid_35m": "Accompanying friend",
+    "opioid_67f": "Spouse and medication list",
+}
+_HANDOVER_CONTEXT = {
+    "pneumonia_83m": "The referral note suggests possible dehydration after poor intake; no diagnosis has been established.",
+    "acs_54m_inferior": "The triage note records 'indigestion?' as an unconfirmed impression.",
+    "pulmonary_embolism_33f": "She wonders whether anxiety could explain the episode; this has not been assessed.",
+    "asthma_49m": "Handover notes that the wheeze sounds quieter than it did earlier.",
+}
+for _family in FAMILIES.values():
+    for _variant in _family["variants"]:
+        _variant["history_source"] = _COLLATERAL_SOURCES.get(_variant["id"], "Patient")
+        if _variant["id"] in _HANDOVER_CONTEXT:
+            _variant["presentation"] += " " + _HANDOVER_CONTEXT[_variant["id"]]
+
+
+def variant_by_id(identifier):
+    """Return an isolated case; caller changes must never mutate the bank."""
+    for family in FAMILIES.values():
+        for variant in family["variants"]:
+            if variant["id"] == identifier:
+                return deepcopy(variant)
+    raise KeyError(f"Unknown clinical case variant: {identifier}")
+
+
+del _o, _family, _variant

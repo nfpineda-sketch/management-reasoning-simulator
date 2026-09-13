@@ -24,7 +24,7 @@ def bedside(monkeypatch):
     app.run()
     assert not app.exception
     selector = widget(app.selectbox, "Clinical problem")
-    assert len(selector.options) == len(CHALLENGES) == 3
+    assert len(selector.options) == len(CHALLENGES) == 11
     assert all("PS001" not in label and "PS002" not in label for label in selector.options)
     selector.set_value("R1-03").run()
     widget(app.button, "Begin Encounter").click().run()
