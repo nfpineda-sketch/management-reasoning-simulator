@@ -10,6 +10,7 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
+from encounter_workspace import render_encounter_workspace
 from ai_interpreter import AIInterpretationError, normalize_with_ai
 from account_portal import accounts_enabled, require_account_access, render_account_sidebar
 from curriculum_runtime import (
@@ -17,7 +18,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Curriculum pilot v0.12.0", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.13.0", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -56,7 +57,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.12.1-curriculum-pilot"
+SIMULATOR_VERSION = "0.13.0-clinical-encounter"
 
 
 def faculty_access():
@@ -9616,7 +9617,7 @@ def render_event(event):
     st.write(event["text"])
 
 st.title("Management Reasoning Simulator")
-st.caption("Curriculum pilot v0.12.0")
+st.caption("Clinical encounter v0.13.0")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -9779,16 +9780,13 @@ if attempt_number > 1 and any(
             )
 st.divider()
 
-left, right = st.columns([3, 1])
+left, right = st.columns([2, 1])
 
 with left:
-    st.subheader("Clinical Encounter")
-    for event in st.session_state.events:
-        render_event(event)
-        st.write("")
+    render_encounter_workspace(st.session_state.events, render_event)
 
 with right:
-    st.subheader("Patient Data")
+    st.subheader("At the bedside")
     o = st.session_state.state["observable"]
     h = st.session_state.state["hidden"]
     with st.expander("Vitals", expanded=True):
@@ -9857,7 +9855,7 @@ with right:
                     f'Glucose {labs.get("glucose_mg_dl")} mg/dL'
                 )
 
-    with st.expander("Respiratory"):
+    with st.expander("Respiratory examination", expanded=True):
         if not o.get("pulse_present", True):
             st.write("SpO₂: no reliable reading")
             st.write("Respirations: absent")
@@ -9875,7 +9873,7 @@ with right:
         else:
             st.write("Lungs: diffuse bilateral B-lines and crackles")
 
-    with st.expander("Treatments"):
+    with st.expander("Current treatments", expanded=True):
         tr = st.session_state.state["treatments"]
         st.write(f'Cumulative crystalloid: {tr["cumulative_crystalloid_ml"]} mL')
         if tr["metoprolol_total_mg"] > 0:
@@ -10443,6 +10441,6 @@ if faculty_access():
 
 if ACCOUNT_CONTEXT:
     save_session(ACCOUNT_CONTEXT)
-st.caption("Management Reasoning Simulator · Curriculum pilot v0.12.0")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.13.0")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

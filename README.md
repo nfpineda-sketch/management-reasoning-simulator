@@ -1,3 +1,7 @@
+# Clinical encounter workspace v0.13.0
+
+Development UI: arrival handover, current exchange, investigation reports, and complete encounter record. [Local setup and scope](docs/UPDATE_v0.13.0.md).
+
 # Management Reasoning Simulator — Curriculum pilot v0.12.1
 
 ## AI faculty assessment brief
