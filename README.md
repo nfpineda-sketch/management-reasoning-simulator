@@ -1,4 +1,14 @@
-# Management Reasoning Simulator — Curriculum pilot v0.12.1
+# Management Reasoning Simulator — Curriculum pilot v0.12.2
+
+## Recover a held order
+
+Oxygen saturation measurements no longer create oxygen treatment orders.
+**Cancel held order** clears an unexecuted order while preserving the same
+attempt, patient state, earlier decisions and carry-forward plan. Cancellation
+is recorded in the encounter timeline and does not count as treatment or a
+completed review. Guided reasoning accepts **0 minutes** for immediate reassessment.
+
+- [Recover an existing attempt and update locally](docs/UPDATE_v0.12.2.md)
 
 ## AI faculty assessment brief
 

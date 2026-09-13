@@ -17,7 +17,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Curriculum pilot v0.12.0", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Curriculum pilot v0.12.2", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -56,7 +56,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.12.1-curriculum-pilot"
+SIMULATOR_VERSION = "0.12.2-curriculum-pilot"
 
 
 def faculty_access():
@@ -1267,7 +1267,7 @@ def _immediate_expectation_text(expected, event):
         # A trailing 'without worsening oxygenation' qualifies preservation;
         # it must not turn oxygenation into an expected improvement.
         clause = re.split(r"\b(?:without|sin)\b", clause, maxsplit=1)[0].strip()
-        if not clause or re.search(r"\b(?:no|not|never|don't|doesn't|won't|cannot|can't|unlikely)\b", clause):
+        if not clause or re.search(r"\b(?:no|not|never|don't|doesn't|won't|wouldn't|cannot|can't|unlikely)\b", clause):
             continue
         horizon = re.search(
             r"\b(?:in|after|within|en|a los|dentro de)\s+"
@@ -4583,20 +4583,43 @@ def _oxygen_order_clauses(text):
         (r"\b(?:administrar|administra|administre|aplicar)\b", "administer"),
         (r"\b(?:colocar|coloca|coloque|poner|pon|ponga)\b", "place"),
         (r"\b(?:mantener|mantenga|mant[eé]n|continuar|contin[uú]a)\b", "continue"),
+        (r"\b(?:aumentar|aumenta|aumente|subir|sube|suba)\b", "increase"),
+        (r"\b(?:disminuir|disminuye|disminuya|reducir|reduce|reduzca|bajar|baja|baje)\b", "decrease"),
         (r"\bpero\b", "but"),
         (r"\b(?:si|cuando|considerar|considerar[ií]a|podr[ií]a|deber[ií]a|evitar|suspender|previamente)\b", "if"),
     ):
         raw = re.sub(pattern, replacement, raw)
     aliases = r"(?:oxygen|o2|nas+al\s+can+ula|nc|non-?rebreather|nrb|simple\s+mask|face\s+mask)"
     commands = r"(?:start|initiate|give|administer|apply|increase|decrease|switch|change|place|put|continue|provide|order|deliver|set|begin|supplement)"
-    boundaries = commands + r"|reassess|recheck|obtain|infuse|bolus|perform|intubate"
+    observations = r"(?:re-?assess|re-?check|re-?evaluate|assess|check|monitor|measure|observe|evaluar|reevaluar|revaluar|medir|vigilar|monitorizar)"
+    boundaries = commands + "|" + observations + r"|obtain|infuse|bolus|perform|intubate"
     clauses = []
     for sentence in re.split(r"\.(?!\d)|[;\n]", raw):
         mentions = list(re.finditer(rf"\b{aliases}\b", sentence))
         for mention in mentions:
             prefix = sentence[:mention.start()]
+            tail = sentence[mention.end():]
+            # Oxygen saturation is a measured variable, even in a comma-separated
+            # reassessment list or a stated goal to increase saturation. Its name
+            # must not become a bare oxygen-administration order. Keep actual
+            # directives such as "give oxygen to target saturation 94%" intact.
+            if mention.group() in {"oxygen", "o2"} and (
+                re.match(r"\s+(?:saturations?|sats?|levels?|readings?|saturaci[oó]n)\b", tail)
+                or re.search(
+                    r"\b(?:saturations?|sats?|levels?|readings?|saturaci[oó]n|niveles?)\s+(?:(?:of|de|del)\s+)?$",
+                    prefix,
+                )
+            ):
+                continue
             command_matches = list(re.finditer(rf"\b{commands}\b", prefix))
             command = command_matches[-1] if command_matches else None
+            observation_matches = list(re.finditer(rf"\b{observations}\b", prefix))
+            if observation_matches and (
+                command is None or observation_matches[-1].start() > command.start()
+            ):
+                # An observation verb still governs later items in its list;
+                # only a subsequent treatment command starts a new order.
+                continue
             commanded = bool(command and mention.start() - command.end() <= 65)
             if commanded:
                 start = command.start()
@@ -4605,7 +4628,6 @@ def _oxygen_order_clauses(text):
                 if not compact:
                     continue
                 start = mention.start()
-            tail = sentence[mention.end():]
             next_command = re.search(rf"\b(?:{boundaries})\b", tail)
             end = mention.end() + next_command.start() if next_command else len(sentence)
             # A later independent command owns its negation/condition. Examples:
@@ -5404,27 +5426,32 @@ def extract_explicit_reasoning(text):
     # later infinitive. Without this precedence, "I expect pressure to increase
     # and perfusion to improve" was truncated to "increase and perfusion to
     # improve" because the generic parser started at the second word "to".
-    direct_expectation = re.search(
-        r"\b(?:i|we)\s+(?:would\s+)?(?:expect|anticipate)\s+(.+?)"
+    # Keep every explicit expectation in sentence order, preserving negation.
+    # A negative oxygenation expectation must not erase a separate positive
+    # pressure expectation, or be inverted by the later infinitive fallback.
+    expectation_clauses = []
+    direct_expectations = re.finditer(
+        r"\b(?:i|we)\s+(?:(?P<negation>do\s+not|don['’]t|would\s+not|wouldn['’]t)\s+|would\s+)?"
+        r"(?:expect|anticipate)\s+(?P<effect>.+?)"
         r"(?=\s+if\b|\s*,?\s*(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
         joined,
         re.I,
     )
-    if direct_expectation:
-        candidate = _clean_reasoning_phrase(direct_expectation.group(1))
-        candidate = re.sub(
-            r"^(?:this|it|that)\s+(?:to|will)\s+",
-            "",
-            candidate or "",
-            flags=re.I,
-        )
-        if candidate and re.search(
-            r"\b(?:improv|restor|increas|decreas|reduc|support|correct|stabili|"
-            r"remain|maintain|preserv|sustain|convert|conversion|stop\s+worsening)",
-            candidate,
-            re.I,
-        ):
-            reasoning["expected_effect"] = candidate
+    for expectation in direct_expectations:
+        if expectation.group("negation"):
+            candidate = _clean_reasoning_phrase(expectation.group())
+        else:
+            candidate = _clean_reasoning_phrase(expectation.group("effect"))
+            candidate = re.sub(
+                r"^(?:this|it|that)\s+(?:to|will)\s+",
+                "",
+                candidate or "",
+                flags=re.I,
+            )
+        if candidate:
+            expectation_clauses.append(candidate)
+    if expectation_clauses:
+        reasoning["expected_effect"] = "; ".join(expectation_clauses)
 
     # Explicit intended/expected effect only. Search all candidate purpose clauses
     # and reject clauses that belong to a stated priority/goal rather than an
@@ -6412,6 +6439,22 @@ def hold_pending_reasoning(parsed, missing=None):
     return reasoning_gate_prompt(parsed, missing)
 
 
+def cancel_pending_order():
+    """Discard only unexecuted orders; preserve the encounter and its evidence."""
+    pending = st.session_state.get("pending_reasoning") or {}
+    parsed = pending.get("parsed") or {}
+    if not (pending or st.session_state.get("pending_action") or st.session_state.get("pending_bundle")):
+        return False
+    summary = _reasoning_gate_action_summary(parsed) if parsed else "pending order"
+    st.session_state.pending_reasoning = None
+    st.session_state.pending_action = None
+    st.session_state.pending_bundle = None
+    clear_reasoning_gate_clarification()
+    next_reasoning_gate_id()
+    add_event("order_cancelled", f"Cancelled {summary} before execution. No intervention was administered and no simulation time elapsed.")
+    return True
+
+
 def complete_pending_reasoning_fields(
     working_model,
     management_priority,
@@ -6443,7 +6486,7 @@ def complete_pending_reasoning_fields(
     delay = None
     try:
         if reassessment_delay_min is not None:
-            delay = max(1, int(round(float(reassessment_delay_min))))
+            delay = max(0, int(round(float(reassessment_delay_min))))
     except (TypeError, ValueError):
         delay = None
 
@@ -9598,6 +9641,7 @@ def render_event(event):
         "presentation": "INITIAL PRESENTATION",
         "you": "YOU",
         "reasoning_completion": "REASONING COMPLETION",
+        "order_cancelled": "ORDER CANCELLED",
         "clinical_update": "CLINICAL UPDATE",
         "reasoning_note": "CONTEXT CHECK — DOES NOT BLOCK EXECUTION",
         "clarification": "CLARIFICATION",
@@ -9616,7 +9660,7 @@ def render_event(event):
     st.write(event["text"])
 
 st.title("Management Reasoning Simulator")
-st.caption("Curriculum pilot v0.12.0")
+st.caption("Curriculum pilot v0.12.2")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -10039,6 +10083,9 @@ if not st.session_state.encounter_ended:
             "complete the reasoning in your own words or use the guided fields."
         )
         st.markdown(f"**Held order:** {_reasoning_gate_action_summary(held_parsed)}")
+        if st.button("Cancel held order", key="cancel_held_order"):
+            cancel_pending_order()
+            rerun_app()
         held_unmodeled = [
             str(item)
             for item in (held_parsed.get("recognized_future_actions") or [])
@@ -10093,10 +10140,11 @@ if not st.session_state.encounter_ended:
                 )
             guided_reassessment_delay = st.number_input(
                 "I will reassess in… minutes",
-                min_value=1,
+                min_value=0,
                 max_value=240,
-                value=min(240, max(1, int(held_reassessment.get("delay_min") or 5))),
+                value=min(240, max(0, int(held_reassessment["delay_min"] if held_reassessment.get("delay_min") is not None else 5))),
                 step=1,
+                help="Use 0 to reassess immediately.",
                 key=f"reasoning_delay_{gate_id}",
             )
             guided_submitted = st.form_submit_button(
@@ -10443,6 +10491,6 @@ if faculty_access():
 
 if ACCOUNT_CONTEXT:
     save_session(ACCOUNT_CONTEXT)
-st.caption("Management Reasoning Simulator · Curriculum pilot v0.12.0")
+st.caption("Management Reasoning Simulator · Curriculum pilot v0.12.2")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

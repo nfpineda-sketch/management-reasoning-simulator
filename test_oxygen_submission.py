@@ -7,6 +7,7 @@ from streamlit.testing.v1 import AppTest
 
 import ai_interpreter
 from ai_interpreter import AIInterpretation, AIInterpretationError
+from test_oxygen_measurements import REPORTED_REASSESSMENT
 
 
 APP = str(Path(__file__).with_name("app.py"))
@@ -221,3 +222,30 @@ def test_unspecified_device_and_flow_require_both_clarifications(encounter):
     submit(at, "nasal cannula")
     assert at.session_state.state["treatments"]["oxygen_device"] == "Nasal cannula"
     assert at.session_state.state["treatments"]["oxygen_flow_lpm"] == 3
+
+
+@pytest.mark.parametrize("normalization", ["local", "echo", "invented_oxygen"])
+def test_reported_reassessment_executes_without_a_phantom_oxygen_hold(encounter, monkeypatch, normalization):
+    at = encounter
+    if normalization != "local":
+        use_ai(at, monkeypatch, lambda text: (
+            "Start oxygen. " + text if normalization == "invented_oxygen" else text
+        ))
+    before = deepcopy(at.session_state.state)
+    submit(at, REPORTED_REASSESSMENT)
+    assert not at.session_state.pending_reasoning
+    assert not at.session_state.pending_action
+    assert at.session_state.state["treatments"] == before["treatments"]
+    assert at.session_state.state["sim_time"] == before["sim_time"]
+    trace = at.session_state.management_trace
+    assert len(trace) == 1 and trace[0]["execution_status"] == "executed"
+    assert trace[0]["interpreted_action"] == [
+        {"type": "reassessment", "delay_min": 0, "focus": "perfusion"}
+    ]
+    assert trace[0]["reasoning"]["expected_effect"] == (
+        "I do not expect reassessment alone to improve the patient's physiology"
+    )
+    if normalization == "invented_oxygen":
+        assert trace[0]["interpretation_mode"] == "deterministic-fallback"
+        assert "oxygen order" in trace[0]["ai_fallback_reason"]
+    assert not next(button for button in at.button if button.label == "Complete Encounter & Begin Review").disabled
