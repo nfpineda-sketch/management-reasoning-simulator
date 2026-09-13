@@ -10,6 +10,7 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
+from curriculum import CHALLENGES
 from resuscitation_room import render_room
 from encounter_workspace import render_encounter_workspace
 from ai_interpreter import AIInterpretationError, normalize_with_ai
@@ -19,7 +20,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.13.1", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.14.0", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -58,7 +59,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.13.1-clinical-encounter"
+SIMULATOR_VERSION = "0.14.0-clinical-encounter"
 
 
 def faculty_access():
@@ -9597,6 +9598,8 @@ def format_clinical_update():
 
 def render_event(event):
     labels = {
+        "patient_history": "PATIENT HISTORY",
+        "examination": "EXAMINATION",
         "presentation": "INITIAL PRESENTATION",
         "you": "YOU",
         "reasoning_completion": "REASONING COMPLETION",
@@ -9617,8 +9620,7 @@ def render_event(event):
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
     st.write(event["text"])
 
-st.title("Management Reasoning Simulator")
-st.caption("Clinical encounter v0.13.1")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.14.0")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -9629,8 +9631,8 @@ if not st.session_state.started:
     st.subheader("Select encounter")
     selected = st.selectbox(
         "Clinical surface",
-        list(CASE_CONFIGS.keys()),
-        index=list(CASE_CONFIGS.keys()).index(st.session_state.get("selected_case", list(CASE_CONFIGS.keys())[0])),
+        list(CASE_CONFIGS.keys()) + [key + " · " + value["title"] for key, value in CHALLENGES.items()],
+        index=(list(CASE_CONFIGS.keys()).index(st.session_state.get("selected_case")) if st.session_state.get("selected_case") in CASE_CONFIGS else 0),
         label_visibility="collapsed",
     )
     st.session_state.selected_case = selected
@@ -9639,7 +9641,15 @@ if not st.session_state.started:
         "Ask for information, order tests, perform interventions, and reassess as the case evolves."
     )
     if st.button("Begin Encounter", type="primary"):
-        cfg = CASE_CONFIGS[selected]
+        if selected in CASE_CONFIGS:
+            cfg = CASE_CONFIGS[selected]
+        else:
+            from encounter_generator import generate_encounter
+            with st.spinner("Preparing your encounter..."):
+                generated = generate_encounter(selected.split(" · ")[0], INITIAL_STATE,
+                    api_key=_runtime_secret("OPENAI_API_KEY"), model=_runtime_secret("MRS_GENERATOR_MODEL") or "gpt-5-mini")
+            cfg = {"state_factory": lambda: deepcopy(generated["state"]), "presentation": generated["presentation"]}
+            st.session_state.selected_case = list(CASE_CONFIGS.keys())[0]
         st.session_state.state = cfg["state_factory"]()
         st.session_state.events = []
         st.session_state.history = []
@@ -9715,7 +9725,47 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
     st.stop()
 
 render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, sim_time_label(st.session_state.state["sim_time"]))
+encounter_mode = st.radio("Encounter", ["Talk", "Examine", "Tests", "Treat"], index=3, horizontal=True, label_visibility="collapsed")
 orders_panel = st.container()
+from clinical_scene import history_facts, answer_history, setting as scene_setting
+if encounter_mode == "Talk" and not st.session_state.encounter_ended:
+    presentation = next((e["text"] for e in st.session_state.events if e["kind"] == "presentation"), "")
+    facts = history_facts(presentation, st.session_state.state.get("case_id"))
+    with st.form("patient_conversation"):
+        question = st.text_input("Ask the patient", placeholder="What brought you in today?")
+        ask_patient = st.form_submit_button("Ask")
+    if ask_patient and question.strip():
+        answer = answer_history(question, facts, scene_setting("OPENAI_API_KEY"))
+        add_event("you", question)
+        add_event("patient_history", answer)
+        rerun_app()
+    with st.expander("History topics"):
+        topic = st.selectbox("Explore", ["Presenting symptoms and onset", "Associated symptoms", "Previous health"])
+        if st.button("Ask about this topic"):
+            if topic == "Associated symptoms":
+                response = " ".join(facts[-2:])
+            elif topic == "Previous health":
+                response = "Hypertension." if st.session_state.state.get("case_id") == "PS002" else "Hypertension and type 2 diabetes."
+            else:
+                response = " ".join(facts[:-2])
+            add_event("you", "Ask about " + topic.lower())
+            add_event("patient_history", response)
+            rerun_app()
+if encounter_mode == "Examine":
+    area = st.selectbox("Examine", ["General appearance", "Breathing", "Peripheral perfusion"])
+    if st.button("Examine patient"):
+        observed = st.session_state.state["observable"]
+        if area == "General appearance":
+            finding = "Mental status: " + str(observed.get("mental_status", "Not documented"))
+        elif area == "Breathing":
+            finding = "Respiratory rate: " + str(observed.get("respiratory_rate", "—")) + "/min. Work of breathing: " + str(observed.get("work_of_breathing", "Not documented"))
+        elif not observed.get("pulse_present", True):
+            finding = "Pulse absent. Capillary refill is not measurable."
+        else:
+            finding = "Capillary refill: " + str(observed.get("crt", "—")) + " s. Extremities: " + str(observed.get("extremities", "Not documented"))
+        add_event("you", "Examine: " + area)
+        add_event("examination", finding)
+        rerun_app()
 
 carry_forward_plan = st.session_state.get("carry_forward_plan", {}) or {}
 attempt_number = max(1, int(st.session_state.get("attempt_number", 1)))
@@ -10017,8 +10067,8 @@ submitted = False
 submission_text = ""
 submission_parsed = None
 with orders_panel:
-    if not st.session_state.encounter_ended:
-        st.markdown("### What would you like to do next?")
+    if not st.session_state.encounter_ended and (encounter_mode in {"Tests", "Treat"} or st.session_state.get("pending_reasoning")):
+        st.markdown("### Orders" if encounter_mode == "Tests" else "### Management")
         st.caption(
             "Explain in your own words what you think is happening, what you are addressing first, "
             "what change you expect, and what you will reassess and when. Equivalent wording is accepted."
@@ -10445,6 +10495,6 @@ if faculty_access():
 
 if ACCOUNT_CONTEXT:
     save_session(ACCOUNT_CONTEXT)
-st.caption("Management Reasoning Simulator · Clinical encounter v0.13.1")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.14.0")
 
 # Compatibility marker for v0.6.0.27 regression lineage.

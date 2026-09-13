@@ -56,34 +56,19 @@ def monitor_html(o, time_label):
 
 
 def render_room(state, events, ecg_svg, render_event, time_label):
-    o, t = state['observable'], state['treatments']
-    patient, monitor = st.columns([1.1, 1])
-    with patient:
-        st.markdown('### Resuscitation bay')
-        st.markdown(patient_svg(t), unsafe_allow_html=True)
-        st.caption('Schematic equipment view · assess physical findings in the examination record.')
-        labels = device_labels(t)
-        if labels:
-            for label in labels:
-                st.markdown('**' + escape(label) + '**')
-        else:
-            st.caption('No active oxygen or vasoactive infusion recorded.')
-    with monitor:
-        st.markdown(monitor_html(o, time_label), unsafe_allow_html=True)
-        st.markdown(ecg_svg(o), unsafe_allow_html=True)
-        st.caption('Synthetic lead II · values update after executed actions')
-        @st.dialog('ECG · synthetic lead II', width='large')
-        def enlarged_ecg():
-            st.markdown(ecg_svg(o), unsafe_allow_html=True)
-            st.caption('25 mm/s · 10 mm/mV · synthetic rhythm strip')
-        if st.button('Enlarge ECG', use_container_width=True):
-            enlarged_ecg()
-        st.markdown(f"**Mental status:** {o.get('mental_status', '—')} · **CRT:** {str(o.get('crt', '—')) + ' s' if o.get('pulse_present', True) else 'Not measurable'}")
-    arrival, latest, _, _ = encounter_sections(events)
-    with st.expander('Arrival handover', expanded=not latest):
-        for event in arrival:
-            st.write(event['text'])
+    from clinical_scene import scene_image, scene_html
+    image = scene_image(state, events)
+    st.markdown(scene_html(image, monitor_html(state['observable'], time_label), ecg_svg(state['observable'])), unsafe_allow_html=True)
+    @st.dialog('ECG · synthetic lead II', width='large')
+    def enlarged_ecg():
+        st.markdown(ecg_svg(state['observable']), unsafe_allow_html=True)
+    if st.button('Enlarge ECG'):
+        enlarged_ecg()
+    labels = device_labels(state['treatments'])
+    if labels:
+        st.caption('Current support · ' + ' | '.join(labels))
+    _, latest, _, _ = encounter_sections(events)
     if latest:
-        with st.container(border=True, height=190):
+        with st.container(border=True, height=180):
             for event in latest:
                 render_event(event)
