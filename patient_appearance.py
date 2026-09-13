@@ -13,7 +13,7 @@ from io import BytesIO
 from PIL import Image
 
 
-APPEARANCE_VERSION = 1
+APPEARANCE_VERSION = 2
 MAX_IMAGE_BYTES = 20_000_000
 
 _MENTAL = {
@@ -39,6 +39,23 @@ _SUPPORT = {
     "niv": "A fitted noninvasive ventilation face mask with straps and breathing circuit.",
     "invasive ventilation": "A secured oral endotracheal tube connected to a breathing circuit, with no noninvasive mask or cannula.",
 }
+_EXPRESSION = {
+    "neutral": "A neutral, unposed expression, without a cheerful or camera-ready smile.",
+    "uncomfortable": "Visibly uncomfortable: subtle brow tension, strained eyes and a tense, unsmiling mouth. Awake does not mean comfortable or well.",
+    "markedly uncomfortable": "Marked discomfort with a strained brow and facial tension, proportionate to illness, without theatrical grimacing or exaggerated suffering.",
+    "passive": "A passive face with markedly reduced engagement; do not add purposeful grimacing or a smile.",
+    "sedated": "Pharmacologically relaxed facial muscles; do not depict this relaxation as recovery of perfusion.",
+}
+_SKIN = {
+    "natural": "Natural baseline pigmentation without pallor, artificial rosy cheeks or a cosmetic healthy glow.",
+    "mild pallor": "Subtle but visible pallor relative to this person's natural pigmentation, including reduced facial and lip coloration. Avoid rosy cheeks, tanning or a healthy glow; retain the same skin identity, not white-painted skin.",
+    "pallor": "Visible pallor relative to the same person's baseline pigmentation on face, lips and visible hands. Retain natural skin identity and texture; no whitening filter or cyanosis.",
+}
+_SWEAT = {
+    "absent": "No visible diaphoresis.",
+    "mild": "A subtle film of sweat on the forehead, without exaggerated droplets.",
+    "marked": "Clearly visible beads of sweat on the forehead and face.",
+}
 
 
 def _known(value, choices):
@@ -49,12 +66,13 @@ def _known(value, choices):
 def appearance_state(state):
     """Return only established facts with a visible photographic representation.
 
-    Extremity temperature is assessed by touch. Only the explicit Mottled/Cold
-    finding permits mottling; Cool/Cold and numeric perfusion values do not.
+    Extremity temperature is assessed by touch. Mottling must be an explicit
+    visual or Mottled/Cold finding; Cool/Cold and vital numbers do not imply it.
     Support selection uses executed treatment state, with airway precedence.
     Device settings and drug rates do not change the appearance of the device.
     """
-    o, tr = state.get("observable", {}), state.get("treatments", {})
+    from visual_observations import visual_observations
+    tr = state.get("treatments", {})
     if tr.get("invasive_ventilation"):
         support = "invasive ventilation"
     elif tr.get("niv"):
@@ -66,9 +84,7 @@ def appearance_state(state):
     else:
         support = "none"
     return {
-        "mental_status": _known(o.get("mental_status"), _MENTAL),
-        "work_of_breathing": _known(o.get("work_of_breathing"), _BREATHING),
-        "mottling": str(o.get("extremities", "")).strip().lower() in {"mottled/cold", "mottled"},
+        **visual_observations(state),
         "respiratory_support": support,
     }
 
@@ -79,32 +95,52 @@ def appearance_signature(state):
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
 
-def edit_prompt(state):
-    """A source-bounded edit brief; arbitrary state strings never reach the model."""
+def appearance_brief(state):
+    """One bounded visible brief shared by first-generation and subsequent edits."""
     visible = appearance_state(state)
     support = visible["respiratory_support"]
     if support not in _SUPPORT:
         raise ValueError("The active oxygen interface has no supported visual representation.")
     observations = [
-        _MENTAL.get(visible["mental_status"], "Mental status is not recorded: preserve the reference expression."),
+        _MENTAL.get(visible["mental_status"], "Mental status is not recorded: do not invent impaired engagement."),
+        _EXPRESSION.get(visible["expression"], "Do not invent discomfort or a cheerful smile."),
         _BREATHING.get(visible["work_of_breathing"], "Breathing effort is not recorded: preserve reference posture."),
+        _SKIN.get(visible["skin_color"], "Skin color is not specified: preserve natural pigmentation without inventing pallor."),
+        _SWEAT.get(visible["diaphoresis"], "Diaphoresis is not specified: do not invent sweating."),
         "Show mottling only on the visible extremities." if visible["mottling"] else
-        "Preserve the person's natural skin color; do not add mottling or a perfusion-related skin-color change.",
+        "Do not add mottling.",
         _SUPPORT[support],
     ]
+    return " ".join(observations)
+
+
+def appearance_summary(state):
+    """Short examination findings from exactly the contract sent to the renderer."""
+    visible = appearance_state(state)
+    names = {"mental_status": "Mental status", "expression": "Expression", "skin_color": "Color", "diaphoresis": "Diaphoresis"}
+    findings = [f"{name}: {visible[key].capitalize() if key == 'mental_status' else visible[key]}"
+                for key, name in names.items() if visible[key] != "not recorded"]
+    if visible["mottling"]:
+        findings.append("Mottling on visible extremities")
+    return ". ".join(findings) + "."
+
+
+def edit_prompt(state):
+    """A source-bounded edit brief; arbitrary state strings never reach the model."""
     return (
         "Edit this reference photograph of a fictional patient in an emergency department. "
         "It is the SAME patient later in the SAME encounter. Preserve the exact identity, age, "
-        "sex, face structure, hair, skin tone, gown, blanket, room, lighting, camera position, "
+        "sex, face structure, hair, baseline skin pigmentation, gown, blanket, room, lighting, camera position, "
         "framing, head location and the empty rightmost wall used by the software monitor. "
         "Change only the following documented observations and active respiratory interface: "
-        + " ".join(observations) + " "
+        + appearance_brief(state) + " "
         "When the requested appearance differs from the reference, adjust eyelids, gaze, facial "
         "engagement and breathing-related posture conservatively, without changing facial identity. "
         "Use ONLY the respiratory interface listed above; remove other respiratory interfaces if present. "
         "Keep ECG electrodes, cuff and finger oximeter. No extra personnel, procedures, IV infusions "
-        "or equipment. Do not infer a diagnosis, unconsciousness cause, pain, pallor, cyanosis, "
-        "bleeding, sweating, wounds or any unlisted sign. Cold skin cannot be shown as a color change. "
+        "or equipment. Represent the explicitly requested color, expression and sweat changes even "
+        "if the reference looked different. Do not infer a diagnosis, unconsciousness cause, pain location, "
+        "cyanosis, bleeding, wounds or any unlisted sign. Tactile coldness alone is not a color change. "
         "No labels, text, numeric readings, monitors, ECG traces, icons or UI in the photograph. "
         "Photorealistic documentary medical photography. Return the entire landscape photograph."
     )

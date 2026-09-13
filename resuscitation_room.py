@@ -45,7 +45,7 @@ def patient_svg(t):
     <circle cx="177" cy="335" r="10" fill="#405565"/><circle cx="333" cy="335" r="10" fill="#405565"/>{mask}{pump}</svg>'''
 
 
-ROOM_RENDER_VERSION = 4
+ROOM_RENDER_VERSION = 5
 
 
 def monitor_html(o, time_label, profile='baseline', seed=0):
@@ -64,14 +64,14 @@ def monitor_html(o, time_label, profile='baseline', seed=0):
 @st.fragment(run_every=2)
 def render_room(state, events, ecg_svg, render_event, time_label):
     from clinical_scene import scene_image, scene_html
-    from patient_appearance import appearance_signature
+    from patient_appearance import appearance_signature, appearance_summary
     image = scene_image(state, events)
     signature = appearance_signature(state)
     if st.session_state.get('_scene_failed') and st.session_state.get('_scene_failure_notified') != signature:
         st.session_state['_scene_failure_notified'] = signature
         st.rerun()  # Make the retry control visible after a background failure.
     o = state['observable']
-    description = ' · '.join(str(o.get(k, '')) for k in ('mental_status', 'work_of_breathing') if o.get(k))
+    description = appearance_summary(state) + ' Work of breathing: ' + str(o.get('work_of_breathing', 'Not recorded'))
     profile = state.get('ecg_profile', state.get('encounter_spec', {}).get('ecg_profile', 'baseline'))
     st.markdown(scene_html(image, monitor_html(o, time_label, profile, state.get('seed', 0)),
                           current=st.session_state.get('_scene_current', False),

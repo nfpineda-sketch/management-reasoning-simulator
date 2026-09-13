@@ -9,7 +9,7 @@ from html import escape
 from PIL import Image
 import streamlit as st
 
-SCENE_RENDER_VERSION = 5
+SCENE_RENDER_VERSION = 6
 
 
 def setting(name, default=''):
@@ -20,9 +20,8 @@ def setting(name, default=''):
 
 
 def scene_prompt(state):
-    o = state['observable']
     person = '64-year-old woman' if state.get('case_id') == 'PS002' else '70-year-old man'
-    from patient_appearance import appearance_state
+    from patient_appearance import appearance_state, appearance_brief
     visible = appearance_state(state)
     return ('Photorealistic emergency department encounter, clinician viewpoint from the foot of a bed. '
             'Wide landscape photograph with a lifelike fictional '+person+' in a hospital gown, '
@@ -34,7 +33,8 @@ def scene_prompt(state):
             'oximeter. Add only the active support equipment explicitly listed in the observations. '
             'Do not invent wounds, cyanosis, bleeding or other clinical signs. Mottling is permitted only when explicitly true below. '
             'Depict only these established visible '
-            'observations conservatively: '+json.dumps(visible)+'. Documentary medical photography, '
+            'observations conservatively: '+json.dumps(visible)+'. '+appearance_brief(state)+' '
+            'Clinical findings must remain visible and proportionate, not a posed wellness portrait. Documentary medical photography, '
             'not a cartoon, icon, diagram, doll or 3D game render.')
 
 
@@ -52,37 +52,46 @@ def generate_scene(state, api_key, model='gpt-image-1.5', client=None):
 
 
 def scene_image(state, events):
-    from patient_appearance import appearance_signature, generate_appearance
+    from functools import partial
+    from patient_appearance import appearance_signature, APPEARANCE_VERSION
+    from scene_pipeline import screened_scene, screened_appearance, SCENE_PIPELINE_VERSION
     from scene_jobs import SceneJobs
     arrival = next((e for e in events if e.get('kind') == 'presentation'), None)
     if not arrival:
         return None
-    key = (st.session_state.get('_attempt_id'), id(arrival))
+    # Invalidate older unscreened pictures on a running session's hot update.
+    key = (st.session_state.get('_attempt_id'), id(arrival),
+           SCENE_RENDER_VERSION, APPEARANCE_VERSION, SCENE_PIPELINE_VERSION)
     if st.session_state.get('_scene_identity') != key or '_scene_jobs' not in st.session_state:
         st.session_state['_scene_identity'] = key
         st.session_state['_scene_jobs'] = SceneJobs()
         st.session_state['_scene_failure_notified'] = None
     jobs = st.session_state['_scene_jobs']
     signature = appearance_signature(state)
+    review_model = setting('MRS_IMAGE_REVIEW_MODEL', 'gpt-5-mini').strip() or 'gpt-5-mini'
     jobs.request(signature, state, setting('OPENAI_API_KEY'),
-                 setting('MRS_IMAGE_MODEL', 'gpt-image-1.5'), generate_scene, generate_appearance)
+                 setting('MRS_IMAGE_MODEL', 'gpt-image-1.5'),
+                 partial(screened_scene, review_model=review_model),
+                 partial(screened_appearance, review_model=review_model))
     current = jobs.current(signature)
     st.session_state['_scene_current'] = current is not None
     st.session_state['_scene_failed'] = signature in jobs.failed
     st.session_state['_scene_pending'] = jobs.pending is not None
-    # Any prior image is explicitly marked as prior, never as current observation.
-    return current or jobs.previous()
+    # A label cannot neutralize a contradictory visual cue. Never substitute a
+    # previous appearance while the current one is pending, rejected or failed.
+    return current
 
 
 def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, observations=''):
+    if not current:
+        image_b64 = None
+    current = bool(current and image_b64)
     ecg = ''.join(line.strip() for line in ecg.splitlines())
     bg = f'background-image:url(data:image/png;base64,{image_b64});' if image_b64 else ''
     status = 'Patient illustration · current state' if current else (
-        'Updating appearance · previous image' if pending and image_b64 else
-        'Preparing patient image' if pending else 'Current patient image unavailable')
-    stale = ' scene-previous' if image_b64 and not current else ''
+        'Updating patient appearance' if pending else 'Current patient image unavailable')
     return ("<style>" + BEDSPACE_CSS + "</style>" +
-            f'<div class="clinical-scene{stale}" style="{bg}">' +
+            f'<div class="clinical-scene" style="{bg}">' +
             f'<div class="scene-monitor">{monitor}{ecg}</div>' +
             f'<div class="scene-time">ED / Bed 03 · {escape(status)}</div>' +
             (f'<div class="scene-observations">{escape(observations)}</div>' if not current else '') + '</div>')
@@ -91,7 +100,6 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
 BEDSPACE_CSS = """
 .clinical-scene{position:fixed;inset:3.4rem 1rem 1rem;background:#18252e;
  background-size:cover;background-position:38% center;border-radius:14px;overflow:hidden;z-index:1}
-.scene-previous{background-blend-mode:luminosity}
 .scene-monitor{position:absolute;right:1.2%;top:1.5%;width:36%;background:#07141d;
  border:5px solid #263a48;border-radius:14px;box-shadow:0 8px 24px #0008;max-height:37vh;overflow:hidden}
 .scene-monitor svg{width:100%;height:auto;display:block;max-height:12vh}

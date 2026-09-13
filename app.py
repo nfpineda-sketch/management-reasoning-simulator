@@ -12,13 +12,18 @@ import streamlit as st
 
 from curriculum import CHALLENGES
 # Refresh the changed renderer once during Streamlit hot updates.
+import importlib
+import patient_appearance as _appearance
+if getattr(_appearance, "APPEARANCE_VERSION", 0) != 2:
+    importlib.reload(_appearance)
+import encounter_generator as _encounter_generator
+if getattr(_encounter_generator, "GENERATOR_VERSION", "") != "0.10.1":
+    importlib.reload(_encounter_generator)
 import clinical_scene as _clinical_scene
-if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 5:
-    import importlib
+if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 6:
     importlib.reload(_clinical_scene)
 import resuscitation_room as _room
-if getattr(_room, "ROOM_RENDER_VERSION", 0) != 4:
-    import importlib
+if getattr(_room, "ROOM_RENDER_VERSION", 0) != 5:
     importlib.reload(_room)
 from resuscitation_room import render_room, render_bedside_tools
 from encounter_workspace import render_encounter_workspace
@@ -29,7 +34,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.15.1", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.15.2", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -68,7 +73,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.15.1-clinical-encounter"
+SIMULATOR_VERSION = "0.15.2-clinical-encounter"
 
 
 def faculty_access():
@@ -7693,6 +7698,7 @@ def recompute_coupled_physiology(state, elapsed_min=1):
         h["cardiac_arrest"] = True
         h["terminal_collapse"] = True
         o["pulse_present"] = False
+        o["peripheral_perfusion"] = "critical"
         # PEA is organized electrical activity without effective mechanical output.
         # Preserve the electrical ventricular rate at the moment of collapse rather
         # than incorrectly representing PEA as 0/min (which would imply asystole).
@@ -7704,7 +7710,9 @@ def recompute_coupled_physiology(state, elapsed_min=1):
         # unavailable rather than continuing as ordinary vital signs.
         o["crt"] = None
         o["spo2"] = None
-        o["extremities"] = "Cold"
+        # Collapse does not erase mottling already documented by the surface.
+        # Do not invent mottling when it was not present.
+        o["extremities"] = "Mottled/Cold" if o.get("extremities") == "Mottled/Cold" else "Cold"
         o["mental_status"] = "Unresponsive"
 
 
@@ -7736,6 +7744,14 @@ def update_perfusion_surface(state):
         - 0.25 * h.get("vasoplegia_severity", 0.0)
     )
     h["peripheral_flow"] = peripheral_flow
+    # Expose the existing flow bands for case-authored visual phenotypes. This
+    # does not change physiology and precedes distributive warming of the skin.
+    o["peripheral_perfusion"] = (
+        "preserved" if peripheral_flow >= 0.70 else
+        "mildly impaired" if peripheral_flow >= 0.52 else
+        "impaired" if peripheral_flow >= 0.23 else
+        "severely impaired" if peripheral_flow >= 0.08 else "critical"
+    )
 
     # v0.6.0.16: CRT responds relatively quickly to current peripheral flow, while
     # extremity temperature has thermal/microcirculatory memory. Sustained forward
@@ -9645,7 +9661,7 @@ def render_event(event):
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
     st.write(event["text"])
 
-st.caption("Management Reasoning Simulator · Clinical encounter v0.15.1")
+st.caption("Management Reasoning Simulator · Clinical encounter v0.15.2")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -9782,7 +9798,8 @@ with st.container(key="encounter-console"):
         if st.button("Examine patient"):
             observed = st.session_state.state["observable"]
             if area == "General appearance":
-                finding = "Mental status: " + str(observed.get("mental_status", "Not documented"))
+                from patient_appearance import appearance_summary
+                finding = appearance_summary(st.session_state.state)
             elif area == "Breathing":
                 finding = "Respiratory rate: " + str(observed.get("respiratory_rate", "—")) + "/min. Work of breathing: " + str(observed.get("work_of_breathing", "Not documented"))
             elif not observed.get("pulse_present", True):
@@ -10518,6 +10535,6 @@ with st.container(key="encounter-console"):
 
     if ACCOUNT_CONTEXT:
         save_session(ACCOUNT_CONTEXT)
-    st.caption("Management Reasoning Simulator · Clinical encounter v0.15.1")
+    st.caption("Management Reasoning Simulator · Clinical encounter v0.15.2")
 
     # Compatibility marker for v0.6.0.27 regression lineage.

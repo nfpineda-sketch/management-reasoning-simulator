@@ -21,7 +21,7 @@ import secrets
 from typing import Any
 
 
-GENERATOR_VERSION = "0.10.0"
+GENERATOR_VERSION = "0.10.1"
 SPEC_VERSION = "mrs.ps001.encounter.v1"
 DEFAULT_MODEL = "gpt-5-mini"
 SUPPORTED_CHALLENGES = ("R1-03", "R1-04", "R2-01")
@@ -287,6 +287,9 @@ def generate_encounter(
     state["hidden"].update(profile["hidden"])
     state["observable"].update(profile["observable"])
     observable = state["observable"]
+    # Authored entry state for all current pilot profiles; thereafter the
+    # existing engine updates this category from peripheral flow, not BP alone.
+    observable["peripheral_perfusion"] = "impaired"
     state["hidden"]["effective_map"] = (observable["sbp"] + 2 * observable["dbp"]) / 3
     # Synchronize derived entry descriptors without advancing the clinical clock.
     h = state["hidden"]
@@ -302,6 +305,7 @@ def generate_encounter(
         "comorbidities": ["hypertension", "type 2 diabetes"],
         "source": "urinary", "focused_history": _HISTORY,
     }
+    from visual_observations import hypoperfusion_visual_profile
     spec = {
         "schema_version": SPEC_VERSION,
         "generator_version": GENERATOR_VERSION,
@@ -311,6 +315,7 @@ def generate_encounter(
         "profile_id": choice["profile_id"],
         "choices": deepcopy(choice),
         "patient_facts": facts,
+        "visual_profile": hypoperfusion_visual_profile(),
         "hidden_overrides": deepcopy(profile["hidden"]),
         "initial_observable": deepcopy(observable),
         "presentation": presentation,
