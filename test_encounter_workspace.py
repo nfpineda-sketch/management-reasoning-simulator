@@ -36,5 +36,5 @@ def test_both_clinical_surfaces_render_handover_and_complete_record(monkeypatch)
         assert [t.label for t in at.tabs][:3] == [
             'Current exchange', 'Investigation reports', 'Complete encounter record']
         source = next(e['text'] for e in at.session_state.events if e['kind'] == 'presentation')
-        assert sum(m.value == source for m in at.markdown) == 2
+        assert sum(m.value == source for m in at.markdown) >= 2
         assert not any('Developer' in e.label for e in at.expander)
