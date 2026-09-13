@@ -7,7 +7,7 @@ from clinical_scene import generate_scene, scene_prompt, history_facts, answer_h
 
 
 def test_image_request_uses_only_visual_facts_and_validates_bytes():
-    out=BytesIO(); Image.new('RGB',(4,4)).save(out,format='PNG')
+    out=BytesIO(); Image.new('RGB',(1536,1024)).save(out,format='PNG')
     class Images:
         def generate(self, **kwargs):
             self.request=kwargs

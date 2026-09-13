@@ -9,7 +9,7 @@ from html import escape
 from PIL import Image
 import streamlit as st
 
-SCENE_RENDER_VERSION = 3
+SCENE_RENDER_VERSION = 4
 
 
 def setting(name, default=''):
@@ -22,7 +22,8 @@ def setting(name, default=''):
 def scene_prompt(state):
     o = state['observable']
     person = '64-year-old woman' if state.get('case_id') == 'PS002' else '70-year-old man'
-    visible = {k:o.get(k) for k in ('mental_status','work_of_breathing')}
+    from patient_appearance import appearance_state
+    visible = appearance_state(state)
     return ('Photorealistic emergency department encounter, clinician viewpoint from the foot of a bed. '
             'Wide landscape photograph with a lifelike fictional '+person+' in a hospital gown, '
             'head and hands clearly visible, body covered by a white blanket. Patient centered at 40% '
@@ -30,9 +31,9 @@ def scene_prompt(state):
             'Reserve the entire rightmost 34% for empty dark hospital wall; a live monitor will be '
             'composited there by software. No monitor screens anywhere, no numbers, text, logos, '
             'diagnostic labels, annotations, charts or UI. ECG electrodes, a BP cuff and finger '
-            'oximeter only. No oxygen, mask, IV fluids, infusion or airway equipment attached. '
-            'Do not invent wounds, cyanosis, bleeding, mottling or other clinical signs. '
-            'The image is the arrival scene, before treatment. Depict only these established visible '
+            'oximeter. Add only the active support equipment explicitly listed in the observations. '
+            'Do not invent wounds, cyanosis, bleeding or other clinical signs. Mottling is permitted only when explicitly true below. '
+            'Depict only these established visible '
             'observations conservatively: '+json.dumps(visible)+'. Documentary medical photography, '
             'not a cartoon, icon, diagram, doll or 3D game render.')
 
@@ -44,48 +45,82 @@ def generate_scene(state, api_key, model='gpt-image-1.5', client=None):
         from openai import OpenAI
         client = OpenAI(api_key=api_key, timeout=120, max_retries=0)
     result = client.images.generate(model=model, prompt=scene_prompt(state),
-                                   size='1536x1024', quality='medium', n=1)
-    raw = base64.b64decode(result.data[0].b64_json, validate=True)
-    if len(raw) > 20_000_000:
-        raise ValueError('Image is too large.')
-    # Verify format and dimensions; never use a provider URL or arbitrary HTML.
-    with Image.open(BytesIO(raw)) as im:
-        im.verify()
+                                   size='1536x1024', quality='medium', output_format='png', n=1)
+    from patient_appearance import _validated_image
+    raw, _ = _validated_image(result.data[0].b64_json, output=True)
     return base64.b64encode(raw).decode('ascii')
 
 
 def scene_image(state, events):
-    # New presentation object = new encounter, even if two cases have identical text.
+    from patient_appearance import appearance_signature, generate_appearance
+    from scene_jobs import SceneJobs
     arrival = next((e for e in events if e.get('kind') == 'presentation'), None)
     if not arrival:
         return None
     key = (st.session_state.get('_attempt_id'), id(arrival))
-    if st.session_state.get('_scene_identity') != key:
+    if st.session_state.get('_scene_identity') != key or '_scene_jobs' not in st.session_state:
         st.session_state['_scene_identity'] = key
-        st.session_state['_scene_image'] = None
-        st.session_state['_scene_attempted'] = False
-    api_key = setting('OPENAI_API_KEY')
-    if not st.session_state['_scene_attempted'] and api_key:
-        st.session_state['_scene_attempted'] = True
-        try:
-            with st.spinner('Preparing the patient scene…'):
-                st.session_state['_scene_image'] = generate_scene(state, api_key, setting('MRS_IMAGE_MODEL','gpt-image-1.5'))
-        except Exception:
-            st.session_state['_scene_image'] = None
-    if not st.session_state['_scene_image']:
-        st.info('Patient image unavailable. You can still talk, examine, request tests and treat.')
-        if api_key and st.button('Retry patient image'):
-            st.session_state['_scene_attempted'] = False
-            st.rerun()
-    return st.session_state['_scene_image']
+        st.session_state['_scene_jobs'] = SceneJobs()
+        st.session_state['_scene_failure_notified'] = None
+    jobs = st.session_state['_scene_jobs']
+    signature = appearance_signature(state)
+    jobs.request(signature, state, setting('OPENAI_API_KEY'),
+                 setting('MRS_IMAGE_MODEL', 'gpt-image-1.5'), generate_scene, generate_appearance)
+    current = jobs.current(signature)
+    st.session_state['_scene_current'] = current is not None
+    st.session_state['_scene_failed'] = signature in jobs.failed
+    st.session_state['_scene_pending'] = jobs.pending is not None
+    # Any prior image is explicitly marked as prior, never as current observation.
+    return current or jobs.previous()
 
 
-def scene_html(image_b64, monitor, ecg):
-    # Markdown treats blank lines plus four-space SVG indentation as code.
-    # Compact only markup whitespace before embedding the existing ECG.
-    ecg = "".join(line.strip() for line in ecg.splitlines())
+def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, observations=''):
+    ecg = ''.join(line.strip() for line in ecg.splitlines())
     bg = f'background-image:url(data:image/png;base64,{image_b64});' if image_b64 else ''
-    return '''<style>.clinical-scene{position:relative;aspect-ratio:3/2;background:#18252e;background-size:cover;background-position:center;border-radius:14px;overflow:hidden}.scene-monitor{position:absolute;right:2%;top:5%;width:31%;background:#0c1924;border:8px solid #263a48;border-radius:14px;box-shadow:0 8px 24px #0008}.scene-monitor div[style*="font:700"]{font-size:clamp(16px,2.2vw,36px)!important}.scene-monitor svg{min-height:0!important}.scene-monitor .mrs-ecg-strip{margin:0}.scene-time{position:absolute;left:0;right:0;bottom:0;background:#000a;color:#eee;padding:8px 16px;font:13px system-ui}@media(max-width:700px){.clinical-scene{aspect-ratio:auto;min-height:420px;background-size:auto 420px;background-position:left top;padding-top:420px}.scene-monitor{position:relative;right:auto;top:auto;width:96%;margin:2%}.scene-time{top:0;bottom:auto}}</style>'''+f'<div class="clinical-scene" style="{bg}"><div class="scene-monitor">{monitor}{ecg}</div><div class="scene-time">ED / Bed 03 · Arrival photograph · Monitor shows current values</div></div>'
+    status = 'Patient illustration · current state' if current else (
+        'Updating appearance · previous image' if pending and image_b64 else
+        'Preparing patient image' if pending else 'Current patient image unavailable')
+    stale = ' scene-previous' if image_b64 and not current else ''
+    return ("<style>" + BEDSPACE_CSS + "</style>" +
+            f'<div class="clinical-scene{stale}" style="{bg}">' +
+            f'<div class="scene-monitor">{monitor}{ecg}</div>' +
+            f'<div class="scene-time">ED / Bed 03 · {escape(status)}</div>' +
+            (f'<div class="scene-observations">{escape(observations)}</div>' if not current else '') + '</div>')
+
+
+BEDSPACE_CSS = """
+.clinical-scene{position:fixed;inset:3.4rem 1rem 1rem;background:#18252e;
+ background-size:cover;background-position:38% center;border-radius:14px;overflow:hidden;z-index:1}
+.scene-previous{background-blend-mode:luminosity}
+.scene-monitor{position:absolute;right:1.2%;top:1.5%;width:36%;background:#07141d;
+ border:5px solid #263a48;border-radius:14px;box-shadow:0 8px 24px #0008;max-height:37vh;overflow:hidden}
+.scene-monitor svg{width:100%;height:auto;display:block;max-height:12vh}
+.monitor-values{min-width:0}.monitor-values>div{min-width:0}
+.scene-time{position:absolute;left:0;top:0;background:#000b;color:#eee;padding:8px 14px;font:12px system-ui;max-width:59%}
+.scene-observations{position:absolute;left:2%;bottom:3%;max-width:54%;background:#17222eee;color:white;padding:10px;border-radius:8px}
+.st-key-encounter-console{position:fixed!important;right:2.2rem;top:calc(3.4rem + 39vh);
+ bottom:1.8rem;width:35%!important;overflow-y:auto!important;overflow-x:hidden;z-index:2;
+ background:rgba(248,250,252,.96);padding:14px;border:1px solid #b8c6cd;border-radius:12px;
+ box-shadow:0 8px 28px #0005;color:#17232d;color-scheme:light}
+.st-key-encounter-console h3{font-size:1.1rem!important;margin:0!important;padding-top:0!important}
+.st-key-encounter-console [data-testid="stForm"]{padding:10px}
+.st-key-encounter-console [data-testid="stCaptionContainer"]{font-size:.8rem}
+.st-key-encounter-console [data-testid="stVerticalBlock"]{gap:.6rem}
+.st-key-encounter-console [data-testid="stExpander"]{background:#f7f9fb}
+.st-key-encounter-console [role="radiogroup"]{gap:.6rem;flex-wrap:wrap}
+.st-key-encounter-console [data-testid="stMarkdownContainer"]{overflow-wrap:anywhere}
+@media(max-width:760px){
+ .clinical-scene{inset:3.2rem .4rem auto;height:39vh;background-position:25% center}
+ .scene-monitor{width:43%;max-height:35vh;right:1%;top:5%}
+ .scene-monitor .monitor-values{grid-template-columns:repeat(2,1fr)!important}
+ .scene-monitor .monitor-values>div{padding:2px!important}
+ .scene-monitor .monitor-values small{font-size:10px}
+ .scene-monitor svg{max-height:9vh}.scene-time{font-size:10px;max-width:52%;padding:4px}
+ .scene-observations{font-size:11px;max-width:49%;padding:5px}
+ .st-key-encounter-console{left:.4rem;right:.4rem;top:calc(3.2rem + 40vh);bottom:.4rem;width:auto!important;padding:10px}
+}
+@media(prefers-reduced-motion:reduce){.scene-monitor *{animation:none!important}}
+"""
 
 
 def history_facts(presentation, case_id):

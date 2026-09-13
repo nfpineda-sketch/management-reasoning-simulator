@@ -45,30 +45,86 @@ def patient_svg(t):
     <circle cx="177" cy="335" r="10" fill="#405565"/><circle cx="333" cy="335" r="10" fill="#405565"/>{mask}{pump}</svg>'''
 
 
-def monitor_html(o, time_label):
+ROOM_RENDER_VERSION = 4
+
+
+def monitor_html(o, time_label, profile='baseline', seed=0):
+    from ecg12 import monitor_wave_svg
     pulse = o.get('pulse_present', True)
     values = [('HR', str(o.get('hr', '—')), '/min', '#72efa5'),
               ('SpO₂', str(o.get('spo2', '—')) if pulse else '—', '%', '#64dced'),
-              ('BP', f"{o.get('sbp', '—')}/{o.get('dbp', '—')}" if pulse else '—', 'mmHg', '#f6c77a'),
-              ('RR', str(o.get('respiratory_rate', '—')) if pulse else '0', '/min', '#f1efff')]
-    cards = ''.join(f'<div style="color:{c};padding:12px"><div style="font-size:13px">{label}</div><div style="font:700 clamp(24px,3.5vw,48px) monospace">{escape(v)}</div><small>{unit}</small></div>' for label,v,unit,c in values)
-    return f'<div style="background:#0c1924;border:3px solid #294354;border-radius:16px;padding:14px"><div style="color:#c3d4df;font:14px monospace">BEDSIDE MONITOR · {escape(time_label)}</div><div style="display:grid;grid-template-columns:1fr 1fr">{cards}</div></div>'
+              ('NIBP', f"{o.get('sbp', '—')}/{o.get('dbp', '—')}" if pulse else '—', 'mmHg', '#f6c77a'),
+              ('RR', str(o.get('respiratory_rate', '—')), '/min', '#f1efff')]
+    cards = ''.join(f'<div style="color:{c};padding:4px 8px"><small>{label}</small><div style="font:700 clamp(17px,2.1vw,34px) monospace">{escape(v)}</div><small>{unit}</small></div>' for label,v,unit,c in values)
+    wave = monitor_wave_svg(o, profile=profile, seed=seed)
+    return (f'<div style="padding:8px"><div style="color:#c3d4df;font:12px monospace">BEDSIDE MONITOR · {escape(time_label)}</div>'
+            + wave + f'<div class="monitor-values" style="display:grid;grid-template-columns:repeat(4,1fr)">{cards}</div></div>')
 
 
+@st.fragment(run_every=2)
 def render_room(state, events, ecg_svg, render_event, time_label):
     from clinical_scene import scene_image, scene_html
+    from patient_appearance import appearance_signature
     image = scene_image(state, events)
-    st.markdown(scene_html(image, monitor_html(state['observable'], time_label), ecg_svg(state['observable'])), unsafe_allow_html=True)
-    @st.dialog('ECG · synthetic lead II', width='large')
-    def enlarged_ecg():
-        st.markdown(ecg_svg(state['observable']), unsafe_allow_html=True)
-    if st.button('Enlarge ECG'):
-        enlarged_ecg()
+    signature = appearance_signature(state)
+    if st.session_state.get('_scene_failed') and st.session_state.get('_scene_failure_notified') != signature:
+        st.session_state['_scene_failure_notified'] = signature
+        st.rerun()  # Make the retry control visible after a background failure.
+    o = state['observable']
+    description = ' · '.join(str(o.get(k, '')) for k in ('mental_status', 'work_of_breathing') if o.get(k))
+    profile = state.get('ecg_profile', state.get('encounter_spec', {}).get('ecg_profile', 'baseline'))
+    st.markdown(scene_html(image, monitor_html(o, time_label, profile, state.get('seed', 0)),
+                          current=st.session_state.get('_scene_current', False),
+                          pending=st.session_state.get('_scene_pending', False),
+                          observations=description), unsafe_allow_html=True)
+
+
+def render_bedside_tools(state, events, render_event):
+    """Acquire a frozen ECG; viewing an older acquisition never changes its data."""
+    from ecg12 import acquire_ecg, render_ecg_svg
+    from clinical_scene import setting
+    from patient_appearance import appearance_signature
+    acquired = False
+    @st.dialog('ECG · 12 leads', width='large')
+    def show_ecg(snapshot):
+        svg = render_ecg_svg(snapshot)
+        st.markdown(''.join(line.strip() for line in svg.splitlines()), unsafe_allow_html=True)
+        st.caption('Synthetic educational tracing · Clinical pattern validation pending.')
+        st.download_button('Download ECG', svg, file_name='ecg_12_leads.svg', mime='image/svg+xml')
+
+    if st.button('ECG', help='Acquire a 12-lead ECG at the current simulation time.'):
+        try:
+            snapshot = acquire_ecg(state)
+            if snapshot.get('status') != 'available':
+                st.info(snapshot.get('reason', 'ECG unavailable for this electrical state.'))
+            else:
+                state.setdefault('diagnostics', {}).setdefault('ecg', []).append(snapshot)
+                events.append({'kind': 'diagnostic', 'time': state.get('sim_time', 0),
+                               'text': '12-lead ECG acquired. Available in ECG recordings.'})
+                acquired = True
+                show_ecg(snapshot)
+        except ValueError as error:
+            st.error(str(error))
+    recordings = state.get('diagnostics', {}).get('ecg', [])
+    if recordings:
+        with st.expander('ECG recordings'):
+            recording = st.selectbox('Acquisition', list(range(len(recordings))),
+                                    format_func=lambda i: f"ECG {i+1} · {recordings[i].get('acquired_at_minutes', 0):g} min",
+                                    index=len(recordings)-1)
+            if st.button('View recording'):
+                show_ecg(recordings[recording])
+    jobs = st.session_state.get('_scene_jobs')
+    if jobs and appearance_signature(state) in jobs.failed and setting('OPENAI_API_KEY'):
+        if st.button('Retry patient image'):
+            jobs.failed.discard(appearance_signature(state))
+            st.rerun()
     labels = device_labels(state['treatments'])
     if labels:
         st.caption('Current support · ' + ' | '.join(labels))
     _, latest, _, _ = encounter_sections(events)
     if latest:
-        with st.container(border=True, height=180):
+        with st.expander('Latest response', expanded=True):
             for event in latest:
-                render_event(event)
+                if event.get('kind') != 'you':
+                    render_event(event)
+    return acquired
