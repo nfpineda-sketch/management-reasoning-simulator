@@ -15,7 +15,7 @@ from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
 from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.17.9"
+GENERATOR_VERSION = "0.18.0"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -65,6 +65,13 @@ including in hypoxemic cases; these devices are distinct matchers and one rule d
 Include a crystalloid fluid response, appropriate to this patient's physiology (including harm or no benefit when appropriate).
 Include relevant alternative drug agents/routes, not just the preferred therapy. Author each effect separately; never copy an
 oxygen-device effect to a different device or invent benefit for an inappropriate intervention.
+Cardioversion and procedural_sedation are supported only with explicitly authored response rules.
+For cardioversion, dose_field/reference_dose must be null; settings must contain the exact energy_j;
+onset_min must be zero; rhythm_after describes the actual post-shock rhythm, including failure to convert.
+Energy is a matcher, never a linear efficacy multiplier. Include plausible alternative energies with independently authored outcomes.
+For ventilator_adjustment, dose_field/reference_dose must be null and settings must contain exact fio2_percent and peep_cmh2o.
+For other actions settings and rhythm_after must be null. Sedation uses an exact drug, route and dose_mg exposure;
+authored effects must account for hemodynamic/respiratory consequences. Do not assume sedation merely because cardioversion was ordered.
 No learner grading, bias name, answer quality, reward or punishment may influence physiology. At least two state
 rules must describe clinically observable change during deterioration AND improvement; each rule is applied to actual current
 numeric fields, all conditions must match, and later matching rules override earlier ones. Mental status/ECG/exam changes need a

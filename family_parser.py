@@ -11,11 +11,12 @@ import re
 import unicodedata
 
 from shared_order_quantities import parse_volume_ml
+from shared_order_language import _normalize, _route, _amount
 
 
 NEW_TREATMENT_ACTIONS = frozenset({
     "fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator",
-    "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin",
+    "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin",
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "diuretic",
 })
 
@@ -35,6 +36,13 @@ _AGENTS = {
     "ppi": {"pantoprazole": r"pantoprazole|pantoprazol", "omeprazole": r"omeprazole|omeprazol"},
     "aspirin": {"aspirin": r"aspirin|aspirina|asa|aas"},
     "anticoagulation": {"heparin": r"heparin|heparina", "enoxaparin": r"enoxaparin|enoxaparina"},
+    "beta_blocker": {"metoprolol": r"metoprolol", "propranolol": r"propranolol"},
+    "diltiazem": {"diltiazem": r"diltiazem|dilt"},
+    "amiodarone": {"amiodarone": r"amiodarone|amiodarona|amio"},
+    "procedural_sedation": {
+        "etomidate": r"etomidate|etomidato", "midazolam": r"midazolam",
+        "ketamine": r"ketamine|ketamina", "propofol": r"propofol", "fentanyl": r"fentanyl|fentanilo",
+    },
     "diuretic": {"furosemide": r"furosemide|furosemida|lasix"},
 }
 _DIAGNOSTICS = {
@@ -61,7 +69,7 @@ _DIAGNOSTICS = {
 }
 _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
-    r"(?P<verb>want|give|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
+    r"(?P<verb>cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
     r"stop|discontinue|increase|decrease|titrate|continue|change|set|switch|transfuse|nebulize|"
     r"consult|call|activate|admit|transfer|intubate|ventilate|reassess|re-assess|recheck|reevaluate|"
     r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|iniciar|inicio|inicie|infundir|indicar|indico|"
@@ -94,40 +102,14 @@ _OXYGEN_MENTION = r"\b(?:oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|
 _FLOW = r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(?:l\s*/\s*min|lpm|lts?\s*/\s*min|(?:lts?|l)(?![\w/]|\s*/)|liters?\s*/\s*min|litres?\s*/\s*min|litros?\s*/\s*min)\b"
 
 
-def _normalize(text):
-    text = unicodedata.normalize("NFKD", str(text or "").replace("µ", "u").replace("μ", "u"))
-    text = "".join(c for c in text if not unicodedata.combining(c)).lower()
-    text = text.replace("’", "'")
-    # A decimal comma is numeric, whereas a comma separating orders is not.
-    return re.sub(r"(?<=\d),(?=\d)", ".", text)
 
 
 def _clarification(message):
     return {"type": "clarification", "message": message}
 
 
-def _route(text):
-    found = []
-    for route, pattern in (
-        ("IV", r"\b(?:iv|ev|intravenous|intravenously|intravenos[ao])\b"),
-        ("IO", r"\b(?:io|intraosseous|intraose[ao])\b"),
-        ("IM", r"\b(?:im|intramuscular)\b"),
-        ("PO", r"\b(?:po|vo|oral|orally|por boca|por via oral)\b"),
-        ("IN", r"\bintranasal\b|\bin\s*(?:now|ahora)?\s*$"),
-        ("nebulized", r"\b(?:nebulized|nebulised|nebulization|nebulizado|nebulizada|nebulizar|nebulize|neb)\b"),
-        ("inhaled", r"\b(?:inhaled|inhalado|inhalada)\b"),
-        ("SC", r"\b(?:sc|sq|subcutaneous|subcutane[ao])\b"),
-    ):
-        if re.search(pattern, text):
-            found.append(route)
-    return found[0] if len(found) == 1 else None
 
 
-def _amount(text, units):
-    matches = list(re.finditer(r"(?<![\w.])(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(" + units + r")\b", text))
-    if len(matches) != 1:
-        return None, None
-    return float(matches[0][1]), matches[0][2]
 
 
 def _medication(text, kind, agent):
@@ -164,7 +146,7 @@ def _operation(verb):
 
 
 def _settings(text, name):
-    match = re.search(r"\b" + name + r"\s*(?:of|de|=|at|a)?\s*(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(%)?", text)
+    match = re.search(r"\b" + name + r"\s*(?:of|de|=|at|to|a)?\s*(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(%)?", text)
     if not match:
         return None
     value = float(match[1])
@@ -195,15 +177,15 @@ def _oxygen_order(body, verb):
         # "Increase nasal cannula from 3 to 4 L/min" retains its explicitly
         # named device. A request to switch interfaces must name the new one.
         selected = set(devices(body[:transition.start(1)]))
-    if len(selected) != 1:
+    if len(selected) > 1 or (not selected and (verb in {"switch", "cambiar"} or _operation(verb) not in {"adjust", "continue"})):
         return _clarification("Specify one target oxygen device and its flow in L/min.")
-    device = selected.pop()
+    device = selected.pop() if selected else None
     if device == "room air":
         return {"type": "oxygen", "device": device, "flow_lpm": 0}
     flows = list(re.finditer(_FLOW, target))
-    if len(flows) != 1:
+    if len(flows) > 1 or (not flows and _operation(verb) not in {"adjust", "continue"}):
         return _clarification("Specify one absolute target oxygen flow in L/min.")
-    return {"type": "oxygen", "device": device, "flow_lpm": float(flows[0][1])}
+    return {"type": "oxygen", "device": device, "flow_lpm": float(flows[0][1]) if flows else None, **({"operation": _operation(verb)} if _operation(verb) in {"adjust", "continue"} and (device is None or not flows) else {})}
 
 
 def _parse_piece(piece, inherited=None):
@@ -240,7 +222,7 @@ def _parse_piece(piece, inherited=None):
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
-        shorthand = r"(?:bipap|cpap|niv|vni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|nitroglycerin|nitroglicerina|nitro)"
+        shorthand = r"(?:cardioversion|bipap|cpap|niv|vni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|nitroglycerin|nitroglicerina|nitro)"
         medication_start = any(re.match(r"(?:" + pattern + r")\b", body) for agents in _AGENTS.values() for pattern in agents.values())
         quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
         if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start):
@@ -265,6 +247,18 @@ def _parse_piece(piece, inherited=None):
         if re.search(r"\bward\b|\bsala\b|hospital ward", body):
             destination = "ward"
         return [{"type": "disposition", "destination": destination}], verb
+    if verb in {"cardiovert", "cardiovertir", "cardiovierto"} or re.search(r"\b(?:cardioversion|synchronized shock|choque sincronizado)\b", body):
+        if re.search(r"\b(?:unsynchronized|defibrillation|no sincronizado)\b", body):
+            return [_clarification("Specify synchronized cardioversion; defibrillation is outside this pulse-present encounter.")], verb
+        energy, _ = _amount(body, r"j|joules?|julios?")
+        return [{"type": "cardioversion", "energy_j": energy, "synchronized": True}], verb
+    if (_operation(verb) in {"adjust", "continue"} and re.search(r"\b(?:ventilator|ventilation|fio2|peep|ipap|epap)\b", body)
+            and not re.search(r"\b(?:bipap|cpap|niv|vni)\b", body)):
+        if re.search(r"\b(?:by|en)\s+-?\d", body):
+            return [_clarification("Specify absolute target ventilator settings, not a relative change.")], verb
+        return [{"type": "respiratory_adjustment", "operation": _operation(verb),
+                 "fio2_percent": _settings(body, "fio2"), "peep_cmh2o": _settings(body, "peep"),
+                 "ipap_cmh2o": _settings(body, "ipap"), "epap_cmh2o": _settings(body, "epap")}], verb
     if re.search(r"\b(?:bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|bolsa[- ]mascarilla|bolsa valvula mascarilla)\b", body):
         return [{"type": "bag_mask"}], verb
     if verb in {"intubate", "intubar", "intubo"} or re.match(r"(?:intubation|intubacion)\b", body):

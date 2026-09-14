@@ -27,7 +27,7 @@ STUDIES = ("pocus", "lactate", "vbg", "abg", "basic_labs", "temperature", "poc_g
            "urinalysis", "blood_cultures", "troponin", "ctpa", "hemoglobin", "head_ct", "abdominal_ct",
            "cortisol", "thyroid_function", "ketones", "toxicology")
 ACTIONS = ("fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator", "steroid", "dextrose",
-           "naloxone", "blood", "ppi", "aspirin", "anticoagulation", "bag_mask", "intubation", "norepinephrine", "diuretic")
+           "naloxone", "blood", "ppi", "aspirin", "anticoagulation", "bag_mask", "intubation", "norepinephrine", "diuretic", "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment")
 
 
 def obj(properties):
@@ -65,6 +65,8 @@ RESPONSE_RULE = obj({
     "id": SHORT, "action_type": enum(ACTIONS), "agent": nullable(SHORT), "route": nullable(SHORT),
     "units": nullable(SHORT), "device": nullable(SHORT),
     "dose_field": nullable(enum(("dose_mg", "dose_g", "volume_ml", "units", "rate", "rate_mcg_min", "dose", "flow_lpm"))),
+    "settings": nullable(array(obj({"field": enum(("energy_j", "fio2_percent", "peep_cmh2o")), "value": NUMBER}), minimum=1, maximum=2)),
+    "rhythm_after": nullable(enum(tuple(k for k,v in RHYTHMS.items() if v not in {"vf", "asystole"}))),
     "reference_dose": nullable({"type": "number", "exclusiveMinimum": 0, "maximum": 30000}),
     "onset_min": {"type": "integer", "minimum": 0, "maximum": 120},
     "duration_min": {"type": "integer", "minimum": 1, "maximum": 180},
@@ -292,6 +294,11 @@ def compile_case(raw):
     engine["untreated_drift_per_min"] = _pairs(engine["untreated_drift_per_min"], "field", "value")
     for rule in engine["response_rules"]:
         rule["delta"] = _pairs(rule["delta"], "field", "value")
+        if rule.get("settings") is not None:
+            fields = [item["field"] for item in rule["settings"]]
+            if len(fields) != len(set(fields)):
+                raise ValueError("Duplicate response settings are not permitted.")
+            rule["settings"] = _pairs(rule["settings"], "field", "value")
         for key in tuple(rule):
             if rule[key] is None:
                 rule.pop(key)
@@ -303,7 +310,8 @@ def compile_case(raw):
             rule["examination"] = _pairs(rule["examination"], "area", "finding")
     case["visual_profile"] = {"id": "ai_authored_visible_findings_v1", "baseline": deepcopy(case["observable"]["visual"]), "perfusion_appearance": {}}
     from generated_engine_diagnostics import collect_declarative_issues
-    issues = collect_clinical_issues(case) + collect_declarative_issues(case)
+    from generated_case_coverage import coverage_issues
+    issues = collect_clinical_issues(case) + collect_declarative_issues(case) + coverage_issues(case)
     if issues:
         raise ContractValidationError(issues)
     from generated_engine import diagnostic_bindings

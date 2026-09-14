@@ -31,6 +31,10 @@ _MEDICINES = {
     "ppi": ({"IV", "PO"}, 1, 160),
     "aspirin": ({"PO"}, 1, 650),
     "diuretic": ({"IV", "PO"}, .1, 250),
+    "beta_blocker": ({"IV", "PO"}, .001, 1000),
+    "diltiazem": ({"IV", "PO"}, .001, 1000),
+    "amiodarone": ({"IV", "PO"}, .001, 2000),
+    "procedural_sedation": ({"IV", "IM", "IN"}, .001, 1000),
 }
 
 
@@ -57,13 +61,19 @@ def _validate(state, parsed):
     if not isinstance(actions, list) or not actions:
         return None, "Please specify a question, investigation, treatment, or reassessment."
     normalized = []
+    validation_state = deepcopy(state)
     for raw in actions:
         if not isinstance(raw, dict):
             return None, "Please restate the order."
-        a = deepcopy(raw)
+        from active_order_context import complete_active_order, remember_validated_support
+        a, context_error = complete_active_order(validation_state, raw)
+        if context_error:
+            return None, context_error
         kind = a.get("type")
-        if state.get("family_state", {}).get("invasive") and kind in {"oxygen", "niv", "bag_mask"}:
+        if validation_state.get("family_state", {}).get("invasive") and kind in {"oxygen", "niv", "bag_mask"}:
             return None, "The patient is receiving invasive ventilation. Please specify ventilator settings or clarify the intended airway change."
+        if kind in {"beta_blocker", "diltiazem", "amiodarone", "cardioversion", "procedural_sedation", "ventilator_adjustment"} and state.get("engine_family") != "generated":
+            return None, "This intervention requires a generated encounter with an explicit response rule."
         if kind == "clarification":
             return None, str(a.get("message") or "Please clarify the order before it is executed.")
         if kind == "diagnostic":
@@ -93,6 +103,11 @@ def _validate(state, parsed):
         elif kind == "fluid":
             if not _number(a.get("volume_ml"), 1, 3000) or not a.get("fluid_type"):
                 return None, "Specify the crystalloid and confirm the bolus volume in mL (up to 3000 mL per order)."
+        elif kind == "cardioversion":
+            if a.get("synchronized") is not True or not _number(a.get("energy_j"), 1, 360):
+                return None, "Specify synchronized cardioversion and its energy in joules."
+            if state.get("observable", {}).get("pulse_present") is not True:
+                return None, "Cardioversion requires a pulse-present encounter."
         elif kind == "blood":
             if not _number(a.get("units"), 1, 4) or int(a["units"]) != a["units"]:
                 return None, "Confirm the number of packed red-cell units (1–4 per order)."
@@ -127,7 +142,7 @@ def _validate(state, parsed):
                     a["units"] = aliases.get(units)
                     if a["units"] is None or not _number(a.get("rate"), .001, 100 if a["units"] == "mcg/min" else 1.5):
                         return None, "Specify or confirm norepinephrine dose and units (mcg/min or mcg/kg/min)."
-        elif kind == "intubation":
+        elif kind in {"intubation", "ventilator_adjustment"}:
             if not a.get("ventilator_mode") or not _number(a.get("fio2_percent"), 21, 100) or not _number(a.get("peep_cmh2o"), 0, 20):
                 return None, "Specify initial ventilator mode, FiO₂ and PEEP."
         elif kind == "anticoagulation":
@@ -145,6 +160,7 @@ def _validate(state, parsed):
         else:
             return None, f"The requested action ({str(kind)[:60]}) is not executable in this encounter. Please clarify the order."
         normalized.append(a)
+        remember_validated_support(validation_state, a)
     return normalized, None
 
 
@@ -184,7 +200,14 @@ def _order(state, a):
     kind = a["type"]
     duration = 1
     label = kind.replace("_", " ").capitalize()
-    if kind == "fluid":
+    if kind == "cardioversion":
+        tr.setdefault("cardioversions", []).append({"energy_j": a["energy_j"], "synchronized": True, "time_min": state.get("sim_time", 0)})
+        label = f"Synchronized cardioversion delivered: {a['energy_j']:g} J"
+        duration = 0
+    elif kind in {"beta_blocker", "diltiazem", "amiodarone", "procedural_sedation"}:
+        label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} administered"
+        duration = 0
+    elif kind == "fluid":
         f["pending_fluid_ml"] += a["volume_ml"]
         duration = math.ceil(a["volume_ml"] / 50)
         label = f"{a['fluid_type']} {a['volume_ml']:g} mL started"
@@ -247,7 +270,7 @@ def _order(state, a):
     elif kind in {"nitroglycerin", "norepinephrine"}:
         rate = 0 if a["operation"] == "stop" else a.get("rate_mcg_min", a.get("rate", 0))
         if kind == "norepinephrine" and a.get("units") == "mcg/kg/min":
-            rate *= 70  # authored adult reference weight; not patient-specific dosing advice
+            rate *= _case(state).get("patient", {}).get("weight_kg", 70)
         f[kind] = rate
         tr[kind] = bool(rate)
         reported_rate = a.get("rate_mcg_min", a.get("rate", 0))
@@ -257,6 +280,11 @@ def _order(state, a):
         else:
             tr.update(norepinephrine_rate=reported_rate if rate else 0, norepinephrine_units=reported_units)
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
+    elif kind == "ventilator_adjustment":
+        f["oxygen_fio2"] = a["fio2_percent"] / 100
+        tr.update(ventilator_mode=a["ventilator_mode"], ventilator_fio2_percent=a["fio2_percent"], ventilator_peep_cmh2o=a["peep_cmh2o"])
+        label = f"Ventilator settings: {a['ventilator_mode']}, FiO2 {a['fio2_percent']:g}%, PEEP {a['peep_cmh2o']:g}"
+        duration = 0
     elif kind in {"bag_mask", "intubation"}:
         f["bag_mask"] = kind == "bag_mask"
         tr["bag_mask"] = f["bag_mask"]
@@ -287,7 +315,7 @@ def _order(state, a):
         label = f"Transfer/admission requested: {a['destination']}"
         duration = 0
     summary = {"type": kind, "label": label, "duration_min": duration}
-    for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "service", "destination", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
+    for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "service", "destination", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
         if key in a:
             summary[key] = a[key]
     if kind in _MEDICINES or kind == "anticoagulation":
@@ -295,6 +323,8 @@ def _order(state, a):
         record.setdefault("agent", kind)
         record["time_min"] = int(state.get("sim_time", 0))
         tr["administered_medications"].append(record)
+    if kind in {"oxygen", "niv", "norepinephrine", "nitroglycerin", "ventilator_adjustment"}:
+        tr.setdefault("active_orders", {})[kind] = deepcopy(a)
     return summary
 
 

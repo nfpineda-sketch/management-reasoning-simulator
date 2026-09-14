@@ -1,4 +1,6 @@
-# Clinical encounter workspace v0.17.9
+# Clinical encounter workspace v0.18.0
+
+See [v0.18.0 release notes](docs/RELEASE_v0.18.0.md) for shared order interpretation, active treatment adjustments and generated procedure support.
 
 Live testing also found isolated uncertainty about non-severe respiratory
 effort. That detail may now be deferred explicitly to examination alongside

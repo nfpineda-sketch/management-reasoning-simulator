@@ -177,7 +177,7 @@ def collect_declarative_issues(case):
             for at in sorted(times):
                 values = {key: number + at * drift.get(key, 0) for key, number in initial.items()}
                 if response is not None:
-                    progress = min(1, max(0, (at - response["onset_min"]) / response["duration_min"]))
+                    progress = 1.0 if response["action_type"] == "cardioversion" else min(1, max(0, (at - response["onset_min"]) / response["duration_min"]))
                     for key, delta in response["delta"].items():
                         if key in values:
                             values[key] += delta * response["max_exposure"] * progress

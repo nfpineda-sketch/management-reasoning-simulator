@@ -10,7 +10,7 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-SIMULATOR_VERSION = "0.17.9-clinical-encounter"
+SIMULATOR_VERSION = "0.18.0-clinical-encounter"
 
 import importlib
 import generation_reload as _generation_reload
@@ -4034,65 +4034,9 @@ def _quantity_is_respiratory_support(text, start, end):
 
 
 def parse_volume_ml(text):
-    t = text.lower().replace(",", "")
-    fluid = r"(?:ns|normal\s+saline|saline|lr|lactated\s+ringers?|ringer'?s?|crystalloid|fluids?)"
-    liters = r"(?:l|lt|lts|liter|liters|litre|litres|litter|litters)"
-    milliliters = r"(?:ml|milliliter|milliliters|millilitre|millilitres|cc)"
+    from shared_order_quantities import parse_volume_ml as shared_parse_volume
+    return shared_parse_volume(text)
 
-    # A quantity attached to a named fluid has priority over every other number
-    # in a compound order. This is the critical distinction in
-    # "1000 NS ... O2 3lt": 1000 is the fluid volume and 3 is the oxygen flow.
-    named_patterns = (
-        (rf"\b(\d+(?:\.\d+)?)\s*{milliliters}\s*(?:of\s+)?{fluid}\b", "ml"),
-        (rf"\b{fluid}\s+(\d+(?:\.\d+)?)\s*{milliliters}\b", "ml"),
-        (rf"\b(\d+(?:\.\d+)?)\s*{liters}\s*(?:of\s+)?{fluid}\b", "l"),
-        (rf"\b{fluid}\s+(\d+(?:\.\d+)?)\s*{liters}\b", "l"),
-        (rf"\b(\d+(?:\.\d+)?)\s*{fluid}\b", "shorthand"),
-        (rf"\b{fluid}\s+(\d+(?:\.\d+)?)\b", "shorthand"),
-    )
-    for pattern, scale in named_patterns:
-        m = re.search(pattern, t, re.I)
-        if m:
-            value = float(m.group(1))
-            if scale == "l":
-                value *= 1000
-            elif scale == "shorthand" and value < 100:
-                value *= 1000
-            return int(round(value))
-
-    word_liters = {
-        "half": 500,
-        "one": 1000,
-        "two": 2000,
-        "three": 3000,
-        "four": 4000,
-        "five": 5000,
-    }
-    for word, ml in word_liters.items():
-        article = r"(?:a\s+)?" if word == "half" else ""
-        if re.search(rf"\b{word}\s+{article}{liters}\s*(?:of\s+)?{fluid}\b", t, re.I):
-            return ml
-        if re.search(rf"\b{fluid}\s+{word}\s+{article}{liters}\b", t, re.I):
-            return ml
-
-    # Explicit mL / cc is unambiguously a fluid volume in this simulator.
-    m = re.search(rf"(\d+(?:\.\d+)?)\s*{milliliters}\b", t, re.I)
-    if m:
-        return int(round(float(m.group(1))))
-
-    # For unnamed liter orders, consider every candidate and exclude oxygen flow
-    # by its local semantic scope, with or without an explicit "/min" suffix.
-    for m in re.finditer(rf"(\d+(?:\.\d+)?)\s*{liters}\b", t, re.I):
-        if not _quantity_is_respiratory_support(t, m.start(), m.end()):
-            return int(round(float(m.group(1)) * 1000))
-
-    for word, ml in word_liters.items():
-        article = r"(?:a\s+)?" if word == "half" else ""
-        m = re.search(rf"\b{word}\s+{article}{liters}\b", t, re.I)
-        if m and not _quantity_is_respiratory_support(t, m.start(), m.end()):
-            return ml
-
-    return None
 
 def parse_delay_min(text):
     """
@@ -4280,17 +4224,15 @@ def detect_fluid_type(text):
 
 
 def parse_dose_mg(text):
-    t = text.lower().replace(",", "")
-    m = re.search(r"(\d+(?:\.\d+)?)\s*mg\b", t)
-    return float(m.group(1)) if m else None
+    from shared_order_language import _normalize, _amount
+    value, units = _amount(_normalize(text), r"mg|g|mcg|ug")
+    return None if value is None else value * (1000 if units == "g" else .001 if units in {"mcg", "ug"} else 1)
+
 
 def parse_route(text):
-    t = text.lower()
-    if re.search(r"\b(iv|intravenous|intravenously)\b", t):
-        return "IV"
-    if re.search(r"\b(po|oral|orally|by mouth)\b", t):
-        return "PO"
-    return None
+    from shared_order_language import _normalize, _route
+    return _route(_normalize(text))
+
 
 def parse_energy_j(text):
     t = text.lower().replace(",", "")
@@ -4790,6 +4732,13 @@ def try_resolve_pending_action(text):
     pending = st.session_state.get("pending_action")
     if not pending:
         return None
+
+    if pending.get("type") == "family_bundle":
+        from pending_family_orders import complete_bundle
+        resolution = complete_bundle(pending, text)
+        if resolution is None or resolution.get("parsed"):
+            st.session_state.pending_action = None
+        return resolution
 
     if pending.get("type") == "fluid":
         resolved = dict(pending)
@@ -6301,7 +6250,7 @@ REASONING_GATE_ACTION_TYPES = {
     "ventilator_adjustment", "ventilator_continuation", "dobutamine",
     "norepinephrine", "oxygen", "procedural_sedation", "cardioversion",
     "antibiotics", "disposition",
-    "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
+    "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
     "naloxone", "blood", "anticoagulation", "bag_mask", "consult",
 }
 
@@ -8902,7 +8851,13 @@ def execute_bundle(parsed):
     state = st.session_state.state
     if state.get("engine_family"):
         from family_engine import execute_family_bundle
-        return execute_family_bundle(state, parsed)
+        from pending_family_orders import hold_incomplete_bundle
+        result = execute_family_bundle(state, parsed)
+        if not result.get("executed") and result.get("clarification"):
+            pending = hold_incomplete_bundle(parsed)
+            if pending:
+                st.session_state.pending_action = pending
+        return result
 
     # Keep the learner input available after collapse, but do not run ordinary
     # intervention/reassessment physiology as though spontaneous circulation persists.

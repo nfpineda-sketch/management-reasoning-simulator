@@ -35,6 +35,12 @@ _SYNTAX_EXAMPLES = (
     "Intubate VC/AC FiO2 50% PEEP 5",
     "Start norepinephrine 0.05 mcg/kg/min",
     "Give furosemide 40 mg IV",
+    "Give metoprolol 2.5 mg IV",
+    "Give diltiazem 5 mg IV",
+    "Give amiodarone 150 mg IV",
+    "Give etomidate 8 mg IV",
+    "Perform synchronized cardioversion 200 J",
+    "Set ventilator FiO2 50% PEEP 5",
 )
 # Candidate spellings are filtered by the existing response matcher/validator.
 # Adding a candidate here cannot make a new unit executable.
@@ -75,7 +81,8 @@ def executable_generation_constraints():
     contracts = {}
     for text in _SYNTAX_EXAMPLES:
         normalized, error = _validate(
-            {"observable": {"mental_status": "Alert"}}, parse_family_actions(text)
+            {"engine_family": "generated", "observable": {"mental_status": "Alert", "pulse_present": True},
+             "treatments": {"invasive_ventilation": True, "ventilator_mode": "VC/AC", "ventilator_fio2_percent": 50, "ventilator_peep_cmh2o": 5}}, parse_family_actions(text)
         )
         if error or not normalized or len(normalized) != 1:
             raise ValueError("A generation capability example no longer matches the order interpreter.")
@@ -93,6 +100,10 @@ def executable_generation_constraints():
             "dose_field": dose_field,
             "reference_dose": action.get(dose_field) if dose_field else None,
         }
+        if kind == "cardioversion":
+            rule["settings"] = {"energy_j": action["energy_j"]}
+        elif kind == "ventilator_adjustment":
+            rule["settings"] = {"fio2_percent": action["fio2_percent"], "peep_cmh2o": action["peep_cmh2o"]}
         # Fill unit labels only when the live matching logic recognizes them.
         if rule["units"] is None:
             rule["units"] = next(
