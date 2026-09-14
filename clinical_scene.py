@@ -9,7 +9,7 @@ from html import escape
 from PIL import Image
 import streamlit as st
 
-SCENE_RENDER_VERSION = 9
+SCENE_RENDER_VERSION = 10
 
 # Only recorded patient-history topics are exposed to conversational retrieval.
 # The full case specification also includes diagnoses and teaching objectives.
@@ -198,7 +198,7 @@ def scene_status_text(status):
         from scene_errors import SceneImageError
         error = SceneImageError(status.get('code'), status.get('stage'), status.get('failed_checks', ()))
         detail = str(error)
-        if error.code == 'MISMATCH' and error.failed_checks:
+        if error.code in ('MISMATCH', 'UNCERTAIN') and error.failed_checks:
             domains = {'expression': 'expression', 'gaze_and_eyelids': 'gaze and eyelids',
                        'skin_color': 'skin color', 'mottling': 'mottling', 'diaphoresis': 'sweating',
                        'respiratory_posture': 'breathing posture', 'respiratory_support': 'respiratory equipment',

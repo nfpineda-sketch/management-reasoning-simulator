@@ -58,12 +58,14 @@ def test_invalid_provider_image_does_not_pass_as_success(stage, png):
     assert "INVALID_PROVIDER_IMAGE" not in str(failure.value)
 
 
-def test_scene_keeps_monitor_and_safe_failure_while_rejected_image_is_hidden():
+@pytest.mark.parametrize("code", ["MISMATCH", "UNCERTAIN"])
+def test_scene_keeps_monitor_and_safe_failure_while_rejected_image_is_hidden(code):
     html = clinical_scene.scene_html(
         "UNAPPROVED_IMAGE", "<div>HR 118</div>", current=False,
-        image_status={"state": "failed", "stage": "SCREEN", "code": "MISMATCH",
+        image_status={"state": "failed", "stage": "SCREEN", "code": code,
                       "message": "PRIVATE_RAW_PROVIDER_RESPONSE", "failed_checks": ["expression"]})
-    assert "HR 118" in html and "IMAGE-SCREEN-MISMATCH" in html
+    assert "HR 118" in html and f"IMAGE-SCREEN-{code}" in html
+    assert "expression" in html.lower()
     assert "UNAPPROVED_IMAGE" not in html and "PRIVATE" not in html
     assert 'role="status"' in html
     assert "background-image:url" not in html

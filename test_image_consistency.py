@@ -58,9 +58,38 @@ def test_success_sends_only_bounded_contract_and_fictional_images(image, contrac
     assert request["text"]["format"]["strict"] is True
     content = request["input"][0]["content"]
     images = [part for part in content if part["type"] == "input_image"]
-    assert len(images) == 2
+    assert len(images) == 3
+    # Full candidate and original identity reference remain byte-for-byte intact.
+    assert images[0]["image_url"].split(",", 1)[1] == image
+    assert images[2]["image_url"].split(",", 1)[1] == image
     assert all(part["image_url"].startswith("data:image/png;base64,") and part["detail"] == "high" for part in images)
     assert "fictional-test-key" not in json.dumps(request)
+
+
+def test_screen_receives_visible_targets_and_detail_in_one_request(contract):
+    contract.update(mental_status="drowsy", work_of_breathing="increased",
+                    expression="markedly uncomfortable")
+    original = Image.new("RGB", (100, 100))
+    original.putdata([(x, y, (x + y) % 256) for y in range(100) for x in range(100)])
+    output = BytesIO()
+    original.save(output, format="PNG")
+    encoded = base64.b64encode(output.getvalue()).decode("ascii")
+    client = Responses()
+    run(encoded, contract, client)
+    assert len(client.calls) == 1
+    content = client.calls[0]["input"][0]["content"]
+    targets = json.loads(content[0]["text"].split(": ", 1)[1].rsplit(". Full", 1)[0])
+    assert set(targets) == set(CHECK_IDS)
+    assert "partly lowered eyelids" in targets["gaze_and_eyelids"]
+    assert "neck or shoulder muscle tension" in targets["respiratory_posture"]
+    assert "drowsy" not in json.dumps(targets)
+    assert "mental_status" not in targets and "work_of_breathing" not in targets
+    images = [part for part in content if part["type"] == "input_image"]
+    assert len(images) == 2
+    assert images[0]["image_url"].split(",", 1)[1] == encoded
+    with Image.open(BytesIO(base64.b64decode(images[1]["image_url"].split(",", 1)[1]))) as detail:
+        assert detail.size == (56, 70)
+        assert detail.tobytes() == original.crop((12, 8, 68, 78)).tobytes()
 
 
 @pytest.mark.parametrize("check", CHECK_IDS)

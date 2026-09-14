@@ -1,4 +1,10 @@
-# Clinical encounter workspace v0.17.4
+# Clinical encounter workspace v0.17.5
+
+Image screening now receives explicit visible features and a detail crop of the
+same patient alongside the complete image, within one review request. It checks
+eyelids and posture rather than asking a photograph to establish a physiological
+state. Uncertainty and visible conflicts still prevent display. See
+[v0.17.5](docs/RELEASE_v0.17.5.md).
 
 When the image screen identifies a definite visual mismatch, the app now makes
 one targeted correction and screens the full result again. Only an accepted
