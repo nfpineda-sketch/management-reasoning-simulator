@@ -9,6 +9,7 @@ from copy import deepcopy
 import math
 from generated_response import response_progress, select_responses, diagnostic_overrides
 from generated_dynamics import INFUSIONS, event_progress, gain_at, retire_active_events
+from generated_rhythm import rhythm_key, select_cardioversion, advance_recurrence
 
 from family_engine import (
     _failure, _initialize as _initialize_orders, _order, _validate as _validate_orders,
@@ -140,6 +141,14 @@ def validate_declarative_case(case):
             if any(a["value"] >= b["value"] for a,b in zip(points,points[1:])):
                 raise ValueError("State coupling points must be strictly increasing.")
         _validate_procedure_rule(rule)
+        recurrence = rule.get("recurrence")
+        if recurrence:
+            _number_map(recurrence.get("delta"), "recurrence delta")
+            if any(value and key not in initialized for key,value in recurrence["delta"].items()):
+                raise ValueError("Recurrence effects require initialized numeric fields.")
+            for condition in recurrence["when"]:
+                if not isinstance(condition,dict) or condition.get("field") not in initialized | {"elapsed_min","fluid_delivered_ml"} or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
+                    raise ValueError("Recurrence must depend on declared numerical conditions.")
         _validate_response_capability(case, rule)
         _number_map(rule.get("delta"), "response delta")
         if any(value and key not in initialized for key, value in rule["delta"].items()):
@@ -149,7 +158,8 @@ def validate_declarative_case(case):
     # The data contract must remain executable through its authored horizon.
     # Check the untreated path and each isolated maximum-exposure response at
     # all breakpoints; combinations are checked atomically when ordered.
-    for response in [None] + rules:
+    recurrence_responses = [{**r, "delta": r["recurrence"]["delta"], "state_gain": None} for r in rules if r.get("recurrence")]
+    for response in [None] + rules + recurrence_responses:
         times = {0, horizon}
         if response is not None:
             times.update({min(horizon, response["onset_min"]), min(horizon, response["onset_min"] + response["duration_min"])})
@@ -254,6 +264,17 @@ def _validate_procedure_rule(rule):
         raise ValueError("Cardioversion responses require explicit energy_j and immediate onset.")
     if kind == "ventilator_adjustment" and set(settings) != {"fio2_percent", "peep_cmh2o"}:
         raise ValueError("Ventilator responses require explicit FiO2 and PEEP settings.")
+    before = rule.get("rhythm_before")
+    if before is not None and (kind != "cardioversion" or before not in RHYTHMS or RHYTHMS[before] in {"vf", "asystole"}):
+        raise ValueError("Pre-shock rhythm must be a supported pulse-present rhythm.")
+    recurrence = rule.get("recurrence")
+    if recurrence is not None:
+        if kind != "cardioversion" or not isinstance(recurrence,dict) or not _finite(recurrence.get("after_min")) or not 1 <= recurrence["after_min"] <= 180 or not isinstance(recurrence.get("when"),list) or len(recurrence["when"]) > 6:
+            raise ValueError("Recurrence needs a cardioversion, a finite delay and at most six conditions.")
+        if recurrence.get("rhythm_after") not in RHYTHMS or RHYTHMS[recurrence["rhythm_after"]] in {"vf", "asystole"} or not rule.get("rhythm_after") or rhythm_key(recurrence["rhythm_after"]) == rhythm_key(rule["rhythm_after"]):
+            raise ValueError("Recurrence must specify a different supported rhythm.")
+        if before is not None and rhythm_key(before) == rhythm_key(rule.get("rhythm_after")):
+            raise ValueError("An unsuccessful shock cannot schedule post-conversion recurrence.")
     rhythm = rule.get("rhythm_after")
     if rhythm is not None and (kind != "cardioversion" or rhythm not in RHYTHMS or RHYTHMS[rhythm] in {"vf", "asystole"}):
         raise ValueError("Only pulse-present cardioversion may declare a post-procedure rhythm.")
@@ -365,6 +386,11 @@ def _record_effect(state, action, matching, summary):
         return
     if kind in INFUSIONS:
         signatures[kind] = None if _stopping(action) else signature
+    converting = kind == "cardioversion" and any(r.get("rhythm_after") and rhythm_key(r["rhythm_after"]) != rhythm_key(state["observable"].get("rhythm")) for r in matching)
+    if converting:
+        # A new conversion replaces its previous rhythm-related benefit, while
+        # retaining separately authored adverse effects and other therapies.
+        g["events"] = [e for e in g["events"] if not e.get("conversion_effect", e.get("action_type") == "cardioversion" and bool(e.get("rhythm_after")))]
     previous = {e["rule_id"]: e for e in g["events"] if e["action_type"] == kind}
     if kind in _ACTIVE:
         replace = _RESPIRATORY if kind in _RESPIRATORY else {kind}
@@ -378,7 +404,7 @@ def _record_effect(state, action, matching, summary):
     for rule in matching:
         exposure = float(action[rule["dose_field"]]) / rule["reference_dose"] if rule.get("dose_field") else 1.0
         exposure *= rule.get("_interpolation_weight", 1.0)
-        consumed = 0 if kind in _ACTIVE or rule.get("recovery_min") is not None else g["exposure"].get(rule["id"], 0)
+        consumed = 0 if kind in _ACTIVE or converting or rule.get("recovery_min") is not None else g["exposure"].get(rule["id"], 0)
         exposure = min(exposure, max(0, rule["max_exposure"] - consumed))
         if exposure <= 0:
             continue
@@ -397,9 +423,10 @@ def _record_effect(state, action, matching, summary):
         g["events"].append({
             "rule_id": rule["id"], "action_type": kind, "started_at": g["elapsed"] + delivery_queue,
             "onset_min": rule["onset_min"], "duration_min": duration,
-            "immediate": kind == "cardioversion", "rhythm_after": rule.get("rhythm_after"),
+            "immediate": kind == "cardioversion", "rhythm_after": rule.get("rhythm_after") if converting else None,
             "recovery_min": rule.get("recovery_min"), "mental_status_during": rule.get("mental_status_during"), "mental_status_threshold": rule.get("mental_status_threshold"),
             "exposure": exposure, "delta": deepcopy(rule["delta"]),
+            "conversion_effect": converting, "recurrence": deepcopy(rule.get("recurrence")),
             "washout_min": rule.get("washout_min"), "state_gain": deepcopy(rule.get("state_gain")),
         })
         if kind in INFUSIONS and previous and rule.get("washout_min"):
@@ -495,6 +522,8 @@ def _minute(state):
     tr["packed_red_cells_units"] = round(f["blood_delivered_units"], 3)
     state["sim_time"] = int(state.get("sim_time", 0)) + 1
     _surface(state)
+    if advance_recurrence(state):
+        _surface(state)
 
 
 def _collect_diagnostic(state, diagnostic, duration):
@@ -567,6 +596,11 @@ def execute_generated_bundle(state, parsed):
             delay = 1 if action["diagnostic"] == "ecg" else _case(candidate)["investigations"][action["diagnostic"]].get("duration_min", 0)
             pending.append({"available_at": candidate["sim_time"] + delay, "summary": _collect_diagnostic(candidate, action["diagnostic"], delay)})
         else:
+            if action["type"] == "cardioversion":
+                selected = select_cardioversion(candidate, selected)
+                if not selected:
+                    return _failure("Cardioversion understood, but this case has no unambiguous response for the current rhythm and requested energy. No orders in this submission were executed.")
+                rhythm_before = candidate["observable"].get("rhythm")
             summary = _order(candidate, action)
             from generated_delivery import schedule_delivery
             schedule_delivery(candidate, action, summary)
@@ -574,6 +608,9 @@ def execute_generated_bundle(state, parsed):
             summaries.append(summary)
             try:
                 _surface(candidate)
+                if action["type"] == "cardioversion":
+                    summary.update(rhythm_before=rhythm_before, rhythm_after=candidate["observable"].get("rhythm"))
+                    candidate.setdefault("rhythm_history", []).append({"time_min":candidate["sim_time"], "kind":"cardioversion", "energy_j":action["energy_j"], "rhythm_before":rhythm_before, "rhythm_after":candidate["observable"].get("rhythm")})
             except ValueError as error:
                 return _failure(str(error) + " No orders in this submission were executed.")
     elapsed = reassess if reassess is not None else max(max((item["available_at"] - candidate["sim_time"] for item in pending), default=0), max((s["duration_min"] for s in summaries), default=0))

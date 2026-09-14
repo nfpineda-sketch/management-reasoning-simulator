@@ -75,7 +75,7 @@ def test_page_title_and_all_visible_captions_share_release_version(monkeypatch):
     app = open_shared(monkeypatch)
     captions = [item.value for item in app.caption if "Clinical encounter v" in item.value]
     assert captions
-    assert all(item.endswith("v0.21.0") for item in captions)
+    assert all(item.endswith("v0.22.0") for item in captions)
     # AppTest does not expose page config; evaluate its real expression using
     # the same assignment that produces persisted simulator metadata.
     import ast
@@ -92,4 +92,4 @@ def test_page_title_and_all_visible_captions_share_release_version(monkeypatch):
     exec(compile(ast.Module(body=[version], type_ignores=[]), "version", "exec"), namespace)
     title = next(keyword.value for keyword in config.keywords if keyword.arg == "page_title")
     value = eval(compile(ast.Expression(title), "page_title", "eval"), namespace)
-    assert value.endswith("v0.21.0")
+    assert value.endswith("v0.22.0")

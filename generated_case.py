@@ -15,7 +15,7 @@ from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
 from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.21.0"
+GENERATOR_VERSION = "0.22.0"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -68,6 +68,14 @@ oxygen-device effect to a different device or invent benefit for an inappropriat
 Cardioversion and procedural_sedation are supported only with explicitly authored response rules.
 For cardioversion, dose_field/reference_dose must be null; settings must contain the exact energy_j;
 onset_min must be zero; rhythm_after describes the actual post-shock rhythm, including failure to convert.
+Every cardioversion response requires rhythm_before and rhythm_after. Author separate responses for the current rhythm and exact energy,
+including a shock after conversion when appropriate (no benefit or harm rather than repeating conversion gain).
+Use recurrence=null if the converted rhythm remains stable within this case horizon. Otherwise declare recurrence.after_min relative to
+that successful shock, recurrence.when as additional numerical conditions, recurrence.rhythm_after, and recurrence.delta.
+Recurrence replaces the previous conversion's numeric delta with the explicitly authored recurrence delta (both relative to arrival);
+other medication effects and untreated drift continue. It is checked once per minute, after the minimum delay and only while the
+post-conversion rhythm persists. A subsequent conversion replaces the previous conversion effect and starts a new relative clock.
+Use null rhythm_before/recurrence for non-cardioversion rules. Never infer recurrent AF from a fixed universal timer.
 Energy is a matcher, never a linear efficacy multiplier. Include plausible alternative energies with independently authored outcomes.
 Set recovery_min, mental_status_during (Sedated), and mental_status_threshold explicitly for each sedation response.
 Numeric and sedating effects rise over duration_min and then return to baseline over recovery_min; do not model permanent sedation.

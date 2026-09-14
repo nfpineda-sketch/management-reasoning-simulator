@@ -72,6 +72,8 @@ RESPONSE_RULE = obj({
     "recovery_min": nullable({"type":"number", "minimum":1, "maximum":180}),
     "mental_status_during": nullable(enum(("Sedated",))),
     "mental_status_threshold": nullable({"type":"number", "exclusiveMinimum":0, "maximum":5}),
+    "rhythm_before": nullable(enum(tuple(k for k,v in RHYTHMS.items() if v not in {"vf", "asystole"}))),
+    "recurrence": nullable(obj({"after_min":{"type":"integer", "minimum":1, "maximum":180}, "when":array(CONDITION, maximum=6), "rhythm_after":enum(tuple(k for k,v in RHYTHMS.items() if v not in {"vf", "asystole"})), "delta":NUMERIC_PAIRS})),
     "rhythm_after": nullable(enum(tuple(k for k,v in RHYTHMS.items() if v not in {"vf", "asystole"}))),
     "reference_dose": nullable({"type": "number", "exclusiveMinimum": 0, "maximum": 30000}),
     "onset_min": {"type": "integer", "minimum": 0, "maximum": 120},
@@ -302,6 +304,8 @@ def compile_case(raw):
     engine["untreated_drift_per_min"] = _pairs(engine["untreated_drift_per_min"], "field", "value")
     for rule in engine["response_rules"]:
         rule["delta"] = _pairs(rule["delta"], "field", "value")
+        if rule.get("recurrence") is not None:
+            rule["recurrence"]["delta"] = _pairs(rule["recurrence"]["delta"], "field", "value")
         if rule.get("settings") is not None:
             fields = [item["field"] for item in rule["settings"]]
             if len(fields) != len(set(fields)):

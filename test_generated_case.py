@@ -18,7 +18,7 @@ def novel_payload(*, diagnosis="Acute adrenal crisis following glucocorticoid wi
     state_changes = lambda **kw: {key: kw.get(key) for key in STATE_TEXT}
     def rule(identifier, action, field, reference, delta, agent=None, route=None):
         return {"id": identifier, "action_type": action, "agent": agent, "route": route,
-                "units": None, "device": None, "settings": None, "interpolate_settings": None, "washout_min": None, "state_gain": {"field":"fluid_delivered_ml", "points":[{"value":0,"factor":1},{"value":2000,"factor":.5}]} if action == "fluid" else None, "recovery_min": None, "mental_status_during": None, "mental_status_threshold": None, "rhythm_after": None, "dose_field": field, "reference_dose": reference,
+                "units": None, "device": None, "settings": None, "interpolate_settings": None, "washout_min": None, "state_gain": {"field":"fluid_delivered_ml", "points":[{"value":0,"factor":1},{"value":2000,"factor":.5}]} if action == "fluid" else None, "recovery_min": None, "mental_status_during": None, "mental_status_threshold": None, "rhythm_before": None, "recurrence": None, "rhythm_after": None, "dose_field": field, "reference_dose": reference,
                 "onset_min": 0 if action == "fluid" else 10, "duration_min": 10 if action == "fluid" else 30,
                 "max_exposure": 2, "delta": [{"field": key, "value": value} for key, value in delta.items()],
                 "explanation": "A bounded illustrative response to documented exposure, requiring expert validation."}
