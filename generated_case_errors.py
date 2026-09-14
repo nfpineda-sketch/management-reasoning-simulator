@@ -20,13 +20,13 @@ _MESSAGES = {
     "JSON": "The case service returned an unreadable response. Select Begin Encounter to try again.",
     "STRUCTURE": "The proposed case response did not contain the required information. Select Begin Encounter to try again.",
     "CONTRACT": "The proposed case could not satisfy the simulator's consistency checks after a correction attempt. Select Begin Encounter to try again.",
-    "REVIEW": "The new case did not pass the clinical consistency screen. Select Begin Encounter to try again.",
+    "REVIEW": "The new case did not pass the clinical consistency screen after one targeted repair. Report the reference and checks below to the administrator before restarting.",
     "INTERNAL": "The app could not prepare this case. Select Begin Encounter to try again; if this persists, share the reference below with the administrator.",
 }
 _STAGES = {"SETUP", "AUTHOR", "CORRECTION", "REVIEW"}
 
 
-def generation_error(code, stage, *, validation_codes=()):
+def generation_error(code, stage, *, validation_codes=(), review_checks=()):
     """Use only fixed public labels, even if callers pass untrusted strings."""
     code = code if code in _MESSAGES else "INTERNAL"
     stage = stage if stage in _STAGES else "SETUP"
@@ -37,10 +37,16 @@ def generation_error(code, stage, *, validation_codes=()):
     from types import SimpleNamespace
     checks = (safe_validation_codes(SimpleNamespace(issues=[{"code": value} for value in validation_codes]))
               if code == "CONTRACT" and validation_codes else [])
+    from generated_case_schema import REVIEW_SCHEMA
+    allowed_review = REVIEW_SCHEMA['properties']['checks']['properties']
+    failed_review = [key for key in allowed_review if key in review_checks] if code == 'REVIEW' else []
     suffix = " Checks: " + ", ".join(checks) + "." if checks else ""
+    if failed_review:
+        suffix += " Review checks: " + ", ".join(failed_review) + "."
     error = GeneratedCaseError(f"{_MESSAGES[code]} No encounter has been started. Reference: {reference}.{suffix}")
     error.code, error.stage, error.reference = code, stage, reference
     error.validation_codes = checks
+    error.review_checks = failed_review
     logging.getLogger(__name__).warning("Case generation stopped: %s%s", reference, suffix)
     return error
 

@@ -15,7 +15,7 @@ from scene_preparation import ScenePreparation
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
 
-RUNTIME_VERSION = "0.24.3"
+RUNTIME_VERSION = "0.24.4"
 PAYLOAD_VERSION = "mrs_attempt_v1"
 SESSION_FIELDS = (
     "started", "selected_case", "state", "events", "history", "management_trace",
@@ -136,6 +136,7 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
                 model=_secret("MRS_GENERATOR_MODEL", _secret("OPENAI_MODEL", "gpt-5-mini")), seed=seed,
                 progress=progress, on_case_compiled=scene.on_case_compiled,
             )
+        st.session_state.pop("_case_generation_failure", None)
         encounter["assignment"] = assignment
         attempt_id = store.create_attempt(token, assignment["challenge_id"], encounter, user["role"] != "resident")
         record = store.get_attempt(token, attempt_id)
@@ -186,6 +187,11 @@ def render_dashboard(context, initial_state, reset_session):
             st.caption("These are formative teaching opportunities. The catalog does not diagnose a learner's cognitive bias or establish competence.")
     st.caption("You may enter your reasoning and orders in English or Spanish. Patient information and feedback are in English.")
     st.caption("Your encounter and reflection are saved to your account. Faculty in this pilot program can review them.")
+    failure = st.session_state.get('_case_generation_failure')
+    if user['role'] in {'faculty', 'admin'} and failure and failure.get('owner') == user['id']:
+        st.download_button('Download case preparation diagnostic',
+            json.dumps(failure['data'], ensure_ascii=False, indent=2),
+            file_name='case_preparation_diagnostic.json', mime='application/json')
     active = next((a for a in own if a["status"] == "active"), None)
     if st.button("Resume encounter" if active else "Begin Encounter", type="primary"):
         from generated_case import GeneratedCaseError
@@ -195,6 +201,10 @@ def render_dashboard(context, initial_state, reset_session):
             else:
                 start_encounter(context, initial_state, reset_session, faculty_choice)
         except (AccountError, GeneratedCaseError) as exc:
+            diagnostic = getattr(exc, 'diagnostic', None)
+            if diagnostic is not None:
+                # Private session storage only; never a learner widget or accepted attempt.
+                st.session_state['_case_generation_failure'] = {'owner': user['id'], 'data': deepcopy(diagnostic)}
             st.error(str(exc))
             st.stop()
         st.rerun()

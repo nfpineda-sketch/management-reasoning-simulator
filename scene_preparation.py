@@ -1,4 +1,4 @@
-"""Prepare one initial image privately while a compiled case is being reviewed.
+"""Prepare one initial image privately after a compiled case passes clinical review.
 
 The local owner transfers its screened-image job to one browser session only
 after the case has passed independent review and any required attempt storage.

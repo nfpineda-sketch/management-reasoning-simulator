@@ -1,4 +1,6 @@
-# Clinical encounter workspace v0.24.3
+# Clinical encounter workspace v0.24.4
+
+v0.24.4 repairs a clinically rejected draft once using the actual review and native preview, revalidates it and reviews it again. Image preparation begins only after clinical approval. Failures retain a private session diagnostic and show allowlisted failed review checks.
 
 v0.24.3 separates observed monitoring devices from respiratory interfaces using a typed inventory. Mild pallor that cannot be distinguished from natural pigmentation is labelled as a photographic limitation. A retained rejected candidate from the same case and appearance can be screened again on upgrade before requesting another generated image.
 

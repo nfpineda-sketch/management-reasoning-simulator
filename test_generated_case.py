@@ -180,7 +180,7 @@ def test_independent_review_rejection_blocks_launch(review):
     client = AuthorClient(review=review)
     with pytest.raises(GeneratedCaseError, match="consistency screen"):
         generate_encounter("R1-05", clean_base(), client=client)
-    assert len(client.calls) == 2
+    assert len(client.calls) == 4
 
 
 @pytest.mark.parametrize("mutate", [
@@ -266,3 +266,36 @@ def test_new_case_cannot_inherit_an_existing_native_patient():
     assert new['coupled_state']['seed']==2
     assert new['pending_investigations']==[]
     assert new['rhythm_history']==[]
+
+
+def test_review_repair_reuses_draft_and_real_objections_before_launch():
+    class Client(AuthorClient):
+        def create(self, **kwargs):
+            if kwargs['text']['format']['name']=='clinical_consistency_review':
+                count=sum(c['text']['format']['name']=='clinical_consistency_review' for c in self.calls)
+                self.review=approval()
+                if count==0:
+                    self.review['coherent']=False
+                    self.review['checks']['state_transitions']=False
+                    self.review['issues']=['Baseline blood pressure contradicts native trajectory.']
+            return super().create(**kwargs)
+    client=Client();scenes=[]
+    result=generate_ai_encounter('R1-05',clean_base(),client=client,seed=42,on_case_compiled=lambda *x:scenes.append(len(client.calls)))
+    assert len(client.calls)==4 and scenes==[4]
+    repair=json.loads(client.calls[2]['input'])
+    assert repair['proposed_case']==client.payload
+    assert repair['clinical_review']['checks']['state_transitions'] is False
+    assert repair['shared_engine_preview']
+    assert result['spec']['provenance']['correction_count']==1
+    assert result['state']['coupled_state']
+
+
+def test_persistent_review_failure_retains_private_diagnostic_and_safe_check_names():
+    review=approval();review['checks']['state_transitions']=False
+    review['issues']=['PRIVATE clinical diagnosis detail']
+    with pytest.raises(GeneratedCaseError) as caught:
+        generate_ai_encounter('R1-05',clean_base(),client=AuthorClient(review=review),seed=42)
+    assert 'state_transitions' in str(caught.value)
+    assert 'PRIVATE' not in str(caught.value)
+    assert caught.value.diagnostic['review']['issues']==review['issues']
+    assert caught.value.diagnostic['draft']

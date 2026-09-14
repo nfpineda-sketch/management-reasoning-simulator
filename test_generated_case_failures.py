@@ -113,7 +113,7 @@ def test_corrected_case_still_cannot_launch_when_reviewer_rejects():
         generate_ai_encounter("R1-05", clean_base(), client=client)
     assert exc.value.reference == "CASE-REVIEW-REVIEW"
     assert "hidden diagnosis" not in str(exc.value)
-    assert len(client.calls) == 3
+    assert len(client.calls) == 5
 
 
 @pytest.mark.parametrize("client,reference", [

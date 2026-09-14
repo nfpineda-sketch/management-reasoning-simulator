@@ -33,16 +33,15 @@ def generate(preparation, client=None):
                                  on_case_compiled=preparation.on_case_compiled)
 
 
-def test_initial_job_starts_before_reviewer_without_state_or_student_data(pool):
+def test_initial_job_starts_only_after_clinical_approval_without_student_data(pool):
     session = {"_account_user_id": "owner-one"}
     before = deepcopy(session)
 
     class ReviewingClient(AuthorClient):
         def create(self, **kwargs):
             if kwargs["text"]["format"]["name"] == "clinical_consistency_review":
-                assert len(pool.calls) == 1
+                assert len(pool.calls) == 0
                 assert session == before
-                assert not pool.calls[0][2].done()
             return super().create(**kwargs)
 
     with ScenePreparation("test-key") as preparation:
@@ -67,27 +66,13 @@ def test_initial_job_starts_before_reviewer_without_state_or_student_data(pool):
     assert "screened-initial-image" not in json.dumps(result)
 
 
-@pytest.mark.parametrize("running", [False, True])
-def test_rejected_clinical_review_discards_even_late_success(pool, running):
-    review = approval()
-    review["coherent"] = False
-
-    class RejectingClient(AuthorClient):
-        def create(self, **kwargs):
-            if kwargs["text"]["format"]["name"] == "clinical_consistency_review" and running:
-                pool.calls[0][2].set_running_or_notify_cancel()
-            return super().create(**kwargs)
-
-    session = {}
+def test_rejected_clinical_review_never_spends_on_an_image(pool):
+    review = approval(); review['coherent'] = False
     with pytest.raises(GeneratedCaseError):
-        with ScenePreparation("test-key") as preparation:
-            generate(preparation, RejectingClient(review=review))
-    future = pool.calls[0][2]
-    assert future.cancelled() is (not running)
-    if running:
-        future.set_result("late-unapproved-case-image")
+        with ScenePreparation('test-key') as preparation:
+            generate(preparation, AuthorClient(review=review))
+    assert pool.calls == []
     assert preparation._jobs is None
-    assert session == {}
 
 
 def test_invalid_case_never_starts_image_job(pool):
