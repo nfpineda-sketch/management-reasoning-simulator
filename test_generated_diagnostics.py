@@ -16,7 +16,8 @@ def test_omitted_binding_does_not_accept_glucose_inconsistent_with_patient():
     client = AuthorClient(raw)
     with pytest.raises(GeneratedCaseError):
         generate_ai_encounter('R1-05', clean_base(), client=client)
-    assert len(client.calls) == 1  # Block before an approving reviewer can mask it.
+    assert len(client.calls) == 2  # One correction; no approving reviewer can mask it.
+    assert all(call["text"]["format"]["name"] == "new_clinical_case" for call in client.calls)
 
 
 @pytest.mark.parametrize('measurement,value', [('glucose_mg_dl', 20), ('hemoglobin_g_dl', 3)])

@@ -96,7 +96,7 @@ class AuthorClient:
         self.calls.append(kwargs)
         if self.failure:
             raise self.failure
-        payload = self.payload if len(self.calls) == 1 else self.review
+        payload = self.review if kwargs["text"]["format"]["name"] == "clinical_consistency_review" else self.payload
         return SimpleNamespace(status=self.status, output_text=payload if isinstance(payload, str) else json.dumps(payload),
                                output=[SimpleNamespace(content=[SimpleNamespace(type="refusal")])] if self.refusal else [],
                                usage=SimpleNamespace(input_tokens=50, output_tokens=500, total_tokens=550))
@@ -197,7 +197,8 @@ def test_hard_structure_gates_reject_even_before_reviewer_can_approve(mutate):
     client = AuthorClient(raw)
     with pytest.raises(GeneratedCaseError):
         generate_ai_encounter("R1-05", clean_base(), client=client)
-    assert len(client.calls) == 1
+    assert 1 <= len(client.calls) <= 2
+    assert all(call["text"]["format"]["name"] == "new_clinical_case" for call in client.calls)
 
 
 def test_frozen_case_hash_and_deep_copies_support_replay_without_provider():

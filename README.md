@@ -1,4 +1,10 @@
-# Clinical encounter workspace v0.17.0
+# Clinical encounter workspace v0.17.1
+
+The development generator now receives the order interpreter's exact field,
+route, unit and device contracts. A structured draft that fails executable
+validation gets one correction attempt, followed by the same validators and
+independent consistency review. Generation failures have safe stage-specific
+references instead of one ambiguous error. See [v0.17.1](docs/RELEASE_v0.17.1.md).
 
 The development app authors a new clinical case with AI from any of the eleven
 management or cognitive challenges. It generates the patient, presenting concern,

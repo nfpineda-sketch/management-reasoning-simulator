@@ -34,7 +34,7 @@ from curriculum_runtime import (
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.17.0", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.17.1", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -73,7 +73,7 @@ if ACCOUNT_CONTEXT is None:
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
 
-SIMULATOR_VERSION = "0.17.0-clinical-encounter"
+SIMULATOR_VERSION = "0.17.1-clinical-encounter"
 
 
 def faculty_access():

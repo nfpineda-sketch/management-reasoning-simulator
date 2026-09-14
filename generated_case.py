@@ -12,8 +12,9 @@ import secrets
 from cognitive_catalog import BIAS_CHALLENGES, CATALOG_VERSION
 from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
+from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.17.0"
+GENERATOR_VERSION = "0.17.1"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -103,17 +104,23 @@ def _unique_json_object(items):
     return result
 
 
-def _response_data(response, schema):
+def _response_data(response, schema, stage="AUTHOR"):
     if getattr(response, "status", None) != "completed":
-        raise ValueError("Incomplete model response.")
+        raise generation_error("INCOMPLETE", stage)
     for item in getattr(response, "output", ()) or ():
         if any(getattr(block, "type", None) == "refusal" for block in getattr(item, "content", ()) or ()):
-            raise ValueError("Refused model response.")
+            raise generation_error("REFUSED", stage)
     raw = getattr(response, "output_text", None)
     if not isinstance(raw, str) or len(raw.encode()) > 250000:
-        raise ValueError("Invalid model response.")
-    result = json.loads(raw, object_pairs_hook=_unique_json_object, parse_constant=lambda value: (_ for _ in ()).throw(ValueError("Nonfinite data.")))
-    validate_schema(result, schema)
+        raise generation_error("JSON", stage)
+    try:
+        result = json.loads(raw, object_pairs_hook=_unique_json_object, parse_constant=lambda value: (_ for _ in ()).throw(ValueError("Nonfinite data.")))
+    except (ValueError, RecursionError):
+        raise generation_error("JSON", stage) from None
+    try:
+        validate_schema(result, schema)
+    except (ValueError, RecursionError):
+        raise generation_error("STRUCTURE", stage) from None
     return result
 
 
@@ -122,19 +129,27 @@ def _usage(response):
             if type(value := getattr(getattr(response, "usage", None), key, None)) is int and value >= 0}
 
 
-def _call(client, model, instructions, payload, schema, name, tokens):
-    return client.responses.create(model=model, store=False, max_output_tokens=tokens,
-        instructions=instructions, input=json.dumps(payload, allow_nan=False),
-        text={"format": {"type": "json_schema", "name": name, "strict": True, "schema": schema}})
+def _call(client, model, instructions, payload, schema, name, tokens, stage="AUTHOR"):
+    # Serialize locally before classifying provider exceptions. A programming
+    # error is not evidence of a bad API key or unavailable model.
+    serialized = json.dumps(payload, allow_nan=False)
+    try:
+        return client.responses.create(model=model, store=False, max_output_tokens=tokens,
+            instructions=instructions, input=serialized,
+            text={"format": {"type": "json_schema", "name": name, "strict": True, "schema": schema}})
+    except Exception as exc:
+        raise provider_error(exc, stage) from None
 
 
 def generation_capabilities():
     from ecg12 import PROFILES, RHYTHMS
     from family_parser import _AGENTS
+    from generated_case_capabilities import executable_generation_constraints
     return {"actions": ACTIONS, "medication_agents": {key: list(value) for key, value in _AGENTS.items()},
             "diagnostic_studies": STUDIES, "ecg_profiles": PROFILES, "electrical_rhythms": list(RHYTHMS),
             "adult_only": True, "no_arbitrary_medications_or_ecg_morphologies": True,
-            "finite_short_term_simulation_not_clinically_validated": True}
+            "finite_short_term_simulation_not_clinically_validated": True,
+            "executable_contract": executable_generation_constraints()}
 
 
 def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=None, client=None, review_model=None):
@@ -153,29 +168,52 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
     if type(seed) is not int or not 0 <= seed < 2**31:
         raise GeneratedCaseError("Invalid encounter seed.")
     if not api_key and client is None:
-        raise GeneratedCaseError("Case generation is not configured. Ask the app administrator to set OPENAI_API_KEY, then select Generate case again.")
+        raise GeneratedCaseError("Case generation is not configured. Ask the app administrator to set OPENAI_API_KEY, then select Begin Encounter to try again.")
     used_model = str(model or "gpt-5-mini").strip() or "gpt-5-mini"
     checker_model = str(review_model or used_model).strip() or used_model
+    stage = "SETUP"
+    author_responses = []
+    correction_count = 0
     try:
         if client is None:
             from openai import OpenAI
             client = OpenAI(api_key=api_key, timeout=120, max_retries=0)
         request = {"learning_challenge": objective, "variation_seed": seed,
                    "capabilities": generation_capabilities()}
+        stage = "AUTHOR"
         authored = _call(client, used_model, AUTHOR_INSTRUCTIONS, request, CASE_SCHEMA, "new_clinical_case", 24000)
-        raw = _response_data(authored, CASE_SCHEMA)
-        case = compile_case(raw)
+        author_responses.append(authored)
+        raw = _response_data(authored, CASE_SCHEMA, stage)
+        try:
+            case = compile_case(raw)
+        except ValueError as exc:
+            # Exactly one repair of a fully structured fictional draft. The
+            # full validators and separate reviewer still have to approve it.
+            # The rejected draft and feedback never reach a learner or logs.
+            stage = "CORRECTION"
+            correction_count = 1
+            correction = {**request, "proposed_case": raw,
+                          "validation_feedback": str(exc)[:1000],
+                          "task": "Correct the proposed case to satisfy the executable contract. Preserve its clinical problem and coherent facts. Return the full corrected case; do not weaken or bypass checks."}
+            authored = _call(client, used_model, AUTHOR_INSTRUCTIONS, correction, CASE_SCHEMA,
+                             "new_clinical_case", 24000, stage)
+            author_responses.append(authored)
+            raw = _response_data(authored, CASE_SCHEMA, stage)
+            try:
+                case = compile_case(raw)
+            except ValueError:
+                raise generation_error("CONTRACT", stage) from None
+        stage = "REVIEW"
         reviewed = _call(client, checker_model, REVIEW_INSTRUCTIONS,
                          {"learning_challenge": objective, "case": case, "capabilities": generation_capabilities()},
-                         REVIEW_SCHEMA, "clinical_consistency_review", 6000)
-        review = _response_data(reviewed, REVIEW_SCHEMA)
+                         REVIEW_SCHEMA, "clinical_consistency_review", 6000, stage)
+        review = _response_data(reviewed, REVIEW_SCHEMA, stage)
         if not review["coherent"] or not all(review["checks"].values()) or review["issues"]:
-            raise GeneratedCaseError("The new case did not pass the clinical consistency screen. Select Generate case again; no encounter has been started.")
+            raise generation_error("REVIEW", stage)
     except GeneratedCaseError:
         raise
     except Exception:
-        # Provider errors may contain credentials and unreviewed hidden diagnoses.
-        raise GeneratedCaseError("A coherent new case could not be generated and reviewed. Select Generate case again. If this persists, ask the administrator to check the case model and API access.") from None
+        raise generation_error("INTERNAL", stage) from None
     case["id"] = "AI-" + _digest(raw)[:16]
     case["faculty"]["sources"] = []  # no fabricated evidence attribution
     state = deepcopy(base_state)
@@ -201,7 +239,11 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
             "provenance": {"source": "ai", "authoring": "novel_structured_case", "model": used_model,
                            "review_model": checker_model, "fallback_reason": None,
                            "clinical_validation": "automated_consistency_screen_only_requires_expert_validation",
-                           "author_usage": _usage(authored), "review_usage": _usage(reviewed),
+                           "author_usage": {key: sum(_usage(response).get(key, 0) for response in author_responses)
+                                            for key in ("input_tokens", "output_tokens", "total_tokens")
+                                            if any(key in _usage(response) for response in author_responses)},
+                           "authoring_requests": len(author_responses), "correction_count": correction_count,
+                           "review_usage": _usage(reviewed),
                            "review": deepcopy(review), "raw_case_sha256": _digest(raw),
                            "execution_model": "bounded_declarative_v1"}}
     spec["content_sha256"] = _digest(spec)
