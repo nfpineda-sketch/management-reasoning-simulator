@@ -33,9 +33,9 @@ generated_case.GENERATOR_VERSION = "0.17.1"
 encounter_generator.GENERATOR_VERSION = "0.17.0"
 curriculum_runtime.RUNTIME_VERSION = "0.17.1"
 
-assert refresh_generation_modules("0.17.7") is True
+assert refresh_generation_modules("0.17.8") is True
 # This is the guard used by app.py after the author stack has been refreshed.
-if curriculum_runtime.RUNTIME_VERSION != "0.17.7":
+if curriculum_runtime.RUNTIME_VERSION != "0.17.8":
     importlib.reload(curriculum_runtime)
 assert curriculum_runtime.generate_encounter is encounter_generator.generate_encounter
 assert generated_case.GeneratedCaseError is generated_case_schema.GeneratedCaseError
@@ -55,7 +55,7 @@ except generated_case.GeneratedCaseError:
     pass
 else:
     raise AssertionError("The UI error boundary must catch the current error class")
-assert refresh_generation_modules("0.17.7") is False
+assert refresh_generation_modules("0.17.8") is False
 ''')
 
 
@@ -64,13 +64,13 @@ def test_fresh_process_and_matching_release_do_not_reload():
 import sys
 from generation_reload import refresh_generation_modules
 assert "generated_case" not in sys.modules
-assert refresh_generation_modules("0.17.7") is False
+assert refresh_generation_modules("0.17.8") is False
 assert "generated_case" not in sys.modules
 import generated_case
 import encounter_generator
 author = generated_case.generate_ai_encounter
 error = generated_case.GeneratedCaseError
-assert refresh_generation_modules("0.17.7") is False
+assert refresh_generation_modules("0.17.8") is False
 assert generated_case.generate_ai_encounter is author
 assert generated_case.GeneratedCaseError is error
 ''')
@@ -117,7 +117,7 @@ assert scene_preparation.SceneJobs is scene_jobs.SceneJobs
 assert scene_preparation.screened_scene is scene_pipeline.screened_scene
 assert scene_pipeline.inspect_image is image_consistency.inspect_image
 assert patient_appearance.APPEARANCE_VERSION == 4
-assert scene_pipeline.SCENE_PIPELINE_VERSION == 5
+assert scene_pipeline.SCENE_PIPELINE_VERSION == 6
 assert clinical_scene.SCENE_RENDER_VERSION == 12
 assert resuscitation_room.ROOM_RENDER_VERSION == 7
 assert generation_reload._LOCK is old_lock

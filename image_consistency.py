@@ -122,7 +122,7 @@ def photographic_targets(expected):
         'respiratory_posture': posture.get(expected['work_of_breathing'], unspecified),
         'respiratory_support': _SUPPORT[expected['respiratory_support']],
         'identity_and_framing': 'Face and hands visible in the full image; rightmost third clear for the monitor. When supplied, preserve the original reference identity and framing.',
-        'no_unrequested_signs': 'No invented injury, bleeding, cyanosis, extra interfaces, text, numbers, logos or monitoring screens.',
+        'no_unrequested_signs': 'No invented injury, bleeding, cyanosis, extra respiratory interfaces or explicit diagnostic/treatment claims. Judge clinical contradictions only; incidental lettering, branding or fabric patterns on ordinary equipment are not clinical signs.',
     }
 
 
@@ -245,6 +245,13 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
         "when provided to preserve it. Normal/absent targets mean absence of a visible contradiction. "
         "Use an original reference only for identity, baseline pigmentation and room/framing, never "
         "to override the current visible targets. A reference's old expression or equipment may differ. "
+        "The no_unrequested_signs check is about unrequested CLINICAL findings: injury, bleeding, "
+        "cyanosis, respiratory interfaces or explicit diagnostic/treatment clues. Do not reject for "
+        "incidental manufacturer lettering, cuff markings, linen patterns, ordinary ECG electrodes, "
+        "a blood pressure cuff, finger oximeter, bedside supplies or unconnected equipment in the room. "
+        "Those ordinary details do not indicate an administered treatment. Cosmetic branding or "
+        "minor photographic imperfections are not clinical contradictions. A visible conflicting "
+        "monitor reading, diagnostic label or active unrequested intervention remains a conflict. "
         "For bag-mask support, necessary gloved clinician hands and mask coverage of mouth/nose are "
         "allowed; eyes and upper face must remain visible. A manual resuscitation bag is not a "
         "non-rebreather reservoir or NIV mask. Do not permit extra people. "

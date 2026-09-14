@@ -12,7 +12,7 @@ from patient_appearance import appearance_state, generate_appearance
 from scene_errors import safe_image_error
 from scene_repair import repair_scene
 
-SCENE_PIPELINE_VERSION = 5
+SCENE_PIPELINE_VERSION = 6
 _LOG = logging.getLogger(__name__)
 
 
