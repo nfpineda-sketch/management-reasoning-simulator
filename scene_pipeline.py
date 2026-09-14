@@ -12,7 +12,7 @@ from patient_appearance import appearance_state, generate_appearance
 from scene_errors import safe_image_error
 from scene_repair import repair_scene
 
-SCENE_PIPELINE_VERSION = 6
+SCENE_PIPELINE_VERSION = 7
 _LOG = logging.getLogger(__name__)
 
 
@@ -47,6 +47,9 @@ def _screen(candidate, state, api_key, review_model, reference=None, progress=No
         _LOG.warning("patient_image_rejected reference=%s checks=%s",
                      error.reference, ",".join(error.failed_checks))
         if isinstance(failure, ImageConsistencyError):
+            # Private troubleshooting artifact, never an accepted/current image.
+            # SceneJobs owns access and clears it with its encounter.
+            failure._diagnostic_candidate = candidate
             raise
         raise error from None
     return ScreenedImage(candidate, result.get('limitations', ()))

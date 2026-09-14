@@ -21,6 +21,15 @@ class SceneJobs:
         self._statuses = {}
         self._status_lock = Lock()
         self._discarded = False
+        self._diagnostic_candidate = None
+
+    def diagnostic_candidate(self, signature):
+        """Latest rejected image of this session's exact failed appearance only."""
+        self.poll()
+        record = self._diagnostic_candidate
+        if not self._discarded and signature in self.failed and record and record[0] == signature:
+            return record[1]
+        return None
 
     def _stage(self, signature, stage):
         # Called by the background worker, never with Streamlit or patient data.
@@ -68,6 +77,7 @@ class SceneJobs:
                 or (self.pending is not None and self.pending[0] == signature)):
             return False
         self.failed.discard(signature)
+        self._diagnostic_candidate = None
         with self._status_lock:
             self._statuses.pop(signature, None)
         return True
@@ -87,6 +97,7 @@ class SceneJobs:
         self.base = None
         self.images.clear()
         self.failed.clear()
+        self._diagnostic_candidate = None
 
     def poll(self):
         if self.pending is None or not self.pending[1].done():
@@ -95,6 +106,7 @@ class SceneJobs:
         self.pending = None
         try:
             image = future.result()
+            self._diagnostic_candidate = None
             self.images[signature] = image
             if self.base is None:
                 self.base = image
@@ -103,6 +115,9 @@ class SceneJobs:
                 del self.images[next(iter(self.images))]
             self._finish(signature, "ready")
         except Exception as failure:
+            candidate = getattr(failure, '_diagnostic_candidate', None)
+            if isinstance(candidate, str):
+                self._diagnostic_candidate = (signature, candidate)
             with self._status_lock:
                 stage = self._statuses.get(signature, {}).get("stage", "CREATE")
             error = safe_image_error(failure, stage)

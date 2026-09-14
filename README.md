@@ -1,4 +1,4 @@
-# Clinical encounter workspace v0.17.8
+# Clinical encounter workspace v0.17.9
 
 Live testing also found isolated uncertainty about non-severe respiratory
 effort. That detail may now be deferred explicitly to examination alongside

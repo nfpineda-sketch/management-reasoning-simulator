@@ -47,7 +47,7 @@ def patient_svg(t):
     <circle cx="177" cy="335" r="10" fill="#405565"/><circle cx="333" cy="335" r="10" fill="#405565"/>{mask}{pump}</svg>'''
 
 
-ROOM_RENDER_VERSION = 7
+ROOM_RENDER_VERSION = 8
 
 
 def monitor_html(o, time_label, profile='baseline', seed=0):
@@ -115,6 +115,19 @@ def render_bedside_tools(state, events, render_event):
             if st.button('View recording'):
                 show_ecg(recordings[recording])
     jobs = st.session_state.get('_scene_jobs')
+    if jobs is not None and st.button('Image issue details', help='Inspect a rejected illustration separately for troubleshooting. It is not the current clinical image.'):
+        diagnostic = getattr(jobs, 'diagnostic_candidate', None)
+        candidate = diagnostic(appearance_signature(state)) if callable(diagnostic) else None
+        if candidate:
+            @st.dialog('Image issue · rejected illustration', width='large')
+            def show_image_issue():
+                from patient_appearance import _validated_image
+                st.warning('Rejected illustration for troubleshooting only. Do not use it to interpret the clinical encounter.')
+                st.image(_validated_image(candidate)[0], caption='Rejected candidate — not the current patient image.')
+                st.caption(str(jobs.failure(appearance_signature(state)).get('reference', '')))
+            show_image_issue()
+        else:
+            st.info('No rejected illustration is available for this appearance.')
     retry_image = getattr(jobs, 'retry', None)
     if callable(retry_image) and not st.session_state.get('encounter_ended') and setting('OPENAI_API_KEY'):
         if st.button('Retry patient image', help='Retry only the current patient image. Your encounter and decisions are preserved.'):

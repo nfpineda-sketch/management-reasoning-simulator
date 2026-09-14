@@ -302,8 +302,12 @@ def test_unsuccessful_second_screen_cannot_publish_or_request_another_edit(monke
     signature = request(jobs, state)
     pool.complete()
     assert jobs.current(signature) is None and jobs.base is None and not jobs.images
+    assert jobs.diagnostic_candidate(signature) == 'UNAPPROVED_CORRECTION'
+    assert jobs.diagnostic_candidate('a-different-appearance') is None
     assert jobs.failure(signature)["reference"] == failure.reference
     assert len(screens) == 2 and len(repairs) == 1
+    jobs.retry(signature)
+    assert jobs.diagnostic_candidate(signature) is None
 
 
 def test_repair_provider_failure_is_terminal_and_has_safe_repair_stage(monkeypatch, state, pool, caplog):
