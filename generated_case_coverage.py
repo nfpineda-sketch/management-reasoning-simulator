@@ -15,6 +15,12 @@ def coverage_issues(case):
     if 'pocus' in case.get('investigations',{}) and 'pocus' not in engine.get('stable_diagnostics',[]) and not any('pocus' in (r.get('diagnostic_updates') or {}) for r in engine.get('state_rules',[])):
         missing.append('POCUS: author state-dependent findings or explicitly declare stable_diagnostics')
     for r in rules:
+        if r.get('action_type') in {'norepinephrine','dobutamine','nitroglycerin'} and r.get('washout_min') is None:
+            missing.append(r['action_type'] + ': explicit infusion washout')
+        if r.get('action_type') in {'beta_blocker','diltiazem','amiodarone'} and r.get('recovery_min') is None:
+            missing.append(r['action_type'] + ': explicit recovery')
+        if r.get('action_type') == 'fluid' and r.get('state_gain') is None:
+            missing.append('fluid: explicit state-dependent response curve')
         if r.get('action_type') == 'procedural_sedation' and any(r.get(k) is None for k in ('recovery_min','mental_status_during','mental_status_threshold')):
             missing.append('sedation: explicit recovery, mental status and exposure threshold')
     vent = [r for r in rules if r.get('action_type') == 'ventilator_adjustment' and r.get('interpolate_settings') is True]

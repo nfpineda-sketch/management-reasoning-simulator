@@ -3,7 +3,7 @@ from copy import deepcopy
 import re
 from family_parser import _normalize, _route, _amount, _medication, _COMMAND, _NEGATION, _CONDITIONAL, parse_family_actions
 
-_FIELDS = {'fluid': ('volume_ml', 'fluid_type'), 'cardioversion': ('energy_j',),
+_FIELDS = {'blood': ('units',), 'anticoagulation': ('dose','units','route'), 'fluid': ('volume_ml', 'fluid_type'), 'cardioversion': ('energy_j',),
            'norepinephrine': ('rate', 'units'), 'nitroglycerin': ('rate_mcg_min',),
            'dobutamine': ('rate','units'), 'niv': ('mode','epap_cmh2o','fio2_percent'),
            'intubation': ('ventilator_mode','fio2_percent','peep_cmh2o'), 'oxygen': ('device', 'flow_lpm')}
@@ -46,6 +46,12 @@ def complete_bundle(pending, text):
         fluid = parse_family_actions('give ' + body)['actions']
         if len(fluid) == 1 and fluid[0].get('type') == 'fluid':
             supplied.update({k:v for k,v in fluid[0].items() if v is not None})
+    elif a['type'] == 'blood':
+        value, _ = _amount(body, r'units?|unidades?|u')
+        supplied['units'] = value
+    elif a['type'] == 'anticoagulation':
+        value, unit = _amount(body, r'mg|units?|unidades?|ui|u|iu')
+        supplied.update(dose=value, units=('mg' if unit == 'mg' else 'units') if unit else None, route=_route(body))
     elif a['type'] == 'cardioversion':
         value, _ = _amount(body, r'j|joules?|julios?')
         if value is not None:

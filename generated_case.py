@@ -15,7 +15,7 @@ from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
 from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.19.0"
+GENERATOR_VERSION = "0.20.0"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -72,7 +72,18 @@ Energy is a matcher, never a linear efficacy multiplier. Include plausible alter
 Set recovery_min, mental_status_during (Sedated), and mental_status_threshold explicitly for each sedation response.
 Numeric and sedating effects rise over duration_min and then return to baseline over recovery_min; do not model permanent sedation.
 The threshold is expressed in actual reference-dose exposure and must prevent tiny doses causing full sedation.
-For nonsedating rules these fields are null.
+mental_status_during and mental_status_threshold are null for nonsedating rules.
+Use recovery_min for other fixed-dose drugs when the effect should wear off; it is mandatory for beta_blocker, diltiazem and amiodarone.
+Infusions (norepinephrine, dobutamine, nitroglycerin) require washout_min, with recovery_min null.
+Their effects approach a changed dose over onset_min + duration_min and fade after stopping over washout_min.
+Use state_gain to couple a response to a declared numeric field, elapsed_min or fluid_delivered_ml. Its 2–8 strictly increasing
+points specify value/factor pairs; factors lie between 0 and 1. Values outside the curve use its end factors. Every fluid response
+requires a state_gain curve, including a constant curve when appropriate. Model diminishing benefit and increasing harm with
+separate response rules and explicitly authored curves; do not silently assume every bolus gives the same benefit.
+Curves read a shared unmodified response snapshot, not each other's already scaled output; this prevents circular feedback.
+Use this mechanism for interactions between rate, pressure, perfusion and oxygenation only when appropriate to the patient.
+Do not invent universal thresholds copied from a different case. Other responses may use state_gain=null.
+Airway preparation is an administrative action taking two minutes; it does not intubate or sedate and needs no response rule.
 State rules may use elapsed_min and fluid_delivered_ml in addition to physiological measurements. diagnostic_updates can update
 narrative POCUS findings (lv,rv,ivc,lungs,pericardium,report) with the current state; numeric lab values still use their bindings.
 For POCUS, provide state-dependent findings or list pocus in engine.stable_diagnostics only when its findings should truly remain stable.

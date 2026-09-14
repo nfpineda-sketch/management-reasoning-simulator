@@ -33,9 +33,9 @@ generated_case.GENERATOR_VERSION = "0.17.1"
 encounter_generator.GENERATOR_VERSION = "0.17.0"
 curriculum_runtime.RUNTIME_VERSION = "0.17.1"
 
-assert refresh_generation_modules("0.19.0") is True
+assert refresh_generation_modules("0.20.0") is True
 # This is the guard used by app.py after the author stack has been refreshed.
-if curriculum_runtime.RUNTIME_VERSION != "0.19.0":
+if curriculum_runtime.RUNTIME_VERSION != "0.20.0":
     importlib.reload(curriculum_runtime)
 assert curriculum_runtime.generate_encounter is encounter_generator.generate_encounter
 assert generated_case.GeneratedCaseError is generated_case_schema.GeneratedCaseError
@@ -55,7 +55,7 @@ except generated_case.GeneratedCaseError:
     pass
 else:
     raise AssertionError("The UI error boundary must catch the current error class")
-assert refresh_generation_modules("0.19.0") is False
+assert refresh_generation_modules("0.20.0") is False
 ''')
 
 
@@ -64,13 +64,13 @@ def test_fresh_process_and_matching_release_do_not_reload():
 import sys
 from generation_reload import refresh_generation_modules
 assert "generated_case" not in sys.modules
-assert refresh_generation_modules("0.19.0") is False
+assert refresh_generation_modules("0.20.0") is False
 assert "generated_case" not in sys.modules
 import generated_case
 import encounter_generator
 author = generated_case.generate_ai_encounter
 error = generated_case.GeneratedCaseError
-assert refresh_generation_modules("0.19.0") is False
+assert refresh_generation_modules("0.20.0") is False
 assert generated_case.generate_ai_encounter is author
 assert generated_case.GeneratedCaseError is error
 ''')

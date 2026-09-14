@@ -155,7 +155,7 @@ def _validate(state, parsed):
         elif kind == "disposition":
             if not str(a.get("destination") or "").strip():
                 return None, "Where would you like to transfer or admit the patient?"
-        elif kind == "bag_mask":
+        elif kind in {"bag_mask", "airway_preparation"}:
             pass
         else:
             return None, f"The requested action ({str(kind)[:60]}) is not executable in this encounter. Please clarify the order."
@@ -205,7 +205,11 @@ def _order(state, a):
     kind = a["type"]
     duration = 1
     label = kind.replace("_", " ").capitalize()
-    if kind == "cardioversion":
+    if kind == "airway_preparation":
+        tr["airway_prepared"] = True
+        label = "Airway equipment prepared; intubation has not occurred"
+        duration = 2
+    elif kind == "cardioversion":
         tr.setdefault("cardioversions", []).append({"energy_j": a["energy_j"], "synchronized": True, "time_min": state.get("sim_time", 0)})
         label = f"Synchronized cardioversion delivered: {a['energy_j']:g} J"
         duration = 0

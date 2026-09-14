@@ -67,6 +67,8 @@ RESPONSE_RULE = obj({
     "dose_field": nullable(enum(("dose_mg", "dose_g", "volume_ml", "units", "rate", "rate_mcg_min", "dose", "flow_lpm"))),
     "settings": nullable(array(obj({"field": enum(("energy_j", "fio2_percent", "peep_cmh2o")), "value": NUMBER}), minimum=1, maximum=2)),
     "interpolate_settings": nullable(BOOL),
+    "washout_min": nullable({"type":"number", "minimum":1, "maximum":180}),
+    "state_gain": nullable(obj({"field": enum(NUMERIC_FIELDS + ("elapsed_min", "fluid_delivered_ml")), "points": array(obj({"value": NUMBER, "factor": {"type":"number", "minimum":0, "maximum":1}}), minimum=2, maximum=8)})),
     "recovery_min": nullable({"type":"number", "minimum":1, "maximum":180}),
     "mental_status_during": nullable(enum(("Sedated",))),
     "mental_status_threshold": nullable({"type":"number", "exclusiveMinimum":0, "maximum":5}),

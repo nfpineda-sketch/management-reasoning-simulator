@@ -8,6 +8,7 @@ teaching model requiring clinical review, not a clinical prediction engine.
 from copy import deepcopy
 import math
 from generated_response import response_progress, select_responses, diagnostic_overrides
+from generated_dynamics import INFUSIONS, event_progress, gain_at, retire_active_events
 
 from family_engine import (
     _failure, _initialize as _initialize_orders, _order, _validate as _validate_orders,
@@ -26,7 +27,7 @@ BOUNDS = {
 }
 _ACTIVE = frozenset({"oxygen", "niv", "bag_mask", "intubation", "ventilator_adjustment", "norepinephrine", "dobutamine", "nitroglycerin"})
 _RESPIRATORY = frozenset({"oxygen", "niv", "bag_mask", "intubation", "ventilator_adjustment"})
-_ADMIN = frozenset({"consult", "reperfusion_referral", "disposition"})
+_ADMIN = frozenset({"consult", "reperfusion_referral", "disposition", "airway_preparation"})
 _DOSE_FIELDS = {
     "beta_blocker": "dose_mg", "diltiazem": "dose_mg", "amiodarone": "dose_mg", "procedural_sedation": "dose_mg", "fluid": "volume_ml", "blood": "units", "dextrose": "dose_g", "naloxone": "dose_mg",
     "antibiotics": "dose_mg", "bronchodilator": "dose_mg", "steroid": "dose_mg",
@@ -120,13 +121,24 @@ def validate_declarative_case(case):
         if not _finite(rule.get("max_exposure")) or not 0 < rule["max_exposure"] <= 20:
             raise ValueError("Response exposure must have a finite positive cap.")
         if rule.get("recovery_min") is not None:
-            if kind != "procedural_sedation" or not _finite(rule["recovery_min"]) or not 1 <= rule["recovery_min"] <= 180:
-                raise ValueError("Only sedation may define a finite recovery interval.")
+            if kind not in _DRUGS - INFUSIONS or not _finite(rule["recovery_min"]) or not 1 <= rule["recovery_min"] <= 180:
+                raise ValueError("Only fixed-dose medications may define a finite recovery interval.")
         if rule.get("mental_status_during") is not None:
             if kind != "procedural_sedation" or rule["mental_status_during"] != "Sedated" or rule.get("recovery_min") is None or not _finite(rule.get("mental_status_threshold")) or not 0 < rule["mental_status_threshold"] <= rule["max_exposure"]:
                 raise ValueError("Sedation requires an explicit recovery interval and exposure threshold.")
         if rule.get("interpolate_settings") not in (None, False, True) or (rule.get("interpolate_settings") and kind != "ventilator_adjustment"):
             raise ValueError("Interpolation is restricted to authored ventilator grids.")
+        if rule.get("washout_min") is not None and (kind not in INFUSIONS or not _finite(rule["washout_min"]) or not 1 <= rule["washout_min"] <= 180):
+            raise ValueError("Infusion washout must be between 1 and 180 minutes.")
+        curve = rule.get("state_gain")
+        if curve is not None:
+            if not isinstance(curve, dict) or curve.get("field") not in initialized | {"elapsed_min", "fluid_delivered_ml"}:
+                raise ValueError("State coupling must read a declared measurement, elapsed time or delivered fluid.")
+            points = curve.get("points")
+            if not isinstance(points, list) or not 2 <= len(points) <= 8 or any(not isinstance(p,dict) or not _finite(p.get("value")) or not _finite(p.get("factor")) or not 0 <= p["factor"] <= 1 for p in points):
+                raise ValueError("State coupling needs 2–8 finite points with factors between zero and one.")
+            if any(a["value"] >= b["value"] for a,b in zip(points,points[1:])):
+                raise ValueError("State coupling points must be strictly increasing.")
         _validate_procedure_rule(rule)
         _validate_response_capability(case, rule)
         _number_map(rule.get("delta"), "response delta")
@@ -345,10 +357,22 @@ def _stopping(action):
 def _record_effect(state, action, matching, summary):
     g = state["generated_state"]
     kind = action["type"]
+    signature = {k:v for k,v in action.items() if k != "operation"}
+    signatures = g.setdefault("active_signatures", {})
+    if kind in INFUSIONS and _stopping(action) and kind in signatures and signatures[kind] is None:
+        return
+    if kind in INFUSIONS and not _stopping(action) and signatures.get(kind) == signature:
+        return
+    if kind in INFUSIONS:
+        signatures[kind] = None if _stopping(action) else signature
     previous = {e["rule_id"]: e for e in g["events"] if e["action_type"] == kind}
     if kind in _ACTIVE:
         replace = _RESPIRATORY if kind in _RESPIRATORY else {kind}
+        retiring = [event for event in g["events"] if event["action_type"] in replace]
         g["events"] = [event for event in g["events"] if event["action_type"] not in replace]
+        if kind in INFUSIONS:
+            transition = None if _stopping(action) else max((r["onset_min"] + r["duration_min"] for r in matching if r.get("washout_min")), default=None)
+            g["events"].extend(retire_active_events(retiring, g["elapsed"], transition))
     if _stopping(action):
         return
     for rule in matching:
@@ -376,8 +400,14 @@ def _record_effect(state, action, matching, summary):
             "immediate": kind == "cardioversion", "rhythm_after": rule.get("rhythm_after"),
             "recovery_min": rule.get("recovery_min"), "mental_status_during": rule.get("mental_status_during"), "mental_status_threshold": rule.get("mental_status_threshold"),
             "exposure": exposure, "delta": deepcopy(rule["delta"]),
+            "washout_min": rule.get("washout_min"), "state_gain": deepcopy(rule.get("state_gain")),
         })
-        if kind in _ACTIVE and rule["id"] in previous:
+        if kind in INFUSIONS and previous and rule.get("washout_min"):
+            # Blend the previous effect into the new target over one interval.
+            # A delayed target must not create an artificial dip while increasing.
+            g["events"][-1]["duration_min"] += rule["onset_min"]
+            g["events"][-1]["onset_min"] = 0
+        if kind in _ACTIVE and rule["id"] in previous and not rule.get("washout_min"):
             g["events"][-1]["started_at"] = previous[rule["id"]]["started_at"]
 
 
@@ -385,8 +415,17 @@ def _surface(state):
     case = _case(state)
     engine, g, f = case["engine"], state["generated_state"], state["family_state"]
     values = {key: number + g["elapsed"] * engine.get("untreated_drift_per_min", {}).get(key, 0) for key, number in g["baseline_values"].items()}
+    # One unmodified snapshot for all response curves prevents circular feedback
+    # and makes repeated rendering at the same minute idempotent.
+    drivers = dict(values)
     for event in g["events"]:
-        progress = response_progress(g["elapsed"] - event["started_at"], event["onset_min"], event["duration_min"], event.get("recovery_min"), event.get("immediate", False))
+        progress = event_progress(event, g["elapsed"])
+        for key, delta in event["delta"].items():
+            if key in drivers:
+                drivers[key] += delta * event["exposure"] * progress
+    drivers.update(elapsed_min=g["elapsed"], fluid_delivered_ml=f["fluid_delivered_ml"])
+    for event in g["events"]:
+        progress = event_progress(event, g["elapsed"]) * gain_at(event.get("state_gain"), drivers)
         for key, delta in event["delta"].items():
             if key in values:
                 values[key] += delta * event["exposure"] * progress
@@ -423,7 +462,7 @@ def _surface(state):
                 else:
                     observed[key] = deepcopy(value)
             g["examination"].update(deepcopy(rule.get("examination", {})))
-    sedating = [e for e in g["events"] if e.get("mental_status_during") and e["exposure"] * response_progress(g["elapsed"]-e["started_at"], e["onset_min"], e["duration_min"], e.get("recovery_min")) >= e["mental_status_threshold"]]
+    sedating = [e for e in g["events"] if e.get("mental_status_during") and e["exposure"] * gain_at(e.get("state_gain"), drivers) * event_progress(e, g["elapsed"]) >= e["mental_status_threshold"]]
     if sedating:
         # Do not describe an unresponsive patient as more awake due to sedation.
         if observed.get("mental_status") not in {"Unresponsive", "Obtunded"}:

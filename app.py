@@ -10,7 +10,7 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-SIMULATOR_VERSION = "0.19.0-clinical-encounter"
+SIMULATOR_VERSION = "0.20.0-clinical-encounter"
 
 import importlib
 import generation_reload as _generation_reload
@@ -6474,6 +6474,17 @@ def hold_pending_reasoning(parsed, missing=None):
     return reasoning_gate_prompt(parsed, missing)
 
 
+def cancel_pending_order():
+    """Discard unexecuted orders, preserving patient state and encounter evidence."""
+    from pending_cancellation import clear_pending_orders
+    if not clear_pending_orders(st.session_state):
+        return False
+    clear_reasoning_gate_clarification()
+    next_reasoning_gate_id()
+    add_event("order_cancelled", "Pending orders cancelled before execution. No treatment administered; simulation time unchanged.")
+    return True
+
+
 def complete_pending_reasoning_fields(
     working_model,
     management_priority,
@@ -10327,6 +10338,11 @@ with st.container(key="encounter-console"):
                     submission_text = natural_text.strip()
                     submitted = True
 
+            if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action", "pending_bundle")):
+                if st.button("Cancel pending orders", key="cancel_pending_orders"):
+                    cancel_pending_order()
+                    rerun_app()
+
             if pending_reasoning and faculty_access():
                 st.caption(
                     f"Facilitator override: type `{REASONING_GATE_OVERRIDE}` in the natural-language box."
@@ -10334,6 +10350,11 @@ with st.container(key="encounter-console"):
 
     if submitted and submission_text.strip():
         learner_input = submission_text.strip()
+        from pending_cancellation import is_cancellation
+        if is_cancellation(learner_input):
+            if not cancel_pending_order():
+                add_event("clarification", "There are no pending orders to cancel.")
+            rerun_app()
         add_event(
             "reasoning_completion" if submission_parsed is not None else "you",
             learner_input,

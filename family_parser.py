@@ -194,6 +194,8 @@ def _oxygen_order(body, verb):
 
 
 def _parse_piece_core(piece, inherited=None):
+    if re.fullmatch(r"\s*(?:prepare|set up|get ready|preparar|prepara)(?:\s+(?:for|para))?\s+(?:intubation|intubacion|airway|via aerea)\s*[.!]?", piece):
+        return [{"type": "airway_preparation"}], "prepare"
     text = piece.strip(" :")
     text = re.sub(r"^(?:please|por favor|then|luego|despues)\s+", "", text)
     command = _COMMAND.match(text)
