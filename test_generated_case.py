@@ -1,5 +1,6 @@
 """Novel authoring, independent review, hard coherence gates, and frozen replay."""
 from copy import deepcopy
+from clinical_core_defaults import PHENOTYPE_FIELDS, INITIAL_HIDDEN, CORE_VERSION
 import json
 from types import SimpleNamespace
 
@@ -58,7 +59,7 @@ def novel_payload(*, diagnosis="Acute adrenal crisis following glucocorticoid wi
                                      {"hemoglobin_g_dl": "hemoglobin_g_dl", "glucose_mg_dl": "glucose_mg_dl"}, 10),
                                study("pocus", {"lv": "Hyperdynamic contraction.", "lungs": "No diffuse B-lines.", "rv": "No enlargement."}),
                                study("cortisol", {"cortisol_ug_dl": 1.2}, duration=60)],
-            "engine": {"volume_model": {"initial_extravascular_ml":0,"redistribution_half_life_min":28,"clearance_half_life_min":120,"extravascular_fraction":.5,"diuresis_extravascular_fraction":.7}, "terminal_rule":None, "model": "declarative_v1", "horizon_min": 60, "stable_diagnostics": ["pocus"],
+            "engine": {"core_profile":{"version":CORE_VERSION,"infection_active":False,"initial_hidden":{k:INITIAL_HIDDEN[k] for k in PHENOTYPE_FIELDS}}, "volume_model": {"initial_extravascular_ml":0,"redistribution_half_life_min":28,"clearance_half_life_min":120,"extravascular_fraction":.5,"diuresis_extravascular_fraction":.7}, "terminal_rule":None, "model": CORE_VERSION, "horizon_min": 60, "stable_diagnostics": ["pocus"],
                        "initial_labs": {"hemoglobin_g_dl": 12.4, "lactate_mmol_l": 3, "pco2_mm_hg": 35,
                                         "bicarbonate_mmol_l": 22, "pao2_mm_hg": 92},
                        "untreated_drift_per_min": [{"field": "sbp", "value": -.12}, {"field": "dbp", "value": -.05}],
@@ -249,3 +250,19 @@ def test_duplicate_model_json_fields_cannot_override_a_previous_value():
     with pytest.raises(GeneratedCaseError):
         generate_ai_encounter('R1-05', clean_base(), client=client)
     assert len(client.calls) == 1
+
+
+def test_new_case_cannot_inherit_an_existing_native_patient():
+    prior=generate_ai_encounter('R1-05',clean_base(),seed=1,client=AuthorClient())['state']
+    prior['coupled_state']['hidden']['terminal_collapse']=True
+    prior['coupled_state']['treatments']['norepinephrine']=True
+    prior['pending_investigations']=[{'diagnostic_type':'old'}]
+    prior['rhythm_history']=[{'kind':'old'}]
+    before=deepcopy(prior)
+    new=generate_ai_encounter('R1-05',prior,seed=2,client=AuthorClient())['state']
+    assert prior==before
+    assert not new['coupled_state']['hidden'].get('terminal_collapse')
+    assert not new['coupled_state']['treatments']['norepinephrine']
+    assert new['coupled_state']['seed']==2
+    assert new['pending_investigations']==[]
+    assert new['rhythm_history']==[]

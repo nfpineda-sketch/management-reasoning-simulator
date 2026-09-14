@@ -129,10 +129,12 @@ def executable_generation_constraints():
     if set(contracts) != set(ACTIONS):
         raise ValueError("Generation capability examples must cover all supported actions.")
     return {
+        "execution_model": "main_ia_v1",
         "action_contracts": contracts,
         "initial_numeric_bounds": {key: list(value) for key, value in INITIAL_BOUNDS.items()},
         "trajectory_numeric_bounds": {key: list(value) for key, value in BOUNDS.items()},
         "contract_notes": [
+            "All newly generated cases use the complete main/IA physiological core. Native actions need no response rules or ventilator interpolation grids; matching-response examples below apply only to declared extensions. Native numeric response deltas are ignored.",
             "All values are software capabilities, not clinical recommendations. Example doses are syntax/exposure examples, not default prescriptions or preferred management paths.",
             "Use matching_response_fields_example for field shape. Select the actual agent, route, reference exposure and physiologic effect appropriate to the newly authored patient; a route accepted by software may still be clinically inappropriate for a particular drug.",
             "Use only listed matcher values. Fluid, blood and respiratory support have null route/agent matchers because the normalized orders do not carry those fields; do not invent an IV route matcher for fluids or blood.",

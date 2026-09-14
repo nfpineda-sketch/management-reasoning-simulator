@@ -1,6 +1,6 @@
-# Clinical encounter workspace v0.23.0
+# Clinical encounter workspace v0.24.0
 
-See [v0.23.0 release notes](docs/RELEASE_v0.23.0.md) for shared legacy physiology, generated fluid compartments, active drug-load dynamics and terminal-state handling. New generated cases use the v2 authoring contract; existing saved encounters retain their declared profiles.
+See [v0.24.0 release notes](docs/RELEASE_v0.24.0.md): all newly generated encounters execute the complete shared main/IA physiological core through the v3 authoring contract. Generate a new case to use this engine; previous saved encounter records are preserved.
 
 Live testing also found isolated uncertainty about non-severe respiratory
 effort. That detail may now be deferred explicitly to examination alongside

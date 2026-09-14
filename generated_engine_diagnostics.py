@@ -5,6 +5,7 @@ engine validator remains the execution gate. Paths, codes and messages are
 static software descriptions; details belong only in the authoring request,
 never in a learner-facing error or log.
 """
+from clinical_core_defaults import CORE_VERSION
 from generated_physiology import VOLUME_FIELDS, validate as validate_physiology
 from clinical_physiology import exposure_effect
 from generated_engine import (
@@ -65,7 +66,7 @@ def collect_declarative_issues(case):
         add("ENGINE_MODEL", "engine", "A declarative clinical engine is required.")
         return issues
     engine = case["engine"]
-    if engine.get("model") != MODEL:
+    if engine.get("model") not in {MODEL, CORE_VERSION} or (engine.get("model") == CORE_VERSION and not engine.get("core_profile")):
         add("ENGINE_MODEL", "engine.model", "Use the supported declarative engine model.", expected=MODEL)
     observed = case.get("observable", {})
     baseline_ok = isinstance(observed, dict) and OBSERVED_FIELDS <= set(observed)
@@ -98,7 +99,7 @@ def collect_declarative_issues(case):
     if not horizon_ok:
         add("HORIZON", "engine.horizon_min", "Use a whole-number horizon from 1 through 240 minutes.")
     rules = engine.get("response_rules")
-    if not isinstance(rules, list) or not 1 <= len(rules) <= 64:
+    if not isinstance(rules, list) or not (0 if engine.get("core_profile") else 1) <= len(rules) <= 64:
         add("RESPONSE_RULES", "engine.response_rules", "Include 1 through 64 explicit response rules.")
     usable_rules = []
     identifiers = set()

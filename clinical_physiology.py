@@ -1,9 +1,9 @@
 """Shared clinical physiology recovered from main/IA.
 
-The legacy profile preserves its coefficients exactly. ContextVar callbacks keep
-randomness and display formatting scoped to one invocation/session. Generated
-profiles use the shared, parameterized numerical primitives below; never infer a
-legacy hidden state from a diagnosis or learner reasoning.
+Original and generated encounters execute these same transitions and coupled
+updates. ContextVar callbacks keep randomness and formatting scoped to each
+invocation. Generated cases explicitly author their initial physiology drivers;
+learner reasoning and diagnosis labels never choose hidden treatment effects.
 """
 from copy import deepcopy
 from contextvars import ContextVar
@@ -564,6 +564,7 @@ def update_dynamic_rhythm(state, minutes=1):
             + 3 * (dobutamine / (1.0 + dobutamine))
             + 2 * (norepi / (1.0 + norepi))
             - 22 * nodal
+            + state.get("physiology_inputs", {}).get("hr", 0)
         )
         o["hr"] = int(round(0.82 * o["hr"] + 0.18 * clamp(target, 50, 145)))
 
@@ -576,7 +577,7 @@ def norepinephrine_normalized(state):
     units = tr.get("norepinephrine_units")
     if units == "mcg/kg/min":
         return clamp(rate / 0.10, 0.0, 5.0)
-    return clamp(rate / 10.0, 0.0, 5.0)
+    return clamp(rate / (0.10 * state.get("patient_weight_kg", 100.0)), 0.0, 5.0)
 
 
 def dobutamine_normalized(state):
@@ -585,12 +586,14 @@ def dobutamine_normalized(state):
         return 0.0
     rate = tr.get("dobutamine_rate", 0.0) or 0.0
     # 5 mcg/kg/min = 1.0 normalized. Supports approximately 2.5-20.
+    if tr.get("dobutamine_units") == "mcg/min":
+        rate /= state.get("patient_weight_kg", 70.0)
     return clamp(rate / 5.0, 0.0, 4.0)
 
 
 def oxygen_support_fraction(state):
     tr = state["treatments"]
-    support = 0.0
+    support = 0.85 if tr.get("bag_mask") else 0.0
 
     if tr.get("oxygen"):
         flow = tr.get("oxygen_flow_lpm", 0.0) or 0.0
@@ -644,7 +647,7 @@ def recompute_coupled_physiology(state, elapsed_min=1):
     exogenous_vascular_support = 0.30 * (norepi / (1.0 + 0.18 * norepi))
     nitrate_effect = h.get("nitroglycerin_effect", 0.0) if state["treatments"].get("nitroglycerin") else 0.0
     dobutamine_effect = h.get("dobutamine_effect", 0.0)
-    procedural_sedation_effect = h.get("procedural_sedation_effect", 0.0)
+    procedural_sedation_effect = h.get("procedural_sedation_effect", 0.0) + state.get("physiology_inputs", {}).get("sedation_effect", 0)
     # Beta-1 inotropy with a modest beta-2 vasodilatory component. The latter means
     # dobutamine can improve flow while leaving MAP unchanged or slightly lower.
     # v0.6.0.13: dobutamine is primarily an inotrope, with enough beta-2
@@ -1000,6 +1003,9 @@ def recompute_coupled_physiology(state, elapsed_min=1):
         + 7.0 * (h["sympathetic_drive"] - 0.85)
         - 10.0 * (h["pulmonary_congestion"] - 0.05)
     )
+    inputs = state.get("physiology_inputs", {})
+    map_target += inputs.get("map", 0)
+    pulse_pressure += inputs.get("pulse_pressure", 0)
     map_target = max(18.0, min(125.0, map_target))
     pulse_pressure = max(20.0, min(65.0, pulse_pressure))
 
@@ -1023,7 +1029,7 @@ def recompute_coupled_physiology(state, elapsed_min=1):
             0.10 * procedural_sedation_effect,
         )
     )
-    target_spo2 = 94.0 - 16.0 * respiratory_burden + 7.0 * support
+    target_spo2 = 94.0 - 16.0 * respiratory_burden + 7.0 * support + state.get("physiology_inputs", {}).get("spo2", 0)
     target_spo2 = max(72.0, min(100.0, target_spo2))
     o["spo2"] = int(round(o["spo2"] + 0.45 * (target_spo2 - o["spo2"])))
 
@@ -1034,6 +1040,8 @@ def recompute_coupled_physiology(state, elapsed_min=1):
 
     # ---- Observable perfusion surfaces ----
     update_perfusion_surface(state)
+    if state.get("physiology_inputs", {}).get("crt"):
+        o["crt"] = max(1, min(12, o["crt"] + state["physiology_inputs"]["crt"]))
 
     # Cerebral status follows sustained low flow / oxygen delivery rather than BP alone.
     # This lets severe myocardial depression eventually produce clinically visible
@@ -1116,6 +1124,7 @@ def recompute_coupled_physiology(state, elapsed_min=1):
         and o["sbp"] < 65
         and h.get("low_flow_burden", 0.0) >= 0.65
     ):
+        o["electrical_rhythm"] = o.get("rhythm", "Sinus rhythm")
         h["cardiac_arrest"] = True
         h["terminal_collapse"] = True
         o["pulse_present"] = False
@@ -1239,6 +1248,8 @@ def apply_natural_disease(state, minutes):
     whole_minutes = int(round(minutes))
 
     for _ in range(whole_minutes):
+        if state.get("physiology_inputs", {}).get("respiratory_rate"):
+            state["observable"]["respiratory_rate"] = max(4, min(60, state.get("baseline_respiratory_rate", 20) + state["physiology_inputs"]["respiratory_rate"]))
         # Pharmacology evolves continuously with time.
         advance_beta_pharmacodynamics(state, 1)
 
@@ -1360,7 +1371,7 @@ def apply_natural_disease(state, minutes):
         update_fluid_phenotype(state)
 
         # Untreated infectious physiology also evolves continuously.
-        if not state["treatments"]["antibiotics"]:
+        if state.get("physiology_parameters", {}).get("infection_active", True) and not state["treatments"]["antibiotics"]:
             h = state["hidden"]
             h["inflammatory_drive"] = clamp(h["inflammatory_drive"] + 0.015 / 15.0)
             h["vasomotor_tone"] = clamp(h["vasomotor_tone"] - 0.012 / 15.0)
@@ -1398,7 +1409,8 @@ def fluid_transition(state, volume_ml, fluid_type="Crystalloid", rate="standard"
     # Administration itself is saturating: larger single boluses do not create
     # linearly larger useful intravascular effects.
     bolus_units = max(0.0, volume_ml) / 500.0
-    retained_increment = 0.135 * (1.0 - math.exp(-0.72 * bolus_units))
+    delivered_before = state.get("_fluid_delivery", {}).get("before_ml", 0) / 500.0
+    retained_increment = 0.135 * (math.exp(-0.72 * delivered_before) - math.exp(-0.72 * (delivered_before + bolus_units)))
 
     # Later boluses still add intravascular volume, but their conversion into useful
     # effective filling falls as Frank-Starling reserve is exhausted. A nonresponsive
@@ -1492,7 +1504,7 @@ def beta_blocker_transition(state, agent, dose_mg, route):
     else:
         ref_dose = 1.0 if route == "IV" else 20.0
 
-    dose_strength = clamp(dose_mg / max(ref_dose, 0.1), 0.10, 2.5)
+    dose_strength = clamp(dose_mg / max(ref_dose, 0.1), 0.0, 2.5)
     route_factor = 1.0 if route == "IV" else 0.55
 
     # Standard IV reference dose contributes ~1.0 normalized effect-site unit.
@@ -1527,7 +1539,7 @@ def beta_blocker_transition(state, agent, dose_mg, route):
 def diltiazem_transition(state, dose_mg, route):
     h, tr = state["hidden"], state["treatments"]
     ref = 15.0 if route == "IV" else 60.0
-    strength = clamp(dose_mg / ref, 0.10, 2.5)
+    strength = clamp(dose_mg / ref, 0.0, 2.5)
     route_factor = 1.0 if route == "IV" else 0.55
     h["diltiazem_depot"] = clamp(h.get("diltiazem_depot", 0.0) + strength * route_factor, 0.0, 2.5)
     tr["diltiazem_total_mg"] += dose_mg
@@ -1537,7 +1549,7 @@ def diltiazem_transition(state, dose_mg, route):
 def amiodarone_transition(state, dose_mg, route):
     h, tr = state["hidden"], state["treatments"]
     ref = 150.0 if route == "IV" else 200.0
-    strength = clamp(dose_mg / ref, 0.10, 3.0)
+    strength = clamp(dose_mg / ref, 0.0, 3.0)
     route_factor = 1.0 if route == "IV" else 0.50
     h["amiodarone_depot"] = clamp(h.get("amiodarone_depot", 0.0) + strength * route_factor, 0.0, 3.0)
     tr["amiodarone_total_mg"] += dose_mg
@@ -1594,13 +1606,13 @@ def dobutamine_transition(state, rate, units="mcg/kg/min", operation="start"):
         _record_treatment_timing(state, "dobutamine", "stop")
         # Pharmacodynamic effect washes out rather than disappearing instantly.
         return {"duration_min": 1, "support_type": "dobutamine", "operation": "stop",
-                "rate": old_rate, "units": "mcg/kg/min"}
+                "rate": old_rate, "units": tr.get("dobutamine_units", "mcg/kg/min")}
 
-    if units != "mcg/kg/min":
-        # This build models weight-based dobutamine dosing. A bare start defaults to 5.
-        units = "mcg/kg/min"
+    if units not in {"mcg/kg/min", "mcg/min"}:
+        raise ValueError("Unsupported dobutamine units.")
     rate = float(rate if rate is not None else 5.0)
-    rate = clamp(rate, 2.5, 20.0)
+    if not math.isfinite(rate) or rate <= 0:
+        raise ValueError("Dobutamine requires a positive finite rate.")
     tr["dobutamine"] = True
     tr["dobutamine_rate"] = rate
     tr["dobutamine_units"] = units
@@ -1641,7 +1653,7 @@ def furosemide_transition(state, dose_mg, route):
     h, tr = state["hidden"], state["treatments"]
     tr["furosemide_total_mg"] = tr.get("furosemide_total_mg", 0.0) + dose_mg
     # IV onset is clinically meaningful over the next 10-20 min; PO is slower.
-    potency = clamp(dose_mg / 40.0, 0.25, 2.0) * (1.0 if route == "IV" else 0.45)
+    potency = clamp(dose_mg / 40.0, 0.0, 2.0) * (1.0 if route == "IV" else 0.45)
     h["furosemide_effect"] = clamp(h.get("furosemide_effect", 0.0) + potency, 0.0, 2.5)
     return {"duration_min": 2 if route == "IV" else 5, "agent": "furosemide", "dose_mg": dose_mg, "route": route}
 
@@ -1837,11 +1849,12 @@ def procedural_sedation_transition(state, medications):
     )
     h["procedural_sedation_effect"] = clamp(
         h.get("procedural_sedation_effect", 0.0) + effect,
-        0.15,
+        0.0,
         1.50,
     )
     h["procedural_sedation_minutes"] = 0.0
-    o["mental_status"] = "Sedated"
+    if h["procedural_sedation_effect"] >= 0.35:
+        o["mental_status"] = "Sedated"
     return {
         "duration_min": 1,
         "support_type": "procedural_sedation",
@@ -1856,9 +1869,10 @@ def cardioversion_transition(state, energy_j):
     tr["cardioversions"] += 1
     pre_rhythm = o["rhythm"]
     # Deterministic vertical slice: >=150 J converts; 100-149 J converts on the first attempt; <100 J fails.
-    success = energy_j >= 150 or (100 <= energy_j < 150 and tr["cardioversions"] == 1)
-    if success and pre_rhythm == "AF":
-        o["rhythm"] = "Sinus rhythm"
+    target = state.get("cardioversion_target")
+    success = (target is not None and target != pre_rhythm) or (pre_rhythm == "AF" and (energy_j >= 150 or (100 <= energy_j < 150 and tr["cardioversions"] == 1)))
+    if success:
+        o["rhythm"] = target or "Sinus rhythm"
         h["af_burden"] = 0.05
         h["minutes_since_cardioversion"] = 0
         h["af_recurrence_pressure"] = 0.0

@@ -1,7 +1,7 @@
 """Authoring-only checks for missing executable management paths.
 
 Reject incomplete new cases rather than fabricate response curves at runtime.
-Frozen earlier cases remain replayable under their original declarations.
+Saved earlier case records remain intact; production requires a native profile.
 """
 import re
 from family_parser import _AGENTS, _normalize
@@ -9,6 +9,17 @@ from family_parser import _AGENTS, _normalize
 
 def coverage_issues(case):
     rules = case.get('engine', {}).get('response_rules', [])
+    if case.get('engine',{}).get('core_profile'):
+        from coupled_encounter import native
+        paths=_normalize(' '.join(case.get('faculty',{}).get('anticipated_management_paths',[])))
+        missing=[]
+        for kind,agents in _AGENTS.items():
+            for agent,pattern in agents.items():
+                if native({'type':kind,'agent':agent,'route':'IV'}):
+                    continue
+                if re.search(r'\b(?:'+pattern+r')\b',paths) and not any(r.get('action_type')==kind and r.get('agent')==agent for r in rules):
+                    missing.append(kind+': '+agent)
+        return [{'code':'MANAGEMENT_COVERAGE','path':'engine.response_rules','message':'Declare responses for disease-specific treatments outside the shared main/IA core.','details':{'missing':missing}}] if missing else []
     kinds = {r.get('action_type') for r in rules}
     missing = []
     engine = case.get('engine',{})

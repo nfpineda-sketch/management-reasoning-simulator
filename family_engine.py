@@ -592,6 +592,9 @@ def _release_diagnostic(state, summary, available_time):
 def execute_family_bundle(state, parsed):
     """Execute a fully validated bundle atomically; all clocks are simulated minutes."""
     if state.get("engine_family") == "generated":
+        from coupled_encounter import enabled
+        if not enabled(_case(state)):
+            return _failure("This saved case predates the shared main/IA engine. Generate a new case to continue; the original record is preserved.")
         from generated_engine import execute_generated_bundle
         return execute_generated_bundle(state, parsed)
     if state.get("engine_family") not in FAMILIES:

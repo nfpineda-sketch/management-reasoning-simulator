@@ -5,6 +5,7 @@ elapsed simulation time and explicitly administered exposure. Learner reasoning,
 bias labels, grades and post-hoc reflections cannot affect physiology. This is a
 teaching model requiring clinical review, not a clinical prediction engine.
 """
+from clinical_core_defaults import CORE_VERSION
 from copy import deepcopy
 import math
 import generated_physiology as physiology
@@ -69,7 +70,10 @@ def validate_declarative_case(case):
     if not isinstance(case, dict) or not isinstance(case.get("engine"), dict):
         raise ValueError("A declarative clinical engine is required.")
     engine = case["engine"]
-    if engine.get("model") != MODEL:
+    if engine.get("core_profile") is not None:
+        from coupled_encounter import validate_profile
+        validate_profile(engine["core_profile"])
+    if engine.get("model") not in {MODEL, CORE_VERSION} or (engine.get("model") == CORE_VERSION and not engine.get("core_profile")):
         raise ValueError("Unsupported generated trajectory model.")
     observed = case.get("observable", {})
     if not isinstance(observed, dict) or not OBSERVED_FIELDS <= set(observed):
@@ -94,7 +98,7 @@ def validate_declarative_case(case):
     if not _finite(horizon) or not 1 <= horizon <= 240 or int(horizon) != horizon:
         raise ValueError("The generated trajectory needs a finite supported time horizon.")
     rules = engine.get("response_rules")
-    if not isinstance(rules, list) or not 1 <= len(rules) <= 64:
+    if not isinstance(rules, list) or not (0 if engine.get("core_profile") else 1) <= len(rules) <= 64:
         raise ValueError("The generated trajectory needs explicit treatment response rules.")
     identifiers = set()
     for rule in rules:
@@ -582,6 +586,9 @@ def _collect_diagnostic(state, diagnostic, duration):
 
 def execute_generated_bundle(state, parsed):
     """Atomically execute validated supported orders against an immutable case spec."""
+    from coupled_encounter import enabled, execute
+    if enabled(_case(state)):
+        return execute(state, parsed)
     if state.get("engine_family") != "generated":
         return _failure("This encounter does not have a generated clinical trajectory.")
     try:
@@ -675,7 +682,9 @@ def _current_examination_overrides(state):
         if conditions and all(c.get("field") in values and c.get("operator") in _COMPARATORS
                               and _COMPARATORS[c["operator"]](values[c["field"]], c["value"])
                               for c in conditions):
-            overrides.update(deepcopy(rule.get("examination", {})))
+            from coupled_encounter import enabled, examination_updates
+            updates = examination_updates(rule, state.get("observable", {})) if enabled(_case(state)) else deepcopy(rule.get("examination", {}))
+            overrides.update(updates)
     return overrides
 
 

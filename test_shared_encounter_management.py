@@ -184,7 +184,8 @@ def test_live_app_adapter_holds_and_completes_generated_fluid_bundle():
     class Session(dict):
         __getattr__ = dict.get
         __setattr__ = dict.__setitem__
-    session = Session(state=make_state(), pending_action=None)
+    from test_coupled_encounter import patient
+    session = Session(state=patient(), pending_action=None)
     namespace = {'st': SimpleNamespace(session_state=session)}
     tree = ast.parse(Path('app.py').read_text())
     functions = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name in {'execute_bundle', 'try_resolve_pending_action'}]
