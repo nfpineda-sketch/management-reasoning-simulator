@@ -1,4 +1,6 @@
-# Clinical encounter workspace v0.24.0
+# Clinical encounter workspace v0.24.1
+
+Image optimization: generation, edits and corrections now request low quality; the default visual reviewer uses minimal reasoning. Landscape framing, identity checks, background preparation and per-appearance caching remain active. Lower photographic detail is the tradeoff; live latency and total billed cost have not been benchmarked.
 
 See [v0.24.0 release notes](docs/RELEASE_v0.24.0.md): all newly generated encounters execute the complete shared main/IA physiological core through the v3 authoring contract. Generate a new case to use this engine; previous saved encounter records are preserved.
 

@@ -196,7 +196,7 @@ def generate_appearance(base_b64, state, api_key, model="gpt-image-1.5", client=
     reference = BytesIO(raw)
     reference.name = "original-patient." + {"PNG": "png", "JPEG": "jpg", "WEBP": "webp"}[image_format]
     request = dict(model=model, image=reference, prompt=prompt, size="1536x1024",
-                   quality="medium", output_format="png", n=1)
+                   quality="low", output_format="png", n=1)
     # GPT Image 2 inputs are already high fidelity and reject this parameter.
     if model in {"gpt-image-1.5", "gpt-image-1"}:
         request["input_fidelity"] = "high"

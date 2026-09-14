@@ -80,6 +80,7 @@ class AppearanceTests(unittest.TestCase):
         self.assertEqual(captured["reference_bytes"], base64.b64decode(base))
         self.assertEqual(captured["input_fidelity"], "high")
         self.assertEqual(captured["n"], 1)
+        self.assertEqual(captured["quality"], "low")
         self.assertIn("SAME patient", captured["prompt"])
         self.assertIn("heavy eyelids", captured["prompt"])
         self.assertEqual(current, before)

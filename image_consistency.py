@@ -258,13 +258,16 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
         "Return all nine checks and every visually uncertain domain. Do not omit a conflict because "
         "another domain is uncertain. This screen does not certify clinical realism."
     )
+    # The default reviewer returns nine bounded checks, not a long analysis.
+    # Keep other explicitly configured models' parameter contracts unchanged.
+    review_options = {"reasoning": {"effort": "minimal"}} if model in {"gpt-5-mini", "gpt-5-mini-2025-08-07"} else {}
     try:
         response = client.responses.create(
             model=model, instructions=instructions,
             input=[{"role": "user", "content": content}],
             text={"format": {"type": "json_schema", "name": "patient_image_consistency",
                              "strict": True, "schema": schema}},
-            max_output_tokens=4096, store=False)
+            max_output_tokens=4096, store=False, **review_options)
     except Exception as error:
         raise _provider_failure(error) from None
     for item in getattr(response, "output", ()) or ():

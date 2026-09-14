@@ -114,7 +114,7 @@ def generate_scene(state, api_key, model='gpt-image-1.5', client=None):
             from openai import OpenAI
             client = OpenAI(api_key=api_key, timeout=120, max_retries=0)
         result = client.images.generate(model=model, prompt=prompt,
-                                       size='1536x1024', quality='medium', output_format='png', n=1)
+                                       size='1536x1024', quality='low', output_format='png', n=1)
     except Exception as error:
         raise provider_image_error(error, 'CREATE') from None
     from patient_appearance import _validated_image

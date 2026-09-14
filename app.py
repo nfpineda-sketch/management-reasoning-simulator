@@ -10,7 +10,7 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-SIMULATOR_VERSION = "0.24.0-clinical-encounter"
+SIMULATOR_VERSION = "0.24.1-clinical-encounter"
 
 import importlib
 import generation_reload as _generation_reload

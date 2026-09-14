@@ -226,3 +226,13 @@ def test_missing_api_configuration_fails_closed(image, contract):
     with pytest.raises(ImageConsistencyError) as failure:
         inspect_image(image, contract, "")
     assert failure.value.reason_code == "not_configured"
+
+
+def test_default_screen_limits_reasoning_without_extra_calls(image, contract):
+    responses=Responses()
+    run(image,contract,responses)
+    assert len(responses.calls)==1
+    assert responses.calls[0]['reasoning']=={'effort':'minimal'}
+    custom=Responses()
+    run(image,contract,custom,model='configured-vision-model')
+    assert 'reasoning' not in custom.calls[0]

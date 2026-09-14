@@ -132,7 +132,7 @@ def repair_scene(candidate_b64, state, api_key, model="gpt-image-1.5", *,
             stream.name = name + "." + {"PNG": "png", "JPEG": "jpg", "WEBP": "webp"}[image_format]
             images.append(stream)
         request = dict(model=model, image=images, prompt=prompt, size="1536x1024",
-                       quality="medium", output_format="png", n=1)
+                       quality="low", output_format="png", n=1)
         if model in {"gpt-image-1.5", "gpt-image-1"}:
             request["input_fidelity"] = "high"
         try:

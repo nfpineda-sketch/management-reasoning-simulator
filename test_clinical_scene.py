@@ -18,6 +18,7 @@ def test_image_request_uses_only_visual_facts_and_validates_bytes():
     assert 'PRIVATE' not in images.request['prompt']
     assert '64-year-old woman' in images.request['prompt']
     assert state==before and images.request['n']==1
+    assert images.request['quality']=='low'
 
 
 def test_history_selection_cannot_invent_content_or_return_exam():

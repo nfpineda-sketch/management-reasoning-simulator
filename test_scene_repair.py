@@ -76,7 +76,7 @@ def test_real_sdk_sends_correct_images_once_and_preserves_request_contract(
     fields = {name: body.decode() for name, filename, body in calls[0][2] if filename is None}
     files = [(name, filename, body) for name, filename, body in calls[0][2] if filename is not None]
     assert fields["model"] == model and fields["size"] == "1536x1024"
-    assert fields["quality"] == "medium" and fields["output_format"] == "png" and fields["n"] == "1"
+    assert fields["quality"] == "low" and fields["output_format"] == "png" and fields["n"] == "1"
     assert fields.get("input_fidelity") == ("high" if high_fidelity else None)
     assert files[0] == ("image[]", "rejected-candidate.png", base64.b64decode(candidate))
     assert len(files) == (2 if with_reference else 1)
