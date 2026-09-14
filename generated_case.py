@@ -60,7 +60,12 @@ Active support/infusions are removed when stopped; completed boluses persist up 
 and disposition do not magically deliver therapy. Nondefinitive treatment must not instantly cure the cause. Include explicit zero-
 effect rules (with explanation) for plausible supported orders whose modeled observation window contains no short-term effect.
 Orders with no matching rule are honestly unavailable, so support enough plausible management paths to avoid making one correct
-path compulsory. No learner grading, bias name, answer quality, reward or punishment may influence physiology. At least two state
+path compulsory. Explicitly include oxygen response rules for Nasal cannula, Simple mask and Non-rebreather mask,
+including in hypoxemic cases; these devices are distinct matchers and one rule does not cover all three.
+Include a crystalloid fluid response, appropriate to this patient's physiology (including harm or no benefit when appropriate).
+Include relevant alternative drug agents/routes, not just the preferred therapy. Author each effect separately; never copy an
+oxygen-device effect to a different device or invent benefit for an inappropriate intervention.
+No learner grading, bias name, answer quality, reward or punishment may influence physiology. At least two state
 rules must describe clinically observable change during deterioration AND improvement; each rule is applied to actual current
 numeric fields, all conditions must match, and later matching rules override earlier ones. Mental status/ECG/exam changes need a
 physiological explanation. A changed mental-status category must include updated Neurological examination findings. Pulse-less arrest is outside this execution model; keep pulse_present true. Set horizon_min 30–180.

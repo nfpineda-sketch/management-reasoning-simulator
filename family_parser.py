@@ -10,6 +10,8 @@ from __future__ import annotations
 import re
 import unicodedata
 
+from shared_order_quantities import parse_volume_ml
+
 
 NEW_TREATMENT_ACTIONS = frozenset({
     "fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator",
@@ -59,7 +61,7 @@ _DIAGNOSTICS = {
 }
 _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
-    r"(?P<verb>give|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
+    r"(?P<verb>want|give|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
     r"stop|discontinue|increase|decrease|titrate|continue|change|set|switch|transfuse|nebulize|"
     r"consult|call|activate|admit|transfer|intubate|ventilate|reassess|re-assess|recheck|reevaluate|"
     r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|iniciar|inicio|inicie|infundir|indicar|indico|"
@@ -69,7 +71,7 @@ _COMMAND = re.compile(
     r"hospitalizar|ingresar|trasladar|intubar|intubo|ventilar|reevaluar|reevaluo|revalorar)\b\s*"
 )
 _DIAG_VERBS = {
-    "order", "request", "obtain", "check", "measure", "send", "get", "perform", "do",
+    "want", "order", "request", "obtain", "check", "measure", "send", "get", "perform", "do",
     "solicitar", "solicito", "solicite", "pedir", "pido", "medir", "mido", "controlar",
     "control", "obtener", "realizar", "hacer", "recheck",
 }
@@ -83,13 +85,13 @@ _CONDITIONAL = re.compile(
 )
 _NEGATION = re.compile(r"^(?:please\s+)?(?:do not|don't|dont|never|avoid|no|not|sin|evitar|evito)\b")
 _OXYGEN_DEVICES = (
-    ("nasal cannula", r"nasal cannula|canula nasal|naricera|nasal prongs|nc"),
+    ("nasal cannula", r"nasal cann?ula|canula nasal|naricera|nasal prongs|nc"),
     ("non-rebreather mask", r"non[- ]rebreather(?: mask)?|non[- ]rebreathing mask|nrb|mascarilla(?:\s+con)?\s+reservorio"),
     ("simple mask", r"simple (?:face )?mask|mascarilla simple"),
     ("room air", r"room air|aire ambiente"),
 )
-_OXYGEN_MENTION = r"\b(?:oxygen|oxigeno|o2|nasal cannula|canula nasal|naricera|nasal prongs|nc|non[- ]rebreather|non[- ]rebreathing|nrb|simple mask|mascarilla|room air|aire ambiente)\b"
-_FLOW = r"(-?\d+(?:\.\d+)?)\s*(?:l\s*/\s*min|lpm|liters?\s*/\s*min|litres?\s*/\s*min|litros?\s*/\s*min)\b"
+_OXYGEN_MENTION = r"\b(?:oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nasal prongs|nc|non[- ]rebreather|non[- ]rebreathing|nrb|simple mask|mascarilla|room air|aire ambiente)\b"
+_FLOW = r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(?:l\s*/\s*min|lpm|lts?\s*/\s*min|(?:lts?|l)(?![\w/]|\s*/)|liters?\s*/\s*min|litres?\s*/\s*min|litros?\s*/\s*min)\b"
 
 
 def _normalize(text):
@@ -122,7 +124,7 @@ def _route(text):
 
 
 def _amount(text, units):
-    matches = list(re.finditer(r"(?<![\w.])(-?\d+(?:\.\d+)?)\s*(" + units + r")\b", text))
+    matches = list(re.finditer(r"(?<![\w.])(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(" + units + r")\b", text))
     if len(matches) != 1:
         return None, None
     return float(matches[0][1]), matches[0][2]
@@ -162,7 +164,7 @@ def _operation(verb):
 
 
 def _settings(text, name):
-    match = re.search(r"\b" + name + r"\s*(?:of|de|=|at|a)?\s*(-?\d+(?:\.\d+)?)\s*(%)?", text)
+    match = re.search(r"\b" + name + r"\s*(?:of|de|=|at|a)?\s*(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(%)?", text)
     if not match:
         return None
     value = float(match[1])
@@ -238,7 +240,7 @@ def _parse_piece(piece, inherited=None):
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
-        shorthand = r"(?:bipap|cpap|niv|vni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cannula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|nitroglycerin|nitroglicerina|nitro)"
+        shorthand = r"(?:bipap|cpap|niv|vni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|nitroglycerin|nitroglicerina|nitro)"
         medication_start = any(re.match(r"(?:" + pattern + r")\b", body) for agents in _AGENTS.values() for pattern in agents.values())
         quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
         if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start):
@@ -247,7 +249,7 @@ def _parse_piece(piece, inherited=None):
             return [], None
 
     medication_count = sum(bool(re.search(r"\b(?:" + pattern + r")\b", body)) for agents in _AGENTS.values() for pattern in agents.values())
-    has_fluid = bool(re.search(r"\b(?:saline|ns|ringer|ringers|lr|crystalloid|cristaloides?|salino|suero fisiologico|solucion fisiologica)\b", body))
+    has_fluid = bool(re.search(r"\b(?:saline|ns|sf|ringer|ringers|lr|crystalloid|cristaloides?|salino|suero fisiologico|solucion fisiologica)\b", body))
     if medication_count > 1 or (medication_count and has_fluid):
         return [_clarification("Separate each medication or fluid with its own dose and route so the order is unambiguous.")], verb
 
@@ -282,7 +284,7 @@ def _parse_piece(piece, inherited=None):
         return [{"type": "niv", "mode": mode, "ipap_cmh2o": ipap, "epap_cmh2o": epap, "fio2_percent": _settings(body, "fio2"), "operation": _operation(verb)}], verb
     if re.search(r"\b(?:norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro)\b", body):
         kind = "nitroglycerin" if re.search(r"\b(?:nitroglycerin|nitroglicerina|nitro)\b", body) else "norepinephrine"
-        rate_matches = list(re.finditer(r"(-?\d+(?:\.\d+)?)\s*(mcg|ug|mg)\s*/\s*(kg\s*/\s*)?(min(?:ute)?|h(?:r|our)?)\b", body))
+        rate_matches = list(re.finditer(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg)\s*/\s*(kg\s*/\s*)?(min(?:ute)?|h(?:r|our)?)\b", body))
         if len(rate_matches) > 1 or (_operation(verb) == "adjust" and re.search(r"\b(?:by|en)\s+-?\d", body)):
             return [_clarification("Specify a single absolute target infusion rate; a relative change or several rates is ambiguous.")], verb
         rate_match = rate_matches[0] if rate_matches else None
@@ -302,12 +304,18 @@ def _parse_piece(piece, inherited=None):
     if re.search(r"\b(?:prbcs?|packed red (?:blood )?cells|blood|sangre|globulos rojos|concentrad[oa]s? de hematies|hematies)\b", body):
         units, _ = _amount(body, r"units?|unidades?|u")
         return [{"type": "blood", "units": units}], verb
-    if re.search(r"\b(?:saline|normal saline|ns|ringer|lactated ringers?|lr|crystalloid|cristaloides?|salino|suero fisiologico|solucion fisiologica|fluid|fluids|volumen)\b", body):
-        volume, units = _amount(body, r"ml|cc|liters?|litres?|litros?|l")
+    if re.search(r"\b(?:saline|normal saline|ns|sf|sf|ringer|lactated ringers?|lr|crystalloid|cristaloides?|salino|suero fisiologico|solucion fisiologica|fluid|fluids|volumen)\b", body):
+        volume, units = _amount(body, r"ml|cc|lts?|liters?|litres?|litros?|l")
         if volume is not None and units not in {"ml", "cc"}:
             volume *= 1000
+        if volume is None:
+            # Reuse the earlier branch's named-fluid shorthand and word volumes.
+            # Never use its first-match fallback to resolve conflicting quantities.
+            numbers = re.findall(r"(?<![\w.])(?:\d+(?:\.\d+)?|\.\d+)", body)
+            if len(numbers) <= 1 and not re.search(r"-\s*\d|/\s*(?:min|h|hr)", body):
+                volume = parse_volume_ml(body)
         fluid_type = None
-        if re.search(r"\b(?:saline|ns|salino|suero fisiologico|solucion fisiologica)\b", body):
+        if re.search(r"\b(?:saline|ns|sf|salino|suero fisiologico|solucion fisiologica)\b", body):
             fluid_type = "normal saline"
         elif re.search(r"\b(?:ringer|ringers|lr)\b", body):
             fluid_type = "lactated Ringer's"

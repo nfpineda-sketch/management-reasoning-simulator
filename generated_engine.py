@@ -436,7 +436,13 @@ def execute_generated_bundle(state, parsed):
     for action in actions:
         selected = [rule for rule in rules if _matches(rule, action)]
         if action["type"] not in _ADMIN | {"diagnostic", "reassessment"} and not selected and not _stopping(action):
-            return _failure("That specific treatment, dose unit, route or device has no defined response in this generated encounter. It has not been executed.")
+            details = [str(action.get("agent") or action["type"]).replace("_", " ")]
+            field = _DOSE_FIELDS.get(action["type"])
+            if field and action.get(field) is not None:
+                units = action.get("units") or {"volume_ml": "mL", "flow_lpm": "L/min", "dose_mg": "mg", "dose_g": "g", "rate_mcg_min": "mcg/min"}.get(field, field)
+                details.append(f"{action[field]:g} {units}")
+            details.extend(str(action[key]) for key in ("route", "device") if action.get(key))
+            return _failure("Order understood: " + ", ".join(details) + ". This generated case has no modeled response for this intervention. Rewording the order will not resolve this case limitation. No orders in this submission were executed.")
         matching.append(selected)
     candidate = deepcopy(state)
     _initialize(candidate)
