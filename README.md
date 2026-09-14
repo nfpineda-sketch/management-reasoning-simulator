@@ -1,4 +1,6 @@
-# Clinical encounter workspace v0.24.2
+# Clinical encounter workspace v0.24.3
+
+v0.24.3 separates observed monitoring devices from respiratory interfaces using a typed inventory. Mild pallor that cannot be distinguished from natural pigmentation is labelled as a photographic limitation. A retained rejected candidate from the same case and appearance can be screened again on upgrade before requesting another generated image.
 
 v0.24.2 verifies executor dependency releases during hot updates, even when the author already reports the current version. Visual screening now requests specific observations for each rejection and distinguishes unresolved mild moisture from excessive sweat; rejected-image details retain those observations.
 

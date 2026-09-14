@@ -11,6 +11,7 @@ from io import BytesIO
 from PIL import Image
 
 from visual_observations import VISUAL_CHOICES
+from visual_review_contract import OBSERVATIONS_SCHEMA, interpret
 from scene_errors import CHECK_IDS, SceneImageError, provider_image_error
 
 _CONTRACT_KEYS = {
@@ -140,7 +141,7 @@ def _result(payload, expected_contract=None):
         if not isinstance(payload, str) or len(payload) > 20_000:
             raise ValueError("Invalid result text")
         parsed = json.loads(payload, object_pairs_hook=_unique_object)
-        if type(parsed) is not dict or set(parsed) not in ({"checks", "uncertain_checks"}, {"checks", "uncertain_checks", "conflict_evidence"}):
+        if type(parsed) is not dict or set(parsed) not in ({"checks", "uncertain_checks"}, {"checks", "uncertain_checks", "conflict_evidence"}, {"checks", "uncertain_checks", "conflict_evidence", "observations"}):
             raise ValueError("Invalid result fields")
         checks, uncertain = parsed["checks"], parsed["uncertain_checks"]
         evidence = parsed.get("conflict_evidence", [])
@@ -162,6 +163,8 @@ def _result(payload, expected_contract=None):
                 raise ValueError("Every rejection needs one specific observation and no passing check may have a conflict.")
         if len(uncertain) != len(set(uncertain)):
             raise ValueError("Repeated uncertainty check")
+        if "observations" in parsed:
+            interpret(parsed['observations'], _contract(expected_contract), checks, uncertain, evidence)
     except (ValueError, TypeError, RecursionError):
         raise ImageConsistencyError("invalid_response") from None
     # A positive boolean means no definite conflict; uncertainty is separate.
@@ -171,6 +174,8 @@ def _result(payload, expected_contract=None):
     permissible = {}
     if expected_contract is not None:
         expected = _contract(expected_contract)
+        if expected['skin_color'] == 'mild pallor':
+            permissible['skin_color'] = 'mild_skin_color'
         if expected['diaphoresis'] == 'mild':
             permissible['diaphoresis'] = 'mild_skin_moisture'
         if expected['work_of_breathing'] in ('mildly increased', 'increased', 'moderately increased'):
@@ -225,6 +230,7 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
     schema = {
         "type": "object", "additionalProperties": False,
         "properties": {
+            "observations": OBSERVATIONS_SCHEMA,
             "checks": {"type": "object", "additionalProperties": False,
                        "properties": {name: {"type": "boolean"} for name in CHECK_IDS},
                        "required": list(CHECK_IDS)},
@@ -235,9 +241,16 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
                                "finding": {"type": "string", "minLength": 1, "maxLength": 240}},
                 "required": ["check", "finding"]}},
         },
-        "required": ["checks", "uncertain_checks", "conflict_evidence"],
+        "required": ["checks", "uncertain_checks", "conflict_evidence", "observations"],
     }
     instructions = (
+        "First inventory the actual visible devices in observations, independently of whether you think they are allowed. "
+        "A finger pulse oximeter, blood pressure cuff and ECG electrodes are MONITORS, never respiratory support "
+        "or an unrequested active treatment, even when connected and operating. They must not enter unexpected_findings. "
+        "Respiratory support means an actual interface at the nose/mouth/airway. A wall oxygen outlet is unconnected equipment. "
+        "For skin use natural_or_subtle_pallor when natural pigmentation and mild pallor cannot reliably be distinguished. "
+        "Do not describe ordinary warm skin tones as marked_flushing. No reference means you cannot establish a person's "
+        "pre-illness pigmentation. The application interprets these observations against the clinical targets. "
         "Review a fictional patient illustration against the supplied STATIC VISIBLE targets. "
         "This is image-content quality assurance, not diagnosis or examination of a real person. "
         "The input gives photographic features, not a request to establish consciousness, perfusion, "

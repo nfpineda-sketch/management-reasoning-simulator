@@ -33,9 +33,9 @@ generated_case.GENERATOR_VERSION = "0.17.1"
 encounter_generator.GENERATOR_VERSION = "0.17.0"
 curriculum_runtime.RUNTIME_VERSION = "0.17.1"
 
-assert refresh_generation_modules("0.24.2") is True
+assert refresh_generation_modules("0.24.3") is True
 # This is the guard used by app.py after the author stack has been refreshed.
-if curriculum_runtime.RUNTIME_VERSION != "0.24.2":
+if curriculum_runtime.RUNTIME_VERSION != "0.24.3":
     importlib.reload(curriculum_runtime)
 assert curriculum_runtime.generate_encounter is encounter_generator.generate_encounter
 assert generated_case.GeneratedCaseError is generated_case_schema.GeneratedCaseError
@@ -55,7 +55,7 @@ except generated_case.GeneratedCaseError:
     pass
 else:
     raise AssertionError("The UI error boundary must catch the current error class")
-assert refresh_generation_modules("0.24.2") is False
+assert refresh_generation_modules("0.24.3") is False
 ''')
 
 
@@ -64,13 +64,13 @@ def test_fresh_process_and_matching_release_do_not_reload():
 import sys
 from generation_reload import refresh_generation_modules
 assert "generated_case" not in sys.modules
-assert refresh_generation_modules("0.24.2") is False
+assert refresh_generation_modules("0.24.3") is False
 assert "generated_case" not in sys.modules
 import generated_case
 import encounter_generator
 author = generated_case.generate_ai_encounter
 error = generated_case.GeneratedCaseError
-assert refresh_generation_modules("0.24.2") is False
+assert refresh_generation_modules("0.24.3") is False
 assert generated_case.generate_ai_encounter is author
 assert generated_case.GeneratedCaseError is error
 ''')
@@ -117,7 +117,7 @@ assert scene_preparation.SceneJobs is scene_jobs.SceneJobs
 assert scene_preparation.screened_scene is scene_pipeline.screened_scene
 assert scene_pipeline.inspect_image is image_consistency.inspect_image
 assert patient_appearance.APPEARANCE_VERSION == 4
-assert scene_pipeline.SCENE_PIPELINE_VERSION == 9
+assert scene_pipeline.SCENE_PIPELINE_VERSION == 10
 assert clinical_scene.SCENE_RENDER_VERSION == 12
 assert resuscitation_room.ROOM_RENDER_VERSION == 8
 assert generation_reload._LOCK is old_lock
@@ -171,15 +171,15 @@ def test_current_generator_with_old_executor_is_reloaded_and_executes_native_ord
     run_isolated("""
 import generated_case, encounter_generator, generated_engine, family_engine
 from generation_reload import refresh_generation_modules
-assert generated_case.GENERATOR_VERSION == '0.24.2'
-assert encounter_generator.GENERATOR_VERSION == '0.24.2'
+assert generated_case.GENERATOR_VERSION == '0.24.3'
+assert encounter_generator.GENERATOR_VERSION == '0.24.3'
 def old_executor(*args):
     raise AssertionError('An outdated executor was reached')
 generated_engine.execute_generated_bundle=old_executor
 family_engine.execute_family_bundle=old_executor
 del generated_engine.EXECUTION_VERSION
 del family_engine.EXECUTION_VERSION
-assert refresh_generation_modules('0.24.2') is True
+assert refresh_generation_modules('0.24.3') is True
 from test_generated_case import AuthorClient, clean_base
 from family_parser import parse_family_actions
 s=generated_case.generate_ai_encounter('R1-05',clean_base(),client=AuthorClient(),seed=5)['state']
@@ -187,5 +187,5 @@ r=family_engine.execute_family_bundle(s,parse_family_actions('start oxygen 4 L/m
 assert r['executed'],r
 assert s['coupled_state']['treatments']['oxygen_flow_lpm']==4
 assert s['family_state']['fluid_delivered_ml']>0
-assert refresh_generation_modules('0.24.2') is False
+assert refresh_generation_modules('0.24.3') is False
 """)

@@ -12,7 +12,7 @@ from patient_appearance import appearance_state, generate_appearance
 from scene_errors import safe_image_error
 from scene_repair import repair_scene
 
-SCENE_PIPELINE_VERSION = 9
+SCENE_PIPELINE_VERSION = 10
 _LOG = logging.getLogger(__name__)
 
 
@@ -21,7 +21,7 @@ class ScreenedImage(str):
 
     def __new__(cls, encoded, limitations=()):
         value = super().__new__(cls, encoded)
-        value.limitations = tuple(x for x in limitations if x in ('mild_skin_moisture', 'breathing_effort'))
+        value.limitations = tuple(x for x in limitations if x in ('mild_skin_moisture', 'breathing_effort', 'mild_skin_color'))
         return value
 
 
@@ -96,3 +96,8 @@ def screened_appearance(reference, state, api_key, model, *, review_model="gpt-5
     except Exception as error:
         raise safe_image_error(error, "EDIT") from None
     return _screen_with_correction(candidate, state, api_key, model, review_model, reference, progress)
+
+
+def screened_existing_scene(candidate, state, api_key, model, *, review_model="gpt-5-mini", progress=None):
+    """Recheck the exact rejected appearance after a screening update, without creating it again."""
+    return _screen_with_correction(candidate, state, api_key, model, review_model, progress=progress)

@@ -141,6 +141,12 @@ def scene_image(state, events):
            SCENE_RENDER_VERSION, APPEARANCE_VERSION, SCENE_PIPELINE_VERSION)
     if st.session_state.get('_scene_identity') != key or '_scene_jobs' not in st.session_state:
         previous = st.session_state.get('_scene_jobs')
+        rejected = None
+        prior_identity = st.session_state.get('_scene_identity')
+        if previous is not None and isinstance(prior_identity, tuple) and prior_identity[:2] == key[:2]:
+            diagnostic = getattr(previous, 'diagnostic_candidate', None)
+            if callable(diagnostic):
+                rejected = diagnostic(appearance_signature(state))
         if previous is not None:
             discard = getattr(previous, 'discard', None)
             if callable(discard):
@@ -154,6 +160,10 @@ def scene_image(state, events):
         st.session_state['_scene_identity'] = key
         st.session_state['_scene_jobs'] = consume_prepared_scene(
             st.session_state, state, st.session_state.get('_attempt_id')) or SceneJobs()
+        if rejected and st.session_state['_scene_jobs'].base is None:
+            from scene_pipeline import screened_existing_scene
+            review_model = setting('MRS_IMAGE_REVIEW_MODEL', 'gpt-5-mini').strip() or 'gpt-5-mini'
+            st.session_state['_scene_jobs'].review_candidate = partial(screened_existing_scene, rejected, review_model=review_model)
         st.session_state['_scene_failure_notified'] = None
     jobs = st.session_state['_scene_jobs']
     signature = appearance_signature(state)
@@ -184,6 +194,8 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
     detail = scene_status_text(image_status) if not current else ''
     limitations = getattr(image_b64, 'limitations', ()) if current else ()
     limited_details = []
+    if 'mild_skin_color' in limitations:
+        limited_details.append('Mild pallor')
     if 'mild_skin_moisture' in limitations:
         limited_details.append('Skin moisture')
     if 'breathing_effort' in limitations:

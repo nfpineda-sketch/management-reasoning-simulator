@@ -15,6 +15,7 @@ _LOG = logging.getLogger(__name__)
 class SceneJobs:
     def __init__(self):
         self.base = None
+        self.review_candidate = None
         self.images = {}
         self.failed = set()
         self.pending = None
@@ -105,6 +106,7 @@ class SceneJobs:
         if pending is not None:
             pending[1].cancel()
         self.base = None
+        self.review_candidate = None
         self.images.clear()
         self.failed.clear()
         self._diagnostic_candidate = None
@@ -155,6 +157,9 @@ class SceneJobs:
                                          "queued": bool(progress_supported)}
         if self.base is None:
             function, args = initial, (frozen, api_key, model)
+            if self.review_candidate is not None:
+                function = self.review_candidate
+                self.review_candidate = None
         else:
             function, args = edit, (self.base, frozen, api_key, model)
         if progress_supported:

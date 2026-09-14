@@ -134,6 +134,8 @@ def test_moisture_exception_requires_explicitly_mild_finding(image, contract, de
 def test_mild_sweat_uncertainty_cannot_hide_other_uncertainty(image, contract, check):
     response = passing_result()
     response["uncertain_checks"] = ["diaphoresis", check]
+    if check == "skin_color":
+        contract["skin_color"] = "pallor"  # Definite pallor remains a required visual finding.
     with pytest.raises(ImageConsistencyError):
         run(image, contract, Responses(response))
 
