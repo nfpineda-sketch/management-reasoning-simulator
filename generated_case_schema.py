@@ -4,6 +4,8 @@ Clinical narratives and diagnoses are newly authored; executable capability is
 explicitly bounded. Model output is data, never Python, expressions, or code.
 Structural checks are software checks, not clinical validation.
 """
+EXECUTION_VERSION = "0.24.2"
+
 from copy import deepcopy
 import math
 

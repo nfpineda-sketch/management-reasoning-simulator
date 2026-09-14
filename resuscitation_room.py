@@ -125,6 +125,9 @@ def render_bedside_tools(state, events, render_event):
                 st.warning('Rejected illustration for troubleshooting only. Do not use it to interpret the clinical encounter.')
                 st.image(_validated_image(candidate)[0], caption='Rejected candidate — not the current patient image.')
                 st.caption(str(jobs.failure(appearance_signature(state)).get('reference', '')))
+                evidence = getattr(jobs, 'diagnostic_evidence', lambda signature: ())
+                for item in evidence(appearance_signature(state)):
+                    st.text(f"Reviewer observation · {item['check']}: {item['finding']}")
             show_image_issue()
         else:
             st.info('No rejected illustration is available for this appearance.')

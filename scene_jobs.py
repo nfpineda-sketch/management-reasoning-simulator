@@ -22,6 +22,7 @@ class SceneJobs:
         self._status_lock = Lock()
         self._discarded = False
         self._diagnostic_candidate = None
+        self._diagnostic_evidence = ()
 
     def diagnostic_candidate(self, signature):
         """Latest rejected image of this session's exact failed appearance only."""
@@ -30,6 +31,14 @@ class SceneJobs:
         if not self._discarded and signature in self.failed and record and record[0] == signature:
             return record[1]
         return None
+
+    def diagnostic_evidence(self, signature):
+        """Private reviewer observations, displayed as plain text, never executed."""
+        self.poll()
+        if (self._discarded or signature not in self.failed or not self._diagnostic_candidate
+                or self._diagnostic_candidate[0] != signature):
+            return ()
+        return deepcopy(self._diagnostic_evidence)
 
     def _stage(self, signature, stage):
         # Called by the background worker, never with Streamlit or patient data.
@@ -78,6 +87,7 @@ class SceneJobs:
             return False
         self.failed.discard(signature)
         self._diagnostic_candidate = None
+        self._diagnostic_evidence = ()
         with self._status_lock:
             self._statuses.pop(signature, None)
         return True
@@ -98,6 +108,7 @@ class SceneJobs:
         self.images.clear()
         self.failed.clear()
         self._diagnostic_candidate = None
+        self._diagnostic_evidence = ()
 
     def poll(self):
         if self.pending is None or not self.pending[1].done():
@@ -107,6 +118,7 @@ class SceneJobs:
         try:
             image = future.result()
             self._diagnostic_candidate = None
+            self._diagnostic_evidence = ()
             self.images[signature] = image
             if self.base is None:
                 self.base = image
@@ -118,6 +130,7 @@ class SceneJobs:
             candidate = getattr(failure, '_diagnostic_candidate', None)
             if isinstance(candidate, str):
                 self._diagnostic_candidate = (signature, candidate)
+            self._diagnostic_evidence = tuple(deepcopy(getattr(failure, 'conflict_evidence', ())))
             with self._status_lock:
                 stage = self._statuses.get(signature, {}).get("stage", "CREATE")
             error = safe_image_error(failure, stage)

@@ -1,4 +1,6 @@
-# Clinical encounter workspace v0.24.1
+# Clinical encounter workspace v0.24.2
+
+v0.24.2 verifies executor dependency releases during hot updates, even when the author already reports the current version. Visual screening now requests specific observations for each rejection and distinguishes unresolved mild moisture from excessive sweat; rejected-image details retain those observations.
 
 Image optimization: generation, edits and corrections now request low quality; the default visual reviewer uses minimal reasoning. Landscape framing, identity checks, background preparation and per-appearance caching remain active. Lower photographic detail is the tradeoff; live latency and total billed cost have not been benchmarked.
 

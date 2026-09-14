@@ -5,6 +5,8 @@ updates. ContextVar callbacks keep randomness and formatting scoped to each
 invocation. Generated cases explicitly author their initial physiology drivers;
 learner reasoning and diagnosis labels never choose hidden treatment effects.
 """
+EXECUTION_VERSION = "0.24.2"
+
 from copy import deepcopy
 from contextvars import ContextVar
 import math

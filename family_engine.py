@@ -6,6 +6,8 @@ magnitudes and timings are simulation parameters requiring faculty review. Bias
 selection, learner scores and diagnostic labels never drive patient physiology.
 Orders are validated as a whole before an isolated copy is executed and committed.
 """
+EXECUTION_VERSION = "0.24.2"
+
 from copy import deepcopy
 import math
 

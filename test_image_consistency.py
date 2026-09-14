@@ -236,3 +236,27 @@ def test_default_screen_limits_reasoning_without_extra_calls(image, contract):
     custom=Responses()
     run(image,contract,custom,model='configured-vision-model')
     assert 'reasoning' not in custom.calls[0]
+
+
+def test_specific_rejection_evidence_is_retained_for_troubleshooting(image, contract):
+    response=passing_result()
+    response['checks']['no_unrequested_signs']=False
+    response['conflict_evidence']=[{'check':'no_unrequested_signs','finding':'Active oxygen mask over the nose; expected no respiratory interface.'}]
+    with pytest.raises(ImageConsistencyError) as caught:
+        run(image,contract,Responses(response))
+    assert caught.value.conflict_evidence==tuple(response['conflict_evidence'])
+
+
+def test_reviewer_cannot_accept_while_reporting_a_visible_conflict(image, contract):
+    response=passing_result()
+    response['conflict_evidence']=[{'check':'diaphoresis','finding':'Prominent sweat droplets on forehead.'}]
+    with pytest.raises(ImageConsistencyError) as caught:
+        run(image,contract,Responses(response))
+    assert caught.value.reason_code=='invalid_response'
+
+
+def test_uncertain_mild_sweat_needs_no_repair_and_preserves_limitation(image, contract):
+    response=passing_result();response['uncertain_checks']=['diaphoresis'];response['conflict_evidence']=[]
+    result=run(image,contract,Responses(response))
+    assert result['accepted']
+    assert result['limitations']==['mild_skin_moisture']

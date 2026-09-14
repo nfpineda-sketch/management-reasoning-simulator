@@ -5,6 +5,8 @@ elapsed simulation time and explicitly administered exposure. Learner reasoning,
 bias labels, grades and post-hoc reflections cannot affect physiology. This is a
 teaching model requiring clinical review, not a clinical prediction engine.
 """
+EXECUTION_VERSION = "0.24.2"
+
 from clinical_core_defaults import CORE_VERSION
 from copy import deepcopy
 import math

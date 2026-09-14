@@ -140,15 +140,26 @@ def _result(payload, expected_contract=None):
         if not isinstance(payload, str) or len(payload) > 20_000:
             raise ValueError("Invalid result text")
         parsed = json.loads(payload, object_pairs_hook=_unique_object)
-        if type(parsed) is not dict or set(parsed) != {"checks", "uncertain_checks"}:
+        if type(parsed) is not dict or set(parsed) not in ({"checks", "uncertain_checks"}, {"checks", "uncertain_checks", "conflict_evidence"}):
             raise ValueError("Invalid result fields")
         checks, uncertain = parsed["checks"], parsed["uncertain_checks"]
+        evidence = parsed.get("conflict_evidence", [])
+        if type(evidence) is not list or len(evidence) > len(CHECK_IDS):
+            raise ValueError("Invalid conflict evidence")
+        if any(type(item) is not dict or set(item) != {"check", "finding"}
+               or item["check"] not in CHECK_IDS or type(item["finding"]) is not str
+               or not 1 <= len(item["finding"].strip()) <= 240 for item in evidence):
+            raise ValueError("Invalid conflict evidence")
         if type(checks) is not dict or set(checks) != set(CHECK_IDS):
             raise ValueError("Incomplete checks")
         if any(type(value) is not bool for value in checks.values()):
             raise ValueError("Invalid boolean")
         if type(uncertain) is not list or any(type(x) is not str or x not in CHECK_IDS for x in uncertain):
             raise ValueError("Invalid uncertainty check")
+        if "conflict_evidence" in parsed:
+            domains = [item["check"] for item in evidence]
+            if len(domains) != len(set(domains)) or set(domains) != {key for key, value in checks.items() if not value}:
+                raise ValueError("Every rejection needs one specific observation and no passing check may have a conflict.")
         if len(uncertain) != len(set(uncertain)):
             raise ValueError("Repeated uncertainty check")
     except (ValueError, TypeError, RecursionError):
@@ -169,7 +180,10 @@ def _result(payload, expected_contract=None):
                 "limitations": [permissible[name] for name in uncertain]}
     failed = [name for name in CHECK_IDS if not checks[name]]
     if failed:
-        raise ImageConsistencyError("mismatch", failed)
+        failure = ImageConsistencyError("mismatch", failed)
+        failure.conflict_evidence = tuple({"check": item["check"], "finding": item["finding"].strip()}
+                                         for item in evidence if item["check"] in failed)
+        raise failure
     if uncertain:
         raise ImageConsistencyError("uncertain", uncertain)
     return {"accepted": True, "checks": checks, "uncertain_checks": []}
@@ -215,8 +229,13 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
                        "properties": {name: {"type": "boolean"} for name in CHECK_IDS},
                        "required": list(CHECK_IDS)},
             "uncertain_checks": {"type": "array", "items": {"type": "string", "enum": list(CHECK_IDS)}},
+            "conflict_evidence": {"type": "array", "maxItems": len(CHECK_IDS), "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {"check": {"type": "string", "enum": list(CHECK_IDS)},
+                               "finding": {"type": "string", "minLength": 1, "maxLength": 240}},
+                "required": ["check", "finding"]}},
         },
-        "required": ["checks", "uncertain_checks"],
+        "required": ["checks", "uncertain_checks", "conflict_evidence"],
     }
     instructions = (
         "Review a fictional patient illustration against the supplied STATIC VISIBLE targets. "
@@ -255,6 +274,13 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
         "For bag-mask support, necessary gloved clinician hands and mask coverage of mouth/nose are "
         "allowed; eyes and upper face must remain visible. A manual resuscitation bag is not a "
         "non-rebreather reservoir or NIV mask. Do not permit extra people. "
+        "For each false check, conflict_evidence must describe the specific visible contradiction, "
+        "its location and the expected target. Category names alone are not evidence. Return an empty "
+        "array when no definite conflict is visible. For mild diaphoresis, a lack of resolvable skin "
+        "moisture is uncertainty, not a conflict: set that check true and list it as uncertain. "
+        "Reject that target only for clearly excessive sweat, such as prominent beads or soaking. "
+        "For no_unrequested_signs identify the actual unrequested clinical finding or active intervention; "
+        "ordinary electrodes, cuffs, unconnected equipment, incidental text and skin highlights do not qualify. "
         "Return all nine checks and every visually uncertain domain. Do not omit a conflict because "
         "another domain is uncertain. This screen does not certify clinical realism."
     )

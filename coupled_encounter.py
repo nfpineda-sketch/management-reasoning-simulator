@@ -5,6 +5,8 @@ through the same transitions, natural disease, pressure/flow, brain and rhythm
 functions as the original cases. Extra-domain responses enter the shared engine
 as explicit inputs; they do not overwrite its output after a tick.
 """
+EXECUTION_VERSION = "0.24.2"
+
 from copy import deepcopy
 import math
 import random
