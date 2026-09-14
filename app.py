@@ -10,14 +10,13 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-SIMULATOR_VERSION = "0.17.3-clinical-encounter"
+SIMULATOR_VERSION = "0.17.4-clinical-encounter"
 
 import importlib
 import generation_reload as _generation_reload
-# v0.17.2 processes have the shared lock but not the visual refresh helper yet.
-# Upgrade that bootstrap module under its existing lock, preserving lock identity.
+# Upgrade cached bootstrap dependency lists under their existing shared lock.
 with _generation_reload._LOCK:
-    if not callable(getattr(_generation_reload, "refresh_visual_modules", None)):
+    if getattr(_generation_reload, 'RELOAD_VERSION', None) != SIMULATOR_VERSION.split('-')[0]:
         importlib.reload(_generation_reload)
     _generation_reload.refresh_generation_modules(SIMULATOR_VERSION.split("-")[0])
     _generation_reload.refresh_visual_modules()

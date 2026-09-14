@@ -86,8 +86,8 @@ def test_scene_and_edit_are_screened_with_the_visible_contract(monkeypatch, stat
 
 
 @pytest.mark.parametrize("failure_mode", ["mismatch", "uncertain", "false_result"])
-def test_rejected_initial_candidate_never_enters_cache_or_retries(monkeypatch, state, pool, failure_mode, caplog):
-    generated, inspected = [], []
+def test_rejected_initial_candidate_never_enters_cache_or_requeues(monkeypatch, state, pool, failure_mode, caplog):
+    generated, inspected, repaired = [], [], []
 
     def generate(*args):
         generated.append(args)
@@ -99,8 +99,13 @@ def test_rejected_initial_candidate_never_enters_cache_or_retries(monkeypatch, s
             return {"accepted": False}
         raise ImageConsistencyError(failure_mode, ("expression",))
 
+    def repair(candidate, *args, **kwargs):
+        repaired.append(candidate)
+        return 'PRIVATE_REJECTED_CORRECTION'
+
     monkeypatch.setattr(clinical_scene, "generate_scene", generate)
     monkeypatch.setattr(scene_pipeline, "inspect_image", inspect)
+    monkeypatch.setattr(scene_pipeline, "repair_scene", repair)
     jobs = scene_jobs.SceneJobs()
     signature = appearance_signature(state)
     request = lambda: jobs.request(signature, state, "PRIVATE_KEY", "image-model",
@@ -112,7 +117,9 @@ def test_rejected_initial_candidate_never_enters_cache_or_retries(monkeypatch, s
     assert jobs.base is None and not jobs.images and signature in jobs.failed
     request()
     request()
-    assert len(pool.calls) == len(generated) == len(inspected) == 1
+    assert len(pool.calls) == len(generated) == 1
+    assert len(repaired) == (1 if failure_mode == 'mismatch' else 0)
+    assert len(inspected) == 1 + len(repaired)
     assert "PRIVATE" not in caplog.text
 
 
@@ -132,6 +139,7 @@ def test_edits_keep_original_reference_and_never_publish_a_rejected_revision(mon
     monkeypatch.setattr(clinical_scene, "generate_scene", lambda *args: "approved-original")
     monkeypatch.setattr(scene_pipeline, "generate_appearance", edit)
     monkeypatch.setattr(scene_pipeline, "inspect_image", inspect)
+    monkeypatch.setattr(scene_pipeline, "repair_scene", lambda *args, **kwargs: 'still-rejected-correction')
     jobs = scene_jobs.SceneJobs()
 
     def request_current():

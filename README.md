@@ -1,4 +1,8 @@
-# Clinical encounter workspace v0.17.3
+# Clinical encounter workspace v0.17.4
+
+When the image screen identifies a definite visual mismatch, the app now makes
+one targeted correction and screens the full result again. Only an accepted
+image enters the scene. See [v0.17.4](docs/RELEASE_v0.17.4.md).
 
 The initial patient image now starts while the compiled case receives its
 independent clinical review. It remains private until approval and successful

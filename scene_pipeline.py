@@ -1,7 +1,8 @@
 """Only screened current-state images may enter the encounter's image cache.
 
 Generation and screening run in one background job using its frozen snapshot.
-No clinical clock advances, retries or learner evaluation occur in this layer.
+One targeted correction may follow a complete screen's known visual mismatch.
+No clinical clock advances or learner evaluation occur in this layer.
 An automated screen can miss errors; it does not constitute clinical validation.
 """
 import logging
@@ -9,8 +10,9 @@ import logging
 from image_consistency import ImageConsistencyError, inspect_image
 from patient_appearance import appearance_state, generate_appearance
 from scene_errors import safe_image_error
+from scene_repair import repair_scene
 
-SCENE_PIPELINE_VERSION = 2
+SCENE_PIPELINE_VERSION = 3
 _LOG = logging.getLogger(__name__)
 
 
@@ -41,6 +43,30 @@ def _screen(candidate, state, api_key, review_model, reference=None, progress=No
     return candidate
 
 
+def _screen_with_correction(candidate, state, api_key, model, review_model, reference=None, progress=None):
+    """Correct a known visual conflict once; every acceptance check still applies.
+
+    Missing, refused, incomplete or uncertain review results do not authorize an
+    edit. Both rejected candidates stay local to this frozen job, never in the
+    session's approved-image cache. A second rejection propagates without loops.
+    """
+    try:
+        return _screen(candidate, state, api_key, review_model, reference, progress)
+    except ImageConsistencyError as failure:
+        if failure.reason_code != 'mismatch' or not failure.failed_checks:
+            raise
+        checks = failure.failed_checks
+    _progress(progress, 'REPAIR')
+    try:
+        corrected = repair_scene(candidate, state, api_key, model,
+                                 failed_checks=checks, reference_b64=reference)
+    except Exception as failure:
+        raise safe_image_error(failure, 'REPAIR') from None
+    # For an evolving patient the approved original, never a rejected candidate,
+    # remains the identity reference. Inspect ALL domains, not only the failures.
+    return _screen(corrected, state, api_key, review_model, reference, progress)
+
+
 def screened_scene(state, api_key, model, *, review_model="gpt-5-mini", progress=None):
     from clinical_scene import generate_scene
     _progress(progress, "CREATE")
@@ -48,7 +74,7 @@ def screened_scene(state, api_key, model, *, review_model="gpt-5-mini", progress
         candidate = generate_scene(state, api_key, model)
     except Exception as error:
         raise safe_image_error(error, "CREATE") from None
-    return _screen(candidate, state, api_key, review_model, progress=progress)
+    return _screen_with_correction(candidate, state, api_key, model, review_model, progress=progress)
 
 
 def screened_appearance(reference, state, api_key, model, *, review_model="gpt-5-mini", progress=None):
@@ -57,4 +83,4 @@ def screened_appearance(reference, state, api_key, model, *, review_model="gpt-5
         candidate = generate_appearance(reference, state, api_key, model)
     except Exception as error:
         raise safe_image_error(error, "EDIT") from None
-    return _screen(candidate, state, api_key, review_model, reference, progress)
+    return _screen_with_correction(candidate, state, api_key, model, review_model, reference, progress)

@@ -9,7 +9,7 @@ from html import escape
 from PIL import Image
 import streamlit as st
 
-SCENE_RENDER_VERSION = 8
+SCENE_RENDER_VERSION = 9
 
 # Only recorded patient-history topics are exposed to conversational retrieval.
 # The full case specification also includes diagnoses and teaching objectives.
@@ -197,10 +197,21 @@ def scene_status_text(status):
     if status.get('state') == 'failed':
         from scene_errors import SceneImageError
         error = SceneImageError(status.get('code'), status.get('stage'), status.get('failed_checks', ()))
-        return str(error)
+        detail = str(error)
+        if error.code == 'MISMATCH' and error.failed_checks:
+            domains = {'expression': 'expression', 'gaze_and_eyelids': 'gaze and eyelids',
+                       'skin_color': 'skin color', 'mottling': 'mottling', 'diaphoresis': 'sweating',
+                       'respiratory_posture': 'breathing posture', 'respiratory_support': 'respiratory equipment',
+                       'identity_and_framing': 'patient identity or framing',
+                       'no_unrequested_signs': 'unrequested visible findings'}
+            detail += ' Review flagged: ' + ', '.join(domains[key] for key in error.failed_checks) + '.'
+        if status.get('correction_attempted') is True:
+            detail += ' One image correction was attempted.'
+        return detail
     if status.get('state') == 'pending':
         labels = {'QUEUED': 'Waiting to prepare patient image', 'CREATE': 'Creating patient image',
-                  'EDIT': 'Updating patient appearance', 'SCREEN': 'Checking patient appearance'}
+                  'EDIT': 'Updating patient appearance', 'REPAIR': 'Correcting patient image',
+                  'SCREEN': 'Checking patient appearance'}
         stage = 'QUEUED' if status.get('queued') is True else status.get('stage')
         label = labels.get(stage, 'Preparing patient image') if isinstance(stage, str) else 'Preparing patient image'
         elapsed = status.get('elapsed_seconds')

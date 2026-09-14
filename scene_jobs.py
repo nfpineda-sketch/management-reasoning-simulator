@@ -30,6 +30,8 @@ class SceneJobs:
             record = self._statuses.get(signature)
             if not self._discarded and record and record["state"] == "pending":
                 record.update(stage=stage, queued=False)
+                if stage == 'REPAIR':
+                    record['correction_attempted'] = True
 
     def _finish(self, signature, state, error=None):
         with self._status_lock:

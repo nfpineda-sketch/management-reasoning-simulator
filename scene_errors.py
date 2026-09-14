@@ -5,7 +5,7 @@ CHECK_IDS = (
     "respiratory_posture", "respiratory_support", "identity_and_framing",
     "no_unrequested_signs",
 )
-STAGES = frozenset({"CREATE", "EDIT", "SCREEN"})
+STAGES = frozenset({"CREATE", "EDIT", "REPAIR", "SCREEN"})
 _MESSAGES = {
     "CONFIG": "Patient image generation is not configured.",
     "AUTH": "The patient image service could not authenticate.",
