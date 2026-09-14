@@ -5,7 +5,8 @@ from family_parser import _normalize, _route, _amount, _medication, _COMMAND, _N
 
 _FIELDS = {'fluid': ('volume_ml', 'fluid_type'), 'cardioversion': ('energy_j',),
            'norepinephrine': ('rate', 'units'), 'nitroglycerin': ('rate_mcg_min',),
-           'oxygen': ('device', 'flow_lpm')}
+           'dobutamine': ('rate','units'), 'niv': ('mode','epap_cmh2o','fio2_percent'),
+           'intubation': ('ventilator_mode','fio2_percent','peep_cmh2o'), 'oxygen': ('device', 'flow_lpm')}
 
 
 def missing_fields(a):
@@ -14,12 +15,16 @@ def missing_fields(a):
         fields = ('dose_mg', 'route')
     elif fields is None and 'dose_g' in a:
         fields = ('dose_g', 'route')
+    if a.get('type') == 'niv' and str(a.get('mode','')).lower() == 'bipap':
+        fields = (*fields, 'ipap_cmh2o')
     return [k for k in (fields or ()) if a.get(k) is None]
 
 
 def hold_incomplete_bundle(parsed):
+    parsed = deepcopy(parsed)
+    parsed['actions'] = [deepcopy(a.get('pending_action', a)) for a in parsed.get('actions', [])]
     indices = [i for i,a in enumerate(parsed.get('actions', [])) if missing_fields(a)]
-    if len(indices) != 1 or any(a.get('type') == 'clarification' for a in parsed.get('actions', [])):
+    if not indices or any(a.get('type') == 'clarification' for a in parsed.get('actions', [])):
         return None
     return {'type': 'family_bundle', 'parsed': deepcopy(parsed), 'index': indices[0]}
 
@@ -50,7 +55,20 @@ def complete_bundle(pending, text):
         if supplied.get('type') == 'clarification':
             return {'clarification': supplied['message']}
     else:
-        return None
+        prefix = {'oxygen': 'start oxygen ', 'norepinephrine': 'start norepinephrine ', 'nitroglycerin': 'start nitroglycerin ', 'dobutamine': 'start dobutamine ', 'niv':'start NIV ', 'intubation':'intubate '}.get(a['type'])
+        if not prefix:
+            return None
+        unit_only = re.fullmatch(r'(?:mcg|ug)\s*/\s*(?:kg\s*/\s*)?min', body)
+        candidate_text = prefix + ('1 ' if unit_only else '') + body
+        candidates = parse_family_actions(candidate_text)['actions']
+        if len(candidates) != 1:
+            return None
+        supplied = candidates[0].get('pending_action', candidates[0])
+        if unit_only:
+            supplied.pop('rate', None)
+            supplied.pop('rate_mcg_min', None)
+        if supplied.get('type') == 'clarification':
+            return {'clarification': supplied['message']}
     changed = False
     for k in missing:
         if supplied.get(k) is not None:

@@ -10,6 +10,33 @@ def complete_active_order(state, raw):
     a = deepcopy(raw)
     kind = a.get('type')
     tr = state.get('treatments', {})
+    if kind == 'repeat_order':
+        history = tr.get('order_history', [])
+        eligible = [item for item in history if item.get('type') in {'fluid', 'blood', 'beta_blocker', 'diltiazem', 'amiodarone', 'diuretic', 'antibiotics', 'procedural_sedation', 'steroid', 'dextrose', 'naloxone', 'aspirin', 'ppi', 'anticoagulation'}]
+        if a.get('target'):
+            eligible = [item for item in eligible if item['type'] == a['target']]
+        if a.get('fluid_type'):
+            eligible = [item for item in eligible if item.get('fluid_type') == a['fluid_type']]
+        if a.get('agent'):
+            eligible = [item for item in eligible if item.get('agent') == a['agent']]
+        if not eligible:
+            return a, 'No matching administered treatment is recorded. Specify the treatment, dose and route.'
+        if not a.get('target') and not a.get('agent') and len({(item['type'], item.get('agent')) for item in eligible}) > 1:
+            return a, 'Which previous treatment should be repeated? Specify the drug or fluid.'
+        resolved = deepcopy(eligible[-1])
+        if a.get('amount') is not None:
+            unit, value = a.get('amount_unit'), a['amount']
+            if resolved['type'] == 'fluid' and unit in {'ml','cc','l','lt'}:
+                resolved['volume_ml'] = value * (1000 if unit in {'l','lt'} else 1)
+            elif 'dose_mg' in resolved and unit in {'mg','g','mcg','ug'}:
+                resolved['dose_mg'] = value * (1000 if unit == 'g' else .001 if unit in {'mcg','ug'} else 1)
+            else:
+                return a, 'Specify compatible units for the treatment being repeated.'
+        if a.get('route') is not None:
+            resolved['route'] = a['route']
+        if a.get('administration_duration_min') is not None:
+            resolved['administration_duration_min'] = a['administration_duration_min']
+        return resolved, None
     if kind == 'respiratory_adjustment':
         if tr.get('invasive_ventilation'):
             a['type'] = kind = 'ventilator_adjustment'
@@ -28,14 +55,14 @@ def complete_active_order(state, raw):
         return a, None
     if a.get('operation') not in {'adjust', 'continue'}:
         return a, None
-    if kind in {'norepinephrine', 'nitroglycerin'}:
+    if kind in {'norepinephrine', 'nitroglycerin', 'dobutamine'}:
         if not tr.get(kind):
             return a, f'No active {kind} infusion is recorded. Specify a starting rate and units.'
-        if kind == 'norepinephrine':
+        if kind in {'norepinephrine', 'dobutamine'}:
             # A change of units without a rate is not a numerical conversion.
-            if a.get('rate') is None and a.get('units') not in (None, tr.get('norepinephrine_units')):
+            if a.get('rate') is None and a.get('units') not in (None, tr.get(kind + '_units')):
                 return a, 'Specify the rate in the new infusion units.'
-            for field, key in [('rate', 'norepinephrine_rate'), ('units', 'norepinephrine_units')]:
+            for field, key in [('rate', kind + '_rate'), ('units', kind + '_units')]:
                 if a.get(field) is None:
                     a[field] = tr.get(key)
         elif a.get('rate_mcg_min') is None:
@@ -62,6 +89,7 @@ def remember_validated_support(state, a):
     """Advance only validation context within a compound order, not physiology."""
     tr = state.setdefault('treatments', {})
     kind = a['type']
+    tr.setdefault('order_history', []).append(deepcopy(a))
     if kind == 'oxygen':
         tr.update(oxygen=a.get('device') != 'Room air', oxygen_device=a.get('device'), oxygen_flow_lpm=a.get('flow_lpm'))
         tr['niv'] = False
@@ -73,9 +101,9 @@ def remember_validated_support(state, a):
         tr.update(invasive_ventilation=True, oxygen=False, niv=False)
         state.setdefault('family_state', {})['invasive'] = True
         tr.update(ventilator_mode=a.get('ventilator_mode'), ventilator_fio2_percent=a.get('fio2_percent'), ventilator_peep_cmh2o=a.get('peep_cmh2o'))
-    elif kind in {'norepinephrine', 'nitroglycerin'}:
+    elif kind in {'norepinephrine', 'nitroglycerin', 'dobutamine'}:
         tr[kind] = a.get('operation') != 'stop'
-        if kind == 'norepinephrine':
-            tr.update(norepinephrine_rate=a.get('rate'), norepinephrine_units=a.get('units'))
+        if kind in {'norepinephrine', 'dobutamine'}:
+            tr.update({kind + '_rate': a.get('rate'), kind + '_units': a.get('units')})
         else:
             tr['nitroglycerin_rate_mcg_min'] = a.get('rate_mcg_min')

@@ -27,7 +27,7 @@ STUDIES = ("pocus", "lactate", "vbg", "abg", "basic_labs", "temperature", "poc_g
            "urinalysis", "blood_cultures", "troponin", "ctpa", "hemoglobin", "head_ct", "abdominal_ct",
            "cortisol", "thyroid_function", "ketones", "toxicology")
 ACTIONS = ("fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator", "steroid", "dextrose",
-           "naloxone", "blood", "ppi", "aspirin", "anticoagulation", "bag_mask", "intubation", "norepinephrine", "diuretic", "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment")
+           "naloxone", "blood", "ppi", "aspirin", "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic", "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment")
 
 
 def obj(properties):
@@ -60,12 +60,16 @@ STATE_TEXT = {"mental_status": enum(("Alert", "Drowsy", "Obtunded", "Unresponsiv
               "rhythm": enum(tuple(RHYTHMS)), "ecg_profile": enum(PROFILES), "visual": VISUAL}
 NUMERIC_PAIRS = array(obj({"field": enum(NUMERIC_FIELDS), "value": NUMBER}), maximum=13)
 EXAM = array(obj({"area": enum(EXAM_AREAS), "finding": TEXT}), minimum=1, maximum=6)
-CONDITION = obj({"field": enum(NUMERIC_FIELDS), "operator": enum(("lt", "lte", "gt", "gte")), "value": NUMBER})
+CONDITION = obj({"field": enum(NUMERIC_FIELDS + ("elapsed_min", "fluid_delivered_ml")), "operator": enum(("lt", "lte", "gt", "gte")), "value": NUMBER})
 RESPONSE_RULE = obj({
     "id": SHORT, "action_type": enum(ACTIONS), "agent": nullable(SHORT), "route": nullable(SHORT),
     "units": nullable(SHORT), "device": nullable(SHORT),
     "dose_field": nullable(enum(("dose_mg", "dose_g", "volume_ml", "units", "rate", "rate_mcg_min", "dose", "flow_lpm"))),
     "settings": nullable(array(obj({"field": enum(("energy_j", "fio2_percent", "peep_cmh2o")), "value": NUMBER}), minimum=1, maximum=2)),
+    "interpolate_settings": nullable(BOOL),
+    "recovery_min": nullable({"type":"number", "minimum":1, "maximum":180}),
+    "mental_status_during": nullable(enum(("Sedated",))),
+    "mental_status_threshold": nullable({"type":"number", "exclusiveMinimum":0, "maximum":5}),
     "rhythm_after": nullable(enum(tuple(k for k,v in RHYTHMS.items() if v not in {"vf", "asystole"}))),
     "reference_dose": nullable({"type": "number", "exclusiveMinimum": 0, "maximum": 30000}),
     "onset_min": {"type": "integer", "minimum": 0, "maximum": 120},
@@ -99,8 +103,10 @@ CASE_SCHEMA = obj({
                    "initial_labs": obj({key: {"type": "number", "minimum": BOUNDS[key][0], "maximum": BOUNDS[key][1]} for key in LAB_NUMERIC}),
                    "untreated_drift_per_min": NUMERIC_PAIRS,
                    "response_rules": array(RESPONSE_RULE, minimum=2, maximum=24),
+                   "stable_diagnostics": array(enum(STUDIES), maximum=19),
                    "state_rules": array(obj({"id": SHORT, "when": array(CONDITION, minimum=1, maximum=6),
                                              "set": obj({key: nullable(value) for key, value in STATE_TEXT.items()}),
+                                             "diagnostic_updates": nullable(array(obj({"diagnostic": enum(STUDIES), "findings": array(obj({"field": enum(("lv","rv","ivc","lungs","pericardium","report")), "value": TEXT}), minimum=1, maximum=6)}), minimum=1, maximum=19)),
                                              "examination": nullable(EXAM)}), minimum=2, maximum=12)}),
     "faculty": obj({"diagnosis": TEXT, "management_focus": TEXT, "management_dilemma": TEXT,
                     "challenge_alignment": TEXT, "discriminating_findings": array(TEXT, minimum=2, maximum=8),
@@ -303,6 +309,13 @@ def compile_case(raw):
             if rule[key] is None:
                 rule.pop(key)
     for rule in engine["state_rules"]:
+        updates = rule.get("diagnostic_updates")
+        if updates is not None:
+            if len({u["diagnostic"] for u in updates}) != len(updates) or any(len({f["field"] for f in u["findings"]}) != len(u["findings"]) for u in updates):
+                raise ValueError("Duplicate dynamic diagnostic findings are not permitted.")
+            rule["diagnostic_updates"] = {u["diagnostic"]: _pairs(u["findings"], "field", "value") for u in updates}
+        else:
+            rule.pop("diagnostic_updates", None)
         rule["set"] = {key: value for key, value in rule["set"].items() if value is not None}
         if rule["examination"] is None:
             rule.pop("examination")

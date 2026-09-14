@@ -74,7 +74,10 @@ def test_sedation_shock_and_immediate_ecg_are_ordered_recorded_and_executed():
         rule('shock', 'cardioversion', {'hr': -34}, dose_field=None, reference_dose=None, settings={'energy_j': 200}, rhythm_after='sinus rhythm', max_exposure=1),
     ])
     result = execute(state, 'Give etomidate 8 mg IV; cardiovert 200 J; get ECG; reassess immediately')
-    assert [a['type'] for a in result['action_summaries']] == ['procedural_sedation', 'cardioversion', 'diagnostic']
+    assert [a['type'] for a in result['action_summaries']] == ['procedural_sedation', 'cardioversion']
+    assert state['sim_time'] == 0
+    assert state['pending_investigations'][0]['diagnostic_type'] == 'ecg'
+    execute(state, 'reassess in 1 minute')
     assert state['treatments']['administered_medications'][0]['dose_mg'] == 8
     assert state['treatments']['cardioversions'][0]['energy_j'] == 200
     assert state['observable']['rhythm'] == 'sinus rhythm'

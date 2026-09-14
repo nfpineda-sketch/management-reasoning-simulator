@@ -7,6 +7,7 @@ teaching model requiring clinical review, not a clinical prediction engine.
 """
 from copy import deepcopy
 import math
+from generated_response import response_progress, select_responses, diagnostic_overrides
 
 from family_engine import (
     _failure, _initialize as _initialize_orders, _order, _validate as _validate_orders,
@@ -23,16 +24,16 @@ BOUNDS = {
     "glucose_mg_dl": (10, 1000), "hemoglobin_g_dl": (1, 25), "lactate_mmol_l": (.1, 30),
     "pco2_mm_hg": (10, 150), "bicarbonate_mmol_l": (2, 60), "pao2_mm_hg": (10, 600),
 }
-_ACTIVE = frozenset({"oxygen", "niv", "bag_mask", "intubation", "ventilator_adjustment", "norepinephrine", "nitroglycerin"})
+_ACTIVE = frozenset({"oxygen", "niv", "bag_mask", "intubation", "ventilator_adjustment", "norepinephrine", "dobutamine", "nitroglycerin"})
 _RESPIRATORY = frozenset({"oxygen", "niv", "bag_mask", "intubation", "ventilator_adjustment"})
 _ADMIN = frozenset({"consult", "reperfusion_referral", "disposition"})
 _DOSE_FIELDS = {
     "beta_blocker": "dose_mg", "diltiazem": "dose_mg", "amiodarone": "dose_mg", "procedural_sedation": "dose_mg", "fluid": "volume_ml", "blood": "units", "dextrose": "dose_g", "naloxone": "dose_mg",
     "antibiotics": "dose_mg", "bronchodilator": "dose_mg", "steroid": "dose_mg",
     "ppi": "dose_mg", "aspirin": "dose_mg", "diuretic": "dose_mg", "anticoagulation": "dose",
-    "nitroglycerin": "rate_mcg_min", "norepinephrine": "rate", "oxygen": "flow_lpm",
+    "nitroglycerin": "rate_mcg_min", "norepinephrine": "rate", "dobutamine": "rate", "oxygen": "flow_lpm",
 }
-_DRUGS = frozenset({"beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "dextrose", "naloxone", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "anticoagulation", "nitroglycerin", "norepinephrine"})
+_DRUGS = frozenset({"beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "dextrose", "naloxone", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "anticoagulation", "nitroglycerin", "norepinephrine", "dobutamine"})
 _ACTIONS = frozenset(_DOSE_FIELDS) | _ACTIVE | {"cardioversion"}
 _COMPARATORS = {"lt": lambda a, b: a < b, "lte": lambda a, b: a <= b, "gt": lambda a, b: a > b, "gte": lambda a, b: a >= b, "eq": lambda a, b: a == b}
 _SET_FIELDS = frozenset({"mental_status", "work_of_breathing", "extremities", "peripheral_perfusion", "pulse_present", "rhythm", "ecg_profile", "visual"})
@@ -102,7 +103,7 @@ def validate_declarative_case(case):
                 raise ValueError(f"A response rule has an invalid {field} matcher.")
         if kind in _DRUGS and (not rule.get("agent") or not rule.get("route")):
             raise ValueError("Medication effects need an exact agent and route.")
-        if kind in {"norepinephrine", "anticoagulation"} and not rule.get("units"):
+        if kind in {"norepinephrine", "dobutamine", "anticoagulation"} and not rule.get("units"):
             raise ValueError("A variable-unit medication effect needs explicit dose units.")
         expected = _DOSE_FIELDS.get(kind)
         if expected:
@@ -118,6 +119,14 @@ def validate_declarative_case(case):
             raise ValueError("Response duration must be positive and supported.")
         if not _finite(rule.get("max_exposure")) or not 0 < rule["max_exposure"] <= 20:
             raise ValueError("Response exposure must have a finite positive cap.")
+        if rule.get("recovery_min") is not None:
+            if kind != "procedural_sedation" or not _finite(rule["recovery_min"]) or not 1 <= rule["recovery_min"] <= 180:
+                raise ValueError("Only sedation may define a finite recovery interval.")
+        if rule.get("mental_status_during") is not None:
+            if kind != "procedural_sedation" or rule["mental_status_during"] != "Sedated" or rule.get("recovery_min") is None or not _finite(rule.get("mental_status_threshold")) or not 0 < rule["mental_status_threshold"] <= rule["max_exposure"]:
+                raise ValueError("Sedation requires an explicit recovery interval and exposure threshold.")
+        if rule.get("interpolate_settings") not in (None, False, True) or (rule.get("interpolate_settings") and kind != "ventilator_adjustment"):
+            raise ValueError("Interpolation is restricted to authored ventilator grids.")
         _validate_procedure_rule(rule)
         _validate_response_capability(case, rule)
         _number_map(rule.get("delta"), "response delta")
@@ -132,10 +141,12 @@ def validate_declarative_case(case):
         times = {0, horizon}
         if response is not None:
             times.update({min(horizon, response["onset_min"]), min(horizon, response["onset_min"] + response["duration_min"])})
+        if response is not None and response.get("recovery_min") is not None:
+            times.add(min(horizon, response["onset_min"] + response["duration_min"] + response["recovery_min"]))
         for at in times:
             values = {key: number + at * drift.get(key, 0) for key, number in initial_values.items()}
             if response is not None:
-                progress = 1.0 if response["action_type"] == "cardioversion" else min(1, max(0, (at - response["onset_min"]) / response["duration_min"]))
+                progress = response_progress(at, response["onset_min"], response["duration_min"], response.get("recovery_min"), response["action_type"] == "cardioversion")
                 for key, delta in response["delta"].items():
                     if key in values:
                         values[key] += delta * response["max_exposure"] * progress
@@ -151,7 +162,7 @@ def validate_declarative_case(case):
         if not isinstance(rule, dict) or not isinstance(rule.get("when"), list) or not rule["when"]:
             raise ValueError("Observation changes must have physiological conditions.")
         for condition in rule["when"]:
-            if not isinstance(condition, dict) or condition.get("field") not in initialized or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
+            if not isinstance(condition, dict) or condition.get("field") not in initialized | {"elapsed_min", "fluid_delivered_ml"} or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
                 raise ValueError("Observation rules may read only declared numeric physiology.")
         values = rule.get("set", {})
         if not isinstance(values, dict) or set(values) - _SET_FIELDS:
@@ -169,6 +180,13 @@ def validate_declarative_case(case):
             raise ValueError("An observation rule selected an unsupported ECG morphology.")
         if not isinstance(rule.get("examination", {}), dict) or any(not isinstance(v, str) for v in rule.get("examination", {}).values()):
             raise ValueError("Examination updates must be authored descriptions.")
+    for rule in state_rules:
+        updates = rule.get("diagnostic_updates") or {}
+        if not isinstance(updates, dict) or set(updates) - set(case.get("investigations",{})):
+            raise ValueError("Diagnostic updates must refer to available investigations.")
+        for study, fields in updates.items():
+            if not isinstance(fields, dict) or set(fields) - {"lv","rv","lungs","ivc","pericardium","report"} or any(not isinstance(v,str) or not v.strip() for v in fields.values()):
+                raise ValueError("Diagnostic updates may change only explicit narrative findings, not numeric measurements.")
     studies = case.get("investigations", {})
     if not isinstance(studies, dict):
         raise ValueError("Investigations must be a dictionary.")
@@ -253,7 +271,7 @@ def _response_capability_probe(case, rule):
     field = rule.get("dose_field")
     if field:
         action[field] = rule["reference_dose"]
-    if kind in _DRUGS - {"norepinephrine", "nitroglycerin"}:
+    if kind in _DRUGS - {"norepinephrine", "dobutamine", "nitroglycerin"}:
         action["route"] = rule.get("route")
         if kind != "dextrose":  # The live dextrose parser emits a class and grams.
             action["agent"] = rule.get("agent")
@@ -267,9 +285,9 @@ def _response_capability_probe(case, rule):
         action.update(operation="start", mode="BiPAP", ipap_cmh2o=10, epap_cmh2o=5, fio2_percent=50)
     elif kind in {"intubation", "ventilator_adjustment"}:
         action.update(ventilator_mode="VC/AC", fio2_percent=50, peep_cmh2o=5)
-    elif kind in {"nitroglycerin", "norepinephrine"}:
+    elif kind in {"nitroglycerin", "norepinephrine", "dobutamine"}:
         action["operation"] = "start"
-        if kind == "norepinephrine":
+        if kind in {"norepinephrine", "dobutamine"}:
             action["units"] = rule.get("units")
     action.update(rule.get("settings") or {})
     if kind == "cardioversion":
@@ -305,7 +323,7 @@ def _matches(rule, action):
     if rule.get("agent") and rule["agent"].strip().lower() != _action_agent(action):
         return False
     if rule.get("route"):
-        route = action.get("route") or ("IV" if action["type"] in {"norepinephrine", "nitroglycerin"} else None)
+        route = action.get("route") or ("IV" if action["type"] in {"norepinephrine", "dobutamine", "nitroglycerin"} else None)
         if str(route).lower() != rule["route"].lower():
             return False
     if rule.get("units"):
@@ -335,24 +353,28 @@ def _record_effect(state, action, matching, summary):
         return
     for rule in matching:
         exposure = float(action[rule["dose_field"]]) / rule["reference_dose"] if rule.get("dose_field") else 1.0
-        consumed = 0 if kind in _ACTIVE else g["exposure"].get(rule["id"], 0)
+        exposure *= rule.get("_interpolation_weight", 1.0)
+        consumed = 0 if kind in _ACTIVE or rule.get("recovery_min") is not None else g["exposure"].get(rule["id"], 0)
         exposure = min(exposure, max(0, rule["max_exposure"] - consumed))
         if exposure <= 0:
             continue
         if kind not in _ACTIVE:
             g["exposure"][rule["id"]] = consumed + exposure
         duration = rule["duration_min"]
-        if kind in {"fluid", "blood", "dextrose"}:
+        if kind in {"fluid", "blood", "dextrose"} or action.get("administration_duration_min") is not None:
             duration = max(duration, summary["duration_min"])
         delivery_queue = 0
         if kind == "fluid":
             delivery_queue = max(0, state["family_state"]["pending_fluid_ml"] - action["volume_ml"]) / 50
         elif kind == "blood":
             delivery_queue = max(0, state["family_state"]["pending_blood_units"] - action["units"]) * 30
+        if summary.get("delivery_starts_at_min") is not None:
+            delivery_queue = summary["delivery_starts_at_min"] - g["elapsed"]
         g["events"].append({
             "rule_id": rule["id"], "action_type": kind, "started_at": g["elapsed"] + delivery_queue,
             "onset_min": rule["onset_min"], "duration_min": duration,
             "immediate": kind == "cardioversion", "rhythm_after": rule.get("rhythm_after"),
+            "recovery_min": rule.get("recovery_min"), "mental_status_during": rule.get("mental_status_during"), "mental_status_threshold": rule.get("mental_status_threshold"),
             "exposure": exposure, "delta": deepcopy(rule["delta"]),
         })
         if kind in _ACTIVE and rule["id"] in previous:
@@ -364,9 +386,7 @@ def _surface(state):
     engine, g, f = case["engine"], state["generated_state"], state["family_state"]
     values = {key: number + g["elapsed"] * engine.get("untreated_drift_per_min", {}).get(key, 0) for key, number in g["baseline_values"].items()}
     for event in g["events"]:
-        progress = min(1.0, max(0.0, (g["elapsed"] - event["started_at"] - event["onset_min"]) / event["duration_min"]))
-        if event.get("immediate"):
-            progress = 1.0
+        progress = response_progress(g["elapsed"] - event["started_at"], event["onset_min"], event["duration_min"], event.get("recovery_min"), event.get("immediate", False))
         for key, delta in event["delta"].items():
             if key in values:
                 values[key] += delta * event["exposure"] * progress
@@ -392,8 +412,9 @@ def _surface(state):
     for event in g["events"]:
         if event.get("rhythm_after") and event.get("immediate"):
             observed["rhythm"] = event["rhythm_after"]
+    condition_values = {**values, "elapsed_min": g["elapsed"], "fluid_delivered_ml": f["fluid_delivered_ml"]}
     for rule in engine.get("state_rules", []):
-        if all(_COMPARATORS[c["operator"]](values[c["field"]], c["value"]) for c in rule["when"]):
+        if all(_COMPARATORS[c["operator"]](condition_values[c["field"]], c["value"]) for c in rule["when"]):
             for key, value in rule.get("set", {}).items():
                 if key == "ecg_profile":
                     state["ecg_profile"] = value
@@ -402,6 +423,11 @@ def _surface(state):
                 else:
                     observed[key] = deepcopy(value)
             g["examination"].update(deepcopy(rule.get("examination", {})))
+    sedating = [e for e in g["events"] if e.get("mental_status_during") and e["exposure"] * response_progress(g["elapsed"]-e["started_at"], e["onset_min"], e["duration_min"], e.get("recovery_min")) >= e["mental_status_threshold"]]
+    if sedating:
+        # Do not describe an unresponsive patient as more awake due to sedation.
+        if observed.get("mental_status") not in {"Unresponsive", "Obtunded"}:
+            observed["mental_status"] = sedating[-1]["mental_status_during"]
     if f["invasive"]:
         observed["respiratory_support"] = "Invasive ventilation"
         observed["work_of_breathing"] = "Ventilator-supported"
@@ -419,11 +445,13 @@ def _minute(state):
     g, f, tr = state["generated_state"], state["family_state"], state["treatments"]
     g["elapsed"] += 1
     f["elapsed"] += 1
-    fluid, blood = min(50, f["pending_fluid_ml"]), min(1 / 30, f["pending_blood_units"])
-    f["pending_fluid_ml"] = max(0, f["pending_fluid_ml"] - fluid)
-    f["pending_blood_units"] = max(0, f["pending_blood_units"] - blood)
-    f["fluid_delivered_ml"] += fluid
-    f["blood_delivered_units"] += blood
+    from generated_delivery import advance_deliveries
+    if not advance_deliveries(state):
+        fluid, blood = min(50, f["pending_fluid_ml"]), min(1 / 30, f["pending_blood_units"])
+        f["pending_fluid_ml"] = max(0, f["pending_fluid_ml"] - fluid)
+        f["pending_blood_units"] = max(0, f["pending_blood_units"] - blood)
+        f["fluid_delivered_ml"] += fluid
+        f["blood_delivered_units"] += blood
     tr["total_crystalloid_ml"] = tr["cumulative_crystalloid_ml"] = round(f["fluid_delivered_ml"], 1)
     tr["packed_red_cells_units"] = round(f["blood_delivered_units"], 3)
     state["sim_time"] = int(state.get("sim_time", 0)) + 1
@@ -437,6 +465,7 @@ def _collect_diagnostic(state, diagnostic, duration):
     else:
         study = _case(state)["investigations"][diagnostic]
         result = deepcopy(study["result"])
+        result.update(diagnostic_overrides(state, diagnostic))
         bindings = diagnostic_bindings(_case(state), study)
         for field, source in bindings.items():
             result[field] = round(state["generated_state"]["values"][source], 2)
@@ -466,7 +495,7 @@ def execute_generated_bundle(state, parsed):
     rules = _case(state)["engine"]["response_rules"]
     matching = []
     for action in actions:
-        selected = [rule for rule in rules if _matches(rule, action)]
+        selected = select_responses(rules, action, _matches)
         if action["type"] not in _ADMIN | {"diagnostic", "reassessment"} and not selected and not _stopping(action):
             details = [str(action.get("agent") or action["type"]).replace("_", " ")]
             field = _DOSE_FIELDS.get(action["type"])
@@ -481,38 +510,43 @@ def execute_generated_bundle(state, parsed):
         matching.append(selected)
     candidate = deepcopy(state)
     _initialize(candidate)
-    summaries, pending = [], []
+    summaries = []
+    pending = candidate["generated_state"].setdefault("pending_diagnostics", [])
     reassess = None
     for action, selected in zip(actions, matching):
         if action["type"] == "reassessment":
             reassess = action["delay_min"]
         elif action["type"] == "diagnostic":
             delay = 1 if action["diagnostic"] == "ecg" else _case(candidate)["investigations"][action["diagnostic"]].get("duration_min", 0)
-            pending.append((delay, _collect_diagnostic(candidate, action["diagnostic"], delay)))
+            pending.append({"available_at": candidate["sim_time"] + delay, "summary": _collect_diagnostic(candidate, action["diagnostic"], delay)})
         else:
             summary = _order(candidate, action)
+            from generated_delivery import schedule_delivery
+            schedule_delivery(candidate, action, summary)
             _record_effect(candidate, action, selected, summary)
             summaries.append(summary)
             try:
                 _surface(candidate)
             except ValueError as error:
                 return _failure(str(error) + " No orders in this submission were executed.")
-    elapsed = max(max((delay for delay, _ in pending), default=0), reassess if reassess is not None else max((s["duration_min"] for s in summaries), default=0))
+    elapsed = reassess if reassess is not None else max(max((item["available_at"] - candidate["sim_time"] for item in pending), default=0), max((s["duration_min"] for s in summaries), default=0))
     if candidate["generated_state"]["elapsed"] + elapsed > _case(candidate)["engine"].get("horizon_min", 180):
         return _failure("This order extends beyond the generated scenario's supported time horizon. Please choose a shorter reassessment interval or finish the encounter.")
-    due = {}
-    for delay, summary in pending:
-        due.setdefault(delay, []).append(summary)
-    for summary in due.get(0, []):
-        summaries.append(_release_diagnostic(candidate, summary, candidate.get("sim_time", 0)))
+    def release_ready():
+        ready = [item for item in pending if item["available_at"] <= candidate["sim_time"]]
+        for item in ready:
+            summaries.append(_release_diagnostic(candidate, item["summary"], item["available_at"]))
+            pending.remove(item)
+    release_ready()
     try:
         for minute in range(1, elapsed + 1):
             _minute(candidate)
-            for summary in due.get(minute, []):
-                summaries.append(_release_diagnostic(candidate, summary, candidate["sim_time"]))
+            release_ready()
         _surface(candidate)
     except ValueError as error:
         return _failure(str(error) + " No orders in this submission were executed.")
+    # Public waiting status contains no result, private case data or diagnosis.
+    candidate["pending_investigations"] = [{"diagnostic_type": item["summary"]["diagnostic_type"], "available_at_min": item["available_at"], "collected_at_min": item["summary"]["result"].get("time_min", item["summary"]["result"].get("acquired_at_minutes", candidate["sim_time"]))} for item in pending]
     state.clear()
     state.update(candidate)
     return {"executed": True, "clarification": None, "action_summaries": summaries, "reassess_delay": reassess, "elapsed_min": elapsed}
@@ -520,7 +554,8 @@ def execute_generated_bundle(state, parsed):
 
 def _current_examination_overrides(state):
     """Identify descriptions explicitly authored for the current physiological state."""
-    values = state.get("generated_state", {}).get("values", {})
+    values = dict(state.get("generated_state", {}).get("values", {}))
+    values.update(elapsed_min=state.get("generated_state",{}).get("elapsed",0), fluid_delivered_ml=state.get("family_state",{}).get("fluid_delivered_ml",0))
     overrides = {}
     for rule in _case(state).get("engine", {}).get("state_rules", []):
         conditions = rule.get("when", [])

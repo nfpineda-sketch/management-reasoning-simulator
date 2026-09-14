@@ -10,7 +10,7 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-SIMULATOR_VERSION = "0.18.0-clinical-encounter"
+SIMULATOR_VERSION = "0.19.0-clinical-encounter"
 
 import importlib
 import generation_reload as _generation_reload
@@ -4736,7 +4736,8 @@ def try_resolve_pending_action(text):
     if pending.get("type") == "family_bundle":
         from pending_family_orders import complete_bundle
         resolution = complete_bundle(pending, text)
-        if resolution is None or resolution.get("parsed"):
+        from family_parser import _COMMAND, _normalize, _NEGATION
+        if (resolution and resolution.get("parsed")) or (resolution is None and (_COMMAND.match(_normalize(text)) or _NEGATION.match(_normalize(text)))):
             st.session_state.pending_action = None
         return resolution
 
@@ -6250,7 +6251,7 @@ REASONING_GATE_ACTION_TYPES = {
     "ventilator_adjustment", "ventilator_continuation", "dobutamine",
     "norepinephrine", "oxygen", "procedural_sedation", "cardioversion",
     "antibiotics", "disposition",
-    "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
+    "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
     "naloxone", "blood", "anticoagulation", "bag_mask", "consult",
 }
 
@@ -9966,6 +9967,9 @@ with st.container(key="encounter-console"):
             with st.expander("ECG", expanded=False):
                 st.caption("Acquire and compare 12-lead tracings using ECG above.")
 
+            for pending_study in st.session_state.state.get("pending_investigations", []):
+                from family_reports import TEST_LABELS
+                st.caption(f"{TEST_LABELS.get(pending_study['diagnostic_type'], pending_study['diagnostic_type'])}: pending · expected at {pending_study['available_at_min']} min")
             diagnostics = st.session_state.state.get("diagnostics", {}) or {}
             if st.session_state.state.get("engine_family") and diagnostics:
                 from family_reports import TEST_LABELS, format_result

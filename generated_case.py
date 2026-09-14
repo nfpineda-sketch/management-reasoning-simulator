@@ -15,7 +15,7 @@ from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
 from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.18.0"
+GENERATOR_VERSION = "0.19.0"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -69,6 +69,16 @@ Cardioversion and procedural_sedation are supported only with explicitly authore
 For cardioversion, dose_field/reference_dose must be null; settings must contain the exact energy_j;
 onset_min must be zero; rhythm_after describes the actual post-shock rhythm, including failure to convert.
 Energy is a matcher, never a linear efficacy multiplier. Include plausible alternative energies with independently authored outcomes.
+Set recovery_min, mental_status_during (Sedated), and mental_status_threshold explicitly for each sedation response.
+Numeric and sedating effects rise over duration_min and then return to baseline over recovery_min; do not model permanent sedation.
+The threshold is expressed in actual reference-dose exposure and must prevent tiny doses causing full sedation.
+For nonsedating rules these fields are null.
+State rules may use elapsed_min and fluid_delivered_ml in addition to physiological measurements. diagnostic_updates can update
+narrative POCUS findings (lv,rv,ivc,lungs,pericardium,report) with the current state; numeric lab values still use their bindings.
+For POCUS, provide state-dependent findings or list pocus in engine.stable_diagnostics only when its findings should truly remain stable.
+If intubation is a management path, provide at least four ventilator_adjustment grid corners with interpolate_settings=true,
+covering clinically plausible FiO2/PEEP bounds for this patient. All corners must share onset/duration/max_exposure.
+The runtime interpolates between complete grid corners, never beyond them. Other rules use interpolate_settings=null.
 For ventilator_adjustment, dose_field/reference_dose must be null and settings must contain exact fio2_percent and peep_cmh2o.
 For other actions settings and rhythm_after must be null. Sedation uses an exact drug, route and dose_mg exposure;
 authored effects must account for hemodynamic/respiratory consequences. Do not assume sedation merely because cardioversion was ordered.

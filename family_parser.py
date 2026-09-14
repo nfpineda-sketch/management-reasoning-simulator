@@ -17,7 +17,7 @@ from shared_order_language import _normalize, _route, _amount
 NEW_TREATMENT_ACTIONS = frozenset({
     "fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator",
     "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin",
-    "anticoagulation", "bag_mask", "intubation", "norepinephrine", "diuretic",
+    "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
 })
 
 _AGENTS = {
@@ -69,7 +69,7 @@ _DIAGNOSTICS = {
 }
 _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
-    r"(?P<verb>cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
+    r"(?P<verb>repeat|repetir|repito|repite|cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
     r"stop|discontinue|increase|decrease|titrate|continue|change|set|switch|transfuse|nebulize|"
     r"consult|call|activate|admit|transfer|intubate|ventilate|reassess|re-assess|recheck|reevaluate|"
     r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|iniciar|inicio|inicie|infundir|indicar|indico|"
@@ -146,6 +146,9 @@ def _operation(verb):
 
 
 def _settings(text, name):
+    if name == "fio2" and not re.search(r"\bfio2\b", text):
+        # O2 expressed as a percentage is a respiratory setting, not a flow.
+        text = re.sub(r"\bo2(?=\s*(?:of|de|=|at|to|a)?\s*[-.\d]+\s*%)", "fio2", text)
     match = re.search(r"\b" + name + r"\s*(?:of|de|=|at|to|a)?\s*(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(%)?", text)
     if not match:
         return None
@@ -178,17 +181,19 @@ def _oxygen_order(body, verb):
         # named device. A request to switch interfaces must name the new one.
         selected = set(devices(body[:transition.start(1)]))
     if len(selected) > 1 or (not selected and (verb in {"switch", "cambiar"} or _operation(verb) not in {"adjust", "continue"})):
-        return _clarification("Specify one target oxygen device and its flow in L/min.")
+        return {**_clarification("Specify one target oxygen device and its flow in L/min."),
+                **({"pending_action": {"type": "oxygen", "device": None, "flow_lpm": float(re.search(_FLOW, target)[1]) if re.search(_FLOW, target) else None}} if not selected and verb not in {"switch", "cambiar"} and len(list(re.finditer(_FLOW, target))) <= 1 else {})}
     device = selected.pop() if selected else None
     if device == "room air":
         return {"type": "oxygen", "device": device, "flow_lpm": 0}
     flows = list(re.finditer(_FLOW, target))
     if len(flows) > 1 or (not flows and _operation(verb) not in {"adjust", "continue"}):
-        return _clarification("Specify one absolute target oxygen flow in L/min.")
+        return {**_clarification("Specify one absolute target oxygen flow in L/min."),
+                **({"pending_action": {"type": "oxygen", "device": device, "flow_lpm": None}} if not flows else {})}
     return {"type": "oxygen", "device": device, "flow_lpm": float(flows[0][1]) if flows else None, **({"operation": _operation(verb)} if _operation(verb) in {"adjust", "continue"} and (device is None or not flows) else {})}
 
 
-def _parse_piece(piece, inherited=None):
+def _parse_piece_core(piece, inherited=None):
     text = piece.strip(" :")
     text = re.sub(r"^(?:please|por favor|then|luego|despues)\s+", "", text)
     command = _COMMAND.match(text)
@@ -204,6 +209,27 @@ def _parse_piece(piece, inherited=None):
     if not body and verb not in {"reassess", "re-assess", "reevaluate", "reevaluar", "reevaluo", "revalorar", "intubate", "intubar", "intubo"}:
         return [], verb
 
+    if verb in {"repeat", "repetir", "repito", "repite"} or re.match(r"(?:another|more|otro|otra|otros|otras)\b", body):
+        studies = [name for name, pattern in _DIAGNOSTICS.items() if re.search(r"\b(?:" + pattern + r")\b", body)]
+        if studies:
+            return [{"type": "diagnostic", "diagnostic": name} for name in studies], verb
+        quantity_text = re.split(r"\b(?:over|durante|en)\s+[-.\d]", body)[0]
+        if len(re.findall(r"(?<![\w.])-?(?:\d+(?:\.\d+)?|\.\d+)\s*(?:ml|cc|l|lt|mg|g|mcg|ug)\b", quantity_text)) > 1:
+            return [_clarification("Specify one quantity for the treatment to repeat.")], verb
+        target = "fluid" if re.search(r"\b(?:bolus|fluid|saline|ns|sf|ringer|ringers|lr|crystalloid|cristaloides?|bolo|suero|ml|cc)\b", body) else None
+        agent = next((name for agents in _AGENTS.values() for name, pattern in agents.items() if re.search(r"\b(?:" + pattern + r")\b", body)), None)
+        value, unit = _amount(body, r"ml|cc|l|lt|mg|g|mcg|ug")
+        if value is None and re.search(r"\d", quantity_text):
+            return [_clarification("Specify explicit units for the quantity to repeat.")], verb
+        if target is None and agent is None and not re.fullmatch(r"(?:the )?(?:same|previous)(?: (?:treatment|dose|medication))?|(?:el |la )?(?:mismo|misma|anterior)(?: (?:tratamiento|dosis|medicamento))?", body):
+            return [_clarification("Specify which recorded drug or fluid to repeat.")], verb
+        fluid_type = None
+        if target == "fluid":
+            if re.search(r"\b(?:saline|ns|sf|salino|suero fisiologico|solucion fisiologica)\b", body):
+                fluid_type = "normal saline"
+            elif re.search(r"\b(?:ringer|ringers|lr)\b", body):
+                fluid_type = "lactated Ringer's"
+        return [{"type": "repeat_order", "target": target, "agent": agent, "fluid_type": fluid_type, "amount": value, "amount_unit": unit, "route": _route(body)}], verb
     reassess = verb in {"reassess", "re-assess", "reevaluate", "reevaluar", "reevaluo", "revalorar"}
     if reassess:
         delay, _ = _amount(body, r"minutes?|mins?|minutos?")
@@ -222,7 +248,7 @@ def _parse_piece(piece, inherited=None):
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
-        shorthand = r"(?:cardioversion|bipap|cpap|niv|vni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|nitroglycerin|nitroglicerina|nitro)"
+        shorthand = r"(?:cardioversion|bipap|cpap|niv|vni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|nitroglycerin|nitroglicerina|nitro)"
         medication_start = any(re.match(r"(?:" + pattern + r")\b", body) for agents in _AGENTS.values() for pattern in agents.values())
         quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
         if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start):
@@ -252,11 +278,15 @@ def _parse_piece(piece, inherited=None):
             return [_clarification("Specify synchronized cardioversion; defibrillation is outside this pulse-present encounter.")], verb
         energy, _ = _amount(body, r"j|joules?|julios?")
         return [{"type": "cardioversion", "energy_j": energy, "synchronized": True}], verb
-    if (_operation(verb) in {"adjust", "continue"} and re.search(r"\b(?:ventilator|ventilation|fio2|peep|ipap|epap)\b", body)
+    if (_operation(verb) in {"adjust", "continue"} and re.search(r"\b(?:ventilator|ventilation|fio2|peep|ipap|epap|vc[/ -]?ac|pc[/ -]?ac)\b", body)
             and not re.search(r"\b(?:bipap|cpap|niv|vni)\b", body)):
         if re.search(r"\b(?:by|en)\s+-?\d", body):
             return [_clarification("Specify absolute target ventilator settings, not a relative change.")], verb
+        modes = [mode for mode, pattern in (("VC/AC", r"\bvc[/ -]?ac\b|volume control"), ("PC/AC", r"\bpc[/ -]?ac\b|pressure control")) if re.search(pattern, body)]
+        if len(modes) > 1:
+            return [_clarification("Specify one target ventilator mode.")], verb
         return [{"type": "respiratory_adjustment", "operation": _operation(verb),
+                 "ventilator_mode": modes[0] if modes else None,
                  "fio2_percent": _settings(body, "fio2"), "peep_cmh2o": _settings(body, "peep"),
                  "ipap_cmh2o": _settings(body, "ipap"), "epap_cmh2o": _settings(body, "epap")}], verb
     if re.search(r"\b(?:bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|bolsa[- ]mascarilla|bolsa valvula mascarilla)\b", body):
@@ -276,13 +306,17 @@ def _parse_piece(piece, inherited=None):
         if cpap and epap is None:
             epap = float(cpap[1])
         return [{"type": "niv", "mode": mode, "ipap_cmh2o": ipap, "epap_cmh2o": epap, "fio2_percent": _settings(body, "fio2"), "operation": _operation(verb)}], verb
-    if re.search(r"\b(?:norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro)\b", body):
-        kind = "nitroglycerin" if re.search(r"\b(?:nitroglycerin|nitroglicerina|nitro)\b", body) else "norepinephrine"
+    if re.search(r"\b(?:dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro)\b", body):
+        kind = "nitroglycerin" if re.search(r"\b(?:nitroglycerin|nitroglicerina|nitro)\b", body) else "dobutamine" if re.search(r"\b(?:dobutamine|dobutamina)\b", body) else "norepinephrine"
         rate_matches = list(re.finditer(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg)\s*/\s*(kg\s*/\s*)?(min(?:ute)?|h(?:r|our)?)\b", body))
         if len(rate_matches) > 1 or (_operation(verb) == "adjust" and re.search(r"\b(?:by|en)\s+-?\d", body)):
             return [_clarification("Specify a single absolute target infusion rate; a relative change or several rates is ambiguous.")], verb
         rate_match = rate_matches[0] if rate_matches else None
         rate, units = None, None
+        if not rate_match:
+            bare_rates = re.findall(r"(?<![\w.])(-?(?:\d+(?:\.\d+)?|\.\d+))(?![\w.])", body)
+            if len(bare_rates) == 1 and not re.search(r"\b(?:minutes?|mins?|hours?|horas?|minutos?)\b", body):
+                rate = float(bare_rates[0])
         if rate_match:
             rate = float(rate_match[1]) * (1000 if rate_match[2] == "mg" else 1)
             if rate_match[4].startswith("h"):
@@ -336,6 +370,22 @@ def _parse_piece(piece, inherited=None):
     if verb:
         return [_clarification("This order was not recognized. Specify the intervention, dose/settings, and route explicitly.")], verb
     return [], None
+
+
+def _parse_piece(piece, inherited=None):
+    actions, verb = _parse_piece_core(piece, inherited)
+    # Delivery time is attached to this treatment clause, never to reasoning or
+    # the reassessment clause. Retain unsupported/ambiguous timing as a question.
+    text = _NON_ORDER.split(piece, maxsplit=1)[0]
+    matches = list(re.finditer(r"\b(?:over|durante|en)\s+(\d+(?:\.\d+)?)\s*(minutes?|mins?|minutos?|hours?|horas?|seconds?|segundos?)\b", text))
+    treatments = [a for a in actions if a['type'] not in {'diagnostic', 'reassessment', 'clarification'}]
+    if matches and treatments:
+        if len(matches) != 1 or len(treatments) != 1:
+            return [_clarification("Specify one delivery duration for each treatment.")], verb
+        value, unit = float(matches[0][1]), matches[0][2]
+        value *= 60 if unit.startswith(('hour', 'hora')) else 1 / 60 if unit.startswith(('second', 'segundo')) else 1
+        treatments[0]['administration_duration_min'] = value
+    return actions, verb
 
 
 def parse_family_actions(text) -> dict:

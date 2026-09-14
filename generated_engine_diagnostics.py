@@ -6,7 +6,7 @@ static software descriptions; details belong only in the authoring request,
 never in a learner-facing error or log.
 """
 from generated_engine import (
-    BOUNDS, MODEL, OBSERVED_FIELDS, LAB_FIELDS, NUMERIC_FIELDS, _ACTIONS,
+    response_progress, BOUNDS, MODEL, OBSERVED_FIELDS, LAB_FIELDS, NUMERIC_FIELDS, _ACTIONS,
     _DOSE_FIELDS, _DRUGS, _COMPARATORS, _SET_FIELDS, _finite,
     _validate_response_capability, _response_capability_probe, _action_agent,
 )
@@ -117,7 +117,7 @@ def collect_declarative_issues(case):
         if kind_ok and kind in _DRUGS and (not rule.get("agent") or not rule.get("route")):
             add("RESPONSE_MEDICATION_MATCHERS", path, "Medication effects need an exact supported agent and route.")
             matchers_ok = False
-        if kind in ("norepinephrine", "anticoagulation") and not rule.get("units"):
+        if kind in ("norepinephrine", "dobutamine", "anticoagulation") and not rule.get("units"):
             add("RESPONSE_UNITS", path + ".units", "A variable-unit medication needs explicit dose units.")
             matchers_ok = False
         expected = _DOSE_FIELDS.get(kind) if kind_ok else None
@@ -174,10 +174,12 @@ def collect_declarative_issues(case):
             times = {0, horizon}
             if response is not None:
                 times.update({min(horizon, response["onset_min"]), min(horizon, response["onset_min"] + response["duration_min"])})
+            if response is not None and isinstance(response.get("recovery_min"), (int,float)):
+                times.add(min(horizon, response["onset_min"] + response["duration_min"] + response["recovery_min"]))
             for at in sorted(times):
                 values = {key: number + at * drift.get(key, 0) for key, number in initial.items()}
                 if response is not None:
-                    progress = 1.0 if response["action_type"] == "cardioversion" else min(1, max(0, (at - response["onset_min"]) / response["duration_min"]))
+                    progress = response_progress(at, response["onset_min"], response["duration_min"], response.get("recovery_min"), response["action_type"] == "cardioversion")
                     for key, delta in response["delta"].items():
                         if key in values:
                             values[key] += delta * response["max_exposure"] * progress
@@ -239,7 +241,7 @@ def _collect_state_and_study_issues(case, engine, initialized, add):
         if not isinstance(when, list) or not when:
             add("STATE_CONDITION", path + ".when", "Observation changes need explicit physiological conditions.")
         for j, condition in enumerate(when if isinstance(when, list) else []):
-            if not isinstance(condition, dict) or not isinstance(condition.get("field"), str) or condition.get("field") not in initialized or not isinstance(condition.get("operator"), str) or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
+            if not isinstance(condition, dict) or not isinstance(condition.get("field"), str) or condition.get("field") not in initialized | {"elapsed_min", "fluid_delivered_ml"} or not isinstance(condition.get("operator"), str) or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
                 add("STATE_CONDITION", path + f".when[{j}]", "Conditions may read only initialized numeric physiology with a supported comparison.")
         values = rule.get("set", {})
         if not isinstance(values, dict) or set(values) - _SET_FIELDS:

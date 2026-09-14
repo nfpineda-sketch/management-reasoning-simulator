@@ -72,7 +72,7 @@ def _validate(state, parsed):
         kind = a.get("type")
         if validation_state.get("family_state", {}).get("invasive") and kind in {"oxygen", "niv", "bag_mask"}:
             return None, "The patient is receiving invasive ventilation. Please specify ventilator settings or clarify the intended airway change."
-        if kind in {"beta_blocker", "diltiazem", "amiodarone", "cardioversion", "procedural_sedation", "ventilator_adjustment"} and state.get("engine_family") != "generated":
+        if kind in {"beta_blocker", "diltiazem", "amiodarone", "cardioversion", "procedural_sedation", "ventilator_adjustment", "dobutamine"} and state.get("engine_family") != "generated":
             return None, "This intervention requires a generated encounter with an explicit response rule."
         if kind == "clarification":
             return None, str(a.get("message") or "Please clarify the order before it is executed.")
@@ -129,19 +129,19 @@ def _validate(state, parsed):
                     return None, "Specify CPAP or BiPAP."
                 if a["mode"].lower() == "bipap" and (not _number(a.get("ipap_cmh2o"), a["epap_cmh2o"], 35)):
                     return None, "Specify an inspiratory pressure at least as high as expiratory pressure."
-        elif kind in {"nitroglycerin", "norepinephrine"}:
+        elif kind in {"nitroglycerin", "norepinephrine", "dobutamine"}:
             a["operation"] = str(a.get("operation") or "start").lower()
             if a["operation"] not in {"start", "adjust", "continue", "stop"}:
                 return None, "Specify whether to start, adjust, continue, or stop the infusion."
             if a["operation"] != "stop":
                 if kind == "nitroglycerin" and not _number(a.get("rate_mcg_min"), .1, 400):
                     return None, "Specify or confirm the nitroglycerin rate in mcg/min."
-                if kind == "norepinephrine":
+                if kind in {"norepinephrine", "dobutamine"}:
                     units = str(a.get("units", "")).lower().replace("μ", "u").replace("µ", "u")
                     aliases = {"mcg/min": "mcg/min", "ug/min": "mcg/min", "mcg/kg/min": "mcg/kg/min", "ug/kg/min": "mcg/kg/min"}
                     a["units"] = aliases.get(units)
-                    if a["units"] is None or not _number(a.get("rate"), .001, 100 if a["units"] == "mcg/min" else 1.5):
-                        return None, "Specify or confirm norepinephrine dose and units (mcg/min or mcg/kg/min)."
+                    if a["units"] is None or not _number(a.get("rate"), .001, (10000 if kind == "dobutamine" else 100) if a["units"] == "mcg/min" else (50 if kind == "dobutamine" else 1.5)):
+                        return None, f"Specify or confirm {kind} dose and units (mcg/min or mcg/kg/min)."
         elif kind in {"intubation", "ventilator_adjustment"}:
             if not a.get("ventilator_mode") or not _number(a.get("fio2_percent"), 21, 100) or not _number(a.get("peep_cmh2o"), 0, 20):
                 return None, "Specify initial ventilator mode, FiO₂ and PEEP."
@@ -159,6 +159,11 @@ def _validate(state, parsed):
             pass
         else:
             return None, f"The requested action ({str(kind)[:60]}) is not executable in this encounter. Please clarify the order."
+        if a.get("administration_duration_min") is not None:
+            if kind not in set(_MEDICINES) | {"fluid", "blood", "anticoagulation"} or not _number(a["administration_duration_min"], 1/60, 120):
+                return None, "Specify a positive supported delivery duration for a fluid, blood or fixed-dose medication."
+            if state.get("engine_family") != "generated":
+                return None, "Timed administration is available in generated encounters."
         normalized.append(a)
         remember_validated_support(validation_state, a)
     return normalized, None
@@ -267,9 +272,9 @@ def _order(state, a):
             f["oxygen_fio2"] = .21
         label = f"NIV {a['operation']}" + (f": {a['mode']}, FiO₂ {a['fio2_percent']:g}%" if f["niv"] else "")
         duration = 3
-    elif kind in {"nitroglycerin", "norepinephrine"}:
+    elif kind in {"nitroglycerin", "norepinephrine", "dobutamine"}:
         rate = 0 if a["operation"] == "stop" else a.get("rate_mcg_min", a.get("rate", 0))
-        if kind == "norepinephrine" and a.get("units") == "mcg/kg/min":
+        if kind in {"norepinephrine", "dobutamine"} and a.get("units") == "mcg/kg/min":
             rate *= _case(state).get("patient", {}).get("weight_kg", 70)
         f[kind] = rate
         tr[kind] = bool(rate)
@@ -278,7 +283,7 @@ def _order(state, a):
         if kind == "nitroglycerin":
             tr["nitroglycerin_rate_mcg_min"] = reported_rate if rate else 0
         else:
-            tr.update(norepinephrine_rate=reported_rate if rate else 0, norepinephrine_units=reported_units)
+            tr.update({kind + "_rate": reported_rate if rate else 0, kind + "_units": reported_units})
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
     elif kind == "ventilator_adjustment":
         f["oxygen_fio2"] = a["fio2_percent"] / 100
@@ -323,8 +328,12 @@ def _order(state, a):
         record.setdefault("agent", kind)
         record["time_min"] = int(state.get("sim_time", 0))
         tr["administered_medications"].append(record)
-    if kind in {"oxygen", "niv", "norepinephrine", "nitroglycerin", "ventilator_adjustment"}:
+    if kind in {"oxygen", "niv", "norepinephrine", "nitroglycerin", "dobutamine", "ventilator_adjustment"}:
         tr.setdefault("active_orders", {})[kind] = deepcopy(a)
+    tr.setdefault("order_history", []).append(deepcopy(a))
+    if a.get("administration_duration_min") is not None:
+        summary["administration_duration_min"] = a["administration_duration_min"]
+        summary["duration_min"] = math.ceil(a["administration_duration_min"])
     return summary
 
 
