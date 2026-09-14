@@ -26,14 +26,22 @@ _MESSAGES = {
 _STAGES = {"SETUP", "AUTHOR", "CORRECTION", "REVIEW"}
 
 
-def generation_error(code, stage):
+def generation_error(code, stage, *, validation_codes=()):
     """Use only fixed public labels, even if callers pass untrusted strings."""
     code = code if code in _MESSAGES else "INTERNAL"
     stage = stage if stage in _STAGES else "SETUP"
     reference = f"CASE-{stage}-{code}"
-    error = GeneratedCaseError(f"{_MESSAGES[code]} No encounter has been started. Reference: {reference}.")
+    # Independently filter even internal callers: exception text, paths, numeric
+    # patient values and provider payloads never become public troubleshooting IDs.
+    from generated_case_validation import safe_validation_codes
+    from types import SimpleNamespace
+    checks = (safe_validation_codes(SimpleNamespace(issues=[{"code": value} for value in validation_codes]))
+              if code == "CONTRACT" and validation_codes else [])
+    suffix = " Checks: " + ", ".join(checks) + "." if checks else ""
+    error = GeneratedCaseError(f"{_MESSAGES[code]} No encounter has been started. Reference: {reference}.{suffix}")
     error.code, error.stage, error.reference = code, stage, reference
-    logging.getLogger(__name__).warning("Case generation stopped: %s", reference)
+    error.validation_codes = checks
+    logging.getLogger(__name__).warning("Case generation stopped: %s%s", reference, suffix)
     return error
 
 

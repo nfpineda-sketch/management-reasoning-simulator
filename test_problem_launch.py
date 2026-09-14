@@ -10,11 +10,11 @@ def install_author(monkeypatch, payload_factory=None, review=None):
     import generated_case
     real_author = generated_case.generate_ai_encounter
     records = []
-    def author(challenge_id, base_state, api_key="", model="", seed=None, client=None, review_model=None):
+    def author(challenge_id, base_state, api_key="", model="", seed=None, client=None, review_model=None, progress=None):
         payload = payload_factory(len(records)) if payload_factory else novel_payload()
         fake = AuthorClient(payload, review)
         records.append(fake)
-        return real_author(challenge_id, base_state, api_key, model, seed, fake, review_model)
+        return real_author(challenge_id, base_state, api_key, model, seed, fake, review_model, progress=progress)
     monkeypatch.setattr(generated_case, "generate_ai_encounter", author)
     return records
 
@@ -81,13 +81,13 @@ def test_failed_independent_review_does_not_show_unreviewed_patient(monkeypatch)
 
 
 def test_repeat_authors_new_patient_from_prior_problem_without_old_case_or_answers(monkeypatch):
-    from contextlib import nullcontext
     from test_curriculum_trajectories import load_engine, initialize
     from encounter_generator import generate_encounter
     calls = install_author(monkeypatch, lambda index: novel_payload(age=42 + index, sex='female' if index == 0 else 'male'))
     engine = load_engine()
     engine['_runtime_secret'] = lambda key: ''
-    engine['st'].spinner = lambda *args: nullcontext()
+    from test_generation_progress import RecordingStatus
+    engine['st'].status = lambda *args, **kwargs: RecordingStatus()
     original = generate_encounter('R1-04', engine['INITIAL_STATE'], seed=17)
     session = initialize(engine, original['state'])
     session.selected_case = 'PS001 · Tachyarrhythmia in an Acutely Ill Patient'

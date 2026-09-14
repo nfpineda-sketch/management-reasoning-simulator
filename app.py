@@ -10,6 +10,11 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
+SIMULATOR_VERSION = "0.17.2-clinical-encounter"
+
+from generation_reload import refresh_generation_modules
+refresh_generation_modules(SIMULATOR_VERSION.split("-")[0])
+
 from curriculum import CHALLENGES
 # Refresh the changed renderer once during Streamlit hot updates.
 import importlib
@@ -17,7 +22,7 @@ import patient_appearance as _appearance
 if getattr(_appearance, "APPEARANCE_VERSION", 0) != 3:
     importlib.reload(_appearance)
 import encounter_generator as _encounter_generator
-if getattr(_encounter_generator, "GENERATOR_VERSION", "") != "0.17.0":
+if getattr(_encounter_generator, "GENERATOR_VERSION", "") != SIMULATOR_VERSION.split("-")[0]:
     importlib.reload(_encounter_generator)
 import clinical_scene as _clinical_scene
 if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 7:
@@ -29,12 +34,15 @@ from resuscitation_room import render_room, render_bedside_tools
 from encounter_workspace import render_encounter_workspace
 from ai_interpreter import AIInterpretationError, normalize_with_ai
 from account_portal import accounts_enabled, require_account_access, render_account_sidebar
+import curriculum_runtime as _curriculum_runtime
+if getattr(_curriculum_runtime, "RUNTIME_VERSION", "") != SIMULATOR_VERSION.split("-")[0]:
+    importlib.reload(_curriculum_runtime)
 from curriculum_runtime import (
     save_session, render_dashboard, start_encounter, render_learning_focus,
     return_to_dashboard,
 )
 
-st.set_page_config(page_title="Management Reasoning Simulator — Clinical encounter v0.17.1", page_icon="🩺", layout="wide")
+st.set_page_config(page_title=f"Management Reasoning Simulator — Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}", page_icon="🩺", layout="wide")
 
 
 def require_shared_password():
@@ -72,8 +80,6 @@ if ACCOUNT_CONTEXT is None:
     require_shared_password()
 else:
     render_account_sidebar(ACCOUNT_CONTEXT)
-
-SIMULATOR_VERSION = "0.17.1-clinical-encounter"
 
 
 def faculty_access():
@@ -3486,13 +3492,15 @@ def generate_problem_config(challenge_id):
     from curriculum import CHALLENGES
     from encounter_generator import generate_encounter
     from generated_case import GeneratedCaseError
+    from generation_progress import encounter_preparation
     if challenge_id not in CHALLENGES:
         raise ValueError("Choose an implemented clinical problem.")
     try:
-        with st.spinner("Creating your patient and checking the clinical scenario..."):
+        with encounter_preparation(st) as progress:
             generated = generate_encounter(challenge_id, INITIAL_STATE,
                 api_key=_runtime_secret("OPENAI_API_KEY"),
-                model=_runtime_secret("MRS_GENERATOR_MODEL") or _runtime_secret("OPENAI_MODEL") or "gpt-5-mini")
+                model=_runtime_secret("MRS_GENERATOR_MODEL") or _runtime_secret("OPENAI_MODEL") or "gpt-5-mini",
+                progress=progress)
     except GeneratedCaseError as exc:
         st.error(str(exc))
         st.stop()
@@ -9740,7 +9748,7 @@ def render_event(event):
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
     st.write(event["text"])
 
-st.caption("Management Reasoning Simulator · Clinical encounter v0.17.0")
+st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -10650,6 +10658,6 @@ with st.container(key="encounter-console"):
 
     if ACCOUNT_CONTEXT:
         save_session(ACCOUNT_CONTEXT)
-    st.caption("Management Reasoning Simulator · Clinical encounter v0.17.0")
+    st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
 
     # Compatibility marker for v0.6.0.27 regression lineage.

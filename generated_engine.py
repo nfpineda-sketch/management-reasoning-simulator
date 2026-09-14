@@ -220,6 +220,18 @@ def _validate_response_capability(case, rule):
         supported = set(_AGENTS.get(kind, {})) or {kind}
         if str(rule.get("agent", "")).strip().lower() not in supported:
             raise ValueError("A generated treatment names an agent unavailable to the order interpreter.")
+    normalized, error = _response_capability_probe(case, rule)
+    if error or not normalized or not _matches(rule, normalized[0]):
+        raise ValueError("A generated treatment rule cannot be reached by a supported order with those dose units, route or device.")
+
+
+def _response_capability_probe(case, rule):
+    """Return order validation only; never execute an order or change the case.
+
+    The same probe supports private authoring diagnostics, so the correction
+    request can describe actual normalized matchers rather than guess them.
+    """
+    kind = rule["action_type"]
     action = {"type": kind}
     field = rule.get("dose_field")
     if field:
@@ -243,9 +255,7 @@ def _validate_response_capability(case, rule):
         if kind == "norepinephrine":
             action["units"] = rule.get("units")
     check_state = {"encounter_spec": {"clinical_case": case}, "observable": deepcopy(case["observable"])}
-    normalized, error = _validate_orders(check_state, {"actions": [action]})
-    if error or not normalized or not _matches(rule, normalized[0]):
-        raise ValueError("A generated treatment rule cannot be reached by a supported order with those dose units, route or device.")
+    return _validate_orders(check_state, {"actions": [action]})
 
 
 def _initialize(state):

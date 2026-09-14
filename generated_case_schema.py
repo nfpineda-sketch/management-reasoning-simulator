@@ -9,6 +9,7 @@ import math
 
 from ecg12 import PROFILES, RHYTHMS
 from visual_observations import VISUAL_CHOICES, PERFUSION_CATEGORIES
+from generated_case_validation import ContractValidationError
 
 SCHEMA_VERSION = "mrs.generated.case.v1"
 OBSERVED_NUMERIC = ("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt", "temperature_c", "glucose_mg_dl")
@@ -161,9 +162,122 @@ def _pairs(items, key, value):
     return {item[key]: deepcopy(item[value]) for item in items}
 
 
+def _duplicate_issues(raw):
+    """Reject every ambiguous array before converting any duplicate to a dict."""
+    issues = []
+
+    def check(items, key, path, code="DUPLICATE_FIELD"):
+        seen = {}
+        for index, item in enumerate(items):
+            name = item[key]
+            if name in seen:
+                issues.append({"code": code, "path": f"{path}[{index}].{key}",
+                               "message": "Duplicate studies are not permitted." if code == "DUPLICATE_STUDY" else "Duplicate case fields are not permitted.",
+                               "details": {"field": name, "first_index": seen[name], "duplicate_index": index}})
+            else:
+                seen[name] = index
+
+    check(raw["examination"], "area", "case.examination")
+    check(raw["investigations"], "id", "case.investigations", "DUPLICATE_STUDY")
+    for index, study in enumerate(raw["investigations"]):
+        for key in ("result", "result_bindings"):
+            check(study[key], "field", f"case.investigations[{index}].{key}")
+    check(raw["engine"]["untreated_drift_per_min"], "field", "case.engine.untreated_drift_per_min")
+    for index, rule in enumerate(raw["engine"]["response_rules"]):
+        check(rule["delta"], "field", f"case.engine.response_rules[{index}].delta")
+    for index, rule in enumerate(raw["engine"]["state_rules"]):
+        if rule["examination"] is not None:
+            check(rule["examination"], "area", f"case.engine.state_rules[{index}].examination")
+    return issues
+
+
+def collect_clinical_issues(case):
+    """Collect independent existing clinical contradictions without changing data.
+
+    This receives a schema-validated case whose arrays have been normalized and
+    whose bindings are still as authored. The final validators remain mandatory.
+    """
+    from ecg12 import acquire_ecg
+    issues = []
+
+    def add(code, path, message, **details):
+        issues.append({"code": code, "path": path, "message": message, "details": details})
+
+    def number(value):
+        return type(value) in (int, float) and math.isfinite(value)
+
+    observed, patient = case["observable"], case["patient"]
+    if observed["sbp"] <= observed["dbp"] + 10 or observed["pulse_present"] is not True:
+        add("INITIAL_CIRCULATION", "case.observable", "Initial circulation is outside the supported encounter contract.",
+            sbp=observed["sbp"], dbp=observed["dbp"], pulse_present=observed["pulse_present"], minimum_pulse_pressure_exclusive=10)
+    if patient["pronouns"] != ("she/her" if patient["sex"] == "female" else "he/him"):
+        add("PATIENT_PRONOUNS", "case.patient.pronouns", "Patient description is inconsistent.", sex=patient["sex"], pronouns=patient["pronouns"])
+    if len(case["examination"]) != len(EXAM_AREAS):
+        add("EXAMINATION_INCOMPLETE", "case.examination", "All examination areas must have explicit findings.",
+            missing_areas=sorted(set(EXAM_AREAS) - set(case["examination"])))
+    studies = case["investigations"]
+    for study_id in sorted({"poc_glucose", "temperature", "basic_labs", "pocus"} - set(studies)):
+        add("ESSENTIAL_STUDY_MISSING", "case.investigations", "The case is missing an essential source investigation.", study_id=study_id)
+    for study_id, measurement in (("poc_glucose", "glucose_mg_dl"), ("temperature", "temperature_c")):
+        if study_id in studies and measurement not in studies[study_id]["result"]:
+            add("BEDSIDE_MEASUREMENT_MISSING", f"case.investigations.{study_id}.result", "Essential bedside studies require an explicit numerical measurement.", field=measurement)
+    baseline = {key: observed[key] for key in OBSERVED_NUMERIC}
+    baseline.update(case["engine"]["initial_labs"])
+    for study_id, study in studies.items():
+        result, bindings = study["result"], study["result_bindings"]
+        path = f"case.investigations.{study_id}"
+        for field, target in bindings.items():
+            expected = "pco2_mm_hg" if field == "paco2_mm_hg" else field
+            if field not in result or expected not in NUMERIC_FIELDS or target != expected:
+                add("DIAGNOSTIC_BINDING", f"{path}.result_bindings.{field}", "A diagnostic binding cannot substitute a different measurement.",
+                    field=field, declared_target=target, expected_target=expected if expected in NUMERIC_FIELDS else None,
+                    result_present=field in result)
+        # Include derived bindings: omission must never freeze a modeled result.
+        for field, measured in result.items():
+            target = "pco2_mm_hg" if field == "paco2_mm_hg" else field
+            if target not in NUMERIC_FIELDS:
+                continue
+            initial = baseline.get(target)
+            if not number(measured) or not number(initial):
+                add("DIAGNOSTIC_NUMERIC", f"{path}.result.{field}", "Every modeled diagnostic needs a numerical initial physiological value.",
+                    field=field, result=measured, baseline=initial)
+            elif abs(measured - initial) > .11:
+                add("DIAGNOSTIC_BASELINE", f"{path}.result.{field}", "Initial results conflict with the initial physiology.",
+                    field=field, result=measured, baseline=initial, maximum_absolute_difference=.11)
+        if all(field in result for field in ("ph", "bicarbonate_mmol_l")) and ("pco2_mm_hg" in result or "paco2_mm_hg" in result):
+            co2 = result.get("pco2_mm_hg", result.get("paco2_mm_hg"))
+            bicarbonate, ph = result["bicarbonate_mmol_l"], result["ph"]
+            if not all(number(value) for value in (co2, bicarbonate, ph)) or co2 <= 0 or bicarbonate <= 0:
+                add("BLOOD_GAS_NUMERIC", f"{path}.result", "Invalid blood-gas values: pH, bicarbonate and carbon dioxide must be numerical, with positive bicarbonate and carbon dioxide.",
+                    ph=ph, bicarbonate_mmol_l=bicarbonate, pco2_mm_hg=co2)
+            else:
+                calculated = 6.1 + math.log10(bicarbonate / (.03 * co2))
+                if abs(ph - calculated) > .08:
+                    add("BLOOD_GAS_CONSISTENCY", f"{path}.result.ph", "Blood-gas measurements are internally inconsistent.",
+                        ph=ph, calculated_ph=calculated, maximum_absolute_difference=.08)
+    electrical = acquire_ecg({"observable": observed, "ecg_profile": case["ecg_profile"], "sim_time": 0, "seed": 1})
+    if electrical.get("status") != "available":
+        add("ECG_UNREPRESENTABLE", "case.ecg_profile", "The generated ECG cannot be represented coherently.",
+            profile=case["ecg_profile"], rhythm=observed["rhythm"], hr=observed["hr"])
+    if observed["mental_status"] in {"Obtunded", "Unresponsive", "Sedated"} and case["history_source"] == "Patient":
+        add("HISTORY_SOURCE", "case.history_source", "An unavailable patient cannot supply an intact initial history.", mental_status=observed["mental_status"])
+    if observed["peripheral_perfusion"] in {"severely impaired", "critical"} and observed["visual"]["expression"] == "neutral":
+        add("VISUAL_PERFUSION", "case.observable.visual.expression", "The visual appearance conflicts with this severe presentation.",
+            peripheral_perfusion=observed["peripheral_perfusion"], expression=observed["visual"]["expression"])
+    for index, rule in enumerate(case["engine"]["state_rules"]):
+        mental = rule["set"].get("mental_status")
+        if mental is not None and mental != observed["mental_status"] and "Neurological" not in rule.get("examination", {}):
+            add("NEUROLOGICAL_UPDATE", f"case.engine.state_rules[{index}].examination", "A mental-status change requires a consistent neurological examination update.",
+                mental_status=mental, initial_mental_status=observed["mental_status"])
+    return issues
+
+
 def compile_case(raw):
     """Translate schema arrays to immutable, existing encounter data contracts."""
     validate_schema(raw, CASE_SCHEMA)
+    duplicates = _duplicate_issues(raw)
+    if duplicates:
+        raise ContractValidationError(duplicates)
     case = deepcopy(raw)
     case["examination"] = _pairs(raw["examination"], "area", "finding")
     studies = {}
@@ -188,10 +302,20 @@ def compile_case(raw):
         else:
             rule["examination"] = _pairs(rule["examination"], "area", "finding")
     case["visual_profile"] = {"id": "ai_authored_visible_findings_v1", "baseline": deepcopy(case["observable"]["visual"]), "perfusion_appearance": {}}
+    from generated_engine_diagnostics import collect_declarative_issues
+    issues = collect_clinical_issues(case) + collect_declarative_issues(case)
+    if issues:
+        raise ContractValidationError(issues)
     from generated_engine import diagnostic_bindings
-    for study in case["investigations"].values():
-        study["result_bindings"] = diagnostic_bindings(case, study)
-    validate_clinical_structure(case)
+    try:
+        for study in case["investigations"].values():
+            study["result_bindings"] = diagnostic_bindings(case, study)
+        validate_clinical_structure(case)
+    except ValueError as exc:
+        # Authoritative gates still reject if a new rule has not yet acquired
+        # a dedicated collector. This private message is never a logging code.
+        raise ContractValidationError([{"code": "CONTRACT_UNCLASSIFIED", "path": "case",
+                                        "message": str(exc), "details": {}}]) from None
     return case
 
 
@@ -224,7 +348,7 @@ def validate_clinical_structure(case):
         result = test["result"]
         if all(field in result for field in ("ph", "bicarbonate_mmol_l")) and ("pco2_mm_hg" in result or "paco2_mm_hg" in result):
             co2 = result.get("pco2_mm_hg", result.get("paco2_mm_hg"))
-            if not isinstance(co2, (int, float)) or co2 <= 0 or result["bicarbonate_mmol_l"] <= 0:
+            if any(type(value) not in (int, float) or not math.isfinite(value) for value in (co2, result["bicarbonate_mmol_l"], result["ph"])) or co2 <= 0 or result["bicarbonate_mmol_l"] <= 0:
                 raise ValueError("Invalid blood-gas values.")
             calculated = 6.1 + math.log10(result["bicarbonate_mmol_l"] / (.03 * co2))
             if abs(result["ph"] - calculated) > .08:

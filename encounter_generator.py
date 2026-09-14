@@ -22,7 +22,7 @@ import secrets
 from typing import Any
 
 
-GENERATOR_VERSION = "0.17.0"
+GENERATOR_VERSION = "0.17.2"
 SPEC_VERSION = "mrs.ps001.encounter.v1"
 DEFAULT_MODEL = "gpt-5-mini"
 SUPPORTED_CHALLENGES = ("R1-03", "R1-04", "R2-01")
@@ -211,6 +211,7 @@ def generate_encounter(
     variant_id: str | None = None,
     generation_mode: str = "novel",
     review_model: str | None = None,
+    progress: Any = None,
 ) -> dict:
     """Author and review a novel frozen case; failure requires explicit retry.
 
@@ -226,7 +227,7 @@ def generate_encounter(
         raise ValueError("Unknown generation mode.")
     if generation_mode == "novel" and profile_id is None and family_id is None and variant_id is None:
         from generated_case import generate_ai_encounter
-        return generate_ai_encounter(challenge_id, base_state, api_key, model, seed, client, review_model)
+        return generate_ai_encounter(challenge_id, base_state, api_key, model, seed, client, review_model, progress)
     if challenge_id in BIAS_CHALLENGES:
         if profile_id is not None:
             raise ValueError("Use a clinical family and patient variant for this challenge.")

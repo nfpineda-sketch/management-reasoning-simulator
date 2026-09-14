@@ -8,13 +8,14 @@ from copy import deepcopy
 import hashlib
 import json
 import secrets
+from time import monotonic
 
 from cognitive_catalog import BIAS_CHALLENGES, CATALOG_VERSION
 from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
 from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.17.1"
+GENERATOR_VERSION = "0.17.2"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -152,7 +153,7 @@ def generation_capabilities():
             "executable_contract": executable_generation_constraints()}
 
 
-def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=None, client=None, review_model=None):
+def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=None, client=None, review_model=None, progress=None):
     """Return frozen new case after authoring + separate consistency review.
 
     Failure leaves base_state untouched and never substitutes a bank case. Replay
@@ -174,6 +175,14 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
     stage = "SETUP"
     author_responses = []
     correction_count = 0
+    timings = {}
+    started = monotonic()
+
+    def report(name):
+        # Only fixed stage names reach the UI, never unreviewed patient facts.
+        if progress is not None:
+            progress(name)
+
     try:
         if client is None:
             from openai import OpenAI
@@ -181,32 +190,47 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
         request = {"learning_challenge": objective, "variation_seed": seed,
                    "capabilities": generation_capabilities()}
         stage = "AUTHOR"
+        report("author")
+        requested = monotonic()
         authored = _call(client, used_model, AUTHOR_INSTRUCTIONS, request, CASE_SCHEMA, "new_clinical_case", 24000)
+        timings["author_seconds"] = round(monotonic() - requested, 3)
         author_responses.append(authored)
         raw = _response_data(authored, CASE_SCHEMA, stage)
+        report("validation")
         try:
             case = compile_case(raw)
         except ValueError as exc:
             # Exactly one repair of a fully structured fictional draft. The
             # full validators and separate reviewer still have to approve it.
-            # The rejected draft and feedback never reach a learner or logs.
+            # All independently detected issues are sent together so the repair
+            # need not guess which check comes after the first failure. Neither
+            # the rejected draft nor detailed feedback reach learners or logs.
             stage = "CORRECTION"
             correction_count = 1
+            report("correction")
             correction = {**request, "proposed_case": raw,
                           "validation_feedback": str(exc)[:1000],
-                          "task": "Correct the proposed case to satisfy the executable contract. Preserve its clinical problem and coherent facts. Return the full corrected case; do not weaken or bypass checks."}
+                          "validation_issues": getattr(exc, "issues", []),
+                          "task": "Correct ALL listed validation issues together, then recheck the entire proposed case against the executable contract. For trajectory issues use the supplied field, time, exposure and bounds to calculate consistent authored effects. Preserve the clinical problem and coherent facts; do not conceal inconsistencies by removing necessary treatments, zeroing all effects, making the patient healthy, or shortening the observation window without clinical justification. Return the full corrected case; do not weaken or bypass checks."}
+            requested = monotonic()
             authored = _call(client, used_model, AUTHOR_INSTRUCTIONS, correction, CASE_SCHEMA,
                              "new_clinical_case", 24000, stage)
+            timings["correction_seconds"] = round(monotonic() - requested, 3)
             author_responses.append(authored)
             raw = _response_data(authored, CASE_SCHEMA, stage)
+            report("validation")
             try:
                 case = compile_case(raw)
-            except ValueError:
-                raise generation_error("CONTRACT", stage) from None
+            except ValueError as exc:
+                from generated_case_validation import safe_validation_codes
+                raise generation_error("CONTRACT", stage, validation_codes=safe_validation_codes(exc)) from None
         stage = "REVIEW"
+        report("review")
+        requested = monotonic()
         reviewed = _call(client, checker_model, REVIEW_INSTRUCTIONS,
-                         {"learning_challenge": objective, "case": case, "capabilities": generation_capabilities()},
+                         {"learning_challenge": objective, "case": case, "capabilities": request["capabilities"]},
                          REVIEW_SCHEMA, "clinical_consistency_review", 6000, stage)
+        timings["review_seconds"] = round(monotonic() - requested, 3)
         review = _response_data(reviewed, REVIEW_SCHEMA, stage)
         if not review["coherent"] or not all(review["checks"].values()) or review["issues"]:
             raise generation_error("REVIEW", stage)
@@ -243,10 +267,12 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
                                             for key in ("input_tokens", "output_tokens", "total_tokens")
                                             if any(key in _usage(response) for response in author_responses)},
                            "authoring_requests": len(author_responses), "correction_count": correction_count,
+                           "generation_timings": {**timings, "total_seconds": round(monotonic() - started, 3)},
                            "review_usage": _usage(reviewed),
                            "review": deepcopy(review), "raw_case_sha256": _digest(raw),
                            "execution_model": "bounded_declarative_v1"}}
     spec["content_sha256"] = _digest(spec)
     state["encounter_spec"] = deepcopy(spec)
     state["encounter_facts"] = deepcopy(case["patient"])
+    report("complete")
     return {"state": state, "spec": spec, "presentation": case["presentation"], "source": "ai", "warning": None}
