@@ -1,4 +1,11 @@
-# Clinical encounter workspace v0.17.6
+# Clinical encounter workspace v0.17.7
+
+Live testing also found isolated uncertainty about non-severe respiratory
+effort. That detail may now be deferred explicitly to examination alongside
+mild skin moisture, provided all definite-conflict checks pass. Severe/reduced
+breathing effort and every other uncertain domain remain blocking. Known
+conflicts take priority over uncertainty in diagnostics and correction. See
+[v0.17.7](docs/RELEASE_v0.17.7.md).
 
 Isolated uncertainty about **mild skin moisture** no longer discards an otherwise
 consistent patient image. All nine checks must report no definite conflict and

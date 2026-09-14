@@ -69,8 +69,9 @@ def request(jobs, state):
 
 
 @pytest.mark.parametrize("needs_correction", [False, True])
+@pytest.mark.parametrize('uncertain_domains', [['diaphoresis'], ['respiratory_posture'], ['diaphoresis', 'respiratory_posture']])
 def test_reported_mild_sweat_uncertainty_renders_current_image_without_extra_generation(
-        monkeypatch, state, pool, needs_correction):
+        monkeypatch, state, pool, needs_correction, uncertain_domains):
     # Replay the reported state through the real reviewer parser, job cache and
     # renderer. Replace only external image generation and the provider response.
     import base64
@@ -83,7 +84,7 @@ def test_reported_mild_sweat_uncertainty_renders_current_image_without_extra_gen
     Image.new('RGB', (32, 32), (40, 50, 60)).save(out, format='PNG')
     encoded = base64.b64encode(out.getvalue()).decode('ascii')
     uncertain = passing_result()
-    uncertain['uncertain_checks'] = ['diaphoresis']
+    uncertain['uncertain_checks'] = uncertain_domains
     response = Responses(uncertain)
     calls = {'generate': 0, 'repair': 0, 'screen': 0}
     before = deepcopy(state)
@@ -110,11 +111,12 @@ def test_reported_mild_sweat_uncertainty_renders_current_image_without_extra_gen
     pool.complete()
     current = jobs.current(signature)
     assert current == encoded
-    assert current.limitations == ('mild_skin_moisture',)
+    expected_limits = tuple({'diaphoresis':'mild_skin_moisture','respiratory_posture':'breathing_effort'}[x] for x in uncertain_domains)
+    assert current.limitations == expected_limits
     assert jobs.status(signature)['state'] == 'ready'
     html = clinical_scene.scene_html(current, '<div>HR 118</div>')
     assert 'background-image:url(data:image/png;base64,' + encoded in html
-    assert 'Skin moisture is not discernible' in html and 'HR 118' in html
+    assert 'not discernible in this still view' in html and 'HR 118' in html
     assert 'unavailable' not in html and 'IMAGE-SCREEN-UNCERTAIN' not in html
     assert 'not discernible' not in clinical_scene.scene_html(current, '', current=False)
     assert encoded not in clinical_scene.scene_html(current, '', current=False)

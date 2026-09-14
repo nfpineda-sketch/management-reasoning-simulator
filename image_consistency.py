@@ -157,16 +157,21 @@ def _result(payload, expected_contract=None):
     # Mild moisture can be below the wide bedside image's resolving power. Do
     # not discard a coherent patient for this alone or claim it was verified.
     # Every other domain must pass, and a definite sweat conflict still rejects.
-    if (uncertain == ["diaphoresis"] and all(checks.values())
-            and expected_contract is not None
-            and _contract(expected_contract)["diaphoresis"] == "mild"):
+    permissible = {}
+    if expected_contract is not None:
+        expected = _contract(expected_contract)
+        if expected['diaphoresis'] == 'mild':
+            permissible['diaphoresis'] = 'mild_skin_moisture'
+        if expected['work_of_breathing'] in ('mildly increased', 'increased', 'moderately increased'):
+            permissible['respiratory_posture'] = 'breathing_effort'
+    if uncertain and all(checks.values()) and set(uncertain) <= set(permissible):
         return {"accepted": True, "checks": checks, "uncertain_checks": uncertain,
-                "limitations": ["mild_skin_moisture"]}
-    if uncertain:
-        raise ImageConsistencyError("uncertain", uncertain)
+                "limitations": [permissible[name] for name in uncertain]}
     failed = [name for name in CHECK_IDS if not checks[name]]
     if failed:
         raise ImageConsistencyError("mismatch", failed)
+    if uncertain:
+        raise ImageConsistencyError("uncertain", uncertain)
     return {"accepted": True, "checks": checks, "uncertain_checks": []}
 
 
@@ -177,8 +182,8 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
     Only the bounded visible appearance contract and fictional image(s) leave
     this process. No retry, image regeneration, physiology mutation or logging
     occurs here. Failures, refusals and incomplete responses reject the candidate.
-    Isolated uncertainty about mild skin moisture permits a labelled limited
-    image only when every boolean check passes; all other uncertainty rejects.
+    Unresolved mild moisture or non-severe breathing effort permits a labelled
+    limited image only when every boolean check passes; other uncertainty rejects.
     Successful screening remains fallible and is not evidence
     that a static photograph is clinically diagnostic.
     """

@@ -22,7 +22,7 @@ import secrets
 from typing import Any
 
 
-GENERATOR_VERSION = "0.17.6"
+GENERATOR_VERSION = "0.17.7"
 SPEC_VERSION = "mrs.ps001.encounter.v1"
 DEFAULT_MODEL = "gpt-5-mini"
 SUPPORTED_CHALLENGES = ("R1-03", "R1-04", "R2-01")

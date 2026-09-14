@@ -12,7 +12,7 @@ from patient_appearance import appearance_state, generate_appearance
 from scene_errors import safe_image_error
 from scene_repair import repair_scene
 
-SCENE_PIPELINE_VERSION = 4
+SCENE_PIPELINE_VERSION = 5
 _LOG = logging.getLogger(__name__)
 
 
@@ -21,7 +21,7 @@ class ScreenedImage(str):
 
     def __new__(cls, encoded, limitations=()):
         value = super().__new__(cls, encoded)
-        value.limitations = tuple(x for x in limitations if x == 'mild_skin_moisture')
+        value.limitations = tuple(x for x in limitations if x in ('mild_skin_moisture', 'breathing_effort'))
         return value
 
 

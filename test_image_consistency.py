@@ -130,10 +130,19 @@ def test_moisture_exception_requires_explicitly_mild_finding(image, contract, de
         run(image, contract, Responses(response))
 
 
-@pytest.mark.parametrize("check", [x for x in CHECK_IDS if x != "diaphoresis"])
+@pytest.mark.parametrize("check", [x for x in CHECK_IDS if x not in ("diaphoresis", "respiratory_posture")])
 def test_mild_sweat_uncertainty_cannot_hide_other_uncertainty(image, contract, check):
     response = passing_result()
     response["uncertain_checks"] = ["diaphoresis", check]
+    with pytest.raises(ImageConsistencyError):
+        run(image, contract, Responses(response))
+
+
+@pytest.mark.parametrize('effort', ['severe', 'markedly increased', 'reduced', 'not recorded'])
+def test_respiratory_limitation_never_applies_to_severe_reduced_or_unknown_effort(image, contract, effort):
+    contract['work_of_breathing'] = effort
+    response = passing_result()
+    response['uncertain_checks'] = ['respiratory_posture']
     with pytest.raises(ImageConsistencyError):
         run(image, contract, Responses(response))
 
