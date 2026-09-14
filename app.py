@@ -10,7 +10,7 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-SIMULATOR_VERSION = "0.20.0-clinical-encounter"
+SIMULATOR_VERSION = "0.21.0-clinical-encounter"
 
 import importlib
 import generation_reload as _generation_reload
@@ -1298,7 +1298,7 @@ def _immediate_expectation_text(expected, event):
         # A trailing 'without worsening oxygenation' qualifies preservation;
         # it must not turn oxygenation into an expected improvement.
         clause = re.split(r"\b(?:without|sin)\b", clause, maxsplit=1)[0].strip()
-        if not clause or re.search(r"\b(?:no|not|never|don't|doesn't|won't|cannot|can't|unlikely)\b", clause):
+        if not clause or re.search(r"\b(?:no|not|never|don't|doesn't|won't|wouldn't|cannot|can't|unlikely)\b", clause):
             continue
         horizon = re.search(
             r"\b(?:in|after|within|en|a los|dentro de)\s+"
@@ -4619,20 +4619,43 @@ def _oxygen_order_clauses(text):
         (r"\b(?:administrar|administra|administre|aplicar)\b", "administer"),
         (r"\b(?:colocar|coloca|coloque|poner|pon|ponga)\b", "place"),
         (r"\b(?:mantener|mantenga|mant[eé]n|continuar|contin[uú]a)\b", "continue"),
+        (r"\b(?:aumentar|aumenta|aumente|subir|sube|suba)\b", "increase"),
+        (r"\b(?:disminuir|disminuye|disminuya|reducir|reduce|reduzca|bajar|baja|baje)\b", "decrease"),
         (r"\bpero\b", "but"),
         (r"\b(?:si|cuando|considerar|considerar[ií]a|podr[ií]a|deber[ií]a|evitar|suspender|previamente)\b", "if"),
     ):
         raw = re.sub(pattern, replacement, raw)
     aliases = r"(?:oxygen|o2|nas+al\s+can+ula|nc|non-?rebreather|nrb|simple\s+mask|face\s+mask)"
     commands = r"(?:start|initiate|give|administer|apply|increase|decrease|switch|change|place|put|continue|provide|order|deliver|set|begin|supplement)"
-    boundaries = commands + r"|reassess|recheck|obtain|infuse|bolus|perform|intubate"
+    observations = r"(?:re-?assess|re-?check|re-?evaluate|assess|check|monitor|measure|observe|evaluar|reevaluar|revaluar|medir|vigilar|monitorizar)"
+    boundaries = commands + "|" + observations + r"|obtain|infuse|bolus|perform|intubate"
     clauses = []
     for sentence in re.split(r"\.(?!\d)|[;\n]", raw):
         mentions = list(re.finditer(rf"\b{aliases}\b", sentence))
         for mention in mentions:
             prefix = sentence[:mention.start()]
+            tail = sentence[mention.end():]
+            # Oxygen saturation is a measured variable, even in a comma-separated
+            # reassessment list or a stated goal to increase saturation. Its name
+            # must not become a bare oxygen-administration order. Keep actual
+            # directives such as "give oxygen to target saturation 94%" intact.
+            if mention.group() in {"oxygen", "o2"} and (
+                re.match(r"\s+(?:saturations?|sats?|levels?|readings?|saturaci[oó]n)\b", tail)
+                or re.search(
+                    r"\b(?:saturations?|sats?|levels?|readings?|saturaci[oó]n|niveles?)\s+(?:(?:of|de|del)\s+)?$",
+                    prefix,
+                )
+            ):
+                continue
             command_matches = list(re.finditer(rf"\b{commands}\b", prefix))
             command = command_matches[-1] if command_matches else None
+            observation_matches = list(re.finditer(rf"\b{observations}\b", prefix))
+            if observation_matches and (
+                command is None or observation_matches[-1].start() > command.start()
+            ):
+                # An observation verb still governs later items in its list;
+                # only a subsequent treatment command starts a new order.
+                continue
             commanded = bool(command and mention.start() - command.end() <= 65)
             if commanded:
                 start = command.start()
@@ -4641,7 +4664,6 @@ def _oxygen_order_clauses(text):
                 if not compact:
                     continue
                 start = mention.start()
-            tail = sentence[mention.end():]
             next_command = re.search(rf"\b(?:{boundaries})\b", tail)
             end = mention.end() + next_command.start() if next_command else len(sentence)
             # A later independent command owns its negation/condition. Examples:
@@ -5448,27 +5470,32 @@ def extract_explicit_reasoning(text):
     # later infinitive. Without this precedence, "I expect pressure to increase
     # and perfusion to improve" was truncated to "increase and perfusion to
     # improve" because the generic parser started at the second word "to".
-    direct_expectation = re.search(
-        r"\b(?:i|we)\s+(?:would\s+)?(?:expect|anticipate)\s+(.+?)"
+    # Keep every explicit expectation in sentence order, preserving negation.
+    # A negative oxygenation expectation must not erase a separate positive
+    # pressure expectation, or be inverted by the later infinitive fallback.
+    expectation_clauses = []
+    direct_expectations = re.finditer(
+        r"\b(?:i|we)\s+(?:(?P<negation>do\s+not|don['’]t|would\s+not|wouldn['’]t)\s+|would\s+)?"
+        r"(?:expect|anticipate)\s+(?P<effect>.+?)"
         r"(?=\s+if\b|\s*,?\s*(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
         joined,
         re.I,
     )
-    if direct_expectation:
-        candidate = _clean_reasoning_phrase(direct_expectation.group(1))
-        candidate = re.sub(
-            r"^(?:this|it|that)\s+(?:to|will)\s+",
-            "",
-            candidate or "",
-            flags=re.I,
-        )
-        if candidate and re.search(
-            r"\b(?:improv|restor|increas|decreas|reduc|support|correct|stabili|"
-            r"remain|maintain|preserv|sustain|convert|conversion|stop\s+worsening)",
-            candidate,
-            re.I,
-        ):
-            reasoning["expected_effect"] = candidate
+    for expectation in direct_expectations:
+        if expectation.group("negation"):
+            candidate = _clean_reasoning_phrase(expectation.group())
+        else:
+            candidate = _clean_reasoning_phrase(expectation.group("effect"))
+            candidate = re.sub(
+                r"^(?:this|it|that)\s+(?:to|will)\s+",
+                "",
+                candidate or "",
+                flags=re.I,
+            )
+        if candidate:
+            expectation_clauses.append(candidate)
+    if expectation_clauses:
+        reasoning["expected_effect"] = "; ".join(expectation_clauses)
 
     # Explicit intended/expected effect only. Search all candidate purpose clauses
     # and reject clauses that belong to a stated priority/goal rather than an

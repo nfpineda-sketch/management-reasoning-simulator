@@ -516,6 +516,14 @@ def _collect_diagnostic(state, diagnostic, duration):
             co2 = result.get("pco2_mm_hg", result.get("paco2_mm_hg"))
             if _finite(co2) and co2 > 0 and _finite(result["bicarbonate_mmol_l"]) and result["bicarbonate_mmol_l"] > 0:
                 result["ph"] = round(6.1 + math.log10(result["bicarbonate_mmol_l"] / (.03 * co2)), 2)
+        if diagnostic in {"abg", "vbg"}:
+            # Snapshot support at sampling, never when the delayed result returns.
+            fio2 = state["family_state"]["oxygen_fio2"]
+            result["fio2_percent"] = round(fio2 * 100, 1)
+            result.pop("pf_ratio", None)
+            result.pop("report", None)
+            if diagnostic == "abg" and _finite(result.get("pao2_mm_hg")):
+                result["pf_ratio"] = round(result["pao2_mm_hg"] / fio2)
         result["time_min"] = int(state.get("sim_time", 0))
     return {"type": "diagnostic", "diagnostic_type": diagnostic, "result": result, "duration_min": duration}
 
