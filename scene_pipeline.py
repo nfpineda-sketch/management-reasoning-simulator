@@ -12,8 +12,17 @@ from patient_appearance import appearance_state, generate_appearance
 from scene_errors import safe_image_error
 from scene_repair import repair_scene
 
-SCENE_PIPELINE_VERSION = 3
+SCENE_PIPELINE_VERSION = 4
 _LOG = logging.getLogger(__name__)
+
+
+class ScreenedImage(str):
+    """Image bytes plus a fixed, non-diagnostic limitation retained by the cache."""
+
+    def __new__(cls, encoded, limitations=()):
+        value = super().__new__(cls, encoded)
+        value.limitations = tuple(x for x in limitations if x == 'mild_skin_moisture')
+        return value
 
 
 def _progress(callback, stage):
@@ -40,7 +49,7 @@ def _screen(candidate, state, api_key, review_model, reference=None, progress=No
         if isinstance(failure, ImageConsistencyError):
             raise
         raise error from None
-    return candidate
+    return ScreenedImage(candidate, result.get('limitations', ()))
 
 
 def _screen_with_correction(candidate, state, api_key, model, review_model, reference=None, progress=None):

@@ -1,4 +1,12 @@
-# Clinical encounter workspace v0.17.5
+# Clinical encounter workspace v0.17.6
+
+Isolated uncertainty about **mild skin moisture** no longer discards an otherwise
+consistent patient image. All nine checks must report no definite conflict and
+no other domain may be uncertain. The scene explicitly says that skin moisture
+is not discernible in this view and should be assessed during examination. This
+does not waive visible conflicts, marked sweating, or uncertainty about patient
+engagement, coloration, respiratory posture or equipment. See
+[v0.17.6](docs/RELEASE_v0.17.6.md).
 
 Image screening now receives explicit visible features and a detail crop of the
 same patient alongside the complete image, within one review request. It checks

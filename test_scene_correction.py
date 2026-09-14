@@ -68,6 +68,63 @@ def request(jobs, state):
     return signature
 
 
+@pytest.mark.parametrize("needs_correction", [False, True])
+def test_reported_mild_sweat_uncertainty_renders_current_image_without_extra_generation(
+        monkeypatch, state, pool, needs_correction):
+    # Replay the reported state through the real reviewer parser, job cache and
+    # renderer. Replace only external image generation and the provider response.
+    import base64
+    from io import BytesIO
+    from types import SimpleNamespace
+    from PIL import Image
+    from image_consistency import inspect_image
+    from test_image_consistency import Responses, passing_result
+    out = BytesIO()
+    Image.new('RGB', (32, 32), (40, 50, 60)).save(out, format='PNG')
+    encoded = base64.b64encode(out.getvalue()).decode('ascii')
+    uncertain = passing_result()
+    uncertain['uncertain_checks'] = ['diaphoresis']
+    response = Responses(uncertain)
+    calls = {'generate': 0, 'repair': 0, 'screen': 0}
+    before = deepcopy(state)
+
+    def generate(*args):
+        calls['generate'] += 1
+        return encoded
+
+    def repair(*args, **kwargs):
+        calls['repair'] += 1
+        return encoded
+
+    def screen(candidate, contract, key, **kwargs):
+        calls['screen'] += 1
+        if needs_correction and calls['screen'] == 1:
+            return screened_result('expression')
+        return inspect_image(candidate, contract, key, client=SimpleNamespace(responses=response), **kwargs)
+
+    monkeypatch.setattr(clinical_scene, 'generate_scene', generate)
+    monkeypatch.setattr(scene_pipeline, 'repair_scene', repair)
+    monkeypatch.setattr(scene_pipeline, 'inspect_image', screen)
+    jobs = scene_jobs.SceneJobs()
+    signature = request(jobs, state)
+    pool.complete()
+    current = jobs.current(signature)
+    assert current == encoded
+    assert current.limitations == ('mild_skin_moisture',)
+    assert jobs.status(signature)['state'] == 'ready'
+    html = clinical_scene.scene_html(current, '<div>HR 118</div>')
+    assert 'background-image:url(data:image/png;base64,' + encoded in html
+    assert 'Skin moisture is not discernible' in html and 'HR 118' in html
+    assert 'unavailable' not in html and 'IMAGE-SCREEN-UNCERTAIN' not in html
+    assert 'not discernible' not in clinical_scene.scene_html(current, '', current=False)
+    assert encoded not in clinical_scene.scene_html(current, '', current=False)
+    for _ in range(4):
+        request(jobs, state)
+        assert jobs.current(signature) is current
+    assert calls == {'generate': 1, 'repair': int(needs_correction), 'screen': 1 + int(needs_correction)}
+    assert len(response.calls) == 1 and state == before
+
+
 def test_corrected_initial_image_is_the_only_candidate_accepted_into_cache(monkeypatch, state, pool, caplog):
     jobs = scene_jobs.SceneJobs()
     signature = appearance_signature(state)

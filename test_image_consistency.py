@@ -112,6 +112,32 @@ def test_uncertainty_rejects_even_when_boolean_checks_pass(image, contract):
     assert failure.value.failed_checks == ("gaze_and_eyelids",)
 
 
+@pytest.mark.parametrize("check", CHECK_IDS)
+def test_mild_sweat_uncertainty_cannot_hide_any_definite_conflict(image, contract, check):
+    response = passing_result()
+    response["uncertain_checks"] = ["diaphoresis"]
+    response["checks"][check] = False
+    with pytest.raises(ImageConsistencyError):
+        run(image, contract, Responses(response))
+
+
+@pytest.mark.parametrize("degree", ["marked", "absent", "not recorded"])
+def test_moisture_exception_requires_explicitly_mild_finding(image, contract, degree):
+    contract["diaphoresis"] = degree
+    response = passing_result()
+    response["uncertain_checks"] = ["diaphoresis"]
+    with pytest.raises(ImageConsistencyError):
+        run(image, contract, Responses(response))
+
+
+@pytest.mark.parametrize("check", [x for x in CHECK_IDS if x != "diaphoresis"])
+def test_mild_sweat_uncertainty_cannot_hide_other_uncertainty(image, contract, check):
+    response = passing_result()
+    response["uncertain_checks"] = ["diaphoresis", check]
+    with pytest.raises(ImageConsistencyError):
+        run(image, contract, Responses(response))
+
+
 @pytest.mark.parametrize("mutate", [
     lambda value: value.pop("checks"),
     lambda value: value["checks"].pop("expression"),

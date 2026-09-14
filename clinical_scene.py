@@ -9,7 +9,7 @@ from html import escape
 from PIL import Image
 import streamlit as st
 
-SCENE_RENDER_VERSION = 10
+SCENE_RENDER_VERSION = 11
 
 # Only recorded patient-history topics are exposed to conversational retrieval.
 # The full case specification also includes diagnoses and teaching objectives.
@@ -182,11 +182,14 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
     status = 'Patient illustration · current state' if current else (
         'Updating patient appearance' if pending else 'Current patient image unavailable')
     detail = scene_status_text(image_status) if not current else ''
+    limitation = ('Skin moisture is not discernible in this view; assess during examination.'
+                  if current and 'mild_skin_moisture' in getattr(image_b64, 'limitations', ()) else '')
     return ("<style>" + BEDSPACE_CSS + "</style>" +
             f'<div class="clinical-scene" style="{bg}">' +
             f'<div class="scene-monitor">{monitor}{ecg}</div>' +
             f'<div class="scene-time">ED / Bed 03 · {escape(status)}</div>' +
             (f'<div class="scene-image-status" role="status">{escape(detail)}</div>' if detail else '') +
+            (f'<div class="scene-observations">{limitation}</div>' if limitation else '') +
             (f'<div class="scene-observations">{escape(observations)}</div>' if not current else '') + '</div>')
 
 
