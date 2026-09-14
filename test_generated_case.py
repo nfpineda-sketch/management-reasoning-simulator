@@ -18,7 +18,7 @@ def novel_payload(*, diagnosis="Acute adrenal crisis following glucocorticoid wi
     state_changes = lambda **kw: {key: kw.get(key) for key in STATE_TEXT}
     def rule(identifier, action, field, reference, delta, agent=None, route=None):
         return {"id": identifier, "action_type": action, "agent": agent, "route": route,
-                "units": None, "device": None, "settings": None, "interpolate_settings": None, "washout_min": None, "state_gain": {"field":"fluid_delivered_ml", "points":[{"value":0,"factor":1},{"value":2000,"factor":.5}]} if action == "fluid" else None, "recovery_min": None, "mental_status_during": None, "mental_status_threshold": None, "rhythm_before": None, "recurrence": None, "rhythm_after": None, "dose_field": field, "reference_dose": reference,
+                "exposure_pool": None, "volume_basis": "circulating" if action == "fluid" else None, "diuresis_ml_min": None, "exposure_curve": None, "units": None, "device": None, "settings": None, "interpolate_settings": None, "washout_min": None, "state_gain": {"field":"fluid_delivered_ml", "points":[{"value":0,"factor":1},{"value":2000,"factor":.5}]} if action == "fluid" else None, "recovery_min": None, "mental_status_during": None, "mental_status_threshold": None, "rhythm_before": None, "recurrence": None, "rhythm_after": None, "dose_field": field, "reference_dose": reference,
                 "onset_min": 0 if action == "fluid" else 10, "duration_min": 10 if action == "fluid" else 30,
                 "max_exposure": 2, "delta": [{"field": key, "value": value} for key, value in delta.items()],
                 "explanation": "A bounded illustrative response to documented exposure, requiring expert validation."}
@@ -58,12 +58,13 @@ def novel_payload(*, diagnosis="Acute adrenal crisis following glucocorticoid wi
                                      {"hemoglobin_g_dl": "hemoglobin_g_dl", "glucose_mg_dl": "glucose_mg_dl"}, 10),
                                study("pocus", {"lv": "Hyperdynamic contraction.", "lungs": "No diffuse B-lines.", "rv": "No enlargement."}),
                                study("cortisol", {"cortisol_ug_dl": 1.2}, duration=60)],
-            "engine": {"model": "declarative_v1", "horizon_min": 60, "stable_diagnostics": ["pocus"],
+            "engine": {"volume_model": {"initial_extravascular_ml":0,"redistribution_half_life_min":28,"clearance_half_life_min":120,"extravascular_fraction":.5,"diuresis_extravascular_fraction":.7}, "terminal_rule":None, "model": "declarative_v1", "horizon_min": 60, "stable_diagnostics": ["pocus"],
                        "initial_labs": {"hemoglobin_g_dl": 12.4, "lactate_mmol_l": 3, "pco2_mm_hg": 35,
                                         "bicarbonate_mmol_l": 22, "pao2_mm_hg": 92},
                        "untreated_drift_per_min": [{"field": "sbp", "value": -.12}, {"field": "dbp", "value": -.05}],
                        "response_rules": [rule("crystalloid_response", "fluid", "volume_ml", 500, {"sbp": 10, "dbp": 5, "crt": -1}),
-                                          rule("steroid_response", "steroid", "dose_mg", 100, {"sbp": 12, "dbp": 5, "hr": -10, "crt": -1}, "hydrocortisone", "IV")],
+                                          rule("steroid_response", "steroid", "dose_mg", 100, {"sbp": 12, "dbp": 5, "hr": -10, "crt": -1}, "hydrocortisone", "IV"),
+                                          {**rule("extravascular", "fluid", "volume_ml", 500, {}), "volume_basis":"extravascular"}],
                        "state_rules": [{"id": "worsening_flow", "diagnostic_updates": None, "when": [{"field": "sbp", "operator": "lt", "value": 80}],
                                         "set": state_changes(mental_status="Drowsy", peripheral_perfusion="severely impaired",
                                                              visual={**visual, "expression": "markedly uncomfortable", "skin_color": "pallor"}),

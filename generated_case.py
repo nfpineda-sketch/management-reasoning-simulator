@@ -15,7 +15,7 @@ from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
 from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.22.0"
+GENERATOR_VERSION = "0.23.0"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -48,8 +48,9 @@ appearance must convey illness proportionately (comfort, pallor, diaphoresis, re
 wellness portrait. Do not infer skin color solely from a blood pressure number. Author visible signs explicitly and let state rules
 change them only when clinically coherent. Preserve focal exam facts unless a state rule explicitly changes them.
 
-Data-driven engine model: untreated_drift_per_min is a list of changes per simulated minute. response_rules.delta is a TOTAL change
-in each listed physiological variable over duration_min AFTER onset_min, per reference_dose exposure, capped at max_exposure. Omit
+Data-driven engine model: untreated_drift_per_min is a list of changes per simulated minute. For rules without volume_basis/exposure_curve, response_rules.delta is a TOTAL change
+in each listed physiological variable over duration_min AFTER onset_min, per reference_dose exposure, capped at max_exposure.
+The coupled volume and active-load rules below replace that generic envelope when declared. Omit
 unchanged delta fields. Each treatment rule must match the exact action_type, drug agent and canonical route, units and device where
 applicable. These are internal simulation exposure scales, not recommendations displayed to the resident. Use clinically plausible
 scales and latencies; no automatic doses. A tiny dose must not produce a full treatment effect. Dose-scaled medications must have
@@ -84,6 +85,30 @@ mental_status_during and mental_status_threshold are null for nonsedating rules.
 Use recovery_min for other fixed-dose drugs when the effect should wear off; it is mandatory for beta_blocker, diltiazem and amiodarone.
 Infusions (norepinephrine, dobutamine, nitroglycerin) require washout_min, with recovery_min null.
 Their effects approach a changed dose over onset_min + duration_min and fade after stopping over washout_min.
+Shared clinical physiology: every NEW case declares volume_model with patient-specific redistribution half-life,
+clearance half-life, retained-to-extravascular fraction, initial extravascular excess and diuresis removal fraction.
+These are teaching parameters in mL/minutes, NOT the dimensionless PS001 coefficients. Never derive them from learner reasoning.
+Fluid rules must use volume_basis=circulating or extravascular. Their delta/reference_dose now describes current net compartment
+volume, not cumulative bolus exposure. Circulating volume is retained fluid minus diuretic deficit; extravascular volume is change
+from arrival. Separate benefit and congestion rules so redistribution can remove benefit while congestion persists. Include
+both bases even if one has explicitly zero effect. Do not count fluid again as a fixed permanent response. Cap the authored
+exposure conservatively; outside the cap the compartment still conserves mass but its measured effect saturates.
+Diuretic rules declare diuresis_ml_min per reference dose and recovery_min; renal removal preferentially reduces extravascular
+volume, then retained fluid and finally creates volume deficit. Use delta=[] for effects already represented by the fluid rules.
+Beta blockers/diltiazem/amiodarone require separate exposure_curve rules for nodal benefit and hemodynamic cost as appropriate.
+Curve = [saturating_weight*(1-exp(-rate*active_load)) + progressive_weight*active_load**power] normalized at load=1.
+Active loads pool repeated doses of the same rule using the original depot/effect-site recurrence, parameterized by
+exposure_curve.onset_half_life_min and elimination_half_life_min; onset_min is an initial delay. For these curves recovery_min
+is retained for compatibility, but the exponential pharmacokinetics replace the linear response envelope. max_exposure caps CURRENT active load,
+not total lifetime administrations. Avoid duplicated identical effects in separate rules. Sedation may also use a curve.
+To combine equivalent agents into one active drug load, use the same exposure_pool identifier on their corresponding rules.
+Members must share delta, max_exposure, state_gain and curve shape; reference doses and kinetic half-lives may differ.
+Use separate pools for nodal benefit and myocardial cost, so agents do not duplicate the same physiological effect.
+Use exposure_pool=null for independent effects. Use volume_basis, diuresis_ml_min and exposure_curve=null when not applicable. State and POCUS rules may read fluid_retained_ml,
+fluid_extravascular_ml, fluid_deficit_ml and fluid_output_ml. These internal volumes are not automatically learner measurements.
+terminal_rule=null means no modeled collapse. Otherwise specify simultaneous physiological conditions sustained for 1–60 minutes,
+never a dose-count or label trigger. Collapse creates irreversible PEA, stops simulation time and makes pulse-dependent readings
+unavailable; do not promise CPR/defibrillation because the inherited engine does not execute resuscitation. Initial pulse is required.
 Use state_gain to couple a response to a declared numeric field, elapsed_min or fluid_delivered_ml. Its 2–8 strictly increasing
 points specify value/factor pairs; factors lie between 0 and 1. Values outside the curve use its end factors. Every fluid response
 requires a state_gain curve, including a constant curve when appropriate. Model diminishing benefit and increasing harm with
@@ -104,7 +129,7 @@ authored effects must account for hemodynamic/respiratory consequences. Do not a
 No learner grading, bias name, answer quality, reward or punishment may influence physiology. At least two state
 rules must describe clinically observable change during deterioration AND improvement; each rule is applied to actual current
 numeric fields, all conditions must match, and later matching rules override earlier ones. Mental status/ECG/exam changes need a
-physiological explanation. A changed mental-status category must include updated Neurological examination findings. Pulse-less arrest is outside this execution model; keep pulse_present true. Set horizon_min 30–180.
+physiological explanation. A changed mental-status category must include updated Neurological examination findings. Keep pulse_present true at arrival and in ordinary state_rules; only terminal_rule may produce irreversible PEA after sustained deterioration. Set horizon_min 30–180.
 
 All five engine.initial_labs are internal baseline measurements; no measurement is exposed before being obtained. Required source
 studies: poc_glucose, temperature, basic_labs, pocus. Add every study reasonably needed for the authored dilemma. Numerical labs

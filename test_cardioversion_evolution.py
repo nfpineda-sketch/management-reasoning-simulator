@@ -129,7 +129,7 @@ def test_generated_schema_compiles_recurrence_for_execution():
     from generated_case_schema import compile_case
     raw=novel_payload();raw['observable']['rhythm']='af'
     shock=deepcopy(raw['engine']['response_rules'][0])
-    shock.update(id='shock',action_type='cardioversion',dose_field=None,reference_dose=None,onset_min=0,duration_min=1,max_exposure=1,
+    shock.update(volume_basis=None,id='shock',action_type='cardioversion',dose_field=None,reference_dose=None,onset_min=0,duration_min=1,max_exposure=1,
                  state_gain=None,settings=[{'field':'energy_j','value':200}],rhythm_before='af',rhythm_after='sinus rhythm',
                  delta=[{'field':'hr','value':-34}],recurrence={'after_min':5,'when':[], 'rhythm_after':'af','delta':[]})
     raw['engine']['response_rules'].append(shock)

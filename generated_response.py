@@ -49,7 +49,8 @@ def select_responses(rules, action, matches):
 def diagnostic_overrides(state, diagnostic):
     from generated_engine import _COMPARATORS
     g = state.get('generated_state', {})
-    values = dict(g.get('values', {}))
+    from generated_physiology import drivers
+    values = {**g.get('values', {}), **drivers(state)}
     values.update(elapsed_min=g.get('elapsed',0), fluid_delivered_ml=state.get('family_state',{}).get('fluid_delivered_ml',0))
     overrides = {}
     for rule in state.get('encounter_spec',{}).get('clinical_case',{}).get('engine',{}).get('state_rules',[]):

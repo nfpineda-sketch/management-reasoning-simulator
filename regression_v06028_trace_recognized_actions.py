@@ -2,7 +2,7 @@ from pathlib import Path
 import ast
 
 s = Path("app.py").read_text()
-assert "v0.6.0.28" in s
+assert "v0.6.0.28" in Path("clinical_physiology.py").read_text()
 assert 'event.get("recognized_future_actions")' in s
 assert '(recognized; not yet executable)' in s
 assert 'return " + ".join(labels) if labels else "Reassessment"' in s

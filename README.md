@@ -1,6 +1,6 @@
-# Clinical encounter workspace v0.18.0
+# Clinical encounter workspace v0.23.0
 
-See [v0.18.0 release notes](docs/RELEASE_v0.18.0.md) for shared order interpretation, active treatment adjustments and generated procedure support.
+See [v0.23.0 release notes](docs/RELEASE_v0.23.0.md) for shared legacy physiology, generated fluid compartments, active drug-load dynamics and terminal-state handling. New generated cases use the v2 authoring contract; existing saved encounters retain their declared profiles.
 
 Live testing also found isolated uncertainty about non-severe respiratory
 effort. That detail may now be deferred explicitly to examination alongside

@@ -139,7 +139,7 @@ def executable_generation_constraints():
             "Norepinephrine and nitroglycerin use their action_type as agent and IV as route. Anticoagulation and norepinephrine require explicit units. Dose-based units are case-sensitive canonical strings.",
             "No-dose actions use null dose_field and reference_dose. Every measured action needs a positive reference_dose using exactly its dose_field.",
             "Initial numeric fields must satisfy initial_numeric_bounds. Untreated drift and every isolated maximum-exposure rule must remain within trajectory_numeric_bounds throughout horizon_min, with systolic pressure greater than diastolic pressure.",
-            "For each checked time t: initial + t * untreated_drift_per_min + delta * max_exposure * min(1, max(0, (t - onset_min) / duration_min)). Check time 0, the horizon and each onset/end breakpoint within that horizon. Concurrent orders undergo an additional runtime bounds check.",
+            "Generic response rules use their linear onset/duration/recovery envelope. Rules with volume_basis instead read net current compartments; rules with exposure_curve pool active depot/effect-site exposure and transform it with the authored curve. Coupled responses must fit the bounds at both time endpoints and their positive/negative exposure extremes. Concurrent orders undergo an additional atomic runtime bounds check.",
             "A change that reaches a bound at one reference exposure may exceed it at max_exposure. In particular, oxygen saturation cannot exceed 100 and capillary refill cannot become negative. Preserve realistic limits without fabricating clinical recovery.",
         ],
     }

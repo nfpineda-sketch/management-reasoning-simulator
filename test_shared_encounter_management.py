@@ -99,7 +99,7 @@ def test_generation_coverage_identifies_missing_oxygen_interfaces_and_authored_m
     case['observable']['spo2'] = 86
     case['faculty'] = {'anticipated_management_paths': ['Administer etomidate, then perform cardioversion.']}
     missing = coverage_issues(case)[0]['details']['missing']
-    assert set(missing) == {'fluid: explicit state-dependent response curve', 'oxygen: nasal cannula', 'oxygen: simple mask', 'oxygen: non-rebreather mask', 'procedural_sedation: etomidate', 'cardioversion'}
+    assert set(missing) == {'fluid: explicit volume compartments', 'fluid: explicit state-dependent response curve', 'oxygen: nasal cannula', 'oxygen: simple mask', 'oxygen: non-rebreather mask', 'procedural_sedation: etomidate', 'cardioversion'}
     # This is an authoring-only gate: do not mutate stored attempts to fill gaps.
     validate_declarative_case(case)
 

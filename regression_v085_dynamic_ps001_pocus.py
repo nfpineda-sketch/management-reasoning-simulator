@@ -12,7 +12,7 @@ from pathlib import Path
 source = Path("app.py").read_text(encoding="utf-8")
 assert 'SIMULATOR_VERSION = "0.8.21"' in source
 assert "MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry" in source
-assert 'h["effective_contractility"] = effective_contractility' in source
+assert 'h["effective_contractility"] = effective_contractility' in Path('clinical_physiology.py').read_text(encoding='utf-8')
 
 tree = ast.parse(source)
 nodes = []

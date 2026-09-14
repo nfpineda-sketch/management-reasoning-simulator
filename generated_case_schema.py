@@ -11,7 +11,7 @@ from ecg12 import PROFILES, RHYTHMS
 from visual_observations import VISUAL_CHOICES, PERFUSION_CATEGORIES
 from generated_case_validation import ContractValidationError
 
-SCHEMA_VERSION = "mrs.generated.case.v1"
+SCHEMA_VERSION = "mrs.generated.case.v2"
 OBSERVED_NUMERIC = ("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt", "temperature_c", "glucose_mg_dl")
 LAB_NUMERIC = ("hemoglobin_g_dl", "lactate_mmol_l", "pco2_mm_hg", "bicarbonate_mmol_l", "pao2_mm_hg")
 NUMERIC_FIELDS = OBSERVED_NUMERIC + LAB_NUMERIC
@@ -60,15 +60,21 @@ STATE_TEXT = {"mental_status": enum(("Alert", "Drowsy", "Obtunded", "Unresponsiv
               "rhythm": enum(tuple(RHYTHMS)), "ecg_profile": enum(PROFILES), "visual": VISUAL}
 NUMERIC_PAIRS = array(obj({"field": enum(NUMERIC_FIELDS), "value": NUMBER}), maximum=13)
 EXAM = array(obj({"area": enum(EXAM_AREAS), "finding": TEXT}), minimum=1, maximum=6)
-CONDITION = obj({"field": enum(NUMERIC_FIELDS + ("elapsed_min", "fluid_delivered_ml")), "operator": enum(("lt", "lte", "gt", "gte")), "value": NUMBER})
+from generated_physiology import VOLUME_FIELDS
+DRIVER_FIELDS = NUMERIC_FIELDS + tuple(sorted(VOLUME_FIELDS))
+CONDITION = obj({"field": enum(DRIVER_FIELDS + ("elapsed_min", "fluid_delivered_ml")), "operator": enum(("lt", "lte", "gt", "gte")), "value": NUMBER})
 RESPONSE_RULE = obj({
     "id": SHORT, "action_type": enum(ACTIONS), "agent": nullable(SHORT), "route": nullable(SHORT),
     "units": nullable(SHORT), "device": nullable(SHORT),
     "dose_field": nullable(enum(("dose_mg", "dose_g", "volume_ml", "units", "rate", "rate_mcg_min", "dose", "flow_lpm"))),
     "settings": nullable(array(obj({"field": enum(("energy_j", "fio2_percent", "peep_cmh2o")), "value": NUMBER}), minimum=1, maximum=2)),
     "interpolate_settings": nullable(BOOL),
+    "exposure_pool": nullable(SHORT),
+    "volume_basis": nullable(enum(("circulating", "extravascular"))),
+    "diuresis_ml_min": nullable({"type":"number", "minimum":0, "maximum":50}),
+    "exposure_curve": nullable(obj({"saturating_weight":{"type":"number","minimum":0,"maximum":1}, "progressive_weight":{"type":"number","minimum":0,"maximum":1}, "rate":{"type":"number","minimum":.01,"maximum":10}, "power":{"type":"number","minimum":1,"maximum":3}, "onset_half_life_min":{"type":"number","minimum":.1,"maximum":120}, "elimination_half_life_min":{"type":"number","minimum":1,"maximum":1440}})),
     "washout_min": nullable({"type":"number", "minimum":1, "maximum":180}),
-    "state_gain": nullable(obj({"field": enum(NUMERIC_FIELDS + ("elapsed_min", "fluid_delivered_ml")), "points": array(obj({"value": NUMBER, "factor": {"type":"number", "minimum":0, "maximum":1}}), minimum=2, maximum=8)})),
+    "state_gain": nullable(obj({"field": enum(DRIVER_FIELDS + ("elapsed_min", "fluid_delivered_ml")), "points": array(obj({"value": NUMBER, "factor": {"type":"number", "minimum":0, "maximum":1}}), minimum=2, maximum=8)})),
     "recovery_min": nullable({"type":"number", "minimum":1, "maximum":180}),
     "mental_status_during": nullable(enum(("Sedated",))),
     "mental_status_threshold": nullable({"type":"number", "exclusiveMinimum":0, "maximum":5}),
@@ -103,10 +109,12 @@ CASE_SCHEMA = obj({
                                 "result": array(obj({"field": enum(RESULT_FIELDS), "value": {"anyOf": [TEXT, NUMBER]}}), minimum=1, maximum=25),
                                 "result_bindings": array(obj({"field": enum(RESULT_FIELDS), "observable_field": enum(NUMERIC_FIELDS)}), maximum=13)}), minimum=4, maximum=19),
     "engine": obj({"model": enum(("declarative_v1",)),
+                   "volume_model": obj({"initial_extravascular_ml":{"type":"number","minimum":0,"maximum":10000}, "redistribution_half_life_min":{"type":"number","minimum":1,"maximum":240}, "clearance_half_life_min":{"type":"number","minimum":1,"maximum":1440}, "extravascular_fraction":{"type":"number","minimum":0,"maximum":1}, "diuresis_extravascular_fraction":{"type":"number","minimum":0,"maximum":1}}),
+                   "terminal_rule": nullable(obj({"when":array(obj({"field":enum(NUMERIC_FIELDS),"operator":enum(("lt","lte","gt","gte")),"value":NUMBER}),minimum=1,maximum=6), "sustained_min":{"type":"integer","minimum":1,"maximum":60}})),
                    "horizon_min": {"type": "integer", "minimum": 30, "maximum": 180},
                    "initial_labs": obj({key: {"type": "number", "minimum": BOUNDS[key][0], "maximum": BOUNDS[key][1]} for key in LAB_NUMERIC}),
                    "untreated_drift_per_min": NUMERIC_PAIRS,
-                   "response_rules": array(RESPONSE_RULE, minimum=2, maximum=24),
+                   "response_rules": array(RESPONSE_RULE, minimum=2, maximum=64),
                    "stable_diagnostics": array(enum(STUDIES), maximum=19),
                    "state_rules": array(obj({"id": SHORT, "when": array(CONDITION, minimum=1, maximum=6),
                                              "set": obj({key: nullable(value) for key, value in STATE_TEXT.items()}),

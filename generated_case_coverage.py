@@ -25,6 +25,15 @@ def coverage_issues(case):
             missing.append('fluid: explicit state-dependent response curve')
         if r.get('action_type') == 'procedural_sedation' and any(r.get(k) is None for k in ('recovery_min','mental_status_during','mental_status_threshold')):
             missing.append('sedation: explicit recovery, mental status and exposure threshold')
+    if engine.get('volume_model') is None:
+        missing.append('fluid: explicit volume compartments')
+    elif not {'circulating','extravascular'} <= {r.get('volume_basis') for r in rules if r.get('action_type') == 'fluid'}:
+        missing.append('fluid: circulating and extravascular responses')
+    for r in rules:
+        if r.get('action_type') in {'beta_blocker','diltiazem','amiodarone'} and r.get('exposure_curve') is None:
+            missing.append(r['action_type'] + ': active-load response curve')
+        if r.get('action_type') == 'diuretic' and r.get('diuresis_ml_min') is None:
+            missing.append('diuretic: volume removal and recovery')
     from generated_rhythm import rhythm_key
     shocks = [r for r in rules if r.get('action_type') == 'cardioversion']
     shock_keys = [(rhythm_key(r.get('rhythm_before')), (r.get('settings') or {}).get('energy_j')) for r in shocks]

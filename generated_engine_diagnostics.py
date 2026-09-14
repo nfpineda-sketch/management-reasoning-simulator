@@ -5,6 +5,8 @@ engine validator remains the execution gate. Paths, codes and messages are
 static software descriptions; details belong only in the authoring request,
 never in a learner-facing error or log.
 """
+from generated_physiology import VOLUME_FIELDS, validate as validate_physiology
+from clinical_physiology import exposure_effect
 from generated_engine import (
     response_progress, BOUNDS, MODEL, OBSERVED_FIELDS, LAB_FIELDS, NUMERIC_FIELDS, _ACTIONS,
     _DOSE_FIELDS, _DRUGS, _COMPARATORS, _SET_FIELDS, _finite,
@@ -13,7 +15,7 @@ from generated_engine import (
 
 
 ENGINE_ISSUE_CODES = frozenset({
-    "ENGINE_MODEL", "BASELINE_OBSERVATIONS", "BASELINE_BOUNDS", "BASELINE_PRESSURE",
+    "PHYSIOLOGY_CONTRACT", "ENGINE_MODEL", "BASELINE_OBSERVATIONS", "BASELINE_BOUNDS", "BASELINE_PRESSURE",
     "ARREST_UNSUPPORTED", "NUMERIC_FIELDS", "NUMERIC_VALUE", "NUMERIC_DELTA_RANGE",
     "LAB_INITIAL_VALUE", "HORIZON", "RESPONSE_RULES", "RESPONSE_IDENTIFIER",
     "RESPONSE_ACTION", "RESPONSE_MATCHER", "RESPONSE_MEDICATION_MATCHERS",
@@ -79,6 +81,11 @@ def collect_declarative_issues(case):
     labs = engine.get("initial_labs", {})
     labs_ok = numbers(labs, "engine.initial_labs", LAB_FIELDS, initial=True)
     initialized = OBSERVED_FIELDS | (set(labs) & LAB_FIELDS if isinstance(labs, dict) else set())
+    try:
+        validate_physiology(engine, initialized)
+    except (ValueError, TypeError, KeyError):
+        add("PHYSIOLOGY_CONTRACT", "engine", "Volume, drug kinetics or terminal-state parameters are invalid. Correct the authored parameters.")
+        return issues
     drift = engine.get("untreated_drift_per_min", {})
     drift_ok = numbers(drift, "engine.untreated_drift_per_min")
     if isinstance(drift, dict):
@@ -182,7 +189,7 @@ def collect_declarative_issues(case):
                     progress = response_progress(at, response["onset_min"], response["duration_min"], response.get("recovery_min"), response["action_type"] == "cardioversion")
                     for key, delta in response["delta"].items():
                         if key in values:
-                            values[key] += delta * response["max_exposure"] * progress
+                            values[key] += delta * exposure_effect(response["max_exposure"], response.get("exposure_curve")) * progress
                 context = {"time_min": at, "horizon_min": horizon, "response_index": index,
                            "exposure": response["max_exposure"] if response is not None else 0,
                            "response_id": str(response.get("id", ""))[:160] if response is not None else None,
@@ -202,7 +209,7 @@ def collect_declarative_issues(case):
                                        response_delta=response["delta"].get(key, 0) if response is not None else 0)
                         if response is not None and response["max_exposure"] * progress > 0:
                             untreated = initial[key] + at * drift.get(key, 0)
-                            factor = response["max_exposure"] * progress
+                            factor = exposure_effect(response["max_exposure"], response.get("exposure_curve")) * progress
                             details["admissible_delta_at_this_time"] = {"lower": (lower - untreated) / factor, "upper": (upper - untreated) / factor}
                         elif response is None and at > 0:
                             details["admissible_drift_at_this_time"] = {"lower": (lower - initial[key]) / at, "upper": (upper - initial[key]) / at}
@@ -241,7 +248,7 @@ def _collect_state_and_study_issues(case, engine, initialized, add):
         if not isinstance(when, list) or not when:
             add("STATE_CONDITION", path + ".when", "Observation changes need explicit physiological conditions.")
         for j, condition in enumerate(when if isinstance(when, list) else []):
-            if not isinstance(condition, dict) or not isinstance(condition.get("field"), str) or condition.get("field") not in initialized | {"elapsed_min", "fluid_delivered_ml"} or not isinstance(condition.get("operator"), str) or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
+            if not isinstance(condition, dict) or not isinstance(condition.get("field"), str) or condition.get("field") not in initialized | VOLUME_FIELDS | {"elapsed_min", "fluid_delivered_ml"} or not isinstance(condition.get("operator"), str) or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
                 add("STATE_CONDITION", path + f".when[{j}]", "Conditions may read only initialized numeric physiology with a supported comparison.")
         values = rule.get("set", {})
         if not isinstance(values, dict) or set(values) - _SET_FIELDS:

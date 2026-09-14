@@ -7,6 +7,8 @@ teaching model requiring clinical review, not a clinical prediction engine.
 """
 from copy import deepcopy
 import math
+import generated_physiology as physiology
+from clinical_physiology import exposure_effect
 from generated_response import response_progress, select_responses, diagnostic_overrides
 from generated_dynamics import INFUSIONS, event_progress, gain_at, retire_active_events
 from generated_rhythm import rhythm_key, select_cardioversion, advance_recurrence
@@ -82,6 +84,8 @@ def validate_declarative_case(case):
         raise ValueError("Initial laboratory physiology has unsupported fields.")
     _number_map(initial_labs, "initial_labs", initial=True)
     initialized = OBSERVED_FIELDS | set(initial_labs)
+    physiology.validate(engine, initialized)
+    driver_fields = initialized | (physiology.VOLUME_FIELDS if engine.get("volume_model") else set())
     drift = engine.get("untreated_drift_per_min", {})
     _number_map(drift, "untreated_drift_per_min")
     if any(value and key not in initialized for key, value in drift.items()):
@@ -133,7 +137,7 @@ def validate_declarative_case(case):
             raise ValueError("Infusion washout must be between 1 and 180 minutes.")
         curve = rule.get("state_gain")
         if curve is not None:
-            if not isinstance(curve, dict) or curve.get("field") not in initialized | {"elapsed_min", "fluid_delivered_ml"}:
+            if not isinstance(curve, dict) or curve.get("field") not in driver_fields | {"elapsed_min", "fluid_delivered_ml"}:
                 raise ValueError("State coupling must read a declared measurement, elapsed time or delivered fluid.")
             points = curve.get("points")
             if not isinstance(points, list) or not 2 <= len(points) <= 8 or any(not isinstance(p,dict) or not _finite(p.get("value")) or not _finite(p.get("factor")) or not 0 <= p["factor"] <= 1 for p in points):
@@ -147,7 +151,7 @@ def validate_declarative_case(case):
             if any(value and key not in initialized for key,value in recurrence["delta"].items()):
                 raise ValueError("Recurrence effects require initialized numeric fields.")
             for condition in recurrence["when"]:
-                if not isinstance(condition,dict) or condition.get("field") not in initialized | {"elapsed_min","fluid_delivered_ml"} or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
+                if not isinstance(condition,dict) or condition.get("field") not in driver_fields | {"elapsed_min","fluid_delivered_ml"} or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
                     raise ValueError("Recurrence must depend on declared numerical conditions.")
         _validate_response_capability(case, rule)
         _number_map(rule.get("delta"), "response delta")
@@ -155,6 +159,7 @@ def validate_declarative_case(case):
             raise ValueError("A treatment-responsive laboratory field needs an initial value.")
     initial_values = {key: observed[key] for key in OBSERVED_FIELDS}
     initial_values.update(initial_labs)
+    physiology.validate_extremes(engine, initial_values, BOUNDS)
     # The data contract must remain executable through its authored horizon.
     # Check the untreated path and each isolated maximum-exposure response at
     # all breakpoints; combinations are checked atomically when ordered.
@@ -171,7 +176,7 @@ def validate_declarative_case(case):
                 progress = response_progress(at, response["onset_min"], response["duration_min"], response.get("recovery_min"), response["action_type"] == "cardioversion")
                 for key, delta in response["delta"].items():
                     if key in values:
-                        values[key] += delta * response["max_exposure"] * progress
+                        values[key] += delta * exposure_effect(response["max_exposure"], response.get("exposure_curve")) * progress
             if any(not BOUNDS[key][0] <= number <= BOUNDS[key][1] for key, number in values.items()):
                 raise ValueError("A generated trajectory exceeds supported physiology within its stated horizon.")
             if values["dbp"] >= values["sbp"]:
@@ -184,7 +189,7 @@ def validate_declarative_case(case):
         if not isinstance(rule, dict) or not isinstance(rule.get("when"), list) or not rule["when"]:
             raise ValueError("Observation changes must have physiological conditions.")
         for condition in rule["when"]:
-            if not isinstance(condition, dict) or condition.get("field") not in initialized | {"elapsed_min", "fluid_delivered_ml"} or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
+            if not isinstance(condition, dict) or condition.get("field") not in driver_fields | {"elapsed_min", "fluid_delivered_ml"} or condition.get("operator") not in _COMPARATORS or not _finite(condition.get("value")):
                 raise ValueError("Observation rules may read only declared numeric physiology.")
         values = rule.get("set", {})
         if not isinstance(values, dict) or set(values) - _SET_FIELDS:
@@ -341,6 +346,7 @@ def _initialize(state):
         "version": 1, "elapsed": 0, "baseline_values": deepcopy(values), "values": values,
         "events": [], "exposure": {}, "examination": deepcopy(case.get("examination", {})),
     }
+    physiology.initialize(state)
     _surface(state)
 
 
@@ -439,23 +445,36 @@ def _record_effect(state, action, matching, summary):
 
 
 def _surface(state):
+    if state.get("hidden", {}).get("terminal_collapse"):
+        return
+    physiology.initialize(state)
     case = _case(state)
     engine, g, f = case["engine"], state["generated_state"], state["family_state"]
     values = {key: number + g["elapsed"] * engine.get("untreated_drift_per_min", {}).get(key, 0) for key, number in g["baseline_values"].items()}
     # One unmodified snapshot for all response curves prevents circular feedback
     # and makes repeated rendering at the same minute idempotent.
-    drivers = dict(values)
+    drivers = {**values, **physiology.drivers(state)}
+    coupled_ids = {r["id"] for r in engine["response_rules"] if r.get("volume_basis") or r.get("exposure_curve")}
     for event in g["events"]:
+        if event["rule_id"] in coupled_ids:
+            continue
         progress = event_progress(event, g["elapsed"])
         for key, delta in event["delta"].items():
             if key in drivers:
                 drivers[key] += delta * event["exposure"] * progress
+    for key, delta in physiology.contributions(state, engine["response_rules"], drivers, apply_gain=False).items():
+        drivers[key] += delta
     drivers.update(elapsed_min=g["elapsed"], fluid_delivered_ml=f["fluid_delivered_ml"])
     for event in g["events"]:
+        if event["rule_id"] in coupled_ids:
+            continue
         progress = event_progress(event, g["elapsed"]) * gain_at(event.get("state_gain"), drivers)
         for key, delta in event["delta"].items():
             if key in values:
                 values[key] += delta * event["exposure"] * progress
+    for key, delta in physiology.contributions(state, engine["response_rules"], drivers).items():
+        if key in values:
+            values[key] += delta
     for key, number in values.items():
         if not _finite(number) or not BOUNDS[key][0] <= number <= BOUNDS[key][1]:
             raise ValueError("The combined interventions exceed this generated trajectory's supported physiology.")
@@ -478,7 +497,7 @@ def _surface(state):
     for event in g["events"]:
         if event.get("rhythm_after") and event.get("immediate"):
             observed["rhythm"] = event["rhythm_after"]
-    condition_values = {**values, "elapsed_min": g["elapsed"], "fluid_delivered_ml": f["fluid_delivered_ml"]}
+    condition_values = {**values, **physiology.drivers(state), "elapsed_min": g["elapsed"], "fluid_delivered_ml": f["fluid_delivered_ml"]}
     for rule in engine.get("state_rules", []):
         if all(_COMPARATORS[c["operator"]](condition_values[c["field"]], c["value"]) for c in rule["when"]):
             for key, value in rule.get("set", {}).items():
@@ -489,7 +508,8 @@ def _surface(state):
                 else:
                     observed[key] = deepcopy(value)
             g["examination"].update(deepcopy(rule.get("examination", {})))
-    sedating = [e for e in g["events"] if e.get("mental_status_during") and e["exposure"] * gain_at(e.get("state_gain"), drivers) * event_progress(e, g["elapsed"]) >= e["mental_status_threshold"]]
+    sedating = [r for r in engine["response_rules"] if r.get("mental_status_during") and r.get("exposure_curve") and physiology.active_load(state,r) * gain_at(r.get("state_gain"),drivers) >= r["mental_status_threshold"]]
+    sedating += [e for e in g["events"] if e["rule_id"] not in coupled_ids and e.get("mental_status_during") and e["exposure"] * gain_at(e.get("state_gain"), drivers) * event_progress(e, g["elapsed"]) >= e["mental_status_threshold"]]
     if sedating:
         # Do not describe an unresponsive patient as more awake due to sedation.
         if observed.get("mental_status") not in {"Unresponsive", "Obtunded"}:
@@ -521,7 +541,10 @@ def _minute(state):
     tr["total_crystalloid_ml"] = tr["cumulative_crystalloid_ml"] = round(f["fluid_delivered_ml"], 1)
     tr["packed_red_cells_units"] = round(f["blood_delivered_units"], 3)
     state["sim_time"] = int(state.get("sim_time", 0)) + 1
+    physiology.advance(state)
     _surface(state)
+    if physiology.terminal_tick(state):
+        return
     if advance_recurrence(state):
         _surface(state)
 
@@ -565,6 +588,8 @@ def execute_generated_bundle(state, parsed):
         validate_declarative_case(_case(state))
     except (ValueError, TypeError, KeyError) as error:
         return _failure("The generated trajectory could not be validated: " + str(error))
+    if state.get("hidden", {}).get("terminal_collapse"):
+        return _failure("The patient has no pulse. This encounter has reached its terminal state; resuscitation actions are not executable in this build.")
     actions, error = _validate_orders(state, parsed)
     if error:
         return _failure(error)
@@ -626,6 +651,9 @@ def execute_generated_bundle(state, parsed):
         for minute in range(1, elapsed + 1):
             _minute(candidate)
             release_ready()
+            if candidate.get("hidden", {}).get("terminal_collapse"):
+                elapsed = minute
+                break
         _surface(candidate)
     except ValueError as error:
         return _failure(str(error) + " No orders in this submission were executed.")
@@ -639,6 +667,7 @@ def execute_generated_bundle(state, parsed):
 def _current_examination_overrides(state):
     """Identify descriptions explicitly authored for the current physiological state."""
     values = dict(state.get("generated_state", {}).get("values", {}))
+    values.update(physiology.drivers(state))
     values.update(elapsed_min=state.get("generated_state",{}).get("elapsed",0), fluid_delivered_ml=state.get("family_state",{}).get("fluid_delivered_ml",0))
     overrides = {}
     for rule in _case(state).get("engine", {}).get("state_rules", []):
@@ -693,6 +722,9 @@ def current_findings(state):
         "Cardiac": (f"Heart rate {observed.get('hr', 'not recorded')}/min; rhythm {observed.get('rhythm', 'not recorded')}; "
                     f"BP {observed.get('sbp', 'not recorded')}/{observed.get('dbp', 'not recorded')} mmHg."),
     }
+    if observed.get("pulse_present") is False:
+        supplements["Cardiac"] = f"No palpable pulse; organized electrical activity (PEA), electrical rate {observed.get('hr')}/min. Blood pressure unavailable."
+        supplements["Peripheral perfusion"] = "No palpable pulse. Capillary refill cannot be assessed."
     related_fields = {
         "General appearance": ("mental_status", "work_of_breathing", "visual"),
         "Peripheral perfusion": ("crt", "extremities", "peripheral_perfusion", "visual"),
@@ -713,6 +745,8 @@ def current_findings(state):
 def clinical_update(state):
     """Brief public state update; no unmeasured labs or hidden diagnosis."""
     observed = state.get("observable", {})
+    if observed.get("pulse_present") is False:
+        return "No palpable pulse; organized electrical activity (PEA). Unresponsive. Blood pressure, SpO₂ and capillary refill are unavailable."
     return (f"BP {observed.get('sbp')}/{observed.get('dbp')} mmHg · HR {observed.get('hr')}/min · "
             f"SpO₂ {observed.get('spo2')}% · RR {observed.get('respiratory_rate')}/min. "
             f"{observed.get('mental_status', 'Not recorded')}; respiratory effort "

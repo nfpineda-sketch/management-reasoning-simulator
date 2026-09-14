@@ -25,7 +25,8 @@ def select_cardioversion(state, candidates):
 def advance_recurrence(state):
     from generated_engine import _COMPARATORS
     g = state['generated_state']
-    values = dict(g['values'])
+    from generated_physiology import drivers
+    values = {**g['values'], **drivers(state)}
     values.update(elapsed_min=g['elapsed'], fluid_delivered_ml=state['family_state']['fluid_delivered_ml'])
     changed = False
     for event in g['events']:
