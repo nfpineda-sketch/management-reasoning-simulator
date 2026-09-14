@@ -15,7 +15,7 @@ from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
 from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.24.4"
+GENERATOR_VERSION = "0.24.5"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -85,7 +85,7 @@ must be numerical result fields. Dynamic measurements use result_bindings mappin
 must satisfy Henderson-Hasselbalch; bind PCO2/HCO3/PaO2 where they evolve; the engine recalculates pH from contemporaneous components.
 Do not promise immediate blood culture identification. Test duration is simulated sample-processing time, not time since onset.
 No source URLs are requested: do not fabricate citations or claim this is an expert-validated case. State limitations candidly in
-faculty-only fields. No executable code, expressions, HTML, external files, diagnosis-triggered hidden actions or function calls.
+faculty-only fields. Keep prose concise and avoid restating the same facts across fields; retain every required source fact and both management paths. No executable code, expressions, HTML, external files, diagnosis-triggered hidden actions or function calls.
 """
 
 REVIEW_INSTRUCTIONS = """Independently audit this proposed NEW fictional clinical encounter as a medical-simulation consistency reviewer.
@@ -151,12 +151,16 @@ def _usage(response):
             if type(value := getattr(getattr(response, "usage", None), key, None)) is int and value >= 0}
 
 
-def _call(client, model, instructions, payload, schema, name, tokens, stage="AUTHOR"):
+def _call(client, model, instructions, payload, schema, name, tokens, stage="AUTHOR", *, timeout=120):
     # Serialize locally before classifying provider exceptions. A programming
     # error is not evidence of a bad API key or unavailable model.
-    serialized = json.dumps(payload, allow_nan=False)
+    serialized = json.dumps(payload, allow_nan=False, separators=(",", ":"))
+    # Explicitly bound the supported default model's reasoning. Preserve other
+    # configured model contracts; clinical review keeps medium effort.
+    options = {"reasoning": {"effort": "medium" if stage == "REVIEW" else "low"}} if model in {
+        "gpt-5-mini", "gpt-5-mini-2025-08-07"} else {}
     try:
-        return client.responses.create(model=model, store=False, max_output_tokens=tokens,
+        return client.responses.create(model=model, store=False, max_output_tokens=tokens, timeout=timeout, **options,
             instructions=instructions, input=serialized,
             text={"format": {"type": "json_schema", "name": name, "strict": True, "schema": schema}})
     except Exception as exc:
@@ -212,7 +216,26 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
     review_responses = []
     correction_count = 0
     timings = {}
+    requests = []
     started = monotonic()
+    deadline = started + 300
+
+    def request_case(client, model, instructions, payload, schema, name, tokens, stage="AUTHOR"):
+        remaining = deadline - monotonic()
+        # Reserve review time before spending the remaining budget on a draft.
+        reserve = 30 if stage != "REVIEW" else 0
+        if remaining < reserve + 10:
+            raise generation_error("BUDGET", stage)
+        begin = monotonic()
+        record = {"stage": stage.lower(), "model": model, "status": "failed"}
+        requests.append(record)
+        try:
+            response = _call(client, model, instructions, payload, schema, name, tokens,
+                             stage, timeout=min(120, remaining - reserve))
+            record.update(status=getattr(response, "status", "unknown"), usage=_usage(response))
+            return response
+        finally:
+            record["seconds"] = round(monotonic() - begin, 3)
 
     def report(name):
         # Only fixed stage names reach the UI, never unreviewed patient facts.
@@ -223,12 +246,12 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
         if client is None:
             from openai import OpenAI
             client = OpenAI(api_key=api_key, timeout=120, max_retries=0)
-        request = {"learning_challenge": objective, "variation_seed": seed,
+        request = {"challenge_id": challenge_id, "learning_challenge": objective, "variation_seed": seed,
                    "capabilities": generation_capabilities()}
         stage = "AUTHOR"
         report("author")
         requested = monotonic()
-        authored = _call(client, used_model, AUTHOR_INSTRUCTIONS, request, CASE_SCHEMA, "new_clinical_case", 24000)
+        authored = request_case(client, used_model, AUTHOR_INSTRUCTIONS, request, CASE_SCHEMA, "new_clinical_case", 24000)
         timings["author_seconds"] = round(monotonic() - requested, 3)
         author_responses.append(authored)
         raw = _response_data(authored, CASE_SCHEMA, stage)
@@ -249,7 +272,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
                           "validation_issues": getattr(exc, "issues", []),
                           "task": "Correct ALL listed validation issues together, then recheck the entire proposed case against the executable contract. For trajectory issues use the supplied field, time, exposure and bounds to calculate consistent authored effects. Preserve the clinical problem and coherent facts; do not conceal inconsistencies by removing necessary treatments, zeroing all effects, making the patient healthy, or shortening the observation window without clinical justification. Return the full corrected case; do not weaken or bypass checks."}
             requested = monotonic()
-            authored = _call(client, used_model, AUTHOR_INSTRUCTIONS, correction, CASE_SCHEMA,
+            authored = request_case(client, used_model, AUTHOR_INSTRUCTIONS, correction, CASE_SCHEMA,
                              "new_clinical_case", 24000, stage)
             timings["correction_seconds"] = round(monotonic() - requested, 3)
             author_responses.append(authored)
@@ -264,10 +287,10 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
         for review_round in range(2):
             stage = "REVIEW"
             report("review")
-            native_preview = preview(case)
+            native_preview = preview(case, seed=seed)
             requested = monotonic()
-            reviewed = _call(client, checker_model, REVIEW_INSTRUCTIONS,
-                             {"learning_challenge": objective, "case": case, "shared_engine_preview": native_preview, "capabilities": request["capabilities"]},
+            reviewed = request_case(client, checker_model, REVIEW_INSTRUCTIONS,
+                             {"challenge_id": challenge_id, "learning_challenge": objective, "case": case, "shared_engine_preview": native_preview, "capabilities": request["capabilities"]},
                              REVIEW_SCHEMA, "clinical_consistency_review", 6000, stage)
             timings["review_seconds"] = timings.get("review_seconds", 0) + round(monotonic() - requested, 3)
             review_responses.append(reviewed)
@@ -287,7 +310,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
             report("correction")
             correction_count += 1
             requested = monotonic()
-            authored = _call(client, used_model, AUTHOR_INSTRUCTIONS,
+            authored = request_case(client, used_model, AUTHOR_INSTRUCTIONS,
                 {**request, "proposed_case": raw, "clinical_review": review,
                  "shared_engine_preview": native_preview,
                  "task": "Repair this SAME case using every specific reviewer objection and the real native-engine preview. Preserve the patient and clinical dilemma. Fix conflicting physiology drivers, baseline measurements, findings and extension responses together. Native treatments need no response rules. Return the complete corrected schema. Do not remove necessary care or weaken any validation."},
@@ -309,10 +332,12 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
             # Image work starts only after clinical approval: rejected drafts cost no images.
             on_case_compiled(_scene_snapshot(case), _digest(raw))
     except GeneratedCaseError as failure:
-        if not hasattr(failure, 'diagnostic') and 'raw' in locals():
+        if not hasattr(failure, 'diagnostic'):
             failure.diagnostic = {"generator_version": GENERATOR_VERSION, "seed": seed,
-                "challenge_id": challenge_id, "draft": deepcopy(raw),
+                "challenge_id": challenge_id, "draft": deepcopy(locals().get("raw")),
                 "review": deepcopy(locals().get('review')), "timings": deepcopy(timings)}
+        failure.diagnostic["requests"] = deepcopy(requests)
+        failure.diagnostic["elapsed_seconds"] = round(monotonic() - started, 3)
         raise
     except Exception:
         raise generation_error("INTERNAL", stage) from None
@@ -348,6 +373,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
                            "authoring_requests": len(author_responses), "correction_count": correction_count,
                            "generation_timings": {**timings, "total_seconds": round(monotonic() - started, 3)},
                            "review_requests": len(review_responses),
+                           "requests": deepcopy(requests), "request_budget_seconds": 300,
                            "review_usage": {key: sum(_usage(response).get(key, 0) for response in review_responses)
                                             for key in ("input_tokens", "output_tokens", "total_tokens")
                                             if any(key in _usage(response) for response in review_responses)},

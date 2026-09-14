@@ -288,15 +288,16 @@ def execute(state,parsed):
         return _failure('The main/IA encounter could not execute this submission: '+str(error)+'. No orders were executed.')
 
 
-def preview(case):
+def preview(case, seed=17):
     """Provide real native-engine timepoints to the independent case reviewer."""
-    s={'engine_family':'generated','seed':17,'sim_time':0,'observable':deepcopy(case['observable']),
+    s={'engine_family':'generated','seed':seed,'sim_time':0,'observable':deepcopy(case['observable']),
        'encounter_spec':{'clinical_case':case},'treatments':{},'hidden':{},'diagnostics':{}}
     initialize(s)
     points=[{'time_min':0,'observable':deepcopy(s['observable'])}]
-    for minute in range(1,min(case['engine'].get('horizon_min',15),15)+1):
+    horizon = case['engine'].get('horizon_min', 15)
+    for minute in range(1, horizon + 1):
         tick(s)
-        if minute in {1,5,15} or s['hidden'].get('terminal_collapse'):
+        if minute in {1,5,15,30,60,120,horizon} or s['hidden'].get('terminal_collapse'):
             points.append({'time_min':minute,'observable':deepcopy(s['observable']),
                 'flow':s['hidden'].get('cardiac_output_index'),'oxygen_delivery':s['hidden'].get('oxygen_delivery')})
         if s['hidden'].get('terminal_collapse'):break

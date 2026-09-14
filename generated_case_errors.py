@@ -10,6 +10,7 @@ _MESSAGES = {
     "MODEL": "The configured case model is unavailable. Ask the administrator to check MRS_GENERATOR_MODEL and API access.",
     "QUOTA": "The case service has no available API quota. Ask the administrator to check the API project's billing and usage limits.",
     "RATE": "The case service is temporarily busy. Wait a moment and select Begin Encounter to try again.",
+    "BUDGET": "Case preparation reached its time budget. The draft was not approved. Ask the administrator to inspect the generation report before restarting.",
     "TIMEOUT": "The case service did not respond in time. Select Begin Encounter to try again.",
     "CONNECTION": "The app could not connect to the case service. Select Begin Encounter to try again.",
     "FORMAT": "The case service rejected the structured request format. Ask the administrator to check the generator's API compatibility.",

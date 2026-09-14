@@ -15,7 +15,7 @@ from scene_preparation import ScenePreparation
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
 
-RUNTIME_VERSION = "0.24.4"
+RUNTIME_VERSION = "0.24.5"
 PAYLOAD_VERSION = "mrs_attempt_v1"
 SESSION_FIELDS = (
     "started", "selected_case", "state", "events", "history", "management_trace",
@@ -134,6 +134,7 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
                 assignment["challenge_id"], initial_state,
                 api_key=_secret("OPENAI_API_KEY"),
                 model=_secret("MRS_GENERATOR_MODEL", _secret("OPENAI_MODEL", "gpt-5-mini")), seed=seed,
+                review_model=_secret("MRS_GENERATOR_REVIEW_MODEL") or None,
                 progress=progress, on_case_compiled=scene.on_case_compiled,
             )
         st.session_state.pop("_case_generation_failure", None)

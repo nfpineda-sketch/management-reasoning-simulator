@@ -1,6 +1,6 @@
-# Clinical encounter workspace v0.24.4
+# Clinical encounter workspace v0.24.5
 
-v0.24.4 repairs a clinically rejected draft once using the actual review and native preview, revalidates it and reviews it again. Image preparation begins only after clinical approval. Failures retain a private session diagnostic and show allowlisted failed review checks.
+v0.24.5 bounds generation requests with a shared 300-second budget, uses low authoring effort and independent medium-effort review for gpt-5-mini, and reviews native evolution through the full case horizon with the actual encounter seed. Private request timings and usage survive failed generation. See docs/RELEASE_v0.24.5.md.
 
 v0.24.3 separates observed monitoring devices from respiratory interfaces using a typed inventory. Mild pallor that cannot be distinguished from natural pigmentation is labelled as a photographic limitation. A retained rejected candidate from the same case and appearance can be screened again on upgrade before requesting another generated image.
 
