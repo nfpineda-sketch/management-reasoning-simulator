@@ -11,10 +11,11 @@ from account_store import AccountError
 from curriculum import CHALLENGES, assign_challenge, evidence_summary
 from encounter_generator import generate_encounter
 from generation_progress import encounter_preparation
+from scene_preparation import ScenePreparation
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
 
-RUNTIME_VERSION = "0.17.2"
+RUNTIME_VERSION = "0.17.3"
 PAYLOAD_VERSION = "mrs_attempt_v1"
 SESSION_FIELDS = (
     "started", "selected_case", "state", "events", "history", "management_trace",
@@ -125,21 +126,25 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         assignment = {"challenge_id": faculty_choice, "reason": "faculty_sandbox", "assignment_seed": seed}
     else:
         assignment = assign_challenge(user["training_year"], own, seed)
-    with encounter_preparation(st) as progress:
-        encounter = generate_encounter(
-            assignment["challenge_id"], initial_state,
-            api_key=_secret("OPENAI_API_KEY"),
-            model=_secret("MRS_GENERATOR_MODEL", _secret("OPENAI_MODEL", "gpt-5-mini")), seed=seed,
-            progress=progress,
-        )
-    encounter["assignment"] = assignment
-    attempt_id = store.create_attempt(token, assignment["challenge_id"], encounter, user["role"] != "resident")
-    record = store.get_attempt(token, attempt_id)
-    restore_attempt(context, record, reset_session)
-    st.session_state.attempt_number = 1 + sum(a["status"] == "completed" for a in own)
-    st.session_state.carry_forward_plan = deepcopy(adaptation_plan or {})
-    st.session_state.prior_attempt_record = deepcopy(prior_record)
-    save_session(context)
+    with ScenePreparation(_secret("OPENAI_API_KEY"),
+                          _secret("MRS_IMAGE_MODEL", "gpt-image-1.5"),
+                          _secret("MRS_IMAGE_REVIEW_MODEL", "gpt-5-mini")) as scene:
+        with encounter_preparation(st) as progress:
+            encounter = generate_encounter(
+                assignment["challenge_id"], initial_state,
+                api_key=_secret("OPENAI_API_KEY"),
+                model=_secret("MRS_GENERATOR_MODEL", _secret("OPENAI_MODEL", "gpt-5-mini")), seed=seed,
+                progress=progress, on_case_compiled=scene.on_case_compiled,
+            )
+        encounter["assignment"] = assignment
+        attempt_id = store.create_attempt(token, assignment["challenge_id"], encounter, user["role"] != "resident")
+        record = store.get_attempt(token, attempt_id)
+        restore_attempt(context, record, reset_session)
+        st.session_state.attempt_number = 1 + sum(a["status"] == "completed" for a in own)
+        st.session_state.carry_forward_plan = deepcopy(adaptation_plan or {})
+        st.session_state.prior_attempt_record = deepcopy(prior_record)
+        save_session(context)
+        scene.adopt(st.session_state, st.session_state.state, attempt_id)
 
 
 def _date(value):

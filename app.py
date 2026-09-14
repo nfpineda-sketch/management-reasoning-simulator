@@ -10,26 +10,25 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-SIMULATOR_VERSION = "0.17.2-clinical-encounter"
+SIMULATOR_VERSION = "0.17.3-clinical-encounter"
 
-from generation_reload import refresh_generation_modules
-refresh_generation_modules(SIMULATOR_VERSION.split("-")[0])
+import importlib
+import generation_reload as _generation_reload
+# v0.17.2 processes have the shared lock but not the visual refresh helper yet.
+# Upgrade that bootstrap module under its existing lock, preserving lock identity.
+with _generation_reload._LOCK:
+    if not callable(getattr(_generation_reload, "refresh_visual_modules", None)):
+        importlib.reload(_generation_reload)
+    _generation_reload.refresh_generation_modules(SIMULATOR_VERSION.split("-")[0])
+    _generation_reload.refresh_visual_modules()
 
 from curriculum import CHALLENGES
-# Refresh the changed renderer once during Streamlit hot updates.
-import importlib
 import patient_appearance as _appearance
-if getattr(_appearance, "APPEARANCE_VERSION", 0) != 3:
-    importlib.reload(_appearance)
 import encounter_generator as _encounter_generator
 if getattr(_encounter_generator, "GENERATOR_VERSION", "") != SIMULATOR_VERSION.split("-")[0]:
     importlib.reload(_encounter_generator)
 import clinical_scene as _clinical_scene
-if getattr(_clinical_scene, "SCENE_RENDER_VERSION", 0) != 7:
-    importlib.reload(_clinical_scene)
 import resuscitation_room as _room
-if getattr(_room, "ROOM_RENDER_VERSION", 0) != 6:
-    importlib.reload(_room)
 from resuscitation_room import render_room, render_bedside_tools
 from encounter_workspace import render_encounter_workspace
 from ai_interpreter import AIInterpretationError, normalize_with_ai
@@ -3493,14 +3492,19 @@ def generate_problem_config(challenge_id):
     from encounter_generator import generate_encounter
     from generated_case import GeneratedCaseError
     from generation_progress import encounter_preparation
+    from scene_preparation import ScenePreparation
     if challenge_id not in CHALLENGES:
         raise ValueError("Choose an implemented clinical problem.")
     try:
-        with encounter_preparation(st) as progress:
-            generated = generate_encounter(challenge_id, INITIAL_STATE,
-                api_key=_runtime_secret("OPENAI_API_KEY"),
-                model=_runtime_secret("MRS_GENERATOR_MODEL") or _runtime_secret("OPENAI_MODEL") or "gpt-5-mini",
-                progress=progress)
+        with ScenePreparation(_runtime_secret("OPENAI_API_KEY"),
+                              _runtime_secret("MRS_IMAGE_MODEL") or "gpt-image-1.5",
+                              _runtime_secret("MRS_IMAGE_REVIEW_MODEL") or "gpt-5-mini") as scene:
+            with encounter_preparation(st) as progress:
+                generated = generate_encounter(challenge_id, INITIAL_STATE,
+                    api_key=_runtime_secret("OPENAI_API_KEY"),
+                    model=_runtime_secret("MRS_GENERATOR_MODEL") or _runtime_secret("OPENAI_MODEL") or "gpt-5-mini",
+                    progress=progress, on_case_compiled=scene.on_case_compiled)
+            scene.adopt(st.session_state, generated["state"], st.session_state.get("_attempt_id"))
     except GeneratedCaseError as exc:
         st.error(str(exc))
         st.stop()

@@ -248,5 +248,7 @@ def test_scene_image_schedules_screened_functions_and_configurable_review_model(
     assert clinical_scene.scene_image(state, [{"kind": "presentation"}]) is None
     callback = pool.calls[0][0]
     assert isinstance(callback, partial) and callback.func is scene_pipeline.screened_scene
-    assert callback.keywords == {"review_model": "review-model"}
+    assert callback.keywords["review_model"] == "review-model"
+    assert callable(callback.keywords["progress"])
+    assert session["_scene_jobs"].status(appearance_signature(state))["queued"]
     assert session["_scene_pending"] and not session["_scene_current"]

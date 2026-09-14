@@ -1,4 +1,10 @@
-# Clinical encounter workspace v0.17.2
+# Clinical encounter workspace v0.17.3
+
+The initial patient image now starts while the compiled case receives its
+independent clinical review. It remains private until approval and successful
+encounter storage. The bedside scene reports image creation, appearance checking,
+elapsed time and fixed failure references. Manual image retry preserves the
+existing case and decisions. See [v0.17.3](docs/RELEASE_v0.17.3.md).
 
 The development generator now sends all independently detected clinical and
 trajectory inconsistencies to its single correction attempt, with the affected

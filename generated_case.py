@@ -15,7 +15,7 @@ from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
 from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.17.2"
+GENERATOR_VERSION = "0.17.3"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -153,7 +153,21 @@ def generation_capabilities():
             "executable_contract": executable_generation_constraints()}
 
 
-def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=None, client=None, review_model=None, progress=None):
+def _scene_snapshot(case):
+    """Project only drawable facts, never case history, diagnoses or objectives."""
+    from visual_observations import visual_observations
+    visible = visual_observations({"observable": case["observable"],
+                                  "encounter_spec": {"visual_profile": case["visual_profile"]}})
+    visual = {key: visible[key] for key in ("expression", "skin_color", "diaphoresis", "mottling")}
+    return {"observable": {"mental_status": visible["mental_status"],
+                           "work_of_breathing": visible["work_of_breathing"], "visual": visual},
+            "treatments": {},
+            "encounter_spec": {"clinical_case": {"patient": {
+                key: case["patient"][key] for key in ("age_years", "sex")}},
+                "visual_profile": {"baseline": deepcopy(visual)}}}
+
+
+def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=None, client=None, review_model=None, progress=None, on_case_compiled=None):
     """Return frozen new case after authoring + separate consistency review.
 
     Failure leaves base_state untouched and never substitutes a bank case. Replay
@@ -226,6 +240,10 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
                 raise generation_error("CONTRACT", stage, validation_codes=safe_validation_codes(exc)) from None
         stage = "REVIEW"
         report("review")
+        if on_case_compiled is not None:
+            # The caller holds any preparation privately until both this review
+            # and encounter storage succeed. No patient is returned or shown yet.
+            on_case_compiled(_scene_snapshot(case), _digest(raw))
         requested = monotonic()
         reviewed = _call(client, checker_model, REVIEW_INSTRUCTIONS,
                          {"learning_challenge": objective, "case": case, "capabilities": request["capabilities"]},

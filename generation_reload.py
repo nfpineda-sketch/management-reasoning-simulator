@@ -1,10 +1,12 @@
-"""Refresh one changed generator stack during a Streamlit hot update."""
+"""Refresh changed generation and visual stacks during a Streamlit hot update."""
 import importlib
 import sys
 from threading import RLock
 
 
-_LOCK = RLock()
+# Keep the same lock when this bootstrap module itself is upgraded in a process
+# that already has Streamlit sessions waiting on it.
+_LOCK = globals().get("_LOCK") or RLock()
 _MODULES = (
     "generated_case_validation",
     "generated_engine",
@@ -15,6 +17,34 @@ _MODULES = (
     "generated_case",
     "encounter_generator",
 )
+_VISUAL_RELEASES = {
+    "patient_appearance": ("APPEARANCE_VERSION", 4),
+    "scene_pipeline": ("SCENE_PIPELINE_VERSION", 2),
+    "clinical_scene": ("SCENE_RENDER_VERSION", 8),
+    "resuscitation_room": ("ROOM_RENDER_VERSION", 7),
+}
+_VISUAL_MODULES = (
+    "scene_errors", "patient_appearance", "image_consistency", "scene_jobs",
+    "scene_pipeline", "scene_preparation", "clinical_scene", "resuscitation_room",
+)
+
+
+def refresh_visual_modules():
+    """Check and reload visual dependencies under the shared process lock."""
+    with _LOCK:
+        stale = any(
+            name in sys.modules and getattr(sys.modules[name], marker, None) != version
+            for name, (marker, version) in _VISUAL_RELEASES.items()
+        )
+        if not stale:
+            return False
+        for name in _VISUAL_MODULES:
+            module = sys.modules.get(name)
+            if module is None:
+                importlib.import_module(name)
+            else:
+                importlib.reload(module)
+        return True
 
 
 def refresh_generation_modules(expected_version):

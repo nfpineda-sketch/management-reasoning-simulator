@@ -9,7 +9,7 @@ from html import escape
 from PIL import Image
 import streamlit as st
 
-SCENE_RENDER_VERSION = 7
+SCENE_RENDER_VERSION = 8
 
 # Only recorded patient-history topics are exposed to conversational retrieval.
 # The full case specification also includes diagnoses and teaching objectives.
@@ -102,15 +102,26 @@ def scene_prompt(state):
 
 
 def generate_scene(state, api_key, model='gpt-image-1.5', client=None):
-    if not api_key:
-        raise ValueError('Image generation is not configured.')
-    if client is None:
-        from openai import OpenAI
-        client = OpenAI(api_key=api_key, timeout=120, max_retries=0)
-    result = client.images.generate(model=model, prompt=scene_prompt(state),
-                                   size='1536x1024', quality='medium', output_format='png', n=1)
+    from scene_errors import SceneImageError, provider_image_error
+    if not api_key and client is None:
+        raise SceneImageError('CONFIG', 'CREATE')
+    try:
+        prompt = scene_prompt(state)
+    except (ValueError, TypeError, KeyError):
+        raise SceneImageError('CONTRACT', 'CREATE') from None
+    try:
+        if client is None:
+            from openai import OpenAI
+            client = OpenAI(api_key=api_key, timeout=120, max_retries=0)
+        result = client.images.generate(model=model, prompt=prompt,
+                                       size='1536x1024', quality='medium', output_format='png', n=1)
+    except Exception as error:
+        raise provider_image_error(error, 'CREATE') from None
     from patient_appearance import _validated_image
-    raw, _ = _validated_image(result.data[0].b64_json, output=True)
+    try:
+        raw, _ = _validated_image(result.data[0].b64_json, output=True)
+    except (ValueError, AttributeError, IndexError, TypeError):
+        raise SceneImageError('INVALID_IMAGE', 'CREATE') from None
     return base64.b64encode(raw).decode('ascii')
 
 
@@ -119,17 +130,30 @@ def scene_image(state, events):
     from patient_appearance import appearance_signature, APPEARANCE_VERSION
     from scene_pipeline import screened_scene, screened_appearance, SCENE_PIPELINE_VERSION
     from scene_jobs import SceneJobs
+    from scene_preparation import consume_prepared_scene
     arrival = next((e for e in events if e.get('kind') == 'presentation'), None)
     if not arrival:
         return None
     # Invalidate older unscreened pictures on a running session's hot update.
     spec = state.get('encounter_spec') or {}
-    patient_identity = (id(arrival), state.get('case_id'), spec.get('content_sha256'))
+    patient_identity = (state.get('case_id'), spec.get('content_sha256')) if spec.get('content_sha256') else (id(arrival), state.get('case_id'))
     key = (st.session_state.get('_attempt_id'), patient_identity,
            SCENE_RENDER_VERSION, APPEARANCE_VERSION, SCENE_PIPELINE_VERSION)
     if st.session_state.get('_scene_identity') != key or '_scene_jobs' not in st.session_state:
+        previous = st.session_state.get('_scene_jobs')
+        if previous is not None:
+            discard = getattr(previous, 'discard', None)
+            if callable(discard):
+                discard()
+            else:
+                # Objects already in a v0.17.2 session retain their old class
+                # after importlib.reload. Drop them without invoking new APIs.
+                pending = getattr(previous, 'pending', None)
+                if pending is not None:
+                    pending[1].cancel()
         st.session_state['_scene_identity'] = key
-        st.session_state['_scene_jobs'] = SceneJobs()
+        st.session_state['_scene_jobs'] = consume_prepared_scene(
+            st.session_state, state, st.session_state.get('_attempt_id')) or SceneJobs()
         st.session_state['_scene_failure_notified'] = None
     jobs = st.session_state['_scene_jobs']
     signature = appearance_signature(state)
@@ -137,17 +161,19 @@ def scene_image(state, events):
     jobs.request(signature, state, setting('OPENAI_API_KEY'),
                  setting('MRS_IMAGE_MODEL', 'gpt-image-1.5'),
                  partial(screened_scene, review_model=review_model),
-                 partial(screened_appearance, review_model=review_model))
+                 partial(screened_appearance, review_model=review_model),
+                 progress_supported=True)
     current = jobs.current(signature)
     st.session_state['_scene_current'] = current is not None
     st.session_state['_scene_failed'] = signature in jobs.failed
     st.session_state['_scene_pending'] = jobs.pending is not None
+    st.session_state['_scene_status'] = jobs.status(signature)
     # A label cannot neutralize a contradictory visual cue. Never substitute a
     # previous appearance while the current one is pending, rejected or failed.
     return current
 
 
-def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, observations=''):
+def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, observations='', image_status=None):
     if not current:
         image_b64 = None
     current = bool(current and image_b64)
@@ -155,11 +181,31 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
     bg = f'background-image:url(data:image/png;base64,{image_b64});' if image_b64 else ''
     status = 'Patient illustration · current state' if current else (
         'Updating patient appearance' if pending else 'Current patient image unavailable')
+    detail = scene_status_text(image_status) if not current else ''
     return ("<style>" + BEDSPACE_CSS + "</style>" +
             f'<div class="clinical-scene" style="{bg}">' +
             f'<div class="scene-monitor">{monitor}{ecg}</div>' +
             f'<div class="scene-time">ED / Bed 03 · {escape(status)}</div>' +
+            (f'<div class="scene-image-status" role="status">{escape(detail)}</div>' if detail else '') +
             (f'<div class="scene-observations">{escape(observations)}</div>' if not current else '') + '</div>')
+
+
+def scene_status_text(status):
+    """Render only fixed labels and safe diagnostics; never job/provider text."""
+    if not isinstance(status, dict):
+        return ''
+    if status.get('state') == 'failed':
+        from scene_errors import SceneImageError
+        error = SceneImageError(status.get('code'), status.get('stage'), status.get('failed_checks', ()))
+        return str(error)
+    if status.get('state') == 'pending':
+        labels = {'QUEUED': 'Waiting to prepare patient image', 'CREATE': 'Creating patient image',
+                  'EDIT': 'Updating patient appearance', 'SCREEN': 'Checking patient appearance'}
+        stage = 'QUEUED' if status.get('queued') is True else status.get('stage')
+        label = labels.get(stage, 'Preparing patient image') if isinstance(stage, str) else 'Preparing patient image'
+        elapsed = status.get('elapsed_seconds')
+        return f'{label} · {int(elapsed)}s elapsed' if type(elapsed) in (int, float) and 0 <= elapsed < 86400 else label
+    return ''
 
 
 BEDSPACE_CSS = """
@@ -171,6 +217,7 @@ BEDSPACE_CSS = """
 .monitor-values{min-width:0}.monitor-values>div{min-width:0}
 .scene-time{position:absolute;left:0;top:0;background:#000b;color:#eee;padding:8px 14px;font:12px system-ui;max-width:59%}
 .scene-observations{position:absolute;left:2%;bottom:3%;max-width:54%;background:#17222eee;color:white;padding:10px;border-radius:8px}
+.scene-image-status{position:absolute;left:3%;top:38%;max-width:53%;color:#dce8ef;font:16px/1.5 system-ui;padding:12px;background:#0e1b24;border-radius:8px}
 .st-key-encounter-console{position:fixed!important;right:2.2rem;top:calc(3.4rem + 39vh);
  bottom:1.8rem;width:35%!important;overflow-y:auto!important;overflow-x:hidden;z-index:2;
  background:rgba(248,250,252,.96);padding:14px;border:1px solid #b8c6cd;border-radius:12px;
@@ -190,6 +237,7 @@ BEDSPACE_CSS = """
  .scene-monitor .monitor-values small{font-size:10px}
  .scene-monitor svg{max-height:9vh}.scene-time{font-size:10px;max-width:52%;padding:4px}
  .scene-observations{font-size:11px;max-width:49%;padding:5px}
+ .scene-image-status{font-size:11px;max-width:48%;padding:6px;top:20%}
  .st-key-encounter-console{left:.4rem;right:.4rem;top:calc(3.2rem + 40vh);bottom:.4rem;width:auto!important;padding:10px}
 }
 @media(prefers-reduced-motion:reduce){.scene-monitor *{animation:none!important}}

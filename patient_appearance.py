@@ -13,7 +13,7 @@ from io import BytesIO
 from PIL import Image
 
 
-APPEARANCE_VERSION = 3
+APPEARANCE_VERSION = 4
 MAX_IMAGE_BYTES = 20_000_000
 
 _MENTAL = {
@@ -182,13 +182,17 @@ def generate_appearance(base_b64, state, api_key, model="gpt-image-1.5", client=
     Streamlit calls or global/session caches, so a worker cannot mutate a newer
     clinical state. Format checks are technical validation, not clinical review.
     """
+    from scene_errors import SceneImageError, provider_image_error
     if not api_key and client is None:
-        raise ValueError("Image generation is not configured.")
-    prompt = edit_prompt(state)
-    raw, image_format = _validated_image(base_b64)
-    if client is None:
-        from openai import OpenAI
-        client = OpenAI(api_key=api_key, timeout=120, max_retries=0)
+        raise SceneImageError('CONFIG', 'EDIT')
+    try:
+        prompt = edit_prompt(state)
+    except (ValueError, TypeError, KeyError):
+        raise SceneImageError('CONTRACT', 'EDIT') from None
+    try:
+        raw, image_format = _validated_image(base_b64)
+    except ValueError:
+        raise SceneImageError('INVALID_IMAGE', 'EDIT') from None
     reference = BytesIO(raw)
     reference.name = "original-patient." + {"PNG": "png", "JPEG": "jpg", "WEBP": "webp"}[image_format]
     request = dict(model=model, image=reference, prompt=prompt, size="1536x1024",
@@ -197,12 +201,20 @@ def generate_appearance(base_b64, state, api_key, model="gpt-image-1.5", client=
     if model in {"gpt-image-1.5", "gpt-image-1"}:
         request["input_fidelity"] = "high"
     try:
+        if client is None:
+            from openai import OpenAI
+            client = OpenAI(api_key=api_key, timeout=120, max_retries=0)
         result = client.images.edit(**request)
+    except Exception as error:
+        raise provider_image_error(error, 'EDIT') from None
     finally:
         reference.close()
     try:
         encoded = result.data[0].b64_json
-    except (AttributeError, IndexError, TypeError) as exc:
-        raise ValueError("No edited patient image was returned.") from exc
-    output, _ = _validated_image(encoded, output=True)
+    except (AttributeError, IndexError, TypeError):
+        raise SceneImageError('INVALID_IMAGE', 'EDIT') from None
+    try:
+        output, _ = _validated_image(encoded, output=True)
+    except ValueError:
+        raise SceneImageError('INVALID_IMAGE', 'EDIT') from None
     return base64.b64encode(output).decode("ascii")

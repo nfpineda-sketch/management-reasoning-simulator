@@ -47,7 +47,7 @@ def patient_svg(t):
     <circle cx="177" cy="335" r="10" fill="#405565"/><circle cx="333" cy="335" r="10" fill="#405565"/>{mask}{pump}</svg>'''
 
 
-ROOM_RENDER_VERSION = 6
+ROOM_RENDER_VERSION = 7
 
 
 def monitor_html(o, time_label, profile='baseline', seed=0):
@@ -76,7 +76,8 @@ def render_room(state, events, ecg_svg, render_event, time_label):
     st.markdown(scene_html(image, monitor_html(o, time_label, profile, state.get('seed', 0)),
                           current=st.session_state.get('_scene_current', False),
                           pending=st.session_state.get('_scene_pending', False),
-                          observations=description), unsafe_allow_html=True)
+                          observations=description,
+                          image_status=st.session_state.get('_scene_status')), unsafe_allow_html=True)
 
 
 def render_bedside_tools(state, events, render_event):
@@ -114,10 +115,13 @@ def render_bedside_tools(state, events, render_event):
             if st.button('View recording'):
                 show_ecg(recordings[recording])
     jobs = st.session_state.get('_scene_jobs')
-    if jobs and setting('OPENAI_API_KEY'):
-        if st.button('Retry patient image'):
-            jobs.failed.discard(appearance_signature(state))
-            st.rerun()
+    retry_image = getattr(jobs, 'retry', None)
+    if callable(retry_image) and not st.session_state.get('encounter_ended') and setting('OPENAI_API_KEY'):
+        if st.button('Retry patient image', help='Retry only the current patient image. Your encounter and decisions are preserved.'):
+            if retry_image(appearance_signature(state)):
+                st.rerun()
+            elif jobs.pending is not None:
+                st.info('The patient image is still being prepared. Its progress appears beside the monitor.')
     labels = device_labels(state['treatments'])
     if labels:
         st.caption('Current support · ' + ' | '.join(labels))

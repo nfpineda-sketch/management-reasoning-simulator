@@ -10,11 +10,12 @@ def install_author(monkeypatch, payload_factory=None, review=None):
     import generated_case
     real_author = generated_case.generate_ai_encounter
     records = []
-    def author(challenge_id, base_state, api_key="", model="", seed=None, client=None, review_model=None, progress=None):
+    def author(challenge_id, base_state, api_key="", model="", seed=None, client=None, review_model=None, progress=None, on_case_compiled=None):
         payload = payload_factory(len(records)) if payload_factory else novel_payload()
         fake = AuthorClient(payload, review)
         records.append(fake)
-        return real_author(challenge_id, base_state, api_key, model, seed, fake, review_model, progress=progress)
+        return real_author(challenge_id, base_state, api_key, model, seed, fake, review_model, progress=progress,
+                           on_case_compiled=on_case_compiled)
     monkeypatch.setattr(generated_case, "generate_ai_encounter", author)
     return records
 

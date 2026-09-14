@@ -9,13 +9,7 @@ import base64
 import json
 
 from visual_observations import VISUAL_CHOICES
-
-
-CHECK_IDS = (
-    "expression", "gaze_and_eyelids", "skin_color", "mottling", "diaphoresis",
-    "respiratory_posture", "respiratory_support", "identity_and_framing",
-    "no_unrequested_signs",
-)
+from scene_errors import CHECK_IDS, SceneImageError, provider_image_error
 
 _CONTRACT_KEYS = {
     "expression", "skin_color", "mottling", "diaphoresis", "mental_status",
@@ -38,13 +32,25 @@ _REASONS = {
 }
 
 
-class ImageConsistencyError(ValueError):
+_DIAGNOSTIC_CODES = {
+    "invalid_contract": "CONTRACT", "invalid_image": "INVALID_IMAGE",
+    "not_configured": "CONFIG", "provider_unavailable": "PROVIDER",
+    "invalid_response": "INVALID_RESPONSE", "uncertain": "UNCERTAIN",
+    "mismatch": "MISMATCH",
+}
+
+
+class ImageConsistencyError(SceneImageError):
     """A sanitized, bounded failure, safe for a job log or status record."""
 
-    def __init__(self, reason_code, failed_checks=()):
-        self.reason_code = reason_code if reason_code in _REASONS else "invalid_response"
-        self.failed_checks = tuple(check for check in CHECK_IDS if check in failed_checks)
-        super().__init__(_REASONS[self.reason_code])
+    def __init__(self, reason_code, failed_checks=(), *, diagnostic_code=None):
+        self.reason_code = reason_code if isinstance(reason_code, str) and reason_code in _REASONS else "invalid_response"
+        super().__init__(diagnostic_code or _DIAGNOSTIC_CODES[self.reason_code], "SCREEN", failed_checks)
+
+
+def _provider_failure(error):
+    return ImageConsistencyError("provider_unavailable",
+                                 diagnostic_code=provider_image_error(error, "SCREEN").code)
 
 
 def _contract(value):
@@ -128,8 +134,8 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
         try:
             from openai import OpenAI
             client = OpenAI(api_key=api_key, timeout=90, max_retries=0)
-        except Exception:
-            raise ImageConsistencyError("provider_unavailable") from None
+        except Exception as error:
+            raise _provider_failure(error) from None
     content = [{"type": "input_text", "text":
                 "Expected visual appearance contract: " + json.dumps(expected, sort_keys=True) +
                 ". Candidate illustration follows."}, candidate]
@@ -193,8 +199,12 @@ def inspect_image(image_b64, expected_contract, api_key, model="gpt-5-mini",
             text={"format": {"type": "json_schema", "name": "patient_image_consistency",
                              "strict": True, "schema": schema}},
             max_output_tokens=4096, store=False)
-    except Exception:
-        raise ImageConsistencyError("provider_unavailable") from None
+    except Exception as error:
+        raise _provider_failure(error) from None
+    for item in getattr(response, "output", ()) or ():
+        for part in getattr(item, "content", ()) or ():
+            if getattr(part, "type", None) == "refusal":
+                raise ImageConsistencyError("invalid_response", diagnostic_code="REFUSED")
     if getattr(response, "status", None) != "completed":
-        raise ImageConsistencyError("invalid_response")
+        raise ImageConsistencyError("invalid_response", diagnostic_code="INCOMPLETE")
     return _result(getattr(response, "output_text", None))
