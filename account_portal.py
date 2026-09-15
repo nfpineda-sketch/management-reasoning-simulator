@@ -72,7 +72,7 @@ def _start_session(token: str, user: dict[str, Any]) -> None:
 
 
 @st.cache_resource(show_spinner=False)
-def _configured_store(url: str, allow_sqlite: bool, username: str, password_hash: str) -> AccountStore:
+def _configured_store(url: str, allow_sqlite: bool, username: str, password_hash: str, schema_version: int = 2) -> AccountStore:
     """Cache connection configuration only; identities and permissions are never cached.
 
     AccountStore opens a separate transaction/connection for each operation and
@@ -97,7 +97,7 @@ def _open_store() -> AccountStore:
     if bool(username) != bool(password_hash):
         _closed("Account access is temporarily unavailable. The administrator account configuration is incomplete.")
     try:
-        return _configured_store(url, allow_sqlite and not _on_streamlit_cloud(), username, password_hash)
+        return _configured_store(url, allow_sqlite and not _on_streamlit_cloud(), username, password_hash, schema_version=2)
     except Exception:
         # Database exceptions may contain connection strings or credentials.
         # Never show exception text, repr, traceback, or secrets to the browser.

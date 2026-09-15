@@ -68,6 +68,9 @@ def test_failed_repair_has_actionable_safe_ids_without_case_content_or_false_com
     with pytest.raises(GeneratedCaseError) as caught:
         generate_ai_encounter("R1-05", base, client=client, progress=stages.append)
     assert caught.value.reference == "CASE-CORRECTION-CONTRACT"
+    assert len(caught.value.diagnostic["validation_failures"]) == 2
+    assert caught.value.diagnostic["validation_failures"][-1]["message"]
+    assert caught.value.diagnostic["draft"] == invalid
     assert caught.value.validation_codes
     assert all(code in str(caught.value) and code in caplog.text for code in caught.value.validation_codes)
     assert private not in str(caught.value) + caplog.text

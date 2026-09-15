@@ -229,6 +229,11 @@ class AccountStore:
                 CHECK (status IN ('active','completed','abandoned')),
                 CHECK (is_sandbox IN (0,1))
             )""",
+            """CREATE TABLE IF NOT EXISTS mrs_generation_failures (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL REFERENCES mrs_users(id),
+                diagnostic_json TEXT NOT NULL, created_at BIGINT NOT NULL
+            )""",
             "CREATE INDEX IF NOT EXISTS mrs_sessions_user ON mrs_sessions(user_id)",
             "CREATE INDEX IF NOT EXISTS mrs_attempts_user ON mrs_attempts(user_id, updated_at)",
             """CREATE UNIQUE INDEX IF NOT EXISTS mrs_active_resident_attempt
@@ -415,6 +420,24 @@ class AccountStore:
                 (hash_password(new_password), actor["id"]))
             self._execute(connection, "DELETE FROM mrs_sessions WHERE user_id = ?", (actor["id"],))
             return self._new_session(connection, actor["id"])
+
+    def save_generation_failure(self, token: str, diagnostic: dict) -> str:
+        encoded = _json(diagnostic, max_bytes=1_000_000)
+        with self._transaction(write=True) as connection:
+            actor = self._actor(connection, token)
+            identifier = uuid.uuid4().hex
+            self._execute(connection, "INSERT INTO mrs_generation_failures (id, user_id, diagnostic_json, created_at) VALUES (?, ?, ?, ?)",
+                          (identifier, actor["id"], encoded, int(time.time())))
+            return identifier
+
+    def list_generation_failures(self, token: str) -> list[dict]:
+        with self._transaction() as connection:
+            actor = self._actor(connection, token)
+            if actor["role"] != "admin":
+                raise AccountError("Generation diagnostics require an administrator account.")
+            rows = self._execute(connection, "SELECT id, user_id, diagnostic_json, created_at FROM mrs_generation_failures ORDER BY created_at DESC, id LIMIT 50").fetchall()
+            return [{"id": row["id"], "user_id": row["user_id"], "created_at": row["created_at"],
+                     "diagnostic": json.loads(row["diagnostic_json"])} for row in rows]
 
     def create_attempt(self, token: str, challenge_id: str, encounter: dict, is_sandbox: bool = False) -> str:
         if not isinstance(challenge_id, str) or not re.fullmatch(r"R[123]-\d{2}", challenge_id):

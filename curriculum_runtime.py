@@ -15,7 +15,7 @@ from scene_preparation import ScenePreparation
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
 
-RUNTIME_VERSION = "0.24.5"
+RUNTIME_VERSION = "0.24.6"
 PAYLOAD_VERSION = "mrs_attempt_v1"
 SESSION_FIELDS = (
     "started", "selected_case", "state", "events", "history", "management_trace",
@@ -188,6 +188,27 @@ def render_dashboard(context, initial_state, reset_session):
             st.caption("These are formative teaching opportunities. The catalog does not diagnose a learner's cognitive bias or establish competence.")
     st.caption("You may enter your reasoning and orders in English or Spanish. Patient information and feedback are in English.")
     st.caption("Your encounter and reflection are saved to your account. Faculty in this pilot program can review them.")
+    retained = st.session_state.get('_case_generation_failure')
+    if retained and retained.get('owner') == user['id'] and not retained.get('report_id'):
+        try:
+            retained['report_id'] = store.save_generation_failure(token, retained['data'])
+            st.caption('Support report: ' + retained['report_id'])
+        except AccountError:
+            st.warning('The support report could not be saved. The failure remains in this session.')
+    if user['role'] == 'admin':
+        with st.expander('Case preparation diagnostics'):
+            if st.button('Load saved generation failures'):
+                try:
+                    reports = store.list_generation_failures(token)
+                    if not reports:
+                        st.info('No saved generation failures.')
+                    for report in reports:
+                        st.download_button('Download report ' + report['id'][:8],
+                            json.dumps(report, ensure_ascii=False, indent=2),
+                            file_name='case_preparation_' + report['id'] + '.json',
+                            mime='application/json', key='failure_' + report['id'])
+                except AccountError as error:
+                    st.error(str(error))
     failure = st.session_state.get('_case_generation_failure')
     if user['role'] in {'faculty', 'admin'} and failure and failure.get('owner') == user['id']:
         st.download_button('Download case preparation diagnostic',
@@ -206,6 +227,12 @@ def render_dashboard(context, initial_state, reset_session):
             if diagnostic is not None:
                 # Private session storage only; never a learner widget or accepted attempt.
                 st.session_state['_case_generation_failure'] = {'owner': user['id'], 'data': deepcopy(diagnostic)}
+                try:
+                    report_id = store.save_generation_failure(token, diagnostic)
+                    st.session_state['_case_generation_failure']['report_id'] = report_id
+                    st.caption('Support report: ' + report_id)
+                except AccountError:
+                    st.warning('The support report could not be saved. The failure remains in this session.')
             st.error(str(exc))
             st.stop()
         st.rerun()

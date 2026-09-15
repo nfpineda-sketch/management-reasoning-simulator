@@ -40,6 +40,20 @@ class AccountStoreTests(unittest.TestCase):
     def attempt(self, token, challenge="R1-03"):
         return self.store.create_attempt(token, challenge, {"version": "test", "seed": 17})
 
+    def test_generation_failure_is_persistent_admin_only_and_not_an_attempt(self):
+        resident = self.enroll()
+        faculty = self.enroll("faculty", role="faculty")
+        diagnostic = {"draft": {"private": "fictional case"}, "validation_failures": [{"message": "exact error"}]}
+        identifier = self.store.save_generation_failure(resident, diagnostic)
+        reopened = AccountStore(self.url, allow_sqlite=True)
+        report = reopened.list_generation_failures(self.admin)[0]
+        self.assertEqual(report["id"], identifier)
+        self.assertEqual(report["diagnostic"], diagnostic)
+        self.assertEqual(reopened.list_attempts(resident), [])
+        for token in (resident, faculty, "invalid-session"):
+            with self.assertRaises(AccountError):
+                reopened.list_generation_failures(token)
+
     def test_sqlite_requires_explicit_local_mode(self):
         with self.assertRaisesRegex(AccountError, "local development"):
             AccountStore(self.url)

@@ -15,7 +15,7 @@ from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, ACTIONS, STUDIES,
                                    GeneratedCaseError, compile_case, validate_schema)
 from generated_case_errors import generation_error, provider_error
 
-GENERATOR_VERSION = "0.24.5"
+GENERATOR_VERSION = "0.24.6"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -217,6 +217,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
     correction_count = 0
     timings = {}
     requests = []
+    validation_failures = []
     started = monotonic()
     deadline = started + 300
 
@@ -259,6 +260,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
         try:
             case = compile_case(raw)
         except ValueError as exc:
+            validation_failures.append({"message": str(exc), "issues": deepcopy(getattr(exc, "issues", []))})
             # Exactly one repair of a fully structured fictional draft. The
             # full validators and separate reviewer still have to approve it.
             # All independently detected issues are sent together so the repair
@@ -281,6 +283,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
             try:
                 case = compile_case(raw)
             except ValueError as exc:
+                validation_failures.append({"message": str(exc), "issues": deepcopy(getattr(exc, "issues", []))})
                 from generated_case_validation import safe_validation_codes
                 raise generation_error("CONTRACT", stage, validation_codes=safe_validation_codes(exc)) from None
         from coupled_encounter import preview
@@ -322,6 +325,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
             try:
                 case = compile_case(raw)
             except ValueError as exc:
+                validation_failures.append({"message": str(exc), "issues": deepcopy(getattr(exc, "issues", []))})
                 from generated_case_validation import safe_validation_codes
                 failure = generation_error("CONTRACT", stage, validation_codes=safe_validation_codes(exc))
                 failure.diagnostic = {"generator_version": GENERATOR_VERSION, "seed": seed,
@@ -336,6 +340,8 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
             failure.diagnostic = {"generator_version": GENERATOR_VERSION, "seed": seed,
                 "challenge_id": challenge_id, "draft": deepcopy(locals().get("raw")),
                 "review": deepcopy(locals().get('review')), "timings": deepcopy(timings)}
+        failure.diagnostic["validation_failures"] = deepcopy(validation_failures)
+        failure.diagnostic["reference"] = getattr(failure, "reference", "CASE-UNKNOWN")
         failure.diagnostic["requests"] = deepcopy(requests)
         failure.diagnostic["elapsed_seconds"] = round(monotonic() - started, 3)
         raise
