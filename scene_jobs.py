@@ -16,6 +16,7 @@ class SceneJobs:
     def __init__(self):
         self.base = None
         self.review_candidate = None
+        self._retry_candidate = None
         self.images = {}
         self.failed = set()
         self.pending = None
@@ -86,6 +87,7 @@ class SceneJobs:
         if (self._discarded or signature not in self.failed or signature in self.images
                 or (self.pending is not None and self.pending[0] == signature)):
             return False
+        self._retry_candidate = self._diagnostic_candidate if self._diagnostic_candidate and self._diagnostic_candidate[0] == signature else None
         self.failed.discard(signature)
         self._diagnostic_candidate = None
         self._diagnostic_evidence = ()
@@ -102,6 +104,7 @@ class SceneJobs:
         with self._status_lock:
             self._discarded = True
             self._statuses.clear()
+        self._retry_candidate = None
         pending, self.pending = self.pending, None
         if pending is not None:
             pending[1].cancel()
@@ -142,7 +145,7 @@ class SceneJobs:
             _LOG.warning("patient_image_failed reference=%s checks=%s",
                          error.reference, ",".join(error.failed_checks))
 
-    def request(self, signature, state, api_key, model, initial, edit, *, progress_supported=False):
+    def request(self, signature, state, api_key, model, initial, edit, *, progress_supported=False, recheck=None):
         self.poll()
         if self._discarded or signature in self.images or signature in self.failed or self.pending:
             return
@@ -162,6 +165,11 @@ class SceneJobs:
                 self.review_candidate = None
         else:
             function, args = edit, (self.base, frozen, api_key, model)
+        retry_candidate = self._retry_candidate
+        self._retry_candidate = None
+        if retry_candidate and retry_candidate[0] == signature and recheck is not None:
+            function = partial(recheck, reference=self.base)
+            args = (retry_candidate[1], frozen, api_key, model)
         if progress_supported:
             function = partial(function, progress=partial(self._stage, signature))
         future = _POOL.submit(function, *args)

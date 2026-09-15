@@ -15,7 +15,7 @@ from scene_preparation import ScenePreparation
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
 
-RUNTIME_VERSION = "0.24.6"
+RUNTIME_VERSION = "0.24.13"
 PAYLOAD_VERSION = "mrs_attempt_v1"
 SESSION_FIELDS = (
     "started", "selected_case", "state", "events", "history", "management_trace",

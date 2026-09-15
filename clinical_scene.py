@@ -128,7 +128,7 @@ def generate_scene(state, api_key, model='gpt-image-1.5', client=None):
 def scene_image(state, events):
     from functools import partial
     from patient_appearance import appearance_signature, APPEARANCE_VERSION
-    from scene_pipeline import screened_scene, screened_appearance, SCENE_PIPELINE_VERSION
+    from scene_pipeline import screened_scene, screened_appearance, screened_existing_scene, SCENE_PIPELINE_VERSION
     from scene_jobs import SceneJobs
     from scene_preparation import consume_prepared_scene
     arrival = next((e for e in events if e.get('kind') == 'presentation'), None)
@@ -172,7 +172,8 @@ def scene_image(state, events):
                  setting('MRS_IMAGE_MODEL', 'gpt-image-1.5'),
                  partial(screened_scene, review_model=review_model),
                  partial(screened_appearance, review_model=review_model),
-                 progress_supported=True)
+                 progress_supported=True,
+                 recheck=partial(screened_existing_scene, review_model=review_model))
     current = jobs.current(signature)
     st.session_state['_scene_current'] = current is not None
     st.session_state['_scene_failed'] = signature in jobs.failed

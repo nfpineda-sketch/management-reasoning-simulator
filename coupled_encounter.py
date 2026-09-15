@@ -147,10 +147,14 @@ def examination_updates(rule, observed):
 def project(state,delta=None):
     from generated_engine import OBSERVED_FIELDS,BOUNDS,_COMPARATORS
     g=state['generated_state'];s=state['coupled_state'];case=state['encounter_spec']['clinical_case']
+    previous_visual=deepcopy(state['observable'].get('visual',{}))
     state['hidden']=deepcopy(s['hidden']);state['observable']=deepcopy(s['observable'])
     state['treatment_timeline']=deepcopy(s['treatment_timeline'])
     o=state['observable'];o['map']=round((o['sbp']+2*o['dbp'])/3)
     if s['hidden'].get('terminal_collapse'):
+        # Preserve the last displayed findings when terminal physiology bypasses
+        # narrative rules; copying the native baseline must not imply recovery.
+        o.setdefault('visual',{}).update(previous_visual)
         o.setdefault('electrical_rhythm',s.get('pre_arrest_rhythm','sinus'))
         return
     delta=delta or {}
@@ -270,7 +274,7 @@ def execute(state,parsed):
                 project(candidate)
             else:_record_effect(candidate,a,rules,summary)
             summaries.append(summary)
-        elapsed=reassess if reassess is not None else max([0]+[x['duration_min'] for x in summaries]+[x['available_at']-candidate['sim_time'] for x in pending])
+        elapsed=reassess if reassess is not None else 0
         if g['elapsed']+elapsed>case['engine'].get('horizon_min',180):return _failure('Choose a reassessment within this case\'s supported time horizon.')
         def release():
             for item in list(pending):

@@ -133,11 +133,18 @@ def render_bedside_tools(state, events, render_event):
             st.info('No rejected illustration is available for this appearance.')
     retry_image = getattr(jobs, 'retry', None)
     if callable(retry_image) and not st.session_state.get('encounter_ended') and setting('OPENAI_API_KEY'):
-        if st.button('Retry patient image', help='Retry only the current patient image. Your encounter and decisions are preserved.'):
+        if st.button('Retry patient image', help='Recheck the saved image when available; otherwise create it. Your encounter and decisions are preserved.'):
             if retry_image(appearance_signature(state)):
                 st.rerun()
             elif jobs.pending is not None:
                 st.info('The patient image is still being prepared. Its progress appears beside the monitor.')
+    from case_study_compatibility import missing_native_studies, upgrade_studies
+    missing = missing_native_studies(state.get('encounter_spec', {}).get('clinical_case', {}))
+    if missing:
+        st.info('This saved case can enable modeled studies: ' + ', '.join(sorted(missing)) + '. Patient state and existing results are preserved.')
+        if st.button('Enable modeled studies for this saved case'):
+            upgrade_studies(state)
+            st.rerun()
     labels = device_labels(state['treatments'])
     if labels:
         st.caption('Current support · ' + ' | '.join(labels))

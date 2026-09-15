@@ -10,7 +10,7 @@ from html import escape
 from copy import deepcopy
 import streamlit as st
 
-SIMULATOR_VERSION = "0.24.6-clinical-encounter"
+SIMULATOR_VERSION = "0.24.13-clinical-encounter"
 
 import importlib
 import generation_reload as _generation_reload
@@ -7088,7 +7088,7 @@ def execute_bundle(parsed):
         from pending_family_orders import hold_incomplete_bundle
         result = execute_family_bundle(state, parsed)
         if not result.get("executed") and result.get("clarification"):
-            pending = hold_incomplete_bundle(parsed)
+            pending = hold_incomplete_bundle(parsed, state)
             if pending:
                 st.session_state.pending_action = pending
         return result
@@ -8293,6 +8293,14 @@ with st.container(key="encounter-console"):
                     if tr.get("bag_mask"):
                         st.write("Bag-mask assisted ventilation")
                 st.write(f'Cumulative crystalloid: {tr["cumulative_crystalloid_ml"]} mL')
+                remaining = st.session_state.state.get('family_state', {}).get('pending_fluid_ml', 0)
+                for delivery in st.session_state.state.get('generated_state', {}).get('native_deliveries', []):
+                    if delivery.get('key', [None])[0] == 'fluid':
+                        st.write(f"Fluid order: {delivery['amount']:g} mL over {delivery['duration']:g} min; delivered {delivery['delivered']:g} mL.")
+                if remaining:
+                    st.write(f'Crystalloid pending: {remaining:g} mL. Delivery continues as simulation time advances.')
+                if st.session_state.state.get('engine_family') == 'generated':
+                    st.caption('Orders and tests do not automatically wait for completion. Specify a reassessment interval to advance time.')
                 if tr["metoprolol_total_mg"] > 0:
                     st.write(f'Metoprolol: {tr["metoprolol_total_mg"]:g} mg total')
                 if tr["propranolol_total_mg"] > 0:

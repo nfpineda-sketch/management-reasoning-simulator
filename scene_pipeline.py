@@ -12,7 +12,7 @@ from patient_appearance import appearance_state, generate_appearance
 from scene_errors import safe_image_error
 from scene_repair import repair_scene
 
-SCENE_PIPELINE_VERSION = 10
+SCENE_PIPELINE_VERSION = 12
 _LOG = logging.getLogger(__name__)
 
 
@@ -98,6 +98,6 @@ def screened_appearance(reference, state, api_key, model, *, review_model="gpt-5
     return _screen_with_correction(candidate, state, api_key, model, review_model, reference, progress)
 
 
-def screened_existing_scene(candidate, state, api_key, model, *, review_model="gpt-5-mini", progress=None):
+def screened_existing_scene(candidate, state, api_key, model, *, review_model="gpt-5-mini", progress=None, reference=None):
     """Recheck the exact rejected appearance after a screening update, without creating it again."""
-    return _screen_with_correction(candidate, state, api_key, model, review_model, progress=progress)
+    return _screen(candidate, state, api_key, review_model, reference, progress)

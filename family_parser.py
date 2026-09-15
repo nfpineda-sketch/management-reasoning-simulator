@@ -54,8 +54,8 @@ _DIAGNOSTICS = {
     "toxicology": r"toxicology|toxicology screen|toxicologia|screening toxicologico",
     "pocus": r"pocus|point[- ]of[- ]care ultrasound|bedside ultrasound|ecografia(?:\s+a pie de cama)?|ultrasonido",
     "lactate": r"lactate|lactato",
-    "vbg": r"vbg|venous blood gas|gasometria venosa|gases venosos",
-    "abg": r"abg|arterial blood gas|gasometria arterial|gases arteriales",
+    "vbg": r"vbg|venous blood gases?|venous blood gas|gasometria venosa|gases venosos",
+    "abg": r"abg|arterial blood gases?|arterial blood gas|gasometria arterial|gases arteriales",
     "basic_labs": r"basic labs|blood tests|blood work|laboratory tests|laboratorio|examenes de laboratorio|hemograma|cbc|bmp|cmp|electrolytes|electrolitos|creatinine|creatinina",
     "temperature": r"temperature|temperatura|temp",
     "poc_glucose": r"poc glucose|blood glucose|blood sugar|fingerstick|finger stick|glucose|glucosa|glicemia|glucemia|hgt|hemoglucotest",
@@ -85,7 +85,7 @@ _DIAG_VERBS = {
 }
 _NON_ORDER = re.compile(
     r"\b(?:i think|i suspect|i believe|i expect|i anticipate|i hope|my hypothesis|my impression|"
-    r"my working model|my working diagnosis|my priority|my plan|working diagnosis|because|to improve|should improve|would improve|may improve|"
+    r"my working model|my working diagnosis|my priority|my plan|working diagnosis|because|need to improve|to improve|should improve|would improve|may improve|"
     r"pienso|creo|sospecho|espero|anticip[oae]|mi hipotesis|mi impresion|mi prioridad|mi plan|porque|para mejorar)\b"
 )
 _CONDITIONAL = re.compile(
@@ -99,7 +99,7 @@ _OXYGEN_DEVICES = (
     ("room air", r"room air|aire ambiente"),
 )
 _OXYGEN_MENTION = r"\b(?:oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nasal prongs|nc|non[- ]rebreather|non[- ]rebreathing|nrb|simple mask|mascarilla|room air|aire ambiente)\b"
-_FLOW = r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(?:l\s*/\s*min|lpm|lts?\s*/\s*min|(?:lts?|l)(?![\w/]|\s*/)|liters?\s*/\s*min|litres?\s*/\s*min|litros?\s*/\s*min)\b"
+_FLOW = r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(?:l\s*/\s*(?:min|m)\b|lpm|lts?\s*/\s*min|(?:lts?|l)(?![\w/]|\s*/)|liters?\s*/\s*min|litres?\s*/\s*min|litros?\s*/\s*min)\b"
 
 
 
@@ -257,6 +257,9 @@ def _parse_piece_core(piece, inherited=None):
             diagnostics.append((match.start(), {"type": "diagnostic", "diagnostic": diagnostic}))
     if diagnostics:
         return [action for _, action in sorted(diagnostics, key=lambda x: x[0])], verb or "order"
+    if re.search(r"\b(?:gases|gasometria|blood gases?)\b", body):
+        return [{'type': 'clarification', 'message': 'Specify arterial (ABG) or venous (VBG) blood gases.',
+                 'pending_action': {'type': 'diagnostic', 'diagnostic': None}}], verb
     if verb in _DIAG_VERBS and verb not in {"order", "perform", "do", "realizar", "hacer"}:
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
@@ -386,7 +389,10 @@ def _parse_piece_core(piece, inherited=None):
 
 
 def _parse_piece(piece, inherited=None):
-    actions, verb = _parse_piece_core(piece, inherited)
+    dose_piece = re.sub(r"\b(?:over|durante|en)\s+\d+(?:\.\d+)?\s*(?:minutes?|mins?|minutos?|hours?|horas?|seconds?|segundos?)\b", "", piece)
+    if re.search(r"\b(?:reassess|reevaluar|reevaluo|revalorar|reassessment)\b", piece):
+        dose_piece = piece
+    actions, verb = _parse_piece_core(dose_piece, inherited)
     # Delivery time is attached to this treatment clause, never to reasoning or
     # the reassessment clause. Retain unsupported/ambiguous timing as a question.
     text = _NON_ORDER.split(piece, maxsplit=1)[0]
@@ -419,10 +425,9 @@ def parse_family_actions(text) -> dict:
         # even when a later conjunction contains words such as "reassess".
         if _NON_ORDER.match(sentence):
             continue
-        if _COMMAND.match(sentence):
-            rationale = _NON_ORDER.search(sentence)
-            if rationale:
-                sentence = sentence[:rationale.start()].strip(" ,")
+        rationale = _NON_ORDER.search(sentence)
+        if rationale:
+            sentence = sentence[:rationale.start()].strip(" ,")
         conditional = _CONDITIONAL.search(sentence)
         if conditional:
             # "Start oxygen ..., and if BP falls give fluids" contains an

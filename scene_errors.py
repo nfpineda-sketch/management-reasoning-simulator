@@ -7,6 +7,10 @@ CHECK_IDS = (
 )
 STAGES = frozenset({"CREATE", "EDIT", "REPAIR", "SCREEN"})
 _MESSAGES = {
+    "RESULT_JSON": "The image review did not return readable JSON. Retry verification of the saved image.",
+    "RESULT_SCHEMA": "The image review returned missing or invalid fields. Retry verification of the saved image.",
+    "RESULT_EVIDENCE": "The image review returned inconsistent checks and evidence. Retry verification of the saved image.",
+    "RESULT_OBSERVATIONS": "The image review returned invalid visual observations. Retry verification of the saved image.",
     "CONFIG": "Patient image generation is not configured.",
     "AUTH": "The patient image service could not authenticate.",
     "ACCESS": "Access to the patient image service was denied.",

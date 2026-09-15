@@ -83,7 +83,7 @@ def _validate(state, parsed):
             if str(study.get("result", {}).get("report", "")).startswith("No result is recorded"):
                 return None, "That investigation has no available result in this encounter. It has not been reported as normal."
             if a.get("diagnostic") != "ecg" and a.get("diagnostic") not in _case(state).get("investigations", {}):
-                return None, "That investigation is not available in this encounter. Please specify an available study."
+                return None, f"Requested study {a.get('diagnostic')!r} is unavailable. Available studies: {', '.join(sorted(_case(state).get('investigations', {})))}; ecg. No orders in this submission were executed."
         elif kind == "reassessment":
             if not _number(a.get("delay_min"), 0, 120):
                 return None, "Specify a reassessment interval from 0 to 120 minutes."

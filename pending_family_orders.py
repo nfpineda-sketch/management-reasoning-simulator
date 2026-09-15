@@ -3,7 +3,7 @@ from copy import deepcopy
 import re
 from family_parser import _normalize, _route, _amount, _medication, _COMMAND, _NEGATION, _CONDITIONAL, parse_family_actions
 
-_FIELDS = {'blood': ('units',), 'anticoagulation': ('dose','units','route'), 'fluid': ('volume_ml', 'fluid_type'), 'cardioversion': ('energy_j',),
+_FIELDS = {'diagnostic': ('diagnostic',), 'blood': ('units',), 'anticoagulation': ('dose','units','route'), 'fluid': ('volume_ml', 'fluid_type'), 'cardioversion': ('energy_j',),
            'norepinephrine': ('rate', 'units'), 'nitroglycerin': ('rate_mcg_min',),
            'dobutamine': ('rate','units'), 'niv': ('mode','epap_cmh2o','fio2_percent'),
            'intubation': ('ventilator_mode','fio2_percent','peep_cmh2o'), 'oxygen': ('device', 'flow_lpm')}
@@ -20,9 +20,15 @@ def missing_fields(a):
     return [k for k in (fields or ()) if a.get(k) is None]
 
 
-def hold_incomplete_bundle(parsed):
+def hold_incomplete_bundle(parsed, state=None):
     parsed = deepcopy(parsed)
     parsed['actions'] = [deepcopy(a.get('pending_action', a)) for a in parsed.get('actions', [])]
+    if state is not None:
+        available = state.get('encounter_spec', {}).get('clinical_case', {}).get('investigations', {})
+        for a in parsed.get('actions', []):
+            if a.get('type') == 'diagnostic' and a.get('diagnostic') not in available and a.get('diagnostic') != 'ecg':
+                a['requested_diagnostic'] = a.get('diagnostic')
+                a['diagnostic'] = None
     indices = [i for i,a in enumerate(parsed.get('actions', [])) if missing_fields(a)]
     if not indices or any(a.get('type') == 'clarification' for a in parsed.get('actions', [])):
         return None
@@ -31,6 +37,20 @@ def hold_incomplete_bundle(parsed):
 
 def complete_bundle(pending, text):
     body = _normalize(text).strip()
+    original = pending['parsed']['actions'][pending['index']]
+    if original.get('type') == 'diagnostic':
+        parsed = deepcopy(pending['parsed'])
+        if re.fullmatch(r'(?:cancel|omit|skip|cancelar|omitir)(?: this| ese| este)?(?: study| examen| estudio)?', body):
+            del parsed['actions'][pending['index']]
+        else:
+            reply = parse_family_actions(re.sub(r'^ok[ ,]*', '', body))['actions']
+            if len(reply) != 1 or reply[0].get('type') != 'diagnostic':
+                return {'clarification': 'Specify one replacement study, or say cancel study. The other orders remain pending.'}
+            parsed['actions'][pending['index']] = reply[0]
+        parsed.pop('clarification', None)
+        parsed['raw_text'] += '\nClarification: ' + text
+        parsed['resolved_from_clarification'] = True
+        return {'parsed': parsed}
     if _COMMAND.match(body) or _NEGATION.match(body) or _CONDITIONAL.search(body):
         return None  # A new directive is not a dose clarification.
     parsed = deepcopy(pending['parsed'])

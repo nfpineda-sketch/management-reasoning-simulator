@@ -295,8 +295,8 @@ def collect_clinical_issues(case):
     return issues
 
 
-def compile_case(raw):
-    """Translate schema arrays to immutable, existing encounter data contracts."""
+def _normalize_case(raw):
+    """Normalize structure only; output is NOT approved for an encounter."""
     validate_schema(raw, CASE_SCHEMA)
     duplicates = _duplicate_issues(raw)
     if duplicates:
@@ -310,6 +310,19 @@ def compile_case(raw):
         studies[study["id"]] = {"duration_min": study["duration_min"],
                                 "result": _pairs(study["result"], "field", "value"),
                                 "result_bindings": _pairs(study["result_bindings"], "field", "observable_field")}
+    # Native laboratory studies use explicit authored baseline values, never
+    # invented normal results. Keep authored studies and their validation intact.
+    if raw['engine'].get('core_profile') is not None:
+        labs = raw['engine']['initial_labs']
+        for name, fields, delay in (
+            ('vbg', ('pco2_mm_hg', 'bicarbonate_mmol_l', 'lactate_mmol_l'), 3),
+            ('abg', ('pco2_mm_hg', 'bicarbonate_mmol_l', 'pao2_mm_hg'), 3),
+            ('lactate', ('lactate_mmol_l',), 3),
+        ):
+            if name not in studies and all(field in labs for field in fields):
+                studies[name] = {'duration_min': delay,
+                                 'result': {field: labs[field] for field in fields},
+                                 'result_bindings': {field: field for field in fields}}
     case["investigations"] = studies
     engine = case["engine"]
     engine["untreated_drift_per_min"] = _pairs(engine["untreated_drift_per_min"], "field", "value")
@@ -339,9 +352,25 @@ def compile_case(raw):
         else:
             rule["examination"] = _pairs(rule["examination"], "area", "finding")
     case["visual_profile"] = {"id": "ai_authored_visible_findings_v1", "baseline": deepcopy(case["observable"]["visual"]), "perfusion_appearance": {}}
+    return case
+
+
+def compile_case(raw):
+    """Normalize and pass every encounter validation gate."""
+    case = _normalize_case(raw)
     from generated_engine_diagnostics import collect_declarative_issues
     from generated_case_coverage import coverage_issues
-    issues = collect_clinical_issues(case) + collect_declarative_issues(case) + coverage_issues(case)
+    # Check auto-derived bindings too; omitted bindings cannot conceal conflicts.
+    binding_issues = []
+    from generated_engine import diagnostic_bindings
+    for study_id, study in case['investigations'].items():
+        try:
+            study['result_bindings'] = diagnostic_bindings(case, study)
+        except ValueError as exc:
+            binding_issues.append({'code': 'DIAGNOSTIC_BINDING',
+                'path': 'case.investigations.' + study_id,
+                'message': str(exc), 'details': {}})
+    issues = binding_issues + collect_clinical_issues(case) + collect_declarative_issues(case) + coverage_issues(case)
     if issues:
         raise ContractValidationError(issues)
     from generated_engine import diagnostic_bindings

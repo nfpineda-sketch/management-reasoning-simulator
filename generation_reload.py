@@ -7,7 +7,7 @@ from threading import RLock
 # Keep the same lock when this bootstrap module itself is upgraded in a process
 # that already has Streamlit sessions waiting on it.
 _LOCK = globals().get("_LOCK") or RLock()
-RELOAD_VERSION = "0.24.6"
+RELOAD_VERSION = "0.24.13"
 _EXECUTION_RELEASE = "0.24.2"
 _EXECUTION_MODULES = (
     "account_store", "account_portal",'family_engine', 'generated_engine', 'coupled_encounter', 'clinical_physiology', 'generated_case_schema')
@@ -23,6 +23,7 @@ _MODULES = (
     "generated_case_schema",
     "generated_case_capabilities",
     "generated_case_errors",
+    "case_authoring",
     "generated_case",
     "encounter_generator",
 )
