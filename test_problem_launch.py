@@ -78,12 +78,12 @@ def test_failed_independent_review_does_not_show_unreviewed_patient(monkeypatch)
     assert any('consistency screen' in item.value for item in app.error)
     assert not app.session_state.started
     assert not any(item.label == 'Encounter' for item in app.radio)
-    # A rejected review costs one clinical repair and one re-review before the
-    # encounter is refused: author, review, correction, review. Raising this
-    # budget raises the price of every failed encounter, so pin it explicitly.
+    # With one review round a rejected case is reported, not repaired: author and
+    # review, and no clinical correction whose own re-review could not run.
+    # Raising this raises the price of every failed encounter, so pin it.
     assert len(calls) == 1
     stages = [call['max_output_tokens'] for call in calls[0].calls]
-    assert stages == [24000, 6000, 24000, 6000]
+    assert stages == [24000, 6000]
 
 
 def test_repeat_authors_new_patient_from_prior_problem_without_old_case_or_answers(monkeypatch):

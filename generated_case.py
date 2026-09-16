@@ -18,14 +18,21 @@ from generated_case_errors import generation_error, provider_error
 GENERATOR_VERSION = "0.24.13"
 SPEC_VERSION = "mrs.generated.encounter.v1"
 
-# The time budget used to be a bare 300 s while the pipeline's own longest path
-# needs five provider requests. A real gpt-5-mini run measured author 63.0 s,
-# corrections 48.1 s and 53.7 s, and review 70.0 s: the four first calls spent
-# 235 s and the mandatory final review was started with 63 s left and timed out.
-# Five paid requests, 60,011 tokens and no encounter. Derive the budget from the
-# path instead, so the two cannot drift apart again.
+# A real gpt-5-mini run measured author 63.0 s, corrections 48.1 s and 53.7 s,
+# and review 70.0 s. With two review rounds the longest path needs five provider
+# requests, which did not fit the former 300 s budget: the four first calls spent
+# 235 s, the mandatory final review started with 63 s left and timed out, and the
+# attempt cost 60,011 tokens without an encounter.
+#
+# One review round. A rejected case is reported rather than repaired: three paid
+# requests at most, and an honest refusal costs less than a repair whose own
+# re-review cannot run. Raising this restores the clinical repair and widens the
+# budget with it; the worst case and the budget are derived from it together so
+# they cannot drift apart again.
+REVIEW_ROUNDS = 1
 STAGE_BUDGET_SECONDS = 90
-WORST_CASE_STAGES = ("AUTHOR", "CORRECTION", "REVIEW", "CORRECTION", "REVIEW")
+WORST_CASE_STAGES = (("AUTHOR", "CORRECTION")
+                     + ("REVIEW", "CORRECTION") * (REVIEW_ROUNDS - 1) + ("REVIEW",))
 REQUEST_BUDGET_SECONDS = STAGE_BUDGET_SECONDS * len(WORST_CASE_STAGES)
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
@@ -329,7 +336,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
                 from generated_case_validation import safe_validation_codes
                 raise generation_error("CONTRACT", stage, validation_codes=safe_validation_codes(exc)) from None
         from coupled_encounter import preview
-        for review_round in range(2):
+        for review_round in range(REVIEW_ROUNDS):
             stage = "REVIEW"
             report("review")
             native_preview = preview(case, seed=seed)
@@ -342,7 +349,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
             review = _response_data(reviewed, REVIEW_SCHEMA, stage)
             if review["coherent"] and all(review["checks"].values()) and not review["issues"]:
                 break
-            if review_round == 1:
+            if review_round == REVIEW_ROUNDS - 1:
                 failure = generation_error("REVIEW", stage,
                     review_checks=[key for key, value in review['checks'].items() if not value])
                 failure.diagnostic = {"generator_version": GENERATOR_VERSION, "seed": seed,

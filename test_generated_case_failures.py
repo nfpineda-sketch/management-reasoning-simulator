@@ -113,7 +113,11 @@ def test_corrected_case_still_cannot_launch_when_reviewer_rejects():
         generate_ai_encounter("R1-05", clean_base(), client=client)
     assert exc.value.reference == "CASE-REVIEW-REVIEW"
     assert "hidden diagnosis" not in str(exc.value)
-    assert len(client.calls) == 5
+    # Author, one structural correction, one review. Under a single review round
+    # a rejected case is reported rather than repaired and re-reviewed, so the
+    # worst rejected encounter costs three requests instead of five.
+    assert len(client.calls) == 3
+    assert [call["max_output_tokens"] for call in client.calls] == [24000, 24000, 6000]
 
 
 @pytest.mark.parametrize("client,reference", [

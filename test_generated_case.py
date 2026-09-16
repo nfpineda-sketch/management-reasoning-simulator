@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
+import generated_case
 from generated_case import generate_ai_encounter, GeneratedCaseError, FOUNDATION_OBJECTIVES
 from generated_case_schema import (CASE_SCHEMA, REVIEW_SCHEMA, SCHEMA_VERSION, compile_case,
                                    validate_schema, STATE_TEXT)
@@ -180,7 +181,8 @@ def test_independent_review_rejection_blocks_launch(review):
     client = AuthorClient(review=review)
     with pytest.raises(GeneratedCaseError, match="consistency screen"):
         generate_encounter("R1-05", clean_base(), client=client)
-    assert len(client.calls) == 4
+    # One review round: the rejection is reported, not repaired and re-reviewed.
+    assert len(client.calls) == 2
 
 
 @pytest.mark.parametrize("mutate", [
@@ -276,7 +278,27 @@ def test_new_case_cannot_inherit_an_existing_native_patient():
     assert new['rhythm_history']==[]
 
 
-def test_review_repair_reuses_draft_and_real_objections_before_launch():
+def test_a_single_rejection_is_terminal_under_the_production_review_budget():
+    """The cut to one review round: a rejected case is reported, not repaired.
+
+    This is a real capability loss, taken deliberately. The former second round
+    spent a repair and a re-review that the 300 s budget could not finish.
+    """
+    assert generated_case.REVIEW_ROUNDS == 1
+    review = approval()
+    review['coherent'] = False
+    review['checks']['state_transitions'] = False
+    client = AuthorClient(review=review)
+    with pytest.raises(GeneratedCaseError, match='consistency screen'):
+        generate_ai_encounter('R1-05', clean_base(), client=client, seed=42)
+    assert [c['text']['format']['name'] for c in client.calls] == [
+        'new_clinical_case', 'clinical_consistency_review']
+
+
+def test_review_repair_reuses_draft_and_real_objections_before_launch(monkeypatch):
+    # Exercised with the repair enabled, so raising REVIEW_ROUNDS stays a
+    # one-line change rather than the discovery that the branch rotted.
+    monkeypatch.setattr(generated_case, 'REVIEW_ROUNDS', 2)
     class Client(AuthorClient):
         def create(self, **kwargs):
             if kwargs['text']['format']['name']=='clinical_consistency_review':

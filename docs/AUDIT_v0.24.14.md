@@ -196,19 +196,34 @@ the washout fix in section 2 did not prevent this failure and this run neither
 confirms nor refutes that fix; and the reviewer rejected the corrected case,
 which is the reviewer working, not a defect.
 
-### Budget derived from the path
+### One review round, and a budget derived from it
 
-`REQUEST_BUDGET_SECONDS` is now `STAGE_BUDGET_SECONDS * len(WORST_CASE_STAGES)`
-= 90 x 5 = 450 s, and a stage reserves a whole stage for the review that must
-follow it, refusing before paying when the call itself cannot finish. The old
-check let a request start with 10 s left and buy a timeout. Replaying the
-measured durations, the run would have completed at ~305 s. The trade is a
-worst-case wait of 450 s instead of 300 s; the alternative is to shorten the
-path, for example to a single review round, which is a product decision.
+The repository owner chose to shorten the path rather than widen the wait.
+`REVIEW_ROUNDS = 1`: a case the reviewer rejects is **reported, not repaired**.
+The worst case and the budget follow from it,
+
+    WORST_CASE_STAGES = ("AUTHOR", "CORRECTION") + ("REVIEW", "CORRECTION") * (REVIEW_ROUNDS - 1) + ("REVIEW",)
+    REQUEST_BUDGET_SECONDS = STAGE_BUDGET_SECONDS * len(WORST_CASE_STAGES)
+
+giving three stages and 270 s. A draft reserves a whole stage for the review
+that must follow it, and a call that cannot finish is refused before it is paid
+for; the old check let a request start with 10 s left and buy a timeout. The
+measured path — author 63.0 s, structural correction 48.1 s, review 70.0 s —
+completes in 181 s.
+
+This is a deliberate capability loss: the second round used to repair a rejected
+case once, and now nothing does. The cost of a rejected encounter falls from
+five requests ending in a timeout to two honest ones. Raising `REVIEW_ROUNDS`
+restores the repair and widens the budget with it in one line, and the repair
+branch is still exercised by tests that raise the constant, so it cannot rot
+unnoticed while production does not reach it.
+
 `test_generation_budget_and_diagnostics` reads `generate_ai_encounter` with
-`ast` and fails if its request sites stop matching `WORST_CASE_STAGES`, and
-`test_generation_budget` now derives its exhaustion point from the constants
-rather than the literal 295 that quietly stopped refusing.
+`ast` and fails if its request sites stop matching `WORST_CASE_STAGES`.
+`test_generation_budget` derives its exhaustion point from the constants rather
+than the literal 295 that quietly stopped refusing, and the cost pins in
+`test_problem_launch` and `test_generated_case` record that a rejected review now
+costs two requests rather than four.
 
 ### The diagnostic now survives
 
@@ -224,6 +239,34 @@ account path persisted them, and only to an administrator table.
 It sanitizes the reference, drops an oversized draft rather than the report, and
 never raises, so a failed write cannot replace the error the caller is
 reporting. Learner-facing output is unchanged.
+
+## 11. The suite was buying provider requests
+
+While preparing the paid run, the key was placed in `.streamlit/secrets.toml`.
+That is the path the application itself reads: `_runtime_secret` consults
+`st.secrets` and falls back to the environment, so `ai_interpretation_enabled()`
+became true for the tests as well, and **every simulated learner submission in
+the AppTest suite issued a real `normalize_with_ai` request**. Confirmed with a
+spy: one submission, one call. Several full-suite runs followed, and files such
+as `test_oxygen_submission` (30 tests), `test_cognitive_encounters` (53) and
+`test_curriculum_app` submit learner text repeatedly. The requests are small,
+but there were many and none was authorized. The count is only visible in the
+provider's billing.
+
+It also corrupted results: two `test_mixed_order_scenario` assertions failed
+because the live model rewrote the resident's own words ("oxygenation and
+perfusion to improve" for "improve oxygenation and perfusion"). They pass again
+with the key out of that path.
+
+`conftest.py` now keeps the suite offline with two autouse guards: outbound
+sockets are refused with an explicit message, allowing localhost, and deployment
+key variables are removed from the environment for every test. Tests that need a
+provider already pass a stub client or an `httpx.MockTransport`, neither of which
+opens a socket, so the guard changes no existing test. `MRS_ALLOW_NETWORK_TESTS=1`
+is the explicit opt-out for a deliberate paid run.
+
+A key for a real run belongs somewhere the application does not read by itself,
+for example `local-data/`, exported only for that run.
 
 ## Validation and limits
 

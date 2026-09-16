@@ -16,7 +16,7 @@ import unittest
 
 import generated_case
 from generated_case import (
-    REQUEST_BUDGET_SECONDS, STAGE_BUDGET_SECONDS, WORST_CASE_STAGES,
+    REQUEST_BUDGET_SECONDS, REVIEW_ROUNDS, STAGE_BUDGET_SECONDS, WORST_CASE_STAGES,
 )
 
 
@@ -29,22 +29,32 @@ class BudgetFitsTheLongestPath(unittest.TestCase):
                                 STAGE_BUDGET_SECONDS * len(WORST_CASE_STAGES))
 
     def test_the_declared_worst_case_matches_the_requests_the_code_can_make(self):
-        """author, one structural correction, then two review rounds with one repair."""
-        source = (ROOT / "generated_case.py").read_text()
-        tree = ast.parse(source)
+        """author, one structural correction, then REVIEW_ROUNDS reviews and repairs."""
+        tree = ast.parse((ROOT / "generated_case.py").read_text())
         function = next(n for n in ast.walk(tree)
                         if isinstance(n, ast.FunctionDef) and n.name == "generate_ai_encounter")
-        calls = [n for n in ast.walk(function)
+        sites = [n for n in ast.walk(function)
                  if isinstance(n, ast.Call) and getattr(n.func, "id", "") == "request_case"]
-        # Three call sites: author, structural correction, and the review loop's
-        # review plus clinical correction, which run at most twice.
-        self.assertEqual(len(calls), 4)
-        self.assertEqual(len(WORST_CASE_STAGES), 5)
+        # Four call sites: author, structural correction, and inside the review
+        # loop a review plus the clinical repair that precedes the next round.
+        self.assertEqual(len(sites), 4)
+        self.assertEqual(len(WORST_CASE_STAGES), 2 * REVIEW_ROUNDS + 1)
+        self.assertEqual(WORST_CASE_STAGES.count("REVIEW"), REVIEW_ROUNDS)
+
+    def test_one_review_round_reports_a_rejected_case_instead_of_repairing_it(self):
+        """The cut: a rejected case costs three requests, not five and a timeout."""
+        self.assertEqual(REVIEW_ROUNDS, 1)
+        self.assertEqual(WORST_CASE_STAGES, ("AUTHOR", "CORRECTION", "REVIEW"))
+        self.assertEqual(REQUEST_BUDGET_SECONDS, 270)
 
     def test_the_measured_run_would_now_complete(self):
-        """Replay the observed durations against the budget arithmetic."""
-        observed = [("AUTHOR", 63.0), ("CORRECTION", 48.1), ("REVIEW", 70.0),
-                    ("CORRECTION", 53.7), ("REVIEW", 70.0)]
+        """Replay the real run's durations against the budget arithmetic.
+
+        Author 63.0 s, structural correction 48.1 s and review 70.0 s are the
+        first three stages actually measured; under one review round that is the
+        whole worst case.
+        """
+        observed = [("AUTHOR", 63.0), ("CORRECTION", 48.1), ("REVIEW", 70.0)]
         elapsed = 0.0
         for stage, seconds in observed:
             remaining = REQUEST_BUDGET_SECONDS - elapsed
@@ -145,3 +155,61 @@ class AFailedGenerationSurvivesOnDisk(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TheClinicalRepairStaysReachable(unittest.TestCase):
+    """REVIEW_ROUNDS = 1 makes the repair branch unreachable in production.
+
+    Exercise it anyway, so raising the constant back is a one-line change rather
+    than the discovery that the branch rotted while nothing ran it.
+    """
+
+    def test_raising_the_rounds_restores_the_repair_and_widens_the_budget(self):
+        import importlib
+        from test_generated_case import AuthorClient, clean_base
+
+        module = importlib.reload(generated_case)
+        original = module.REVIEW_ROUNDS
+        try:
+            module.REVIEW_ROUNDS = 2
+            module.WORST_CASE_STAGES = (("AUTHOR", "CORRECTION")
+                                        + ("REVIEW", "CORRECTION") * (module.REVIEW_ROUNDS - 1)
+                                        + ("REVIEW",))
+            module.REQUEST_BUDGET_SECONDS = (module.STAGE_BUDGET_SECONDS
+                                             * len(module.WORST_CASE_STAGES))
+            self.assertEqual(module.REQUEST_BUDGET_SECONDS, 450)
+
+            rejected = {"coherent": False, "issues": ["Appearance conflicts with physiology."],
+                        "checks": None}
+
+            class RejectingOnce(AuthorClient):
+                reviews = 0
+
+                def create(self, **kwargs):
+                    response = super().create(**kwargs)
+                    if kwargs["text"]["format"]["name"] == "clinical_consistency_review":
+                        RejectingOnce.reviews += 1
+                    return response
+
+            client = RejectingOnce()
+            module.generate_ai_encounter("R1-03", clean_base(), client=client, seed=31)
+            stages = [c["max_output_tokens"] for c in client.calls]
+            self.assertEqual(stages[0], 24000)
+            self.assertIn(6000, stages)
+        finally:
+            module.REVIEW_ROUNDS = original
+            importlib.reload(generated_case)
+
+    def test_the_repair_branch_is_still_compiled_and_reachable_by_the_loop(self):
+        tree = ast.parse((ROOT / "generated_case.py").read_text())
+        function = next(n for n in ast.walk(tree)
+                        if isinstance(n, ast.FunctionDef) and n.name == "generate_ai_encounter")
+        loops = [n for n in ast.walk(function) if isinstance(n, ast.For)
+                 and isinstance(n.iter, ast.Call)
+                 and getattr(n.iter.func, "id", "") == "range"]
+        review_loop = next(n for n in loops
+                           if getattr(n.iter.args[0], "id", "") == "REVIEW_ROUNDS")
+        sites = [n for n in ast.walk(review_loop)
+                 if isinstance(n, ast.Call) and getattr(n.func, "id", "") == "request_case"]
+        # The review itself and the clinical repair that precedes the next round.
+        self.assertEqual(len(sites), 2)
