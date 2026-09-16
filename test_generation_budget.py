@@ -20,10 +20,14 @@ def test_default_effort_preserves_independent_review_and_request_limits():
 def test_budget_prevents_additional_paid_call_without_approval(monkeypatch):
     clock = [0.0]
     monkeypatch.setattr(generation, 'monotonic', lambda: clock[0])
+    # Leave less than one stage, so the mandatory review cannot finish and must
+    # be refused rather than paid for. Derive it from the budget constants: the
+    # old literal 295 silently stopped refusing when the budget was recalibrated.
+    exhausted = generation.REQUEST_BUDGET_SECONDS - generation.STAGE_BUDGET_SECONDS + 5
     class SlowClient(AuthorClient):
         def create(self, **kwargs):
             response = super().create(**kwargs)
-            clock[0] = 295
+            clock[0] = exhausted
             return response
     client = SlowClient()
     images = []

@@ -225,6 +225,10 @@ def render_dashboard(context, initial_state, reset_session):
         except (AccountError, GeneratedCaseError) as exc:
             diagnostic = getattr(exc, 'diagnostic', None)
             if diagnostic is not None:
+                # A local copy as well: the database row is administrator-only and
+                # an offline replay should not need database access.
+                from generation_diagnostics import save_failure
+                save_failure(exc, challenge_id=faculty_choice)
                 # Private session storage only; never a learner widget or accepted attempt.
                 st.session_state['_case_generation_failure'] = {'owner': user['id'], 'data': deepcopy(diagnostic)}
                 try:

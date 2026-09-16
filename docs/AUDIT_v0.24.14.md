@@ -171,6 +171,60 @@ mislabel remains: `_screen` codes a non-raising `accepted is not True` as
   required properties per response rule. The real saving is not spending a
   correction on a draft that cannot compile.
 
+## 10. One authorized paid run, and what it proved
+
+Challenge R1-05, seed 933662594, no image, `gpt-5-mini`. It **failed**:
+
+| stage | status | seconds | tokens |
+|---|---|---|---|
+| author | completed | 62.99 | 13,845 |
+| correction | completed | 48.10 | 16,546 |
+| review | completed | 70.04 | 12,197 |
+| correction | completed | 53.68 | 17,423 |
+| review | **timed out** | 63.63 | — |
+| | | **300.15** | **60,011** |
+
+`CASE-REVIEW-TIMEOUT`. The budget was the cause, and the arithmetic is exact:
+the four first calls spent 235 s, the mandatory final review began with 63.5 s
+left, `reserve = 30 if stage != "REVIEW" else 0` gave it `min(120, 63.5)`, and a
+review had just taken 70.0 s. **The 300 s budget could not accommodate the
+pipeline's own longest path**, so entering the long branch guaranteed paying for
+four calls and then timing out on the fifth.
+
+Two further facts from the run: the author's first draft did **not** compile, so
+the washout fix in section 2 did not prevent this failure and this run neither
+confirms nor refutes that fix; and the reviewer rejected the corrected case,
+which is the reviewer working, not a defect.
+
+### Budget derived from the path
+
+`REQUEST_BUDGET_SECONDS` is now `STAGE_BUDGET_SECONDS * len(WORST_CASE_STAGES)`
+= 90 x 5 = 450 s, and a stage reserves a whole stage for the review that must
+follow it, refusing before paying when the call itself cannot finish. The old
+check let a request start with 10 s left and buy a timeout. Replaying the
+measured durations, the run would have completed at ~305 s. The trade is a
+worst-case wait of 450 s instead of 300 s; the alternative is to shorten the
+path, for example to a single review round, which is a product decision.
+`test_generation_budget_and_diagnostics` reads `generate_ai_encounter` with
+`ast` and fails if its request sites stop matching `WORST_CASE_STAGES`, and
+`test_generation_budget` now derives its exhaustion point from the constants
+rather than the literal 295 that quietly stopped refusing.
+
+### The diagnostic now survives
+
+The run's diagnostic was lost: it was written to a session-scoped temporary
+directory that was removed. That was avoidable, and it also exposed a real gap —
+in shared-password mode `generate_problem_config` caught `GeneratedCaseError`
+and only called `st.error`, discarding the draft, the validator issues, the
+reviewer objections and the request ledger of every paid failure. Only the
+account path persisted them, and only to an administrator table.
+
+`generation_diagnostics.save_failure` now writes the diagnostic to
+`local-data/generation_failures/` from both launch paths, keeping the last 50.
+It sanitizes the reference, drops an oversized draft rather than the report, and
+never raises, so a failed write cannot replace the error the caller is
+reporting. Learner-facing output is unchanged.
+
 ## Validation and limits
 
 All 82 pytest files pass, run one file per process. On the published HEAD, 13

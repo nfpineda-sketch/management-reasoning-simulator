@@ -17,6 +17,16 @@ from generated_case_errors import generation_error, provider_error
 
 GENERATOR_VERSION = "0.24.13"
 SPEC_VERSION = "mrs.generated.encounter.v1"
+
+# The time budget used to be a bare 300 s while the pipeline's own longest path
+# needs five provider requests. A real gpt-5-mini run measured author 63.0 s,
+# corrections 48.1 s and 53.7 s, and review 70.0 s: the four first calls spent
+# 235 s and the mandatory final review was started with 63 s left and timed out.
+# Five paid requests, 60,011 tokens and no encounter. Derive the budget from the
+# path instead, so the two cannot drift apart again.
+STAGE_BUDGET_SECONDS = 90
+WORST_CASE_STAGES = ("AUTHOR", "CORRECTION", "REVIEW", "CORRECTION", "REVIEW")
+REQUEST_BUDGET_SECONDS = STAGE_BUDGET_SECONDS * len(WORST_CASE_STAGES)
 FOUNDATION_OBJECTIVES = {
     "R1-03": "Relate tachycardia to the patient's physiological state and prioritize the rhythm contribution versus other causes of deterioration.",
     "R1-04": "Anticipate an intervention's effects and use reassessment to adapt management when the response differs from expectations.",
@@ -248,13 +258,15 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
     requests = []
     validation_failures = []
     started = monotonic()
-    deadline = started + 300
+    deadline = started + REQUEST_BUDGET_SECONDS
 
     def request_case(client, model, instructions, payload, schema, name, tokens, stage="AUTHOR"):
         remaining = deadline - monotonic()
-        # Reserve review time before spending the remaining budget on a draft.
-        reserve = 30 if stage != "REVIEW" else 0
-        if remaining < reserve + 10:
+        # A draft is always followed by a mandatory review, so reserve a whole
+        # stage for it. Refuse before paying when this call cannot finish
+        # either: a request started with less than a stage left buys a timeout.
+        reserve = 0 if stage == "REVIEW" else STAGE_BUDGET_SECONDS
+        if remaining < reserve + STAGE_BUDGET_SECONDS:
             raise generation_error("BUDGET", stage)
         begin = monotonic()
         record = {"stage": stage.lower(), "model": model, "status": "failed"}
@@ -409,7 +421,7 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
                            "authoring_requests": len(author_responses), "correction_count": correction_count,
                            "generation_timings": {**timings, "total_seconds": round(monotonic() - started, 3)},
                            "review_requests": len(review_responses),
-                           "requests": deepcopy(requests), "request_budget_seconds": 300,
+                           "requests": deepcopy(requests), "request_budget_seconds": REQUEST_BUDGET_SECONDS,
                            "review_usage": {key: sum(_usage(response).get(key, 0) for response in review_responses)
                                             for key in ("input_tokens", "output_tokens", "total_tokens")
                                             if any(key in _usage(response) for response in review_responses)},

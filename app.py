@@ -3536,6 +3536,10 @@ def generate_problem_config(challenge_id):
                     progress=progress, on_case_compiled=scene.on_case_compiled)
             scene.adopt(st.session_state, generated["state"], st.session_state.get("_attempt_id"))
     except GeneratedCaseError as exc:
+        # Without an account store this was the only handler, and it dropped the
+        # draft, the validator issues and the request ledger of a paid failure.
+        from generation_diagnostics import save_failure
+        save_failure(exc, challenge_id=challenge_id)
         st.error(str(exc))
         st.stop()
     return {"state_factory": lambda: deepcopy(generated["state"]),
