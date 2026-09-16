@@ -384,7 +384,13 @@ def _parse_piece_core(piece, inherited=None):
             medication_text = body + " nebulized" if verb in {"nebulize", "nebulizar"} else body
             return [_medication(medication_text, kind, agent)], verb or "give"
     if verb:
-        return [_clarification("This order was not recognized. Specify the intervention, dose/settings, and route explicitly.")], verb
+        # Quote the fragment back: a resident cannot repair an unnamed item, and
+        # the rest of the submission is held rather than discarded.
+        fragment = " ".join(str(piece).split())[:80]
+        return [{**_clarification(
+            f'This order was not recognized: "{fragment}". Replace it with a supported '
+            "intervention, dose/settings and route, or say cancel. The other orders in "
+            "this submission are held until then."), "unrecognized_text": fragment}], verb
     return [], None
 
 

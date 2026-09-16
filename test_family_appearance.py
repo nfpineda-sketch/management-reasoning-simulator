@@ -137,10 +137,10 @@ def test_vision_screen_accepts_supported_bag_mask_contract_and_rejects_device_co
     client = SimpleNamespace(responses=responses)
     assert inspect_image(encoded, appearance_state(state), '', client=client)['accepted']
     request = responses.request
-    assert 'necessary gloved clinician hands' in request['instructions']
+    assert 'gloved clinician hands' in request['instructions']
     # The current visual contract excludes physiological inference altogether.
-    assert 'not a request to establish consciousness, perfusion' in request['instructions']
-    assert 'a respiratory rate or motion' in request['instructions']
+    assert 'not diagnosis or proof of consciousness, perfusion' in request['instructions']
+    assert 'respiratory rate or motion' in request['instructions']
     assert appearance_state(state)['work_of_breathing'] == 'reduced'
     assert 'opioid' not in json.dumps(request['input']).lower()
     responses.conflict = True

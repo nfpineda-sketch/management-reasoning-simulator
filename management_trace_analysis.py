@@ -95,6 +95,19 @@ def _answers(value, fields, *, complete=False):
     return {field: _text(value.get(field, ""), empty=not complete) for field in fields}
 
 
+def _derived_slots(reasoning):
+    """Reasoning slots the interpreter composed rather than the learner writing.
+
+    These are the app's wording, grounded in the learner's text but never typed
+    by the learner. Naming them keeps the analysis from reporting the app's
+    phrase as a priority the resident stated.
+    """
+    values = (reasoning or {}).get("derived_slots") if isinstance(reasoning, dict) else None
+    if not isinstance(values, (list, tuple, set)):
+        return []
+    return sorted(str(value) for value in values if value in REASONING_FIELDS)
+
+
 def _diagnostic(value, at_time):
     # A numerical value in hidden state is not evidence of a performed test.
     if not isinstance(value, dict) or value.get("status", "available") != "available":
@@ -269,6 +282,7 @@ def build_analysis_source(payload):
             "execution_status": status,
             "learner_input": _text(event.get("learner_input", "")),
             "recorded_reasoning": _answers(event.get("reasoning"), REASONING_FIELDS),
+            "app_composed_reasoning_slots": _derived_slots(event.get("reasoning")),
             "executed_actions": _actions(event.get("action_summaries"), end) if status == "executed" else [],
             "state_before": before_source, "state_after": after_source,
         })
@@ -458,6 +472,9 @@ correct treatment, recommend treatment, or invent a diagnosis. Do not reward or
 penalize a favorable or unfavorable outcome. There is no expert answer here.
 
 Original learner_input is distinct from interpreter-extracted recorded_reasoning.
+Any slot named in app_composed_reasoning_slots was written by the application
+from the learner's other words, not typed by the learner: never quote it, never
+call it a stated priority, and say the learner did not state it if that matters.
 Do not turn interpreter-extracted reasoning into a verbatim learner quote or a
 proven mental process. Your entire output is clearly labeled AI interpretation.
 If reasoning is missing, say 'not recorded'; do not supply a plausible rationale.

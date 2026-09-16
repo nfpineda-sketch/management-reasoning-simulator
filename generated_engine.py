@@ -138,9 +138,14 @@ def validate_declarative_case(case):
             if kind != "procedural_sedation" or rule["mental_status_during"] != "Sedated" or rule.get("recovery_min") is None or not _finite(rule.get("mental_status_threshold")) or not 0 < rule["mental_status_threshold"] <= rule["max_exposure"]:
                 raise ValueError("Sedation requires an explicit recovery interval and exposure threshold.")
         if rule.get("interpolate_settings") not in (None, False, True) or (rule.get("interpolate_settings") and kind != "ventilator_adjustment"):
-            raise ValueError("Interpolation is restricted to authored ventilator grids.")
-        if rule.get("washout_min") is not None and (kind not in INFUSIONS or not _finite(rule["washout_min"]) or not 1 <= rule["washout_min"] <= 180):
-            raise ValueError("Infusion washout must be between 1 and 180 minutes.")
+            raise ValueError(f"Setting interpolation is restricted to authored ventilator grids, not to '{kind}'.")
+        if rule.get("washout_min") is not None:
+            # Name the action type: a range-only message sent a repair request
+            # back to correct a value that was already inside the range.
+            if kind not in INFUSIONS:
+                raise ValueError(f"Response washout applies only to a titratable infusion, not to '{kind}'.")
+            if not _finite(rule["washout_min"]) or not 1 <= rule["washout_min"] <= 180:
+                raise ValueError("Infusion washout must be between 1 and 180 minutes.")
         curve = rule.get("state_gain")
         if curve is not None:
             if not isinstance(curve, dict) or curve.get("field") not in driver_fields | {"elapsed_min", "fluid_delivered_ml"}:

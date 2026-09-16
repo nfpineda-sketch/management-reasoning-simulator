@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import unittest
 from clinical_core_defaults import PHENOTYPE_FIELDS, INITIAL_HIDDEN, CORE_VERSION
 from generated_case_schema import SCHEMA_VERSION, STATE_TEXT, CASE_SCHEMA, REVIEW_SCHEMA, compile_case, validate_schema
-from case_authoring import AUTHOR_SCHEMA, DERIVED, expand_author_case
+from case_authoring import AUTHOR_SCHEMA, DERIVED, UNUSABLE_RULE_FIELDS, expand_author_case
 from generated_case import generate_ai_encounter
 
 
@@ -28,6 +28,9 @@ def compact(case):
     for rule in case['engine']['response_rules']:
         rule.pop('volume_basis')
         rule.pop('diuresis_ml_min')
+        # Fields no author-selectable action can use are not offered any more.
+        for field in UNUSABLE_RULE_FIELDS:
+            rule.pop(field)
     case.pop('schema_version')
     for field in ('model', 'volume_model', 'terminal_rule', 'untreated_drift_per_min'):
         case['engine'].pop(field)

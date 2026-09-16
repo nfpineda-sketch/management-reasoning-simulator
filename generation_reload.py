@@ -9,8 +9,13 @@ from threading import RLock
 _LOCK = globals().get("_LOCK") or RLock()
 RELOAD_VERSION = "0.24.13"
 _EXECUTION_RELEASE = "0.24.2"
+# Only modules that actually declare EXECUTION_VERSION belong here. A module
+# without the marker reads as ``None`` and would report a stale executor on
+# every rerun, reloading the whole stack and discarding process state. The
+# account modules are refreshed through _MODULES; they carry no execution
+# release. test_generation_reload keeps this list and the markers in step.
 _EXECUTION_MODULES = (
-    "account_store", "account_portal",'family_engine', 'generated_engine', 'coupled_encounter', 'clinical_physiology', 'generated_case_schema')
+    'family_engine', 'generated_engine', 'coupled_encounter', 'clinical_physiology', 'generated_case_schema')
 _MODULES = (
     "account_store", "account_portal",
     "shared_order_language", "shared_order_quantities", "active_order_context",
@@ -29,7 +34,7 @@ _MODULES = (
 )
 _VISUAL_RELEASES = {
     "patient_appearance": ("APPEARANCE_VERSION", 4),
-    "scene_pipeline": ("SCENE_PIPELINE_VERSION", 10),
+    "scene_pipeline": ("SCENE_PIPELINE_VERSION", 12),
     "clinical_scene": ("SCENE_RENDER_VERSION", 12),
     "resuscitation_room": ("ROOM_RENDER_VERSION", 8),
 }

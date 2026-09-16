@@ -24,6 +24,29 @@ NATIVE_ONLY = {'fluid', 'oxygen', 'niv', 'bag_mask', 'intubation',
                'nitroglycerin', 'airway_preparation', 'antibiotics'}
 action_schema = engine['properties']['response_rules']['items']['properties']['action_type']
 action_schema['enum'] = [kind for kind in action_schema['enum'] if kind not in NATIVE_ONLY]
+# Several response-rule fields are legal only for particular action types. Once
+# the native-only actions leave the enum, some of them can no longer be used by
+# any action the author may write. Structured outputs still require every
+# property, so the author has to emit them, and any non-null value is a fatal
+# compile error whose message names the field's range rather than the action
+# type it does not apply to. v0.24.7 removed volume_basis/diuresis_ml_min for
+# the same reason; derive the rest from the executor's own legality sets so a
+# later enum change cannot quietly reintroduce an unusable option.
+from generated_dynamics import INFUSIONS
+_KIND_RESTRICTED_RULE_FIELDS = {
+    'washout_min': frozenset(INFUSIONS),
+    'interpolate_settings': frozenset({'ventilator_adjustment'}),
+    'mental_status_during': frozenset({'procedural_sedation'}),
+    'mental_status_threshold': frozenset({'procedural_sedation'}),
+    'rhythm_before': frozenset({'cardioversion'}),
+    'rhythm_after': frozenset({'cardioversion'}),
+    'recurrence': frozenset({'cardioversion'}),
+    'settings': frozenset({'cardioversion', 'ventilator_adjustment'}),
+}
+UNUSABLE_RULE_FIELDS = tuple(sorted(
+    field for field, kinds in _KIND_RESTRICTED_RULE_FIELDS.items()
+    if not kinds.intersection(action_schema['enum'])))
+remove(engine['properties']['response_rules']['items'], *UNUSABLE_RULE_FIELDS)
 # Legacy compartment drivers are unavailable when volume_model is null.
 from generated_physiology import VOLUME_FIELDS
 def restrict_drivers(node):
@@ -76,6 +99,7 @@ def expand_author_case(raw):
     engine['core_profile']['version'] = CORE_VERSION
     for rule in engine['response_rules']:
         rule.update(volume_basis=None, diuresis_ml_min=None)
+        rule.update(dict.fromkeys(UNUSABLE_RULE_FIELDS))
     baseline = {**case['observable'], **engine['initial_labs']}
     for study in case['investigations']:
         study['result_bindings'] = []

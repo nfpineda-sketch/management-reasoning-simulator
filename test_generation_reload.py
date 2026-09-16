@@ -117,7 +117,7 @@ assert scene_preparation.SceneJobs is scene_jobs.SceneJobs
 assert scene_preparation.screened_scene is scene_pipeline.screened_scene
 assert scene_pipeline.inspect_image is image_consistency.inspect_image
 assert patient_appearance.APPEARANCE_VERSION == 4
-assert scene_pipeline.SCENE_PIPELINE_VERSION == 10
+assert scene_pipeline.SCENE_PIPELINE_VERSION == 12
 assert clinical_scene.SCENE_RENDER_VERSION == 12
 assert resuscitation_room.ROOM_RENDER_VERSION == 8
 assert generation_reload._LOCK is old_lock
@@ -189,3 +189,48 @@ assert s['coupled_state']['treatments']['oxygen_flow_lpm']==4
 assert s['family_state']['fluid_delivered_ml']>0
 assert refresh_generation_modules('0.24.13') is False
 """)
+
+
+def test_release_markers_match_the_modules_they_gate():
+    """A marker that drifts makes every rerun look stale and reload the stack.
+
+    Reading the sources with ``ast`` keeps this check independent of whichever
+    modules a collected test happens to have imported and mutated.
+    """
+    import ast
+
+    import generation_reload
+
+    def declared(name, marker):
+        tree = ast.parse((Path(__file__).resolve().parent / (name + ".py")).read_text())
+        for node in tree.body:
+            targets = node.targets if isinstance(node, ast.Assign) else []
+            if any(isinstance(t, ast.Name) and t.id == marker for t in targets):
+                return ast.literal_eval(node.value)
+        return None
+
+    for name in generation_reload._EXECUTION_MODULES:
+        assert declared(name, "EXECUTION_VERSION") == generation_reload._EXECUTION_RELEASE, name
+    for name, (marker, version) in generation_reload._VISUAL_RELEASES.items():
+        assert declared(name, marker) == version, name
+
+
+def test_a_settled_process_stops_reloading_once_every_module_is_loaded():
+    """The staleness check ran against modules the refresh itself imports.
+
+    Those modules declare no execution release, so the process stayed stale and
+    reloaded 46 modules on every rerun, discarding module state each time.
+    """
+    run_isolated('''
+from generation_reload import refresh_generation_modules, refresh_visual_modules
+import app_bootstrap_not_needed  # noqa
+'''.replace("import app_bootstrap_not_needed  # noqa", """
+assert refresh_generation_modules("0.24.13") is False
+assert refresh_visual_modules() is False
+import account_portal, account_store, patient_appearance, scene_pipeline
+import clinical_scene, resuscitation_room, generated_case, encounter_generator
+author = generated_case.generate_ai_encounter
+assert refresh_generation_modules("0.24.13") is False
+assert refresh_visual_modules() is False
+assert generated_case.generate_ai_encounter is author
+"""))

@@ -921,8 +921,29 @@ def _trace_reasoning_text(reasoning):
         ("Preserve", "preservation_goal"),
         ("Reassess", "reassessment_target"),
     ]
-    parts = [f"**{label}:** {r[key]}" for label, key in labels if r.get(key)]
+    derived = _derived_slots(r)
+    parts = [f"**{label}:** {r[key]}" + (DERIVED_SLOT_NOTE if key in derived else "")
+             for label, key in labels if r.get(key)]
     return "  \n".join(parts) if parts else "—"
+
+
+def _fluid_order_label(summary, now_min):
+    """Name the ordered volume and, while it is still running, what has gone in.
+
+    A bolus is delivered on the simulation clock. Reporting only the ordered
+    volume told the resident that 1000 mL had been given when 500 mL had.
+    """
+    label = str(summary.get("label") or f'{summary["volume_ml"]:g} mL {summary["fluid_type"]}')
+    start = summary.get("delivery_starts_at_min")
+    duration = summary.get("administration_duration_min")
+    if start is None or not duration:
+        return label
+    infused = summary["volume_ml"] * min(1, max(0, (now_min - start) / duration))
+    if infused >= summary["volume_ml"]:
+        return label
+    due = start + duration
+    return (f'{label} ({infused:.0f} mL of {summary["volume_ml"]:g} mL infused by '
+            f'{now_min:g} min; remainder due at {due:g} min)')
 
 
 def _norepinephrine_summary_label(summary):
@@ -1136,10 +1157,20 @@ def _trace_action_text(event):
             labels.append(str(a.get("type", "action")).replace("_", " "))
     return " + ".join(labels) if labels else "Reassessment"
 
+DERIVED_SLOT_NOTE = " · composed by the app from the resident's own words, not stated as such"
+
+
+def _derived_slots(reasoning):
+    values = (reasoning or {}).get("derived_slots")
+    return frozenset(values) if isinstance(values, (list, tuple, set)) else frozenset()
+
+
 def _trace_reasoning_items(reasoning):
     r = reasoning or {}
+    derived = _derived_slots(r)
     labels = [("Problem", "problem_representation"), ("Priority", "management_priority"), ("Rationale", "rationale"), ("Expected effect", "expected_effect"), ("Preservation goal", "preservation_goal"), ("Reassessment target", "reassessment_target")]
-    return [(label, str(r[key])) for label, key in labels if r.get(key)]
+    return [(label + (DERIVED_SLOT_NOTE if key in derived else ""), str(r[key]))
+            for label, key in labels if r.get(key)]
 
 
 def _trace_observable_delta(before, after, reasoning=None):
@@ -5629,6 +5660,10 @@ def extract_explicit_reasoning(text):
             str(reasoning.get(key) or "")
             for key in ("problem_representation", "rationale", "expected_effect")
         ).lower()
+        # This slot is composed by the app, not written by the resident. Record
+        # that so the trace, the PDF and the faculty analysis never present the
+        # app's wording as a priority the resident stated.
+        before_synthesis = dict(reasoning)
         if re.search(r"\b(?:perfusion|capillary\s+refill|crt)\b", grounded):
             if re.search(r"\b(?:pressure|blood\s+pressure|bp|map|hypotens\w*)\b", grounded):
                 reasoning["management_priority"] = "improve arterial pressure and tissue perfusion"
@@ -5642,6 +5677,9 @@ def extract_explicit_reasoning(text):
             reasoning["management_priority"] = "restore an effective rhythm"
         elif re.search(r"\b(?:heart\s+rate|\bhr\b|tachycard\w*|bradycard\w*)\b", grounded):
             reasoning["management_priority"] = "optimize heart rate"
+        if reasoning.get("management_priority") != before_synthesis.get("management_priority"):
+            reasoning["derived_slots"] = sorted(
+                set(reasoning.get("derived_slots") or ()) | {"management_priority"})
 
     # Guard against semantically useless duplication between slots.
     if (reasoning.get("problem_representation") and reasoning.get("rationale") and
@@ -8697,7 +8735,9 @@ with st.container(key="encounter-console"):
                 # patient state and produce one learner-facing update at the reassessment time.
                 labels = []
                 for s in summaries:
-                    if s.get("label"):
+                    if "volume_ml" in s and s.get("fluid_type"):
+                        labels.append(_fluid_order_label(s, st.session_state.state["sim_time"]))
+                    elif s.get("label"):
                         labels.append(str(s["label"]))
                     elif "volume_ml" in s:
                         labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')

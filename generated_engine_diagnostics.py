@@ -8,6 +8,7 @@ never in a learner-facing error or log.
 from clinical_core_defaults import CORE_VERSION
 from generated_physiology import VOLUME_FIELDS, validate as validate_physiology
 from clinical_physiology import exposure_effect
+from generated_dynamics import INFUSIONS
 from generated_engine import (
     response_progress, BOUNDS, MODEL, OBSERVED_FIELDS, LAB_FIELDS, NUMERIC_FIELDS, _ACTIONS,
     _DOSE_FIELDS, _DRUGS, _COMPARATORS, _SET_FIELDS, _finite,
@@ -21,7 +22,8 @@ ENGINE_ISSUE_CODES = frozenset({
     "LAB_INITIAL_VALUE", "HORIZON", "RESPONSE_RULES", "RESPONSE_IDENTIFIER",
     "RESPONSE_ACTION", "RESPONSE_MATCHER", "RESPONSE_MEDICATION_MATCHERS",
     "RESPONSE_UNITS", "RESPONSE_EXPOSURE", "RESPONSE_DEVICE", "RESPONSE_TIMING",
-    "RESPONSE_CAP", "RESPONSE_ORDER_UNREACHABLE", "TRAJECTORY_BOUNDS",
+    "RESPONSE_CAP", "RESPONSE_KINETICS", "RESPONSE_SEDATION", "RESPONSE_STATE_GAIN",
+    "RESPONSE_ORDER_UNREACHABLE", "TRAJECTORY_BOUNDS",
     "TRAJECTORY_PRESSURE", "STATE_RULES", "STATE_CONDITION", "STATE_OUTPUT",
     "STATE_ECG", "STATE_EXAMINATION", "STUDY_STRUCTURE", "STUDY_TIMING",
 })
@@ -149,6 +151,7 @@ def collect_declarative_issues(case):
         cap_ok = _finite(cap) and 0 < cap <= 20
         if not cap_ok:
             add("RESPONSE_CAP", path + ".max_exposure", "Use a positive finite exposure cap no greater than 20.")
+        _collect_kinetics_issues(rule, kind, kind_ok, path, add)
         if baseline_ok and kind_ok and matchers_ok and exposure_ok:
             try:
                 _validate_response_capability(case, rule)
@@ -283,3 +286,48 @@ def _collect_state_and_study_issues(case, engine, initialized, add):
         delay = study.get("duration_min", 0)
         if not _finite(delay) or not 0 <= delay <= 120 or int(delay) != delay:
             add("STUDY_TIMING", path + ".duration_min", "Use a whole-number processing time from 0 through 120 minutes.")
+
+
+def _collect_kinetics_issues(rule, kind, kind_ok, path, add):
+    """Name the action type behind a kinetics rejection, not only its range.
+
+    The execution gate rejects these declarations with a message about the
+    permitted interval. Without the action type and the rule's path, a repair
+    request corrects a value that was already inside the range and fails again.
+    """
+    if rule.get("washout_min") is not None:
+        if kind_ok and kind not in INFUSIONS:
+            add("RESPONSE_KINETICS", path + ".washout_min",
+                "Only a titratable infusion has a washout interval. Remove this field for this action or model the offset with duration_min.",
+                action_type=kind, actions_with_washout=sorted(INFUSIONS))
+        elif kind_ok and (not _finite(rule["washout_min"]) or not 1 <= rule["washout_min"] <= 180):
+            add("RESPONSE_KINETICS", path + ".washout_min",
+                "An infusion washout must be from 1 through 180 minutes.",
+                action_type=kind, actual=rule["washout_min"], lower=1, upper=180)
+    if rule.get("interpolate_settings"):
+        if kind_ok and kind != "ventilator_adjustment":
+            add("RESPONSE_KINETICS", path + ".interpolate_settings",
+                "Setting interpolation belongs to an authored ventilator grid. Remove this field for this action.",
+                action_type=kind, actions_with_interpolation=["ventilator_adjustment"])
+    if rule.get("recovery_min") is not None and kind_ok and kind not in _DRUGS - INFUSIONS:
+        add("RESPONSE_KINETICS", path + ".recovery_min",
+            "Only a fixed-dose medication has a recovery interval after its effect. Remove this field for this action.",
+            action_type=kind)
+    if rule.get("mental_status_during") is not None and kind_ok:
+        if kind != "procedural_sedation":
+            add("RESPONSE_SEDATION", path + ".mental_status_during",
+                "Only procedural sedation may declare a sedated mental status. Remove this field for this action.",
+                action_type=kind)
+        elif rule.get("recovery_min") is None or not _finite(rule.get("mental_status_threshold")) or not 0 < rule["mental_status_threshold"] <= (rule.get("max_exposure") or 0):
+            add("RESPONSE_SEDATION", path,
+                "Procedural sedation needs recovery_min and a mental_status_threshold above zero and no greater than max_exposure.",
+                recovery_min=rule.get("recovery_min"), mental_status_threshold=rule.get("mental_status_threshold"),
+                max_exposure=rule.get("max_exposure"))
+    curve = rule.get("state_gain")
+    if isinstance(curve, dict):
+        points = curve.get("points")
+        if isinstance(points, list) and all(isinstance(p, dict) and _finite(p.get("value")) for p in points):
+            if any(a["value"] >= b["value"] for a, b in zip(points, points[1:])):
+                add("RESPONSE_STATE_GAIN", path + ".state_gain.points",
+                    "State coupling values must increase strictly from one point to the next.",
+                    values=[p["value"] for p in points])

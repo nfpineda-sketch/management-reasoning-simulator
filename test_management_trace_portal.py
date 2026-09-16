@@ -53,7 +53,7 @@ def downloads(app):
 
 
 def cached_pdf(app):
-    values = [value for key, value in app.session_state.filtered_state.items()
+    values = [value for key, value in app.session_state.to_dict().items()
               if key.startswith("_learner_trace_") and "_pdf_" in key]
     assert values and all(isinstance(value, bytes) for value in values)
     return values[-1]
@@ -103,7 +103,7 @@ def test_no_ai_request_before_lock_then_one_request_and_pdf_reused(monkeypatch):
     app.run()
     assert len(calls) == 1 and len(pdf_calls) == 2
     texts = ["\n".join(page.extract_text() for page in PdfReader(BytesIO(data)).pages)
-             for key, data in app.session_state.filtered_state.items() if "_pdf_" in key]
+             for key, data in app.session_state.to_dict().items() if "_pdf_" in key]
     assert any("Look again at breathing effort." in text for text in texts)
 
 

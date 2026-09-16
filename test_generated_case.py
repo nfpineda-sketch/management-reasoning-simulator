@@ -221,6 +221,14 @@ def test_generated_case_runs_existing_family_entrypoints_and_new_diagnostic_pars
     state = generate_ai_encounter("R1-05", clean_base(), client=AuthorClient())["state"]
     result = execute_family_bundle(state, {"actions": [{"type": "fluid", "volume_ml": 500, "fluid_type": "normal saline"}]})
     assert result["executed"]
+    # Ordering is not administering: the bolus runs on the simulation clock, so
+    # nothing is delivered and no pressure has changed before time advances.
+    assert state["observable"]["sbp"] == 85
+    assert state["family_state"]["fluid_delivered_ml"] == 0
+    assert state["family_state"]["pending_fluid_ml"] == 500
+    execute_family_bundle(state, {"actions": [{"type": "reassessment", "delay_min": 10}]})
+    assert state["family_state"]["fluid_delivered_ml"] == 500
+    assert state["treatments"]["cumulative_crystalloid_ml"] == 500
     assert state["observable"]["sbp"] > 85
     assert "Cardiac" in current_findings(state)
     assert "BP" in clinical_update(state)

@@ -3,7 +3,9 @@ from copy import deepcopy
 import re
 from family_parser import _normalize, _route, _amount, _medication, _COMMAND, _NEGATION, _CONDITIONAL, parse_family_actions
 
-_FIELDS = {'diagnostic': ('diagnostic',), 'blood': ('units',), 'anticoagulation': ('dose','units','route'), 'fluid': ('volume_ml', 'fluid_type'), 'cardioversion': ('energy_j',),
+# A fragment the parser could not read is held like any other incomplete slot:
+# the resident replaces or cancels that item and the rest of the bundle is kept.
+_FIELDS = {'clarification': ('replacement',), 'diagnostic': ('diagnostic',), 'blood': ('units',), 'anticoagulation': ('dose','units','route'), 'fluid': ('volume_ml', 'fluid_type'), 'cardioversion': ('energy_j',),
            'norepinephrine': ('rate', 'units'), 'nitroglycerin': ('rate_mcg_min',),
            'dobutamine': ('rate','units'), 'niv': ('mode','epap_cmh2o','fio2_percent'),
            'intubation': ('ventilator_mode','fio2_percent','peep_cmh2o'), 'oxygen': ('device', 'flow_lpm')}
@@ -30,14 +32,38 @@ def hold_incomplete_bundle(parsed, state=None):
                 a['requested_diagnostic'] = a.get('diagnostic')
                 a['diagnostic'] = None
     indices = [i for i,a in enumerate(parsed.get('actions', [])) if missing_fields(a)]
-    if not indices or any(a.get('type') == 'clarification' for a in parsed.get('actions', [])):
+    if not indices:
+        return None
+    executable = [a for a in parsed.get('actions', [])
+                  if a.get('type') not in {'clarification', 'reassessment'}]
+    if not executable:
+        # Nothing worth preserving: a lone unreadable fragment is not a bundle.
         return None
     return {'type': 'family_bundle', 'parsed': deepcopy(parsed), 'index': indices[0]}
+
+
+_CANCEL = re.compile(r'(?:cancel|omit|skip|drop|forget|cancelar|omitir|olvidar)'
+                     r'(?: (?:this|that|it|ese|este|eso|esa))?'
+                     r'(?: (?:one|item|order|study|test|examen|estudio|orden))?', re.I)
 
 
 def complete_bundle(pending, text):
     body = _normalize(text).strip()
     original = pending['parsed']['actions'][pending['index']]
+    if original.get('type') == 'clarification':
+        parsed = deepcopy(pending['parsed'])
+        if _CANCEL.fullmatch(body):
+            del parsed['actions'][pending['index']]
+        else:
+            reply = parse_family_actions(re.sub(r'^ok[ ,]*', '', body, flags=re.I))['actions']
+            if len(reply) != 1 or reply[0].get('type') == 'clarification':
+                return {'clarification': 'Name one supported order to replace that item, or say cancel. '
+                                         'Every other order in the same submission is still held.'}
+            parsed['actions'][pending['index']] = reply[0]
+        parsed.pop('clarification', None)
+        parsed['raw_text'] = str(parsed.get('raw_text', '')) + '\nClarification: ' + str(text)
+        parsed['resolved_from_clarification'] = True
+        return {'parsed': parsed}
     if original.get('type') == 'diagnostic':
         parsed = deepcopy(pending['parsed'])
         if re.fullmatch(r'(?:cancel|omit|skip|cancelar|omitir)(?: this| ese| este)?(?: study| examen| estudio)?', body):

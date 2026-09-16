@@ -212,7 +212,11 @@ def test_unrecorded_findings_are_not_mandatory_visual_signs(image, contract):
     contract.update(expression="not recorded", skin_color="not recorded", diaphoresis="not recorded")
     client = Responses()
     assert run(image, contract, client)["accepted"]
-    assert "do not require or infer a sign" in client.calls[0]["instructions"]
+    # The instruction moved into the per-domain photographic targets; assert on
+    # the whole request so a later move cannot silently drop the guarantee.
+    sent = json.dumps(client.calls[0], default=str)
+    assert "do not require or infer a sign" in sent
+    assert "do not invent a requirement" in client.calls[0]["instructions"]
 
 
 @pytest.mark.parametrize("which", ["candidate", "reference"])

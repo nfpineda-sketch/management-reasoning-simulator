@@ -78,7 +78,12 @@ def test_failed_independent_review_does_not_show_unreviewed_patient(monkeypatch)
     assert any('consistency screen' in item.value for item in app.error)
     assert not app.session_state.started
     assert not any(item.label == 'Encounter' for item in app.radio)
-    assert len(calls) == 1 and len(calls[0].calls) == 2
+    # A rejected review costs one clinical repair and one re-review before the
+    # encounter is refused: author, review, correction, review. Raising this
+    # budget raises the price of every failed encounter, so pin it explicitly.
+    assert len(calls) == 1
+    stages = [call['max_output_tokens'] for call in calls[0].calls]
+    assert stages == [24000, 6000, 24000, 6000]
 
 
 def test_repeat_authors_new_patient_from_prior_problem_without_old_case_or_answers(monkeypatch):
@@ -135,9 +140,19 @@ def test_new_ai_case_is_persisted_and_resumed_without_reauthoring(tmp_path, monk
     first.text_area[0].set_value('Measure temperature')
     next(b for b in first.button if b.label == 'Submit').click().run()
     assert not first.exception
+    # An ordered study no longer advances the clock on its own. It stays visibly
+    # pending with its expected time until the resident reassesses explicitly.
+    assert first.session_state.state['sim_time'] == 0
+    assert [item['diagnostic_type'] for item in
+            first.session_state.state['pending_investigations']] == ['temperature']
+    assert any('Temperature: pending' in str(c.value) for c in first.caption)
+    first.text_area[0].set_value('Reassess in 5 minutes')
+    next(b for b in first.button if b.label == 'Submit').click().run()
+    assert not first.exception
     expected = deepcopy(first.session_state.state)
     trace = deepcopy(first.session_state.management_trace)
     assert 'temperature' in expected['diagnostics'] and trace
+    assert not expected['pending_investigations']
     assert expected['encounter_spec'] == frozen
     saved = store.list_attempts(token)
     assert len(saved) == 1
