@@ -194,3 +194,61 @@ class SimultaneousObservationRulesMustAgree(unittest.TestCase):
         case = deepcopy(novel_payload())
         mutate(case)
         compile_case(case)
+
+
+class TheDilemmaMustBePractisable(unittest.TestCase):
+    """Two paid generations built a pulmonary-embolism dilemma on thrombolysis.
+
+    The engine executes no thrombolytic, no catheter-directed reperfusion and no
+    surgery, so the central decision could not be carried out and the reviewer
+    rejected both. Naming such a therapy is fine when the decision is to consult,
+    refer, arrange or transfer for it, which the engine does execute.
+    """
+
+    def paths(self, *entries, focus="Stabilise circulation.", dilemma="Fluid or vasopressor."):
+        from generated_case_coverage import unexecutable_path_issues
+        return unexecutable_path_issues({"faculty": {
+            "anticipated_management_paths": list(entries),
+            "management_focus": focus, "management_dilemma": dilemma}})
+
+    def test_a_path_that_expects_the_learner_to_thrombolyse_is_rejected(self):
+        issues = self.paths("Give systemic thrombolysis with alteplase if shock persists.")
+        self.assertEqual([i["code"] for i in issues], ["UNEXECUTABLE_MANAGEMENT_PATH"])
+        self.assertEqual(issues[0]["details"]["therapy"], "thrombolysis")
+        self.assertIn("alteplase", issues[0]["details"]["matched_terms"])
+        self.assertEqual(issues[0]["details"]["referral_actions"],
+                         ["consult", "reperfusion_referral", "disposition"])
+
+    def test_the_same_therapy_as_a_referral_decision_is_accepted(self):
+        for entry in ("Consult interventional radiology for catheter-directed thrombolysis.",
+                      "Transfer urgently for embolectomy.",
+                      "Arrange dialysis with the renal team.",
+                      "Request a surgical opinion about thoracotomy."):
+            self.assertEqual(self.paths(entry), [], entry)
+
+    def test_an_executable_path_is_never_flagged(self):
+        self.assertEqual(self.paths(
+            "Give 500 mL crystalloid, start norepinephrine and reassess perfusion at 10 minutes."), [])
+
+    def test_a_dilemma_that_turns_on_an_unexecutable_therapy_is_rejected(self):
+        """Framing every path as a referral does not rescue the central decision."""
+        issues = self.paths(
+            "Consult the PE team for catheter-directed therapy.",
+            dilemma="Immediate systemic thrombolysis could reverse the obstructive shock "
+                    "but carries bleeding risk after recent surgery.")
+        self.assertEqual([i["path"] for i in issues], ["case.faculty.management_dilemma"])
+
+    def test_every_unmodelled_therapy_family_is_detected(self):
+        from generated_case_coverage import UNMODELLED_THERAPIES
+        for therapy, terms in UNMODELLED_THERAPIES.items():
+            for term in terms:
+                issues = self.paths(f"Proceed to {term} immediately.")
+                self.assertTrue(issues, (therapy, term))
+
+    def test_the_author_is_told_the_rule_before_it_writes(self):
+        from generated_case import AUTHOR_INSTRUCTIONS
+        self.assertIn("anticipated_management_paths must be practisable", AUTHOR_INSTRUCTIONS)
+        self.assertIn("thrombolysis", AUTHOR_INSTRUCTIONS)
+        self.assertIn("consult, refer, arrange or transfer", AUTHOR_INSTRUCTIONS)
+        # And the rule behind STATE_RULE_CONFLICT, which it kept breaking.
+        self.assertIn("must not set different values for the same finding", AUTHOR_INSTRUCTIONS)

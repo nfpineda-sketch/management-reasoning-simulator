@@ -363,7 +363,7 @@ def compile_case(raw):
     """Normalize and pass every encounter validation gate."""
     case = _normalize_case(raw)
     from generated_engine_diagnostics import collect_declarative_issues
-    from generated_case_coverage import coverage_issues
+    from generated_case_coverage import coverage_issues, unexecutable_path_issues
     # Check auto-derived bindings too; omitted bindings cannot conceal conflicts.
     binding_issues = []
     from generated_engine import diagnostic_bindings
@@ -374,7 +374,8 @@ def compile_case(raw):
             binding_issues.append({'code': 'DIAGNOSTIC_BINDING',
                 'path': 'case.investigations.' + study_id,
                 'message': str(exc), 'details': {}})
-    issues = binding_issues + collect_clinical_issues(case) + collect_declarative_issues(case) + coverage_issues(case)
+    issues = (binding_issues + collect_clinical_issues(case) + collect_declarative_issues(case)
+              + coverage_issues(case) + unexecutable_path_issues(case))
     if issues:
         raise ContractValidationError(issues)
     from generated_engine import diagnostic_bindings

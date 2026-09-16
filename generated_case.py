@@ -93,7 +93,14 @@ Sedation uses an exact drug, route and dose_mg exposure. Non-core sedation exten
 consequences. Do not assume sedation merely because cardioversion was ordered.
 No learner grading, bias name, answer quality, reward or punishment may influence physiology. At least two state
 rules must describe clinically observable change during deterioration AND improvement; each rule is applied to actual current
-numeric fields, all conditions must match, and later matching rules override earlier ones. Mental status/ECG/exam changes need a
+numeric fields, all conditions must match, and later matching rules override earlier ones. Because they accumulate, two rules whose
+conditions can hold at the SAME moment must not set different values for the same finding: a hypotension rule asking for mottling
+and a hypoxia rule asking for none will both fire at once and the patient will be shown unmottled. Either make the conditions
+mutually exclusive, or give the shared findings identical values. This is checked and rejected before review.
+Every entry in faculty.anticipated_management_paths must be practisable with the supplied capabilities. Do not build the dilemma on
+thrombolysis, catheter-directed or surgical reperfusion, PCI, dialysis, chest or pericardial drainage, extracorporeal support,
+pacing, surgery or blood components other than packed red cells: none is executable here. Such a therapy may appear only as the
+decision to consult, refer, arrange or transfer for it. This is checked and rejected before review. Mental status/ECG/exam changes need a
 physiological explanation. A changed mental-status category must include updated Neurological examination findings. Keep pulse_present true at arrival and in ordinary state_rules; only the shared physiological engine may produce irreversible PEA after sustained deterioration. Set horizon_min 30–180.
 
 All five engine.initial_labs are internal baseline measurements; no measurement is exposed before being obtained. Required source

@@ -75,3 +75,70 @@ def coverage_issues(case):
     return [{'code': 'MANAGEMENT_COVERAGE', 'path': 'engine.response_rules',
              'message': 'The new case is missing executable responses for plausible or explicitly authored management paths. Author patient-specific effects, including harm or no benefit where appropriate.',
              'details': {'missing': missing}}] if missing else []
+
+
+# Therapies clinicians name constantly and this engine does not execute. A case
+# whose expected paths rest on one of them cannot be practised: four paid
+# generations built a pulmonary-embolism dilemma around systemic thrombolysis
+# and catheter-directed therapy, and the reviewer rejected every one. Naming a
+# therapy is fine when the path is to consult, refer or transfer for it, which
+# the engine does execute.
+UNMODELLED_THERAPIES = {
+    'thrombolysis': ('thrombolysis', 'thrombolytic', 'thrombolytics', 'fibrinolysis',
+                     'fibrinolytic', 'alteplase', 'tenecteplase', 'tpa', 't-pa', 'streptokinase'),
+    'catheter-directed or surgical reperfusion': ('catheter-directed', 'catheter directed',
+                                                  'embolectomy', 'thrombectomy'),
+    'percutaneous coronary intervention': ('percutaneous coronary intervention', 'primary pci',
+                                           'cath lab', 'catheterisation lab', 'catheterization lab'),
+    'renal replacement therapy': ('dialysis', 'haemodialysis', 'hemodialysis',
+                                  'renal replacement'),
+    'chest drainage or pericardial drainage': ('chest tube', 'thoracostomy', 'thoracentesis',
+                                               'pericardiocentesis', 'needle decompression'),
+    'extracorporeal support': ('ecmo', 'extracorporeal', 'balloon pump', 'impella'),
+    'transvenous or transcutaneous pacing': ('transvenous pacing', 'transcutaneous pacing',
+                                             'pacing wire', 'pacemaker insertion'),
+    'surgery': ('laparotomy', 'thoracotomy', 'craniotomy', 'operating theatre',
+                'operating room', 'emergency surgery'),
+    'blood components other than packed red cells': ('fresh frozen plasma', 'platelet transfusion',
+                                                     'cryoprecipitate', 'prothrombin complex'),
+}
+# The engine does execute the decision to involve someone else.
+_REFERRAL_WORDS = ('consult', 'refer', 'referral', 'transfer', 'disposition', 'admit',
+                   'activate', 'call ', 'escalate', 'arrange', 'request', 'organise',
+                   'organize', 'not available', 'unavailable',
+                   'cannot be performed', 'outside this simulation')
+
+
+def unexecutable_path_issues(case):
+    """The dilemma and its expected paths must be practisable, or be referrals.
+
+    Checking the paths alone was not enough: one paid case framed every path as a
+    consult or transfer while its management_dilemma still turned on whether to
+    thrombolyse, a decision the learner cannot carry out.
+    """
+    faculty = case.get('faculty') or {}
+    entries = [(f'case.faculty.anticipated_management_paths[{i}]', text)
+               for i, text in enumerate(faculty.get('anticipated_management_paths') or [])]
+    entries += [(f'case.faculty.{field}', faculty.get(field))
+                for field in ('management_focus', 'management_dilemma')]
+    issues = []
+    for index, path in entries:
+        if not isinstance(path, str):
+            continue
+        lowered = path.lower()
+        if any(word in lowered for word in _REFERRAL_WORDS):
+            continue
+        for therapy, terms in sorted(UNMODELLED_THERAPIES.items()):
+            matched = [term for term in terms if term in lowered]
+            if not matched:
+                continue
+            issues.append({'code': 'UNEXECUTABLE_MANAGEMENT_PATH',
+                           'path': index,
+                           'message': ('This rests on a therapy the engine cannot execute, so the learner '
+                                       'cannot practise it. Build the dilemma from executable treatments, '
+                                       'or make it the decision to consult, refer, arrange or transfer for '
+                                       'that therapy, which the engine does execute.'),
+                           'details': {'therapy': therapy, 'matched_terms': sorted(matched),
+                                       'referral_actions': ['consult', 'reperfusion_referral', 'disposition']}})
+            break
+    return issues
