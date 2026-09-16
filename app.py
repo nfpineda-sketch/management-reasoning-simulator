@@ -5734,6 +5734,69 @@ def extract_explicit_reasoning(text):
     # physiologic direction, that combination can faithfully express the
     # management priority even without the words "priority" or "first". Keep
     # the mapping narrow and grounded in the learner's own expected effect.
+    def _capture_spanish_reasoning(joined, reasoning):
+        """Fill priority, expected effect and reassessment target from Spanish.
+
+        The interpreter's English patterns are pinned by many regressions, so Spanish
+        is captured separately and only for a slot that is still empty, using
+        Spanish markers alone. English behaviour therefore cannot change. As with
+        English, only the learner's own words are kept.
+
+        Nested here rather than a module function: several regressions load a named
+        subset of app.py's functions through ast, so this must travel with its caller.
+        """
+        _ES_ORDER_VERBS = (r"dar|administrar|iniciar|comenzar|poner|suspender|aumentar|subir|bajar|"
+                           r"disminuir|intubar|pedir|solicitar|reevaluar|revaluar|re-evaluar|controlar|"
+                           r"volver\s+a\s+evaluar")
+        _ES_TIME = r"(?:en|a\s+los|tras|despu[eé]s\s+de)\s+\d+(?:[.,]\d+)?\s*(?:min|mins|minutos?|h|horas?)\b"
+        stop = r"(?=\s*,?\s*(?:y\s+)?(?:" + _ES_ORDER_VERBS + r")\b|\s*,?\s*(?:y\s+)?(?:espero|anticipo)\b|[.;]|$)"
+
+        if "management_priority" not in reasoning:
+            m = re.search(
+                r"\b(?:mi\s+(?:prioridad|objetivo|meta)(?:\s+(?:principal|inicial|inmediata|ahora))?"
+                r"\s+(?:es|ser[aá])|lo\s+primero\s+es|me\s+enfoco(?:\s+primero)?\s+en|priorizo)"
+                r"\s+(?:(?:el|la|los|las|lo)\s+)?(.+?)" + stop,
+                joined, re.I,
+            )
+            if m and _clean_reasoning_phrase(m.group(1)):
+                reasoning["management_priority"] = _clean_reasoning_phrase(m.group(1))
+
+        if "expected_effect" not in reasoning:
+            # "Espero" is also "I wait": "Espero 10 minutos" is not an expectation.
+            m = re.search(
+                r"\b(?P<neg>no\s+)?(?:espero|anticipo|preveo)(?!\s+(?:\d|a\s|hasta\b|unos?\b|un\s+momento))"
+                r"(?:\s+que)?\s+(?P<effect>.+?)" + stop,
+                joined, re.I,
+            )
+            if not m:
+                m = re.search(r"\bel\s+efecto\s+esperado\s+es\s+(?:que\s+)?(?P<effect>.+?)" + stop,
+                              joined, re.I)
+            if m:
+                effect = _clean_reasoning_phrase(m.group("effect"))
+                if effect:
+                    negated = "neg" in m.groupdict() and m.group("neg")
+                    reasoning["expected_effect"] = ("no espero que " + effect) if negated else effect
+
+        if "reassessment_target" not in reasoning:
+            # "reevaluar SpO2 y FR en 15 minutos" and "reevaluar en 15 minutos SpO2 y FR".
+            m = re.search(
+                r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú]o|controlar|volver\s+a\s+evaluar)\s+"
+                r"(?!" + _ES_TIME + r")(?:(?:el|la|los|las)\s+)?(.+?)(?=\s+" + _ES_TIME + r"|[.;]|$)",
+                joined, re.I,
+            )
+            target = _clean_reasoning_phrase(m.group(1)) if m else None
+            if not target:
+                m = re.search(
+                    r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú]o|controlar)\s+" + _ES_TIME +
+                    r"\s*,?\s*(?:(?:el|la|los|las)\s+)?(.+?)(?=[.;]|$)",
+                    joined, re.I,
+                )
+                target = _clean_reasoning_phrase(m.group(1)) if m else None
+            if target and target.lower() not in {"al paciente", "paciente", "de nuevo", "nuevamente", "otra vez"}:
+                reasoning["reassessment_target"] = target
+
+    _capture_spanish_reasoning(joined, reasoning)
+
     if "management_priority" not in reasoning and reasoning.get("expected_effect"):
         grounded = " ".join(
             str(reasoning.get(key) or "")

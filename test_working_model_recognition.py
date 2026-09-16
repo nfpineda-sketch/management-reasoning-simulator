@@ -87,3 +87,73 @@ def test_nothing_is_attributed_that_the_resident_did_not_express(extract, text):
 def test_mi_is_not_mistaken_for_an_acronym(extract):
     """"Mi" is Spanish for "my"; the acronym match is case-sensitive."""
     assert not extract("Mi prioridad es la perfusión.").get("problem_representation")
+
+
+@pytest.fixture(scope="module")
+def gate():
+    source = (ROOT / "app.py").read_text()
+    tree = ast.parse(source)
+    nodes = [n for n in tree.body if isinstance(n, ast.FunctionDef) or (
+        isinstance(n, ast.Assign) and any(getattr(t, "id", "").startswith(("_ES_", "REASONING_GATE"))
+                                          for t in n.targets))]
+    namespace = {"st": _Streamlit(), "re": re, "math": math, "random": random, "json": json,
+                 "deepcopy": deepcopy, "escape": escape, "BytesIO": BytesIO, "__file__": "app.py"}
+    exec(compile(ast.Module(body=nodes, type_ignores=[]), "app.py", "exec"), namespace)
+    return namespace
+
+
+SPANISH = ("Parece ICC descompensada. Mi prioridad es mejorar la oxigenación. "
+           "Iniciar BiPAP IPAP 12 EPAP 6 FiO2 60%. Espero que la SpO2 suba sobre 92%. "
+           "Reevaluar SpO2 y trabajo respiratorio en 10 minutos.")
+
+
+def test_a_complete_spanish_order_passes_the_reasoning_gate(gate):
+    """A Spanish-speaking resident met the gate in three of five slots."""
+    from family_parser import parse_family_actions
+    reasoning = gate["extract_explicit_reasoning"](SPANISH)
+    assert reasoning["problem_representation"] == "ICC descompensada"
+    assert reasoning["management_priority"] == "mejorar la oxigenación"
+    assert reasoning["expected_effect"] == "la SpO2 suba sobre 92%"
+    assert reasoning["reassessment_target"] == "SpO2 y trabajo respiratorio"
+    parsed = parse_family_actions(SPANISH)
+    parsed["reasoning"] = reasoning
+    assert gate["reasoning_gate_missing"](parsed) == []
+
+
+@pytest.mark.parametrize("text,slot,expected", [
+    ("Mi prioridad es la diuresis. Dar furosemida 80 mg IV.", "management_priority", "diuresis"),
+    ("Mi objetivo principal es la perfusión. Dar 500 mL de suero.", "management_priority", "perfusión"),
+    ("Anticipo que mejore la presión arterial.", "expected_effect", "mejore la presión arterial"),
+    # A negated expectation keeps its negation, as in English.
+    ("No espero que baje la presión.", "expected_effect", "no espero que baje la presión"),
+    ("Dar furosemida y reevaluar SpO2 y frecuencia respiratoria en 15 minutos.",
+     "reassessment_target", "SpO2 y frecuencia respiratoria"),
+    # Timing first, then the target.
+    ("Reevaluar en 10 minutos la presión y el llenado capilar.",
+     "reassessment_target", "presión y el llenado capilar"),
+])
+def test_spanish_slots_are_captured_in_the_residents_words(gate, text, slot, expected):
+    assert gate["extract_explicit_reasoning"](text).get(slot) == expected
+
+
+@pytest.mark.parametrize("text,slot", [
+    # "Espero" is also "I wait".
+    ("Espero 10 minutos antes de reevaluar.", "expected_effect"),
+    ("Espero a ver la respuesta.", "expected_effect"),
+    ("Dar furosemida 40 mg IV.", "management_priority"),
+    ("Dar furosemida 40 mg IV.", "expected_effect"),
+    # Timing alone, or the patient as a whole, is not a reassessment target.
+    ("Reevaluar en 10 minutos.", "reassessment_target"),
+    ("Reevaluar al paciente en 10 minutos.", "reassessment_target"),
+])
+def test_spanish_capture_invents_nothing(gate, text, slot):
+    assert not gate["extract_explicit_reasoning"](text).get(slot)
+
+
+def test_an_english_slot_is_never_overwritten_by_the_spanish_capture(gate):
+    text = ("Acute pulmonary edema. My priority is oxygenation. Start BiPAP IPAP 12 EPAP 6 FiO2 60%. "
+            "I expect SpO2 to rise. Reassess SpO2 in 10 minutes.")
+    reasoning = gate["extract_explicit_reasoning"](text)
+    assert reasoning["management_priority"] == "oxygenation"
+    assert reasoning["expected_effect"] == "SpO2 to rise"
+    assert reasoning["reassessment_target"] == "SpO2"
