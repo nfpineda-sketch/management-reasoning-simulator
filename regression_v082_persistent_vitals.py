@@ -86,7 +86,7 @@ html = namespace["_vitals_grid_html"](snapshot, variant="response")
 for label in (
     "SIM TIME",
     "BP · MAP",
-    "HR · RHYTHM",
+    "HR",
     "SpO₂ · SUPPORT",
     "RR · WORK OF BREATHING",
     "CRT · EXTREMITIES",
@@ -94,6 +94,10 @@ for label in (
 ):
     assert label in html
 assert "100/60 · MAP 73" in html
-assert "162 · AF" in html
+# The response card reports the rate; naming the rhythm is the resident's work.
+assert "162/min" in html
+assert "HR · RHYTHM" not in html
+assert ">AF<" not in html and "· AF" not in html
+assert snapshot["rhythm"] == "AF"  # still recorded for the Management Trace
 
 print("PASS: v0.8.2 persistent live monitor and immutable post-intervention vitals")

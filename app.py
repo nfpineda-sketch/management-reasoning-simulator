@@ -5203,6 +5203,9 @@ def extract_explicit_reasoning(text):
     # Tolerate common dictated/typed variants such as ``i.m`` and ``im``.
     joined = re.sub(r"\bi\s*[.'’]?\s*m\b", "I'm", joined, flags=re.I)
     joined = re.sub(r"\brythm\b", "rhythm", joined, flags=re.I)
+    # Common typed misspellings seen in local testing: "stil", "reasses".
+    joined = re.sub(r"\bstil\b", "still", joined, flags=re.I)
+    joined = re.sub(r"\bre-?as+es+(?=\b|ment)", "reassess", joined, flags=re.I)
     joined = re.sub(
         r"\b(?:urianalysis|urinealysis|urinalisis|urinanalysis)\b",
         "urinalysis",
@@ -5274,9 +5277,25 @@ def extract_explicit_reasoning(text):
         m = re.search(
             r"(?:^|[.;])\s*((?:(?:the\s+)?patient|he|she)?\s*(?:is\s+)?still\s+"
             r"(?:in\s+)?(?:a-?fib|af|atrial\s+fibrillation|shock|hypotensive|"
-            r"hypoxemic|hypoxic|tachycardic))(?=\s*,|[.;]|$)",
+            r"hypoxemic|hypoxic|tachycardic|"
+            # A persisting named condition, wherever in the turn it is stated:
+            # "... reassess BP. still pulmonary edema".
+            r"(?:acute\s+|hypertensive\s+|cardiogenic\s+|flash\s+)*pulmonary\s+o?edema|o?edematous|"
+            r"congested|congestive|overloaded|volume\s+overloaded|in\s+failure|decompensated|"
+            r"hypertensive|septic|bleeding|wheezy|bronchospastic))(?=\s*,|[.;]|$)",
             joined,
             re.I,
+        )
+        if m:
+            reasoning["problem_representation"] = _clean_reasoning_phrase(m.group(1))
+
+    if "problem_representation" not in reasoning:
+        m = re.search(
+            r"(?:^|[.;])\s*((?:el\s+paciente\s+|la\s+paciente\s+)?(?:sigue|persiste|contin[uú]a)\s+"
+            r"(?:en\s+|con\s+|el\s+|la\s+)?(?:congestiv[oa]|edema(?:\s+pulmonar)?|hipotens[oa]|hipertens[oa]|"
+            r"hip[oó]xic[oa]|taquic[aá]rdic[oa]|en\s+shock|en\s+choque|s[eé]ptic[oa]|sangrando|"
+            r"descompensad[oa]|sobrecargad[oa]|con\s+sobrecarga))(?=\s*,|[.;]|$)",
+            joined, re.I,
         )
         if m:
             reasoning["problem_representation"] = _clean_reasoning_phrase(m.group(1))
@@ -7770,7 +7789,9 @@ def _vitals_cells(snapshot):
     return (
         ("SIM TIME", sim_time_label(int(snapshot.get("sim_time_min", 0) or 0))),
         ("BP · MAP", bp),
-        ("HR · RHYTHM", f'{snapshot.get("hr", "—")} · {snapshot.get("rhythm") or "—"}'),
+        # Rate only: the resident reads the rhythm off the monitor trace and the
+        # 12-lead. The snapshot still records it for the Management Trace.
+        ("HR", f'{snapshot.get("hr", "—")}/min' if snapshot.get("hr") is not None else "—"),
         ("SpO₂ · SUPPORT", spo2),
         ("RR · WORK OF BREATHING", rr_value),
         ("CRT · EXTREMITIES", perfusion),

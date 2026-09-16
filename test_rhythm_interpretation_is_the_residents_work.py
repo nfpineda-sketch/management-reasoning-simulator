@@ -70,6 +70,27 @@ def test_the_bedside_surface_never_names_the_rhythm(encounter):
     assert not names_a_rhythm("\n".join(str(e["text"]) for e in app.session_state.events))
 
 
+def test_the_response_card_after_an_order_never_names_the_rhythm(encounter):
+    """The first version of this file only inspected the screen before any order.
+
+    The card rendered after a reassessment still read "HR · RHYTHM: 121 · Sinus
+    tachycardia", and a resident testing locally found it.
+    """
+    app = encounter
+    app.text_area[0].set_value(
+        "Acute pulmonary edema. My priority is oxygenation. Start oxygen 4 L/min nasal cannula. "
+        "I expect SpO2 to rise. Reassess SpO2 in 5 minutes.")
+    next(b for b in app.button if b.label == "Submit").click().run()
+    assert not app.exception
+    assert any(e["kind"] == "clinical_update" for e in app.session_state.events)
+    rendered = visible_text(app)
+    assert "HR · RHYTHM" not in rendered
+    assert not names_a_rhythm(rendered), names_a_rhythm(rendered)
+    # Still recorded, where naming it is a record rather than a shortcut.
+    update = next(e for e in app.session_state.events if e["kind"] == "clinical_update")
+    assert update["learner_vitals"].get("rhythm")
+
+
 def test_the_vitals_panel_reports_a_rate_and_not_a_diagnosis():
     source = (ROOT / "app.py").read_text()
     assert "st.write(f'HR: {o[\"hr\"]}/min')" in source

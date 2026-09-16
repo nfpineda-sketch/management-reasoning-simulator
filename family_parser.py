@@ -324,11 +324,43 @@ def _parse_piece_core(piece, inherited=None):
         return [{"type": "niv", "mode": mode, "ipap_cmh2o": ipap, "epap_cmh2o": epap, "fio2_percent": _settings(body, "fio2"), "operation": _operation(verb)}], verb
     if re.search(r"\b(?:dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro)\b", body):
         kind = "nitroglycerin" if re.search(r"\b(?:nitroglycerin|nitroglicerina|nitro)\b", body) else "dobutamine" if re.search(r"\b(?:dobutamine|dobutamina)\b", body) else "norepinephrine"
-        rate_matches = list(re.finditer(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg)\s*/\s*(kg\s*/\s*)?(min(?:ute)?|h(?:r|our)?)\b", body))
+        # A rate may be written with a slash or in words: "20 mcg/min",
+        # "20 mcg per minute", "20 mcg por minuto".
+        per = r"(?:\s*/\s*|\s+(?:per|por|each|every|cada|a\s+la|al)\s+)"
+        rate_matches = list(re.finditer(
+            r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg)" + per + r"(kg" + per + r")?"
+            r"(min(?:ute)?s?|minutos?|h(?:r|our)?s?|horas?)\b", body))
         if len(rate_matches) > 1 or (_operation(verb) == "adjust" and re.search(r"\b(?:by|en)\s+-?\d", body)):
             return [_clarification("Specify a single absolute target infusion rate; a relative change or several rates is ambiguous.")], verb
         rate_match = rate_matches[0] if rate_matches else None
         rate, units = None, None
+        # A bolus, push, sublingual dose or a mass with no time unit is a single
+        # dose, not an infusion rate. It used to fall through to the bare-number
+        # fallback, so "nitroglycerin 600 mcg IV bolus" started an infusion at
+        # 600 mcg/min. This engine runs these drugs only as continuous infusions,
+        # so say so and convert nothing.
+        name = {"nitroglycerin": "Nitroglycerin", "dobutamine": "Dobutamine"}.get(kind, "Norepinephrine")
+        single_dose = re.search(
+            r"\b(?:bolus|bolo|push|stat\s+dose|sublingual|sublingual|sl|spray|tablet|tableta|comprimido|"
+            r"pastilla|dosis\s+unica|dosis\s+única)\b", body)
+        mass_dose = None if rate_match else re.search(
+            r"(?<![\w.])((?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg)\b(?!\s*/)", body)
+        if not rate_match and (single_dose or mass_dose):
+            form = single_dose[0].lower() if single_dose else "single dose"
+            form = {"sl": "sublingual dose", "sublingual": "sublingual dose", "bolo": "bolus",
+                    "push": "IV push", "spray": "spray dose", "tableta": "tablet",
+                    "comprimido": "tablet", "pastilla": "tablet", "stat dose": "single dose",
+                    "dosis unica": "single dose", "dosis única": "single dose"}.get(form, form)
+            dose = f" of {mass_dose[1]} {mass_dose[2]}" if mass_dose else ""
+            unit = "mcg/min" if kind == "nitroglycerin" else "mcg/kg/min or mcg/min"
+            return [{**_clarification(
+                f"{name} was understood as {'an' if form[0] in 'aeiouAEIOU' else 'a'} {form}{dose}. "
+                f"This encounter gives {name.lower()} only as a "
+                f"continuous IV infusion, so nothing was converted or executed. To give it, state an "
+                f"infusion rate in {unit}, or say cancel."),
+                "unsupported_administration": {"agent": kind, "form": form,
+                                               "dose": float(mass_dose[1]) if mass_dose else None,
+                                               "units": mass_dose[2] if mass_dose else None}}], verb
         if not rate_match:
             bare_rates = re.findall(r"(?<![\w.])(-?(?:\d+(?:\.\d+)?|\.\d+))(?![\w.])", body)
             if len(bare_rates) == 1 and not re.search(r"\b(?:minutes?|mins?|hours?|horas?|minutos?)\b", body):

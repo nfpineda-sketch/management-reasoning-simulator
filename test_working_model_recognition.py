@@ -157,3 +157,18 @@ def test_an_english_slot_is_never_overwritten_by_the_spanish_capture(gate):
     assert reasoning["management_priority"] == "oxygenation"
     assert reasoning["expected_effect"] == "SpO2 to rise"
     assert reasoning["reassessment_target"] == "SpO2"
+
+
+@pytest.mark.parametrize("text,expected", [
+    # Stated after the orders, as a resident actually wrote it, with typos.
+    ("better oxygenation, stil elevated RR, HR and BP. start nitroglycerin at 40 mcg/min "
+     "and reassess in 3 minutes. reasses BP. still pulmonary edema", "still pulmonary edema"),
+    ("Mejor oxigenación. Dar nitroglicerina a 40 mcg por minuto. Sigue congestivo.", "Sigue congestivo"),
+    ("Still in AF, I want to do rhythm management.", "Still in AF"),
+])
+def test_a_persisting_condition_is_a_working_model_wherever_it_is_stated(extract, text, expected):
+    assert extract(text).get("problem_representation") == expected
+
+
+def test_a_misspelled_reassess_does_not_leak_into_the_target(extract):
+    assert extract("reasses BP in 5 minutes").get("reassessment_target") == "BP"
