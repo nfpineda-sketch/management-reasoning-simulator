@@ -544,7 +544,13 @@ def _diagnostic(state, diagnostic, duration):
         result = {"lactate_mmol_l": value, "report": f"Lactate {value:g} mmol/L"}
     elif diagnostic == "pocus":
         if state["engine_family"] == "pulmonary_edema":
-            result["lungs"] = "Diffuse bilateral B-lines" if f["lung"] >= .65 else "Fewer but persistent bilateral B-lines"
+            # Keep the case's own finding, distribution included, while the lungs
+            # have not improved; replacing it at every scan dropped "in the
+            # anterior and lateral zones" even before any treatment.
+            if f["lung"] < .65:
+                authored = str(result.get("lungs") or "")
+                zones = authored[authored.find(" in the "):] if " in the " in authored else ""
+                result["lungs"] = "Fewer but persistent bilateral B-lines" + zones
         # Every bank case now documents the IVC, so this finally runs. It reports
         # what is seen after volume, not what the resident should conclude.
         volume = f["fluid_delivered_ml"] + f["blood_delivered_units"] * 300

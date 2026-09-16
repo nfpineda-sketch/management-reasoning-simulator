@@ -32,6 +32,8 @@ Me pediste que la VCI, el VI, las líneas B y el VD evolucionen. **Solo está im
 
 Con VNI o ventilación invasiva, la VCI informa el diámetro y *"respiratory variation not assessable during positive-pressure support"*.
 
+**Líneas B en edema pulmonar:** mientras la congestión no mejora se muestra el hallazgo del caso tal cual, con su distribución. Cuando mejora pasa a *"Fewer but persistent bilateral B-lines"*, conservando la distribución del caso (por ejemplo, *"in the anterior and lateral zones"*).
+
 **Decisión para ti:** los umbrales son genéricos. En un caso que empieza con VCI de 0,9 cm, saltar a 1,5 cm con 500 mL puede ser demasiado. Dime si prefieres umbrales por caso.
 
 ## Casos del banco

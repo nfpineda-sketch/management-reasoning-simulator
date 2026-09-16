@@ -880,7 +880,7 @@ def _trace_state_text(snapshot):
         # The old summary matched phrases, dropped RV and B-lines when the
         # wording changed, and never included the IVC at all.
         from pocus_report import format_pocus
-        sections = format_pocus(pocus).splitlines()[1:]
+        sections = format_pocus(pocus, compact=True).splitlines()[1:]
         parts.append("POCUS: " + " | ".join(sections))
     labs = d.get("basic_labs")
     if labs:

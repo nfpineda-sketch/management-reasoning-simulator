@@ -33,10 +33,50 @@ def bank_cases():
 
 def test_the_report_lists_every_section_in_a_fixed_order():
     text = format_pocus({key: "finding" for key in POCUS_KEYS})
-    headers = [line.split(" — ")[0] for line in text.splitlines()[1:]]
+    lines = text.splitlines()[1:]
+    headers = [line for line in lines if not line.startswith("· ")]
     assert headers == [section.upper() for section, _ in SECTIONS]
     positions = [text.index(label) for _, items in SECTIONS for _, label in items]
     assert positions == sorted(positions)
+
+
+def test_each_structure_has_its_own_line_for_the_narrow_bedside_panel():
+    lines = format_pocus({key: "finding" for key in POCUS_KEYS}).splitlines()
+    items = [line for line in lines if line.startswith("· ")]
+    assert len(items) == len(POCUS_KEYS)
+    assert all(line.count(": ") == 1 for line in items)
+
+
+def test_the_compact_layout_keeps_one_line_per_section():
+    lines = format_pocus({key: "finding" for key in POCUS_KEYS}, compact=True).splitlines()[1:]
+    assert [line.split(" — ")[0] for line in lines] == [section.upper() for section, _ in SECTIONS]
+
+
+def test_pulmonary_oedema_b_lines_keep_their_distribution_before_and_after_improvement():
+    import ast
+    from pathlib import Path
+    from encounter_generator import generate_encounter
+    from family_engine import execute_family_bundle
+    tree = ast.parse(Path("app.py").read_text())
+    node = next(n for n in tree.body if isinstance(n, ast.Assign)
+                and any(getattr(t, "id", "") == "INITIAL_STATE" for t in n.targets))
+    state = generate_encounter("R1-05", ast.literal_eval(node.value), api_key="",
+                               generation_mode="authored", seed=0)["state"]
+    assert state["engine_family"] == "pulmonary_edema"
+
+    def b_lines():
+        execute_family_bundle(state, {"actions": [{"type": "diagnostic", "diagnostic": "pocus"},
+                                                   {"type": "reassessment", "delay_min": 3}]})
+        return state["diagnostics"]["pocus"]["lungs"]
+
+    authored = state["encounter_spec"]  # noqa: F841 -- the case is frozen in the spec
+    assert b_lines() == "Diffuse bilateral B-lines in the anterior and lateral zones"
+    execute_family_bundle(state, {"actions": [
+        {"type": "niv", "mode": "BiPAP", "ipap_cmh2o": 12.0, "epap_cmh2o": 6.0, "fio2_percent": 60.0, "operation": "start"},
+        {"type": "nitroglycerin", "rate_mcg_min": 100.0, "operation": "start"},
+        {"type": "diuretic", "agent": "furosemide", "dose_mg": 80.0, "route": "IV"},
+        {"type": "reassessment", "delay_min": 40}]})
+    assert b_lines() == "Fewer but persistent bilateral B-lines in the anterior and lateral zones"
 
 
 def test_an_undocumented_structure_is_never_shown_as_normal():

@@ -51,8 +51,17 @@ def missing_sections(result):
             if not (isinstance(result.get(key), str) and result[key].strip())]
 
 
-def format_pocus(result, *, heading="POCUS"):
-    """Render a POCUS result as one line per section, in a fixed order."""
+def format_pocus(result, *, heading="POCUS", compact=False):
+    """Render a POCUS result in the fixed protocol order.
+
+    The default puts each structure on its own line under its section title,
+    which reads well in the narrow bedside panel. ``compact`` gives one line per
+    section, for places that hold several results side by side, such as the
+    Management Trace state summary.
+
+    Items start with "· " rather than indentation: markdown, the PDF and the
+    HTML review all strip leading spaces.
+    """
     result = result if isinstance(result, dict) else {}
     lines = []
     header = heading
@@ -66,8 +75,13 @@ def format_pocus(result, *, heading="POCUS"):
             value = result.get(key)
             text = value.strip() if isinstance(value, str) and value.strip() else NOT_DOCUMENTED
             parts.append(f"{label}: {text}")
-        lines.append(section.upper() + " — " + " · ".join(parts))
+        if compact:
+            lines.append(section.upper() + " — " + " · ".join(parts))
+        else:
+            lines.append(section.upper())
+            lines.extend("· " + part for part in parts)
     # Legacy saved encounters carried free prose; keep it rather than drop it.
     if isinstance(result.get("report"), str) and result["report"].strip():
-        lines.append("Additional findings — " + result["report"].strip())
+        additional = "Additional findings — " + result["report"].strip()
+        lines.append(additional if compact else "ADDITIONAL FINDINGS\n· " + result["report"].strip())
     return "\n".join(lines)
