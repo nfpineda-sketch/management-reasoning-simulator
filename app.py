@@ -5148,6 +5148,26 @@ def _resolve_reasoning_coreference(phrase, context, statement_start):
     if not re.match(r"^(?:it|this|that)\b", candidate, re.I):
         return candidate
 
+    # "I think this is acute pulmonary oedema": ``this`` is a dummy subject and
+    # the learner has named the problem in full. Only a generic complement such
+    # as "the primary problem" still needs an explicit antecedent.
+    frame = re.match(
+        r"^(?:it|this|that)\s*(?:'s|\s+is|\s+looks\s+like|\s+seems\s+like|\s+seems\s+to\s+be|"
+        r"\s+appears\s+to\s+be|\s+(?:could|may|might|must)\s+be|\s+is\s+(?:likely|probably|possibly))"
+        r"\s+(.+)$",
+        candidate, re.I,
+    )
+    if frame:
+        complement = _clean_reasoning_phrase(frame.group(1))
+        complement = re.sub(r"^(?:likely|probably|possibly)\s+", "", complement or "", flags=re.I)
+        generic = re.fullmatch(
+            r"(?:the|a|an|my|our)?\s*(?:(?:main|primary|real|underlying|biggest|key|first|immediate)\s+)?"
+            r"(?:problem|issue|cause|concern|priority|thing|driver|reason|explanation|diagnosis)",
+            complement or "", re.I,
+        )
+        if complement and not generic:
+            return complement
+
     prefix = str(context or "")[:max(0, int(statement_start or 0))]
     patterns = [
         r"\bi(?:'m| am)\s+(?:addressing|treating|targeting|prioritizing|focusing\s+on)\s+"
@@ -5190,16 +5210,39 @@ def extract_explicit_reasoning(text):
         flags=re.I,
     )
     joined = re.sub(r"(?<=\d)\.(?=\d)", "\ue000", joined)
-    working_model_explicit = bool(re.search(r"\bmy working model is\b", joined, re.I))
+    working_model_explicit = bool(re.search(
+        r"\b(?:my working model is|mi modelo de trabajo es)\b", joined, re.I))
 
     thought = None
     m = re.search(
-        r"\b(?:i think|i believe|i suspect|my impression is|my working diagnosis is|my working model is|i am concerned that|i\'m concerned that|this (?:looks|seems) like)\s+"
-        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|thus\b|because\b|and i\b (?:want|will|would)\b|so i\b)|[.;]|$)",
+        r"\b(?:i think|i believe|i suspect|my impression is|my working diagnosis is|my working model is|i am concerned that|i\'m concerned that|this (?:looks|seems) like|"
+        # Spanish lead-ins. The capture below still copies only the learner's words.
+        r"creo que|pienso que|sospecho que|considero que|mi impresi[oó]n es(?: que)?|mi modelo de trabajo es|"
+        r"mi diagn[oó]stico de trabajo es|me preocupa que)\s+"
+        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|thus\b|because\b|and i\b (?:want|will|would)\b|so i\b|"
+        r"por lo que\b|as[ií] que\b|porque\b|entonces\b)|[.;]|$)",
         joined, re.I
     )
     if m:
         thought = _resolve_reasoning_coreference(m.group(1), joined, m.start())
+        if thought:
+            # Spanish copular frames: "creo que es X", "creo que se trata de X".
+            thought = re.sub(r"^(?:es|ser[ií]a|se trata de|corresponde a|parece(?: ser)?)\s+",
+                             "", thought, flags=re.I) or thought
+
+    # A sentence that opens with a hedge names the learner's working model even
+    # without "I think": "Likely septic shock." / "Parece ICC descompensada."
+    if not thought:
+        m = re.search(
+            r"(?:^|[.;]\s*)(?:likely|probably|probable|possible|possibly|suspected|suspect|"
+            r"consistent with|concern(?:ing)? for|picture of|looks like|seems like|"
+            r"probablemente|probable|posible|sospecha de|parece(?: ser| un| una)?|impresiona(?: como)?|"
+            r"se trata de|cuadro (?:compatible con|sugerente de|de)|compatible con|sugerente de)\s+"
+            r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|because\b|por lo que\b|porque\b)|[.;]|$)",
+            joined, re.I,
+        )
+        if m:
+            thought = _clean_reasoning_phrase(m.group(1))
 
     # When the learner explicitly states cause -> consequence, keep the full
     # causal statement as rationale and create a distinct problem representation
@@ -5299,7 +5342,9 @@ def extract_explicit_reasoning(text):
         command = re.search(
             r"(?:^|[.;])\s*(?:give|administer|infuse|bolus|start|stop|continue|"
             r"increase|decrease|cardiovert|perform|intubate|apply|place|put|"
-            r"order|obtain|reassess|re-assess|recheck|re-check|reevaluate|re-evaluate|observe|watch)\b",
+            r"order|obtain|reassess|re-assess|recheck|re-check|reevaluate|re-evaluate|observe|watch|"
+            r"dar|administrar|iniciar|comenzar|poner|suspender|aumentar|subir|bajar|disminuir|"
+            r"intubar|pedir|solicitar|reevaluar|revaluar|controlar)\b",
             joined,
             re.I,
         )
@@ -5310,14 +5355,43 @@ def extract_explicit_reasoning(text):
             r"mental\s+status|obtund\w*|drows\w*|hypox\w*|dyspn\w*|"
             r"respiratory\w*|atrial\s+fibrillation|a-?fib|afib|arrhythm\w*|"
             r"sepsis|septic|infect\w*|urinalysis|lactate|capillary\s+refill|"
-            r"(?:cold|cool)\s+extremit\w*)\b",
+            r"(?:cold|cool)\s+extremit\w*|"
+            # A named condition is a working model in its own right: "Acute
+            # hypertensive pulmonary edema after missing diuretics."
+            r"o?edema|heart\s+failure|cardiac\s+failure|failure|overload\w*|congesti\w*|"
+            r"decompensat\w*|cardiogenic|embol\w*|pneumon\w*|exacerbat\w*|asthma|"
+            r"anaphyla\w*|ketoacidosis|hypoglyc\w*|hyperglyc\w*|overdose|toxicity|"
+            r"intoxicat\w*|opioid\w*|bleed\w*|ha?emorrhag\w*|dehydrat\w*|hypovol[ae]m\w*|"
+            r"infarct\w*|ischa?em\w*|tamponade|pneumothorax|adrenal\w*|"
+            r"insuficiencia|descompensad\w*|sobrecarga|congesti[oó]n|cardiog[eé]nic\w*|"
+            r"embolia|tromboembolismo|neumon[ií]a|exacerbaci[oó]n|asma|anafila\w*|"
+            r"cetoacidosis|hipoglic\w*|hiperglic\w*|intoxicaci[oó]n|sangrado|hemorragia|"
+            r"deshidrataci[oó]n|hipovolemi\w*|infarto|isquemi\w*|taponamiento|neumot[oó]rax|"
+            r"choque|s[eé]ptic\w*|hipotens\w*|hipox\w*|hipoperfusi[oó]n|taquicardi\w*|"
+            r"bradicardi\w*|arritmi\w*|fibrilaci[oó]n|shock)\b",
+            re.I,
+        )
+        # Acronyms are matched case-sensitively: "mi" is Spanish for "my".
+        acronym_pattern = re.compile(
+            r"\b(?:ICC|EAP|CHF|ADHF|HF|TEP|PE|EPOC|COPD|DKA|CAD|IAM|SCA|ACS|STEMI|NSTEMI|AF|FA|SVT|TSV)\b")
+        # A clause that already states another slot is not a working model:
+        # "My priority is reducing congestion" names congestion but is a priority.
+        other_slot = re.compile(
+            r"^(?:my\s+(?:management\s+|main\s+|first\s+)?(?:priority|goal|aim|plan)|"
+            r"i\s+(?:expect|anticipate|want|will|would|plan|intend)|"
+            r"(?:i\s+am|i'm)\s+(?:addressing|treating|targeting|prioriti[sz]ing|expecting|aiming)|"
+            r"expected\s+effect|to\s+(?:improve|reduce|treat|address|correct)|"
+            r"mi\s+(?:prioridad|objetivo|meta|plan)|espero|anticipo|quiero|voy\s+a|"
+            r"pretendo|busco|para\s+(?:mejorar|reducir|tratar|corregir))\b",
             re.I,
         )
         clinical_clauses = []
         for clause in re.split(r"[.;]+", clinical_prefix):
             candidate = _clean_reasoning_phrase(clause)
+            if candidate and other_slot.match(candidate):
+                continue
             candidate = re.sub(r"^(?:the\s+)?patient\s+", "", candidate or "", flags=re.I)
-            if candidate and cue_pattern.search(candidate):
+            if candidate and (cue_pattern.search(candidate) or acronym_pattern.search(candidate)):
                 clinical_clauses.append(candidate)
         if clinical_clauses:
             reasoning["problem_representation"] = "; ".join(clinical_clauses[:3])
