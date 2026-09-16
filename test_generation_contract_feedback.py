@@ -252,3 +252,46 @@ class TheDilemmaMustBePractisable(unittest.TestCase):
         self.assertIn("consult, refer, arrange or transfer", AUTHOR_INSTRUCTIONS)
         # And the rule behind STATE_RULE_CONFLICT, which it kept breaking.
         self.assertIn("must not set different values for the same finding", AUTHOR_INSTRUCTIONS)
+
+
+class AnExactlyRepeatedStudyIsCollapsed(unittest.TestCase):
+    """A paid correction answered seven issues with one study repeated eight times.
+
+    All eight lactate entries were byte-identical and the encounter was refused
+    for DUPLICATE_STUDY, hiding the contradiction the correction had actually
+    failed to fix. Removing an exact repetition chooses nothing.
+    """
+
+    def study(self, identifier="lactate", value=3.2, duration=20):
+        return {"id": identifier, "duration_min": duration,
+                "result": [{"field": "lactate_mmol_l", "value": value}],
+                "result_bindings": [{"field": "lactate_mmol_l", "observable_field": "lactate_mmol_l"}]}
+
+    def collapse(self, studies):
+        from case_authoring import collapse_identical_study_fields
+        result = collapse_identical_study_fields({"investigations": studies})
+        return [s["id"] for s in result["investigations"]]
+
+    def test_eight_identical_copies_become_one(self):
+        studies = [{"id": "pocus", "result": [{"field": "report", "value": "x"}]}] + [self.study()] * 8
+        self.assertEqual(self.collapse(studies), ["pocus", "lactate"])
+
+    def test_a_repeated_id_with_different_content_still_reaches_validation(self):
+        studies = [self.study(value=3.2), self.study(value=9.9)]
+        self.assertEqual(self.collapse(studies), ["lactate", "lactate"])
+
+    def test_a_repeated_id_with_a_different_delay_still_reaches_validation(self):
+        studies = [self.study(duration=20), self.study(duration=5)]
+        self.assertEqual(self.collapse(studies), ["lactate", "lactate"])
+
+    def test_distinct_studies_are_untouched(self):
+        studies = [self.study("lactate"), self.study("troponin"), self.study("pocus")]
+        self.assertEqual(self.collapse(studies), ["lactate", "troponin", "pocus"])
+
+    def test_a_conflicting_duplicate_is_reported_with_both_indices(self):
+        codes, issues = codes_for(lambda case: case["investigations"].append(
+            {**deepcopy(case["investigations"][0]), "duration_min": 99}))
+        self.assertIn("DUPLICATE_STUDY", codes)
+        issue = next(i for i in issues if i["code"] == "DUPLICATE_STUDY")
+        self.assertIn("first_index", issue["details"])
+        self.assertIn("duplicate_index", issue["details"])

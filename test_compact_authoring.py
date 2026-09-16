@@ -72,8 +72,17 @@ class CompactTests(unittest.TestCase):
         study['result'][0]['value'] = 999
         with self.assertRaises(ValueError):
             expand_author_case(raw)
+        # An exact repetition is collapsed: it chooses nothing. A repeated id
+        # whose content differs is a real contradiction and still fails.
         raw = compact(fixture())
+        before = len(raw['investigations'])
         raw['investigations'].append(deepcopy(raw['investigations'][0]))
+        compile_case(expand_author_case(raw))
+        self.assertEqual(len(expand_author_case(raw)['investigations']), before)
+        raw = compact(fixture())
+        conflicting = deepcopy(raw['investigations'][0])
+        conflicting['duration_min'] = (conflicting.get('duration_min') or 0) + 7
+        raw['investigations'].append(conflicting)
         with self.assertRaises(ValueError):
             compile_case(expand_author_case(raw))
 

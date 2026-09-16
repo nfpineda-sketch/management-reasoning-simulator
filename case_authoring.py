@@ -1,5 +1,6 @@
 """Compact author contract; deterministic expansion into the unchanged runtime schema."""
 from copy import deepcopy
+import json
 import math
 from generated_case_schema import CASE_SCHEMA, SCHEMA_VERSION, NUMERIC_FIELDS, RESULT_FIELDS, obj, enum, validate_schema
 from clinical_core_defaults import CORE_VERSION
@@ -76,8 +77,25 @@ history, findings, diagnoses, management paths and extension effects remain your
 '''
 
 def collapse_identical_study_fields(raw):
-    """Drop exact duplicate rows only; conflicting duplicates reach validation."""
+    """Drop exact duplicate rows and studies; conflicting ones reach validation.
+
+    A paid correction asked to fix seven issues at once answered with the same
+    lactate study repeated eight times, byte for byte, and the encounter was
+    refused. Removing an exact repetition chooses nothing: two entries with the
+    same id and different content still fail DUPLICATE_STUDY.
+    """
     result = deepcopy(raw)
+    studies, seen = [], {}
+    for study in result.get('investigations', []) or []:
+        key = json.dumps(study, sort_keys=True, default=str) if isinstance(study, dict) else None
+        identifier = study.get('id') if isinstance(study, dict) else None
+        if identifier is not None and seen.get(identifier) == key:
+            continue
+        if identifier is not None:
+            seen[identifier] = key if identifier not in seen else object()
+        studies.append(study)
+    if 'investigations' in result:
+        result['investigations'] = studies
     for study in result.get('investigations', []):
         for key in ('result', 'result_bindings'):
             if key not in study:
