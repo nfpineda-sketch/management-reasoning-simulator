@@ -76,10 +76,11 @@ def _patient_description(state):
 
 
 def setting(name, default=''):
+    from offline_cases import withhold
     try:
-        return str(st.secrets.get(name, os.environ.get(name, default)))
+        return withhold(name, str(st.secrets.get(name, os.environ.get(name, default))))
     except Exception:
-        return os.environ.get(name, default)
+        return withhold(name, os.environ.get(name, default))
 
 
 def scene_prompt(state):

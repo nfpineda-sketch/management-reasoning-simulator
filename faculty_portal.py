@@ -32,7 +32,8 @@ def _secret(name, default=""):
         value = st.secrets.get(name, "")
     except Exception:
         value = ""
-    return str(value or os.environ.get(name, default) or "").strip()
+    from offline_cases import withhold
+    return withhold(name, str(value or os.environ.get(name, default) or "").strip())
 
 
 def _staff_record(context, record):

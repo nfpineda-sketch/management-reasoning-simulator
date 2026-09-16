@@ -30,7 +30,10 @@ def _setting(name: str, default: str = "") -> str:
         value = None
     if value is None:
         value = os.environ.get(name, default)
-    return str(value).strip()
+    # Only auth settings are read here today, but this resolves any name, so it
+    # obeys the same offline rule as every other reader of a provider key.
+    from offline_cases import withhold
+    return withhold(name, str(value).strip())
 
 
 def _closed(message: str) -> None:

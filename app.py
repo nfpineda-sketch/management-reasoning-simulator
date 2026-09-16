@@ -3525,15 +3525,16 @@ def generate_problem_config(challenge_id):
     from scene_preparation import ScenePreparation
     if challenge_id not in CHALLENGES:
         raise ValueError("Choose an implemented clinical problem.")
+    from offline_cases import launch_options
+    generation, scene_key = launch_options(_runtime_secret("OPENAI_API_KEY"))
     try:
-        with ScenePreparation(_runtime_secret("OPENAI_API_KEY"),
+        with ScenePreparation(scene_key,
                               _runtime_secret("MRS_IMAGE_MODEL") or "gpt-image-1.5",
                               _runtime_secret("MRS_IMAGE_REVIEW_MODEL") or "gpt-5-mini") as scene:
             with encounter_preparation(st) as progress:
                 generated = generate_encounter(challenge_id, INITIAL_STATE,
-                    api_key=_runtime_secret("OPENAI_API_KEY"),
                     model=_runtime_secret("MRS_GENERATOR_MODEL") or _runtime_secret("OPENAI_MODEL") or "gpt-5-mini",
-                    progress=progress, on_case_compiled=scene.on_case_compiled)
+                    progress=progress, on_case_compiled=scene.on_case_compiled, **generation)
             scene.adopt(st.session_state, generated["state"], st.session_state.get("_attempt_id"))
     except GeneratedCaseError as exc:
         # Without an account store this was the only handler, and it dropped the
@@ -6218,7 +6219,8 @@ def _runtime_secret(name, default=""):
         value = st.secrets.get(name, "")
     except Exception:
         value = ""
-    return str(value or os.environ.get(name, default) or "").strip()
+    from offline_cases import withhold
+    return withhold(name, str(value or os.environ.get(name, default) or "").strip())
 
 
 def ai_interpretation_enabled():

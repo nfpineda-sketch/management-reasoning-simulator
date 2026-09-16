@@ -36,7 +36,8 @@ def _secret(name, default=""):
         value = st.secrets.get(name, "")
     except Exception:
         value = ""
-    return str(value or os.environ.get(name, default) or "").strip()
+    from offline_cases import withhold
+    return withhold(name, str(value or os.environ.get(name, default) or "").strip())
 
 
 def _payload():
@@ -126,16 +127,17 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         assignment = {"challenge_id": faculty_choice, "reason": "faculty_sandbox", "assignment_seed": seed}
     else:
         assignment = assign_challenge(user["training_year"], own, seed)
-    with ScenePreparation(_secret("OPENAI_API_KEY"),
+    from offline_cases import launch_options
+    generation, scene_key = launch_options(_secret("OPENAI_API_KEY"))
+    with ScenePreparation(scene_key,
                           _secret("MRS_IMAGE_MODEL", "gpt-image-1.5"),
                           _secret("MRS_IMAGE_REVIEW_MODEL", "gpt-5-mini")) as scene:
         with encounter_preparation(st) as progress:
             encounter = generate_encounter(
                 assignment["challenge_id"], initial_state,
-                api_key=_secret("OPENAI_API_KEY"),
                 model=_secret("MRS_GENERATOR_MODEL", _secret("OPENAI_MODEL", "gpt-5-mini")), seed=seed,
                 review_model=_secret("MRS_GENERATOR_REVIEW_MODEL") or None,
-                progress=progress, on_case_compiled=scene.on_case_compiled,
+                progress=progress, on_case_compiled=scene.on_case_compiled, **generation,
             )
         st.session_state.pop("_case_generation_failure", None)
         encounter["assignment"] = assignment
