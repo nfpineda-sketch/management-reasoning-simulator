@@ -58,7 +58,11 @@ VISUAL = obj({"expression": enum(VISUAL_CHOICES["expression"][:-1]),
               "diaphoresis": enum(VISUAL_CHOICES["diaphoresis"][:-1]), "mottling": BOOL})
 STATE_TEXT = {"mental_status": enum(("Alert", "Drowsy", "Obtunded", "Unresponsive", "Sedated")),
               "work_of_breathing": enum(("Normal", "Reduced", "Mildly increased", "Increased", "Moderately increased", "Markedly increased", "Severe", "Ventilator-supported")),
-              "extremities": enum(("Warm", "Cool", "Cold", "Mottled/cold")),
+              # The executor also reports "Very cold" and "Mottled/Cold" as
+              # perfusion falls. Declaring only the first four made the shared
+              # core violate the contract published to the author and reviewer.
+              "extremities": enum(("Warm", "Warmer", "Cool", "Cold", "Very cold",
+                                   "Mottled/cold", "Mottled/Cold")),
               "peripheral_perfusion": enum(PERFUSION_CATEGORIES), "pulse_present": BOOL,
               "rhythm": enum(tuple(RHYTHMS)), "ecg_profile": enum(PROFILES), "visual": VISUAL}
 NUMERIC_PAIRS = array(obj({"field": enum(NUMERIC_FIELDS), "value": NUMBER}), maximum=13)

@@ -144,6 +144,20 @@ def examination_updates(rule, observed):
     return updates
 
 
+def sync_mottling(observable):
+    """The mottling flag must agree with the extremities the core reports.
+
+    ``visual.mottling`` drives the patient illustration, so a patient the engine
+    describes as "Mottled/Cold" was being drawn without mottling. The flag is
+    derived here rather than in the shared core, which stays identical to main.
+    Mottling already recorded by a narrative rule is never erased.
+    """
+    extremities = str(observable.get('extremities') or '')
+    if 'mottled' in extremities.lower():
+        observable.setdefault('visual', {})['mottling'] = True
+    return observable
+
+
 def project(state,delta=None):
     from generated_engine import OBSERVED_FIELDS,BOUNDS,_COMPARATORS
     g=state['generated_state'];s=state['coupled_state'];case=state['encounter_spec']['clinical_case']
@@ -156,6 +170,7 @@ def project(state,delta=None):
         # narrative rules; copying the native baseline must not imply recovery.
         o.setdefault('visual',{}).update(previous_visual)
         o.setdefault('electrical_rhythm',s.get('pre_arrest_rhythm','sinus'))
+        sync_mottling(o)
         return
     delta=delta or {}
     for k in OBSERVED_FIELDS:
@@ -183,6 +198,7 @@ def project(state,delta=None):
     elif state['family_state']['niv']:o['respiratory_support']='NIV'
     elif state['family_state']['bag_mask']:o['respiratory_support']='Bag-mask ventilation'
     else:o['respiratory_support']=state['family_state']['oxygen_device']
+    sync_mottling(o)
 
 
 def tick(state):
