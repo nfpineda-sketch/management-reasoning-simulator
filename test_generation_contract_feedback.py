@@ -122,3 +122,75 @@ class GateRejectionsCarryAnActionableCause(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SimultaneousObservationRulesMustAgree(unittest.TestCase):
+    """Both engines apply every matching rule in order, so the last one wins.
+
+    A real paid generation of R1-05 spent three requests on a case whose
+    hypotension rule asked for mottling and marked sweating while its hypoxia
+    rule, matching at the very same minute, asked for none and mild. The engine
+    preview showed a patient at a systolic pressure of 46 described as unmottled
+    and the reviewer rejected the case. The contradiction is decidable locally.
+    """
+
+    def hypoxia_and_hypotension(self, case, *, later_mottling=False):
+        rules = case["engine"]["state_rules"]
+        rules[0] = {**rules[0], "id": "deterioration_hypotension",
+                    "when": [{"field": "sbp", "operator": "lt", "value": 85}],
+                    "set": {**rules[0]["set"], "extremities": "Cold",
+                            "visual": {"expression": "markedly uncomfortable",
+                                       "skin_color": "mild pallor",
+                                       "diaphoresis": "marked", "mottling": True}}}
+        rules[1] = {**rules[1], "id": "hypoxia_worse_breathing",
+                    "when": [{"field": "spo2", "operator": "lt", "value": 90}],
+                    "set": {**rules[1]["set"], "extremities": "Cold",
+                            "visual": {"expression": "markedly uncomfortable",
+                                       "skin_color": "mild pallor",
+                                       "diaphoresis": "marked",
+                                       "mottling": later_mottling}}}
+
+    def test_overlapping_rules_that_disagree_are_rejected_with_both_indices(self):
+        codes, issues = codes_for(lambda case: self.hypoxia_and_hypotension(case))
+        self.assertNotIn("CONTRACT_UNCLASSIFIED", codes)
+        self.assertIn("STATE_RULE_CONFLICT", codes)
+        issue = next(i for i in issues if i["code"] == "STATE_RULE_CONFLICT")
+        self.assertEqual(issue["path"], "engine.state_rules[1]")
+        self.assertEqual(issue["details"]["conflicting_rule_index"], 0)
+        self.assertEqual(issue["details"]["conflicting_rule_id"], "deterioration_hypotension")
+        disagreements = {d["field"]: (d["earlier"], d["later"])
+                         for d in issue["details"]["disagreements"]}
+        self.assertEqual(disagreements["visual.mottling"], (True, False))
+
+    def test_overlapping_rules_that_agree_are_accepted(self):
+        """Overlap is allowed; only disagreement about the same finding is not."""
+        case = deepcopy(novel_payload())
+        self.hypoxia_and_hypotension(case)
+        rules = case["engine"]["state_rules"]
+        rules[1]["set"] = deepcopy(rules[0]["set"])
+        rules[1]["examination"] = deepcopy(rules[0].get("examination") or [])
+        compile_case(case)
+
+    def test_rules_that_cannot_hold_together_are_not_reported(self):
+        """Mutually exclusive thresholds may describe opposite states freely."""
+        def mutate(case):
+            rules = case["engine"]["state_rules"]
+            rules[0] = {**rules[0], "when": [{"field": "sbp", "operator": "lt", "value": 85}],
+                        "set": {**rules[0]["set"], "extremities": "Cold"}}
+            rules[1] = {**rules[1], "when": [{"field": "sbp", "operator": "gte", "value": 90}],
+                        "set": {**rules[1]["set"], "extremities": "Warm"}}
+        case = deepcopy(novel_payload())
+        mutate(case)
+        compile_case(case)
+
+    def test_an_overlap_only_outside_the_supported_range_is_not_reported(self):
+        """sbp cannot exceed 300, so these two can never both hold."""
+        def mutate(case):
+            rules = case["engine"]["state_rules"]
+            rules[0] = {**rules[0], "when": [{"field": "sbp", "operator": "gt", "value": 310}],
+                        "set": {**rules[0]["set"], "extremities": "Cold"}}
+            rules[1] = {**rules[1], "when": [{"field": "sbp", "operator": "gt", "value": 320}],
+                        "set": {**rules[1]["set"], "extremities": "Warm"}}
+        case = deepcopy(novel_payload())
+        mutate(case)
+        compile_case(case)

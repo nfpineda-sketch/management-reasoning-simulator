@@ -25,7 +25,8 @@ ENGINE_ISSUE_CODES = frozenset({
     "RESPONSE_CAP", "RESPONSE_KINETICS", "RESPONSE_SEDATION", "RESPONSE_STATE_GAIN",
     "RESPONSE_ORDER_UNREACHABLE", "TRAJECTORY_BOUNDS",
     "TRAJECTORY_PRESSURE", "STATE_RULES", "STATE_CONDITION", "STATE_OUTPUT",
-    "STATE_ECG", "STATE_EXAMINATION", "STUDY_STRUCTURE", "STUDY_TIMING",
+    "STATE_ECG", "STATE_EXAMINATION", "STATE_RULE_CONFLICT",
+    "STUDY_STRUCTURE", "STUDY_TIMING",
 })
 
 
@@ -274,6 +275,7 @@ def _collect_state_and_study_issues(case, engine, initialized, add):
         examination = rule.get("examination", {})
         if not isinstance(examination, dict) or any(not isinstance(v, str) for v in examination.values()):
             add("STATE_EXAMINATION", path + ".examination", "Examination updates must be authored descriptions.")
+    _collect_state_rule_conflicts(rules if isinstance(rules, list) else [], initialized, add)
     studies = case.get("investigations", {})
     if not isinstance(studies, dict):
         add("STUDY_STRUCTURE", "investigations", "Investigations must have normalized keyed results.")
@@ -331,3 +333,100 @@ def _collect_kinetics_issues(rule, kind, kind_ok, path, add):
                 add("RESPONSE_STATE_GAIN", path + ".state_gain.points",
                     "State coupling values must increase strictly from one point to the next.",
                     values=[p["value"] for p in points])
+
+
+_UNBOUNDED = (float("-inf"), float("inf"))
+
+
+def _rule_interval(rule, field):
+    """The values of ``field`` a rule's conditions still allow, as (lo, hi, lo_in, hi_in)."""
+    lo, hi = _UNBOUNDED
+    lo_in = hi_in = True
+    for condition in rule.get("when", []) or []:
+        if not isinstance(condition, dict) or condition.get("field") != field:
+            continue
+        value, operator = condition.get("value"), condition.get("operator")
+        if not _finite(value):
+            continue
+        if operator in ("lt", "lte"):
+            inclusive = operator == "lte"
+            if value < hi or (value == hi and not inclusive):
+                hi, hi_in = value, inclusive
+        elif operator in ("gt", "gte"):
+            inclusive = operator == "gte"
+            if value > lo or (value == lo and not inclusive):
+                lo, lo_in = value, inclusive
+    return lo, hi, lo_in, hi_in
+
+
+def _overlaps(first, second, field):
+    """Can both rules hold at once for this field, inside its supported range?"""
+    lo, hi, lo_in, hi_in = _UNBOUNDED[0], _UNBOUNDED[1], True, True
+    for rule in (first, second):
+        r_lo, r_hi, r_lo_in, r_hi_in = _rule_interval(rule, field)
+        if r_lo > lo or (r_lo == lo and not r_lo_in):
+            lo, lo_in = r_lo, r_lo_in
+        if r_hi < hi or (r_hi == hi and not r_hi_in):
+            hi, hi_in = r_hi, r_hi_in
+    bound_lo, bound_hi = BOUNDS.get(field, (0 if field in VOLUME_FIELDS | {"elapsed_min", "fluid_delivered_ml"} else _UNBOUNDED[0], _UNBOUNDED[1]))
+    lo, hi = max(lo, bound_lo), min(hi, bound_hi)
+    return lo < hi or (lo == hi and lo_in and hi_in)
+
+
+def _conflicting_outputs(first, second):
+    """Fields both rules write with different values, including visual sub-fields."""
+    conflicts = []
+    a, b = first.get("set") or {}, second.get("set") or {}
+    for key in sorted(set(a) & set(b)):
+        if key == "visual" and isinstance(a[key], dict) and isinstance(b[key], dict):
+            for sub in sorted(set(a[key]) & set(b[key])):
+                if a[key][sub] != b[key][sub]:
+                    conflicts.append((f"visual.{sub}", a[key][sub], b[key][sub]))
+        elif a[key] != b[key]:
+            conflicts.append((key, a[key], b[key]))
+    exam_a, exam_b = first.get("examination") or {}, second.get("examination") or {}
+    if isinstance(exam_a, dict) and isinstance(exam_b, dict):
+        for area in sorted(set(exam_a) & set(exam_b)):
+            if exam_a[area] != exam_b[area]:
+                conflicts.append((f"examination.{area}", exam_a[area], exam_b[area]))
+    return conflicts
+
+
+def _collect_state_rule_conflicts(rules, initialized, add):
+    """Two rules that can hold at once must not disagree about what is observed.
+
+    Both engines apply every matching rule in list order, so a later rule
+    silently overwrites an earlier one. A real generation spent three provider
+    requests on a case whose hypotension rule asked for mottling while its
+    hypoxia rule, matching at the same moment, asked for none; the reviewer saw a
+    patient with a systolic pressure of 46 described as unmottled and rejected
+    it. Detect the contradiction here, before a review is paid for.
+    """
+    fields = set()
+    for rule in rules:
+        if isinstance(rule, dict):
+            for condition in rule.get("when", []) or []:
+                if isinstance(condition, dict) and isinstance(condition.get("field"), str):
+                    fields.add(condition["field"])
+    for i, first in enumerate(rules):
+        if not isinstance(first, dict):
+            continue
+        for j in range(i + 1, len(rules)):
+            second = rules[j]
+            if not isinstance(second, dict):
+                continue
+            if not all(_overlaps(first, second, field) for field in fields):
+                continue
+            conflicts = _conflicting_outputs(first, second)
+            if not conflicts:
+                continue
+            add("STATE_RULE_CONFLICT", f"engine.state_rules[{j}]",
+                "These observation rules can hold at the same time and disagree about what is "
+                "observed. The later rule silently overwrites the earlier one. Make their "
+                "conditions mutually exclusive, or make the shared findings identical.",
+                conflicting_rule_index=i,
+                conflicting_rule_id=str(first.get("id", ""))[:160],
+                rule_id=str(second.get("id", ""))[:160],
+                conditions=[first.get("when"), second.get("when")],
+                disagreements=[{"field": field, "earlier": earlier, "later": later}
+                               for field, earlier, later in conflicts[:8]])

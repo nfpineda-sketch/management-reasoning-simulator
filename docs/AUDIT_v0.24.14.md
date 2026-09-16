@@ -268,6 +268,77 @@ is the explicit opt-out for a deliberate paid run.
 A key for a real run belongs somewhere the application does not read by itself,
 for example `local-data/`, exported only for that run.
 
+## 12. A second authorized paid run, and the contradiction it exposed
+
+Same challenge, seed and model, no image, with sections 7, 8 and 10 in place.
+
+| stage | status | seconds | tokens |
+|---|---|---|---|
+| author | completed | 79.59 | 14,113 |
+| correction | completed | 65.78 | 17,090 |
+| review | completed | 84.56 | 13,325 |
+| | | **230.97** | **44,528** |
+
+`CASE-REVIEW-REVIEW`. It failed, but the earlier fixes did what they were for:
+three requests instead of five, finished inside the budget instead of timing
+out, and **the diagnostic was written to `local-data/generation_failures/`**,
+which is what made everything below possible.
+
+### Why the first draft did not compile
+
+The question the lost run took with it:
+
+    NEUROLOGICAL_UPDATE | case.engine.state_rules[2].examination
+    details: {"mental_status": "Alert", "initial_mental_status": "Drowsy"}
+
+A specific code with a path and the offending values, not
+`CONTRACT_UNCLASSIFIED`. The correction repaired it and the draft compiled.
+
+### Why the reviewer rejected the corrected case
+
+Four of the reviewer's five objections had one cause, reproduced offline from
+the saved draft:
+
+    t=1  sbp=71 spo2=80  -> rules [0, 1] both match
+    t=5  sbp=46 spo2=79  -> rules [0, 1] both match
+
+`deterioration_hypotension` (sbp < 85) asks for `visual.mottling = true` and
+marked sweating. `hypoxia_worse_breathing` (spo2 < 90), matching at the same
+minute, asks for neither. Both engines apply every matching rule in list order
+— `coupled_encounter.project` for `visual` and the examination, and
+`generated_engine._surface` for every field — so **the later rule silently
+overwrites the earlier one**. The preview showed a patient at a systolic
+pressure of 46 described as unmottled, and the reviewer rejected the case.
+
+Nothing in the schema, the compiler or the validators checked that two
+simultaneously satisfiable rules agree. The author writes independent rules; the
+engines treat them as cumulative.
+
+### Rejected locally instead
+
+`STATE_RULE_CONFLICT` reports two rules that can hold at once and disagree about
+the same finding, with both indices, both identifiers, both condition sets and
+the disagreeing values. Simultaneous satisfiability is decided by intersecting
+each field's interval, clipped to its supported physiological range, so rules
+that can only overlap outside `BOUNDS` are not reported and mutually exclusive
+thresholds stay free to describe opposite states. Overlap itself is allowed;
+only disagreement about the same finding is not.
+
+Replayed against the draft this run paid for, compilation now stops with
+
+    STATE_RULE_CONFLICT | engine.state_rules[1]
+      conflicting_rule_id: deterioration_hypotension   rule_id: hypoxia_worse_breathing
+      extremities Cold -> Cool | peripheral_perfusion severely impaired -> impaired
+      visual.diaphoresis marked -> mild | visual.mottling True -> False
+
+so that generation would have failed after the author with an actionable issue
+and spent no review.
+
+Neither paid run produced a launchable encounter. The first died of the budget,
+the second of a real clinical contradiction. What changed is that each failure
+is now cheaper, leaves evidence, and this class no longer reaches a paid review.
+Two runs are not a latency or acceptance benchmark.
+
 ## Validation and limits
 
 All 82 pytest files pass, run one file per process. On the published HEAD, 13
