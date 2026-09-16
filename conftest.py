@@ -69,3 +69,17 @@ def _no_deployment_key(monkeypatch):
     for name in ("OPENAI_API_KEY", "MRS_FACULTY_MODEL", "MRS_IMAGE_MODEL",
                  "MRS_IMAGE_REVIEW_MODEL", "MRS_GENERATOR_MODEL", "OPENAI_MODEL"):
         monkeypatch.delenv(name, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def _diagnostics_stay_out_of_the_project(tmp_path, monkeypatch):
+    """A test that exercises a failed generation must not write into the repo.
+
+    ``save_failure`` is wired into both launch paths, so the AppTest suite began
+    dropping stub-client diagnostics into ``local-data/generation_failures``
+    beside the real ones kept for replay.
+    """
+    import generation_diagnostics
+
+    monkeypatch.setattr(generation_diagnostics, "DIAGNOSTIC_DIR",
+                        tmp_path / "generation_failures")
