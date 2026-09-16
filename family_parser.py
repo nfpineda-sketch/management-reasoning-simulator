@@ -78,6 +78,30 @@ _COMMAND = re.compile(
     r"ajustar|cambiar|transfundir|transfundo|nebulizar|consultar|interconsultar|llamar|activar|"
     r"hospitalizar|ingresar|trasladar|intubar|intubo|ventilar|reevaluar|reevaluo|revalorar)\b\s*"
 )
+# Spanish orders are written in the infinitive ("iniciar"), the tu imperative
+# ("inicia") or the usted imperative ("inicie"). The verb sets below list one
+# form per verb, so a clause-initial imperative is read as its infinitive first.
+_ES_IMPERATIVES = {
+    "iniciar": "inicia comienza comience empieza empiece comenzar empezar",
+    "administrar": "administra", "dar": "da", "poner": "pon ponga", "colocar": "coloca coloque",
+    "aplicar": "aplica aplique", "infundir": "infunde infunda", "indicar": "indica",
+    "pedir": "pide pida", "solicitar": "solicita", "medir": "mide mida",
+    "controlar": "controla controle", "obtener": "obten obtenga", "realizar": "realiza realice",
+    "hacer": "haz haga", "suspender": "suspende suspenda", "detener": "deten detenga",
+    "aumentar": "aumenta aumente", "disminuir": "disminuye disminuya", "titular": "titula titule",
+    "continuar": "continua", "mantener": "manten mantenga", "ajustar": "ajusta ajuste",
+    "cambiar": "cambia cambie", "transfundir": "transfunde transfunda", "nebulizar": "nebuliza nebulice",
+    "consultar": "consulta", "llamar": "llama llame", "activar": "activa active",
+    "hospitalizar": "hospitaliza hospitalice", "ingresar": "ingresa ingrese",
+    "trasladar": "traslada traslade", "intubar": "intuba intube", "ventilar": "ventila ventile",
+    "reevaluar": "reevalua reevalue",
+}
+_ES_IMPERATIVE_FORMS = {form: verb for verb, forms in _ES_IMPERATIVES.items() for form in forms.split()}
+_ES_IMPERATIVE = re.compile(
+    r"(^|[.;\n,+:]\s*|\b(?:y|luego|and|then)\s+)(" + "|".join(sorted(_ES_IMPERATIVE_FORMS, key=len, reverse=True)) + r")\b"
+)
+
+
 _DIAG_VERBS = {
     "want", "order", "request", "obtain", "check", "measure", "send", "get", "perform", "do",
     "solicitar", "solicito", "solicite", "pedir", "pido", "medir", "mido", "controlar",
@@ -453,7 +477,7 @@ def parse_family_actions(text) -> dict:
     A conditional instruction is retained as a future plan, never executed now.
     """
     raw = str(text or "")
-    normalized = _normalize(raw)
+    normalized = _ES_IMPERATIVE.sub(lambda m: m.group(1) + _ES_IMPERATIVE_FORMS[m.group(2)], _normalize(raw))
     actions, future = [], []
     for sentence in re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized):
         sentence = sentence.strip()

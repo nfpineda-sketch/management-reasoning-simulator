@@ -5751,11 +5751,17 @@ def extract_explicit_reasoning(text):
         Nested here rather than a module function: several regressions load a named
         subset of app.py's functions through ast, so this must travel with its caller.
         """
-        _ES_ORDER_VERBS = (r"dar|administrar|iniciar|comenzar|poner|suspender|aumentar|subir|bajar|"
-                           r"disminuir|intubar|pedir|solicitar|reevaluar|revaluar|re-evaluar|controlar|"
+        _ES_ORDER_VERBS = (r"dar|administrar|administra|iniciar|inicia|comenzar|comienza|poner|pon|coloca|"
+                           r"suspender|suspende|aumentar|aumenta|subir|bajar|disminuir|disminuye|intubar|intuba|"
+                           r"pedir|pide|solicitar|solicita|reevaluar|reeval[uú]a|revaluar|re-evaluar|controlar|controla|"
                            r"volver\s+a\s+evaluar")
+        # "bajar precarga y poscarga" is part of a goal, not an order that ends it.
+        _ES_PHYSIOLOGY = (r"(?:(?:el|la|los|las)\s+)?(?:precarga|pos(?:t)?carga|presi[oó]n|pas?|pam|fc|fr|"
+                          r"frecuencia|trabajo|congesti[oó]n|oxigenaci[oó]n|perfusi[oó]n|lactato|hipoxemia|"
+                          r"spo2|saturaci[oó]n|resistencia|demanda|consumo)\b")
         _ES_TIME = r"(?:en|a\s+los|tras|despu[eé]s\s+de)\s+\d+(?:[.,]\d+)?\s*(?:min|mins|minutos?|h|horas?)\b"
-        stop = r"(?=\s*,?\s*(?:y\s+)?(?:" + _ES_ORDER_VERBS + r")\b|\s*,?\s*(?:y\s+)?(?:espero|anticipo)\b|[.;]|$)"
+        stop = (r"(?=\s*,?\s*(?:y\s+)?(?:" + _ES_ORDER_VERBS + r")\b(?!\s+" + _ES_PHYSIOLOGY + r")"
+                r"|\s*,?\s*(?:y\s+)?(?:espero|anticipo)\b|[.;]|$)")
 
         if "management_priority" not in reasoning:
             m = re.search(
@@ -5786,14 +5792,14 @@ def extract_explicit_reasoning(text):
         if "reassessment_target" not in reasoning:
             # "reevaluar SpO2 y FR en 15 minutos" and "reevaluar en 15 minutos SpO2 y FR".
             m = re.search(
-                r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú]o|controlar|volver\s+a\s+evaluar)\s+"
+                r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú][oae]|controlar|controla|volver\s+a\s+evaluar)\s+"
                 r"(?!" + _ES_TIME + r")(?:(?:el|la|los|las)\s+)?(.+?)(?=\s+" + _ES_TIME + r"|[.;]|$)",
                 joined, re.I,
             )
             target = _clean_reasoning_phrase(m.group(1)) if m else None
             if not target:
                 m = re.search(
-                    r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú]o|controlar)\s+" + _ES_TIME +
+                    r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú][oae]|controlar|controla)\s+" + _ES_TIME +
                     r"\s*,?\s*(?:(?:el|la|los|las)\s+)?(.+?)(?=[.;]|$)",
                     joined, re.I,
                 )
