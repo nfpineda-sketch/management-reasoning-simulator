@@ -373,22 +373,43 @@ def _overlaps(first, second, field):
     return lo < hi or (lo == hi and lo_in and hi_in)
 
 
+# Overlapping rules are a legitimate way to grade severity: a hypotension rule
+# and a worse-hypoxia rule may both hold, and last-write-wins then shows the
+# sicker description, which is what the author intends. The defect is the
+# opposite direction, where a later rule quietly makes the patient look better
+# while the earlier condition still holds. Only that is reported.
+_SEVERITY = {
+    "peripheral_perfusion": ("preserved", "mildly impaired", "impaired",
+                             "severely impaired", "critical"),
+    "mental_status": ("Alert", "Drowsy", "Obtunded", "Unresponsive"),
+    "extremities": ("Warm", "Warmer", "Cool", "Cold", "Very cold",
+                    "Mottled/cold", "Mottled/Cold"),
+    "work_of_breathing": ("Normal", "Mildly increased", "Increased",
+                          "Moderately increased", "Markedly increased", "Severe"),
+    "visual.mottling": (False, True),
+    "visual.diaphoresis": ("absent", "mild", "marked"),
+}
+
+
+def _improves(field, earlier, later):
+    """True when the later value describes a less severe state than the earlier."""
+    order = _SEVERITY.get(field)
+    if order is None or earlier not in order or later not in order:
+        return False
+    return order.index(later) < order.index(earlier)
+
+
 def _conflicting_outputs(first, second):
-    """Fields both rules write with different values, including visual sub-fields."""
+    """Shared findings where the later rule would silently improve the patient."""
     conflicts = []
     a, b = first.get("set") or {}, second.get("set") or {}
     for key in sorted(set(a) & set(b)):
         if key == "visual" and isinstance(a[key], dict) and isinstance(b[key], dict):
             for sub in sorted(set(a[key]) & set(b[key])):
-                if a[key][sub] != b[key][sub]:
+                if _improves(f"visual.{sub}", a[key][sub], b[key][sub]):
                     conflicts.append((f"visual.{sub}", a[key][sub], b[key][sub]))
-        elif a[key] != b[key]:
+        elif _improves(key, a[key], b[key]):
             conflicts.append((key, a[key], b[key]))
-    exam_a, exam_b = first.get("examination") or {}, second.get("examination") or {}
-    if isinstance(exam_a, dict) and isinstance(exam_b, dict):
-        for area in sorted(set(exam_a) & set(exam_b)):
-            if exam_a[area] != exam_b[area]:
-                conflicts.append((f"examination.{area}", exam_a[area], exam_b[area]))
     return conflicts
 
 
@@ -421,9 +442,11 @@ def _collect_state_rule_conflicts(rules, initialized, add):
             if not conflicts:
                 continue
             add("STATE_RULE_CONFLICT", f"engine.state_rules[{j}]",
-                "These observation rules can hold at the same time and disagree about what is "
-                "observed. The later rule silently overwrites the earlier one. Make their "
-                "conditions mutually exclusive, or make the shared findings identical.",
+                "These observation rules can hold at the same time, and because every matching "
+                "rule is applied in order the later one would show a LESS severe finding while "
+                "the earlier condition still holds. Grading severity downward across overlapping "
+                "rules hides deterioration. Make the conditions mutually exclusive, or make the "
+                "later rule at least as severe as the earlier one for the shared finding.",
                 conflicting_rule_index=i,
                 conflicting_rule_id=str(first.get("id", ""))[:160],
                 rule_id=str(second.get("id", ""))[:160],

@@ -171,6 +171,61 @@ class SimultaneousObservationRulesMustAgree(unittest.TestCase):
         rules[1]["examination"] = deepcopy(rules[0].get("examination") or [])
         compile_case(case)
 
+    def test_grading_severity_downward_across_overlapping_rules_is_rejected(self):
+        """A later rule must not quietly improve a patient still meeting the first."""
+        def mutate(case):
+            rules = case["engine"]["state_rules"]
+            rules[0] = {**rules[0], "id": "hypotension",
+                        "when": [{"field": "sbp", "operator": "lt", "value": 85}],
+                        "set": {**rules[0]["set"], "extremities": "Very cold",
+                                "mental_status": "Obtunded"},
+                        "examination": [{"area": "Neurological", "finding": "Obtunded; withdraws to pain."}]}
+            rules[1] = {**rules[1], "id": "hypoxia",
+                        "when": [{"field": "spo2", "operator": "lt", "value": 90}],
+                        "set": {**rules[1]["set"], "extremities": "Cool",
+                                "mental_status": "Drowsy"},
+                        "examination": [{"area": "Neurological", "finding": "Drowsy but rousable."}]}
+        codes, issues = codes_for(mutate)
+        self.assertIn("STATE_RULE_CONFLICT", codes)
+        fields = {d["field"] for i in issues if i["code"] == "STATE_RULE_CONFLICT"
+                  for d in i["details"]["disagreements"]}
+        self.assertTrue({"extremities", "mental_status"} <= fields, fields)
+
+    def test_grading_severity_upward_is_the_intended_pattern_and_is_accepted(self):
+        """A worse-hypoxia rule after a hypotension rule is how authors grade.
+
+        Rejecting this cost a paid correction that had nothing to repair: the
+        author's overlapping pair already showed the sicker description.
+        """
+        case = deepcopy(novel_payload())
+        rules = case["engine"]["state_rules"]
+        rules[0] = {**rules[0], "id": "hypotension_impairs_perfusion",
+                    "when": [{"field": "sbp", "operator": "lt", "value": 85}],
+                    "set": {**rules[0]["set"], "extremities": "Cool",
+                            "mental_status": "Drowsy", "peripheral_perfusion": "impaired"},
+                    "examination": [{"area": "Neurological", "finding": "Drowsy but rousable."}]}
+        rules[1] = {**rules[1], "id": "deterioration_hypoxia_worsens",
+                    "when": [{"field": "spo2", "operator": "lt", "value": 88}],
+                    "set": {**rules[1]["set"], "extremities": "Very cold",
+                            "mental_status": "Obtunded",
+                            "peripheral_perfusion": "severely impaired"},
+                    "examination": [{"area": "Neurological", "finding": "Obtunded; withdraws to pain."}]}
+        compile_case(case)
+
+    def test_unordered_findings_are_left_to_the_author(self):
+        """Expression or exam wording has no severity order to judge."""
+        case = deepcopy(novel_payload())
+        rules = case["engine"]["state_rules"]
+        # Identical apart from the one finding that has no severity order.
+        rules[0] = {**rules[0], "when": [{"field": "sbp", "operator": "lt", "value": 85}],
+                    "set": {**rules[0]["set"],
+                            "visual": {**rules[0]["set"]["visual"], "expression": "markedly uncomfortable"}}}
+        rules[1] = {**rules[1], "when": [{"field": "spo2", "operator": "lt", "value": 90}],
+                    "set": {**deepcopy(rules[0]["set"]),
+                            "visual": {**rules[0]["set"]["visual"], "expression": "uncomfortable"}},
+                    "examination": deepcopy(rules[0].get("examination") or [])}
+        compile_case(case)
+
     def test_rules_that_cannot_hold_together_are_not_reported(self):
         """Mutually exclusive thresholds may describe opposite states freely."""
         def mutate(case):
