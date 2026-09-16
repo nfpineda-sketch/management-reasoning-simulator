@@ -545,8 +545,17 @@ def _diagnostic(state, diagnostic, duration):
     elif diagnostic == "pocus":
         if state["engine_family"] == "pulmonary_edema":
             result["lungs"] = "Diffuse bilateral B-lines" if f["lung"] >= .65 else "Fewer but persistent bilateral B-lines"
-        if "ivc" in result and state["engine_family"] in {"pneumonia", "gi_bleed"} and f["fluid_delivered_ml"] + f["blood_delivered_units"] * 300 >= 500:
-            result["ivc"] = "IVC is less small than at presentation; interpret with the current support and the rest of the examination."
+        # Every bank case now documents the IVC, so this finally runs. It reports
+        # what is seen after volume, not what the resident should conclude.
+        volume = f["fluid_delivered_ml"] + f["blood_delivered_units"] * 300
+        if "ivc" in result and state["engine_family"] in {"pneumonia", "gi_bleed"}:
+            if volume >= 1500:
+                result["ivc"] = "2.0 cm; <50% inspiratory collapse"
+            elif volume >= 500:
+                result["ivc"] = "1.5 cm; about 50% inspiratory collapse"
+        if "ivc" in result and (f.get("niv") or f.get("invasive")):
+            result["ivc"] = (result["ivc"].split(";")[0]
+                             + "; respiratory variation not assessable during positive-pressure support")
     elif diagnostic in {"vbg", "abg"}:
         respiratory_failure = state["engine_family"] in {"asthma", "opioid"}
         pco2 = float(result.get("pco2_mm_hg", result.get("paco2_mm_hg", result.get("pco2_mmhg", result.get("pco2", 40)))))

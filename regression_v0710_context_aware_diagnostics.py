@@ -56,14 +56,16 @@ assert parsed["reasoning"]["management_priority"] == "improve perfusion"
 spontaneous = namespace["build_ps002_state"]()
 spontaneous["hidden"]["preload_state"] = 0.40
 spontaneous_pocus = namespace["pocus_transition"](spontaneous)["result"]
-assert "with >50% respiratory variation" in spontaneous_pocus["ivc"], spontaneous_pocus
+# Findings, not interpretation: diameter and collapse, not a preload verdict.
+assert ">50% inspiratory collapse" in spontaneous_pocus["ivc"], spontaneous_pocus
 
 niv = namespace["build_ps002_state"]()
 niv["hidden"]["preload_state"] = 0.40
 niv["treatments"].update({"niv": True, "niv_mode": "BiPAP", "niv_ipap_cmh2o": 18.0, "niv_epap_cmh2o": 6.0})
 niv_pocus = namespace["pocus_transition"](niv)["result"]
 assert "noninvasive positive-pressure support" in niv_pocus["ivc"], niv_pocus
-assert "standalone preload marker" in niv_pocus["ivc"], niv_pocus
+assert "respiratory variation not assessable during positive-pressure support" in niv_pocus["ivc"], niv_pocus
+assert "preload" not in niv_pocus["ivc"], niv_pocus
 
 ventilated = namespace["build_ps002_state"]()
 ventilated["hidden"]["preload_state"] = 0.40
@@ -78,8 +80,9 @@ pocus_summary = namespace["pocus_transition"](ventilated)
 ivc_text = pocus_summary["result"]["ivc"]
 assert "positive-pressure ventilation" in ivc_text, ivc_text
 assert "PEEP 14 cm H₂O" in ivc_text, ivc_text
-assert "standalone preload marker" in ivc_text, ivc_text
-assert ">50% respiratory variation" not in ivc_text, ivc_text
+assert "respiratory variation not assessable during positive-pressure support" in ivc_text, ivc_text
+assert ">50% inspiratory collapse" not in ivc_text, ivc_text
+assert "preload" not in ivc_text, ivc_text
 
 
 # Results belong to the same decision's Observed response, including the last
@@ -93,7 +96,7 @@ event = {
 diagnostic_results = namespace["_trace_diagnostic_results"](event)
 rendered = " ".join(text for _, text in diagnostic_results)
 assert len(diagnostic_results) == 3, diagnostic_results
-assert "POCUS:" in rendered and "PEEP 14 cm H₂O" in rendered, rendered
+assert "POCUS · sample obtained" in rendered and "PEEP 14 cm H₂O" in rendered, rendered
 assert "Lactate:" in rendered and "mmol/L" in rendered, rendered
 assert "ABG:" in rendered and "P/F ratio" in rendered, rendered
 assert all(time_text.startswith("01:") for time_text, _ in diagnostic_results), diagnostic_results

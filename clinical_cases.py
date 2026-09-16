@@ -32,6 +32,104 @@ INVESTIGATION_IDS = (
 )
 
 
+# ---------------------------------------------------------------------------
+# POCUS findings -- DRAFT PENDING FACULTY REVIEW
+#
+# Every case reports every structure of the faculty's emergency POCUS protocol,
+# normal findings included, in the order pocus_report.SECTIONS renders them.
+# Findings, not interpretation: nothing here says "preload responsive" or
+# "tamponade". The LV is qualitative; the IVC keeps diameter and collapse.
+#
+# These were drafted to be consistent with each case's diagnosis, vital signs,
+# history and examination. They have not been clinically reviewed. See
+# docs/POCUS_DRAFT_FINDINGS.md, which lists what to check.
+# ---------------------------------------------------------------------------
+POCUS_DRAFT_PENDING_FACULTY_REVIEW = True
+
+_RV_NORMAL = "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign"
+_PERICARDIUM_NORMAL = "No pericardial effusion"
+_SLIDING_NORMAL = "Present bilaterally; no pneumothorax"
+_B_LINES_NONE = "No B-lines; A-line pattern bilaterally"
+_CONSOLIDATION_NONE = "No consolidation or pleural effusion"
+_AORTA_NORMAL = {
+    "aorta_root": "Not dilated",
+    "aorta_descending": "Not dilated in the visible segment",
+    "aorta_abdominal": "Normal calibre from the diaphragm to the iliac bifurcation",
+}
+_VEINS_COMPRESSIBLE = {
+    "dvt_femoral": "Compressible bilaterally",
+    "dvt_popliteal": "Compressible bilaterally",
+}
+
+
+def _pocus(*, lv, ivc, rv=_RV_NORMAL, pericardium=_PERICARDIUM_NORMAL,
+           lung_sliding=_SLIDING_NORMAL, lungs=_B_LINES_NONE,
+           lung_consolidation=_CONSOLIDATION_NONE, aorta=None, veins=None):
+    return {"lv": lv, "rv": rv, "pericardium": pericardium, "ivc": ivc,
+            "lung_sliding": lung_sliding, "lungs": lungs,
+            "lung_consolidation": lung_consolidation,
+            **(aorta or _AORTA_NORMAL), **(veins or _VEINS_COMPRESSIBLE)}
+
+
+POCUS = {
+    "pneumonia": (
+        _pocus(lv="Preserved, vigorous contraction",
+               ivc="1.0 cm; >50% inspiratory collapse",
+               lungs="Focal B-lines at the right base; no diffuse bilateral B-lines",
+               lung_consolidation="Right basal subpleural consolidation with dynamic air bronchograms; no pleural effusion"),
+        _pocus(lv="Preserved contraction",
+               ivc="1.2 cm; >50% inspiratory collapse",
+               lungs="Focal B-lines at the left base; no diffuse bilateral B-lines",
+               lung_consolidation="Left basal consolidation with air bronchograms; no pleural effusion"),
+    ),
+    "pulmonary_edema": (
+        _pocus(lv="Moderately reduced global contraction",
+               ivc="2.4 cm; <50% inspiratory collapse",
+               lungs="Diffuse bilateral B-lines in the anterior and lateral zones"),
+        _pocus(lv="Severely reduced global contraction",
+               ivc="2.5 cm; minimal inspiratory collapse",
+               lungs="Diffuse bilateral B-lines in the anterior and lateral zones",
+               lung_consolidation="No consolidation; small bilateral pleural effusions"),
+    ),
+    "acs": (
+        _pocus(lv="Reduced contraction of the inferior wall; the other walls contract normally",
+               rv="Smaller than the LV; RV free wall contracts normally; no septal flattening (no D-sign); no McConnell sign",
+               ivc="1.8 cm; about 50% inspiratory collapse"),
+        _pocus(lv="Mild hypokinesis of the inferolateral wall; global contraction otherwise preserved",
+               ivc="1.7 cm; about 50% inspiratory collapse"),
+    ),
+    "pulmonary_embolism": (
+        _pocus(lv="Preserved contraction",
+               rv="Mildly enlarged, approximately equal to the LV; no septal flattening (no D-sign); no McConnell sign",
+               ivc="2.0 cm; <50% inspiratory collapse",
+               veins={"dvt_femoral": "Compressible bilaterally",
+                      "dvt_popliteal": "Non-compressible on the operated (symptomatic) side, with echogenic intraluminal material; compressible on the other side"}),
+        _pocus(lv="Small, underfilled cavity with vigorous contraction",
+               rv="Larger than the LV; septal flattening with a D-shaped LV; reduced free-wall contraction with apical sparing (McConnell sign)",
+               ivc="2.3 cm; minimal inspiratory collapse",
+               veins={"dvt_femoral": "Compressible bilaterally",
+                      "dvt_popliteal": "Left popliteal vein non-compressible; right popliteal vein compressible"}),
+    ),
+    "asthma": (
+        _pocus(lv="Preserved contraction", ivc="1.4 cm; >50% inspiratory collapse"),
+        _pocus(lv="Preserved contraction", ivc="1.6 cm; >50% inspiratory collapse"),
+    ),
+    "gi_bleed": (
+        _pocus(lv="Small cavity with hyperdynamic contraction; near-obliteration of the cavity in systole",
+               ivc="0.9 cm; near-complete inspiratory collapse"),
+        _pocus(lv="Hyperdynamic contraction", ivc="1.1 cm; >50% inspiratory collapse"),
+    ),
+    "hypoglycemia": (
+        _pocus(lv="Preserved contraction", ivc="1.7 cm; about 50% inspiratory collapse"),
+        _pocus(lv="Preserved contraction", ivc="1.8 cm; about 50% inspiratory collapse"),
+    ),
+    "opioid": (
+        _pocus(lv="Preserved contraction", ivc="1.8 cm; minimal respiratory variation with shallow breaths"),
+        _pocus(lv="Preserved contraction", ivc="1.9 cm; minimal respiratory variation with shallow breaths"),
+    ),
+}
+
+
 def _observable(sbp, dbp, hr, spo2, rr, *, wob="Normal", crt=2,
                 extremities="Warm", mental="Alert", temperature=36.8,
                 glucose=110, perfusion="preserved"):
@@ -179,8 +277,7 @@ FAMILIES["pneumonia"]["variants"].append(_case(
      "Neurological": "Awake, oriented and moving all limbs symmetrically."}, _o,
     _investigations(_o, lactate=3.8, hemoglobin=12.2, wbc=19.4, creatinine=1.4,
         abg=(7.42, 31, 58), vbg=(7.38, 38),
-        pocus={"lungs": "Right basal subpleural consolidation with dynamic air bronchograms; no diffuse bilateral B-lines.",
-               "lv": "Preserved contraction.", "rv": "No enlargement."},
+        pocus=POCUS["pneumonia"][0],
         chest_xray="Right lower-lobe air-space opacity. No pulmonary edema or pneumothorax.", troponin=12),
     "Community-acquired pneumonia with hypoxemia and impaired perfusion",
     ["Focal pulmonary findings", "Fever and productive cough", "Hypoxemia and delayed capillary refill"],
@@ -209,8 +306,7 @@ FAMILIES["pneumonia"]["variants"].append(_case(
      "Neurological": "Opens eyes to voice, follows simple commands slowly, and moves all limbs without an obvious focal deficit."}, _o,
     _investigations(_o, lactate=3.1, hemoglobin=13.1, wbc=15.6, creatinine=1.6,
         abg=(7.41, 33, 62), vbg=(7.37, 40),
-        pocus={"lungs": "Focal left basal consolidation with air bronchograms; no diffuse bilateral B-lines.",
-               "rv": "No enlargement.", "pericardium": "No effusion."},
+        pocus=POCUS["pneumonia"][1],
         chest_xray="Left lower-lobe consolidation without diffuse edema.", troponin=17),
     "Pneumonia presenting with acute encephalopathy and impaired perfusion",
     ["New tachypnea and hypoxemia", "Focal consolidation", "New mental-status change from an independent baseline"],
@@ -240,9 +336,7 @@ FAMILIES["pulmonary_edema"]["variants"].append(_case(
      "Neurological": "Awake, oriented and distressed; answers are brief because of breathlessness."}, _o,
     _investigations(_o, lactate=2.8, hemoglobin=14.3, wbc=10.8, creatinine=1.2,
         abg=(7.29, 49, 46), vbg=(7.25, 56),
-        pocus={"lungs": "Diffuse bilateral B-lines with bilateral lung sliding.",
-               "lv": "Moderately reduced systolic contraction.", "rv": "No enlargement.",
-               "pericardium": "No large effusion."},
+        pocus=POCUS["pulmonary_edema"][0],
         chest_xray="Bilateral perihilar air-space and interstitial opacities with vascular congestion.", troponin=28),
     "Hypertensive acute cardiogenic pulmonary edema",
     ["Marked hypertension", "Orthopnea and diffuse congestion", "Severe hypoxemia"],
@@ -271,8 +365,7 @@ FAMILIES["pulmonary_edema"]["variants"].append(_case(
      "Neurological": "Awake and oriented, speaking in short phrases."}, _o,
     _investigations(_o, lactate=2.3, hemoglobin=11.7, wbc=9.3, creatinine=1.8,
         abg=(7.34, 43, 51), vbg=(7.30, 50), bun=34,
-        pocus={"lungs": "Diffuse bilateral B-lines and small bilateral pleural effusions.",
-               "lv": "Globally reduced systolic contraction.", "pericardium": "No large effusion."},
+        pocus=POCUS["pulmonary_edema"][1],
         chest_xray="Cardiomegaly, bilateral vascular and interstitial congestion, and small pleural effusions.", troponin=35),
     "Acute decompensated systolic heart failure with pulmonary edema",
     ["Orthopnea and edema", "Diffuse B-lines with reduced LV contraction", "Recent interruption of diuretic therapy"],
@@ -304,8 +397,7 @@ FAMILIES["acs"]["variants"].append(_case(
      "Neurological": "Awake, oriented and moving all limbs normally."}, _o,
     _investigations(_o, lactate=2.1, hemoglobin=14.1, wbc=10.5, creatinine=1.0,
         abg=(7.43, 35, 83), vbg=(7.39, 42),
-        pocus={"lv": "Inferior wall contraction is reduced.", "lungs": "No diffuse B-lines.",
-               "rv": "No marked enlargement.", "pericardium": "No effusion."},
+        pocus=POCUS["acs"][0],
         chest_xray="No focal consolidation or pulmonary edema.", troponin=95),
     "Inferior ST-elevation myocardial infarction",
     ["Persistent exertional discomfort with autonomic symptoms", "Inferior ST elevation with reciprocal changes", "Regional LV wall-motion abnormality"],
@@ -333,8 +425,7 @@ FAMILIES["acs"]["variants"].append(_case(
      "Neurological": "Alert, oriented and conversant."}, _o,
     _investigations(_o, lactate=1.6, hemoglobin=12.8, wbc=9.6, creatinine=1.1,
         abg=(7.43, 35, 78), vbg=(7.39, 42),
-        pocus={"lv": "Mild inferolateral regional hypokinesis.", "lungs": "No diffuse B-lines.",
-               "rv": "No enlargement.", "pericardium": "No effusion."},
+        pocus=POCUS["acs"][1],
         chest_xray="No acute focal pulmonary abnormality.", troponin=180),
     "Non-ST-elevation acute coronary syndrome",
     ["Persistent ischemic symptoms", "ST depression", "Elevated troponin requiring contextual and serial assessment"],
@@ -367,9 +458,7 @@ FAMILIES["pulmonary_embolism"]["variants"].append(_case(
      "Extremities": "Unilateral calf swelling and tenderness on the operated side."}, _o,
     _investigations(_o, lactate=2.0, hemoglobin=12.6, wbc=10.2, creatinine=.8,
         abg=(7.47, 30, 59), vbg=(7.43, 37),
-        pocus={"rv": "Mild enlargement.", "lv": "Preserved contraction.",
-               "lungs": "Bilateral lung sliding and no diffuse B-lines.",
-               "venous_compression": "Noncompressible proximal vein in the symptomatic leg."},
+        pocus=POCUS["pulmonary_embolism"][0],
         chest_xray="No focal consolidation, edema or pneumothorax.", troponin=31,
         ctpa="Acute lobar and segmental filling defects in the right and left pulmonary arteries. Mild RV enlargement."),
     "Acute pulmonary embolism with hypoxemia, initially without hypotension",
@@ -399,9 +488,7 @@ FAMILIES["pulmonary_embolism"]["variants"].append(_case(
      "Extremities": "Left calf swelling and tenderness."}, _o,
     _investigations(_o, lactate=4.8, hemoglobin=11.6, wbc=8.7, creatinine=1.3,
         abg=(7.43, 28, 55), vbg=(7.39, 35),
-        pocus={"rv": "Dilated with reduced systolic contraction and septal flattening.",
-               "lv": "Small LV cavity.", "pericardium": "No large effusion.",
-               "lungs": "No diffuse B-lines."},
+        pocus=POCUS["pulmonary_embolism"][1],
         chest_xray="No focal consolidation or pulmonary edema.", troponin=76,
         ctpa="Extensive acute bilateral main and lobar pulmonary arterial filling defects with RV enlargement and septal flattening."),
     "High-risk pulmonary embolism with obstructive shock",
@@ -432,7 +519,7 @@ FAMILIES["asthma"]["variants"].append(_case(
      "Neurological": "Awake, oriented and cooperative, but speech is limited by breathing."}, _o,
     _investigations(_o, lactate=2.1, hemoglobin=13.0, wbc=9.8, creatinine=.8,
         abg=(7.45, 31, 59), vbg=(7.41, 38),
-        pocus="Bilateral lung sliding; no focal consolidation, diffuse B-lines, RV enlargement or pericardial effusion.",
+        pocus=POCUS["asthma"][0],
         chest_xray="Hyperinflation without focal consolidation or pneumothorax."),
     "Acute severe asthma exacerbation",
     ["Prolonged expiration and widespread wheeze", "Reduced peak expiratory flow", "Controller interruption and repeated reliever use"],
@@ -459,7 +546,7 @@ FAMILIES["asthma"]["variants"].append(_case(
      "Neurological": "Drowsy, opens eyes to voice and follows simple commands briefly; no lateralizing motor deficit."}, _o,
     _investigations(_o, lactate=2.6, hemoglobin=14.2, wbc=10.6, creatinine=1.0,
         abg=(7.30, 51, 57), vbg=(7.26, 58),
-        pocus="Bilateral lung sliding without diffuse B-lines, focal consolidation or large pericardial effusion.",
+        pocus=POCUS["asthma"][1],
         chest_xray="Hyperinflation without pneumothorax or focal air-space opacity."),
     "Life-threatening asthma with fatigue and hypercapnia",
     ["Reduced air movement despite persistent effort", "Drowsiness", "Hypercapnia with respiratory acidemia"],
@@ -491,8 +578,7 @@ FAMILIES["gi_bleed"]["variants"].append(_case(
      "Neurological": "Awake and oriented, reporting persistent faintness."}, _o,
     _investigations(_o, lactate=4.4, hemoglobin=6.7, wbc=11.1, creatinine=1.3, bun=48,
         abg=(7.37, 31, 91), vbg=(7.33, 38),
-        pocus={"lv": "Small, hyperdynamic LV.", "lungs": "No diffuse B-lines.",
-               "rv": "No enlargement.", "pericardium": "No effusion."},
+        pocus=POCUS["gi_bleed"][0],
         chest_xray="No focal consolidation or pulmonary edema.", troponin=16),
     "Upper gastrointestinal bleeding with hemorrhagic hypoperfusion",
     ["Melena", "Low hemoglobin", "Delayed refill and hypotension despite normal oxygen saturation"],
@@ -521,8 +607,7 @@ FAMILIES["gi_bleed"]["variants"].append(_case(
      "Neurological": "Alert, oriented and moving all limbs symmetrically."}, _o,
     _investigations(_o, lactate=3.4, hemoglobin=6.4, wbc=10.3, creatinine=1.2, bun=43,
         abg=(7.40, 33, 84), vbg=(7.36, 40),
-        pocus={"lv": "Hyperdynamic LV.", "lungs": "No diffuse B-lines.",
-               "rv": "No enlargement.", "pericardium": "No effusion."},
+        pocus=POCUS["gi_bleed"][1],
         chest_xray="No acute cardiopulmonary abnormality.", troponin=17),
     "Upper gastrointestinal bleeding presenting with symptomatic anemia and hypoperfusion",
     ["Melena on targeted history and examination", "Severe anemia", "Postural symptoms with delayed refill"],
@@ -552,7 +637,7 @@ FAMILIES["hypoglycemia"]["variants"].append(_case(
      "Neurological": "Drowsy and confused, but opens eyes to voice; speech is slow and all limbs move symmetrically. Pupils are equal and reactive."}, _o,
     _investigations(_o, lactate=1.7, hemoglobin=14.8, wbc=8.2, creatinine=.9,
         abg=(7.41, 39, 96), vbg=(7.37, 46),
-        pocus="Preserved biventricular contraction; no pericardial effusion or diffuse B-lines.",
+        pocus=POCUS["hypoglycemia"][0],
         chest_xray="No acute pulmonary abnormality.", troponin=6),
     "Severe insulin-associated hypoglycemia with neuroglycopenia",
     ["Low bedside glucose", "Autonomic symptoms before confusion", "Insulin-meal mismatch"],
@@ -580,7 +665,7 @@ FAMILIES["hypoglycemia"]["variants"].append(_case(
      "Neurological": "Opens eyes only briefly to a firm stimulus and localizes with both arms. Pupils are equal and reactive."}, _o,
     _investigations(_o, lactate=1.8, hemoglobin=11.8, wbc=8.6, creatinine=2.1, bun=36,
         abg=(7.39, 40, 91), vbg=(7.35, 47),
-        pocus="Preserved biventricular contraction without diffuse B-lines or pericardial effusion.",
+        pocus=POCUS["hypoglycemia"][1],
         chest_xray="No focal consolidation or edema.", troponin=12),
     "Sulfonylurea-associated hypoglycemia with recurrence risk",
     ["Low bedside glucose", "Continued sulfonylurea with reduced intake", "Impaired renal function"],
@@ -611,7 +696,7 @@ FAMILIES["opioid"]["variants"].append(_case(
      "Neurological": "Obtunded, with small reactive pupils and brief bilateral withdrawal to firm stimulation; no visible head injury."}, _o,
     _investigations(_o, lactate=2.6, hemoglobin=14.5, wbc=8.9, creatinine=1.0,
         abg=(7.21, 69, 45), vbg=(7.17, 76),
-        pocus="Preserved biventricular contraction; no diffuse B-lines or pericardial effusion.",
+        pocus=POCUS["opioid"][0],
         chest_xray="No focal infiltrate or pulmonary edema.", troponin=7),
     "Opioid toxidrome with respiratory depression following an uncertain tablet exposure",
     ["Slow shallow ventilation", "Reduced responsiveness with small pupils", "Recent uncertain medication exposure"],
@@ -639,7 +724,7 @@ FAMILIES["opioid"]["variants"].append(_case(
      "Neurological": "Obtunded with small reactive pupils, briefly withdrawing both arms to a firm stimulus."}, _o,
     _investigations(_o, lactate=2.2, hemoglobin=12.4, wbc=8.1, creatinine=2.2, bun=38,
         abg=(7.25, 61, 50), vbg=(7.21, 68),
-        pocus="Preserved biventricular contraction without diffuse B-lines or large pericardial effusion.",
+        pocus=POCUS["opioid"][1],
         chest_xray="No focal consolidation or edema.", troponin=11),
     "Long-acting opioid-associated ventilatory depression with recurrence risk",
     ["Hypoventilation and reduced responsiveness", "Long-acting opioid exposure", "Impaired renal function"],

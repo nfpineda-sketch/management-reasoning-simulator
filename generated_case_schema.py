@@ -94,7 +94,9 @@ RESPONSE_RULE = obj({
     "max_exposure": {"type": "number", "minimum": .1, "maximum": 5},
     "delta": NUMERIC_PAIRS, "explanation": TEXT,
 })
-RESULT_FIELDS = ("report", "lv", "rv", "pericardium", "ivc", "lungs", "ph", "pco2_mm_hg", "paco2_mm_hg",
+RESULT_FIELDS = ("report", "lv", "rv", "pericardium", "ivc", "lungs",
+                 "lung_sliding", "lung_consolidation", "aorta_root", "aorta_descending",
+                 "aorta_abdominal", "dvt_femoral", "dvt_popliteal", "ph", "pco2_mm_hg", "paco2_mm_hg",
                  "pao2_mm_hg", "bicarbonate_mmol_l", "lactate_mmol_l", "fio2_percent", "sao2_percent",
                  "wbc_k_ul", "hemoglobin_g_dl", "platelets_k_ul", "sodium_mmol_l", "potassium_mmol_l",
                  "bun_mg_dl", "creatinine_mg_dl", "glucose_mg_dl", "temperature_c", "value_ng_l",
@@ -245,6 +247,18 @@ def collect_clinical_issues(case):
     studies = case["investigations"]
     for study_id in sorted({"poc_glucose", "temperature", "basic_labs", "pocus"} - set(studies)):
         add("ESSENTIAL_STUDY_MISSING", "case.investigations", "The case is missing an essential source investigation.", study_id=study_id)
+    if "pocus" in studies:
+        # The faculty's emergency POCUS protocol reports every structure, normal
+        # findings included, so a generated case must document all of them.
+        from pocus_report import missing_sections
+        missing = missing_sections(studies["pocus"]["result"])
+        if missing:
+            add("POCUS_INCOMPLETE", "case.investigations.pocus.result",
+                "POCUS must document every structure of the protocol, normal findings included: "
+                "LV contractility, RV size and relation to LV, pericardium, IVC, pleural sliding, "
+                "B-lines, consolidation and effusion, aortic root, descending and abdominal aorta, "
+                "and femoral and popliteal vein compression. Report findings, not interpretation.",
+                missing_fields=missing)
     for study_id, measurement in (("poc_glucose", "glucose_mg_dl"), ("temperature", "temperature_c")):
         if study_id in studies and measurement not in studies[study_id]["result"]:
             add("BEDSIDE_MEASUREMENT_MISSING", f"case.investigations.{study_id}.result", "Essential bedside studies require an explicit numerical measurement.", field=measurement)

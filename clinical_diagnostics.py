@@ -31,52 +31,68 @@ def pocus_transition(state, requested_delay_min=None):
         cardiac = clamp(cardiac * current_contractility, 0.0, 1.35)
 
     if cardiac >= 0.68:
-        lv = "preserved to hyperdynamic LV systolic function"
+        lv = "Preserved to hyperdynamic contraction"
     elif cardiac >= 0.48:
-        lv = "mildly reduced LV systolic function"
+        lv = "Mildly reduced global contraction"
     else:
-        lv = "moderately to severely reduced LV systolic function"
+        lv = "Moderately to severely reduced global contraction"
 
     if preload < 0.48:
         ivc_diameter = 1.4
-        spontaneous_variation = ">50% respiratory variation"
+        spontaneous_variation = ">50% inspiratory collapse"
     elif preload < 0.65:
         ivc_diameter = 1.8
-        spontaneous_variation = "moderate respiratory variation"
+        spontaneous_variation = "about 50% inspiratory collapse"
     else:
         ivc_diameter = 2.1
-        spontaneous_variation = "limited respiratory variation"
+        spontaneous_variation = "<50% inspiratory collapse"
 
+    # Findings, not interpretation: report what the scan shows and whether the
+    # variation can be assessed, never what it implies about preload.
     if tr.get("invasive_ventilation"):
         peep = float(tr.get("ventilator_peep_cmh2o") or 5.0)
         ivc = (
-            f"IVC approximately {ivc_diameter:g} cm during positive-pressure ventilation "
-            f"(PEEP {peep:g} cm H₂O); respiratory variation is not interpreted as a standalone preload marker"
+            f"{ivc_diameter:g} cm during positive-pressure ventilation (PEEP {peep:g} cm H₂O); "
+            "respiratory variation not assessable during positive-pressure support"
         )
     elif tr.get("niv"):
         ivc = (
-            f"IVC approximately {ivc_diameter:g} cm during noninvasive positive-pressure support; "
-            "respiratory variation is not interpreted as a standalone preload marker"
+            f"{ivc_diameter:g} cm during noninvasive positive-pressure support; "
+            "respiratory variation not assessable during positive-pressure support"
         )
     else:
-        ivc = f"IVC approximately {ivc_diameter:g} cm with {spontaneous_variation}"
+        ivc = f"{ivc_diameter:g} cm; {spontaneous_variation}"
 
     if congestion >= 0.48:
-        lungs = "diffuse bilateral B-lines"
+        lungs = "Diffuse bilateral B-lines in the anterior and lateral zones"
     elif congestion >= 0.20:
-        lungs = "scattered bilateral B-lines"
+        lungs = "Scattered bilateral B-lines"
     else:
-        lungs = "no diffuse B-line pattern"
+        lungs = "No B-lines; A-line pattern bilaterally"
 
     delay = 2 if requested_delay_min is None else max(0, int(requested_delay_min))
     result = {
         "time_min": _diagnostic_timestamp(state, delay),
         "lv": lv,
-        "rv": "RV not dilated; no clear RV pressure-overload pattern",
-        "pericardium": "no pericardial effusion",
+        "rv": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+        "pericardium": "No pericardial effusion",
         "ivc": ivc,
         "lungs": lungs,
     }
+    # PS001 has no authored imaging, so its structures that do not evolve with
+    # physiology are stated here -- a urinary-source sepsis without thoracic,
+    # aortic or venous pathology. DRAFT PENDING FACULTY REVIEW. Any other caller
+    # supplies its own authored findings and gets nothing filled in as normal.
+    if state.get("case_id") == "PS001":
+        result.update({
+            "lung_sliding": "Present bilaterally; no pneumothorax",
+            "lung_consolidation": "No consolidation or pleural effusion",
+            "aorta_root": "Not dilated",
+            "aorta_descending": "Not dilated in the visible segment",
+            "aorta_abdominal": "Normal calibre from the diaphragm to the iliac bifurcation",
+            "dvt_femoral": "Compressible bilaterally",
+            "dvt_popliteal": "Compressible bilaterally",
+        })
     d["pocus"] = result
     return {"duration_min": delay, "diagnostic_type": "pocus", "result": deepcopy(result)}
 

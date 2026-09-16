@@ -29,6 +29,10 @@ FIELDS = {
 
 def format_result(test_id, result):
     label = TEST_LABELS.get(test_id, "Investigation")
+    if test_id == "pocus":
+        # Every POCUS report uses the same structure, normal findings included.
+        from pocus_report import format_pocus
+        return format_pocus(result, heading=label)
     parts = [str(result["report"])] if isinstance(result.get("report"), str) else []
     if type(result.get("collected_at_min")) in {int, float}:
         parts.insert(0, f"Sample obtained at minute {result['collected_at_min']}")

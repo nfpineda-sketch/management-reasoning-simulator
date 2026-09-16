@@ -875,27 +875,13 @@ def _trace_state_text(snapshot):
         )
     pocus = d.get("pocus")
     if pocus:
-        pocus_bits = []
-        lv = str(pocus.get("lv") or "").lower()
-        if "hyperdynamic" in lv:
-            pocus_bits.append("hyperdynamic LV")
-        elif "preserved" in lv:
-            pocus_bits.append("preserved LV systolic function")
-        elif lv:
-            pocus_bits.append(str(pocus.get("lv")))
-        rv = str(pocus.get("rv") or "").lower()
-        if "not dilated" in rv:
-            pocus_bits.append("no RV dilation")
-        pericardium = str(pocus.get("pericardium") or "").lower()
-        if "no pericardial effusion" in pericardium:
-            pocus_bits.append("no pericardial effusion")
-        lungs = str(pocus.get("lungs") or "").lower()
-        if "no diffuse b-line" in lungs:
-            pocus_bits.append("no diffuse B-lines")
-        if pocus_bits:
-            parts.append("POCUS: " + ", ".join(pocus_bits))
-        else:
-            parts.append("POCUS result available")
+        # The trace records what the resident knew when deciding, so it carries
+        # the findings as reported rather than a summary guessed from wording.
+        # The old summary matched phrases, dropped RV and B-lines when the
+        # wording changed, and never included the IVC at all.
+        from pocus_report import format_pocus
+        sections = format_pocus(pocus).splitlines()[1:]
+        parts.append("POCUS: " + " | ".join(sections))
     labs = d.get("basic_labs")
     if labs:
         lab_bits = []
@@ -2579,7 +2565,8 @@ def _review_markdown(payload):
                 lines.append(f'- **{label}:** {old} → {new}')
         if diagnostics:
             for time_text, result_text in diagnostics:
-                lines.append(f'- **Diagnostic result · {time_text}:** {result_text}')
+                # Keep a multi-line report such as POCUS inside its list item.
+                lines.append(f'- **Diagnostic result · {time_text}:** ' + str(result_text).replace("\n", "  \n  "))
         if not deltas and not diagnostics:
             lines.append("*No material observable change recorded.*")
         lines.append("")
@@ -2981,7 +2968,7 @@ def _review_pdf(payload):
                 response_story.append(Paragraph(f"- <b>{safe(label)}:</b> {safe(old)} -&gt; {safe(new)}", body_style))
         if diagnostics:
             for time_text, result_text in diagnostics:
-                response_story.append(Paragraph(f"- <b>Diagnostic result | {safe(time_text)}:</b> {safe(result_text)}", body_style))
+                response_story.append(Paragraph(f"- <b>Diagnostic result | {safe(time_text)}:</b> " + safe(result_text).replace("\n", "<br/>"), body_style))
         if not deltas and not diagnostics:
             response_story.append(Paragraph("<i>No material observable change recorded.</i>", body_style))
         story.append(KeepTogether(response_story))
@@ -4027,7 +4014,7 @@ def render_management_trace(trace):
         diagnostics = _trace_diagnostic_results(event)
         clinical_items = "".join(f'<li class="mt-delta"><strong>{html.escape(label)}</strong>: {html.escape(before)} <span class="mt-arrow">→</span> {html.escape(after)}</li>' for label, before, after in deltas)
         delta_html = f'<div class="mt-response-group"><div class="mt-response-title">Clinical response</div><ul class="mt-deltas">{clinical_items}</ul></div>' if clinical_items else ""
-        diagnostic_items = "".join(f'<div class="mt-result"><span class="mt-result-time">Diagnostic result · {html.escape(time_text)}:</span><span class="mt-result-text">{html.escape(result_text)}</span></div>' for time_text, result_text in diagnostics)
+        diagnostic_items = "".join(f'<div class="mt-result"><span class="mt-result-time">Diagnostic result · {html.escape(time_text)}:</span><span class="mt-result-text">{html.escape(result_text).replace(chr(10), "<br>")}</span></div>' for time_text, result_text in diagnostics)
         diagnostic_html = f'<div class="mt-response-group"><div class="mt-response-title">New diagnostic information</div><div class="mt-result-list">{diagnostic_items}</div></div>' if diagnostic_items else ""
         if not delta_html and not diagnostic_html:
             delta_html = '<span class="mt-muted">No material observable change recorded.</span>'
@@ -7215,12 +7202,8 @@ def format_diagnostic_summary(summary):
         from family_reports import format_result
         return format_result(dtype, r)
     if dtype == "pocus":
-        return (
-            "POCUS: " + "; ".join([
-                r.get("lv", ""), r.get("rv", ""), r.get("pericardium", ""),
-                r.get("ivc", ""), r.get("lungs", "")
-            ])
-        )
+        from pocus_report import format_pocus
+        return format_pocus(r)
     if dtype == "lactate":
         return f'Lactate: {r.get("value_mmol_l", 0):.1f} mmol/L.'
     if dtype == "vbg":
@@ -8124,7 +8107,9 @@ def render_event(event):
                 st.markdown(_vitals_grid_html(snapshot, variant="response"), unsafe_allow_html=True)
         return
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
-    st.write(event["text"])
+    # A structured report such as POCUS uses one line per section; markdown would
+    # otherwise run the lines together.
+    st.write(str(event["text"]).replace("\n", "  \n"))
 
 st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
 if faculty_access():
@@ -8399,7 +8384,7 @@ with st.container(key="encounter-console"):
                         if not isinstance(result, dict):
                             continue
                         st.markdown(_patient_diagnostic_heading(TEST_LABELS.get(test_id, "Investigation"), result))
-                        st.write(format_result(test_id, result))
+                        st.write(format_result(test_id, result).replace("\n", "  \n"))
             elif any(diagnostics.get(k) for k in ["pocus", "lactate", "vbg", "abg", "basic_labs"]):
                 with st.expander("Diagnostics", expanded=True):
                     p = diagnostics.get("pocus")

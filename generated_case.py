@@ -111,6 +111,13 @@ reperfusion-dependent syndrome: high-risk pulmonary embolism, STEMI, tamponade, 
 stroke or a ruptured aneurysm. Any of those may still appear as a differential the learner must weigh and exclude, which is often
 the point; it simply cannot be the answer, because the decision it demands cannot be executed. This is checked and rejected before
 review.
+POCUS follows one fixed protocol and every field is required, normal findings included: lv (qualitative LV contractility,
+never an ejection fraction), rv (RV size relative to the LV as smaller, equal or larger, plus D-sign and McConnell sign),
+pericardium (effusion; if present, chamber collapse, especially right-sided), ivc (diameter in cm and inspiratory collapse),
+lung_sliding (pleural sliding and pneumothorax), lungs (B-lines and whether focal or diffuse), lung_consolidation
+(consolidation and pleural effusion), aorta_root, aorta_descending, aorta_abdominal (diaphragm to iliac bifurcation),
+dvt_femoral and dvt_popliteal (compression, both sides). Write FINDINGS, never interpretation: "1.1 cm; >50% inspiratory
+collapse", not "preload responsive"; "right atrial systolic collapse", not "tamponade". This is checked before review.
 Leave the learner a usable window. The untreated course must deteriorate, but a patient who loses their pulse within the first
 20 minutes cannot even finish a 1000 mL bolus at this engine's 50 mL/min delivery, so nothing the learner does can be judged.
 Author initial_hidden drivers whose untreated trajectory still worsens over the horizon without arresting that early. Softening
