@@ -451,8 +451,8 @@ PRESENTATION = (
     "fatigue, and exertional dyspnea beginning sometime this morning. He cannot identify "
     "the exact onset. He felt normal yesterday and was at his usual baseline. He is alert "
     "and conversant but appears uncomfortable. BP is 90/54 mmHg. Capillary refill is approximately 5 seconds "
-    "and his distal extremities are cool. Initial ECG shows atrial fibrillation with rapid "
-    "ventricular response without pre-excitation."
+    "and his distal extremities are cool. A 12-lead ECG has been obtained and is available "
+    "for review."
 )
 
 
@@ -503,7 +503,7 @@ PS002_PRESENTATION = (
     "weakness, and lightheadedness over the past day. She is alert and speaking in short phrases. "
     "Respiratory rate is 32/min with markedly increased work of breathing. SpO₂ is 86% on room air. "
     "Capillary refill is approximately 4 seconds; her extremities are warm. BP is 88/54 mmHg and "
-    "HR is 124/min in sinus rhythm. There is no obvious external bleeding. The cause of her "
+    "HR is 124/min. There is no obvious external bleeding. The cause of her "
     "respiratory and hemodynamic compromise is not yet established."
 )
 
@@ -7639,25 +7639,6 @@ def _vitals_cells(snapshot):
     )
 
 
-def _ecg_interpretation(observable):
-    """Return the learner-facing interpretation paired with the synthetic strip."""
-    rhythm = str(observable.get("rhythm") or "Unknown rhythm")
-    hr = int(round(float(observable.get("hr") or 0)))
-    if not observable.get("pulse_present", True):
-        if rhythm.upper() == "PEA":
-            return f"Organized electrical activity at approximately {hr}/min without a palpable pulse (PEA)."
-        return f"{rhythm} at approximately {hr}/min without a palpable pulse."
-    if rhythm == "Sinus rhythm":
-        return f"Sinus rhythm at approximately {hr}/min; narrow QRS."
-    if rhythm == "AF":
-        rate_label = "rapid ventricular response" if hr >= 110 else "controlled ventricular response"
-        return (
-            f"Atrial fibrillation with {rate_label} at approximately {hr}/min; "
-            "irregularly irregular rhythm, no consistent P waves, narrow QRS, and no pre-excitation."
-        )
-    return f"{rhythm} at approximately {hr}/min."
-
-
 def _ecg_strip_svg(observable, duration_seconds=5.0):
     """Create a deterministic educational lead-II rhythm strip from visible state.
 
@@ -7744,8 +7725,11 @@ def _ecg_strip_svg(observable, duration_seconds=5.0):
     id_suffix = f"{rhythm_key}-{int(round(hr))}"
     small_grid_id = f"mrs-ecg-small-{id_suffix}"
     grid_id = f"mrs-ecg-grid-{id_suffix}"
-    interpretation = _ecg_interpretation(observable)
-    accessible_label = escape(f"Synthetic lead II ECG. {interpretation}", quote=True)
+    # Describe the trace, never interpret it: a screen-reader user must read the
+    # rhythm from the same evidence as everyone else.
+    rate_label = f"approximately {int(round(hr))} complexes per minute"
+    pulse_label = "" if observable.get("pulse_present", True) else " No palpable pulse is recorded."
+    accessible_label = escape(f"Synthetic lead II rhythm strip at {rate_label}.{pulse_label}", quote=True)
 
     return f"""
     <div class="mrs-ecg-strip" data-rhythm="{escape(rhythm_key)}" data-rate="{int(round(hr))}">
@@ -7922,7 +7906,7 @@ def format_clinical_update():
         )
 
     text = (
-        f'BP is {o["sbp"]}/{o["dbp"]} mmHg, HR is {o["hr"]}/min in {o["rhythm"]}, '
+        f'BP is {o["sbp"]}/{o["dbp"]} mmHg, HR is {o["hr"]}/min, '
         f'capillary refill is approximately {o["crt"]} seconds, and the extremities are {o["extremities"].lower()}.'
     )
 
@@ -8229,14 +8213,16 @@ with st.container(key="encounter-console"):
             o = st.session_state.state["observable"]
             h = st.session_state.state["hidden"]
             with st.expander("Vitals", expanded=True):
+                # Naming the rhythm here does the resident's interpretation for
+                # them. The bedside waveform and the 12-lead are where it is read.
                 if not o.get("pulse_present", True):
                     st.write("BP: no measurable blood pressure")
-                    st.write(f'Monitor rate: {o["hr"]}/min · {o["rhythm"]}')
+                    st.write(f'Monitor: organized electrical activity at {o["hr"]}/min, no palpable pulse')
                     st.write("SpO₂: no reliable reading")
                     st.write("CRT: not measurable")
                 else:
                     st.write(f'BP: {o["sbp"]}/{o["dbp"]} mmHg')
-                    st.write(f'HR: {o["hr"]}/min · {o["rhythm"]}')
+                    st.write(f'HR: {o["hr"]}/min')
                     st.write(f'SpO₂: {o["spo2"]}%')
                     st.write(f'CRT: {o["crt"]} s')
             with st.expander("ECG", expanded=False):

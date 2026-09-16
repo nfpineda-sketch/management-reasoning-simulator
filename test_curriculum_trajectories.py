@@ -120,7 +120,12 @@ class CurriculumTrajectoryTests(unittest.TestCase):
         }[observable["rhythm"]]
         self.assertIn(f'data-rhythm="{rhythm}"', svg)
         self.assertIn(f'data-rate="{observable["hr"]}"', svg)
-        self.assertIn("Synthetic lead II ECG", svg)
+        # The strip is described, never interpreted: the resident reads the
+        # rhythm off the trace and the 12-lead, so the label must not name it.
+        self.assertIn("Synthetic lead II rhythm strip", svg)
+        label = svg.split('aria-label="', 1)[1].split('"', 1)[0]
+        for name in ("Sinus rhythm", "Atrial fibrillation", "PEA", "narrow QRS"):
+            self.assertNotIn(name, label)
         return svg
 
     def test_every_profile_executes_bundle_and_zero_time_reassessment(self):

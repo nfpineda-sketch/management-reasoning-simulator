@@ -189,7 +189,7 @@ def _presentation(choice: dict, observable: dict) -> str:
         f"BP is {observable['sbp']}/{observable['dbp']} mmHg, heart rate is {observable['hr']}/min, "
         f"and SpO₂ is {observable['spo2']}% on room air. "
         f"Capillary refill is approximately {observable['crt']} seconds and his distal extremities are cool. "
-        "The initial ECG shows atrial fibrillation with rapid ventricular response without pre-excitation."
+        "A 12-lead ECG has been obtained and is available for review."
     )
 
 
