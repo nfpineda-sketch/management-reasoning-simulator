@@ -13,3 +13,7 @@ __pycache__/
 .venv/
 .pytest_cache/
 local-data/
+
+# Tooling links Streamlit creates on launch; they point into a local .venv.
+.agents/
+.claude/
