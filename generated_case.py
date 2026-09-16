@@ -100,7 +100,22 @@ mutually exclusive, or give the shared findings identical values. This is checke
 Every entry in faculty.anticipated_management_paths must be practisable with the supplied capabilities. Do not build the dilemma on
 thrombolysis, catheter-directed or surgical reperfusion, PCI, dialysis, chest or pericardial drainage, extracorporeal support,
 pacing, surgery or blood components other than packed red cells: none is executable here. Such a therapy may appear only as the
-decision to consult, refer, arrange or transfer for it. This is checked and rejected before review. Mental status/ECG/exam changes need a
+decision to consult, refer, arrange or transfer for it. This is checked and rejected before review.
+The definitive management this engine delivers is resuscitation and titrated support: volume, vasopressors and inotropes,
+vasodilation, oxygen and every airway/ventilation step, rate and rhythm control including cardioversion, antibiotics, steroid,
+bronchodilator, diuresis, glucose, naloxone, anticoagulation, aspirin, acid suppression, packed red cells and sedation. Choose a
+condition whose emergency management LIVES in that list, so the learner can actually carry the decision out. Shock and respiratory
+failure of uncertain cause are the natural material: sepsis, hypovolaemia and haemorrhage, cardiogenic failure, arrhythmia,
+anaphylaxis, asthma or COPD, diabetic emergencies, opioid toxicity, adrenal crisis. Do NOT make the confirmed diagnosis a
+reperfusion-dependent syndrome: high-risk pulmonary embolism, STEMI, tamponade, tension pneumothorax, aortic dissection, ischaemic
+stroke or a ruptured aneurysm. Any of those may still appear as a differential the learner must weigh and exclude, which is often
+the point; it simply cannot be the answer, because the decision it demands cannot be executed. This is checked and rejected before
+review.
+Leave the learner a usable window. The untreated course must deteriorate, but a patient who loses their pulse within the first
+20 minutes cannot even finish a 1000 mL bolus at this engine's 50 mL/min delivery, so nothing the learner does can be judged.
+Author initial_hidden drivers whose untreated trajectory still worsens over the horizon without arresting that early. Softening
+the starting physiology is the fix; removing the deterioration is not. This is checked against the real engine and rejected
+before review. Mental status/ECG/exam changes need a
 physiological explanation. A changed mental-status category must include updated Neurological examination findings. Keep pulse_present true at arrival and in ordinary state_rules; only the shared physiological engine may produce irreversible PEA after sustained deterioration. Set horizon_min 30–180.
 
 All five engine.initial_labs are internal baseline measurements; no measurement is exposed before being obtained. Required source

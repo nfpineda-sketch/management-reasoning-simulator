@@ -142,3 +142,102 @@ def unexecutable_path_issues(case):
                                        'referral_actions': ['consult', 'reperfusion_referral', 'disposition']}})
             break
     return issues
+
+
+# A diagnosis whose defining emergency management is a therapy this engine does
+# not execute cannot carry a management dilemma. Four of five saved paid drafts
+# chose massive or submassive pulmonary embolism, whose central decision is
+# whether to thrombolyse; none could be practised and every one was rejected.
+# Naming the syndrome as a differential the resident must weigh is fine. It is
+# the confirmed teaching diagnosis that has to be manageable here.
+REPERFUSION_DEPENDENT_SYNDROMES = {
+    # (terms that name the syndrome, terms that make it reperfusion-dependent)
+    'high-risk pulmonary embolism': (
+        ('pulmonary embolism', 'pulmonary emboli', ' pe ', '(pe)', 'pe with', 'pe causing'),
+        ('massive', 'submassive', 'high-risk', 'high risk', 'obstructive shock',
+         'rv strain', 'rv failure', 'right ventricular strain', 'right ventricular failure',
+         'hypotension', 'shock', 'haemodynamic instability', 'hemodynamic instability')),
+    'ST-elevation myocardial infarction': (
+        ('stemi', 'st-elevation myocardial infarction', 'st elevation myocardial infarction'), ()),
+    'cardiac tamponade': (('cardiac tamponade', 'pericardial tamponade'), ()),
+    'tension pneumothorax': (('tension pneumothorax',), ()),
+    'aortic dissection': (('aortic dissection', 'aortic rupture'), ()),
+    'acute ischaemic stroke': (
+        ('ischemic stroke', 'ischaemic stroke', 'large vessel occlusion'), ()),
+    'ruptured aneurysm or surgical haemorrhage': (
+        ('ruptured aneurysm', 'ruptured abdominal aortic',
+         'surgical haemorrhage', 'surgical hemorrhage'), ()),
+}
+
+
+def executable_definitive_managements():
+    """What this engine can actually deliver, derived from the action list."""
+    from generated_case_schema import ACTIONS
+    return sorted(set(ACTIONS) - {'consult', 'reperfusion_referral', 'disposition',
+                                  'airway_preparation'})
+
+
+def unmanageable_diagnosis_issues(case):
+    """The confirmed diagnosis must be manageable with the executable actions."""
+    diagnosis = (case.get('faculty') or {}).get('diagnosis')
+    if not isinstance(diagnosis, str):
+        return []
+    lowered = ' ' + diagnosis.lower() + ' '
+    for syndrome, (terms, severities) in sorted(REPERFUSION_DEPENDENT_SYNDROMES.items()):
+        matched = [term for term in terms if term in lowered]
+        if not matched:
+            continue
+        # A low-risk presentation of the same syndrome is managed with actions
+        # this engine does execute, so only the reperfusion-dependent form fails.
+        if severities:
+            severe = [term for term in severities if term in lowered]
+            if not severe:
+                continue
+            matched = matched + severe
+        return [{'code': 'UNMANAGEABLE_DIAGNOSIS', 'path': 'case.faculty.diagnosis',
+                 'message': ('The defining emergency management of this diagnosis is a therapy '
+                             'the engine cannot execute, so the encounter has no practisable '
+                             'dilemma. Choose a condition whose management is reachable with the '
+                             'executable actions. The syndrome may still appear as a differential '
+                             'the resident has to weigh and exclude.'),
+                 'details': {'syndrome': syndrome, 'matched_terms': sorted(matched),
+                             'executable_managements': executable_definitive_managements()}}]
+    return []
+
+
+# A resident needs time to assess, order, watch the order run in, and reassess.
+# The engine delivers a 1000 mL bolus at 50 mL/min, so a patient who arrests
+# untreated before 20 minutes cannot even finish a standard fluid challenge, let
+# alone show whether it helped. A paid draft fell from a systolic pressure of 92
+# to 71 in one minute and to pulseless electrical activity by minute 8.
+MINIMUM_UNTREATED_WINDOW_MIN = 20
+
+
+def untreated_window_issues(case, seed=17):
+    """The untreated course must leave room to intervene and be judged.
+
+    This constrains the authored phenotype, not the physics: the shared core is
+    unchanged and still collapses when the drivers say so. What is rejected is a
+    starting state whose own untreated trajectory ends before any intervention
+    could be delivered and reassessed.
+    """
+    from coupled_encounter import preview
+    try:
+        points = preview(case, seed=seed)
+    except (ValueError, TypeError, KeyError, ArithmeticError):
+        return []  # A case that cannot even be previewed fails other gates first.
+    for point in points:
+        observable = point.get('observable') or {}
+        if observable.get('pulse_present') is False and point['time_min'] < MINIMUM_UNTREATED_WINDOW_MIN:
+            arrival = (points[0].get('observable') or {}).get('sbp')
+            return [{'code': 'UNTREATED_COLLAPSE_TOO_FAST', 'path': 'case.engine.core_profile.initial_hidden',
+                     'message': ('Left untreated this patient loses their pulse before any ordered '
+                                 'treatment could be delivered and reassessed, so the encounter cannot '
+                                 'show whether management helped. Soften the starting physiology so the '
+                                 'untreated course still deteriorates but leaves a usable window, or '
+                                 'author a less extreme presentation. Do not remove the deterioration.'),
+                     'details': {'arrest_at_min': point['time_min'],
+                                 'minimum_window_min': MINIMUM_UNTREATED_WINDOW_MIN,
+                                 'arrival_sbp': arrival,
+                                 'standard_bolus_delivery_min': 20}}]
+    return []

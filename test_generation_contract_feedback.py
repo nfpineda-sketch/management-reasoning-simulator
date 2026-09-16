@@ -350,3 +350,134 @@ class AnExactlyRepeatedStudyIsCollapsed(unittest.TestCase):
         issue = next(i for i in issues if i["code"] == "DUPLICATE_STUDY")
         self.assertIn("first_index", issue["details"])
         self.assertIn("duplicate_index", issue["details"])
+
+
+class TheConfirmedDiagnosisMustBeManageableHere(unittest.TestCase):
+    """Four of five saved paid drafts confirmed a high-risk pulmonary embolism.
+
+    Its defining decision is whether to thrombolyse, which the engine cannot
+    execute, so no encounter built on it has a practisable dilemma. The syndrome
+    is still legitimate as a differential the resident weighs and excludes.
+    """
+
+    def check(self, diagnosis):
+        from generated_case_coverage import unmanageable_diagnosis_issues
+        return unmanageable_diagnosis_issues({"faculty": {"diagnosis": diagnosis}})
+
+    def test_a_reperfusion_dependent_diagnosis_is_rejected(self):
+        issues = self.check("Acute massive pulmonary embolism causing obstructive shock.")
+        self.assertEqual([i["code"] for i in issues], ["UNMANAGEABLE_DIAGNOSIS"])
+        self.assertEqual(issues[0]["details"]["syndrome"], "high-risk pulmonary embolism")
+        self.assertIn("fluid", issues[0]["details"]["executable_managements"])
+
+    def test_the_low_risk_form_of_the_same_syndrome_is_accepted(self):
+        """Anticoagulation is executable, so a normotensive embolism is playable."""
+        self.assertEqual(self.check(
+            "Acute pulmonary embolism, low risk and normotensive, for anticoagulation."), [])
+
+    def test_the_shock_states_this_engine_can_manage_are_accepted(self):
+        for diagnosis in ("Septic shock from a urinary source",
+                          "Haemorrhagic shock from upper gastrointestinal bleeding",
+                          "Cardiogenic pulmonary oedema",
+                          "Diabetic ketoacidosis",
+                          "Anaphylaxis with hypotension",
+                          "Atrial fibrillation with rapid ventricular response and hypotension",
+                          "Opioid toxicity with respiratory depression"):
+            self.assertEqual(self.check(diagnosis), [], diagnosis)
+
+    def test_every_reperfusion_dependent_syndrome_is_detected(self):
+        for diagnosis in ("ST-elevation myocardial infarction of the anterior wall",
+                          "Cardiac tamponade from a malignant effusion",
+                          "Tension pneumothorax after a fall",
+                          "Type A aortic dissection",
+                          "Acute ischemic stroke with large vessel occlusion",
+                          "Ruptured abdominal aortic aneurysm"):
+            self.assertTrue(self.check(diagnosis), diagnosis)
+
+    def test_the_executable_list_is_derived_from_the_action_set(self):
+        from generated_case_coverage import executable_definitive_managements
+        from generated_case_schema import ACTIONS
+        listed = set(executable_definitive_managements())
+        self.assertTrue(listed <= set(ACTIONS))
+        # Referral and disposition are decisions, not definitive management.
+        self.assertFalse(listed & {"consult", "reperfusion_referral", "disposition"})
+
+    def test_the_author_is_told_what_it_may_choose(self):
+        from generated_case import AUTHOR_INSTRUCTIONS
+        self.assertIn("emergency management LIVES in that list", AUTHOR_INSTRUCTIONS)
+        self.assertIn("may still appear as a differential", AUTHOR_INSTRUCTIONS)
+        for word in ("sepsis", "anaphylaxis", "arrhythmia"):
+            self.assertIn(word, AUTHOR_INSTRUCTIONS.lower())
+
+
+class TheUntreatedCourseMustLeaveAWindow(unittest.TestCase):
+    """A patient who arrests before any order can run in teaches nothing.
+
+    A paid draft fell from a systolic pressure of 92 to 71 in one minute and to
+    pulseless electrical activity by minute 8. The engine delivers a 1000 mL
+    bolus at 50 mL/min, so 20 minutes is the least that lets a standard fluid
+    challenge finish and be reassessed. The physics are untouched: this
+    constrains the authored starting phenotype, not the core.
+    """
+
+    def test_the_window_is_derived_from_the_delivery_the_engine_performs(self):
+        from generated_case_coverage import MINIMUM_UNTREATED_WINDOW_MIN
+        self.assertGreaterEqual(MINIMUM_UNTREATED_WINDOW_MIN, 1000 / 50)
+
+    def test_a_case_that_arrests_inside_the_window_is_rejected(self):
+        from generated_case_coverage import untreated_window_issues, MINIMUM_UNTREATED_WINDOW_MIN
+
+        class Collapsing:
+            @staticmethod
+            def preview(case, seed=17):
+                return [{"time_min": 0, "observable": {"sbp": 92, "pulse_present": True}},
+                        {"time_min": 8, "observable": {"sbp": 0, "pulse_present": False}}]
+
+        import coupled_encounter
+        original = coupled_encounter.preview
+        coupled_encounter.preview = Collapsing.preview
+        try:
+            issues = untreated_window_issues({})
+        finally:
+            coupled_encounter.preview = original
+        self.assertEqual([i["code"] for i in issues], ["UNTREATED_COLLAPSE_TOO_FAST"])
+        self.assertEqual(issues[0]["details"]["arrest_at_min"], 8)
+        self.assertEqual(issues[0]["details"]["minimum_window_min"], MINIMUM_UNTREATED_WINDOW_MIN)
+        self.assertEqual(issues[0]["details"]["arrival_sbp"], 92)
+        self.assertIn("Do not remove the deterioration", issues[0]["message"])
+
+    def test_a_later_collapse_is_left_alone(self):
+        from generated_case_coverage import untreated_window_issues
+
+        import coupled_encounter
+        original = coupled_encounter.preview
+        coupled_encounter.preview = lambda case, seed=17: [
+            {"time_min": 0, "observable": {"sbp": 92, "pulse_present": True}},
+            {"time_min": 41, "observable": {"sbp": 0, "pulse_present": False}}]
+        try:
+            self.assertEqual(untreated_window_issues({}), [])
+        finally:
+            coupled_encounter.preview = original
+
+    def test_a_case_that_never_arrests_is_left_alone(self):
+        compile_case(deepcopy(novel_payload()))
+
+    def test_an_unpreviewable_case_is_left_to_the_other_gates(self):
+        from generated_case_coverage import untreated_window_issues
+
+        import coupled_encounter
+        original = coupled_encounter.preview
+
+        def broken(case, seed=17):
+            raise ValueError("no")
+
+        coupled_encounter.preview = broken
+        try:
+            self.assertEqual(untreated_window_issues({}), [])
+        finally:
+            coupled_encounter.preview = original
+
+    def test_the_author_is_told_to_leave_the_window(self):
+        from generated_case import AUTHOR_INSTRUCTIONS
+        self.assertIn("Leave the learner a usable window", AUTHOR_INSTRUCTIONS)
+        self.assertIn("removing the deterioration is not", AUTHOR_INSTRUCTIONS)
