@@ -8958,6 +8958,9 @@ with st.container(key="encounter-console"):
                     add_event("clinical_update", lead + format_clinical_update())
                 elif (
                     diagnostic_summaries
+                    # A reassessment the resident asked for is reported as such, even
+                    # when the results arrived before it.
+                    and result.get("reassess_delay") is None
                     and int(result.get("elapsed_min", 0) or 0) > 0
                     and observable_state_changed(trace_state_before, trace_state_after)
                 ):

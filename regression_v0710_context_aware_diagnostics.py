@@ -96,7 +96,7 @@ event = {
 diagnostic_results = namespace["_trace_diagnostic_results"](event)
 rendered = " ".join(text for _, text in diagnostic_results)
 assert len(diagnostic_results) == 3, diagnostic_results
-assert "POCUS · sample obtained" in rendered and "PEEP 14 cm H₂O" in rendered, rendered
+assert "POCUS · performed at minute" in rendered and "PEEP 14 cm H₂O" in rendered, rendered
 assert "Lactate:" in rendered and "mmol/L" in rendered, rendered
 assert "ABG:" in rendered and "P/F ratio" in rendered, rendered
 assert all(time_text.startswith("01:") for time_text, _ in diagnostic_results), diagnostic_results

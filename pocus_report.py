@@ -67,7 +67,8 @@ def format_pocus(result, *, heading="POCUS", compact=False):
     header = heading
     collected = result.get("collected_at_min", result.get("time_min"))
     if type(collected) in {int, float} and not isinstance(collected, bool):
-        header += f" · sample obtained at minute {collected:g}"
+        # A scan is performed, not sampled.
+        header += f" · performed at minute {collected:g}"
     lines.append(header)
     for section, items in SECTIONS:
         parts = []

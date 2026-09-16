@@ -192,3 +192,8 @@ def test_the_management_trace_records_every_finding_the_resident_had():
     text = namespace["_trace_state_text"](snapshot)
     for key in POCUS_KEYS:
         assert pocus[key] in text, key
+
+
+def test_a_scan_is_performed_not_sampled():
+    header = format_pocus({"collected_at_min": 0, "time_min": 2}).splitlines()[0]
+    assert header == "POCUS · performed at minute 0"

@@ -159,3 +159,17 @@ def test_a_bare_cancel_still_drops_the_whole_held_submission(encounter):
     assert not state["treatments"].get("oxygen")
     assert not state["diagnostics"]
     assert app.session_state.pending_action is None
+
+
+def test_a_requested_reassessment_is_reported_as_one_even_when_results_arrive_first(encounter):
+    # Reported encounter: POCUS alone with a 3-minute reassessment. The result
+    # arrived at 00:02, yet the card said "While awaiting diagnostic results".
+    app = encounter
+    submit(app, "Probable sepsis. My priority is perfusion. Order POCUS. "
+                "I expect to define volume status. Reassess perfusion in 3 minutes.")
+    updates = [e["text"] for e in app.session_state.events if e["kind"] == "clinical_update"]
+    assert updates, app.session_state.events
+    assert not any("awaiting diagnostic results" in text for text in updates), updates
+    assert updates[-1].startswith("After 3 minutes, "), updates
+    results = [e["text"] for e in app.session_state.events if e["kind"] == "diagnostic_result"]
+    assert results and all("sample obtained" not in text for text in results), results
