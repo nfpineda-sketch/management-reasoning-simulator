@@ -26,6 +26,16 @@ FIELDS = {
     "finding": "Finding", "history": "History",
 }
 
+TIMING_VERBS = {
+    "chest_xray": "Performed", "head_ct": "Performed", "abdominal_ct": "Performed",
+    "ctpa": "Performed", "ecg": "Performed", "temperature": "Measured",
+}
+
+
+def _dose_text(amount):
+    """A dose as a clinician writes it: whole units from 10 up, three figures below."""
+    return f"{amount:.0f}" if abs(amount) >= 10 else f"{amount:.3g}"
+
 
 def format_result(test_id, result):
     label = TEST_LABELS.get(test_id, "Investigation")
@@ -33,12 +43,19 @@ def format_result(test_id, result):
         # Every POCUS report uses the same structure, normal findings included.
         from pocus_report import format_pocus
         return format_pocus(result, heading=label)
-    parts = [str(result["report"])] if isinstance(result.get("report"), str) else []
+    report = result.get("report") if isinstance(result.get("report"), str) else None
+    parts = [report] if report else []
     if type(result.get("collected_at_min")) in {int, float}:
-        parts.insert(0, f"Sample obtained at minute {result['collected_at_min']}")
+        # Imaging and tracings are performed and a temperature is measured; only a
+        # specimen is a sample.
+        verb = TIMING_VERBS.get(test_id, "Sample obtained")
+        parts.insert(0, f"{verb} at minute {result['collected_at_min']:g}")
     for key, title in FIELDS.items():
         value = result.get(key)
         if isinstance(value, (str, int, float)) and not isinstance(value, bool):
+            # "Lactate 3.4 mmol/L" already states the value; do not repeat it as a field.
+            if report and f"{value}" in report and title.split(" (")[0].lower() in report.lower():
+                continue
             parts.append(f"{title}: {value}")
     return label + ": " + (" · ".join(parts) if parts else "No result has been recorded.")
 
@@ -48,7 +65,7 @@ def format_administration(record):
     unit = "g" if "dose_g" in record else "mg" if "dose_mg" in record else record.get("units", "")
     parts = [str(record.get("agent") or "Medication")]
     if isinstance(amount, (int, float)) and not isinstance(amount, bool):
-        parts.append(f"{amount:g} {unit}")
+        parts.append(f"{_dose_text(amount)} {unit}")
     if record.get("route"):
         parts.append(str(record["route"]))
     text = " ".join(parts) + " · minute " + str(record.get("time_min", "—"))
@@ -58,5 +75,5 @@ def format_administration(record):
         ordered = record.get("ordered_dose_g", record.get("ordered_dose_mg", record.get("ordered_dose")))
         text += f" · over {duration:g} min"
         if record.get("administration_status") == "in_progress" and isinstance(ordered, (int, float)):
-            text += f" · {amount:g} of {ordered:g} {unit} given so far"
+            text += f" · {_dose_text(amount)} of {_dose_text(ordered)} {unit} given so far"
     return text

@@ -71,7 +71,7 @@ def test_a_timed_medicine_reports_what_has_gone_in():
     assert record["ordered_dose_mg"] == 2000 and record["administration_status"] == "in_progress"
     assert record["dose_mg"] == pytest.approx(666.67, abs=.01)
     assert format_administration(record) == \
-        "ceftriaxone 666.667 mg IV · minute 0 · over 30 min · 666.667 of 2000 mg given so far"
+        "ceftriaxone 667 mg IV · minute 0 · over 30 min · 667 of 2000 mg given so far"
     bank(state, "Reassess in 20 minutes.")
     assert record != state["treatments"]["administered_medications"][0]
     record = state["treatments"]["administered_medications"][0]
