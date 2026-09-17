@@ -5450,9 +5450,14 @@ def extract_explicit_reasoning(text):
     # physiological object does not: "and increase the MAP above 65".
     _en_order_clause = (
         r"\s*(?:,\s*(?:(?:and|then)\s+)?|\s(?:and|then)\s+)"
-        r"(?:(?:give|start|begin|initiate|order|obtain|request|send|administer|infuse|bolus|draw|"
-        r"check|get|repeat|(?:reassess|recheck)(?=[^.;]*\d)|intubate|place|apply|stop|discontinue|hold|transfuse|"
-        r"consult|call|push|hang|perform|put)\b"
+        r"(?:(?:give|start|begin|initiate|administer|infuse|bolus|"
+        r"(?:reassess|recheck)(?=[^.;]*\d)|intubate|place|apply|stop|discontinue|hold|transfuse|"
+        r"consult|call|push|hang|put)\b"
+        # A study verb ends the priority only when it names a study: "check lactate",
+        # not "check for early fluid overload".
+        r"|(?:order|obtain|request|send|draw|check|get|repeat|perform)\s+(?=[^.;,]*\b(?:lactate|vbg|abg|"
+        r"blood\s+gas|pocus|ultrasound|x-?ray|cxr|ecg|ekg|cultures?|troponin|glucose|labs?|hemoglobin|"
+        r"urinalysis|ct|ctpa)\b)"
         r"|(?:increase|decrease|titrate|wean)\b(?!\s+(?:the\s+|her\s+|his\s+)?(?:preload|afterload|"
         r"perfusion|oxygenation|ventilation|blood\s+pressure|bp|map|pressure|heart\s+rate|"
         r"work\s+of\s+breathing|congestion|oxygen\s+delivery|demand)\b))"
@@ -5772,15 +5777,18 @@ def extract_explicit_reasoning(text):
         subset of app.py's functions through ast, so this must travel with its caller.
         """
         _ES_ORDER_VERBS = (r"dar|administrar|administra|iniciar|inicia|comenzar|comienza|poner|pon|coloca|"
-                           r"suspender|suspende|aumentar|aumenta|subir|bajar|disminuir|disminuye|intubar|intuba|"
+                           r"suspender|suspende|intubar|intuba|"
                            r"pedir|pide|solicitar|solicita|reevaluar|reeval[uú]a|revaluar|re-evaluar|controlar|controla|"
                            r"volver\s+a\s+evaluar")
+        # These also state goals ("bajar precarga"), so only a non-physiological object ends the priority.
+        _ES_GOAL_VERBS = r"aumentar|aumenta|subir|bajar|disminuir|disminuye"
         # "bajar precarga y poscarga" is part of a goal, not an order that ends it.
         _ES_PHYSIOLOGY = (r"(?:(?:el|la|los|las)\s+)?(?:precarga|pos(?:t)?carga|presi[oó]n|pas?|pam|fc|fr|"
                           r"frecuencia|trabajo|congesti[oó]n|oxigenaci[oó]n|perfusi[oó]n|lactato|hipoxemia|"
                           r"spo2|saturaci[oó]n|resistencia|demanda|consumo)\b")
         _ES_TIME = r"(?:en|a\s+los|tras|despu[eé]s\s+de)\s+\d+(?:[.,]\d+)?\s*(?:min|mins|minutos?|h|horas?)\b"
-        stop = (r"(?=\s*,?\s*(?:y\s+)?(?:" + _ES_ORDER_VERBS + r")\b(?!\s+" + _ES_PHYSIOLOGY + r")"
+        stop = (r"(?=\s*,?\s*(?:y\s+)?(?:" + _ES_ORDER_VERBS + r")\b"
+                r"|\s*,?\s*(?:y\s+)?(?:" + _ES_GOAL_VERBS + r")\b(?!\s+" + _ES_PHYSIOLOGY + r")"
                 r"|\s*,?\s*(?:y\s+)?(?:espero|anticipo)\b|[.;]|$)")
 
         if "management_priority" not in reasoning:

@@ -91,7 +91,7 @@ _ES_IMPERATIVES = {
     "aumentar": "aumenta aumente", "disminuir": "disminuye disminuya", "titular": "titula titule",
     "continuar": "continua", "mantener": "manten mantenga", "ajustar": "ajusta ajuste",
     "cambiar": "cambia cambie", "transfundir": "transfunde transfunda", "nebulizar": "nebuliza nebulice",
-    "consultar": "consulta", "llamar": "llama llame", "activar": "activa active",
+    "consultar": "consulta", "interconsultar": "interconsulta interconsulte", "llamar": "llama llame", "activar": "activa active",
     "hospitalizar": "hospitaliza hospitalice", "ingresar": "ingresa ingrese",
     "trasladar": "traslada traslade", "intubar": "intuba intube", "ventilar": "ventila ventile",
     "reevaluar": "reevalua reevalue",
@@ -506,6 +506,12 @@ def _order_after_reasoning(text):
         # "My priority is to restore glucose and reassess the patient" states an
         # intention; only a timed reassessment ("reassess in 30 minutes") schedules one.
         if command["verb"] in _REASSESS_VERBS and not re.search(r"\d", rest):
+            continue
+        # "check for early fluid overload" or "get the right level of care" is still
+        # reasoning: the clause counts only if it names an order the parser knows.
+        first = re.split(r"\s*(?:,|\+|\band\b|\by\b|\bthen\b|\bluego\b)\s*", rest, maxsplit=1)[0]
+        parsed, _ = _parse_piece(first)
+        if not any(action["type"] != "clarification" for action in parsed):
             continue
         return rest
     return None

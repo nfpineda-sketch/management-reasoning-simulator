@@ -82,3 +82,27 @@ def test_an_untimed_reassessment_inside_a_priority_is_an_intention(engine):
     assert summary(text) == []
     assert engine["extract_explicit_reasoning"](text)["management_priority"] == \
         "restore glucose availability and reassess the patient"
+
+
+def test_a_study_verb_without_a_study_stays_reasoning(engine):
+    # Reported: ", check for early fluid overload" became an unrecognized study
+    # and held the whole turn, and the priority was cut to "stop routine fluid".
+    text = ("My priority is to stop routine fluid, check for early fluid overload "
+            "and secure the right level of care.")
+    assert parse_family_actions(text)["actions"] == []
+    assert engine["extract_explicit_reasoning"](text)["management_priority"] == (
+        "stop routine fluid, check for early fluid overload and secure the right level of care")
+
+
+@pytest.mark.parametrize("text, priority", [
+    ("My priority is perfusion, check lactate and VBG.", "perfusion"),
+    ("Mi prioridad es la perfusión, pide lactato.", "perfusión"),
+])
+def test_a_study_named_after_the_priority_is_ordered(engine, text, priority):
+    assert [kind for kind, _ in summary(text)] == ["diagnostic"] * len(parse_family_actions(text)["actions"])
+    assert summary(text)
+    assert engine["extract_explicit_reasoning"](text)["management_priority"] == priority
+
+
+def test_interconsulta_is_a_consult_order():
+    assert parse_family_actions("Interconsulta a UCI.")["actions"] == [{"type": "consult", "service": "ICU"}]
