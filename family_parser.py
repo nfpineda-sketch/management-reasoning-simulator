@@ -469,6 +469,43 @@ def _parse_piece(piece, inherited=None):
     return actions, verb
 
 
+# Verbs that also state a goal: "and increase perfusion" is reasoning, whereas
+# "and increase FiO2 to 80%" is an order.
+_GOAL_VERBS = {"increase", "decrease", "titrate", "continue", "aumentar", "aumento",
+               "disminuir", "disminuyo", "titular", "continuar", "mantener"}
+_PHYSIOLOGICAL_OBJECT = re.compile(
+    r"(?:(?:the|her|his|el|la|los|las|su)\s+)?(?:preload|afterload|perfusion|oxygenation|ventilation|"
+    r"blood pressure|bp|map|pressure|heart rate|work of breathing|congestion|oxygen delivery|demand|"
+    r"precarga|poscarga|postcarga|presion|pa|pas|pam|oxigenacion|ventilacion|frecuencia|trabajo|"
+    r"congestion|demanda|consumo|entrega)\b"
+)
+_REASSESS_VERBS = {"reassess", "re-assess", "reevaluate", "recheck", "reevaluar", "reevaluo", "revalorar"}
+_CLAUSE_BOUNDARY = re.compile(r"\s*,\s*(?:(?:and|y|then|luego)\s+)?|\s+(?:and|y|then|luego)\s+")
+
+
+def _order_after_reasoning(text):
+    """Return the orders that follow a statement of reasoning in one sentence.
+
+    "My priority is perfusion, give 1000 mL NS" states a priority and then gives
+    an order. The reasoning is captured elsewhere; the order must still be
+    executed. A later clause counts only when it opens with an order verb, so
+    "and reducing preload" or "y bajar precarga" remain part of the reasoning.
+    """
+    for boundary in _CLAUSE_BOUNDARY.finditer(text):
+        rest = text[boundary.end():]
+        command = _COMMAND.match(rest)
+        if not command:
+            continue
+        if command["verb"] in _GOAL_VERBS and _PHYSIOLOGICAL_OBJECT.match(rest[command.end():]):
+            continue
+        # "My priority is to restore glucose and reassess the patient" states an
+        # intention; only a timed reassessment ("reassess in 30 minutes") schedules one.
+        if command["verb"] in _REASSESS_VERBS and not re.search(r"\d", rest):
+            continue
+        return rest
+    return None
+
+
 def parse_family_actions(text) -> dict:
     """Return source-ordered action dictionaries without changing patient state.
 
@@ -479,17 +516,25 @@ def parse_family_actions(text) -> dict:
     raw = str(text or "")
     normalized = _ES_IMPERATIVE.sub(lambda m: m.group(1) + _ES_IMPERATIVE_FORMS[m.group(2)], _normalize(raw))
     actions, future = [], []
-    for sentence in re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized):
-        sentence = sentence.strip()
+    queue = re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
+    while queue:
+        sentence = queue.pop(0).strip()
         if not sentence:
             continue
-        # A priority/expected-response sentence is a description of reasoning,
-        # even when a later conjunction contains words such as "reassess".
+        # A priority/expected-response statement is a description of reasoning.
+        # Only a later clause that opens with an order verb is read as an order.
         if _NON_ORDER.match(sentence):
-            continue
+            sentence = _order_after_reasoning(sentence)
+            if not sentence:
+                continue
         rationale = _NON_ORDER.search(sentence)
         if rationale:
+            following = _order_after_reasoning(sentence[rationale.start():])
+            if following:
+                queue.insert(0, following)
             sentence = sentence[:rationale.start()].strip(" ,")
+            if not sentence:
+                continue
         conditional = _CONDITIONAL.search(sentence)
         if conditional:
             # "Start oxygen ..., and if BP falls give fluids" contains an

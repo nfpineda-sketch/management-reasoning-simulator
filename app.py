@@ -5437,10 +5437,21 @@ def extract_explicit_reasoning(text):
         ):
             reasoning["rationale"] = thought
 
-    # Explicit management priority only.
+    # Explicit management priority only. An order in the same sentence ends it:
+    # "My priority is perfusion, give 1000 mL NS". A goal verb with a
+    # physiological object does not: "and increase the MAP above 65".
+    _en_order_clause = (
+        r"\s*(?:,\s*(?:(?:and|then)\s+)?|\s(?:and|then)\s+)"
+        r"(?:(?:give|start|begin|initiate|order|obtain|request|send|administer|infuse|bolus|draw|"
+        r"check|get|repeat|(?:reassess|recheck)(?=[^.;]*\d)|intubate|place|apply|stop|discontinue|hold|transfuse|"
+        r"consult|call|push|hang|perform|put)\b"
+        r"|(?:increase|decrease|titrate|wean)\b(?!\s+(?:the\s+|her\s+|his\s+)?(?:preload|afterload|"
+        r"perfusion|oxygenation|ventilation|blood\s+pressure|bp|map|pressure|heart\s+rate|"
+        r"work\s+of\s+breathing|congestion|oxygen\s+delivery|demand)\b))"
+    )
     m = re.search(
         r"\b(?:my|the) (?:(?:main|first|immediate|management) )?priority is (?:to )?"
-        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|[.;]|$)", joined, re.I
+        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|" + _en_order_clause + r"|[.;]|$)", joined, re.I
     )
     if not m:
         m = re.search(
@@ -5449,7 +5460,8 @@ def extract_explicit_reasoning(text):
         )
     if not m:
         m = re.search(
-            r"\b(?:my|the) (?:management )?goal is (?:to )?(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|[.;]|$)",
+            r"\b(?:my|the) (?:management )?goal is (?:to )?(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|"
+            + _en_order_clause + r"|[.;]|$)",
             joined, re.I
         )
     # Natural equivalents: "I'm addressing heart rate first", "I will focus on
