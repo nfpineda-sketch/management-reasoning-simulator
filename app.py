@@ -1047,9 +1047,11 @@ def _trace_action_text(event):
         elif "volume_ml" in s:
             labels.append(f'{s["volume_ml"]} mL {s.get("fluid_type", "crystalloid")}')
         elif s.get("agent") == "furosemide":
-            labels.append(f'furosemide {s.get("dose_mg", 0):g} mg {s.get("route", "IV")}')
+            labels.append(f'furosemide {s.get("dose_mg", 0):g} mg {s.get("route", "IV")}'
+                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
         elif "agent" in s:
-            labels.append(f'{s["agent"]} {s.get("dose_mg", 0):g} mg {s.get("route", "")}'.strip())
+            labels.append(f'{s["agent"]} {s.get("dose_mg", 0):g} mg {s.get("route", "")}'.strip()
+                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
         elif s.get("support_type") == "procedural_sedation":
             labels.append(procedural_sedation_label(s))
         elif "energy_j" in s:
@@ -4074,6 +4076,12 @@ def parse_delay_min(text):
       watch for 1 hour
     """
     t = text.lower().strip()
+    # "Give 500 mL over 30 minutes" states how long the infusion runs, not when to
+    # reassess. It must not replace the learner's own reassessment interval.
+    t = re.sub(
+        r"\b(?:over|durante)\s+\d+(?:\.\d+)?\s*(?:s|sec|secs|seconds?|m|min|mins|minutes?|minutos?|h|hr|hrs|hours?|horas?)\b",
+        " ", t,
+    )
 
     # A learner may request a checkpoint without advancing simulated time.
     # Keep this scoped to reassessment verbs so unrelated uses of "now" or
@@ -6366,12 +6374,41 @@ def clinical_interpreter(text):
 
     future = recognized_unimplemented_medications(text)
 
-    return {
+    # A delivery duration belongs to the single treatment named in the same clause:
+    # "Give 500 mL NS over 30 minutes", "metoprolol 5 mg IV over 2 minutes".
+    duration_clarification = None
+    timed_names = {
+        "fluid": r"\b(?:\d+(?:\.\d+)?\s*(?:ml|cc|l|liters?|litres?)|saline|ns|lr|ringer'?s?|crystalloid|fluids?|bolus)\b",
+        "beta_blocker": r"\b(?:metoprolol|propranolol)\b",
+        "diltiazem": r"\bdiltiazem\b",
+        "amiodarone": r"\bamiodarone\b",
+        "furosemide": r"\b(?:furosemide|lasix)\b",
+        "antibiotics": r"\b(?:ceftriaxone|azithromycin|antibiotics?|piperacillin|vancomycin)\b",
+    }
+    for clause in re.split(r"[.;\n]+", t):
+        for m in re.finditer(
+            r"\bover\s+(\d+(?:\.\d+)?)\s*(s|sec|secs|seconds?|m|min|mins|minutes?|h|hr|hrs|hours?)\b", clause
+        ):
+            minutes = float(m.group(1)) * (60 if m.group(2).startswith("h") else 1 / 60 if m.group(2).startswith("s") else 1)
+            named = {kind for kind, pattern in timed_names.items() if re.search(pattern, clause)}
+            targets = [a for a in actions if a.get("type") in named]
+            if len(targets) == 1 and minutes > 0:
+                targets[0]["administration_duration_min"] = minutes
+            else:
+                duration_clarification = (
+                    "Specify one delivery duration for each fluid or medication, "
+                    "in the same sentence as that order."
+                )
+
+    parsed = {
         "raw_text": text,
         "reasoning": reasoning,
         "actions": actions,
         "recognized_future_actions": future,
     }
+    if duration_clarification:
+        parsed["clarification"] = duration_clarification
+    return parsed
 
 
 def _runtime_secret(name, default=""):
@@ -7283,6 +7320,67 @@ def merge_pending_bundle(parsed):
 
 
 def execute_bundle(parsed):
+    # Nested so that regressions loading execute_bundle through ast keep its helpers.
+    def _record_administration_time(res, action):
+        """Keep a stated administration time on a medication summary.
+
+        The legacy medication models keep their own onset kinetics; the stated time
+        is recorded, shown, and advances the clock when no reassessment is given.
+        """
+        duration = action.get("administration_duration_min")
+        if duration:
+            res["administration_duration_min"] = duration
+            res["duration_min"] = max(int(res.get("duration_min", 0) or 0), math.ceil(duration))
+
+    def _start_timed_fluid(state, action):
+        """Queue a crystalloid order to run evenly over its stated duration."""
+        queue = state.setdefault("timed_fluids", [])
+        now = int(state.get("sim_time", 0))
+        # A second bag follows the one still running rather than doubling the rate.
+        start = max([now] + [item["start"] + item["duration"] for item in queue])
+        duration = float(action["administration_duration_min"])
+        queue.append({"fluid_type": action["fluid_type"], "rate": action.get("rate", "standard"),
+                      "volume_ml": float(action["volume_ml"]), "delivered_ml": 0.0,
+                      "start": start, "duration": duration})
+        return {
+            "fluid_type": action["fluid_type"], "volume_ml": action["volume_ml"],
+            "administration_duration_min": duration,
+            "delivery_starts_at_min": start, "delivery_due_at_min": start + duration,
+            "duration_min": math.ceil(start - now + duration),
+            "cumulative_ml": state["treatments"]["cumulative_crystalloid_ml"],
+        }
+
+
+    def _advance_with_timed_fluids(state, elapsed):
+        """Advance the clock, delivering any timed crystalloid minute by minute.
+
+        Without a timed fluid the clock advances in one call, exactly as before. With
+        one, each minute's share goes through the same fluid transition, counting the
+        volume already given from that order so the saturating response adds up to
+        the same whole-bag effect.
+        """
+        if not state.get("timed_fluids"):
+            apply_natural_disease(state, elapsed)
+            state["sim_time"] += elapsed
+            return
+        for _ in range(int(elapsed)):
+            now = state["sim_time"] + 1
+            for item in state["timed_fluids"]:
+                target = item["volume_ml"] * min(1, max(0, (now - item["start"]) / item["duration"]))
+                change = target - item["delivered_ml"]
+                if change <= 0:
+                    continue
+                state["_fluid_delivery"] = {"before_ml": item["delivered_ml"]}
+                try:
+                    fluid_transition(state, change, item["fluid_type"], item["rate"])
+                finally:
+                    state.pop("_fluid_delivery", None)
+                item["delivered_ml"] = target
+            state["timed_fluids"] = [item for item in state["timed_fluids"]
+                                     if item["delivered_ml"] < item["volume_ml"]]
+            apply_natural_disease(state, 1)
+            state["sim_time"] = now
+
     state = st.session_state.state
     if state.get("engine_family"):
         from family_engine import execute_family_bundle
@@ -7305,6 +7403,9 @@ def execute_bundle(parsed):
             "reassess_delay": None,
             "elapsed_min": 0,
         }
+
+    if parsed.get("clarification"):
+        return {"clarification": parsed["clarification"], "executed": False}
 
     summaries = []
     reassess_delay = None
@@ -7486,7 +7587,10 @@ def execute_bundle(parsed):
 
     for a in parsed["actions"]:
         if a["type"] == "fluid":
-            res = fluid_transition(state, a["volume_ml"], a["fluid_type"], a["rate"])
+            if a.get("administration_duration_min"):
+                res = _start_timed_fluid(state, a)
+            else:
+                res = fluid_transition(state, a["volume_ml"], a["fluid_type"], a["rate"])
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -7498,6 +7602,7 @@ def execute_bundle(parsed):
 
         elif a["type"] == "beta_blocker":
             res = beta_blocker_transition(state, a["agent"], a["dose_mg"], a["route"])
+            _record_administration_time(res, a)
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -7509,6 +7614,7 @@ def execute_bundle(parsed):
 
         elif a["type"] == "diltiazem":
             res = diltiazem_transition(state, a["dose_mg"], a["route"])
+            _record_administration_time(res, a)
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -7517,6 +7623,7 @@ def execute_bundle(parsed):
 
         elif a["type"] == "amiodarone":
             res = amiodarone_transition(state, a["dose_mg"], a["route"])
+            _record_administration_time(res, a)
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -7525,6 +7632,7 @@ def execute_bundle(parsed):
 
         elif a["type"] == "furosemide":
             res = furosemide_transition(state, a["dose_mg"], a["route"])
+            _record_administration_time(res, a)
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -7711,6 +7819,7 @@ def execute_bundle(parsed):
                 state, a.get("agent", "broad-spectrum antibiotics"),
                 dose_g=a.get("dose_g"), route=a.get("route")
             )
+            _record_administration_time(res, a)
             summaries.append(res); max_action_duration = max(max_action_duration, res["duration_min"])
             st.session_state.last_executed_action = {
                 "type": "antibiotics", "agent": a.get("agent"),
@@ -7746,8 +7855,7 @@ def execute_bundle(parsed):
         elapsed = max_action_duration
 
     if elapsed > 0:
-        apply_natural_disease(state, elapsed)
-        state["sim_time"] += elapsed
+        _advance_with_timed_fluids(state, elapsed)
     # When FiO2 alone is reduced, ongoing recruitment may still improve the
     # underlying lung state, but the learner-facing response must not imply that
     # lowering FiO2 directly raised saturation. Stability is allowed; an increase
@@ -8485,11 +8593,13 @@ with st.container(key="encounter-console"):
                         st.write("Bag-mask assisted ventilation")
                 st.write(f'Cumulative crystalloid: {tr["cumulative_crystalloid_ml"]} mL')
                 remaining = st.session_state.state.get('family_state', {}).get('pending_fluid_ml', 0)
-                for delivery in st.session_state.state.get('generated_state', {}).get('native_deliveries', []):
+                timed_deliveries = (st.session_state.state.get('generated_state', {}).get('native_deliveries', [])
+                                    + st.session_state.state.get('family_state', {}).get('deliveries', []))
+                for delivery in timed_deliveries:
                     if delivery.get('key', [None])[0] == 'fluid':
-                        st.write(f"Fluid order: {delivery['amount']:g} mL over {delivery['duration']:g} min; delivered {delivery['delivered']:g} mL.")
+                        st.write(f"Fluid order: {delivery['amount']:g} mL over {delivery['duration']:g} min; delivered {delivery['delivered']:.0f} mL.")
                 if remaining:
-                    st.write(f'Crystalloid pending: {remaining:g} mL. Delivery continues as simulation time advances.')
+                    st.write(f'Crystalloid pending: {remaining:.0f} mL. Delivery continues as simulation time advances.')
                 if st.session_state.state.get('engine_family') == 'generated':
                     st.caption('Orders and tests do not automatically wait for completion. Specify a reassessment interval to advance time.')
                 if tr["metoprolol_total_mg"] > 0:
@@ -8895,9 +9005,11 @@ with st.container(key="encounter-console"):
                     elif "volume_ml" in s:
                         labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')
                     elif s.get("agent") == "furosemide":
-                        labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}')
+                        labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}'
+                                      + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
                     elif "agent" in s:
-                        labels.append(f'{s["agent"]} {s["dose_mg"]:g} mg {s["route"]}')
+                        labels.append(f'{s["agent"]} {s["dose_mg"]:g} mg {s["route"]}'
+                                      + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
                     elif s.get("support_type") == "procedural_sedation":
                         labels.append(procedural_sedation_label(s))
                     elif "energy_j" in s:
@@ -8957,6 +9069,8 @@ with st.container(key="encounter-console"):
                                 antibiotic += f' {s.get("dose_g"):g} g'
                             if s.get("route"):
                                 antibiotic += f' {s.get("route")}'
+                        if s.get("administration_duration_min"):
+                            antibiotic += f' over {s["administration_duration_min"]:g} min'
                         labels.append(antibiotic)
 
                 diagnostic_summaries = sorted(

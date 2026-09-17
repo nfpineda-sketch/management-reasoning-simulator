@@ -51,4 +51,12 @@ def format_administration(record):
         parts.append(f"{amount:g} {unit}")
     if record.get("route"):
         parts.append(str(record["route"]))
-    return " ".join(parts) + " · minute " + str(record.get("time_min", "—"))
+    text = " ".join(parts) + " · minute " + str(record.get("time_min", "—"))
+    duration = record.get("administration_duration_min")
+    if duration:
+        # A timed dose names what has gone in, not only what was ordered.
+        ordered = record.get("ordered_dose_g", record.get("ordered_dose_mg", record.get("ordered_dose")))
+        text += f" · over {duration:g} min"
+        if record.get("administration_status") == "in_progress" and isinstance(ordered, (int, float)):
+            text += f" · {amount:g} of {ordered:g} {unit} given so far"
+    return text

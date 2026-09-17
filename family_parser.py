@@ -421,7 +421,12 @@ def _parse_piece_core(piece, inherited=None):
             fluid_type = "lactated Ringer's"
         elif re.search(r"\b(?:crystalloid|cristaloides?)\b", body):
             fluid_type = "crystalloid"
-        return [{"type": "fluid", "volume_ml": volume, "fluid_type": fluid_type}], verb
+        fluid = {"type": "fluid", "volume_ml": volume, "fluid_type": fluid_type}
+        # A stated route is kept so the engine can confirm it; none is assumed.
+        route = _route(body)
+        if route:
+            fluid["route"] = route
+        return [fluid], verb
 
     medicines = []
     for kind, agents in _AGENTS.items():

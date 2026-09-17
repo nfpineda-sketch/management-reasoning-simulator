@@ -10,6 +10,7 @@ EXECUTION_VERSION = "0.24.2"
 
 from copy import deepcopy
 import math
+import re
 
 FAMILY_ENGINE_VERSION = 1
 FAMILIES = frozenset({"pneumonia", "pulmonary_edema", "acs", "pulmonary_embolism", "asthma", "gi_bleed", "hypoglycemia", "opioid"})
@@ -105,6 +106,10 @@ def _validate(state, parsed):
         elif kind == "fluid":
             if not _number(a.get("volume_ml"), 1, 3000) or not a.get("fluid_type"):
                 return None, "Specify the crystalloid and confirm the bolus volume in mL (up to 3000 mL per order)."
+            if a.get("route") is not None:
+                a["route"] = _ROUTES.get(str(a["route"]).strip().lower())
+                if a["route"] not in {"IV", "IO"}:
+                    return None, "A crystalloid bolus is given IV or IO. Please specify the route."
         elif kind == "cardioversion":
             if a.get("synchronized") is not True or not _number(a.get("energy_j"), 1, 360):
                 return None, "Specify synchronized cardioversion and its energy in joules."
@@ -164,8 +169,6 @@ def _validate(state, parsed):
         if a.get("administration_duration_min") is not None:
             if kind not in set(_MEDICINES) | {"fluid", "blood", "anticoagulation"} or not _number(a["administration_duration_min"], 1/60, 120):
                 return None, "Specify a positive supported delivery duration for a fluid, blood or fixed-dose medication."
-            if state.get("engine_family") != "generated":
-                return None, "Timed administration is available in generated encounters."
         normalized.append(a)
         remember_validated_support(validation_state, a)
     return normalized, None
@@ -201,10 +204,89 @@ def _initialize(state):
     state.setdefault("hidden", {})
 
 
+_TIMED_FIELD = {"fluid": "volume_ml", "blood": "units", "dextrose": "dose_g", "anticoagulation": "dose"}
+
+
+def _medicine_effect(state, a, amount):
+    """Apply ``amount`` of a medicine's modeled effect.
+
+    An untimed order applies its whole dose at once, exactly as before. A timed
+    order applies the part delivered in each simulated minute.
+    """
+    f, kind = state["family_state"], a["type"]
+    if kind == "dextrose":
+        f["dextrose_g"] += amount
+    elif kind == "naloxone":
+        f["naloxone"] += min(1.4, amount / (.4 if a["route"] in {"IV", "IO"} else 2))
+    elif kind == "bronchodilator":
+        f["bronchodilation"] = min(1.3, f["bronchodilation"] + min(.8, amount / 5))
+    elif kind == "diuretic":
+        f["diuretic_dose"] += amount
+    elif kind in {"antibiotics", "steroid"}:
+        exposure = "antibiotic_exposure" if kind == "antibiotics" else "steroid_exposure"
+        f[exposure] = min(1, f[exposure] + amount / _EXPOSURE_MG[kind][str(a["agent"]).lower()])
+    elif kind == "anticoagulation":
+        scale = 5000 if a["units"] in {"units", "U", "IU"} else 70
+        f["anticoagulant_exposure"] = min(1, f["anticoagulant_exposure"] + amount / scale)
+
+
+def _queue_delivery(state, a, summary):
+    """Deliver a timed order evenly over its stated duration on the simulation clock."""
+    f, tr, kind = state["family_state"], state["treatments"], a["type"]
+    field = _TIMED_FIELD.get(kind, "dose_mg")
+    duration = float(a["administration_duration_min"])
+    queue = f.setdefault("deliveries", [])
+    key = [kind, a.get("agent")]
+    # A second bag of the same order follows the first rather than doubling the rate.
+    start = max([f["elapsed"]] + [item["start"] + item["duration"] for item in queue
+                                  if item["key"] == key and item["delivered"] < item["amount"]])
+    record_index = None
+    if kind in _MEDICINES or kind == "anticoagulation":
+        record_index = len(tr["administered_medications"]) - 1
+        record = tr["administered_medications"][record_index]
+        record["ordered_" + field] = a[field]
+        record[field] = 0
+        record["administration_duration_min"] = duration
+        record["administration_status"] = "in_progress"
+    queue.append({"key": key, "field": field, "amount": float(a[field]), "delivered": 0.0,
+                  "start": start, "duration": duration, "record_index": record_index,
+                  "action": deepcopy(a)})
+    offset = int(state.get("sim_time", 0)) - f["elapsed"]
+    summary["administration_duration_min"] = duration
+    summary["delivery_starts_at_min"] = start + offset
+    summary["delivery_due_at_min"] = start + offset + duration
+    summary["duration_min"] = math.ceil(start - f["elapsed"] + duration)
+
+
+def _advance_deliveries(state):
+    """Deliver this minute's share of each timed order; return fluid and blood given."""
+    f, tr = state["family_state"], state["treatments"]
+    given = {"fluid": 0.0, "blood": 0.0}
+    for item in f.get("deliveries", []):
+        target = item["amount"] * min(1, max(0, (f["elapsed"] - item["start"]) / item["duration"]))
+        change = target - item["delivered"]
+        if change <= 0:
+            continue
+        item["delivered"] = target
+        kind = item["key"][0]
+        if kind in given:
+            given[kind] += change
+            continue
+        _medicine_effect(state, item["action"], change)
+        record = tr["administered_medications"][item["record_index"]]
+        record[item["field"]] = round(target, 6)
+        if target >= item["amount"]:
+            record["administration_status"] = "completed"
+            record["completed_at_min"] = int(state.get("sim_time", 0)) + 1
+    return given
+
+
 def _order(state, a):
     f = state["family_state"]
     tr = state["treatments"]
     kind = a["type"]
+    # Generated cases schedule timed delivery in generated_delivery; only bank cases queue here.
+    timed = a.get("administration_duration_min") is not None and state.get("engine_family") != "generated"
     duration = 1
     label = kind.replace("_", " ").capitalize()
     if kind == "airway_preparation":
@@ -219,43 +301,43 @@ def _order(state, a):
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} administered"
         duration = 0
     elif kind == "fluid":
+        # The pending total includes timed volume, so the bedside shows what is still to run.
         f["pending_fluid_ml"] += a["volume_ml"]
         duration = math.ceil(a["volume_ml"] / 50)
-        label = f"{a['fluid_type']} {a['volume_ml']:g} mL started"
+        label = f"{a['fluid_type']} {a['volume_ml']:g} mL" + (f" {a['route']}" if a.get("route") else "") + " started"
     elif kind == "blood":
         f["pending_blood_units"] += a["units"]
         duration = int(30 * a["units"])
         label = f"Packed red cells: {a['units']:g} unit(s) ordered; transfusion started"
     elif kind == "dextrose":
-        f["dextrose_g"] += a["dose_g"]
+        if not timed:
+            _medicine_effect(state, a, a["dose_g"])
         duration = 3 if a["route"] in {"IV", "IO"} else 10
         label = f"Glucose {a['dose_g']:g} g {a['route']}"
     elif kind == "naloxone":
-        f["naloxone"] += min(1.4, a["dose_mg"] / (.4 if a["route"] in {"IV", "IO"} else 2))
+        if not timed:
+            _medicine_effect(state, a, a["dose_mg"])
         duration = 2 if a["route"] in {"IV", "IO"} else 4
         label = f"Naloxone {a['dose_mg']:g} mg {a['route']}"
     elif kind == "bronchodilator":
-        f["bronchodilation"] = min(1.3, f["bronchodilation"] + min(.8, a["dose_mg"] / 5))
+        if not timed:
+            _medicine_effect(state, a, a["dose_mg"])
         duration = 5
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']}"
     elif kind in {"antibiotics", "steroid", "diuretic"}:
         field = {"antibiotics": "antibiotic_at", "steroid": "steroid_at", "diuretic": "diuretic_at"}[kind]
         if f[field] is None:
             f[field] = f["elapsed"]
-        if kind == "diuretic":
-            f["diuretic_dose"] += a["dose_mg"]
-        else:
-            exposure = "antibiotic_exposure" if kind == "antibiotics" else "steroid_exposure"
-            f[exposure] = min(1, f[exposure] + a["dose_mg"] / _EXPOSURE_MG[kind][str(a["agent"]).lower()])
+        if not timed:
+            _medicine_effect(state, a, a["dose_mg"])
         tr[kind] = {"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"]}
         duration = 5
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} administered"
     elif kind in {"ppi", "aspirin", "anticoagulation"}:
         f[{"anticoagulation": "anticoagulated"}.get(kind, kind)] = True
         tr[kind] = deepcopy(a)
-        if kind == "anticoagulation":
-            scale = 5000 if a["units"] in {"units", "U", "IU"} else 70
-            f["anticoagulant_exposure"] = min(1, f["anticoagulant_exposure"] + a["dose"] / scale)
+        if kind == "anticoagulation" and not timed:
+            _medicine_effect(state, a, a["dose"])
         label = f"{a.get('agent', kind)} {a.get('dose_mg', a.get('dose')):g} {a.get('units', 'mg')} {a['route']} administered"
     elif kind == "oxygen":
         device = a["device"]
@@ -337,17 +419,30 @@ def _order(state, a):
     if kind in {"oxygen", "niv", "norepinephrine", "nitroglycerin", "dobutamine", "ventilator_adjustment"}:
         tr.setdefault("active_orders", {})[kind] = deepcopy(a)
     tr.setdefault("order_history", []).append(deepcopy(a))
-    if a.get("administration_duration_min") is not None:
+    if a.get("administration_duration_min") is not None and not timed:
         summary["administration_duration_min"] = a["administration_duration_min"]
         summary["duration_min"] = math.ceil(a["administration_duration_min"])
+    if timed:
+        _queue_delivery(state, a, summary)
+        summary["label"] = re.sub(r" (?:administered|started)$", "", summary["label"]) + \
+            f" started over {summary['administration_duration_min']:g} min"
     return summary
 
 
 def _minute(state):
     f, family = state["family_state"], state["engine_family"]
     f["elapsed"] += 1
-    fluid = min(50, f["pending_fluid_ml"])
-    blood = min(1 / 30, f["pending_blood_units"])
+    if f.get("deliveries"):
+        # Timed volume runs at its own rate; any untimed bolus keeps running alongside.
+        timed_remaining = {kind: sum(item["amount"] - item["delivered"] for item in f["deliveries"]
+                                     if item["key"][0] == kind) for kind in ("fluid", "blood")}
+        given = _advance_deliveries(state)
+        fluid = given["fluid"] + min(50, max(0, f["pending_fluid_ml"] - timed_remaining["fluid"]))
+        blood = given["blood"] + min(1 / 30, max(0, f["pending_blood_units"] - timed_remaining["blood"]))
+        f["deliveries"] = [item for item in f["deliveries"] if item["delivered"] < item["amount"]]
+    else:
+        fluid = min(50, f["pending_fluid_ml"])
+        blood = min(1 / 30, f["pending_blood_units"])
     glucose = min(10, f["dextrose_g"])
     f["pending_fluid_ml"] = max(0, f["pending_fluid_ml"] - fluid)
     f["pending_blood_units"] = max(0, f["pending_blood_units"] - blood)
