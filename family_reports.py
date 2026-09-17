@@ -43,6 +43,13 @@ def format_result(test_id, result):
         # Every POCUS report uses the same structure, normal findings included.
         from pocus_report import format_pocus
         return format_pocus(result, heading=label)
+    if test_id == "ecg":
+        # The tracing is the result. The resident reads it; the report never names the rhythm.
+        timing = (f"Performed at minute {result['collected_at_min']:g} · "
+                  if type(result.get("collected_at_min")) in {int, float} else "")
+        if result.get("status") not in (None, "available"):
+            return f"{label}: {timing}{result.get('reason') or 'No tracing could be acquired.'}"
+        return f"{label}: {timing}12-lead tracing available in ECG recordings at the bedside."
     report = result.get("report") if isinstance(result.get("report"), str) else None
     parts = [report] if report else []
     if type(result.get("collected_at_min")) in {int, float}:

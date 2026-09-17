@@ -70,7 +70,7 @@ _DIAGNOSTICS = {
 _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
     r"(?P<verb>monitor|assess|vigilar|monitorizar|repeat|repetir|repito|repite|cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
-    r"stop|discontinue|increase|decrease|titrate|continue|change|set|switch|transfuse|nebulize|"
+    r"stop|discontinue|increase|decrease|titrate|continue|change|set|switch|adjust|modify|reduce|wean|transfuse|nebulize|"
     r"consult|call|activate|admit|transfer|intubate|ventilate|reassess|re-assess|recheck|reevaluate|"
     r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|iniciar|inicio|inicie|infundir|indicar|indico|"
     r"solicitar|solicito|solicite|pedir|pido|medir|mido|controlar|control|obtener|realizar|hacer|"
@@ -162,7 +162,7 @@ def _medication(text, kind, agent):
 def _operation(verb):
     if verb in {"stop", "discontinue", "suspender", "suspendo", "detener"}:
         return "stop"
-    if verb in {"increase", "decrease", "titrate", "change", "set", "switch", "aumentar", "aumento", "disminuir", "disminuyo", "titular", "ajustar", "cambiar"}:
+    if verb in {"increase", "decrease", "titrate", "change", "set", "switch", "adjust", "modify", "reduce", "wean", "aumentar", "aumento", "disminuir", "disminuyo", "titular", "ajustar", "cambiar"}:
         return "adjust"
     if verb in {"continue", "continuar", "mantener"}:
         return "continue"
@@ -404,7 +404,12 @@ def _parse_piece_core(piece, inherited=None):
     if re.search(r"\b(?:prbcs?|packed red (?:blood )?cells|blood|sangre|globulos rojos|concentrad[oa]s? de hematies|hematies)\b", body):
         units, _ = _amount(body, r"units?|unidades?|u")
         return [{"type": "blood", "units": units}], verb
-    if re.search(r"\b(?:saline|normal saline|ns|sf|sf|ringer|lactated ringers?|lr|crystalloid|cristaloides?|salino|suero fisiologico|solucion fisiologica|fluid|fluids|volumen)\b", body):
+    if re.search(r"\b(?:saline|normal saline|ns|sf|sf|ringer|lactated ringers?|lr|crystalloid|cristaloides?|salino|suero fisiologico|solucion fisiologica|sueros?|fluid|fluids|volumen)\b", body):
+        if _operation(verb) == "stop":
+            # "Stop the normal saline" ends a running infusion; it is not a new bolus.
+            fluid_type = ("normal saline" if re.search(r"\b(?:saline|ns|sf|salino|fisiologico|fisiologica)\b", body)
+                          else "lactated Ringer's" if re.search(r"\b(?:ringer|ringers|lr)\b", body) else None)
+            return [{"type": "fluid", "operation": "stop", "fluid_type": fluid_type}], verb
         volume, units = _amount(body, r"ml|cc|lts?|liters?|litres?|litros?|l")
         if volume is not None and units not in {"ml", "cc"}:
             volume *= 1000

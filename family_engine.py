@@ -103,6 +103,9 @@ def _validate(state, parsed):
                 return None, f"The specified {kind} agent has no modeled response in this encounter. Please clarify the medication."
             if kind == "dextrose" and a["route"] == "PO" and str(state.get("observable", {}).get("mental_status", "")).lower() != "alert":
                 return None, "The patient is not fully alert. Please clarify the intended route and airway protection before oral glucose."
+        elif kind == "fluid" and a.get("operation") == "stop":
+            # "Stop further fluids" with nothing running withholds fluid; it is recorded, not questioned.
+            pass
         elif kind == "fluid":
             if not _number(a.get("volume_ml"), 1, 3000) or not a.get("fluid_type"):
                 return None, "Specify the crystalloid and confirm the bolus volume in mL (up to 3000 mL per order)."
@@ -281,6 +284,30 @@ def _advance_deliveries(state):
     return given
 
 
+def _stop_fluid(state):
+    """Stop every running crystalloid and return the volume that will not be given.
+
+    Bank cases hold untimed volume in pending_fluid_ml and timed volume in the
+    family_state queue; generated cases queue it in generated_state. Each queued
+    bag is closed at what it has delivered, so its record stays true.
+    """
+    f = state["family_state"]
+    remaining = max(0.0, float(f.get("pending_fluid_ml", 0)))
+    f["pending_fluid_ml"] = 0
+    for item in f.get("deliveries", []):
+        if item["key"][0] == "fluid":
+            item["amount"] = item["delivered"]
+    g = state.get("generated_state") or {}
+    for item in g.get("deliveries", []):
+        if item["key"][0] == "fluid" and item["delivered"] < item["amount"]:
+            elapsed = g.get("elapsed", 0) - item["start"]
+            item["amount"] = item["delivered"]
+            # Closing the bag at its elapsed time keeps the linear delivery formula at the amount given.
+            if elapsed > 0:
+                item["duration"] = elapsed
+    return remaining
+
+
 def _order(state, a):
     f = state["family_state"]
     tr = state["treatments"]
@@ -299,6 +326,11 @@ def _order(state, a):
         duration = 0
     elif kind in {"beta_blocker", "diltiazem", "amiodarone", "procedural_sedation"}:
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} administered"
+        duration = 0
+    elif kind == "fluid" and a.get("operation") == "stop":
+        remaining = _stop_fluid(state)
+        label = (f"stopping crystalloid ({remaining:.0f} mL not given)" if remaining > 0
+                 else "withholding further fluid (none was running)")
         duration = 0
     elif kind == "fluid":
         # The pending total includes timed volume, so the bedside shows what is still to run.

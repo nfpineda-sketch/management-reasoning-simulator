@@ -6377,6 +6377,9 @@ def clinical_interpreter(text):
         else:
             actions.append({"type": "antibiotics", "agent": "broad-spectrum antibiotics", "dose_g": None, "route": None})
 
+    # "Stop the normal saline" ends a running infusion; it is never a new bolus.
+    if re.search(r"\b(?:stop|discontinue)\b[^.;]{0,30}\b(?:fluids?|saline|ns|lr|ringer'?s?|crystalloid|bolus)\b", t):
+        actions.append({"type": "fluid_stop"})
     if re.search(r"\b(?:admit|admission|transfer)\b", t) and re.search(r"\b(?:icu|intensive care|critical care)\b", t):
         actions.append({"type": "disposition", "destination": "ICU"})
 
@@ -7594,6 +7597,14 @@ def execute_bundle(parsed):
     reassess_delay = None
 
     for a in parsed["actions"]:
+        if a["type"] == "fluid_stop":
+            remaining = sum(item["volume_ml"] - item["delivered_ml"] for item in state.get("timed_fluids", []))
+            state["timed_fluids"] = []
+            summaries.append({"label": (f"stopping crystalloid ({remaining:.0f} mL not given)" if remaining > 0
+                                        else "withholding further fluid (none was running)"),
+                              "duration_min": 0})
+            continue
+
         if a["type"] == "fluid":
             if a.get("administration_duration_min"):
                 res = _start_timed_fluid(state, a)

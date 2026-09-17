@@ -263,6 +263,7 @@ def execute(state,parsed):
                 delay=1 if a['diagnostic']=='ecg' else case['investigations'][a['diagnostic']].get('duration_min',0)
                 pending.append({'available_at':candidate['sim_time']+delay,'summary':collect(candidate,a['diagnostic'],delay)});continue
             summary=_order(candidate,a)
+            if k=='fluid' and a.get('operation')=='stop':summaries.append(summary);continue
             schedule_delivery(candidate,a,summary)
             queued=k=='fluid' or (native(a) and a.get('administration_duration_min') is not None)
             if queued:
