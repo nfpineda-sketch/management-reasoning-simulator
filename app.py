@@ -8599,7 +8599,7 @@ with st.container(key="encounter-console"):
                         st.write(format_administration(medication))
                     if tr.get("bag_mask"):
                         st.write("Bag-mask assisted ventilation")
-                st.write(f'Cumulative crystalloid: {tr["cumulative_crystalloid_ml"]} mL')
+                st.write(f'Cumulative crystalloid: {float(tr["cumulative_crystalloid_ml"]):.0f} mL')
                 remaining = st.session_state.state.get('family_state', {}).get('pending_fluid_ml', 0)
                 timed_deliveries = (st.session_state.state.get('generated_state', {}).get('native_deliveries', [])
                                     + st.session_state.state.get('family_state', {}).get('deliveries', []))
@@ -9006,7 +9006,13 @@ with st.container(key="encounter-console"):
                 # patient state and produce one learner-facing update at the reassessment time.
                 labels = []
                 for s in summaries:
-                    if "volume_ml" in s and s.get("fluid_type"):
+                    # A call or admission request reads as part of "After ..., BP ...";
+                    # its stored label ("ICU contacted; definitive ...") does not.
+                    if s.get("type") in {"consult", "reperfusion_referral"}:
+                        labels.append(f'contacting {s.get("service") or s.get("destination")} (no intervention yet)')
+                    elif s.get("type") == "disposition":
+                        labels.append(f'requesting admission to {s.get("destination")}')
+                    elif "volume_ml" in s and s.get("fluid_type"):
                         labels.append(_fluid_order_label(s, st.session_state.state["sim_time"]))
                     elif s.get("label"):
                         labels.append(str(s["label"]))

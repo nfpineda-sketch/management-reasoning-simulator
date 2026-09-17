@@ -266,3 +266,32 @@ def test_new_treatment_requires_reasoning_then_executes_the_held_order_once(shar
     medications = shared_app.session_state.state["treatments"]["administered_medications"]
     assert len(medications) == 1 and medications[0]["dose_g"] == 25
     assert shared_app.session_state.management_trace[-1]["execution_status"] == "executed"
+
+
+def test_a_consult_or_admission_reads_as_part_of_the_patient_response(shared_app, engine):
+    # Reported: "After ICU contacted; definitive intervention has not yet occurred, BP ...".
+    widget(shared_app.selectbox, "Clinical problem").set_value(challenge_for("pneumonia")).run()
+    widget(shared_app.button, "Begin Encounter").click().run()
+    generated = encounter(engine, "pneumonia")
+    shared_app.session_state.state = deepcopy(generated["state"])
+    shared_app.run()
+    widget(shared_app.radio, "Encounter").set_value("Treat").run()
+    for order, lead in (
+        ("Sepsis from pneumonia. My priority is the right level of care. Consult ICU. "
+         "I expect a stable blood pressure. Reassess in 15 minutes BP and HR.",
+         "After contacting ICU (no intervention yet), BP "),
+        ("Sepsis from pneumonia. My priority is the right level of care. Admit to ICU. "
+         "I expect a stable blood pressure. Reassess in 15 minutes BP and HR.",
+         "After requesting admission to ICU, BP "),
+    ):
+        shared_app.text_area[0].set_value(order)
+        widget(shared_app.button, "Submit").click().run()
+        assert not shared_app.exception
+        updates = [e["text"] for e in shared_app.session_state.events if e["kind"] == "clinical_update"]
+        assert updates, (shared_app.session_state.events, shared_app.session_state.pending_reasoning)
+        update = updates[-1]
+        assert update.startswith(lead), update
+        assert "definitive intervention" not in update
+    assert any(item.value.startswith("Cumulative crystalloid: ") and item.value.endswith(" mL")
+               and ".0 mL" not in item.value for item in shared_app.markdown), \
+        [item.value for item in shared_app.markdown if "crystalloid" in item.value]
