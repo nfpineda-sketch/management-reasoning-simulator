@@ -185,3 +185,12 @@ def test_a_case_that_needed_no_repair_records_no_codes():
     from generated_case import generate_ai_encounter
     provenance = generate_ai_encounter("R1-05", clean_base(), client=AuthorClient(), seed=7)["spec"]["provenance"]
     assert provenance["correction_count"] == 0 and provenance["correction_validation_codes"] == []
+
+
+def test_even_a_usual_low_dose_collapses_the_pressure():
+    # With sildenafil, 20 mcg/min is not a safe small dose: the fall saturates early.
+    low = {"type": "nitroglycerin", "rate_mcg_min": 20, "operation": "start"}
+    control, hazard = preload_dependent(None), preload_dependent("pde5_inhibitor")
+    run(control, low, wait(10))
+    run(hazard, low, wait(10))
+    assert control["observable"]["sbp"] - hazard["observable"]["sbp"] >= 25

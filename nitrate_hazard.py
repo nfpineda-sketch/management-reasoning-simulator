@@ -14,22 +14,22 @@ CAUSES = {
     "pde5_inhibitor": {
         "label": "phosphodiesterase-5 inhibitor taken within 48 hours",
         "cue": "the medications history names the drug (for example sildenafil, tadalafil or vardenafil) and when it was taken",
-        "sbp_per_mcg_min": .50, "max_fraction": .55,
+        "half_effect_mcg_min": 10, "max_fraction": .55,
     },
     "severe_aortic_stenosis": {
         "label": "severe aortic stenosis",
         "cue": "the cardiac examination describes an ejection systolic murmur, or the medical history records aortic stenosis",
-        "sbp_per_mcg_min": .45, "max_fraction": .50,
+        "half_effect_mcg_min": 15, "max_fraction": .50,
     },
     "lvot_obstruction": {
         "label": "left ventricular outflow tract obstruction (hypertrophic obstructive cardiomyopathy)",
         "cue": "the cardiac examination describes a systolic murmur, or the medical history records hypertrophic cardiomyopathy",
-        "sbp_per_mcg_min": .45, "max_fraction": .50,
+        "half_effect_mcg_min": 15, "max_fraction": .50,
     },
     "right_ventricular_infarction": {
         "label": "right ventricular infarction",
         "cue": "ecg_profile is st_elevation_inferior and the POCUS RV finding describes a dilated or hypokinetic right ventricle",
-        "sbp_per_mcg_min": .40, "max_fraction": .45,
+        "half_effect_mcg_min": 15, "max_fraction": .45,
     },
 }
 ONSET_TAU_MIN = 2.0        # the fall develops within minutes of starting nitroglycerin
@@ -117,7 +117,9 @@ def step(state, fluid_ml):
     g, treatments = state["generated_state"], state["coupled_state"]["treatments"]
     rate = float(treatments.get("nitroglycerin_rate_mcg_min") or 0) if treatments.get("nitroglycerin") else 0.0
     baseline = float(case["observable"]["sbp"])
-    target = min(spec["max_fraction"] * baseline, spec["sbp_per_mcg_min"] * rate)
+    # Even a usual dose collapses the pressure: the fall saturates, reaching half of its
+    # maximum at half_effect_mcg_min rather than growing in proportion to the rate.
+    target = spec["max_fraction"] * baseline * rate / (rate + spec["half_effect_mcg_min"]) if rate else 0.0
     drop = g.get("nitrate_drop", 0.0)
     drop += (target - drop) / (ONSET_TAU_MIN if target > drop else RECOVERY_TAU_MIN)
     # Volume refills the pooled venous capacitance; while nitroglycerin still runs
