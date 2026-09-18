@@ -84,6 +84,7 @@ def initialize(state):
     # fell to it within minutes, as if fluid had worsened oxygenation. Anchor it to
     # the authored arrival value, as the gases are; changes still come from the core.
     state['generated_state']['spo2_anchor']=float(case['observable']['spo2'])-core_spo2_target(s)
+    state['generated_state']['arrival_tissue_perfusion']=float(h['tissue_perfusion'])
     state['generated_state']['lab_reference']=diagnostic_core.vbg_transition(deepcopy(s),0)['result']
     state['generated_state']['abg_reference']=diagnostic_core.abg_transition(deepcopy(s),0)['result']
     state['hidden']=deepcopy(h)
@@ -124,6 +125,15 @@ def transition(s,a):
     raise ValueError('Unsupported native intervention.')
 
 
+def hr_relief(state):
+    """Lower the heart rate as tissue perfusion recovers beyond its arrival value."""
+    g=state['generated_state']
+    if 'arrival_tissue_perfusion' not in g:
+        return 0.0  # a state saved before this adjustment behaves as before
+    gained=state['coupled_state']['hidden'].get('tissue_perfusion',0.0)-g['arrival_tissue_perfusion']
+    return -min(HR_RELIEF_MAX,HR_RELIEF_PER_PERFUSION*max(0.0,gained))
+
+
 def prepare_inputs(state):
     """Non-core disease responses enter the core before its pressure/flow update."""
     from generated_dynamics import event_progress,gain_at
@@ -138,7 +148,7 @@ def prepare_inputs(state):
         from nitrate_hazard import DBP_FRACTION
         delta['sbp']=delta.get('sbp',0)-g['nitrate_drop'];delta['dbp']=delta.get('dbp',0)-DBP_FRACTION*g['nitrate_drop']
     s['physiology_inputs']={'map':(delta.get('sbp',0)+2*delta.get('dbp',0))/3,
-       'pulse_pressure':delta.get('sbp',0)-delta.get('dbp',0),'hr':delta.get('hr',0),
+       'pulse_pressure':delta.get('sbp',0)-delta.get('dbp',0),'hr':delta.get('hr',0)+hr_relief(state),
        'spo2':delta.get('spo2',0)+g.get('spo2_anchor',0),'crt':delta.get('crt',0),'respiratory_rate':delta.get('respiratory_rate',0)}
     sedating=[e for e in g['events'] if e.get('mental_status_during') and e['exposure']*event_progress(e,g['elapsed'])>=e.get('mental_status_threshold',1)]
     s['physiology_inputs']['sedation_effect']=.5 if sedating else 0
@@ -196,6 +206,15 @@ def project(state,delta=None):
     for k,baseline in case['engine'].get('initial_labs',{}).items():
         change=labs[k]-ref[k] if k in {'lactate_mmol_l','bicarbonate_mmol_l','pco2_mm_hg'} else diagnostic_core.abg_transition(deepcopy(s),0)['result']['pao2_mm_hg']-g['abg_reference']['pao2_mm_hg'] if k=='pao2_mm_hg' else 0
         g['values'][k]=baseline+change+delta.get(k,0)
+    # A falling lactate clears over tens of minutes, not in one reassessment.
+    lactate=g['values'].get('lactate_mmol_l')
+    if lactate is not None and 'arrival_tissue_perfusion' in g:
+        shown,at=g.get('lactate_shown'),g.get('lactate_shown_at',g['elapsed'])
+        if shown is not None and lactate<shown:
+            elapsed=max(0,g['elapsed']-at)
+            lactate=shown+(lactate-shown)*(1-math.exp(-elapsed/LACTATE_CLEARANCE_TAU_MIN))
+        g['values']['lactate_mmol_l']=lactate
+        g['lactate_shown'],g['lactate_shown_at']=lactate,g['elapsed']
     # Gas changes use the inherited physiology, anchored to the authored initial sample.
     for k,v in g['values'].items():
         if k in BOUNDS and (not math.isfinite(v) or not BOUNDS[k][0]<=v<=BOUNDS[k][1]):
@@ -246,6 +265,14 @@ def tick(state):
 
 
 DYNAMIC_POCUS=('lv','ivc','lungs')
+
+# Adapter adjustments for generated cases only (faculty review pending). The shared
+# core keeps sinus HR near 88 + 25 x sympathetic drive, so a patient whose
+# perfusion recovered stayed at ~106/min; and its lactate cleared 3.2 -> 0.5 mmol/L
+# in 20 minutes. Bank cases and PS001 do not pass through this adapter.
+HR_RELIEF_PER_PERFUSION=30.0   # bpm lower per unit of tissue perfusion gained since arrival
+HR_RELIEF_MAX=20.0
+LACTATE_CLEARANCE_TAU_MIN=45.0 # a falling lactate approaches the core value with this time constant
 
 
 def arrival_core_pocus(case):

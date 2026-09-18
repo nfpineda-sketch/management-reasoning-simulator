@@ -471,16 +471,29 @@ def _order(state, a):
             f["oxygen_fio2"] = .85
     elif kind in {"consult", "reperfusion_referral"}:
         service = str(a.get("service") or a.get("destination"))
-        f["consultations"].append({"service": service, "time_min": state.get("sim_time", 0)})
-        label = f"{service} contacted; definitive intervention has not yet occurred"
+        earlier = next((c for c in f["consultations"] if c["service"] == service), None)
+        if earlier:
+            # A repeated call is recorded as such, not as a second consultation.
+            label = f"{service} already contacted at minute {earlier['time_min']}; not repeated"
+        else:
+            f["consultations"].append({"service": service, "time_min": state.get("sim_time", 0)})
+            label = f"{service} contacted; definitive intervention has not yet occurred"
         duration = 0
     elif kind == "disposition":
+        repeated = tr.get("disposition") == a["destination"]
         state["disposition"] = a["destination"]
         tr["disposition"] = a["destination"]
         f["handoff_requested"] = True
-        label = f"Transfer/admission requested: {a['destination']}"
+        label = (f"Admission to {a['destination']} already requested; not repeated" if repeated
+                 else f"Transfer/admission requested: {a['destination']}")
         duration = 0
+    else:
+        repeated = False
     summary = {"type": kind, "label": label, "duration_min": duration}
+    if kind in {"consult", "reperfusion_referral"} and earlier:
+        summary["repeated"] = True
+    if kind == "disposition" and repeated:
+        summary["repeated"] = True
     for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "service", "destination", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
         if key in a:
             summary[key] = a[key]

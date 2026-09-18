@@ -9038,9 +9038,12 @@ with st.container(key="encounter-console"):
                     # A call or admission request reads as part of "After ..., BP ...";
                     # its stored label ("ICU contacted; definitive ...") does not.
                     if s.get("type") in {"consult", "reperfusion_referral"}:
-                        labels.append(f'contacting {s.get("service") or s.get("destination")} (no intervention yet)')
+                        service = s.get("service") or s.get("destination")
+                        labels.append(f'{service} already contacted (not repeated)' if s.get("repeated")
+                                      else f'contacting {service} (no intervention yet)')
                     elif s.get("type") == "disposition":
-                        labels.append(f'requesting admission to {s.get("destination")}')
+                        labels.append(f'admission to {s.get("destination")} already requested (not repeated)'
+                                      if s.get("repeated") else f'requesting admission to {s.get("destination")}')
                     elif "volume_ml" in s and s.get("fluid_type"):
                         labels.append(_fluid_order_label(s, st.session_state.state["sim_time"]))
                     elif s.get("label"):

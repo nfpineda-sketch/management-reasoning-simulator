@@ -264,3 +264,60 @@ def test_a_two_category_fall_is_always_reported():
     state = preserved_heart_state()
     state["coupled_state"]["hidden"].update(contractile_reserve=.5, effective_contractility=.5, tissue_perfusion=.7)
     assert scan(state)["lv"] == "Moderately to severely reduced global contraction"
+
+
+# Repeated consult / admission --------------------------------------------------
+
+def test_a_repeated_consult_or_admission_is_recorded_as_not_repeated():
+    from family_engine import execute_family_bundle
+    from family_parser import parse_family_actions
+    state = patient()
+    order = "Consult cardiology. Admit to ICU. Reassess in 5 minutes."
+    execute_family_bundle(state, parse_family_actions(order))
+    result = execute_family_bundle(state, parse_family_actions(order))
+    assert [s.get("repeated") for s in result["action_summaries"] if s["type"] in {"consult", "disposition"}] == [True, True]
+    assert [c["service"] for c in state["family_state"]["consultations"]] == ["cardiology"]
+
+
+# Heart rate and lactate adjustments -------------------------------------------
+
+def test_the_heart_rate_falls_as_perfusion_recovers_beyond_arrival():
+    state = patient(tissue_perfusion=.3)
+    assert state["generated_state"]["arrival_tissue_perfusion"] == .3
+    state["coupled_state"]["hidden"]["tissue_perfusion"] = 1.0
+    assert adapter.hr_relief(state) == -adapter.HR_RELIEF_MAX
+    state["coupled_state"]["hidden"]["tissue_perfusion"] = .7
+    assert adapter.hr_relief(state) == pytest.approx(-12.0)
+    state["coupled_state"]["hidden"]["tissue_perfusion"] = .2
+    assert adapter.hr_relief(state) == 0
+
+
+def test_a_state_saved_before_the_adjustments_behaves_as_before():
+    state = patient()
+    state["generated_state"].pop("arrival_tissue_perfusion")
+    assert adapter.hr_relief(state) == 0
+
+
+def lactate_after(monkeypatch, core_change, minutes):
+    """Authored lactate 3.2; the core's lactate has moved by core_change after ``minutes``."""
+    state = patient()
+    g = state["generated_state"]
+    state["encounter_spec"]["clinical_case"]["engine"]["initial_labs"]["lactate_mmol_l"] = 3.2
+    reference = dict(g["lab_reference"])
+    g["lactate_shown"], g["lactate_shown_at"] = 3.2, g["elapsed"]
+    g["elapsed"] += minutes
+    monkeypatch.setattr(adapter.diagnostic_core, "vbg_transition",
+                        lambda s, delay: {"result": {**reference, "lactate_mmol_l": reference["lactate_mmol_l"] + core_change}})
+    adapter.project(state)
+    return g["values"]["lactate_mmol_l"]
+
+
+def test_a_falling_lactate_clears_with_a_time_constant(monkeypatch):
+    import math
+    # The core would show 0.5 mmol/L at once; the displayed value falls with tau 45 min.
+    expected = 3.2 - 2.7 * (1 - math.exp(-20 / adapter.LACTATE_CLEARANCE_TAU_MIN))
+    assert lactate_after(monkeypatch, -2.7, 20) == pytest.approx(expected)
+
+
+def test_a_rising_lactate_is_shown_at_once(monkeypatch):
+    assert lactate_after(monkeypatch, +1.0, 5) == pytest.approx(4.2)
