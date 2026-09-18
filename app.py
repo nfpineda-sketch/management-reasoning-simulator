@@ -5242,6 +5242,23 @@ def extract_explicit_reasoning(text):
         if m:
             thought = _clean_reasoning_phrase(m.group(1))
 
+    # A finding that "suggests" a diagnosis names the working model too:
+    # "Chest pressure suggests acute coronary syndrome." / "La hipotensión sugiere
+    # shock vasodilatador." An order is never the subject of such a sentence.
+    if not thought:
+        m = re.search(
+            r"(?:^|[.;]\s*)(?!(?:give|start|order|begin|administer|stop|increase|decrease|reassess|"
+            r"dar|administra|inicia|iniciar|pide|pedir|reeval)\w*\b)([^.;]{3,160}?)\s+"
+            r"(?:suggests?|is suggestive of|are suggestive of|points? to|is consistent with|are consistent with|"
+            r"is compatible with|are compatible with|favou?rs?|"
+            r"sugiere(?:n)?|orienta(?:n)? a|es compatible con|son compatibles con|es sugerente de)\s+"
+            r"(?:an?\s+|the\s+|un\s+|una\s+)?(.+?)(?=\s*,?\s*(?:so\b|therefore\b|because\b|por lo que\b|porque\b)|[.;]|$)",
+            joined, re.I,
+        )
+        if m:
+            # Keep the learner's whole statement: the finding is part of the model.
+            thought = _clean_reasoning_phrase(joined[m.start(1):m.end(2)])
+
     # When the learner explicitly states cause -> consequence, keep the full
     # causal statement as rationale and create a distinct problem representation
     # using only concepts already present in the learner's own words.

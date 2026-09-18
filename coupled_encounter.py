@@ -233,15 +233,37 @@ def tick(state):
     project(state,delta)
 
 
+DYNAMIC_POCUS=('lv','ivc','lungs')
+
+
+def arrival_core_pocus(case):
+    """The core's own LV/IVC/lung findings for this case at arrival.
+
+    The author writes the arrival POCUS in words and the core derives its findings
+    from the authored drivers; the two can disagree (a sildenafil case authored
+    "normal contractility" with drivers the core reads as a weak LV). Comparing
+    later scans with the core's arrival reading reports only real change.
+    """
+    h=deepcopy(INITIAL_HIDDEN);h.update(case['engine']['core_profile']['initial_hidden'])
+    h.update(preload_state=h['effective_volume'])
+    s={'case_id':'generated','engine_profile':CORE_VERSION,'hidden':h,'treatments':deepcopy(INITIAL_TREATMENTS)}
+    result=diagnostic_core.pocus_transition(s,0)['result']
+    return {key:result[key] for key in DYNAMIC_POCUS}
+
+
 def collect(state,study,duration):
     from generated_engine import _collect_diagnostic
     result=_collect_diagnostic(state,study,duration)
     if study=='pocus':
+        case=state['encounter_spec']['clinical_case']
         dynamic=diagnostic_core.pocus_transition(deepcopy(state['coupled_state']),0)['result']
-        # Preserve authored focal RV/pericardial pathology; only native dynamic fields change.
-        for key in ('lv','ivc','lungs'):
-            arrival=state['encounter_spec']['clinical_case']['investigations'].get('pocus',{}).get('result',{}).get(key)
-            result['result'][key]=(f'At arrival: {arrival}. Current physiology: {dynamic[key]}' if arrival and arrival!=dynamic[key] else dynamic[key])
+        reference=arrival_core_pocus(case)
+        # Preserve authored findings, focal RV/pericardial pathology included, until the
+        # physiology itself changes; then report the current finding alone. One scan
+        # reports one set of findings: the earlier scans stay in the diagnostic history.
+        for key in DYNAMIC_POCUS:
+            authored=case['investigations'].get('pocus',{}).get('result',{}).get(key)
+            result['result'][key]=authored if authored and dynamic[key]==reference[key] else dynamic[key]
     return result
 
 
