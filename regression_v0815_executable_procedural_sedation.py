@@ -95,8 +95,77 @@ assert tr["etomidate_total_mg"] == 8.0, tr
 assert tr["midazolam_total_mg"] == 2.0, tr
 assert tr["cardioversions"] == 1, tr
 assert st.session_state.state["observable"]["rhythm"] == "Sinus rhythm"
+
+# AI-normalized compound orders commonly use "I order". Therapeutic orders
+# must not disappear while diagnostic requests in the same turn execute.
+compound = namespace["clinical_interpreter"](
+    "The heart rate remains unchanged. I order 1000 cc of normal saline IV. "
+    "Reassess blood pressure, heart rate, and perfusion in 15 minutes. "
+    "I request a urinalysis and a chest X-ray. I order ceftriaxone 2 grams IV. "
+    "I request a urine culture and blood cultures."
+)
+compound_types = [action["type"] for action in compound["actions"]]
+assert "fluid" in compound_types, compound
+assert "antibiotics" in compound_types, compound
+assert "urinalysis" in compound_types and "chest_xray" in compound_types, compound
+assert "blood_cultures" in compound_types, compound
+
+# A sequential bundle phrased as "sedation, followed by cardioversion" is an
+# explicit prospective order, not a retrospective mention.
+followed_by = namespace["clinical_interpreter"](
+    "Administer etomidate 8 mg IV and midazolam 2 mg IV for procedural sedation, "
+    "followed by synchronized electrical cardioversion at 200 J. I expect conversion "
+    "to sinus rhythm. My priority is to improve perfusion. My working model is unstable "
+    "rapid atrial fibrillation. Immediately after cardioversion, reassess rhythm, heart "
+    "rate, blood pressure, mental status, and perfusion."
+)
+followed_types = [action["type"] for action in followed_by["actions"]]
+assert followed_types[:2] == ["procedural_sedation", "cardioversion"], followed_by
+assert namespace["reasoning_gate_missing"](followed_by) == [], followed_by
+
+# Regression for sedation washout: "Sedated" is an intervention label, not a
+# member of the cerebral-perfusion severity scale, and must never raise while
+# time advances between bundled actions.
+initialize()
+st.session_state.state["observable"]["mental_status"] = "Sedated"
+st.session_state.state["hidden"]["procedural_sedation_effect"] = 0.0
+namespace["recompute_coupled_physiology"](st.session_state.state, elapsed_min=1)
+assert st.session_state.state["observable"]["mental_status"] in {"Sedated", "Drowsy", "Alert"}
 assert st.session_state.state["observable"]["mental_status"] in {"Sedated", "Drowsy"}
 assert after["treatments"]["last_procedural_sedation"][0]["agent"] == "etomidate"
+
+# Natural canonical English produced from a Spanish learner turn must remain
+# executable, including equivalent "order", "electrical", and "using" syntax.
+canonical_spanish_turn = (
+    "The patient is hypotensive, poorly perfused, and tachycardic. I think the primary problem is "
+    "atrial fibrillation, so I order synchronized electrical cardioversion at 200 J, with sedation "
+    "using etomidate 8 mg and midazolam 2 mg. I expect conversion to sinus rhythm and improvement in "
+    "the signs of perfusion. After cardioversion, reassess the rhythm, heart rate, blood pressure, and perfusion."
+)
+initialize()
+canonical_parsed = namespace["clinical_interpreter"](canonical_spanish_turn)
+canonical_types = [action["type"] for action in canonical_parsed["actions"]]
+assert canonical_types[:2] == ["procedural_sedation", "cardioversion"], canonical_parsed
+assert namespace["reasoning_gate_missing"](canonical_parsed) == [], canonical_parsed
+canonical_result = namespace["execute_bundle"](canonical_parsed)
+assert canonical_result["executed"] is True, canonical_result
+assert canonical_result["elapsed_min"] == 3, canonical_result
+assert canonical_result["reassess_delay"] == 0, canonical_result
+assert st.session_state.state["observable"]["rhythm"] == "Sinus rhythm"
+
+# A standalone immediate reassessment is an executable zero-time checkpoint,
+# not an unsupported prototype action. This is the learner's sequence entry 7.
+immediate_reassessment = (
+    "Reassess rhythm, heart rate, blood pressure, capillary refill, extremity temperature, "
+    "oxygenation, work of breathing, mental status, and urine output now."
+)
+initialize()
+immediate_parsed = namespace["clinical_interpreter"](immediate_reassessment)
+immediate_result = namespace["execute_bundle"](immediate_parsed)
+assert immediate_result["executed"] is True, immediate_result
+assert immediate_result["reassess_delay"] == 0, immediate_result
+assert immediate_result["elapsed_min"] == 0, immediate_result
+assert st.session_state.state["sim_time"] == 0
 
 namespace["record_management_trace"](learner_text, parsed, result, before, after)
 trace_label = namespace["_trace_action_text"](st.session_state.management_trace[-1])

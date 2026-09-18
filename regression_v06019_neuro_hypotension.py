@@ -1,5 +1,5 @@
 from pathlib import Path
-src = Path(__file__).with_name('app.py').read_text()
+src = Path(__file__).with_name('clinical_physiology.py').read_text()
 assert 'current_map < 45 or o["sbp"] < 70' in src
 assert 'desired_mental = "Obtunded"' in src
 assert 'current_map < 32 or o["sbp"] < 55' in src

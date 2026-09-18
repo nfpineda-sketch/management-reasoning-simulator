@@ -3,14 +3,97 @@ import re
 import math
 import random
 import json
+import os
+import hmac
 from io import BytesIO
 from html import escape
 from copy import deepcopy
 import streamlit as st
 
-st.set_page_config(page_title="Management Reasoning Simulator — MVP v0.8.21", page_icon="🩺", layout="wide")
+SIMULATOR_VERSION = "0.24.13-clinical-encounter"
 
-SIMULATOR_VERSION = "0.8.21"
+import importlib
+import generation_reload as _generation_reload
+# Upgrade cached bootstrap dependency lists under their existing shared lock.
+with _generation_reload._LOCK:
+    if getattr(_generation_reload, 'RELOAD_VERSION', None) != SIMULATOR_VERSION.split('-')[0]:
+        importlib.reload(_generation_reload)
+    _generation_reload.refresh_generation_modules(SIMULATOR_VERSION.split("-")[0])
+    _generation_reload.refresh_visual_modules()
+
+from curriculum import CHALLENGES
+import patient_appearance as _appearance
+import encounter_generator as _encounter_generator
+if getattr(_encounter_generator, "GENERATOR_VERSION", "") != SIMULATOR_VERSION.split("-")[0]:
+    importlib.reload(_encounter_generator)
+import clinical_scene as _clinical_scene
+import resuscitation_room as _room
+from resuscitation_room import render_room, render_bedside_tools
+from encounter_workspace import render_encounter_workspace
+from ai_interpreter import AIInterpretationError, normalize_with_ai
+from account_portal import accounts_enabled, require_account_access, render_account_sidebar
+import curriculum_runtime as _curriculum_runtime
+if getattr(_curriculum_runtime, "RUNTIME_VERSION", "") != SIMULATOR_VERSION.split("-")[0]:
+    importlib.reload(_curriculum_runtime)
+from curriculum_runtime import (
+    save_session, render_dashboard, start_encounter, render_learning_focus,
+    return_to_dashboard,
+)
+
+st.set_page_config(page_title=f"Management Reasoning Simulator — Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}", page_icon="🩺", layout="wide")
+
+
+def require_shared_password():
+    """Fail-closed shared-password gate backed by Streamlit Secrets."""
+    try:
+        configured_password = str(st.secrets.get("APP_PASSWORD", "")).strip()
+    except Exception:
+        configured_password = ""
+
+    if not configured_password:
+        st.title("Management Reasoning Simulator")
+        st.error("Access is temporarily closed. The application password has not been configured.")
+        st.stop()
+
+    if st.session_state.get("_shared_access_granted", False):
+        return
+
+    st.title("Management Reasoning Simulator")
+    st.caption("Restricted access")
+    with st.form("shared_password_form"):
+        entered_password = st.text_input("Password", type="password")
+        submitted_password = st.form_submit_button("Enter", type="primary")
+
+    if submitted_password:
+        if hmac.compare_digest(entered_password, configured_password):
+            st.session_state["_shared_access_granted"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    st.stop()
+
+
+ACCOUNT_CONTEXT = require_account_access() if accounts_enabled() else None
+if ACCOUNT_CONTEXT is None:
+    require_shared_password()
+else:
+    render_account_sidebar(ACCOUNT_CONTEXT)
+
+
+def faculty_access():
+    context = globals().get("ACCOUNT_CONTEXT")
+    return bool(context and context["user"]["role"] in {"faculty", "admin"})
+
+
+def rerun_app():
+    context = globals().get("ACCOUNT_CONTEXT")
+    if context:
+        save_session(context)
+    st.rerun()
+
+# Historical source markers retained so the v0.8.21 regression lineage remains auditable.
+LEGACY_REGRESSION_VERSION_MARKER = 'SIMULATOR_VERSION = "0.8.21"'
+LEGACY_REGRESSION_CAPTION = "MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry"
 MANAGEMENT_TRACE_DEFINITION = (
     "Management Trace is a time-resolved record of how a learner translates patient state into "
     "management priorities and actions, anticipates their effects, observes the resulting patient "
@@ -368,8 +451,8 @@ PRESENTATION = (
     "fatigue, and exertional dyspnea beginning sometime this morning. He cannot identify "
     "the exact onset. He felt normal yesterday and was at his usual baseline. He is alert "
     "and conversant but appears uncomfortable. BP is 90/54 mmHg. Capillary refill is approximately 5 seconds "
-    "and his distal extremities are cool. Initial ECG shows atrial fibrillation with rapid "
-    "ventricular response without pre-excitation."
+    "and his distal extremities are cool. A 12-lead ECG has been obtained and is available "
+    "for review."
 )
 
 
@@ -420,7 +503,7 @@ PS002_PRESENTATION = (
     "weakness, and lightheadedness over the past day. She is alert and speaking in short phrases. "
     "Respiratory rate is 32/min with markedly increased work of breathing. SpO₂ is 86% on room air. "
     "Capillary refill is approximately 4 seconds; her extremities are warm. BP is 88/54 mmHg and "
-    "HR is 124/min in sinus rhythm. There is no obvious external bleeding. The cause of her "
+    "HR is 124/min. There is no obvious external bleeding. The cause of her "
     "respiratory and hemodynamic compromise is not yet established."
 )
 
@@ -437,8 +520,11 @@ def clamp(x, lo=0.0, hi=1.0):
     return max(lo, min(hi, x))
 
 def reset_session():
+    for key in list(st.session_state):
+        if str(key).startswith("_learner_trace_"):
+            del st.session_state[key]
     st.session_state.started = False
-    st.session_state.selected_case = "PS001 · Tachyarrhythmia in an Acutely Ill Patient"
+    st.session_state.selected_case = "R1-05"
     st.session_state.state = deepcopy(INITIAL_STATE)
     st.session_state.events = []
     st.session_state.history = []
@@ -448,6 +534,7 @@ def reset_session():
     st.session_state.management_trace = []
     st.session_state.encounter_ended = False
     st.session_state.encounter_closed_trace = None
+    st.session_state.encounter_closed_events = None
     st.session_state.encounter_closed_state = None
     st.session_state.encounter_closed_time_min = None
     st.session_state.review_prompts = []
@@ -580,6 +667,8 @@ def management_state_snapshot(state):
     tr = state.get("treatments", {})
     return {
         "case_id": state.get("case_id"),
+        "encounter_variant": (state.get("encounter_spec") or {}).get("generator_version"),
+        "encounter_event_count": len(st.session_state.get("events") or []),
         "sim_time_min": int(state.get("sim_time", 0)),
         "observable": {
             "sbp": o.get("sbp"),
@@ -625,12 +714,15 @@ def management_state_snapshot(state):
             "niv_epap_cmh2o": tr.get("niv_epap_cmh2o"),
             "niv_fio2_percent": tr.get("niv_fio2_percent"),
             "invasive_ventilation": bool(tr.get("invasive_ventilation")),
+            "bag_mask": bool(tr.get("bag_mask")),
             "ventilator_mode": tr.get("ventilator_mode"),
             "ventilator_fio2_percent": tr.get("ventilator_fio2_percent"),
             "ventilator_peep_cmh2o": tr.get("ventilator_peep_cmh2o"),
             "airway_prepared": bool(tr.get("airway_prepared")),
             "disposition": tr.get("disposition"),
             "cumulative_crystalloid_ml": tr.get("cumulative_crystalloid_ml", 0),
+            "total_crystalloid_ml": tr.get("total_crystalloid_ml", 0),
+            "packed_red_cells_units": tr.get("packed_red_cells_units", 0),
             "furosemide_total_mg": tr.get("furosemide_total_mg", 0.0),
             "cardioversions": tr.get("cardioversions", 0),
             "procedural_sedations": tr.get("procedural_sedations", 0),
@@ -671,6 +763,9 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         "reasoning_observations": deepcopy(parsed.get("reasoning_observations", [])),
         "reasoning_gate": deepcopy(parsed.get("reasoning_gate", {"required": False, "status": "not_required"})),
         "recognized_future_actions": deepcopy(parsed.get("recognized_future_actions", [])),
+        "interpretation_mode": parsed.get("interpretation_mode", "deterministic"),
+        "ai_interpretation": deepcopy(parsed.get("ai_interpretation")),
+        "ai_fallback_reason": parsed.get("ai_fallback_reason"),
         "execution_status": status,
         "clarification": result.get("clarification"),
         "action_summaries": deepcopy(result.get("action_summaries", [])),
@@ -780,27 +875,13 @@ def _trace_state_text(snapshot):
         )
     pocus = d.get("pocus")
     if pocus:
-        pocus_bits = []
-        lv = str(pocus.get("lv") or "").lower()
-        if "hyperdynamic" in lv:
-            pocus_bits.append("hyperdynamic LV")
-        elif "preserved" in lv:
-            pocus_bits.append("preserved LV systolic function")
-        elif lv:
-            pocus_bits.append(str(pocus.get("lv")))
-        rv = str(pocus.get("rv") or "").lower()
-        if "not dilated" in rv:
-            pocus_bits.append("no RV dilation")
-        pericardium = str(pocus.get("pericardium") or "").lower()
-        if "no pericardial effusion" in pericardium:
-            pocus_bits.append("no pericardial effusion")
-        lungs = str(pocus.get("lungs") or "").lower()
-        if "no diffuse b-line" in lungs:
-            pocus_bits.append("no diffuse B-lines")
-        if pocus_bits:
-            parts.append("POCUS: " + ", ".join(pocus_bits))
-        else:
-            parts.append("POCUS result available")
+        # The trace records what the resident knew when deciding, so it carries
+        # the findings as reported rather than a summary guessed from wording.
+        # The old summary matched phrases, dropped RV and B-lines when the
+        # wording changed, and never included the IVC at all.
+        from pocus_report import format_pocus
+        sections = format_pocus(pocus, compact=True).splitlines()[1:]
+        parts.append("POCUS: " + " | ".join(sections))
     labs = d.get("basic_labs")
     if labs:
         lab_bits = []
@@ -826,8 +907,29 @@ def _trace_reasoning_text(reasoning):
         ("Preserve", "preservation_goal"),
         ("Reassess", "reassessment_target"),
     ]
-    parts = [f"**{label}:** {r[key]}" for label, key in labels if r.get(key)]
+    derived = _derived_slots(r)
+    parts = [f"**{label}:** {r[key]}" + (DERIVED_SLOT_NOTE if key in derived else "")
+             for label, key in labels if r.get(key)]
     return "  \n".join(parts) if parts else "—"
+
+
+def _fluid_order_label(summary, now_min):
+    """Name the ordered volume and, while it is still running, what has gone in.
+
+    A bolus is delivered on the simulation clock. Reporting only the ordered
+    volume told the resident that 1000 mL had been given when 500 mL had.
+    """
+    label = str(summary.get("label") or f'{summary["volume_ml"]:g} mL {summary["fluid_type"]}')
+    start = summary.get("delivery_starts_at_min")
+    duration = summary.get("administration_duration_min")
+    if start is None or not duration:
+        return label
+    infused = summary["volume_ml"] * min(1, max(0, (now_min - start) / duration))
+    if infused >= summary["volume_ml"]:
+        return label
+    due = start + duration
+    return (f'{label} ({infused:.0f} mL of {summary["volume_ml"]:g} mL infused by '
+            f'{now_min:g} min; remainder due at {due:g} min)')
 
 
 def _norepinephrine_summary_label(summary):
@@ -940,12 +1042,16 @@ def _trace_action_text(event):
     )
     labels = []
     for s in summaries:
-        if "volume_ml" in s:
+        if s.get("label"):
+            labels.append(str(s["label"]))
+        elif "volume_ml" in s:
             labels.append(f'{s["volume_ml"]} mL {s.get("fluid_type", "crystalloid")}')
         elif s.get("agent") == "furosemide":
-            labels.append(f'furosemide {s.get("dose_mg", 0):g} mg {s.get("route", "IV")}')
+            labels.append(f'furosemide {s.get("dose_mg", 0):g} mg {s.get("route", "IV")}'
+                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
         elif "agent" in s:
-            labels.append(f'{s["agent"]} {s.get("dose_mg", 0):g} mg {s.get("route", "")}'.strip())
+            labels.append(f'{s["agent"]} {s.get("dose_mg", 0):g} mg {s.get("route", "")}'.strip()
+                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
         elif s.get("support_type") == "procedural_sedation":
             labels.append(procedural_sedation_label(s))
         elif "energy_j" in s:
@@ -1039,10 +1145,20 @@ def _trace_action_text(event):
             labels.append(str(a.get("type", "action")).replace("_", " "))
     return " + ".join(labels) if labels else "Reassessment"
 
+DERIVED_SLOT_NOTE = " · composed by the app from the resident's own words, not stated as such"
+
+
+def _derived_slots(reasoning):
+    values = (reasoning or {}).get("derived_slots")
+    return frozenset(values) if isinstance(values, (list, tuple, set)) else frozenset()
+
+
 def _trace_reasoning_items(reasoning):
     r = reasoning or {}
+    derived = _derived_slots(r)
     labels = [("Problem", "problem_representation"), ("Priority", "management_priority"), ("Rationale", "rationale"), ("Expected effect", "expected_effect"), ("Preservation goal", "preservation_goal"), ("Reassessment target", "reassessment_target")]
-    return [(label, str(r[key])) for label, key in labels if r.get(key)]
+    return [(label + (DERIVED_SLOT_NOTE if key in derived else ""), str(r[key]))
+            for label, key in labels if r.get(key)]
 
 
 def _trace_observable_delta(before, after, reasoning=None):
@@ -1171,6 +1287,58 @@ def _perfusion_response_direction(event):
     return "unchanged"
 
 
+def _review_expectation_text(text):
+    """Normalize only review matching; retain the learner's original wording."""
+    return str(text or "").lower().translate(str.maketrans("áéíóúüñ’", "aeiouun'"))
+
+
+def _immediate_expectation_text(expected, event):
+    """Keep affirmative effects whose stated horizon fits this observation.
+
+    This is deliberately conservative: an excluded clause cannot be restored
+    through the reassessment list, which describes what to check, not what must
+    improve. Separate clauses preserve immediate effects in compound orders.
+    """
+    normalized = _review_expectation_text(expected)
+    elapsed = event.get("elapsed_minutes")
+    if elapsed is None:
+        start = event.get("decision_time_min", (event.get("state_before") or {}).get("sim_time_min"))
+        end = event.get("response_time_min", (event.get("state_after") or {}).get("sim_time_min"))
+        elapsed = max(0, float(end) - float(start)) if start is not None and end is not None else None
+    clauses = re.split(
+        r"(?<!\d)[.;](?!\d)|\b(?:but|whereas|while|pero|mientras|aunque)\b|"
+        r",\s*(?=(?:without|sin|no\b|not\b|i\b|we\b|and\b|y\b))|"
+        r"\b(?:and|y)\s+(?=(?:i|we|norepinephrine|noradrenalina|oxygen|oxigeno|fluids|liquidos|antibiotics|antibioticos)\b)|"
+        r"\b(?:and|y)\s+(?=(?:improved|better|mejoria)[^.;]*\b(?:now|immediately|promptly|ahora|inmediata\w*)\b)",
+        normalized,
+    )
+    immediate = []
+    for clause in clauses:
+        # A trailing 'without worsening oxygenation' qualifies preservation;
+        # it must not turn oxygenation into an expected improvement.
+        clause = re.split(r"\b(?:without|sin)\b", clause, maxsplit=1)[0].strip()
+        if not clause or re.search(r"\b(?:no|not|never|don't|doesn't|won't|wouldn't|cannot|can't|unlikely)\b", clause):
+            continue
+        horizon = re.search(
+            r"\b(?:in|after|within|en|a los|dentro de)\s+"
+            r"(?:(?:the\s+)?next\s+|la\s+proxima\s+)?"
+            r"(?:(\d+(?:\.\d+)?|one|an?|una?)\s*)?"
+            r"(minutes?|mins?|minutos?|hours?|horas?)\b", clause)
+        if horizon:
+            amount = horizon.group(1) or "1"
+            minutes = (float(amount) if re.fullmatch(r"\d+(?:\.\d+)?", amount) else 1) * (60 if horizon.group(2).startswith(("hour", "hora")) else 1)
+            if elapsed is None or minutes > float(elapsed):
+                continue
+        elif re.search(
+            r"\b(?:gradual\w*|paulatin\w*|eventual\w*|later|delayed|over time|con el tiempo|mas tarde)\b|"
+            r"\b(?:over|during|after|durante|despues de|en)\b[^.;]*\b(?:hours|horas)\b",
+            clause,
+        ):
+            continue
+        immediate.append(clause)
+    return "; ".join(immediate)
+
+
 def _expected_response_prompt(event):
     """Return a target-aware, non-scoring expectation/response prompt."""
     r = event.get("reasoning") or {}
@@ -1180,9 +1348,48 @@ def _expected_response_prompt(event):
     if not expected and not preservation:
         return None
 
-    exp = expected.lower()
-    preservation_text = preservation.lower()
-    priority_text = str(r.get("management_priority", "")).lower()
+    exp = _immediate_expectation_text(expected, event)
+    preservation_text = _review_expectation_text(preservation)
+    target = _review_expectation_text(target)
+    # Bind preservation to its own clause and endpoint. For example, preserving
+    # oxygenation must not convert an explicit BP improvement into a stable-BP
+    # goal, or require the preserved oxygenation to improve.
+    effect_clauses = re.split(
+        r";|\b(?:with|con)\s+(?=(?:maintain\w*|preserv\w*|mantener\w*)\b)|"
+        r"\b(?:and|y)\s+(?=(?:improv\w*|better|mejor\w*|preserv\w*|maintain\w*|unchanged)\b)", exp
+    )
+    preservation_clauses = [clause for clause in effect_clauses if re.search(
+        r"\b(?:maintain\w*|preserv\w*|remain\s+stable|stay\s+stable|unchanged|mantener\w*|estable)\b", clause
+    )]
+    pressure_preservation_target = any(re.search(
+        r"blood pressure|arterial pressure|presion arterial|\b(?:bp|map|pam)\b", clause
+    ) for clause in preservation_clauses)
+    inline_oxygen_preservation = any(re.search(
+        r"oxygen\w*|oxigen\w*|spo2|saturation|saturacion|respirator\w*", clause
+    ) for clause in preservation_clauses)
+    perfusion_preservation = any(re.search(r"perfusion|hemodynamic|hemodinamic", clause)
+                                for clause in preservation_clauses) or bool(re.search(
+                                    r"perfusion|hemodynamic|hemodinamic", preservation_text))
+    exp = "; ".join(clause for clause in effect_clauses if clause not in preservation_clauses)
+    if preservation_clauses and not preservation:
+        preservation = expected
+    # Antimicrobial efficacy cannot be determined from one immediate snapshot.
+    # Apply this only to antibiotic-only treatment, so a simultaneous fluid,
+    # pressor, or respiratory intervention retains its own immediate review.
+    treatment_types = _action_types_for_event(event) - {
+        "reassessment", "pocus", "lactate", "vbg", "abg", "basic_labs",
+        "urinalysis", "chest_xray", "blood_cultures", "temperature", "focused_history",
+    }
+    if expected and treatment_types == {"antibiotics"}:
+        changes = _trace_observable_delta(event.get("state_before"), event.get("state_after"), r)
+        observed = "; ".join(f"{label} {old} to {new}" for label, old, new in changes)
+        return (
+            "Treatment timing and reassessment",
+            f"Your stated expectation was: {expected}. The recorded response was {observed or 'no recorded observable change'}. "
+            "This before/after comparison alone does not establish antimicrobial success or failure. "
+            "How does the expected treatment time course affect your interpretation, and which findings would prompt "
+            "immediate supportive treatment or reassessment of the infectious source?",
+        )
     mechanistic_terms = (
         "preload", "contractility", "cardiac output", "stroke volume",
         "afterload", "vascular tone", "filling", "venous return"
@@ -1204,25 +1411,29 @@ def _expected_response_prompt(event):
     tr_after = astate.get("treatments") or {}
 
     perfusion_target = any(x in exp for x in (
-        "perfusion", "blood pressure", "arterial pressure", "capillary refill", "crt", "hemodynamic"
-    ))
+        "perfusion", "blood pressure", "arterial pressure", "capillary refill", "crt", "hemodynamic",
+        "presion arterial", "relleno capilar", "hemodinamic",
+    )) or bool(re.search(r"\b(?:bp|map|pam)\b", exp)) or pressure_preservation_target or perfusion_preservation
     oxygen_improvement_target = any(x in exp for x in (
-        "oxygen", "spo2", "respiratory"
+        "oxygen", "spo2", "respiratory", "oxigen", "saturacion", "respiratori"
     ))
     oxygen_preservation_target = any(x in preservation_text for x in (
-        "oxygen", "spo2", "saturation", "respiratory"
+        "oxygen", "spo2", "saturation", "respiratory", "oxigen", "saturacion", "respiratori"
+    )) or inline_oxygen_preservation
+    lactate_target = "lactate" in exp or "lactato" in exp
+    # Reassessment can disambiguate an unqualified mechanistic expectation,
+    # but it must not undo excluded time horizons or negated targets.
+    limited_expectation = bool(re.search(
+        r"\b(?:no|not|without|sin|never|don't|doesn't|won't|unlikely|gradual\w*|later|delayed|hours?|horas?|minutes?|minutos?)\b",
+        _review_expectation_text(expected),
     ))
-    lactate_target = "lactate" in exp
-    # Reassessment targets disambiguate a mechanistic or otherwise non-observable
-    # expectation, but they do not add an effect the learner never expected.
-    if expected and not perfusion_target and not oxygen_improvement_target and not lactate_target:
+    if (exp and is_mechanistic and not limited_expectation and not perfusion_target
+            and not oxygen_improvement_target and not lactate_target):
         perfusion_target = any(x in target for x in (
             "perfusion", "blood pressure", "arterial pressure", "capillary refill", "crt", "hemodynamic"
         ))
         oxygen_improvement_target = any(x in target for x in ("oxygen", "spo2", "respiratory"))
         lactate_target = "lactate" in target
-    else:
-        lactate_target = lactate_target or "lactate" in target
     if not perfusion_target and not oxygen_improvement_target and not oxygen_preservation_target and not lactate_target:
         return None
 
@@ -1269,8 +1480,8 @@ def _expected_response_prompt(event):
             )
 
     if perfusion_target:
-        expects_pressure_improvement = any(x in exp for x in ("blood pressure", "arterial pressure", "bp", "map"))
-        expects_crt_improvement = any(x in exp for x in ("capillary refill", "crt"))
+        expects_pressure_improvement = (any(x in exp for x in ("blood pressure", "arterial pressure", "presion arterial")) or bool(re.search(r"\b(?:bp|map|pam)\b", exp))) and not pressure_preservation_target
+        expects_crt_improvement = any(x in exp for x in ("capillary refill", "crt", "relleno capilar"))
         if b.get("sbp") is not None and a.get("sbp") is not None:
             pressure_delta = a["sbp"] - b["sbp"]
             pressure_fact = f"blood pressure {b.get('sbp')}/{b.get('dbp')} to {a.get('sbp')}/{a.get('dbp')}"
@@ -1348,6 +1559,12 @@ def _expected_response_prompt(event):
         )
 
     observed = joined_facts(negative + neutral[:1])
+    if pressure_preservation_target and not re.search(r"improv\w*|increase\w*|shorten\w*|mejor\w*", exp):
+        return (
+            "Preservation goal vs observed response",
+            f"Your stated expectation was: {expected}. The recorded findings were {joined_facts(negative + preservation_failed + neutral[:1])}. "
+            "How did these findings affect your assessment of whether the preservation goal was met and your next priority?",
+        )
     preservation_sentence = ""
     if preservation_failed:
         preservation_sentence = " " + joined_facts(preservation_failed)[:1].upper() + joined_facts(preservation_failed)[1:] + "."
@@ -1358,7 +1575,7 @@ def _expected_response_prompt(event):
             f"You expected {expected} after another fluid bolus. Instead, {observed}.{preservation_sentence} "
             "How did this response affect your assessment of fluid responsiveness and your working model?"
         )
-    if expected:
+    if exp:
         return (
             "Expected effect vs observed response",
             f"You expected {expected}. Those expected improvements were not demonstrated: {observed}."
@@ -1641,7 +1858,7 @@ def _ps001_classroom_review_items(events):
     if len(events) < 9:
         return None
     first_state = (events[0][1].get("state_before") or {})
-    if first_state.get("case_id") != "PS001":
+    if first_state.get("case_id") != "PS001" or first_state.get("encounter_variant"):
         return None
 
     action_types = {
@@ -1702,6 +1919,9 @@ def _reflect_compare_items(trace):
     missing reasoning.
     """
     filtered_events = [e for e in trace if e.get("execution_status") in {"executed", "terminal_locked"}]
+    if filtered_events and str((filtered_events[0].get("state_before") or {}).get("case_id", "")).startswith("CE-"):
+        from cognitive_review import reflection_items
+        return reflection_items(trace)
     events = list(enumerate(filtered_events, 1))
     ps001_selector = globals().get("_ps001_classroom_review_items")
     ps001_classroom_items = ps001_selector(events) if ps001_selector else None
@@ -1737,7 +1957,7 @@ def _reflect_compare_items(trace):
             candidates.append((2, i, ("decision", i, _trace_time(event.get("decision_time_min", 0)), label, text)))
             covered.add(i)
 
-    # 2) Explicit expected effect not demonstrated by the subsequent response.
+    # 2) Expected-effect/response mismatch or an explicit treatment-timing review.
     for i, event in events:
         if i in covered:
             continue
@@ -1849,6 +2069,18 @@ def _review_prompt_records(trace):
                 "prompt": prompt_text,
             }
         records.append(record)
+    # A coherent, uncomplicated variant still deserves reflection. Do not
+    # require a mismatch or missing reasoning before opening the learning cycle.
+    if not records:
+        executed = [e for e in trace if e.get("execution_status") in {"executed", "terminal_locked"}]
+        if executed and (executed[-1].get("state_before") or {}).get("encounter_variant"):
+            records.append({
+                "review_id": "decision-" + str(len(executed)),
+                "kind": "decision", "decision": len(executed),
+                "time": _trace_time(executed[-1].get("decision_time_min", 0)),
+                "label": "Review your management model",
+                "prompt": "What response did you expect, what did you observe, and how would those observations influence your next priority?",
+            })
     return records
 
 
@@ -1885,6 +2117,9 @@ def _trajectory_expert_model(prompt, event):
     if not event:
         return None
     before = event.get("state_before") or {}
+    if str(before.get("case_id", "")).startswith("CE-"):
+        from cognitive_review import trajectory_review
+        return trajectory_review(event, source_decision=prompt.get("decision"))
     after = event.get("state_after") or {}
     observable = before.get("observable") or {}
     reasoning = event.get("reasoning") or {}
@@ -1895,11 +2130,18 @@ def _trajectory_expert_model(prompt, event):
     delta_text = "; ".join(
         f"{label} changed from {old} to {new}" for label, old, new in deltas
     ) or "no material observable change was recorded"
-    map_value = int(round((float(observable.get("sbp") or 0) + 2 * float(observable.get("dbp") or 0)) / 3))
+    sbp, dbp = observable.get("sbp"), observable.get("dbp")
+    map_value = (float(sbp) + 2 * float(dbp)) / 3 if sbp is not None and dbp is not None else None
+    # SSC 2026 favors an initial MAP near 65 over higher targets. Adequate
+    # pressure does not exclude hypoperfusion or prove existing support is
+    # unnecessary; assess those questions separately in the frozen state.
+    # https://www.sccm.org/clinical-resources/guidelines/guidelines/surviving-sepsis-campaign-international-guidelines-for-management-of-sepsis-and-septic-shock-2026
+    hypotension = map_value is not None and map_value < 65
     crt = int(observable.get("crt") or 0)
-    severe_shock = map_value < 65 or crt >= 5 or str(observable.get("mental_status") or "").lower() in {
+    impaired_perfusion = crt >= 4 or str(observable.get("mental_status") or "").lower() in {
         "drowsy", "obtunded", "unresponsive"
-    }
+    } or str(observable.get("extremities") or "").lower() in {"cold", "cool", "mottled/cold"}
+    existing_pressure_support = bool((before.get("treatments") or {}).get("norepinephrine_rate", 0))
 
     learner_problem = str(reasoning.get("problem_representation") or "").strip()
     framing = (
@@ -1910,14 +2152,21 @@ def _trajectory_expert_model(prompt, event):
     )
 
     if "fluid" in action_types:
-        if severe_shock:
+        if hypotension:
             priority = (
                 "Restore arterial pressure and tissue perfusion while testing preload responsiveness, without delaying "
                 "vasopressor support or treatment of the underlying cause."
             )
             action = (
                 "Use reassessed crystalloid aliquots with explicit pulmonary stopping criteria and begin vasopressor and "
-                "source-directed treatment concurrently when severe hypotension or neurologic dysfunction is present."
+                "cause-directed treatment concurrently when hypotension persists."
+            )
+        elif impaired_perfusion or map_value is None:
+            priority = "Clarify pressure, tissue perfusion, and preload responsiveness before selecting further circulatory support."
+            action = (
+                "Reassess pressure and tissue-perfusion findings, use POCUS and a dynamic assessment of preload responsiveness "
+                "when available, and give further fluid only for a demonstrated need with explicit stopping criteria. "
+                "Impaired perfusion alone does not establish a need to raise arterial pressure."
             )
         else:
             priority = (
@@ -1933,18 +2182,34 @@ def _trajectory_expert_model(prompt, event):
             "source-directed treatment when vasoplegia or low output is dominant."
         )
     elif "norepinephrine" in action_types or "antibiotics" in action_types:
-        priority = (
-            "Restore perfusion pressure and treat the suspected infectious source while determining whether improved "
-            "pressure also produces improved tissue flow."
-        )
-        action = (
-            "Start or titrate norepinephrine and administer prompt source-directed antimicrobials, then judge the response "
-            "using both MAP and bedside tissue-perfusion markers."
-        )
+        if hypotension:
+            priority = "Restore perfusion pressure while evaluating tissue flow and the cause of the circulatory impairment."
+            action = (
+                "Start or titrate norepinephrine for persistent hypotension, with reassessment of MAP and bedside "
+                "tissue-perfusion markers against an individualized pressure target."
+            )
+        elif map_value is None:
+            priority = "Establish the current arterial pressure and tissue-perfusion state before selecting pressure support."
+            action = "Obtain a reliable blood pressure and reassess perfusion before deciding whether to initiate or change vasopressor support."
+        elif existing_pressure_support:
+            priority = "Distinguish adequate pressure on treatment from adequate tissue flow and reassess the continuing support requirement."
+            action = (
+                "Reassess ongoing pressure support against the individualized MAP target and tissue-perfusion findings. "
+                "An adequate MAP on norepinephrine does not by itself justify either escalation or discontinuation."
+            )
+        else:
+            priority = "Reassess tissue perfusion and the underlying cause while maintaining adequate arterial pressure."
+            action = (
+                "Reassess tissue perfusion, cardiac function, and the clinical trajectory before adding pressure support. "
+                "The recorded arterial pressure alone does not justify starting or increasing norepinephrine."
+            )
         tradeoff = (
-            "Norepinephrine may restore MAP without correcting low forward flow and can worsen peripheral vasoconstriction; "
-            "antimicrobial treatment will not produce an immediate hemodynamic response."
+            "Raising arterial pressure may not correct impaired tissue flow; unnecessary vasoconstriction can add harm."
         )
+        if "antibiotics" in action_types:
+            priority += " Treat the suspected infectious source and assess its clinical course."
+            action += " Administer appropriate source-directed antimicrobials and reassess the source and treatment as further evidence becomes available."
+            tradeoff += " A short-term blood pressure change alone does not establish antimicrobial efficacy or failure."
     elif "cardioversion" in action_types:
         priority = (
             "Test the causal contribution of the rhythm while protecting perfusion, and define success by clinical recovery "
@@ -1990,9 +2255,11 @@ def _trajectory_expert_model(prompt, event):
         action = f"A defensible approach is {action_text}, paired with explicit benefit, harm, and reassessment thresholds."
         tradeoff = "The expected benefit must be weighed against treatment harm and the risk of delaying management of another active problem."
 
+    pressure_label = f"{sbp}/{dbp} mmHg" if map_value is not None else "unavailable"
+    map_label = f"MAP approximately {round(map_value)}" if map_value is not None else "MAP unavailable"
     before_cue = (
-        f"At the decision point: BP {observable.get('sbp')}/{observable.get('dbp')} mmHg "
-        f"(MAP approximately {map_value}), HR {observable.get('hr')}/min in {observable.get('rhythm')}."
+        f"At the decision point: BP {pressure_label} ({map_label}), "
+        f"HR {observable.get('hr')}/min in {observable.get('rhythm')}."
     )
     perfusion_cue = (
         f"Tissue-perfusion findings were capillary refill {observable.get('crt')} seconds, "
@@ -2021,6 +2288,9 @@ def _expert_model_for_prompt(case_id, prompt, trace=None):
     event = _event_for_review_prompt(prompt, trace) if trace is not None else None
     if trace is not None and not event:
         return None
+
+    if event and (event.get("state_before") or {}).get("encounter_variant"):
+        return _trajectory_expert_model(prompt, event)
 
     static_model = None
     if prompt.get("kind") == "decision":
@@ -2072,7 +2342,11 @@ def _expert_comparison_complete(expert_models, comparison_responses):
 
 def _strip_private_review_data(value):
     """Deep-copy learner export data while excluding engine-only physiology."""
-    private_keys = {"physiology", "hidden", "developer_state"}
+    private_keys = {
+        "physiology", "hidden", "developer_state", "encounter_spec", "encounter_facts",
+        "clinical_case", "faculty", "faculty_brief", "faculty_analysis", "faculty_assessment",
+        "teaching_context", "response_rules", "engine_config",
+    }
     if isinstance(value, dict):
         return {
             key: _strip_private_review_data(item)
@@ -2293,7 +2567,8 @@ def _review_markdown(payload):
                 lines.append(f'- **{label}:** {old} → {new}')
         if diagnostics:
             for time_text, result_text in diagnostics:
-                lines.append(f'- **Diagnostic result · {time_text}:** {result_text}')
+                # Keep a multi-line report such as POCUS inside its list item.
+                lines.append(f'- **Diagnostic result · {time_text}:** ' + str(result_text).replace("\n", "  \n  "))
         if not deltas and not diagnostics:
             lines.append("*No material observable change recorded.*")
         lines.append("")
@@ -2695,7 +2970,7 @@ def _review_pdf(payload):
                 response_story.append(Paragraph(f"- <b>{safe(label)}:</b> {safe(old)} -&gt; {safe(new)}", body_style))
         if diagnostics:
             for time_text, result_text in diagnostics:
-                response_story.append(Paragraph(f"- <b>Diagnostic result | {safe(time_text)}:</b> {safe(result_text)}", body_style))
+                response_story.append(Paragraph(f"- <b>Diagnostic result | {safe(time_text)}:</b> " + safe(result_text).replace("\n", "<br/>"), body_style))
         if not deltas and not diagnostics:
             response_story.append(Paragraph("<i>No material observable change recorded.</i>", body_style))
         story.append(KeepTogether(response_story))
@@ -3153,7 +3428,7 @@ def _render_export_controls(
         st.session_state.get("prior_attempt_summary"),
     )
     case_id = str((final_state or {}).get("case_id") or "encounter").lower()
-    with st.container(border=True):
+    with st.expander("Complete original encounter record · PDF, Markdown and JSON", expanded=False):
         info, col_pdf, col_md, col_json = st.columns([1.9, 1, 1, 1])
         with info:
             status = "Complete review" if payload.get("review_complete") else "Draft export available"
@@ -3189,12 +3464,32 @@ def _render_export_controls(
     return payload
 
 
+def _render_analyzed_management_trace():
+    """Analyze only frozen decisions and the locked independent reflection."""
+    from management_trace_store import analysis_payload_from_session
+    from management_trace_portal import render_management_trace_analysis
+    if not st.session_state.get("expert_comparison_unlocked"):
+        return
+    context = globals().get("ACCOUNT_CONTEXT")
+    if context:
+        save_session(context)
+    payload = analysis_payload_from_session(dict(st.session_state))
+    return render_management_trace_analysis(
+        payload, api_key=_runtime_secret("OPENAI_API_KEY"),
+        model=_runtime_secret("MRS_TRACE_MODEL") or _runtime_secret("OPENAI_MODEL") or "gpt-5-mini",
+        context=context, case_label=str(st.session_state.get("selected_case") or "Clinical encounter"),
+        review_completed=bool(st.session_state.get("review_completed")),
+        adaptation_plan=st.session_state.get("adaptation_plan") or {},
+    )
+
+
 def begin_decision_review(trace, state):
     """Freeze the encounter and initialize a separate retrospective review layer."""
     frozen_trace = deepcopy(trace or [])
     frozen_state = management_state_snapshot(state)
     st.session_state.encounter_ended = True
     st.session_state.encounter_closed_trace = frozen_trace
+    st.session_state.encounter_closed_events = deepcopy(st.session_state.get("events") or [])
     st.session_state.encounter_closed_state = frozen_state
     st.session_state.encounter_closed_time_min = int(state.get("sim_time", 0))
     st.session_state.review_prompts = _review_prompt_records(frozen_trace)
@@ -3211,10 +3506,52 @@ def begin_decision_review(trace, state):
     st.session_state.expert_comparison_responses = {}
 
 
+def generate_problem_config(challenge_id):
+    from curriculum import CHALLENGES
+    from encounter_generator import generate_encounter
+    from generated_case import GeneratedCaseError
+    from generation_progress import encounter_preparation
+    from scene_preparation import ScenePreparation
+    if challenge_id not in CHALLENGES:
+        raise ValueError("Choose an implemented clinical problem.")
+    from offline_cases import launch_options
+    generation, scene_key = launch_options(_runtime_secret("OPENAI_API_KEY"))
+    try:
+        with ScenePreparation(scene_key,
+                              _runtime_secret("MRS_IMAGE_MODEL") or "gpt-image-1.5",
+                              _runtime_secret("MRS_IMAGE_REVIEW_MODEL") or "gpt-5-mini") as scene:
+            with encounter_preparation(st) as progress:
+                generated = generate_encounter(challenge_id, INITIAL_STATE,
+                    model=_runtime_secret("MRS_GENERATOR_MODEL") or _runtime_secret("OPENAI_MODEL") or "gpt-5-mini",
+                    progress=progress, on_case_compiled=scene.on_case_compiled, **generation)
+            scene.adopt(st.session_state, generated["state"], st.session_state.get("_attempt_id"))
+    except GeneratedCaseError as exc:
+        # Without an account store this was the only handler, and it dropped the
+        # draft, the validator issues and the request ledger of a paid failure.
+        from generation_diagnostics import save_failure
+        save_failure(exc, challenge_id=challenge_id)
+        st.error(str(exc))
+        st.stop()
+    return {"state_factory": lambda: deepcopy(generated["state"]),
+            "presentation": generated["presentation"]}
+
+
 def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     """Start a clean repeat attempt while preserving only the prospective plan."""
-    selected = st.session_state.get("selected_case")
-    cfg = CASE_CONFIGS[selected]
+    context = globals().get("ACCOUNT_CONTEXT")
+    if context:
+        save_session(context)
+        choice = (st.session_state.get("encounter_assignment") or {}).get("challenge_id")
+        from generated_case import GeneratedCaseError
+        try:
+            start_encounter(context, INITIAL_STATE, reset_session, choice, adaptation_plan, prior_attempt_record)
+        except GeneratedCaseError as exc:
+            st.error(str(exc))
+            st.stop()
+        return {"adaptation_plan": deepcopy(adaptation_plan)}
+    selected = (st.session_state.state.get("encounter_spec") or {}).get("challenge_id") or "R1-05"
+    cfg = generate_problem_config(selected)
+    st.session_state.selected_case = selected
     current_attempt = max(1, int(st.session_state.get("attempt_number", 1)))
     carried_plan = {
         field: str((adaptation_plan or {}).get(field) or "").strip()
@@ -3243,6 +3580,7 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     st.session_state.management_trace = []
     st.session_state.encounter_ended = False
     st.session_state.encounter_closed_trace = None
+    st.session_state.encounter_closed_events = None
     st.session_state.encounter_closed_state = None
     st.session_state.encounter_closed_time_min = None
     st.session_state.review_prompts = []
@@ -3311,6 +3649,7 @@ def render_decision_review(trace, final_state):
     progress_parts.append(f'{progress["plan_fields_filled"]}/{progress["plan_fields_total"]} plan fields')
     st.progress(progress["fraction"], text=" · ".join(progress_parts))
     st.caption("Autosave is active when you leave a field or move to another step.")
+    _render_analyzed_management_trace()
     _render_export_controls(
         trace,
         final_state,
@@ -3330,7 +3669,7 @@ def render_decision_review(trace, final_state):
     with nav_decision:
         if st.button("1 · Decision Review", use_container_width=True, disabled=stage == "decision"):
             st.session_state.review_stage = "decision"
-            st.rerun()
+            rerun_app()
     with nav_comparison:
         if st.button(
             "2 · Expert Comparison",
@@ -3338,7 +3677,7 @@ def render_decision_review(trace, final_state):
             disabled=(stage == "comparison" or not comparison_unlocked),
         ):
             st.session_state.review_stage = "comparison"
-            st.rerun()
+            rerun_app()
     with nav_plan:
         if st.button(
             "3 · Adaptation Plan",
@@ -3346,7 +3685,7 @@ def render_decision_review(trace, final_state):
             disabled=(stage == "adaptation" or not comparison_unlocked),
         ):
             st.session_state.review_stage = "adaptation"
-            st.rerun()
+            rerun_app()
     with nav_summary:
         if st.button(
             "4 · Final Summary",
@@ -3354,7 +3693,7 @@ def render_decision_review(trace, final_state):
             disabled=(stage == "summary" or not comparison_unlocked),
         ):
             st.session_state.review_stage = "summary"
-            st.rerun()
+            rerun_app()
 
     if stage == "decision":
         if not prompts:
@@ -3384,16 +3723,16 @@ def render_decision_review(trace, final_state):
         with previous_col:
             if st.button("Previous decision", use_container_width=True, disabled=active_index == 0):
                 st.session_state.active_review_index = active_index - 1
-                st.rerun()
+                rerun_app()
         with next_col:
             if active_index < len(prompts) - 1:
                 if st.button("Next decision", type="primary", use_container_width=True):
                     st.session_state.active_review_index = active_index + 1
-                    st.rerun()
+                    rerun_app()
             elif comparison_unlocked:
                 if st.button("Continue to Expert Comparison", type="primary", use_container_width=True):
                     st.session_state.review_stage = "comparison"
-                    st.rerun()
+                    rerun_app()
 
         if len(prompts) > 1:
             st.markdown("### Other review points")
@@ -3413,7 +3752,7 @@ def render_decision_review(trace, final_state):
                     st.caption("Saved response preview: " + preview)
                     if st.button("Review this decision", key=f"open_review_{other.get('review_id')}"):
                         st.session_state.active_review_index = index
-                        st.rerun()
+                        rerun_app()
 
         if not comparison_unlocked:
             st.markdown("### Reveal comparison")
@@ -3433,7 +3772,7 @@ def render_decision_review(trace, final_state):
                 st.session_state.expert_comparison_unlocked = True
                 st.session_state.review_stage = "comparison"
                 st.session_state.active_comparison_index = 0
-                st.rerun()
+                rerun_app()
 
     elif stage == "comparison":
         st.markdown("## Expert Comparison")
@@ -3446,7 +3785,7 @@ def render_decision_review(trace, final_state):
             st.info("No faculty-validation expert model is available for these review points.")
             if st.button("Continue to Adaptation Plan", type="primary"):
                 st.session_state.review_stage = "adaptation"
-                st.rerun()
+                rerun_app()
             return
 
         active_index = max(
@@ -3494,7 +3833,7 @@ def render_decision_review(trace, final_state):
         with previous_col:
             if st.button("Previous comparison", use_container_width=True, disabled=active_index == 0):
                 st.session_state.active_comparison_index = active_index - 1
-                st.rerun()
+                rerun_app()
         with next_col:
             next_label = "Continue to Adaptation Plan" if active_index == len(comparison_prompts) - 1 else "Next comparison"
             if st.button(next_label, type="primary", use_container_width=True):
@@ -3502,7 +3841,7 @@ def render_decision_review(trace, final_state):
                     st.session_state.review_stage = "adaptation"
                 else:
                     st.session_state.active_comparison_index = active_index + 1
-                st.rerun()
+                rerun_app()
 
         if len(comparison_prompts) > 1:
             st.markdown("### Other comparison points")
@@ -3516,7 +3855,7 @@ def render_decision_review(trace, final_state):
                     st.caption("Expert model available · faculty-validation draft")
                     if st.button("Compare this decision", key=f"open_comparison_{other.get('review_id')}"):
                         st.session_state.active_comparison_index = index
-                        st.rerun()
+                        rerun_app()
 
     elif stage == "adaptation":
         suggestions = _suggest_adaptation_plan(prompts, responses)
@@ -3549,11 +3888,11 @@ def render_decision_review(trace, final_state):
         with back_col:
             if st.button("Back to Expert Comparison", use_container_width=True):
                 st.session_state.review_stage = "comparison"
-                st.rerun()
+                rerun_app()
         with summary_col:
             if st.button("Continue to Final Summary", type="primary", use_container_width=True):
                 st.session_state.review_stage = "summary"
-                st.rerun()
+                rerun_app()
 
     else:
         st.markdown("## Final Summary")
@@ -3606,15 +3945,15 @@ def render_decision_review(trace, final_state):
         with view_decision:
             if st.button("View Locked Review", use_container_width=True):
                 st.session_state.review_stage = "decision"
-                st.rerun()
+                rerun_app()
         with edit_comparison:
             if st.button("Edit Comparison", use_container_width=True):
                 st.session_state.review_stage = "comparison"
-                st.rerun()
+                rerun_app()
         with edit_plan:
             if st.button("Edit Adaptation Plan", use_container_width=True):
                 st.session_state.review_stage = "adaptation"
-                st.rerun()
+                rerun_app()
 
         st.markdown("### Download complete record")
         summary_payload = _render_export_controls(
@@ -3630,17 +3969,18 @@ def render_decision_review(trace, final_state):
 
         st.markdown("### Adapt & Repeat")
         st.caption(
-            "Start a clean attempt of the same encounter. Only the prospective Adaptation Plan is "
-            "carried forward; the clinical trajectory, Management Trace, self-review, and comparison restart empty."
+            ("Start a new assigned encounter with your Adaptation Plan. The next clinical trajectory and review begin empty."
+             if globals().get("ACCOUNT_CONTEXT") else
+             "Start a clean attempt of the same encounter. Only the prospective Adaptation Plan is carried forward; the clinical trajectory, Management Trace, self-review, and comparison restart empty.")
         )
         if st.button(
-            "Repeat Encounter with This Adaptation Plan",
+            ("Next Encounter with This Adaptation Plan" if globals().get("ACCOUNT_CONTEXT") else "Repeat Encounter with This Adaptation Plan"),
             type="primary",
             use_container_width=True,
             disabled=not st.session_state.review_completed,
         ):
             begin_repeat_encounter(adaptation_plan, summary_payload)
-            st.rerun()
+            rerun_app()
 
 
 def management_trace_rows(trace):
@@ -3676,7 +4016,7 @@ def render_management_trace(trace):
         diagnostics = _trace_diagnostic_results(event)
         clinical_items = "".join(f'<li class="mt-delta"><strong>{html.escape(label)}</strong>: {html.escape(before)} <span class="mt-arrow">→</span> {html.escape(after)}</li>' for label, before, after in deltas)
         delta_html = f'<div class="mt-response-group"><div class="mt-response-title">Clinical response</div><ul class="mt-deltas">{clinical_items}</ul></div>' if clinical_items else ""
-        diagnostic_items = "".join(f'<div class="mt-result"><span class="mt-result-time">Diagnostic result · {html.escape(time_text)}:</span><span class="mt-result-text">{html.escape(result_text)}</span></div>' for time_text, result_text in diagnostics)
+        diagnostic_items = "".join(f'<div class="mt-result"><span class="mt-result-time">Diagnostic result · {html.escape(time_text)}:</span><span class="mt-result-text">{html.escape(result_text).replace(chr(10), "<br>")}</span></div>' for time_text, result_text in diagnostics)
         diagnostic_html = f'<div class="mt-response-group"><div class="mt-response-title">New diagnostic information</div><div class="mt-result-list">{diagnostic_items}</div></div>' if diagnostic_items else ""
         if not delta_html and not diagnostic_html:
             delta_html = '<span class="mt-muted">No material observable change recorded.</span>'
@@ -3719,65 +4059,9 @@ def _quantity_is_respiratory_support(text, start, end):
 
 
 def parse_volume_ml(text):
-    t = text.lower().replace(",", "")
-    fluid = r"(?:ns|normal\s+saline|saline|lr|lactated\s+ringers?|ringer'?s?|crystalloid|fluids?)"
-    liters = r"(?:l|lt|lts|liter|liters|litre|litres|litter|litters)"
-    milliliters = r"(?:ml|milliliter|milliliters|millilitre|millilitres|cc)"
+    from shared_order_quantities import parse_volume_ml as shared_parse_volume
+    return shared_parse_volume(text)
 
-    # A quantity attached to a named fluid has priority over every other number
-    # in a compound order. This is the critical distinction in
-    # "1000 NS ... O2 3lt": 1000 is the fluid volume and 3 is the oxygen flow.
-    named_patterns = (
-        (rf"\b(\d+(?:\.\d+)?)\s*{milliliters}\s*(?:of\s+)?{fluid}\b", "ml"),
-        (rf"\b{fluid}\s+(\d+(?:\.\d+)?)\s*{milliliters}\b", "ml"),
-        (rf"\b(\d+(?:\.\d+)?)\s*{liters}\s*(?:of\s+)?{fluid}\b", "l"),
-        (rf"\b{fluid}\s+(\d+(?:\.\d+)?)\s*{liters}\b", "l"),
-        (rf"\b(\d+(?:\.\d+)?)\s*{fluid}\b", "shorthand"),
-        (rf"\b{fluid}\s+(\d+(?:\.\d+)?)\b", "shorthand"),
-    )
-    for pattern, scale in named_patterns:
-        m = re.search(pattern, t, re.I)
-        if m:
-            value = float(m.group(1))
-            if scale == "l":
-                value *= 1000
-            elif scale == "shorthand" and value < 100:
-                value *= 1000
-            return int(round(value))
-
-    word_liters = {
-        "half": 500,
-        "one": 1000,
-        "two": 2000,
-        "three": 3000,
-        "four": 4000,
-        "five": 5000,
-    }
-    for word, ml in word_liters.items():
-        article = r"(?:a\s+)?" if word == "half" else ""
-        if re.search(rf"\b{word}\s+{article}{liters}\s*(?:of\s+)?{fluid}\b", t, re.I):
-            return ml
-        if re.search(rf"\b{fluid}\s+{word}\s+{article}{liters}\b", t, re.I):
-            return ml
-
-    # Explicit mL / cc is unambiguously a fluid volume in this simulator.
-    m = re.search(rf"(\d+(?:\.\d+)?)\s*{milliliters}\b", t, re.I)
-    if m:
-        return int(round(float(m.group(1))))
-
-    # For unnamed liter orders, consider every candidate and exclude oxygen flow
-    # by its local semantic scope, with or without an explicit "/min" suffix.
-    for m in re.finditer(rf"(\d+(?:\.\d+)?)\s*{liters}\b", t, re.I):
-        if not _quantity_is_respiratory_support(t, m.start(), m.end()):
-            return int(round(float(m.group(1)) * 1000))
-
-    for word, ml in word_liters.items():
-        article = r"(?:a\s+)?" if word == "half" else ""
-        m = re.search(rf"\b{word}\s+{article}{liters}\b", t, re.I)
-        if m and not _quantity_is_respiratory_support(t, m.start(), m.end()):
-            return ml
-
-    return None
 
 def parse_delay_min(text):
     """
@@ -3792,6 +4076,35 @@ def parse_delay_min(text):
       watch for 1 hour
     """
     t = text.lower().strip()
+    # "Give 500 mL over 30 minutes" states how long the infusion runs, not when to
+    # reassess. It must not replace the learner's own reassessment interval.
+    t = re.sub(
+        r"\b(?:over|durante)\s+\d+(?:\.\d+)?\s*(?:s|sec|secs|seconds?|m|min|mins|minutes?|minutos?|h|hr|hrs|hours?|horas?)\b",
+        " ", t,
+    )
+
+    # A learner may request a checkpoint without advancing simulated time.
+    # Keep this scoped to reassessment verbs so unrelated uses of "now" or
+    # "immediately" do not become timing instructions.
+    immediate_reassessment = re.search(
+        r"\b(?:reassess|re-assess|reevaluate|re-evaluate|recheck|re-check|observe|check)\b"
+        r"[^.;]{0,300}\b(?:now|immediately)\b",
+        t,
+    ) or re.search(
+        r"\bimmediately\s+(?:reassess|re-assess|reevaluate|re-evaluate|recheck|re-check|observe|check)\b",
+        t,
+    )
+    if immediate_reassessment or re.search(r"\bon\s+immediate\s+reassessment\b", t):
+        return 0
+
+    # Event-anchored reassessment is an explicit immediate checkpoint even
+    # when the learner does not supply a clock interval.
+    if re.search(
+        r"\b(?:immediately\s+)?after\s+(?:the\s+)?"
+        r"(?:(?:synchronized|synchronised)\s+)?(?:electrical\s+)?cardioversion\b",
+        t,
+    ):
+        return 0
 
     # Minutes: accept min, mins, minute(s), and standalone m after a number.
     m = re.search(
@@ -3942,17 +4255,15 @@ def detect_fluid_type(text):
 
 
 def parse_dose_mg(text):
-    t = text.lower().replace(",", "")
-    m = re.search(r"(\d+(?:\.\d+)?)\s*mg\b", t)
-    return float(m.group(1)) if m else None
+    from shared_order_language import _normalize, _amount
+    value, units = _amount(_normalize(text), r"mg|g|mcg|ug")
+    return None if value is None else value * (1000 if units == "g" else .001 if units in {"mcg", "ug"} else 1)
+
 
 def parse_route(text):
-    t = text.lower()
-    if re.search(r"\b(iv|intravenous|intravenously)\b", t):
-        return "IV"
-    if re.search(r"\b(po|oral|orally|by mouth)\b", t):
-        return "PO"
-    return None
+    from shared_order_language import _normalize, _route
+    return _route(_normalize(text))
+
 
 def parse_energy_j(text):
     t = text.lower().replace(",", "")
@@ -3980,13 +4291,18 @@ def is_explicit_cardioversion_order(text):
 
         explicit_command = bool(
             re.search(
-                r"\b(?:perform|repeat|attempt|deliver|do|start|initiate)\b[^,]{0,50}\b"
-                r"(?:synchronized\s+|synchronised\s+)?cardioversion\b",
+                r"\b(?:perform|order|repeat|attempt|deliver|do|start|initiate)\b[^,]{0,50}\b"
+                r"(?:synchronized\s+|synchronised\s+)?(?:electrical\s+)?cardioversion\b",
                 clause,
             )
             or re.search(
                 r"\bproceed\s+with\b[^,]{0,35}\b"
                 r"(?:synchronized\s+|synchronised\s+)?cardioversion\b",
+                clause,
+            )
+            or re.search(
+                r"\bfollowed\s+by\s+"
+                r"(?:synchronized\s+|synchronised\s+)?(?:electrical\s+)?cardioversion\b",
                 clause,
             )
             or re.search(
@@ -3998,7 +4314,7 @@ def is_explicit_cardioversion_order(text):
         )
         compact_energy_order = bool(re.search(
             r"(?:^|,\s*|\band\s+|\bthen\s+)"
-            r"(?:synchronized\s+|synchronised\s+)?cardioversion\s*"
+            r"(?:synchronized\s+|synchronised\s+)?(?:electrical\s+)?cardioversion\s*"
             r"(?:at|with)?\s*\d+(?:\.\d+)?\s*(?:j|joules?)\b",
             clause,
         ))
@@ -4055,7 +4371,7 @@ def is_explicit_antibiotic_order(text):
 
         explicit_command = bool(
             re.search(
-                rf"\b(?:give|administer|infuse|start|initiate|begin)\b[^,;]{{0,65}}\b{aliases}\b",
+                rf"\b(?:give|administer|order|infuse|start|initiate|begin)\b[^,;]{{0,65}}\b{aliases}\b",
                 clause,
             )
             or re.search(
@@ -4318,31 +4634,142 @@ def parse_nitroglycerin_rate(text):
     return float(m.group(1)) if m else None
 
 
+def _oxygen_order_clauses(text):
+    """Find locally ordered conventional oxygen, preserving intent and scope.
+
+    Device names in history, monitoring, negated plans, and conditional plans
+    are not new orders. Keep the command's own clause so a fluid quantity or
+    another oxygen device elsewhere in the turn cannot supply its parameters.
+    """
+    raw = str(text or "").lower().replace("₂", "2").replace("’", "'")
+    # Bounded bilingual order vocabulary also protects the raw-text fallback.
+    for pattern, replacement in (
+        (r"\box[ií]geno\b", "oxygen"),
+        (r"\bc[aá]nula\s+nasal\b", "nasal cannula"),
+        (r"\b(?:iniciar|inicia|inicie|comenzar)\b", "start"),
+        (r"\b(?:administrar|administra|administre|aplicar)\b", "administer"),
+        (r"\b(?:colocar|coloca|coloque|poner|pon|ponga)\b", "place"),
+        (r"\b(?:mantener|mantenga|mant[eé]n|continuar|contin[uú]a)\b", "continue"),
+        (r"\b(?:aumentar|aumenta|aumente|subir|sube|suba)\b", "increase"),
+        (r"\b(?:disminuir|disminuye|disminuya|reducir|reduce|reduzca|bajar|baja|baje)\b", "decrease"),
+        (r"\bpero\b", "but"),
+        (r"\b(?:si|cuando|considerar|considerar[ií]a|podr[ií]a|deber[ií]a|evitar|suspender|previamente)\b", "if"),
+    ):
+        raw = re.sub(pattern, replacement, raw)
+    aliases = r"(?:oxygen|o2|nas+al\s+can+ula|nc|non-?rebreather|nrb|simple\s+mask|face\s+mask)"
+    commands = r"(?:start|initiate|give|administer|apply|increase|decrease|switch|change|place|put|continue|provide|order|deliver|set|begin|supplement)"
+    observations = r"(?:re-?assess|re-?check|re-?evaluate|assess|check|monitor|measure|observe|evaluar|reevaluar|revaluar|medir|vigilar|monitorizar)"
+    boundaries = commands + "|" + observations + r"|obtain|infuse|bolus|perform|intubate"
+    clauses = []
+    for sentence in re.split(r"\.(?!\d)|[;\n]", raw):
+        mentions = list(re.finditer(rf"\b{aliases}\b", sentence))
+        for mention in mentions:
+            prefix = sentence[:mention.start()]
+            tail = sentence[mention.end():]
+            # Oxygen saturation is a measured variable, even in a comma-separated
+            # reassessment list or a stated goal to increase saturation. Its name
+            # must not become a bare oxygen-administration order. Keep actual
+            # directives such as "give oxygen to target saturation 94%" intact.
+            if mention.group() in {"oxygen", "o2"} and (
+                re.match(r"\s+(?:saturations?|sats?|levels?|readings?|saturaci[oó]n)\b", tail)
+                or re.search(
+                    r"\b(?:saturations?|sats?|levels?|readings?|saturaci[oó]n|niveles?)\s+(?:(?:of|de|del)\s+)?$",
+                    prefix,
+                )
+            ):
+                continue
+            command_matches = list(re.finditer(rf"\b{commands}\b", prefix))
+            command = command_matches[-1] if command_matches else None
+            observation_matches = list(re.finditer(rf"\b{observations}\b", prefix))
+            if observation_matches and (
+                command is None or observation_matches[-1].start() > command.start()
+            ):
+                # An observation verb still governs later items in its list;
+                # only a subsequent treatment command starts a new order.
+                continue
+            commanded = bool(command and mention.start() - command.end() <= 65)
+            if commanded:
+                start = command.start()
+            else:
+                compact = re.search(r"(?:^|,|\band\b)\s*$", prefix)
+                if not compact:
+                    continue
+                start = mention.start()
+            next_command = re.search(rf"\b(?:{boundaries})\b", tail)
+            end = mention.end() + next_command.start() if next_command else len(sentence)
+            # A later independent command owns its negation/condition. Examples:
+            # "start oxygen ... and do not give fluids"; "..., and if BP falls ...".
+            following_clause = re.search(
+                rf"(?:,|\band\b|\bbut\b)\s*(?:and\s+)?"
+                rf"(?=(?:do not|don't|if|unless|when|{boundaries})\b)",
+                sentence[mention.end():end],
+            )
+            if following_clause:
+                end = mention.end() + following_clause.start()
+            clause = sentence[start:end].strip(" ,")
+            preceding = sentence[:start]
+            local_prefix = re.split(r",|\band\b|\bbut\b", preceding)[-1] if commanded else preceding
+            # A leading conditional before the comma still governs its order:
+            # "If saturation falls, start oxygen ...". An explicit "but"
+            # introduces an independent directive.
+            condition_scope = re.split(r"\bbut\b", preceding)[-1]
+            leading_condition = bool(re.match(r"\s*(?:if|unless|when|previously|already)\b", condition_scope))
+            intent_context = local_prefix + clause
+            if leading_condition or "?" in clause or re.search(
+                r"\b(?:do not|don't|didn't|won't|not|no|never|avoid|defer|hold|withhold|stop|"
+                r"if|unless|when|consider|might|may|could|would|should|whether|previously|already|"
+                r"was|were|had|received|receiving)\b", intent_context,
+            ):
+                continue
+            if re.search(r"\b(?:cpap|bipap|niv|nimv|nippv|vmni|noninvasive|non-invasive|ventilat\w*)\b", clause):
+                continue
+            if clause and clause not in clauses:
+                # Oxygen and its device can both match in the same command.
+                if not any(clause in prior for prior in clauses):
+                    clauses.append(clause)
+    return clauses
+
+
 def parse_oxygen_order(text):
-    t = text.lower()
-    device = None
-    flow = None
-
-    if any(k in t for k in ["nonrebreather", "non-rebreather", "nrb"]):
-        device = "Non-rebreather mask"
-    elif re.search(r"\bnas+al\s+can+ula\b", t) or re.search(r"\bnc\b", t):
-        device = "Nasal cannula"
-    elif any(k in t for k in ["simple mask", "face mask"]):
-        device = "Simple face mask"
-
-    m = re.search(r"(\d+(?:\.\d+)?)\s*(?:l|lt|lts|liter|liters|litre|litres)\s*/?\s*(?:min|minute)?", t)
-    if m:
-        flow = float(m.group(1))
-
-    # Conventional default if a non-rebreather is explicitly requested.
-    if device == "Non-rebreather mask" and flow is None:
-        flow = 15.0
-
-    # If oxygen + low flow is specified without a device, infer nasal cannula.
-    if ("oxygen" in t or "o2" in t) and flow is not None and device is None:
-        device = "Nasal cannula" if flow <= 6 else "Simple face mask"
-
+    """Read explicit device/flow only; missing parameters require clarification."""
+    t = str(text or "").lower().replace("₂", "2")
+    device_patterns = (
+        (r"\b(?:non-?rebreather|nrb)\b", "Non-rebreather mask"),
+        (r"\b(?:nas+al\s+can+ula|nc)\b", "Nasal cannula"),
+        (r"\b(?:simple\s+mask|(?:simple\s+)?face\s+mask)\b", "Simple face mask"),
+    )
+    devices = {name for pattern, name in device_patterns if re.search(pattern, t)}
+    device = next(iter(devices)) if len(devices) == 1 else None
+    if len(devices) > 1:
+        destination = re.search(r"\bto\s+(.+)$", t)
+        targets = {name for pattern, name in device_patterns if destination and re.search(pattern, destination.group(1))}
+        device = next(iter(targets)) if len(targets) == 1 else None
+    flows = []
+    for match in re.finditer(
+        r"(?<![\w.\-])(\d+(?:\.\d+)?)\s*(?:liters?|litres?|lts?|l)\b"
+        r"(?:\s*/?\s*(?:minutes?|mins?)\b)?", t,
+    ):
+        if _quantity_is_respiratory_support(t, match.start(), match.end()) or re.fullmatch(
+            r"\s*(?:(?:at|to|use)\s+)?\d+(?:\.\d+)?\s*(?:liters?|litres?|lts?|l)\s*/\s*(?:minutes?|mins?)\s*(?:please)?\s*[.]?", t,
+        ):
+            flows.append(float(match.group(1)))
+    if len(flows) == 1:
+        flow = flows[0]
+    elif len(flows) == 2 and re.search(r"\bfrom\b.+\bto\b", t):
+        flow = flows[-1]
+    else:
+        flow = None
+    if flow is not None and flow <= 0:
+        flow = None
     return device, flow
+
+
+def explicit_oxygen_actions(text):
+    return [
+        {"type": "oxygen", "device": device, "flow_lpm": flow}
+        for clause in _oxygen_order_clauses(text)
+        for device, flow in [parse_oxygen_order(clause)]
+    ]
 
 
 def detect_diltiazem(text):
@@ -4358,6 +4785,14 @@ def try_resolve_pending_action(text):
     pending = st.session_state.get("pending_action")
     if not pending:
         return None
+
+    if pending.get("type") == "family_bundle":
+        from pending_family_orders import complete_bundle
+        resolution = complete_bundle(pending, text)
+        from family_parser import _COMMAND, _normalize, _NEGATION
+        if (resolution and resolution.get("parsed")) or (resolution is None and (_COMMAND.match(_normalize(text)) or _NEGATION.match(_normalize(text)))):
+            st.session_state.pending_action = None
+        return resolution
 
     if pending.get("type") == "fluid":
         resolved = dict(pending)
@@ -4593,11 +5028,19 @@ def try_resolve_pending_action(text):
                     "resolved_from_clarification": True,
                 }}
         resolved = dict(pending)
+        if re.search(
+            r"\b(?:not|no|never|avoid|defer|hold|withhold|stop|if|unless|when|consider|might|may|could|would|previously|already|was|were|received)\b",
+            str(text or ""), re.I,
+        ):
+            return {"clarification": "The oxygen order is still held. Please state the device and flow to use now, without a conditional or retrospective instruction."}
         device, flow = parse_oxygen_order(text)
         if device is None and flow is None:
             return {"clarification": "What oxygen device or flow would you like to use (for example, nasal cannula 4 L/min or non-rebreather mask)?"}
-        resolved["device"] = device or resolved.get("device") or "Nasal cannula"
+        resolved["device"] = device or resolved.get("device")
         resolved["flow_lpm"] = flow if flow is not None else resolved.get("flow_lpm")
+        st.session_state.pending_action = resolved
+        if resolved.get("device") is None:
+            return {"clarification": "Which oxygen device would you like to use?"}
         if resolved.get("flow_lpm") is None:
             return {"clarification": "What oxygen flow would you like to use?"}
         st.session_state.pending_action = None
@@ -4700,6 +5143,26 @@ def _resolve_reasoning_coreference(phrase, context, statement_start):
     if not re.match(r"^(?:it|this|that)\b", candidate, re.I):
         return candidate
 
+    # "I think this is acute pulmonary oedema": ``this`` is a dummy subject and
+    # the learner has named the problem in full. Only a generic complement such
+    # as "the primary problem" still needs an explicit antecedent.
+    frame = re.match(
+        r"^(?:it|this|that)\s*(?:'s|\s+is|\s+looks\s+like|\s+seems\s+like|\s+seems\s+to\s+be|"
+        r"\s+appears\s+to\s+be|\s+(?:could|may|might|must)\s+be|\s+is\s+(?:likely|probably|possibly))"
+        r"\s+(.+)$",
+        candidate, re.I,
+    )
+    if frame:
+        complement = _clean_reasoning_phrase(frame.group(1))
+        complement = re.sub(r"^(?:likely|probably|possibly)\s+", "", complement or "", flags=re.I)
+        generic = re.fullmatch(
+            r"(?:the|a|an|my|our)?\s*(?:(?:main|primary|real|underlying|biggest|key|first|immediate)\s+)?"
+            r"(?:problem|issue|cause|concern|priority|thing|driver|reason|explanation|diagnosis)",
+            complement or "", re.I,
+        )
+        if complement and not generic:
+            return complement
+
     prefix = str(context or "")[:max(0, int(statement_start or 0))]
     patterns = [
         r"\bi(?:'m| am)\s+(?:addressing|treating|targeting|prioritizing|focusing\s+on)\s+"
@@ -4735,6 +5198,9 @@ def extract_explicit_reasoning(text):
     # Tolerate common dictated/typed variants such as ``i.m`` and ``im``.
     joined = re.sub(r"\bi\s*[.'’]?\s*m\b", "I'm", joined, flags=re.I)
     joined = re.sub(r"\brythm\b", "rhythm", joined, flags=re.I)
+    # Common typed misspellings seen in local testing: "stil", "reasses".
+    joined = re.sub(r"\bstil\b", "still", joined, flags=re.I)
+    joined = re.sub(r"\bre-?as+es+(?=\b|ment)", "reassess", joined, flags=re.I)
     joined = re.sub(
         r"\b(?:urianalysis|urinealysis|urinalisis|urinanalysis)\b",
         "urinalysis",
@@ -4742,16 +5208,56 @@ def extract_explicit_reasoning(text):
         flags=re.I,
     )
     joined = re.sub(r"(?<=\d)\.(?=\d)", "\ue000", joined)
-    working_model_explicit = bool(re.search(r"\bmy working model is\b", joined, re.I))
+    working_model_explicit = bool(re.search(
+        r"\b(?:my working model is|mi modelo de trabajo es)\b", joined, re.I))
 
     thought = None
     m = re.search(
-        r"\b(?:i think|i believe|i suspect|my impression is|my working diagnosis is|my working model is|i am concerned that|i\'m concerned that|this (?:looks|seems) like)\s+"
-        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|thus\b|because\b|and i\b (?:want|will|would)\b|so i\b)|[.;]|$)",
+        r"\b(?:i think|i believe|i suspect|my impression is|my working diagnosis is|my working model is|i am concerned that|i\'m concerned that|this (?:looks|seems) like|"
+        # Spanish lead-ins. The capture below still copies only the learner's words.
+        r"creo que|pienso que|sospecho que|considero que|mi impresi[oó]n es(?: que)?|mi modelo de trabajo es|"
+        r"mi diagn[oó]stico de trabajo es|me preocupa que)\s+"
+        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|thus\b|because\b|and i\b (?:want|will|would)\b|so i\b|"
+        r"por lo que\b|as[ií] que\b|porque\b|entonces\b)|[.;]|$)",
         joined, re.I
     )
     if m:
         thought = _resolve_reasoning_coreference(m.group(1), joined, m.start())
+        if thought:
+            # Spanish copular frames: "creo que es X", "creo que se trata de X".
+            thought = re.sub(r"^(?:es|ser[ií]a|se trata de|corresponde a|parece(?: ser)?)\s+",
+                             "", thought, flags=re.I) or thought
+
+    # A sentence that opens with a hedge names the learner's working model even
+    # without "I think": "Likely septic shock." / "Parece ICC descompensada."
+    if not thought:
+        m = re.search(
+            r"(?:^|[.;]\s*)(?:likely|probably|probable|possible|possibly|suspected|suspect|"
+            r"consistent with|concern(?:ing)? for|picture of|looks like|seems like|"
+            r"probablemente|probable|posible|sospecha de|parece(?: ser| un| una)?|impresiona(?: como)?|"
+            r"se trata de|cuadro (?:compatible con|sugerente de|de)|compatible con|sugerente de)\s+"
+            r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|because\b|por lo que\b|porque\b)|[.;]|$)",
+            joined, re.I,
+        )
+        if m:
+            thought = _clean_reasoning_phrase(m.group(1))
+
+    # A finding that "suggests" a diagnosis names the working model too:
+    # "Chest pressure suggests acute coronary syndrome." / "La hipotensión sugiere
+    # shock vasodilatador." An order is never the subject of such a sentence.
+    if not thought:
+        m = re.search(
+            r"(?:^|[.;]\s*)(?!(?:give|start|order|begin|administer|stop|increase|decrease|reassess|"
+            r"dar|administra|inicia|iniciar|pide|pedir|reeval)\w*\b)([^.;]{3,160}?)\s+"
+            r"(?:suggests?|is suggestive of|are suggestive of|points? to|is consistent with|are consistent with|"
+            r"is compatible with|are compatible with|favou?rs?|"
+            r"sugiere(?:n)?|orienta(?:n)? a|es compatible con|son compatibles con|es sugerente de)\s+"
+            r"(?:an?\s+|the\s+|un\s+|una\s+)?(.+?)(?=\s*,?\s*(?:so\b|therefore\b|because\b|por lo que\b|porque\b)|[.;]|$)",
+            joined, re.I,
+        )
+        if m:
+            # Keep the learner's whole statement: the finding is part of the model.
+            thought = _clean_reasoning_phrase(joined[m.start(1):m.end(2)])
 
     # When the learner explicitly states cause -> consequence, keep the full
     # causal statement as rationale and create a distinct problem representation
@@ -4783,9 +5289,25 @@ def extract_explicit_reasoning(text):
         m = re.search(
             r"(?:^|[.;])\s*((?:(?:the\s+)?patient|he|she)?\s*(?:is\s+)?still\s+"
             r"(?:in\s+)?(?:a-?fib|af|atrial\s+fibrillation|shock|hypotensive|"
-            r"hypoxemic|hypoxic|tachycardic))(?=\s*,|[.;]|$)",
+            r"hypoxemic|hypoxic|tachycardic|"
+            # A persisting named condition, wherever in the turn it is stated:
+            # "... reassess BP. still pulmonary edema".
+            r"(?:acute\s+|hypertensive\s+|cardiogenic\s+|flash\s+)*pulmonary\s+o?edema|o?edematous|"
+            r"congested|congestive|overloaded|volume\s+overloaded|in\s+failure|decompensated|"
+            r"hypertensive|septic|bleeding|wheezy|bronchospastic))(?=\s*,|[.;]|$)",
             joined,
             re.I,
+        )
+        if m:
+            reasoning["problem_representation"] = _clean_reasoning_phrase(m.group(1))
+
+    if "problem_representation" not in reasoning:
+        m = re.search(
+            r"(?:^|[.;])\s*((?:el\s+paciente\s+|la\s+paciente\s+)?(?:sigue|persiste|contin[uú]a)\s+"
+            r"(?:en\s+|con\s+|el\s+|la\s+)?(?:congestiv[oa]|edema(?:\s+pulmonar)?|hipotens[oa]|hipertens[oa]|"
+            r"hip[oó]xic[oa]|taquic[aá]rdic[oa]|en\s+shock|en\s+choque|s[eé]ptic[oa]|sangrando|"
+            r"descompensad[oa]|sobrecargad[oa]|con\s+sobrecarga))(?=\s*,|[.;]|$)",
+            joined, re.I,
         )
         if m:
             reasoning["problem_representation"] = _clean_reasoning_phrase(m.group(1))
@@ -4851,7 +5373,9 @@ def extract_explicit_reasoning(text):
         command = re.search(
             r"(?:^|[.;])\s*(?:give|administer|infuse|bolus|start|stop|continue|"
             r"increase|decrease|cardiovert|perform|intubate|apply|place|put|"
-            r"order|obtain|reassess|re-assess|recheck|re-check|reevaluate|re-evaluate|observe|watch)\b",
+            r"order|obtain|reassess|re-assess|recheck|re-check|reevaluate|re-evaluate|observe|watch|"
+            r"dar|administrar|iniciar|comenzar|poner|suspender|aumentar|subir|bajar|disminuir|"
+            r"intubar|pedir|solicitar|reevaluar|revaluar|controlar)\b",
             joined,
             re.I,
         )
@@ -4862,14 +5386,43 @@ def extract_explicit_reasoning(text):
             r"mental\s+status|obtund\w*|drows\w*|hypox\w*|dyspn\w*|"
             r"respiratory\w*|atrial\s+fibrillation|a-?fib|afib|arrhythm\w*|"
             r"sepsis|septic|infect\w*|urinalysis|lactate|capillary\s+refill|"
-            r"(?:cold|cool)\s+extremit\w*)\b",
+            r"(?:cold|cool)\s+extremit\w*|"
+            # A named condition is a working model in its own right: "Acute
+            # hypertensive pulmonary edema after missing diuretics."
+            r"o?edema|heart\s+failure|cardiac\s+failure|failure|overload\w*|congesti\w*|"
+            r"decompensat\w*|cardiogenic|embol\w*|pneumon\w*|exacerbat\w*|asthma|"
+            r"anaphyla\w*|ketoacidosis|hypoglyc\w*|hyperglyc\w*|overdose|toxicity|"
+            r"intoxicat\w*|opioid\w*|bleed\w*|ha?emorrhag\w*|dehydrat\w*|hypovol[ae]m\w*|"
+            r"infarct\w*|ischa?em\w*|tamponade|pneumothorax|adrenal\w*|"
+            r"insuficiencia|descompensad\w*|sobrecarga|congesti[oó]n|cardiog[eé]nic\w*|"
+            r"embolia|tromboembolismo|neumon[ií]a|exacerbaci[oó]n|asma|anafila\w*|"
+            r"cetoacidosis|hipoglic\w*|hiperglic\w*|intoxicaci[oó]n|sangrado|hemorragia|"
+            r"deshidrataci[oó]n|hipovolemi\w*|infarto|isquemi\w*|taponamiento|neumot[oó]rax|"
+            r"choque|s[eé]ptic\w*|hipotens\w*|hipox\w*|hipoperfusi[oó]n|taquicardi\w*|"
+            r"bradicardi\w*|arritmi\w*|fibrilaci[oó]n|shock)\b",
+            re.I,
+        )
+        # Acronyms are matched case-sensitively: "mi" is Spanish for "my".
+        acronym_pattern = re.compile(
+            r"\b(?:ICC|EAP|CHF|ADHF|HF|TEP|PE|EPOC|COPD|DKA|CAD|IAM|SCA|ACS|STEMI|NSTEMI|AF|FA|SVT|TSV)\b")
+        # A clause that already states another slot is not a working model:
+        # "My priority is reducing congestion" names congestion but is a priority.
+        other_slot = re.compile(
+            r"^(?:my\s+(?:management\s+|main\s+|first\s+)?(?:priority|goal|aim|plan)|"
+            r"i\s+(?:expect|anticipate|want|will|would|plan|intend)|"
+            r"(?:i\s+am|i'm)\s+(?:addressing|treating|targeting|prioriti[sz]ing|expecting|aiming)|"
+            r"expected\s+effect|to\s+(?:improve|reduce|treat|address|correct)|"
+            r"mi\s+(?:prioridad|objetivo|meta|plan)|espero|anticipo|quiero|voy\s+a|"
+            r"pretendo|busco|para\s+(?:mejorar|reducir|tratar|corregir))\b",
             re.I,
         )
         clinical_clauses = []
         for clause in re.split(r"[.;]+", clinical_prefix):
             candidate = _clean_reasoning_phrase(clause)
+            if candidate and other_slot.match(candidate):
+                continue
             candidate = re.sub(r"^(?:the\s+)?patient\s+", "", candidate or "", flags=re.I)
-            if candidate and cue_pattern.search(candidate):
+            if candidate and (cue_pattern.search(candidate) or acronym_pattern.search(candidate)):
                 clinical_clauses.append(candidate)
         if clinical_clauses:
             reasoning["problem_representation"] = "; ".join(clinical_clauses[:3])
@@ -4909,10 +5462,26 @@ def extract_explicit_reasoning(text):
         ):
             reasoning["rationale"] = thought
 
-    # Explicit management priority only.
+    # Explicit management priority only. An order in the same sentence ends it:
+    # "My priority is perfusion, give 1000 mL NS". A goal verb with a
+    # physiological object does not: "and increase the MAP above 65".
+    _en_order_clause = (
+        r"\s*(?:,\s*(?:(?:and|then)\s+)?|\s(?:and|then)\s+)"
+        r"(?:(?:give|start|begin|initiate|administer|infuse|bolus|"
+        r"(?:reassess|recheck)(?=[^.;]*\d)|intubate|place|apply|stop|discontinue|hold|transfuse|"
+        r"consult|call|push|hang|put)\b"
+        # A study verb ends the priority only when it names a study: "check lactate",
+        # not "check for early fluid overload".
+        r"|(?:order|obtain|request|send|draw|check|get|repeat|perform)\s+(?=[^.;,]*\b(?:lactate|vbg|abg|"
+        r"blood\s+gas|pocus|ultrasound|x-?ray|cxr|ecg|ekg|cultures?|troponin|glucose|labs?|hemoglobin|"
+        r"urinalysis|ct|ctpa)\b)"
+        r"|(?:increase|decrease|titrate|wean)\b(?!\s+(?:the\s+|her\s+|his\s+)?(?:preload|afterload|"
+        r"perfusion|oxygenation|ventilation|blood\s+pressure|bp|map|pressure|heart\s+rate|"
+        r"work\s+of\s+breathing|congestion|oxygen\s+delivery|demand)\b))"
+    )
     m = re.search(
         r"\b(?:my|the) (?:(?:main|first|immediate|management) )?priority is (?:to )?"
-        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|[.;]|$)", joined, re.I
+        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|" + _en_order_clause + r"|[.;]|$)", joined, re.I
     )
     if not m:
         m = re.search(
@@ -4921,7 +5490,8 @@ def extract_explicit_reasoning(text):
         )
     if not m:
         m = re.search(
-            r"\b(?:my|the) (?:management )?goal is (?:to )?(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|[.;]|$)",
+            r"\b(?:my|the) (?:management )?goal is (?:to )?(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|"
+            + _en_order_clause + r"|[.;]|$)",
             joined, re.I
         )
     # Natural equivalents: "I'm addressing heart rate first", "I will focus on
@@ -5058,27 +5628,32 @@ def extract_explicit_reasoning(text):
     # later infinitive. Without this precedence, "I expect pressure to increase
     # and perfusion to improve" was truncated to "increase and perfusion to
     # improve" because the generic parser started at the second word "to".
-    direct_expectation = re.search(
-        r"\b(?:i|we)\s+(?:would\s+)?(?:expect|anticipate)\s+(.+?)"
+    # Keep every explicit expectation in sentence order, preserving negation.
+    # A negative oxygenation expectation must not erase a separate positive
+    # pressure expectation, or be inverted by the later infinitive fallback.
+    expectation_clauses = []
+    direct_expectations = re.finditer(
+        r"\b(?:i|we)\s+(?:(?P<negation>do\s+not|don['’]t|would\s+not|wouldn['’]t)\s+|would\s+)?"
+        r"(?:expect|anticipate)\s+(?P<effect>.+?)"
         r"(?=\s+if\b|\s*,?\s*(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
         joined,
         re.I,
     )
-    if direct_expectation:
-        candidate = _clean_reasoning_phrase(direct_expectation.group(1))
-        candidate = re.sub(
-            r"^(?:this|it|that)\s+(?:to|will)\s+",
-            "",
-            candidate or "",
-            flags=re.I,
-        )
-        if candidate and re.search(
-            r"\b(?:improv|restor|increas|decreas|reduc|support|correct|stabili|"
-            r"remain|maintain|preserv|sustain|convert|conversion|stop\s+worsening)",
-            candidate,
-            re.I,
-        ):
-            reasoning["expected_effect"] = candidate
+    for expectation in direct_expectations:
+        if expectation.group("negation"):
+            candidate = _clean_reasoning_phrase(expectation.group())
+        else:
+            candidate = _clean_reasoning_phrase(expectation.group("effect"))
+            candidate = re.sub(
+                r"^(?:this|it|that)\s+(?:to|will)\s+",
+                "",
+                candidate or "",
+                flags=re.I,
+            )
+        if candidate:
+            expectation_clauses.append(candidate)
+    if expectation_clauses:
+        reasoning["expected_effect"] = "; ".join(expectation_clauses)
 
     # Explicit intended/expected effect only. Search all candidate purpose clauses
     # and reject clauses that belong to a stated priority/goal rather than an
@@ -5207,11 +5782,87 @@ def extract_explicit_reasoning(text):
     # physiologic direction, that combination can faithfully express the
     # management priority even without the words "priority" or "first". Keep
     # the mapping narrow and grounded in the learner's own expected effect.
+    def _capture_spanish_reasoning(joined, reasoning):
+        """Fill priority, expected effect and reassessment target from Spanish.
+
+        The interpreter's English patterns are pinned by many regressions, so Spanish
+        is captured separately and only for a slot that is still empty, using
+        Spanish markers alone. English behaviour therefore cannot change. As with
+        English, only the learner's own words are kept.
+
+        Nested here rather than a module function: several regressions load a named
+        subset of app.py's functions through ast, so this must travel with its caller.
+        """
+        _ES_ORDER_VERBS = (r"dar|administrar|administra|iniciar|inicia|comenzar|comienza|poner|pon|coloca|"
+                           r"suspender|suspende|intubar|intuba|"
+                           r"pedir|pide|solicitar|solicita|reevaluar|reeval[uú]a|revaluar|re-evaluar|controlar|controla|"
+                           r"volver\s+a\s+evaluar")
+        # These also state goals ("bajar precarga"), so only a non-physiological object ends the priority.
+        _ES_GOAL_VERBS = r"aumentar|aumenta|subir|bajar|disminuir|disminuye"
+        # "bajar precarga y poscarga" is part of a goal, not an order that ends it.
+        _ES_PHYSIOLOGY = (r"(?:(?:el|la|los|las)\s+)?(?:precarga|pos(?:t)?carga|presi[oó]n|pas?|pam|fc|fr|"
+                          r"frecuencia|trabajo|congesti[oó]n|oxigenaci[oó]n|perfusi[oó]n|lactato|hipoxemia|"
+                          r"spo2|saturaci[oó]n|resistencia|demanda|consumo)\b")
+        _ES_TIME = r"(?:en|a\s+los|tras|despu[eé]s\s+de)\s+\d+(?:[.,]\d+)?\s*(?:min|mins|minutos?|h|horas?)\b"
+        stop = (r"(?=\s*,?\s*(?:y\s+)?(?:" + _ES_ORDER_VERBS + r")\b"
+                r"|\s*,?\s*(?:y\s+)?(?:" + _ES_GOAL_VERBS + r")\b(?!\s+" + _ES_PHYSIOLOGY + r")"
+                r"|\s*,?\s*(?:y\s+)?(?:espero|anticipo)\b|[.;]|$)")
+
+        if "management_priority" not in reasoning:
+            m = re.search(
+                r"\b(?:mi\s+(?:prioridad|objetivo|meta)(?:\s+(?:principal|inicial|inmediata|ahora))?"
+                r"\s+(?:es|ser[aá])|lo\s+primero\s+es|me\s+enfoco(?:\s+primero)?\s+en|priorizo)"
+                r"\s+(?:(?:el|la|los|las|lo)\s+)?(.+?)" + stop,
+                joined, re.I,
+            )
+            if m and _clean_reasoning_phrase(m.group(1)):
+                reasoning["management_priority"] = _clean_reasoning_phrase(m.group(1))
+
+        if "expected_effect" not in reasoning:
+            # "Espero" is also "I wait": "Espero 10 minutos" is not an expectation.
+            m = re.search(
+                r"\b(?P<neg>no\s+)?(?:espero|anticipo|preveo)(?!\s+(?:\d|a\s|hasta\b|unos?\b|un\s+momento))"
+                r"(?:\s+que)?\s+(?P<effect>.+?)" + stop,
+                joined, re.I,
+            )
+            if not m:
+                m = re.search(r"\bel\s+efecto\s+esperado\s+es\s+(?:que\s+)?(?P<effect>.+?)" + stop,
+                              joined, re.I)
+            if m:
+                effect = _clean_reasoning_phrase(m.group("effect"))
+                if effect:
+                    negated = "neg" in m.groupdict() and m.group("neg")
+                    reasoning["expected_effect"] = ("no espero que " + effect) if negated else effect
+
+        if "reassessment_target" not in reasoning:
+            # "reevaluar SpO2 y FR en 15 minutos" and "reevaluar en 15 minutos SpO2 y FR".
+            m = re.search(
+                r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú][oae]|controlar|controla|volver\s+a\s+evaluar)\s+"
+                r"(?!" + _ES_TIME + r")(?:(?:el|la|los|las)\s+)?(.+?)(?=\s+" + _ES_TIME + r"|[.;]|$)",
+                joined, re.I,
+            )
+            target = _clean_reasoning_phrase(m.group(1)) if m else None
+            if not target:
+                m = re.search(
+                    r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú][oae]|controlar|controla)\s+" + _ES_TIME +
+                    r"\s*,?\s*(?:(?:el|la|los|las)\s+)?(.+?)(?=[.;]|$)",
+                    joined, re.I,
+                )
+                target = _clean_reasoning_phrase(m.group(1)) if m else None
+            if target and target.lower() not in {"al paciente", "paciente", "de nuevo", "nuevamente", "otra vez"}:
+                reasoning["reassessment_target"] = target
+
+    _capture_spanish_reasoning(joined, reasoning)
+
     if "management_priority" not in reasoning and reasoning.get("expected_effect"):
         grounded = " ".join(
             str(reasoning.get(key) or "")
             for key in ("problem_representation", "rationale", "expected_effect")
         ).lower()
+        # This slot is composed by the app, not written by the resident. Record
+        # that so the trace, the PDF and the faculty analysis never present the
+        # app's wording as a priority the resident stated.
+        before_synthesis = dict(reasoning)
         if re.search(r"\b(?:perfusion|capillary\s+refill|crt)\b", grounded):
             if re.search(r"\b(?:pressure|blood\s+pressure|bp|map|hypotens\w*)\b", grounded):
                 reasoning["management_priority"] = "improve arterial pressure and tissue perfusion"
@@ -5225,6 +5876,9 @@ def extract_explicit_reasoning(text):
             reasoning["management_priority"] = "restore an effective rhythm"
         elif re.search(r"\b(?:heart\s+rate|\bhr\b|tachycard\w*|bradycard\w*)\b", grounded):
             reasoning["management_priority"] = "optimize heart rate"
+        if reasoning.get("management_priority") != before_synthesis.get("management_priority"):
+            reasoning["derived_slots"] = sorted(
+                set(reasoning.get("derived_slots") or ()) | {"management_priority"})
 
     # Guard against semantically useless duplication between slots.
     if (reasoning.get("problem_representation") and reasoning.get("rationale") and
@@ -5260,11 +5914,11 @@ def parse_procedural_sedation_order(text):
             ))
             explicit_order = bool(re.search(
                 r"\b(?:give|administer|start|use|provide|sedate with|sedation with|"
-                r"premedicate with)\b[^,;.]{0,85}$",
+                r"sedation using|premedicate with)\b[^,;.]{0,85}$",
                 local_prefix,
             ))
             chained_sedation = bool(
-                re.search(r"\b(?:sedation|sedate)\s+with\b", segment[:match.start() - segment_start])
+                re.search(r"\b(?:sedation|sedate)\s+(?:with|using)\b", segment[:match.start() - segment_start])
                 and re.search(r"(?:\+|\band\b)[^,;.]{0,35}$", local_prefix)
             )
             purpose_context = bool(re.search(r"\bfor\s+(?:procedural\s+)?sedation\b", local_tail))
@@ -5373,6 +6027,14 @@ def recognized_unimplemented_medications(text):
 
 
 def clinical_interpreter(text):
+    if (st.session_state.get("state") or {}).get("engine_family"):
+        from family_parser import parse_family_actions
+        parsed = parse_family_actions(text)
+        parsed["reasoning"] = extract_explicit_reasoning(text)
+        unresolved = next((a for a in parsed.get("actions", []) if a.get("type") == "clarification"), None)
+        if unresolved:
+            parsed["clarification"] = unresolved.get("message") or "Please clarify the order."
+        return parsed
     t = text.lower()
     reasoning = extract_explicit_reasoning(text)
 
@@ -5388,7 +6050,7 @@ def clinical_interpreter(text):
         or re.search(r"\b\d+(?:\.\d+)?\s*(?:l|lt|liter|litre|liters|litres)\b(?!\s*/?\s*(?:min|minute|minutes|hr|hour|hours)\b)[^.;,]*\biv\b", t)
     )
     explicit_fluid_order = bool(
-        re.search(r"\b(?:give|administer|infuse|bolus|start)\b[^.;]{0,80}\b(?:fluid|fluids|crystalloid|saline|normal\s+saline|ringer|lr|ns|\d+(?:\.\d+)?\s*(?:ml|cc|l|liter|litre))\b", t)
+        re.search(r"\b(?:give|administer|order|infuse|bolus|start)\b[^.;]{0,80}\b(?:fluid|fluids|crystalloid|saline|normal\s+saline|ringer|lr|ns|\d+(?:\.\d+)?\s*(?:ml|cc|l|liter|litre))\b", t)
         or re.search(r"\banother\s+\d+(?:\.\d+)?\s*(?:ml|cc|l|liter|litre)?\s*(?:of\s+)?(?:ns|lr|normal\s+saline|saline|crystalloid|fluid)?\b", t)
     )
     if explicit_fluid_order and (any(w in t for w in fluid_words) or re.search(r"\b(?:lr|ns)\b", t) or implicit_iv_volume):
@@ -5629,22 +6291,7 @@ def clinical_interpreter(text):
                 "operation": op,
             })
 
-    oxygen_device_named = bool(re.search(r"\bnas+al\s+can+ula\b", t)) or any(k in t for k in ["nonrebreather", "non-rebreather", "nrb", "simple mask", "face mask"])
-    oxygen_command = any(
-        not re.search(r"\b(?:cpap|bipap|niv|nimv|nippv|vmni|noninvasive|non-invasive)\b", match.group(0))
-        for match in re.finditer(
-            r"\b(?:start|initiate|give|administer|apply|increase|decrease|switch|change|place|put|continue)\b"
-            r"[^.;]{0,45}\b(?:oxygen|o2)\b",
-            t,
-        )
-    )
-    if oxygen_device_named or oxygen_command:
-        device, flow = parse_oxygen_order(text)
-        actions.append({
-            "type": "oxygen",
-            "device": device,
-            "flow_lpm": flow,
-        })
+    actions.extend(explicit_oxygen_actions(text))
 
     # Procedural sedation is deliberately placed before cardioversion in the
     # executable bundle even when the learner mentions the shock first. This
@@ -5747,17 +6394,152 @@ def clinical_interpreter(text):
         else:
             actions.append({"type": "antibiotics", "agent": "broad-spectrum antibiotics", "dose_g": None, "route": None})
 
+    # "Stop the normal saline" ends a running infusion; it is never a new bolus.
+    if re.search(r"\b(?:stop|discontinue)\b[^.;]{0,30}\b(?:fluids?|saline|ns|lr|ringer'?s?|crystalloid|bolus)\b", t):
+        actions.append({"type": "fluid_stop"})
     if re.search(r"\b(?:admit|admission|transfer)\b", t) and re.search(r"\b(?:icu|intensive care|critical care)\b", t):
         actions.append({"type": "disposition", "destination": "ICU"})
 
     future = recognized_unimplemented_medications(text)
 
-    return {
+    # A delivery duration belongs to the single treatment named in the same clause:
+    # "Give 500 mL NS over 30 minutes", "metoprolol 5 mg IV over 2 minutes".
+    duration_clarification = None
+    timed_names = {
+        "fluid": r"\b(?:\d+(?:\.\d+)?\s*(?:ml|cc|l|liters?|litres?)|saline|ns|lr|ringer'?s?|crystalloid|fluids?|bolus)\b",
+        "beta_blocker": r"\b(?:metoprolol|propranolol)\b",
+        "diltiazem": r"\bdiltiazem\b",
+        "amiodarone": r"\bamiodarone\b",
+        "furosemide": r"\b(?:furosemide|lasix)\b",
+        "antibiotics": r"\b(?:ceftriaxone|azithromycin|antibiotics?|piperacillin|vancomycin)\b",
+    }
+    for clause in re.split(r"[.;\n]+", t):
+        for m in re.finditer(
+            r"\bover\s+(\d+(?:\.\d+)?)\s*(s|sec|secs|seconds?|m|min|mins|minutes?|h|hr|hrs|hours?)\b", clause
+        ):
+            minutes = float(m.group(1)) * (60 if m.group(2).startswith("h") else 1 / 60 if m.group(2).startswith("s") else 1)
+            named = {kind for kind, pattern in timed_names.items() if re.search(pattern, clause)}
+            targets = [a for a in actions if a.get("type") in named]
+            if len(targets) == 1 and minutes > 0:
+                targets[0]["administration_duration_min"] = minutes
+            else:
+                duration_clarification = (
+                    "Specify one delivery duration for each fluid or medication, "
+                    "in the same sentence as that order."
+                )
+
+    parsed = {
         "raw_text": text,
         "reasoning": reasoning,
         "actions": actions,
         "recognized_future_actions": future,
     }
+    if duration_clarification:
+        parsed["clarification"] = duration_clarification
+    return parsed
+
+
+def _runtime_secret(name, default=""):
+    """Read deployment secrets without requiring them in local/test environments."""
+    try:
+        value = st.secrets.get(name, "")
+    except Exception:
+        value = ""
+    from offline_cases import withhold
+    return withhold(name, str(value or os.environ.get(name, default) or "").strip())
+
+
+def ai_interpretation_enabled():
+    return bool(_runtime_secret("OPENAI_API_KEY"))
+
+
+def _numeric_tokens(text):
+    """Return quantities whose preservation is clinically safety-relevant.
+
+    Spanish ordinal shorthand such as ``1rio``/``2do`` is lexical rather than
+    a clinical quantity and may legitimately disappear during translation.
+    Attached clinical units (for example ``200J`` or ``5min``) remain protected.
+    """
+    protected_units = {
+        "j", "joule", "joules", "mg", "mcg", "ug", "g", "kg",
+        "ml", "l", "cc", "min", "mins", "minute", "minutes",
+        "h", "hr", "hrs", "hour", "hours", "bpm", "mmhg", "%",
+    }
+    tokens = []
+    raw = str(text or "")
+    # Formatting-only thousands separators do not change a quantity: 1000 and
+    # 1,000 must compare identically across bilingual normalization.
+    raw = re.sub(r"(?<=\d),(?=\d{3}\b)", "", raw)
+    for match in re.finditer(r"(?<![A-Za-z])\d+(?:\.\d+)?", raw):
+        suffix_match = re.match(r"[A-Za-z%]+", raw[match.end():])
+        if suffix_match and suffix_match.group(0).lower() not in protected_units:
+            continue
+        tokens.append(match.group(0))
+    return tokens
+
+
+def normalize_clinical_turn(text):
+    """Return English canonical text plus an auditable interpretation record.
+
+    Any unavailable, ambiguous, low-confidence, or locally invalid AI result
+    falls back to the original text. This helper is used before direct orders,
+    pending-order clarifications, and reasoning completions alike.
+    """
+    api_key = _runtime_secret("OPENAI_API_KEY")
+    if not api_key:
+        return text, {"mode": "deterministic"}
+
+    model = _runtime_secret("OPENAI_MODEL", "gpt-5.6-luna")
+    visible_state = deepcopy((st.session_state.get("state") or {}).get("observable") or {})
+    try:
+        normalized = normalize_with_ai(text, visible_state, api_key=api_key, model=model)
+        if sorted(_numeric_tokens(normalized.canonical_text)) != sorted(_numeric_tokens(text)):
+            raise AIInterpretationError("AI normalization introduced or removed a numeric value.")
+        if explicit_oxygen_actions(text) != explicit_oxygen_actions(normalized.canonical_text):
+            raise AIInterpretationError("AI normalization changed or omitted an explicit oxygen order.")
+        if normalized.confidence == "low" or normalized.ambiguities:
+            raise AIInterpretationError("AI normalization retained unresolved ambiguity.")
+        return normalized.canonical_text, {
+            "mode": "ai-assisted",
+            "canonical_text": normalized.canonical_text,
+            "confidence": normalized.confidence,
+            "model": normalized.model,
+        }
+    except AIInterpretationError as exc:
+        return text, {
+            "mode": "deterministic-fallback",
+            "fallback_reason": str(exc),
+        }
+
+
+def _restore_original_turn(parsed, processed_text, original_text):
+    """Keep the learner's literal language in the longitudinal audit trail."""
+    raw = str(parsed.get("raw_text") or "")
+    if processed_text != original_text and raw.endswith(processed_text):
+        raw = raw[: len(raw) - len(processed_text)] + original_text
+    elif not raw:
+        raw = original_text
+    parsed["raw_text"] = raw
+    return parsed
+
+
+def _attach_interpretation_audit(parsed, audit):
+    parsed["interpretation_mode"] = audit.get("mode", "deterministic")
+    if audit.get("mode") == "ai-assisted":
+        parsed["ai_interpretation"] = {
+            key: audit[key] for key in ("canonical_text", "confidence", "model") if audit.get(key)
+        }
+    elif audit.get("fallback_reason"):
+        parsed["ai_fallback_reason"] = audit["fallback_reason"]
+    return parsed
+
+
+def interpret_clinical_input(text):
+    """Backward-compatible direct-turn entry point for tests and integrations."""
+    processed, audit = normalize_clinical_turn(text)
+    parsed = clinical_interpreter(processed)
+    _restore_original_turn(parsed, processed, text)
+    return _attach_interpretation_audit(parsed, audit)
 
 
 REASONING_GATE_ACTION_TYPES = {
@@ -5766,6 +6548,8 @@ REASONING_GATE_ACTION_TYPES = {
     "ventilator_adjustment", "ventilator_continuation", "dobutamine",
     "norepinephrine", "oxygen", "procedural_sedation", "cardioversion",
     "antibiotics", "disposition",
+    "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
+    "naloxone", "blood", "anticoagulation", "bag_mask", "consult", "nitroglycerin_bolus",
 }
 
 REASONING_GATE_FIELD_LABELS = {
@@ -5788,6 +6572,8 @@ REASONING_GATE_OVERRIDE = "execute without complete reasoning"
 
 def reasoning_gate_missing(parsed):
     """Return prospective reasoning fields missing from a management order."""
+    if parsed.get("clarification"):
+        return []
     actions = parsed.get("actions", []) or []
     requires_gate = any(a.get("type") in REASONING_GATE_ACTION_TYPES for a in actions)
     if not requires_gate:
@@ -5858,11 +6644,17 @@ def _reasoning_gate_action_summary(parsed):
             volume = action.get("volume_ml")
             fluid = action.get("fluid_type") or "crystalloid"
             labels.append(f"{volume:g} mL {fluid}" if volume is not None else fluid)
-        elif atype in {"beta_blocker", "diltiazem", "amiodarone", "furosemide"}:
+        elif atype in {"beta_blocker", "diltiazem", "amiodarone", "furosemide", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "naloxone"}:
             agent = action.get("agent") or atype.replace("_", " ")
             dose = action.get("dose_mg")
             route = action.get("route") or ""
             labels.append(f"{agent} {dose:g} mg {route}".strip() if dose is not None else agent)
+        elif atype in {"dextrose", "anticoagulation", "blood"}:
+            dose = action.get("dose_g") if atype == "dextrose" else action.get("dose") if atype == "anticoagulation" else action.get("units")
+            units = "g" if atype == "dextrose" else action.get("units", "") if atype == "anticoagulation" else "unit(s)"
+            agent = action.get("agent") or atype
+            route = action.get("route") or ""
+            labels.append(f"{agent} {dose:g} {units} {route}".strip() if dose is not None else agent)
         elif atype == "oxygen":
             device = action.get("device") or "oxygen"
             flow = action.get("flow_lpm")
@@ -5878,7 +6670,7 @@ def _reasoning_gate_action_summary(parsed):
             if operation == "stop":
                 labels.append(f"stop {atype}")
             elif rate is not None:
-                labels.append(f"{operation} {atype} {rate:g} mcg/kg/min")
+                labels.append(f"{operation} {atype} {rate:g} {action.get('units') or 'mcg/kg/min'}")
             else:
                 labels.append(f"{operation} {atype}")
         elif atype == "nitroglycerin":
@@ -5977,6 +6769,17 @@ def hold_pending_reasoning(parsed, missing=None):
         "gate_id": gate_id,
     }
     return reasoning_gate_prompt(parsed, missing)
+
+
+def cancel_pending_order():
+    """Discard unexecuted orders, preserving patient state and encounter evidence."""
+    from pending_cancellation import clear_pending_orders
+    if not clear_pending_orders(st.session_state):
+        return False
+    clear_reasoning_gate_clarification()
+    next_reasoning_gate_id()
+    add_event("order_cancelled", "Pending orders cancelled before execution. No treatment administered; simulation time unchanged.")
+    return True
 
 
 def complete_pending_reasoning_fields(
@@ -6079,6 +6882,8 @@ def resolve_pending_reasoning(text):
     held = deepcopy(pending.get("parsed") or {})
     normalized = re.sub(r"[^a-z]+", " ", str(text or "").lower()).strip()
     if normalized == REASONING_GATE_OVERRIDE:
+        if "ACCOUNT_CONTEXT" in globals() and not faculty_access():
+            return {"clarification": "Complete the requested reasoning to continue.", "missing": list(pending.get("missing") or [])}
         held["raw_text"] = (
             str(held.get("raw_text") or "").strip()
             + "\n\nFacilitator override: " + str(text).strip()
@@ -6135,428 +6940,71 @@ def resolve_pending_reasoning(text):
     return {"parsed": held, "overridden": False}
 
 def classify_volume_state(ev):
-    if ev < 0.45:
-        return "markedly reduced"
-    if ev < 0.60:
-        return "moderately reduced"
-    if ev < 0.75:
-        return "near adequate"
-    return "adequate / loaded"
+    from clinical_physiology import invoke
+    return invoke("classify_volume_state", (ev,), {}, rng, sim_time_label)
 
 
 def fluid_responsiveness(ev):
-    """
-    Smooth Frank-Starling-style remaining preload responsiveness.
-
-    High when effective filling is low, then progressively saturates as preload
-    approaches adequacy. This is intentionally continuous rather than a bolus lookup.
-    """
-    # v0.6.0.2: a broader Frank-Starling transition. Responsiveness still declines
-    # continuously with filling, but does not collapse to near-zero after ~1 L.
-    # This lets additional retained volume remain physiologically visible while
-    # preserving diminishing returns.
-    return clamp(1.0 / (1.0 + math.exp(8.0 * (ev - 0.62))), 0.06, 0.98)
+    from clinical_physiology import invoke
+    return invoke("fluid_responsiveness", (ev,), {}, rng, sim_time_label)
 
 
 def update_fluid_phenotype(state):
-    """
-    v0.6 preload / fluid-responsiveness phenotype.
-
-    The state distinguishes:
-      - retained intravascular crystalloid effect,
-      - effective preload,
-      - remaining preload responsiveness,
-      - cumulative administered crystalloid.
-
-    The learner never sees these internal variables. They drive stroke volume and
-    effective cardiac output in recompute_coupled_physiology().
-    """
-    h = state["hidden"]
-    total = state["treatments"]["cumulative_crystalloid_ml"]
-
-    h["fluid_load"] = total / 5000.0
-
-    # Effective preload is the physiologic filling state, not the lifetime total fluid.
-    preload = clamp(h.get("effective_volume", 0.35))
-    h["preload_state"] = preload
-
-    # Continuous saturating Frank-Starling reserve. Tachycardia and congestion can
-    # reduce useful responsiveness without turning fluid into a scripted penalty.
-    base_resp = fluid_responsiveness(preload)
-    congestion_modifier = clamp(1.0 - 0.55 * h.get("pulmonary_congestion", 0.0), 0.35, 1.0)
-    h["preload_responsiveness"] = clamp(base_resp * congestion_modifier, 0.04, 0.98)
-
-    # Keep the legacy key synchronized so existing debug/logic remains compatible.
-    h["fluid_responsiveness"] = h["preload_responsiveness"]
-
-    # Tolerance remains a soft physiologic descriptor only; there is no liter-count
-    # threshold that directly causes deterioration or arrest.
-    h["fluid_tolerance"] = clamp(
-        0.66
-        - 0.28 * max(0.0, preload - 0.60)
-        - 0.22 * h.get("pulmonary_congestion", 0.0),
-        0.18, 0.72
-    )
+    from clinical_physiology import invoke
+    return invoke("update_fluid_phenotype", (state,), {}, rng, sim_time_label)
 
 def fluid_intolerance_pressure(state, incoming_ml):
-    """
-    Continuous hydrostatic overfilling signal.
-
-    No cumulative-liter threshold is used. The signal emerges from:
-      - current effective preload,
-      - retained intravascular volume,
-      - existing pulmonary congestion,
-      - incoming bolus size.
-
-    A patient can therefore retain several liters with little penalty while still
-    preload deficient, but once filling is high, additional volume increasingly
-    contributes to congestion and reduced effective forward flow.
-    """
-    h = state["hidden"]
-    update_fluid_phenotype(state)
-
-    preload = h.get("preload_state", h["effective_volume"])
-    retained = h.get("effective_intravascular_fluid", 0.0)
-    projected_retained = retained + 0.10 * max(0.0, incoming_ml) / 500.0
-
-    preload_excess = max(0.0, preload - 0.72)
-    retained_excess = max(0.0, projected_retained - 0.52)
-    congestion = h.get("pulmonary_congestion", 0.0)
-    bolus_size = max(0.0, incoming_ml - 1000.0) / 3000.0
-
-    return clamp(
-        1.20 * preload_excess
-        + 0.55 * retained_excess
-        + 0.45 * congestion
-        + 0.08 * bolus_size,
-        0.0,
-        1.25,
-    )
+    from clinical_physiology import invoke
+    return invoke("fluid_intolerance_pressure", (state, incoming_ml), {}, rng, sim_time_label)
 
 def pulmonary_clinical_signal(state):
-    h = state["hidden"]
-    congestion = h.get("pulmonary_congestion", 0.0)
-    overfill = h.get("overfill_burden", 0.0)
-    extravascular = h.get("extravascular_fluid_burden", 0.0)
-
-    # Preserve early fluid responsiveness: none of these surfaces become relevant
-    # while the patient remains on the ascending portion of the preload curve.
-    # The signal is state-derived; there is no cumulative-liter threshold.
-    overfill_surface = clamp((overfill - 0.14) / 0.72, 0.0, 0.88)
-    interstitial_surface = clamp((extravascular - 0.06) / 0.28, 0.0, 0.92)
-    return max(congestion, overfill_surface, interstitial_surface)
+    from clinical_physiology import invoke
+    return invoke("pulmonary_clinical_signal", (state,), {}, rng, sim_time_label)
 
 
 def congestion_stage(congestion):
-    if congestion < 0.18:
-        return "none"
-    if congestion < 0.30:
-        return "early"
-    if congestion < 0.45:
-        return "moderate"
-    return "marked"
+    from clinical_physiology import invoke
+    return invoke("congestion_stage", (congestion,), {}, rng, sim_time_label)
 
 
 def update_decompensation(state, added_fluid_ml=0, elapsed_min=0):
-    """
-    Convert state-derived overfilling / pulmonary congestion into respiratory
-    decompensation and worsening global perfusion.
-
-    v0.6.0.6 separates three fluid compartments:
-      1) useful effective preload,
-      2) retained intravascular crystalloid,
-      3) redistributed extravascular/interstitial fluid.
-
-    This allows preload benefit to wane while pulmonary fluid burden continues to
-    accumulate. No cumulative-liter threshold directly triggers harm.
-    """
-    h = state["hidden"]
-    o = state["observable"]
-
-    if h.get("cardiac_arrest"):
-        return
-
-    preload = h.get("preload_state", h["effective_volume"])
-    retained = h.get("effective_intravascular_fluid", 0.0)
-    extravascular = h.get("extravascular_fluid_burden", 0.0)
-    perfusion_deficit = 1.0 - h["tissue_perfusion"]
-
-    preload_excess = max(0.0, preload - 0.76)
-    retained_excess = max(0.0, retained - 0.40)
-    interstitial_excess = max(0.0, extravascular - 0.045)
-
-    # Pulmonary congestion is now a continuously evolving hidden state.
-    # Inflammatory capillary leak amplifies the effect of interstitial fluid.
-    leak_amplifier = 0.75 + 0.45 * h.get("inflammatory_drive", 0.0)
-    target_congestion = clamp(
-        0.05
-        + 1.70 * interstitial_excess * leak_amplifier
-        + 0.55 * preload_excess
-        + 0.28 * retained_excess,
-        0.03,
-        0.95,
-    )
-
-    congestion = h.get("pulmonary_congestion", 0.05)
-    if target_congestion > congestion:
-        congestion += 0.10 * (target_congestion - congestion) * max(elapsed_min, 1)
-    else:
-        congestion += 0.025 * (target_congestion - congestion) * max(elapsed_min, 1)
-    h["pulmonary_congestion"] = clamp(congestion, 0.02, 0.95)
-    congestion = h["pulmonary_congestion"]
-
-    # The right side of Frank-Starling is represented as a continuous overfill
-    # burden, now including redistributed tissue fluid.
-    target_overfill = clamp(
-        1.15 * preload_excess
-        + 0.70 * retained_excess
-        + 1.25 * interstitial_excess
-        + 0.90 * max(0.0, congestion - 0.18),
-        0.0,
-        1.25,
-    )
-
-    burden = h.get("overfill_burden", 0.0)
-    if target_overfill > burden:
-        burden += 0.16 * (target_overfill - burden) * max(elapsed_min, 1)
-    else:
-        burden += 0.03 * (target_overfill - burden) * max(elapsed_min, 1)
-    h["overfill_burden"] = clamp(burden, 0.0, 1.25)
-
-    # Respiratory failure follows the same pulmonary signal, so low-flow shock
-    # cannot make significant hydrostatic congestion invisible.
-    pulmonary_signal = pulmonary_clinical_signal(state)
-    primary_resp = clamp(h.get("primary_respiratory_burden", 0.0))
-    target_resp = clamp(
-        max(
-            0.78 * pulmonary_signal + 0.38 * max(0.0, congestion - 0.20),
-            primary_resp,
-        ),
-        0.0,
-        1.0,
-    )
-    h["respiratory_failure_severity"] = clamp(
-        h["respiratory_failure_severity"]
-        + 0.12 * (target_resp - h["respiratory_failure_severity"])
-        * max(elapsed_min, 1)
-    )
-
-    h["global_perfusion_failure"] = clamp(
-        max(
-            h["global_perfusion_failure"] * 0.985,
-            perfusion_deficit * 0.40
-            + h["respiratory_failure_severity"] * 0.42
-            + max(0.0, h["overfill_burden"] - 0.35) * 0.30
-        )
-    )
-
-    respiratory_surface = max(
-        h["respiratory_failure_severity"],
-        pulmonary_clinical_signal(state),
-    )
-
-    # Learner-facing respiratory phenotype. These are thresholds on the continuous
-    # hidden pulmonary signal, not thresholds on administered fluid volume.
-    if respiratory_surface >= 0.18:
-        o["respiratory_rate"] = max(o["respiratory_rate"], 24)
-        o["work_of_breathing"] = "Increased"
-    if respiratory_surface >= 0.30:
-        o["spo2"] = min(o["spo2"], 92)
-        o["respiratory_rate"] = max(o["respiratory_rate"], 28)
-        o["work_of_breathing"] = "Moderately increased"
-    if respiratory_surface >= 0.42:
-        o["spo2"] = min(o["spo2"], 89)
-        o["respiratory_rate"] = max(o["respiratory_rate"], 32)
-        o["work_of_breathing"] = "Markedly increased"
-    if respiratory_surface >= 0.56:
-        o["spo2"] = min(o["spo2"], 85)
-        o["respiratory_rate"] = max(o["respiratory_rate"], 36)
-        o["work_of_breathing"] = "Severe"
-    if respiratory_surface >= 0.70:
-        o["spo2"] = min(o["spo2"], 80)
-        o["respiratory_rate"] = max(o["respiratory_rate"], 40)
-        o["work_of_breathing"] = "Severe"
-        if o["mental_status"] == "Alert":
-            o["mental_status"] = "Drowsy"
+    from clinical_physiology import invoke
+    return invoke("update_decompensation", (state, added_fluid_ml, elapsed_min), {}, rng, sim_time_label)
 
 
 def total_beta_blockade(state):
-    """Total active beta-blocker pharmacologic load."""
-    h = state["hidden"]
-    return max(0.0, h.get("metoprolol_effect", 0.0) + h.get("propranolol_effect", 0.0))
+    from clinical_physiology import invoke
+    return invoke("total_beta_blockade", (state,), {}, rng, sim_time_label)
 
 
 def beta_av_nodal_effect(state):
-    """
-    Saturable AV-nodal component.
-    Repeated dosing continues to increase drug load, but nodal slowing has
-    diminishing returns and may plateau while myocardial depression continues.
-    """
-    load = total_beta_blockade(state)
-    return 1.0 - math.exp(-0.95 * load)
+    from clinical_physiology import invoke
+    return invoke("beta_av_nodal_effect", (state,), {}, rng, sim_time_label)
 
 
 def beta_myocardial_depression(state):
-    """
-    Progressive myocardial beta effect.
-
-    AV-nodal slowing is saturable, but myocardial depression continues to increase
-    with active cumulative beta-blocker exposure. Thus additional drug can worsen
-    SV/CO even when ventricular rate changes very little.
-    """
-    load = max(0.0, total_beta_blockade(state))
-    depression = 0.48 * (1.0 - math.exp(-0.58 * load)) + 0.035 * (load ** 1.45)
-    return clamp(depression, 0.0, 0.96)
+    from clinical_physiology import invoke
+    return invoke("beta_myocardial_depression", (state,), {}, rng, sim_time_label)
 
 
 def total_av_nodal_suppression(state):
-    h = state["hidden"]
-    beta = beta_av_nodal_effect(state)
-    dilt = h.get("diltiazem_effect", 0.0)
-    amio = h.get("amiodarone_effect", 0.0)
-    return max(0.0, beta + 0.90 * dilt + 0.35 * amio)
+    from clinical_physiology import invoke
+    return invoke("total_av_nodal_suppression", (state,), {}, rng, sim_time_label)
 
 
 def af_substrate(state):
-    """Current propensity to sustain/re-trigger AF from evolving physiology."""
-    h = state["hidden"]
-    perfusion_deficit = 1.0 - h["tissue_perfusion"]
-    volume_deficit = 1.0 - h["effective_volume"]
-    congestion = h["pulmonary_congestion"]
-    return clamp(
-        0.38 * h["inflammatory_drive"]
-        + 0.32 * h["sympathetic_drive"]
-        + 0.14 * perfusion_deficit
-        + 0.08 * volume_deficit
-        + 0.08 * congestion
-    )
+    from clinical_physiology import invoke
+    return invoke("af_substrate", (state,), {}, rng, sim_time_label)
 
 
 def af_ventricular_rate(state):
-    """
-    Ventricular response during AF. The rate is generated from current physiology
-    plus active AV-nodal blockade, not from a fixed drug-dose lookup table.
-    """
-    h = state["hidden"]
-    blockade = total_av_nodal_suppression(state)
-    substrate = af_substrate(state)
-
-    unblocked_target = (
-        88
-        + 56 * h["sympathetic_drive"]
-        + 24 * h["inflammatory_drive"]
-        + 20 * substrate
-    )
-    # Cumulative AV-nodal suppression with diminishing returns.
-    # There is no artificial ~115 bpm floor: repeated beta blockade can continue
-    # to slow ventricular response, while the coupled state engine simultaneously
-    # applies increasing contractility/output costs.
-    av_suppression = 104 * (1.0 - math.exp(-1.20 * blockade))
-    target = unblocked_target - av_suppression
-    return int(round(max(35, min(175, target))))
+    from clinical_physiology import invoke
+    return invoke("af_ventricular_rate", (state,), {}, rng, sim_time_label)
 
 
 def advance_beta_pharmacodynamics(state, minutes=1):
-    """
-    One-compartment educational pharmacodynamic model with an effect-site onset.
-
-    Drug initially enters a 'depot/effect-site input' and progressively transfers
-    into active beta blockade. Active effect then decays more slowly. This creates
-    onset -> peak -> decay instead of an instantaneous permanent HR decrement.
-    """
-    if minutes <= 0:
-        return
-
-    h = state["hidden"]
-    o = state["observable"]
-
-    for _ in range(int(minutes)):
-        prior_active = total_beta_blockade(state)
-
-        # Effect-site onset half-times (minutes), deliberately simplified.
-        met_abs = math.exp(-math.log(2) / 3.5)
-        prop_abs = math.exp(-math.log(2) / 3.0)
-
-        old_met_depot = h.get("metoprolol_depot", 0.0)
-        old_prop_depot = h.get("propranolol_depot", 0.0)
-
-        new_met_depot = old_met_depot * met_abs
-        new_prop_depot = old_prop_depot * prop_abs
-
-        met_transfer = old_met_depot - new_met_depot
-        prop_transfer = old_prop_depot - new_prop_depot
-
-        h["metoprolol_depot"] = new_met_depot
-        h["propranolol_depot"] = new_prop_depot
-
-        # Effect half-lives are longer than onset.
-        h["metoprolol_effect"] = (
-            h.get("metoprolol_effect", 0.0) * math.exp(-math.log(2) / 60.0)
-            + met_transfer
-        )
-        h["propranolol_effect"] = (
-            h.get("propranolol_effect", 0.0) * math.exp(-math.log(2) / 90.0)
-            + 1.08 * prop_transfer
-        )
-
-        h["metoprolol_effect"] = clamp(h["metoprolol_effect"], 0.0, 3.60)
-        h["propranolol_effect"] = clamp(h["propranolol_effect"], 0.0, 3.60)
-
-        # Diltiazem effect-site onset/decay.
-        old_dilt_depot = h.get("diltiazem_depot", 0.0)
-        dilt_abs = math.exp(-math.log(2) / 3.0)
-        new_dilt_depot = old_dilt_depot * dilt_abs
-        dilt_transfer = old_dilt_depot - new_dilt_depot
-        h["diltiazem_depot"] = new_dilt_depot
-        h["diltiazem_effect"] = clamp(
-            h.get("diltiazem_effect", 0.0) * math.exp(-math.log(2) / 80.0) + dilt_transfer,
-            0.0, 1.55
-        )
-
-        # Amiodarone has slower onset and long persistence.
-        old_amio_depot = h.get("amiodarone_depot", 0.0)
-        amio_abs = math.exp(-math.log(2) / 9.0)
-        new_amio_depot = old_amio_depot * amio_abs
-        amio_transfer = old_amio_depot - new_amio_depot
-        h["amiodarone_depot"] = new_amio_depot
-        h["amiodarone_effect"] = clamp(
-            h.get("amiodarone_effect", 0.0) * math.exp(-math.log(2) / 240.0) + amio_transfer,
-            0.0, 1.60
-        )
-
-        current_active = total_beta_blockade(state)
-        rising_effect = max(0.0, current_active - prior_active)
-
-        # Hemodynamic cost evolves as blockade comes on, especially when the patient
-        # is still dependent on sympathetic compensation.
-        if rising_effect > 0:
-            perfusion_deficit = 1.0 - h["tissue_perfusion"]
-            sympathetic_dependence = clamp(
-                0.55 * h["sympathetic_drive"] + 0.45 * perfusion_deficit
-            )
-            pressure_cost = 10.0 * rising_effect * sympathetic_dependence
-            perfusion_cost = 0.055 * rising_effect * sympathetic_dependence
-
-            o["sbp"] = max(55, int(round(o["sbp"] - pressure_cost)))
-            o["dbp"] = max(30, int(round(o["dbp"] - 0.55 * pressure_cost)))
-            h["tissue_perfusion"] = clamp(h["tissue_perfusion"] - perfusion_cost)
-            h["sympathetic_drive"] = clamp(
-                h["sympathetic_drive"] - 0.045 * rising_effect
-            )
-
-        # Diltiazem can produce additional vasodilation/negative inotropy as effect rises.
-        dilt = h.get("diltiazem_effect", 0.0)
-        prior_dilt = max(0.0, dilt - dilt_transfer)
-        dilt_rise = max(0.0, dilt - prior_dilt)
-        if dilt_rise > 0:
-            vulnerability = clamp(
-                0.55 * (1.0 - h["tissue_perfusion"])
-                + 0.45 * (1.0 - h["vasomotor_tone"])
-            )
-            pressure_cost = 9.0 * dilt_rise * (0.45 + vulnerability)
-            o["sbp"] = max(55, int(round(o["sbp"] - pressure_cost)))
-            o["dbp"] = max(30, int(round(o["dbp"] - 0.55 * pressure_cost)))
-            h["tissue_perfusion"] = clamp(h["tissue_perfusion"] - 0.035 * dilt_rise * vulnerability)
+    from clinical_physiology import invoke
+    return invoke("advance_beta_pharmacodynamics", (state, minutes), {}, rng, sim_time_label)
 
         # Norepinephrine is represented as CURRENT exogenous vascular support.
         # Do not permanently accumulate it into endogenous vasomotor tone: doing so
@@ -6568,1584 +7016,155 @@ def advance_beta_pharmacodynamics(state, minutes=1):
 
 
 def update_dynamic_rhythm(state, minutes=1):
-    """
-    Longitudinal rhythm evolution.
-
-    Successful cardioversion creates a persistent sinus state. Recurrence requires
-    both persistent AF substrate and erosion of post-conversion electrical stability.
-    This prevents later interventions from silently resetting the rhythm to baseline.
-    """
-    if minutes <= 0:
-        return
-
-    h = state["hidden"]
-    o = state["observable"]
-
-    if h.get("cardiac_arrest"):
-        return
-
-    if o["rhythm"] == "Sinus rhythm" and h.get("minutes_since_cardioversion") is not None:
-        h["minutes_since_cardioversion"] += minutes
-
-        substrate = af_substrate(state)
-        blockade = total_beta_blockade(state)
-
-        # Electrical stability erodes faster when the underlying substrate remains
-        # severe, and more slowly when the patient is physiologically improving.
-        stability = h.get("sinus_stability", 1.0)
-        destabilizing_drive = clamp(
-            0.20
-            + 0.62 * substrate
-            + 0.20 * h.get("inflammatory_drive", 0.0)
-            - 0.12 * min(blockade, 1.0),
-            0.0,
-            1.2,
-        )
-        stability -= 0.010 * destabilizing_drive * minutes
-        h["sinus_stability"] = clamp(stability, 0.0, 1.0)
-
-        excess_substrate = max(0.0, substrate - 0.52)
-        recurrence_drive = clamp(
-            excess_substrate
-            * (1.0 - h["sinus_stability"])
-            * (0.75 + 0.35 * h.get("inflammatory_drive", 0.0)),
-            0.0,
-            1.0,
-        )
-        h["af_recurrence_pressure"] = clamp(
-            h.get("af_recurrence_pressure", 0.0)
-            + 0.035 * recurrence_drive * minutes,
-            0.0,
-            1.0,
-        )
-
-        # Recurrence is state-thresholded rather than an isolated random minute.
-        if (
-            h["minutes_since_cardioversion"] >= 10
-            and h["sinus_stability"] < 0.40
-            and h["af_recurrence_pressure"] >= 0.55
-            and substrate > 0.66
-        ):
-            o["rhythm"] = "AF"
-            h["af_burden"] = clamp(0.48 + 0.32 * substrate)
-            o["hr"] = af_ventricular_rate(state)
-            h["minutes_since_cardioversion"] = None
-            h["af_recurrence_pressure"] = 0.0
-            h["sinus_stability"] = 0.0
-        else:
-            # Sinus rate remains dynamic with current sympathetic drive / blockade.
-            nodal = total_av_nodal_suppression(state)
-            target = 76 + 24 * h["sympathetic_drive"] - 22 * nodal
-            o["hr"] = int(round(0.72 * o["hr"] + 0.28 * clamp(target, 50, 120)))
-
-    elif o["rhythm"] == "AF":
-        target = af_ventricular_rate(state)
-        o["hr"] = int(round(0.72 * o["hr"] + 0.28 * target))
-
-        amio = h.get("amiodarone_effect", 0.0)
-        if amio > 0.18:
-            substrate = af_substrate(state)
-            conversion_hazard = clamp(
-                0.010 + 0.075 * amio * max(0.15, 1.0 - substrate),
-                0.0, 0.12
-            )
-            if rng().random() < conversion_hazard:
-                o["rhythm"] = "Sinus rhythm"
-                h["af_burden"] = 0.08
-                h["minutes_since_cardioversion"] = 0
-                h["af_recurrence_pressure"] = 0.0
-                h["sinus_stability"] = 0.75
-                nodal = total_av_nodal_suppression(state)
-                sinus_target = 78 + 20 * h["sympathetic_drive"] - 22 * nodal
-                o["hr"] = int(round(max(50, min(110, sinus_target))))
-
-    elif o["rhythm"] == "Sinus rhythm":
-        # Sinus tachycardia must remain longitudinally responsive even when it
-        # did not follow cardioversion. The prior engine left PS002 fixed at
-        # 124/min for the entire encounter. This target combines inflammatory
-        # drive, compensatory tone, low-flow burden, and active catecholamine
-        # support, with conservative smoothing to avoid implausible jumps.
-        nodal = total_av_nodal_suppression(state)
-        low_flow = clamp(h.get("low_flow_burden", 0.0), 0.0, 1.0)
-        dobutamine = dobutamine_normalized(state)
-        norepi = norepinephrine_normalized(state)
-        target = (
-            88
-            + 25 * h.get("sympathetic_drive", 0.0)
-            + 15 * h.get("inflammatory_drive", 0.0)
-            + 10 * low_flow
-            + 3 * (dobutamine / (1.0 + dobutamine))
-            + 2 * (norepi / (1.0 + norepi))
-            - 22 * nodal
-        )
-        o["hr"] = int(round(0.82 * o["hr"] + 0.18 * clamp(target, 50, 145)))
+    from clinical_physiology import invoke
+    return invoke("update_dynamic_rhythm", (state, minutes), {}, rng, sim_time_label)
 
 
 def norepinephrine_normalized(state):
-    tr = state["treatments"]
-    if not tr.get("norepinephrine"):
-        return 0.0
-    rate = tr.get("norepinephrine_rate", 0.0) or 0.0
-    units = tr.get("norepinephrine_units")
-    if units == "mcg/kg/min":
-        return clamp(rate / 0.10, 0.0, 5.0)
-    return clamp(rate / 10.0, 0.0, 5.0)
+    from clinical_physiology import invoke
+    return invoke("norepinephrine_normalized", (state,), {}, rng, sim_time_label)
 
 
 def dobutamine_normalized(state):
-    tr = state["treatments"]
-    if not tr.get("dobutamine"):
-        return 0.0
-    rate = tr.get("dobutamine_rate", 0.0) or 0.0
-    # 5 mcg/kg/min = 1.0 normalized. Supports approximately 2.5-20.
-    return clamp(rate / 5.0, 0.0, 4.0)
+    from clinical_physiology import invoke
+    return invoke("dobutamine_normalized", (state,), {}, rng, sim_time_label)
 
 
 def oxygen_support_fraction(state):
-    tr = state["treatments"]
-    support = 0.0
-
-    if tr.get("oxygen"):
-        flow = tr.get("oxygen_flow_lpm", 0.0) or 0.0
-        device = tr.get("oxygen_device") or "Nasal cannula"
-        if device == "Non-rebreather mask":
-            support = max(support, clamp(0.75 + 0.02 * min(flow, 15.0), 0.0, 1.0))
-        elif device == "Simple face mask":
-            support = max(support, clamp(0.30 + 0.055 * flow, 0.0, 0.80))
-        else:
-            support = max(support, clamp(0.08 + 0.075 * flow, 0.0, 0.60))
-
-    if tr.get("niv"):
-        pressure = tr.get("niv_pressure_cmh2o", 0.0) or 0.0
-        fio2 = tr.get("niv_fio2_percent")
-        base_fio = clamp(((fio2 or 40.0) - 21.0) / 79.0, 0.0, 1.0)
-        niv_support = clamp(0.30 + 0.32 * base_fio + 0.030 * pressure, 0.35, 1.0)
-        support = max(support, niv_support)
-
-    if tr.get("invasive_ventilation"):
-        fio2 = tr.get("ventilator_fio2_percent") or 40.0
-        peep = tr.get("ventilator_peep_cmh2o") or 5.0
-        base_fio = clamp((fio2 - 21.0) / 79.0, 0.0, 1.0)
-        support = max(support, clamp(0.78 + 0.42 * base_fio + 0.025 * peep, 0.85, 1.45))
-
-    return support
+    from clinical_physiology import invoke
+    return invoke("oxygen_support_fraction", (state,), {}, rng, sim_time_label)
 
 
 def recompute_coupled_physiology(state, elapsed_min=1):
-    """
-    Central Clinical State Engine.
-
-    Treatments primarily modify hidden physiology. Observable BP, perfusion,
-    oxygenation, and rate are then re-derived from the *current coupled state*.
-    This prevents one intervention from simply overwriting another intervention's
-    output and makes sequence/context matter.
-    """
-    h = state["hidden"]
-    o = state["observable"]
-
-    if h.get("cardiac_arrest"):
-        return
-
-    # ---- Vascular state ----
-    norepi = norepinephrine_normalized(state)
-    # v0.6.0.9: preserve a monotonic pressor dose-response through high-dose norepinephrine.
-    # Previous code capped normalized norepinephrine at 3.0, so 0.3 and 0.4 mcg/kg/min
-    # produced the same vascular support while the underlying low-flow state continued
-    # to deteriorate. That could make BP fall after a dose increase. Use a saturating
-    # but still increasing curve instead; pressure support rises at each clinically
-    # meaningful step without treating vasoconstriction as increased cardiac output.
-    exogenous_vascular_support = 0.30 * (norepi / (1.0 + 0.18 * norepi))
-    nitrate_effect = h.get("nitroglycerin_effect", 0.0) if state["treatments"].get("nitroglycerin") else 0.0
-    dobutamine_effect = h.get("dobutamine_effect", 0.0)
-    procedural_sedation_effect = h.get("procedural_sedation_effect", 0.0)
-    # Beta-1 inotropy with a modest beta-2 vasodilatory component. The latter means
-    # dobutamine can improve flow while leaving MAP unchanged or slightly lower.
-    # v0.6.0.13: dobutamine is primarily an inotrope, with enough beta-2
-    # vasodilation to prevent recruited flow from behaving like an added pressor.
-    dobutamine_vasodilation = 0.060 * (dobutamine_effect / (1.0 + 0.35 * dobutamine_effect))
-    vascular_support = clamp(
-        h["vasomotor_tone"]
-        + exogenous_vascular_support
-        - 0.12 * h["inflammatory_drive"]
-        - 0.10 * nitrate_effect
-        - dobutamine_vasodilation
-        - 0.025 * procedural_sedation_effect
-    )
-    h["vascular_support"] = vascular_support
-    h["pressure_support_state"] = clamp(exogenous_vascular_support - dobutamine_vasodilation, 0.0, 1.0)
-
-    # ---- Rate → filling → stroke volume → forward-flow coupling ----
-    rate = max(35, o.get("hr", 90))
-    is_af = o.get("rhythm") == "AF"
-    if dobutamine_effect > 0 and not is_af:
-        chronotropic_target = clamp(rate + 7.0 * (dobutamine_effect / (1.0 + 0.6 * dobutamine_effect)), 50, 135)
-        o["hr"] = int(round(0.82 * rate + 0.18 * chronotropic_target))
-        rate = max(35, o["hr"])
-
-    # Diastolic filling is explicitly rate-dependent. Very rapid rates shorten
-    # filling time; excessive rate control can also reduce total forward flow.
-    # AF carries an additional filling penalty from loss of coordinated atrial
-    # contribution. The curve is intentionally broad rather than a single optimum.
-    if rate >= 170:
-        rate_fill = 0.52
-    elif rate >= 150:
-        rate_fill = 0.52 + (170 - rate) * 0.009
-    elif rate >= 120:
-        rate_fill = 0.70 + (150 - rate) * 0.007
-    elif rate >= 80:
-        rate_fill = 0.91 + (120 - rate) * 0.002
-    elif rate >= 55:
-        rate_fill = 0.99 - (80 - rate) * 0.004
-    else:
-        rate_fill = max(0.62, 0.89 - (55 - rate) * 0.010)
-
-    atrial_factor = 0.90 if is_af else 1.0
-    filling_efficiency = clamp(rate_fill * atrial_factor, 0.45, 1.02)
-    h["diastolic_filling_efficiency"] = filling_efficiency
-
-    congestion_penalty = 0.34 * h["pulmonary_congestion"]
-    update_fluid_phenotype(state)
-
-    # v0.6.0.2: retained intravascular crystalloid continues to contribute to
-    # filling even after preload responsiveness has begun to saturate. This keeps
-    # later boluses physiologically present without making them equally effective.
-    retained_fluid = h.get("effective_intravascular_fluid", 0.0)
-    base_preload = h["effective_volume"] * (1.0 - 0.38 * h["pulmonary_congestion"])
-    preload_response = h.get(
-        "preload_responsiveness",
-        fluid_responsiveness(h["effective_volume"])
-    )
-    retained_preload = retained_fluid * (0.18 + 0.20 * preload_response)
-    preload = clamp(base_preload + retained_preload, 0.05, 1.0)
-    h["preload_state"] = preload
-
-    # v0.8.18: preserve the observable early contribution of an actively retained
-    # crystalloid bolus when the patient is still preload responsive and not
-    # congested. The prior engine let falling contractile reserve erase the entire
-    # short-term fluid signal, so a responsive 2000 mL bolus followed by a requested
-    # 5-minute check could look identical to 18 minutes of untreated deterioration.
-    # This term is bounded by retained fluid and current responsiveness, decays as
-    # fluid redistributes, and disappears on the flat/right side of the curve.
-    preload_reserve = clamp((0.75 - preload) / 0.25, 0.0, 1.0)
-    shock_recruitment_window = clamp(
-        (0.24 - h.get("tissue_perfusion", 0.0)) / 0.12,
-        0.0,
-        1.0,
-    )
-    acute_preload_recruitment = clamp(
-        retained_fluid
-        * preload_response
-        * preload_reserve
-        * shock_recruitment_window
-        * clamp(1.0 - 1.4 * h.get("pulmonary_congestion", 0.0), 0.0, 1.0),
-        0.0,
-        0.22,
-    )
-    h["acute_preload_recruitment"] = acute_preload_recruitment
-
-    # Smooth Frank-Starling contribution: preload matters most while reserve remains.
-    preload_contribution = clamp(
-        0.48 + 0.78 * preload - 0.22 * (preload ** 2)
-    )
-    filling = clamp(
-        preload_contribution
-        * (0.76 + 0.32 * filling_efficiency)
-        * (0.90 + 0.10 * preload_response)
-    )
-
-    # Beta blockade has two competing effects: at extreme tachycardia it may
-    # improve filling and stroke volume through rate control, but it also carries
-    # a direct negative-inotropic cost. Therefore metoprolol is not intrinsically
-    # pressor, and excessive blockade can reduce flow.
-    beta_blockade = total_beta_blockade(state)
-    beta_inotropy_penalty = beta_myocardial_depression(state)
-
-    reserve = h.get("contractile_reserve", 1.0)
-    overload = max(0.0, beta_inotropy_penalty - 0.28)
-    # v0.6.0.32: once a starting norepinephrine infusion has restored usable
-    # perfusion pressure, do not continue the same unconditional myocardial-reserve
-    # decay that drives untreated shock. This represents stabilization/coronary and
-    # venous-pressure recruitment, not direct inotropy; reserve can still fall if
-    # pressure is inadequate or at higher pressor doses.
-    pressor_preserving = (
-        0.5 <= norepi <= 1.5
-        and ((o.get("sbp", 0) + 2.0 * o.get("dbp", 0)) / 3.0) >= 62
-    )
-    base_reserve_loss = 0.003 if pressor_preserving else 0.020
-    reserve_loss = (base_reserve_loss + 0.050 * overload) * max(elapsed_min, 1)
-    reserve_recovery = 0.010 * max(0.0, 0.22 - beta_inotropy_penalty) * max(elapsed_min, 1)
-    h["contractile_reserve"] = clamp(reserve - reserve_loss + reserve_recovery, 0.06, 1.0)
-
-    # Inotropic support augments effective contractility without erasing the underlying
-    # myocardial disease state. The response saturates and develops over time.
-    # v0.6.0.13: moderate, saturating contractile recruitment. This preserves a
-    # clinically useful forward-flow effect without producing an abrupt CO jump.
-    inotrope_gain = 0.68 * (dobutamine_effect / (1.0 + 0.55 * dobutamine_effect))
-    effective_contractility = clamp(h["contractile_reserve"] + inotrope_gain, 0.06, 1.35)
-    # Preserve the current effective contractile state for learner-requested
-    # imaging. Base cardiac_function is a patient phenotype; it must not make a
-    # later POCUS ignore acquired low-output physiology or inotropic recruitment.
-    h["effective_contractility"] = effective_contractility
-
-    rhythm_penalty = (0.055 + 0.075 * h.get("af_burden", 0.0)) if is_af else 0.0
-
-    # Afterload can support pressure while opposing stroke volume at high vascular tone.
-    high_pressor_afterload = 0.055 * max(0.0, norepi - 2.5)
-    afterload = clamp(
-        0.55 + 0.75 * vascular_support - 0.12 * nitrate_effect
-        + high_pressor_afterload - 0.075 * dobutamine_effect,
-        0.38,
-        1.48
-    )
-    h["afterload_factor"] = afterload
-    afterload_efficiency = clamp(1.14 - 0.28 * max(0.0, afterload - 0.82), 0.72, 1.12)
-
-    # Right side of the fluid-response curve:
-    # once effective filling is excessive, added preload no longer raises SV and
-    # may progressively impair effective forward flow through hydrostatic burden.
-    overfill_burden = h.get("overfill_burden", 0.0)
-    overfill_penalty = clamp(
-        0.22 * max(0.0, preload - 0.78)
-        + 0.26 * overfill_burden
-        + 0.10 * max(0.0, h["pulmonary_congestion"] - 0.30),
-        0.0,
-        0.42,
-    )
-
-    stroke_eff = clamp(
-        h["cardiac_function"]
-        * effective_contractility
-        * (0.52 + 0.70 * filling)
-        * (0.82 + 0.22 * filling_efficiency)
-        * afterload_efficiency
-        * (1.0 - rhythm_penalty - congestion_penalty - overfill_penalty)
-        * max(0.02, 1.0 - beta_inotropy_penalty)
-    )
-    h["stroke_volume_efficiency"] = stroke_eff
-
-    # Rate contribution to CO is non-monotonic: tachycardia initially supports
-    # minute output, but extreme rates become inefficient because filling collapses;
-    # bradycardia eventually lowers output despite a larger stroke volume.
-    if rate < 55:
-        rate_output = 0.55 + 0.008 * max(rate - 35, 0)
-    elif rate <= 110:
-        rate_output = 0.71 + 0.0053 * (rate - 55)
-    elif rate <= 140:
-        rate_output = 1.00 - 0.003 * (rate - 110)
-    else:
-        rate_output = 0.91 - 0.0065 * (rate - 140)
-    rate_output = clamp(rate_output, 0.48, 1.02)
-    h["rate_output_efficiency"] = rate_output
-
-    cardiac_output = clamp(
-        stroke_eff * rate_output * (0.80 + 0.26 * h["sympathetic_drive"])
-        + 0.70 * acute_preload_recruitment
-    )
-    h["cardiac_output_index"] = cardiac_output
-    h["forward_flow_state"] = cardiac_output
-
-    burden = h.get("low_flow_burden", 0.0)
-    if cardiac_output < 0.30:
-        burden += (0.30 - cardiac_output) * 0.11 * max(elapsed_min, 1)
-    else:
-        burden -= 0.025 * max(elapsed_min, 1)
-
-    # Once a usable perfusion pressure has been restored, accumulated low-flow
-    # injury should wash out gradually rather than remain permanently latched.
-    # This does NOT equate MAP with recovery: meaningful clearance requires at
-    # least some forward flow, and severe low output can still keep burden high.
-    current_map = (state["observable"]["sbp"] + 2 * state["observable"]["dbp"]) / 3.0
-    flow_recovery_threshold = 0.34
-    if current_map >= 65 and cardiac_output >= flow_recovery_threshold:
-        h["adequate_perfusion_minutes"] = min(30.0, h.get("adequate_perfusion_minutes", 0.0) + max(elapsed_min, 1))
-        inotrope_clearance = 0.024 * clamp(dobutamine_effect / 1.0, 0.0, 1.5)
-        burden -= (
-            0.006
-            + 0.016 * clamp((current_map - 65.0) / 15.0)
-            + 0.050 * clamp((cardiac_output - flow_recovery_threshold) / 0.24)
-            + inotrope_clearance
-        ) * max(elapsed_min, 1)
-    elif current_map < 60 or cardiac_output < 0.18:
-        h["adequate_perfusion_minutes"] = max(0.0, h.get("adequate_perfusion_minutes", 0.0) - 2.0 * max(elapsed_min, 1))
-    else:
-        h["adequate_perfusion_minutes"] = max(0.0, h.get("adequate_perfusion_minutes", 0.0) - 0.5 * max(elapsed_min, 1))
-    h["low_flow_burden"] = clamp(burden, 0.0, 1.25)
-
-    # Global perfusion depends more on flow/filling than on pressure alone.
-    # Vasopressor support can restore perfusion pressure, but high vascular tone is
-    # not treated as equivalent to increased forward flow.
-    low_output_drag = (
-        0.24 * max(0.0, 0.30 - cardiac_output)
-        + 0.26 * h.get("low_flow_burden", 0.0)
-    )
-
-    recovery_minutes = h.get("adequate_perfusion_minutes", 0.0)
-    # Sustained adequate pressure permits delayed microcirculatory recruitment,
-    # but only when there is enough forward flow to use that pressure. The bonus
-    # ramps over ~10 minutes and is intentionally modest.
-    pressure_recovery_bonus = (
-        0.12
-        * clamp(recovery_minutes / 10.0)
-        * clamp((cardiac_output - 0.30) / 0.28)
-    )
-    # v0.6.0.12: when an inotrope has actually recruited forward flow and pressure
-    # is usable, tissue perfusion receives an additional delayed recruitment signal.
-    # This is flow-dependent, not a direct MAP shortcut.
-    inotrope_flow_recruitment = 0.0
-    if current_map >= 62 and dobutamine_effect > 0.15 and cardiac_output >= 0.32:
-        inotrope_flow_recruitment = (
-            0.12
-            * clamp(dobutamine_effect / 1.0, 0.0, 1.4)
-            * clamp((cardiac_output - 0.30) / 0.28, 0.0, 1.0)
-            * clamp((recovery_minutes + 2.0) / 12.0, 0.0, 1.0)
-        )
-
-    perfusion_target = clamp(
-        0.04
-        + 0.24 * filling
-        + 0.07 * vascular_support
-        + 0.64 * cardiac_output
-        + pressure_recovery_bonus
-        + inotrope_flow_recruitment
-        + 0.70 * acute_preload_recruitment
-        + 1.10 * retained_fluid * h.get("vasoplegia_severity", 0.0)
-        # v0.6.0.31: low/moderate norepinephrine can recruit tissue perfusion
-        # indirectly when it restores a usable perfusion pressure in a patient
-        # whose forward flow is not profoundly depressed. This is deliberately
-        # modest and conditional: norepinephrine is not a direct flow surrogate.
-        + (
-            0.11 * (norepi / (0.50 + norepi))
-            * clamp((current_map - 55.0) / 15.0, 0.0, 1.0)
-            * clamp((cardiac_output - 0.24) / 0.22, 0.0, 1.0)
-        )
-        - 0.17 * h["inflammatory_drive"]
-        - 0.32 * h.get("vasoplegia_severity", 0.0)
-        - 0.20 * h["pulmonary_congestion"]
-        - low_output_drag
-    )
-
-    # Tissue perfusion moves toward the coupled target rather than jumping.
-    alpha = clamp(0.18 * max(elapsed_min, 1), 0.18, 0.55)
-    # Pressure may recover before microcirculatory flow. With substantial norepinephrine
-    # and persistent low output, deliberately slow upward perfusion recovery; worsening
-    # perfusion is never delayed by this rule.
-    if perfusion_target > h["tissue_perfusion"] and norepi >= 2.0 and cardiac_output < 0.34:
-        alpha *= 0.42
-    elif perfusion_target > h["tissue_perfusion"] and dobutamine_effect > 0.20 and cardiac_output >= 0.34:
-        # Forward-flow rescue recruits tissue perfusion over several reassessments,
-        # not instantaneously.
-        alpha *= 1.20
-    h["tissue_perfusion"] = clamp(
-        h["tissue_perfusion"] + alpha * (perfusion_target - h["tissue_perfusion"])
-    )
-
-    # v0.6.0.32: a clinically effective *starting* norepinephrine infusion may
-    # restore perfusion pressure before it restores normal microcirculatory flow,
-    # but it should not produce a deterministic peripheral/cerebral collapse solely
-    # because untreated inflammatory physiology continues to drift during the same
-    # 10-minute reassessment. When MAP is usable and forward flow is at least
-    # marginal, preserve a low-but-viable tissue-perfusion floor. This is a
-    # stabilization rule, not a cure: CRT can remain prolonged and the patient may
-    # remain cool/drowsy. Higher pressor doses and profound low-output states do not
-    # receive this floor.
-    if 0.5 <= norepi <= 1.5 and current_map >= 62 and cardiac_output >= 0.18:
-        h["tissue_perfusion"] = max(h["tissue_perfusion"], 0.24)
-
-    # ---- Endogenous compensatory drive ----
-    sympathetic_ceiling = clamp(
-        1.0 - 0.42 * h.get("low_flow_burden", 0.0) - 0.22 * beta_inotropy_penalty,
-        0.34, 1.0
-    )
-    sympathetic_target = clamp(
-        0.34
-        + 0.34 * h["inflammatory_drive"]
-        + 0.38 * (1.0 - h["tissue_perfusion"])
-        + 0.035 * norepi,
-        0.0,
-        sympathetic_ceiling
-    )
-    h["sympathetic_drive"] = clamp(
-        h["sympathetic_drive"] + 0.10 * (sympathetic_target - h["sympathetic_drive"])
-    )
-
-    # ---- Blood pressure derived from coupled physiology ----
-    # The untreated PS001 physiology trends toward its prior pressure equilibrium,
-    # while the learner-visible case now deliberately enters at 90/54 mmHg.
-    low_output_penalty = (
-        44.0 * max(0.0, 0.32 - cardiac_output)
-        + 24.0 * h.get("low_flow_burden", 0.0)
-    )
-
-    # v0.6.0.9: explicit pressure component from the active norepinephrine dose.
-    # This is intentionally a PRESSURE effect, not a flow/perfusion effect. It keeps
-    # dose escalation monotonic while CRT/mottling can remain abnormal in low-output shock.
-    # v0.6.0.28: a clinically meaningful starting norepinephrine infusion must
-    # exert a clear positive arterial-pressure effect even when the underlying
-    # low-output/inflammatory state is still deteriorating. The prior quadratic
-    # curve contributed only ~3.5 mmHg at 0.1 mcg/kg/min (normalized=1), allowing
-    # natural decline to overwhelm the pressor signal during a 10-minute
-    # reassessment. This saturating term is stronger at low/moderate doses, converges toward the prior high-dose effect, and is
-    # monotonic. It changes PRESSURE only: forward flow and tissue
-    # perfusion remain independently derived and may stay abnormal.
-    norepi_pressure_bonus = 21.0 * norepi / (0.25 + norepi)
-
-    # Offset the pressure generated indirectly by increased stroke volume: dobutamine
-    # may leave MAP similar or slightly lower rather than acting as a second pressor.
-    dobutamine_map_offset = 38.0 * (dobutamine_effect / (1.0 + 0.55 * dobutamine_effect))
-    map_target = (
-        73.0
-        + 42.0 * (vascular_support - 0.298)
-        + norepi_pressure_bonus
-        - dobutamine_map_offset
-        + 16.0 * (filling - 0.340)
-        + 34.0 * (cardiac_output - 0.455)
-        + 110.0 * acute_preload_recruitment
-        + 190.0 * retained_fluid * h.get("vasoplegia_severity", 0.0)
-        - 12.0 * (h["pulmonary_congestion"] - 0.05)
-        - 40.0 * h.get("vasoplegia_severity", 0.0)
-        - low_output_penalty
-    )
-    pulse_pressure = (
-        40.0
-        + 17.0 * (stroke_eff - 0.49)
-        + 7.0 * (h["sympathetic_drive"] - 0.85)
-        - 10.0 * (h["pulmonary_congestion"] - 0.05)
-    )
-    map_target = max(18.0, min(125.0, map_target))
-    pulse_pressure = max(20.0, min(65.0, pulse_pressure))
-
-    target_sbp = map_target + 0.67 * pulse_pressure
-    target_dbp = map_target - 0.33 * pulse_pressure
-    # Smooth observed pressure minute-to-minute.
-    pressure_alpha = 0.34 + 0.24 * clamp(h.get("low_flow_burden", 0.0), 0.0, 1.0)
-    o["sbp"] = max(28, int(round(o["sbp"] + pressure_alpha * (target_sbp - o["sbp"]))))
-    o["dbp"] = max(15, int(round(o["dbp"] + pressure_alpha * (target_dbp - o["dbp"]))))
-    h["effective_map"] = (o["sbp"] + 2.0 * o["dbp"]) / 3.0
-
-    # ---- Oxygenation derived from pulmonary state + support ----
-    support = oxygen_support_fraction(state)
-    pulmonary_signal = pulmonary_clinical_signal(state)
-    respiratory_burden = clamp(
-        max(
-            0.62 * pulmonary_signal
-            + 0.38 * h["pulmonary_congestion"]
-            + 0.48 * h["respiratory_failure_severity"],
-            0.82 * h.get("primary_respiratory_burden", 0.0),
-            0.10 * procedural_sedation_effect,
-        )
-    )
-    target_spo2 = 94.0 - 16.0 * respiratory_burden + 7.0 * support
-    target_spo2 = max(72.0, min(100.0, target_spo2))
-    o["spo2"] = int(round(o["spo2"] + 0.45 * (target_spo2 - o["spo2"])))
-
-    # ---- Oxygen delivery index (not shown to learner) ----
-    h["oxygen_delivery"] = clamp(
-        h["tissue_perfusion"] * (o["spo2"] / 100.0) * (0.70 + 0.35 * cardiac_output)
-    )
-
-    # ---- Observable perfusion surfaces ----
-    update_perfusion_surface(state)
-
-    # Cerebral status follows sustained low flow / oxygen delivery rather than BP alone.
-    # This lets severe myocardial depression eventually produce clinically visible
-    # deterioration even if MAP has not yet collapsed.
-    neuro_burden = h.get("low_flow_burden", 0.0)
-    recovery_minutes = h.get("adequate_perfusion_minutes", 0.0)
-    current_map = (o["sbp"] + 2.0 * o["dbp"]) / 3.0
-
-    # v0.6.0.19: severe *current* hypotension is an immediate cerebral danger
-    # signal. Pressure is still not used as a shortcut for neurologic recovery,
-    # but a patient cannot remain fully Alert through profound shock simply
-    # because the slower low-flow burden integrator has not yet caught up.
-    # The pressure thresholds therefore only accelerate DETERIORATION.
-    if (current_map < 32 or o["sbp"] < 55) or h["oxygen_delivery"] < 0.070 or h["tissue_perfusion"] < 0.070 or neuro_burden >= 0.82:
-        desired_mental = "Unresponsive"
-    elif (current_map < 45 or o["sbp"] < 70) or h["oxygen_delivery"] < 0.115 or h["tissue_perfusion"] < 0.115 or neuro_burden >= 0.55:
-        desired_mental = "Obtunded"
-    elif (current_map < 55 or o["sbp"] < 85) or h["oxygen_delivery"] < 0.19 or h["tissue_perfusion"] < 0.20 or neuro_burden >= 0.30:
-        desired_mental = "Drowsy"
-    elif h["oxygen_delivery"] >= 0.26 and h["tissue_perfusion"] >= 0.28 and neuro_burden < 0.18:
-        desired_mental = "Alert"
-    else:
-        desired_mental = o["mental_status"]
-
-    # v0.6.0.14: neurologic recovery deliberately lags hemodynamic and peripheral
-    # perfusion recovery. A restored MAP or improving CRT is not enough by itself:
-    # the brain must see sustained forward flow and oxygen delivery before the
-    # observable mental-status label advances. Worsening remains immediate.
-    cerebral_ok = (
-        h["oxygen_delivery"] >= 0.15
-        and h["tissue_perfusion"] >= 0.20
-        and cardiac_output >= 0.30
-        and o["spo2"] >= 84
-    )
-    if cerebral_ok:
-        h["cerebral_recovery_minutes"] = min(60.0, h.get("cerebral_recovery_minutes", 0.0) + 1.0)
-    else:
-        h["cerebral_recovery_minutes"] = max(0.0, h.get("cerebral_recovery_minutes", 0.0) - 1.5)
-
-    if state.get("treatments", {}).get("invasive_ventilation"):
-        # Sedation is an intervention state, not evidence of worsening cerebral
-        # perfusion. Preserve it while invasive ventilation is active; arrest can
-        # still override it below.
-        o["mental_status"] = "Sedated"
-    elif procedural_sedation_effect >= 0.35:
-        # Procedural sedation is transient and is not interpreted as neurologic
-        # deterioration. Once the effect-site signal decays, ordinary cerebral
-        # recovery logic resumes from a drowsy state.
-        o["mental_status"] = "Sedated"
-    else:
-        levels = ["Alert", "Drowsy", "Obtunded", "Unresponsive"]
-        current = o["mental_status"] if o["mental_status"] in levels else "Drowsy"
-        if levels.index(desired_mental) > levels.index(current):
-            # Deterioration is not delayed.
-            o["mental_status"] = desired_mental
-        elif levels.index(desired_mental) < levels.index(current):
-            cerebral_minutes = h.get("cerebral_recovery_minutes", 0.0)
-            # One neurologic level at a time. The first step requires sustained
-            # recovery; a fully Alert state requires a longer period of adequate
-            # cerebral oxygen delivery than peripheral CRT improvement does.
-            if current == "Unresponsive" and cerebral_minutes >= 8:
-                o["mental_status"] = "Obtunded"
-            elif current == "Obtunded" and cerebral_minutes >= 16:
-                o["mental_status"] = "Drowsy"
-            elif current == "Drowsy" and cerebral_minutes >= 28:
-                o["mental_status"] = "Alert"
-
-    # Extreme low-flow physiology can progress to cardiac arrest. The trigger is
-    # state-derived rather than dose-count-derived.
-    if (
-        h.get("cardiac_output_index", 1.0) < 0.095
-        and h["tissue_perfusion"] < 0.095
-        and h["oxygen_delivery"] < 0.080
-        and o["sbp"] < 65
-        and h.get("low_flow_burden", 0.0) >= 0.65
-    ):
-        h["cardiac_arrest"] = True
-        h["terminal_collapse"] = True
-        o["pulse_present"] = False
-        # PEA is organized electrical activity without effective mechanical output.
-        # Preserve the electrical ventricular rate at the moment of collapse rather
-        # than incorrectly representing PEA as 0/min (which would imply asystole).
-        o["hr"] = max(1, int(o.get("hr", 60)))
-        o["rhythm"] = "PEA"
-        o["sbp"] = 0
-        o["dbp"] = 0
-        # v0.6.0.16: once pulseless, pulse-dependent bedside measurements are
-        # unavailable rather than continuing as ordinary vital signs.
-        o["crt"] = None
-        o["spo2"] = None
-        o["extremities"] = "Cold"
-        o["mental_status"] = "Unresponsive"
+    from clinical_physiology import invoke
+    return invoke("recompute_coupled_physiology", (state, elapsed_min), {}, rng, sim_time_label)
 
 
 def update_perfusion_surface(state):
-    h = state["hidden"]
-    o = state["observable"]
-    prior_extremities = o.get("extremities")
-
-    # CRT/extremity temperature represent PERIPHERAL flow, not MAP alone.
-    # Norepinephrine may improve perfusion pressure while simultaneously increasing
-    # peripheral vasoconstriction. This deliberately decouples a normal MAP from
-    # automatically warm extremities / normal CRT.
-    norepi = norepinephrine_normalized(state)
-    vascular_support = h.get("vascular_support", h["vasomotor_tone"])
-    dob = h.get("dobutamine_effect", 0.0)
-    vasoconstriction_penalty = (
-        # v0.6.0.31: at a starting dose, pressure recruitment should not by
-        # itself force a paradoxical collapse in peripheral flow. Vasoconstriction
-        # penalty becomes progressively more important above the initial dose.
-        0.025 * clamp(norepi / 1.0, 0.0, 1.0)
-        + 0.055 * clamp((norepi - 1.0) / 2.0, 0.0, 1.5)
-        + 0.025 * clamp((vascular_support - 0.55) / 0.45, 0.0, 1.0)
-    )
-    peripheral_flow = clamp(
-        0.75 * h["tissue_perfusion"]
-        + 0.42 * h.get("cardiac_output_index", 0.0)
-        + 0.055 * (dob / (1.0 + 0.35 * dob))
-        - vasoconstriction_penalty
-        - 0.25 * h.get("vasoplegia_severity", 0.0)
-    )
-    h["peripheral_flow"] = peripheral_flow
-
-    # v0.6.0.16: CRT responds relatively quickly to current peripheral flow, while
-    # extremity temperature has thermal/microcirculatory memory. Sustained forward
-    # flow therefore produces a delayed Cool -> Warmer -> Warm recovery instead of
-    # leaving the patient indefinitely cold after CRT has improved. Deterioration
-    # remains immediate.
-    peripheral_recovery_ok = (
-        peripheral_flow >= 0.34
-        and h.get("cardiac_output_index", 0.0) >= 0.32
-        and h.get("tissue_perfusion", 0.0) >= 0.20
-    )
-    if peripheral_recovery_ok:
-        h["peripheral_recovery_minutes"] = min(60.0, h.get("peripheral_recovery_minutes", 0.0) + 1.0)
-    else:
-        h["peripheral_recovery_minutes"] = max(0.0, h.get("peripheral_recovery_minutes", 0.0) - 2.0)
-
-    recovery = h.get("peripheral_recovery_minutes", 0.0)
-    if peripheral_flow >= 0.70:
-        o["crt"] = 2
-        o["extremities"] = "Warm"
-    elif peripheral_flow >= 0.52:
-        o["crt"] = 3
-        o["extremities"] = "Warm" if recovery >= 24 else "Warmer"
-    elif peripheral_flow >= 0.36:
-        o["crt"] = 4
-        o["extremities"] = "Warmer" if recovery >= 18 else "Cool"
-    elif peripheral_flow >= 0.23:
-        o["crt"] = 5
-        o["extremities"] = "Cool"
-    elif peripheral_flow >= 0.14:
-        o["crt"] = 6
-        o["extremities"] = "Cold"
-    elif peripheral_flow >= 0.08:
-        o["crt"] = 7
-        o["extremities"] = "Very cold"
-    else:
-        o["crt"] = 8
-        o["extremities"] = "Mottled/Cold"
-
-    # v0.6.0.32: "Warmer" is a recovery descriptor, not a lower temperature
-    # category than Warm. Never report Warm -> Warmer while CRT/flow are worsening.
-    if prior_extremities == "Warm" and o.get("extremities") == "Warmer":
-        o["extremities"] = "Warm"
-    if h.get("vasoplegia_severity", 0.0) >= 0.60 and peripheral_flow >= 0.23:
-        # Distributive shock may remain peripherally warm despite abnormal
-        # capillary refill; temperature and microcirculatory transit are not the
-        # same observable.
-        o["extremities"] = "Warm"
+    from clinical_physiology import invoke
+    return invoke("update_perfusion_surface", (state,), {}, rng, sim_time_label)
 
 
 def apply_natural_disease(state, minutes):
-    """
-    Advance the patient minute-by-minute so observation/reassessment is true
-    state evolution, not merely a clock jump plus threshold checks.
-    """
-    if minutes <= 0:
-        return
-
-    # Terminal cardiovascular collapse is an absorbing state in this build.
-    # Ordinary reassessment must not resume conventional circulation/vitals.
-    if state["hidden"].get("terminal_collapse"):
-        return
-
-    whole_minutes = int(round(minutes))
-
-    for _ in range(whole_minutes):
-        # Pharmacology evolves continuously with time.
-        advance_beta_pharmacodynamics(state, 1)
-
-        # Dobutamine is a longitudinal inotrope: onset builds over several minutes
-        # and washout is gradual. It primarily modifies forward flow, not MAP directly.
-        h = state["hidden"]
-        tr = state["treatments"]
-        sedation_effect = h.get("procedural_sedation_effect", 0.0)
-        if sedation_effect > 0:
-            # Short effect-site decay: the intervention remains visible in the
-            # treatment record even after its physiologic effect has waned.
-            h["procedural_sedation_effect"] = max(
-                0.0,
-                sedation_effect * math.exp(-math.log(2) / 4.0),
-            )
-            h["procedural_sedation_minutes"] = min(
-                60.0,
-                h.get("procedural_sedation_minutes", 0.0) + 1.0,
-            )
-        target_dob = dobutamine_normalized(state) if tr.get("dobutamine") else 0.0
-        current_dob = h.get("dobutamine_effect", 0.0)
-        # v0.6.0.13: slower onset makes perfusion recovery visible over serial
-        # reassessments rather than largely completing within the first 10 minutes.
-        onset_alpha = 0.20 if target_dob > current_dob else 0.14
-        h["dobutamine_effect"] = clamp(current_dob + onset_alpha * (target_dob - current_dob), 0.0, 4.0)
-        if tr.get("dobutamine"):
-            h["dobutamine_minutes"] = min(120.0, h.get("dobutamine_minutes", 0.0) + 1.0)
-        else:
-            h["dobutamine_minutes"] = max(0.0, h.get("dobutamine_minutes", 0.0) - 1.0)
-
-        # Retained crystalloid effect redistributes gradually. This preserves a
-        # meaningful transient preload effect without making a bolus permanent.
-        h = state["hidden"]
-        retained = h.get("effective_intravascular_fluid", 0.0)
-        if retained > 0:
-            redistributed = retained * (1.0 - math.exp(-math.log(2) / 28.0))
-            h["effective_intravascular_fluid"] = max(0.0, retained - redistributed)
-
-            # v0.6.0.6: redistributed crystalloid is not physiologically erased.
-            # In an inflamed patient, a substantial fraction becomes interstitial/
-            # extravascular fluid. This preserves the distinction between waning
-            # preload benefit and accumulating hydrostatic/capillary-leak burden.
-            leak_fraction = clamp(
-                0.62 + 0.28 * h.get("inflammatory_drive", 0.0),
-                0.55,
-                0.90,
-            )
-            h["extravascular_fluid_burden"] = clamp(
-                h.get("extravascular_fluid_burden", 0.0)
-                + redistributed * leak_fraction,
-                0.0,
-                1.60,
-            )
-
-            # Most waning occurs through the retained-fluid compartment itself.
-            # Only a smaller component is removed from effective filling.
-            h["effective_volume"] = clamp(h["effective_volume"] - 0.22 * redistributed)
-
-        # Extravascular fluid clears much more slowly than useful preload benefit.
-        # This prevents a bolus from becoming permanently beneficial while still
-        # allowing true overload to resolve over a longer timescale.
-        extra = h.get("extravascular_fluid_burden", 0.0)
-        if extra > 0:
-            extra *= math.exp(-math.log(2) / 180.0)
-            h["extravascular_fluid_burden"] = max(0.0, extra)
-
-        # Active IV nitroglycerin primarily unloads the pulmonary circulation and
-        # reduces vascular tone/afterload. The hemodynamic benefit is conditional on
-        # adequate pressure; at low SBP the same vasodilatory action can worsen perfusion.
-        nitro = h.get("nitroglycerin_effect", 0.0)
-        if state["treatments"].get("nitroglycerin") and nitro > 0:
-            pressure_factor = clamp((state["observable"].get("sbp", 90) - 80.0) / 45.0, 0.0, 1.0)
-            h["pulmonary_congestion"] = max(
-                0.02,
-                h.get("pulmonary_congestion", 0.05) - 0.0045 * nitro * (0.55 + 0.45 * pressure_factor)
-            )
-            h["preload_state"] = max(0.05, h.get("preload_state", 0.35) - 0.0020 * nitro)
-            h["vasomotor_tone"] = clamp(h.get("vasomotor_tone", 0.4) - 0.0017 * nitro)
-            if state["observable"].get("sbp", 90) < 90:
-                h["tissue_perfusion"] = clamp(h["tissue_perfusion"] - 0.0025 * nitro)
-
-        # NIV improves alveolar recruitment and work of breathing while modestly
-        # reducing venous return. It can therefore help pulmonary edema but can be
-        # poorly tolerated in a severely preload-dependent/hypotensive patient.
-        if state["treatments"].get("niv"):
-            pressure = state["treatments"].get("niv_pressure_cmh2o", 0.0) or 0.0
-            niv_strength = clamp(pressure / 10.0, 0.0, 1.4)
-            h["respiratory_failure_severity"] = max(
-                0.0,
-                h.get("respiratory_failure_severity", 0.0) - 0.010 * niv_strength
-            )
-            h["pulmonary_congestion"] = max(
-                0.02,
-                h.get("pulmonary_congestion", 0.05) - 0.0025 * niv_strength
-            )
-            if state["observable"].get("sbp", 90) < 90:
-                h["effective_volume"] = clamp(h["effective_volume"] - 0.0015 * niv_strength)
-
-        if state["treatments"].get("invasive_ventilation"):
-            peep = state["treatments"].get("ventilator_peep_cmh2o", 5.0) or 5.0
-            vent_strength = clamp(peep / 10.0, 0.4, 1.4)
-            h["respiratory_failure_severity"] = max(
-                0.0, h.get("respiratory_failure_severity", 0.0) - 0.024 * vent_strength
-            )
-            if state["observable"].get("sbp", 90) < 90:
-                h["effective_volume"] = clamp(h["effective_volume"] - 0.0018 * vent_strength)
-
-        # Diuresis has delayed, progressive effects rather than an instantaneous reset.
-        # It preferentially removes retained/extravascular fluid and can modestly reduce
-        # effective circulating volume, so over-diuresis is not automatically beneficial.
-        fx = h.get("furosemide_effect", 0.0)
-        if fx > 0:
-            onset = min(1.0, fx)
-            h["extravascular_fluid_burden"] = max(0.0, h.get("extravascular_fluid_burden", 0.0) - 0.010 * onset)
-            h["effective_intravascular_fluid"] = max(0.0, h.get("effective_intravascular_fluid", 0.0) - 0.004 * onset)
-            h["effective_volume"] = clamp(h.get("effective_volume", 0.0) - 0.0015 * onset)
-            h["furosemide_effect"] = fx * math.exp(-math.log(2) / 75.0)
-
-        update_fluid_phenotype(state)
-
-        # Untreated infectious physiology also evolves continuously.
-        if not state["treatments"]["antibiotics"]:
-            h = state["hidden"]
-            h["inflammatory_drive"] = clamp(h["inflammatory_drive"] + 0.015 / 15.0)
-            h["vasomotor_tone"] = clamp(h["vasomotor_tone"] - 0.012 / 15.0)
-            h["effective_volume"] = clamp(h["effective_volume"] - 0.006 / 15.0)
-            h["tissue_perfusion"] = clamp(h["tissue_perfusion"] - 0.010 / 15.0)
-            h["sympathetic_drive"] = clamp(h["sympathetic_drive"] + 0.008 / 15.0)
-
-        update_dynamic_rhythm(state, 1)
-        update_decompensation(state, added_fluid_ml=0, elapsed_min=1)
-        recompute_coupled_physiology(state, elapsed_min=1)
-        if state["treatments"].get("invasive_ventilation") and not h.get("cardiac_arrest"):
-            state["observable"]["respiratory_rate"] = 20
-            state["observable"]["work_of_breathing"] = "Ventilator-supported"
+    from clinical_physiology import invoke
+    return invoke("apply_natural_disease", (state, minutes), {}, rng, sim_time_label)
 
 def fluid_transition(state, volume_ml, fluid_type="Crystalloid", rate="standard"):
-    """
-    v0.6.0.1 crystalloid transition with single-pass clock integration.
-
-    Fluid changes retained intravascular volume / preload. Observable BP, HR, CRT,
-    mental status, and perfusion then emerge from the coupled physiology engine.
-    No fixed BP increment or fixed HR decrement is applied here.
-    """
-    h = state["hidden"]
-    tr = state["treatments"]
-
-    update_fluid_phenotype(state)
-
-    pre_ev = h["effective_volume"]
-    pre_total = tr["cumulative_crystalloid_ml"]
-    pre_cong = h["pulmonary_congestion"]
-    pre_resp = h["preload_responsiveness"]
-    pre_retained = h.get("effective_intravascular_fluid", 0.0)
-
-    # Administration itself is saturating: larger single boluses do not create
-    # linearly larger useful intravascular effects.
-    bolus_units = max(0.0, volume_ml) / 500.0
-    retained_increment = 0.135 * (1.0 - math.exp(-0.72 * bolus_units))
-
-    # Later boluses still add intravascular volume, but their conversion into useful
-    # effective filling falls as Frank-Starling reserve is exhausted. A nonresponsive
-    # patient therefore retains volume without receiving the same forward-flow benefit.
-    preload_gain = retained_increment * (0.34 + 0.66 * pre_resp)
-
-    # Retained crystalloid is allowed to accumulate beyond the useful-preload
-    # plateau. The useful filling state remains capped separately, so extra volume
-    # can become hydrostatic burden rather than disappearing from the model.
-    h["effective_intravascular_fluid"] = clamp(
-        pre_retained + retained_increment, 0.0, 2.40
-    )
-    h["effective_volume"] = clamp(h["effective_volume"] + preload_gain, 0.05, 1.0)
-    tr["cumulative_crystalloid_ml"] += volume_ml
-
-    # Minimal congestion representation only. This is continuous and state-based,
-    # not a penalty at a cumulative-liter threshold.
-    intolerance = fluid_intolerance_pressure(state, volume_ml)
-    # Ordinary crystalloid accumulation should show diminishing returns before it
-    # shows a major adverse filling penalty. Congestion remains possible, but only
-    # rises meaningfully when filling is already high or intolerance is substantial.
-    # Complete the right side of the curve: while still fluid responsive, the
-    # congestion increment remains small; after preload saturation, additional
-    # retained volume increasingly becomes hydrostatic congestion.
-    preload_now = h.get("preload_state", h["effective_volume"])
-    saturation = max(0.0, preload_now - 0.74)
-    retained_excess = max(0.0, h["effective_intravascular_fluid"] - 0.54)
-    # Preserve the good 0–1 L response: congestion is minimal while preload
-    # reserve remains. Once the plateau is reached, retained volume progressively
-    # becomes hydrostatic congestion. This is state-derived, not a liter trigger.
-    cong_gain = (
-        0.002 * bolus_units
-        + 0.026 * intolerance
-        + 0.105 * saturation
-        + 0.085 * retained_excess
-        + 0.055 * max(0.0, 0.30 - pre_resp)
-    )
-    if rate == "rapid":
-        cong_gain *= 1.15
-    h["pulmonary_congestion"] = clamp(h["pulmonary_congestion"] + cong_gain)
-
-    update_fluid_phenotype(state)
-
-    # Administration time. Reassessment requested by the learner is handled by the
-    # existing aligned-clock pathway; this duration represents infusion time only.
-    duration = max(3, int(round(volume_ml / (180 if rate == "rapid" else 110))))
-    duration = min(duration, 20)
-
-    # IMPORTANT v0.6.0.1:
-    # Do NOT advance/recompute time-dependent physiology here for `duration`.
-    # execute_bundle() advances the clinical state minute-by-minute for the action /
-    # reassessment interval after all interventions are registered. In v0.6.0 this
-    # transition also recomputed with elapsed_min=duration, so a 5-minute fluid
-    # action effectively exposed the patient to ~10 minutes of contractile/perfusion
-    # deterioration. That made the post-fluid trajectory systematically worse than
-    # untreated natural history after the transient preload benefit waned.
-    #
-    # This transition now only changes the fluid/preload state. The coupled engine
-    # integrates preload -> SV -> CO -> BP/perfusion exactly once in the aligned
-    # clinical clock via apply_natural_disease().
-    return {
-        "duration_min": duration,
-        "pre_volume_state": classify_volume_state(pre_ev),
-        "post_volume_state": classify_volume_state(h["effective_volume"]),
-        "responsiveness": pre_resp,
-        "post_responsiveness": h["preload_responsiveness"],
-        "pre_retained_fluid_effect": pre_retained,
-        "post_retained_fluid_effect": h["effective_intravascular_fluid"],
-        "fluid_type": fluid_type,
-        "volume_ml": volume_ml,
-        "cumulative_ml": tr["cumulative_crystalloid_ml"],
-        "congestion_stage": congestion_stage(h["pulmonary_congestion"]),
-        "intolerance_pressure": intolerance,
-    }
+    from clinical_physiology import invoke
+    return invoke("fluid_transition", (state, volume_ml, fluid_type, rate), {}, rng, sim_time_label)
 
 
 
 def beta_blocker_transition(state, agent, dose_mg, route):
-    """
-    Administer beta blocker into a time-resolved effect-site model.
-    The dose does not instantly produce its full HR effect.
-    """
-    h = state["hidden"]
-    o = state["observable"]
-    tr = state["treatments"]
-
-    if h.get("cardiac_arrest"):
-        return {"duration_min": 0, "agent": agent, "dose_mg": dose_mg, "route": route}
-
-    if agent == "metoprolol":
-        ref_dose = 5.0 if route == "IV" else 25.0
-    else:
-        ref_dose = 1.0 if route == "IV" else 20.0
-
-    dose_strength = clamp(dose_mg / max(ref_dose, 0.1), 0.10, 2.5)
-    route_factor = 1.0 if route == "IV" else 0.55
-
-    # Standard IV reference dose contributes ~1.0 normalized effect-site unit.
-    input_effect = dose_strength * route_factor
-
-    if agent == "metoprolol":
-        h["metoprolol_depot"] = clamp(
-            h.get("metoprolol_depot", 0.0) + input_effect,
-            0.0,
-            6.0,
-        )
-        tr["metoprolol_total_mg"] += dose_mg
-    else:
-        h["propranolol_depot"] = clamp(
-            h.get("propranolol_depot", 0.0) + input_effect,
-            0.0,
-            6.0,
-        )
-        tr["propranolol_total_mg"] += dose_mg
-
-    # The action itself consumes time; during these minutes the drug begins to act.
-    duration = 5 if route == "IV" else 30
-
-    return {
-        "duration_min": duration,
-        "agent": agent,
-        "dose_mg": dose_mg,
-        "route": route,
-    }
+    from clinical_physiology import invoke
+    return invoke("beta_blocker_transition", (state, agent, dose_mg, route), {}, rng, sim_time_label)
 
 
 def diltiazem_transition(state, dose_mg, route):
-    h, tr = state["hidden"], state["treatments"]
-    ref = 15.0 if route == "IV" else 60.0
-    strength = clamp(dose_mg / ref, 0.10, 2.5)
-    route_factor = 1.0 if route == "IV" else 0.55
-    h["diltiazem_depot"] = clamp(h.get("diltiazem_depot", 0.0) + strength * route_factor, 0.0, 2.5)
-    tr["diltiazem_total_mg"] += dose_mg
-    return {"duration_min": 5 if route == "IV" else 30, "agent": "diltiazem", "dose_mg": dose_mg, "route": route}
+    from clinical_physiology import invoke
+    return invoke("diltiazem_transition", (state, dose_mg, route), {}, rng, sim_time_label)
 
 
 def amiodarone_transition(state, dose_mg, route):
-    h, tr = state["hidden"], state["treatments"]
-    ref = 150.0 if route == "IV" else 200.0
-    strength = clamp(dose_mg / ref, 0.10, 3.0)
-    route_factor = 1.0 if route == "IV" else 0.50
-    h["amiodarone_depot"] = clamp(h.get("amiodarone_depot", 0.0) + strength * route_factor, 0.0, 3.0)
-    tr["amiodarone_total_mg"] += dose_mg
-
-    # IV loading can transiently lower pressure, particularly in a poorly perfused patient.
-    if route == "IV":
-        vulnerability = clamp(1.0 - h["tissue_perfusion"])
-        state["observable"]["sbp"] = max(55, int(round(state["observable"]["sbp"] - 3.0 * strength * vulnerability)))
-        state["observable"]["dbp"] = max(30, int(round(state["observable"]["dbp"] - 1.5 * strength * vulnerability)))
-
-    return {"duration_min": 10 if route == "IV" else 30, "agent": "amiodarone", "dose_mg": dose_mg, "route": route}
+    from clinical_physiology import invoke
+    return invoke("amiodarone_transition", (state, dose_mg, route), {}, rng, sim_time_label)
 
 
 def _record_treatment_timing(state, key, operation="start"):
-    """Record start/adjustment/stop times for learner-visible ongoing support."""
-    timeline = state.setdefault("treatment_timeline", {})
-    entry = timeline.setdefault(key, {})
-    now = int(state.get("sim_time", 0))
-    if operation == "stop":
-        entry["active"] = False
-        entry["stopped_min"] = now
-        entry["last_changed_min"] = now
-        return
-    if operation == "continue":
-        if "started_min" not in entry:
-            entry["started_min"] = now
-        entry["active"] = True
-        return
-    if not entry.get("active"):
-        entry["started_min"] = now
-    entry["active"] = True
-    entry["last_changed_min"] = now
-    entry.pop("stopped_min", None)
+    from clinical_physiology import invoke
+    return invoke("_record_treatment_timing", (state, key, operation), {}, rng, sim_time_label)
 
 
 def _treatment_timing_suffix(state, key):
-    entry = (state.get("treatment_timeline", {}) or {}).get(key) or {}
-    started = entry.get("started_min")
-    changed = entry.get("last_changed_min")
-    if started is None:
-        return ""
-    parts = [f"started {sim_time_label(int(started))}"]
-    if changed is not None and int(changed) != int(started):
-        parts.append(f"last adjusted {sim_time_label(int(changed))}")
-    return " — " + " · ".join(parts)
+    from clinical_physiology import invoke
+    return invoke("_treatment_timing_suffix", (state, key), {}, rng, sim_time_label)
 
 
 def dobutamine_transition(state, rate, units="mcg/kg/min", operation="start"):
-    h, tr = state["hidden"], state["treatments"]
-    if operation == "stop":
-        old_rate = tr.get("dobutamine_rate", 0.0)
-        tr["dobutamine"] = False
-        tr["dobutamine_rate"] = 0.0
-        _record_treatment_timing(state, "dobutamine", "stop")
-        # Pharmacodynamic effect washes out rather than disappearing instantly.
-        return {"duration_min": 1, "support_type": "dobutamine", "operation": "stop",
-                "rate": old_rate, "units": "mcg/kg/min"}
-
-    if units != "mcg/kg/min":
-        # This build models weight-based dobutamine dosing. A bare start defaults to 5.
-        units = "mcg/kg/min"
-    rate = float(rate if rate is not None else 5.0)
-    rate = clamp(rate, 2.5, 20.0)
-    tr["dobutamine"] = True
-    tr["dobutamine_rate"] = rate
-    tr["dobutamine_units"] = units
-    _record_treatment_timing(state, "dobutamine", operation)
-    # Do not jump contractility/perfusion here: the effect is integrated minute by minute.
-    h.setdefault("dobutamine_effect", 0.0)
-    h.setdefault("dobutamine_minutes", 0.0)
-    return {"duration_min": 1, "support_type": "dobutamine", "operation": operation,
-            "rate": rate, "units": units}
+    from clinical_physiology import invoke
+    return invoke("dobutamine_transition", (state, rate, units, operation), {}, rng, sim_time_label)
 
 
 def norepinephrine_transition(state, rate, units, operation="start"):
-    tr = state["treatments"]
-    was_active = bool(tr.get("norepinephrine"))
-    old_rate = tr.get("norepinephrine_rate", 0.0)
-    old_units = tr.get("norepinephrine_units")
-    if operation == "stop":
-        tr["norepinephrine"] = False
-        tr["norepinephrine_rate"] = 0.0
-        _record_treatment_timing(state, "norepinephrine", "stop")
-        return {"duration_min": 1, "support_type": "norepinephrine", "operation": "stop", "rate": old_rate, "units": old_units}
-    tr["norepinephrine"] = True
-    tr["norepinephrine_rate"] = rate
-    tr["norepinephrine_units"] = units
-    _record_treatment_timing(state, "norepinephrine", operation)
-    return {
-        "duration_min": 2,
-        "support_type": "norepinephrine",
-        "operation": operation,
-        "rate": rate,
-        "units": units,
-        "old_rate": old_rate if was_active else None,
-        "old_units": old_units if was_active else None,
-    }
+    from clinical_physiology import invoke
+    return invoke("norepinephrine_transition", (state, rate, units, operation), {}, rng, sim_time_label)
 
 
 def furosemide_transition(state, dose_mg, route):
-    h, tr = state["hidden"], state["treatments"]
-    tr["furosemide_total_mg"] = tr.get("furosemide_total_mg", 0.0) + dose_mg
-    # IV onset is clinically meaningful over the next 10-20 min; PO is slower.
-    potency = clamp(dose_mg / 40.0, 0.25, 2.0) * (1.0 if route == "IV" else 0.45)
-    h["furosemide_effect"] = clamp(h.get("furosemide_effect", 0.0) + potency, 0.0, 2.5)
-    return {"duration_min": 2 if route == "IV" else 5, "agent": "furosemide", "dose_mg": dose_mg, "route": route}
+    from clinical_physiology import invoke
+    return invoke("furosemide_transition", (state, dose_mg, route), {}, rng, sim_time_label)
 
 
 def oxygen_transition(state, device, flow_lpm):
-    tr = state["treatments"]
-    operation = "adjust" if tr.get("oxygen") else "start"
-    tr["oxygen"] = True
-    tr["oxygen_device"] = device
-    tr["oxygen_flow_lpm"] = flow_lpm
-    _record_treatment_timing(state, "oxygen", operation)
-    return {"duration_min": 1, "support_type": "oxygen", "device": device, "flow_lpm": flow_lpm}
+    from clinical_physiology import invoke
+    return invoke("oxygen_transition", (state, device, flow_lpm), {}, rng, sim_time_label)
 
 
 
 def nitroglycerin_transition(state, rate_mcg_min, operation="start"):
-    h, tr = state["hidden"], state["treatments"]
-    if operation == "stop":
-        tr["nitroglycerin"] = False
-        tr["nitroglycerin_rate_mcg_min"] = 0.0
-        h["nitroglycerin_effect"] = 0.0
-        _record_treatment_timing(state, "nitroglycerin", "stop")
-        return {"duration_min": 1, "support_type": "nitroglycerin", "operation": "stop", "rate_mcg_min": 0.0}
-
-    tr["nitroglycerin"] = True
-    tr["nitroglycerin_rate_mcg_min"] = float(rate_mcg_min)
-    _record_treatment_timing(state, "nitroglycerin", operation)
-    # Effect is continuous and pressure-dependent; no direct canned BP response.
-    h["nitroglycerin_effect"] = clamp(float(rate_mcg_min) / 120.0, 0.0, 1.5)
-    return {
-        "duration_min": 1,
-        "support_type": "nitroglycerin",
-        "operation": "start",
-        "rate_mcg_min": float(rate_mcg_min),
-    }
+    from clinical_physiology import invoke
+    return invoke("nitroglycerin_transition", (state, rate_mcg_min, operation), {}, rng, sim_time_label)
 
 
 def niv_transition(state, mode, pressure_cmh2o, operation="start", ipap_cmh2o=None, epap_cmh2o=None, fio2_percent=None):
-    tr = state["treatments"]
-    if operation == "stop":
-        tr["niv"] = False
-        tr["niv_mode"] = None
-        tr["niv_pressure_cmh2o"] = 0.0
-        tr["niv_ipap_cmh2o"] = None
-        tr["niv_epap_cmh2o"] = None
-        tr["niv_fio2_percent"] = None
-        _record_treatment_timing(state, "niv", "stop")
-        return {"duration_min": 1, "support_type": "niv", "operation": "stop", "mode": mode, "pressure_cmh2o": 0.0}
-
-    effective_pressure = epap_cmh2o if mode == "BiPAP" and epap_cmh2o is not None else pressure_cmh2o
-    if effective_pressure is None:
-        effective_pressure = 0.0
-    timing_operation = "adjust" if tr.get("niv") else "start"
-    if tr.get("oxygen"):
-        _record_treatment_timing(state, "oxygen", "stop")
-    tr["niv"] = True
-    tr["oxygen"] = False
-    tr["oxygen_device"] = None
-    tr["oxygen_flow_lpm"] = 0.0
-    tr["niv_mode"] = mode
-    tr["niv_pressure_cmh2o"] = float(effective_pressure)
-    tr["niv_ipap_cmh2o"] = float(ipap_cmh2o) if ipap_cmh2o is not None else None
-    tr["niv_epap_cmh2o"] = float(epap_cmh2o) if epap_cmh2o is not None else None
-    if fio2_percent is not None:
-        tr["niv_fio2_percent"] = float(fio2_percent)
-    _record_treatment_timing(state, "niv", timing_operation)
-    return {
-        "duration_min": 1, "support_type": "niv", "operation": "start", "mode": mode,
-        "pressure_cmh2o": float(effective_pressure),
-        "ipap_cmh2o": tr.get("niv_ipap_cmh2o"), "epap_cmh2o": tr.get("niv_epap_cmh2o"),
-        "fio2_percent": tr.get("niv_fio2_percent"),
-    }
+    from clinical_physiology import invoke
+    return invoke("niv_transition", (state, mode, pressure_cmh2o, operation, ipap_cmh2o, epap_cmh2o, fio2_percent), {}, rng, sim_time_label)
 
 
 def airway_preparation_transition(state):
-    state["treatments"]["airway_prepared"] = True
-    return {"duration_min": 2, "support_type": "airway_preparation", "operation": "prepare"}
+    from clinical_physiology import invoke
+    return invoke("airway_preparation_transition", (state,), {}, rng, sim_time_label)
 
 
 def intubation_transition(state, ventilator_mode="VC/AC", fio2_percent=100.0, peep_cmh2o=8.0):
-    tr = state["treatments"]
-    if tr.get("niv"):
-        _record_treatment_timing(state, "niv", "stop")
-    if tr.get("oxygen"):
-        _record_treatment_timing(state, "oxygen", "stop")
-    tr["airway_prepared"] = True
-    tr["invasive_ventilation"] = True
-    tr["ventilator_mode"] = ventilator_mode
-    tr["ventilator_fio2_percent"] = float(fio2_percent)
-    tr["ventilator_peep_cmh2o"] = float(peep_cmh2o)
-    tr["sedated_for_intubation"] = True
-    tr["niv"] = False
-    tr["niv_mode"] = None
-    tr["niv_pressure_cmh2o"] = 0.0
-    tr["niv_ipap_cmh2o"] = None
-    tr["niv_epap_cmh2o"] = None
-    tr["niv_fio2_percent"] = None
-    tr["oxygen"] = False
-    tr["oxygen_device"] = None
-    tr["oxygen_flow_lpm"] = 0.0
-    _record_treatment_timing(state, "invasive_ventilation", "start")
-    state["observable"]["mental_status"] = "Sedated"
-    return {
-        "duration_min": 5,
-        "support_type": "invasive_ventilation",
-        "operation": "start",
-        "ventilator_mode": ventilator_mode,
-        "fio2_percent": float(fio2_percent),
-        "peep_cmh2o": float(peep_cmh2o),
-    }
+    from clinical_physiology import invoke
+    return invoke("intubation_transition", (state, ventilator_mode, fio2_percent, peep_cmh2o), {}, rng, sim_time_label)
 
 
 def ventilator_adjustment_transition(state, ventilator_mode=None, fio2_percent=None, peep_cmh2o=None):
-    """Adjust an existing invasive ventilator without repeating intubation."""
-    tr = state["treatments"]
-    old_mode = tr.get("ventilator_mode") or "VC/AC"
-    old_fio2 = float(tr.get("ventilator_fio2_percent") or 40.0)
-    old_peep = float(tr.get("ventilator_peep_cmh2o") or 5.0)
-    pre_spo2 = state.get("observable", {}).get("spo2")
-    if ventilator_mode is not None:
-        tr["ventilator_mode"] = ventilator_mode
-    if fio2_percent is not None:
-        tr["ventilator_fio2_percent"] = float(fio2_percent)
-    if peep_cmh2o is not None:
-        tr["ventilator_peep_cmh2o"] = float(peep_cmh2o)
-    _record_treatment_timing(state, "invasive_ventilation", "adjust")
-    return {
-        "duration_min": 1,
-        "support_type": "invasive_ventilation",
-        "operation": "adjust",
-        "ventilator_mode": tr.get("ventilator_mode") or "VC/AC",
-        "fio2_percent": float(tr.get("ventilator_fio2_percent") or 40.0),
-        "peep_cmh2o": float(tr.get("ventilator_peep_cmh2o") or 5.0),
-        "old_ventilator_mode": old_mode,
-        "old_fio2_percent": old_fio2,
-        "old_peep_cmh2o": old_peep,
-        "pre_adjustment_spo2": pre_spo2,
-    }
+    from clinical_physiology import invoke
+    return invoke("ventilator_adjustment_transition", (state, ventilator_mode, fio2_percent, peep_cmh2o), {}, rng, sim_time_label)
 
 
 def ventilator_continuation_transition(state):
-    """Acknowledge unchanged invasive support without a second procedure."""
-    tr = state["treatments"]
-    _record_treatment_timing(state, "invasive_ventilation", "continue")
-    return {
-        "duration_min": 0,
-        "support_type": "invasive_ventilation",
-        "operation": "continue",
-        "ventilator_mode": tr.get("ventilator_mode") or "VC/AC",
-        "fio2_percent": float(tr.get("ventilator_fio2_percent") or 40.0),
-        "peep_cmh2o": float(tr.get("ventilator_peep_cmh2o") or 5.0),
-    }
+    from clinical_physiology import invoke
+    return invoke("ventilator_continuation_transition", (state,), {}, rng, sim_time_label)
 
 
 def procedural_sedation_transition(state, medications):
-    """Administer a bounded, time-limited procedural-sedation regimen."""
-    h, o, tr = state["hidden"], state["observable"], state["treatments"]
-    administered = []
-    etomidate_mg = 0.0
-    midazolam_mg = 0.0
-    for medication in medications or []:
-        agent = str(medication.get("agent") or "").lower()
-        dose = float(medication.get("dose") or 0.0)
-        units = str(medication.get("units") or "mg").lower()
-        if units in {"mcg", "µg", "ug"}:
-            dose_mg = dose / 1000.0
-        elif units == "g":
-            dose_mg = dose * 1000.0
-        else:
-            dose_mg = dose
-        item = {
-            "agent": agent,
-            "dose": dose,
-            "units": units,
-            "route": medication.get("route") or "IV",
-        }
-        administered.append(item)
-        if agent == "etomidate":
-            etomidate_mg += dose_mg
-        elif agent == "midazolam":
-            midazolam_mg += dose_mg
-
-    tr["procedural_sedations"] = int(tr.get("procedural_sedations", 0)) + 1
-    tr["etomidate_total_mg"] = float(tr.get("etomidate_total_mg", 0.0)) + etomidate_mg
-    tr["midazolam_total_mg"] = float(tr.get("midazolam_total_mg", 0.0)) + midazolam_mg
-    tr["last_procedural_sedation"] = deepcopy(administered)
-    _record_treatment_timing(state, "procedural_sedation", "administer")
-
-    # Reference doses create a short-lived effect-site signal. Etomidate has a
-    # smaller modeled vascular penalty; midazolam contributes more persistence.
-    effect = (
-        0.55 * clamp(etomidate_mg / 10.0, 0.0, 2.0)
-        + 0.75 * clamp(midazolam_mg / 2.0, 0.0, 2.0)
-    )
-    h["procedural_sedation_effect"] = clamp(
-        h.get("procedural_sedation_effect", 0.0) + effect,
-        0.15,
-        1.50,
-    )
-    h["procedural_sedation_minutes"] = 0.0
-    o["mental_status"] = "Sedated"
-    return {
-        "duration_min": 1,
-        "support_type": "procedural_sedation",
-        "operation": "administer",
-        "medications": administered,
-    }
+    from clinical_physiology import invoke
+    return invoke("procedural_sedation_transition", (state, medications), {}, rng, sim_time_label)
 
 
 def cardioversion_transition(state, energy_j):
-    h, o, tr = state["hidden"], state["observable"], state["treatments"]
-    r = rng()
-    tr["cardioversions"] += 1
-    pre_rhythm = o["rhythm"]
-    # Deterministic vertical slice: >=150 J converts; 100-149 J converts on the first attempt; <100 J fails.
-    success = energy_j >= 150 or (100 <= energy_j < 150 and tr["cardioversions"] == 1)
-    if success and pre_rhythm == "AF":
-        o["rhythm"] = "Sinus rhythm"
-        h["af_burden"] = 0.05
-        h["minutes_since_cardioversion"] = 0
-        h["af_recurrence_pressure"] = 0.0
-        h["sinus_stability"] = 1.0
-        # Post-conversion sinus rate reflects residual sympathetic drive and active blockade.
-        blockade = total_beta_blockade(state)
-        sinus_target = 78 + 22 * h["sympathetic_drive"] - 24 * blockade
-        o["hr"] = int(round(max(55, min(115, sinus_target + r.uniform(-4, 4)))))
-        # Only the AF-attributable fraction of instability improves. In PS001 AF is mostly a marker/contributor.
-        gain = h.get("af_causal_weight", 0.25)
-        o["sbp"] = int(round(o["sbp"] + 5 * gain + r.uniform(-1, 1)))
-        o["dbp"] = int(round(o["dbp"] + 3 * gain + r.uniform(-1, 1)))
-        h["tissue_perfusion"] = clamp(h["tissue_perfusion"] + 0.05 * gain)
-    duration = 3
-    update_decompensation(state, added_fluid_ml=0, elapsed_min=duration)
-    return {"duration_min": duration, "energy_j": energy_j, "cardioversion_success": success, "pre_rhythm": pre_rhythm}
+    from clinical_physiology import invoke
+    return invoke("cardioversion_transition", (state, energy_j), {}, rng, sim_time_label)
 
 
 
 def _diagnostic_timestamp(state, delay_min=0):
-    return int(state.get("sim_time", 0) + delay_min)
+    from clinical_diagnostics import _diagnostic_timestamp as diagnostic
+    return diagnostic(state, delay_min)
 
 
 def pocus_transition(state, requested_delay_min=None):
-    """Return a bedside POCUS result derived from the current simulated physiology.
-
-    POCUS is informational only: it does not modify physiology.
-    """
-    h = state["hidden"]
-    tr = state.get("treatments", {}) or {}
-    d = state.setdefault("diagnostics", {})
-    preload = float(h.get("preload_state", h.get("effective_volume", 0.5)))
-    cardiac = float(h.get("cardiac_function", 0.8))
-    congestion = float(h.get("pulmonary_congestion", 0.0))
-
-    # PS001 deliberately evolves from a preserved baseline to acquired low
-    # contractile reserve during the classroom trajectory. Use the current
-    # effective state rather than the immutable baseline phenotype so repeat
-    # POCUS can disclose that transition. PS002 retains its validated
-    # case-specific imaging phenotype.
-    if state.get("case_id") == "PS001":
-        current_contractility = float(
-            h.get("effective_contractility", h.get("contractile_reserve", 1.0))
-        )
-        cardiac = clamp(cardiac * current_contractility, 0.0, 1.35)
-
-    if cardiac >= 0.68:
-        lv = "preserved to hyperdynamic LV systolic function"
-    elif cardiac >= 0.48:
-        lv = "mildly reduced LV systolic function"
-    else:
-        lv = "moderately to severely reduced LV systolic function"
-
-    if preload < 0.48:
-        ivc_diameter = 1.4
-        spontaneous_variation = ">50% respiratory variation"
-    elif preload < 0.65:
-        ivc_diameter = 1.8
-        spontaneous_variation = "moderate respiratory variation"
-    else:
-        ivc_diameter = 2.1
-        spontaneous_variation = "limited respiratory variation"
-
-    if tr.get("invasive_ventilation"):
-        peep = float(tr.get("ventilator_peep_cmh2o") or 5.0)
-        ivc = (
-            f"IVC approximately {ivc_diameter:g} cm during positive-pressure ventilation "
-            f"(PEEP {peep:g} cm H₂O); respiratory variation is not interpreted as a standalone preload marker"
-        )
-    elif tr.get("niv"):
-        ivc = (
-            f"IVC approximately {ivc_diameter:g} cm during noninvasive positive-pressure support; "
-            "respiratory variation is not interpreted as a standalone preload marker"
-        )
-    else:
-        ivc = f"IVC approximately {ivc_diameter:g} cm with {spontaneous_variation}"
-
-    if congestion >= 0.48:
-        lungs = "diffuse bilateral B-lines"
-    elif congestion >= 0.20:
-        lungs = "scattered bilateral B-lines"
-    else:
-        lungs = "no diffuse B-line pattern"
-
-    delay = 2 if requested_delay_min is None else max(0, int(requested_delay_min))
-    result = {
-        "time_min": _diagnostic_timestamp(state, delay),
-        "lv": lv,
-        "rv": "RV not dilated; no clear RV pressure-overload pattern",
-        "pericardium": "no pericardial effusion",
-        "ivc": ivc,
-        "lungs": lungs,
-    }
-    d["pocus"] = result
-    return {"duration_min": delay, "diagnostic_type": "pocus", "result": deepcopy(result)}
+    from clinical_diagnostics import pocus_transition as diagnostic
+    return diagnostic(state, requested_delay_min)
 
 
 def lactate_transition(state, requested_delay_min=None):
-    """Return a lactate value coupled to tissue perfusion / low-flow burden."""
-    h = state["hidden"]
-    d = state.setdefault("diagnostics", {})
-    perf = clamp(float(h.get("tissue_perfusion", 0.5)))
-    low_flow = clamp(float(h.get("low_flow_burden", 0.0)))
-    inflammatory = clamp(float(h.get("inflammatory_drive", 0.0)))
-    # Deliberately deterministic for a reproducible teaching case.
-    value = 1.1 + 5.0 * (1.0 - perf) + 1.8 * low_flow + 0.7 * inflammatory
-    value = round(max(0.8, min(9.5, value)), 1)
-    delay = 5 if requested_delay_min is None else max(0, int(requested_delay_min))
-    result = {
-        "time_min": _diagnostic_timestamp(state, delay),
-        "value_mmol_l": value,
-        "flag": "elevated" if value >= 2.0 else "normal",
-    }
-    d["lactate"] = result
-    return {"duration_min": delay, "diagnostic_type": "lactate", "result": deepcopy(result)}
+    from clinical_diagnostics import lactate_transition as diagnostic
+    return diagnostic(state, requested_delay_min)
 
 
 def vbg_transition(state, requested_delay_min=None):
-    """Return a deterministic venous blood gas coupled to current physiology."""
-    h = state["hidden"]
-    d = state.setdefault("diagnostics", {})
-    perf = clamp(float(h.get("tissue_perfusion", 0.5)))
-    low_flow = clamp(float(h.get("low_flow_burden", 0.0)))
-    inflammatory = clamp(float(h.get("inflammatory_drive", 0.0)))
-    respiratory = clamp(float(h.get("respiratory_failure_severity", 0.0)))
-    lactate = round(max(0.8, min(9.5, 1.1 + 5.0 * (1.0 - perf) + 1.8 * low_flow + 0.7 * inflammatory)), 1)
-    bicarbonate = int(round(max(14, 24 - 7.0 * (1.0 - perf) - 3.0 * low_flow - 2.0 * inflammatory)))
-    pco2 = int(round(max(24, min(55, 1.5 * bicarbonate + 8.0 - 3.0 * respiratory))))
-    ph = round(max(6.90, min(7.55, 6.1 + math.log10(bicarbonate / (0.03 * pco2)))), 2)
-    delay = 3 if requested_delay_min is None else max(0, int(requested_delay_min))
-    result = {
-        "time_min": _diagnostic_timestamp(state, delay),
-        "ph": ph,
-        "pco2_mm_hg": pco2,
-        "bicarbonate_mmol_l": bicarbonate,
-        "base_excess_mmol_l": int(round(bicarbonate - 24)),
-        "lactate_mmol_l": lactate,
-    }
-    d["vbg"] = result
-    return {"duration_min": delay, "diagnostic_type": "vbg", "result": deepcopy(result)}
+    from clinical_diagnostics import vbg_transition as diagnostic
+    return diagnostic(state, requested_delay_min)
 
 
 def abg_transition(state, requested_delay_min=None):
-    """Return an arterial blood gas with oxygenation tied to current support."""
-    h = state["hidden"]
-    o = state["observable"]
-    tr = state["treatments"]
-    d = state.setdefault("diagnostics", {})
-    perf = clamp(float(h.get("tissue_perfusion", 0.5)))
-    low_flow = clamp(float(h.get("low_flow_burden", 0.0)))
-    inflammatory = clamp(float(h.get("inflammatory_drive", 0.0)))
-    respiratory = clamp(float(h.get("respiratory_failure_severity", 0.0)))
-
-    bicarbonate = int(round(max(14, 24 - 7.0 * (1.0 - perf) - 3.0 * low_flow - 2.0 * inflammatory)))
-    paco2 = int(round(max(22, min(60, 1.45 * bicarbonate + 6.0 - 4.0 * respiratory))))
-    ph = round(max(6.90, min(7.60, 6.1 + math.log10(bicarbonate / (0.03 * paco2)))), 2)
-
-    spo2 = float(o.get("spo2") if o.get("spo2") is not None else 85.0)
-    if spo2 <= 90:
-        pao2 = 60.0 + 2.0 * (spo2 - 90.0)
-    elif spo2 <= 94:
-        pao2 = 60.0 + 7.5 * (spo2 - 90.0)
-    elif spo2 <= 97:
-        pao2 = 90.0 + 10.0 * (spo2 - 94.0)
-    else:
-        pao2 = 120.0 + 20.0 * (spo2 - 97.0)
-    pao2 = int(round(max(35.0, min(300.0, pao2))))
-
-    if tr.get("invasive_ventilation"):
-        fio2_percent = float(tr.get("ventilator_fio2_percent") or 40.0)
-    elif tr.get("niv"):
-        fio2_percent = float(tr.get("niv_fio2_percent") or 40.0)
-    elif tr.get("oxygen"):
-        fio2_percent = min(60.0, 21.0 + 3.0 * float(tr.get("oxygen_flow_lpm") or 0.0))
-    else:
-        fio2_percent = 21.0
-    fio2_fraction = clamp(fio2_percent / 100.0, 0.21, 1.0)
-    pf_ratio = int(round(pao2 / fio2_fraction))
-
-    delay = 3 if requested_delay_min is None else max(0, int(requested_delay_min))
-    result = {
-        "time_min": _diagnostic_timestamp(state, delay),
-        "ph": ph,
-        "paco2_mm_hg": paco2,
-        "pao2_mm_hg": pao2,
-        "bicarbonate_mmol_l": bicarbonate,
-        "base_excess_mmol_l": int(round(bicarbonate - 24)),
-        "fio2_percent": fio2_percent,
-        "pf_ratio": pf_ratio,
-    }
-    d["abg"] = result
-    return {"duration_min": delay, "diagnostic_type": "abg", "result": deepcopy(result)}
+    from clinical_diagnostics import abg_transition as diagnostic
+    return diagnostic(state, requested_delay_min)
 
 
 def basic_labs_transition(state):
@@ -8262,13 +7281,12 @@ def antibiotics_transition(state, agent="broad-spectrum antibiotics", dose_g=Non
 def format_diagnostic_summary(summary):
     dtype = summary.get("diagnostic_type")
     r = summary.get("result") or {}
+    if r.get("report") or (st.session_state.get("state") or {}).get("engine_family"):
+        from family_reports import format_result
+        return format_result(dtype, r)
     if dtype == "pocus":
-        return (
-            "POCUS: " + "; ".join([
-                r.get("lv", ""), r.get("rv", ""), r.get("pericardium", ""),
-                r.get("ivc", ""), r.get("lungs", "")
-            ])
-        )
+        from pocus_report import format_pocus
+        return format_pocus(r)
     if dtype == "lactate":
         return f'Lactate: {r.get("value_mmol_l", 0):.1f} mmol/L.'
     if dtype == "vbg":
@@ -8330,7 +7348,77 @@ def merge_pending_bundle(parsed):
 
 
 def execute_bundle(parsed):
+    # Nested so that regressions loading execute_bundle through ast keep its helpers.
+    def _record_administration_time(res, action):
+        """Keep a stated administration time on a medication summary.
+
+        The legacy medication models keep their own onset kinetics; the stated time
+        is recorded, shown, and advances the clock when no reassessment is given.
+        """
+        duration = action.get("administration_duration_min")
+        if duration:
+            res["administration_duration_min"] = duration
+            res["duration_min"] = max(int(res.get("duration_min", 0) or 0), math.ceil(duration))
+
+    def _start_timed_fluid(state, action):
+        """Queue a crystalloid order to run evenly over its stated duration."""
+        queue = state.setdefault("timed_fluids", [])
+        now = int(state.get("sim_time", 0))
+        # A second bag follows the one still running rather than doubling the rate.
+        start = max([now] + [item["start"] + item["duration"] for item in queue])
+        duration = float(action["administration_duration_min"])
+        queue.append({"fluid_type": action["fluid_type"], "rate": action.get("rate", "standard"),
+                      "volume_ml": float(action["volume_ml"]), "delivered_ml": 0.0,
+                      "start": start, "duration": duration})
+        return {
+            "fluid_type": action["fluid_type"], "volume_ml": action["volume_ml"],
+            "administration_duration_min": duration,
+            "delivery_starts_at_min": start, "delivery_due_at_min": start + duration,
+            "duration_min": math.ceil(start - now + duration),
+            "cumulative_ml": state["treatments"]["cumulative_crystalloid_ml"],
+        }
+
+
+    def _advance_with_timed_fluids(state, elapsed):
+        """Advance the clock, delivering any timed crystalloid minute by minute.
+
+        Without a timed fluid the clock advances in one call, exactly as before. With
+        one, each minute's share goes through the same fluid transition, counting the
+        volume already given from that order so the saturating response adds up to
+        the same whole-bag effect.
+        """
+        if not state.get("timed_fluids"):
+            apply_natural_disease(state, elapsed)
+            state["sim_time"] += elapsed
+            return
+        for _ in range(int(elapsed)):
+            now = state["sim_time"] + 1
+            for item in state["timed_fluids"]:
+                target = item["volume_ml"] * min(1, max(0, (now - item["start"]) / item["duration"]))
+                change = target - item["delivered_ml"]
+                if change <= 0:
+                    continue
+                state["_fluid_delivery"] = {"before_ml": item["delivered_ml"]}
+                try:
+                    fluid_transition(state, change, item["fluid_type"], item["rate"])
+                finally:
+                    state.pop("_fluid_delivery", None)
+                item["delivered_ml"] = target
+            state["timed_fluids"] = [item for item in state["timed_fluids"]
+                                     if item["delivered_ml"] < item["volume_ml"]]
+            apply_natural_disease(state, 1)
+            state["sim_time"] = now
+
     state = st.session_state.state
+    if state.get("engine_family"):
+        from family_engine import execute_family_bundle
+        from pending_family_orders import hold_incomplete_bundle
+        result = execute_family_bundle(state, parsed)
+        if not result.get("executed") and result.get("clarification"):
+            pending = hold_incomplete_bundle(parsed, state)
+            if pending:
+                st.session_state.pending_action = pending
+        return result
 
     # Keep the learner input available after collapse, but do not run ordinary
     # intervention/reassessment physiology as though spontaneous circulation persists.
@@ -8343,6 +7431,9 @@ def execute_bundle(parsed):
             "reassess_delay": None,
             "elapsed_min": 0,
         }
+
+    if parsed.get("clarification"):
+        return {"clarification": parsed["clarification"], "executed": False}
 
     summaries = []
     reassess_delay = None
@@ -8523,8 +7614,19 @@ def execute_bundle(parsed):
     reassess_delay = None
 
     for a in parsed["actions"]:
+        if a["type"] == "fluid_stop":
+            remaining = sum(item["volume_ml"] - item["delivered_ml"] for item in state.get("timed_fluids", []))
+            state["timed_fluids"] = []
+            summaries.append({"label": (f"stopping crystalloid ({remaining:.0f} mL not given)" if remaining > 0
+                                        else "withholding further fluid (none was running)"),
+                              "duration_min": 0})
+            continue
+
         if a["type"] == "fluid":
-            res = fluid_transition(state, a["volume_ml"], a["fluid_type"], a["rate"])
+            if a.get("administration_duration_min"):
+                res = _start_timed_fluid(state, a)
+            else:
+                res = fluid_transition(state, a["volume_ml"], a["fluid_type"], a["rate"])
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -8536,6 +7638,7 @@ def execute_bundle(parsed):
 
         elif a["type"] == "beta_blocker":
             res = beta_blocker_transition(state, a["agent"], a["dose_mg"], a["route"])
+            _record_administration_time(res, a)
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -8547,6 +7650,7 @@ def execute_bundle(parsed):
 
         elif a["type"] == "diltiazem":
             res = diltiazem_transition(state, a["dose_mg"], a["route"])
+            _record_administration_time(res, a)
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -8555,6 +7659,7 @@ def execute_bundle(parsed):
 
         elif a["type"] == "amiodarone":
             res = amiodarone_transition(state, a["dose_mg"], a["route"])
+            _record_administration_time(res, a)
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -8563,6 +7668,7 @@ def execute_bundle(parsed):
 
         elif a["type"] == "furosemide":
             res = furosemide_transition(state, a["dose_mg"], a["route"])
+            _record_administration_time(res, a)
             max_action_duration = max(max_action_duration, res["duration_min"])
             summaries.append(res)
             st.session_state.last_executed_action = {
@@ -8749,6 +7855,7 @@ def execute_bundle(parsed):
                 state, a.get("agent", "broad-spectrum antibiotics"),
                 dose_g=a.get("dose_g"), route=a.get("route")
             )
+            _record_administration_time(res, a)
             summaries.append(res); max_action_duration = max(max_action_duration, res["duration_min"])
             st.session_state.last_executed_action = {
                 "type": "antibiotics", "agent": a.get("agent"),
@@ -8784,8 +7891,7 @@ def execute_bundle(parsed):
         elapsed = max_action_duration
 
     if elapsed > 0:
-        apply_natural_disease(state, elapsed)
-        state["sim_time"] += elapsed
+        _advance_with_timed_fluids(state, elapsed)
     # When FiO2 alone is reduced, ongoing recruitment may still improve the
     # underlying lung state, but the learner-facing response must not imply that
     # lowering FiO2 directly raised saturation. Stability is allowed; an increase
@@ -8828,31 +7934,14 @@ def _vitals_cells(snapshot):
     return (
         ("SIM TIME", sim_time_label(int(snapshot.get("sim_time_min", 0) or 0))),
         ("BP · MAP", bp),
-        ("HR · RHYTHM", f'{snapshot.get("hr", "—")} · {snapshot.get("rhythm") or "—"}'),
+        # Rate only: the resident reads the rhythm off the monitor trace and the
+        # 12-lead. The snapshot still records it for the Management Trace.
+        ("HR", f'{snapshot.get("hr", "—")}/min' if snapshot.get("hr") is not None else "—"),
         ("SpO₂ · SUPPORT", spo2),
         ("RR · WORK OF BREATHING", rr_value),
         ("CRT · EXTREMITIES", perfusion),
         ("MENTAL STATUS", snapshot.get("mental_status") or "—"),
     )
-
-
-def _ecg_interpretation(observable):
-    """Return the learner-facing interpretation paired with the synthetic strip."""
-    rhythm = str(observable.get("rhythm") or "Unknown rhythm")
-    hr = int(round(float(observable.get("hr") or 0)))
-    if not observable.get("pulse_present", True):
-        if rhythm.upper() == "PEA":
-            return f"Organized electrical activity at approximately {hr}/min without a palpable pulse (PEA)."
-        return f"{rhythm} at approximately {hr}/min without a palpable pulse."
-    if rhythm == "Sinus rhythm":
-        return f"Sinus rhythm at approximately {hr}/min; narrow QRS."
-    if rhythm == "AF":
-        rate_label = "rapid ventricular response" if hr >= 110 else "controlled ventricular response"
-        return (
-            f"Atrial fibrillation with {rate_label} at approximately {hr}/min; "
-            "irregularly irregular rhythm, no consistent P waves, narrow QRS, and no pre-excitation."
-        )
-    return f"{rhythm} at approximately {hr}/min."
 
 
 def _ecg_strip_svg(observable, duration_seconds=5.0):
@@ -8941,8 +8030,11 @@ def _ecg_strip_svg(observable, duration_seconds=5.0):
     id_suffix = f"{rhythm_key}-{int(round(hr))}"
     small_grid_id = f"mrs-ecg-small-{id_suffix}"
     grid_id = f"mrs-ecg-grid-{id_suffix}"
-    interpretation = _ecg_interpretation(observable)
-    accessible_label = escape(f"Synthetic lead II ECG. {interpretation}", quote=True)
+    # Describe the trace, never interpret it: a screen-reader user must read the
+    # rhythm from the same evidence as everyone else.
+    rate_label = f"approximately {int(round(hr))} complexes per minute"
+    pulse_label = "" if observable.get("pulse_present", True) else " No palpable pulse is recorded."
+    accessible_label = escape(f"Synthetic lead II rhythm strip at {rate_label}.{pulse_label}", quote=True)
 
     return f"""
     <div class="mrs-ecg-strip" data-rhythm="{escape(rhythm_key)}" data-rate="{int(round(hr))}">
@@ -9104,6 +8196,9 @@ def oxygen_context():
 
 
 def format_clinical_update():
+    if st.session_state.state.get("engine_family"):
+        from family_engine import clinical_update
+        return clinical_update(st.session_state.state)
     o = st.session_state.state["observable"]
     h = st.session_state.state["hidden"]
 
@@ -9116,7 +8211,7 @@ def format_clinical_update():
         )
 
     text = (
-        f'BP is {o["sbp"]}/{o["dbp"]} mmHg, HR is {o["hr"]}/min in {o["rhythm"]}, '
+        f'BP is {o["sbp"]}/{o["dbp"]} mmHg, HR is {o["hr"]}/min, '
         f'capillary refill is approximately {o["crt"]} seconds, and the extremities are {o["extremities"].lower()}.'
     )
 
@@ -9154,6 +8249,8 @@ def format_clinical_update():
 
 def render_event(event):
     labels = {
+        "patient_history": "PATIENT HISTORY",
+        "examination": "EXAMINATION",
         "presentation": "INITIAL PRESENTATION",
         "you": "YOU",
         "reasoning_completion": "REASONING COMPLETION",
@@ -9172,17 +8269,26 @@ def render_event(event):
                 st.markdown(_vitals_grid_html(snapshot, variant="response"), unsafe_allow_html=True)
         return
     st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
-    st.write(event["text"])
+    # A structured report such as POCUS uses one line per section; markdown would
+    # otherwise run the lines together.
+    st.write(str(event["text"]).replace("\n", "  \n"))
 
-st.title("Management Reasoning Simulator")
-st.caption("MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry")
+st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
+if faculty_access():
+    st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
 
 if not st.session_state.started:
-    st.subheader("Select encounter")
+    if ACCOUNT_CONTEXT:
+        render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
+        st.stop()
+    st.subheader("Choose a clinical problem")
+    from cognitive_catalog import BIAS_CHALLENGES
+    problem_ids = list(BIAS_CHALLENGES) + [key for key in CHALLENGES if key not in BIAS_CHALLENGES]
+    previous_problem = st.session_state.get("selected_case")
     selected = st.selectbox(
-        "Clinical surface",
-        list(CASE_CONFIGS.keys()),
-        index=list(CASE_CONFIGS.keys()).index(st.session_state.get("selected_case", list(CASE_CONFIGS.keys())[0])),
+        "Clinical problem", problem_ids,
+        index=problem_ids.index(previous_problem) if previous_problem in problem_ids else 0,
+        format_func=lambda key: key + " · " + CHALLENGES[key]["title"],
         label_visibility="collapsed",
     )
     st.session_state.selected_case = selected
@@ -9191,13 +8297,14 @@ if not st.session_state.started:
         "Ask for information, order tests, perform interventions, and reassess as the case evolves."
     )
     if st.button("Begin Encounter", type="primary"):
-        cfg = CASE_CONFIGS[selected]
+        cfg = generate_problem_config(selected)
         st.session_state.state = cfg["state_factory"]()
         st.session_state.events = []
         st.session_state.history = []
         st.session_state.management_trace = []
         st.session_state.encounter_ended = False
         st.session_state.encounter_closed_trace = None
+        st.session_state.encounter_closed_events = None
         st.session_state.encounter_closed_state = None
         st.session_state.encounter_closed_time_min = None
         st.session_state.review_prompts = []
@@ -9224,726 +8331,899 @@ if not st.session_state.started:
         st.session_state.last_executed_action = None
         st.session_state.started = True
         add_event("presentation", cfg["presentation"], 0)
-        st.rerun()
+        rerun_app()
     st.stop()
 
-current_status()
-
-carry_forward_plan = st.session_state.get("carry_forward_plan", {}) or {}
-attempt_number = max(1, int(st.session_state.get("attempt_number", 1)))
-if attempt_number > 1 and any(
-    str(carry_forward_plan.get(field) or "").strip() for field, _ in ADAPTATION_PLAN_FIELDS
-):
-    st.markdown(f"### Attempt {attempt_number} · Carry-Forward Learning Goal")
-    st.caption(
-        "This prospective plan came from the previous attempt. Use it as an intention for action and "
-        "reassessment; the new Management Trace records only what you actually do now."
+if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
+    st.subheader("Completed encounter review")
+    st.caption("This saved review is read-only. Start a new encounter to apply your Adaptation Plan.")
+    render_learning_focus(ACCOUNT_CONTEXT)
+    frozen_trace = st.session_state.get("encounter_closed_trace") or []
+    frozen_state = st.session_state.get("encounter_closed_state") or {}
+    _render_analyzed_management_trace()
+    with st.expander("Original decision-by-decision record", expanded=False):
+        render_management_trace(frozen_trace)
+    prompts = st.session_state.get("review_prompts") or []
+    responses = st.session_state.get("precomparison_decision_review") or st.session_state.get("decision_review") or {}
+    models = _expert_models_for_prompts(frozen_state.get("case_id"), prompts, frozen_trace)
+    for prompt in prompts:
+        with st.expander(_review_heading(prompt)):
+            st.write(prompt.get("prompt", ""))
+            for field, label in REVIEW_RESPONSE_FIELDS:
+                st.markdown("**" + label + "**")
+                st.write((responses.get(prompt["review_id"]) or {}).get(field, ""))
+            model = models.get(prompt["review_id"]) or {}
+            if model:
+                st.markdown("**Expert comparison · faculty-validation draft**")
+                for field in ("framing", "priority", "action", "tradeoff", "reassessment"):
+                    st.write(str(model.get(field) or ""))
+                for field, label in EXPERT_COMPARISON_FIELDS:
+                    st.markdown("**" + label + "**")
+                    st.write(((st.session_state.get("expert_comparison_responses") or {}).get(prompt["review_id"]) or {}).get(field, ""))
+    plan = st.session_state.get("adaptation_plan") or {}
+    st.subheader("Your Adaptation Plan")
+    for field, label in ADAPTATION_PLAN_FIELDS:
+        st.write(label + ": " + str(plan.get(field) or ""))
+    payload = _render_export_controls(
+        frozen_trace, frozen_state, prompts, responses, plan,
+        st.session_state.get("expert_comparison_responses") or {}, True, "saved",
     )
-    with st.container(border=True):
-        cue_col, priority_col, target_col = st.columns(3)
-        with cue_col:
-            st.markdown("**Clinical cue to watch**")
-            st.write(carry_forward_plan.get("cue") or "—")
-            st.markdown("**Threshold for changing course**")
-            st.write(carry_forward_plan.get("threshold") or "—")
-        with priority_col:
-            st.markdown("**Next management priority**")
-            st.write(carry_forward_plan.get("next_priority") or "—")
-            st.markdown("**Alternative action**")
-            st.write(carry_forward_plan.get("alternative_action") or "—")
-        with target_col:
-            st.markdown("**Expected effect**")
-            st.write(carry_forward_plan.get("expected_effect") or "—")
-            st.markdown("**Reassessment target and timing**")
-            st.write(carry_forward_plan.get("reassessment_plan") or "—")
-    prior_attempt_record = st.session_state.get("prior_attempt_record") or {}
-    if prior_attempt_record:
-        prior_cycle = prior_attempt_record.get("learning_cycle", {}) or {}
-        prior_number = max(1, int(prior_cycle.get("attempt_number", attempt_number - 1) or 1))
-        prior_case = str((prior_attempt_record.get("encounter", {}) or {}).get("case_id") or "encounter").lower()
-        prior_info, prior_pdf, prior_md, prior_json = st.columns([1.9, 1, 1, 1])
-        with prior_info:
-            st.markdown(f"**Previous attempt record · Attempt {prior_number}**")
-            st.caption("The completed prior trajectory remains separate and available for download.")
-        with prior_pdf:
-            st.download_button(
-                "Previous PDF",
-                data=_review_pdf(prior_attempt_record),
-                file_name=f"{prior_case}_attempt_{prior_number}_review_v0819.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-                key=f"previous_pdf_{prior_number}",
-            )
-        with prior_md:
-            st.download_button(
-                "Previous Markdown",
-                data=_review_markdown(prior_attempt_record),
-                file_name=f"{prior_case}_attempt_{prior_number}_review_v0819.md",
-                mime="text/markdown",
-                use_container_width=True,
-                key=f"previous_markdown_{prior_number}",
-            )
-        with prior_json:
-            st.download_button(
-                "Previous JSON",
-                data=_review_json(prior_attempt_record),
-                file_name=f"{prior_case}_attempt_{prior_number}_review_v0819.json",
-                mime="application/json",
-                use_container_width=True,
-                key=f"previous_json_{prior_number}",
-            )
-st.divider()
+    if st.button("Next Encounter with This Adaptation Plan", type="primary"):
+        begin_repeat_encounter(plan, payload)
+        rerun_app()
+    if st.button("Return to dashboard"):
+        return_to_dashboard(ACCOUNT_CONTEXT, reset_session)
+    st.stop()
 
-left, right = st.columns([3, 1])
-
-with left:
-    st.subheader("Clinical Encounter")
-    for event in st.session_state.events:
-        render_event(event)
-        st.write("")
-
-with right:
-    st.subheader("Patient Data")
-    o = st.session_state.state["observable"]
-    h = st.session_state.state["hidden"]
-    with st.expander("Vitals", expanded=True):
-        if not o.get("pulse_present", True):
-            st.write("BP: no measurable blood pressure")
-            st.write(f'Monitor rate: {o["hr"]}/min · {o["rhythm"]}')
-            st.write("SpO₂: no reliable reading")
-            st.write("CRT: not measurable")
-        else:
-            st.write(f'BP: {o["sbp"]}/{o["dbp"]} mmHg')
-            st.write(f'HR: {o["hr"]}/min · {o["rhythm"]}')
-            st.write(f'SpO₂: {o["spo2"]}%')
-            st.write(f'CRT: {o["crt"]} s')
-    with st.expander("ECG", expanded=True):
-        st.markdown(_ecg_strip_svg(o), unsafe_allow_html=True)
-        st.caption("Synthetic educational rhythm strip · Lead II")
-        st.write(_ecg_interpretation(o))
-
-    diagnostics = st.session_state.state.get("diagnostics", {}) or {}
-    if any(diagnostics.get(k) for k in ["pocus", "lactate", "vbg", "abg", "basic_labs"]):
-        with st.expander("Diagnostics", expanded=True):
-            p = diagnostics.get("pocus")
-            if p:
-                st.markdown(_patient_diagnostic_heading("POCUS", p))
-                st.write(p.get("lv"))
-                st.write(p.get("rv"))
-                st.write(p.get("pericardium"))
-                st.write(p.get("ivc"))
-                st.write(p.get("lungs"))
-            lac = diagnostics.get("lactate")
-            if lac:
-                st.markdown(_patient_diagnostic_heading("Lactate", lac))
-                st.write(f'{lac.get("value_mmol_l"):.1f} mmol/L')
-            vbg = diagnostics.get("vbg")
-            if vbg:
-                st.markdown(_patient_diagnostic_heading("VBG", vbg))
-                st.write(
-                    f'pH {vbg.get("ph"):.2f} · pCO₂ {vbg.get("pco2_mm_hg")} mmHg · '
-                    f'HCO₃ {vbg.get("bicarbonate_mmol_l")} mmol/L · '
-                    f'Base excess {vbg.get("base_excess_mmol_l"):+g} mmol/L · '
-                    f'Lactate {vbg.get("lactate_mmol_l"):.1f} mmol/L'
-                )
-            abg = diagnostics.get("abg")
-            if abg:
-                st.markdown(_patient_diagnostic_heading("ABG", abg))
-                st.write(
-                    f'pH {abg.get("ph"):.2f} · PaCO₂ {abg.get("paco2_mm_hg")} mmHg · '
-                    f'PaO₂ {abg.get("pao2_mm_hg")} mmHg · HCO₃ '
-                    f'{abg.get("bicarbonate_mmol_l")} mmol/L · Base excess '
-                    f'{abg.get("base_excess_mmol_l"):+g} mmol/L · FiO₂ '
-                    f'{abg.get("fio2_percent"):g}% · P/F ratio {abg.get("pf_ratio")}'
-                )
-            labs = diagnostics.get("basic_labs")
-            if labs:
-                st.markdown(_patient_diagnostic_heading("Basic laboratory tests", labs))
-                st.write(
-                    f'WBC {labs.get("wbc_k_ul")} K/µL · Hgb {labs.get("hemoglobin_g_dl")} g/dL · '
-                    f'Plt {labs.get("platelets_k_ul")} K/µL'
-                )
-                st.write(
-                    f'Na {labs.get("sodium_mmol_l")} · K {labs.get("potassium_mmol_l")} · '
-                    f'HCO₃ {labs.get("bicarbonate_mmol_l")} mmol/L'
-                )
-                st.write(
-                    f'BUN {labs.get("bun_mg_dl")} mg/dL · Cr {labs.get("creatinine_mg_dl")} mg/dL · '
-                    f'Glucose {labs.get("glucose_mg_dl")} mg/dL'
-                )
-
-    with st.expander("Respiratory"):
-        if not o.get("pulse_present", True):
-            st.write("SpO₂: no reliable reading")
-            st.write("Respirations: absent")
-        else:
-            st.write(f'SpO₂: {o["spo2"]}%')
-            st.write(f'Respiratory rate: {o.get("respiratory_rate", 22)}/min')
-            st.write(f'Work of breathing: {o.get("work_of_breathing", "Mildly increased")}')
-        stage = congestion_stage(pulmonary_clinical_signal(st.session_state.state))
-        if stage == "none":
-            st.write("Lungs: no new congestion findings")
-        elif stage == "early":
-            st.write("Lungs: scattered new B-lines")
-        elif stage == "moderate":
-            st.write("Lungs: bilateral B-lines with bibasilar crackles")
-        else:
-            st.write("Lungs: diffuse bilateral B-lines and crackles")
-
-    with st.expander("Treatments"):
-        tr = st.session_state.state["treatments"]
-        st.write(f'Cumulative crystalloid: {tr["cumulative_crystalloid_ml"]} mL')
-        if tr["metoprolol_total_mg"] > 0:
-            st.write(f'Metoprolol: {tr["metoprolol_total_mg"]:g} mg total')
-        if tr["propranolol_total_mg"] > 0:
-            st.write(f'Propranolol: {tr["propranolol_total_mg"]:g} mg total')
-        if tr["diltiazem_total_mg"] > 0:
-            st.write(f'Diltiazem: {tr["diltiazem_total_mg"]:g} mg total')
-        if tr["amiodarone_total_mg"] > 0:
-            st.write(f'Amiodarone: {tr["amiodarone_total_mg"]:g} mg total')
-        if tr.get("procedural_sedations", 0) > 0:
-            sedatives = []
-            if tr.get("etomidate_total_mg", 0) > 0:
-                sedatives.append(f'Etomidate {tr["etomidate_total_mg"]:g} mg total')
-            if tr.get("midazolam_total_mg", 0) > 0:
-                sedatives.append(f'Midazolam {tr["midazolam_total_mg"]:g} mg total')
-            st.write(
-                "Procedural sedation administered: "
-                + " + ".join(sedatives)
-                + _treatment_timing_suffix(st.session_state.state, "procedural_sedation")
-            )
-        if tr.get("norepinephrine"):
-            st.write(
-                f'Norepinephrine: {tr["norepinephrine_rate"]:g} {tr["norepinephrine_units"]}'
-                + _treatment_timing_suffix(st.session_state.state, "norepinephrine")
-            )
-        if tr.get("dobutamine"):
-            st.write(
-                f'Dobutamine: {tr["dobutamine_rate"]:g} mcg/kg/min'
-                + _treatment_timing_suffix(st.session_state.state, "dobutamine")
-            )
-        if tr.get("furosemide_total_mg", 0) > 0:
-            st.write(f'Furosemide administered: {tr["furosemide_total_mg"]:g} mg total')
-        if tr.get("oxygen"):
-            st.write(
-                f'Oxygen: {tr["oxygen_device"]} at {tr["oxygen_flow_lpm"]:g} L/min'
-                + _treatment_timing_suffix(st.session_state.state, "oxygen")
-            )
-        if tr.get("nitroglycerin"):
-            st.write(
-                f'Nitroglycerin: {tr["nitroglycerin_rate_mcg_min"]:g} mcg/min'
-                + _treatment_timing_suffix(st.session_state.state, "nitroglycerin")
-            )
-        if tr.get("niv"):
-            if tr.get("niv_mode") == "BiPAP" and tr.get("niv_ipap_cmh2o") is not None and tr.get("niv_epap_cmh2o") is not None:
-                fio = f' · FiO₂ {tr.get("niv_fio2_percent"):g}%' if tr.get("niv_fio2_percent") is not None else ""
-                st.write(
-                    f'BiPAP: {tr["niv_ipap_cmh2o"]:g}/{tr["niv_epap_cmh2o"]:g} cm H2O{fio}'
-                    + _treatment_timing_suffix(st.session_state.state, "niv")
-                )
-            else:
-                fio = f' · FiO₂ {tr.get("niv_fio2_percent"):g}%' if tr.get("niv_fio2_percent") is not None else ""
-                st.write(
-                    f'{tr["niv_mode"]}: {tr["niv_pressure_cmh2o"]:g} cm H2O{fio}'
-                    + _treatment_timing_suffix(st.session_state.state, "niv")
-                )
-        if tr.get("airway_prepared") and not tr.get("invasive_ventilation"):
-            st.write("Airway equipment and team prepared for intubation")
-        if tr.get("invasive_ventilation"):
-            st.write(
-                f'Invasive ventilation: {tr.get("ventilator_mode") or "VC/AC"} · '
-                f'FiO₂ {tr.get("ventilator_fio2_percent", 100):g}% · '
-                f'PEEP {tr.get("ventilator_peep_cmh2o", 8):g} cm H2O'
-                + _treatment_timing_suffix(st.session_state.state, "invasive_ventilation")
-            )
-        if tr.get("disposition"):
-            st.write(f'Disposition: {tr.get("disposition")}')
-    with st.expander("Developer state", expanded=False):
-        st.caption("Hidden from learners in production.")
-        st.json({
-            "effective_volume": round(h["effective_volume"], 3),
-            "preload_state": round(h.get("preload_state", h["effective_volume"]), 3),
-            "preload_responsiveness": round(h.get("preload_responsiveness", 0.0), 3),
-            "effective_intravascular_fluid": round(h.get("effective_intravascular_fluid", 0.0), 3),
-            "extravascular_fluid_burden": round(h.get("extravascular_fluid_burden", 0.0), 3),
-            "retained_preload_contribution": round(
-                h.get("effective_intravascular_fluid", 0.0)
-                * (0.18 + 0.20 * h.get("preload_responsiveness", 0.0)),
-                3
-            ),
-            "overfill_burden": round(h.get("overfill_burden", 0.0), 3),
-            "pulmonary_congestion": round(h.get("pulmonary_congestion", 0.0), 3),
-            "pulmonary_clinical_signal": round(pulmonary_clinical_signal(st.session_state.state), 3),
-            "respiratory_failure_severity": round(h.get("respiratory_failure_severity", 0.0), 3),
-            "total_beta_blockade": round(total_beta_blockade(st.session_state.state), 3),
-            "beta_av_nodal_effect": round(beta_av_nodal_effect(st.session_state.state), 3),
-            "beta_myocardial_depression": round(beta_myocardial_depression(st.session_state.state), 3),
-            "af_substrate": round(af_substrate(st.session_state.state), 3),
-            "fluid_clock_integration": "single-pass",
-            "tissue_perfusion": round(h["tissue_perfusion"], 3),
-            "sympathetic_drive": round(h["sympathetic_drive"], 3),
-            "af_recurrence_pressure": round(h.get("af_recurrence_pressure", 0.0), 3),
-            "sinus_stability": round(h.get("sinus_stability", 0.0), 3),
-            "nitroglycerin_effect": round(h.get("nitroglycerin_effect", 0.0), 3),
-            "metoprolol_effect": round(h.get("metoprolol_effect", 0.0), 3),
-            "propranolol_effect": round(h.get("propranolol_effect", 0.0), 3),
-            "metoprolol_depot": round(h.get("metoprolol_depot", 0.0), 3),
-            "propranolol_depot": round(h.get("propranolol_depot", 0.0), 3),
-            "diltiazem_effect": round(h.get("diltiazem_effect", 0.0), 3),
-            "diltiazem_depot": round(h.get("diltiazem_depot", 0.0), 3),
-            "amiodarone_effect": round(h.get("amiodarone_effect", 0.0), 3),
-            "amiodarone_depot": round(h.get("amiodarone_depot", 0.0), 3),
-            "procedural_sedation_effect": round(h.get("procedural_sedation_effect", 0.0), 3),
-            "procedural_sedation_minutes": round(h.get("procedural_sedation_minutes", 0.0), 1),
-            "pulmonary_congestion": round(h["pulmonary_congestion"], 3),
-            "effective_map": round(h.get("effective_map", 0.0), 2),
-            "pressure_support_state": round(h.get("pressure_support_state", 0.0), 3),
-            "vascular_support": round(h.get("vascular_support", 0.0), 3),
-            "forward_flow_state": round(h.get("forward_flow_state", h.get("cardiac_output_index", 0.0)), 3),
-            "dobutamine_effect": round(h.get("dobutamine_effect", 0.0), 3),
-            "dobutamine_minutes": round(h.get("dobutamine_minutes", 0.0), 1),
-            "stroke_volume_efficiency": round(h.get("stroke_volume_efficiency", 0.0), 3),
-            "afterload_factor": round(h.get("afterload_factor", 0.0), 3),
-            "cardiac_output_index": round(h.get("cardiac_output_index", 0.0), 3),
-            "oxygen_delivery": round(h.get("oxygen_delivery", 0.0), 3),
-            "peripheral_flow": round(h.get("peripheral_flow", 0.0), 3),
-            "contractile_reserve": round(h.get("contractile_reserve", 1.0), 3),
-            "low_flow_burden": round(h.get("low_flow_burden", 0.0), 3),
-            "sympathetic_drive": round(h.get("sympathetic_drive", 0.0), 3),
-            "cardiac_arrest": bool(h.get("cardiac_arrest", False)),
-            "terminal_collapse": bool(h.get("terminal_collapse", False)),
-            "fluid_responsiveness": round(h["fluid_responsiveness"], 3),
-            "fluid_tolerance": round(h["fluid_tolerance"], 3),
-            "fluid_load": round(h["fluid_load"], 3),
-            "vasoplegia_severity": round(h.get("vasoplegia_severity", 0.0), 3),
-            "respiratory_failure_severity": round(h["respiratory_failure_severity"], 3),
-            "global_perfusion_failure": round(h["global_perfusion_failure"], 3),
-            "peri_arrest_risk": round(h["peri_arrest_risk"], 3),
-            "cardiac_arrest": h["cardiac_arrest"],
-            "pending_action": st.session_state.get("pending_action"),
-            "pending_reasoning": st.session_state.get("pending_reasoning"),
-            "last_executed_action": st.session_state.get("last_executed_action"),
-        })
-
-st.divider()
-submitted = False
-submission_text = ""
-submission_parsed = None
 if not st.session_state.encounter_ended:
-    st.markdown("### What would you like to do next?")
-    st.caption(
-        "Explain in your own words what you think is happening, what you are addressing first, "
-        "what change you expect, and what you will reassess and when. Equivalent wording is accepted."
-    )
-    pending_reasoning = st.session_state.get("pending_reasoning")
-    if pending_reasoning:
-        pending_missing = pending_reasoning.get("missing", []) or []
-        held_parsed = pending_reasoning.get("parsed", {}) or {}
-        held_reasoning = held_parsed.get("reasoning", {}) or {}
-        held_reassessment = next(
-            (
-                action for action in held_parsed.get("actions", [])
-                if action.get("type") == "reassessment"
-            ),
-            {},
-        )
-        gate_id = int(pending_reasoning.get("gate_id") or 1)
-        st.warning(
-            "An understood order is being held. The patient state is unchanged; "
-            "complete the reasoning in your own words or use the guided fields."
-        )
-        st.markdown(f"**Held order:** {_reasoning_gate_action_summary(held_parsed)}")
-        held_unmodeled = [
-            str(item)
-            for item in (held_parsed.get("recognized_future_actions") or [])
-            if item
-        ]
-        if held_unmodeled:
-            st.info(
-                "Also recognized but not executable in this build: "
-                + ", ".join(held_unmodeled)
-                + ". These medications have not been administered."
-            )
-        for observation in held_parsed.get("reasoning_observations", []) or []:
-            st.info(observation)
-        st.markdown("  \n".join(
-            f"{'○' if field in pending_missing else '✓'} {label}"
-            for field, label in REASONING_GATE_FIELD_LABELS.items()
-        ))
+    render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, sim_time_label(st.session_state.state["sim_time"]))
+with st.container(key="encounter-console"):
+    if render_bedside_tools(st.session_state.state, st.session_state.events, render_event) and ACCOUNT_CONTEXT:
+        save_session(ACCOUNT_CONTEXT)
+    encounter_mode = st.radio("Encounter", ["Talk", "Examine", "Tests", "Treat"], index=3, horizontal=True, label_visibility="collapsed")
+    st.caption("Act · anticipate the response · reassess")
+    orders_panel = st.container()
+    from clinical_scene import history_facts, answer_history, associated_symptoms, history_topics, history_topic_facts, setting as scene_setting
+    if encounter_mode == "Talk" and not st.session_state.encounter_ended:
+        clinical_case = st.session_state.state.get("encounter_spec", {}).get("clinical_case", {})
+        history_source = clinical_case.get("history_source")
+        has_collateral = bool(history_source and str(history_source).strip().lower() not in {"patient", "the patient"})
+        cannot_speak = str(st.session_state.state['observable'].get('mental_status', '')).lower() in {'unresponsive', 'obtunded', 'sedated'}
+        if cannot_speak and not has_collateral:
+            st.info('The patient cannot provide a history at present. Review the history already obtained in the clinical chart.')
+        else:
+            if history_source:
+                st.caption("History source: " + str(history_source))
+            if cannot_speak:
+                st.info("The patient cannot answer at present. Questions are directed to the available collateral source.")
+            presentation = next((e["text"] for e in st.session_state.events if e["kind"] == "presentation"), "")
+            facts = history_facts(presentation, st.session_state.state.get("case_id"), state=st.session_state.state)
+            with st.form("patient_conversation"):
+                question = st.text_input("Ask the available history source" if cannot_speak else "Ask the patient", placeholder="What brought you in today?")
+                ask_patient = st.form_submit_button("Ask")
+            if ask_patient and question.strip():
+                answer = answer_history(question, facts, scene_setting("OPENAI_API_KEY"), state=st.session_state.state)
+                add_event("you", question)
+                add_event("patient_history", answer)
+                rerun_app()
+            with st.expander("History topics"):
+                case_topics = history_topics(st.session_state.state)
+                topic = st.selectbox("Explore", case_topics or ["Presenting symptoms and onset", "Associated symptoms", "Previous health"])
+                if st.button("Ask about this topic"):
+                    if case_topics:
+                        response = " ".join(history_topic_facts(st.session_state.state, topic))
+                    elif topic == "Associated symptoms":
+                        response = associated_symptoms(facts)
+                    elif topic == "Previous health":
+                        response = "Hypertension." if st.session_state.state.get("case_id") == "PS002" else "Hypertension and type 2 diabetes."
+                    else:
+                        response = " ".join(f for f in facts if not f.startswith(("I ", "It has burned")))
+                    add_event("you", "Ask about " + topic.lower())
+                    add_event("patient_history", response)
+                    rerun_app()
+    if encounter_mode == "Examine":
+        family_findings = {}
+        if st.session_state.state.get("engine_family"):
+            from family_engine import current_findings
+            family_findings = current_findings(st.session_state.state)
+        area = st.selectbox("Examine", list(dict.fromkeys(["General appearance", "Breathing", "Peripheral perfusion"] + list(family_findings))))
+        if st.button("Examine patient"):
+            observed = st.session_state.state["observable"]
+            if area == "General appearance":
+                from patient_appearance import appearance_summary
+                finding = appearance_summary(st.session_state.state)
+            elif area in family_findings:
+                finding = family_findings[area]
+            elif area == "Breathing":
+                finding = "Respiratory rate: " + str(observed.get("respiratory_rate", "—")) + "/min. Work of breathing: " + str(observed.get("work_of_breathing", "Not documented"))
+            elif not observed.get("pulse_present", True):
+                finding = "Pulse absent. Capillary refill is not measurable."
+            else:
+                finding = "Capillary refill: " + str(observed.get("crt", "—")) + " s. Extremities: " + str(observed.get("extremities", "Not documented"))
+            add_event("you", "Examine: " + area)
+            add_event("examination", finding)
+            rerun_app()
 
-        st.markdown("#### Complete the sentence starters")
-        with st.form(f"reasoning_completion_form_{gate_id}"):
-            left, right = st.columns(2)
-            with left:
-                guided_working_model = st.text_area(
-                    REASONING_GATE_FIELD_STEMS["working_model"],
-                    value=str(
-                        held_reasoning.get("problem_representation")
-                        or held_reasoning.get("rationale")
-                        or ""
+    carry_forward_plan = st.session_state.get("carry_forward_plan", {}) or {}
+    attempt_number = max(1, int(st.session_state.get("attempt_number", 1)))
+    if attempt_number > 1 and any(
+        str(carry_forward_plan.get(field) or "").strip() for field, _ in ADAPTATION_PLAN_FIELDS
+    ):
+        st.markdown(f"### Attempt {attempt_number} · Carry-Forward Learning Goal")
+        st.caption(
+            "This prospective plan came from the previous attempt. Use it as an intention for action and "
+            "reassessment; the new Management Trace records only what you actually do now."
+        )
+        with st.container(border=True):
+            cue_col, priority_col, target_col = st.columns(3)
+            with cue_col:
+                st.markdown("**Clinical cue to watch**")
+                st.write(carry_forward_plan.get("cue") or "—")
+                st.markdown("**Threshold for changing course**")
+                st.write(carry_forward_plan.get("threshold") or "—")
+            with priority_col:
+                st.markdown("**Next management priority**")
+                st.write(carry_forward_plan.get("next_priority") or "—")
+                st.markdown("**Alternative action**")
+                st.write(carry_forward_plan.get("alternative_action") or "—")
+            with target_col:
+                st.markdown("**Expected effect**")
+                st.write(carry_forward_plan.get("expected_effect") or "—")
+                st.markdown("**Reassessment target and timing**")
+                st.write(carry_forward_plan.get("reassessment_plan") or "—")
+        prior_attempt_record = st.session_state.get("prior_attempt_record") or {}
+        if prior_attempt_record:
+            prior_cycle = prior_attempt_record.get("learning_cycle", {}) or {}
+            prior_number = max(1, int(prior_cycle.get("attempt_number", attempt_number - 1) or 1))
+            prior_case = str((prior_attempt_record.get("encounter", {}) or {}).get("case_id") or "encounter").lower()
+            prior_info, prior_pdf, prior_md, prior_json = st.columns([1.9, 1, 1, 1])
+            with prior_info:
+                st.markdown(f"**Previous attempt record · Attempt {prior_number}**")
+                st.caption("The completed prior trajectory remains separate and available for download.")
+            with prior_pdf:
+                st.download_button(
+                    "Previous PDF",
+                    data=_review_pdf(prior_attempt_record),
+                    file_name=f"{prior_case}_attempt_{prior_number}_review_v0819.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                    key=f"previous_pdf_{prior_number}",
+                )
+            with prior_md:
+                st.download_button(
+                    "Previous Markdown",
+                    data=_review_markdown(prior_attempt_record),
+                    file_name=f"{prior_case}_attempt_{prior_number}_review_v0819.md",
+                    mime="text/markdown",
+                    use_container_width=True,
+                    key=f"previous_markdown_{prior_number}",
+                )
+            with prior_json:
+                st.download_button(
+                    "Previous JSON",
+                    data=_review_json(prior_attempt_record),
+                    file_name=f"{prior_case}_attempt_{prior_number}_review_v0819.json",
+                    mime="application/json",
+                    use_container_width=True,
+                    key=f"previous_json_{prior_number}",
+                )
+    st.divider()
+
+    with st.expander("Clinical chart · examination · results · treatment record", expanded=False):
+        left, right = st.columns([2, 1])
+
+        with left:
+            render_encounter_workspace(st.session_state.events, render_event)
+
+        with right:
+            st.subheader("At the bedside")
+            o = st.session_state.state["observable"]
+            h = st.session_state.state["hidden"]
+            with st.expander("Vitals", expanded=True):
+                # Naming the rhythm here does the resident's interpretation for
+                # them. The bedside waveform and the 12-lead are where it is read.
+                if not o.get("pulse_present", True):
+                    st.write("BP: no measurable blood pressure")
+                    st.write(f'Monitor: organized electrical activity at {o["hr"]}/min, no palpable pulse')
+                    st.write("SpO₂: no reliable reading")
+                    st.write("CRT: not measurable")
+                else:
+                    st.write(f'BP: {o["sbp"]}/{o["dbp"]} mmHg')
+                    st.write(f'HR: {o["hr"]}/min')
+                    st.write(f'SpO₂: {o["spo2"]}%')
+                    st.write(f'CRT: {o["crt"]} s')
+            with st.expander("ECG", expanded=False):
+                st.caption("Acquire and compare 12-lead tracings using ECG above.")
+
+            for pending_study in st.session_state.state.get("pending_investigations", []):
+                from family_reports import TEST_LABELS
+                st.caption(f"{TEST_LABELS.get(pending_study['diagnostic_type'], pending_study['diagnostic_type'])}: pending · expected at {pending_study['available_at_min']} min")
+            diagnostics = st.session_state.state.get("diagnostics", {}) or {}
+            if st.session_state.state.get("engine_family") and diagnostics:
+                from family_reports import TEST_LABELS, format_result
+                with st.expander("Diagnostics", expanded=True):
+                    for test_id, result in diagnostics.items():
+                        if not isinstance(result, dict):
+                            continue
+                        st.markdown(_patient_diagnostic_heading(TEST_LABELS.get(test_id, "Investigation"), result))
+                        st.write(format_result(test_id, result).replace("\n", "  \n"))
+            elif any(diagnostics.get(k) for k in ["pocus", "lactate", "vbg", "abg", "basic_labs"]):
+                with st.expander("Diagnostics", expanded=True):
+                    p = diagnostics.get("pocus")
+                    if p:
+                        st.markdown(_patient_diagnostic_heading("POCUS", p))
+                        st.write(p.get("lv"))
+                        st.write(p.get("rv"))
+                        st.write(p.get("pericardium"))
+                        st.write(p.get("ivc"))
+                        st.write(p.get("lungs"))
+                    lac = diagnostics.get("lactate")
+                    if lac:
+                        st.markdown(_patient_diagnostic_heading("Lactate", lac))
+                        st.write(f'{lac.get("value_mmol_l"):.1f} mmol/L')
+                    vbg = diagnostics.get("vbg")
+                    if vbg:
+                        st.markdown(_patient_diagnostic_heading("VBG", vbg))
+                        st.write(
+                            f'pH {vbg.get("ph"):.2f} · pCO₂ {vbg.get("pco2_mm_hg")} mmHg · '
+                            f'HCO₃ {vbg.get("bicarbonate_mmol_l")} mmol/L · '
+                            f'Base excess {vbg.get("base_excess_mmol_l"):+g} mmol/L · '
+                            f'Lactate {vbg.get("lactate_mmol_l"):.1f} mmol/L'
+                        )
+                    abg = diagnostics.get("abg")
+                    if abg:
+                        st.markdown(_patient_diagnostic_heading("ABG", abg))
+                        st.write(
+                            f'pH {abg.get("ph"):.2f} · PaCO₂ {abg.get("paco2_mm_hg")} mmHg · '
+                            f'PaO₂ {abg.get("pao2_mm_hg")} mmHg · HCO₃ '
+                            f'{abg.get("bicarbonate_mmol_l")} mmol/L · Base excess '
+                            f'{abg.get("base_excess_mmol_l"):+g} mmol/L · FiO₂ '
+                            f'{abg.get("fio2_percent"):g}% · P/F ratio {abg.get("pf_ratio")}'
+                        )
+                    labs = diagnostics.get("basic_labs")
+                    if labs:
+                        st.markdown(_patient_diagnostic_heading("Basic laboratory tests", labs))
+                        st.write(
+                            f'WBC {labs.get("wbc_k_ul")} K/µL · Hgb {labs.get("hemoglobin_g_dl")} g/dL · '
+                            f'Plt {labs.get("platelets_k_ul")} K/µL'
+                        )
+                        st.write(
+                            f'Na {labs.get("sodium_mmol_l")} · K {labs.get("potassium_mmol_l")} · '
+                            f'HCO₃ {labs.get("bicarbonate_mmol_l")} mmol/L'
+                        )
+                        st.write(
+                            f'BUN {labs.get("bun_mg_dl")} mg/dL · Cr {labs.get("creatinine_mg_dl")} mg/dL · '
+                            f'Glucose {labs.get("glucose_mg_dl")} mg/dL'
+                        )
+
+            with st.expander("Respiratory examination", expanded=True):
+                if not o.get("pulse_present", True):
+                    st.write("SpO₂: no reliable reading")
+                    st.write("Respirations: absent")
+                else:
+                    st.write(f'SpO₂: {o["spo2"]}%')
+                    st.write(f'Respiratory rate: {o.get("respiratory_rate", 22)}/min')
+                    st.write(f'Work of breathing: {o.get("work_of_breathing", "Mildly increased")}')
+                stage = "family" if st.session_state.state.get("engine_family") else congestion_stage(pulmonary_clinical_signal(st.session_state.state))
+                if stage == "family":
+                    from family_engine import current_findings
+                    st.write(current_findings(st.session_state.state).get("Respiratory", "No additional examination finding recorded."))
+                if stage == "none":
+                    st.write("Lungs: no new congestion findings")
+                elif stage == "early":
+                    st.write("Lungs: scattered new B-lines")
+                elif stage == "moderate":
+                    st.write("Lungs: bilateral B-lines with bibasilar crackles")
+                elif stage != "family":
+                    st.write("Lungs: diffuse bilateral B-lines and crackles")
+
+            with st.expander("Current treatments", expanded=True):
+                tr = st.session_state.state["treatments"]
+                if st.session_state.state.get("engine_family"):
+                    if tr.get("packed_red_cells_units"):
+                        st.write(f'Packed red cells delivered: {tr["packed_red_cells_units"]:g} unit(s)')
+                    for medication in tr.get("administered_medications", []):
+                        from family_reports import format_administration
+                        st.write(format_administration(medication))
+                    if tr.get("bag_mask"):
+                        st.write("Bag-mask assisted ventilation")
+                st.write(f'Cumulative crystalloid: {float(tr["cumulative_crystalloid_ml"]):.0f} mL')
+                remaining = st.session_state.state.get('family_state', {}).get('pending_fluid_ml', 0)
+                timed_deliveries = (st.session_state.state.get('generated_state', {}).get('native_deliveries', [])
+                                    + st.session_state.state.get('family_state', {}).get('deliveries', []))
+                for delivery in timed_deliveries:
+                    if delivery.get('key', [None])[0] == 'fluid':
+                        st.write(f"Fluid order: {delivery['amount']:g} mL over {delivery['duration']:g} min; delivered {delivery['delivered']:.0f} mL.")
+                # Float residue from paced delivery (1e-13 mL) is not volume still to run.
+                if remaining >= .5:
+                    st.write(f'Crystalloid pending: {remaining:.0f} mL. Delivery continues as simulation time advances.')
+                if st.session_state.state.get('engine_family') == 'generated':
+                    st.caption('Orders and tests do not automatically wait for completion. Specify a reassessment interval to advance time.')
+                if tr["metoprolol_total_mg"] > 0:
+                    st.write(f'Metoprolol: {tr["metoprolol_total_mg"]:g} mg total')
+                if tr["propranolol_total_mg"] > 0:
+                    st.write(f'Propranolol: {tr["propranolol_total_mg"]:g} mg total')
+                if tr["diltiazem_total_mg"] > 0:
+                    st.write(f'Diltiazem: {tr["diltiazem_total_mg"]:g} mg total')
+                if tr["amiodarone_total_mg"] > 0:
+                    st.write(f'Amiodarone: {tr["amiodarone_total_mg"]:g} mg total')
+                if tr.get("procedural_sedations", 0) > 0:
+                    sedatives = []
+                    if tr.get("etomidate_total_mg", 0) > 0:
+                        sedatives.append(f'Etomidate {tr["etomidate_total_mg"]:g} mg total')
+                    if tr.get("midazolam_total_mg", 0) > 0:
+                        sedatives.append(f'Midazolam {tr["midazolam_total_mg"]:g} mg total')
+                    st.write(
+                        "Procedural sedation administered: "
+                        + " + ".join(sedatives)
+                        + _treatment_timing_suffix(st.session_state.state, "procedural_sedation")
+                    )
+                if tr.get("norepinephrine"):
+                    st.write(
+                        f'Norepinephrine: {tr["norepinephrine_rate"]:g} {tr["norepinephrine_units"]}'
+                        + _treatment_timing_suffix(st.session_state.state, "norepinephrine")
+                    )
+                if tr.get("dobutamine"):
+                    st.write(
+                        f'Dobutamine: {tr["dobutamine_rate"]:g} mcg/kg/min'
+                        + _treatment_timing_suffix(st.session_state.state, "dobutamine")
+                    )
+                if tr.get("furosemide_total_mg", 0) > 0:
+                    st.write(f'Furosemide administered: {tr["furosemide_total_mg"]:g} mg total')
+                if tr.get("oxygen"):
+                    st.write(
+                        f'Oxygen: {tr["oxygen_device"]} at {tr["oxygen_flow_lpm"]:g} L/min'
+                        + _treatment_timing_suffix(st.session_state.state, "oxygen")
+                    )
+                if tr.get("nitroglycerin"):
+                    st.write(
+                        f'Nitroglycerin: {tr["nitroglycerin_rate_mcg_min"]:g} mcg/min'
+                        + _treatment_timing_suffix(st.session_state.state, "nitroglycerin")
+                    )
+                if tr.get("niv"):
+                    if tr.get("niv_mode") == "BiPAP" and tr.get("niv_ipap_cmh2o") is not None and tr.get("niv_epap_cmh2o") is not None:
+                        fio = f' · FiO₂ {tr.get("niv_fio2_percent"):g}%' if tr.get("niv_fio2_percent") is not None else ""
+                        st.write(
+                            f'BiPAP: {tr["niv_ipap_cmh2o"]:g}/{tr["niv_epap_cmh2o"]:g} cm H2O{fio}'
+                            + _treatment_timing_suffix(st.session_state.state, "niv")
+                        )
+                    else:
+                        fio = f' · FiO₂ {tr.get("niv_fio2_percent"):g}%' if tr.get("niv_fio2_percent") is not None else ""
+                        st.write(
+                            f'{tr["niv_mode"]}: {tr["niv_pressure_cmh2o"]:g} cm H2O{fio}'
+                            + _treatment_timing_suffix(st.session_state.state, "niv")
+                        )
+                if tr.get("airway_prepared") and not tr.get("invasive_ventilation"):
+                    st.write("Airway equipment and team prepared for intubation")
+                if tr.get("invasive_ventilation"):
+                    st.write(
+                        f'Invasive ventilation: {tr.get("ventilator_mode") or "VC/AC"} · '
+                        f'FiO₂ {tr.get("ventilator_fio2_percent", 100):g}% · '
+                        f'PEEP {tr.get("ventilator_peep_cmh2o", 8):g} cm H2O'
+                        + _treatment_timing_suffix(st.session_state.state, "invasive_ventilation")
+                    )
+                if tr.get("disposition"):
+                    st.write(f'Disposition: {tr.get("disposition")}')
+            if faculty_access() and not st.session_state.state.get("engine_family"):
+                with st.expander("Developer state", expanded=False):
+                    st.caption("Hidden from learners in production.")
+                    st.json({
+                        "effective_volume": round(h["effective_volume"], 3),
+                        "preload_state": round(h.get("preload_state", h["effective_volume"]), 3),
+                        "preload_responsiveness": round(h.get("preload_responsiveness", 0.0), 3),
+                        "effective_intravascular_fluid": round(h.get("effective_intravascular_fluid", 0.0), 3),
+                        "extravascular_fluid_burden": round(h.get("extravascular_fluid_burden", 0.0), 3),
+                        "retained_preload_contribution": round(
+                            h.get("effective_intravascular_fluid", 0.0)
+                            * (0.18 + 0.20 * h.get("preload_responsiveness", 0.0)),
+                            3
+                        ),
+                        "overfill_burden": round(h.get("overfill_burden", 0.0), 3),
+                        "pulmonary_congestion": round(h.get("pulmonary_congestion", 0.0), 3),
+                        "pulmonary_clinical_signal": round(pulmonary_clinical_signal(st.session_state.state), 3),
+                        "respiratory_failure_severity": round(h.get("respiratory_failure_severity", 0.0), 3),
+                        "total_beta_blockade": round(total_beta_blockade(st.session_state.state), 3),
+                        "beta_av_nodal_effect": round(beta_av_nodal_effect(st.session_state.state), 3),
+                        "beta_myocardial_depression": round(beta_myocardial_depression(st.session_state.state), 3),
+                        "af_substrate": round(af_substrate(st.session_state.state), 3),
+                        "fluid_clock_integration": "single-pass",
+                        "tissue_perfusion": round(h["tissue_perfusion"], 3),
+                        "sympathetic_drive": round(h["sympathetic_drive"], 3),
+                        "af_recurrence_pressure": round(h.get("af_recurrence_pressure", 0.0), 3),
+                        "sinus_stability": round(h.get("sinus_stability", 0.0), 3),
+                        "nitroglycerin_effect": round(h.get("nitroglycerin_effect", 0.0), 3),
+                        "metoprolol_effect": round(h.get("metoprolol_effect", 0.0), 3),
+                        "propranolol_effect": round(h.get("propranolol_effect", 0.0), 3),
+                        "metoprolol_depot": round(h.get("metoprolol_depot", 0.0), 3),
+                        "propranolol_depot": round(h.get("propranolol_depot", 0.0), 3),
+                        "diltiazem_effect": round(h.get("diltiazem_effect", 0.0), 3),
+                        "diltiazem_depot": round(h.get("diltiazem_depot", 0.0), 3),
+                        "amiodarone_effect": round(h.get("amiodarone_effect", 0.0), 3),
+                        "amiodarone_depot": round(h.get("amiodarone_depot", 0.0), 3),
+                        "procedural_sedation_effect": round(h.get("procedural_sedation_effect", 0.0), 3),
+                        "procedural_sedation_minutes": round(h.get("procedural_sedation_minutes", 0.0), 1),
+                        "pulmonary_congestion": round(h["pulmonary_congestion"], 3),
+                        "effective_map": round(h.get("effective_map", 0.0), 2),
+                        "pressure_support_state": round(h.get("pressure_support_state", 0.0), 3),
+                        "vascular_support": round(h.get("vascular_support", 0.0), 3),
+                        "forward_flow_state": round(h.get("forward_flow_state", h.get("cardiac_output_index", 0.0)), 3),
+                        "dobutamine_effect": round(h.get("dobutamine_effect", 0.0), 3),
+                        "dobutamine_minutes": round(h.get("dobutamine_minutes", 0.0), 1),
+                        "stroke_volume_efficiency": round(h.get("stroke_volume_efficiency", 0.0), 3),
+                        "afterload_factor": round(h.get("afterload_factor", 0.0), 3),
+                        "cardiac_output_index": round(h.get("cardiac_output_index", 0.0), 3),
+                        "oxygen_delivery": round(h.get("oxygen_delivery", 0.0), 3),
+                        "peripheral_flow": round(h.get("peripheral_flow", 0.0), 3),
+                        "contractile_reserve": round(h.get("contractile_reserve", 1.0), 3),
+                        "low_flow_burden": round(h.get("low_flow_burden", 0.0), 3),
+                        "sympathetic_drive": round(h.get("sympathetic_drive", 0.0), 3),
+                        "cardiac_arrest": bool(h.get("cardiac_arrest", False)),
+                        "terminal_collapse": bool(h.get("terminal_collapse", False)),
+                        "fluid_responsiveness": round(h["fluid_responsiveness"], 3),
+                        "fluid_tolerance": round(h["fluid_tolerance"], 3),
+                        "fluid_load": round(h["fluid_load"], 3),
+                        "vasoplegia_severity": round(h.get("vasoplegia_severity", 0.0), 3),
+                        "respiratory_failure_severity": round(h["respiratory_failure_severity"], 3),
+                        "global_perfusion_failure": round(h["global_perfusion_failure"], 3),
+                        "peri_arrest_risk": round(h["peri_arrest_risk"], 3),
+                        "cardiac_arrest": h["cardiac_arrest"],
+                        "pending_action": st.session_state.get("pending_action"),
+                        "pending_reasoning": st.session_state.get("pending_reasoning"),
+                        "last_executed_action": st.session_state.get("last_executed_action"),
+                    })
+
+    st.divider()
+    submitted = False
+    submission_text = ""
+    submission_parsed = None
+    with orders_panel:
+        if not st.session_state.encounter_ended and (encounter_mode in {"Tests", "Treat"} or st.session_state.get("pending_reasoning")):
+            st.markdown("### Orders" if encounter_mode == "Tests" else "### Management")
+            st.caption(
+                "State your priority, action, expected effect and reassessment."
+            )
+            pending_reasoning = st.session_state.get("pending_reasoning")
+            if pending_reasoning:
+                pending_missing = pending_reasoning.get("missing", []) or []
+                held_parsed = pending_reasoning.get("parsed", {}) or {}
+                held_reasoning = held_parsed.get("reasoning", {}) or {}
+                held_reassessment = next(
+                    (
+                        action for action in held_parsed.get("actions", [])
+                        if action.get("type") == "reassessment"
                     ),
-                    height=78,
-                    key=f"reasoning_model_{gate_id}",
+                    {},
                 )
-                guided_expected_effect = st.text_area(
-                    REASONING_GATE_FIELD_STEMS["expected_effect"],
-                    value=str(held_reasoning.get("expected_effect") or ""),
-                    height=78,
-                    key=f"reasoning_effect_{gate_id}",
+                gate_id = int(pending_reasoning.get("gate_id") or 1)
+                st.warning(
+                    "An understood order is being held. The patient state is unchanged; "
+                    "complete the reasoning in your own words or use the guided fields."
                 )
-            with right:
-                guided_priority = st.text_area(
-                    REASONING_GATE_FIELD_STEMS["management_priority"],
-                    value=str(held_reasoning.get("management_priority") or ""),
-                    height=78,
-                    key=f"reasoning_priority_{gate_id}",
-                )
-                guided_reassessment_target = st.text_area(
-                    REASONING_GATE_FIELD_STEMS["reassessment_target"],
-                    value=str(held_reasoning.get("reassessment_target") or ""),
-                    height=78,
-                    key=f"reasoning_reassessment_{gate_id}",
-                    placeholder="e.g. HR and rhythm, BP/MAP, capillary refill, mental status",
-                )
-            guided_reassessment_delay = st.number_input(
-                "I will reassess in… minutes",
-                min_value=1,
-                max_value=240,
-                value=min(240, max(1, int(held_reassessment.get("delay_min") or 5))),
-                step=1,
-                key=f"reasoning_delay_{gate_id}",
-            )
-            guided_submitted = st.form_submit_button(
-                "Complete reasoning & execute held order",
-                type="primary",
-            )
+                st.markdown(f"**Held order:** {_reasoning_gate_action_summary(held_parsed)}")
+                held_unmodeled = [
+                    str(item)
+                    for item in (held_parsed.get("recognized_future_actions") or [])
+                    if item
+                ]
+                if held_unmodeled:
+                    st.info(
+                        "Also recognized but not executable in this build: "
+                        + ", ".join(held_unmodeled)
+                        + ". These medications have not been administered."
+                    )
+                for observation in held_parsed.get("reasoning_observations", []) or []:
+                    st.info(observation)
+                st.markdown("  \n".join(
+                    f"{'○' if field in pending_missing else '✓'} {label}"
+                    for field, label in REASONING_GATE_FIELD_LABELS.items()
+                ))
 
-        if guided_submitted:
-            guided_resolution = complete_pending_reasoning_fields(
-                guided_working_model,
-                guided_priority,
-                guided_expected_effect,
-                guided_reassessment_target,
-                guided_reassessment_delay,
-            )
-            if guided_resolution and guided_resolution.get("clarification"):
+                st.markdown("#### Complete the sentence starters")
+                with st.form(f"reasoning_completion_form_{gate_id}"):
+                    left, right = st.columns(2)
+                    with left:
+                        guided_working_model = st.text_area(
+                            REASONING_GATE_FIELD_STEMS["working_model"],
+                            value=str(
+                                held_reasoning.get("problem_representation")
+                                or held_reasoning.get("rationale")
+                                or ""
+                            ),
+                            height=78,
+                            key=f"reasoning_model_{gate_id}",
+                        )
+                        guided_expected_effect = st.text_area(
+                            REASONING_GATE_FIELD_STEMS["expected_effect"],
+                            value=str(held_reasoning.get("expected_effect") or ""),
+                            height=78,
+                            key=f"reasoning_effect_{gate_id}",
+                        )
+                    with right:
+                        guided_priority = st.text_area(
+                            REASONING_GATE_FIELD_STEMS["management_priority"],
+                            value=str(held_reasoning.get("management_priority") or ""),
+                            height=78,
+                            key=f"reasoning_priority_{gate_id}",
+                        )
+                        guided_reassessment_target = st.text_area(
+                            REASONING_GATE_FIELD_STEMS["reassessment_target"],
+                            value=str(held_reasoning.get("reassessment_target") or ""),
+                            height=78,
+                            key=f"reasoning_reassessment_{gate_id}",
+                            placeholder="e.g. HR and rhythm, BP/MAP, capillary refill, mental status",
+                        )
+                    guided_reassessment_delay = st.number_input(
+                        "I will reassess in… minutes",
+                        min_value=1,
+                        max_value=240,
+                        value=min(240, max(1, int(held_reassessment.get("delay_min") or 5))),
+                        step=1,
+                        key=f"reasoning_delay_{gate_id}",
+                    )
+                    guided_submitted = st.form_submit_button(
+                        "Complete reasoning & execute held order",
+                        type="primary",
+                    )
+
+                if guided_submitted:
+                    guided_resolution = complete_pending_reasoning_fields(
+                        guided_working_model,
+                        guided_priority,
+                        guided_expected_effect,
+                        guided_reassessment_target,
+                        guided_reassessment_delay,
+                    )
+                    if guided_resolution and guided_resolution.get("clarification"):
+                        active_pending = st.session_state.get("pending_reasoning") or {}
+                        upsert_reasoning_gate_clarification(
+                            active_pending.get("parsed", held_parsed),
+                            guided_resolution.get("missing", []),
+                        )
+                        rerun_app()
+                    if guided_resolution and guided_resolution.get("parsed"):
+                        submission_parsed = guided_resolution["parsed"]
+                        submission_text = guided_resolution.get("transcript") or "Guided reasoning completed."
+                        submitted = True
+
+                st.caption(
+                    "Or answer naturally below. You only need to add what is missing; "
+                    "you do not need to repeat the held order."
+                )
+
+            if not submitted:
+                with st.form("learner_form", clear_on_submit=True):
+                    natural_text = st.text_area(
+                        "Enter your clinical reasoning and/or actions",
+                        height=100,
+                        label_visibility="collapsed",
+                        placeholder=(
+                            "Describe your reasoning naturally. For example: I think...; "
+                            "I am addressing... first; I expect...; reassess ... in ... minutes."
+                        ),
+                    )
+                    natural_submitted = st.form_submit_button("Submit", type="primary")
+                if natural_submitted:
+                    submission_text = natural_text.strip()
+                    submitted = True
+
+            if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action", "pending_bundle")):
+                if st.button("Cancel pending orders", key="cancel_pending_orders"):
+                    cancel_pending_order()
+                    rerun_app()
+
+            if pending_reasoning and faculty_access():
+                st.caption(
+                    f"Facilitator override: type `{REASONING_GATE_OVERRIDE}` in the natural-language box."
+                )
+
+    if submitted and submission_text.strip():
+        learner_input = submission_text.strip()
+        from pending_cancellation import is_cancellation
+        if is_cancellation(learner_input):
+            if not cancel_pending_order():
+                add_event("clarification", "There are no pending orders to cancel.")
+            rerun_app()
+        add_event(
+            "reasoning_completion" if submission_parsed is not None else "you",
+            learner_input,
+        )
+        trace_state_before = management_state_snapshot(st.session_state.state)
+        processing_input = learner_input
+        interpretation_audit = {"mode": "guided-form"}
+        if submission_parsed is None:
+            processing_input, interpretation_audit = normalize_clinical_turn(learner_input)
+
+        if submission_parsed is not None:
+            parsed = submission_parsed
+        else:
+            reasoning_resolution = resolve_pending_reasoning(processing_input)
+            if reasoning_resolution and reasoning_resolution.get("clarification"):
                 active_pending = st.session_state.get("pending_reasoning") or {}
                 upsert_reasoning_gate_clarification(
-                    active_pending.get("parsed", held_parsed),
-                    guided_resolution.get("missing", []),
+                    active_pending.get("parsed", {}),
+                    reasoning_resolution.get("missing", []),
                 )
-                st.rerun()
-            if guided_resolution and guided_resolution.get("parsed"):
-                submission_parsed = guided_resolution["parsed"]
-                submission_text = guided_resolution.get("transcript") or "Guided reasoning completed."
-                submitted = True
+                rerun_app()
 
-        st.caption(
-            "Or answer naturally below. You only need to add what is missing; "
-            "you do not need to repeat the held order."
-        )
-
-    if not submitted:
-        with st.form("learner_form", clear_on_submit=True):
-            natural_text = st.text_area(
-                "Enter your clinical reasoning and/or actions",
-                height=100,
-                label_visibility="collapsed",
-                placeholder=(
-                    "Describe your reasoning naturally. For example: I think...; "
-                    "I am addressing... first; I expect...; reassess ... in ... minutes."
-                ),
-            )
-            natural_submitted = st.form_submit_button("Submit", type="primary")
-        if natural_submitted:
-            submission_text = natural_text.strip()
-            submitted = True
-
-    if pending_reasoning:
-        st.caption(
-            f"Facilitator override: type `{REASONING_GATE_OVERRIDE}` in the natural-language box."
-        )
-
-if submitted and submission_text.strip():
-    learner_input = submission_text.strip()
-    add_event(
-        "reasoning_completion" if submission_parsed is not None else "you",
-        learner_input,
-    )
-    trace_state_before = management_state_snapshot(st.session_state.state)
-
-    if submission_parsed is not None:
-        parsed = submission_parsed
-    else:
-        reasoning_resolution = resolve_pending_reasoning(learner_input)
-        if reasoning_resolution and reasoning_resolution.get("clarification"):
-            active_pending = st.session_state.get("pending_reasoning") or {}
-            upsert_reasoning_gate_clarification(
-                active_pending.get("parsed", {}),
-                reasoning_resolution.get("missing", []),
-            )
-            st.rerun()
-
-        if reasoning_resolution and reasoning_resolution.get("parsed"):
-            parsed = reasoning_resolution["parsed"]
-        else:
-            pending_resolution = try_resolve_pending_action(learner_input)
-            if pending_resolution and pending_resolution.get("clarification"):
-                add_event("clarification", pending_resolution["clarification"])
-                st.rerun()
-
-            if pending_resolution and pending_resolution.get("parsed"):
-                parsed = merge_pending_bundle(pending_resolution["parsed"])
+            if reasoning_resolution and reasoning_resolution.get("parsed"):
+                parsed = reasoning_resolution["parsed"]
             else:
-                # Parse the current turn in full before considering contextual
-                # shorthand. Context resolution is a fallback only when this turn does
-                # not already contain an explicit executable action.
-                direct = clinical_interpreter(learner_input)
-                direct_non_reassess = [
-                    a for a in direct.get("actions", []) if a.get("type") != "reassessment"
-                ]
-                if direct_non_reassess:
-                    parsed = direct
+                pending_resolution = try_resolve_pending_action(processing_input)
+                if pending_resolution and pending_resolution.get("clarification"):
+                    add_event("clarification", pending_resolution["clarification"])
+                    rerun_app()
+
+                if pending_resolution and pending_resolution.get("parsed"):
+                    parsed = merge_pending_bundle(pending_resolution["parsed"])
                 else:
-                    contextual = parse_contextual_followup(learner_input)
-                    if contextual:
-                        contextual["reasoning"] = direct.get("reasoning", {})
-                        reassess = [a for a in direct.get("actions", []) if a.get("type") == "reassessment"]
-                        contextual["actions"] = [
-                            a for a in contextual.get("actions", []) if a.get("type") != "reassessment"
-                        ] + reassess
-                        parsed = contextual
-                    else:
+                    # Parse the current turn in full before considering contextual
+                    # shorthand. Context resolution is a fallback only when this turn does
+                    # not already contain an explicit executable action.
+                    direct = clinical_interpreter(processing_input)
+                    direct_non_reassess = [
+                        a for a in direct.get("actions", []) if a.get("type") != "reassessment"
+                    ]
+                    if direct_non_reassess or st.session_state.state.get("engine_family"):
                         parsed = direct
+                    else:
+                        contextual = parse_contextual_followup(processing_input)
+                        if contextual:
+                            contextual["reasoning"] = direct.get("reasoning", {})
+                            reassess = [a for a in direct.get("actions", []) if a.get("type") == "reassessment"]
+                            contextual["actions"] = [
+                                a for a in contextual.get("actions", []) if a.get("type") != "reassessment"
+                            ] + reassess
+                            parsed = contextual
+                        else:
+                            parsed = direct
 
-    parsed["reasoning_observations"] = reasoning_state_observations(
-        parsed, st.session_state.state
-    )
-    missing_reasoning = reasoning_gate_missing(parsed)
-    gate_status = (parsed.get("reasoning_gate") or {}).get("status")
-    if missing_reasoning and gate_status != "overridden":
+            _restore_original_turn(parsed, processing_input, learner_input)
+            _attach_interpretation_audit(parsed, interpretation_audit)
+
+        parsed["reasoning_observations"] = reasoning_state_observations(
+            parsed, st.session_state.state
+        )
+        missing_reasoning = reasoning_gate_missing(parsed)
+        gate_status = (parsed.get("reasoning_gate") or {}).get("status")
+        if missing_reasoning and gate_status != "overridden":
+            st.session_state.last_parse = parsed
+            hold_pending_reasoning(parsed, missing_reasoning)
+            upsert_reasoning_gate_clarification(parsed, missing_reasoning)
+            rerun_app()
+        if gate_status is None and any(
+            action.get("type") in REASONING_GATE_ACTION_TYPES
+            for action in parsed.get("actions", [])
+        ):
+            parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": []}
+            gate_status = "complete"
+
+        for observation in parsed.get("reasoning_observations", []) or []:
+            add_event("reasoning_note", observation)
+
         st.session_state.last_parse = parsed
-        hold_pending_reasoning(parsed, missing_reasoning)
-        upsert_reasoning_gate_clarification(parsed, missing_reasoning)
-        st.rerun()
-    if gate_status is None and any(
-        action.get("type") in REASONING_GATE_ACTION_TYPES
-        for action in parsed.get("actions", [])
-    ):
-        parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": []}
-        gate_status = "complete"
+        st.session_state.history.append(parsed)
+        trace_input = parsed.get("raw_text") or learner_input
 
-    for observation in parsed.get("reasoning_observations", []) or []:
-        add_event("reasoning_note", observation)
-
-    st.session_state.last_parse = parsed
-    st.session_state.history.append(parsed)
-    trace_input = parsed.get("raw_text") or learner_input
-
-    result = execute_bundle(parsed)
-    trace_state_after = management_state_snapshot(st.session_state.state)
-    record_management_trace(
-        trace_input, parsed, result, trace_state_before, trace_state_after
-    )
-
-    if gate_status == "overridden":
-        add_event(
-            "prototype",
-            "Facilitator override accepted. The held order was executed with incomplete prospective reasoning."
+        result = execute_bundle(parsed)
+        trace_state_after = management_state_snapshot(st.session_state.state)
+        record_management_trace(
+            trace_input, parsed, result, trace_state_before, trace_state_after
         )
 
-    if parsed["recognized_future_actions"] and not result.get("terminal_locked"):
-        add_event(
-            "prototype",
-            "Recognized but not executed in this build: "
-            + ", ".join(parsed["recognized_future_actions"])
-            + ". Any supported actions in the same order continue separately."
-        )
-
-    if result.get("clarification"):
-        add_event("clarification", result["clarification"])
-    else:
-        summaries = _summaries_in_learner_order(
-            result.get("action_summaries", []), trace_input
-        )
-        if summaries:
-            # All actions in one learner order are integrated into one longitudinal
-            # patient state and produce one learner-facing update at the reassessment time.
-            labels = []
-            for s in summaries:
-                if "volume_ml" in s:
-                    labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')
-                elif s.get("agent") == "furosemide":
-                    labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}')
-                elif "agent" in s:
-                    labels.append(f'{s["agent"]} {s["dose_mg"]:g} mg {s["route"]}')
-                elif s.get("support_type") == "procedural_sedation":
-                    labels.append(procedural_sedation_label(s))
-                elif "energy_j" in s:
-                    labels.append(f'synchronized cardioversion {s["energy_j"]} J')
-                elif s.get("support_type") == "oxygen":
-                    labels.append(f'{s["device"]} {s["flow_lpm"]:g} L/min')
-                elif s.get("support_type") == "norepinephrine":
-                    if s.get("operation") == "stop":
-                        labels.append("norepinephrine stopped")
-                    else:
-                        labels.append(_norepinephrine_summary_label(s))
-                elif s.get("support_type") == "dobutamine":
-                    if s.get("operation") == "stop":
-                        labels.append("dobutamine stopped")
-                    else:
-                        labels.append(f'dobutamine {s.get("rate", 5):g} mcg/kg/min')
-                elif s.get("support_type") == "nitroglycerin":
-                    if s.get("operation") == "stop":
-                        labels.append("nitroglycerin stopped")
-                    else:
-                        labels.append(f'nitroglycerin {s["rate_mcg_min"]:g} mcg/min')
-                elif s.get("support_type") == "niv":
-                    if s.get("operation") == "stop":
-                        labels.append("noninvasive ventilation stopped")
-                    elif s.get("mode") == "BiPAP" and s.get("ipap_cmh2o") is not None and s.get("epap_cmh2o") is not None:
-                        fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
-                        labels.append(f'BiPAP {s.get("ipap_cmh2o"):g}/{s.get("epap_cmh2o"):g} cm H2O{fio}')
-                    else:
-                        fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
-                        labels.append(f'{s["mode"]} {s["pressure_cmh2o"]:g} cm H2O{fio}')
-                elif s.get("support_type") == "airway_preparation":
-                    labels.append("airway preparation for intubation")
-                elif s.get("support_type") == "invasive_ventilation":
-                    operation = s.get("operation", "start")
-                    prefix = {
-                        "continue": "continued",
-                        "adjust": "adjusted",
-                        "start": "intubation +",
-                    }.get(operation, "adjusted")
-                    labels.append(
-                        f'{prefix} {s.get("ventilator_mode", "VC/AC")} ventilation '
-                        f'at FiO2 {s.get("fio2_percent", 100):g}% and PEEP {s.get("peep_cmh2o", 8):g} cm H2O'
-                    )
-                elif s.get("support_type") == "disposition":
-                    labels.append(f'admission to {s.get("destination", "ICU")}')
-                elif s.get("support_type") == "antibiotics":
-                    antibiotic = str(s.get("agent_name") or "broad-spectrum antibiotics")
-                    if antibiotic.lower() == "ceftriaxone + azithromycin":
-                        ceftriaxone = "ceftriaxone"
-                        if s.get("dose_g") is not None:
-                            ceftriaxone += f' {s.get("dose_g"):g} g'
-                        if s.get("route"):
-                            ceftriaxone += f' {s.get("route")}'
-                        antibiotic = ceftriaxone + " + azithromycin"
-                    else:
-                        if s.get("dose_g") is not None:
-                            antibiotic += f' {s.get("dose_g"):g} g'
-                        if s.get("route"):
-                            antibiotic += f' {s.get("route")}'
-                    labels.append(antibiotic)
-
-            diagnostic_summaries = sorted(
-                [x for x in summaries if x.get("diagnostic_type")],
-                key=lambda x: (x.get("result") or {}).get("time_min", st.session_state.state["sim_time"]),
+        if gate_status == "overridden":
+            add_event(
+                "prototype",
+                "Facilitator override accepted. The held order was executed with incomplete prospective reasoning."
             )
-            treatment_labels = [x for x in labels if x]
-            # Diagnostic information becomes available during the interval and is
-            # rendered before the scheduled reassessment update.
-            for ds in diagnostic_summaries:
-                add_event(
-                    "diagnostic_result", format_diagnostic_summary(ds),
-                    time=(ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"])
+
+        if parsed["recognized_future_actions"] and not result.get("terminal_locked"):
+            add_event(
+                "prototype",
+                "Recognized but not executed in this build: "
+                + ", ".join(parsed["recognized_future_actions"])
+                + ". Any supported actions in the same order continue separately."
+            )
+
+        if result.get("clarification"):
+            add_event("clarification", result["clarification"])
+        else:
+            summaries = _summaries_in_learner_order(
+                result.get("action_summaries", []), trace_input
+            )
+            if summaries:
+                # All actions in one learner order are integrated into one longitudinal
+                # patient state and produce one learner-facing update at the reassessment time.
+                labels = []
+                for s in summaries:
+                    # A call or admission request reads as part of "After ..., BP ...";
+                    # its stored label ("ICU contacted; definitive ...") does not.
+                    if s.get("type") in {"consult", "reperfusion_referral"}:
+                        labels.append(f'contacting {s.get("service") or s.get("destination")} (no intervention yet)')
+                    elif s.get("type") == "disposition":
+                        labels.append(f'requesting admission to {s.get("destination")}')
+                    elif "volume_ml" in s and s.get("fluid_type"):
+                        labels.append(_fluid_order_label(s, st.session_state.state["sim_time"]))
+                    elif s.get("label"):
+                        labels.append(str(s["label"]))
+                    elif "volume_ml" in s:
+                        labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')
+                    elif s.get("agent") == "furosemide":
+                        labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}'
+                                      + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
+                    elif "agent" in s:
+                        labels.append(f'{s["agent"]} {s["dose_mg"]:g} mg {s["route"]}'
+                                      + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
+                    elif s.get("support_type") == "procedural_sedation":
+                        labels.append(procedural_sedation_label(s))
+                    elif "energy_j" in s:
+                        labels.append(f'synchronized cardioversion {s["energy_j"]} J')
+                    elif s.get("support_type") == "oxygen":
+                        labels.append(f'{s["device"]} {s["flow_lpm"]:g} L/min')
+                    elif s.get("support_type") == "norepinephrine":
+                        if s.get("operation") == "stop":
+                            labels.append("norepinephrine stopped")
+                        else:
+                            labels.append(_norepinephrine_summary_label(s))
+                    elif s.get("support_type") == "dobutamine":
+                        if s.get("operation") == "stop":
+                            labels.append("dobutamine stopped")
+                        else:
+                            labels.append(f'dobutamine {s.get("rate", 5):g} mcg/kg/min')
+                    elif s.get("support_type") == "nitroglycerin":
+                        if s.get("operation") == "stop":
+                            labels.append("nitroglycerin stopped")
+                        else:
+                            labels.append(f'nitroglycerin {s["rate_mcg_min"]:g} mcg/min')
+                    elif s.get("support_type") == "niv":
+                        if s.get("operation") == "stop":
+                            labels.append("noninvasive ventilation stopped")
+                        elif s.get("mode") == "BiPAP" and s.get("ipap_cmh2o") is not None and s.get("epap_cmh2o") is not None:
+                            fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
+                            labels.append(f'BiPAP {s.get("ipap_cmh2o"):g}/{s.get("epap_cmh2o"):g} cm H2O{fio}')
+                        else:
+                            fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
+                            labels.append(f'{s["mode"]} {s["pressure_cmh2o"]:g} cm H2O{fio}')
+                    elif s.get("support_type") == "airway_preparation":
+                        labels.append("airway preparation for intubation")
+                    elif s.get("support_type") == "invasive_ventilation":
+                        operation = s.get("operation", "start")
+                        prefix = {
+                            "continue": "continued",
+                            "adjust": "adjusted",
+                            "start": "intubation +",
+                        }.get(operation, "adjusted")
+                        labels.append(
+                            f'{prefix} {s.get("ventilator_mode", "VC/AC")} ventilation '
+                            f'at FiO2 {s.get("fio2_percent", 100):g}% and PEEP {s.get("peep_cmh2o", 8):g} cm H2O'
+                        )
+                    elif s.get("support_type") == "disposition":
+                        labels.append(f'admission to {s.get("destination", "ICU")}')
+                    elif s.get("support_type") == "antibiotics":
+                        antibiotic = str(s.get("agent_name") or "broad-spectrum antibiotics")
+                        if antibiotic.lower() == "ceftriaxone + azithromycin":
+                            ceftriaxone = "ceftriaxone"
+                            if s.get("dose_g") is not None:
+                                ceftriaxone += f' {s.get("dose_g"):g} g'
+                            if s.get("route"):
+                                ceftriaxone += f' {s.get("route")}'
+                            antibiotic = ceftriaxone + " + azithromycin"
+                        else:
+                            if s.get("dose_g") is not None:
+                                antibiotic += f' {s.get("dose_g"):g} g'
+                            if s.get("route"):
+                                antibiotic += f' {s.get("route")}'
+                        if s.get("administration_duration_min"):
+                            antibiotic += f' over {s["administration_duration_min"]:g} min'
+                        labels.append(antibiotic)
+
+                diagnostic_summaries = sorted(
+                    [x for x in summaries if x.get("diagnostic_type")],
+                    key=lambda x: (x.get("result") or {}).get("time_min", st.session_state.state["sim_time"]),
                 )
-            if treatment_labels:
-                lead = "After " + " + ".join(treatment_labels) + ", "
-                add_event("clinical_update", lead + format_clinical_update())
-            elif (
-                diagnostic_summaries
-                and int(result.get("elapsed_min", 0) or 0) > 0
-                and observable_state_changed(trace_state_before, trace_state_after)
-            ):
-                elapsed = int(result.get("elapsed_min", 0) or 0)
-                add_event(
-                    "clinical_update",
-                    f"While awaiting diagnostic results over {elapsed} minutes, "
-                    + format_clinical_update(),
-                )
-            elif result.get("reassess_delay") is not None:
-                d = result.get("reassess_delay") or 0
+                treatment_labels = [x for x in labels if x]
+                # Diagnostic information becomes available during the interval and is
+                # rendered before the scheduled reassessment update.
+                for ds in diagnostic_summaries:
+                    add_event(
+                        "diagnostic_result", format_diagnostic_summary(ds),
+                        time=(ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"])
+                    )
+                if treatment_labels:
+                    lead = "After " + " + ".join(treatment_labels) + ", "
+                    add_event("clinical_update", lead + format_clinical_update())
+                elif (
+                    diagnostic_summaries
+                    # A reassessment the resident asked for is reported as such, even
+                    # when the results arrived before it.
+                    and result.get("reassess_delay") is None
+                    and int(result.get("elapsed_min", 0) or 0) > 0
+                    and observable_state_changed(trace_state_before, trace_state_after)
+                ):
+                    elapsed = int(result.get("elapsed_min", 0) or 0)
+                    add_event(
+                        "clinical_update",
+                        f"While awaiting diagnostic results over {elapsed} minutes, "
+                        + format_clinical_update(),
+                    )
+                elif result.get("reassess_delay") is not None:
+                    d = result.get("reassess_delay") or 0
+                    add_event(
+                        "clinical_update",
+                        ("On immediate reassessment, " if d == 0 else f"After {d} minutes, ")
+                        + format_clinical_update()
+                    )
+
+            # A reassessment-only order has no treatment/diagnostic summaries, so
+            # it needs its own learner-facing patient update.
+            if result.get("reassess_delay") is not None and not result.get("action_summaries"):
+                d = result["reassess_delay"] or 0
                 add_event(
                     "clinical_update",
                     ("On immediate reassessment, " if d == 0 else f"After {d} minutes, ")
                     + format_clinical_update()
                 )
 
-        if result.get("reassess_delay") is not None and not result.get("action_summaries"):
-            d = result["reassess_delay"] or 0
-            add_event(
-                "clinical_update",
-                ("On immediate reassessment, " if d == 0 else f"After {d} minutes, ")
-                + format_clinical_update()
-            )
+            if result.get("terminal_locked"):
+                add_event(
+                    "prototype",
+                    "Cardiovascular collapse is a terminal state in this build. Ordinary reassessment is paused; arrest-management actions are not yet executable."
+                )
 
-        if result.get("terminal_locked"):
-            add_event(
-                "prototype",
-                "Cardiovascular collapse is a terminal state in this build. Ordinary reassessment is paused; arrest-management actions are not yet executable."
-            )
+            if not result.get("executed") and not parsed["recognized_future_actions"] and not result.get("terminal_locked"):
+                add_event(
+                    "prototype",
+                    "I preserved your input, but this build does not yet execute that action."
+                )
 
-        if not result.get("executed") and not parsed["recognized_future_actions"] and not result.get("terminal_locked"):
-            add_event(
-                "prototype",
-                "I preserved your input, but this build does not yet execute that action."
-            )
+        rerun_app()
 
-    st.rerun()
+    st.divider()
 
-st.divider()
-
-if not st.session_state.encounter_ended:
-    if st.button(
-        "Complete Encounter & Begin Review",
-        type="primary",
-        disabled=not bool(st.session_state.management_trace),
-    ):
-        begin_decision_review(st.session_state.management_trace, st.session_state.state)
-        st.rerun()
-else:
-    frozen_trace = st.session_state.get("encounter_closed_trace")
-    if frozen_trace is None:
-        # Backward-compatible recovery for an in-memory session opened in an
-        # earlier build before encounter snapshots were introduced.
-        begin_decision_review(st.session_state.management_trace, st.session_state.state)
-        frozen_trace = st.session_state.encounter_closed_trace
-    frozen_state = st.session_state.get("encounter_closed_state") or management_state_snapshot(st.session_state.state)
-    st.markdown("## Management Trace")
-    st.caption(
-        "Your decision pathway through the encounter. This review shows only clinical information "
-        "available to you, the reasoning you explicitly stated, your actions, and the observed patient response."
-    )
-    render_management_trace(frozen_trace)
-
-    st.caption(
-        "Management Trace is descriptive. It does not score decisions or add reasoning that was not explicitly stated."
-    )
-
-    st.markdown("---")
-    render_decision_review(frozen_trace, frozen_state)
-
-st.divider()
-if st.button("Reset scenario", type="secondary"):
-    # Clear all scenario-specific session state and rebuild the initial patient.
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.rerun()
-
-if st.session_state.last_parse:
-    with st.expander("Developer: last structured interpretation", expanded=False):
-        st.json(st.session_state.last_parse)
-
-with st.expander("Developer: Management Trace", expanded=False):
-    st.caption("Structured longitudinal decision-response log. Hidden from learners in production.")
-    if st.session_state.management_trace:
-        st.json(st.session_state.management_trace)
+    if not st.session_state.encounter_ended:
+        if st.button(
+            "Complete Encounter & Begin Review",
+            type="primary",
+            disabled=not bool(st.session_state.management_trace),
+        ):
+            begin_decision_review(st.session_state.management_trace, st.session_state.state)
+            rerun_app()
     else:
-        st.caption("No Management Trace events recorded yet.")
+        frozen_trace = st.session_state.get("encounter_closed_trace")
+        if frozen_trace is None:
+            # Backward-compatible recovery for an in-memory session opened in an
+            # earlier build before encounter snapshots were introduced.
+            begin_decision_review(st.session_state.management_trace, st.session_state.state)
+            frozen_trace = st.session_state.encounter_closed_trace
+        frozen_state = st.session_state.get("encounter_closed_state") or management_state_snapshot(st.session_state.state)
+        render_learning_focus(ACCOUNT_CONTEXT)
+        with st.expander("Original decision-by-decision record", expanded=False):
+            st.caption("Your original orders, stated reasoning and recorded responses remain unchanged.")
+            render_management_trace(frozen_trace)
+        if not st.session_state.get("expert_comparison_unlocked"):
+            st.caption("Complete your independent reflection to receive an analyzed Management Trace with your clinical trajectory and key decisions.")
+        render_decision_review(frozen_trace, frozen_state)
 
-st.caption("Management Reasoning Simulator · MVP v0.8.21")
+    st.divider()
+    if ACCOUNT_CONTEXT:
+        if st.button("Save & return to dashboard", type="secondary"):
+            return_to_dashboard(ACCOUNT_CONTEXT, reset_session)
+        if st.button("End this attempt without completing review", type="secondary"):
+            return_to_dashboard(ACCOUNT_CONTEXT, reset_session, abandon=True)
+    else:
+        if st.button("Reset scenario", type="secondary"):
+            reset_session()
+            rerun_app()
 
-# Compatibility marker for v0.6.0.27 regression lineage.
+    if faculty_access():
+        if st.session_state.last_parse:
+            with st.expander("Developer: last structured interpretation", expanded=False):
+                st.json(st.session_state.last_parse)
+        with st.expander("Developer: Management Trace", expanded=False):
+            st.caption("Structured longitudinal decision-response log for faculty inspection.")
+            st.json(st.session_state.management_trace)
+
+    if ACCOUNT_CONTEXT:
+        save_session(ACCOUNT_CONTEXT)
+    st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
+
+    # Compatibility marker for v0.6.0.27 regression lineage.

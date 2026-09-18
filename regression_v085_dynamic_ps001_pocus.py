@@ -12,7 +12,7 @@ from pathlib import Path
 source = Path("app.py").read_text(encoding="utf-8")
 assert 'SIMULATOR_VERSION = "0.8.21"' in source
 assert "MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry" in source
-assert 'h["effective_contractility"] = effective_contractility' in source
+assert 'h["effective_contractility"] = effective_contractility' in Path('clinical_physiology.py').read_text(encoding='utf-8')
 
 tree = ast.parse(source)
 nodes = []
@@ -66,7 +66,9 @@ def execute(text):
 # The first POCUS still reports the patient's preserved baseline phenotype.
 initialize()
 initial_pocus = namespace["pocus_transition"](deepcopy(st.session_state.state))["result"]
-assert initial_pocus["lv"] == "preserved to hyperdynamic LV systolic function", initial_pocus
+# Wording follows the fixed POCUS protocol (qualitative findings); the dynamic
+# LV trajectory this regression protects is unchanged.
+assert initial_pocus["lv"] == "Preserved to hyperdynamic contraction", initial_pocus
 
 # Reproduce the treatment/time sequence that generated the classroom finding.
 for entry in (
@@ -81,9 +83,9 @@ state = st.session_state.state
 assert state["sim_time"] == 30, state["sim_time"]
 assert state["hidden"]["effective_contractility"] < 0.60, state["hidden"]
 repeat_pocus = namespace["pocus_transition"](deepcopy(state))["result"]
-assert repeat_pocus["lv"] == "moderately to severely reduced LV systolic function", repeat_pocus
+assert repeat_pocus["lv"] == "Moderately to severely reduced global contraction", repeat_pocus
 assert "1.4 cm" in repeat_pocus["ivc"] and ">50%" in repeat_pocus["ivc"], repeat_pocus
-assert repeat_pocus["lungs"] == "no diffuse B-line pattern", repeat_pocus
+assert repeat_pocus["lungs"] == "No B-lines; A-line pattern bilaterally", repeat_pocus
 
 # Describing the available dynamic POCUS in the next reasoning turn is not a new order.
 retrospective_pocus = namespace["clinical_interpreter"](
@@ -102,15 +104,15 @@ assert [action["type"] for action in retrospective_pocus["actions"]] == [
 execute("Start norepinephrine 0.05 mcg/kg/min and reassess in 5 minutes.")
 execute("Perform synchronized cardioversion with 200 J and reassess in 5 minutes.")
 pre_inotrope = namespace["pocus_transition"](deepcopy(state))["result"]
-assert pre_inotrope["lv"] == "moderately to severely reduced LV systolic function", pre_inotrope
+assert pre_inotrope["lv"] == "Moderately to severely reduced global contraction", pre_inotrope
 execute("Start dobutamine 2.5 mcg/kg/min and reassess in 10 minutes.")
 post_inotrope = namespace["pocus_transition"](deepcopy(state))["result"]
-assert post_inotrope["lv"] == "mildly reduced LV systolic function", post_inotrope
+assert post_inotrope["lv"] == "Mildly reduced global contraction", post_inotrope
 
 # PS002 retains the already validated case-specific imaging phenotype.
 ps002 = namespace["build_ps002_state"]()
 ps002["hidden"]["effective_contractility"] = 0.20
 ps002_pocus = namespace["pocus_transition"](ps002)["result"]
-assert ps002_pocus["lv"] == "preserved to hyperdynamic LV systolic function", ps002_pocus
+assert ps002_pocus["lv"] == "Preserved to hyperdynamic contraction", ps002_pocus
 
 print("PASS: v0.8.5 PS001 POCUS follows dynamic contractility and preserves PS002")

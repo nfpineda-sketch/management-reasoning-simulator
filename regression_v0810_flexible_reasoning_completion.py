@@ -12,8 +12,8 @@ from pathlib import Path
 source = Path("app.py").read_text(encoding="utf-8")
 assert 'SIMULATOR_VERSION = "0.8.21"' in source
 assert "MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry" in source
-assert "Equivalent wording is accepted" in source
-assert "Complete the sentence starters" in source
+# The encounter UI no longer displays the old sentence-starter instructions.
+# Keep the semantic completion assertions below as the regression contract.
 assert "My working model is…" in source
 assert "My management priority is…" in source
 assert "I will reassess these variables…" in source

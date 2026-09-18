@@ -1,4 +1,223 @@
-# Management Reasoning Simulator — MVP v0.8.21
+# Clinical encounter workspace v0.24.6
+
+v0.24.6 saves failed-generation drafts and exact validator feedback to persistent administrator-only diagnostics, including failures from resident accounts. No additional AI requests. See docs/RELEASE_v0.24.6.md.
+
+v0.24.3 separates observed monitoring devices from respiratory interfaces using a typed inventory. Mild pallor that cannot be distinguished from natural pigmentation is labelled as a photographic limitation. A retained rejected candidate from the same case and appearance can be screened again on upgrade before requesting another generated image.
+
+v0.24.2 verifies executor dependency releases during hot updates, even when the author already reports the current version. Visual screening now requests specific observations for each rejection and distinguishes unresolved mild moisture from excessive sweat; rejected-image details retain those observations.
+
+Image optimization: generation, edits and corrections now request low quality; the default visual reviewer uses minimal reasoning. Landscape framing, identity checks, background preparation and per-appearance caching remain active. Lower photographic detail is the tradeoff; live latency and total billed cost have not been benchmarked.
+
+See [v0.24.0 release notes](docs/RELEASE_v0.24.0.md): all newly generated encounters execute the complete shared main/IA physiological core through the v3 authoring contract. Generate a new case to use this engine; previous saved encounter records are preserved.
+
+Live testing also found isolated uncertainty about non-severe respiratory
+effort. That detail may now be deferred explicitly to examination alongside
+mild skin moisture, provided all definite-conflict checks pass. Severe/reduced
+breathing effort and every other uncertain domain remain blocking. Known
+conflicts take priority over uncertainty in diagnostics and correction. See
+[v0.17.7](docs/RELEASE_v0.17.7.md).
+
+Isolated uncertainty about **mild skin moisture** no longer discards an otherwise
+consistent patient image. All nine checks must report no definite conflict and
+no other domain may be uncertain. The scene explicitly says that skin moisture
+is not discernible in this view and should be assessed during examination. This
+does not waive visible conflicts, marked sweating, or uncertainty about patient
+engagement, coloration, respiratory posture or equipment. See
+[v0.17.6](docs/RELEASE_v0.17.6.md).
+
+Image screening now receives explicit visible features and a detail crop of the
+same patient alongside the complete image, within one review request. It checks
+eyelids and posture rather than asking a photograph to establish a physiological
+state. Uncertainty and visible conflicts still prevent display. See
+[v0.17.5](docs/RELEASE_v0.17.5.md).
+
+When the image screen identifies a definite visual mismatch, the app now makes
+one targeted correction and screens the full result again. Only an accepted
+image enters the scene. See [v0.17.4](docs/RELEASE_v0.17.4.md).
+
+The initial patient image now starts while the compiled case receives its
+independent clinical review. It remains private until approval and successful
+encounter storage. The bedside scene reports image creation, appearance checking,
+elapsed time and fixed failure references. Manual image retry preserves the
+existing case and decisions. See [v0.17.3](docs/RELEASE_v0.17.3.md).
+
+The development generator now sends all independently detected clinical and
+trajectory inconsistencies to its single correction attempt, with the affected
+field, time and limits. Original validators and independent consistency review
+remain mandatory. Preparation shows its current stage; failed corrections expose
+only fixed check identifiers for troubleshooting. The page title and captions
+share one release version. See [v0.17.2](docs/RELEASE_v0.17.2.md).
+
+The development app authors a new clinical case with AI from any of the eleven
+management or cognitive challenges. It generates the patient, presenting concern,
+history, examination, investigations, electrical profile and response trajectories
+as one frozen case. A separate automated consistency review and executable-model
+checks must pass before launch. Generation failures stop launch with a retry;
+there is no silent substitution of an authored bank case.
+
+The diagnoses are not restricted to the previous eight families. Generation is
+bounded by the adult physiology, treatments and ECG patterns the simulator can
+actually render and execute. Automated checking is not expert clinical validation.
+Existing authored cases remain available internally for saved encounters and tests.
+
+After independent reflection is locked, a learner-facing AI Management Trace
+explains pivotal decisions, the stated model and expectations, observed responses
+and subsequent adaptation. Trend charts and evidence-linked decision cards are
+available on screen and in a PDF. Later reflection is distinguished from reasoning
+recorded during care. The full original encounter remains available separately.
+
+The eight cognitive challenges now have specific, cited ACGME Emergency Medicine
+Milestones and Royal College Emergency Medicine EPA component mappings. These are
+local educational alignments. Faculty confirm assessments; the app does not
+certify a full EPA or infer a cognitive bias from an outcome.
+
+Account-based progress continues after a local target or faculty confirmation.
+Later concerns can prompt faculty review without silently erasing the original
+confirmation. The private faculty analysis and PDF remain unavailable to residents.
+The existing expert-comparison draft remains pending faculty validation.
+
+- [Release scope, setup and verification](docs/RELEASE_v0.17.0.md)
+- [Clinical and cognitive challenges](docs/COGNITIVE_CATALOG.md)
+- [Specific competency mappings and primary sources](docs/COMPETENCY_MAPPING.md)
+- [Continuous observations and faculty review](docs/LONGITUDINAL_PROGRESS.md)
+- [Separate development database and activation status](docs/CLINICAL_DEV_DATABASE.md)
+
+Persistent bedside view: patient, monitor, serial 12-lead ECG, conversation,
+examination, investigations, treatment and reassessment. Only the development
+branch `clinical-encounter-v0.13` receives this release.
+
+The sections below describe earlier releases; use the v0.17.0 documents above for
+current generation, account activation and observation behavior.
+
+# Management Reasoning Simulator — Curriculum pilot v0.12.1
+
+## AI faculty assessment brief
+
+Faculty and administrators can generate a private analysis for a completed
+resident encounter with a completed reflection. It summarizes the recorded
+reasoning, cites key decisions, and proposes objective-specific feedback,
+depth, and assistance descriptors. Insufficient evidence remains distinct from
+an unsatisfactory judgment. The brief can be read in the dashboard or downloaded
+as a two-page PDF: six provisional objective assessments, selected evidence,
+three review priorities and a link back to the encounter. The complete analysis
+remains available on screen and as a separate full PDF. Existing saved briefs
+use the concise layout without a new AI request. Excerpted legacy text is labeled;
+the full report remains the source for all qualifications and supporting detail.
+
+Suggestions can be loaded into the existing objective form as editable drafts.
+Faculty must resolve unanswered fields, confirm their review, and explicitly
+record the assessment. Generation, downloads and draft loading never change
+progress counters. The final assessment audit retains the source brief ID;
+residents receive only the faculty's saved feedback, not the private AI brief.
+
+The source sent to the analysis model is explicitly allowlisted, preserving
+original learner inputs and chronological visible findings while excluding
+account metadata, engine internals and previous faculty judgments. Reflections
+and later adaptation are distinguished from reasoning during the encounter.
+Assistance must be supplied by faculty; unknown assistance cannot be inferred
+from polished language. The analysis uses the local objective scopes and is
+formative decision support, not an independent clinical or competency assessment.
+
+The existing `OPENAI_API_KEY` is reused. Optional `MRS_FACULTY_MODEL` selects a
+separate analysis model; otherwise `OPENAI_MODEL` is used. Requests are explicit,
+bounded, and never silently retried or replaced with a fabricated report.
+Immutable private drafts are stored separately in `mrs_faculty_briefs` and tied
+to the completed encounter's source hash and revision. Existing encounters and
+assessment counts are unchanged by this additive schema setup.
+
+- [Use the concise faculty brief and update locally](docs/UPDATE_v0.12.1.md)
+
+## Oxygen order integrity and state-aware review
+
+Explicit oxygen orders retain their device and flow through AI normalization. If
+normalization omits or changes that order, interpretation returns to the original
+entry. Negated and conditional oxygen mentions do not start treatment, and fluid
+volumes are kept separate from oxygen flow.
+
+Review questions respect negated expectations and delayed antimicrobial effects.
+Expert comparisons use the pressure and support recorded at the selected decision;
+they do not automatically recommend increasing norepinephrine at an adequate MAP.
+
+- [Update v0.11.2 locally and understand the cloud account setup](docs/UPDATE_v0.11.2.md)
+
+## Separate resident progress page
+
+Residents start on **Clinical encounters**, where objective tables, assessment
+criteria and faculty progress feedback are not rendered. **My progress**, in the
+dashboard sidebar, opens a separate page with their existing observation counts,
+depth and faculty feedback. The progress menu is absent during an encounter;
+residents can save and return to the dashboard to consult their general progress.
+The encounter's assigned learning focus is disclosed in its post-encounter review.
+Faculty and administrators retain their existing dashboard and assessment controls.
+
+- [Update an existing local installation without replacing accounts or secrets](docs/UPDATE_v0.11.1.md)
+
+## Longitudinal objective tracking
+
+Completed resident encounters can now support several separately reviewed
+objectives. Faculty select actual trace evidence, assess the simulated management
+component, and record depth, support needed, context and feedback. Only a
+satisfactory faculty assessment advances its objective's counter, at most once
+per encounter. The counter stops at the configured target; the complete encounter
+record is retained. Repeated submissions and simultaneous reviews cannot add
+extra credit.
+
+Numeric targets and faculty confirmation are separate. Administrators can adjust
+the program targets with a reason; faculty can confirm, reopen or void an
+observation with an audit trail. Reopening preserves the count. The eight initial
+targets were supplied by the program owner and are not represented as verified
+Royal College assessment requirements. These counts cover simulated components,
+not whole workplace EPAs. Trauma and end-of-life objectives are listed for planning
+but cannot receive credit from the currently implemented cases.
+
+- [Objective scope, depth and counting rules](docs/OBJECTIVE_TRACKING.md)
+
+## Curriculum and individual accounts
+
+The curriculum pilot includes invitation-based resident, faculty and administrator accounts,
+persistent encounters, internally assigned learning challenges, and bounded AI
+composition of PS001 variants. Residents see the clinical presentation first;
+the specific objective is disclosed in the post-encounter review. Faculty can
+select any of the three implemented challenges in a sandbox excluded from
+resident progress.
+
+Account mode is opt-in. The existing `APP_PASSWORD` gate remains the default
+until `MRS_AUTH_MODE = "accounts"` and persistent PostgreSQL storage are configured.
+The stable application on `main` does not need to change.
+
+- [Activation, local startup and verification](docs/SETUP_v0.11.0.md)
+- [Curriculum mappings, evidence rules and generation limits](docs/CURRICULUM_PILOT.md)
+
+Three challenges are executable; the proposed 30-challenge curriculum is not yet
+fully implemented. Faculty review supports formative progress and does not certify workplace competence.
+The generator chooses reviewed software options, stores a frozen specification,
+and falls back to a predefined local variant if the provider fails. Clinical
+profile calibration and deployment-specific PostgreSQL verification remain
+necessary before resident assessment.
+
+## AI language interpretation
+
+This branch adds an optional OpenAI language-normalization layer. The model converts
+free-form or mixed-language learner input into conservative canonical clinical text.
+The existing deterministic parser reparses that text, validates supported actions,
+and remains solely responsible for execution and patient physiology.
+
+The integration fails closed: if the API is unavailable, confidence is low,
+ambiguity remains, or a numeric value changes, the application automatically uses
+the deterministic v0.8.21 interpreter. The learner's original text is preserved in
+the Management Trace. For language interpretation, only learner text and the
+visible patient state are sent to the API; hidden physiology and review data are
+not included. The separate encounter-generation request uses an internal learning
+objective and approved profile/scene options, with no resident identity or trace.
+
+Configure the separate Streamlit test app under **Settings → Secrets**:
+
+```toml
+OPENAI_API_KEY = "your-project-api-key"
+OPENAI_MODEL = "gpt-5.6-luna"
+```
+
+Never commit a real API key to GitHub.
 
 ## Dynamic learner-visible ECG
 
