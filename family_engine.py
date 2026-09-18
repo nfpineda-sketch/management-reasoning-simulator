@@ -64,6 +64,17 @@ EDEMA = {
 }
 
 
+# Active GI bleeding (faculty request 2026-09-18): crystalloid alone must do less
+# than blood. 2 L of saline used to restore pressure and refill almost as well as
+# a transfusion, with only a 0.2 g/dL fall in haemoglobin. Magnitudes pending review.
+GI_BLEED = {
+    "crystalloid_per_ml": .00015,     # circulation gain per mL (other families: .00025)
+    "crystalloid_transient": .6,      # share of that gain that redistributes out of the vessels...
+    "crystalloid_leak_tau_min": 30.0, # ...with this time constant
+    "hemodilution_g_dl_per_ml": .0006,  # 1 L of crystalloid dilutes haemoglobin by 0.6 g/dL
+}
+
+
 def _clamp(value, lower, upper):
     return min(upper, max(lower, float(value)))
 
@@ -564,7 +575,17 @@ def _minute(state):
     state["treatments"]["total_crystalloid_ml"] = round(f["fluid_delivered_ml"], 1)
     state["treatments"]["cumulative_crystalloid_ml"] = round(f["fluid_delivered_ml"], 1)
     state["treatments"]["packed_red_cells_units"] = round(f["blood_delivered_units"], 3)
-    if family in {"pneumonia", "gi_bleed"}:
+    if family == "gi_bleed":
+        g = GI_BLEED
+        gain = fluid * g["crystalloid_per_ml"]
+        f["circulation"] -= gain + blood * .36
+        # Part of the crystalloid leaves the circulation; the pressure it bought fades.
+        f["crystalloid_boost"] = f.get("crystalloid_boost", 0.0) + gain * g["crystalloid_transient"]
+        leak = f["crystalloid_boost"] * (1 - math.exp(-1 / g["crystalloid_leak_tau_min"]))
+        f["crystalloid_boost"] -= leak
+        f["circulation"] += leak
+        f["hemoglobin"] -= fluid * g["hemodilution_g_dl_per_ml"]
+    elif family == "pneumonia":
         f["circulation"] -= fluid * .00025 + blood * .36
     elif family == "pulmonary_embolism":
         f["lung"] += fluid * .00015
