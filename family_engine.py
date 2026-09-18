@@ -41,6 +41,29 @@ _MEDICINES = {
 }
 
 
+# Pulmonary oedema teaching magnitudes (docs/PULMONARY_EDEMA_PHYSIOLOGY_PROPOSAL.md,
+# faculty decisions of 2026-09-18). "lung" is 1.0 at arrival and 0.25 when resolved.
+EDEMA = {
+    "drift_per_min": .003,               # untreated progression
+    "resolved_drift_euvolemic": .001,    # once resolved, little recurrence without excess volume
+    "fluid_per_ml": .0004,               # crystalloid worsens congestion...
+    "fluid_on_positive_pressure": .4,    # ...less under NIV/invasive support, whose benefit dominates
+    "niv_heal_per_min": .006,            # NIV itself resolves oedema (EPAP 5)...
+    "niv_heal_per_epap": .0006,          # ...more with higher EPAP
+    "nitro_lung_per_mcg": .00008,        # per mcg/min equivalent of nitroglycerin
+    "nitro_lung_max": .02,
+    "nitro_bolus_tau_min": 4.0,          # IV bolus effect decays with this time constant
+    "nitro_bp_per_mcg": .35, "nitro_bp_max_fraction": .30, "nitro_bp_tau_min": 3.0,
+    "congestion_bp_fraction": .10,       # sympathetic relief as congestion resolves
+    "diuretic_onset_min": 30, "diuretic_per_mg": .00005, "diuretic_max": .004,
+    "diuretic_resolved_lung": .65,       # before oedema resolves, furosemide has almost no effect
+    "diuretic_early_factor": .1, "diuretic_euvolemic_factor": .25,
+    "recruit_base": .20, "recruit_per_epap": .03, "recruit_max": .50,
+    "pressure_support_rr_per_cm": 1.0, "epap_bp_per_cm": 1.5,
+    "shunt_attenuation": .6, "rr_resolved": 16, "spo2_resolved": 97, "hr_relief": 20,
+}
+
+
 def _clamp(value, lower, upper):
     return min(upper, max(lower, float(value)))
 
@@ -139,6 +162,12 @@ def _validate(state, parsed):
                     return None, "Specify CPAP or BiPAP."
                 if a["mode"].lower() == "bipap" and (not _number(a.get("ipap_cmh2o"), a["epap_cmh2o"], 35)):
                     return None, "Specify an inspiratory pressure at least as high as expiratory pressure."
+        elif kind == "nitroglycerin_bolus":
+            if not _number(a.get("dose_mcg"), 50, 3000):
+                return None, "Specify a nitroglycerin IV bolus from 50 to 3000 mcg."
+            if str(a.get("route") or "IV").upper() != "IV":
+                return None, "A nitroglycerin bolus is given IV in this encounter."
+            a["route"] = "IV"
         elif kind in {"nitroglycerin", "norepinephrine", "dobutamine"}:
             a["operation"] = str(a.get("operation") or "start").lower()
             if a["operation"] not in {"start", "adjust", "continue", "stop"}:
@@ -362,6 +391,12 @@ def _order(state, a):
             f[field] = f["elapsed"]
         if not timed:
             _medicine_effect(state, a, a["dose_mg"])
+        if kind == "diuretic" and state.get("engine_family") == "pulmonary_edema":
+            congestion = _case(state).get("engine", {}).get("congestion", {})
+            factor = 1.0 if f["lung"] <= EDEMA["diuretic_resolved_lung"] else EDEMA["diuretic_early_factor"]
+            factor *= 1.0 if congestion.get("volume_overload", True) else EDEMA["diuretic_euvolemic_factor"]
+            f["diuretic_effective_mg"] = f.get("diuretic_effective_mg", 0.0) + a["dose_mg"] * factor
+            f["diuretic_effective_at"] = f["elapsed"]
         tr[kind] = {"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"]}
         duration = 5
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} administered"
@@ -392,6 +427,12 @@ def _order(state, a):
             f["oxygen_fio2"] = .21
         label = f"NIV {a['operation']}" + (f": {a['mode']}, FiO₂ {a['fio2_percent']:g}%" if f["niv"] else "")
         duration = 3
+    elif kind == "nitroglycerin_bolus":
+        f["nitro_bolus_pool"] = f.get("nitro_bolus_pool", 0.0) + a["dose_mcg"]
+        tr["administered_medications"].append({"agent": "nitroglycerin", "dose": a["dose_mcg"], "units": "mcg",
+                                               "route": "IV", "time_min": int(state.get("sim_time", 0))})
+        label = f"Nitroglycerin {a['dose_mcg']:g} mcg IV bolus"
+        duration = 1
     elif kind in {"nitroglycerin", "norepinephrine", "dobutamine"}:
         rate = 0 if a["operation"] == "stop" else a.get("rate_mcg_min", a.get("rate", 0))
         if kind in {"norepinephrine", "dobutamine"} and a.get("units") == "mcg/kg/min":
@@ -461,6 +502,32 @@ def _order(state, a):
     return summary
 
 
+def _nitro_equivalent(f):
+    """Infusion rate plus the current effect of IV boluses, in mcg/min."""
+    return f["nitroglycerin"] + f.get("nitro_bolus_pool", 0.0) / EDEMA["nitro_bolus_tau_min"]
+
+
+def _edema_minute(state, fluid):
+    f, tr, e = state["family_state"], state["treatments"], EDEMA
+    congestion = _case(state).get("engine", {}).get("congestion", {})
+    positive_pressure = f["niv"] or f["invasive"]
+    resolved = f["lung"] <= e["diuretic_resolved_lung"]
+    f["lung"] += (e["resolved_drift_euvolemic"] if resolved and not congestion.get("volume_overload", True)
+                  else e["drift_per_min"])
+    f["lung"] += fluid * e["fluid_per_ml"] * congestion.get("fluid_sensitivity", 1.0) * (
+        e["fluid_on_positive_pressure"] if positive_pressure else 1)
+    if f["niv"]:
+        epap = float(tr.get("niv_epap_cmh2o") or 5)
+        f["lung"] -= e["niv_heal_per_min"] + e["niv_heal_per_epap"] * max(0, epap - 5)
+    equivalent = _nitro_equivalent(f)
+    f["lung"] -= min(e["nitro_lung_max"], equivalent * e["nitro_lung_per_mcg"])
+    if f.get("diuretic_effective_mg") and f["elapsed"] - f.get("diuretic_effective_at", 0) >= e["diuretic_onset_min"]:
+        f["lung"] -= min(e["diuretic_max"], f["diuretic_effective_mg"] * e["diuretic_per_mg"])
+    target = min(e["nitro_bp_max_fraction"] * float(f["baseline"].get("sbp", 120)), equivalent * e["nitro_bp_per_mcg"])
+    effect = f.get("nitro_bp_effect", 0.0)
+    f["nitro_bp_effect"] = effect + (target - effect) / e["nitro_bp_tau_min"]
+
+
 def _minute(state):
     f, family = state["family_state"], state["engine_family"]
     f["elapsed"] += 1
@@ -486,9 +553,9 @@ def _minute(state):
     state["treatments"]["packed_red_cells_units"] = round(f["blood_delivered_units"], 3)
     if family in {"pneumonia", "gi_bleed"}:
         f["circulation"] -= fluid * .00025 + blood * .36
-    elif family in {"pulmonary_edema", "pulmonary_embolism"}:
+    elif family == "pulmonary_embolism":
         f["lung"] += fluid * .00015
-        f["circulation"] += fluid * (.00005 if family == "pulmonary_embolism" else 0)
+        f["circulation"] += fluid * .00005
     f["hemoglobin"] += blood * .85
     f["glucose"] = min(350, f["glucose"] + glucose * 4)
     if family == "pneumonia":
@@ -497,9 +564,7 @@ def _minute(state):
         f["lung"] += .002 - antibiotic_effect
         f["circulation"] += .002 - antibiotic_effect
     elif family == "pulmonary_edema":
-        f["lung"] += .003 - min(.012, f["nitroglycerin"] * .00012)
-        if f["diuretic_at"] is not None and f["elapsed"] - f["diuretic_at"] >= 20:
-            f["lung"] -= min(.006, f["diuretic_dose"] * .0001)
+        _edema_minute(state, fluid)
     elif family == "asthma":
         steroid_active = f["steroid_at"] is not None and f["elapsed"] - f["steroid_at"] >= 60
         f["obstruction"] += .002 - (.004 * f["steroid_exposure"] if steroid_active else 0)
@@ -512,6 +577,10 @@ def _minute(state):
         f["opioid"] *= .999
     elif family in {"acs", "pulmonary_embolism"}:
         f["circulation"] += .001
+    if f.get("nitro_bolus_pool"):
+        f["nitro_bolus_pool"] *= math.exp(-1 / EDEMA["nitro_bolus_tau_min"])
+        if f["nitro_bolus_pool"] < 1:
+            f["nitro_bolus_pool"] = 0.0
     f["naloxone"] *= .975
     f["bronchodilation"] *= .986
     for key in {"lung", "circulation", "obstruction"}:
@@ -536,17 +605,33 @@ def _surface(state):
     support = f["invasive"] or f["niv"] or f["bag_mask"]
     fio2 = max(f["oxygen_fio2"], .85 if f["bag_mask"] else .21)
     oxygen_gain = max(0, fio2 - .21) * (30 if family not in {"opioid"} else 22)
-    if family in {"pneumonia", "pulmonary_edema"}:
+    if family == "pulmonary_edema":
+        e, tr = EDEMA, state["treatments"]
+        epap = float(tr.get("niv_epap_cmh2o") or 5) if f["niv"] else 0
+        ipap = float(tr.get("niv_ipap_cmh2o") or epap) if f["niv"] else 0
+        recruitment = (min(e["recruit_max"], e["recruit_base"] + e["recruit_per_epap"] * epap) if f["niv"]
+                       else .48 if f["invasive"] else 0)
+        effective_lung = max(.25, lung - recruitment)
+        drive = _clamp((effective_lung - .25) / .75, 0, 1)
+        worse = max(0.0, effective_lung - 1)
+        base_spo2, base_rr = float(base.get("spo2", 96)), float(base.get("respiratory_rate", 20))
+        spo2 = base_spo2 + (e["spo2_resolved"] - base_spo2) * (1 - drive) - worse * 18
+        rr = e["rr_resolved"] + (base_rr - e["rr_resolved"]) * drive + worse * 18
+        if f["niv"]:
+            rr -= _clamp(e["pressure_support_rr_per_cm"] * ((ipap - epap) - 5), -3, 5)
+        relief = e["congestion_bp_fraction"] * float(base.get("sbp", 120)) * (1 - drive)
+        pressure_drop = f.get("nitro_bp_effect", 0.0) + relief
+        sbp -= pressure_drop + e["epap_bp_per_cm"] * max(0, epap - 5)
+        dbp -= pressure_drop * .48
+        hr -= e["hr_relief"] * (1 - drive)
+        oxygen_gain *= 1 - e["shunt_attenuation"] * drive
+        effort = drive + worse
+    elif family == "pneumonia":
         recruitment = .35 if f["niv"] else .48 if f["invasive"] else 0
         effective_lung = max(.25, lung - recruitment)
         spo2 -= (effective_lung - 1) * 18
         rr += (effective_lung - 1) * 18
         effort = effective_lung
-        if family == "pulmonary_edema":
-            pressure_reduction = min(65, f["nitroglycerin"] * .35)
-            sbp -= pressure_reduction
-            dbp -= pressure_reduction * .48
-            hr -= max(0, 1 - effective_lung) * 15
     elif family == "asthma":
         obstruction = max(.2, f["obstruction"] - f["bronchodilation"])
         spo2 -= (obstruction - 1) * 14
@@ -574,8 +659,8 @@ def _surface(state):
     # Supplemental oxygen changes oxygenation, not bronchospasm or respiratory drive.
     spo2 += oxygen_gain
     if family != "pulmonary_edema":
-        sbp -= min(45, f["nitroglycerin"] * .3)
-        dbp -= min(25, f["nitroglycerin"] * .15)
+        sbp -= min(45, _nitro_equivalent(f) * .3)
+        dbp -= min(25, _nitro_equivalent(f) * .15)
     vasopressor_boost = min(35, f["norepinephrine"] * 1.5)
     sbp += vasopressor_boost
     dbp += vasopressor_boost * .7
@@ -607,6 +692,9 @@ def _surface(state):
         index = {"normal": 0, "mildly increased": 1, "increased": 2, "moderately increased": 2, "markedly increased": 3, "severe": 4}.get(baseline_wob.lower(), 2)
         change = int(round((effort - 1) * 3))
         wob = baseline_wob if change == 0 else levels[int(_clamp(index + change, 0, 4))]
+        if family == "pulmonary_edema" and effort < 1:
+            # Resolving oedema returns the work of breathing towards normal in proportion.
+            wob = levels[int(_clamp(round(index * effort), 0, 4))]
 
     else:
         wob = str(base.get("work_of_breathing", "Normal"))

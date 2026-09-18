@@ -218,7 +218,7 @@ def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
 def _case(identifier, family, age, sex, comorbidities, presentation, history,
           examination, observable, investigations, diagnosis, findings, focus,
           questions, actions, *, ecg="baseline", visual=None, recurrence=False,
-          history_source="Patient"):
+          history_source="Patient", congestion=None):
     return {
         "id": identifier,
         "patient": {"age_years": age, "sex": sex,
@@ -234,6 +234,7 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
             "baseline_hemoglobin": investigations["hemoglobin"]["result"]["hemoglobin_g_dl"],
             "baseline_lactate": investigations["lactate"]["result"]["lactate_mmol_l"],
             "recurrence_risk": recurrence,
+            **({"congestion": dict(congestion)} if congestion else {}),
         },
         "faculty": {"diagnosis": diagnosis, "discriminating_findings": list(findings),
                     "management_focus": focus, "review_questions": list(questions),
@@ -343,7 +344,9 @@ FAMILIES["pulmonary_edema"]["variants"].append(_case(
     "Support breathing and reduce excessive cardiac loading with close blood-pressure reassessment.",
     ["How did wheeze fit with the other examination findings?", "Which changes would prompt you to adjust respiratory support or vasodilation?"],
     ["niv", "nitroglycerin", "diuretic"],
-    visual=_visual(expression="markedly uncomfortable", sweating="marked")))
+    visual=_visual(expression="markedly uncomfortable", sweating="marked"),
+    # Hypertensive redistribution: little excess circulating volume.
+    congestion={"fluid_sensitivity": 1.0, "volume_overload": False}))
 
 _o = _observable(164, 92, 114, 84, 32, wob="Markedly increased", crt=3,
                  extremities="Cool", temperature=36.7, glucose=132, perfusion="mildly impaired")
@@ -372,7 +375,9 @@ FAMILIES["pulmonary_edema"]["variants"].append(_case(
     "Treat respiratory distress and congestion, checking renal function, pressure and the evolving response.",
     ["Which finding supported congestion rather than a need for more fluid?", "What would establish that the response was adequate?"],
     ["niv", "diuretic", "nitroglycerin"],
-    visual=_visual(expression="markedly uncomfortable", sweating="mild")))
+    visual=_visual(expression="markedly uncomfortable", sweating="mild"),
+    # HFrEF with missed diuretic: expanded circulating volume, more fluid-sensitive.
+    congestion={"fluid_sensitivity": 1.5, "volume_overload": True}))
 
 
 # ACS: the diagnostic ECG and biomarker findings are authored, never invented

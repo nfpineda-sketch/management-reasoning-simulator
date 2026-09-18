@@ -16,7 +16,7 @@ from shared_order_language import _normalize, _route, _amount
 
 NEW_TREATMENT_ACTIONS = frozenset({
     "fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator",
-    "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin",
+    "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin", "nitroglycerin_bolus",
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
 })
 
@@ -369,6 +369,12 @@ def _parse_piece_core(piece, inherited=None):
             r"pastilla|dosis\s+unica|dosis\s+única)\b", body)
         mass_dose = None if rate_match else re.search(
             r"(?<![\w.])((?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg)\b(?!\s*/)", body)
+        if (kind == "nitroglycerin" and not rate_match and mass_dose
+                and not re.search(r"\b(?:sublingual|sl|spray|tablet|tableta|comprimido|pastilla)\b", body)
+                and (single_dose or re.search(r"\b(?:iv|ev|intravenous|intravenos[ao])\b", body))):
+            # An IV nitroglycerin bolus (typically 1000-2000 mcg) is a treatment of its own.
+            dose = float(mass_dose[1]) * (1000 if mass_dose[2] == "mg" else 1)
+            return [{"type": "nitroglycerin_bolus", "dose_mcg": dose, "route": "IV"}], verb
         if not rate_match and (single_dose or mass_dose):
             form = single_dose[0].lower() if single_dose else "single dose"
             form = {"sl": "sublingual dose", "sublingual": "sublingual dose", "bolo": "bolus",
@@ -379,9 +385,12 @@ def _parse_piece_core(piece, inherited=None):
             unit = "mcg/min" if kind == "nitroglycerin" else "mcg/kg/min or mcg/min"
             return [{**_clarification(
                 f"{name} was understood as {'an' if form[0] in 'aeiouAEIOU' else 'a'} {form}{dose}. "
-                f"This encounter gives {name.lower()} only as a "
-                f"continuous IV infusion, so nothing was converted or executed. To give it, state an "
-                f"infusion rate in {unit}, or say cancel."),
+                + (f"This encounter gives nitroglycerin as a continuous IV infusion or an IV bolus, so nothing was "
+                 f"converted or executed. To give it, state an infusion rate in {unit} or an IV bolus in mcg, or say cancel."
+                 if kind == "nitroglycerin" else
+                 f"This encounter gives {name.lower()} only as a "
+                 f"continuous IV infusion, so nothing was converted or executed. To give it, state an "
+                 f"infusion rate in {unit}, or say cancel.")),
                 "unsupported_administration": {"agent": kind, "form": form,
                                                "dose": float(mass_dose[1]) if mass_dose else None,
                                                "units": mass_dose[2] if mass_dose else None}}], verb

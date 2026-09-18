@@ -19,12 +19,8 @@ def only(text):
 
 
 @pytest.mark.parametrize("text,agent,form,dose", [
-    ("start nitroglycerin give a iv bolus 600 mcg and reassess in 3 minutes",
-     "nitroglycerin", "bolus", 600.0),
-    ("give nitroglycerin 600 mcg IV bolus", "nitroglycerin", "bolus", 600.0),
     ("nitroglycerin 400 mcg sublingual", "nitroglycerin", "sublingual dose", 400.0),
     ("nitroglycerin 400 mcg SL", "nitroglycerin", "sublingual dose", 400.0),
-    ("dar nitroglicerina bolo 600 mcg", "nitroglycerin", "bolus", 600.0),
     ("give norepinephrine 10 mcg IV push", "norepinephrine", "IV push", 10.0),
 ])
 def test_a_single_dose_is_named_back_and_nothing_is_executed(text, agent, form, dose):
@@ -34,6 +30,17 @@ def test_a_single_dose_is_named_back_and_nothing_is_executed(text, agent, form, 
     detail = action["unsupported_administration"]
     assert (detail["agent"], detail["form"], detail["dose"]) == (agent, form, dose)
     assert "nothing was converted or executed" in action["message"]
+
+
+@pytest.mark.parametrize("text", [
+    "start nitroglycerin give a iv bolus 600 mcg and reassess in 3 minutes",
+    "give nitroglycerin 600 mcg IV bolus",
+    "dar nitroglicerina bolo 600 mcg",
+])
+def test_an_iv_nitroglycerin_bolus_is_a_bolus_never_an_infusion(text):
+    # Faculty decision (2026-09-18): nitroglycerin may be given as IV boluses.
+    action = only(text)
+    assert action == {"type": "nitroglycerin_bolus", "dose_mcg": 600.0, "route": "IV"}
 
 
 def test_the_reassessment_in_the_same_order_is_kept():

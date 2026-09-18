@@ -6532,7 +6532,7 @@ REASONING_GATE_ACTION_TYPES = {
     "norepinephrine", "oxygen", "procedural_sedation", "cardioversion",
     "antibiotics", "disposition",
     "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
-    "naloxone", "blood", "anticoagulation", "bag_mask", "consult",
+    "naloxone", "blood", "anticoagulation", "bag_mask", "consult", "nitroglycerin_bolus",
 }
 
 REASONING_GATE_FIELD_LABELS = {
