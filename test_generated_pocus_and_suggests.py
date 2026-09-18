@@ -298,9 +298,10 @@ def test_a_state_saved_before_the_adjustments_behaves_as_before():
     assert adapter.hr_relief(state) == 0
 
 
-def lactate_after(monkeypatch, core_change, minutes):
+def lactate_after(monkeypatch, core_change, minutes, perfusion=.8):
     """Authored lactate 3.2; the core's lactate has moved by core_change after ``minutes``."""
     state = patient()
+    state["coupled_state"]["hidden"]["tissue_perfusion"] = perfusion
     g = state["generated_state"]
     state["encounter_spec"]["clinical_case"]["engine"]["initial_labs"]["lactate_mmol_l"] = 3.2
     reference = dict(g["lab_reference"])
@@ -321,3 +322,37 @@ def test_a_falling_lactate_clears_with_a_time_constant(monkeypatch):
 
 def test_a_rising_lactate_is_shown_at_once(monkeypatch):
     assert lactate_after(monkeypatch, +1.0, 5) == pytest.approx(4.2)
+
+
+def test_hypoperfused_tissue_keeps_producing_lactate_whatever_the_core_shows(monkeypatch):
+    # Perfusion 0.2 is 0.3 below the threshold: +0.1 x 0.3 mmol/L per minute for 20 minutes.
+    assert lactate_after(monkeypatch, -2.7, 20, perfusion=.2) == pytest.approx(3.2 + 0.6)
+
+
+def test_lactate_starts_from_the_authored_value():
+    state = patient()
+    g = state["generated_state"]
+    assert g["lactate_shown"] == state["encounter_spec"]["clinical_case"]["engine"]["initial_labs"]["lactate_mmol_l"]
+
+
+def mental_state(history, before, now):
+    state = patient()
+    g = state["generated_state"]
+    g["recent_tissue_perfusion"] = list(history[:-1])
+    state["coupled_state"]["hidden"]["tissue_perfusion"] = history[-1]
+    state["coupled_state"]["observable"]["mental_status"] = now
+    adapter.hold_mental_while_perfusion_falls(state, before)
+    return state["coupled_state"]["observable"]["mental_status"]
+
+
+def test_mental_status_does_not_improve_while_perfusion_falls():
+    # Path C: the core woke the patient to Alert at 86/51 as perfusion fell 0.52 -> 0.37.
+    assert mental_state([.52, .5, .47, .44, .40, .37], "Drowsy", "Alert") == "Drowsy"
+
+
+def test_mental_status_improves_while_perfusion_holds_or_rises():
+    assert mental_state([.60, .63, .66, .68, .70, .71], "Drowsy", "Alert") == "Alert"
+
+
+def test_deterioration_is_never_held():
+    assert mental_state([.52, .5, .47, .44, .40, .37], "Drowsy", "Obtunded") == "Obtunded"

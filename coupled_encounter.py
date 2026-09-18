@@ -85,6 +85,10 @@ def initialize(state):
     # the authored arrival value, as the gases are; changes still come from the core.
     state['generated_state']['spo2_anchor']=float(case['observable']['spo2'])-core_spo2_target(s)
     state['generated_state']['arrival_tissue_perfusion']=float(h['tissue_perfusion'])
+    if 'lactate_mmol_l' in values:
+        # Lactate starts from the authored arrival value, not the core's first-minute reading.
+        state['generated_state']['lactate_shown']=values['lactate_mmol_l']
+        state['generated_state']['lactate_shown_at']=state['generated_state']['elapsed']
     state['generated_state']['lab_reference']=diagnostic_core.vbg_transition(deepcopy(s),0)['result']
     state['generated_state']['abg_reference']=diagnostic_core.abg_transition(deepcopy(s),0)['result']
     state['hidden']=deepcopy(h)
@@ -123,6 +127,20 @@ def transition(s,a):
         s['treatments'].update(bag_mask=True,niv=False,oxygen=False)
         return {'duration_min':1}
     raise ValueError('Unsupported native intervention.')
+
+
+def hold_mental_while_perfusion_falls(state,before):
+    """Keep the previous mental status if the core raised it while perfusion is falling."""
+    g=state['generated_state'];s=state['coupled_state']
+    if 'arrival_tissue_perfusion' not in g:
+        return  # a state saved before this adjustment behaves as before
+    history=g.setdefault('recent_tissue_perfusion',[])
+    history.append(s['hidden'].get('tissue_perfusion',0.0))
+    del history[:-(MENTAL_TREND_WINDOW_MIN+1)]
+    now=s['observable'].get('mental_status')
+    if before in MENTAL_LEVELS and now in MENTAL_LEVELS and MENTAL_LEVELS.index(now)<MENTAL_LEVELS.index(before):
+        if len(history)>MENTAL_TREND_WINDOW_MIN and history[-1]<history[0]-MENTAL_TREND_FALL:
+            s['observable']['mental_status']=before
 
 
 def hr_relief(state):
@@ -210,8 +228,12 @@ def project(state,delta=None):
     lactate=g['values'].get('lactate_mmol_l')
     if lactate is not None and 'arrival_tissue_perfusion' in g:
         shown,at=g.get('lactate_shown'),g.get('lactate_shown_at',g['elapsed'])
-        if shown is not None and lactate<shown:
-            elapsed=max(0,g['elapsed']-at)
+        elapsed=max(0,g['elapsed']-at)
+        perfusion=s['hidden'].get('tissue_perfusion',1.0)
+        if shown is not None and perfusion<LACTATE_PRODUCTION_THRESHOLD:
+            # Hypoperfused tissue keeps producing lactate, whatever the core's value.
+            lactate=max(lactate,shown+LACTATE_PRODUCTION_RATE*(LACTATE_PRODUCTION_THRESHOLD-perfusion)*elapsed)
+        elif shown is not None and lactate<shown:
             lactate=shown+(lactate-shown)*(1-math.exp(-elapsed/LACTATE_CLEARANCE_TAU_MIN))
         g['values']['lactate_mmol_l']=lactate
         g['lactate_shown'],g['lactate_shown_at']=lactate,g['elapsed']
@@ -255,7 +277,9 @@ def tick(state):
     nitrate_hazard.step(state,f['fluid_delivered_ml']-fluid_before)
     delta=prepare_inputs(state)
     before_rhythm=s['observable']['rhythm']
+    before_mental=s['observable'].get('mental_status')
     call(s,'apply_natural_disease',1)
+    hold_mental_while_perfusion_falls(state,before_mental)
     s['sim_time']+=1;state['sim_time']=s['sim_time'];f['elapsed']=g['elapsed']
     if s['observable'].get('rhythm')!=before_rhythm:
         state.setdefault('rhythm_history',[]).append({'time_min':state['sim_time'],'kind':'physiological_evolution','rhythm_before':before_rhythm,'rhythm_after':s['observable']['rhythm']})
@@ -273,6 +297,17 @@ DYNAMIC_POCUS=('lv','ivc','lungs')
 HR_RELIEF_PER_PERFUSION=30.0   # bpm lower per unit of tissue perfusion gained since arrival
 HR_RELIEF_MAX=20.0
 LACTATE_CLEARANCE_TAU_MIN=45.0 # a falling lactate approaches the core value with this time constant
+# The core's lactate fell even as a patient deteriorated (SBP 72, lactate 3.2 -> 2.6)
+# because its low-flow burden clears regardless of perfusion. Below this tissue
+# perfusion, lactate is produced: +rate x (threshold - perfusion) mmol/L per minute.
+LACTATE_PRODUCTION_THRESHOLD=0.50
+LACTATE_PRODUCTION_RATE=0.10
+# The core lets mental status climb once 28 minutes of cerebral oxygen delivery have
+# accrued, even if perfusion is falling at that moment; a patient woke to "Alert"
+# at 86/51 on the way down. No improvement while perfusion fell over this window.
+MENTAL_TREND_WINDOW_MIN=5
+MENTAL_TREND_FALL=0.01
+MENTAL_LEVELS=('Alert','Drowsy','Obtunded','Unresponsive')
 
 
 def arrival_core_pocus(case):
