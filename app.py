@@ -8634,7 +8634,8 @@ with st.container(key="encounter-console"):
                 for delivery in timed_deliveries:
                     if delivery.get('key', [None])[0] == 'fluid':
                         st.write(f"Fluid order: {delivery['amount']:g} mL over {delivery['duration']:g} min; delivered {delivery['delivered']:.0f} mL.")
-                if remaining:
+                # Float residue from paced delivery (1e-13 mL) is not volume still to run.
+                if remaining >= .5:
                     st.write(f'Crystalloid pending: {remaining:.0f} mL. Delivery continues as simulation time advances.')
                 if st.session_state.state.get('engine_family') == 'generated':
                     st.caption('Orders and tests do not automatically wait for completion. Specify a reassessment interval to advance time.')

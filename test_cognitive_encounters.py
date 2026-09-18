@@ -295,3 +295,27 @@ def test_a_consult_or_admission_reads_as_part_of_the_patient_response(shared_app
     assert any(item.value.startswith("Cumulative crystalloid: ") and item.value.endswith(" mL")
                and ".0 mL" not in item.value for item in shared_app.markdown), \
         [item.value for item in shared_app.markdown if "crystalloid" in item.value]
+
+
+def test_a_finished_timed_bolus_leaves_no_pending_crystalloid_line(shared_app, engine):
+    # Paced delivery in a generated case left 1e-13 mL, shown as "Crystalloid pending: 0 mL".
+    from generated_case import generate_ai_encounter
+    from test_generated_case import AuthorClient
+    widget(shared_app.selectbox, "Clinical problem").set_value(challenge_for("pneumonia")).run()
+    widget(shared_app.button, "Begin Encounter").click().run()
+    generated = generate_ai_encounter("R1-05", deepcopy(engine["INITIAL_STATE"]), client=AuthorClient(), seed=7)
+    shared_app.session_state.state = deepcopy(generated["state"])
+    shared_app.run()
+    widget(shared_app.radio, "Encounter").set_value("Treat").run()
+    shared_app.text_area[0].set_value(
+        "Adrenal crisis. My priority is perfusion. Give 1000 mL normal saline IV over 15 minutes. "
+        "I expect a higher blood pressure. Reassess in 10 minutes BP and HR.")
+    widget(shared_app.button, "Submit").click().run()
+    shared_app.text_area[0].set_value(
+        "Adrenal crisis. My priority is perfusion. Give 500 mL normal saline IV over 10 minutes. "
+        "I expect a higher blood pressure. Reassess in 20 minutes BP and HR.")
+    widget(shared_app.button, "Submit").click().run()
+    assert not shared_app.exception
+    assert shared_app.session_state.state["treatments"]["cumulative_crystalloid_ml"] == 1500
+    assert not any("Crystalloid pending" in item.value for item in shared_app.markdown), \
+        shared_app.session_state.state["family_state"]["pending_fluid_ml"]

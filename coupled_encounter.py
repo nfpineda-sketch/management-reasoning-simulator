@@ -275,8 +275,28 @@ def collect(state,study,duration):
         # reports one set of findings: the earlier scans stay in the diagnostic history.
         for key in DYNAMIC_POCUS:
             authored=case['investigations'].get('pocus',{}).get('result',{}).get(key)
-            result['result'][key]=authored if authored and dynamic[key]==reference[key] else dynamic[key]
+            unchanged=dynamic[key]==reference[key] or (key=='lv' and _lv_dip_during_recovery(state,case,dynamic[key],reference[key]))
+            result['result'][key]=authored if authored and unchanged else dynamic[key]
     return result
+
+
+_LV_ORDER=('Preserved to hyperdynamic contraction','Mildly reduced global contraction','Moderately to severely reduced global contraction')
+
+
+def _lv_dip_during_recovery(state,case,current,arrival):
+    """A one-category LV fall while perfusion is better than at arrival is not reported.
+
+    In the sildenafil case the core lowered contractile reserve during the first
+    low-flow minutes (0.7 x 1.0 -> 0.7 x 0.8), so the LV crossed from preserved to
+    mildly reduced at the moment pressure, capillary refill and lactate recovered.
+    A real deterioration -- two categories, or while perfusion is no better -- is shown.
+    """
+    if current not in _LV_ORDER or arrival not in _LV_ORDER:
+        return False
+    if _LV_ORDER.index(current)-_LV_ORDER.index(arrival)!=1:
+        return False
+    arrival_perfusion=case['engine']['core_profile']['initial_hidden'].get('tissue_perfusion',0.0)
+    return state['coupled_state']['hidden'].get('tissue_perfusion',0.0)>arrival_perfusion
 
 
 def execute(state,parsed):

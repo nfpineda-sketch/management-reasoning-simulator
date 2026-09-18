@@ -235,3 +235,32 @@ def test_the_gate_floors_mirror_the_core(congestion, minimum_rr):
     state["observable"]["respiratory_rate"] = 12
     run(state, wait(1))
     assert state["observable"]["respiratory_rate"] >= minimum_rr
+
+
+# LV dip during recovery -------------------------------------------------------
+
+def preserved_heart_state():
+    state = patient(cardiac_function=.7, contractile_reserve=1.0, tissue_perfusion=.3)
+    state["encounter_spec"]["clinical_case"]["investigations"]["pocus"] = {
+        "duration_min": 2, "result": dict(AUTHORED), "result_bindings": {}}
+    return state
+
+
+def test_a_one_category_lv_dip_while_perfusion_recovers_is_not_reported():
+    # Sildenafil case: reserve 1.0 -> 0.8 during early low flow read as "mildly reduced"
+    # just as pressure, refill and lactate recovered.
+    state = preserved_heart_state()
+    state["coupled_state"]["hidden"].update(contractile_reserve=.8, effective_contractility=.8, tissue_perfusion=.7)
+    assert scan(state)["lv"] == AUTHORED["lv"]
+
+
+def test_the_same_dip_without_better_perfusion_is_reported():
+    state = preserved_heart_state()
+    state["coupled_state"]["hidden"].update(contractile_reserve=.8, effective_contractility=.8, tissue_perfusion=.25)
+    assert scan(state)["lv"] == "Mildly reduced global contraction"
+
+
+def test_a_two_category_fall_is_always_reported():
+    state = preserved_heart_state()
+    state["coupled_state"]["hidden"].update(contractile_reserve=.5, effective_contractility=.5, tissue_perfusion=.7)
+    assert scan(state)["lv"] == "Moderately to severely reduced global contraction"
