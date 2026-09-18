@@ -134,6 +134,19 @@ No source URLs are requested: do not fabricate citations or claim this is an exp
 faculty-only fields. Keep prose concise and avoid restating the same facts across fields; retain every required source fact and both management paths. No executable code, expressions, HTML, external files, diagnosis-triggered hidden actions or function calls.
 """
 
+# The arrival POCUS LV, IVC and B-lines must agree with the core's reading of the
+# drivers; the thresholds come from the gate itself.
+import generated_pocus_consistency as _pocus_core
+AUTHOR_INSTRUCTIONS += (
+    "\nThe arrival POCUS lv, ivc and lungs findings must match what the shared core derives from initial_hidden: "
+    f"LV contraction from cardiac_function x contractile_reserve (>= {_pocus_core.LV_THRESHOLDS[0]} preserved, "
+    f">= {_pocus_core.LV_THRESHOLDS[1]} mildly reduced, lower moderately to severely reduced); IVC collapse from "
+    f"effective_volume (< {_pocus_core.IVC_THRESHOLDS[0]} >50% collapse, < {_pocus_core.IVC_THRESHOLDS[1]} about 50%, "
+    f"higher <50%); B-lines from pulmonary_congestion (< {_pocus_core.B_LINE_THRESHOLDS[0]} none, "
+    f"< {_pocus_core.B_LINE_THRESHOLDS[1]} scattered, higher diffuse). Focal findings such as the B-lines of a "
+    "pneumonia may be written as focal. A clear contradiction is checked and rejected before review.\n"
+)
+
 # Nitrate hazard: derived from nitrate_hazard.CAUSES so the contract, the gate and
 # the engine name the same conditions.
 from nitrate_hazard import CAUSES as _NITRATE_CAUSES

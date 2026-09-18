@@ -71,3 +71,82 @@ def test_a_finding_that_suggests_a_diagnosis_is_a_working_model(engine, text, mo
 def test_an_order_is_never_the_subject_of_a_suggestion(engine):
     reasoning = engine["extract_explicit_reasoning"]("Give 500 mL NS as the IVC suggests volume responsiveness.")
     assert reasoning.get("problem_representation") is None
+
+
+# Generation gate ------------------------------------------------------------
+
+import json
+from generated_case_schema import compile_case
+from generated_case_validation import ContractValidationError
+from generated_pocus_consistency import issues as pocus_core_issues
+from test_generated_case import novel_payload
+
+
+def gate_codes(raw):
+    try:
+        compile_case(raw)
+    except ContractValidationError as error:
+        return [issue for issue in error.issues if issue["code"] == "POCUS_CORE_MISMATCH"]
+    return []
+
+
+def with_drivers(**hidden):
+    raw = novel_payload()
+    raw["engine"]["core_profile"]["initial_hidden"].update(hidden)
+    return raw
+
+
+def test_the_default_payload_agrees_with_its_drivers():
+    assert gate_codes(novel_payload()) == []
+
+
+def test_a_normal_lv_with_weak_drivers_is_rejected_with_the_rule_to_fix_it():
+    [issue] = gate_codes(with_drivers(cardiac_function=.7, contractile_reserve=.6))
+    assert issue["details"] == {"field": "lv", "authored_level": "preserved or hyperdynamic",
+                                "core_level": "moderately to severely reduced"}
+    assert "cardiac_function x contractile_reserve" in issue["message"]
+
+
+def test_one_category_apart_is_left_to_the_reviewer():
+    # 0.8 x 0.75 = 0.60: the core reads mildly reduced, the author wrote hyperdynamic.
+    assert gate_codes(with_drivers(cardiac_function=.8, contractile_reserve=.75)) == []
+
+
+def test_a_collapsing_ivc_with_full_drivers_is_rejected():
+    assert [i["details"]["field"] for i in gate_codes(with_drivers(effective_volume=.8))] == ["ivc"]
+
+
+def test_no_b_lines_with_heavy_congestion_is_rejected_but_focal_b_lines_are_not_judged():
+    assert [i["details"]["field"] for i in gate_codes(with_drivers(pulmonary_congestion=.6))] == ["lungs"]
+    raw = with_drivers(pulmonary_congestion=.6)
+    pocus = next(study for study in raw["investigations"] if study["id"] == "pocus")
+    next(item for item in pocus["result"] if item["field"] == "lungs")["value"] = "Focal B-lines at the right base"
+    assert gate_codes(raw) == []
+
+
+@pytest.mark.parametrize("hidden", [
+    {"cardiac_function": .7, "contractile_reserve": .6, "effective_volume": .3, "pulmonary_congestion": .2},
+    {"cardiac_function": .9, "contractile_reserve": 1.0, "effective_volume": .7, "pulmonary_congestion": .6},
+    {"cardiac_function": .6, "contractile_reserve": .9, "effective_volume": .5, "pulmonary_congestion": .1},
+])
+def test_the_gate_thresholds_mirror_the_core(hidden):
+    # The gate's categories must match the core's own arrival findings.
+    from coupled_encounter import arrival_core_pocus
+    from generated_pocus_consistency import _b_line_level, _ivc_level, _lv_level
+    raw = with_drivers(**hidden)
+    case = {"engine": raw["engine"]}
+    core = arrival_core_pocus(case)
+    for field, classify in (("lv", _lv_level), ("ivc", _ivc_level), ("lungs", _b_line_level)):
+        pocus = next(study for study in raw["investigations"] if study["id"] == "pocus")
+        next(item for item in pocus["result"] if item["field"] == field)["value"] = core[field]
+    assert gate_codes(raw) == []
+    assert all(classify(core[field]) is not None for field, classify in
+               (("lv", _lv_level), ("ivc", _ivc_level), ("lungs", _b_line_level)))
+
+
+def test_the_paid_sildenafil_case_would_now_be_sent_back_for_its_lv():
+    case = {"engine": {"core_profile": {"initial_hidden": {"cardiac_function": .7, "contractile_reserve": .6,
+                                                           "effective_volume": .3, "pulmonary_congestion": .2}}},
+            "investigations": {"pocus": {"result": {"lv": "normal contractility", "ivc": "1.2 cm; >50% inspiratory collapse",
+                                                    "lungs": "no B-lines"}}}}
+    assert [i["details"]["field"] for i in pocus_core_issues(case)] == ["lv"]
