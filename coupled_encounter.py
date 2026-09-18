@@ -122,6 +122,9 @@ def prepare_inputs(state):
     for event in g['events']:
         progress=event['exposure']*event_progress(event,g['elapsed'])*gain_at(event.get('state_gain'),{**g['values'],'elapsed_min':g['elapsed'],'fluid_delivered_ml':state['family_state']['fluid_delivered_ml']})
         for k,v in event['delta'].items():delta[k]=delta.get(k,0)+progress*v
+    if g.get('nitrate_drop'):
+        from nitrate_hazard import DBP_FRACTION
+        delta['sbp']=delta.get('sbp',0)-g['nitrate_drop'];delta['dbp']=delta.get('dbp',0)-DBP_FRACTION*g['nitrate_drop']
     s['physiology_inputs']={'map':(delta.get('sbp',0)+2*delta.get('dbp',0))/3,
        'pulse_pressure':delta.get('sbp',0)-delta.get('dbp',0),'hr':delta.get('hr',0),
        'spo2':delta.get('spo2',0),'crt':delta.get('crt',0),'respiratory_rate':delta.get('respiratory_rate',0)}
@@ -205,6 +208,7 @@ def tick(state):
     from generated_delivery import advance_deliveries
     s=state['coupled_state'];g=state['generated_state'];f=state['family_state'];g['elapsed']+=1
     before=[x.get('delivered',0) for x in g.get('deliveries',[])]
+    fluid_before=f['fluid_delivered_ml']
     advance_deliveries(state)
     for item,prior in zip(g.get('deliveries',[]),before):
         change=item['delivered']-prior
@@ -215,6 +219,9 @@ def tick(state):
             if action['type']=='fluid':s['_fluid_delivery']={'before_ml':prior,'total_ml':item['amount']}
             try:transition(s,part)
             finally:s.pop('_fluid_delivery',None)
+    # A declared preload-dependent condition turns nitroglycerin into an abrupt fall in pressure.
+    import nitrate_hazard
+    nitrate_hazard.step(state,f['fluid_delivered_ml']-fluid_before)
     delta=prepare_inputs(state)
     before_rhythm=s['observable']['rhythm']
     call(s,'apply_natural_disease',1)

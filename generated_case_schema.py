@@ -11,6 +11,7 @@ import math
 
 from ecg12 import PROFILES, RHYTHMS
 from clinical_core_defaults import CORE_VERSION, PHENOTYPE_FIELDS
+from nitrate_hazard import CAUSES as NITRATE_HAZARD_CAUSES
 from visual_observations import VISUAL_CHOICES, PERFUSION_CATEGORIES
 from generated_case_validation import ContractValidationError
 
@@ -120,6 +121,7 @@ CASE_SCHEMA = obj({
     "engine": obj({"core_profile": obj({"version":enum((CORE_VERSION,)), "infection_active":BOOL, "initial_hidden":obj({k:{"type":"number","minimum":0,"maximum":1} for k in PHENOTYPE_FIELDS})}), "model": enum((CORE_VERSION,)),
                    "volume_model": nullable(obj({"initial_extravascular_ml":{"type":"number","minimum":0,"maximum":10000}, "redistribution_half_life_min":{"type":"number","minimum":1,"maximum":240}, "clearance_half_life_min":{"type":"number","minimum":1,"maximum":1440}, "extravascular_fraction":{"type":"number","minimum":0,"maximum":1}, "diuresis_extravascular_fraction":{"type":"number","minimum":0,"maximum":1}})),
                    "terminal_rule": nullable(obj({"when":array(obj({"field":enum(NUMERIC_FIELDS),"operator":enum(("lt","lte","gt","gte")),"value":NUMBER}),minimum=1,maximum=6), "sustained_min":{"type":"integer","minimum":1,"maximum":60}})),
+                   "nitrate_hazard": nullable(obj({"cause": enum(tuple(NITRATE_HAZARD_CAUSES))})),
                    "horizon_min": {"type": "integer", "minimum": 30, "maximum": 180},
                    "initial_labs": obj({key: {"type": "number", "minimum": BOUNDS[key][0], "maximum": BOUNDS[key][1]} for key in LAB_NUMERIC}),
                    "untreated_drift_per_min": NUMERIC_PAIRS,
@@ -259,6 +261,10 @@ def collect_clinical_issues(case):
                 "B-lines, consolidation and effusion, aortic root, descending and abdominal aorta, "
                 "and femoral and popliteal vein compression. Report findings, not interpretation.",
                 missing_fields=missing)
+    # Nitroglycerin can collapse the pressure of a preload-dependent patient. The
+    # case must declare such a condition exactly when it describes one.
+    from nitrate_hazard import issues as nitrate_hazard_issues
+    issues.extend(nitrate_hazard_issues(case))
     for study_id, measurement in (("poc_glucose", "glucose_mg_dl"), ("temperature", "temperature_c")):
         if study_id in studies and measurement not in studies[study_id]["result"]:
             add("BEDSIDE_MEASUREMENT_MISSING", f"case.investigations.{study_id}.result", "Essential bedside studies require an explicit numerical measurement.", field=measurement)

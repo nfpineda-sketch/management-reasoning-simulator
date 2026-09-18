@@ -66,7 +66,7 @@ def novel_payload(*, diagnosis="Acute adrenal crisis following glucocorticoid wi
                                               "aorta_abdominal": "Normal calibre from the diaphragm to the iliac bifurcation",
                                               "dvt_femoral": "Compressible bilaterally", "dvt_popliteal": "Compressible bilaterally"}),
                                study("cortisol", {"cortisol_ug_dl": 1.2}, duration=60)],
-            "engine": {"core_profile":{"version":CORE_VERSION,"infection_active":False,"initial_hidden":{k:INITIAL_HIDDEN[k] for k in PHENOTYPE_FIELDS}}, "volume_model": {"initial_extravascular_ml":0,"redistribution_half_life_min":28,"clearance_half_life_min":120,"extravascular_fraction":.5,"diuresis_extravascular_fraction":.7}, "terminal_rule":None, "model": CORE_VERSION, "horizon_min": 60, "stable_diagnostics": ["pocus"],
+            "engine": {"core_profile":{"version":CORE_VERSION,"infection_active":False,"initial_hidden":{k:INITIAL_HIDDEN[k] for k in PHENOTYPE_FIELDS}}, "nitrate_hazard": None, "volume_model": {"initial_extravascular_ml":0,"redistribution_half_life_min":28,"clearance_half_life_min":120,"extravascular_fraction":.5,"diuresis_extravascular_fraction":.7}, "terminal_rule":None, "model": CORE_VERSION, "horizon_min": 60, "stable_diagnostics": ["pocus"],
                        "initial_labs": {"hemoglobin_g_dl": 12.4, "lactate_mmol_l": 3, "pco2_mm_hg": 35,
                                         "bicarbonate_mmol_l": 22, "pao2_mm_hg": 92},
                        "untreated_drift_per_min": [{"field": "sbp", "value": -.12}, {"field": "dbp", "value": -.05}],

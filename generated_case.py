@@ -134,6 +134,19 @@ No source URLs are requested: do not fabricate citations or claim this is an exp
 faculty-only fields. Keep prose concise and avoid restating the same facts across fields; retain every required source fact and both management paths. No executable code, expressions, HTML, external files, diagnosis-triggered hidden actions or function calls.
 """
 
+# Nitrate hazard: derived from nitrate_hazard.CAUSES so the contract, the gate and
+# the engine name the same conditions.
+from nitrate_hazard import CAUSES as _NITRATE_CAUSES
+AUTHOR_INSTRUCTIONS += (
+    "\nengine.nitrate_hazard is null unless the case includes a preload-dependent condition in which nitroglycerin can cause "
+    "abrupt, severe hypotension. Include one only when it serves the challenge; never add it by default. If you include one, "
+    "set engine.nitrate_hazard.cause and leave the resident a cue to discover it before or while treating:\n"
+    + "".join(f"- {cause} ({spec['label']}): {spec['cue']}.\n" for cause, spec in _NITRATE_CAUSES.items())
+    + "If the case mentions any of these conditions anywhere, including in the history, examination, POCUS or faculty "
+    "fields, it must declare it; a negated mention such as 'I have not taken sildenafil' does not count. This is checked "
+    "before review. With a declared hazard, nitroglycerin drops pressure rapidly, and stopping it with volume restores it.\n"
+)
+
 REVIEW_INSTRUCTIONS = """Independently audit this proposed NEW fictional clinical encounter as a medical-simulation consistency reviewer.
 All cases execute main_ia_v1: native oxygen, fluids, vasoactives, nodal agents, diuresis, IV etomidate/midazolam,
 ventilation and cardioversion are globally executable without authored response_rules. Empty response_rules are valid
