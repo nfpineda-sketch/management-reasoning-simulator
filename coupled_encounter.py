@@ -45,6 +45,14 @@ def call(s,name,*args,**kwargs):
     return core.invoke(name,(s,*args),kwargs,rng,lambda t:f'{int(t)//60:02d}:{int(t)%60:02d}')
 
 
+def core_spo2_target(s):
+    """The core's SpO2 target for this state, mirrored from clinical_physiology."""
+    h=s['hidden']
+    burden=core.clamp(max(0.62*core.pulmonary_clinical_signal(s)+0.38*h['pulmonary_congestion']+0.48*h['respiratory_failure_severity'],
+                          0.82*h.get('primary_respiratory_burden',0.0),0.0))
+    return max(72.0,min(100.0,94.0-16.0*burden+7.0*core.oxygen_support_fraction(s)))
+
+
 def initialize(state):
     if state.get('coupled_state'):
         return
@@ -72,6 +80,10 @@ def initialize(state):
        'pending_diagnostics':[],'native_deliveries':[],'engine_version':CORE_VERSION}
     # Reference values preserve authored baseline laboratory etiologies. Subsequent
     # changes come from the same perfusion/respiratory calculations as main/IA.
+    # The core has its own room-air SpO2 equilibrium (at most 94%); an authored 96%
+    # fell to it within minutes, as if fluid had worsened oxygenation. Anchor it to
+    # the authored arrival value, as the gases are; changes still come from the core.
+    state['generated_state']['spo2_anchor']=float(case['observable']['spo2'])-core_spo2_target(s)
     state['generated_state']['lab_reference']=diagnostic_core.vbg_transition(deepcopy(s),0)['result']
     state['generated_state']['abg_reference']=diagnostic_core.abg_transition(deepcopy(s),0)['result']
     state['hidden']=deepcopy(h)
@@ -127,7 +139,7 @@ def prepare_inputs(state):
         delta['sbp']=delta.get('sbp',0)-g['nitrate_drop'];delta['dbp']=delta.get('dbp',0)-DBP_FRACTION*g['nitrate_drop']
     s['physiology_inputs']={'map':(delta.get('sbp',0)+2*delta.get('dbp',0))/3,
        'pulse_pressure':delta.get('sbp',0)-delta.get('dbp',0),'hr':delta.get('hr',0),
-       'spo2':delta.get('spo2',0),'crt':delta.get('crt',0),'respiratory_rate':delta.get('respiratory_rate',0)}
+       'spo2':delta.get('spo2',0)+g.get('spo2_anchor',0),'crt':delta.get('crt',0),'respiratory_rate':delta.get('respiratory_rate',0)}
     sedating=[e for e in g['events'] if e.get('mental_status_during') and e['exposure']*event_progress(e,g['elapsed'])>=e.get('mental_status_threshold',1)]
     s['physiology_inputs']['sedation_effect']=.5 if sedating else 0
     return delta

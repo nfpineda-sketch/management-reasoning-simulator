@@ -53,6 +53,9 @@ def test_native_actions_use_same_engine_and_do_not_require_case_response_rules(a
     elif k=='niv':adapter.call(reference,'niv_transition','BiPAP',5,'start',10,5,50)
     elif k=='intubation':adapter.call(reference,'intubation_transition','VC/AC',60,8)
     else:raise AssertionError('Missing independent native reference')
+    # The adapter's only standing input is the authored-SpO2 anchor; give the reference the same input.
+    reference['physiology_inputs']={'map':0,'pulse_pressure':0,'hr':0,'spo2':s['generated_state']['spo2_anchor'],
+                                    'crt':0,'respiratory_rate':0,'sedation_effect':0}
     for i in range(5):
         adapter.call(reference,'apply_natural_disease',1);reference['sim_time']+=1
     run(s,action,wait(5))

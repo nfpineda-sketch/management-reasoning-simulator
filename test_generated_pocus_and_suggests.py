@@ -150,3 +150,42 @@ def test_the_paid_sildenafil_case_would_now_be_sent_back_for_its_lv():
             "investigations": {"pocus": {"result": {"lv": "normal contractility", "ivc": "1.2 cm; >50% inspiratory collapse",
                                                     "lungs": "no B-lines"}}}}
     assert [i["details"]["field"] for i in pocus_core_issues(case)] == ["lv"]
+
+
+# SpO2 anchored to the authored arrival value ---------------------------------
+
+def spo2_patient(authored=96, **hidden):
+    state = patient(**hidden)
+    case = state["encounter_spec"]["clinical_case"]
+    case["observable"]["spo2"] = authored
+    state["observable"]["spo2"] = authored
+    state["coupled_state"] = {}
+    adapter.initialize(state)
+    return state
+
+
+def test_an_authored_room_air_spo2_is_kept_instead_of_falling_to_the_core_equilibrium():
+    # The core's room-air target was 94 - 16 x burden: an authored 96% fell to 91%.
+    from test_coupled_encounter import run
+    from test_generated_engine import wait
+    state = spo2_patient(96, pulmonary_congestion=.2, primary_respiratory_burden=.1)
+    assert adapter.core_spo2_target(state["coupled_state"]) < 92
+    run(state, wait(15))
+    assert state["observable"]["spo2"] >= 95
+
+
+def test_oxygen_still_raises_the_anchored_spo2():
+    from test_coupled_encounter import run
+    from test_generated_engine import wait
+    state = spo2_patient(92, pulmonary_congestion=.2, primary_respiratory_burden=.1)
+    run(state, wait(5))
+    before = state["observable"]["spo2"]
+    run(state, {"type": "oxygen", "device": "nasal cannula", "flow_lpm": 4}, wait(10))
+    assert state["observable"]["spo2"] > before
+
+
+def test_a_state_saved_before_the_anchor_behaves_as_before():
+    state = spo2_patient(96)
+    state["generated_state"].pop("spo2_anchor")
+    adapter.prepare_inputs(state)
+    assert state["coupled_state"]["physiology_inputs"]["spo2"] == 0
