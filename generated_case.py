@@ -245,6 +245,22 @@ def _call(client, model, instructions, payload, schema, name, tokens, stage="AUT
         raise provider_error(exc, stage) from None
 
 
+def _correction_codes(validation_failures):
+    """Allowlisted rule codes from every rejected draft, in first-seen order."""
+    from generated_case_validation import safe_validation_codes
+
+    class _Failure:
+        def __init__(self, issues):
+            self.issues = issues
+
+    codes = []
+    for failure in validation_failures:
+        for code in safe_validation_codes(_Failure(failure.get("issues") or [])):
+            if code not in codes:
+                codes.append(code)
+    return codes
+
+
 def generation_capabilities():
     from ecg12 import PROFILES, RHYTHMS
     from family_parser import _AGENTS
@@ -468,6 +484,9 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
                                             for key in ("input_tokens", "output_tokens", "total_tokens")
                                             if any(key in _usage(response) for response in author_responses)},
                            "authoring_requests": len(author_responses), "correction_count": correction_count,
+                           # Which rules the draft first broke, so a launched case shows what had to be
+                           # repaired. Static rule codes only: no paths, patient facts or messages.
+                           "correction_validation_codes": _correction_codes(validation_failures),
                            "generation_timings": {**timings, "total_seconds": round(monotonic() - started, 3)},
                            "review_requests": len(review_responses),
                            "requests": deepcopy(requests), "request_budget_seconds": REQUEST_BUDGET_SECONDS,

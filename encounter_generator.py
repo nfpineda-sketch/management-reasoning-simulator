@@ -199,6 +199,34 @@ def _spec_digest(spec: dict) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def replay_encounter(challenge_id: str, base_state: dict, record: dict) -> dict:
+    """Start a saved AI-generated encounter again from its frozen launch state.
+
+    Local testing only (offline mode): no provider is called. The saved case is
+    checked against the same executable contract a new generation must meet.
+    """
+    from generated_case import GeneratedCaseError
+    state = deepcopy((record or {}).get("state") or {})
+    spec = state.get("encounter_spec") or {}
+    if spec.get("challenge_id") != challenge_id:
+        raise GeneratedCaseError(
+            f"The saved case to replay belongs to challenge {spec.get('challenge_id')}. Choose that challenge, "
+            "or unset MRS_REPLAY_CASE to use the authored cases.")
+    if state.get("sim_time") != 0 or state.get("engine_family") != "generated":
+        raise GeneratedCaseError("The saved case is not a fresh generated encounter.")
+    from coupled_encounter import enabled, validate_profile
+    from generated_engine import validate_declarative_case
+    case = spec.get("clinical_case") or {}
+    try:
+        validate_declarative_case(case)
+        if enabled(case):
+            validate_profile(case["engine"]["core_profile"])
+    except (ValueError, KeyError, TypeError) as exc:
+        raise GeneratedCaseError("The saved case no longer meets the executable contract: " + str(exc)) from None
+    return {"state": state, "spec": deepcopy(spec), "presentation": record.get("presentation") or spec.get("presentation"),
+            "source": "replay", "warning": None}
+
+
 def generate_encounter(
     challenge_id: str,
     base_state: dict,
@@ -213,6 +241,7 @@ def generate_encounter(
     review_model: str | None = None,
     progress: Any = None,
     on_case_compiled: Any = None,
+    replay: dict | None = None,
 ) -> dict:
     """Author and review a novel frozen case; failure requires explicit retry.
 
@@ -224,8 +253,10 @@ def generate_encounter(
     not guaranteed deterministic. Store the returned specification to replay it.
     """
     from cognitive_catalog import BIAS_CHALLENGES
-    if generation_mode not in {"novel", "authored"}:
+    if generation_mode not in {"novel", "authored", "replay"}:
         raise ValueError("Unknown generation mode.")
+    if generation_mode == "replay":
+        return replay_encounter(challenge_id, base_state, replay)
     if generation_mode == "novel" and profile_id is None and family_id is None and variant_id is None:
         from generated_case import generate_ai_encounter
         return generate_ai_encounter(challenge_id, base_state, api_key, model, seed, client, review_model, progress,

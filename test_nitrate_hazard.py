@@ -156,3 +156,32 @@ def test_a_negated_finding_elsewhere_in_the_cardiac_exam_does_not_hide_the_murmu
     assert "NITRATE_HAZARD_UNDISCOVERABLE" not in codes(raw)
     raw = exam(with_hazard("severe_aortic_stenosis"), "Regular rhythm; no systolic murmur.")
     assert "NITRATE_HAZARD_UNDISCOVERABLE" in codes(raw)
+
+
+# Provenance -----------------------------------------------------------------
+
+def test_a_launched_case_records_which_rules_its_draft_had_to_repair():
+    # The paid sildenafil run needed one correction and did not say why.
+    from test_generated_case import AuthorClient, clean_base
+    from generated_case import generate_ai_encounter
+
+    class Client(AuthorClient):
+        def create(self, **kwargs):
+            drafts = sum(c["text"]["format"]["name"] != "clinical_consistency_review" for c in self.calls)
+            if kwargs["text"]["format"]["name"] != "clinical_consistency_review":
+                self.payload = with_hazard(None, medications=["I took sildenafil last night and stopped my prednisone five days ago."]) \
+                    if drafts == 0 else with_hazard("pde5_inhibitor", medications=["I took sildenafil last night and stopped my prednisone five days ago."])
+            return super().create(**kwargs)
+
+    result = generate_ai_encounter("R1-05", clean_base(), client=Client(), seed=7)
+    provenance = result["spec"]["provenance"]
+    assert provenance["correction_count"] == 1
+    assert provenance["correction_validation_codes"] == ["NITRATE_HAZARD_UNDECLARED"]
+    assert result["spec"]["clinical_case"]["engine"]["nitrate_hazard"] == {"cause": "pde5_inhibitor"}
+
+
+def test_a_case_that_needed_no_repair_records_no_codes():
+    from test_generated_case import AuthorClient, clean_base
+    from generated_case import generate_ai_encounter
+    provenance = generate_ai_encounter("R1-05", clean_base(), client=AuthorClient(), seed=7)["spec"]["provenance"]
+    assert provenance["correction_count"] == 0 and provenance["correction_validation_codes"] == []
