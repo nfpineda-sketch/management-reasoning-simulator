@@ -268,6 +268,8 @@ def collect_clinical_issues(case):
     # The authored arrival POCUS must not contradict what the core derives from the drivers.
     from generated_pocus_consistency import issues as pocus_core_issues
     issues.extend(pocus_core_issues(case))
+    from generated_pocus_consistency import respiratory_issues
+    issues.extend(respiratory_issues(case))
     for study_id, measurement in (("poc_glucose", "glucose_mg_dl"), ("temperature", "temperature_c")):
         if study_id in studies and measurement not in studies[study_id]["result"]:
             add("BEDSIDE_MEASUREMENT_MISSING", f"case.investigations.{study_id}.result", "Essential bedside studies require an explicit numerical measurement.", field=measurement)

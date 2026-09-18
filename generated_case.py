@@ -145,6 +145,10 @@ AUTHOR_INSTRUCTIONS += (
     f"higher <50%); B-lines from pulmonary_congestion (< {_pocus_core.B_LINE_THRESHOLDS[0]} none, "
     f"< {_pocus_core.B_LINE_THRESHOLDS[1]} scattered, higher diffuse). Focal findings such as the B-lines of a "
     "pneumonia may be written as focal. A clear contradiction is checked and rejected before review.\n"
+    "The core also raises the arrival respiratory rate and caps SpO2 from pulmonary_congestion: "
+    + "; ".join(f">= {surface} RR >= {rr}" + (f" and SpO2 <= {cap}" if cap else "")
+                for surface, rr, cap in _pocus_core.RESPIRATORY_FLOORS)
+    + ". The authored arrival RR and SpO2 must respect these limits. This is checked before review.\n"
 )
 
 # Nitrate hazard: derived from nitrate_hazard.CAUSES so the contract, the gate and

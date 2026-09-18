@@ -97,3 +97,45 @@ def issues(case):
             "details": {"field": field, "authored_level": levels[written], "core_level": levels[core[field]]},
         })
     return found
+
+
+# The core also imposes respiratory floors from the arrival pulmonary signal
+# (clinical_physiology: respiratory_surface thresholds). They only ever raise RR
+# and cap SpO2, so an authored RR 18 with congestion 0.20 became 24 at once and
+# stayed there. Mirrored thresholds: (surface, minimum RR, maximum SpO2).
+RESPIRATORY_FLOORS = ((.18, 24, None), (.30, 28, 92), (.42, 32, 89), (.56, 36, 85), (.70, 40, 80))
+RR_TOLERANCE = 3
+
+
+def respiratory_floor(case):
+    """(surface, minimum RR, maximum SpO2) the core imposes at arrival, or None."""
+    from clinical_core_defaults import INITIAL_HIDDEN
+    import clinical_physiology as core
+    h = {**INITIAL_HIDDEN, **case["engine"]["core_profile"]["initial_hidden"]}
+    surface = max(h.get("respiratory_failure_severity", 0.0), core.pulmonary_clinical_signal({"hidden": h}))
+    applicable = [floor for floor in RESPIRATORY_FLOORS if surface >= floor[0]]
+    if not applicable:
+        return surface, None, None
+    caps = [cap for _, _, cap in applicable if cap is not None]
+    return surface, applicable[-1][1], (min(caps) if caps else None)
+
+
+def respiratory_issues(case):
+    if case.get("engine", {}).get("core_profile") is None:
+        return []
+    surface, minimum_rr, maximum_spo2 = respiratory_floor(case)
+    observed = case.get("observable", {})
+    found = []
+    if minimum_rr is not None and observed.get("respiratory_rate", minimum_rr) <= minimum_rr - RR_TOLERANCE:
+        found.append(("respiratory_rate", observed["respiratory_rate"], f"a respiratory rate of at least {minimum_rr}/min"))
+    if maximum_spo2 is not None and observed.get("spo2", 0) > maximum_spo2 + 1:
+        found.append(("spo2", observed["spo2"], f"an SpO2 of at most {maximum_spo2}%"))
+    rule = ("pulmonary_congestion (the arrival pulmonary signal) >= 0.18 forces RR >= 24; >= 0.30 RR >= 28 and SpO2 <= 92; "
+            ">= 0.42 RR >= 32 and SpO2 <= 89; >= 0.56 RR >= 36 and SpO2 <= 85; >= 0.70 RR >= 40 and SpO2 <= 80")
+    return [{
+        "code": "RESPIRATORY_CORE_MISMATCH", "path": f"case.observable.{field}",
+        "message": (f"The arrival {field} is {value}, but the core_profile drivers impose {limit} from the first minute "
+                    f"({rule}). Lower pulmonary_congestion to match the authored breathing, or author the breathing the "
+                    f"drivers produce."),
+        "details": {"field": field, "authored": value, "pulmonary_signal": round(surface, 3)},
+    } for field, value, limit in found]

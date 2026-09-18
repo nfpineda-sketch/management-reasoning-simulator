@@ -189,3 +189,49 @@ def test_a_state_saved_before_the_anchor_behaves_as_before():
     state["generated_state"].pop("spo2_anchor")
     adapter.prepare_inputs(state)
     assert state["coupled_state"]["physiology_inputs"]["spo2"] == 0
+
+
+# Respiratory floors at arrival ------------------------------------------------
+
+def respiratory_codes(raw):
+    try:
+        compile_case(raw)
+    except ContractValidationError as error:
+        return [issue for issue in error.issues if issue["code"] == "RESPIRATORY_CORE_MISMATCH"]
+    return []
+
+
+def test_the_default_payload_respects_the_core_floors():
+    assert respiratory_codes(novel_payload()) == []
+
+
+def test_normal_breathing_with_congestion_that_forces_tachypnoea_is_rejected():
+    # The paid sildenafil case: RR 18 and congestion 0.20; the core raised RR to 24 at once.
+    raw = with_drivers(pulmonary_congestion=.2)
+    raw["observable"]["respiratory_rate"] = 18
+    [issue] = respiratory_codes(raw)
+    assert (issue["details"]["field"], issue["details"]["authored"]) == ("respiratory_rate", 18)
+    assert "at least 24/min" in issue["message"]
+
+
+def test_a_high_spo2_under_a_core_cap_is_rejected():
+    raw = with_drivers(pulmonary_congestion=.45)
+    raw["observable"]["respiratory_rate"] = 34
+    fields = {issue["details"]["field"] for issue in respiratory_codes(raw)}
+    assert fields == {"spo2"}  # authored 97% against a core cap of 89%
+
+
+def test_authored_breathing_that_matches_the_floor_passes():
+    raw = with_drivers(pulmonary_congestion=.2)
+    raw["observable"]["respiratory_rate"] = 24
+    assert respiratory_codes(raw) == []
+
+
+@pytest.mark.parametrize("congestion, minimum_rr", [(.19, 24), (.31, 28), (.43, 32)])
+def test_the_gate_floors_mirror_the_core(congestion, minimum_rr):
+    from test_coupled_encounter import run
+    from test_generated_engine import wait
+    state = patient(pulmonary_congestion=congestion)
+    state["observable"]["respiratory_rate"] = 12
+    run(state, wait(1))
+    assert state["observable"]["respiratory_rate"] >= minimum_rr
