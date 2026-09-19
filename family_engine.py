@@ -39,12 +39,40 @@ _MEDICINES = {
     "amiodarone": ({"IV", "PO"}, .001, 2000),
     "procedural_sedation": ({"IV", "IM", "IN"}, .001, 1000),
     "magnesium": ({"IV", "IO"}, 500, 4000),
+    # Induction and maintenance sedation are part of intubating an asthmatic, so
+    # they are no longer restricted to generated encounters.
 }
 
 # Intravenous magnesium in severe asthma (faculty decision 2026-09-19): given
 # before intubation, it adds a modest bronchodilation on top of the beta-agonist.
 # Teaching magnitudes pending review.
 MAGNESIUM = {"bronchodilation_per_g": .075, "max_bronchodilation": .20, "onset_min": 10}
+
+# Diluted epinephrine in severe asthma (faculty decision 2026-09-19): 1 mg in
+# 1000 mL as a drip, or 50-150 mcg IV boluses, before considering intubation. It
+# bronchodilates and supports pressure at the cost of tachycardia. A bolus fades
+# over minutes, so it has to be repeated or replaced by the drip. Magnitudes
+# pending faculty review.
+EPINEPHRINE = {
+    "bolus_tau_min": 3.0,           # a bolus behaves like this many mcg/min while it lasts
+    "bolus_equivalent_divisor": 3.0,
+    "bronchodilation_per_mcg_min": .035, "max_bronchodilation": .45,
+    "sbp_per_mcg_min": 1.2, "max_sbp": 30.0,
+    "hr_per_mcg_min": 1.5, "max_hr": 25.0,
+}
+
+# Continuous nebulization holds the beta-agonist effect instead of letting each
+# dose fade (faculty decision 2026-09-19).
+CONTINUOUS_NEBULIZER = {"bronchodilation_per_mg_h": .09, "max_bronchodilation": 1.0, "tau_min": 10.0}
+
+# Ketamine keeps airway reflexes and relaxes bronchial smooth muscle, so it is the
+# preferred induction and maintenance agent in asthma (faculty decision 2026-09-19).
+KETAMINE = {"bronchodilation_per_mg": .0015, "max_bronchodilation": .25, "tau_min": 45.0}
+
+# The other induction agents drop the pressure of a preload-dependent, air-trapped
+# asthmatic; ketamine and etomidate do not (faculty decision 2026-09-19).
+SEDATION_BP_DROP_PER_MG = {"propofol": .12, "midazolam": .8, "fentanyl": .05}
+SEDATION_BP_TAU_MIN = 15.0
 
 
 # Pulmonary oedema teaching magnitudes (docs/PULMONARY_EDEMA_PHYSIOLOGY_PROPOSAL.md,
@@ -137,7 +165,7 @@ def _validate(state, parsed):
         kind = a.get("type")
         if validation_state.get("family_state", {}).get("invasive") and kind in {"oxygen", "niv", "bag_mask"}:
             return None, "The patient is receiving invasive ventilation. Please specify ventilator settings or clarify the intended airway change."
-        if kind in {"beta_blocker", "diltiazem", "amiodarone", "cardioversion", "procedural_sedation", "ventilator_adjustment", "dobutamine"} and state.get("engine_family") != "generated":
+        if kind in {"beta_blocker", "diltiazem", "amiodarone", "cardioversion", "ventilator_adjustment", "dobutamine"} and state.get("engine_family") != "generated":
             return None, "This intervention requires a generated encounter with an explicit response rule."
         if kind == "clarification":
             return None, str(a.get("message") or "Please clarify the order before it is executed.")
@@ -201,24 +229,37 @@ def _validate(state, parsed):
                     return None, "Specify CPAP or BiPAP."
                 if a["mode"].lower() == "bipap" and (not _number(a.get("ipap_cmh2o"), a["epap_cmh2o"], 35)):
                     return None, "Specify an inspiratory pressure at least as high as expiratory pressure."
+        elif kind == "epinephrine_bolus":
+            if not _number(a.get("dose_mcg"), 10, 500):
+                return None, "Specify an epinephrine IV bolus from 10 to 500 mcg (50-150 mcg is the usual diluted bolus)."
+            if str(a.get("route") or "IV").upper() != "IV":
+                return None, "A diluted epinephrine bolus is given IV in this encounter."
+            a["route"] = "IV"
+        elif kind == "continuous_bronchodilator":
+            a["operation"] = str(a.get("operation") or "start").lower()
+            if a["operation"] not in {"start", "adjust", "continue", "stop"}:
+                return None, "Specify whether to start, adjust, continue, or stop the continuous nebulization."
+            if a["operation"] != "stop" and not _number(a.get("rate_mg_h"), 1, 30):
+                return None, "Specify the continuous nebulized albuterol rate in mg/h (1 to 30)."
         elif kind == "nitroglycerin_bolus":
             if not _number(a.get("dose_mcg"), 50, 3000):
                 return None, "Specify a nitroglycerin IV bolus from 50 to 3000 mcg."
             if str(a.get("route") or "IV").upper() != "IV":
                 return None, "A nitroglycerin bolus is given IV in this encounter."
             a["route"] = "IV"
-        elif kind in {"nitroglycerin", "norepinephrine", "dobutamine"}:
+        elif kind in {"nitroglycerin", "norepinephrine", "dobutamine", "epinephrine"}:
             a["operation"] = str(a.get("operation") or "start").lower()
             if a["operation"] not in {"start", "adjust", "continue", "stop"}:
                 return None, "Specify whether to start, adjust, continue, or stop the infusion."
             if a["operation"] != "stop":
                 if kind == "nitroglycerin" and not _number(a.get("rate_mcg_min"), .1, 400):
                     return None, "Specify or confirm the nitroglycerin rate in mcg/min."
-                if kind in {"norepinephrine", "dobutamine"}:
+                if kind in {"norepinephrine", "dobutamine", "epinephrine"}:
                     units = str(a.get("units", "")).lower().replace("μ", "u").replace("µ", "u")
                     aliases = {"mcg/min": "mcg/min", "ug/min": "mcg/min", "mcg/kg/min": "mcg/kg/min", "ug/kg/min": "mcg/kg/min"}
                     a["units"] = aliases.get(units)
-                    if a["units"] is None or not _number(a.get("rate"), .001, (10000 if kind == "dobutamine" else 100) if a["units"] == "mcg/min" else (50 if kind == "dobutamine" else 1.5)):
+                    ceiling = {"dobutamine": (10000, 50), "norepinephrine": (100, 1.5), "epinephrine": (60, 1.0)}[kind]
+                    if a["units"] is None or not _number(a.get("rate"), .001, ceiling[0] if a["units"] == "mcg/min" else ceiling[1]):
                         return None, f"Specify or confirm {kind} dose and units (mcg/min or mcg/kg/min)."
         elif kind in {"intubation", "ventilator_adjustment"}:
             if not a.get("ventilator_mode") or not _number(a.get("fio2_percent"), 21, 100) or not _number(a.get("peep_cmh2o"), 0, 20):
@@ -260,7 +301,9 @@ def _initialize(state):
         "opioid": 1.0, "naloxone": 0.0, "bronchodilation": 0.0,
         "antibiotic_at": None, "steroid_at": None, "diuretic_at": None,
         "antibiotic_exposure": 0, "steroid_exposure": 0, "anticoagulant_exposure": 0,
-        "diuretic_dose": 0, "nitroglycerin": 0, "norepinephrine": 0,
+        "diuretic_dose": 0, "nitroglycerin": 0, "norepinephrine": 0, "epinephrine": 0,
+        "epi_bolus_pool": 0.0, "continuous_bronchodilator_mg_h": 0.0, "ketamine_mg": 0.0,
+        "sedation_bp_drop": 0.0,
         "pending_fluid_ml": 0, "pending_blood_units": 0, "dextrose_g": 0,
         "blood_delivered_units": 0, "fluid_delivered_ml": 0,
         "oxygen_fio2": .21, "oxygen_device": "Room air", "niv": False,
@@ -397,6 +440,14 @@ def _order(state, a):
         label = f"Synchronized cardioversion delivered: {a['energy_j']:g} J"
         duration = 0
     elif kind in {"beta_blocker", "diltiazem", "amiodarone", "procedural_sedation"}:
+        if kind == "procedural_sedation":
+            agent = str(a["agent"]).lower()
+            if agent == "ketamine":
+                # Ketamine also relaxes bronchial smooth muscle, which is why it is
+                # the preferred induction and maintenance agent here.
+                f["ketamine_mg"] = f.get("ketamine_mg", 0.0) + a["dose_mg"]
+            drop = SEDATION_BP_DROP_PER_MG.get(agent, 0.0) * a["dose_mg"]
+            f["sedation_bp_drop"] = f.get("sedation_bp_drop", 0.0) + drop
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} administered"
         duration = 0
     elif kind == "fluid" and a.get("operation") == "stop":
@@ -475,15 +526,28 @@ def _order(state, a):
             f["oxygen_fio2"] = .21
         label = f"NIV {a['operation']}" + (f": {a['mode']}, FiO₂ {a['fio2_percent']:g}%" if f["niv"] else "")
         duration = 3
+    elif kind == "epinephrine_bolus":
+        f["epi_bolus_pool"] = f.get("epi_bolus_pool", 0.0) + a["dose_mcg"]
+        tr["administered_medications"].append({"agent": "epinephrine", "dose": a["dose_mcg"], "units": "mcg",
+                                               "route": "IV", "time_min": int(state.get("sim_time", 0))})
+        label = f"Epinephrine {a['dose_mcg']:g} mcg IV bolus"
+        duration = 1
+    elif kind == "continuous_bronchodilator":
+        rate = 0.0 if a["operation"] == "stop" else float(a["rate_mg_h"])
+        f["continuous_bronchodilator_mg_h"] = rate
+        tr["continuous_bronchodilator"] = ({"agent": a["agent"], "rate_mg_h": rate, "route": a["route"]} if rate else None)
+        label = (f"Continuous nebulized {a['agent']} {rate:g} mg/h started" if rate
+                 else "Continuous nebulized albuterol stopped")
+        duration = 3
     elif kind == "nitroglycerin_bolus":
         f["nitro_bolus_pool"] = f.get("nitro_bolus_pool", 0.0) + a["dose_mcg"]
         tr["administered_medications"].append({"agent": "nitroglycerin", "dose": a["dose_mcg"], "units": "mcg",
                                                "route": "IV", "time_min": int(state.get("sim_time", 0))})
         label = f"Nitroglycerin {a['dose_mcg']:g} mcg IV bolus"
         duration = 1
-    elif kind in {"nitroglycerin", "norepinephrine", "dobutamine"}:
+    elif kind in {"nitroglycerin", "norepinephrine", "dobutamine", "epinephrine"}:
         rate = 0 if a["operation"] == "stop" else a.get("rate_mcg_min", a.get("rate", 0))
-        if kind in {"norepinephrine", "dobutamine"} and a.get("units") == "mcg/kg/min":
+        if kind in {"norepinephrine", "dobutamine", "epinephrine"} and a.get("units") == "mcg/kg/min":
             rate *= _case(state).get("patient", {}).get("weight_kg", 70)
         f[kind] = rate
         tr[kind] = bool(rate)
@@ -694,6 +758,24 @@ def _minute(state):
         f["nitro_bolus_pool"] *= math.exp(-1 / EDEMA["nitro_bolus_tau_min"])
         if f["nitro_bolus_pool"] < 1:
             f["nitro_bolus_pool"] = 0.0
+    # Continuous nebulization holds a level of bronchodilation instead of fading.
+    if f.get("continuous_bronchodilator_mg_h"):
+        target = min(CONTINUOUS_NEBULIZER["max_bronchodilation"],
+                     CONTINUOUS_NEBULIZER["bronchodilation_per_mg_h"] * f["continuous_bronchodilator_mg_h"])
+        if target > f["bronchodilation"]:
+            f["bronchodilation"] += (target - f["bronchodilation"]) / CONTINUOUS_NEBULIZER["tau_min"]
+    if f.get("epi_bolus_pool"):
+        f["epi_bolus_pool"] *= math.exp(-1 / EPINEPHRINE["bolus_tau_min"])
+        if f["epi_bolus_pool"] < 1:
+            f["epi_bolus_pool"] = 0.0
+    if f.get("sedation_bp_drop"):
+        f["sedation_bp_drop"] *= math.exp(-1 / SEDATION_BP_TAU_MIN)
+        if f["sedation_bp_drop"] < .5:
+            f["sedation_bp_drop"] = 0.0
+    if f.get("ketamine_mg"):
+        f["ketamine_mg"] *= math.exp(-1 / KETAMINE["tau_min"])
+        if f["ketamine_mg"] < .5:
+            f["ketamine_mg"] = 0.0
     if f.get("magnesium_pending"):
         grams = f["magnesium_pending"]
         share = min(1.0, 1 / MAGNESIUM["onset_min"])
@@ -709,6 +791,19 @@ def _minute(state):
         f[key] = _clamp(f[key], .25, 1.9)
     f["glucose"] = _clamp(f["glucose"], 15, 350)
     f["hemoglobin"] = _clamp(f["hemoglobin"], 3, 18)
+
+
+def _epinephrine_equivalent(f):
+    """Current epinephrine effect in mcg/min, counting a fading IV bolus."""
+    return float(f.get("epinephrine") or 0) + float(f.get("epi_bolus_pool") or 0) / EPINEPHRINE["bolus_equivalent_divisor"]
+
+
+def _airway_relaxation(f):
+    """Bronchodilation from epinephrine and ketamine, beyond the nebulized dose."""
+    epi = min(EPINEPHRINE["max_bronchodilation"],
+              EPINEPHRINE["bronchodilation_per_mcg_min"] * _epinephrine_equivalent(f))
+    ketamine = min(KETAMINE["max_bronchodilation"], KETAMINE["bronchodilation_per_mg"] * float(f.get("ketamine_mg") or 0))
+    return epi + ketamine
 
 
 def _surface(state):
@@ -755,7 +850,7 @@ def _surface(state):
         rr += (effective_lung - 1) * 18
         effort = effective_lung
     elif family == "asthma":
-        obstruction = max(.2, f["obstruction"] - f["bronchodilation"])
+        obstruction = max(.2, f["obstruction"] - f["bronchodilation"] - _airway_relaxation(f))
         spo2 -= (obstruction - 1) * 14
         rr += (obstruction - 1) * 18
         hr += min(12, f["bronchodilation"] * 12)
@@ -789,8 +884,11 @@ def _surface(state):
         sbp -= min(45, _nitro_equivalent(f) * .3)
         dbp -= min(25, _nitro_equivalent(f) * .15)
     vasopressor_boost = min(35, f["norepinephrine"] * 1.5)
-    sbp += vasopressor_boost
-    dbp += vasopressor_boost * .7
+    equivalent = _epinephrine_equivalent(f)
+    vasopressor_boost += min(EPINEPHRINE["max_sbp"], EPINEPHRINE["sbp_per_mcg_min"] * equivalent)
+    hr += min(EPINEPHRINE["max_hr"], EPINEPHRINE["hr_per_mcg_min"] * equivalent)
+    sbp += vasopressor_boost - float(f.get("sedation_bp_drop") or 0)
+    dbp += vasopressor_boost * .7 - float(f.get("sedation_bp_drop") or 0) * .6
     # Pressure support does not independently clear authored peripheral findings.
     crt = _clamp(float(base.get("crt") or 2) + (circulation - 1) * 4, 2, 8)
     perfusion = "preserved" if crt < 2.6 else "mildly impaired" if crt < 3.5 else "impaired" if crt < 5.5 else "severely impaired" if crt < 7 else "critical"
@@ -915,7 +1013,8 @@ def _diagnostic(state, diagnostic, duration):
         if respiratory_failure:
             baseline_co2 = pco2
             bicarbonate = float(result.get("bicarbonate_mmol_l", .03 * baseline_co2 * 10 ** (float(result.get("ph", 7.4)) - 6.1)))
-            factor = max(.15, f["obstruction"] - f["bronchodilation"]) if state["engine_family"] == "asthma" else max(.05, f["opioid"] - f["naloxone"])
+            factor = (max(.15, f["obstruction"] - f["bronchodilation"] - _airway_relaxation(f))
+                      if state["engine_family"] == "asthma" else max(.05, f["opioid"] - f["naloxone"]))
             pco2 = 40 + (baseline_co2 - 40) * factor
             if state["engine_family"] == "asthma" and baseline_co2 < 40 and factor > 1.25:
                 pco2 = baseline_co2 + (factor - 1.25) * 40
@@ -1029,7 +1128,7 @@ def current_findings(state):
     f = state.get("family_state", {})
     family = state.get("engine_family")
     if family == "asthma" and f:
-        airflow = f["obstruction"] - f["bronchodilation"]
+        airflow = f["obstruction"] - f["bronchodilation"] - _airway_relaxation(f)
         findings["Respiratory"] = "Improved air entry with residual expiratory wheeze." if airflow < .65 else "Reduced bilateral air entry with prolonged expiration and wheeze."
     elif family == "pulmonary_edema" and f:
         findings["Respiratory"] = "Bilateral crackles remain, with reduced respiratory effort." if f["lung"] < .7 else "Bilateral inspiratory crackles with increased respiratory effort."

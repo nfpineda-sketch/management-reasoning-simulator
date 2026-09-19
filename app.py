@@ -6576,6 +6576,7 @@ REASONING_GATE_ACTION_TYPES = {
     "antibiotics", "disposition",
     "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
     "naloxone", "blood", "anticoagulation", "bag_mask", "consult", "nitroglycerin_bolus", "magnesium",
+    "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
 }
 
 REASONING_GATE_FIELD_LABELS = {
@@ -9106,6 +9107,9 @@ with st.container(key="encounter-console"):
                             labels.append("dobutamine stopped")
                         else:
                             labels.append(f'dobutamine {s.get("rate", 5):g} mcg/kg/min')
+                    elif s.get("support_type") == "epinephrine":
+                        labels.append("epinephrine stopped" if s.get("operation") == "stop"
+                                      else f'epinephrine {s.get("rate", 0):g} {s.get("units", "mcg/min")}')
                     elif s.get("support_type") == "nitroglycerin":
                         if s.get("operation") == "stop":
                             labels.append("nitroglycerin stopped")

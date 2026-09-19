@@ -18,8 +18,11 @@ NEW_TREATMENT_ACTIONS = frozenset({
     "fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator",
     "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin", "nitroglycerin_bolus",
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
-    "magnesium",
+    "magnesium", "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
 })
+
+# A continuous nebulization without a stated rate runs at the usual 10 mg/h.
+CONTINUOUS_NEBULIZER_MG_PER_H = 10.0
 
 _AGENTS = {
     "antibiotics": {
@@ -357,8 +360,10 @@ def _parse_piece_core(piece, inherited=None):
         if cpap and epap is None:
             epap = float(cpap[1])
         return [{"type": "niv", "mode": mode, "ipap_cmh2o": ipap, "epap_cmh2o": epap, "fio2_percent": _settings(body, "fio2"), "operation": _operation(verb)}], verb
-    if re.search(r"\b(?:dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro)\b", body):
-        kind = "nitroglycerin" if re.search(r"\b(?:nitroglycerin|nitroglicerina|nitro)\b", body) else "dobutamine" if re.search(r"\b(?:dobutamine|dobutamina)\b", body) else "norepinephrine"
+    if re.search(r"\b(?:dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|levophed|nitroglycerin|nitroglicerina|nitro|epinephrine|epinefrina|adrenaline|adrenalina|epi)\b", body):
+        kind = ("epinephrine" if re.search(r"\b(?:epinephrine|epinefrina|adrenaline|adrenalina|epi)\b", body)
+                else "nitroglycerin" if re.search(r"\b(?:nitroglycerin|nitroglicerina|nitro)\b", body)
+                else "dobutamine" if re.search(r"\b(?:dobutamine|dobutamina)\b", body) else "norepinephrine")
         # A rate may be written with a slash or in words: "20 mcg/min",
         # "20 mcg per minute", "20 mcg por minuto".
         per = r"(?:\s*/\s*|\s+(?:per|por|each|every|cada|a\s+la|al)\s+)"
@@ -374,12 +379,18 @@ def _parse_piece_core(piece, inherited=None):
         # fallback, so "nitroglycerin 600 mcg IV bolus" started an infusion at
         # 600 mcg/min. This engine runs these drugs only as continuous infusions,
         # so say so and convert nothing.
-        name = {"nitroglycerin": "Nitroglycerin", "dobutamine": "Dobutamine"}.get(kind, "Norepinephrine")
+        name = {"nitroglycerin": "Nitroglycerin", "dobutamine": "Dobutamine",
+                "epinephrine": "Epinephrine"}.get(kind, "Norepinephrine")
         single_dose = re.search(
             r"\b(?:bolus|bolo|push|stat\s+dose|sublingual|sublingual|sl|spray|tablet|tableta|comprimido|"
             r"pastilla|dosis\s+unica|dosis\s+única)\b", body)
         mass_dose = None if rate_match else re.search(
             r"(?<![\w.])((?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg)\b(?!\s*/)", body)
+        if kind == "epinephrine" and not rate_match and mass_dose and (
+                single_dose or re.search(r"\b(?:iv|ev|intravenous|intravenos[ao])\b", body)):
+            # Diluted epinephrine is also given as small IV boluses (50-150 mcg).
+            dose = float(mass_dose[1]) * (1000 if mass_dose[2] == "mg" else 1)
+            return [{"type": "epinephrine_bolus", "dose_mcg": dose, "route": "IV"}], verb
         if (kind == "nitroglycerin" and not rate_match and mass_dose
                 and not re.search(r"\b(?:sublingual|sl|spray|tablet|tableta|comprimido|pastilla)\b", body)
                 and (single_dose or re.search(r"\b(?:iv|ev|intravenous|intravenos[ao])\b", body))):
@@ -452,6 +463,17 @@ def _parse_piece_core(piece, inherited=None):
         if route:
             fluid["route"] = route
         return [fluid], verb
+
+    # Continuous nebulized beta-agonist: a rate per hour, or the word continuous.
+    if re.search(r"\b(?:albuterol|salbutamol)\b", body):
+        continuous = re.search(r"\b(?:continuous|continuously|continua|continuo|continuamente|"
+                               r"sin\s+interrupci[oó]n|back[- ]to[- ]back)\b", body)
+        hourly = re.search(r"(\d+(?:\.\d+)?)\s*mg\s*(?:/|\s+(?:per|por|cada|a\s+la)\s+)\s*(?:h|hr|hour|hora)\b", body)
+        if continuous or hourly:
+            operation = _operation(verb)
+            rate = float(hourly[1]) if hourly else (None if operation == "stop" else CONTINUOUS_NEBULIZER_MG_PER_H)
+            return [{"type": "continuous_bronchodilator", "agent": "albuterol",
+                     "rate_mg_h": rate, "route": "nebulized", "operation": operation}], verb or "start"
 
     medicines = []
     for kind, agents in _AGENTS.items():
