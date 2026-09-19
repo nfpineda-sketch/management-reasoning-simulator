@@ -785,7 +785,12 @@ def _diagnostic(state, diagnostic, duration):
         if "hemoglobin_g_dl" in result or state["engine_family"] == "gi_bleed" or diagnostic == "hemoglobin":
             result["hemoglobin_g_dl"] = round(f["hemoglobin"], 1)
             # Replace stale prose carrying old values; preserve authored other fields.
-            result["report"] = f"Hemoglobin {f['hemoglobin']:.1f} g/dL." + (" Other measured values are shown below." if diagnostic == "basic_labs" else "")
+            if diagnostic == "basic_labs":
+                # The panel lists its own values; a prose line saying so read as
+                # "... Other measured values are shown below. · WBC ..." on one line.
+                result.pop("report", None)
+            else:
+                result["report"] = f"Hemoglobin {f['hemoglobin']:.1f} g/dL."
         if "glucose_mg_dl" in result:
             result["glucose_mg_dl"] = o["glucose_mg_dl"]
     elif diagnostic == "lactate":

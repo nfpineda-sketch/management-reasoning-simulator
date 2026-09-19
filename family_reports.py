@@ -84,3 +84,13 @@ def format_administration(record):
         if record.get("administration_status") == "in_progress" and isinstance(ordered, (int, float)):
             text += f" · {_dose_text(amount)} of {_dose_text(ordered)} {unit} given so far"
     return text
+
+
+def format_transfusion(delivered, pending):
+    """Red cells given so far, and what is still running, without spurious decimals."""
+    def number(value):
+        return f"{value:.1f}".rstrip("0").rstrip(".")
+    if pending >= .05:
+        return f"Packed red cells: {number(delivered)} of {number(delivered + pending)} units given so far"
+    given = number(delivered)
+    return f"Packed red cells given: {given} unit" + ("" if given == "1" else "s")

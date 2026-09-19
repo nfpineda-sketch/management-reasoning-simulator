@@ -8621,7 +8621,9 @@ with st.container(key="encounter-console"):
                 tr = st.session_state.state["treatments"]
                 if st.session_state.state.get("engine_family"):
                     if tr.get("packed_red_cells_units"):
-                        st.write(f'Packed red cells delivered: {tr["packed_red_cells_units"]:g} unit(s)')
+                        from family_reports import format_transfusion
+                        st.write(format_transfusion(tr["packed_red_cells_units"],
+                                                    st.session_state.state.get("family_state", {}).get("pending_blood_units", 0)))
                     for medication in tr.get("administered_medications", []):
                         from family_reports import format_administration
                         st.write(format_administration(medication))
