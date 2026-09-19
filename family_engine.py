@@ -38,7 +38,13 @@ _MEDICINES = {
     "diltiazem": ({"IV", "PO"}, .001, 1000),
     "amiodarone": ({"IV", "PO"}, .001, 2000),
     "procedural_sedation": ({"IV", "IM", "IN"}, .001, 1000),
+    "magnesium": ({"IV", "IO"}, 500, 4000),
 }
+
+# Intravenous magnesium in severe asthma (faculty decision 2026-09-19): given
+# before intubation, it adds a modest bronchodilation on top of the beta-agonist.
+# Teaching magnitudes pending review.
+MAGNESIUM = {"bronchodilation_per_g": .075, "max_bronchodilation": .20, "onset_min": 10}
 
 
 # Pulmonary oedema teaching magnitudes (docs/PULMONARY_EDEMA_PHYSIOLOGY_PROPOSAL.md,
@@ -285,6 +291,10 @@ def _medicine_effect(state, a, amount):
         f["naloxone"] += min(1.4, amount / (.4 if a["route"] in {"IV", "IO"} else 2))
     elif kind == "bronchodilator":
         f["bronchodilation"] = min(1.3, f["bronchodilation"] + min(.8, amount / 5))
+    elif kind == "magnesium":
+        # Smooth-muscle relaxation adds to the beta-agonist rather than replacing it.
+        f["magnesium_pending"] = f.get("magnesium_pending", 0.0) + amount / 1000
+        f["magnesium_at"] = f["elapsed"]
     elif kind == "diuretic":
         f["diuretic_dose"] += amount
     elif kind in {"antibiotics", "steroid"}:
@@ -418,6 +428,11 @@ def _order(state, a):
             _medicine_effect(state, a, a["dose_mg"])
         duration = 5
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']}"
+    elif kind == "magnesium":
+        if not timed:
+            _medicine_effect(state, a, a["dose_mg"])
+        duration = 5
+        label = f"Magnesium sulfate {a['dose_mg'] / 1000:g} g {a['route']}"
     elif kind in {"antibiotics", "steroid", "diuretic"}:
         field = {"antibiotics": "antibiotic_at", "steroid": "steroid_at", "diuretic": "diuretic_at"}[kind]
         if f[field] is None:
@@ -679,6 +694,14 @@ def _minute(state):
         f["nitro_bolus_pool"] *= math.exp(-1 / EDEMA["nitro_bolus_tau_min"])
         if f["nitro_bolus_pool"] < 1:
             f["nitro_bolus_pool"] = 0.0
+    if f.get("magnesium_pending"):
+        grams = f["magnesium_pending"]
+        share = min(1.0, 1 / MAGNESIUM["onset_min"])
+        gain = min(MAGNESIUM["max_bronchodilation"] - f.get("magnesium_effect", 0.0),
+                   grams * MAGNESIUM["bronchodilation_per_g"] * share)
+        f["magnesium_effect"] = f.get("magnesium_effect", 0.0) + max(0.0, gain)
+        f["bronchodilation"] = min(1.3, f["bronchodilation"] + max(0.0, gain))
+        f["magnesium_pending"] = max(0.0, grams - grams * share)
     f["anticoagulant_exposure"] *= math.exp(-1 / ANTICOAGULANT_TAU_MIN)
     f["naloxone"] *= .975
     f["bronchodilation"] *= .986

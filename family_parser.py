@@ -18,6 +18,7 @@ NEW_TREATMENT_ACTIONS = frozenset({
     "fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator",
     "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin", "nitroglycerin_bolus",
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
+    "magnesium",
 })
 
 _AGENTS = {
@@ -32,6 +33,7 @@ _AGENTS = {
         "hydrocortisone": r"hydrocortisone|hidrocortisona", "dexamethasone": r"dexamethasone|dexametasona",
     },
     "dextrose": {"dextrose": r"dextrose|dextrosa|glucosa(?:\s+intravenosa)?|d50|d10"},
+    "magnesium": {"magnesium sulfate": r"magnesium(?:\s+sulfate)?|sulfato\s+de\s+magnesio|magnesio|mgso4|mg\s*so4"},
     "naloxone": {"naloxone": r"naloxone|naloxona|narcan"},
     "ppi": {"pantoprazole": r"pantoprazole|pantoprazol", "omeprazole": r"omeprazole|omeprazol"},
     "aspirin": {"aspirin": r"aspirin|aspirina|asa|aas"},
@@ -67,6 +69,15 @@ _DIAGNOSTICS = {
     "hemoglobin": r"hemoglobin|hemoglobina|hb",
     "ecg": r"(?:12[- ](?:lead|derivadas?)\s+)?ecg(?:\s+(?:de\s+)?12\s+derivadas?)?|ekg|electrocardiogram|electrocardiograma",
 }
+# An airway/ventilation order and the settings fragments that may follow it.
+_VENTILATION_ORDER = re.compile(
+    r"\b(?:intubate|intubar|intuba|intubacion|intubación|rsi|rapid sequence|bipap|cpap|niv|vni|"
+    r"ventilator|ventilation|ventilacion|ventilación|vc/ac|pc/ac|ac/vc|psv)\b", re.I)
+_VENTILATION_SETTING = re.compile(
+    r"^(?:at\s+|with\s+|a\s+|con\s+|de\s+)?(?:fio2|fio₂|peep|ipap|epap|tidal\s+volume|vt|"
+    r"volumen\s+corriente|respiratory\s+rate|rate|frecuencia|i\s*:\s*e|mode|modo|vc/ac|pc/ac|ac/vc|psv|"
+    r"pressure\s+support|presion\s+soporte|presión\s+soporte)\b", re.I)
+
 _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
     r"(?P<verb>monitor|assess|vigilar|monitorizar|repeat|repetir|repito|repite|cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
@@ -580,6 +591,15 @@ def parse_family_actions(text) -> dict:
         # Do not split the clinical device name "bag and mask".
         sentence = re.sub(r"\bbag and mask\b", "bag-mask", sentence)
         pieces = re.split(r"\s*(?:,|\+|\band\b|\by\b|\be\b(?=\s+h?i)|\bthen\b|\bluego\b)\s*", sentence)
+        # Ventilator settings written naturally ("intubate, VC/AC, FiO2 100% and
+        # PEEP 5") belong to the airway order, not to separate orders.
+        merged = []
+        for piece in pieces:
+            if merged and _VENTILATION_SETTING.match(piece) and _VENTILATION_ORDER.search(merged[-1]):
+                merged[-1] += " " + piece
+            else:
+                merged.append(piece)
+        pieces = merged
         grouped = []
         index = 0
         while index < len(pieces):

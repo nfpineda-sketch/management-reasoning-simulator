@@ -5808,7 +5808,30 @@ def extract_explicit_reasoning(text):
         _ES_TIME = r"(?:en|a\s+los|tras|despu[eé]s\s+de)\s+\d+(?:[.,]\d+)?\s*(?:min|mins|minutos?|h|horas?)\b"
         stop = (r"(?=\s*,?\s*(?:y\s+)?(?:" + _ES_ORDER_VERBS + r")\b"
                 r"|\s*,?\s*(?:y\s+)?(?:" + _ES_GOAL_VERBS + r")\b(?!\s+" + _ES_PHYSIOLOGY + r")"
+                # A connector introduces the order that follows, not more priority.
+                r"|\s*,?\s*(?:as[ií]\s+que|por\s+lo\s+que|entonces)\b"
                 r"|\s*,?\s*(?:y\s+)?(?:espero|anticipo)\b|[.;]|$)")
+
+        # A Spanish causal statement is the resident's working model: "Esto es una
+        # crisis asmática grave porque se quedó sin su inhalador", "La obstrucción
+        # persiste porque la inflamación no cede". Without this, every Spanish
+        # management order was held asking for a working model it could not read.
+        if not (reasoning.get("problem_representation") or reasoning.get("rationale")):
+            _ES_CAUSAL = (r"\b(?:porque|debido\s+a|por\s+lo\s+que|as[ií]\s+que|sugiere[n]?|indica[n]?|"
+                          r"significa[n]?\s+que|refleja[n]?|corresponde[n]?\s+a|es\s+compatible\s+con|"
+                          r"se\s+explica\s+por|traduce)\b")
+            for sentence in re.split(r"(?<=[.;])\s+", joined):
+                clause = sentence.strip(" .;")
+                if not clause or not re.search(_ES_CAUSAL, clause, re.I):
+                    continue
+                # An order, a priority or an expectation belongs to its own slot.
+                if re.search(r"\b(?:" + _ES_ORDER_VERBS + r")\b", clause, re.I) or \
+                        re.search(r"\b(?:prioridad|espero|anticipo|preveo|reeval)", clause, re.I):
+                    continue
+                phrase = _clean_reasoning_phrase(clause)
+                if phrase:
+                    reasoning["problem_representation"] = phrase
+                    break
 
         if "management_priority" not in reasoning:
             m = re.search(
@@ -6552,7 +6575,7 @@ REASONING_GATE_ACTION_TYPES = {
     "norepinephrine", "oxygen", "procedural_sedation", "cardioversion",
     "antibiotics", "disposition",
     "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
-    "naloxone", "blood", "anticoagulation", "bag_mask", "consult", "nitroglycerin_bolus",
+    "naloxone", "blood", "anticoagulation", "bag_mask", "consult", "nitroglycerin_bolus", "magnesium",
 }
 
 REASONING_GATE_FIELD_LABELS = {
@@ -6647,7 +6670,7 @@ def _reasoning_gate_action_summary(parsed):
             volume = action.get("volume_ml")
             fluid = action.get("fluid_type") or "crystalloid"
             labels.append(f"{volume:g} mL {fluid}" if volume is not None else fluid)
-        elif atype in {"beta_blocker", "diltiazem", "amiodarone", "furosemide", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "naloxone"}:
+        elif atype in {"beta_blocker", "diltiazem", "amiodarone", "furosemide", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "naloxone", "magnesium"}:
             agent = action.get("agent") or atype.replace("_", " ")
             dose = action.get("dose_mg")
             route = action.get("route") or ""
@@ -9058,6 +9081,9 @@ with st.container(key="encounter-console"):
                         labels.append(str(s["label"]))
                     elif "volume_ml" in s:
                         labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')
+                    elif s.get("type") == "magnesium":
+                        labels.append(f'magnesium sulfate {s["dose_mg"] / 1000:g} g {s.get("route", "IV")}'
+                                      + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
                     elif s.get("agent") == "furosemide":
                         labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}'
                                       + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
