@@ -49,7 +49,10 @@ def complete_active_order(state, raw):
             return a, 'The patient is not receiving invasive ventilation.'
         if a.get('operation') == 'stop':
             return a, 'Specify an airway transition; stopping a ventilator is not an extubation order.'
-        for field, key in [('ventilator_mode', 'ventilator_mode'), ('fio2_percent', 'ventilator_fio2_percent'), ('peep_cmh2o', 'ventilator_peep_cmh2o')]:
+        for field, key in [('ventilator_mode', 'ventilator_mode'), ('fio2_percent', 'ventilator_fio2_percent'),
+                           ('peep_cmh2o', 'ventilator_peep_cmh2o'), ('tidal_volume_ml', 'ventilator_tidal_volume_ml'),
+                           ('tidal_ml_per_kg', 'ventilator_tidal_ml_per_kg'), ('rate_per_min', 'ventilator_rate_per_min'),
+                           ('flow_l_per_min', 'ventilator_flow_l_per_min')]:
             if a.get(field) is None:
                 a[field] = tr.get(key)
         return a, None

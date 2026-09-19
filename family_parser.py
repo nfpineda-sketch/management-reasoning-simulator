@@ -19,6 +19,7 @@ NEW_TREATMENT_ACTIONS = frozenset({
     "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin", "nitroglycerin_bolus",
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
     "magnesium", "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
+    "ventilator_disconnect",
 })
 
 # A continuous nebulization without a stated rate runs at the usual 10 mg/h.
@@ -78,17 +79,17 @@ _VENTILATION_ORDER = re.compile(
     r"ventilator|ventilation|ventilacion|ventilación|vc/ac|pc/ac|ac/vc|psv)\b", re.I)
 _VENTILATION_SETTING = re.compile(
     r"^(?:at\s+|with\s+|a\s+|con\s+|de\s+)?(?:fio2|fio₂|peep|ipap|epap|tidal\s+volume|vt|"
-    r"volumen\s+corriente|respiratory\s+rate|rate|frecuencia|i\s*:\s*e|mode|modo|vc/ac|pc/ac|ac/vc|psv|"
+    r"volumen\s+corriente|respiratory\s+rate|set\s+rate|rate|frecuencia|fr\b|flow|flujo|i\s*:\s*e|mode|modo|vc/ac|pc/ac|ac/vc|psv|"
     r"pressure\s+support|presion\s+soporte|presión\s+soporte)\b", re.I)
 
 _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
     r"(?P<verb>monitor|assess|vigilar|monitorizar|repeat|repetir|repito|repite|cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
-    r"stop|discontinue|increase|decrease|titrate|continue|change|set|switch|adjust|modify|reduce|wean|transfuse|nebulize|"
+    r"stop|discontinue|disconnect|increase|decrease|titrate|continue|change|set|switch|adjust|modify|reduce|wean|transfuse|nebulize|"
     r"consult|call|activate|admit|transfer|intubate|ventilate|reassess|re-assess|recheck|reevaluate|"
     r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|iniciar|inicio|inicie|infundir|indicar|indico|"
     r"solicitar|solicito|solicite|pedir|pido|medir|mido|controlar|control|obtener|realizar|hacer|"
-    r"suspender|suspendo|detener|aumentar|aumento|disminuir|disminuyo|titular|continuar|mantener|"
+    r"suspender|suspendo|detener|desconectar|desconecta|desconecto|aumentar|aumento|disminuir|disminuyo|titular|continuar|mantener|"
     r"ajustar|cambiar|transfundir|transfundo|nebulizar|consultar|interconsultar|llamar|activar|"
     r"hospitalizar|ingresar|trasladar|intubar|intubo|ventilar|reevaluar|reevaluo|revalorar)\b\s*"
 )
@@ -193,6 +194,29 @@ def _settings(text, name):
     value = float(match[1])
     # FiO2 can be explicitly written as a fraction or percentage.
     return value * 100 if name == "fio2" and 0 < value <= 1 and not match[2] else value
+
+
+def _ventilator_extras(body):
+    """Tidal volume, set rate, inspiratory flow and I:E written in any usual form."""
+    extras = {}
+    per_kg = re.search(r"(\d+(?:\.\d+)?)\s*(?:ml|cc)\s*/\s*kg", body)
+    fixed = re.search(r"\b(?:vt|tidal\s+volume|volumen\s+corriente)\s*(?:of|de|=|at|a)?\s*"
+                      r"(\d+(?:\.\d+)?)\s*(?:ml|cc)?\b", body)
+    if per_kg:
+        extras["tidal_ml_per_kg"] = float(per_kg[1])
+    elif fixed:
+        extras["tidal_volume_ml"] = float(fixed[1])
+    rate = re.search(r"\b(?:rr|respiratory\s+rate|set\s+rate|rate|frecuencia(?:\s+respiratoria)?|fr)\s*"
+                     r"(?:of|de|=|at|a)?\s*(\d+(?:\.\d+)?)\s*(?:/\s*min|per\s+min(?:ute)?|bpm|por\s+minuto)?\b", body)
+    if rate:
+        extras["rate_per_min"] = float(rate[1])
+    flow = re.search(r"\b(?:flow|flujo)\s*(?:of|de|=|at|a)?\s*(\d+(?:\.\d+)?)\s*(?:l\s*/\s*min|lpm|l\s+por\s+minuto)\b", body)
+    if flow:
+        extras["flow_l_per_min"] = float(flow[1])
+    ratio = re.search(r"\b(?:i\s*:\s*e|ie|relaci[oó]n\s*i\s*:?\s*e)\s*(?:of|de|=|at|a)?\s*1\s*:\s*(\d+(?:\.\d+)?)", body)
+    if ratio:
+        extras["ie_expiratory_ratio"] = float(ratio[1])
+    return extras
 
 
 def _oxygen_order(body, verb):
@@ -342,14 +366,20 @@ def _parse_piece_core(piece, inherited=None):
         return [{"type": "respiratory_adjustment", "operation": _operation(verb),
                  "ventilator_mode": modes[0] if modes else None,
                  "fio2_percent": _settings(body, "fio2"), "peep_cmh2o": _settings(body, "peep"),
-                 "ipap_cmh2o": _settings(body, "ipap"), "epap_cmh2o": _settings(body, "epap")}], verb
+                 "ipap_cmh2o": _settings(body, "ipap"), "epap_cmh2o": _settings(body, "epap"),
+                 **_ventilator_extras(body)}], verb
+    if (verb in {"disconnect", "desconectar", "desconecta", "desconecto"}
+            or re.search(r"\b(?:disconnect\w*|desconect\w*)\b", body)) and re.search(
+            r"\b(?:circuit|ventilator|tubing|circuito|ventilador|tubuladura|tube|tubo)\b", body):
+        return [{"type": "ventilator_disconnect"}], verb or "disconnect"
     if re.search(r"\b(?:bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|bolsa[- ]mascarilla|bolsa valvula mascarilla)\b", body):
         return [{"type": "bag_mask"}], verb
     if verb in {"intubate", "intubar", "intubo"} or re.match(r"(?:intubation|intubacion)\b", body):
         mode = "VC/AC" if re.search(r"\bvc[/ -]?ac\b|volume control|control volumen", body) else None
         if re.search(r"\bpc[/ -]?ac\b|pressure control|control presion", body):
             mode = "PC/AC"
-        return [{"type": "intubation", "ventilator_mode": mode, "fio2_percent": _settings(body, "fio2"), "peep_cmh2o": _settings(body, "peep")}], verb
+        return [{"type": "intubation", "ventilator_mode": mode, "fio2_percent": _settings(body, "fio2"),
+                 "peep_cmh2o": _settings(body, "peep"), **_ventilator_extras(body)}], verb
     if re.search(r"\b(?:bipap|cpap|niv|vni|non[- ]invasive ventilation|ventilacion no invasiva)\b", body):
         mode = "CPAP" if re.search(r"\bcpap\b", body) else "BiPAP" if re.search(r"\bbipap\b", body) else None
         ipap, epap = _settings(body, "ipap"), _settings(body, "epap")

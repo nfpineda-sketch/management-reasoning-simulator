@@ -10,6 +10,8 @@ EXECUTION_VERSION = "0.24.2"
 
 from copy import deepcopy
 import math
+
+import asthma_ventilation
 import re
 
 FAMILY_ENGINE_VERSION = 1
@@ -165,7 +167,11 @@ def _validate(state, parsed):
         kind = a.get("type")
         if validation_state.get("family_state", {}).get("invasive") and kind in {"oxygen", "niv", "bag_mask"}:
             return None, "The patient is receiving invasive ventilation. Please specify ventilator settings or clarify the intended airway change."
-        if kind in {"beta_blocker", "diltiazem", "amiodarone", "cardioversion", "ventilator_adjustment", "dobutamine"} and state.get("engine_family") != "generated":
+        # Ventilator settings are the treatment in a ventilated asthmatic.
+        generated_only = {"beta_blocker", "diltiazem", "amiodarone", "cardioversion", "dobutamine"}
+        if state.get("engine_family") != "asthma":
+            generated_only = generated_only | {"ventilator_adjustment"}
+        if kind in generated_only and state.get("engine_family") != "generated":
             return None, "This intervention requires a generated encounter with an explicit response rule."
         if kind == "clarification":
             return None, str(a.get("message") or "Please clarify the order before it is executed.")
@@ -261,9 +267,20 @@ def _validate(state, parsed):
                     ceiling = {"dobutamine": (10000, 50), "norepinephrine": (100, 1.5), "epinephrine": (60, 1.0)}[kind]
                     if a["units"] is None or not _number(a.get("rate"), .001, ceiling[0] if a["units"] == "mcg/min" else ceiling[1]):
                         return None, f"Specify or confirm {kind} dose and units (mcg/min or mcg/kg/min)."
+        elif kind == "ventilator_disconnect":
+            if not validation_state.get("family_state", {}).get("invasive"):
+                return None, "The patient is not on a ventilator, so there is no circuit to disconnect."
         elif kind in {"intubation", "ventilator_adjustment"}:
             if not a.get("ventilator_mode") or not _number(a.get("fio2_percent"), 21, 100) or not _number(a.get("peep_cmh2o"), 0, 20):
                 return None, "Specify initial ventilator mode, FiO₂ and PEEP."
+            if a.get("tidal_volume_ml") is not None and not _number(a["tidal_volume_ml"], 200, 900):
+                return None, "Specify a tidal volume from 200 to 900 mL."
+            if a.get("tidal_ml_per_kg") is not None and not _number(a["tidal_ml_per_kg"], 3, 12):
+                return None, "Specify a tidal volume from 3 to 12 mL/kg."
+            if a.get("rate_per_min") is not None and not _number(a["rate_per_min"], 4, 35):
+                return None, "Specify a ventilator rate from 4 to 35 breaths per minute."
+            if a.get("flow_l_per_min") is not None and not _number(a["flow_l_per_min"], 20, 120):
+                return None, "Specify an inspiratory flow from 20 to 120 L/min."
         elif kind == "anticoagulation":
             a["route"] = _ROUTES.get(str(a.get("route", "")).strip().lower())
             if not a.get("agent") or not _number(a.get("dose"), .01, 30000) or a.get("units") not in {"mg", "units", "U", "IU"} or a["route"] not in {"IV", "SC", "PO"}:
@@ -346,6 +363,31 @@ def _medicine_effect(state, a, amount):
     elif kind == "anticoagulation":
         scale = 5000 if a["units"] in {"units", "U", "IU"} else 70
         f["anticoagulant_exposure"] = min(1, f["anticoagulant_exposure"] + amount / scale)
+
+
+def _store_ventilator_settings(tr, a):
+    """Keep the settings the resident stated; the rest stay at the ventilator's defaults."""
+    for field, key in (("tidal_volume_ml", "ventilator_tidal_volume_ml"), ("tidal_ml_per_kg", "ventilator_tidal_ml_per_kg"),
+                       ("rate_per_min", "ventilator_rate_per_min"), ("flow_l_per_min", "ventilator_flow_l_per_min")):
+        if a.get(field) is not None:
+            tr[key] = a[field]
+            if field == "tidal_volume_ml":
+                tr.pop("ventilator_tidal_ml_per_kg", None)
+            elif field == "tidal_ml_per_kg":
+                tr.pop("ventilator_tidal_volume_ml", None)
+
+
+def _settings_tail(tr):
+    parts = []
+    if tr.get("ventilator_tidal_volume_ml") is not None:
+        parts.append(f"Vt {tr['ventilator_tidal_volume_ml']:g} mL")
+    elif tr.get("ventilator_tidal_ml_per_kg") is not None:
+        parts.append(f"Vt {tr['ventilator_tidal_ml_per_kg']:g} mL/kg")
+    if tr.get("ventilator_rate_per_min") is not None:
+        parts.append(f"rate {tr['ventilator_rate_per_min']:g}/min")
+    if tr.get("ventilator_flow_l_per_min") is not None:
+        parts.append(f"flow {tr['ventilator_flow_l_per_min']:g} L/min")
+    return (", " + ", ".join(parts)) if parts else ""
 
 
 def _queue_delivery(state, a, summary):
@@ -446,6 +488,7 @@ def _order(state, a):
                 # Ketamine also relaxes bronchial smooth muscle, which is why it is
                 # the preferred induction and maintenance agent here.
                 f["ketamine_mg"] = f.get("ketamine_mg", 0.0) + a["dose_mg"]
+            f["sedation_at"] = f["elapsed"]
             drop = SEDATION_BP_DROP_PER_MG.get(agent, 0.0) * a["dose_mg"]
             f["sedation_bp_drop"] = f.get("sedation_bp_drop", 0.0) + drop
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} administered"
@@ -558,10 +601,16 @@ def _order(state, a):
         else:
             tr.update({kind + "_rate": reported_rate if rate else 0, kind + "_units": reported_units})
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
+    elif kind == "ventilator_disconnect":
+        # Emptying the trapped gas is the manoeuvre for hyperinflation hypotension.
+        f["circuit_disconnected_at"] = f["elapsed"]
+        label = "Ventilator circuit disconnected; the chest is allowed to empty"
+        duration = 1
     elif kind == "ventilator_adjustment":
         f["oxygen_fio2"] = a["fio2_percent"] / 100
         tr.update(ventilator_mode=a["ventilator_mode"], ventilator_fio2_percent=a["fio2_percent"], ventilator_peep_cmh2o=a["peep_cmh2o"])
-        label = f"Ventilator settings: {a['ventilator_mode']}, FiO2 {a['fio2_percent']:g}%, PEEP {a['peep_cmh2o']:g}"
+        _store_ventilator_settings(tr, a)
+        label = f"Ventilator settings: {a['ventilator_mode']}, FiO2 {a['fio2_percent']:g}%, PEEP {a['peep_cmh2o']:g}" + _settings_tail(tr)
         duration = 0
     elif kind in {"bag_mask", "intubation"}:
         f["bag_mask"] = kind == "bag_mask"
@@ -575,8 +624,9 @@ def _order(state, a):
             f["niv"] = False
             f["oxygen_fio2"] = a["fio2_percent"] / 100
             tr.update(invasive_ventilation=True, niv=False, ventilator_mode=a["ventilator_mode"], ventilator_fio2_percent=a["fio2_percent"], ventilator_peep_cmh2o=a["peep_cmh2o"])
+            _store_ventilator_settings(tr, a)
             duration = 5
-            label = "Intubation completed; invasive ventilation started"
+            label = "Intubation completed; invasive ventilation started" + _settings_tail(tr)
         else:
             label = "Bag-mask assisted ventilation started"
             tr["bag_mask"] = True
@@ -793,6 +843,12 @@ def _minute(state):
     f["hemoglobin"] = _clamp(f["hemoglobin"], 3, 18)
 
 
+def _sedated(f):
+    """Induction wears off: maintenance sedation is a decision, not a given."""
+    given = f.get("sedation_at")
+    return given is not None and f["elapsed"] - given <= asthma_ventilation.SEDATION_DURATION_MIN
+
+
 def _epinephrine_equivalent(f):
     """Current epinephrine effect in mcg/min, counting a fading IV bolus."""
     return float(f.get("epinephrine") or 0) + float(f.get("epi_bolus_pool") or 0) / EPINEPHRINE["bolus_equivalent_divisor"]
@@ -854,6 +910,18 @@ def _surface(state):
         spo2 -= (obstruction - 1) * 14
         rr += (obstruction - 1) * 18
         hr += min(12, f["bronchodilation"] * 12)
+        if f["invasive"]:
+            # Trapped gas raises intrathoracic pressure and obstructs venous return.
+            mech = asthma_ventilation.mechanics(state, obstruction)
+            auto_peep = asthma_ventilation.effective_auto_peep(f, mech["auto_peep_cmh2o"])
+            if not _sedated(f):
+                # Fighting the ventilator shortens expiration further.
+                auto_peep *= asthma_ventilation.DYSSYNCHRONY_AUTO_PEEP_FACTOR
+            f["ventilator_mechanics"] = {**mech, "auto_peep_cmh2o": round(auto_peep, 1)}
+            sbp -= asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep
+            dbp -= asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep * .6
+            rr = mech["rate_per_min"]
+            spo2 += 0
         effort = obstruction
         if obstruction < .4 and spo2 + oxygen_gain >= 90:
             mental = "Alert"
@@ -906,8 +974,9 @@ def _surface(state):
     elif (spo2 < 87 or sbp < 80) and mental == "Alert":
         mental = "Drowsy"
     if f["invasive"]:
-        mental = "Sedated"
-        wob = "Ventilator-supported"
+        sedated = _sedated(f)
+        mental = "Sedated" if sedated else "Awake and fighting the ventilator"
+        wob = "Ventilator-supported" if sedated else "Ventilator dyssynchrony"
     elif family == "opioid":
         spontaneous_rr = 14 - (14 - float(base.get("respiratory_rate", 6))) * max(0, f["opioid"] - f["naloxone"])
         wob = "Reduced" if spontaneous_rr < 10 else "Normal"
@@ -1019,7 +1088,11 @@ def _diagnostic(state, diagnostic, duration):
             if state["engine_family"] == "asthma" and baseline_co2 < 40 and factor > 1.25:
                 pco2 = baseline_co2 + (factor - 1.25) * 40
 
-            if f["bag_mask"] or f["invasive"]:
+            if state["engine_family"] == "asthma" and f["invasive"]:
+                # Permissive hypercapnia: what the set minute ventilation leaves behind.
+                ventilated, _ = asthma_ventilation.blood_gas(state, factor)
+                pco2 = _clamp(ventilated, 30, 130)
+            elif f["bag_mask"] or f["invasive"]:
                 pco2 = min(pco2, 46)
             result["pco2_mm_hg" if diagnostic == "vbg" else "paco2_mm_hg"] = round(pco2)
             result["bicarbonate_mmol_l"] = round(bicarbonate, 1)
@@ -1142,7 +1215,11 @@ def clinical_update(state):
         from generated_engine import clinical_update as generated_update
         return generated_update(state)
     o = state.get("observable", {})
-    return (f"BP {o.get('sbp')}/{o.get('dbp')} mmHg · HR {o.get('hr')}/min · "
+    text = (f"BP {o.get('sbp')}/{o.get('dbp')} mmHg · HR {o.get('hr')}/min · "
             f"SpO₂ {o.get('spo2')}% · RR {o.get('respiratory_rate')}/min. "
             f"{o.get('mental_status', 'Not recorded')}; respiratory effort {str(o.get('work_of_breathing', 'not recorded')).lower()}; "
             f"capillary refill {o.get('crt')} s.")
+    mechanics = state.get("family_state", {}).get("ventilator_mechanics")
+    if mechanics and state.get("family_state", {}).get("invasive"):
+        text += " " + asthma_ventilation.pressure_report(mechanics, mechanics["auto_peep_cmh2o"])
+    return text
