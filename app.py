@@ -8262,6 +8262,7 @@ def render_event(event):
         "clarification": "CLARIFICATION",
         "prototype": "PROTOTYPE",
         "diagnostic_result": "DIAGNOSTIC RESULTS",
+        "procedure": "PROCEDURE",
     }
     if event["kind"] == "clinical_update":
         with st.container(border=True):
@@ -9042,6 +9043,8 @@ with st.container(key="encounter-console"):
                 for s in summaries:
                     # A call or admission request reads as part of "After ..., BP ...";
                     # its stored label ("ICU contacted; definitive ...") does not.
+                    if s.get("type") == "procedure":
+                        continue
                     if s.get("type") in {"consult", "reperfusion_referral"}:
                         service = s.get("service") or s.get("destination")
                         labels.append(f'{service} already contacted (not repeated)' if s.get("repeated")
@@ -9131,11 +9134,14 @@ with st.container(key="encounter-console"):
                 treatment_labels = [x for x in labels if x]
                 # Diagnostic information becomes available during the interval and is
                 # rendered before the scheduled reassessment update.
-                for ds in diagnostic_summaries:
-                    add_event(
-                        "diagnostic_result", format_diagnostic_summary(ds),
-                        time=(ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"])
-                    )
+                # Results and any procedure the course produced (an endoscopy) are
+                # reported in the order they happened.
+                timed_events = [("diagnostic_result", format_diagnostic_summary(ds),
+                                 (ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"]))
+                                for ds in diagnostic_summaries]
+                timed_events += [("procedure", x["label"], x["time_min"]) for x in summaries if x.get("type") == "procedure"]
+                for kind, text, time in sorted(timed_events, key=lambda item: item[2]):
+                    add_event(kind, text, time=time)
                 if treatment_labels:
                     lead = "After " + " + ".join(treatment_labels) + ", "
                     add_event("clinical_update", lead + format_clinical_update())
