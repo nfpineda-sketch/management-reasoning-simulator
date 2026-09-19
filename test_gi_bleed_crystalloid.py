@@ -52,3 +52,26 @@ def test_crystalloid_dilutes_haemoglobin(engine):
     execute_family_bundle(control, parse_family_actions("Reassess in 20 minutes."))
     drop = control["family_state"]["hemoglobin"] - state["family_state"]["hemoglobin"]
     assert drop == pytest.approx(1000 * GI_BLEED["hemodilution_g_dl_per_ml"], abs=.05)
+
+
+# Respiratory rate follows the circulation (2026-09-19) -------------------------
+
+@pytest.mark.parametrize("variant", ["gi_bleed_57m", "gi_bleed_72f"])
+def test_tachypnoea_eases_with_blood_and_worsens_without_treatment(engine, variant):
+    treated = encounter(engine, "gi_bleed", variant)["state"]
+    untreated = encounter(engine, "gi_bleed", variant)["state"]
+    arrival = treated["observable"]["respiratory_rate"]
+    execute_family_bundle(treated, parse_family_actions(
+        "Transfuse 2 units packed red blood cells over 60 minutes. Reassess in 60 minutes."))
+    execute_family_bundle(untreated, parse_family_actions("Reassess in 60 minutes."))
+    assert treated["observable"]["respiratory_rate"] <= arrival - 5
+    assert untreated["observable"]["respiratory_rate"] > arrival
+
+
+def test_the_transfusion_reads_as_units_started():
+    # Seen on the response card as "Packed red cells: 2 unit(s) ordered; transfusion started over 60 min".
+    from test_timed_administration import bank, bank_case
+    one = bank(bank_case("gi_bleed"), "Transfuse 1 unit packed red blood cells. Reassess in 5 minutes.")
+    two = bank(bank_case("gi_bleed"), "Transfuse 2 units packed red blood cells over 60 minutes. Reassess in 5 minutes.")
+    assert one["action_summaries"][0]["label"] == "Packed red cells 1 unit started"
+    assert two["action_summaries"][0]["label"] == "Packed red cells 2 units started over 60 min"

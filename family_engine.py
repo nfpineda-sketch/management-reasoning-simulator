@@ -72,6 +72,8 @@ GI_BLEED = {
     "crystalloid_transient": .6,      # share of that gain that redistributes out of the vessels...
     "crystalloid_leak_tau_min": 30.0, # ...with this time constant
     "hemodilution_g_dl_per_ml": .0006,  # 1 L of crystalloid dilutes haemoglobin by 0.6 g/dL
+    "rr_per_circulation": 15.0,       # RR change per unit of circulation deficit (0 at arrival)
+    "rr_floor": 14,
 }
 
 
@@ -380,7 +382,7 @@ def _order(state, a):
     elif kind == "blood":
         f["pending_blood_units"] += a["units"]
         duration = int(30 * a["units"])
-        label = f"Packed red cells: {a['units']:g} unit(s) ordered; transfusion started"
+        label = f"Packed red cells {a['units']:g} unit{'' if a['units'] == 1 else 's'} started"
     elif kind == "dextrose":
         if not timed:
             _medicine_effect(state, a, a["dose_g"])
@@ -690,6 +692,10 @@ def _surface(state):
     elif family == "pulmonary_embolism":
         spo2 -= (circulation - 1) * 8
         rr += (circulation - 1) * 10
+    elif family == "gi_bleed":
+        # Tachypnoea of hemorrhagic hypoperfusion eases as circulation recovers and
+        # worsens as it fails (faculty request 2026-09-19; magnitude pending review).
+        rr = max(GI_BLEED["rr_floor"], rr + (circulation - 1) * GI_BLEED["rr_per_circulation"])
     # Supplemental oxygen changes oxygenation, not bronchospasm or respiratory drive.
     spo2 += oxygen_gain
     if family != "pulmonary_edema":
