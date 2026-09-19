@@ -3,9 +3,11 @@
 The bleeding used to run at the same rate forever: calling gastroenterology never
 led to an endoscopy and pantoprazole did nothing. Now gastroenterology performs
 the endoscopy 60 minutes after the call once SBP >= 90 and hemoglobin >= 7 (or
-blood is running); before that it is deferred, reported once, and re-checked
-every 15 minutes. Endoscopy leaves 10% of the bleeding; pantoprazole leaves 80%
-before endoscopy only.
+blood is running); before that it is deferred and re-checked every 15 minutes,
+telling the resident once per order. Endoscopy leaves 10% of the bleeding;
+pantoprazole leaves 80% before endoscopy only. Once the bleeding is controlled
+and hemoglobin is at least 7 the compensatory tachycardia eases, and a heparin
+bolus given in error is cleared.
 """
 import pytest
 
@@ -48,14 +50,15 @@ def test_hemostasis_stops_the_fall_in_hemoglobin(engine, variant):
     assert after_transfusion - state["family_state"]["hemoglobin"] < .1
 
 
-def test_an_unresuscitated_patient_is_deferred_once_then_scoped_after_blood(engine):
+def test_an_unresuscitated_patient_is_deferred_then_scoped_after_blood(engine):
     state, procedures = run(engine, "gi_bleed_57m", [
         "Consult gastroenterology for urgent endoscopy. Reassess in 60 minutes.",
         "Reassess in 30 minutes.",
         "Transfuse 2 units packed red blood cells over 60 minutes. Reassess in 60 minutes.",
     ])
     deferrals = [p for p in procedures if "defers" in p["label"]]
-    assert len(deferrals) == 1 and deferrals[0]["time_min"] == 60
+    # One notice per order, not one for each 15-minute re-check.
+    assert [p["time_min"] for p in deferrals] == [60, 75, 105]
     assert "SBP" in deferrals[0]["label"]
     assert state["family_state"]["endoscopy_at"] > 90
     assert state["family_state"]["endoscopy_at"] % GI_BLEED["endoscopy_retry_min"] == 0
@@ -77,3 +80,29 @@ def test_pantoprazole_leaves_hemoglobin_higher(engine):
     without, _ = run(engine, "gi_bleed_57m", ["Reassess in 60 minutes."])
     with_ppi, _ = run(engine, "gi_bleed_57m", ["Give pantoprazole 80 mg IV. Reassess in 60 minutes."])
     assert with_ppi["family_state"]["hemoglobin"] > without["family_state"]["hemoglobin"]
+
+
+def test_the_tachycardia_eases_once_bleeding_is_controlled(engine):
+    state, _ = run(engine, "gi_bleed_57m", [BLOOD_PPI_GI, "Reassess in 60 minutes."])
+    controlled = state["observable"]["hr"]
+    for _ in range(3):
+        execute_family_bundle(state, parse_family_actions("Reassess in 60 minutes."))
+    assert state["observable"]["hr"] < controlled - 8
+    assert state["family_state"]["hemostasis_relief"] > .4
+
+
+def test_returning_anemia_reverses_the_relief(engine):
+    """One unit lifts hemoglobin over 7 briefly; the residual bleeding takes it back."""
+    state, _ = run(engine, "gi_bleed_57m", [
+        "Transfuse 1 unit packed red blood cells over 30 minutes. Consult gastroenterology. Reassess in 90 minutes."])
+    early = state["family_state"]["hemostasis_relief"]
+    execute_family_bundle(state, parse_family_actions("Reassess in 120 minutes."))
+    assert state["family_state"]["hemoglobin"] < GI_BLEED["recovery_min_hemoglobin"]
+    assert state["family_state"]["hemostasis_relief"] < early
+
+
+def test_a_heparin_bolus_is_cleared(engine):
+    state, _ = run(engine, "gi_bleed_57m", ["Give heparin 5000 units IV. Reassess in 60 minutes."])
+    after_one_hour = state["family_state"]["anticoagulant_exposure"]
+    execute_family_bundle(state, parse_family_actions("Reassess in 120 minutes."))
+    assert state["family_state"]["anticoagulant_exposure"] < after_one_hour * .2

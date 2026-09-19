@@ -84,7 +84,17 @@ GI_BLEED = {
     "endoscopy_min_hemoglobin": 7.0,  # ...or blood still running
     "bleeding_after_hemostasis": .10,
     "bleeding_with_ppi": .80,
+    # Once the bleeding is controlled and the anemia corrected, the compensatory
+    # tachycardia eases (faculty decision 2026-09-19). The circulation variable
+    # alone cannot show it: its floor (.25) holds the 57m at HR 105.
+    "recovery_tau_min": 90.0,
+    "recovery_min_hemoglobin": 7.0,
+    "recovery_hr_relief": 20.0,
 }
+
+# Unfractionated heparin is cleared: a bolus given in error stops mattering, and
+# stopping an infusion is a real decision (faculty decision 2026-09-19).
+ANTICOAGULANT_TAU_MIN = 60.0
 
 
 def _clamp(value, lower, upper):
@@ -577,7 +587,7 @@ def _endoscopy_minute(state):
     if f.get("endoscopy_at") is not None:
         return
     call = next((c for c in f["consultations"] if c["service"] == "gastroenterology"), None)
-    now = int(state.get("sim_time", 0))
+    now = int(state.get("sim_time", 0)) + 1  # the minute being simulated ends here
     if call is None or now < max(call["time_min"] + g["endoscopy_after_consult_min"], f.get("endoscopy_retry_at", 0)):
         return
     sbp = state.get("observable", {}).get("sbp", 0)
@@ -591,9 +601,9 @@ def _endoscopy_minute(state):
         reasons = ([f"SBP {sbp} mmHg"] if sbp < g["endoscopy_min_sbp"] else []) + \
                   ([f"hemoglobin {f['hemoglobin']:.1f} g/dL without blood running"]
                    if f["hemoglobin"] < g["endoscopy_min_hemoglobin"] and not transfusing else [])
-        if f.get("endoscopy_deferred"):
-            return  # the deferral is reported once; later checks are silent
-        f["endoscopy_deferred"] = True
+        if f.get("endoscopy_deferral_reported"):
+            return  # once per order; the 15-minute re-checks in between are silent
+        f["endoscopy_deferral_reported"] = True
         text = (f"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated "
                 f"({', '.join(reasons)}); they will re-check every {g['endoscopy_retry_min']} minutes.")
     f.setdefault("procedure_events", []).append({"type": "procedure", "label": text, "time_min": now, "duration_min": 0})
@@ -651,6 +661,11 @@ def _minute(state):
         f["obstruction"] += .002 - (.004 * f["steroid_exposure"] if steroid_active else 0)
     elif family == "gi_bleed":
         _endoscopy_minute(state)
+        # Recovery is conditional: it reverses if the bleeding is not controlled
+        # or the anemia returns.
+        recovering = f.get("endoscopy_at") is not None and f["hemoglobin"] >= GI_BLEED["recovery_min_hemoglobin"]
+        relief = f.get("hemostasis_relief", 0.0)
+        f["hemostasis_relief"] = relief + ((1 if recovering else 0) - relief) / GI_BLEED["recovery_tau_min"]
         bleeding = _gi_bleeding_fraction(f)
         f["circulation"] += (.003 + .002 * f["anticoagulant_exposure"]) * bleeding
         f["hemoglobin"] -= (.009 + .006 * f["anticoagulant_exposure"]) * bleeding
@@ -664,6 +679,7 @@ def _minute(state):
         f["nitro_bolus_pool"] *= math.exp(-1 / EDEMA["nitro_bolus_tau_min"])
         if f["nitro_bolus_pool"] < 1:
             f["nitro_bolus_pool"] = 0.0
+    f["anticoagulant_exposure"] *= math.exp(-1 / ANTICOAGULANT_TAU_MIN)
     f["naloxone"] *= .975
     f["bronchodilation"] *= .986
     for key in {"lung", "circulation", "obstruction"}:
@@ -743,6 +759,7 @@ def _surface(state):
         # Tachypnoea of hemorrhagic hypoperfusion eases as circulation recovers and
         # worsens as it fails (faculty request 2026-09-19; magnitude pending review).
         rr = max(GI_BLEED["rr_floor"], rr + (circulation - 1) * GI_BLEED["rr_per_circulation"])
+        hr -= GI_BLEED["recovery_hr_relief"] * f.get("hemostasis_relief", 0.0)
     # Supplemental oxygen changes oxygenation, not bronchospasm or respiratory drive.
     spo2 += oxygen_gain
     if family != "pulmonary_edema":
@@ -959,6 +976,7 @@ def execute_family_bundle(state, parsed):
     # Events the patient's course produced on its own (an endoscopy) are reported
     # at the minute they happened, not as part of the resident's order.
     summaries.extend(candidate.get("family_state", {}).pop("procedure_events", []))
+    candidate.get("family_state", {}).pop("endoscopy_deferral_reported", None)
     if elapsed == 0 and summaries and any(s.get("type") not in {"consult", "reperfusion_referral", "disposition", "diagnostic", "procedure"} for s in summaries):
         _surface(candidate)
     state.clear()
