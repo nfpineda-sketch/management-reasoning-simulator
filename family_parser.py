@@ -98,7 +98,7 @@ _ES_IMPERATIVES = {
 }
 _ES_IMPERATIVE_FORMS = {form: verb for verb, forms in _ES_IMPERATIVES.items() for form in forms.split()}
 _ES_IMPERATIVE = re.compile(
-    r"(^|[.;\n,+:]\s*|\b(?:y|luego|and|then)\s+)(" + "|".join(sorted(_ES_IMPERATIVE_FORMS, key=len, reverse=True)) + r")\b"
+    r"(^|[.;\n,+:]\s*|\b(?:y|e(?=\s+h?i)|luego|and|then)\s+)(" + "|".join(sorted(_ES_IMPERATIVE_FORMS, key=len, reverse=True)) + r")\b"
 )
 
 
@@ -523,7 +523,7 @@ def _order_after_reasoning(text):
             continue
         # "check for early fluid overload" or "get the right level of care" is still
         # reasoning: the clause counts only if it names an order the parser knows.
-        first = re.split(r"\s*(?:,|\+|\band\b|\by\b|\bthen\b|\bluego\b)\s*", rest, maxsplit=1)[0]
+        first = re.split(r"\s*(?:,|\+|\band\b|\by\b|\be\b(?=\s+h?i)|\bthen\b|\bluego\b)\s*", rest, maxsplit=1)[0]
         parsed, _ = _parse_piece(first)
         if not any(action["type"] != "clarification" for action in parsed):
             continue
@@ -579,7 +579,7 @@ def parse_family_actions(text) -> dict:
         negated = False
         # Do not split the clinical device name "bag and mask".
         sentence = re.sub(r"\bbag and mask\b", "bag-mask", sentence)
-        pieces = re.split(r"\s*(?:,|\+|\band\b|\by\b|\bthen\b|\bluego\b)\s*", sentence)
+        pieces = re.split(r"\s*(?:,|\+|\band\b|\by\b|\be\b(?=\s+h?i)|\bthen\b|\bluego\b)\s*", sentence)
         grouped = []
         index = 0
         while index < len(pieces):

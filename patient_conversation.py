@@ -43,21 +43,13 @@ def _authored_question_ids(q, facts, history):
         (r'\b(urin\w*|dysuria|disuria|orina\w*|miccion\w*|pee\w*|flank)\b', 'urinary_symptoms'),
         (r'\b(chest|pecho|torac\w*)\b', 'chest_pain'),
         (r'\b(breath\w*|dyspnea|disnea|respirar|ahogo|wheez\w*|silbid\w*)\b', 'breathing'),
-        (r'\b(bleed\w*|sangr\w*|melena|hematemesis|black stools?|heces negras)\b', 'bleeding'),
+        (r'\b(bleed\w*|sangr\w*|melena|hematemesis|stools?|heces|deposicion\w*|vomit\w* (?:up )?blood|bloody|blood in)\b', 'bleeding'),
         (r'\b(eat\w*|drink\w*|intake|appetite|apetito|comer|comido|bebido|beber|aliment\w*|ingesta|meals?|comida\w*)\b', 'oral_intake'),
         (r'\b(opioid\w*|opiate\w*|fentanyl|fentanilo|heroin\w*|morphine|morfina|oxycodone|oxicodona|drug use|consumo de drogas)\b', 'exposure'),
         (r'\b(neurolog\w*|numb\w*|entumec\w*|tingl\w*|hormigue\w*|focal weakness|debilidad focal|slurred speech|hablar|speech|facial droop|vision loss|perdida de vision)\b', 'neurological_symptoms'),
         (r'\b(legs?|calf|calves|piernas?|pantorrilla\w*)\b', 'leg_symptoms'),
     ]
     keys = [key for pattern, key in focused if _matches(pattern, q) and key in history]
-    if keys:
-        # Insulin/meal questions require both exposure and food facts when
-        # explicitly requested, not only the first matching domain.
-        ids = topic_ids(keys)
-        if _matches(r'\b(insulin\w*|insulina)\b', q):
-            ids += [i for i, fact in enumerate(facts) if _matches(r'\binsulin\w*\b', _normalized(fact))]
-        return list(dict.fromkeys(ids))
-
     direct_topics = [
         (r'\b(allerg\w*|alerg\w*)\b', ('allergies',)),
         (r'\b(medications?|medicines?|medicamentos?|pastill\w*|farmac\w*)\b', ('medications',)),
@@ -66,6 +58,16 @@ def _authored_question_ids(q, facts, history):
         (r'\b(recent exposures?|exposiciones recientes)\b', ('exposure',)),
     ]
     direct = [key for pattern, keys in direct_topics if _matches(pattern, q) for key in keys]
+    if keys:
+        # A compound question also receives its direct topics: "What colour are
+        # your stools? Which medicines do you take?" answers both parts.
+        # Insulin/meal questions require both exposure and food facts when
+        # explicitly requested, not only the first matching domain.
+        ids = topic_ids(keys + [key for key in direct if key not in keys])
+        if _matches(r'\b(insulin\w*|insulina)\b', q):
+            ids += [i for i, fact in enumerate(facts) if _matches(r'\binsulin\w*\b', _normalized(fact))]
+        return list(dict.fromkeys(ids))
+
     if direct:
         return topic_ids(direct)
     if _matches(r'\b(other|associated|more|otros|mas) (symptoms|sintomas)\b|\banything else\b|\balgo mas\b', q):

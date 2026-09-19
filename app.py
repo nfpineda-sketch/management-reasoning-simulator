@@ -5480,7 +5480,9 @@ def extract_explicit_reasoning(text):
         r"work\s+of\s+breathing|congestion|oxygen\s+delivery|demand)\b))"
     )
     m = re.search(
-        r"\b(?:my|the) (?:(?:main|first|immediate|management) )?priority is (?:to )?"
+        # A labelled priority counts the same: "Priority: restore oxygen delivery."
+        r"(?:\b(?:my|the) (?:(?:main|first|immediate|management) )?priority is (?:to )?|"
+        r"(?:^|(?<=[.;]))\s*(?:(?:main|first|immediate|management) )?priority\s*:\s*(?:to )?)"
         r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|" + _en_order_clause + r"|[.;]|$)", joined, re.I
     )
     if not m:
@@ -5811,8 +5813,9 @@ def extract_explicit_reasoning(text):
         if "management_priority" not in reasoning:
             m = re.search(
                 r"\b(?:mi\s+(?:prioridad|objetivo|meta)(?:\s+(?:principal|inicial|inmediata|ahora))?"
-                r"\s+(?:es|ser[aá])|lo\s+primero\s+es|me\s+enfoco(?:\s+primero)?\s+en|priorizo)"
-                r"\s+(?:(?:el|la|los|las|lo)\s+)?(.+?)" + stop,
+                r"\s+(?:es|ser[aá])|lo\s+primero\s+es|me\s+enfoco(?:\s+primero)?\s+en|priorizo|"
+                r"(?:(?:^|(?<=[.;] )|(?<=[.;]))prioridad(?:\s+(?:principal|inicial|inmediata))?\s*:))"
+                r"\s*(?:(?:el|la|los|las|lo)\s+)?(.+?)" + stop,
                 joined, re.I,
             )
             if m and _clean_reasoning_phrase(m.group(1)):
