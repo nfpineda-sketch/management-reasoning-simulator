@@ -41,11 +41,12 @@ VF_AT_MIN = 120                   # an artery closed this long, or a stress test
 SHOCK_LV = .55
 ARRIVAL_LV = .82                  # the wall the case already describes as reduced
 
+# (threshold, singular clause, plural clause): the report has to read as English.
 WALL_MOTION = (
-    (.85, "contracts normally"),
-    (.70, "shows mildly reduced contraction"),
-    (.58, "shows moderately reduced contraction"),
-    (0.0, "is akinetic"),
+    (.85, "contracts normally", "contract normally"),
+    (.70, "shows mildly reduced contraction", "show mildly reduced contraction"),
+    (.58, "shows moderately reduced contraction", "show moderately reduced contraction"),
+    (0.0, "is akinetic", "are akinetic"),
 )
 TERRITORY_WALL = {"inferior": "inferior wall", "anterior": "anterior wall and apex",
                   "lateral": "lateral wall", "posterior": "posterior wall",
@@ -169,11 +170,20 @@ def troponin(f, baseline):
     return round(baseline + released)
 
 
+GLOBAL_MOTION = ((.85, "normal"), (.70, "mildly reduced"), (.58, "moderately reduced"), (0.0, "severely reduced"))
+
+
 def wall_motion(f, spec):
-    wall = TERRITORY_WALL.get(spec.get("territory"), "affected wall")
-    grade = next(text for threshold, text in WALL_MOTION if f.get("lv_function", 1.0) >= threshold)
-    other = "the other walls contract normally" if spec.get("territory") != "subendocardial" else "without a focal defect"
-    return f"The {wall} {grade}; {other}"
+    territory = spec.get("territory")
+    if territory in {"subendocardial", "left_main"}:
+        grade = next(text for threshold, text in GLOBAL_MOTION if f.get("lv_function", 1.0) >= threshold)
+        return f"Contraction is globally {grade}, without a single focal defect"
+    wall = TERRITORY_WALL.get(territory, "affected wall")
+    plural = wall.endswith("walls") or " and " in wall
+    singular_clause, plural_clause = next((one, many) for threshold, one, many in WALL_MOTION
+                                          if f.get("lv_function", 1.0) >= threshold)
+    grade = plural_clause if plural else singular_clause
+    return f"The {wall} {grade}; the other walls contract normally"
 
 
 def in_shock(f):
