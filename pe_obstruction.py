@@ -34,6 +34,20 @@ LYSIS_TAU_MIN = 30.0
 LYSIS_CIRCULATION_TARGET = .62     # what the obstruction falls to, from 1.0 at arrival
 LYSIS_LUNG_TARGET = .80
 
+# Bleeding is the price of the drug, indicated or not (faculty decision 2026-09-20).
+LYSIS_HEMOGLOBIN_PER_MIN = .006    # occult loss: about 0.36 g/dL per hour
+MAJOR_BLEED_AT_MIN = 20            # when the case carries a bleeding risk
+MAJOR_BLEED_HEMOGLOBIN_PER_MIN = .03
+MAJOR_BLEED_CIRCULATION_PER_MIN = .0015
+BLEED_RISK_TEXT = {
+    "recent_surgery": "the surgical site operated on twelve days ago",
+    "severe_hypertension": "an uncontrolled arterial pressure",
+}
+
+# Positive pressure in obstructive shock empties an already obstructed circulation.
+INTUBATION_CIRCULATION_COST = .40   # the induction and the positive pressure together
+INTUBATION_PER_PEEP_CMH2O = .03
+
 
 def indicated(f):
     """True once the hypotension has been sustained; the indication does not expire.
@@ -88,6 +102,12 @@ def lysis_effect(f):
     return 0.0 if since <= 0 else 1 - math.exp(-since / LYSIS_TAU_MIN)
 
 
+def bleeding_risk(state):
+    """A declared reason this patient bleeds with a thrombolytic, or None."""
+    case = state.get("encounter_spec", {}).get("clinical_case", {})
+    return case.get("engine", {}).get("lysis_bleeding_risk")
+
+
 def step(state, fluid_ml_this_minute):
     """One minute of the obstructed ventricle. Returns an event text or None."""
     f = state["family_state"]
@@ -98,6 +118,19 @@ def step(state, fluid_ml_this_minute):
         # Dissolution pulls the obstruction and the dead space towards their targets.
         f["circulation"] += (LYSIS_CIRCULATION_TARGET + strain - f["circulation"]) * (1 / LYSIS_TAU_MIN)
         f["lung"] += (LYSIS_LUNG_TARGET - f["lung"]) * (1 / LYSIS_TAU_MIN)
+    if f.get("lysis_at") is not None:
+        # The drug bleeds whether or not it was indicated.
+        f["hemoglobin"] -= LYSIS_HEMOGLOBIN_PER_MIN
+        since = f["elapsed"] - f["lysis_at"]
+        risk = bleeding_risk(state)
+        if risk and since >= MAJOR_BLEED_AT_MIN:
+            f["hemoglobin"] -= MAJOR_BLEED_HEMOGLOBIN_PER_MIN
+            f["circulation"] += MAJOR_BLEED_CIRCULATION_PER_MIN
+            if not f.get("major_bleed_reported"):
+                f["major_bleed_reported"] = True
+                return (f"Bleeding from {BLEED_RISK_TEXT.get(risk, 'the declared site')}: the haemoglobin is falling "
+                        "and the pressure with it. This is the risk the thrombolytic carries, and it was taken in a "
+                        "patient who had a reason to bleed.")
     if strain > 0 and not f.get("rv_strain_reported") and strain >= .10:
         f["rv_strain_reported"] = True
         return ("The fluid was given faster than the obstructed right ventricle can accept: it distends, the septum "
@@ -109,7 +142,24 @@ def step(state, fluid_ml_this_minute):
     return None
 
 
-def surface_penalty(f):
-    """(circulation penalty, lung penalty) from the distended ventricle."""
+def positive_pressure_cost(f, peep_cmh2o):
+    """What invasive ventilation costs a circulation that is already obstructed.
+
+    It fades as the obstruction dissolves: the same tube is tolerated once the
+    right ventricle is no longer working against a closed pulmonary circulation.
+    """
+    if not f.get("invasive"):
+        return 0.0
+    remaining = 1 - lysis_effect(f)
+    return (INTUBATION_CIRCULATION_COST + INTUBATION_PER_PEEP_CMH2O * max(0.0, float(peep_cmh2o or 0) - 5)) * remaining
+
+
+def surface_penalty(f, peep_cmh2o=0):
+    """(circulation penalty, lung penalty) from the distended, ventilated ventricle.
+
+    Fast volume costs output and oxygenation; positive pressure costs output alone,
+    because the tube has already taken over the oxygenation.
+    """
     strain = f.get("rv_strain", 0.0)
-    return strain * (1 - RV_STRAIN_LUNG_SHARE), strain * RV_STRAIN_LUNG_SHARE
+    return (strain * (1 - RV_STRAIN_LUNG_SHARE) + positive_pressure_cost(f, peep_cmh2o),
+            strain * RV_STRAIN_LUNG_SHARE)

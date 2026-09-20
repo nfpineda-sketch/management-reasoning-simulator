@@ -230,7 +230,7 @@ def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
 def _case(identifier, family, age, sex, comorbidities, presentation, history,
           examination, observable, investigations, diagnosis, findings, focus,
           questions, actions, *, ecg="baseline", visual=None, recurrence=False,
-          history_source="Patient", congestion=None, coronary=None):
+          history_source="Patient", congestion=None, coronary=None, lysis_bleeding_risk=None):
     return {
         "id": identifier,
         "patient": {"age_years": age, "sex": sex,
@@ -248,6 +248,7 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
             "recurrence_risk": recurrence,
             **({"congestion": dict(congestion)} if congestion else {}),
             **({"coronary": dict(coronary)} if coronary else {}),
+            **({"lysis_bleeding_risk": lysis_bleeding_risk} if lysis_bleeding_risk else {}),
         },
         "faculty": {"diagnosis": diagnosis, "discriminating_findings": list(findings),
                     "management_focus": focus, "review_questions": list(questions),
@@ -623,7 +624,8 @@ FAMILIES["pulmonary_embolism"]["variants"].append(_case(
     ["Abrupt pleuritic dyspnea", "Thromboembolic risk factors", "Confirmed pulmonary arterial filling defects"],
     "Establish the thromboembolic diagnosis and treatment plan while monitoring for deterioration.",
     ["Which findings were not explained by a reassuring chest radiograph?", "What would change the level of monitoring or escalation?"],
-    ["anticoagulation", "consult", "oxygen"], visual=_visual()))
+    # Surgery twelve days ago: a reason to bleed if anyone thrombolyses her.
+    ["anticoagulation", "consult", "oxygen"], lysis_bleeding_risk="recent_surgery", visual=_visual()))
 
 _o = _observable(86, 54, 132, 88, 32, wob="Markedly increased", crt=5,
                  extremities="Cool", temperature=36.7, glucose=136, perfusion="impaired")

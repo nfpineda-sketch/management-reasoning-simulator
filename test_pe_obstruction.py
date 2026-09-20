@@ -104,3 +104,51 @@ def test_the_indication_does_not_expire_once_met(engine):
     state, _ = course(engine, [OXYGEN, "Start norepinephrine 0.2 mcg/kg/min. Reassess in 30 minutes."])
     assert state["observable"]["sbp"] > pe.HYPOTENSION_SBP
     assert pe.indicated(state["family_state"])
+
+
+TUBE = "Give ketamine 100 mg IV and intubate VC/AC FiO2 100% PEEP 5. Reassess in 10 minutes."
+
+
+def test_intubating_an_obstructed_circulation_drops_the_pressure(engine):
+    tubed, _ = course(engine, [TUBE])
+    untouched, _ = course(engine, ["Reassess in 10 minutes."])
+    assert tubed["observable"]["sbp"] < untouched["observable"]["sbp"] - 12
+    assert tubed["observable"]["hr"] > untouched["observable"]["hr"] + 5
+
+
+def test_more_peep_costs_more(engine):
+    modest, _ = course(engine, [TUBE])
+    high, _ = course(engine, ["Give ketamine 100 mg IV and intubate VC/AC FiO2 100% PEEP 12. Reassess in 10 minutes."])
+    assert high["observable"]["sbp"] < modest["observable"]["sbp"] - 5
+
+
+def test_the_same_tube_is_tolerated_once_the_obstruction_dissolves(engine):
+    state, _ = course(engine, [OXYGEN, LYSE, "Reassess in 30 minutes."])
+    before = state["observable"]["sbp"]
+    execute_family_bundle(state, parse_family_actions(TUBE))
+    assert state["observable"]["sbp"] >= before - 3
+
+
+def test_the_thrombolytic_bleeds_slowly_even_when_it_is_indicated(engine):
+    state, _ = course(engine, [OXYGEN, LYSE, "Reassess in 30 minutes."])
+    start = 12.6
+    assert state["family_state"]["hemoglobin"] < start - .3
+    assert state["family_state"]["hemoglobin"] > start - 1.5
+    assert state["family_state"].get("major_bleed_reported") is None
+
+
+def test_a_patient_with_a_reason_to_bleed_bleeds_badly(engine):
+    state, labels = course(engine, [LYSE, "Order hemoglobin. Reassess in 40 minutes.", "Reassess in 40 minutes."],
+                           "pulmonary_embolism_33f")
+    assert "Bleeding from the surgical site" in labels
+    assert state["family_state"]["hemoglobin"] < 10
+    # The bleeding costs circulation too, so the patient is worse than untreated.
+    untreated, _ = course(engine, ["Reassess in 105 minutes."], "pulmonary_embolism_33f")
+    assert state["observable"]["sbp"] < untreated["observable"]["sbp"]
+    assert state["observable"]["hr"] > untreated["observable"]["hr"]
+
+
+def test_the_case_without_a_declared_risk_has_no_major_bleed(engine):
+    state, labels = course(engine, [OXYGEN, LYSE, "Reassess in 60 minutes."])
+    assert "Bleeding from" not in labels
+    assert state["family_state"].get("major_bleed_reported") is None

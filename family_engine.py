@@ -1072,7 +1072,8 @@ def _surface(state):
     elif family == "pulmonary_embolism":
         # The distended ventricle costs output and oxygenation, with the same
         # coefficients the family already uses for the obstruction itself.
-        strain_circulation, strain_lung = pe_obstruction.surface_penalty(f)
+        strain_circulation, strain_lung = pe_obstruction.surface_penalty(
+            f, state.get("treatments", {}).get("ventilator_peep_cmh2o"))
         sbp -= strain_circulation * 45
         dbp -= strain_circulation * 25
         hr += strain_circulation * 25
