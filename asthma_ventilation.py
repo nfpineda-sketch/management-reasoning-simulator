@@ -118,6 +118,10 @@ def pressure_report(mech, auto_peep):
                  "airways, while the pressure reaching the alveolus is the plateau.")
     if mech["plateau_above_limit"]:
         text += " Plateau pressure is above 30 cmH2O."
+    if mech.get("pneumothorax"):
+        side = mech.get("pneumothorax_side") or "right"
+        text += (f" Breath sounds are absent on the {side} and the peak pressure has jumped: air is under tension in "
+                 f"the {side} pleural space.")
     if mech.get("dyssynchrony"):
         text += (" The patient is triggering breaths of their own: the delivered rate is higher than the set rate "
                  "and expiration is shorter.")

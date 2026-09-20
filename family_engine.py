@@ -11,6 +11,7 @@ EXECUTION_VERSION = "0.24.2"
 from copy import deepcopy
 import math
 
+import asthma_complications
 import asthma_ventilation
 import re
 
@@ -271,6 +272,11 @@ def _validate(state, parsed):
                     ceiling = {"dobutamine": (10000, 50), "norepinephrine": (100, 1.5), "epinephrine": (60, 1.0)}[kind]
                     if a["units"] is None or not _number(a.get("rate"), .001, ceiling[0] if a["units"] == "mcg/min" else ceiling[1]):
                         return None, f"Specify or confirm {kind} dose and units (mcg/min or mcg/kg/min)."
+        elif kind == "chest_decompression":
+            if validation_state.get("engine_family") != "asthma":
+                return None, "Chest decompression is not an executable intervention in this encounter."
+            if str(a.get("side")) not in {"left", "right"}:
+                return None, "Specify which side of the chest to decompress."
         elif kind == "ventilator_disconnect":
             if not validation_state.get("family_state", {}).get("invasive"):
                 return None, "The patient is not on a ventilator, so there is no circuit to disconnect."
@@ -605,6 +611,17 @@ def _order(state, a):
         else:
             tr.update({kind + "_rate": reported_rate if rate else 0, kind + "_units": reported_units})
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
+    elif kind == "chest_decompression":
+        side, device = a["side"], a.get("device", "needle")
+        if f.get("pneumothorax_at") is None:
+            label = f"{device.capitalize()} decompression of the {side} chest: no air under tension was released"
+        elif side != f.get("pneumothorax_side"):
+            label = f"{device.capitalize()} decompression of the {side} chest: the pneumothorax is on the other side"
+        else:
+            f["pneumothorax_decompressed_at"] = f["elapsed"]
+            label = (f"{device.capitalize()} decompression of the {side} chest: air under tension released; "
+                     "the pressure and the saturation recover")
+        duration = 3
     elif kind == "ventilator_disconnect":
         # Emptying the trapped gas is the manoeuvre for hyperinflation hypotension.
         f["circuit_disconnected_at"] = f["elapsed"]
@@ -624,6 +641,14 @@ def _order(state, a):
         tr.update(oxygen=False, oxygen_device="Room air", oxygen_flow_lpm=0)
         f["oxygen_device"] = "Room air"
         if kind == "intubation":
+            if state.get("engine_family") == "asthma":
+                # The window is judged on the patient the resident had in front of them.
+                obstruction = max(.2, f["obstruction"] - f["bronchodilation"] - _airway_relaxation(f))
+                timing = asthma_complications.intubation_timing(f, state.get("observable", {}), obstruction)
+                asthma_complications.apply_intubation_timing(f, timing)
+                f.setdefault("procedure_events", []).append(
+                    {"type": "procedure", "label": asthma_complications.timing_note(timing),
+                     "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
             f["invasive"] = True
             f["niv"] = False
             f["oxygen_fio2"] = a["fio2_percent"] / 100
@@ -792,6 +817,11 @@ def _minute(state):
     elif family == "asthma":
         steroid_active = f["steroid_at"] is not None and f["elapsed"] - f["steroid_at"] >= 60
         f["obstruction"] += .002 - (.004 * f["steroid_exposure"] if steroid_active else 0)
+        f["obstruction"] += asthma_complications.track_exhaustion(f, state.get("observable", {}))
+        event = asthma_complications.step(f, f.get("ventilator_mechanics"))
+        if event:
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     elif family == "gi_bleed":
         _endoscopy_minute(state)
         # Recovery is conditional: it reverses if the bleeding is not controlled
@@ -918,11 +948,19 @@ def _surface(state):
             # Trapped gas raises intrathoracic pressure and obstructs venous return.
             mech = asthma_ventilation.mechanics(state, obstruction, _sedated(f))
             auto_peep = asthma_ventilation.effective_auto_peep(f, mech["auto_peep_cmh2o"])
-            f["ventilator_mechanics"] = {**mech, "auto_peep_cmh2o": round(auto_peep, 1)}
-            sbp -= asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep
-            dbp -= asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep * .6
+            tension = asthma_complications.tension_fraction(f)
+            penalty = asthma_complications.intubation_penalty(f)
+            f["ventilator_mechanics"] = {
+                **mech, "auto_peep_cmh2o": round(auto_peep, 1),
+                "peak_cmh2o": round(mech["peak_cmh2o"] + asthma_complications.TENSION_PEAK_RISE * tension, 1),
+                "pneumothorax": tension > .2, "pneumothorax_side": f.get("pneumothorax_side"),
+            }
+            sbp -= asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep + asthma_complications.TENSION_SBP_DROP * tension + penalty
+            dbp -= (asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep * .6
+                    + (asthma_complications.TENSION_SBP_DROP * tension + penalty) * .6)
+            spo2 -= asthma_complications.TENSION_SPO2_DROP * tension
+            oxygen_gain *= 1 - .7 * tension
             rr = mech["rate_per_min"]
-            spo2 += 0
         effort = obstruction
         if obstruction < .4 and spo2 + oxygen_gain >= 90:
             mental = "Alert"
@@ -1074,6 +1112,11 @@ def _diagnostic(state, diagnostic, duration):
                 result["ivc"] = "2.0 cm; <50% inspiratory collapse"
             elif volume >= 500:
                 result["ivc"] = "1.5 cm; about 50% inspiratory collapse"
+        if state["engine_family"] == "asthma" and f.get("pneumothorax_at") is not None:
+            side = f.get("pneumothorax_side", "right")
+            treated = f.get("pneumothorax_decompressed_at") is not None
+            result["lung_sliding"] = (f"Sliding restored on the {side} after decompression" if treated
+                                      else f"Absent on the {side}, with a lung point; present on the other side")
         if "ivc" in result and (f.get("niv") or f.get("invasive")):
             result["ivc"] = (result["ivc"].split(";")[0]
                              + "; respiratory variation not assessable during positive-pressure support")
@@ -1210,6 +1253,12 @@ def current_findings(state):
     if family == "asthma" and f:
         airflow = f["obstruction"] - f["bronchodilation"] - _airway_relaxation(f)
         findings["Respiratory"] = "Improved air entry with residual expiratory wheeze." if airflow < .65 else "Reduced bilateral air entry with prolonged expiration and wheeze."
+        if f.get("pneumothorax_at") is not None:
+            side = f.get("pneumothorax_side", "right")
+            findings["Respiratory"] = (
+                f"Breath sounds returning on the {side} after decompression; " + findings["Respiratory"][0].lower() + findings["Respiratory"][1:]
+                if f.get("pneumothorax_decompressed_at") is not None else
+                f"Breath sounds absent over the {side} hemithorax, which is hyper-resonant; wheeze on the other side.")
     elif family == "pulmonary_edema" and f:
         findings["Respiratory"] = "Bilateral crackles remain, with reduced respiratory effort." if f["lung"] < .7 else "Bilateral inspiratory crackles with increased respiratory effort."
     elif family == "opioid":
