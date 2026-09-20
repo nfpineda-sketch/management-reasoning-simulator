@@ -14,6 +14,7 @@ import math
 import acs_reperfusion
 import asthma_complications
 import asthma_ventilation
+import pe_obstruction
 import re
 
 FAMILY_ENGINE_VERSION = 1
@@ -616,6 +617,14 @@ def _order(state, a):
         else:
             tr.update({kind + "_rate": reported_rate if rate else 0, kind + "_units": reported_units})
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
+    elif kind == "thrombolysis" and state.get("engine_family") == "pulmonary_embolism":
+        note = pe_obstruction.give_thrombolysis(f, f["elapsed"], state.get("observable", {}))
+        tr["administered_medications"].append({"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"],
+                                               "time_min": int(state.get("sim_time", 0))})
+        f.setdefault("procedure_events", []).append(
+            {"type": "procedure", "label": note, "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
+        label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} given"
+        duration = 5
     elif kind == "thrombolysis":
         spec = acs_reperfusion.coronary(state) or {}
         offset = int(state.get("sim_time", 0)) - f["elapsed"]
@@ -849,8 +858,12 @@ def _minute(state):
     elif family == "pneumonia":
         f["circulation"] -= fluid * .00025 + blood * .36
     elif family == "pulmonary_embolism":
-        f["lung"] += fluid * .00015
-        f["circulation"] += fluid * .00005
+        # Volume is neither the treatment nor the insult until it is given fast:
+        # pe_obstruction prices the rate, not the total.
+        event = pe_obstruction.step(state, fluid)
+        if event:
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     f["hemoglobin"] += blood * .85
     f["glucose"] = min(350, f["glucose"] + glucose * 4)
     if family == "pneumonia":
@@ -1057,8 +1070,14 @@ def _surface(state):
         if acs_reperfusion.in_shock(f) and mental == "Alert":
             mental = "Drowsy"
     elif family == "pulmonary_embolism":
-        spo2 -= (circulation - 1) * 8
-        rr += (circulation - 1) * 10
+        # The distended ventricle costs output and oxygenation, with the same
+        # coefficients the family already uses for the obstruction itself.
+        strain_circulation, strain_lung = pe_obstruction.surface_penalty(f)
+        sbp -= strain_circulation * 45
+        dbp -= strain_circulation * 25
+        hr += strain_circulation * 25
+        spo2 -= (circulation - 1 + strain_lung) * 8
+        rr += (circulation - 1 + strain_lung) * 10
     elif family == "gi_bleed":
         # Tachypnoea of hemorrhagic hypoperfusion eases as circulation recovers and
         # worsens as it fails (faculty request 2026-09-19; magnitude pending review).
