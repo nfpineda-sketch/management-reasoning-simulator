@@ -140,6 +140,9 @@ CASE_SCHEMA = obj({
                    # A low arrival glucose, or an opioid with slow breathing, oblige these.
                    "glucose_failure": nullable(obj({"sulfonylurea": BOOL, "thiamine_deficient": BOOL})),
                    "opioid_toxidrome": nullable(obj({"long_acting": BOOL})),
+                   # Blood being lost, and a lung that is full: the last two mechanisms.
+                   "active_bleeding": nullable(obj({"established": BOOL})),
+                   "pulmonary_congestion": nullable(obj({"cardiogenic": BOOL})),
                    "coronary": nullable(obj({"omi": BOOL, "active_occlusion": BOOL,
                                              "territory": enum(CORONARY_TERRITORIES),
                                              "rv_involvement": BOOL, "pci_capable": BOOL,
@@ -288,6 +291,9 @@ def collect_clinical_issues(case):
     from nitrate_hazard import issues as nitrate_hazard_issues
     issues.extend(nitrate_hazard_issues(case))
     # The authored arrival POCUS must not contradict what the core derives from the drivers.
+    # Blood being lost, and a congested lung, oblige the last two.
+    from generated_bleeding_consistency import issues as bleeding_issues
+    issues.extend(bleeding_issues(case))
     # The glucose on the monitor and the breathing of an opioid oblige theirs.
     from generated_metabolic_consistency import issues as metabolic_issues
     issues.extend(metabolic_issues(case))

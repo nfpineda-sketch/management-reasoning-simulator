@@ -180,6 +180,17 @@ def prepare_inputs(state):
         delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
         delta['hr']=delta.get('hr',0)+hr;delta['spo2']=delta.get('spo2',0)+spo2
         delta['respiratory_rate']=delta.get('respiratory_rate',0)+rr
+    import generated_bleeding,generated_congestion
+    if generated_bleeding.spec(state) is not None:
+        sbp,dbp,hr,rr,crt,hemoglobin=generated_bleeding.generated_effects(state)
+        delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
+        delta['hr']=delta.get('hr',0)+hr;delta['respiratory_rate']=delta.get('respiratory_rate',0)+rr
+        delta['crt']=delta.get('crt',0)+crt
+        if hemoglobin:delta['hemoglobin_g_dl']=delta.get('hemoglobin_g_dl',0)+hemoglobin
+    if generated_congestion.spec(state) is not None:
+        sbp,dbp,spo2,rr=generated_congestion.generated_effects(state)
+        delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
+        delta['spo2']=delta.get('spo2',0)+spo2;delta['respiratory_rate']=delta.get('respiratory_rate',0)+rr
     import generated_pe
     if generated_pe.spec(state) is not None:
         peep=state.get('treatments',{}).get('ventilator_peep_cmh2o')
@@ -315,13 +326,15 @@ def tick(state):
     import nitrate_hazard
     nitrate_hazard.step(state,f['fluid_delivered_ml']-fluid_before)
     # A declared occlusion runs the same reperfusion pathway as a bank case.
-    import acs_reperfusion,generated_airway,generated_pe,generated_glucose,generated_opioid
+    import acs_reperfusion,generated_airway,generated_pe,generated_glucose,generated_opioid,generated_bleeding,generated_congestion
     generated_pe.remember_hemoglobin(f)
     declared={acs_reperfusion:acs_reperfusion.coronary(state) is not None,
               generated_airway:generated_airway.spec(state) is not None,
               generated_pe:generated_pe.spec(state) is not None,
               generated_glucose:generated_glucose.spec(state) is not None,
-              generated_opioid:generated_opioid.spec(state) is not None}
+              generated_opioid:generated_opioid.spec(state) is not None,
+              generated_bleeding:generated_bleeding.spec(state) is not None,
+              generated_congestion:generated_congestion.spec(state) is not None}
     for module,active in declared.items():
         if not active:continue
         event=module.step(state,f['fluid_delivered_ml']-fluid_before) if module is generated_pe else module.step(state)
@@ -440,8 +453,9 @@ def execute(state,parsed):
             from acs_reperfusion import MECHANISM_ACTIONS,coronary as coronary_spec
             import generated_airway
             import generated_pe
-            import generated_glucose,generated_opioid
-            mechanism=(generated_glucose.spec(state) is not None and a['type'] in generated_glucose.MECHANISM_ACTIONS) or (
+            import generated_glucose,generated_opioid,generated_bleeding,generated_congestion
+            mechanism=(generated_bleeding.spec(state) is not None and a['type'] in generated_bleeding.MECHANISM_ACTIONS) or (
+                generated_congestion.spec(state) is not None and a['type'] in generated_congestion.MECHANISM_ACTIONS) or (generated_glucose.spec(state) is not None and a['type'] in generated_glucose.MECHANISM_ACTIONS) or (
                 generated_opioid.spec(state) is not None and a['type'] in generated_opioid.MECHANISM_ACTIONS) or (
                 coronary_spec(state) is not None and a['type'] in MECHANISM_ACTIONS) or (
                 generated_airway.spec(state) is not None and a['type'] in AIRWAY_MECHANISM_ACTIONS) or (

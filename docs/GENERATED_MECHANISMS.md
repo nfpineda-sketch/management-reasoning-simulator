@@ -1,6 +1,6 @@
 # Mecanismos clínicos en los casos generados por IA
 
-> **Estado: IMPLEMENTADO** el 2026-09-20. Cinco mecanismos compartidos entre el banco y los casos generados, con compuertas obligatorias. Las magnitudes viven en los módulos del banco y están documentadas en los siete documentos de magnitudes; aquí se documenta **la arquitectura, las declaraciones, las compuertas y lo que cambia en un caso generado**.
+> **Estado: IMPLEMENTADO** el 2026-09-20. Siete mecanismos compartidos entre el banco y los casos generados, con compuertas obligatorias. Las magnitudes viven en los módulos del banco y están documentadas en los siete documentos de magnitudes; aquí se documenta **la arquitectura, las declaraciones, las compuertas y lo que cambia en un caso generado**.
 
 ## El problema que resuelve
 
@@ -18,7 +18,7 @@ Cada mecanismo tiene tres partes, y el precedente es `nitrate_hazard`, que ya fu
 
 Declarar un mecanismo también **autoriza sus órdenes** sin que el autor escriba reglas de respuesta.
 
-## Los cinco mecanismos
+## Los siete mecanismos
 
 | Declaración | Campos | Qué obliga a declararla |
 |---|---|---|
@@ -27,12 +27,14 @@ Declarar un mecanismo también **autoriza sus órdenes** sin que el autor escrib
 | `engine.pulmonary_obstruction` | `bleeding_risk` (nulo, `recent_surgery` o `severe_hypertension`) | Ventrículo derecho dilatado o con D-sign o McConnell en el POCUS, o defectos de llene en el angioTAC |
 | `engine.glucose_failure` | `sulfonylurea`, `thiamine_deficient` | Glucosa de llegada bajo 70 mg/dL |
 | `engine.opioid_toxidrome` | `long_acting` | Un opioide o pupilas puntiformes en la historia **y** FR bajo 12 |
+| `engine.active_bleeding` | `established` | Melena, hematemesis, deposiciones negras o sangrado descrito |
+| `engine.pulmonary_congestion` | `cardiogenic` | Líneas B difusas, crépitos bilaterales o edema pulmonar descrito |
 
 Más `engine.nitrate_hazard`, que ya existía.
 
 ### Códigos de rechazo
 
-`CORONARY_UNDECLARED`, `CORONARY_ECG_MISMATCH`, `CORONARY_UNDISCOVERABLE`, `AIRWAY_OBSTRUCTION_UNDECLARED`, `AIRWAY_OBSTRUCTION_UNDISCOVERABLE`, `PULMONARY_OBSTRUCTION_UNDECLARED`, `PULMONARY_OBSTRUCTION_UNDISCOVERABLE`, `GLUCOSE_FAILURE_UNDECLARED`, `GLUCOSE_FAILURE_UNDISCOVERABLE`, `OPIOID_TOXIDROME_UNDECLARED`, `OPIOID_TOXIDROME_UNDISCOVERABLE`.
+`CORONARY_UNDECLARED`, `CORONARY_ECG_MISMATCH`, `CORONARY_UNDISCOVERABLE`, `AIRWAY_OBSTRUCTION_UNDECLARED`, `AIRWAY_OBSTRUCTION_UNDISCOVERABLE`, `PULMONARY_OBSTRUCTION_UNDECLARED`, `PULMONARY_OBSTRUCTION_UNDISCOVERABLE`, `GLUCOSE_FAILURE_UNDECLARED`, `GLUCOSE_FAILURE_UNDISCOVERABLE`, `OPIOID_TOXIDROME_UNDECLARED`, `OPIOID_TOXIDROME_UNDISCOVERABLE`, `ACTIVE_BLEEDING_UNDECLARED`, `ACTIVE_BLEEDING_UNDISCOVERABLE`, `PULMONARY_CONGESTION_UNDECLARED`, `PULMONARY_CONGESTION_UNDISCOVERABLE`.
 
 Todas las compuertas ignoran menciones negadas, oración por oración, como ya hacía el riesgo de nitratos: "no wheeze" no obliga a declarar broncoespasmo.
 
@@ -44,6 +46,7 @@ Todas las compuertas ignoran menciones negadas, oración por oración, como ya h
 | Obstrucción pulmonar | Un riesgo de sangrado declarado debe aparecer en la historia: "operado hace doce días" |
 | Glucosa | La sulfonilurea debe estar nombrada en los medicamentos; la depleción de tiamina debe explicarse por alcohol o ayuno |
 | Opioides | La exposición y la FR baja, las dos |
+| Sangrado | Una hemorragia `established` debe llegar anémica: hemoglobina de 10 g/dL o menos |
 
 ## Órdenes que autoriza cada declaración
 
@@ -54,6 +57,8 @@ Todas las compuertas ignoran menciones negadas, oración por oración, como ya h
 | Obstrucción pulmonar | trombolisis |
 | Glucosa | dextrosa, infusión de glucosado, octreótido, glucagón, tiamina, carbohidrato oral |
 | Opioides | naloxona, infusión de naloxona, bolsa-mascarilla |
+| Sangrado | sangre, inhibidor de bomba de protones |
+| Congestión | bolo IV de nitroglicerina |
 
 Sin la declaración, esas órdenes siguen respondiendo "outside the main/IA core and has no declared disease-specific response".
 
@@ -81,12 +86,21 @@ Y dos hallazgos de integración:
 | Obstrucción pulmonar | 1000 mL en 10 min cuestan 13 mmHg, 250 mL en 30 no cuestan nada; el reloj de hipotensión corre bajo vasopresor; la trombolisis indicada disuelve; el sangrado declarado baja la hemoglobina informada 0.84 g/dL |
 | Glucosa | Glucosa que cae y monitor que lo muestra; ampolla que despierta; sulfonilurea que la vuelve a llevar; octreótido que la corta; convulsión a los 20 min |
 | Opioides | 0.4 mg con bolsa-mascarilla lleva la FR a 12; a los 45 min el antídoto se fue; la infusión sostiene al de acción prolongada; 2 mg dan FC 128 y agitación; 20 min de apnea terminan en asistolia |
+| Sangrado | La hemoglobina cae sin tratamiento; dos unidades la suben; un litro de suero la deja más de un punto por debajo; el pantoprazol la frena; la endoscopia se posterga mientras el paciente no esté reanimado |
+| Congestión | 2000 mcg de bolo bajan la PA 11 mmHg al tercer minuto, el efecto se disipa a los 15, y lo descargado queda como mejor saturación y menor frecuencia |
 
 Sin declaración, las trayectorias del banco, de los casos generados y de PS001 son **idénticas byte a byte**.
+
+## Por qué la congestión es el mecanismo más delgado
+
+El núcleo compartido **ya modela la congestión**: tiene `pulmonary_congestion` como variable, el volumen la empeora, y el oxígeno, la ventilación no invasiva, la nitroglicerina en infusión y la furosemida son acciones nativas que el núcleo responde. Construir un segundo modelo encima habría duplicado el cálculo, que es el error que cometió la primera versión del mecanismo de glucosa: el monitor marcaba 230 en un paciente que estaba en 130.
+
+Por eso este mecanismo agrega solo lo que el núcleo no cubre —el bolo IV de nitroglicerina, que el banco inventó para esta enseñanza— y deja el resto donde está. La declaración, además, autoriza el bolo y declara la intención del caso.
+
+El de hemorragia, en cambio, es completo: el núcleo modela volumen, pero **no modela perder sangre**. Sin este mecanismo, un caso generado sobre un paciente que sangra no sangraba en absoluto.
 
 ## Fuera de este cambio
 
 - **Ninguna corrida pagada** se ejecutó para verificar esto. Lo que falta saber es si el autor de IA **declara el mecanismo cuando corresponde**; si no lo hace, la compuerta rechaza el caso y la generación reintenta, con el costo que eso implica.
-- **Un sexto mecanismo para la hemorragia digestiva**, con su endoscopia y su hemostasia, que existe en el banco y no tiene equivalente declarable.
-- **El edema pulmonar** tampoco tiene mecanismo: su bloque vive solo en el banco.
-- **Las instrucciones al autor** describen el mecanismo coronario en detalle; los otros cuatro se validan por compuerta pero no se explican en el prompt.
+- **Las instrucciones al autor** describen el mecanismo coronario en detalle; los otros seis se validan por compuerta pero no se explican en el prompt.
+- **Las magnitudes específicas del edema pulmonar del banco** —reclutamiento de la VMNI, tope del 30% de la PAS para la nitroglicerina, la furosemida que casi no sirve antes de resolver— siguen siendo solo del banco.
