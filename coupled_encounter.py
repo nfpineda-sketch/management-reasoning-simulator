@@ -174,6 +174,12 @@ def prepare_inputs(state):
         sbp,dbp,spo2,rr=generated_airway.generated_effects(state)
         delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
         delta['spo2']=delta.get('spo2',0)+spo2;delta['respiratory_rate']=delta.get('respiratory_rate',0)+rr
+    import generated_glucose,generated_opioid
+    if generated_opioid.spec(state) is not None:
+        sbp,dbp,hr,spo2,rr=generated_opioid.generated_effects(state)
+        delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
+        delta['hr']=delta.get('hr',0)+hr;delta['spo2']=delta.get('spo2',0)+spo2
+        delta['respiratory_rate']=delta.get('respiratory_rate',0)+rr
     import generated_pe
     if generated_pe.spec(state) is not None:
         peep=state.get('treatments',{}).get('ventilator_peep_cmh2o')
@@ -271,6 +277,22 @@ def project(state,delta=None):
     elif state['family_state']['niv']:o['respiratory_support']='NIV'
     elif state['family_state']['bag_mask']:o['respiratory_support']='Bag-mask ventilation'
     else:o['respiratory_support']=state['family_state']['oxygen_device']
+    # A declared metabolic or toxicological mechanism owns what it explains: the
+    # glucose the monitor shows, and the brain that depends on it. The core already
+    # answers to the ampoule, so the mechanism replaces that value rather than
+    # adding to it.
+    import generated_glucose,generated_opioid
+    if generated_glucose.spec(state) is not None:
+        o['glucose_mg_dl']=round(state['family_state']['glucose'])
+        g['values']['glucose_mg_dl']=o['glucose_mg_dl']
+    for module in (generated_glucose,generated_opioid):
+        mental=module.mental_status(state)
+        if mental:o['mental_status']=mental
+    if generated_opioid.arrested(state):
+        o.update(pulse_present=False,hr=0,sbp=0,dbp=0,map=0,spo2=0,respiratory_rate=0,
+                 work_of_breathing='Absent',mental_status='Unresponsive',crt=8.0,
+                 peripheral_perfusion='critical',rhythm='Asystole')
+        state.setdefault('hidden',{})['terminal_collapse']=True
     sync_mottling(o)
 
 
@@ -293,12 +315,15 @@ def tick(state):
     import nitrate_hazard
     nitrate_hazard.step(state,f['fluid_delivered_ml']-fluid_before)
     # A declared occlusion runs the same reperfusion pathway as a bank case.
-    import acs_reperfusion,generated_airway,generated_pe
+    import acs_reperfusion,generated_airway,generated_pe,generated_glucose,generated_opioid
     generated_pe.remember_hemoglobin(f)
-    for module in (acs_reperfusion,generated_airway,generated_pe):
-        if module is acs_reperfusion and acs_reperfusion.coronary(state) is None:continue
-        if module is generated_airway and generated_airway.spec(state) is None:continue
-        if module is generated_pe and generated_pe.spec(state) is None:continue
+    declared={acs_reperfusion:acs_reperfusion.coronary(state) is not None,
+              generated_airway:generated_airway.spec(state) is not None,
+              generated_pe:generated_pe.spec(state) is not None,
+              generated_glucose:generated_glucose.spec(state) is not None,
+              generated_opioid:generated_opioid.spec(state) is not None}
+    for module,active in declared.items():
+        if not active:continue
         event=module.step(state,f['fluid_delivered_ml']-fluid_before) if module is generated_pe else module.step(state)
         if event:
             f.setdefault('procedure_events',[]).append(
@@ -415,7 +440,10 @@ def execute(state,parsed):
             from acs_reperfusion import MECHANISM_ACTIONS,coronary as coronary_spec
             import generated_airway
             import generated_pe
-            mechanism=(coronary_spec(state) is not None and a['type'] in MECHANISM_ACTIONS) or (
+            import generated_glucose,generated_opioid
+            mechanism=(generated_glucose.spec(state) is not None and a['type'] in generated_glucose.MECHANISM_ACTIONS) or (
+                generated_opioid.spec(state) is not None and a['type'] in generated_opioid.MECHANISM_ACTIONS) or (
+                coronary_spec(state) is not None and a['type'] in MECHANISM_ACTIONS) or (
                 generated_airway.spec(state) is not None and a['type'] in AIRWAY_MECHANISM_ACTIONS) or (
                 generated_pe.spec(state) is not None and a['type'] in generated_pe.MECHANISM_ACTIONS)
             if not native(a) and not mechanism and a['type'] not in _ADMIN|{'reassessment','diagnostic'} and not rules:

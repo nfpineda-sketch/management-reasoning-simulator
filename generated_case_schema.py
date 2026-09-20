@@ -137,6 +137,9 @@ CASE_SCHEMA = obj({
                    # Right heart strain or a filling defect obliges this one, which runs
                    # the shared pe_obstruction pathway.
                    "pulmonary_obstruction": nullable(obj({"bleeding_risk": nullable(enum(PE_BLEEDING_RISKS))})),
+                   # A low arrival glucose, or an opioid with slow breathing, oblige these.
+                   "glucose_failure": nullable(obj({"sulfonylurea": BOOL, "thiamine_deficient": BOOL})),
+                   "opioid_toxidrome": nullable(obj({"long_acting": BOOL})),
                    "coronary": nullable(obj({"omi": BOOL, "active_occlusion": BOOL,
                                              "territory": enum(CORONARY_TERRITORIES),
                                              "rv_involvement": BOOL, "pci_capable": BOOL,
@@ -285,6 +288,9 @@ def collect_clinical_issues(case):
     from nitrate_hazard import issues as nitrate_hazard_issues
     issues.extend(nitrate_hazard_issues(case))
     # The authored arrival POCUS must not contradict what the core derives from the drivers.
+    # The glucose on the monitor and the breathing of an opioid oblige theirs.
+    from generated_metabolic_consistency import issues as metabolic_issues
+    issues.extend(metabolic_issues(case))
     # Right heart strain or a filling defect obliges the pulmonary declaration.
     from generated_pe_consistency import issues as pe_issues
     issues.extend(pe_issues(case))

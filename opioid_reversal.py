@@ -54,6 +54,8 @@ def step(state):
     """One minute of opioid, antidote and the breathing between them."""
     f = state["family_state"]
     f["opioid"] *= LONG_ACTING_DECAY_PER_MIN if long_acting(state) else DECAY_PER_MIN
+    # The antidote is cleared here, so both engines share one decay.
+    f["naloxone"] = float(f.get("naloxone") or 0) * NALOXONE_DECAY_PER_MIN
     rate = float(f.get("naloxone_infusion_mg_h") or 0)
     if rate:
         # The infusion holds a level; boluses on top still peak above it.
@@ -62,7 +64,9 @@ def step(state):
             f["naloxone"] = min(target, f.get("naloxone", 0) + target / 10)
     observable = state.get("observable", {})
     unsupported = not (f.get("bag_mask") or f.get("invasive"))
-    failing = float(observable.get("respiratory_rate", 12)) <= APNOEA_RR or float(observable.get("spo2", 100)) < APNOEA_SPO2
+    # The core reports a fractional rate, so compare with a tolerance.
+    failing = (float(observable.get("respiratory_rate", 12)) <= APNOEA_RR + .5
+               or float(observable.get("spo2", 100)) <= APNOEA_SPO2)
     if unsupported and failing:
         f["apnoea_min"] = f.get("apnoea_min", 0.0) + 1
     else:

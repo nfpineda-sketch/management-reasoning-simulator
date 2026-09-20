@@ -999,7 +999,7 @@ def _minute(state):
         f["bronchodilation"] = min(1.3, f["bronchodilation"] + max(0.0, gain))
         f["magnesium_pending"] = max(0.0, grams - grams * share)
     f["anticoagulant_exposure"] *= math.exp(-1 / ANTICOAGULANT_TAU_MIN)
-    f["naloxone"] *= .975
+    # The naloxone decay lives in opioid_reversal.step, which both engines call.
     f["bronchodilation"] *= .986
     for key in {"lung", "circulation", "obstruction"}:
         f[key] = _clamp(f[key], .25, 1.9)
