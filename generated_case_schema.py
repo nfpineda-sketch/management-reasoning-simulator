@@ -12,6 +12,9 @@ import math
 from ecg12 import PROFILES, RHYTHMS
 from clinical_core_defaults import CORE_VERSION, PHENOTYPE_FIELDS
 from nitrate_hazard import CAUSES as NITRATE_HAZARD_CAUSES
+from acs_reperfusion import TERRITORY_WALL as _CORONARY_WALLS
+
+CORONARY_TERRITORIES = tuple(sorted(_CORONARY_WALLS))
 from visual_observations import VISUAL_CHOICES, PERFUSION_CATEGORIES
 from generated_case_validation import ContractValidationError
 
@@ -122,6 +125,12 @@ CASE_SCHEMA = obj({
                    "volume_model": nullable(obj({"initial_extravascular_ml":{"type":"number","minimum":0,"maximum":10000}, "redistribution_half_life_min":{"type":"number","minimum":1,"maximum":240}, "clearance_half_life_min":{"type":"number","minimum":1,"maximum":1440}, "extravascular_fraction":{"type":"number","minimum":0,"maximum":1}, "diuresis_extravascular_fraction":{"type":"number","minimum":0,"maximum":1}})),
                    "terminal_rule": nullable(obj({"when":array(obj({"field":enum(NUMERIC_FIELDS),"operator":enum(("lt","lte","gt","gte")),"value":NUMBER}),minimum=1,maximum=6), "sustained_min":{"type":"integer","minimum":1,"maximum":60}})),
                    "nitrate_hazard": nullable(obj({"cause": enum(tuple(NITRATE_HAZARD_CAUSES))})),
+                   # An occlusion pattern on the ECG obliges this declaration, which runs
+                   # the reperfusion pathway (acs_reperfusion) instead of authored rules.
+                   "coronary": nullable(obj({"omi": BOOL, "active_occlusion": BOOL,
+                                             "territory": enum(CORONARY_TERRITORIES),
+                                             "rv_involvement": BOOL, "pci_capable": BOOL,
+                                             "symptom_onset_min": {"type": "integer", "minimum": 0, "maximum": 1440}})),
                    "horizon_min": {"type": "integer", "minimum": 30, "maximum": 180},
                    "initial_labs": obj({key: {"type": "number", "minimum": BOUNDS[key][0], "maximum": BOUNDS[key][1]} for key in LAB_NUMERIC}),
                    "untreated_drift_per_min": NUMERIC_PAIRS,
@@ -266,6 +275,9 @@ def collect_clinical_issues(case):
     from nitrate_hazard import issues as nitrate_hazard_issues
     issues.extend(nitrate_hazard_issues(case))
     # The authored arrival POCUS must not contradict what the core derives from the drivers.
+    # An ECG that shows an occluded artery obliges the coronary declaration.
+    from generated_coronary_consistency import issues as coronary_issues
+    issues.extend(coronary_issues(case))
     from generated_pocus_consistency import issues as pocus_core_issues
     issues.extend(pocus_core_issues(case))
     from generated_pocus_consistency import respiratory_issues

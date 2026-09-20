@@ -164,6 +164,29 @@ AUTHOR_INSTRUCTIONS += (
     "before review. With a declared hazard, nitroglycerin drops pressure rapidly, and stopping it with volume restores it.\n"
 )
 
+# Coronary mechanism: derived from the pathway and its gate so the contract, the
+# instruction and the engine name the same patterns and the same times.
+from acs_reperfusion import DOOR_TO_BALLOON_MIN as _DOOR_TO_BALLOON, DOOR_TO_BALLOON_TRANSFER_MIN as _TRANSFER, \
+    THROMBOLYSIS_TO_REPERFUSION_MIN as _LYSIS_MIN, AV_BLOCK_AT_MIN as _AV_BLOCK, VF_AT_MIN as _VF, \
+    TROPONIN_PER_MIN as _TROPONIN
+from generated_coronary_consistency import PATTERN_TERRITORIES as _CORONARY_PATTERNS, OPEN_AT_ARRIVAL as _OPEN_PATTERNS
+AUTHOR_INSTRUCTIONS += (
+    "\nengine.coronary is null unless ecg_profile shows an occluded artery. These patterns are occlusions (OMI) even "
+    "when they carry no ST elevation, and a case that uses one MUST declare engine.coronary; this is checked before "
+    "review:\n"
+    + "".join(f"- {profile}: territory {sorted(territories)[0]}"
+              + (", active_occlusion false (the artery is open at this moment)\n" if profile in _OPEN_PATTERNS
+                 else ", active_occlusion true\n")
+              for profile, territories in _CORONARY_PATTERNS.items())
+    + "Declaring it replaces authored response_rules for this pathway: while the artery is shut the troponin rises "
+    f"{_TROPONIN:g} ng/L per minute, the affected wall loses contraction, an inferior infarct blocks the AV node at "
+    f"{_AV_BLOCK} minutes and fibrillates at {_VF}, and an exercise stress test fibrillates at once. Activating the cath "
+    f"lab opens the artery after {_DOOR_TO_BALLOON} minutes with pci_capable true, {_TRANSFER} with it false, and "
+    f"thrombolysis after {_LYSIS_MIN}; the ST segment then resolves on a repeated ECG. Author a troponin investigation "
+    "with a numeric value_ng_l, and set rv_involvement true only for st_elevation_inferior. Do not declare an occlusion "
+    "whose ECG the resident cannot read.\n"
+)
+
 REVIEW_INSTRUCTIONS = """Independently audit this proposed NEW fictional clinical encounter as a medical-simulation consistency reviewer.
 All cases execute main_ia_v1: native oxygen, fluids, vasoactives, nodal agents, diuresis, IV etomidate/midazolam,
 ventilation and cardioversion are globally executable without authored response_rules. Empty response_rules are valid

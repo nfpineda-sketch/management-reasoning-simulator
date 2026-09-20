@@ -165,6 +165,11 @@ def prepare_inputs(state):
     if g.get('nitrate_drop'):
         from nitrate_hazard import DBP_FRACTION
         delta['sbp']=delta.get('sbp',0)-g['nitrate_drop'];delta['dbp']=delta.get('dbp',0)-DBP_FRACTION*g['nitrate_drop']
+    import acs_reperfusion
+    if acs_reperfusion.coronary(state) is not None:
+        sbp,dbp,hr=acs_reperfusion.generated_effects(state['family_state'])
+        delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
+        delta['hr']=delta.get('hr',0)+hr
     s['physiology_inputs']={'map':(delta.get('sbp',0)+2*delta.get('dbp',0))/3,
        'pulse_pressure':delta.get('sbp',0)-delta.get('dbp',0),'hr':delta.get('hr',0)+hr_relief(state),
        'spo2':delta.get('spo2',0)+g.get('spo2_anchor',0),'crt':delta.get('crt',0),'respiratory_rate':delta.get('respiratory_rate',0)}
@@ -275,6 +280,13 @@ def tick(state):
     # A declared preload-dependent condition turns nitroglycerin into an abrupt fall in pressure.
     import nitrate_hazard
     nitrate_hazard.step(state,f['fluid_delivered_ml']-fluid_before)
+    # A declared occlusion runs the same reperfusion pathway as a bank case.
+    import acs_reperfusion
+    if acs_reperfusion.coronary(state) is not None:
+        event=acs_reperfusion.step(state)
+        if event:
+            f.setdefault('procedure_events',[]).append(
+                {'type':'procedure','label':event,'time_min':int(state.get('sim_time',0))+1,'duration_min':0})
     delta=prepare_inputs(state)
     before_rhythm=s['observable']['rhythm']
     before_mental=s['observable'].get('mental_status')
@@ -328,6 +340,12 @@ def arrival_core_pocus(case):
 def collect(state,study,duration):
     from generated_engine import _collect_diagnostic
     result=_collect_diagnostic(state,study,duration)
+    import acs_reperfusion
+    spec=acs_reperfusion.coronary(state)
+    if spec is not None and study=='troponin' and 'value_ng_l' in result['result']:
+        # The troponin follows the infarct, as it does in a bank case.
+        result['result']['value_ng_l']=acs_reperfusion.troponin(
+            state['family_state'],float(result['result']['value_ng_l']))
     if study=='pocus':
         case=state['encounter_spec']['clinical_case']
         dynamic=diagnostic_core.pocus_transition(deepcopy(state['coupled_state']),0)['result']
@@ -374,7 +392,9 @@ def execute(state,parsed):
         selected=[]
         for a in actions:
             rules=[] if native(a) else select_responses(case['engine']['response_rules'],a,_matches)
-            if not native(a) and a['type'] not in _ADMIN|{'reassessment','diagnostic'} and not rules:
+            from acs_reperfusion import MECHANISM_ACTIONS,coronary as coronary_spec
+            mechanism=coronary_spec(state) is not None and a['type'] in MECHANISM_ACTIONS
+            if not native(a) and not mechanism and a['type'] not in _ADMIN|{'reassessment','diagnostic'} and not rules:
                 return _failure('Order understood, but this treatment is outside the main/IA core and has no declared disease-specific response. No orders were executed.')
             selected.append(rules)
         candidate=deepcopy(state);initialize(candidate);g=candidate['generated_state'];s=candidate['coupled_state'];summaries=[];reassess=None
@@ -425,6 +445,8 @@ def execute(state,parsed):
             tick(candidate);release()
             if s['hidden'].get('terminal_collapse'):
                 elapsed=minute+1;break
+        # Events the course produced on its own (the artery opening, a block, an arrest).
+        summaries.extend(candidate['family_state'].pop('procedure_events',[]))
         candidate['pending_investigations']=[{'diagnostic_type':x['summary']['diagnostic_type'],'available_at_min':x['available_at'],'collected_at_min':x['summary']['result'].get('time_min',0)} for x in pending]
         state.clear();state.update(candidate)
         return {'executed':True,'clarification':None,'action_summaries':summaries,'reassess_delay':reassess,'elapsed_min':elapsed}

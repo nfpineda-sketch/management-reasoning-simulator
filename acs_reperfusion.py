@@ -73,6 +73,44 @@ def nitrate_drop(f, equivalent_mcg_min, baseline_sbp, fluid_ml):
     return f["nitrate_drop"]
 
 
+# Actions a declared coronary mechanism authorises in a generated case, which would
+# otherwise need an authored response rule of their own.
+MECHANISM_ACTIONS = frozenset({"thrombolysis", "stress_test"})
+
+# The generated adapter receives observable deltas, not the bank's internal variables,
+# exactly as the nitrate hazard does.
+SBP_PER_BURDEN = 45.0
+DBP_PER_BURDEN = 25.0
+HR_PER_BURDEN = 25.0
+
+
+# The shared core amplifies what it is given: a large negative rate input collapsed
+# the patient within minutes. These are deliberately small nudges, ramped in.
+AV_BLOCK_HR_DELTA = -12.0
+AV_BLOCK_SBP_DELTA = -6.0
+AV_BLOCK_RAMP_MIN = 5.0
+GENERATED_SBP_FLOOR = -30.0        # the mechanism never pushes the core past this
+
+
+def generated_effects(f):
+    """Observable deltas for a generated case: (sbp, dbp, hr).
+
+    The pathway keeps its bookkeeping in the shared family_state, where the burden
+    of the failing pump accumulates as it does for a bank case. A generated case
+    reads that burden as a fall in pressure and a rise in rate. The core owns the
+    rate, so a complete AV block enters as a bounded fall, never as an imposed value.
+    """
+    burden = max(0.0, float(f.get("circulation", 1.0)) - 1.0)
+    sbp, dbp, hr = -SBP_PER_BURDEN * burden, -DBP_PER_BURDEN * burden, HR_PER_BURDEN * burden
+    block = f.get("av_block_at")
+    if block is not None and not is_open(f):
+        share = min(1.0, (f["elapsed"] - block) / AV_BLOCK_RAMP_MIN)
+        sbp += AV_BLOCK_SBP_DELTA * share
+        dbp += AV_BLOCK_SBP_DELTA * .6 * share
+        hr += AV_BLOCK_HR_DELTA * share
+    return max(GENERATED_SBP_FLOOR, sbp), max(GENERATED_SBP_FLOOR * .6, dbp), hr
+
+
 def coronary(state):
     """The case's coronary declaration, or None for a case that has none."""
     return state.get("encounter_spec", {}).get("clinical_case", {}).get("engine", {}).get("coronary")
