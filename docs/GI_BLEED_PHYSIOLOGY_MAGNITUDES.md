@@ -1,6 +1,6 @@
 # Fisiología de la hemorragia digestiva — magnitudes implementadas
 
-> **Estado: IMPLEMENTADO** en `family_engine.py` (bloque `GI_BLEED` y rama `gi_bleed`), con las decisiones docentes del 2026-09-18 y 2026-09-19. Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
+> **Estado: IMPLEMENTADO y REVISADO** en `family_engine.py` (bloque `GI_BLEED` y rama `gi_bleed`), con las decisiones docentes del 2026-09-18 y 2026-09-19, y la revisión de magnitudes del 2026-09-20 (alivio tras la hemostasia más rápido). Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
 
 Aplica a `gi_bleed_57m` (88/54, FC 124, FR 26, llene 5 s, Hb 6.7, lactato 4.4, melena por AINE) y `gi_bleed_72f` (98/62, FC 112, FR 24, llene 4 s, Hb 6.4, lactato 3.4, úlcera previa y naproxeno).
 
@@ -82,10 +82,10 @@ El contraste docente está en las dos primeras columnas del cristaloide: la pres
 
 | min | PA | FC | FR | Llene | Hb | Alivio |
 |---|---|---|---|---|---|---|
-| 60 | 114/68 | 109 | 17 | 2.7 s | 8.0 | 0.01 |
-| 120 | 121/73 | 96 | 15 | 2.0 s | 8.8 | 0.49 |
-| 180 | 121/72 | 91 | 15 | 2.1 s | 8.7 | 0.74 |
-| 240 | 120/72 | **89** | 15 | 2.2 s | 8.7 | 0.87 |
+| 60 | 114/68 | 109 | 17 | 2.7 s | 8.0 | 0.02 |
+| 120 | 121/73 | **91** | 15 | 2.0 s | 8.8 | 0.75 |
+| 180 | 121/72 | 87 | 15 | 2.1 s | 8.7 | 0.93 |
+| 240 | 120/72 | 87 | 15 | 2.2 s | 8.7 | 0.98 |
 
 Con la constante de 45 minutos la FC llega a menos de 100 en dos horas, no en cuatro. Sin este alivio, se quedaba pegada en 105 para siempre, porque el piso de la variable de circulación (0.25) fija la FC mínima del 57m en ese valor.
 

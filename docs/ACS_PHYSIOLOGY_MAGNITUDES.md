@@ -87,8 +87,8 @@ Anotaciones: PA · FC · ritmo · minutos de isquemia · función regional · tr
 | min | PA | FC | Ritmo | Isquemia | Función | Troponina |
 |---|---|---|---|---|---|---|
 | 10 | 99/63 | 59 | bradicardia sinusal | 10 | 0.80 | — |
-| 60 | — | — | **arteria abierta, ECG basal** | 59 | — | — |
-| 75 | 92/59 | 63 | sinusal | 59 | 0.70 | 2455 |
+| 60 | 93/60 | 62 | **arteria abierta, ECG basal** | 59 | 0.67 | — |
+| 75 | 92/59 | 63 | sinusal | 59 | 0.70 | 211 |
 | 135 | 89/58 | 64 | sinusal | 59 | **0.78** | — |
 
 La trombolisis a los 10 min deja una función de 0.78 a las dos horas; la angioplastia activada a los 20 min deja 0.67, porque tarda 90 min en abrir. Es el contenido docente de la regla de los 120 minutos.
@@ -97,8 +97,8 @@ La trombolisis a los 10 min deja una función de 0.78 a las dos horas; la angiop
 
 | Escenario | Resultado |
 |---|---|
-| Activación inmediata | Arteria abierta al minuto 90; a los 105 min, 118/73 · FC 101 · función 0.62 · troponina 3620 |
-| Sin activar | A los 70 min, función 0.65 y troponina 1560; **FV a los 130 min** |
+| Activación inmediata | Arteria abierta al minuto 90; a los 105 min, 118/73 · FC 101 · función 0.62. La troponina sigue su curva desde el dolor, que en este caso empezó hace 40 min |
+| Sin activar | A los 70 min, función 0.65; **FV a los 130 min** |
 
 **No hace bloqueo AV**, porque el bloqueo solo ocurre en territorio inferior.
 
@@ -115,7 +115,7 @@ Con la arteria abierta no se infarta nada, la troponina no se mueve y el POCUS s
 
 ### 70f tronco, sin activar
 
-A los 65 min: 98/62 · FC 116 · función 0.66 · troponina 1635 · contracción globalmente reducida. **FV a los 130 min.**
+A los 65 min: 98/62 · FC 116 · función 0.66 · contracción globalmente reducida, con la troponina en su curva desde una hora de dolor. **FV a los 130 min.**
 
 ### 66f no-OMI
 
