@@ -165,11 +165,15 @@ def prepare_inputs(state):
     if g.get('nitrate_drop'):
         from nitrate_hazard import DBP_FRACTION
         delta['sbp']=delta.get('sbp',0)-g['nitrate_drop'];delta['dbp']=delta.get('dbp',0)-DBP_FRACTION*g['nitrate_drop']
-    import acs_reperfusion
+    import acs_reperfusion,generated_airway
     if acs_reperfusion.coronary(state) is not None:
         sbp,dbp,hr=acs_reperfusion.generated_effects(state['family_state'])
         delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
         delta['hr']=delta.get('hr',0)+hr
+    if generated_airway.spec(state) is not None:
+        sbp,dbp,spo2,rr=generated_airway.generated_effects(state)
+        delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
+        delta['spo2']=delta.get('spo2',0)+spo2;delta['respiratory_rate']=delta.get('respiratory_rate',0)+rr
     s['physiology_inputs']={'map':(delta.get('sbp',0)+2*delta.get('dbp',0))/3,
        'pulse_pressure':delta.get('sbp',0)-delta.get('dbp',0),'hr':delta.get('hr',0)+hr_relief(state),
        'spo2':delta.get('spo2',0)+g.get('spo2_anchor',0),'crt':delta.get('crt',0),'respiratory_rate':delta.get('respiratory_rate',0)}
@@ -281,9 +285,11 @@ def tick(state):
     import nitrate_hazard
     nitrate_hazard.step(state,f['fluid_delivered_ml']-fluid_before)
     # A declared occlusion runs the same reperfusion pathway as a bank case.
-    import acs_reperfusion
-    if acs_reperfusion.coronary(state) is not None:
-        event=acs_reperfusion.step(state)
+    import acs_reperfusion,generated_airway
+    for module in (acs_reperfusion,generated_airway):
+        if module is acs_reperfusion and acs_reperfusion.coronary(state) is None:continue
+        if module is generated_airway and generated_airway.spec(state) is None:continue
+        event=module.step(state)
         if event:
             f.setdefault('procedure_events',[]).append(
                 {'type':'procedure','label':event,'time_min':int(state.get('sim_time',0))+1,'duration_min':0})
@@ -301,6 +307,10 @@ def tick(state):
 
 
 DYNAMIC_POCUS=('lv','ivc','lungs')
+# Orders a declared airway obstruction authorises without an authored response rule.
+AIRWAY_MECHANISM_ACTIONS=frozenset({'ventilator_disconnect','chest_decompression','magnesium',
+                                    'continuous_bronchodilator','epinephrine','epinephrine_bolus',
+                                    'bronchodilator','steroid','procedural_sedation'})
 
 # Adapter adjustments for generated cases only (faculty review pending). The shared
 # core keeps sinus HR near 88 + 25 x sympathetic drive, so a patient whose
@@ -393,7 +403,9 @@ def execute(state,parsed):
         for a in actions:
             rules=[] if native(a) else select_responses(case['engine']['response_rules'],a,_matches)
             from acs_reperfusion import MECHANISM_ACTIONS,coronary as coronary_spec
-            mechanism=coronary_spec(state) is not None and a['type'] in MECHANISM_ACTIONS
+            import generated_airway
+            mechanism=(coronary_spec(state) is not None and a['type'] in MECHANISM_ACTIONS) or (
+                generated_airway.spec(state) is not None and a['type'] in AIRWAY_MECHANISM_ACTIONS)
             if not native(a) and not mechanism and a['type'] not in _ADMIN|{'reassessment','diagnostic'} and not rules:
                 return _failure('Order understood, but this treatment is outside the main/IA core and has no declared disease-specific response. No orders were executed.')
             selected.append(rules)
@@ -422,6 +434,12 @@ def execute(state,parsed):
                         s['cardioversion_target']='Sinus rhythm' if rhythm_key(target)=='sinus' else 'AF' if rhythm_key(target)=='af' else target
                 try:native_result=transition(s,a)
                 finally:s.pop('cardioversion_target',None)
+                if k=='intubation':
+                    import generated_airway
+                    note=generated_airway.intubation_note(candidate)
+                    if note:
+                        candidate['family_state'].setdefault('procedure_events',[]).append(
+                            {'type':'procedure','label':note,'time_min':int(candidate.get('sim_time',0)),'duration_min':0})
                 summary.update(native_result)
                 if k in {'oxygen','niv','bag_mask','intubation','ventilator_adjustment'}:
                     s['treatments']['bag_mask']=candidate['family_state']['bag_mask']

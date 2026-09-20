@@ -297,7 +297,8 @@ def _validate(state, parsed):
             if validation_state.get("engine_family") != "acs":
                 return None, "A stress test is not an executable study in this encounter."
         elif kind == "chest_decompression":
-            if validation_state.get("engine_family") != "asthma":
+            import generated_airway
+            if validation_state.get("engine_family") != "asthma" and generated_airway.spec(validation_state) is None:
                 return None, "Chest decompression is not an executable intervention in this encounter."
             if str(a.get("side")) not in {"left", "right"}:
                 return None, "Specify which side of the chest to decompress."

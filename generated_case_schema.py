@@ -127,6 +127,9 @@ CASE_SCHEMA = obj({
                    "nitrate_hazard": nullable(obj({"cause": enum(tuple(NITRATE_HAZARD_CAUSES))})),
                    # An occlusion pattern on the ECG obliges this declaration, which runs
                    # the reperfusion pathway (acs_reperfusion) instead of authored rules.
+                   # A case that describes bronchospasm must declare this, which runs the
+                   # shared airway mechanics (asthma_ventilation, asthma_complications).
+                   "airway_obstruction": nullable(obj({"severity": {"type": "number", "minimum": .3, "maximum": 1.3}})),
                    "coronary": nullable(obj({"omi": BOOL, "active_occlusion": BOOL,
                                              "territory": enum(CORONARY_TERRITORIES),
                                              "rv_involvement": BOOL, "pci_capable": BOOL,
@@ -275,6 +278,9 @@ def collect_clinical_issues(case):
     from nitrate_hazard import issues as nitrate_hazard_issues
     issues.extend(nitrate_hazard_issues(case))
     # The authored arrival POCUS must not contradict what the core derives from the drivers.
+    # A case that describes bronchospasm obliges the airway declaration.
+    from generated_airway_consistency import issues as airway_issues
+    issues.extend(airway_issues(case))
     # An ECG that shows an occluded artery obliges the coronary declaration.
     from generated_coronary_consistency import issues as coronary_issues
     issues.extend(coronary_issues(case))

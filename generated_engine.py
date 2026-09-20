@@ -765,8 +765,9 @@ def clinical_update(state):
     observed = state.get("observable", {})
     if observed.get("pulse_present") is False:
         return "No palpable pulse; organized electrical activity (PEA). Unresponsive. Blood pressure, SpO₂ and capillary refill are unavailable."
+    import generated_airway
     return (f"BP {observed.get('sbp')}/{observed.get('dbp')} mmHg · HR {observed.get('hr')}/min · "
             f"SpO₂ {observed.get('spo2')}% · RR {observed.get('respiratory_rate')}/min. "
             f"{observed.get('mental_status', 'Not recorded')}; respiratory effort "
             f"{str(observed.get('work_of_breathing', 'not recorded')).lower()}; "
-            f"capillary refill {observed.get('crt')} s.")
+            f"capillary refill {observed.get('crt')} s." + generated_airway.pressure_report(state))
