@@ -46,6 +46,46 @@ LATE_SBP_DROP = 25.0              # post-intubation hypotension of the exhausted
 LATE_LACTATE = 2.0
 POST_INTUBATION_TAU_MIN = 20.0
 
+# Volume before induction (faculty decision 2026-09-19). The severe asthmatic
+# arrives preload-depleted after hours of maximal work and poor intake, so the
+# positive pressure that follows induction empties an already empty circulation.
+# Crystalloid buys back part of that cost, whether it is given before or as the
+# rescue afterwards.
+PRELOAD_ML_FOR_FULL_EFFECT = 1500.0
+PRELOAD_MAX_PROTECTION = .55
+
+# Beta-agonists drive potassium into the cell and raise lactate (beta-2 effect).
+POTASSIUM_FALL_PER_MIN = .012      # per unit of beta effect, mmol/L per minute
+POTASSIUM_FLOOR = 2.6
+POTASSIUM_RECOVERY_TAU_MIN = 120.0
+BETA_LACTATE_PER_MIN = .02         # per unit of beta effect, mmol/L per minute
+BETA_LACTATE_CEILING = 6.0
+BETA_LACTATE_CLEARANCE_TAU_MIN = 60.0
+
+
+def preload_protection(f):
+    """Share of the positive-pressure cost that volume has already bought back."""
+    given = float(f.get("fluid_delivered_ml") or 0)
+    return PRELOAD_MAX_PROTECTION * min(1.0, given / PRELOAD_ML_FOR_FULL_EFFECT)
+
+
+def beta_effect(f, relaxation):
+    """Total beta-agonist effect now: nebulized plus intravenous epinephrine."""
+    return float(f.get("bronchodilation") or 0) + relaxation
+
+
+def step_beta_side_effects(f, relaxation, baseline_potassium, baseline_lactate):
+    """Potassium into the cell and lactate out of it, both reversible."""
+    effect = beta_effect(f, relaxation)
+    potassium = f.get("potassium", baseline_potassium)
+    potassium -= POTASSIUM_FALL_PER_MIN * effect
+    potassium += (baseline_potassium - potassium) / POTASSIUM_RECOVERY_TAU_MIN
+    f["potassium"] = max(POTASSIUM_FLOOR, min(baseline_potassium, potassium))
+    lactate = f.get("lactate", baseline_lactate)
+    produced = BETA_LACTATE_PER_MIN * effect
+    cleared = max(0.0, lactate - baseline_lactate) / BETA_LACTATE_CLEARANCE_TAU_MIN
+    f["lactate"] = min(BETA_LACTATE_CEILING, lactate + produced - cleared)
+
 
 def track_exhaustion(f, observable):
     """Count the minutes of failing effort, and let that failure feed back.

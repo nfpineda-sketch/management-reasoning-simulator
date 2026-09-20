@@ -818,6 +818,10 @@ def _minute(state):
         steroid_active = f["steroid_at"] is not None and f["elapsed"] - f["steroid_at"] >= 60
         f["obstruction"] += .002 - (.004 * f["steroid_exposure"] if steroid_active else 0)
         f["obstruction"] += asthma_complications.track_exhaustion(f, state.get("observable", {}))
+        labs = _case(state).get("investigations", {}).get("basic_labs", {}).get("result", {})
+        asthma_complications.step_beta_side_effects(
+            f, _airway_relaxation(f), float(labs.get("potassium_mmol_l", 4.0)),
+            float(_case(state).get("engine", {}).get("baseline_lactate", f["lactate"])))
         event = asthma_complications.step(f, f.get("ventilator_mechanics"))
         if event:
             f.setdefault("procedure_events", []).append(
@@ -955,9 +959,13 @@ def _surface(state):
                 "peak_cmh2o": round(mech["peak_cmh2o"] + asthma_complications.TENSION_PEAK_RISE * tension, 1),
                 "pneumothorax": tension > .2, "pneumothorax_side": f.get("pneumothorax_side"),
             }
-            sbp -= asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep + asthma_complications.TENSION_SBP_DROP * tension + penalty
-            dbp -= (asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep * .6
-                    + (asthma_complications.TENSION_SBP_DROP * tension + penalty) * .6)
+            # Volume given before induction, or as the rescue afterwards, buys back
+            # part of what positive pressure costs an empty circulation.
+            reserve = 1 - asthma_complications.preload_protection(f)
+            cost = (asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep
+                    + asthma_complications.TENSION_SBP_DROP * tension + penalty) * reserve
+            sbp -= cost
+            dbp -= cost * .6
             spo2 -= asthma_complications.TENSION_SPO2_DROP * tension
             oxygen_gain *= 1 - .7 * tension
             rr = mech["rate_per_min"]
@@ -1092,6 +1100,8 @@ def _diagnostic(state, diagnostic, duration):
                 result["report"] = f"Hemoglobin {f['hemoglobin']:.1f} g/dL."
         if "glucose_mg_dl" in result:
             result["glucose_mg_dl"] = o["glucose_mg_dl"]
+        if state["engine_family"] == "asthma" and "potassium_mmol_l" in result and f.get("potassium") is not None:
+            result["potassium_mmol_l"] = round(f["potassium"], 1)
     elif diagnostic == "lactate":
         value = round(max(.8, f["lactate"] + (f["circulation"] - 1) * 2), 1)
         result = {"lactate_mmol_l": value, "report": f"Lactate {value:g} mmol/L"}

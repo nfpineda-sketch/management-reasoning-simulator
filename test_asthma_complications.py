@@ -90,7 +90,8 @@ def test_exhaustion_accumulates_untreated_and_makes_intubation_late(engine):
     assert state["family_state"]["exhausted_min"] >= comp.LATE_EXPOSURE_MIN
     assert state["family_state"]["intubation_timing"] == "late"
     assert any("prolonged period of exhaustion" in e["label"] for e in events)
-    assert state["family_state"]["lactate"] >= 2 + comp.LATE_LACTATE
+    within_window, _ = course(engine, [FIRST_LINE, "Reassess in 25 minutes.", PROTECTIVE])
+    assert state["family_state"]["lactate"] > within_window["family_state"]["lactate"] + 1
     protective, _ = course(engine, [FIRST_LINE, PROTECTIVE])
     assert state["observable"]["sbp"] < protective["observable"]["sbp"]
 
@@ -106,3 +107,56 @@ def test_the_post_intubation_penalty_fades(engine):
     early = state["observable"]["sbp"]
     execute_family_bundle(state, parse_family_actions("Reassess in 60 minutes."))
     assert state["observable"]["sbp"] > early + 10
+
+
+VOLUME = "Give 1000 mL normal saline IV over 10 minutes. Reassess in 12 minutes."
+
+
+def test_volume_before_induction_softens_the_positive_pressure(engine):
+    dry, _ = course(engine, [HIGH_PRESSURE.replace("rate 30", "rate 28")])
+    wet, _ = course(engine, [VOLUME, HIGH_PRESSURE.replace("rate 30", "rate 28")])
+    assert wet["observable"]["sbp"] > dry["observable"]["sbp"] + 5
+    assert comp.preload_protection(wet["family_state"]) > 0
+
+
+def test_volume_is_also_the_rescue_after_induction(engine):
+    state, _ = course(engine, [HIGH_PRESSURE.replace("rate 30", "rate 28")])
+    trapped = state["observable"]["sbp"]
+    execute_family_bundle(state, parse_family_actions(VOLUME))
+    assert state["observable"]["sbp"] > trapped + 5
+
+
+def test_volume_softens_the_late_intubation_penalty(engine):
+    late = ["Reassess in 30 minutes.", "Reassess in 30 minutes.", "Reassess in 20 minutes."]
+    dry, _ = course(engine, late + [PROTECTIVE])
+    wet, _ = course(engine, late[:2] + ["Give 1000 mL normal saline IV over 15 minutes. Reassess in 20 minutes.", PROTECTIVE])
+    assert wet["family_state"]["intubation_timing"] == dry["family_state"]["intubation_timing"] == "late"
+    assert wet["observable"]["sbp"] > dry["observable"]["sbp"] + 5
+
+
+def test_the_beta_agonist_drives_potassium_down_and_lactate_up(engine):
+    state, _ = course(engine, ["Start continuous albuterol nebulization. Give methylprednisolone 125 mg IV. "
+                               "Reassess in 60 minutes.", "Order basic labs and lactate. Reassess in 5 minutes."])
+    baseline = 4.1
+    assert state["family_state"]["potassium"] < baseline - .3
+    assert state["diagnostics"]["basic_labs"]["potassium_mmol_l"] == round(state["family_state"]["potassium"], 1)
+    assert state["diagnostics"]["lactate"]["lactate_mmol_l"] > 2.1
+
+
+def test_epinephrine_adds_to_the_potassium_and_lactate_effect(engine):
+    nebulizer = ["Start continuous albuterol nebulization. Reassess in 45 minutes."]
+    without, _ = course(engine, nebulizer)
+    with_epinephrine, _ = course(engine, nebulizer[:1] + ["Start an epinephrine drip at 10 mcg/min. Reassess in 45 minutes."])
+    assert with_epinephrine["family_state"]["potassium"] < without["family_state"]["potassium"]
+    assert with_epinephrine["family_state"]["lactate"] > without["family_state"]["lactate"]
+
+
+def test_potassium_and_lactate_recover_once_the_beta_agonist_has_washed_out(engine):
+    """The nebulized dose decays over about an hour, so the nadir comes after the stop."""
+    state, _ = course(engine, ["Start continuous albuterol nebulization. Reassess in 60 minutes.",
+                               "Stop the continuous albuterol. Reassess in 60 minutes."])
+    nadir, high = state["family_state"]["potassium"], state["family_state"]["lactate"]
+    execute_family_bundle(state, parse_family_actions("Reassess in 120 minutes."))
+    assert state["family_state"]["potassium"] > nadir
+    assert state["family_state"]["lactate"] < high
+    assert state["family_state"]["potassium"] <= 4.1
