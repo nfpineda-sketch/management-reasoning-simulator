@@ -665,7 +665,8 @@ def _order(state, a):
         tr["naloxone_infusion"] = {"rate_mg_h": rate} if rate else None
         label = (f"Naloxone infusion at {rate:g} mg/h started" if rate else "Naloxone infusion stopped")
         duration = 3
-    elif kind == "thrombolysis" and state.get("engine_family") == "pulmonary_embolism":
+    elif kind == "thrombolysis" and (state.get("engine_family") == "pulmonary_embolism"
+                                     or __import__("generated_pe").spec(state) is not None):
         note = pe_obstruction.give_thrombolysis(f, f["elapsed"], state.get("observable", {}))
         tr["administered_medications"].append({"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"],
                                                "time_min": int(state.get("sim_time", 0))})

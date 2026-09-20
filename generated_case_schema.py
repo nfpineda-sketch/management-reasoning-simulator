@@ -15,6 +15,10 @@ from nitrate_hazard import CAUSES as NITRATE_HAZARD_CAUSES
 from acs_reperfusion import TERRITORY_WALL as _CORONARY_WALLS
 
 CORONARY_TERRITORIES = tuple(sorted(_CORONARY_WALLS))
+
+from pe_obstruction import BLEED_RISK_TEXT as _PE_RISKS
+
+PE_BLEEDING_RISKS = tuple(sorted(_PE_RISKS))
 from visual_observations import VISUAL_CHOICES, PERFUSION_CATEGORIES
 from generated_case_validation import ContractValidationError
 
@@ -130,6 +134,9 @@ CASE_SCHEMA = obj({
                    # A case that describes bronchospasm must declare this, which runs the
                    # shared airway mechanics (asthma_ventilation, asthma_complications).
                    "airway_obstruction": nullable(obj({"severity": {"type": "number", "minimum": .3, "maximum": 1.3}})),
+                   # Right heart strain or a filling defect obliges this one, which runs
+                   # the shared pe_obstruction pathway.
+                   "pulmonary_obstruction": nullable(obj({"bleeding_risk": nullable(enum(PE_BLEEDING_RISKS))})),
                    "coronary": nullable(obj({"omi": BOOL, "active_occlusion": BOOL,
                                              "territory": enum(CORONARY_TERRITORIES),
                                              "rv_involvement": BOOL, "pci_capable": BOOL,
@@ -278,6 +285,9 @@ def collect_clinical_issues(case):
     from nitrate_hazard import issues as nitrate_hazard_issues
     issues.extend(nitrate_hazard_issues(case))
     # The authored arrival POCUS must not contradict what the core derives from the drivers.
+    # Right heart strain or a filling defect obliges the pulmonary declaration.
+    from generated_pe_consistency import issues as pe_issues
+    issues.extend(pe_issues(case))
     # A case that describes bronchospasm obliges the airway declaration.
     from generated_airway_consistency import issues as airway_issues
     issues.extend(airway_issues(case))

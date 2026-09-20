@@ -174,6 +174,14 @@ def prepare_inputs(state):
         sbp,dbp,spo2,rr=generated_airway.generated_effects(state)
         delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
         delta['spo2']=delta.get('spo2',0)+spo2;delta['respiratory_rate']=delta.get('respiratory_rate',0)+rr
+    import generated_pe
+    if generated_pe.spec(state) is not None:
+        peep=state.get('treatments',{}).get('ventilator_peep_cmh2o')
+        sbp,dbp,hr,spo2,rr,hemoglobin=generated_pe.generated_effects(state,peep)
+        delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
+        delta['hr']=delta.get('hr',0)+hr;delta['spo2']=delta.get('spo2',0)+spo2
+        delta['respiratory_rate']=delta.get('respiratory_rate',0)+rr
+        if hemoglobin:delta['hemoglobin_g_dl']=delta.get('hemoglobin_g_dl',0)+hemoglobin
     s['physiology_inputs']={'map':(delta.get('sbp',0)+2*delta.get('dbp',0))/3,
        'pulse_pressure':delta.get('sbp',0)-delta.get('dbp',0),'hr':delta.get('hr',0)+hr_relief(state),
        'spo2':delta.get('spo2',0)+g.get('spo2_anchor',0),'crt':delta.get('crt',0),'respiratory_rate':delta.get('respiratory_rate',0)}
@@ -285,11 +293,13 @@ def tick(state):
     import nitrate_hazard
     nitrate_hazard.step(state,f['fluid_delivered_ml']-fluid_before)
     # A declared occlusion runs the same reperfusion pathway as a bank case.
-    import acs_reperfusion,generated_airway
-    for module in (acs_reperfusion,generated_airway):
+    import acs_reperfusion,generated_airway,generated_pe
+    generated_pe.remember_hemoglobin(f)
+    for module in (acs_reperfusion,generated_airway,generated_pe):
         if module is acs_reperfusion and acs_reperfusion.coronary(state) is None:continue
         if module is generated_airway and generated_airway.spec(state) is None:continue
-        event=module.step(state)
+        if module is generated_pe and generated_pe.spec(state) is None:continue
+        event=module.step(state,f['fluid_delivered_ml']-fluid_before) if module is generated_pe else module.step(state)
         if event:
             f.setdefault('procedure_events',[]).append(
                 {'type':'procedure','label':event,'time_min':int(state.get('sim_time',0))+1,'duration_min':0})
@@ -404,8 +414,10 @@ def execute(state,parsed):
             rules=[] if native(a) else select_responses(case['engine']['response_rules'],a,_matches)
             from acs_reperfusion import MECHANISM_ACTIONS,coronary as coronary_spec
             import generated_airway
+            import generated_pe
             mechanism=(coronary_spec(state) is not None and a['type'] in MECHANISM_ACTIONS) or (
-                generated_airway.spec(state) is not None and a['type'] in AIRWAY_MECHANISM_ACTIONS)
+                generated_airway.spec(state) is not None and a['type'] in AIRWAY_MECHANISM_ACTIONS) or (
+                generated_pe.spec(state) is not None and a['type'] in generated_pe.MECHANISM_ACTIONS)
             if not native(a) and not mechanism and a['type'] not in _ADMIN|{'reassessment','diagnostic'} and not rules:
                 return _failure('Order understood, but this treatment is outside the main/IA core and has no declared disease-specific response. No orders were executed.')
             selected.append(rules)
