@@ -110,3 +110,23 @@ def test_sedation_wears_off_and_the_patient_fights_the_ventilator(engine):
     execute_family_bundle(state, parse_family_actions("Give ketamine 50 mg IV. Reassess in 5 minutes."))
     assert state["observable"]["mental_status"] == "Sedated"
     assert state["family_state"]["ventilator_mechanics"]["auto_peep_cmh2o"] < trapped
+
+
+def test_dyssynchrony_traps_air_until_sedation_is_restored(engine):
+    state, _ = course(engine, [PROTECTIVE, "Reassess in 60 minutes."])
+    assert state["observable"]["mental_status"] == "Awake and fighting the ventilator"
+    fighting = mechanics(state)
+    # Triggered breaths raise the delivered rate and shorten expiration.
+    assert fighting["dyssynchrony"] and fighting["rate_per_min"] > 12
+    pressure = state["observable"]["sbp"]
+    execute_family_bundle(state, parse_family_actions("Give ketamine 50 mg IV. Reassess in 5 minutes."))
+    assert mechanics(state)["auto_peep_cmh2o"] < fighting["auto_peep_cmh2o"]
+    assert state["observable"]["sbp"] >= pressure
+
+
+def test_oxygen_raises_the_arterial_tension_not_only_the_saturation(engine):
+    """A saturation of 99% on FiO2 100% used to report PaO2 77 and a P/F ratio of 77."""
+    state, result = course(engine, [PROTECTIVE, "Order arterial blood gas. Reassess in 5 minutes."])
+    gas = next(s["result"] for s in result["action_summaries"] if s.get("diagnostic_type") == "abg")
+    assert gas["fio2_percent"] == 100
+    assert gas["pao2_mm_hg"] > 200 and gas["pf_ratio"] > 200

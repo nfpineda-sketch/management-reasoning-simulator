@@ -52,10 +52,12 @@ def _authored_question_ids(q, facts, history):
     keys = [key for pattern, key in focused if _matches(pattern, q) and key in history]
     direct_topics = [
         (r'\b(allerg\w*|alerg\w*)\b', ('allergies',)),
-        (r'\b(medications?|medicines?|medicamentos?|pastill\w*|farmac\w*)\b', ('medications',)),
+        (r'\b(medications?|medicines?|medicamentos?|pastill\w*|farmac\w*|inhaler\w*|reliever|preventer|'
+         r'puffer|controller|inhalador\w*|broncodilatador\w*)\b', ('medications',)),
         (r'\b(past medical|medical history|previous health|medical conditions|conditions do you have|antecedentes|enfermedades previas)\b', ('medical_history',)),
         (r'\b(risk factors?|factores de riesgo)\b', ('risk_factors',)),
-        (r'\b(recent exposures?|exposiciones recientes)\b', ('exposure',)),
+        (r'\b(recent exposures?|exposiciones recientes|exposed\s+to|exposure|trigger\w*|pollen|allergen\w*|'
+         r'expuest\w*|polen|desencadenan\w*)\b', ('exposure',)),
     ]
     direct = [key for pattern, keys in direct_topics if _matches(pattern, q) for key in keys]
     if keys:
@@ -107,8 +109,10 @@ def local_question_ids(question, facts, history=None):
          r'\b(vomit\w*|nausea\w*|diarr\w*|bleed\w*|sangr\w*|melena|stool\w*|heces)\b'),
         (r'\b(eat\w*|drink\w*|intake|appetite|apetito|comer|comido|bebido|beber|aliment\w*|ingesta)\b',
          r'\b(eat\w*|drink\w*|intake|appetite|apetito|ingesta)\b'),
-        (r'\b(medications?|medicines?|medicamentos?|allerg\w*|alerg\w*|pastill\w*|farmac\w*)\b',
-         r'\b(medications?|medicines?|medicamentos?|allerg\w*|alerg\w*|pastill\w*|farmac\w*)\b'),
+        (r'\b(medications?|medicines?|medicamentos?|allerg\w*|alerg\w*|pastill\w*|farmac\w*|inhaler\w*|'
+         r'reliever|preventer|puffer|inhalador\w*)\b',
+         r'\b(medications?|medicines?|medicamentos?|allerg\w*|alerg\w*|pastill\w*|farmac\w*|inhaler\w*|'
+         r'reliever|preventer|puffer|inhalador\w*)\b'),
         (r'\b(past medical|medical history|previous health|medical conditions|conditions do you have|antecedentes|enfermedades previas|hypertension|diabet\w*)\b',
          r'\b(hypertension|diabet\w*|medical history|antecedentes)\b'),
         (r'\b(breath\w*|dyspnea|disnea|respirar|ahogo|wheez\w*|silbid\w*)\b',

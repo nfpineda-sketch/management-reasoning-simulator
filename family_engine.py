@@ -76,6 +76,10 @@ KETAMINE = {"bronchodilation_per_mg": .0015, "max_bronchodilation": .25, "tau_mi
 SEDATION_BP_DROP_PER_MG = {"propofol": .12, "midazolam": .8, "fentanyl": .05}
 SEDATION_BP_TAU_MIN = 15.0
 
+# Share of each family's oxygenation defect that oxygen cannot fix (true shunt).
+_OXYGEN_SHUNT = {"asthma": .30, "opioid": .10, "pneumonia": .60, "pulmonary_edema": .70,
+                 "pulmonary_embolism": .45, "acs": .35, "gi_bleed": .20, "hypoglycemia": .20}
+
 
 # Pulmonary oedema teaching magnitudes (docs/PULMONARY_EDEMA_PHYSIOLOGY_PROPOSAL.md,
 # faculty decisions of 2026-09-18). "lung" is 1.0 at arrival and 0.25 when resolved.
@@ -912,11 +916,8 @@ def _surface(state):
         hr += min(12, f["bronchodilation"] * 12)
         if f["invasive"]:
             # Trapped gas raises intrathoracic pressure and obstructs venous return.
-            mech = asthma_ventilation.mechanics(state, obstruction)
+            mech = asthma_ventilation.mechanics(state, obstruction, _sedated(f))
             auto_peep = asthma_ventilation.effective_auto_peep(f, mech["auto_peep_cmh2o"])
-            if not _sedated(f):
-                # Fighting the ventilator shortens expiration further.
-                auto_peep *= asthma_ventilation.DYSSYNCHRONY_AUTO_PEEP_FACTOR
             f["ventilator_mechanics"] = {**mech, "auto_peep_cmh2o": round(auto_peep, 1)}
             sbp -= asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep
             dbp -= asthma_ventilation.SBP_PER_AUTO_PEEP * auto_peep * .6
@@ -1090,7 +1091,7 @@ def _diagnostic(state, diagnostic, duration):
 
             if state["engine_family"] == "asthma" and f["invasive"]:
                 # Permissive hypercapnia: what the set minute ventilation leaves behind.
-                ventilated, _ = asthma_ventilation.blood_gas(state, factor)
+                ventilated, _ = asthma_ventilation.blood_gas(state, factor, _sedated(f))
                 pco2 = _clamp(ventilated, 30, 130)
             elif f["bag_mask"] or f["invasive"]:
                 pco2 = min(pco2, 46)
@@ -1101,7 +1102,13 @@ def _diagnostic(state, diagnostic, duration):
         if diagnostic == "abg":
             result["sao2_percent"] = o["spo2"]
             baseline_oxygen = float(result.get("pao2_mm_hg", 80))
-            pao2 = round(_clamp(baseline_oxygen + (o["spo2"] - f["baseline"].get("spo2", o["spo2"])) * 2.0, 28, 180))
+            # Supplemental oxygen raises the arterial tension, not only the saturation:
+            # a saturation of 99% on FiO2 100% used to report PaO2 77 and a P/F of 77.
+            # How much it rises depends on how much of the defect is true shunt.
+            shunt = _OXYGEN_SHUNT.get(state["engine_family"], .35)
+            oxygen_step = max(0.0, f["oxygen_fio2"] - .21) * 350 * (1 - shunt)
+            pao2 = round(_clamp(baseline_oxygen + (o["spo2"] - f["baseline"].get("spo2", o["spo2"])) * 2.0
+                                + oxygen_step, 28, 500))
             result["pao2_mm_hg"] = pao2
             result["pf_ratio"] = round(pao2 / max(.21, f["oxygen_fio2"]))
         result.pop("report", None)

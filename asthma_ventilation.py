@@ -38,8 +38,9 @@ PLATEAU_LIMIT_CMH2O = 30.0
 VE_REQUIRED_L_PER_MIN_PER_KG = .10
 VE_OBSTRUCTION_PENALTY = .25      # deadspace of the obstructed lung
 
-# An unsedated patient fights the ventilator, which traps more air.
-DYSSYNCHRONY_AUTO_PEEP_FACTOR = 1.3
+# An unsedated patient triggers extra breaths, so expiration is cut short and the
+# delivered ventilation is less effective than the set one.
+DYSSYNCHRONY_RATE_FACTOR = 1.35
 SEDATION_DURATION_MIN = 45
 
 
@@ -62,12 +63,15 @@ def settings(state):
     }
 
 
-def mechanics(state, airflow):
+def mechanics(state, airflow, sedated=True):
     """Airway pressures and trapped gas for the current settings and obstruction.
 
     ``airflow`` is the residual obstruction (1.0 at arrival, .2 fully relieved).
+    An unsedated patient triggers breaths of their own, which shortens expiration.
     """
     s = settings(state)
+    if not sedated:
+        s = {**s, "rate_per_min": s["rate_per_min"] * DYSSYNCHRONY_RATE_FACTOR}
     tidal_l = s["tidal_volume_ml"] / 1000
     resistance = RESISTANCE_BASE + RESISTANCE_PER_OBSTRUCTION * max(0.0, airflow)
     tau = resistance * COMPLIANCE_L_PER_CMH2O
@@ -91,6 +95,7 @@ def mechanics(state, airflow):
         "minute_ventilation_l_min": round(tidal_l * s["rate_per_min"], 1),
         "high_pressure_alarm": peak >= PEAK_ALARM_CMH2O,
         "plateau_above_limit": plateau > PLATEAU_LIMIT_CMH2O,
+        "dyssynchrony": not sedated,
     }
 
 
@@ -113,13 +118,19 @@ def pressure_report(mech, auto_peep):
                  "airways, while the pressure reaching the alveolus is the plateau.")
     if mech["plateau_above_limit"]:
         text += " Plateau pressure is above 30 cmH2O."
+    if mech.get("dyssynchrony"):
+        text += (" The patient is triggering breaths of their own: the delivered rate is higher than the set rate "
+                 "and expiration is shorter.")
     return text
 
 
-def blood_gas(state, airflow):
-    """Permissive hypercapnia: what the set minute ventilation leaves behind."""
-    mech = mechanics(state, airflow)
+def blood_gas(state, airflow, sedated=True):
+    """Permissive hypercapnia: what the minute ventilation leaves behind.
+
+    Breaths the patient triggers do clear CO2, so dyssynchrony shows up as trapped
+    gas and a falling pressure, not as a worse gas.
+    """
+    mech = mechanics(state, airflow, sedated)
     required = (VE_REQUIRED_L_PER_MIN_PER_KG * mech["weight_kg"]
                 * (1 + VE_OBSTRUCTION_PENALTY * max(0.0, airflow)))
-    delivered = max(.5, mech["minute_ventilation_l_min"])
-    return 40 * required / delivered, mech
+    return 40 * required / max(.5, mech["minute_ventilation_l_min"]), mech
