@@ -140,3 +140,61 @@ def test_nitroglycerin_is_ordinary_in_the_case_without_right_ventricular_involve
     state, _ = course(engine, ["Start nitroglycerin at 20 mcg/min. Reassess in 10 minutes."], "acs_66f_nonst")
     assert state["family_state"].get("nitrate_drop", 0) == 0
     assert state["observable"]["sbp"] > 130
+
+
+WELLENS = "acs_48m_wellens"
+POSTERIOR = "acs_61m_posterior"
+DE_WINTER = "acs_52m_de_winter"
+LEFT_MAIN = "acs_70f_left_main"
+
+
+@pytest.mark.parametrize("variant, profile", [
+    (POSTERIOR, "posterior_infarct"), (DE_WINTER, "de_winter"),
+    (WELLENS, "wellens"), (LEFT_MAIN, "diffuse_st_depression_avr"),
+])
+def test_each_equivalent_case_carries_its_morphology(engine, variant, profile):
+    state = encounter(engine, "acs", variant)["state"]
+    case = state["encounter_spec"]["clinical_case"]
+    assert case["ecg_profile"] == profile
+    assert case["engine"]["coronary"]["omi"] is True
+    # The handover never names the pattern: the resident reads the tracing.
+    assert profile.split("_")[0] not in case["presentation"].lower()
+
+
+@pytest.mark.parametrize("variant", [POSTERIOR, DE_WINTER, LEFT_MAIN])
+def test_an_untreated_equivalent_infarcts_like_any_occlusion(engine, variant):
+    state, events = course(engine, [ASPIRIN, "Reassess in 60 minutes."], variant)
+    assert state["family_state"]["ischemic_min"] == 80
+    assert state["family_state"]["lv_function"] < acs.ARRIVAL_LV
+    opened, _ = course(engine, ["Activate the cath lab. Reassess in 95 minutes."], variant)
+    assert acs.is_open(opened["family_state"])
+    assert opened["ecg_profile"] == acs.RESOLVED_PROFILE
+
+
+def test_wellens_does_not_infarct_while_the_resident_watches(engine):
+    state, _ = course(engine, [ASPIRIN, "Reassess in 60 minutes.", "Reassess in 60 minutes."], WELLENS)
+    f = state["family_state"]
+    assert f.get("ischemic_min") is None and f.get("vf_at") is None
+    assert state["observable"]["sbp"] > 120 and state["observable"]["pulse_present"] is True
+
+
+def test_wellens_still_demands_angiography_and_forbids_provocation(engine):
+    scheduled, events = course(engine, ["Activate the cath lab. Reassess in 95 minutes."], WELLENS)
+    assert "angiography is scheduled" in labels(events)
+    assert "rules out provocation testing" in labels(events)
+    assert "stented before it occluded" in labels(events)
+    assert scheduled["ecg_profile"] == acs.RESOLVED_PROFILE
+    tested, test_events = course(engine, ["Order a stress test. Reassess in 12 minutes."], WELLENS)
+    assert tested["family_state"]["vf_at"] is not None
+    assert tested["observable"]["pulse_present"] is False
+
+
+def test_the_left_main_pattern_is_treated_as_an_occlusion(engine):
+    state, _ = course(engine, [ASPIRIN, "Reassess in 60 minutes.", "Reassess in 60 minutes."], LEFT_MAIN)
+    assert state["family_state"]["vf_at"] is not None
+
+
+def test_only_the_inferior_territory_blocks_the_av_node(engine):
+    state, _ = course(engine, [ASPIRIN, "Reassess in 60 minutes."], DE_WINTER)
+    assert state["family_state"].get("av_block_at") is None
+    assert state["observable"]["rhythm"] != "Complete AV block"

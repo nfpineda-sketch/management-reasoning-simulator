@@ -1,5 +1,6 @@
 """Integrity gates for the authored multi-family clinical source bank."""
 import json
+from itertools import combinations
 import unittest
 
 from clinical_cases import FAMILIES, INVESTIGATION_IDS, variant_by_id
@@ -17,16 +18,19 @@ class ClinicalCaseBankTests(unittest.TestCase):
             "asthma", "gi_bleed", "hypoglycemia", "opioid",
         })
         identifiers = [case["id"] for _, case in CASES]
-        self.assertEqual(len(identifiers), 16)
-        self.assertEqual(len(set(identifiers)), 16)
+        # Two per family, plus the four ACS occlusion equivalents added 2026-09-19.
+        self.assertEqual(len(identifiers), 20)
+        self.assertEqual(len([case for family, case in CASES if family == "acs"]), 6)
+        self.assertEqual(len(set(identifiers)), 20)
         for family, entry in FAMILIES.items():
             with self.subTest(family=family):
-                self.assertEqual(len(entry["variants"]), 2)
-                first, second = entry["variants"]
-                self.assertNotEqual(first["patient"], second["patient"])
-                self.assertNotEqual(first["history"], second["history"])
-                self.assertNotEqual(first["presentation"], second["presentation"])
-                self.assertNotEqual(first["observable"], second["observable"])
+                self.assertEqual(len(entry["variants"]), 6 if family == "acs" else 2)
+                # Every variant of a family is a different patient, not a relabelling.
+                for first, second in combinations(entry["variants"], 2):
+                    self.assertNotEqual(first["patient"], second["patient"])
+                    self.assertNotEqual(first["history"], second["history"])
+                    self.assertNotEqual(first["presentation"], second["presentation"])
+                    self.assertNotEqual(first["observable"], second["observable"])
         # This is not a renamed family of 70-year-old AF patients.
         self.assertGreaterEqual(len({case["patient"]["age_years"] for _, case in CASES}), 12)
         self.assertEqual({case["patient"]["sex"] for _, case in CASES}, {"male", "female"})
@@ -113,7 +117,12 @@ class ClinicalCaseBankTests(unittest.TestCase):
                     self.assertLess(case["engine"]["baseline_hemoglobin"], 7)
                     self.assertGreaterEqual(o["spo2"], 96)
                 if family == "acs":
-                    self.assertIn(case["ecg_profile"], {"st_elevation_inferior", "st_depression"})
+                    # Every ACS case carries an authored morphology, including the
+                    # occlusion equivalents that show no ST elevation.
+                    self.assertIn(case["ecg_profile"], {"st_elevation_inferior", "st_depression",
+                                                        "posterior_infarct", "de_winter", "wellens",
+                                                        "diffuse_st_depression_avr"})
+                    self.assertIn("omi", case["engine"]["coronary"])
                     self.assertGreater(case["investigations"]["troponin"]["result"]["value_ng_l"], 19)
                 if family == "pneumonia":
                     self.assertIn("consolidation", json.dumps(case["investigations"]["pocus"]).lower())

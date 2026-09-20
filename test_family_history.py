@@ -154,7 +154,7 @@ def test_history_topic_results_are_copies_and_nonhistory_fields_are_excluded():
     assert not any('PRIVATE_' in fact for fact in history_facts('', state['case_id'], state=state))
 
 
-def test_real_sixteen_case_variants_preserve_their_own_history_and_patient_identity():
+def test_every_real_case_variant_preserves_its_own_history_and_patient_identity():
     from clinical_cases import FAMILIES
     assert len(FAMILIES) == 8
     checked = 0
@@ -172,7 +172,8 @@ def test_real_sixteen_case_variants_preserve_their_own_history_and_patient_ident
             assert 'Legacy AF' not in ' '.join(facts)
             assert f"{case['patient']['age_years']}-year-old" in scene_prompt(state)
             checked += 1
-    assert checked == 16
+    # Four ACS occlusion-equivalent cases were added on 2026-09-19.
+    assert checked == 20
 
 
 def test_neurological_and_leg_history_remain_accessible_without_revealing_diagnoses():

@@ -49,7 +49,7 @@ WALL_MOTION = (
 )
 TERRITORY_WALL = {"inferior": "inferior wall", "anterior": "anterior wall and apex",
                   "lateral": "lateral wall", "posterior": "posterior wall",
-                  "subendocardial": "left ventricle diffusely"}
+                  "left_main": "anterior and lateral walls", "subendocardial": "left ventricle diffusely"}
 # Reperfusion resolves the injury current; the ECG the resident repeats says so.
 RESOLVED_PROFILE = "baseline"
 
@@ -75,6 +75,16 @@ def nitrate_drop(f, equivalent_mcg_min, baseline_sbp, fluid_ml):
 def coronary(state):
     """The case's coronary declaration, or None for a case that has none."""
     return state.get("encounter_spec", {}).get("clinical_case", {}).get("engine", {}).get("coronary")
+
+
+def active_occlusion(spec):
+    """True when muscle is dying now.
+
+    Wellens syndrome is the exception the faculty named: the artery is open at this
+    moment, so nothing infarcts while the resident watches, and yet the lesion is
+    unstable. It needs scheduled angiography, and provocation testing fibrillates.
+    """
+    return bool(spec.get("omi")) and spec.get("active_occlusion", True)
 
 
 def door_to_balloon(spec):
@@ -112,14 +122,20 @@ def step(state):
     if spec is None or not spec.get("omi"):
         return None
     now = f["elapsed"]
-    f.setdefault("lv_function", ARRIVAL_LV)
+    if active_occlusion(spec):
+        f.setdefault("lv_function", ARRIVAL_LV)
     if not is_open(f):
         if f.get("reperfusion_at") is not None and now >= f["reperfusion_at"]:
             open_artery(f, now)
             state["ecg_profile"] = RESOLVED_PROFILE
+            if not active_occlusion(spec):
+                return ("Angiography found a critical proximal stenosis, which was stented before it occluded. The "
+                        "T-wave pattern resolves on a repeated ECG.")
             method = "percutaneous coronary intervention" if f.get("reperfusion_method") == "pci" else "thrombolysis"
             return (f"The artery is open after {method}: the ST segment resolves on a repeated ECG, the discomfort "
                     "settles and the troponin peaks from washout. The affected wall recovers only partly.")
+        if not active_occlusion(spec):
+            return None
         f["ischemic_min"] = f.get("ischemic_min", 0.0) + 1
         f["lv_function"] = max(LV_FLOOR, f.get("lv_function", 1.0) - LV_LOSS_PER_MIN)
         f["circulation"] += RV_CIRCULATION_PER_MIN if spec.get("rv_involvement") else CIRCULATION_PER_MIN
@@ -171,5 +187,8 @@ def pathway_note(spec, f, now):
                 "the pathway here is antiplatelet and anticoagulant treatment with a monitored bed and reassessment.")
     delay = door_to_balloon(spec)
     where = "in this centre" if spec.get("pci_capable", True) else "after transfer to a centre with a cath lab"
+    if not active_occlusion(spec):
+        return (f"Cath lab contacted {where}: angiography is scheduled for minute {now + delay}. This pattern demands "
+                "angiography and rules out provocation testing, even though the patient is pain-free.")
     return (f"Cath lab activated {where}: the artery is expected to be open at minute {now + delay} "
             f"(door to balloon {delay} minutes).")
