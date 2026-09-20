@@ -37,6 +37,7 @@ _SYNTAX_EXAMPLES = (
     "Start dobutamine 5 mcg/kg/min",
     "Give furosemide 40 mg IV",
     "Give magnesium sulfate 2 g IV",
+    "Give tenecteplase 40 mg IV",
     "Give metoprolol 2.5 mg IV",
     "Give diltiazem 5 mg IV",
     "Give amiodarone 150 mg IV",

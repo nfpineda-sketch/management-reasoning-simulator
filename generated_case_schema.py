@@ -31,7 +31,7 @@ STUDIES = ("pocus", "lactate", "vbg", "abg", "basic_labs", "temperature", "poc_g
            "urinalysis", "blood_cultures", "troponin", "ctpa", "hemoglobin", "head_ct", "abdominal_ct",
            "cortisol", "thyroid_function", "ketones", "toxicology")
 ACTIONS = ("fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator", "steroid", "dextrose",
-           "naloxone", "blood", "ppi", "aspirin", "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic", "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "magnesium")
+           "naloxone", "blood", "ppi", "aspirin", "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic", "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "magnesium", "thrombolysis")
 
 
 def obj(properties):

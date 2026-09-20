@@ -16,7 +16,12 @@ MODEL_VERSION = 1
 LEADS = ("I", "II", "III", "aVR", "aVL", "aVF", "V1", "V2", "V3", "V4", "V5", "V6")
 # Standard 3x4 sequential display: each column occupies a different 2.5 s.
 LAYOUT = (("I", "aVR", "V1", "V4"), ("II", "aVL", "V2", "V5"), ("III", "aVF", "V3", "V6"))
-PROFILES = ("baseline", "st_elevation_anterior", "st_elevation_inferior", "st_elevation_lateral", "st_depression", "right_strain")
+# The four added in 2026-09-19 are the electrocardiographic equivalents of an
+# occluded artery (OMI) that carry no ST elevation in the 12-lead ECG: an isolated
+# posterior infarct, de Winter T waves, diffuse ST depression with ST elevation in
+# aVR, and Wellens syndrome. They are morphologies only; the reader interprets them.
+PROFILES = ("baseline", "st_elevation_anterior", "st_elevation_inferior", "st_elevation_lateral", "st_depression",
+            "right_strain", "posterior_infarct", "de_winter", "diffuse_st_depression_avr", "wellens")
 SAMPLE_HZ = 500
 DURATION_SECONDS = 10.0
 RHYTHMS = {
@@ -119,6 +124,30 @@ def _coefficients(profile, axis, rhythm):
         c["I"][5], c["II"][5] = one, two
         for i, st in enumerate(precordial, 1):
             c[f"V{i}"][5] = st
+    if profile == "posterior_infarct":
+        # Mirror image of a posterior injury current: ST depression with a tall R
+        # and an upright, prominent T in the right precordial leads.
+        for i, (st, t_wave, r) in enumerate(((-.12, .30, .55), (-.22, .42, 1.15), (-.18, .38, 1.35)), 1):
+            c[f"V{i}"][5], c[f"V{i}"][4], c[f"V{i}"][2] = st, t_wave, r
+        c["V1"][3], c["V2"][3], c["V3"][3] = -.35, -.40, -.35   # R/S ratio above one
+        c["II"][5], c["I"][5] = -.03, -.02
+    if profile == "de_winter":
+        # Upsloping ST depression at the J point with tall, symmetric T waves; the
+        # diffuse depression in I and II projects as ST elevation in aVR.
+        for i, (st, t_wave) in enumerate(((-.10, .40), (-.16, .95), (-.16, 1.05), (-.14, .95), (-.10, .62), (-.07, .45)), 1):
+            c[f"V{i}"][5], c[f"V{i}"][4] = st, t_wave
+        c["I"][5], c["II"][5] = -.06, -.10
+    if profile == "diffuse_st_depression_avr":
+        # Global subendocardial ischaemia: depression everywhere, elevation in aVR.
+        for i, st in enumerate((-.04, -.12, -.18, -.20, -.18, -.14), 1):
+            c[f"V{i}"][5] = st
+        c["I"][5], c["II"][5] = -.12, -.20
+    if profile == "wellens":
+        # Preserved R waves, no ST shift, deeply inverted or biphasic T waves in
+        # the mid-precordial leads.
+        for i, t_wave in enumerate((.05, -.28, -.45, -.40, -.10, .12), 1):
+            c[f"V{i}"][4] = t_wave
+            c[f"V{i}"][5] = 0.0
     if profile == "right_strain":
         c["I"][3] = -.45  # prominent terminal rightward forces
         c["I"][4], c["II"][4] = .04, -.19

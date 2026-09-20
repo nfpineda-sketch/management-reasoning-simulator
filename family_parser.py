@@ -19,7 +19,7 @@ NEW_TREATMENT_ACTIONS = frozenset({
     "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin", "nitroglycerin_bolus",
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
     "magnesium", "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
-    "ventilator_disconnect", "chest_decompression",
+    "ventilator_disconnect", "chest_decompression", "thrombolysis", "stress_test",
 })
 
 # A continuous nebulization without a stated rate runs at the usual 10 mg/h.
@@ -38,6 +38,8 @@ _AGENTS = {
     },
     "dextrose": {"dextrose": r"dextrose|dextrosa|glucosa(?:\s+intravenosa)?|d50|d10"},
     "magnesium": {"magnesium sulfate": r"magnesium(?:\s+sulfate)?|sulfato\s+de\s+magnesio|magnesio|mgso4|mg\s*so4"},
+    "thrombolysis": {"tenecteplase": r"tenecteplase|tenecteplasa|tnk", "alteplase": r"alteplase|alteplasa|rt-?pa|\btpa\b",
+                     "streptokinase": r"streptokinase|estreptoquinasa"},
     "naloxone": {"naloxone": r"naloxone|naloxona|narcan"},
     "ppi": {"pantoprazole": r"pantoprazole|pantoprazol", "omeprazole": r"omeprazole|omeprazol"},
     "aspirin": {"aspirin": r"aspirin|aspirina|asa|aas"},
@@ -322,6 +324,9 @@ def _parse_piece_core(piece, inherited=None):
     if re.search(r"\b(?:gases|gasometria|blood gases?)\b", body):
         return [{'type': 'clarification', 'message': 'Specify arterial (ABG) or venous (VBG) blood gases.',
                  'pending_action': {'type': 'diagnostic', 'diagnostic': None}}], verb
+    if re.search(r"\b(?:stress\s+test|exercise\s+(?:test|stress)|treadmill|test\s+de\s+esfuerzo|"
+                 r"ergometr[ií]a|prueba\s+de\s+esfuerzo)\b", body):
+        return [{"type": "stress_test"}], verb or "order"
     if verb in _DIAG_VERBS and verb not in {"order", "perform", "do", "realizar", "hacer"}:
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
@@ -368,6 +373,12 @@ def _parse_piece_core(piece, inherited=None):
                  "fio2_percent": _settings(body, "fio2"), "peep_cmh2o": _settings(body, "peep"),
                  "ipap_cmh2o": _settings(body, "ipap"), "epap_cmh2o": _settings(body, "epap"),
                  **_ventilator_extras(body)}], verb
+    if re.search(r"\b(?:stress\s+test|exercise\s+(?:test|stress)|treadmill|test\s+de\s+esfuerzo|"
+                 r"ergometr[ií]a|prueba\s+de\s+esfuerzo)\b", body):
+        return [{"type": "stress_test"}], verb or "order"
+    if re.search(r"\b(?:thromboly\w*|fibrinoly\w*|trombolisis|trombol[ií]tico\w*|fibrinol[ií]tico\w*)\b", body) \
+            and not any(re.search(r"\b(?:" + pattern + r")\b", body) for pattern in _AGENTS["thrombolysis"].values()):
+        return [_clarification("Specify the thrombolytic agent and dose, for example tenecteplase 40 mg IV.")], verb
     if re.search(r"\b(?:needle\s+decompress\w*|needle\s+thoracostomy|finger\s+thoracostomy|chest\s+tube|"
                  r"thoracostomy|tube\s+thoracostomy|descompresi[oó]n\s+con\s+aguja|punci[oó]n\s+(?:pleural|descompresiva)|"
                  r"tubo\s+(?:pleural|de\s+t[oó]rax)|pleurotom[ií]a)\b", body):

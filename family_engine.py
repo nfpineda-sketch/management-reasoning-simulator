@@ -11,6 +11,7 @@ EXECUTION_VERSION = "0.24.2"
 from copy import deepcopy
 import math
 
+import acs_reperfusion
 import asthma_complications
 import asthma_ventilation
 import re
@@ -42,6 +43,7 @@ _MEDICINES = {
     "amiodarone": ({"IV", "PO"}, .001, 2000),
     "procedural_sedation": ({"IV", "IM", "IN"}, .001, 1000),
     "magnesium": ({"IV", "IO"}, 500, 4000),
+    "thrombolysis": ({"IV", "IO"}, 5, 200),
     # Induction and maintenance sedation are part of intubating an asthmatic, so
     # they are no longer restricted to generated encounters.
 }
@@ -272,6 +274,9 @@ def _validate(state, parsed):
                     ceiling = {"dobutamine": (10000, 50), "norepinephrine": (100, 1.5), "epinephrine": (60, 1.0)}[kind]
                     if a["units"] is None or not _number(a.get("rate"), .001, ceiling[0] if a["units"] == "mcg/min" else ceiling[1]):
                         return None, f"Specify or confirm {kind} dose and units (mcg/min or mcg/kg/min)."
+        elif kind == "stress_test":
+            if validation_state.get("engine_family") != "acs":
+                return None, "A stress test is not an executable study in this encounter."
         elif kind == "chest_decompression":
             if validation_state.get("engine_family") != "asthma":
                 return None, "Chest decompression is not an executable intervention in this encounter."
@@ -611,6 +616,33 @@ def _order(state, a):
         else:
             tr.update({kind + "_rate": reported_rate if rate else 0, kind + "_units": reported_units})
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
+    elif kind == "thrombolysis":
+        spec = acs_reperfusion.coronary(state) or {}
+        offset = int(state.get("sim_time", 0)) - f["elapsed"]
+        if not spec.get("omi"):
+            label = (f"{a['agent']} {a['dose_mg']:g} mg {a['route']} given: this ECG shows no occlusion pattern, so "
+                     "thrombolysis carries its bleeding risk without an artery to open")
+        elif acs_reperfusion.is_open(f):
+            label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} given: the artery is already open"
+        else:
+            expected = acs_reperfusion.activate(f, spec, f["elapsed"], method="thrombolysis")
+            label = (f"{a['agent']} {a['dose_mg']:g} mg {a['route']} given: reperfusion is expected at minute "
+                     f"{expected + offset}")
+        tr["administered_medications"].append({"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"],
+                                               "time_min": int(state.get("sim_time", 0))})
+        duration = 5
+    elif kind == "stress_test":
+        # Faculty decision: it is executed, and on an unstable occlusion it fibrillates.
+        spec = acs_reperfusion.coronary(state) or {}
+        if spec.get("omi") and not acs_reperfusion.is_open(f):
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure",
+                 "label": acs_reperfusion.ventricular_fibrillation(f, "an exercise stress test on an unstable occlusion"),
+                 "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
+            label = "Exercise stress test started"
+        else:
+            label = "Exercise stress test performed: no ischaemic change at the workload achieved"
+        duration = 10
     elif kind == "chest_decompression":
         side, device = a["side"], a.get("device", "needle")
         if f.get("pneumothorax_at") is None:
@@ -669,6 +701,12 @@ def _order(state, a):
         else:
             f["consultations"].append({"service": service, "time_min": state.get("sim_time", 0)})
             label = f"{service} contacted; definitive intervention has not yet occurred"
+            spec = acs_reperfusion.coronary(state)
+            if spec is not None and service == "cath lab":
+                # Activating the cath lab starts the door-to-balloon clock.
+                if spec.get("omi"):
+                    acs_reperfusion.activate(f, spec, f["elapsed"], method="pci")
+                label = acs_reperfusion.pathway_note(spec, f, int(state.get("sim_time", 0)))
         duration = 0
     elif kind == "disposition":
         repeated = tr.get("disposition") == a["destination"]
@@ -842,6 +880,15 @@ def _minute(state):
         f["opioid"] *= .999
     elif family in {"acs", "pulmonary_embolism"}:
         f["circulation"] += .001
+        if family == "acs":
+            spec = acs_reperfusion.coronary(state) or {}
+            if spec.get("rv_involvement"):
+                # A preload-dependent right ventricle: nitroglycerin can collapse it.
+                acs_reperfusion.nitrate_drop(f, _nitro_equivalent(f), float(f["baseline"].get("sbp", 120)), fluid)
+            event = acs_reperfusion.step(state)
+            if event:
+                f.setdefault("procedure_events", []).append(
+                    {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     if f.get("nitro_bolus_pool"):
         f["nitro_bolus_pool"] *= math.exp(-1 / EDEMA["nitro_bolus_tau_min"])
         if f["nitro_bolus_pool"] < 1:
@@ -987,6 +1034,17 @@ def _surface(state):
         if f["bag_mask"] or f["invasive"]:
             spo2 = 96
             rr = 12
+    elif family == "acs" and acs_reperfusion.coronary(state):
+        if f.get("av_block_at") is not None and not acs_reperfusion.is_open(f):
+            hr = acs_reperfusion.AV_BLOCK_RATE
+            f["surface_rhythm"] = "Complete AV block"
+        else:
+            f.pop("surface_rhythm", None)
+        drop = f.get("nitrate_drop", 0.0)
+        sbp -= drop
+        dbp -= drop * .6
+        if acs_reperfusion.in_shock(f) and mental == "Alert":
+            mental = "Drowsy"
     elif family == "pulmonary_embolism":
         spo2 -= (circulation - 1) * 8
         rr += (circulation - 1) * 10
@@ -1041,12 +1099,19 @@ def _surface(state):
 
     else:
         wob = str(base.get("work_of_breathing", "Normal"))
-    o.update(sbp=sbp, dbp=dbp, map=int(round((sbp + 2 * dbp) / 3)), hr=int(round(_clamp(hr, 45, 180))), spo2=spo2,
+    o.update(sbp=sbp, dbp=dbp, map=int(round((sbp + 2 * dbp) / 3)), hr=int(round(_clamp(hr, 42, 180))), spo2=spo2,
              respiratory_rate=int(round(_clamp(rr, 3, 45))), work_of_breathing=wob, mental_status=mental,
              crt=round(crt, 1), peripheral_perfusion=perfusion, glucose_mg_dl=int(round(f["glucose"])),
              rhythm=str(base.get("rhythm", "Sinus rhythm")), pulse_present=True,
              extremities=extremities)
-    if str(base.get("rhythm", "")).lower().startswith("sinus"):
+    if f.get("surface_rhythm"):
+        o["rhythm"] = f["surface_rhythm"]
+    if f.get("vf_at") is not None:
+        # Ventricular fibrillation: no organized rhythm and no pulse.
+        o.update(rhythm="VF", pulse_present=False, hr=0, sbp=0, dbp=0, map=0,
+                 mental_status="Unresponsive", crt=None, peripheral_perfusion="critical")
+        state["ecg_profile"] = "baseline"
+    if str(base.get("rhythm", "")).lower().startswith("sinus") and not f.get("surface_rhythm") and f.get("vf_at") is None:
         o["rhythm"] = "Sinus tachycardia" if o["hr"] > 100 else "Sinus bradycardia" if o["hr"] < 60 else "Sinus rhythm"
     o["respiratory_support"] = "Invasive ventilation" if f["invasive"] else "NIV" if f["niv"] else "Bag-mask ventilation" if f["bag_mask"] else f["oxygen_device"]
     # Explicit authored visual contract is kept separate from diagnostic text.
@@ -1104,6 +1169,9 @@ def _diagnostic(state, diagnostic, duration):
             result["glucose_mg_dl"] = o["glucose_mg_dl"]
         if state["engine_family"] == "asthma" and "potassium_mmol_l" in result and f.get("potassium") is not None:
             result["potassium_mmol_l"] = round(f["potassium"], 1)
+    elif diagnostic == "troponin" and state["engine_family"] == "acs" and acs_reperfusion.coronary(state):
+        baseline = float(result.get("value_ng_l", 20))
+        result["value_ng_l"] = acs_reperfusion.troponin(f, baseline)
     elif diagnostic == "lactate":
         value = round(max(.8, f["lactate"] + (f["circulation"] - 1) * 2), 1)
         result = {"lactate_mmol_l": value, "report": f"Lactate {value:g} mmol/L"}
@@ -1129,6 +1197,11 @@ def _diagnostic(state, diagnostic, duration):
             treated = f.get("pneumothorax_decompressed_at") is not None
             result["lung_sliding"] = (f"Sliding restored on the {side} after decompression" if treated
                                       else f"Absent on the {side}, with a lung point; present on the other side")
+        spec = acs_reperfusion.coronary(state) if state["engine_family"] == "acs" else None
+        # The arrival scan is the authored one; the model takes over once the
+        # infarct has had minutes to evolve.
+        if spec is not None and spec.get("omi") and "lv" in result and f.get("ischemic_min", 0):
+            result["lv"] = acs_reperfusion.wall_motion(f, spec)
         if "ivc" in result and (f.get("niv") or f.get("invasive")):
             result["ivc"] = (result["ivc"].split(";")[0]
                              + "; respiratory variation not assessable during positive-pressure support")

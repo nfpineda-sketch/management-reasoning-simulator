@@ -218,7 +218,7 @@ def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
 def _case(identifier, family, age, sex, comorbidities, presentation, history,
           examination, observable, investigations, diagnosis, findings, focus,
           questions, actions, *, ecg="baseline", visual=None, recurrence=False,
-          history_source="Patient", congestion=None):
+          history_source="Patient", congestion=None, coronary=None):
     return {
         "id": identifier,
         "patient": {"age_years": age, "sex": sex,
@@ -235,6 +235,7 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
             "baseline_lactate": investigations["lactate"]["result"]["lactate_mmol_l"],
             "recurrence_risk": recurrence,
             **({"congestion": dict(congestion)} if congestion else {}),
+            **({"coronary": dict(coronary)} if coronary else {}),
         },
         "faculty": {"diagnosis": diagnosis, "discriminating_findings": list(findings),
                     "management_focus": focus, "review_questions": list(questions),
@@ -409,6 +410,10 @@ FAMILIES["acs"]["variants"].append(_case(
     "Recognize the time-critical ischemic pattern and arrange reperfusion while monitoring hemodynamics.",
     ["How did the pain location influence your initial explanation?", "Which finding changed the urgency of definitive management?"],
     ["aspirin", "consult", "reperfusion_referral"], ecg="st_elevation_inferior",
+    # An inferior occlusion with right ventricular involvement: the artery has to be
+    # opened, and nitroglycerin can collapse a preload-dependent circulation.
+    coronary={"omi": True, "territory": "inferior", "rv_involvement": True, "pci_capable": True,
+              "symptom_onset_min": 75},
     visual=_visual(skin="mild pallor", sweating="marked")))
 
 _o = _observable(146, 86, 102, 95, 24, wob="Mildly increased", temperature=36.9, glucose=184)
@@ -437,6 +442,10 @@ FAMILIES["acs"]["variants"].append(_case(
     "Recognize acute ischemia without ST elevation and establish monitored specialist assessment and reassessment.",
     ["What did the absence of ST elevation establish, and what did it not establish?", "How did ongoing symptoms affect your next action?"],
     ["aspirin", "consult"], ecg="st_depression",
+    # Ischaemia without an occlusion pattern: antiplatelet and anticoagulant
+    # treatment with a monitored bed, and angiography that can wait.
+    coronary={"omi": False, "territory": "subendocardial", "rv_involvement": False, "pci_capable": True,
+              "symptom_onset_min": 180},
     visual=_visual(sweating="mild")))
 
 
