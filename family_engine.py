@@ -57,7 +57,8 @@ _MEDICINES = {
 # Intravenous magnesium in severe asthma (faculty decision 2026-09-19): given
 # before intubation, it adds a modest bronchodilation on top of the beta-agonist.
 # Teaching magnitudes pending review.
-MAGNESIUM = {"bronchodilation_per_g": .075, "max_bronchodilation": .20, "onset_min": 10}
+# Faculty 2026-09-20: magnesium helps, but not as much as the other interventions.
+MAGNESIUM = {"bronchodilation_per_g": .05, "max_bronchodilation": .12, "onset_min": 10}
 
 # Diluted epinephrine in severe asthma (faculty decision 2026-09-19): 1 mg in
 # 1000 mL as a drip, or 50-150 mcg IV boluses, before considering intubation. It
@@ -75,6 +76,12 @@ EPINEPHRINE = {
 # Continuous nebulization holds the beta-agonist effect instead of letting each
 # dose fade (faculty decision 2026-09-19).
 CONTINUOUS_NEBULIZER = {"bronchodilation_per_mg_h": .09, "max_bronchodilation": 1.0, "tau_min": 10.0}
+
+# A nebulized dose arrives over minutes and leaves faster than it used to: the
+# faculty asked for the onset (2026-09-20) and for a quicker fade, so that
+# continuous nebulization earns its place before ninety minutes.
+BRONCHODILATOR_ONSET_MIN = 7.0
+BRONCHODILATOR_DECAY_PER_MIN = .975
 
 # Ketamine keeps airway reflexes and relaxes bronchial smooth muscle, so it is the
 # preferred induction and maintenance agent in asthma (faculty decision 2026-09-19).
@@ -136,7 +143,7 @@ GI_BLEED = {
     # Once the bleeding is controlled and the anemia corrected, the compensatory
     # tachycardia eases (faculty decision 2026-09-19). The circulation variable
     # alone cannot show it: its floor (.25) holds the 57m at HR 105.
-    "recovery_tau_min": 90.0,
+    "recovery_tau_min": 45.0,   # faculty 2026-09-20: the relief was too slow
     "recovery_min_hemoglobin": 7.0,
     "recovery_hr_relief": 20.0,
 }
@@ -388,7 +395,9 @@ def _medicine_effect(state, a, amount):
         # ventilation target: pushing past it is how withdrawal is precipitated.
         f["naloxone"] = min(6.0, f["naloxone"] + amount / (.4 if a["route"] in {"IV", "IO"} else 2))
     elif kind == "bronchodilator":
-        f["bronchodilation"] = min(1.3, f["bronchodilation"] + min(.8, amount / 5))
+        # Faculty decision 2026-09-20: no bronchodilator works in one minute. The dose
+        # is held and released over its onset instead of landing at once.
+        f["bronchodilator_pending"] = f.get("bronchodilator_pending", 0.0) + min(.8, amount / 5)
     elif kind == "magnesium":
         # Smooth-muscle relaxation adds to the beta-agonist rather than replacing it.
         f["magnesium_pending"] = f.get("magnesium_pending", 0.0) + amount / 1000
@@ -1000,7 +1009,12 @@ def _minute(state):
         f["magnesium_pending"] = max(0.0, grams - grams * share)
     f["anticoagulant_exposure"] *= math.exp(-1 / ANTICOAGULANT_TAU_MIN)
     # The naloxone decay lives in opioid_reversal.step, which both engines call.
-    f["bronchodilation"] *= .986
+    if f.get("bronchodilator_pending"):
+        share = min(1.0, 1 / BRONCHODILATOR_ONSET_MIN)
+        arriving = f["bronchodilator_pending"] * share
+        f["bronchodilation"] = min(1.3, f["bronchodilation"] + arriving)
+        f["bronchodilator_pending"] -= arriving
+    f["bronchodilation"] *= BRONCHODILATOR_DECAY_PER_MIN
     for key in {"lung", "circulation", "obstruction"}:
         f[key] = _clamp(f[key], .25, 1.9)
     f["glucose"] = _clamp(f["glucose"], 15, 350)
@@ -1098,7 +1112,10 @@ def _surface(state):
             oxygen_gain *= 1 - .7 * tension
             rr = mech["rate_per_min"]
         effort = obstruction
-        if obstruction < .4 and spo2 + oxygen_gain >= 90:
+        # The patient wakes when the oxygenation returns, not when the wheeze is gone.
+        # With the dose's onset and faster fade (faculty 2026-09-20) a single
+        # nebulization peaks lower, and the old .4 threshold left them drowsy at 97%.
+        if obstruction < .6 and spo2 + oxygen_gain >= 90:
             mental = "Alert"
     elif family == "hypoglycemia":
         mental = "Alert" if f["glucose"] >= 70 else "Drowsy" if f["glucose"] >= 45 else "Obtunded" if f["glucose"] >= 25 else "Unresponsive"
@@ -1276,7 +1293,9 @@ def _diagnostic(state, diagnostic, duration):
             result["potassium_mmol_l"] = round(f["potassium"], 1)
     elif diagnostic == "troponin" and state["engine_family"] == "acs" and acs_reperfusion.coronary(state):
         baseline = float(result.get("value_ng_l", 20))
-        result["value_ng_l"] = acs_reperfusion.troponin(f, baseline)
+        spec = acs_reperfusion.coronary(state) or {}
+        result["value_ng_l"] = acs_reperfusion.troponin(
+            f, baseline, float(spec.get("symptom_onset_min") or 0), spec)
     elif diagnostic == "lactate":
         value = round(max(.8, f["lactate"] + (f["circulation"] - 1) * 2), 1)
         result = {"lactate_mmol_l": value, "report": f"Lactate {value:g} mmol/L"}
@@ -1473,4 +1492,6 @@ def clinical_update(state):
     mechanics = state.get("family_state", {}).get("ventilator_mechanics")
     if mechanics and state.get("family_state", {}).get("invasive"):
         text += " " + asthma_ventilation.pressure_report(mechanics, mechanics["auto_peep_cmh2o"])
+        gas = state.get("diagnostics", {}).get("abg", {})
+        text += asthma_ventilation.hypercapnia_note(gas.get("ph"), gas.get("paco2_mm_hg"))
     return text

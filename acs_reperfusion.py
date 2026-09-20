@@ -27,15 +27,28 @@ THROMBOLYSIS_TO_REPERFUSION_MIN = 60
 THROMBOLYSIS_WINDOW_MIN = 720     # beyond twelve hours of symptoms it buys nothing
 
 # Cost of an artery that stays closed, per minute of occlusion.
-TROPONIN_PER_MIN = 25.0           # ng/L
+# Troponin follows the faculty's illustrative hs-cTnI curve (2026-09-20), timed from
+# the onset of pain rather than from arrival: 8 ng/L at 30 minutes, 18 at one hour,
+# 90 at two, 450 at three, 1600 at four and 6000 at six. Those are one plausible
+# curve, not thresholds, and the assay's own upper reference belongs to the case.
+# Two consequences the faculty stated: the first hours show the rise, not the peak,
+# which falls around twelve hours; and reperfusion accelerates the rise by washout,
+# so a brisk climb after angioplasty does not by itself mean the procedure failed.
+# The last point is the peak the faculty placed around twelve hours from the pain,
+# after which the curve holds rather than growing without bound.
+TROPONIN_CURVE = ((30, 8), (60, 18), (120, 90), (180, 450), (240, 1600), (360, 6000), (720, 20000))
 TROPONIN_WASHOUT_FACTOR = 1.6     # the peak after reperfusion, from washout
+TROPONIN_AFTER_REPERFUSION_SHARE = .3   # the rise continues, more slowly
 LV_LOSS_PER_MIN = .0025           # regional function lost: 90 minutes closed costs a grade
 LV_FLOOR = .45
 LV_RECOVERY_PER_MIN = .0015       # after the artery opens
 LV_RECOVERY_CEILING = .85
 CIRCULATION_PER_MIN = .0012       # the failing pump, on top of the family drift
 RV_CIRCULATION_PER_MIN = .0018    # an inferior infarct with right ventricular involvement
-AV_BLOCK_AT_MIN = 45              # inferior territory only
+# Faculty 2026-09-20: the block is conditional, but it must not be rare. It belongs
+# to the inferior territory, it needs the artery still shut, and the case can exclude
+# it with av_block_risk false.
+AV_BLOCK_AT_MIN = 45
 AV_BLOCK_RATE = 42
 VF_AT_MIN = 120                   # an artery closed this long, or a stress test in Wellens
 SHOCK_LV = .55
@@ -171,15 +184,16 @@ def step(state):
                 return ("Angiography found a critical proximal stenosis, which was stented before it occluded. The "
                         "T-wave pattern resolves on a repeated ECG.")
             method = "percutaneous coronary intervention" if f.get("reperfusion_method") == "pci" else "thrombolysis"
-            return (f"The artery is open after {method}: the ST segment resolves on a repeated ECG, the discomfort "
-                    "settles and the troponin peaks from washout. The affected wall recovers only partly.")
+            return (f"The artery is open after {method}: the ST segment resolves on a repeated ECG and the discomfort "
+                    "settles. The troponin climbs faster now, from washout, which is not a failed procedure; its peak "
+                    "comes hours later. The affected wall recovers only partly.")
         if not active_occlusion(spec):
             return None
         f["ischemic_min"] = f.get("ischemic_min", 0.0) + 1
         f["lv_function"] = max(LV_FLOOR, f.get("lv_function", 1.0) - LV_LOSS_PER_MIN)
         f["circulation"] += RV_CIRCULATION_PER_MIN if spec.get("rv_involvement") else CIRCULATION_PER_MIN
-        if (spec.get("territory") == "inferior" and f["ischemic_min"] >= AV_BLOCK_AT_MIN
-                and not f.get("av_block_at")):
+        if (spec.get("territory") == "inferior" and spec.get("av_block_risk", True)
+                and f["ischemic_min"] >= AV_BLOCK_AT_MIN and not f.get("av_block_at")):
             f["av_block_at"] = now
             return ("Complete atrioventricular block: the inferior infarct has taken the AV node. The rate falls and "
                     "the pressure falls with it.")
@@ -200,12 +214,35 @@ def ventricular_fibrillation(f, cause):
             "paused: this is the outcome the pathway exists to prevent.")
 
 
-def troponin(f, baseline):
-    """The troponin the resident measures, with the washout peak after reperfusion."""
-    released = TROPONIN_PER_MIN * f.get("ischemic_min", 0.0)
+def _curve(minutes_since_onset):
+    """The faculty's curve, interpolated in log space between its points."""
+    import math
+    points = TROPONIN_CURVE
+    if minutes_since_onset <= points[0][0]:
+        return points[0][1] * minutes_since_onset / points[0][0]
+    for (t0, v0), (t1, v1) in zip(points, points[1:]):
+        if minutes_since_onset <= t1:
+            share = (minutes_since_onset - t0) / (t1 - t0)
+            return 10 ** (math.log10(v0) + share * (math.log10(v1) - math.log10(v0)))
+    return points[-1][1]   # the peak holds; the fall is beyond this encounter
+
+
+def troponin(f, baseline, onset_min=0, spec=None):
+    """The troponin the resident measures, on the curve timed from the pain.
+
+    The case's authored arrival value is a floor: it is what this patient's assay
+    reported when they arrived. A case with no artery shut — a non-occlusion
+    syndrome, or Wellens with its artery open — keeps that value: nothing is
+    infarcting while the resident watches.
+    """
+    if spec is not None and not active_occlusion(spec):
+        return round(float(baseline))
+    ischaemic = f.get("ischemic_min", 0.0)
+    after = max(0.0, f.get("elapsed", ischaemic) - ischaemic) * TROPONIN_AFTER_REPERFUSION_SHARE
+    value = _curve(float(onset_min) + ischaemic + after)
     if is_open(f):
-        released *= TROPONIN_WASHOUT_FACTOR
-    return round(baseline + released)
+        value *= TROPONIN_WASHOUT_FACTOR
+    return round(max(float(baseline), value))
 
 
 GLOBAL_MOTION = ((.85, "normal"), (.70, "mildly reduced"), (.58, "moderately reduced"), (0.0, "severely reduced"))

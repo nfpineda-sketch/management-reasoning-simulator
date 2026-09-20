@@ -74,7 +74,10 @@ def test_the_obstruction_worsens_untreated_and_answers_to_a_bronchodilator():
     minutes(state, 20)
     assert airway.airflow(state) > 1.0
     run(state, {"type": "bronchodilator", "agent": "albuterol", "dose_mg": 5, "route": "nebulized"})
-    assert airway.airflow(state) < .4
+    # The dose arrives over its onset rather than landing at once, and it fades while
+    # it arrives, so one nebulization no longer clears the airway on its own.
+    minutes(state, 10)
+    assert airway.airflow(state) < .6
     _, _, spo2, rr = airway.generated_effects(state)
     # Relief reaches the patient as oxygenation and a falling rate.
     assert spo2 > 5 and rr < -5

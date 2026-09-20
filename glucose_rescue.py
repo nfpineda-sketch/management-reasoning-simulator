@@ -34,6 +34,18 @@ ORAL_SAFE_MENTAL = {"Alert"}
 # A 10% infusion, in grams per minute: 100 mL/h is 10 g/h.
 INFUSION_G_PER_ML = .1
 
+# Overcorrection (faculty decision 2026-09-20). Hyperglycaemia above 300 mg/dL has
+# little acute repercussion, so the number itself is not punished. What is punished is
+# what overcorrection provokes in a patient whose pancreas works: an insulin response
+# that takes the glucose back down, faster than it fell before.
+REBOUND_GLUCOSE = 200          # a doubled ampoule reaches this; a single one does not
+REBOUND_DELAY_MIN = 30
+REBOUND_FALL_PER_MIN = .8      # enough that the rebound is reached inside an encounter
+REBOUND_ENDS_BELOW = 100
+REBOUND_TEXT = ("The correction overshot: a glucose above 200 mg/dL in a patient with a working pancreas provoked an "
+                "insulin response, and the glucose is now falling faster than it fell before. Overcorrection buys the "
+                "next hypoglycaemia, not safety.")
+
 # Neuroglycopenia that is left too long.
 SEIZURE_GLUCOSE = 40
 SEIZURE_AFTER_MIN = 20
@@ -49,7 +61,8 @@ WERNICKE_TEXT = ("Confusion persists with nystagmus and an unsteady gaze althoug
 def profile(state):
     case = state.get("encounter_spec", {}).get("clinical_case", {}).get("engine", {})
     return {"sulfonylurea": bool(case.get("recurrence_risk")),
-            "thiamine_deficient": bool(case.get("thiamine_deficient"))}
+            "thiamine_deficient": bool(case.get("thiamine_deficient")),
+            "endogenous_insulin": bool(case.get("endogenous_insulin"))}
 
 
 def octreotide_active(f):
@@ -59,9 +72,17 @@ def octreotide_active(f):
 
 def drift_per_min(f, state):
     """How fast the glucose falls on its own, before any treatment."""
-    if not profile(state)["sulfonylurea"]:
-        return -.08
-    return -.08 if octreotide_active(f) else -.6
+    own = profile(state)
+    drift = -.08 if (not own["sulfonylurea"] or octreotide_active(f)) else -.6
+    return drift - rebound_fall(f)
+
+
+def rebound_fall(f):
+    """The extra fall an overshoot bought, once the insulin response has started."""
+    started = f.get("rebound_at")
+    if started is None or f["elapsed"] - started < REBOUND_DELAY_MIN:
+        return 0.0
+    return 0.0 if f.get("glucose", 0) <= REBOUND_ENDS_BELOW else REBOUND_FALL_PER_MIN
 
 
 def _window_gain(f, key, onset, duration, per_min, scale=1.0):
@@ -93,6 +114,10 @@ def step(state):
         f["neuroglycopenia_min"] = f.get("neuroglycopenia_min", 0.0) + 1
     else:
         f["neuroglycopenia_min"] = 0.0
+    if (profile(state)["endogenous_insulin"] and f.get("rebound_at") is None
+            and f["glucose"] > REBOUND_GLUCOSE):
+        f["rebound_at"] = f["elapsed"]
+        return REBOUND_TEXT
     if f.get("seizure_at") is None and f["neuroglycopenia_min"] >= SEIZURE_AFTER_MIN:
         f["seizure_at"] = f["elapsed"]
         return ("Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and "

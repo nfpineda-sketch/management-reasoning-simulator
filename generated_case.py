@@ -168,7 +168,7 @@ AUTHOR_INSTRUCTIONS += (
 # instruction and the engine name the same patterns and the same times.
 from acs_reperfusion import DOOR_TO_BALLOON_MIN as _DOOR_TO_BALLOON, DOOR_TO_BALLOON_TRANSFER_MIN as _TRANSFER, \
     THROMBOLYSIS_TO_REPERFUSION_MIN as _LYSIS_MIN, AV_BLOCK_AT_MIN as _AV_BLOCK, VF_AT_MIN as _VF, \
-    TROPONIN_PER_MIN as _TROPONIN
+    TROPONIN_CURVE as _TROPONIN_CURVE
 from generated_coronary_consistency import PATTERN_TERRITORIES as _CORONARY_PATTERNS, OPEN_AT_ARRIVAL as _OPEN_PATTERNS
 AUTHOR_INSTRUCTIONS += (
     "\nengine.coronary is null unless ecg_profile shows an occluded artery. These patterns are occlusions (OMI) even "
@@ -178,13 +178,15 @@ AUTHOR_INSTRUCTIONS += (
               + (", active_occlusion false (the artery is open at this moment)\n" if profile in _OPEN_PATTERNS
                  else ", active_occlusion true\n")
               for profile, territories in _CORONARY_PATTERNS.items())
-    + "Declaring it replaces authored response_rules for this pathway: while the artery is shut the troponin rises "
-    f"{_TROPONIN:g} ng/L per minute, the affected wall loses contraction, an inferior infarct blocks the AV node at "
+    + "Declaring it replaces authored response_rules for this pathway: while the artery is shut the troponin follows "
+    f"its curve from the onset of pain ({', '.join(f'{t} min {v} ng/L' for t, v in _TROPONIN_CURVE[:4])}), reperfusion "
+    "accelerates that rise by washout, the affected wall loses contraction, an inferior infarct blocks the AV node at "
     f"{_AV_BLOCK} minutes and fibrillates at {_VF}, and an exercise stress test fibrillates at once. Activating the cath "
     f"lab opens the artery after {_DOOR_TO_BALLOON} minutes with pci_capable true, {_TRANSFER} with it false, and "
     f"thrombolysis after {_LYSIS_MIN}; the ST segment then resolves on a repeated ECG. Author a troponin investigation "
-    "with a numeric value_ng_l, and set rv_involvement true only for st_elevation_inferior. Do not declare an occlusion "
-    "whose ECG the resident cannot read.\n"
+    "with a numeric value_ng_l, which the engine treats as the floor this assay reported on arrival, and set "
+    "rv_involvement true only for st_elevation_inferior, and av_block_risk true for an inferior occlusion unless the "
+    "case has a reason to exclude it. Do not declare an occlusion whose ECG the resident cannot read.\n"
 )
 
 # The other six mechanisms, each derived from its own module so the contract, the

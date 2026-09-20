@@ -233,7 +233,7 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
           examination, observable, investigations, diagnosis, findings, focus,
           questions, actions, *, ecg="baseline", visual=None, recurrence=False,
           history_source="Patient", congestion=None, coronary=None, lysis_bleeding_risk=None,
-          thiamine_deficient=False):
+          thiamine_deficient=False, endogenous_insulin=False):
     return {
         "id": identifier,
         "patient": {"age_years": age, "sex": sex,
@@ -253,6 +253,7 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
             **({"coronary": dict(coronary)} if coronary else {}),
             **({"lysis_bleeding_risk": lysis_bleeding_risk} if lysis_bleeding_risk else {}),
             **({"thiamine_deficient": True} if thiamine_deficient else {}),
+            **({"endogenous_insulin": True} if endogenous_insulin else {}),
         },
         "faculty": {"diagnosis": diagnosis, "discriminating_findings": list(findings),
                     "management_focus": focus, "review_questions": list(questions),
@@ -835,7 +836,8 @@ FAMILIES["hypoglycemia"]["variants"].append(_case(
     ["Low bedside glucose", "Continued sulfonylurea with reduced intake", "Impaired renal function"],
     "Correct glucose, reassess consciousness and plan continued monitoring for recurrent hypoglycemia.",
     ["Did an initial recovery establish that the cause had ended?", "What informed your monitoring and specialist-support plan?"],
-    ["dextrose", "reassessment"], recurrence=True,
+    # Type 2 diabetes on a sulfonylurea: the pancreas still answers to an overshoot.
+    ["dextrose", "reassessment"], recurrence=True, endogenous_insulin=True,
     visual=_visual(skin="mild pallor", sweating="mild")))
 
 
@@ -869,7 +871,7 @@ FAMILIES["hypoglycemia"]["variants"].append(_case(
      "Unsteady gaze and nystagmus, which glucose alone will not correct"],
     "Correct the glucose without precipitating an encephalopathy, and treat the deficiency that made it possible.",
     ["What did the gaze findings add to the glucose result?", "Which treatment did the glucose itself make urgent?"],
-    ["dextrose", "thiamine", "reassessment"], thiamine_deficient=True,
+    ["dextrose", "thiamine", "reassessment"], thiamine_deficient=True, endogenous_insulin=True,
     visual=_visual(skin="mild pallor", sweating="mild")))
 
 

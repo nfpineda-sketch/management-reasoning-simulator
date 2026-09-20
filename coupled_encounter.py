@@ -403,7 +403,7 @@ def collect(state,study,duration):
     if spec is not None and study=='troponin' and 'value_ng_l' in result['result']:
         # The troponin follows the infarct, as it does in a bank case.
         result['result']['value_ng_l']=acs_reperfusion.troponin(
-            state['family_state'],float(result['result']['value_ng_l']))
+            state['family_state'],float(result['result']['value_ng_l']),float(spec.get('symptom_onset_min') or 0),spec)
     if study=='pocus':
         case=state['encounter_spec']['clinical_case']
         dynamic=diagnostic_core.pocus_transition(deepcopy(state['coupled_state']),0)['result']

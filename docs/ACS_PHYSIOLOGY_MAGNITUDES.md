@@ -1,6 +1,6 @@
 # Síndrome coronario agudo — magnitudes implementadas
 
-> **Estado: IMPLEMENTADO** en `ecg12.py` (morfologías), `acs_reperfusion.py`, `clinical_cases.py` (seis variantes) y la rama `acs` de `family_engine.py`, con las decisiones docentes del 2026-09-19. Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
+> **Estado: IMPLEMENTADO y REVISADO** en `ecg12.py` (morfologías), `acs_reperfusion.py`, `clinical_cases.py` (seis variantes) y la rama `acs` de `family_engine.py`, con las decisiones docentes del 2026-09-19 y la revisión del 2026-09-20 (curva de troponina desde el dolor, bloqueo AV condicional). Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
 
 ## Decisión docente
 
@@ -45,11 +45,13 @@ Amplitudes que genera el modelo de onda, medidas derivación por derivación en 
 | Puerta-balón, centro con hemodinamia | 90 min desde la activación |
 | Puerta-balón con traslado | 120 min |
 | Trombolisis | Abre a los 60 min de administrada |
-| Troponina | +25 ng/L por minuto de oclusión; **× 1.6** al abrir, por lavado |
+| **Troponina** | Curva ilustrativa de hs-cTnI **cronometrada desde el dolor**: 8 ng/L a los 30 min, 18 a la hora, 90 a las 2 h, 450 a las 3 h, 1600 a las 4 h, 6000 a las 6 h, pico de 20000 a las 12 h. El valor autorizado del caso es el **piso**. Interpolación logarítmica entre puntos |
+| Troponina tras reperfundir | **× 1.6** por lavado, y el ascenso continúa al 30% del ritmo. Un ascenso brusco tras la angioplastia **no es un procedimiento fallido** |
+| Troponina sin arteria ocluida | Se mantiene en el valor autorizado: nada se está infartando |
 | Función regional | Parte en 0.82 y cae 0.0025/min; piso 0.45; recupera 0.0015/min hasta 0.85 |
 | Grados de motilidad | ≥ 0.85 normal, ≥ 0.70 leve, ≥ 0.58 moderada, bajo eso acinesia |
 | Circulación | +0.0012/min; **+0.0018/min con compromiso derecho** |
-| Bloqueo AV completo | A los 45 min de oclusión, solo territorio inferior, FC 42 |
+| Bloqueo AV completo | A los 45 min de oclusión, solo territorio inferior y solo si el caso no lo excluye con `av_block_risk` falso, FC 42 |
 | Fibrilación ventricular | A los 120 min de oclusión, o con test de esfuerzo sobre oclusión inestable |
 | Shock | Función regional ≤ 0.55 con arteria cerrada |
 | Nitroglicerina con compromiso derecho | Constantes de `nitrate_hazard`: tope 45% de la PAS, mitad del efecto a 15 mcg/min, aparición 2 min, recuperación 12 min, rescate 0.06 mmHg por mL |
@@ -66,9 +68,9 @@ Anotaciones: PA · FC · ritmo · minutos de isquemia · función regional · tr
 |---|---|---|---|---|---|---|
 | 20 | 97/63 | 59 | bradicardia sinusal | 20 | 0.77 | — |
 | 65 | 92/59 | **42** | **bloqueo AV completo** | 65 | 0.66 | — |
-| 75 | 91/59 | 42 | bloqueo AV completo | 75 | 0.63 | 1720 |
+| 75 | 91/59 | 42 | bloqueo AV completo | 75 | 0.63 | 176 |
 | 110 | — | — | **arteria abierta, ECG basal** | 109 | — | — |
-| 130 | 85/56 | 66 | sinusal | 109 | 0.58 | **4455** |
+| 130 | 85/56 | 66 | sinusal | 109 | 0.58 | **814** |
 | 190 | 83/54 | 68 | sinusal | 109 | **0.67** | — |
 
 ### 54m inferior, sin activar
@@ -76,8 +78,8 @@ Anotaciones: PA · FC · ritmo · minutos de isquemia · función regional · tr
 | min | PA | FC | Ritmo | Función | Troponina |
 |---|---|---|---|---|---|
 | 45 | 94/61 | 42 | bloqueo AV completo | 0.71 | — |
-| 55 | 93/60 | 42 | bloqueo AV completo | 0.68 | 1220 |
-| 105 | 87/57 | 42 | bloqueo AV completo | 0.56 | 2470 |
+| 55 | 93/60 | 42 | bloqueo AV completo | 0.68 | 120 |
+| 105 | 87/57 | 42 | bloqueo AV completo | 0.56 | 420 |
 | 140 | **0/0** | 0 | **FV** | 0.47 | — |
 
 ### 54m inferior, trombolisis a los 10 min

@@ -1,6 +1,6 @@
 # Fisiología del asma grave — magnitudes implementadas
 
-> **Estado: IMPLEMENTADO** en `family_engine.py` (rama `asthma`), `asthma_ventilation.py` y `asthma_complications.py`, con las decisiones docentes del 2026-09-19. Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
+> **Estado: IMPLEMENTADO y REVISADO** en `family_engine.py` (rama `asthma`), `asthma_ventilation.py` y `asthma_complications.py`, con las decisiones docentes del 2026-09-19 y la revisión de magnitudes del 2026-09-20 (inicio del broncodilatador, decaimiento más rápido, magnesio más modesto y objetivo de pH). Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
 
 Aplica a `asthma_24f` (138/84, FC 126, SpO₂ 90%, FR 34, trabajo marcadamente aumentado, alerta) y `asthma_49m` (142/86, FC 132, SpO₂ 89%, FR 30, trabajo severo, somnoliento, con ingreso previo a UCI).
 
@@ -29,10 +29,10 @@ Variable interna `obstruction`: 1.0 al llegar, piso 0.2 en superficie. El flujo 
 | Mecanismo | Magnitud |
 |---|---|
 | Progresión sin tratamiento | +0.002/min |
-| Salbutamol nebulizado, dosis puntual | +0.8 de broncodilatación con 5 mg, decae 1.4%/min (vida media ≈ 50 min) |
+| Salbutamol nebulizado, dosis puntual | 5 mg entregan +0.8, **liberado con constante de 7 min**, y decae **2.5%/min** (vida media ≈ 27 min). El pico real de una dosis es 0.55 |
 | **Nebulización continua** | Sostiene 0.09 por mg/h (10 mg/h → 0.90), con constante de 10 min |
 | Corticoide IV | Desde los 60 min, −0.004/min × exposición (125 mg de metilprednisolona = 1.0) |
-| **Magnesio IV** | +0.075 por gramo, tope +0.20, aparición en 10 min. Rango 0.5–4 g |
+| **Magnesio IV** | +0.05 por gramo, tope **+0.12**, aparición en 10 min. Rango 0.5–4 g. Ayuda, y menos que las otras intervenciones |
 | **Adrenalina** | +0.035 por mcg/min equivalente, tope +0.45. PAS hasta +30, FC hasta +25 |
 | **Bolo de adrenalina** | 10–500 mcg IV; equivale a un tercio de su dosis en mcg/min y decae con constante de 3 min |
 | **Ketamina** | +0.0015 por mg, tope +0.25, constante de 45 min |
@@ -77,6 +77,7 @@ pico = meseta + resistencia × flujo
 | Límite de meseta | 30 cmH₂O |
 | Sedación | Dura 45 min; sin ella el paciente gatilla y la FR entregada sube 35% |
 | Hipercapnia permisiva | pCO₂ = 40 × VE requerida / VE entregada; VE requerida = 0.10 L/min/kg × (1 + 0.25 × obstrucción) |
+| **Objetivo de pH** | 7.20 como objetivo práctico, no frontera de seguridad. Bajo eso, el registro pide reevaluar tolerancia, tendencia y otras causas de acidosis, y aclara que **no significa subir la ventilación minuto**. La PaCO₂ de 90 mmHg es referencia clásica, no límite rígido |
 
 ### Complicaciones y volumen
 
@@ -98,12 +99,12 @@ Anotaciones: PA · FC · SpO₂ · FR · trabajo respiratorio · K · lactato. *
 | Escenario | 20 min | 60 min | 90 min |
 |---|---|---|---|
 | Sin tratamiento | 30′: 138/84 · 131 · 89 · 35 · marcado | 138/84 · 142 · 88 · 37 · marcado | 138/84 · **147 · 86 · 39 · severo** |
-| Dosis puntuales | 138/84 · 118 · 99 · 23 · leve · K 3.9 · 2.4 | 138/84 · 119 · 99 · 23 · leve · K 3.6 · 2.8 | 138/84 · 121 · **96 · 26 · moderado** · K 3.5 |
-| Nebulización continua | 138/84 · 118 · 99 · 22 · leve | 138/84 · 119 · 99 · 22 · leve · K 3.7 | 138/84 · 117 · **99 · 21 · leve** · K 3.5 · 2.8 |
-| Continua + magnesio | 138/84 · 117 · 99 · **21** · leve | 138/84 · 119 · 99 · 22 · leve | 138/84 · 117 · 99 · 21 · leve |
-| Continua + magnesio + adrenalina | 138/84 · 117 · 99 · 21 · leve | **144/88** · 123 · 99 · **20** · leve · K 3.6 | 144/88 · 123 · 99 · 20 · leve · K 3.4 · 3.0 |
+| Dosis puntuales | 138/84 · 119 · 98 · 24 · leve | 138/84 · 121 · **96 · 26 · moderado** · K 3.7 | 138/84 · 124 · **93 · 30 · moderado** · K 3.6 |
+| Nebulización continua | 138/84 · 118 · 99 · 22 · leve | 138/84 · 120 · 98 · 23 · leve · K 3.7 | 138/84 · 118 · **99 · 22 · leve** · K 3.6 |
+| Continua + magnesio | 138/84 · 118 · 99 · 22 · leve | 138/84 · 120 · 98 · 23 · leve | 138/84 · 118 · 99 · 22 · leve |
+| Continua + magnesio + adrenalina | 138/84 · 118 · 99 · 22 · leve | **144/88** · 123 · 99 · **20** · leve · K 3.6 | 144/88 · 122 · 99 · 20 · leve · K 3.5 |
 
-La diferencia entre dosis puntuales y nebulización continua aparece a los 90 min: con dosis puntuales el efecto ya decayó y la paciente vuelve a SpO₂ 96 y FR 26.
+Con el inicio gradual y el decaimiento más rápido de la revisión del 2026-09-20, la diferencia entre dosis puntuales y nebulización continua aparece **a los 60 min**, no a los 90: la dosis puntual ya cedió y la paciente vuelve a SpO₂ 96 y FR 26, mientras la continua se mantiene en 98 y 23. El magnesio agregado a la continua casi no se ve, porque la broncodilatación está cerca de su techo; se mide solo, sin nebulización continua.
 
 ### 49m
 

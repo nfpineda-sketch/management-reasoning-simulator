@@ -30,7 +30,7 @@ Variable interna `circulation`: 1.0 al llegar; **bajar** es mejorar, subir es em
 | Sangre | Circulación −0.36 por unidad; hemoglobina +0.85 g/dL por unidad; se entrega en 30 min por unidad si no se indica tiempo |
 | **Pantoprazol** | Deja el sangrado en 80%, solo antes de la endoscopia |
 | **Endoscopia** | 60 min después de la interconsulta, si PAS ≥ 90 y Hb ≥ 7 o hay sangre corriendo. Reintenta cada 15 min. Deja el sangrado en 10% |
-| **Alivio tras hemostasia** | Con endoscopia hecha y Hb ≥ 7: hasta −20 latidos, con constante de 90 min. Reversible si la anemia vuelve |
+| **Alivio tras hemostasia** | Con endoscopia hecha y Hb ≥ 7: hasta −20 latidos, con constante de **45 min** (revisión del 2026-09-20; antes 90). Reversible si la anemia vuelve |
 
 ### Superficie
 
@@ -87,7 +87,7 @@ El contraste docente está en las dos primeras columnas del cristaloide: la pres
 | 180 | 121/72 | 91 | 15 | 2.1 s | 8.7 | 0.74 |
 | 240 | 120/72 | **89** | 15 | 2.2 s | 8.7 | 0.87 |
 
-Sin este alivio, la FC se quedaba pegada en 105 para siempre, porque el piso de la variable de circulación (0.25) fija la FC mínima del 57m en ese valor.
+Con la constante de 45 minutos la FC llega a menos de 100 en dos horas, no en cuatro. Sin este alivio, se quedaba pegada en 105 para siempre, porque el piso de la variable de circulación (0.25) fija la FC mínima del 57m en ese valor.
 
 ## Qué más cambió
 

@@ -85,7 +85,9 @@ def issues(case):
         found.append({
             "code": "CORONARY_UNDISCOVERABLE", "path": "case.investigations.troponin",
             "message": ("An occlusion case must report a troponin the resident can measure and follow: the engine "
-                        f"raises it by {acs_reperfusion.TROPONIN_PER_MIN:g} ng/L per minute of occlusion."),
+                        "moves it along its curve from the onset of pain, taking the authored value as the floor "
+                        f"({acs_reperfusion.TROPONIN_CURVE[2][0]} minutes of pain is about "
+                        f"{acs_reperfusion.TROPONIN_CURVE[2][1]} ng/L)."),
             "details": {"ecg_profile": profile},
         })
     return found

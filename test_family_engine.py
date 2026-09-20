@@ -92,7 +92,9 @@ def test_pe_anticoagulation_is_not_instant_clot_lysis():
 
 def test_asthma_airflow_and_mentation_respond_while_steroid_effect_is_delayed():
     state = make_state("asthma")
-    run(state, {"type": "bronchodilator", "agent": "albuterol", "dose_mg": 5, "route": "nebulized"}, {"type": "steroid", "agent": "prednisone", "dose_mg": 50, "route": "PO"}, wait(5))
+    # The nebulized dose now arrives over its onset (faculty 2026-09-20), so the
+    # answer is read once it has landed rather than at five minutes.
+    run(state, {"type": "bronchodilator", "agent": "albuterol", "dose_mg": 5, "route": "nebulized"}, {"type": "steroid", "agent": "prednisone", "dose_mg": 50, "route": "PO"}, wait(15))
     assert state["observable"]["respiratory_rate"] < 32
     assert state["observable"]["mental_status"] == "Alert"
     assert "Improved air entry" in current_findings(state)["Respiratory"]

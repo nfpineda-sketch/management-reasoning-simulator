@@ -1,6 +1,6 @@
 # Hipoglicemia — magnitudes implementadas
 
-> **Estado: IMPLEMENTADO** en `glucose_rescue.py`, `clinical_cases.py` (tres variantes) y la rama `hypoglycemia` de `family_engine.py`, con las decisiones docentes del 2026-09-20. Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
+> **Estado: IMPLEMENTADO y REVISADO** en `glucose_rescue.py`, `clinical_cases.py` (tres variantes) y la rama `hypoglycemia` de `family_engine.py`, con las decisiones docentes del 2026-09-20 y la revisión de magnitudes del mismo día (rebote por sobrecorrección). Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
 
 ## Decisión docente
 
@@ -27,6 +27,7 @@ El 54m es nuevo: lo trae el personal de un albergue, bebe a diario y casi no ha 
 | **Carbohidrato oral** | +1.2 mg/dL por minuto, desde los 5 min y por 25 min. **Solo con el paciente alerta** |
 | **Glucosado 10%** | 0.1 g por mL: 400 mL/h son 0.67 g/min |
 | **Convulsión** | Bajo 40 mg/dL durante 20 min; 10 min post-ictal |
+| **Rebote por sobrecorrección** | Sobre 200 mg/dL en un paciente con páncreas funcionando: a los 30 min la glucosa cae **0.8 mg/dL/min extra**, hasta bajar de 100. La hiperglicemia en sí no se castiga, porque sobre 300 tiene poca repercusión aguda |
 | **Encefalopatía de Wernicke** | Si la glucosa se da sin tiamina dentro de 30 min, en un caso depletado |
 | Reversión con tiamina | Constante de 30 min |
 | Estado mental por glucosa | ≥ 70 alerta, ≥ 45 somnoliento, ≥ 25 obnubilado, bajo eso sin respuesta |
@@ -52,7 +53,20 @@ El glucagón tarda el doble y llega a la mitad: a los 20 minutos el paciente sig
 | **Dextrosa y octreótido** | 129 | 126 | **123** |
 | Dextrosa y glucosado 10% a 400 mL/h | 40′: 221 | 80′: **303** | — |
 
-La infusión a 400 mL/h corrige de más: 303 mg/dL a los 80 minutos. Es una magnitud que conviene revisar, porque hoy nada frena el exceso salvo el techo de 350.
+La infusión a 400 mL/h corrige de más y ahora eso tiene consecuencia: pasado 200 mg/dL, el páncreas de esta paciente responde y la glucosa vuelve a caer, 0.8 mg/dL por minuto además de su propia recurrencia.
+
+### Sobrecorrección: el rebote
+
+Con 50 g de dextrosa en el hombre de 54 años, que no es diabético:
+
+| min | Glucosa | Evento |
+|---|---|---|
+| 10 | 231 | **"The correction overshot…"**: el páncreas responde |
+| 60 | 206 | cayendo |
+| 120 | 154 | cayendo |
+| 180 | **101** | de vuelta al punto de partida |
+
+Con 25 g la glucosa llega a 131 y se queda ahí. En el hombre de 28 años con diabetes tipo 1, los mismos 50 g no producen rebote: no hay páncreas que responda.
 
 ### 54m, depletado de tiamina
 
@@ -74,7 +88,7 @@ El aviso dice: "Confusion persists with nystagmus and an unsteady gaze although 
 ## Fuera de este cambio
 
 - **Hipoglicemia por insulina exógena facticia, insulinoma e insuficiencia suprarrenal.**
-- **Corrección excesiva**: no hay castigo por dejar la glucosa sobre 250.
+- **El número de la hiperglicemia**: sobre 300 mg/dL no tiene repercusión aguda modelada, por decisión docente. Lo que se modela es el rebote que provoca.
 - **Potasio** con la infusión de glucosa e insulina.
 - **Destino y observación prolongada** de la sulfonilurea, más allá del encuentro.
 - **Los casos generados por IA** no tienen nada de este bloque.

@@ -34,6 +34,13 @@ DISCONNECT_REBUILD_TAU_MIN = 3.0  # after a disconnection, the trap returns this
 PEAK_ALARM_CMH2O = 40.0
 PLATEAU_LIMIT_CMH2O = 30.0
 
+# Faculty 2026-09-20: a pH of 7.20 is the practical target, not a safety boundary,
+# and the PaCO2 has no validated absolute ceiling; 90 mmHg is the classic reference.
+# A pH below the target calls for reassessing tolerance, trend and other causes of
+# acidosis, not automatically for more minute ventilation.
+PH_PRACTICAL_TARGET = 7.20
+PACO2_CLASSIC_REFERENCE = 90
+
 # Permissive hypercapnia: the CO2 a set minute ventilation cannot clear.
 VE_REQUIRED_L_PER_MIN_PER_KG = .10
 VE_OBSTRUCTION_PENALTY = .25      # deadspace of the obstructed lung
@@ -106,6 +113,19 @@ def effective_auto_peep(f, computed):
         return computed
     since = max(0.0, f["elapsed"] - released)
     return computed * (1 - math.exp(-since / DISCONNECT_REBUILD_TAU_MIN))
+
+
+def hypercapnia_note(ph, paco2):
+    """What a pH under the practical target means, and what it does not mean."""
+    if ph is None or ph >= PH_PRACTICAL_TARGET:
+        return ""
+    text = (f" The last pH is {ph:g}, below the practical target of {PH_PRACTICAL_TARGET:g}: reassess tolerance, the "
+            "trend and other causes of acidosis. It does not by itself mean raising the minute ventilation, which "
+            "would cost expiratory time.")
+    if paco2 is not None and paco2 > PACO2_CLASSIC_REFERENCE:
+        text += (f" The PaCO2 of {paco2:g} mmHg is above the classic reference of {PACO2_CLASSIC_REFERENCE} mmHg, which "
+                 "is a reference and not a rigid limit: the pH and the cardiovascular repercussion weigh more.")
+    return text
 
 
 def pressure_report(mech, auto_peep):

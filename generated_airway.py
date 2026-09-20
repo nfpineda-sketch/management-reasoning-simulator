@@ -53,6 +53,15 @@ def step(state):
     if declaration is None:
         return None
     base = f.setdefault("airway_obstruction", float(declaration.get("severity", 1.0)))
+    # The nebulized dose arrives over its onset here too; the bank's minute, which
+    # releases it, never runs for a generated case.
+    from family_engine import BRONCHODILATOR_ONSET_MIN, BRONCHODILATOR_DECAY_PER_MIN
+    if f.get("bronchodilator_pending"):
+        arriving = f["bronchodilator_pending"] * min(1.0, 1 / BRONCHODILATOR_ONSET_MIN)
+        f["bronchodilation"] = min(1.3, float(f.get("bronchodilation") or 0) + arriving)
+        f["bronchodilator_pending"] -= arriving
+    if f.get("bronchodilation"):
+        f["bronchodilation"] *= BRONCHODILATOR_DECAY_PER_MIN
     steroid_active = f.get("steroid_at") is not None and f["elapsed"] - f["steroid_at"] >= STEROID_ONSET_MIN
     f["airway_obstruction"] = base + DRIFT_PER_MIN - (STEROID_PER_MIN * f.get("steroid_exposure", 0) if steroid_active else 0)
     residual = airflow(state)
