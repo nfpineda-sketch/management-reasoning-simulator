@@ -42,6 +42,8 @@ LATE_EXPOSURE_MIN = 15.0          # minutes of exhaustion before intubation that
 EXHAUSTION_RECOVERY_PER_MIN = .5  # relief buys the clock back, slowly
 FATIGUE_ONSET_MIN = 20.0          # sustained maximal effort starts to fail
 FATIGUE_DRIFT_PER_MIN = .0015     # ...and the obstruction then worsens faster
+FATIGUE_HR_PER_MIN = .3           # tachycardia of the failing effort
+FATIGUE_HR_MAX = 15.0
 LATE_SBP_DROP = 25.0              # post-intubation hypotension of the exhausted patient
 LATE_LACTATE = 2.0
 POST_INTUBATION_TAU_MIN = 20.0
@@ -102,6 +104,11 @@ def track_exhaustion(f, observable):
     minutes = f.get("exhausted_min", 0.0) + (1.0 if exhausted else -EXHAUSTION_RECOVERY_PER_MIN)
     f["exhausted_min"] = max(0.0, minutes)
     return FATIGUE_DRIFT_PER_MIN if f["exhausted_min"] >= FATIGUE_ONSET_MIN else 0.0
+
+
+def fatigue_tachycardia(f):
+    """The heart rate of exhaustion, which eases as the patient is relieved."""
+    return min(FATIGUE_HR_MAX, FATIGUE_HR_PER_MIN * f.get("exhausted_min", 0.0))
 
 
 def intubation_timing(f, observable, obstruction):

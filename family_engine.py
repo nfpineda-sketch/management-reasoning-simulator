@@ -947,7 +947,9 @@ def _surface(state):
         obstruction = max(.2, f["obstruction"] - f["bronchodilation"] - _airway_relaxation(f))
         spo2 -= (obstruction - 1) * 14
         rr += (obstruction - 1) * 18
-        hr += min(12, f["bronchodilation"] * 12)
+        # Tachycardia has three sources: the obstruction itself, the exhaustion it
+        # causes, and the beta-agonist used to treat it. Relief lowers the first two.
+        hr += (obstruction - 1) * 25 + asthma_complications.fatigue_tachycardia(f) + min(12, f["bronchodilation"] * 12)
         if f["invasive"]:
             # Trapped gas raises intrathoracic pressure and obstructs venous return.
             mech = asthma_ventilation.mechanics(state, obstruction, _sedated(f))

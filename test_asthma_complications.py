@@ -160,3 +160,24 @@ def test_potassium_and_lactate_recover_once_the_beta_agonist_has_washed_out(engi
     assert state["family_state"]["potassium"] > nadir
     assert state["family_state"]["lactate"] < high
     assert state["family_state"]["potassium"] <= 4.1
+
+
+def test_the_heart_rate_follows_the_obstruction_and_the_exhaustion(engine):
+    """It used to sit at the arrival value for an hour and a half, whatever happened."""
+    untreated, _ = course(engine, ["Reassess in 30 minutes.", "Reassess in 30 minutes.", "Reassess in 25 minutes."])
+    treated, _ = course(engine, ["Start continuous albuterol nebulization. Give ipratropium 0.5 mg nebulized and "
+                                 "methylprednisolone 125 mg IV. Reassess in 20 minutes.", "Reassess in 60 minutes."])
+    arrival = 126
+    assert untreated["observable"]["hr"] > arrival + 15
+    assert treated["observable"]["hr"] < arrival
+    assert comp.fatigue_tachycardia(untreated["family_state"]) > 10
+
+
+def test_relief_brings_the_rate_back_down(engine):
+    state, _ = course(engine, ["Reassess in 60 minutes."])
+    exhausted = state["observable"]["hr"]
+    execute_family_bundle(state, parse_family_actions(
+        "Start continuous albuterol nebulization. Give methylprednisolone 125 mg IV. Reassess in 30 minutes."))
+    relieved = state["observable"]["hr"]
+    execute_family_bundle(state, parse_family_actions("Reassess in 60 minutes."))
+    assert relieved < exhausted and state["observable"]["hr"] < relieved
