@@ -638,7 +638,7 @@ def _order(state, a):
             f.setdefault("procedure_events", []).append(
                 {"type": "procedure",
                  "label": acs_reperfusion.ventricular_fibrillation(f, "an exercise stress test on an unstable occlusion"),
-                 "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
+                 "time_min": int(state.get("sim_time", 0)) + 10, "duration_min": 0})
             label = "Exercise stress test started"
         else:
             label = "Exercise stress test performed: no ischaemic change at the workload achieved"
@@ -694,6 +694,7 @@ def _order(state, a):
             f["oxygen_fio2"] = .85
     elif kind in {"consult", "reperfusion_referral"}:
         service = str(a.get("service") or a.get("destination"))
+        pathway_note = None
         earlier = next((c for c in f["consultations"] if c["service"] == service), None)
         if earlier:
             # A repeated call is recorded as such, not as a second consultation.
@@ -706,7 +707,11 @@ def _order(state, a):
                 # Activating the cath lab starts the door-to-balloon clock.
                 if spec.get("omi"):
                     acs_reperfusion.activate(f, spec, f["elapsed"], method="pci")
-                label = acs_reperfusion.pathway_note(spec, f, int(state.get("sim_time", 0)))
+                # The short label belongs in "After ..., BP ..."; the pathway the ECG
+                # dictates is reported as its own entry.
+                pathway_note = acs_reperfusion.pathway_note(spec, f, int(state.get("sim_time", 0)))
+                label = ("cath lab activated" if acs_reperfusion.active_occlusion(spec)
+                         else "cath lab contacted for angiography" if spec.get("omi") else "cath lab contacted")
         duration = 0
     elif kind == "disposition":
         repeated = tr.get("disposition") == a["destination"]
@@ -718,7 +723,10 @@ def _order(state, a):
         duration = 0
     else:
         repeated = False
+    pathway_note = pathway_note if kind in {"consult", "reperfusion_referral"} else None
     summary = {"type": kind, "label": label, "duration_min": duration}
+    if kind == "consult" and pathway_note:
+        summary["pathway_note"] = pathway_note
     if kind in {"consult", "reperfusion_referral"} and earlier:
         summary["repeated"] = True
     if kind == "disposition" and repeated:
@@ -882,6 +890,9 @@ def _minute(state):
         f["circulation"] += .001
         if family == "acs":
             spec = acs_reperfusion.coronary(state) or {}
+            if spec.get("omi") and not acs_reperfusion.active_occlusion(spec):
+                # Wellens: the artery is open, so nothing drifts while it stays open.
+                f["circulation"] -= .001
             if spec.get("rv_involvement"):
                 # A preload-dependent right ventricle: nitroglycerin can collapse it.
                 acs_reperfusion.nitrate_drop(f, _nitro_equivalent(f), float(f["baseline"].get("sbp", 120)), fluid)
@@ -1109,7 +1120,8 @@ def _surface(state):
     if f.get("vf_at") is not None:
         # Ventricular fibrillation: no organized rhythm and no pulse.
         o.update(rhythm="VF", pulse_present=False, hr=0, sbp=0, dbp=0, map=0,
-                 mental_status="Unresponsive", crt=None, peripheral_perfusion="critical")
+                 mental_status="Unresponsive", crt=8.0, peripheral_perfusion="critical",
+                 spo2=0, respiratory_rate=0, work_of_breathing="Absent")
         state["ecg_profile"] = "baseline"
     if str(base.get("rhythm", "")).lower().startswith("sinus") and not f.get("surface_rhythm") and f.get("vf_at") is None:
         o["rhythm"] = "Sinus tachycardia" if o["hr"] > 100 else "Sinus bradycardia" if o["hr"] < 60 else "Sinus rhythm"
@@ -1273,6 +1285,11 @@ def execute_family_bundle(state, parsed):
     actions, error = _validate(state, parsed)
     if error:
         return _failure(error)
+    if state.get("family_state", {}).get("vf_at") is not None:
+        # Arrest management is outside this build: do not run ordinary physiology as
+        # though there were a circulation.
+        return {"executed": False, "terminal_locked": True, "clarification": None,
+                "action_summaries": [], "reassess_delay": None, "elapsed_min": 0}
     candidate = deepcopy(state)
     _initialize(candidate)
     summaries, diagnostic_orders = [], []

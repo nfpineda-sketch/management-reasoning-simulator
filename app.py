@@ -9071,8 +9071,12 @@ with st.container(key="encounter-console"):
                         continue
                     if s.get("type") in {"consult", "reperfusion_referral"}:
                         service = s.get("service") or s.get("destination")
-                        labels.append(f'{service} already contacted (not repeated)' if s.get("repeated")
-                                      else f'contacting {service} (no intervention yet)')
+                        if s.get("pathway_note"):
+                            labels.append(str(s["label"]))
+                        else:
+                            labels.append(f'{service} already contacted (not repeated)' if s.get("repeated")
+                                          else f'contacting {service} (no intervention yet)')
+                            continue
                     elif s.get("type") == "disposition":
                         labels.append(f'admission to {s.get("destination")} already requested (not repeated)'
                                       if s.get("repeated") else f'requesting admission to {s.get("destination")}')
@@ -9170,6 +9174,10 @@ with st.container(key="encounter-console"):
                                  (ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"]))
                                 for ds in diagnostic_summaries]
                 timed_events += [("procedure", x["label"], x["time_min"]) for x in summaries if x.get("type") == "procedure"]
+                # The reperfusion pathway is reported as its own entry, at the minute
+                # the resident decided it.
+                timed_events += [("procedure", str(x["pathway_note"]), st.session_state.state["sim_time"])
+                                 for x in summaries if x.get("pathway_note")]
                 for kind, text, time in sorted(timed_events, key=lambda item: item[2]):
                     add_event(kind, text, time=time)
                 if treatment_labels:

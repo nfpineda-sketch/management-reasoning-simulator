@@ -35,7 +35,8 @@ def course(engine, orders, variant="acs_54m_inferior"):
 
 
 def labels(events):
-    return " | ".join(str(e.get("label", "")) for e in events)
+    """Every text the resident is shown: the order labels and the pathway entries."""
+    return " | ".join(str(e.get("label", "")) + " " + str(e.get("pathway_note") or "") for e in events)
 
 
 @pytest.mark.parametrize("text, expected", [
