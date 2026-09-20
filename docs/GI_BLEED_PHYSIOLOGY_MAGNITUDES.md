@@ -32,6 +32,25 @@ Variable interna `circulation`: 1.0 al llegar; **bajar** es mejorar, subir es em
 | **Endoscopia** | 60 min después de la interconsulta, si PAS ≥ 90 y Hb ≥ 7 o hay sangre corriendo. Reintenta cada 15 min. Deja el sangrado en 10% |
 | **Alivio tras hemostasia** | Con endoscopia hecha y Hb ≥ 7: hasta −20 latidos, con constante de **45 min** (revisión del 2026-09-20; antes 90). Reversible si la anemia vuelve |
 
+### Transfundir sin anemia
+
+Aplica a **todas las familias del banco**, no solo a esta (pregunta docente del 2026-09-20). Una unidad son unos 300 mL que entran rápido y se quedan en el intravascular, así que en un paciente sin déficit de transporte el volumen va al pulmón.
+
+| Mecanismo | Magnitud |
+|---|---|
+| Umbral | Hemoglobina ≥ 10 g/dL **antes** de la unidad |
+| Aparición | 30 min |
+| Por unidad | SpO₂ −4, FR +4 |
+| Pulmón ya congestivo | × 1.6 |
+| Tope | 4 unidades |
+| Furosemida | 0.012 unidades por mg: 40 mg deshacen media unidad |
+
+En el hombre de 54 años del SCA, con hemoglobina 14.1, dos unidades en 30 min lo llevan de SpO₂ 96 y FR 22 a **88 y 30**; con 40 mg de furosemida vuelve a 90 y 28. En la mujer del edema pulmonar, **una sola unidad** la lleva de SpO₂ 84 a 76 y la FR a 40.
+
+El examen respiratorio pasa a describir crépitos bibasales nuevos desde la transfusión, y el registro lo nombra una vez. El umbral es la hemoglobina y no el diagnóstico: una anemia a medio corregir no tiene castigo, y un paciente ya normalizado sí.
+
+No se modelan la reacción febril no hemolítica, frecuente pero aleatoria en un motor determinista, ni la reacción hemolítica, que exige un error de identificación que el simulador no representa.
+
 ### Superficie
 
 | Signo | Magnitud |
@@ -101,6 +120,5 @@ Con la constante de 45 minutos la FC llega a menos de 100 en dos horas, no en cu
 
 - **Resangrado.** Tras la endoscopia queda el 10% del sangrado, siempre igual. El mensaje dice que el resangrado es posible, pero no ocurre.
 - **Otras terapias:** ácido tranexámico, reversión de anticoagulación, octreótido, ligadura de várices. La hemorragia variceal no es un caso del banco.
-- **Transfundir sin anemia** no tiene consecuencia, aquí y en todas las familias.
 - **Sonda nasogástrica, grupo y pruebas cruzadas, plaquetas y plasma.**
 - **Los casos generados por IA** no tienen nada de este bloque.

@@ -152,6 +152,25 @@ GI_BLEED = {
 # stopping an infusion is a real decision (faculty decision 2026-09-19).
 ANTICOAGULANT_TAU_MIN = 60.0
 
+# Transfusing a patient who is not anaemic (faculty question 2026-09-20): a unit is
+# about 300 mL that arrives quickly and stays in the vessels, so in a patient with no
+# oxygen-carrying deficit the volume goes to the lungs. The consequence modelled is
+# circulatory overload, which is the common and teachable one; a febrile reaction is
+# frequent but random, and this engine is deterministic.
+TRANSFUSION = {
+    "unnecessary_above_g_dl": 10.0,   # no oxygen-carrying benefit at or above this
+    "onset_min": 30,                  # the overload builds over half an hour
+    "spo2_per_unit": 4.0,
+    "rr_per_unit": 4.0,
+    "congested_multiplier": 1.6,      # worse in a lung that is already wet
+    "diuretic_relief_per_mg": .012,   # 40 mg of furosemide undoes about half a unit
+    "max_units": 4.0,
+}
+TRANSFUSION_OVERLOAD_TEXT = (
+    "Transfusion-associated circulatory overload: the haemoglobin was already adequate, so the units added volume "
+    "rather than oxygen-carrying capacity. The saturation is falling and the breathing is faster, with crackles "
+    "appearing at the bases. A diuretic treats it.")
+
 
 def _clamp(value, lower, upper):
     return min(upper, max(lower, float(value)))
@@ -923,6 +942,12 @@ def _minute(state):
             f.setdefault("procedure_events", []).append(
                 {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     f["hemoglobin"] += blood * .85
+    if blood:
+        # Volume the patient did not need is volume all the same.
+        if f["hemoglobin"] - blood * .85 >= TRANSFUSION["unnecessary_above_g_dl"]:
+            f["transfusion_overload_units"] = min(TRANSFUSION["max_units"],
+                                                  f.get("transfusion_overload_units", 0.0) + blood)
+            f.setdefault("transfusion_overload_at", f["elapsed"])
     f["glucose"] = min(350, f["glucose"] + glucose * 4)
     if family == "pneumonia":
         elapsed_abx = -1 if f["antibiotic_at"] is None else f["elapsed"] - f["antibiotic_at"]
@@ -999,6 +1024,12 @@ def _minute(state):
         f["ketamine_mg"] *= math.exp(-1 / KETAMINE["tau_min"])
         if f["ketamine_mg"] < .5:
             f["ketamine_mg"] = 0.0
+    if f.get("transfusion_overload_units") and not f.get("transfusion_overload_reported"):
+        if transfusion_overload(state) >= .5:
+            f["transfusion_overload_reported"] = True
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": TRANSFUSION_OVERLOAD_TEXT,
+                 "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     if f.get("magnesium_pending"):
         grams = f["magnesium_pending"]
         share = min(1.0, 1 / MAGNESIUM["onset_min"])
@@ -1019,6 +1050,19 @@ def _minute(state):
         f[key] = _clamp(f[key], .25, 1.9)
     f["glucose"] = _clamp(f["glucose"], 15, 350)
     f["hemoglobin"] = _clamp(f["hemoglobin"], 3, 18)
+
+
+def transfusion_overload(state):
+    """How many units of unnecessary volume are acting on the lungs right now."""
+    f = state["family_state"]
+    units = float(f.get("transfusion_overload_units") or 0)
+    if not units:
+        return 0.0
+    started = f.get("transfusion_overload_at", f["elapsed"])
+    share = min(1.0, max(0.0, (f["elapsed"] - started) / TRANSFUSION["onset_min"]))
+    relieved = TRANSFUSION["diuretic_relief_per_mg"] * float(f.get("diuretic_dose") or 0)
+    congested = TRANSFUSION["congested_multiplier"] if state.get("engine_family") == "pulmonary_edema" else 1.0
+    return max(0.0, units * share * congested - relieved)
 
 
 def _sedated(f):
@@ -1170,6 +1214,10 @@ def _surface(state):
         # worsens as it fails (faculty request 2026-09-19; magnitude pending review).
         rr = max(GI_BLEED["rr_floor"], rr + (circulation - 1) * GI_BLEED["rr_per_circulation"])
         hr -= GI_BLEED["recovery_hr_relief"] * f.get("hemostasis_relief", 0.0)
+    overload = transfusion_overload(state)
+    if overload:
+        spo2 -= TRANSFUSION["spo2_per_unit"] * overload
+        rr += TRANSFUSION["rr_per_unit"] * overload
     # Supplemental oxygen changes oxygenation, not bronchospasm or respiratory drive.
     spo2 += oxygen_gain
     if family != "pulmonary_edema":
@@ -1464,6 +1512,11 @@ def current_findings(state):
 
     f = state.get("family_state", {})
     family = state.get("engine_family")
+    if f and transfusion_overload(state) >= .5:
+        # Replace the authored line rather than prepending to it: the lungs are no
+        # longer clear, whatever the case said at arrival.
+        findings["Respiratory"] = ("New bibasal inspiratory crackles since the transfusion, with increased effort and "
+                                   "no wheeze.")
     if family == "asthma" and f:
         airflow = f["obstruction"] - f["bronchodilation"] - _airway_relaxation(f)
         findings["Respiratory"] = "Improved air entry with residual expiratory wheeze." if airflow < .65 else "Reduced bilateral air entry with prolonged expiration and wheeze."
