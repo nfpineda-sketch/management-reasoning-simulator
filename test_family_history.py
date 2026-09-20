@@ -172,8 +172,9 @@ def test_every_real_case_variant_preserves_its_own_history_and_patient_identity(
             assert 'Legacy AF' not in ' '.join(facts)
             assert f"{case['patient']['age_years']}-year-old" in scene_prompt(state)
             checked += 1
-    # Four ACS occlusion-equivalent cases were added on 2026-09-19.
-    assert checked == 20
+    # Four ACS occlusion equivalents (2026-09-19) and one thiamine-depleted
+    # hypoglycaemia case (2026-09-20).
+    assert checked == 21
 
 
 def test_neurological_and_leg_history_remain_accessible_without_revealing_diagnoses():

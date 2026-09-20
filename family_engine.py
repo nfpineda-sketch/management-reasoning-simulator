@@ -14,6 +14,8 @@ import math
 import acs_reperfusion
 import asthma_complications
 import asthma_ventilation
+import glucose_rescue
+import opioid_reversal
 import pe_obstruction
 import re
 
@@ -45,6 +47,9 @@ _MEDICINES = {
     "procedural_sedation": ({"IV", "IM", "IN"}, .001, 1000),
     "magnesium": ({"IV", "IO"}, 500, 4000),
     "thrombolysis": ({"IV", "IO"}, 5, 200),
+    "octreotide": ({"SC", "IV", "IM"}, .025, .5),
+    "glucagon": ({"IM", "IV", "IN", "SC"}, .5, 2),
+    "thiamine": ({"IV", "IO", "IM"}, 50, 1000),
     # Induction and maintenance sedation are part of intubating an asthmatic, so
     # they are no longer restricted to generated encounters.
 }
@@ -275,6 +280,19 @@ def _validate(state, parsed):
                     ceiling = {"dobutamine": (10000, 50), "norepinephrine": (100, 1.5), "epinephrine": (60, 1.0)}[kind]
                     if a["units"] is None or not _number(a.get("rate"), .001, ceiling[0] if a["units"] == "mcg/min" else ceiling[1]):
                         return None, f"Specify or confirm {kind} dose and units (mcg/min or mcg/kg/min)."
+        elif kind == "oral_carbohydrate":
+            mental = str(validation_state.get("observable", {}).get("mental_status"))
+            if mental not in glucose_rescue.ORAL_SAFE_MENTAL:
+                return None, (f"The patient is {mental.lower()} and cannot safely swallow. Use an intravenous or "
+                              "intramuscular route until the airway is protected.")
+        elif kind == "dextrose_infusion":
+            a["operation"] = str(a.get("operation") or "start").lower()
+            if a["operation"] != "stop" and not _number(a.get("rate_ml_h"), 10, 500):
+                return None, "Specify the dextrose infusion rate in mL/h (10 to 500)."
+        elif kind == "naloxone_infusion":
+            a["operation"] = str(a.get("operation") or "start").lower()
+            if a["operation"] != "stop" and not _number(a.get("rate_mg_h"), .05, 4):
+                return None, "Specify the naloxone infusion rate in mg/h (0.05 to 4)."
         elif kind == "stress_test":
             if validation_state.get("engine_family") != "acs":
                 return None, "A stress test is not an executable study in this encounter."
@@ -363,8 +381,11 @@ def _medicine_effect(state, a, amount):
     f, kind = state["family_state"], a["type"]
     if kind == "dextrose":
         f["dextrose_g"] += amount
+        f.setdefault("glucose_given_at", f["elapsed"])
     elif kind == "naloxone":
-        f["naloxone"] += min(1.4, amount / (.4 if a["route"] in {"IV", "IO"} else 2))
+        # 0.4 mg IV is one unit of antidote. Larger doses are not capped at the
+        # ventilation target: pushing past it is how withdrawal is precipitated.
+        f["naloxone"] = min(6.0, f["naloxone"] + amount / (.4 if a["route"] in {"IV", "IO"} else 2))
     elif kind == "bronchodilator":
         f["bronchodilation"] = min(1.3, f["bronchodilation"] + min(.8, amount / 5))
     elif kind == "magnesium":
@@ -617,6 +638,32 @@ def _order(state, a):
         else:
             tr.update({kind + "_rate": reported_rate if rate else 0, kind + "_units": reported_units})
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
+    elif kind in {"octreotide", "glucagon", "thiamine"}:
+        f[kind + "_at"] = f["elapsed"]
+        if kind == "glucagon":
+            f["glucagon_doses"] = f.get("glucagon_doses", 0) + 1
+        tr.setdefault("administered_medications", []).append(
+            {"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"], "time_min": int(state.get("sim_time", 0))})
+        dose = f"{a['dose_mg'] * 1000:g} mcg" if kind == "octreotide" else f"{a['dose_mg']:g} mg"
+        label = f"{a['agent']} {dose} {a['route']} administered"
+        duration = 3 if kind != "glucagon" else 5
+    elif kind == "oral_carbohydrate":
+        f["oral_carbohydrate_at"] = f["elapsed"]
+        label = "Oral carbohydrate given"
+        duration = 3
+    elif kind == "dextrose_infusion":
+        rate = 0.0 if a["operation"] == "stop" else float(a["rate_ml_h"])
+        f["dextrose_infusion_ml_h"] = rate
+        tr["dextrose_infusion"] = ({"rate_ml_h": rate, "concentration_percent": a.get("concentration_percent", 10)}
+                                   if rate else None)
+        label = (f"Dextrose 10% at {rate:g} mL/h started" if rate else "Dextrose infusion stopped")
+        duration = 3
+    elif kind == "naloxone_infusion":
+        rate = 0.0 if a["operation"] == "stop" else float(a["rate_mg_h"])
+        f["naloxone_infusion_mg_h"] = rate
+        tr["naloxone_infusion"] = {"rate_mg_h": rate} if rate else None
+        label = (f"Naloxone infusion at {rate:g} mg/h started" if rate else "Naloxone infusion stopped")
+        duration = 3
     elif kind == "thrombolysis" and state.get("engine_family") == "pulmonary_embolism":
         note = pe_obstruction.give_thrombolysis(f, f["elapsed"], state.get("observable", {}))
         tr["administered_medications"].append({"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"],
@@ -896,9 +943,15 @@ def _minute(state):
         f["circulation"] += (.003 + .002 * f["anticoagulant_exposure"]) * bleeding
         f["hemoglobin"] -= (.009 + .006 * f["anticoagulant_exposure"]) * bleeding
     elif family == "hypoglycemia":
-        f["glucose"] -= .6 if f["recurrence_risk"] else .08
+        event = glucose_rescue.step(state)
+        if event:
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     elif family == "opioid":
-        f["opioid"] *= .999
+        event = opioid_reversal.step(state)
+        if event:
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     elif family in {"acs", "pulmonary_embolism"}:
         f["circulation"] += .001
         if family == "acs":
@@ -1049,12 +1102,26 @@ def _surface(state):
         mental = "Alert" if f["glucose"] >= 70 else "Drowsy" if f["glucose"] >= 45 else "Obtunded" if f["glucose"] >= 25 else "Unresponsive"
         if f["glucose"] >= 70:
             hr = max(72, float(base.get("hr", 100)) - 18)
+        if glucose_rescue.post_ictal(f):
+            mental = "Unresponsive"
+        elif glucose_rescue.wernicke_share(f) > .35 and mental == "Alert":
+            # The glucose is normal; the brain is not.
+            mental = "Confused"
     elif family == "opioid":
-        suppression = max(0, f["opioid"] - f["naloxone"])
+        suppression = opioid_reversal.suppression(f)
         rr = 14 - (14 - float(base.get("respiratory_rate", 6))) * suppression
         spo2 = 97 - (97 - float(base.get("spo2", 85))) * suppression
         mental = "Alert" if suppression < .2 else "Drowsy" if suppression < .55 else "Obtunded" if suppression < .95 else str(base.get("mental_status", "Obtunded"))
         effort = 1
+        excess = opioid_reversal.withdrawal(f)
+        if excess:
+            hr += opioid_reversal.WITHDRAWAL_HR * min(1.5, excess)
+            sbp += opioid_reversal.WITHDRAWAL_SBP * min(1.5, excess)
+            dbp += opioid_reversal.WITHDRAWAL_SBP * .6 * min(1.5, excess)
+            rr += opioid_reversal.WITHDRAWAL_RR * min(1.5, excess)
+            mental = "Agitated"
+        if f.get("arrest_at") is not None:
+            f["surface_arrest"] = True
         if f["bag_mask"] or f["invasive"]:
             spo2 = 96
             rr = 12
@@ -1137,6 +1204,10 @@ def _surface(state):
              extremities=extremities)
     if f.get("surface_rhythm"):
         o["rhythm"] = f["surface_rhythm"]
+    if f.get("surface_arrest"):
+        o.update(pulse_present=False, hr=0, sbp=0, dbp=0, map=0, spo2=0, respiratory_rate=0,
+                 work_of_breathing="Absent", mental_status="Unresponsive", crt=8.0,
+                 peripheral_perfusion="critical", rhythm="Asystole")
     if f.get("vf_at") is not None:
         # Ventricular fibrillation: no organized rhythm and no pulse.
         o.update(rhythm="VF", pulse_present=False, hr=0, sbp=0, dbp=0, map=0,
@@ -1305,7 +1376,7 @@ def execute_family_bundle(state, parsed):
     actions, error = _validate(state, parsed)
     if error:
         return _failure(error)
-    if state.get("family_state", {}).get("vf_at") is not None:
+    if state.get("family_state", {}).get("vf_at") is not None or state.get("family_state", {}).get("arrest_at") is not None:
         # Arrest management is outside this build: do not run ordinary physiology as
         # though there were a circulation.
         return {"executed": False, "terminal_locked": True, "clarification": None,

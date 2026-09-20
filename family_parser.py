@@ -20,6 +20,7 @@ NEW_TREATMENT_ACTIONS = frozenset({
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
     "magnesium", "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
     "ventilator_disconnect", "chest_decompression", "thrombolysis", "stress_test",
+    "octreotide", "glucagon", "thiamine", "oral_carbohydrate", "dextrose_infusion", "naloxone_infusion",
 })
 
 # A continuous nebulization without a stated rate runs at the usual 10 mg/h.
@@ -40,6 +41,9 @@ _AGENTS = {
     "magnesium": {"magnesium sulfate": r"magnesium(?:\s+sulfate)?|sulfato\s+de\s+magnesio|magnesio|mgso4|mg\s*so4"},
     "thrombolysis": {"tenecteplase": r"tenecteplase|tenecteplasa|tnk", "alteplase": r"alteplase|alteplasa|rt-?pa|\btpa\b",
                      "streptokinase": r"streptokinase|estreptoquinasa"},
+    "octreotide": {"octreotide": r"octreotide|octre[oó]tido|octreotida"},
+    "glucagon": {"glucagon": r"glucagon|glucag[oó]n"},
+    "thiamine": {"thiamine": r"thiamine|tiamina|vitamin b1|vitamina b1"},
     "naloxone": {"naloxone": r"naloxone|naloxona|narcan"},
     "ppi": {"pantoprazole": r"pantoprazole|pantoprazol", "omeprazole": r"omeprazole|omeprazol"},
     "aspirin": {"aspirin": r"aspirin|aspirina|asa|aas"},
@@ -89,7 +93,7 @@ _COMMAND = re.compile(
     r"(?P<verb>monitor|assess|vigilar|monitorizar|repeat|repetir|repito|repite|cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
     r"stop|discontinue|disconnect|decompress|increase|decrease|titrate|continue|change|set|switch|adjust|modify|reduce|wean|transfuse|nebulize|place|insert|"
     r"consult|call|activate|admit|transfer|intubate|ventilate|reassess|re-assess|recheck|reevaluate|"
-    r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|iniciar|inicio|inicie|infundir|indicar|indico|"
+    r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|dale|d[eé]le|iniciar|inicio|inicie|infundir|indicar|indico|"
     r"solicitar|solicito|solicite|pedir|pido|medir|mido|controlar|control|obtener|realizar|hacer|"
     r"suspender|suspendo|detener|desconectar|desconecta|desconecto|aumentar|aumento|disminuir|disminuyo|titular|continuar|mantener|"
     r"ajustar|cambiar|transfundir|transfundo|nebulizar|consultar|interconsultar|llamar|activar|"
@@ -373,6 +377,20 @@ def _parse_piece_core(piece, inherited=None):
                  "fio2_percent": _settings(body, "fio2"), "peep_cmh2o": _settings(body, "peep"),
                  "ipap_cmh2o": _settings(body, "ipap"), "epap_cmh2o": _settings(body, "epap"),
                  **_ventilator_extras(body)}], verb
+    if re.search(r"\b(?:naloxone|naloxona|narcan)\b", body) and re.search(
+            r"\b(?:infusion|infusi[oó]n|drip|goteo|per\s+hour|/\s*h(?:r|our)?\b|por\s+hora)\b", body):
+        rate = re.search(r"(-?\d+(?:\.\d+)?)\s*(mg|mcg|ug)\s*(?:/|\s+(?:per|por|cada)\s+)\s*(?:h|hr|hour|hora)\b", body)
+        milligrams = None
+        if rate:
+            milligrams = float(rate[1]) / 1000 if rate[2] in {"mcg", "ug"} else float(rate[1])
+        return [{"type": "naloxone_infusion", "rate_mg_h": milligrams, "operation": _operation(verb)}], verb or "start"
+    if re.search(r"\b(?:d10|d\s*10|dextrose\s*10|glucosa(?:do)?\s*(?:al\s*)?10|suero\s+glucosado)\b", body):
+        rate = re.search(r"(-?\d+(?:\.\d+)?)\s*(?:ml|cc)\s*(?:/|\s+(?:per|por|cada)\s+)\s*(?:h|hr|hour|hora)\b", body)
+        return [{"type": "dextrose_infusion", "rate_ml_h": float(rate[1]) if rate else None,
+                 "concentration_percent": 10, "operation": _operation(verb)}], verb or "start"
+    if re.search(r"\b(?:oral\s+(?:glucose|carbohydrate|sugar)|glucose\s+gel|juice|zumo|jugo|"
+                 r"carbohidrato\s+oral|glucosa\s+oral|az[uú]car\s+oral|comida|colaci[oó]n)\b", body):
+        return [{"type": "oral_carbohydrate"}], verb or "give"
     if re.search(r"\b(?:stress\s+test|exercise\s+(?:test|stress)|treadmill|test\s+de\s+esfuerzo|"
                  r"ergometr[ií]a|prueba\s+de\s+esfuerzo)\b", body):
         return [{"type": "stress_test"}], verb or "order"

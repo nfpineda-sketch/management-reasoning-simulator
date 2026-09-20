@@ -132,6 +132,8 @@ POCUS = {
         _pocus(lv="Hyperdynamic contraction", ivc="1.1 cm; >50% inspiratory collapse"),
     ),
     "hypoglycemia": (
+        _pocus(lv="Preserved, mildly hyperdynamic contraction",
+               ivc="1.1 cm; >50% inspiratory collapse"),
         _pocus(lv="Preserved contraction", ivc="1.7 cm; about 50% inspiratory collapse"),
         _pocus(lv="Preserved contraction", ivc="1.8 cm; about 50% inspiratory collapse"),
     ),
@@ -230,7 +232,8 @@ def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
 def _case(identifier, family, age, sex, comorbidities, presentation, history,
           examination, observable, investigations, diagnosis, findings, focus,
           questions, actions, *, ecg="baseline", visual=None, recurrence=False,
-          history_source="Patient", congestion=None, coronary=None, lysis_bleeding_risk=None):
+          history_source="Patient", congestion=None, coronary=None, lysis_bleeding_risk=None,
+          thiamine_deficient=False):
     return {
         "id": identifier,
         "patient": {"age_years": age, "sex": sex,
@@ -249,6 +252,7 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
             **({"congestion": dict(congestion)} if congestion else {}),
             **({"coronary": dict(coronary)} if coronary else {}),
             **({"lysis_bleeding_risk": lysis_bleeding_risk} if lysis_bleeding_risk else {}),
+            **({"thiamine_deficient": True} if thiamine_deficient else {}),
         },
         "faculty": {"diagnosis": diagnosis, "discriminating_findings": list(findings),
                     "management_focus": focus, "review_questions": list(questions),
@@ -835,6 +839,40 @@ FAMILIES["hypoglycemia"]["variants"].append(_case(
     visual=_visual(skin="mild pallor", sweating="mild")))
 
 
+# The brain that is short of glucose and of thiamine at the same time: giving one
+# without the other is the error the case exists to teach (faculty, 2026-09-20).
+_o = _observable(118, 70, 104, 97, 18, mental="Drowsy", temperature=36.2, glucose=32,
+                 crt=3, extremities="Cool")
+FAMILIES["hypoglycemia"]["variants"].append(_case(
+    "hypoglycemia_54m_thiamine", "hypoglycemia", 54, "male", ["alcohol use disorder", "poor oral intake"],
+    "A 54-year-old man is brought from a shelter after being found drowsy and unsteady. He has eaten almost nothing for days.",
+    _history("His speech is muddled and he says he feels shaky.",
+        ["He has been unsteady on his feet.", "He has had no fever, cough or vomiting."],
+        "He drinks heavily every day and has eaten very little for a week; he is not diabetic.",
+        "He takes no regular medicines and has received no vitamins.",
+        "The confusion and unsteadiness came on through this morning.",
+        "He drinks heavily and has eaten almost nothing for days.",
+        oral_intake="He has had almost nothing to eat for about a week, and alcohol most days.",
+        neurological_symptoms="His walking has been unsteady and he says his vision feels unfocused.",
+        chest_pain="He reports no chest pain."),
+    {"Cardiac": "Regular mildly rapid pulse; no murmur.",
+     "Respiratory": "Normal effort; clear breath sounds.",
+     "Abdomen": "Soft, without tenderness or organomegaly.",
+     "Neurological": "Drowsy but rousable; gaze is unsteady with a few beats of nystagmus, and gait could not be tested safely. Pupils are equal and reactive."}, _o,
+    _investigations(_o, lactate=2.4, hemoglobin=12.9, wbc=6.2, creatinine=.8,
+        abg=(7.44, 36, 92), vbg=(7.40, 42),
+        pocus=POCUS["hypoglycemia"][0],
+        chest_xray="No focal consolidation.", troponin=9, potassium=3.4),
+    "Hypoglycemia in a thiamine-depleted patient, at risk of Wernicke encephalopathy",
+    ["Neuroglycopenia with a capillary glucose of 32 mg/dL",
+     "Weeks of alcohol use with almost no food: depleted thiamine",
+     "Unsteady gaze and nystagmus, which glucose alone will not correct"],
+    "Correct the glucose without precipitating an encephalopathy, and treat the deficiency that made it possible.",
+    ["What did the gaze findings add to the glucose result?", "Which treatment did the glucose itself make urgent?"],
+    ["dextrose", "thiamine", "reassessment"], thiamine_deficient=True,
+    visual=_visual(skin="mild pallor", sweating="mild")))
+
+
 # OPIOID: intentionally different contexts without stereotyped appearance.
 # Slow shallow breathing is explicitly authored; no cyanosis is inferred from SpO2.
 _o = _observable(106, 64, 68, 80, 6, wob="Reduced", mental="Obtunded", temperature=36.4, glucose=106)
@@ -899,6 +937,7 @@ _COLLATERAL_SOURCES = {
     "asthma_49m": "Partner",
     "hypoglycemia_28m": "Coworker and emergency medication information",
     "hypoglycemia_76f": "Son and medication list",
+    "hypoglycemia_54m_thiamine": "Shelter staff and the paramedic record",
     "opioid_35m": "Accompanying friend",
     "opioid_67f": "Spouse and medication list",
 }

@@ -39,9 +39,10 @@ _DOSE_FIELDS = {
     "antibiotics": "dose_mg", "bronchodilator": "dose_mg", "steroid": "dose_mg",
     "ppi": "dose_mg", "aspirin": "dose_mg", "diuretic": "dose_mg", "anticoagulation": "dose",
     "magnesium": "dose_mg", "thrombolysis": "dose_mg",
+    "octreotide": "dose_mg", "glucagon": "dose_mg", "thiamine": "dose_mg",
     "nitroglycerin": "rate_mcg_min", "norepinephrine": "rate", "dobutamine": "rate", "oxygen": "flow_lpm",
 }
-_DRUGS = frozenset({"beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "dextrose", "naloxone", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "anticoagulation", "nitroglycerin", "norepinephrine", "dobutamine", "magnesium", "thrombolysis"})
+_DRUGS = frozenset({"beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "dextrose", "naloxone", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "anticoagulation", "nitroglycerin", "norepinephrine", "dobutamine", "magnesium", "thrombolysis", "octreotide", "glucagon", "thiamine"})
 _ACTIONS = frozenset(_DOSE_FIELDS) | _ACTIVE | {"cardioversion"}
 _COMPARATORS = {"lt": lambda a, b: a < b, "lte": lambda a, b: a <= b, "gt": lambda a, b: a > b, "gte": lambda a, b: a >= b, "eq": lambda a, b: a == b}
 _SET_FIELDS = frozenset({"mental_status", "work_of_breathing", "extremities", "peripheral_perfusion", "pulse_present", "rhythm", "ecg_profile", "visual"})

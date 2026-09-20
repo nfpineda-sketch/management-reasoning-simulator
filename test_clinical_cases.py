@@ -18,13 +18,15 @@ class ClinicalCaseBankTests(unittest.TestCase):
             "asthma", "gi_bleed", "hypoglycemia", "opioid",
         })
         identifiers = [case["id"] for _, case in CASES]
-        # Two per family, plus the four ACS occlusion equivalents added 2026-09-19.
-        self.assertEqual(len(identifiers), 20)
+        # Two per family, the four ACS occlusion equivalents added 2026-09-19 and the
+        # thiamine-depleted hypoglycaemia case added 2026-09-20.
+        self.assertEqual(len(identifiers), 21)
         self.assertEqual(len([case for family, case in CASES if family == "acs"]), 6)
-        self.assertEqual(len(set(identifiers)), 20)
+        self.assertEqual(len(set(identifiers)), 21)
         for family, entry in FAMILIES.items():
             with self.subTest(family=family):
-                self.assertEqual(len(entry["variants"]), 6 if family == "acs" else 2)
+                expected = {"acs": 6, "hypoglycemia": 3}.get(family, 2)
+                self.assertEqual(len(entry["variants"]), expected)
                 # Every variant of a family is a different patient, not a relabelling.
                 for first, second in combinations(entry["variants"], 2):
                     self.assertNotEqual(first["patient"], second["patient"])

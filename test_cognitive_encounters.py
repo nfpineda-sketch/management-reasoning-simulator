@@ -77,7 +77,9 @@ def test_real_patient_variants_execute_their_management_without_af_state(engine,
     if family == "gi_bleed":
         assert current["sbp"] > old["sbp"] and current["crt"] < old["crt"]
     if family in {"hypoglycemia", "opioid"}:
-        assert current["mental_status"] == "Alert"
+        # The thiamine-depleted patient wakes only once the deficiency is treated too.
+        thiamine_case = session.state["encounter_spec"]["clinical_case"]["engine"].get("thiamine_deficient")
+        assert current["mental_status"] == ("Confused" if thiamine_case else "Alert")
     if family in {"acs", "pulmonary_embolism"}:
         # Giving an antithrombotic or calling a specialist is not reperfusion.
         assert session.state["ecg_profile"] == frozen["ecg_profile"]
