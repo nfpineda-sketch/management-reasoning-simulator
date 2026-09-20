@@ -141,3 +141,32 @@ def test_a_generated_case_without_the_declaration_still_refuses_those_orders():
     result = execute_generated_bundle(state, {"actions": [
         {"type": "thrombolysis", "agent": "tenecteplase", "dose_mg": 40, "route": "IV"}]})
     assert not result["executed"] and "no declared disease-specific response" in result["clarification"]
+
+
+MECHANISM_FIELDS = ("coronary", "airway_obstruction", "pulmonary_obstruction", "glucose_failure",
+                    "opioid_toxidrome", "active_bleeding", "pulmonary_congestion")
+
+
+@pytest.mark.parametrize("field", MECHANISM_FIELDS)
+def test_the_author_is_told_about_every_mechanism(field):
+    """A gate the author was never told about is a rejection waiting to happen."""
+    from generated_case import AUTHOR_INSTRUCTIONS
+    assert f"engine.{field}" in AUTHOR_INSTRUCTIONS
+
+
+@pytest.mark.parametrize("field", MECHANISM_FIELDS)
+def test_every_mechanism_is_in_the_contract(field):
+    from generated_case_schema import CASE_SCHEMA
+    assert field in CASE_SCHEMA["properties"]["engine"]["properties"]
+
+
+def test_the_instructions_carry_the_numbers_from_the_modules():
+    from generated_case import AUTHOR_INSTRUCTIONS
+    import asthma_ventilation, glucose_rescue, opioid_reversal, pe_obstruction
+    from family_engine import GI_BLEED
+    for value in (f"{asthma_ventilation.PLATEAU_LIMIT_CMH2O:g} cmH2O",
+                  f"{pe_obstruction.SUSTAINED_HYPOTENSION_MIN} minutes of systolic below {pe_obstruction.HYPOTENSION_SBP}",
+                  f"{glucose_rescue.SEIZURE_AFTER_MIN} minutes below {glucose_rescue.SEIZURE_GLUCOSE} mg/dL",
+                  f"{opioid_reversal.ARREST_AFTER_MIN} minutes of unsupported apnoeic breathing",
+                  f"{GI_BLEED['endoscopy_after_consult_min']} minutes after the call"):
+        assert value in AUTHOR_INSTRUCTIONS

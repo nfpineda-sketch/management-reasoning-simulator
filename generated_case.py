@@ -187,6 +187,56 @@ AUTHOR_INSTRUCTIONS += (
     "whose ECG the resident cannot read.\n"
 )
 
+# The other six mechanisms, each derived from its own module so the contract, the
+# instruction and the engine cannot drift apart.
+from asthma_ventilation import PLATEAU_LIMIT_CMH2O as _PLATEAU_LIMIT, SEDATION_DURATION_MIN as _SEDATION_MIN
+from asthma_complications import LATE_EXPOSURE_MIN as _LATE_MIN, BAROTRAUMA_THRESHOLD as _BAROTRAUMA
+from pe_obstruction import SUSTAINED_HYPOTENSION_MIN as _PE_SUSTAINED, HYPOTENSION_SBP as _PE_SBP, \
+    TOLERATED_ML_PER_MIN as _PE_TOLERATED, BLEED_RISK_TEXT as _PE_RISKS
+from glucose_rescue import SEIZURE_AFTER_MIN as _SEIZURE_MIN, SEIZURE_GLUCOSE as _SEIZURE_GLUCOSE, \
+    WERNICKE_WINDOW_MIN as _WERNICKE_MIN
+from opioid_reversal import ARREST_AFTER_MIN as _ARREST_MIN, WITHDRAWAL_LEVEL as _WITHDRAWAL
+from family_engine import GI_BLEED as _GI
+from generated_metabolic_consistency import HYPOGLYCAEMIA_MG_DL as _HYPO_MG_DL, OPIOID_RR as _OPIOID_RR
+from generated_bleeding_consistency import ANAEMIA_G_DL as _ANAEMIA
+
+AUTHOR_INSTRUCTIONS += (
+    "\nSix further mechanisms work the same way: each is null unless the case describes its finding, and a case that "
+    "describes the finding MUST declare it. Declaring one replaces authored response_rules for that pathway and "
+    "authorises its orders. All of these are checked before review.\n"
+    "- engine.airway_obstruction (severity 0.3 to 1.3, where 1.0 is the patient at arrival): required when the "
+    "respiratory examination or the history describes wheeze, prolonged expiration, reduced air entry or a silent "
+    f"chest. The engine then relieves it with the bronchodilators ordered, tires the patient, judges the moment of "
+    f"intubation, traps gas when the expiratory time is short, tears the lung above a plateau of {_PLATEAU_LIMIT:g} "
+    f"cmH2O, and lets induction sedation wear off after {_SEDATION_MIN} minutes. Leaving a patient exhausted for "
+    f"{_LATE_MIN:g} minutes before intubating is late, and intubating one who is improving is premature.\n"
+    "- engine.pulmonary_obstruction (bleeding_risk null or one of "
+    + ", ".join(sorted(_PE_RISKS)) + "): required when the POCUS right ventricle is dilated or failing, or a CT "
+    f"angiogram reports filling defects. Thrombolysis then works only after {_PE_SUSTAINED} minutes of systolic below "
+    f"{_PE_SBP} (a vasopressor counts), volume faster than {_PE_TOLERATED:g} mL/min distends the ventricle, positive "
+    "pressure costs an obstructed circulation, and a declared bleeding_risk must appear in the history.\n"
+    "- engine.glucose_failure (sulfonylurea, thiamine_deficient): required when the arrival glucose is below "
+    f"{_HYPO_MG_DL} mg/dL. A declared sulfonylurea must be named among the medicines and a declared thiamine "
+    "deficiency explained by alcohol or weeks without food. The engine then keeps the glucose falling, answers to the "
+    f"ampoule, glucagon, oral carbohydrate and a 10% infusion, seizes after {_SEIZURE_MIN} minutes below "
+    f"{_SEIZURE_GLUCOSE} mg/dL, and leaves a thiamine-depleted brain confused unless thiamine is given within "
+    f"{_WERNICKE_MIN} minutes of the glucose.\n"
+    "- engine.opioid_toxidrome (long_acting): required when the history or the examination points to an opioid and the "
+    f"respiratory rate is below {_OPIOID_RR}/min. The antidote then wears off before the drug, an infusion holds a "
+    f"long-acting one, pushing past {_WITHDRAWAL:g} units of antidote precipitates withdrawal, and "
+    f"{_ARREST_MIN} minutes of unsupported apnoeic breathing end in arrest.\n"
+    "- engine.active_bleeding (established): required when the case describes melena, haematemesis, black stools or "
+    f"other blood being lost. An established bleed must arrive anaemic ({_ANAEMIA} g/dL or less). The engine then "
+    f"keeps the haemoglobin falling, makes crystalloid buy less than blood and dilute what is left, leaves "
+    f"{_GI['bleeding_with_ppi']:.0%} of the bleeding with a proton-pump inhibitor, and has gastroenterology perform "
+    f"the endoscopy {_GI['endoscopy_after_consult_min']} minutes after the call once the patient is resuscitated.\n"
+    "- engine.pulmonary_congestion (cardiogenic): required when the examination, the POCUS or the radiograph describes "
+    "diffuse B-lines, bilateral crackles or pulmonary oedema. The shared core already models the congestion itself, "
+    "including what volume, oxygen, noninvasive ventilation, a nitroglycerin infusion and furosemide do to it; this "
+    "declaration adds only the intravenous nitroglycerin bolus, which no native action covers.\n"
+    "A negated mention never obliges a declaration: 'no wheeze' and 'denies melena' do not count.\n"
+)
+
 REVIEW_INSTRUCTIONS = """Independently audit this proposed NEW fictional clinical encounter as a medical-simulation consistency reviewer.
 All cases execute main_ia_v1: native oxygen, fluids, vasoactives, nodal agents, diuresis, IV etomidate/midazolam,
 ventilation and cardioversion are globally executable without authored response_rules. Empty response_rules are valid
