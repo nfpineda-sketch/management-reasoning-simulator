@@ -56,6 +56,29 @@ def complete_active_order(state, raw):
             if a.get(field) is None:
                 a[field] = tr.get(key)
         return a, None
+    if kind == 'infusion_adjustment':
+        # The resident named the treatment by its role. Resolve it the way a
+        # ventilator adjustment is resolved: against what is actually running,
+        # and never by guessing when the answer is ambiguous.
+        running = [name for name in ('norepinephrine', 'nitroglycerin', 'dobutamine') if tr.get(name)]
+        if not running:
+            return a, 'No infusion is running. Name the drug and its starting rate.'
+        if len(running) > 1:
+            return a, ('More than one infusion is running (' + ', '.join(sorted(running))
+                       + '). Name the one to change.')
+        a['type'] = kind = running[0]
+        rate, units = a.pop('rate_value', None), a.pop('rate_units', None)
+        if kind == 'nitroglycerin':
+            if units is not None and 'kg' in str(units):
+                return a, 'Nitroglycerin is ordered in mcg/min in this encounter.'
+            a['rate_mcg_min'] = rate
+        else:
+            a['rate'] = rate
+            a['units'] = str(units).replace(' ', '') if units else tr.get(kind + '_units')
+        if a.get('operation') == 'stop':
+            return a, None
+        if rate is None and a.get('operation') == 'adjust':
+            return a, f'Specify the new {kind} rate.'
     if a.get('operation') not in {'adjust', 'continue'}:
         return a, None
     if kind in {'norepinephrine', 'nitroglycerin', 'dobutamine'}:

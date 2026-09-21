@@ -71,7 +71,8 @@ _DIAGNOSTICS = {
     "basic_labs": r"basic labs|blood tests|blood work|laboratory tests|laboratorio|examenes de laboratorio|hemograma|cbc|bmp|cmp|electrolytes|electrolitos|creatinine|creatinina",
     "temperature": r"temperature|temperatura|temp",
     "poc_glucose": r"poc glucose|blood glucose|blood sugar|fingerstick|finger stick|glucose|glucosa|glicemia|glucemia|hgt|hemoglucotest",
-    "chest_xray": r"chest x[- ]?ray|chest radiograph|cxr|radiografia de torax|rx(?:\s+de)?\s+torax",
+    "chest_xray": r"chest x[- ]?ray|chest radiograph|cxr|radiografia(?:\s+(?:de\s+)?torax)?|"
+                  r"rx(?:\s+de)?(?:\s+torax)?|placa(?:\s+(?:de\s+)?torax)?|x[- ]?rays?|radiograph",
     "urinalysis": r"urinalysis|urine analysis|urine dip|orina completa|examen de orina",
     "blood_cultures": r"blood cultures?|hemocultivos?",
     "troponin": r"troponin|troponina",
@@ -80,12 +81,19 @@ _DIAGNOSTICS = {
     "ecg": r"(?:12[- ](?:lead|derivadas?)\s+)?ecg(?:\s+(?:de\s+)?12\s+derivadas?)?|ekg|electrocardiogram|electrocardiograma",
 }
 # An airway/ventilation order and the settings fragments that may follow it.
+# The infusions the engine runs. A resident who names one is not naming a role.
+_NAMED_INFUSION = (r"\b(?:nitroglycerin|nitroglicerina|nitro|norepinephrine|noradrenaline|"
+                   r"noradrenalina|norepinefrina|norepi|dobutamine|dobutamina)\b")
+
 _VENTILATION_ORDER = re.compile(
     r"\b(?:intubate|intubar|intuba|intubacion|intubación|rsi|rapid sequence|bipap|cpap|niv|vni|"
-    r"ventilator|ventilation|ventilacion|ventilación|vc/ac|pc/ac|ac/vc|psv)\b", re.I)
+    r"ventilator|ventilation|ventilacion|ventilación|vmni|vc/ac|pc/ac|ac/vc|psv)\b", re.I)
 _VENTILATION_SETTING = re.compile(
     r"^(?:at\s+|with\s+|a\s+|con\s+|de\s+|in\s+|on\s+)?(?:fio2|fio₂|peep|ipap|epap|tidal\s+volume|vt|"
     r"volumen\s+corriente|respiratory\s+rate|set\s+rate|rate|frecuencia|fr\b|flow|flujo|i\s*:\s*e|mode|modo|vc/ac|pc/ac|ac/vc|psv|"
+    # "Conectalo a VMNI, BiPAP 14/8": the named mode after a support that has
+    # none is that support's setting, not a second, contradictory order.
+    r"bipap|cpap|"
     r"pressure\s+support|presion\s+soporte|presión\s+soporte|"
     # The mode written out in either language is a setting of the airway order
     # that precedes it, not a second intubation.
@@ -106,7 +114,7 @@ _COMMAND = re.compile(
     r"consult|call|activate|admit|transfer|intubate|ventilate|reassess|re-assess|recheck|reevaluate|"
     r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|dale|d[eé]le|iniciar|inicio|inicie|infundir|indicar|indico|"
     r"solicitar|solicito|solicite|pedir|pido|medir|mido|controlar|control|obtener|realizar|hacer|"
-    r"suspender|suspendo|detener|desconectar|desconecta|desconecto|aumentar|aumento|disminuir|disminuyo|titular|continuar|mantener|"
+    r"suspender|suspendo|detener|retirar|retiro|sacar|saco|desconectar|desconecta|desconecto|aumentar|aumento|disminuir|disminuyo|titular|continuar|mantener|"
     r"ajustar|cambiar|transfundir|transfundo|nebulizar|consultar|interconsultar|llamar|activar|"
     r"hospitalizar|ingresar|trasladar|intubar|intubo|ventilar|reevaluar|reevaluo|revalorar)\b\s*"
 )
@@ -123,6 +131,7 @@ _ES_IMPERATIVES = {
     "pedir": "pide pida", "solicitar": "solicita", "medir": "mide mida",
     "controlar": "controla controle", "obtener": "obten obtenga toma tome tomar", "realizar": "realiza realice",
     "hacer": "haz haga", "suspender": "suspende suspenda", "detener": "deten detenga",
+    "retirar": "retira retire", "sacar": "saca saque",
     "aumentar": "aumenta aumente sube suba subir", "disminuir": "disminuye disminuya baja baje bajar",
     "titular": "titula titule",
     "continuar": "continua", "mantener": "manten mantenga", "ajustar": "ajusta ajuste",
@@ -244,7 +253,7 @@ def _medication(text, kind, agent):
 
 
 def _operation(verb):
-    if verb in {"stop", "discontinue", "suspender", "suspendo", "detener"}:
+    if verb in {"stop", "discontinue", "suspender", "suspendo", "detener", "retirar", "retiro", "sacar", "saco"}:
         return "stop"
     if verb in {"increase", "decrease", "titrate", "change", "set", "switch", "adjust", "modify", "reduce", "wean", "aumentar", "aumento", "disminuir", "disminuyo", "titular", "ajustar", "cambiar"}:
         return "adjust"
@@ -387,9 +396,13 @@ def _parse_piece_core(piece, inherited=None):
             return [_clarification("Specify the reassessment interval in minutes.")], verb
         return [{"type": "reassessment", "delay_min": delay if delay is not None else 0}], verb
 
+    other_region = re.search(r"\b(?:abdomen|abdominal|pelvis|pelvic|spine|columna|craneo|skull|"
+                             r"extremidad|extremity|limb|rodilla|knee|cadera|hip)\b", body)
     diagnostics = []
     for diagnostic, pattern in _DIAGNOSTICS.items():
         match = re.search(r"\b(?:" + pattern + r")\b", body)
+        if diagnostic == "chest_xray" and other_region and not re.search(r"\btorax\b|\bchest\b", body):
+            continue
         if match and (verb in _DIAG_VERBS or re.fullmatch(r"\s*(?:" + pattern + r")\s*\??", body)):
             diagnostics.append((match.start(), {"type": "diagnostic", "diagnostic": diagnostic}))
     if diagnostics:
@@ -404,7 +417,7 @@ def _parse_piece_core(piece, inherited=None):
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
-        shorthand = r"(?:synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía)"
+        shorthand = r"(?:synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía)"
         medication_start = any(re.match(r"(?:" + pattern + r")\b", body) for agents in _AGENTS.values() for pattern in agents.values())
         quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
         if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start):
@@ -440,7 +453,7 @@ def _parse_piece_core(piece, inherited=None):
         energy, _ = _amount(body, r"j|joules?|julios?")
         return [{"type": "cardioversion", "energy_j": energy, "synchronized": True}], verb
     if (_operation(verb) in {"adjust", "continue"} and re.search(r"\b(?:ventilator|ventilation|fio2|peep|ipap|epap|vc[/ -]?ac|pc[/ -]?ac)\b", body)
-            and not re.search(r"\b(?:bipap|cpap|niv|vni)\b", body)):
+            and not re.search(r"\b(?:bipap|cpap|niv|vni|vmni)\b", body)):
         if re.search(r"\b(?:by|en)\s+-?\d", body):
             return [_clarification("Specify absolute target ventilator settings, not a relative change.")], verb
         modes = [mode for mode, pattern in (("VC/AC", _VC_MODE), ("PC/AC", _PC_MODE)) if re.search(pattern, body)]
@@ -481,6 +494,15 @@ def _parse_piece_core(piece, inherited=None):
             or re.search(r"\b(?:disconnect\w*|desconect\w*)\b", body)) and re.search(
             r"\b(?:circuit|ventilator|tubing|circuito|ventilador|tubuladura|tube|tubo)\b", body):
         return [{"type": "ventilator_disconnect"}], verb or "disconnect"
+    # "Subele la infusion a 100 mcg/min": the resident names the running
+    # treatment by its role. The engine resolves which one, and refuses when
+    # there is none or more than one, exactly as it does for a ventilator.
+    if (_operation(verb) in {"adjust", "continue", "stop"}
+            and re.search(r"\b(?:infusion|drip|goteo|bomba)\b", body)
+            and not re.search(_NAMED_INFUSION, body)):
+        rate, units = _amount(body, r"mcg\s*/\s*kg\s*/\s*min|mcg\s*/\s*min|ug\s*/\s*kg\s*/\s*min|ug\s*/\s*min|ml\s*/\s*h(?:r|ora)?")
+        return [{"type": "infusion_adjustment", "operation": _operation(verb),
+                 "rate_value": rate, "rate_units": units}], verb
     if re.search(r"\b(?:bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|bolsa[- ]mascarilla|bolsa valvula mascarilla)\b", body):
         return [{"type": "bag_mask"}], verb
     if verb in {"intubate", "intubar", "intubo"} or re.match(r"(?:intubation|intubacion)\b", body):
@@ -489,7 +511,7 @@ def _parse_piece_core(piece, inherited=None):
             mode = "PC/AC"
         return [{"type": "intubation", "ventilator_mode": mode, "fio2_percent": _settings(body, "fio2"),
                  "peep_cmh2o": _settings(body, "peep"), **_ventilator_extras(body)}], verb
-    if re.search(r"\b(?:bipap|cpap|niv|vni|non[- ]invasive ventilation|ventilacion no invasiva)\b", body):
+    if re.search(r"\b(?:bipap|cpap|niv|vni|vmni|non[- ]invasive ventilation|ventilacion (?:mecanica )?no invasiva)\b", body):
         mode = "CPAP" if re.search(r"\bcpap\b", body) else "BiPAP" if re.search(r"\bbipap\b", body) else None
         ipap, epap = _settings(body, "ipap"), _settings(body, "epap")
         pair = re.search(r"\bbipap\s+(?:at\s+|a\s+)?(\d+(?:\.\d+)?)\s*/\s*(\d+(?:\.\d+)?)", body)

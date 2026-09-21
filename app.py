@@ -4789,6 +4789,15 @@ def try_resolve_pending_action(text):
     if pending.get("type") == "family_bundle":
         from pending_family_orders import complete_bundle
         resolution = complete_bundle(pending, text)
+        if resolution and resolution.get("superseded"):
+            # The resident wrote a new order instead of answering. It runs, and
+            # what it costs is stated rather than dropped in silence.
+            held = _understood_order_labels(pending.get("parsed") or {})
+            st.session_state.pending_action = None
+            if held:
+                add_event("order_cancelled", "The held order was discarded to run this one: "
+                          + " + ".join(held) + ". None of it was administered.")
+            return None
         from family_parser import _COMMAND, _normalize, _NEGATION
         if (resolution and resolution.get("parsed")) or (resolution is None and (_COMMAND.match(_normalize(text)) or _NEGATION.match(_normalize(text)))):
             st.session_state.pending_action = None
@@ -6052,6 +6061,20 @@ def recognized_unimplemented_medications(text):
     return labels
 
 
+def _understood_order_labels(parsed):
+    """Everything in a turn that the engine read as an order, named for the resident."""
+    from family_reports import TEST_LABELS
+    others = [a for a in (parsed.get("actions", []) or []) if a.get("type") != "clarification"]
+    labels = []
+    if any(a.get("type") in REASONING_GATE_ACTION_TYPES for a in others):
+        labels.append(_reasoning_gate_action_summary({"actions": others}))
+    labels.extend(
+        TEST_LABELS.get(a.get("diagnostic"), str(a.get("diagnostic") or "").replace("_", " "))
+        for a in others if a.get("type") == "diagnostic"
+    )
+    return [label for label in labels if label]
+
+
 def _held_order_prompt(parsed, message):
     """A parser clarification that names the rest of the order it is holding.
 
@@ -6061,16 +6084,8 @@ def _held_order_prompt(parsed, message):
     about an oxygen device without the resident noticing. The hold is now
     declared the way the reasoning gate declares its own.
     """
-    from family_reports import TEST_LABELS
     actions = parsed.get("actions", []) or []
-    others = [a for a in actions if a.get("type") != "clarification"]
-    labels = []
-    if any(a.get("type") in REASONING_GATE_ACTION_TYPES for a in others):
-        labels.append(_reasoning_gate_action_summary({"actions": others}))
-    labels.extend(
-        TEST_LABELS.get(a.get("diagnostic"), str(a.get("diagnostic") or "").replace("_", " "))
-        for a in others if a.get("type") == "diagnostic"
-    )
+    labels = _understood_order_labels(parsed)
     # One order the engine itself questions describes its own problem. The block
     # is for what the resident would otherwise lose without being told: another
     # order in the same turn, or an item the parser could not read at all.
@@ -6612,6 +6627,8 @@ REASONING_GATE_ACTION_TYPES = {
     "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
     "naloxone", "blood", "anticoagulation", "bag_mask", "consult", "nitroglycerin_bolus", "magnesium",
     "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
+    # Named by its role; the engine resolves which infusion before it runs.
+    "infusion_adjustment",
 }
 
 REASONING_GATE_FIELD_LABELS = {
@@ -6745,6 +6762,11 @@ def _reasoning_gate_action_summary(parsed):
                 labels.append(f"{mode} {action['ipap_cmh2o']:g}/{action['epap_cmh2o']:g}")
             else:
                 labels.append(mode)
+        elif atype == "infusion_adjustment":
+            rate, units = action.get("rate_value"), action.get("rate_units")
+            operation = action.get("operation") or "adjust"
+            labels.append(f"{operation} the running infusion"
+                          + (f" at {rate:g} {units}" if rate is not None else ""))
         elif atype == "airway_preparation":
             labels.append("prepare for intubation")
         elif atype == "intubation":

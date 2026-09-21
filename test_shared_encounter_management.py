@@ -190,8 +190,8 @@ def test_live_app_adapter_holds_and_completes_generated_fluid_bundle():
     tree = ast.parse(Path('app.py').read_text())
     functions = [n for n in tree.body if isinstance(n, ast.FunctionDef)
                  and n.name in {'execute_bundle', 'try_resolve_pending_action',
-                                '_held_order_prompt', '_reasoning_gate_action_summary',
-                                'procedural_sedation_label'}]
+                                '_held_order_prompt', '_understood_order_labels',
+                                '_reasoning_gate_action_summary', 'procedural_sedation_label'}]
     constants = [n for n in tree.body if isinstance(n, ast.Assign)
                  and any(getattr(t, 'id', '') == 'REASONING_GATE_ACTION_TYPES' for t in n.targets)]
     functions = constants + functions

@@ -47,6 +47,19 @@ _CANCEL = re.compile(r'(?:cancel|omit|skip|drop|forget|cancelar|omitir|olvidar)'
                      r'(?: (?:one|item|order|study|test|examen|estudio|orden))?', re.I)
 
 
+def _is_a_new_submission(reply):
+    """True when the reply is an order in its own right, not an answer.
+
+    A resident who writes a complete new order after a held turn has moved on.
+    Refusing it leaves them in a loop — found by playing the oedema case, where
+    four consecutive orders were refused while the patient stayed at 218/116.
+    The held bundle is discarded for it, and the caller says so.
+    """
+    if any(a.get('type') == 'clarification' for a in reply):
+        return False
+    return any(a.get('type') not in {'reassessment'} for a in reply)
+
+
 def complete_bundle(pending, text):
     body = _normalize(text).strip()
     original = pending['parsed']['actions'][pending['index']]
@@ -57,6 +70,8 @@ def complete_bundle(pending, text):
         else:
             reply = parse_family_actions(re.sub(r'^ok[ ,]*', '', body, flags=re.I))['actions']
             if len(reply) != 1 or reply[0].get('type') == 'clarification':
+                if _is_a_new_submission(reply):
+                    return {'superseded': True}
                 return {'clarification': 'Name one supported order to replace that item, or say cancel. '
                                          'Every other order in the same submission is still held.'}
             parsed['actions'][pending['index']] = reply[0]
@@ -71,6 +86,8 @@ def complete_bundle(pending, text):
         else:
             reply = parse_family_actions(re.sub(r'^ok[ ,]*', '', body))['actions']
             if len(reply) != 1 or reply[0].get('type') != 'diagnostic':
+                if _is_a_new_submission(reply):
+                    return {'superseded': True}
                 return {'clarification': 'Specify one replacement study, or say cancel study. The other orders remain pending.'}
             parsed['actions'][pending['index']] = reply[0]
         parsed.pop('clarification', None)

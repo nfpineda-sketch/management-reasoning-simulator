@@ -126,3 +126,84 @@ def test_the_litre_that_used_to_disappear_is_delivered(encounter):
     assert updates, [e["kind"] for e in at.session_state.events]
     assert "normal saline 1000 mL" in updates[-1], updates[-1]
     assert at.session_state.state["treatments"]["cumulative_crystalloid_ml"] == 1000
+
+
+# The running treatment, named as residents name it: by its acronym or its role.
+# Found in the same oedema run: "Suspende la VMNI" and "Súbele la infusión a 100
+# mcg/min" were both refused, so the patient kept a support he no longer needed
+# and an infusion that could not be titrated.
+
+@pytest.mark.parametrize("text, operation", [
+    ("Suspende la VMNI.", "stop"),
+    ("Retira la VMNI.", "stop"),
+    ("Saca la BiPAP.", "stop"),
+    ("Retírale la BiPAP.", "stop"),
+    ("Mantén la VMNI.", "continue"),
+    ("Suspende la ventilación mecánica no invasiva.", "stop"),
+])
+def test_the_spanish_acronym_for_niv_is_niv(text, operation):
+    parsed = actions(text)
+    assert [a["type"] for a in parsed] == ["niv"], parsed
+    assert parsed[0]["operation"] == operation
+
+
+def test_a_named_mode_after_the_support_is_not_a_second_order():
+    parsed = actions("Conéctalo a VMNI, BiPAP 14/8 con FiO2 60%.")
+    assert [a["type"] for a in parsed] == ["niv"], parsed
+    assert (parsed[0]["mode"], parsed[0]["ipap_cmh2o"], parsed[0]["epap_cmh2o"]) == ("BiPAP", 14.0, 8.0)
+
+
+def test_two_deliberate_niv_orders_are_still_two():
+    assert [(a["type"], a["operation"]) for a in actions("Suspende la BiPAP y pon CPAP 8 con FiO2 40%.")] == [
+        ("niv", "stop"), ("niv", "start")]
+
+
+NITRATE = {"nitroglycerin": True, "nitroglycerin_rate_mcg_min": 60.0}
+TWO_INFUSIONS = {**NITRATE, "norepinephrine": True, "norepinephrine_rate": 0.05,
+                 "norepinephrine_units": "mcg/kg/min"}
+
+
+def resolve(text, treatments):
+    from active_order_context import complete_active_order
+    return complete_active_order({"treatments": treatments}, actions(text)[0])
+
+
+@pytest.mark.parametrize("text", [
+    "Súbele la infusión a 100 mcg/min.",
+    "Increase the infusion to 100 mcg/min.",
+    "Sube el goteo a 100 mcg/min.",
+])
+def test_the_one_running_infusion_can_be_named_by_its_role(text):
+    resolved, error = resolve(text, NITRATE)
+    assert error is None
+    assert resolved["type"] == "nitroglycerin" and resolved["rate_mcg_min"] == 100.0
+
+
+def test_stopping_the_infusion_needs_no_rate():
+    resolved, error = resolve("Suspende la infusión.", NITRATE)
+    assert error is None
+    assert (resolved["type"], resolved["operation"]) == ("nitroglycerin", "stop")
+
+
+@pytest.mark.parametrize("treatments, expected", [
+    ({}, "No infusion is running. Name the drug and its starting rate."),
+    (TWO_INFUSIONS, "More than one infusion is running (nitroglycerin, norepinephrine). Name the one to change."),
+])
+def test_the_engine_refuses_to_guess_which_infusion(treatments, expected):
+    # The same rule the ventilator adjustment follows: resolve, or ask.
+    assert resolve("Súbele la infusión a 100 mcg/min.", treatments)[1] == expected
+
+
+def test_an_adjustment_with_no_rate_is_asked_about():
+    assert resolve("Súbele la infusión.", NITRATE)[1] == "Specify the new nitroglycerin rate."
+
+
+def test_naming_the_drug_still_wins_over_the_role():
+    parsed = actions("Sube la nitroglicerina a 100 mcg/min.")
+    assert [a["type"] for a in parsed] == ["nitroglycerin"]
+    assert parsed[0]["rate_mcg_min"] == 100.0
+
+
+def test_starting_an_infusion_is_not_an_adjustment():
+    parsed = actions("Inicia nitroglicerina en infusión 60 mcg/min IV.")
+    assert [(a["type"], a["operation"]) for a in parsed] == [("nitroglycerin", "start")]
