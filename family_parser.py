@@ -167,7 +167,8 @@ _DIAG_VERBS = {
 _NON_ORDER = re.compile(
     r"\b(?:i think|i suspect|i believe|i expect|i anticipate|i hope|my hypothesis|my impression|"
     r"my working model|my working diagnosis|my priority|my plan|working diagnosis|because|need to improve|to improve|should improve|would improve|may improve|"
-    r"pienso|creo|sospecho|espero|anticip[oae]|mi hipotesis|mi impresion|mi prioridad|mi plan|porque|para mejorar)\b"
+    r"pienso|creo|sospecho|espero|anticip[oae]|mi hipotesis|mi impresion|mi plan|porque|para mejorar|"
+    r"(?:mi|la|el|nuestra|nuestro)\s+(?:prioridad|objetivo|meta))\b"
 )
 _CONDITIONAL = re.compile(
     r"\b(?:if|unless|consider|considering|might|could|would|perhaps|maybe|si|salvo que|considerar|considero|podria|quizas|tal vez)\b"
@@ -806,6 +807,7 @@ def parse_family_actions(text) -> dict:
                     piece += ", " + pieces[index]
             grouped.append(piece)
             index += 1
+        reasoning_head = False
         for piece in grouped:
             if not piece:
                 continue
@@ -819,8 +821,14 @@ def parse_family_actions(text) -> dict:
             if explicit:
                 negated = False
             if _NON_ORDER.match(piece):
+                reasoning_head = True
                 inherited = None
                 continue
             parsed, inherited = _parse_piece(piece, inherited)
+            if (reasoning_head and len(parsed) == 1 and parsed[0].get("type") == "clarification"
+                    and str(parsed[0].get("message", "")).startswith("The requested study")):
+                # The rest of a stated priority is not a request for a study.
+                inherited = None
+                continue
             actions.extend(parsed)
     return {"raw_text": raw, "actions": actions, "recognized_future_actions": future}

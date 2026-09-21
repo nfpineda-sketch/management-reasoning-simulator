@@ -519,12 +519,24 @@ CASE_CONFIGS = {
 def clamp(x, lo=0.0, hi=1.0):
     return max(lo, min(hi, x))
 
+def _default_challenge():
+    """The challenge the picker opens on.
+
+    A local switch for playing one family repeatedly: the faculty restarts the
+    offline server on the challenge they are working through instead of choosing
+    it again after every restart. Unset, or set to something that is not a
+    challenge, it is the first-year problem the app has always opened on.
+    """
+    choice = os.environ.get("MRS_DEFAULT_CHALLENGE", "").strip()
+    return choice if choice in CHALLENGES else "R1-05"
+
+
 def reset_session():
     for key in list(st.session_state):
         if str(key).startswith("_learner_trace_"):
             del st.session_state[key]
     st.session_state.started = False
-    st.session_state.selected_case = "R1-05"
+    st.session_state.selected_case = _default_challenge()
     st.session_state.state = deepcopy(INITIAL_STATE)
     st.session_state.events = []
     st.session_state.history = []
@@ -5421,7 +5433,9 @@ def extract_explicit_reasoning(text):
             r"i\s+(?:expect|anticipate|want|will|would|plan|intend)|"
             r"(?:i\s+am|i'm)\s+(?:addressing|treating|targeting|prioriti[sz]ing|expecting|aiming)|"
             r"expected\s+effect|to\s+(?:improve|reduce|treat|address|correct)|"
-            r"mi\s+(?:prioridad|objetivo|meta|plan)|espero|anticipo|quiero|voy\s+a|"
+            # Same determiners the priority pattern reads, kept inline because the
+            # AST-subset regressions load this function without module constants.
+            r"(?:mi|la|el|nuestra|nuestro)\s+(?:prioridad|objetivo|meta|plan)|espero|anticipo|quiero|voy\s+a|"
             r"pretendo|busco|para\s+(?:mejorar|reducir|tratar|corregir))\b",
             re.I,
         )
@@ -5842,16 +5856,25 @@ def extract_explicit_reasoning(text):
         # persiste porque la inflamación no cede". Without this, every Spanish
         # management order was held asking for a working model it could not read.
         if not (reasoning.get("problem_representation") or reasoning.get("rationale")):
-            _ES_CAUSAL = (r"\b(?:porque|debido\s+a|por\s+lo\s+que|as[ií]\s+que|sugiere[n]?|indica[n]?|"
+            _ES_CAUSAL = (r"\b(?:porque|debido\s+a(?:l)?|por\s+lo\s+que|as[ií]\s+que|sugiere[n]?|indica[n]?|"
                           r"significa[n]?\s+que|refleja[n]?|corresponde[n]?\s+a|es\s+compatible\s+con|"
                           r"se\s+explica\s+por|traduce)\b")
             for sentence in re.split(r"(?<=[.;])\s+", joined):
                 clause = sentence.strip(" .;")
                 if not clause or not re.search(_ES_CAUSAL, clause, re.I):
                     continue
-                # An order, a priority or an expectation belongs to its own slot.
-                if re.search(r"\b(?:" + _ES_ORDER_VERBS + r")\b", clause, re.I) or \
-                        re.search(r"\b(?:prioridad|espero|anticipo|preveo|reeval)", clause, re.I):
+                # A priority or an expectation belongs to its own slot, but it is
+                # often written in the same sentence as the model: "Con la presion
+                # controlada, debido a la respuesta, la prioridad ahora es...".
+                # Cut there and keep what comes before instead of losing both.
+                clause = re.split(r"\b(?:(?:mi|la|el|nuestra|nuestro)\s+)?(?:prioridad|objetivo|meta)\b"
+                                  r"|\b(?:espero|anticipo|preveo|reeval)",
+                                  clause, maxsplit=1, flags=re.I)[0].strip(" ,;.")
+                # An order still belongs to its own slot, and so does a clause that
+                # kept nothing causal once the priority was removed.
+                if not clause or not re.search(_ES_CAUSAL, clause, re.I):
+                    continue
+                if re.search(r"\b(?:" + _ES_ORDER_VERBS + r")\b", clause, re.I):
                     continue
                 phrase = _clean_reasoning_phrase(clause)
                 if phrase:

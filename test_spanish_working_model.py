@@ -39,3 +39,31 @@ def test_an_order_or_a_priority_is_not_a_working_model(engine):
         "Espero menos sibilancias. Reevalúa en 20 minutos SpO2.")
     assert not reasoning.get("problem_representation")
     assert reasoning["management_priority"] == "revertir la obstrucción"
+
+
+# Found playing the posterior-infarct case (2026-09-21): the trace recorded no
+# working model for "Sigue ocluida, debido al tiempo puerta-balón", and recorded
+# the priority sentence itself as the model when it was written with "la".
+
+@pytest.mark.parametrize("text, model", [
+    # "debido al" is the contraction of "debido a el" and reads the same way.
+    ("Sigue ocluida, debido al tiempo puerta-balón. La prioridad ahora es sostenerlo.",
+     "Sigue ocluida, debido al tiempo puerta-balón"),
+    ("El dolor persiste debido al vasoespasmo. Dale nitroglicerina 20 mcg/min IV.",
+     "El dolor persiste debido al vasoespasmo"),
+    # The model and the priority in one sentence: the model is what precedes it.
+    ("Con la presión controlada, debido a la respuesta al tratamiento, la prioridad ahora es "
+     "vigilancia monitorizada. Repite la troponina.",
+     "Con la presión controlada, debido a la respuesta al tratamiento"),
+])
+def test_the_working_model_is_read_where_the_resident_wrote_it(engine, text, model):
+    assert engine["extract_explicit_reasoning"](text)["problem_representation"] == model
+
+
+@pytest.mark.parametrize("text", [
+    "La prioridad ahora es vigilar arritmias y función. Repite el POCUS.",
+    "El objetivo ahora es controlar el dolor. Dale morfina 4 mg IV.",
+])
+def test_a_priority_is_not_also_recorded_as_the_model(engine, text):
+    # It used to appear in both slots once "la prioridad" became readable.
+    assert not engine["extract_explicit_reasoning"](text).get("problem_representation")

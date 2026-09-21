@@ -207,3 +207,28 @@ def test_naming_the_drug_still_wins_over_the_role():
 def test_starting_an_infusion_is_not_an_adjustment():
     parsed = actions("Inicia nitroglicerina en infusión 60 mcg/min IV.")
     assert [(a["type"], a["operation"]) for a in parsed] == [("nitroglycerin", "start")]
+
+
+# A priority written as a list of infinitives is reasoning, not a request for a
+# study. Found playing the non-OMI coronary case: "La prioridad ahora es
+# antiagregar, anticoagular y medir el daño" split on the commas, and "medir el
+# daño" was answered with "The requested study was not recognized", which held
+# the aspirin, the heparin and three investigations in the same turn.
+
+def test_a_priority_written_as_a_list_is_not_a_study_request():
+    parsed = actions("La prioridad ahora es antiagregar, anticoagular y medir el daño. "
+                     "Dale aspirina 300 mg VO.")
+    assert [a["type"] for a in parsed] == ["aspirin"], parsed
+
+
+def test_a_study_named_inside_a_priority_is_still_ordered():
+    parsed = actions("Mi prioridad es estabilizar, oxigenar y medir el lactato.")
+    assert [a["type"] for a in parsed] == ["diagnostic"]
+    assert parsed[0]["diagnostic"] == "lactate"
+
+
+def test_an_unreadable_study_is_still_questioned_on_its_own():
+    # Only the pieces of a stated priority are protected, not the next sentence.
+    parsed = actions("Mi prioridad es la oxigenación. Pide una resonancia magnética.")
+    assert parsed[0]["type"] == "clarification"
+    assert "not recognized" in parsed[0]["message"]
