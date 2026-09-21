@@ -251,19 +251,41 @@ def _curve(minutes_since_onset):
     return points[-1][1]   # the peak holds; the fall is beyond this encounter
 
 
+def curve_minute(value):
+    """Where a value sits on the curve: the minute of infarct that produces it."""
+    import math
+    points = TROPONIN_CURVE
+    value = max(0.0, float(value))
+    if value <= points[0][1]:
+        return points[0][0] * value / points[0][1]
+    for (t0, v0), (t1, v1) in zip(points, points[1:]):
+        if value <= v1:
+            share = (math.log10(value) - math.log10(v0)) / (math.log10(v1) - math.log10(v0))
+            return t0 + share * (t1 - t0)
+    return float(points[-1][0])
+
+
 def troponin(f, baseline, onset_min=0, spec=None):
     """The troponin the resident measures, on the curve timed from the pain.
 
-    The case's authored arrival value is a floor: it is what this patient's assay
-    reported when they arrived. A case with no artery shut — a non-occlusion
-    syndrome, or Wellens with its artery open — keeps that value: nothing is
-    infarcting while the resident watches.
+    Faculty decision 2026-09-21: the case's authored arrival value sets the clock
+    rather than a floor. It used to be a floor, so the value did not move until
+    the curve caught up with it — a hundred minutes in the left main case, the
+    sickest of the six, where serial samples all read 260 with the artery shut.
+    Read as a clock, the arrival value is still exactly what the case authored
+    and it rises from the first minute, at the curve's own pace. ``onset_min``
+    stays the narrative the patient tells; the assay carries its own history.
+
+    A case with no artery shut — a non-occlusion syndrome, or Wellens with its
+    artery open — keeps the authored value: nothing is infarcting while the
+    resident watches.
     """
     if spec is not None and not active_occlusion(spec):
         return round(float(baseline))
     ischaemic = f.get("ischemic_min", 0.0)
     after = max(0.0, f.get("elapsed", ischaemic) - ischaemic) * TROPONIN_AFTER_REPERFUSION_SHARE
-    value = _curve(float(onset_min) + ischaemic + after)
+    started_at = max(float(onset_min), curve_minute(baseline))
+    value = _curve(started_at + ischaemic + after)
     if is_open(f):
         value *= TROPONIN_WASHOUT_FACTOR
     return round(max(float(baseline), value))

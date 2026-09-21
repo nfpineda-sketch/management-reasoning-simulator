@@ -265,3 +265,54 @@ def test_the_ratio_is_the_one_the_occlusion_used(engine):
     assert rv == (acs.RV_CIRCULATION_PER_MIN + acs.FAMILY_DRIFT_PER_MIN) / acs.LV_LOSS_PER_MIN
     assert plain == (acs.CIRCULATION_PER_MIN + acs.FAMILY_DRIFT_PER_MIN) / acs.LV_LOSS_PER_MIN
     assert rv > plain
+
+
+# Faculty decision 2026-09-21: the authored troponin sets the clock, not a floor.
+# Found playing the left main case: serial samples read 260, 260, 260 for a
+# hundred minutes with the artery shut, because the curve had not yet caught up
+# with the value the case was written with. The sickest of the six gave the
+# most silent curve.
+
+@pytest.mark.parametrize("case_id", ["acs_54m_inferior", "acs_61m_posterior",
+                                     "acs_52m_de_winter", "acs_70f_left_main"])
+def test_the_authored_value_is_the_arrival_sample_and_it_moves(engine, case_id):
+    from clinical_cases import FAMILIES
+    variant = next(v for v in FAMILIES["acs"]["variants"] if v["id"] == case_id)
+    spec = variant["engine"]["coronary"]
+    authored = variant["investigations"]["troponin"]["result"]["value_ng_l"]
+    onset = spec.get("symptom_onset_min", 0)
+    arrival = acs.troponin({"elapsed": 0, "ischemic_min": 0}, authored, onset, spec)
+    assert arrival == authored
+    previous = arrival
+    for minute in (15, 30, 60, 90):
+        value = acs.troponin({"elapsed": minute, "ischemic_min": minute}, authored, onset, spec)
+        assert value > previous, (case_id, minute, value, previous)
+        previous = value
+
+
+def test_the_clock_is_where_the_value_sits_on_the_curve():
+    for minutes, value in acs.TROPONIN_CURVE:
+        assert acs.curve_minute(value) == pytest.approx(minutes)
+    # Between points it interpolates the same way the curve does.
+    assert acs._curve(acs.curve_minute(260)) == pytest.approx(260, rel=.01)
+
+
+@pytest.mark.parametrize("case_id", ["acs_66f_nonst", "acs_48m_wellens"])
+def test_nothing_moves_without_an_artery_that_is_shut(engine, case_id):
+    from clinical_cases import FAMILIES
+    variant = next(v for v in FAMILIES["acs"]["variants"] if v["id"] == case_id)
+    spec = variant["engine"].get("coronary") or {}
+    authored = variant["investigations"]["troponin"]["result"]["value_ng_l"]
+    for minute in (0, 60, 180):
+        assert acs.troponin({"elapsed": minute, "ischemic_min": minute}, authored,
+                            spec.get("symptom_onset_min", 0), spec) == authored
+
+
+def test_the_washout_still_multiplies_after_reperfusion(engine):
+    from clinical_cases import FAMILIES
+    variant = next(v for v in FAMILIES["acs"]["variants"] if v["id"] == "acs_61m_posterior")
+    spec = variant["engine"]["coronary"]
+    authored = variant["investigations"]["troponin"]["result"]["value_ng_l"]
+    closed = acs.troponin({"elapsed": 90, "ischemic_min": 90}, authored, 0, spec)
+    opened = acs.troponin({"elapsed": 90, "ischemic_min": 90, "artery_open_at": 90}, authored, 0, spec)
+    assert opened == pytest.approx(closed * acs.TROPONIN_WASHOUT_FACTOR, rel=.01)

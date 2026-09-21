@@ -1,6 +1,6 @@
 # Síndrome coronario agudo — magnitudes implementadas
 
-> **Estado: IMPLEMENTADO y REVISADO** en `ecg12.py` (morfologías), `acs_reperfusion.py`, `clinical_cases.py` (seis variantes) y la rama `acs` de `family_engine.py`, con las decisiones docentes del 2026-09-19, la revisión del 2026-09-20 (curva de troponina desde el dolor, bloqueo AV condicional) y la del 2026-09-21 (la función ventricular va pareada a la presión y la perfusión). Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
+> **Estado: IMPLEMENTADO y REVISADO** en `ecg12.py` (morfologías), `acs_reperfusion.py`, `clinical_cases.py` (seis variantes) y la rama `acs` de `family_engine.py`, con las decisiones docentes del 2026-09-19, la revisión del 2026-09-20 (curva de troponina desde el dolor, bloqueo AV condicional) y las del 2026-09-21 (la función ventricular va pareada a la presión y la perfusión; el valor autorizado de troponina fija el reloj de la curva). Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
 
 ## Decisión docente
 
@@ -14,6 +14,7 @@ Indicación de la facultad: la conducta y el manejo cambian según el ECG. Hay S
 | 4 | Test de esfuerzo en Wellens | Se ejecuta, y el paciente presenta fibrilación ventricular |
 | 5 | Nitroglicerina en infarto con riesgo de compromiso derecho | Sí, con la misma mecánica de los casos generados |
 | 6 | **Función ventricular y hemodinamia** (2026-09-21) | Donde el ventrículo izquierdo es el problema, su contractilidad va **pareada** a la presión y la perfusión clínica. Que la mejoría del VI se traduzca en mejor presión y mejor llene, y no quede como un dato aislado del POCUS |
+| 7 | **Reloj de la troponina** (2026-09-21) | El valor autorizado **fija el reloj**, no un piso. Antes la troponina no se movía hasta que la curva alcanzaba ese valor: cien minutos en el tronco, el caso más grave de los seis, con muestras seriadas que daban 260, 260 y 260 con la arteria cerrada |
 
 ## Las seis variantes del banco
 
@@ -46,7 +47,7 @@ Amplitudes que genera el modelo de onda, medidas derivación por derivación en 
 | Puerta-balón, centro con hemodinamia | 90 min desde la activación |
 | Puerta-balón con traslado | 120 min |
 | Trombolisis | Abre a los 60 min de administrada |
-| **Troponina** | Curva ilustrativa de hs-cTnI **cronometrada desde el dolor**: 8 ng/L a los 30 min, 18 a la hora, 90 a las 2 h, 450 a las 3 h, 1600 a las 4 h, 6000 a las 6 h, pico de 20000 a las 12 h. El valor autorizado del caso es el **piso**. Interpolación logarítmica entre puntos |
+| **Troponina** | Curva ilustrativa de hs-cTnI: 8 ng/L a los 30 min, 18 a la hora, 90 a las 2 h, 450 a las 3 h, 1600 a las 4 h, 6000 a las 6 h, pico de 20000 a las 12 h. Interpolación logarítmica entre puntos. **El valor autorizado del caso fija el minuto de la curva desde el que corre**: la muestra de llegada es exactamente la que el caso escribió y sube desde el primer minuto. El relato del dolor sigue siendo el del paciente; el ensayo lleva su propia historia |
 | Troponina tras reperfundir | **× 1.6** por lavado, y el ascenso continúa al 30% del ritmo. Un ascenso brusco tras la angioplastia **no es un procedimiento fallido** |
 | Troponina sin arteria ocluida | Se mantiene en el valor autorizado: nada se está infartando |
 | Función regional | Parte en 0.82 y cae 0.0025/min; piso 0.45; recupera 0.0015/min hasta 0.85 |
@@ -71,9 +72,9 @@ Anotaciones: PA · FC · ritmo · minutos de isquemia · función regional · tr
 |---|---|---|---|---|---|---|
 | 20 | 97/63 · llene 3.2 | 59 | bradicardia sinusal | 20 | 0.77 | — |
 | 65 | 92/59 · llene 3.7 | **42** | **bloqueo AV completo** | 65 | 0.66 | — |
-| 75 | 91/59 · llene 3.8 | 42 | bloqueo AV completo | 75 | 0.63 | 176 |
+| 75 | 91/59 · llene 3.8 | 42 | bloqueo AV completo | 75 | 0.63 | 645 |
 | 110 | 90/59 · llene 3.9 | 63 | **arteria abierta, ECG basal** | 109 | 0.63 | — |
-| 130 | **92/59** · llene 3.7 | 63 | sinusal | 109 | **0.66** | **814** |
+| 130 | **92/59** · llene 3.7 | 63 | sinusal | 109 | **0.66** | **2455** |
 | 190 | **96/62** · llene 3.3 | 60 | sinusal | 109 | **0.75** | — |
 
 Desde el minuto 110 la presión **sube** y el llene **se acorta** a medida que la pared vuelve. Antes del 2026-09-21 esta misma columna caía a 83/54 con llene 4.5 mientras la función subía a 0.67: el residente abría la arteria a tiempo y veía al paciente empeorar.
@@ -83,8 +84,8 @@ Desde el minuto 110 la presión **sube** y el llene **se acorta** a medida que l
 | min | PA | FC | Ritmo | Función | Troponina |
 |---|---|---|---|---|---|
 | 45 | 94/61 | 42 | bloqueo AV completo | 0.71 | — |
-| 55 | 93/60 | 42 | bloqueo AV completo | 0.68 | 120 |
-| 105 | 87/57 | 42 | bloqueo AV completo | 0.56 | 420 |
+| 55 | 93/60 | 42 | bloqueo AV completo | 0.68 | 415 |
+| 105 | 87/57 | 42 | bloqueo AV completo | 0.56 | 1216 |
 | 140 | **0/0** | 0 | **FV** | 0.47 | — |
 
 ### 54m inferior, trombolisis a los 10 min
@@ -93,7 +94,7 @@ Desde el minuto 110 la presión **sube** y el llene **se acorta** a medida que l
 |---|---|---|---|---|---|---|
 | 10 | 99/63 · llene 3.1 | 59 | bradicardia sinusal | 10 | 0.80 | — |
 | 60 | 93/60 · llene 3.7 | 62 | **arteria abierta, ECG basal** | 59 | 0.67 | — |
-| 75 | 94/60 · llene 3.6 | 62 | sinusal | 59 | 0.70 | 211 |
+| 75 | 94/60 · llene 3.6 | 62 | sinusal | 59 | 0.70 | 958 |
 | 135 | **98/63** · llene 3.2 | 59 | sinusal | 59 | **0.78** | — |
 | 190 | **100/64** · llene 3.0 | 58 | bradicardia sinusal | 59 | **0.85** | — |
 
@@ -103,7 +104,7 @@ La trombolisis a los 10 min deja una función de 0.78 a las dos horas y una pres
 
 | Escenario | Resultado |
 |---|---|
-| Activación inmediata | Arteria abierta al minuto 90; a los 105 min, 120/74 · FC 100 · función 0.62, ya recuperando presión. La troponina sigue su curva desde el dolor, que en este caso empezó hace 40 min |
+| Activación inmediata | Arteria abierta al minuto 90; a los 105 min, 120/74 · FC 100 · función 0.62, ya recuperando presión. La troponina corre desde el minuto de la curva que fija su valor autorizado de 60 ng/L, y a los 105 min va en 1085 |
 | Sin activar | A los 70 min, función 0.65; **FV a los 130 min** |
 
 **No hace bloqueo AV**, porque el bloqueo solo ocurre en territorio inferior.
@@ -121,7 +122,7 @@ Con la arteria abierta no se infarta nada, la troponina no se mueve y el POCUS s
 
 ### 70f tronco, sin activar
 
-A los 65 min: 98/62 · FC 116 · función 0.66 · contracción globalmente reducida, con la troponina en su curva desde una hora de dolor. **FV a los 130 min.**
+A los 65 min: 98/62 · FC 116 · función 0.66 · contracción globalmente reducida, con la troponina en **1154** desde los 260 de llegada. **FV a los 130 min.**
 
 ### 66f no-OMI
 
