@@ -105,3 +105,24 @@ def test_the_priority_is_read_with_any_of_its_determiners(engine, text, priority
 ])
 def test_no_priority_is_invented(engine, text):
     assert "management_priority" not in engine["extract_explicit_reasoning"](text)
+
+
+# Where a priority ends. Found in the trace of an oedema run: the recorded
+# priority read "recuperar presión de perfusión sin inun", cut inside the word
+# because "dar" matched inside "inundar".
+
+@pytest.mark.parametrize("text, priority", [
+    ("Prioridad: recuperar presión de perfusión sin inundar el pulmón. Inicia noradrenalina.",
+     "recuperar presión de perfusión sin inundar el pulmón"),
+    ("Mi prioridad es que el paciente pueda sentarse sin ahogarse. Dale furosemida 40 mg IV.",
+     "que el paciente pueda sentarse sin ahogarse"),
+    # The enclitic imperative ends it, with or without its written accent.
+    ("Mi prioridad es la perfusión, dale 1000 mL de suero.", "perfusión"),
+    ("La prioridad ahora es la oxigenación, ponle mascarilla a 10 L/min.", "oxigenación"),
+    ("Mi prioridad es tratar la infección, cárgale ceftriaxona 2 g IV.", "tratar la infección"),
+    ("La prioridad ahora es titular el vasopresor, súbele la infusión a 0.1 mcg/kg/min.",
+     "titular el vasopresor"),
+    ("Mi prioridad es llenar antes de apretar, pásale 1000 mL de suero.", "llenar antes de apretar"),
+])
+def test_the_priority_ends_at_an_order_and_not_inside_a_word(engine, text, priority):
+    assert engine["extract_explicit_reasoning"](text)["management_priority"] == priority

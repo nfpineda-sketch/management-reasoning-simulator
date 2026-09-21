@@ -5804,10 +5804,23 @@ def extract_explicit_reasoning(text):
         Nested here rather than a module function: several regressions load a named
         subset of app.py's functions through ast, so this must travel with its caller.
         """
+        # Imported here, not at module scope: the AST-subset regressions load this
+        # function on its own and it must carry its own dependencies.
+        from family_parser import _ES_ENCLITIC_FORMS
         _ES_ORDER_VERBS = (r"dar|administrar|administra|iniciar|inicia|comenzar|comienza|poner|pon|coloca|"
                            r"suspender|suspende|intubar|intuba|"
                            r"pedir|pide|solicitar|solicita|reevaluar|reeval[uú]a|revaluar|re-evaluar|controlar|controla|"
-                           r"volver\s+a\s+evaluar")
+                           r"volver\s+a\s+evaluar|"
+                           # "Mi prioridad es la perfusion, dale 1000 mL": a verb
+                           # carrying its pronoun is an order, so the priority ends
+                           # there. Derived from the parser's own forms, with the
+                           # written accent the enclitic adds ("subele" -> "súbele"),
+                           # because this capture reads the learner's own words and
+                           # never the normalized ones.
+                           + "|".join("".join({"a": "[aá]", "e": "[eé]", "i": "[ií]",
+                                               "o": "[oó]", "u": "[uú]"}.get(letter, letter)
+                                              for letter in form)
+                                      for form in sorted(_ES_ENCLITIC_FORMS, key=len, reverse=True)))
         # These also state goals ("bajar precarga"), so only a non-physiological object ends the priority.
         _ES_GOAL_VERBS = r"aumentar|aumenta|subir|bajar|disminuir|disminuye"
         # "bajar precarga y poscarga" is part of a goal, not an order that ends it.
@@ -5815,11 +5828,14 @@ def extract_explicit_reasoning(text):
                           r"frecuencia|trabajo|congesti[oó]n|oxigenaci[oó]n|perfusi[oó]n|lactato|hipoxemia|"
                           r"spo2|saturaci[oó]n|resistencia|demanda|consumo)\b")
         _ES_TIME = r"(?:en|a\s+los|tras|despu[eé]s\s+de)\s+\d+(?:[.,]\d+)?\s*(?:min|mins|minutos?|h|horas?)\b"
-        stop = (r"(?=\s*,?\s*(?:y\s+)?(?:" + _ES_ORDER_VERBS + r")\b"
-                r"|\s*,?\s*(?:y\s+)?(?:" + _ES_GOAL_VERBS + r")\b(?!\s+" + _ES_PHYSIOLOGY + r")"
+        # The separator is mandatory: without it "sin inundar el pulmon" ended the
+        # priority at "inun", because "dar" matched inside the word.
+        gap = r"(?:\s*,\s*|\s+)"
+        stop = (r"(?=" + gap + r"(?:y\s+)?(?:" + _ES_ORDER_VERBS + r")\b"
+                r"|" + gap + r"(?:y\s+)?(?:" + _ES_GOAL_VERBS + r")\b(?!\s+" + _ES_PHYSIOLOGY + r")"
                 # A connector introduces the order that follows, not more priority.
-                r"|\s*,?\s*(?:as[ií]\s+que|por\s+lo\s+que|entonces)\b"
-                r"|\s*,?\s*(?:y\s+)?(?:espero|anticipo)\b|[.;]|$)")
+                r"|" + gap + r"(?:as[ií]\s+que|por\s+lo\s+que|entonces)\b"
+                r"|" + gap + r"(?:y\s+)?(?:espero|anticipo)\b|[.;]|$)")
 
         # A Spanish causal statement is the resident's working model: "Esto es una
         # crisis asmática grave porque se quedó sin su inhalador", "La obstrucción

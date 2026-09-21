@@ -146,11 +146,14 @@ _ES_IMPERATIVE_FORMS = {form: verb for verb, forms in _ES_IMPERATIVES.items() fo
 # "ingresalo", "darle". The written accent ("pásale") is already gone by
 # normalization, so each form plus its pronoun is the same verb.
 _ES_ENCLITICS = ("le", "les", "lo", "la", "los", "las", "selo", "sela")
-_ES_IMPERATIVE_FORMS.update({
+# Exported: a verb carrying its pronoun is always an order, never a goal, so the
+# reasoning capture uses these to know where a priority ends.
+_ES_ENCLITIC_FORMS = {
     form + pronoun: verb
     for form, verb in list(_ES_IMPERATIVE_FORMS.items())
     for pronoun in _ES_ENCLITICS
-})
+}
+_ES_IMPERATIVE_FORMS.update(_ES_ENCLITIC_FORMS)
 _ES_IMPERATIVE = re.compile(
     r"(^|[.;\n,+:]\s*|\b(?:y|e(?=\s+h?i)|luego|and|then)\s+)(" + "|".join(sorted(_ES_IMPERATIVE_FORMS, key=len, reverse=True)) + r")\b"
 )
