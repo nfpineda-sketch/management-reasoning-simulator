@@ -8563,7 +8563,10 @@ with st.container(key="encounter-console"):
         area = st.selectbox("Examine", list(dict.fromkeys(["General appearance", "Breathing", "Peripheral perfusion"] + list(family_findings))))
         if st.button("Examine patient"):
             observed = st.session_state.state["observable"]
-            if area == "General appearance":
+            if st.session_state.state.get("engine_family"):
+                from family_engine import examination_finding
+                finding = examination_finding(st.session_state.state, area)
+            elif area == "General appearance":
                 from patient_appearance import appearance_summary
                 finding = appearance_summary(st.session_state.state)
             elif area in family_findings:
@@ -9175,6 +9178,10 @@ with st.container(key="encounter-console"):
                     # its stored label ("ICU contacted; definitive ...") does not.
                     if s.get("type") == "procedure":
                         continue
+                    # An examination is an observation: it carries its own entry,
+                    # exactly as the Examine control writes it.
+                    if s.get("type") == "examination":
+                        continue
                     if s.get("type") in {"consult", "reperfusion_referral"}:
                         service = s.get("service") or s.get("destination")
                         if s.get("pathway_note"):
@@ -9280,6 +9287,8 @@ with st.container(key="encounter-console"):
                                  (ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"]))
                                 for ds in diagnostic_summaries]
                 timed_events += [("procedure", x["label"], x["time_min"]) for x in summaries if x.get("type") == "procedure"]
+                timed_events += [("examination", x["label"], x.get("time_min", st.session_state.state["sim_time"]))
+                                 for x in summaries if x.get("type") == "examination"]
                 # The reperfusion pathway is reported as its own entry, at the minute
                 # the resident decided it.
                 timed_events += [("procedure", str(x["pathway_note"]), st.session_state.state["sim_time"])

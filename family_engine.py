@@ -280,6 +280,15 @@ def _validate(state, parsed):
             a["given_at_min"] = given
             normalized.append(a)
             continue
+        if kind == "examination":
+            regions = available_regions(validation_state)
+            match = next((r for r in regions if r.lower() == str(a.get("region", "")).lower()), None)
+            if match is None:
+                return None, ("That examination is not available in this encounter. You may examine "
+                              + ", ".join(regions[:-1]) + " or " + regions[-1] + ".")
+            a["region"] = match
+            normalized.append(a)
+            continue
         if kind == "clarification":
             return None, str(a.get("message") or "Please clarify the order before it is executed.")
         if kind == "diagnostic":
@@ -897,6 +906,13 @@ def _order(state, a):
                 label = ("cath lab activated" if acs_reperfusion.active_occlusion(spec)
                          else "cath lab contacted for angiography" if spec.get("omi") else "cath lab contacted")
         duration = 0
+    elif kind == "examination":
+        label = examination_finding(state, a["region"])
+        duration = 0
+        examined = a["region"]
+    elif kind == "examination":
+        label = examination_finding(state, a["region"])
+        duration = 0
     elif kind == "disposition":
         repeated = tr.get("disposition") == a["destination"]
         state["disposition"] = a["destination"]
@@ -909,6 +925,9 @@ def _order(state, a):
         repeated = False
     pathway_note = pathway_note if kind in {"consult", "reperfusion_referral"} else None
     summary = {"type": kind, "label": label, "duration_min": duration}
+    if kind == "examination":
+        summary["region"] = a["region"]
+        summary["time_min"] = int(state.get("sim_time", 0))
     if kind == "consult" and pathway_note:
         summary["pathway_note"] = pathway_note
     if kind in {"consult", "reperfusion_referral"} and earlier:
@@ -1609,6 +1628,32 @@ def execute_family_bundle(state, parsed):
     state.clear()
     state.update(candidate)
     return {"executed": True, "clarification": None, "action_summaries": summaries, "reassess_delay": reassess, "elapsed_min": elapsed}
+
+
+EXAMINATION_REGIONS = ("General appearance", "Breathing", "Peripheral perfusion")
+
+
+def examination_finding(state, region):
+    """The finding for one region, for the Examine control and for a written order."""
+    observed = state.get("observable", {})
+    if region == "General appearance":
+        from patient_appearance import appearance_summary
+        return appearance_summary(state)
+    findings = current_findings(state)
+    if region in findings:
+        return findings[region]
+    if region == "Breathing":
+        return ("Respiratory rate: " + str(observed.get("respiratory_rate", "—")) + "/min. Work of breathing: "
+                + str(observed.get("work_of_breathing", "Not documented")))
+    if not observed.get("pulse_present", True):
+        return "Pulse absent. Capillary refill is not measurable."
+    return ("Capillary refill: " + str(observed.get("crt", "—")) + " s. Extremities: "
+            + str(observed.get("extremities", "Not documented")))
+
+
+def available_regions(state):
+    """Every region the resident may examine in this encounter, in menu order."""
+    return list(dict.fromkeys(list(EXAMINATION_REGIONS) + list(current_findings(state))))
 
 
 def current_findings(state):

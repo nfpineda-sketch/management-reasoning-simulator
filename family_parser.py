@@ -207,6 +207,35 @@ _FLOW = r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(?:l\s*/\s*(?:min|m)\b|lpm|lts?\s*/\s*mi
 
 
 
+# Examining the patient, written as an order rather than clicked in the Examine
+# control: "examina el abdomen", "ausculta el torax", "revisa el neurologico".
+_EXAMINATION_VERBS = (r"examinar|examina|examine|examine[ns]|explorar|explora|auscultar|ausculta|"
+                      r"auscultate|palpar|palpa|palpate|revisar|revisa|inspeccionar|inspecciona|inspect")
+_EXAMINATION_REGIONS = (
+    ("General appearance", r"apariencia\s+general|aspecto\s+general|estado\s+general|general\s+appearance|"
+                           r"aspecto\s+del?\s+paciente"),
+    ("Breathing", r"respiraci[oó]n|patr[oó]n\s+respiratorio|breathing|trabajo\s+respiratorio|"
+                  r"work\s+of\s+breathing"),
+    ("Peripheral perfusion", r"perfusi[oó]n(?:\s+perif[eé]rica)?|llene\s+capilar|peripheral\s+perfusion|"
+                             r"capillary\s+refill|extremidades"),
+    ("Cardiac", r"cardiaco|card[ií]aco|coraz[oó]n|cardiac|heart|cardiovascular"),
+    ("Respiratory", r"respiratorio|pulmones|pulmonar|t[oó]rax|chest|lungs|respiratory|campos\s+pulmonares"),
+    ("Abdomen", r"abdomen|abdominal|vientre"),
+    ("Neurological", r"neurol[oó]gico|neurol[oó]gica|neurologic(?:al)?|neuro\b|estado\s+neurol[oó]gico|"
+                     r"examen\s+neurol[oó]gico"),
+)
+
+
+def _examination_order(body):
+    """The region a written examination asks for, or None."""
+    if not re.search(r"\b(?:" + _EXAMINATION_VERBS + r")\b", body):
+        return None
+    for region, pattern in _EXAMINATION_REGIONS:
+        if re.search(r"\b(?:" + pattern + r")\b", body):
+            return region
+    return ""
+
+
 def _clarification(message):
     return {"type": "clarification", "message": message}
 
@@ -421,6 +450,13 @@ def _parse_piece_core(piece, inherited=None):
         if re.search(r"\b(?:hours?|horas?|seconds?|segundos?)\b", body):
             return [_clarification("Specify the reassessment interval in minutes.")], verb
         return [{"type": "reassessment", "delay_min": delay if delay is not None else 0}], verb
+
+    examined = _examination_order(body)
+    if examined is not None:
+        if examined:
+            return [{"type": "examination", "region": examined}], verb or "examine"
+        return [_clarification("Name the part of the examination to perform: general appearance, breathing, "
+                               "peripheral perfusion, cardiac, respiratory, abdomen or neurological.")], verb
 
     other_region = re.search(r"\b(?:abdomen|abdominal|pelvis|pelvic|spine|columna|craneo|skull|"
                              r"extremidad|extremity|limb|rodilla|knee|cadera|hip)\b", body)
