@@ -110,7 +110,7 @@ _PC_MODE = (r"\bpc[/ -]?ac\b|pressure control(?:led)?|presion control|control pr
 _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
     r"(?P<verb>monitor|assess|vigilar|monitorizar|repeat|repetir|repito|repite|cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
-    r"stop|discontinue|disconnect|decompress|increase|decrease|titrate|continue|change|set|switch|adjust|modify|reduce|wean|transfuse|nebulize|place|insert|"
+    r"stop|discontinue|disconnect|decompress|increase|decrease|lower|raise|titrate|continue|change|set|switch|adjust|modify|reduce|wean|transfuse|nebulize|place|insert|"
     r"consult|call|activate|admit|transfer|intubate|ventilate|reassess|re-assess|recheck|reevaluate|"
     r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|dale|d[eé]le|iniciar|inicio|inicie|infundir|indicar|indico|"
     r"solicitar|solicito|solicite|pedir|pido|medir|mido|controlar|control|obtener|realizar|hacer|"
@@ -259,7 +259,7 @@ def _medication(text, kind, agent):
 def _operation(verb):
     if verb in {"stop", "discontinue", "suspender", "suspendo", "detener", "retirar", "retiro", "sacar", "saco"}:
         return "stop"
-    if verb in {"increase", "decrease", "titrate", "change", "set", "switch", "adjust", "modify", "reduce", "wean", "aumentar", "aumento", "disminuir", "disminuyo", "titular", "ajustar", "cambiar"}:
+    if verb in {"increase", "decrease", "lower", "raise", "titrate", "change", "set", "switch", "adjust", "modify", "reduce", "wean", "aumentar", "aumento", "disminuir", "disminuyo", "titular", "ajustar", "cambiar"}:
         return "adjust"
     if verb in {"continue", "continuar", "mantener"}:
         return "continue"
@@ -270,7 +270,11 @@ def _settings(text, name):
     if name == "fio2" and not re.search(r"\bfio2\b", text):
         # O2 expressed as a percentage is a respiratory setting, not a flow.
         text = re.sub(r"\bo2(?=\s*(?:of|de|=|at|to|a)?\s*[-.\d]+\s*%)", "fio2", text)
-    match = re.search(r"\b" + name + r"\s*(?:of|de|=|at|to|a)?\s*(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(%)?", text)
+    # "FiO2 del ventilador a 80%": the setting may name the machine it belongs to,
+    # and Spanish contracts "a el" into "al". Nothing else may come between the
+    # name and its value, so "FiO2 and PEEP 5" never reads 5 as the FiO2.
+    match = re.search(r"\b" + name + r"\s*(?:del?\s+(?:la\s+)?ventilador|of\s+the\s+ventilator)?"
+                      r"\s*(?:of|de|=|at|to|al|a)?\s*(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(%)?", text)
     if not match:
         return None
     value = float(match[1])
@@ -282,20 +286,21 @@ def _ventilator_extras(body):
     """Tidal volume, set rate, inspiratory flow and I:E written in any usual form."""
     extras = {}
     per_kg = re.search(r"(\d+(?:\.\d+)?)\s*(?:ml|cc)\s*/\s*kg", body)
-    fixed = re.search(r"\b(?:vt|tidal\s+volume|volumen\s+corriente)\s*(?:of|de|=|at|a)?\s*"
+    fixed = re.search(r"\b(?:vt|tidal\s+volume|volumen\s+corriente)\s*(?:of|de|=|at|to|a)?\s*"
                       r"(\d+(?:\.\d+)?)\s*(?:ml|cc)?\b", body)
     if per_kg:
         extras["tidal_ml_per_kg"] = float(per_kg[1])
     elif fixed:
         extras["tidal_volume_ml"] = float(fixed[1])
-    rate = re.search(r"\b(?:rr|respiratory\s+rate|set\s+rate|rate|frecuencia(?:\s+respiratoria)?|fr)\s*"
-                     r"(?:of|de|=|at|a)?\s*(\d+(?:\.\d+)?)\s*(?:/\s*min|per\s+min(?:ute)?|bpm|por\s+minuto)?\b", body)
+    rate = re.search(r"\b(?:rr|respiratory\s+rate|set\s+rate|rate|"
+                     r"frecuencia(?:\s+(?:respiratoria|del\s+ventilador))?|fr)\s*"
+                     r"(?:del?\s+ventilador)?\s*(?:of|de|=|at|to|al|a)?\s*(\d+(?:\.\d+)?)\s*(?:/\s*min|per\s+min(?:ute)?|bpm|por\s+minuto)?\b", body)
     if rate:
         extras["rate_per_min"] = float(rate[1])
-    flow = re.search(r"\b(?:flow|flujo)\s*(?:of|de|=|at|a)?\s*(\d+(?:\.\d+)?)\s*(?:l\s*/\s*min|lpm|l\s+por\s+minuto)\b", body)
+    flow = re.search(r"\b(?:flow|flujo)\s*(?:of|de|=|at|to|a)?\s*(\d+(?:\.\d+)?)\s*(?:l\s*/\s*min|lpm|l\s+por\s+minuto)\b", body)
     if flow:
         extras["flow_l_per_min"] = float(flow[1])
-    ratio = re.search(r"\b(?:i\s*:\s*e|ie|relaci[oó]n\s*i\s*:?\s*e)\s*(?:of|de|=|at|a)?\s*1\s*:\s*(\d+(?:\.\d+)?)", body)
+    ratio = re.search(r"\b(?:i\s*:\s*e|ie|relaci[oó]n\s*i\s*:?\s*e)\s*(?:of|de|=|at|to|a)?\s*1\s*:\s*(\d+(?:\.\d+)?)", body)
     if ratio:
         extras["ie_expiratory_ratio"] = float(ratio[1])
     return extras
@@ -456,7 +461,10 @@ def _parse_piece_core(piece, inherited=None):
             return [_clarification("Specify synchronized cardioversion; defibrillation is outside this pulse-present encounter.")], verb
         energy, _ = _amount(body, r"j|joules?|julios?")
         return [{"type": "cardioversion", "energy_j": energy, "synchronized": True}], verb
-    if (_operation(verb) in {"adjust", "continue"} and re.search(r"\b(?:ventilator|ventilation|fio2|peep|ipap|epap|vc[/ -]?ac|pc[/ -]?ac)\b", body)
+    if (_operation(verb) in {"adjust", "continue"}
+            and re.search(r"\b(?:ventilator|ventilation|ventilador|ventilacion\s+mecanica|"
+                          r"fio2|peep|ipap|epap|vc[/ -]?ac|pc[/ -]?ac|"
+                          r"tidal\s+volume|volumen\s+corriente|vt)\b", body)
             and not re.search(r"\b(?:bipap|cpap|niv|vni|vmni)\b", body)):
         if re.search(r"\b(?:by|en)\s+-?\d", body):
             return [_clarification("Specify absolute target ventilator settings, not a relative change.")], verb
@@ -698,7 +706,7 @@ def _parse_piece(piece, inherited=None):
 
 # Verbs that also state a goal: "and increase perfusion" is reasoning, whereas
 # "and increase FiO2 to 80%" is an order.
-_GOAL_VERBS = {"increase", "decrease", "titrate", "continue", "aumentar", "aumento",
+_GOAL_VERBS = {"increase", "decrease", "lower", "raise", "titrate", "continue", "aumentar", "aumento",
                "disminuir", "disminuyo", "titular", "continuar", "mantener"}
 _PHYSIOLOGICAL_OBJECT = re.compile(
     r"(?:(?:the|her|his|el|la|los|las|su)\s+)?(?:preload|afterload|perfusion|oxygenation|ventilation|"

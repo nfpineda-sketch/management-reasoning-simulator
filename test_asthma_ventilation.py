@@ -130,3 +130,89 @@ def test_oxygen_raises_the_arterial_tension_not_only_the_saturation(engine):
     gas = next(s["result"] for s in result["action_summaries"] if s.get("diagnostic_type") == "abg")
     assert gas["fio2_percent"] == 100
     assert gas["pao2_mm_hg"] > 200 and gas["pf_ratio"] > 200
+
+
+# Ordering the ventilator, in the words residents use (faculty, 2026-09-21).
+# Found playing the silent-chest asthmatic: the engine reported a pH of 7.16
+# below the practical target and the order that answers it — lowering the rate
+# to lengthen expiration — could not be written. "Baja el volumen corriente a
+# 380 mL" was read as a 380 mL fluid bolus.
+
+INTUBATE = ("Give ketamine 100 mg IV and intubate VC/AC FiO2 100% PEEP 5 Vt 420 mL rate 14. "
+            "Reassess in 10 minutes.")
+
+
+@pytest.mark.parametrize("text, field, value", [
+    ("Baja la frecuencia del ventilador a 8.", "rate_per_min", 8.0),
+    ("Lower the ventilator rate to 8.", "rate_per_min", 8.0),
+    ("Set the ventilator rate to 8.", "rate_per_min", 8.0),
+    ("Adjust the ventilator to rate 8.", "rate_per_min", 8.0),
+    ("Baja el volumen corriente a 380 mL.", "tidal_volume_ml", 380.0),
+    ("Lower the tidal volume to 380 mL.", "tidal_volume_ml", 380.0),
+    ("Raise the PEEP to 8.", "peep_cmh2o", 8.0),
+    ("Sube la FiO2 del ventilador a 80%.", "fio2_percent", 80.0),
+])
+def test_the_ventilator_is_adjusted_in_the_words_residents_use(text, field, value):
+    parsed = parse_family_actions(text)["actions"]
+    assert [a["type"] for a in parsed] == ["respiratory_adjustment"], parsed
+    assert parsed[0][field] == value
+
+
+@pytest.mark.parametrize("text", [
+    # The faculty asked that the resident say whose rate it is.
+    "Baja la frecuencia a 8.",
+    "Baja la frecuencia cardíaca a 90.",
+])
+def test_a_bare_rate_is_not_a_ventilator_order(text):
+    parsed = parse_family_actions(text)["actions"]
+    assert all(a["type"] != "respiratory_adjustment" for a in parsed), parsed
+
+
+def test_a_tidal_volume_is_never_a_fluid_bolus():
+    parsed = parse_family_actions("Baja el volumen corriente a 380 mL.")["actions"]
+    assert all(a["type"] != "fluid" for a in parsed), parsed
+    # And a real bolus is still a real bolus.
+    fluid = parse_family_actions("Dale 1000 mL de suero fisiológico IV.")["actions"]
+    assert [a["type"] for a in fluid] == ["fluid"] and fluid[0]["volume_ml"] == 1000
+
+
+def test_a_slower_rate_buys_expiratory_time(engine):
+    state = encounter(engine, "asthma", "asthma_49m")["state"]
+    for order in (INTUBATE, "Baja la frecuencia del ventilador a 8. Reevalúa en 10 minutos."):
+        result = execute_family_bundle(state, parse_family_actions(order))
+        assert result["executed"], result.get("clarification")
+        if order is INTUBATE:
+            fast = dict(state["family_state"]["ventilator_mechanics"])
+    slow = state["family_state"]["ventilator_mechanics"]
+    assert state["treatments"]["ventilator_rate_per_min"] == 8
+    assert slow["expiratory_time_s"] > fast["expiratory_time_s"]
+    assert slow["auto_peep_cmh2o"] <= fast["auto_peep_cmh2o"]
+
+
+def test_a_smaller_breath_lowers_the_pressure_that_reaches_the_alveolus(engine):
+    state = encounter(engine, "asthma", "asthma_49m")["state"]
+    for order in (INTUBATE, "Baja el volumen corriente a 380 mL. Reevalúa en 10 minutos."):
+        result = execute_family_bundle(state, parse_family_actions(order))
+        assert result["executed"], result.get("clarification")
+        if order is INTUBATE:
+            before = dict(state["family_state"]["ventilator_mechanics"])
+    after = state["family_state"]["ventilator_mechanics"]
+    assert state["treatments"]["ventilator_tidal_volume_ml"] == 380
+    assert after["plateau_cmh2o"] < before["plateau_cmh2o"]
+
+
+def test_two_settings_changed_in_one_turn_both_stick(engine):
+    # The second adjustment used to refill the rate from the state before the
+    # first one, so "rate 8 and Vt 380" ended the turn back at rate 14.
+    state = encounter(engine, "asthma", "asthma_49m")["state"]
+    execute_family_bundle(state, parse_family_actions(INTUBATE))
+    result = execute_family_bundle(state, parse_family_actions(
+        "Baja la frecuencia del ventilador a 8 y baja el volumen corriente a 380 mL. Reevalúa en 10 minutos."))
+    assert result["executed"], result.get("clarification")
+    treatments = state["treatments"]
+    assert treatments["ventilator_rate_per_min"] == 8
+    assert treatments["ventilator_tidal_volume_ml"] == 380
+    # And the settings the resident did not touch are unchanged.
+    assert treatments["ventilator_mode"] == "VC/AC"
+    assert treatments["ventilator_fio2_percent"] == 100
+    assert treatments["ventilator_peep_cmh2o"] == 5

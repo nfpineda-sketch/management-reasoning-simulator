@@ -126,7 +126,17 @@ def remember_validated_support(state, a):
     elif kind in {'intubation', 'ventilator_adjustment'}:
         tr.update(invasive_ventilation=True, oxygen=False, niv=False)
         state.setdefault('family_state', {})['invasive'] = True
-        tr.update(ventilator_mode=a.get('ventilator_mode'), ventilator_fio2_percent=a.get('fio2_percent'), ventilator_peep_cmh2o=a.get('peep_cmh2o'))
+        # Every setting the completion above reads back, so a second adjustment in
+        # the same turn does not reset what the first one changed: "baja la
+        # frecuencia a 8 y baja el volumen corriente a 380" used to end at rate 14.
+        tr.update(ventilator_mode=a.get('ventilator_mode'), ventilator_fio2_percent=a.get('fio2_percent'),
+                  ventilator_peep_cmh2o=a.get('peep_cmh2o'))
+        for field, key in [('tidal_volume_ml', 'ventilator_tidal_volume_ml'),
+                           ('tidal_ml_per_kg', 'ventilator_tidal_ml_per_kg'),
+                           ('rate_per_min', 'ventilator_rate_per_min'),
+                           ('flow_l_per_min', 'ventilator_flow_l_per_min')]:
+            if a.get(field) is not None:
+                tr[key] = a[field]
     elif kind in {'norepinephrine', 'nitroglycerin', 'dobutamine'}:
         tr[kind] = a.get('operation') != 'stop'
         if kind in {'norepinephrine', 'dobutamine'}:

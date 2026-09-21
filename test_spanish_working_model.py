@@ -67,3 +67,16 @@ def test_the_working_model_is_read_where_the_resident_wrote_it(engine, text, mod
 def test_a_priority_is_not_also_recorded_as_the_model(engine, text):
     # It used to appear in both slots once "la prioridad" became readable.
     assert not engine["extract_explicit_reasoning"](text).get("problem_representation")
+
+
+@pytest.mark.parametrize("text, model", [
+    # "bajo el objetivo" is a finding, not a statement of priority. Cutting the
+    # sentence at the bare noun lost the model of a ventilated asthmatic.
+    ("Las presiones muestran atrapamiento con pH bajo el objetivo, debido a un tiempo "
+     "espiratorio insuficiente. La prioridad ahora es alargar la espiración.",
+     "Las presiones muestran atrapamiento con pH bajo el objetivo, debido a un tiempo espiratorio insuficiente"),
+    ("El pH está bajo la meta, debido a la hipoventilación.",
+     "El pH está bajo la meta, debido a la hipoventilación"),
+])
+def test_a_target_named_as_a_finding_is_not_a_priority(engine, text, model):
+    assert engine["extract_explicit_reasoning"](text)["problem_representation"] == model

@@ -5867,7 +5867,11 @@ def extract_explicit_reasoning(text):
                 # often written in the same sentence as the model: "Con la presion
                 # controlada, debido a la respuesta, la prioridad ahora es...".
                 # Cut there and keep what comes before instead of losing both.
-                clause = re.split(r"\b(?:(?:mi|la|el|nuestra|nuestro)\s+)?(?:prioridad|objetivo|meta)\b"
+                # The marker is the statement, not the bare noun: "el pH está bajo
+                # el objetivo" is a finding, and cutting there lost the model.
+                clause = re.split(r"\b(?:(?:mi|la|el|nuestra|nuestro)\s+)?(?:prioridad|objetivo|meta)"
+                                  r"(?:\s+(?:principal|inicial|inmediata|ahora))?\s+(?:es|ser[aá])\b"
+                                  r"|(?:^|\b)prioridad(?:\s+(?:principal|inicial|inmediata))?\s*:"
                                   r"|\b(?:espero|anticipo|preveo|reeval)",
                                   clause, maxsplit=1, flags=re.I)[0].strip(" ,;.")
                 # An order still belongs to its own slot, and so does a clause that
