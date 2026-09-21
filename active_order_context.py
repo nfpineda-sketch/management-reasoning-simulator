@@ -102,6 +102,14 @@ def complete_active_order(state, raw):
             a['device'] = tr.get('oxygen_device')
         if a.get('flow_lpm') is None:
             a['flow_lpm'] = tr.get('oxygen_flow_lpm')
+    elif kind == 'continuous_bronchodilator':
+        running = state.get('family_state', {}).get('continuous_bronchodilator_mg_h') or 0
+        if not running:
+            return a, 'No continuous nebulization is running. Specify the rate in mg/h to start it.'
+        if a.get('rate_mg_h') is None:
+            a['rate_mg_h'] = running
+        a.setdefault('agent', 'albuterol')
+        a.setdefault('route', 'nebulized')
     elif kind == 'niv':
         if not tr.get('niv'):
             return a, 'No active NIV is recorded. Specify the starting mode, pressures and FiO2.'
@@ -119,6 +127,14 @@ def remember_validated_support(state, a):
     if kind == 'oxygen':
         tr.update(oxygen=a.get('device') != 'Room air', oxygen_device=a.get('device'), oxygen_flow_lpm=a.get('flow_lpm'))
         tr['niv'] = False
+    elif kind == 'continuous_bronchodilator':
+        running = state.get('family_state', {}).get('continuous_bronchodilator_mg_h') or 0
+        if not running:
+            return a, 'No continuous nebulization is running. Specify the rate in mg/h to start it.'
+        if a.get('rate_mg_h') is None:
+            a['rate_mg_h'] = running
+        a.setdefault('agent', 'albuterol')
+        a.setdefault('route', 'nebulized')
     elif kind == 'niv':
         tr.update(niv=a.get('operation') != 'stop', oxygen=False)
         for field, key in [('mode', 'niv_mode'), ('ipap_cmh2o', 'niv_ipap_cmh2o'), ('epap_cmh2o', 'niv_epap_cmh2o'), ('fio2_percent', 'niv_fio2_percent')]:

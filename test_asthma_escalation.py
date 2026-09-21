@@ -100,3 +100,52 @@ def test_propofol_drops_the_pressure_and_ketamine_does_not(engine):
     ketamine, _ = course(engine, ["Give ketamine 100 mg IV. " + tube])
     propofol, _ = course(engine, ["Give propofol 150 mg IV. " + tube])
     assert propofol["observable"]["sbp"] < ketamine["observable"]["sbp"] - 5
+
+
+# The continuous nebulization could only be started (faculty, 2026-09-21).
+# Found weaning the 24-year-old who responded: "Mantén la nebulización continua"
+# held the turn, and "Suspende la nebulización continua y ponle naricera a 4
+# L/min" vanished whole — the therapy could be named only through its drug.
+
+def nebulizer(engine, *orders):
+    state = encounter(engine, "asthma", "asthma_24f")["state"]
+    results = []
+    for order in orders:
+        results.append(execute_family_bundle(state, parse_family_actions(order)))
+    return state, results
+
+
+START = "Inicia nebulización continua de salbutamol 10 mg/h. Reevalúa en 10 minutos."
+
+
+def labels(result):
+    return [str(summary.get("label", "")) for summary in result.get("action_summaries", [])]
+
+
+def test_the_therapy_can_be_named_without_its_drug(engine):
+    state, (_, kept, lowered, stopped) = nebulizer(
+        engine, START,
+        "Mantén la nebulización continua. Reevalúa en 10 minutos.",
+        "Baja la nebulización continua a 5 mg/h. Reevalúa en 10 minutos.",
+        "Suspende la nebulización continua y ponle naricera a 4 L/min. Reevalúa en 10 minutos.")
+    assert kept["executed"] and "unchanged" in " ".join(labels(kept))
+    assert lowered["executed"] and "adjusted to 5 mg/h" in " ".join(labels(lowered))
+    assert stopped["executed"] and "stopped" in " ".join(labels(stopped))
+    # The whole weaning order ran, the oxygen step-down included.
+    assert state["treatments"]["oxygen_device"] == "Nasal cannula"
+    assert not state["family_state"]["continuous_bronchodilator_mg_h"]
+
+
+def test_keeping_what_is_not_running_asks_for_a_rate(engine):
+    _, (result,) = nebulizer(engine, "Mantén la nebulización continua. Reevalúa en 10 minutos.")
+    assert not result["executed"]
+    assert "No continuous nebulization is running" in result["clarification"]
+
+
+@pytest.mark.parametrize("text", [
+    "Stop the continuous nebulizer. Reassess in 10 minutes.",
+    "Continue the continuous nebulizer. Reassess in 10 minutes.",
+])
+def test_english_names_the_therapy_the_same_way(engine, text):
+    _, (_, result) = nebulizer(engine, START, text)
+    assert result["executed"], result.get("clarification")

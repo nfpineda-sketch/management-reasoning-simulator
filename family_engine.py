@@ -735,10 +735,16 @@ def _order(state, a):
         duration = 1
     elif kind == "continuous_bronchodilator":
         rate = 0.0 if a["operation"] == "stop" else float(a["rate_mg_h"])
+        running = f.get("continuous_bronchodilator_mg_h") or 0.0
         f["continuous_bronchodilator_mg_h"] = rate
         tr["continuous_bronchodilator"] = ({"agent": a["agent"], "rate_mg_h": rate, "route": a["route"]} if rate else None)
-        label = (f"Continuous nebulized {a['agent']} {rate:g} mg/h started" if rate
-                 else "Continuous nebulized albuterol stopped")
+        if a["operation"] == "continue" and rate == running:
+            label = f"Continuous nebulized {a['agent']} running at {rate:g} mg/h; unchanged"
+        elif rate and running and rate != running:
+            label = f"Continuous nebulized {a['agent']} adjusted to {rate:g} mg/h"
+        else:
+            label = (f"Continuous nebulized {a['agent']} {rate:g} mg/h started" if rate
+                     else "Continuous nebulized albuterol stopped")
         duration = 3
     elif kind == "nitroglycerin_bolus":
         f["nitro_bolus_pool"] = f.get("nitro_bolus_pool", 0.0) + a["dose_mcg"]

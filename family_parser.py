@@ -638,9 +638,14 @@ def _parse_piece_core(piece, inherited=None):
         return [fluid], verb
 
     # Continuous nebulized beta-agonist: a rate per hour, or the word continuous.
-    if re.search(r"\b(?:albuterol|salbutamol)\b", body):
-        continuous = re.search(r"\b(?:continuous|continuously|continua|continuo|continuamente|"
-                               r"sin\s+interrupci[oó]n|back[- ]to[- ]back)\b", body)
+    # "Suspende la nebulizacion continua" names the therapy without naming the
+    # drug, which is how it is stopped and titrated at the bedside.
+    named_therapy = re.search(r"\b(?:continuous\s+nebuli[sz](?:er|ation|ed\s+treatment)|"
+                              r"nebulizaci[oó]n\s+continua|nebulizador\s+continuo)\b", body)
+    if re.search(r"\b(?:albuterol|salbutamol)\b", body) or named_therapy:
+        continuous = named_therapy or re.search(
+            r"\b(?:continuous|continuously|continua|continuo|continuamente|"
+            r"sin\s+interrupci[oó]n|back[- ]to[- ]back)\b", body)
         hourly = re.search(r"(\d+(?:\.\d+)?)\s*mg\s*(?:/|\s+(?:per|por|cada|a\s+la)\s+)\s*(?:h|hr|hour|hora)\b", body)
         if continuous or hourly:
             operation = _operation(verb)
