@@ -5844,7 +5844,7 @@ def extract_explicit_reasoning(text):
 
         if "management_priority" not in reasoning:
             m = re.search(
-                r"\b(?:mi\s+(?:prioridad|objetivo|meta)(?:\s+(?:principal|inicial|inmediata|ahora))?"
+                r"\b(?:(?:mi|la|el|nuestra|nuestro)\s+(?:prioridad|objetivo|meta)(?:\s+(?:principal|inicial|inmediata|ahora))?"
                 r"\s+(?:es|ser[aá])|lo\s+primero\s+es|me\s+enfoco(?:\s+primero)?\s+en|priorizo|"
                 r"(?:(?:^|(?<=[.;] )|(?<=[.;]))prioridad(?:\s+(?:principal|inicial|inmediata))?\s*:))"
                 r"\s*(?:(?:el|la|los|las|lo)\s+)?(.+?)" + stop,
@@ -6782,12 +6782,17 @@ def _reasoning_gate_action_summary(parsed):
     return " + ".join(labels) if labels else "management intervention"
 
 
+def _held_order_summary(parsed):
+    """What a held turn says it understood: interventions and investigations."""
+    return " + ".join(_understood_order_labels(parsed)) or "management intervention"
+
+
 def reasoning_gate_prompt(parsed, missing):
     """Targeted clarification that keeps the interpreted order visibly on hold."""
     lines = [
         "**ORDER HELD — REASONING REQUIRED**",
         "",
-        f"I understood: **{_reasoning_gate_action_summary(parsed)}**.",
+        f"I understood: **{_held_order_summary(parsed)}**.",
         "The order has not been executed and the patient state has not changed.",
         "",
         "Before execution, please add:",

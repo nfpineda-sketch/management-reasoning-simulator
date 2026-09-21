@@ -125,3 +125,27 @@ def test_one_incomplete_order_alone_is_not_dressed_as_a_held_bundle(edema):
     submit(at, MODEL + " Start CPAP with FiO2 60%." + REASONED)
     held = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"]
     assert held[-1] == "Specify the NIV expiratory pressure in cm H₂O, from 0 to 20."
+
+
+def test_the_reasoning_gate_names_the_investigations_it_holds(edema):
+    # The two holds must describe a turn the same way. The gate used to list the
+    # interventions only, so a resident who also ordered tests saw half the turn.
+    at = edema
+    submit(at, "El paciente está hipoperfundido, porque el llene está prolongado. Pásale 1000 mL de "
+               "suero fisiológico IV y pídele un lactato y una radiografía. Espero que suba la presión. "
+               "Reevalúa en 20 minutos presión arterial.")
+    held = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"]
+    assert held, [e["kind"] for e in at.session_state.events]
+    text = held[-1]
+    assert "ORDER HELD — REASONING REQUIRED" in text
+    assert "1000 mL normal saline" in text
+    assert "Lactate" in text and "Chest X-ray" in text
+    assert at.session_state.state["sim_time"] == 0
+
+
+def test_a_turn_with_no_investigations_still_reads_cleanly(edema):
+    at = edema
+    submit(at, "El paciente está hipoperfundido, porque el llene está prolongado. Pásale 1000 mL de "
+               "suero fisiológico IV. Espero que suba la presión. Reevalúa en 20 minutos presión arterial.")
+    text = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"][-1]
+    assert "I understood: **1000 mL normal saline**." in text

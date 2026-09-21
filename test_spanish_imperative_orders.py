@@ -80,3 +80,28 @@ def test_the_reported_reasoning_keeps_the_whole_priority_and_target(engine):
 ])
 def test_an_order_still_ends_the_priority_but_a_physiological_goal_does_not(engine, text, priority):
     assert engine["extract_explicit_reasoning"](text)["management_priority"] == priority
+
+
+# "La prioridad ahora es..." is how it is written in the note, and only "mi"
+# was read (found by playing the oedema case, 2026-09-21). English already
+# accepted both "my" and "the".
+
+@pytest.mark.parametrize("text, priority", [
+    ("La prioridad es el nivel de cuidado adecuado.", "nivel de cuidado adecuado"),
+    ("La prioridad ahora es descargar el ventrículo.", "descargar el ventrículo"),
+    ("El objetivo es tratar la infección.", "tratar la infección"),
+    ("Nuestra prioridad es llenar antes de apretar.", "llenar antes de apretar"),
+    # The forms that already worked keep working.
+    ("Mi prioridad es tratar la infección.", "tratar la infección"),
+    ("Prioridad: llenar antes de apretar.", "llenar antes de apretar"),
+])
+def test_the_priority_is_read_with_any_of_its_determiners(engine, text, priority):
+    assert engine["extract_explicit_reasoning"](text)["management_priority"] == priority
+
+
+@pytest.mark.parametrize("text", [
+    "Dale furosemida 40 mg IV.",
+    "La paciente tiene prioridad en el triage.",
+])
+def test_no_priority_is_invented(engine, text):
+    assert "management_priority" not in engine["extract_explicit_reasoning"](text)
