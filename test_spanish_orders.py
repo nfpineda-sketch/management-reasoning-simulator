@@ -232,3 +232,45 @@ def test_an_unreadable_study_is_still_questioned_on_its_own():
     parsed = actions("Mi prioridad es la oxigenación. Pide una resonancia magnética.")
     assert parsed[0]["type"] == "clarification"
     assert "not recognized" in parsed[0]["message"]
+
+
+# A periphrasis describes the patient; an induction is an order (2026-09-21).
+# Found playing the trapped-gas branch: "Sigue obstruido y empieza a agotarse"
+# was read as "iniciar a agotarse" and questioned as an unsupported order, and
+# "Induce con ketamina 100 mg IV" lost the induction agent, so the airway drug
+# never reached a patient who was being intubated.
+
+@pytest.mark.parametrize("text", [
+    "Sigue obstruido y empieza a agotarse, debido a la obstrucción sostenida.",
+    "El paciente empieza a fatigarse y comienza a cansarse.",
+])
+def test_a_verb_of_beginning_plus_an_infinitive_is_not_an_order(text):
+    assert actions(text) == []
+
+
+@pytest.mark.parametrize("text, kind", [
+    ("Empieza a nebulizar salbutamol 5 mg.", "bronchodilator"),
+    ("Comienza a ventilar con bolsa-mascarilla.", "bag_mask"),
+])
+def test_it_is_an_order_when_the_infinitive_is_one(text, kind):
+    assert [a["type"] for a in actions(text)] == [kind]
+
+
+@pytest.mark.parametrize("text, agent", [
+    ("Induce con ketamina 100 mg IV.", "ketamine"),
+    ("Induzca con etomidato 20 mg IV.", "etomidate"),
+    ("Seda con midazolam 5 mg IV.", "midazolam"),
+    ("Sedate with ketamine 100 mg IV.", "ketamine"),
+])
+def test_inducing_and_sedating_are_orders(text, agent):
+    parsed = actions(text)
+    assert [a["type"] for a in parsed] == ["procedural_sedation"], parsed
+    assert parsed[0]["agent"] == agent
+
+
+def test_the_induction_travels_with_the_intubation():
+    parsed = actions("Induce con ketamina 100 mg IV e intuba con ventilación controlada por volumen, "
+                     "FiO2 100%, PEEP 5, volumen corriente 420 mL y frecuencia 10.")
+    assert [a["type"] for a in parsed] == ["procedural_sedation", "intubation"], parsed
+    assert parsed[0]["agent"] == "ketamine" and parsed[0]["dose_mg"] == 100
+    assert parsed[1]["ventilator_mode"] == "VC/AC" and parsed[1]["peep_cmh2o"] == 5

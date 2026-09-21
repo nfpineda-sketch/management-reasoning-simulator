@@ -111,7 +111,7 @@ _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
     r"(?P<verb>monitor|assess|vigilar|monitorizar|repeat|repetir|repito|repite|cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
     r"stop|discontinue|disconnect|decompress|increase|decrease|lower|raise|titrate|continue|change|set|switch|adjust|modify|reduce|wean|transfuse|nebulize|place|insert|"
-    r"consult|call|activate|admit|transfer|intubate|ventilate|reassess|re-assess|recheck|reevaluate|"
+    r"consult|call|activate|admit|transfer|intubate|ventilate|induce|sedate|reassess|re-assess|recheck|reevaluate|"
     r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|dale|d[eé]le|iniciar|inicio|inicie|infundir|indicar|indico|"
     r"solicitar|solicito|solicite|pedir|pido|medir|mido|controlar|control|obtener|realizar|hacer|"
     r"suspender|suspendo|detener|retirar|retiro|sacar|saco|desconectar|desconecta|desconecto|aumentar|aumento|disminuir|disminuyo|titular|continuar|mantener|"
@@ -138,6 +138,8 @@ _ES_IMPERATIVES = {
     "cambiar": "cambia cambie", "transfundir": "transfunde transfunda", "nebulizar": "nebuliza nebulice",
     "consultar": "consulta", "interconsultar": "interconsulta interconsulte", "llamar": "llama llame", "activar": "activa active",
     "hospitalizar": "hospitaliza hospitalice", "ingresar": "ingresa ingrese",
+    # Inducing and sedating are the airway drug's own verbs.
+    "induce": "induce induzca inducir", "sedate": "seda sede sedar",
     "trasladar": "traslada traslade", "intubar": "intuba intube", "ventilar": "ventila ventile",
     "reevaluar": "reevalua reevalue",
 }
@@ -157,6 +159,21 @@ _ES_IMPERATIVE_FORMS.update(_ES_ENCLITIC_FORMS)
 _ES_IMPERATIVE = re.compile(
     r"(^|[.;\n,+:]\s*|\b(?:y|e(?=\s+h?i)|luego|and|then)\s+)(" + "|".join(sorted(_ES_IMPERATIVE_FORMS, key=len, reverse=True)) + r")\b"
 )
+# "Empieza a agotarse", "comienza a fatigarse": a verb of beginning followed by
+# an infinitive describes the patient. It is an order only when the infinitive
+# is one — "empieza a nebulizar salbutamol".
+# The infinitive may be reflexive: agotarse, fatigarse, cansarse.
+_ES_PERIPHRASIS = re.compile(r"^\s+a\s+(\w+?(?:ar|er|ir))(?:se|me|te|nos)?\b")
+
+
+def _spanish_imperatives(text):
+    """Read a clause-initial imperative as the infinitive the parser knows."""
+    def replace(match):
+        following = _ES_PERIPHRASIS.match(match.string[match.end():])
+        if following and following[1] not in _ES_IMPERATIVE_FORMS.values():
+            return match[0]
+        return match[1] + _ES_IMPERATIVE_FORMS[match[2]]
+    return _ES_IMPERATIVE.sub(replace, text)
 
 
 _DIAG_VERBS = {
@@ -760,7 +777,7 @@ def parse_family_actions(text) -> dict:
     A conditional instruction is retained as a future plan, never executed now.
     """
     raw = str(text or "")
-    normalized = _ES_IMPERATIVE.sub(lambda m: m.group(1) + _ES_IMPERATIVE_FORMS[m.group(2)], _normalize(raw))
+    normalized = _spanish_imperatives(_normalize(raw))
     actions, future = [], []
     queue = re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
     while queue:
