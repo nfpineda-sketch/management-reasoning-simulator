@@ -1,6 +1,6 @@
 # Fisiología del edema pulmonar — magnitudes decididas
 
-> **Estado: IMPLEMENTADO** en `family_engine.py` (bloque `EDEMA` y rama `pulmonary_edema`) con las decisiones docentes del 2026-09-18. Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y el SCA con nitroglicerina dan exactamente lo mismo que antes.
+> **Estado: IMPLEMENTADO** en `family_engine.py` (bloque `EDEMA` y rama `pulmonary_edema`) con las decisiones docentes del 2026-09-18 y la del FiO₂ asumido de la VMNI del 2026-09-20. Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y el SCA con nitroglicerina dan exactamente lo mismo que antes.
 
 Aplica a `pulmonary_edema_58m` (hipertensivo, 218/116, SpO₂ 81%, FR 38) y `pulmonary_edema_75f` (IC con FE reducida y ERC, 164/92, SpO₂ 84%, FR 32).
 
@@ -18,6 +18,7 @@ En una corrida del 58m: 500 mL de suero no cambiaron nada; la PA era una escaler
 | 4 | Recuperación | Con VMNI y bolos de nitroglicerina, la mejoría es mucho más rápida |
 | 5 | Diurético | Antes de resolver el edema, poco o ningún efecto. Sirve más tarde, ya resuelto, en pacientes con volumen circulante efectivo aumentado |
 | 6 | Techo de SpO₂ | Se queda en 99% |
+| 7 | **FiO₂ de la VMNI** (2026-09-20) | Una orden de VMNI sin FiO₂ **se ejecuta al 100%** y el motor lo declara: "FiO₂ 100% (assumed; titrate as needed)". Antes retenía la orden completa, así que un nitrato indicado en la misma frase se perdía |
 
 ## Magnitudes implementadas
 
@@ -82,6 +83,8 @@ En el 58m, al suspender la nitroglicerina la PA vuelve a ~200. Sigue siendo el p
 - **Bolo IV de nitroglicerina** en español e inglés: "Give nitroglycerin 2000 mcg IV bolus", "Nitroglycerin 1 mg IV push", "Administra bolo de nitroglicerina 1000 mcg IV". La nitroglicerina sublingual y el bolo de noradrenalina siguen pidiendo aclaración.
 - El bolo tiene efecto en todas las familias del banco. Fuera del edema solo baja la PA, igual que la infusión.
 - Los casos generados por IA y PS001 no tienen bolo de nitroglicerina; esa orden pide aclaración.
+- **Mensajes de validación** (2026-09-20, todas las familias): cada uno nombra solo lo que falta. Pedir "CPAP con FiO₂ 60%" pide la presión espiratoria y nada más; antes enumeraba los dos parámetros aunque uno estuviera dado. Igual para el cristaloide, la cardioversión, el ventilador y el anticoagulante.
+- **Orden retenida** (2026-09-20, todas las familias): cuando algo queda en espera, el motor declara el resto del turno —"I understood: CPAP + start nitroglycerin 40 mcg/min + POCUS + Lactate. Nothing in this order was executed"— en vez de dejar caer en silencio lo que el residente sí había indicado. Vale para las aclaraciones del parser y las del motor.
 
 ## Fuera de este cambio
 

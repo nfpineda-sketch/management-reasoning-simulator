@@ -188,7 +188,13 @@ def test_live_app_adapter_holds_and_completes_generated_fluid_bundle():
     session = Session(state=patient(), pending_action=None)
     namespace = {'st': SimpleNamespace(session_state=session)}
     tree = ast.parse(Path('app.py').read_text())
-    functions = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name in {'execute_bundle', 'try_resolve_pending_action'}]
+    functions = [n for n in tree.body if isinstance(n, ast.FunctionDef)
+                 and n.name in {'execute_bundle', 'try_resolve_pending_action',
+                                '_held_order_prompt', '_reasoning_gate_action_summary',
+                                'procedural_sedation_label'}]
+    constants = [n for n in tree.body if isinstance(n, ast.Assign)
+                 and any(getattr(t, 'id', '') == 'REASONING_GATE_ACTION_TYPES' for t in n.targets)]
+    functions = constants + functions
     exec(compile(ast.Module(body=functions,type_ignores=[]), 'app.py', 'exec'), namespace)
     original = parse_family_actions('Give NS; reassess in 5 minutes')
     assert not namespace['execute_bundle'](original)['executed']

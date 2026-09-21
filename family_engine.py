@@ -184,6 +184,17 @@ def _case(state):
     return state.get("encounter_spec", {}).get("clinical_case", {})
 
 
+NIV_ASSUMED_FIO2 = 100    # an NIV order without a stated FiO₂ runs at 100%
+
+
+def _listed(items):
+    """"a", "a and b", "a, b and c" — so a message names only what is missing."""
+    items = list(items)
+    if len(items) < 3:
+        return " and ".join(items)
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
+
 def _failure(message):
     return {"executed": False, "clarification": message, "action_summaries": [], "reassess_delay": None, "elapsed_min": 0}
 
@@ -242,15 +253,19 @@ def _validate(state, parsed):
             # "Stop further fluids" with nothing running withholds fluid; it is recorded, not questioned.
             pass
         elif kind == "fluid":
-            if not _number(a.get("volume_ml"), 1, 3000) or not a.get("fluid_type"):
-                return None, "Specify the crystalloid and confirm the bolus volume in mL (up to 3000 mL per order)."
+            if not a.get("fluid_type"):
+                return None, "Which crystalloid would you like to give (for example, normal saline or LR)?"
+            if not _number(a.get("volume_ml"), 1, 3000):
+                return None, "Confirm the bolus volume in mL, up to 3000 mL per order."
             if a.get("route") is not None:
                 a["route"] = _ROUTES.get(str(a["route"]).strip().lower())
                 if a["route"] not in {"IV", "IO"}:
                     return None, "A crystalloid bolus is given IV or IO. Please specify the route."
         elif kind == "cardioversion":
-            if a.get("synchronized") is not True or not _number(a.get("energy_j"), 1, 360):
-                return None, "Specify synchronized cardioversion and its energy in joules."
+            if a.get("synchronized") is not True:
+                return None, "Specify that the cardioversion is synchronized; an unsynchronized shock is outside this encounter."
+            if not _number(a.get("energy_j"), 1, 360):
+                return None, "Specify the cardioversion energy in joules, from 1 to 360."
             if state.get("observable", {}).get("pulse_present") is not True:
                 return None, "Cardioversion requires a pulse-present encounter."
         elif kind == "blood":
@@ -267,8 +282,15 @@ def _validate(state, parsed):
             if a["operation"] not in {"start", "adjust", "continue", "stop"}:
                 return None, "Specify whether to start, adjust, continue, or stop NIV."
             if a["operation"] != "stop":
-                if not _number(a.get("epap_cmh2o"), 0, 20) or not _number(a.get("fio2_percent"), 21, 100):
-                    return None, "Specify NIV expiratory pressure and FiO₂."
+                if not _number(a.get("epap_cmh2o"), 0, 20):
+                    return None, "Specify the NIV expiratory pressure in cm H₂O, from 0 to 20."
+                if a.get("fio2_percent") is None:
+                    # Faculty decision 2026-09-20: the resident connects the device
+                    # and titrates afterwards, so an unstated FiO₂ is 100% and the
+                    # response says so rather than holding the whole order.
+                    a["fio2_percent"], a["fio2_assumed"] = float(NIV_ASSUMED_FIO2), True
+                if not _number(a.get("fio2_percent"), 21, 100):
+                    return None, "Specify the NIV FiO₂ as a percentage, from 21 to 100."
                 a["mode"] = str(a.get("mode") or "BiPAP")
                 if a["mode"].lower() not in {"cpap", "bipap"}:
                     return None, "Specify CPAP or BiPAP."
@@ -332,8 +354,11 @@ def _validate(state, parsed):
             if not validation_state.get("family_state", {}).get("invasive"):
                 return None, "The patient is not on a ventilator, so there is no circuit to disconnect."
         elif kind in {"intubation", "ventilator_adjustment"}:
-            if not a.get("ventilator_mode") or not _number(a.get("fio2_percent"), 21, 100) or not _number(a.get("peep_cmh2o"), 0, 20):
-                return None, "Specify initial ventilator mode, FiO₂ and PEEP."
+            missing = [name for name, given in (("mode", a.get("ventilator_mode")),
+                                               ("FiO₂ as a percentage", _number(a.get("fio2_percent"), 21, 100)),
+                                               ("PEEP in cm H₂O", _number(a.get("peep_cmh2o"), 0, 20))) if not given]
+            if missing:
+                return None, "Specify the ventilator " + _listed(missing) + "."
             if a.get("tidal_volume_ml") is not None and not _number(a["tidal_volume_ml"], 200, 900):
                 return None, "Specify a tidal volume from 200 to 900 mL."
             if a.get("tidal_ml_per_kg") is not None and not _number(a["tidal_ml_per_kg"], 3, 12):
@@ -344,8 +369,12 @@ def _validate(state, parsed):
                 return None, "Specify an inspiratory flow from 20 to 120 L/min."
         elif kind == "anticoagulation":
             a["route"] = _ROUTES.get(str(a.get("route", "")).strip().lower())
-            if not a.get("agent") or not _number(a.get("dose"), .01, 30000) or a.get("units") not in {"mg", "units", "U", "IU"} or a["route"] not in {"IV", "SC", "PO"}:
-                return None, "Specify anticoagulant, dose, dose units, and route."
+            missing = [name for name, given in (("which anticoagulant", a.get("agent")),
+                                               ("the dose", _number(a.get("dose"), .01, 30000)),
+                                               ("the dose units", a.get("units") in {"mg", "units", "U", "IU"}),
+                                               ("the route", a["route"] in {"IV", "SC", "PO"})) if not given]
+            if missing:
+                return None, "Specify " + _listed(missing) + "."
         elif kind in {"consult", "reperfusion_referral"}:
             if not str(a.get("service") or a.get("destination") or "").strip():
                 return None, "Which specialist or reperfusion service would you like to contact?"
@@ -633,7 +662,9 @@ def _order(state, a):
             tr.update(niv_mode=a["mode"], niv_pressure_cmh2o=a["epap_cmh2o"], niv_ipap_cmh2o=a.get("ipap_cmh2o"), niv_epap_cmh2o=a["epap_cmh2o"], niv_fio2_percent=a["fio2_percent"])
         else:
             f["oxygen_fio2"] = .21
-        label = f"NIV {a['operation']}" + (f": {a['mode']}, FiO₂ {a['fio2_percent']:g}%" if f["niv"] else "")
+        label = f"NIV {a['operation']}" + (f": {a['mode']}, FiO₂ {a['fio2_percent']:g}%"
+                                           + (" (assumed; titrate as needed)" if a.get("fio2_assumed") else "")
+                                           if f["niv"] else "")
         duration = 3
     elif kind == "epinephrine_bolus":
         f["epi_bolus_pool"] = f.get("epi_bolus_pool", 0.0) + a["dose_mcg"]

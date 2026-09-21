@@ -6062,7 +6062,8 @@ def _held_order_prompt(parsed, message):
     declared the way the reasoning gate declares its own.
     """
     from family_reports import TEST_LABELS
-    others = [a for a in parsed.get("actions", []) or [] if a.get("type") != "clarification"]
+    actions = parsed.get("actions", []) or []
+    others = [a for a in actions if a.get("type") != "clarification"]
     labels = []
     if any(a.get("type") in REASONING_GATE_ACTION_TYPES for a in others):
         labels.append(_reasoning_gate_action_summary({"actions": others}))
@@ -6070,7 +6071,11 @@ def _held_order_prompt(parsed, message):
         TEST_LABELS.get(a.get("diagnostic"), str(a.get("diagnostic") or "").replace("_", " "))
         for a in others if a.get("type") == "diagnostic"
     )
-    if not labels:
+    # One order the engine itself questions describes its own problem. The block
+    # is for what the resident would otherwise lose without being told: another
+    # order in the same turn, or an item the parser could not read at all.
+    unreadable = any(a.get("type") == "clarification" for a in actions)
+    if not labels or (len(labels) < 2 and not unreadable):
         return message
     return "\n".join([
         "**ORDER HELD — CLARIFICATION REQUIRED**",
@@ -6089,7 +6094,7 @@ def clinical_interpreter(text):
         parsed["reasoning"] = extract_explicit_reasoning(text)
         unresolved = next((a for a in parsed.get("actions", []) if a.get("type") == "clarification"), None)
         if unresolved:
-            parsed["clarification"] = _held_order_prompt(parsed, unresolved.get("message") or "Please clarify the order.")
+            parsed["clarification"] = unresolved.get("message") or "Please clarify the order."
         return parsed
     t = text.lower()
     reasoning = extract_explicit_reasoning(text)
@@ -7472,6 +7477,7 @@ def execute_bundle(parsed):
         from pending_family_orders import hold_incomplete_bundle
         result = execute_family_bundle(state, parsed)
         if not result.get("executed") and result.get("clarification"):
+            result["clarification"] = _held_order_prompt(parsed, result["clarification"])
             pending = hold_incomplete_bundle(parsed, state)
             if pending:
                 st.session_state.pending_action = pending
