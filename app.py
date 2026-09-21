@@ -6052,6 +6052,36 @@ def recognized_unimplemented_medications(text):
     return labels
 
 
+def _held_order_prompt(parsed, message):
+    """A parser clarification that names the rest of the order it is holding.
+
+    One ambiguous action holds the whole turn, which is deliberate: the engine
+    never guesses at an order. But everything else in the turn is parsed and
+    then discarded, so a septic patient can lose an antibiotic to a quibble
+    about an oxygen device without the resident noticing. The hold is now
+    declared the way the reasoning gate declares its own.
+    """
+    from family_reports import TEST_LABELS
+    others = [a for a in parsed.get("actions", []) or [] if a.get("type") != "clarification"]
+    labels = []
+    if any(a.get("type") in REASONING_GATE_ACTION_TYPES for a in others):
+        labels.append(_reasoning_gate_action_summary({"actions": others}))
+    labels.extend(
+        TEST_LABELS.get(a.get("diagnostic"), str(a.get("diagnostic") or "").replace("_", " "))
+        for a in others if a.get("type") == "diagnostic"
+    )
+    if not labels:
+        return message
+    return "\n".join([
+        "**ORDER HELD — CLARIFICATION REQUIRED**",
+        "",
+        "I understood: **" + " + ".join(label for label in labels if label) + "**.",
+        "Nothing in this order was executed and the patient state has not changed.",
+        "",
+        message,
+    ])
+
+
 def clinical_interpreter(text):
     if (st.session_state.get("state") or {}).get("engine_family"):
         from family_parser import parse_family_actions
@@ -6059,7 +6089,7 @@ def clinical_interpreter(text):
         parsed["reasoning"] = extract_explicit_reasoning(text)
         unresolved = next((a for a in parsed.get("actions", []) if a.get("type") == "clarification"), None)
         if unresolved:
-            parsed["clarification"] = unresolved.get("message") or "Please clarify the order."
+            parsed["clarification"] = _held_order_prompt(parsed, unresolved.get("message") or "Please clarify the order.")
         return parsed
     t = text.lower()
     reasoning = extract_explicit_reasoning(text)

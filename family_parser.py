@@ -140,9 +140,13 @@ _NEGATION = re.compile(r"^(?:please\s+)?(?:do not|don't|dont|never|avoid|no|not|
 _OXYGEN_DEVICES = (
     ("nasal cannula", r"nasal cann?ula|canula nasal|naricera|nasal prongs|nc"),
     ("non-rebreather mask", r"non[- ]rebreather(?: mask)?|non[- ]rebreathing mask|nrb|mascarilla(?:\s+con)?\s+reservorio"),
-    ("simple mask", r"simple (?:face )?mask|mascarilla simple"),
+    # A bare "mask" or "mascarilla" is the simple face mask: it is how oxygen is
+    # ordered at the bedside, in both languages. The specific devices above also
+    # contain the word, so ``devices`` keeps the longer match and drops this one.
+    ("simple mask", r"simple (?:face )?mask|mascarilla simple|face mask|mask|mascarilla"),
     ("room air", r"room air|aire ambiente"),
 )
+_OXYGEN_DEVICE_EXAMPLES = "nasal cannula 4 L/min, simple mask 8 L/min or non-rebreather mask 15 L/min"
 _OXYGEN_MENTION = r"\b(?:oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nasal prongs|nc|non[- ]rebreather|non[- ]rebreathing|nrb|simple mask|mascarilla|room air|aire ambiente)\b"
 _FLOW = r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(?:l\s*/\s*(?:min|m)\b|lpm|lts?\s*/\s*min|(?:lts?|l)(?![\w/]|\s*/)|liters?\s*/\s*min|litres?\s*/\s*min|litros?\s*/\s*min)\b"
 
@@ -230,14 +234,20 @@ def _oxygen_order(body, verb):
     if _operation(verb) == "stop":
         return {"type": "oxygen", "device": "room air", "flow_lpm": 0}
     if re.search(r"\b(?:high[- ]flow|hfnc|alto flujo)\b", body):
-        return _clarification("High-flow oxygen is not a supported device in this encounter. Specify an available oxygen device and flow.")
+        return _clarification("High-flow oxygen is not a supported device in this encounter. Specify an available oxygen device and flow (for example, " + _OXYGEN_DEVICE_EXAMPLES + ").")
     if _operation(verb) == "adjust" and re.search(r"\b(?:by|en)\s+-?\d", body):
         return _clarification("Specify the absolute target oxygen flow in L/min, not a relative change.")
 
     def devices(segment):
-        matches = [(match.start(), name) for name, pattern in _OXYGEN_DEVICES
+        matches = [(match.start(), match.end(), name) for name, pattern in _OXYGEN_DEVICES
                    for match in re.finditer(r"\b(?:" + pattern + r")\b", segment)]
-        return [name for _, name in sorted(matches)]
+        # "non-rebreather mask" contains a bare "mask", and "mascarilla con
+        # reservorio" a bare "mascarilla": the named device wins over the span
+        # it encloses, so one order never reads as two devices.
+        kept = [m for i, m in enumerate(matches)
+                if not any(other[0] <= m[0] and m[1] <= other[1] and other[1] - other[0] > m[1] - m[0]
+                           for j, other in enumerate(matches) if j != i)]
+        return [name for _, _, name in sorted(kept)]
 
     target = body
     transition = re.search(r"\b(?:from|desde|de)\b.+?\b(?:to|a)\b\s*(.+)$", body)
@@ -249,14 +259,14 @@ def _oxygen_order(body, verb):
         # named device. A request to switch interfaces must name the new one.
         selected = set(devices(body[:transition.start(1)]))
     if len(selected) > 1 or (not selected and (verb in {"switch", "cambiar"} or _operation(verb) not in {"adjust", "continue"})):
-        return {**_clarification("Specify one target oxygen device and its flow in L/min."),
+        return {**_clarification("Specify one target oxygen device and its flow in L/min (for example, " + _OXYGEN_DEVICE_EXAMPLES + ")."),
                 **({"pending_action": {"type": "oxygen", "device": None, "flow_lpm": float(re.search(_FLOW, target)[1]) if re.search(_FLOW, target) else None}} if not selected and verb not in {"switch", "cambiar"} and len(list(re.finditer(_FLOW, target))) <= 1 else {})}
     device = selected.pop() if selected else None
     if device == "room air":
         return {"type": "oxygen", "device": device, "flow_lpm": 0}
     flows = list(re.finditer(_FLOW, target))
     if len(flows) > 1 or (not flows and _operation(verb) not in {"adjust", "continue"}):
-        return {**_clarification("Specify one absolute target oxygen flow in L/min."),
+        return {**_clarification("Specify one absolute target oxygen flow in L/min (for example, " + _OXYGEN_DEVICE_EXAMPLES + ")."),
                 **({"pending_action": {"type": "oxygen", "device": device, "flow_lpm": None}} if not flows else {})}
     return {"type": "oxygen", "device": device, "flow_lpm": float(flows[0][1]) if flows else None, **({"operation": _operation(verb)} if _operation(verb) in {"adjust", "continue"} and (device is None or not flows) else {})}
 
