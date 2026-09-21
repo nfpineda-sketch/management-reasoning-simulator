@@ -6,7 +6,14 @@ from types import SimpleNamespace
 source = Path('app.py').read_text()
 tree = ast.parse(source)
 module = ast.Module(body=[n for n in tree.body if isinstance(n, ast.FunctionDef)], type_ignores=[])
-ss = SimpleNamespace(state={'treatments': {'dobutamine': False, 'norepinephrine': False}})
+class Session(dict):
+    # clinical_interpreter reads st.session_state.get("state") to choose between
+    # the bank parser and PS001, so the fake session needs mapping access too.
+    __getattr__ = dict.__getitem__
+    __setattr__ = dict.__setitem__
+
+
+ss = Session(state={'treatments': {'dobutamine': False, 'norepinephrine': False}})
 ns = {'re': re, 'deepcopy': deepcopy, 'st': SimpleNamespace(session_state=ss)}
 exec(compile(module, 'v06034_extract', 'exec'), ns)
 parse = ns['clinical_interpreter']

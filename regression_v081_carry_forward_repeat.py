@@ -70,19 +70,21 @@ def state_factory():
     return {"case_id": "PS002", "sim_time": 0, "seed": 17}
 
 
+def generate_problem_config(challenge_id):
+    # The repeat path no longer looks a case label up in CASE_CONFIGS: it reads the
+    # challenge id out of the closing encounter and prepares that challenge again.
+    assert challenge_id == "R1-05", challenge_id
+    return {"id": "R1-05", "state_factory": state_factory, "presentation": "Repeat presentation"}
+
+
 def add_event(kind, text, time=None):
     FakeSt.session_state.events.append({"kind": kind, "text": text, "time": int(time or 0)})
 
 
 namespace = {
     "st": FakeSt(),
-    "CASE_CONFIGS": {
-        "PS002 · Acute Dyspnea with Shock": {
-            "id": "PS002",
-            "state_factory": state_factory,
-            "presentation": "Repeat presentation",
-        }
-    },
+    "generate_problem_config": generate_problem_config,
+    "deepcopy": deepcopy,
     "add_event": add_event,
     "_trace_time": lambda minute: f"{int(minute) // 60:02d}:{int(minute) % 60:02d}",
 }
@@ -99,7 +101,8 @@ plan = {
 
 session = namespace["st"].session_state
 session.update({
-    "selected_case": "PS002 · Acute Dyspnea with Shock",
+    "selected_case": "R1-05",
+    "state": {"case_id": "PS002", "encounter_spec": {"challenge_id": "R1-05"}},
     "attempt_number": 1,
     "encounter_closed_state": {"case_id": "PS002", "physiology": {"secret": True}},
     "encounter_closed_time_min": 95,
@@ -129,6 +132,7 @@ assert session.carry_forward_plan == plan
 assert session.carry_forward_plan is not plan
 assert prior["attempt_number"] == 1
 assert prior["case_id"] == "PS002"
+assert prior["case_label"] == "R1-05"
 assert prior["closed_time_min"] == 95
 assert prior["adaptation_plan"] == plan
 assert session.prior_attempt_summary == prior
@@ -146,7 +150,7 @@ assert not any(key.startswith(("decision_review__", "adaptation_plan__", "expert
 # Attempt metadata and the prospective carry-forward plan are exported, while
 # private state in the prior-attempt summary remains excluded.
 payload = namespace["_review_payload"](
-    "PS002 · Acute Dyspnea with Shock",
+    "R1-05",
     10,
     [],
     {"case_id": "PS001"},

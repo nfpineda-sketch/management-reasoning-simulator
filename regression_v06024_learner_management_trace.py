@@ -8,11 +8,11 @@ assert '## Management Trace' in src
 assert 'st.session_state.encounter_ended = False' in src
 assert '"Management reasoning"' in src
 assert '"Observed response"' in src
-assert 'reasoning you explicitly stated' in src
-assert 'does not score decisions' in src
+assert 'It does not add reasoning that the learner did not explicitly state.' in src
+assert 'descriptive and non-scoring' in src
 
 tree=ast.parse(src)
-names={"_trace_time","_trace_state_text","_trace_reasoning_text","_trace_action_text","_summary_source_position","_summaries_in_learner_order","management_trace_rows"}
+names={"_trace_time","_trace_state_text","_trace_reasoning_text","_trace_action_text","_summary_source_position","_summaries_in_learner_order","management_trace_rows","_derived_slots","_trace_observable_delta","_norepinephrine_summary_label","procedural_sedation_label"}
 nodes=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in names]
 ns={"sim_time_label": lambda m: f"{m//60:02d}:{m%60:02d}", "re": re}
 exec(compile(ast.Module(body=nodes,type_ignores=[]),"trace_subset","exec"),ns)

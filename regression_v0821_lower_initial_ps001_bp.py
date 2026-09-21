@@ -12,10 +12,12 @@ for node in tree.body:
     if not isinstance(node, ast.Assign):
         continue
     for target in node.targets:
-        if isinstance(target, ast.Name) and target.id in {"SIMULATOR_VERSION", "INITIAL_STATE", "PRESENTATION"}:
+        if isinstance(target, ast.Name) and target.id in {"LEGACY_REGRESSION_VERSION_MARKER", "INITIAL_STATE", "PRESENTATION"}:
             assignments[target.id] = ast.literal_eval(node.value)
 
-assert assignments["SIMULATOR_VERSION"] in {"0.8.21", "0.9.0-ai-preview", "0.10.0-curriculum-pilot", "0.11.0-curriculum-pilot", "0.11.1-curriculum-pilot", "0.11.2-curriculum-pilot"}
+# The lineage is anchored on the retained historical marker, not on the current
+# version: the entry pressure below is the contract, and it outlives the number.
+assert assignments["LEGACY_REGRESSION_VERSION_MARKER"] == 'SIMULATOR_VERSION = "0.8.21"'
 state = assignments["INITIAL_STATE"]
 observable = state["observable"]
 
