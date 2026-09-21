@@ -83,3 +83,31 @@ def _diagnostics_stay_out_of_the_project(tmp_path, monkeypatch):
 
     monkeypatch.setattr(generation_diagnostics, "DIAGNOSTIC_DIR",
                         tmp_path / "generation_failures")
+
+
+@pytest.fixture(autouse=True)
+def _streamlit_layout_context_is_not_inherited():
+    """One AppTest must not leave a form open for the next one.
+
+    Streamlit keeps the open layout containers in a ContextVar and the current
+    form on the singleton main DeltaGenerator, which every AppTest in the
+    process shares. A test whose app run ends inside ``st.form`` leaves
+    ``FormData(form_id='learner_form')`` on that singleton, and the next
+    AppTest raises "st.button() can't be used in an st.form()" while rendering
+    an ordinary page. The suite then passes or fails by file order. Clearing
+    both around every test keeps each one independent.
+    """
+    from streamlit.delta_generator_singletons import (
+        context_dg_stack, get_default_dg_stack_value, get_dg_singleton_instance,
+    )
+
+    def reset():
+        try:
+            get_dg_singleton_instance().main_dg._form_data = None
+            context_dg_stack.set(get_default_dg_stack_value())
+        except RuntimeError:
+            pass  # The singleton is created on the first AppTest; nothing to reset yet.
+
+    reset()
+    yield
+    reset()

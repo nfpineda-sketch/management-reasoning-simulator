@@ -84,9 +84,20 @@ _VENTILATION_ORDER = re.compile(
     r"\b(?:intubate|intubar|intuba|intubacion|intubación|rsi|rapid sequence|bipap|cpap|niv|vni|"
     r"ventilator|ventilation|ventilacion|ventilación|vc/ac|pc/ac|ac/vc|psv)\b", re.I)
 _VENTILATION_SETTING = re.compile(
-    r"^(?:at\s+|with\s+|a\s+|con\s+|de\s+)?(?:fio2|fio₂|peep|ipap|epap|tidal\s+volume|vt|"
+    r"^(?:at\s+|with\s+|a\s+|con\s+|de\s+|in\s+|on\s+)?(?:fio2|fio₂|peep|ipap|epap|tidal\s+volume|vt|"
     r"volumen\s+corriente|respiratory\s+rate|set\s+rate|rate|frecuencia|fr\b|flow|flujo|i\s*:\s*e|mode|modo|vc/ac|pc/ac|ac/vc|psv|"
-    r"pressure\s+support|presion\s+soporte|presión\s+soporte)\b", re.I)
+    r"pressure\s+support|presion\s+soporte|presión\s+soporte|"
+    # The mode written out in either language is a setting of the airway order
+    # that precedes it, not a second intubation.
+    r"volume\s+control(?:led)?(?:\s+ventilation)?|pressure\s+control(?:led)?(?:\s+ventilation)?|"
+    r"assist[- ]control|ventilacion\s+controlada(?:\s+por\s+(?:volumen|presion))?|"
+    r"volumen\s+control|presion\s+control|controlada\s+por\s+(?:volumen|presion))\b", re.I)
+
+# The ventilator mode, in both languages and in either word order.
+_VC_MODE = (r"\bvc[/ -]?ac\b|volume control(?:led)?|volumen control|control volumen|"
+            r"controlada por volumen")
+_PC_MODE = (r"\bpc[/ -]?ac\b|pressure control(?:led)?|presion control|control presion|"
+            r"controlada por presion")
 
 _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
@@ -103,13 +114,17 @@ _COMMAND = re.compile(
 # ("inicia") or the usted imperative ("inicie"). The verb sets below list one
 # form per verb, so a clause-initial imperative is read as its infinitive first.
 _ES_IMPERATIVES = {
-    "iniciar": "inicia comienza comience empieza empiece comenzar empezar",
-    "administrar": "administra", "dar": "da", "poner": "pon ponga", "colocar": "coloca coloque",
+    "iniciar": "inicia comienza comience empieza empiece comenzar empezar conecta conecte conectar",
+    # "pasa un litro" and "cargale 2 g" are how these orders are spoken; each
+    # maps to the canonical infinitive the command pattern already knows.
+    "administrar": "administra pasa pase pasar carga cargue cargar",
+    "dar": "da", "poner": "pon ponga", "colocar": "coloca coloque",
     "aplicar": "aplica aplique", "infundir": "infunde infunda", "indicar": "indica",
     "pedir": "pide pida", "solicitar": "solicita", "medir": "mide mida",
-    "controlar": "controla controle", "obtener": "obten obtenga", "realizar": "realiza realice",
+    "controlar": "controla controle", "obtener": "obten obtenga toma tome tomar", "realizar": "realiza realice",
     "hacer": "haz haga", "suspender": "suspende suspenda", "detener": "deten detenga",
-    "aumentar": "aumenta aumente", "disminuir": "disminuye disminuya", "titular": "titula titule",
+    "aumentar": "aumenta aumente sube suba subir", "disminuir": "disminuye disminuya baja baje bajar",
+    "titular": "titula titule",
     "continuar": "continua", "mantener": "manten mantenga", "ajustar": "ajusta ajuste",
     "cambiar": "cambia cambie", "transfundir": "transfunde transfunda", "nebulizar": "nebuliza nebulice",
     "consultar": "consulta", "interconsultar": "interconsulta interconsulte", "llamar": "llama llame", "activar": "activa active",
@@ -118,6 +133,15 @@ _ES_IMPERATIVES = {
     "reevaluar": "reevalua reevalue",
 }
 _ES_IMPERATIVE_FORMS = {form: verb for verb, forms in _ES_IMPERATIVES.items() for form in forms.split()}
+# Spanish attaches the pronoun to the imperative: "pasale", "ponle", "subele",
+# "ingresalo", "darle". The written accent ("pásale") is already gone by
+# normalization, so each form plus its pronoun is the same verb.
+_ES_ENCLITICS = ("le", "les", "lo", "la", "los", "las", "selo", "sela")
+_ES_IMPERATIVE_FORMS.update({
+    form + pronoun: verb
+    for form, verb in list(_ES_IMPERATIVE_FORMS.items())
+    for pronoun in _ES_ENCLITICS
+})
 _ES_IMPERATIVE = re.compile(
     r"(^|[.;\n,+:]\s*|\b(?:y|e(?=\s+h?i)|luego|and|then)\s+)(" + "|".join(sorted(_ES_IMPERATIVE_FORMS, key=len, reverse=True)) + r")\b"
 )
@@ -155,6 +179,41 @@ _FLOW = r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(?:l\s*/\s*(?:min|m)\b|lpm|lts?\s*/\s*mi
 
 def _clarification(message):
     return {"type": "clarification", "message": message}
+
+
+# A quantity that can only be administered: volume, dose, or shock energy. The
+# units of description — mmHg, %, mmol/L, bpm, minutes — are deliberately absent.
+_ADMINISTERED_QUANTITY = re.compile(
+    r"\d(?:[.,]\d+)?\s*(?:ml|cc|mcg|ug|mg|gr?|units?|unidades?|ui|iu|joules?|j\b|"
+    r"l(?:t|ts|iters?|itres?|itros?)?\b)", re.I)
+# What is left of a clause once its numbers, units, routes and particles are
+# removed: a bare "500 mL" is an answer to a question, not an order.
+_QUANTITY_ONLY = re.compile(
+    r"\b(?:ml|cc|mcg|ug|mg|gr?|units?|unidades?|ui|iu|joules?|j|l|lt|lts|liters?|litres?|litros?|"
+    r"iv|io|po|im|sc|sl|min|mins?|minutos?|minutes?|hora?s?|hours?|de|del|la|el|los|las|un|una|"
+    r"por|para|a|al|en|the|of|over|durante|y|and)\b|[\d.,%/]+", re.I)
+
+
+# A clause whose numbers report what already happened, or say what must not
+# happen, is not an order the resident is waiting to see executed.
+_REPORTS_OR_WITHHOLDS = re.compile(
+    r"\b(?:received|receives|was given|were given|already|previously|had|has|have|"
+    r"after|following|improved|worsened|responded|no|not|never|without|"
+    r"recibio|recibe|ya|previamente|tras|despues|luego de|mejoro|empeoro|respondio|sin)\b", re.I)
+
+
+def _names_a_substance(body):
+    """True when the clause says more than a quantity: something was ordered."""
+    return len(_QUANTITY_ONLY.sub(" ", body).strip()) >= 3
+
+
+def _unreadable(piece):
+    """Quote an order back: a resident cannot repair an item that was never named."""
+    fragment = " ".join(str(piece).split())[:80]
+    return {**_clarification(
+        f'This order was not recognized: "{fragment}". Replace it with a supported '
+        "intervention, dose/settings and route, or say cancel. The other orders in "
+        "this submission are held until then."), "unrecognized_text": fragment}
 
 
 
@@ -316,7 +375,7 @@ def _parse_piece_core(piece, inherited=None):
             return [_clarification("Specify which recorded drug or fluid to repeat.")], verb
         fluid_type = None
         if target == "fluid":
-            if re.search(r"\b(?:saline|ns|sf|salino|suero fisiologico|solucion fisiologica)\b", body):
+            if re.search(r"\b(?:saline|ns|sf|salino|(?:suero\s+)?fisiologic[oa]|solucion fisiologica)\b", body):
                 fluid_type = "normal saline"
             elif re.search(r"\b(?:ringer|ringers|lr)\b", body):
                 fluid_type = "lactated Ringer's"
@@ -354,7 +413,7 @@ def _parse_piece_core(piece, inherited=None):
             return [], None
 
     medication_count = sum(bool(re.search(r"\b(?:" + pattern + r")\b", body)) for agents in _AGENTS.values() for pattern in agents.values())
-    has_fluid = bool(re.search(r"\b(?:saline|ns|sf|ringer|ringers|lr|crystalloid|cristaloides?|salino|suero fisiologico|solucion fisiologica)\b", body))
+    has_fluid = bool(re.search(r"\b(?:saline|ns|sf|ringer|ringers|lr|crystalloid|cristaloides?|salino|(?:suero\s+)?fisiologic[oa]|solucion fisiologica)\b", body))
     if medication_count > 1 or (medication_count and has_fluid):
         return [_clarification("Separate each medication or fluid with its own dose and route so the order is unambiguous.")], verb
 
@@ -369,6 +428,11 @@ def _parse_piece_core(piece, inherited=None):
         destination = "ICU" if re.search(r"\b(?:icu|uci)\b|intensive care|cuidados intensivos", body) else None
         if re.search(r"\bward\b|\bsala\b|hospital ward", body):
             destination = "ward"
+        if destination is None and re.search(r"step[- ]down|intermediate care|intermedios?\b|\bui\b|unidad de cuidados intermedios", body):
+            destination = "intermediate care"
+        if destination is None:
+            return [_clarification("Specify where the patient is admitted or transferred: the ICU, "
+                                   "intermediate care, or the ward.")], verb
         return [{"type": "disposition", "destination": destination}], verb
     if verb in {"cardiovert", "cardiovertir", "cardiovierto"} or re.search(r"\b(?:cardioversion|synchronized shock|choque sincronizado)\b", body):
         if re.search(r"\b(?:unsynchronized|defibrillation|no sincronizado)\b", body):
@@ -379,7 +443,7 @@ def _parse_piece_core(piece, inherited=None):
             and not re.search(r"\b(?:bipap|cpap|niv|vni)\b", body)):
         if re.search(r"\b(?:by|en)\s+-?\d", body):
             return [_clarification("Specify absolute target ventilator settings, not a relative change.")], verb
-        modes = [mode for mode, pattern in (("VC/AC", r"\bvc[/ -]?ac\b|volume control"), ("PC/AC", r"\bpc[/ -]?ac\b|pressure control")) if re.search(pattern, body)]
+        modes = [mode for mode, pattern in (("VC/AC", _VC_MODE), ("PC/AC", _PC_MODE)) if re.search(pattern, body)]
         if len(modes) > 1:
             return [_clarification("Specify one target ventilator mode.")], verb
         return [{"type": "respiratory_adjustment", "operation": _operation(verb),
@@ -420,7 +484,7 @@ def _parse_piece_core(piece, inherited=None):
     if re.search(r"\b(?:bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|bolsa[- ]mascarilla|bolsa valvula mascarilla)\b", body):
         return [{"type": "bag_mask"}], verb
     if verb in {"intubate", "intubar", "intubo"} or re.match(r"(?:intubation|intubacion)\b", body):
-        mode = "VC/AC" if re.search(r"\bvc[/ -]?ac\b|volume control|control volumen", body) else None
+        mode = "VC/AC" if re.search(_VC_MODE, body) else "PC/AC" if re.search(_PC_MODE, body) else None
         if re.search(r"\bpc[/ -]?ac\b|pressure control|control presion", body):
             mode = "PC/AC"
         return [{"type": "intubation", "ventilator_mode": mode, "fio2_percent": _settings(body, "fio2"),
@@ -510,7 +574,7 @@ def _parse_piece_core(piece, inherited=None):
     if re.search(r"\b(?:prbcs?|packed red (?:blood )?cells|blood|sangre|globulos rojos|concentrad[oa]s? de hematies|hematies)\b", body):
         units, _ = _amount(body, r"units?|unidades?|u")
         return [{"type": "blood", "units": units}], verb
-    if re.search(r"\b(?:saline|normal saline|ns|sf|sf|ringer|lactated ringers?|lr|crystalloid|cristaloides?|salino|suero fisiologico|solucion fisiologica|sueros?|fluid|fluids|volumen)\b", body):
+    if re.search(r"\b(?:saline|normal saline|ns|sf|sf|ringer|lactated ringers?|lr|crystalloid|cristaloides?|salino|(?:suero\s+)?fisiologic[oa]|solucion fisiologica|sueros?|fluid|fluids|volumen)\b", body):
         if _operation(verb) == "stop":
             # "Stop the normal saline" ends a running infusion; it is not a new bolus.
             fluid_type = ("normal saline" if re.search(r"\b(?:saline|ns|sf|salino|fisiologico|fisiologica)\b", body)
@@ -526,7 +590,7 @@ def _parse_piece_core(piece, inherited=None):
             if len(numbers) <= 1 and not re.search(r"-\s*\d|/\s*(?:min|h|hr)", body):
                 volume = parse_volume_ml(body)
         fluid_type = None
-        if re.search(r"\b(?:saline|ns|sf|salino|suero fisiologico|solucion fisiologica)\b", body):
+        if re.search(r"\b(?:saline|ns|sf|salino|(?:suero\s+)?fisiologic[oa]|solucion fisiologica)\b", body):
             fluid_type = "normal saline"
         elif re.search(r"\b(?:ringer|ringers|lr)\b", body):
             fluid_type = "lactated Ringer's"
@@ -567,13 +631,8 @@ def _parse_piece_core(piece, inherited=None):
             medication_text = body + " nebulized" if verb in {"nebulize", "nebulizar"} else body
             return [_medication(medication_text, kind, agent)], verb or "give"
     if verb:
-        # Quote the fragment back: a resident cannot repair an unnamed item, and
-        # the rest of the submission is held rather than discarded.
-        fragment = " ".join(str(piece).split())[:80]
-        return [{**_clarification(
-            f'This order was not recognized: "{fragment}". Replace it with a supported '
-            "intervention, dose/settings and route, or say cancel. The other orders in "
-            "this submission are held until then."), "unrecognized_text": fragment}], verb
+        # The rest of the submission is held rather than discarded.
+        return [_unreadable(piece)], verb
     return [], None
 
 
@@ -582,6 +641,16 @@ def _parse_piece(piece, inherited=None):
     if re.search(r"\b(?:reassess|reevaluar|reevaluo|revalorar|reassessment)\b", piece):
         dose_piece = piece
     actions, verb = _parse_piece_core(dose_piece, inherited)
+    # An unknown verb is not a reason to lose a treatment. Found by playing the
+    # pneumonia case in Spanish: "Pasa 1000 mL de suero fisiologico IV" produced
+    # no action and no question at all, and the patient simply never received the
+    # litre. A clause that names both a substance and a quantity that can only be
+    # administered is quoted back, so an unread order costs a turn, not a
+    # treatment. A withheld order ("no le pases volumen") is not one of these.
+    if (not actions and not verb and not _NEGATION.match(str(piece).strip())
+            and not _REPORTS_OR_WITHHOLDS.search(dose_piece)
+            and _ADMINISTERED_QUANTITY.search(dose_piece) and _names_a_substance(dose_piece)):
+        return [_unreadable(piece)], None
     # Delivery time is attached to this treatment clause, never to reasoning or
     # the reassessment clause. Retain unsupported/ambiguous timing as a question.
     text = _NON_ORDER.split(piece, maxsplit=1)[0]
