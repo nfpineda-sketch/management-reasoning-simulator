@@ -1055,12 +1055,15 @@ def _minute(state):
             f.setdefault("procedure_events", []).append(
                 {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     elif family in {"acs", "pulmonary_embolism"}:
-        f["circulation"] += .001
+        f["circulation"] += acs_reperfusion.FAMILY_DRIFT_PER_MIN
         if family == "acs":
             spec = acs_reperfusion.coronary(state) or {}
-            if spec.get("omi") and not acs_reperfusion.active_occlusion(spec):
-                # Wellens: the artery is open, so nothing drifts while it stays open.
-                f["circulation"] -= .001
+            if spec.get("omi") and (acs_reperfusion.is_open(f)
+                                    or not acs_reperfusion.active_occlusion(spec)):
+                # Nothing is infarcting: the artery is open, either because the
+                # resident opened it or because this lesion never occluded
+                # (Wellens). The drift of an infarct in progress does not apply.
+                f["circulation"] -= acs_reperfusion.FAMILY_DRIFT_PER_MIN
             if spec.get("rv_involvement"):
                 # A preload-dependent right ventricle: nitroglycerin can collapse it.
                 acs_reperfusion.nitrate_drop(f, _nitro_equivalent(f), float(f["baseline"].get("sbp", 120)), fluid)

@@ -1,6 +1,6 @@
 # Síndrome coronario agudo — magnitudes implementadas
 
-> **Estado: IMPLEMENTADO y REVISADO** en `ecg12.py` (morfologías), `acs_reperfusion.py`, `clinical_cases.py` (seis variantes) y la rama `acs` de `family_engine.py`, con las decisiones docentes del 2026-09-19 y la revisión del 2026-09-20 (curva de troponina desde el dolor, bloqueo AV condicional). Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
+> **Estado: IMPLEMENTADO y REVISADO** en `ecg12.py` (morfologías), `acs_reperfusion.py`, `clinical_cases.py` (seis variantes) y la rama `acs` de `family_engine.py`, con las decisiones docentes del 2026-09-19, la revisión del 2026-09-20 (curva de troponina desde el dolor, bloqueo AV condicional) y la del 2026-09-21 (la función ventricular va pareada a la presión y la perfusión). Son parámetros docentes, no un modelo predictivo. Las trayectorias de abajo salen del motor ya implementado. Las demás familias del banco, PS001 y los casos generados dan exactamente lo mismo que antes.
 
 ## Decisión docente
 
@@ -13,6 +13,7 @@ Indicación de la facultad: la conducta y el manejo cambian según el ECG. Hay S
 | 3 | No-OMI | Antiagregación, anticoagulación y cama monitorizada, con coronariografía diferida y sin castigo por no pedirla de inmediato |
 | 4 | Test de esfuerzo en Wellens | Se ejecuta, y el paciente presenta fibrilación ventricular |
 | 5 | Nitroglicerina en infarto con riesgo de compromiso derecho | Sí, con la misma mecánica de los casos generados |
+| 6 | **Función ventricular y hemodinamia** (2026-09-21) | Donde el ventrículo izquierdo es el problema, su contractilidad va **pareada** a la presión y la perfusión clínica. Que la mejoría del VI se traduzca en mejor presión y mejor llene, y no quede como un dato aislado del POCUS |
 
 ## Las seis variantes del banco
 
@@ -50,7 +51,9 @@ Amplitudes que genera el modelo de onda, medidas derivación por derivación en 
 | Troponina sin arteria ocluida | Se mantiene en el valor autorizado: nada se está infartando |
 | Función regional | Parte en 0.82 y cae 0.0025/min; piso 0.45; recupera 0.0015/min hasta 0.85 |
 | Grados de motilidad | ≥ 0.85 normal, ≥ 0.70 leve, ≥ 0.58 moderada, bajo eso acinesia |
-| Circulación | +0.0012/min; **+0.0018/min con compromiso derecho** |
+| Circulación, arteria cerrada | +0.0012/min, **+0.0018/min con compromiso derecho**, más 0.001/min de la familia |
+| **Circulación, arteria abierta** | La deriva se detiene y la circulación **devuelve lo que la oclusión se llevó**, en proporción a la función que recupera: `(deriva por minuto) ÷ 0.0025` por cada unidad de función, es decir **1.12 por unidad con compromiso derecho** y 0.88 sin él. Piso: la circulación de llegada, nunca mejor que el estado que el caso describe |
+| Sin oclusión que reperfundir | En un Wellens no hay pared que recuperar ni deuda que devolver: el ventrículo queda normal y la circulación no se mueve |
 | Bloqueo AV completo | A los 45 min de oclusión, solo territorio inferior y solo si el caso no lo excluye con `av_block_risk` falso, FC 42 |
 | Fibrilación ventricular | A los 120 min de oclusión, o con test de esfuerzo sobre oclusión inestable |
 | Shock | Función regional ≤ 0.55 con arteria cerrada |
@@ -66,12 +69,14 @@ Anotaciones: PA · FC · ritmo · minutos de isquemia · función regional · tr
 
 | min | PA | FC | Ritmo | Isquemia | Función | Troponina |
 |---|---|---|---|---|---|---|
-| 20 | 97/63 | 59 | bradicardia sinusal | 20 | 0.77 | — |
-| 65 | 92/59 | **42** | **bloqueo AV completo** | 65 | 0.66 | — |
-| 75 | 91/59 | 42 | bloqueo AV completo | 75 | 0.63 | 176 |
-| 110 | — | — | **arteria abierta, ECG basal** | 109 | — | — |
-| 130 | 85/56 | 66 | sinusal | 109 | 0.58 | **814** |
-| 190 | 83/54 | 68 | sinusal | 109 | **0.67** | — |
+| 20 | 97/63 · llene 3.2 | 59 | bradicardia sinusal | 20 | 0.77 | — |
+| 65 | 92/59 · llene 3.7 | **42** | **bloqueo AV completo** | 65 | 0.66 | — |
+| 75 | 91/59 · llene 3.8 | 42 | bloqueo AV completo | 75 | 0.63 | 176 |
+| 110 | 90/59 · llene 3.9 | 63 | **arteria abierta, ECG basal** | 109 | 0.63 | — |
+| 130 | **92/59** · llene 3.7 | 63 | sinusal | 109 | **0.66** | **814** |
+| 190 | **96/62** · llene 3.3 | 60 | sinusal | 109 | **0.75** | — |
+
+Desde el minuto 110 la presión **sube** y el llene **se acorta** a medida que la pared vuelve. Antes del 2026-09-21 esta misma columna caía a 83/54 con llene 4.5 mientras la función subía a 0.67: el residente abría la arteria a tiempo y veía al paciente empeorar.
 
 ### 54m inferior, sin activar
 
@@ -86,18 +91,19 @@ Anotaciones: PA · FC · ritmo · minutos de isquemia · función regional · tr
 
 | min | PA | FC | Ritmo | Isquemia | Función | Troponina |
 |---|---|---|---|---|---|---|
-| 10 | 99/63 | 59 | bradicardia sinusal | 10 | 0.80 | — |
-| 60 | 93/60 | 62 | **arteria abierta, ECG basal** | 59 | 0.67 | — |
-| 75 | 92/59 | 63 | sinusal | 59 | 0.70 | 211 |
-| 135 | 89/58 | 64 | sinusal | 59 | **0.78** | — |
+| 10 | 99/63 · llene 3.1 | 59 | bradicardia sinusal | 10 | 0.80 | — |
+| 60 | 93/60 · llene 3.7 | 62 | **arteria abierta, ECG basal** | 59 | 0.67 | — |
+| 75 | 94/60 · llene 3.6 | 62 | sinusal | 59 | 0.70 | 211 |
+| 135 | **98/63** · llene 3.2 | 59 | sinusal | 59 | **0.78** | — |
+| 190 | **100/64** · llene 3.0 | 58 | bradicardia sinusal | 59 | **0.85** | — |
 
-La trombolisis a los 10 min deja una función de 0.78 a las dos horas; la angioplastia activada a los 20 min deja 0.67, porque tarda 90 min en abrir. Es el contenido docente de la regla de los 120 minutos.
+La trombolisis a los 10 min deja una función de 0.78 a las dos horas y una presión de 98/63; la angioplastia activada a los 20 min deja 0.66 y 92/59 a esa misma hora, porque tarda 90 min en abrir. La diferencia se lee ahora en los dos lugares, en el POCUS y en la cama. Es el contenido docente de la regla de los 120 minutos.
 
 ### 52m de Winter
 
 | Escenario | Resultado |
 |---|---|
-| Activación inmediata | Arteria abierta al minuto 90; a los 105 min, 118/73 · FC 101 · función 0.62. La troponina sigue su curva desde el dolor, que en este caso empezó hace 40 min |
+| Activación inmediata | Arteria abierta al minuto 90; a los 105 min, 120/74 · FC 100 · función 0.62, ya recuperando presión. La troponina sigue su curva desde el dolor, que en este caso empezó hace 40 min |
 | Sin activar | A los 70 min, función 0.65; **FV a los 130 min** |
 
 **No hace bloqueo AV**, porque el bloqueo solo ocurre en territorio inferior.
@@ -108,8 +114,8 @@ La trombolisis a los 10 min deja una función de 0.78 a las dos horas; la angiop
 |---|---|---|---|---|---|
 | 60 | 138/84 | 76 | — | 1.00 | nada cambia |
 | 120 | 138/84 | 76 | — | 1.00 | nada cambia |
-| 210 | 138/84 | 76 | — | 0.85 | **"critical proximal stenosis, stented before it occluded"**, ECG basal |
-| 225 | 138/84 | 76 | — | 0.85 | troponina **42**, motilidad normal |
+| 210 | 138/84 | 76 | — | normal | **"critical proximal stenosis, stented before it occluded"**, ECG basal |
+| 225 | 138/84 | 76 | — | normal | troponina **42**, motilidad normal |
 
 Con la arteria abierta no se infarta nada, la troponina no se mueve y el POCUS sigue normal. El test de esfuerzo, en cambio, fibrila a los 10 min.
 

@@ -45,6 +45,13 @@ LV_RECOVERY_PER_MIN = .0015       # after the artery opens
 LV_RECOVERY_CEILING = .85
 CIRCULATION_PER_MIN = .0012       # the failing pump, on top of the family drift
 RV_CIRCULATION_PER_MIN = .0018    # an inferior infarct with right ventricular involvement
+FAMILY_DRIFT_PER_MIN = .001       # what the engine adds for the family; imported there
+# Faculty decision 2026-09-21: where the left ventricle is the problem, its
+# contractility is paired to the pressure and the perfusion. Opening the artery
+# used to recover the wall on POCUS while the circulation kept sliding, so the
+# reward for a good door-to-balloon was an isolated ultrasound finding. The
+# recovery now gives back what the occlusion took, at the rate it took it.
+CIRCULATION_ARRIVAL = 1.0         # the circulation the case describes on arrival
 # Faculty 2026-09-20: the block is conditional, but it must not be rare. It belongs
 # to the inferior territory, it needs the artery still shut, and the case can exclude
 # it with av_block_risk false.
@@ -202,10 +209,27 @@ def step(state):
             return ventricular_fibrillation(f, "an artery that has stayed closed for two hours")
     else:
         since = now - f["artery_open_at"]
-        f["lv_function"] = min(LV_RECOVERY_CEILING, f.get("lv_function", 1.0) + LV_RECOVERY_PER_MIN)
+        if active_occlusion(spec):
+            # Only a wall that was lost can come back. A lesion that never
+            # occluded (Wellens) keeps the normal ventricle the case describes.
+            before = f.get("lv_function", ARRIVAL_LV)
+            f["lv_function"] = min(LV_RECOVERY_CEILING, before + LV_RECOVERY_PER_MIN)
+            # The wall that comes back brings the pressure and the perfusion with it.
+            f["circulation"] = max(CIRCULATION_ARRIVAL,
+                                   f["circulation"] - circulation_per_lv(spec) * (f["lv_function"] - before))
         if since <= 60:
             f["troponin_peak_at"] = now
     return None
+
+
+def circulation_per_lv(spec):
+    """How much circulation a unit of ventricle is worth, for this case.
+
+    The ratio the occlusion itself used, so a wall that returns to where it
+    started returns the patient to the circulation they arrived with.
+    """
+    per_min = RV_CIRCULATION_PER_MIN if spec.get("rv_involvement") else CIRCULATION_PER_MIN
+    return (per_min + FAMILY_DRIFT_PER_MIN) / LV_LOSS_PER_MIN
 
 
 def ventricular_fibrillation(f, cause):

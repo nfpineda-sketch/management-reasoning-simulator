@@ -199,3 +199,69 @@ def test_only_the_inferior_territory_blocks_the_av_node(engine):
     state, _ = course(engine, [ASPIRIN, "Reassess in 60 minutes."], DE_WINTER)
     assert state["family_state"].get("av_block_at") is None
     assert state["observable"]["rhythm"] != "Complete AV block"
+
+
+# Faculty decision 2026-09-21: where the left ventricle is the problem, its
+# contractility is paired to the pressure and the perfusion. Opening the artery
+# recovered the wall on POCUS while the circulation kept sliding, so a textbook
+# door-to-balloon left the patient drifting towards shock for hours and the only
+# reward was an isolated ultrasound finding.
+
+def trajectory(engine, case_id, first, waits=5, step=40):
+    from family_engine import execute_family_bundle
+    from family_parser import parse_family_actions
+    state = encounter(engine, "acs", case_id)["state"]
+    rows = []
+    for order in [first] + [f"Reassess in {step} minutes."] * waits:
+        result = execute_family_bundle(state, parse_family_actions(order))
+        if not result["executed"]:
+            break
+        rows.append((state["sim_time"], dict(state["observable"]), dict(state["family_state"])))
+    return state, rows
+
+
+ACTIVATE = "Activate the cath lab. Give aspirin 300 mg PO. Reassess in 20 minutes."
+
+
+def test_the_pressure_follows_the_ventricle_back(engine):
+    state, rows = trajectory(engine, "acs_54m_inferior", ACTIVATE)
+    opened = [row for row in rows if row[2].get("artery_open_at") is not None]
+    assert opened, [row[0] for row in rows]
+    first, last = opened[0], opened[-1]
+    # The wall recovers...
+    assert last[2]["lv_function"] > first[2]["lv_function"]
+    # ...and so do the pressure and the capillary refill, which used to slide.
+    assert last[1]["sbp"] > first[1]["sbp"]
+    assert last[1]["crt"] < first[1]["crt"]
+    assert last[2]["circulation"] < first[2]["circulation"]
+
+
+def test_the_recovery_stops_at_the_state_the_case_described(engine):
+    _, rows = trajectory(engine, "acs_61m_posterior", ACTIVATE, waits=20, step=60)
+    assert min(row[2]["circulation"] for row in rows) >= acs.CIRCULATION_ARRIVAL
+
+
+def test_an_artery_that_stays_closed_still_deteriorates(engine):
+    _, rows = trajectory(engine, "acs_54m_inferior", "Give aspirin 300 mg PO. Reassess in 20 minutes.")
+    assert rows[-1][2]["circulation"] > rows[0][2]["circulation"]
+    assert rows[-1][1]["sbp"] < rows[0][1]["sbp"] or rows[-1][2].get("vf_at")
+
+
+def test_a_lesion_that_never_occluded_keeps_its_normal_ventricle(engine):
+    # Wellens: stented before it closed, so there is no wall to recover and
+    # nothing for the circulation to repay.
+    _, rows = trajectory(engine, "acs_48m_wellens", ACTIVATE, waits=5, step=40)
+    assert all(row[2].get("lv_function") is None for row in rows)
+    assert rows[-1][2]["circulation"] == pytest.approx(acs.CIRCULATION_ARRIVAL)
+    assert rows[-1][1]["sbp"] == rows[0][1]["sbp"]
+
+
+def test_the_ratio_is_the_one_the_occlusion_used(engine):
+    # What the artery took per minute is what the recovery gives back per unit
+    # of ventricle, so a wall returning to its arrival value returns the patient
+    # to the circulation they arrived with.
+    rv = acs.circulation_per_lv({"rv_involvement": True})
+    plain = acs.circulation_per_lv({})
+    assert rv == (acs.RV_CIRCULATION_PER_MIN + acs.FAMILY_DRIFT_PER_MIN) / acs.LV_LOSS_PER_MIN
+    assert plain == (acs.CIRCULATION_PER_MIN + acs.FAMILY_DRIFT_PER_MIN) / acs.LV_LOSS_PER_MIN
+    assert rv > plain
