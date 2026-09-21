@@ -186,6 +186,33 @@ def _case(state):
 
 NIV_ASSUMED_FIO2 = 100    # an NIV order without a stated FiO₂ runs at 100%
 
+# A mental status the case authored as abnormal is a sign of the illness, so it
+# must be able to answer treatment (faculty decision 2026-09-21). It recovers by
+# one step, and only once the circulation and the oxygenation that explain it
+# have been back for half an hour: the brain lags behind the haemodynamics.
+MENTAL_RECOVERY = {"delay_min": 30, "spo2": 92, "sbp": 100, "crt_s": 3.5}
+PNEUMONIA_WOB_PER_EFFORT = 6    # levels of respiratory effort per unit of lung burden
+_MENTAL_LADDER = ("Unresponsive", "Obtunded", "Drowsy", "Alert")
+
+
+def _perfusion_is_recovered(state):
+    o = state.get("observable", {})
+    return (float(o.get("spo2") or 0) >= MENTAL_RECOVERY["spo2"]
+            and float(o.get("sbp") or 0) >= MENTAL_RECOVERY["sbp"]
+            and float(o.get("crt") or 9) < MENTAL_RECOVERY["crt_s"])
+
+
+def _mental_after_recovery(f, base_mental, mental):
+    """One step up from the arrival state, never more, and never before its time."""
+    if not f.get("mental_recovered"):
+        return mental
+    if base_mental not in _MENTAL_LADDER or base_mental == "Alert":
+        return mental
+    ceiling = _MENTAL_LADDER[min(_MENTAL_LADDER.index(base_mental) + 1, len(_MENTAL_LADDER) - 1)]
+    if mental not in _MENTAL_LADDER:
+        return mental
+    return ceiling if _MENTAL_LADDER.index(mental) < _MENTAL_LADDER.index(ceiling) else mental
+
 
 def _listed(items):
     """"a", "a and b", "a, b and c" — so a message names only what is missing."""
@@ -933,6 +960,14 @@ def _endoscopy_minute(state):
 def _minute(state):
     f, family = state["family_state"], state["engine_family"]
     f["elapsed"] += 1
+    # A minute of recovered perfusion counts, a minute without it discounts: a
+    # one-mmHg wobble around the threshold must not restart the half hour. Once
+    # the half hour is complete the patient is awake, and only a real
+    # deterioration puts them back down, through the rules that already do that.
+    f["perfusion_recovered_min"] = max(0, f.get("perfusion_recovered_min", 0)
+                                       + (1 if _perfusion_is_recovered(state) else -1))
+    if f["perfusion_recovered_min"] >= MENTAL_RECOVERY["delay_min"]:
+        f["mental_recovered"] = True
     if f.get("deliveries"):
         # Timed volume runs at its own rate; any untimed bolus keeps running alongside.
         timed_remaining = {kind: sum(item["amount"] - item["delivered"] for item in f["deliveries"]
@@ -1276,6 +1311,8 @@ def _surface(state):
         mental = "Obtunded"
     elif (spo2 < 87 or sbp < 80) and mental == "Alert":
         mental = "Drowsy"
+    elif family not in {"hypoglycemia", "opioid"}:
+        mental = _mental_after_recovery(f, str(base.get("mental_status", "Alert")), mental)
     if f["invasive"]:
         sedated = _sedated(f)
         mental = "Sedated" if sedated else "Awake and fighting the ventilator"
@@ -1289,6 +1326,14 @@ def _surface(state):
         index = {"normal": 0, "mildly increased": 1, "increased": 2, "moderately increased": 2, "markedly increased": 3, "severe": 4}.get(baseline_wob.lower(), 2)
         change = int(round((effort - 1) * 3))
         wob = baseline_wob if change == 0 else levels[int(_clamp(index + change, 0, 4))]
+        if family == "pneumonia":
+            # The five-level scale only moved when the effort changed by a third,
+            # so hours of antibiotic bought no visible change. One level per ~8%
+            # of effort puts it roughly where the respiratory rate moves 1.5/min,
+            # which is about when it becomes visible at the bedside. The case's
+            # own wording is kept while the patient is where the case left them.
+            position = int(_clamp(round(index + (effort - 1) * PNEUMONIA_WOB_PER_EFFORT), 0, 4))
+            wob = baseline_wob if position == index else levels[position]
         if family == "pulmonary_edema" and effort < 1:
             # Resolving oedema returns the work of breathing towards normal in proportion.
             wob = levels[int(_clamp(round(index * effort), 0, 4))]
