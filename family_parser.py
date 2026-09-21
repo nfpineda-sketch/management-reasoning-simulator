@@ -652,8 +652,13 @@ def _parse_piece_core(piece, inherited=None):
         _, kind, agent = medicines[0]
         # A bare drug name is only an order with an explicit command or dose.
         if verb or re.search(r"\d\s*(?:mcg|ug|mg|g|units?|ui)\b", body):
+            if _operation(verb) == "continue":
+                # "Manten la heparina" is a decision not to change anything. The
+                # engine answers with what is already recorded instead of holding
+                # the turn over a dose the resident did not intend to give.
+                return [{"type": kind, "agent": agent, "operation": "continue"}], verb
             if _operation(verb) != "start":
-                return [_clarification("This fixed-dose medication order needs an explicit new dose; stopping or continuing it is not a supported new administration.")], verb
+                return [_clarification("This fixed-dose medication order needs an explicit new dose; stopping it is not a supported new administration.")], verb
             medication_text = body + " nebulized" if verb in {"nebulize", "nebulizar"} else body
             return [_medication(medication_text, kind, agent)], verb or "give"
     if verb:

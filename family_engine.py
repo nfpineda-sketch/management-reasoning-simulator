@@ -222,6 +222,26 @@ def _listed(items):
     return ", ".join(items[:-1]) + " and " + items[-1]
 
 
+# Everything given as a dose rather than run as an infusion or a setting.
+_FIXED_DOSE_KINDS = frozenset(_MEDICINES) | {"anticoagulation", "ppi", "aspirin"}
+
+
+def _already_given(state, kind, agent):
+    """The minute a fixed-dose medicine was administered, or None.
+
+    A continuation is a decision to change nothing, so it is answered from the
+    record the way a repeated consult is, instead of demanding a new dose.
+    """
+    for record in reversed(state.get("treatments", {}).get("administered_medications", []) or []):
+        if str(record.get("kind") or record.get("type") or "") == kind or (
+                agent and str(record.get("agent", "")).lower() == str(agent).lower()):
+            return int(record.get("time_min", 0))
+    recorded = state.get("treatments", {}).get(kind)
+    if isinstance(recorded, dict) and (not agent or str(recorded.get("agent", "")).lower() == str(agent).lower()):
+        return int(recorded.get("time_min", 0))
+    return None
+
+
 def _failure(message):
     return {"executed": False, "clarification": message, "action_summaries": [], "reassess_delay": None, "elapsed_min": 0}
 
@@ -250,6 +270,16 @@ def _validate(state, parsed):
             generated_only = generated_only | {"ventilator_adjustment"}
         if kind in generated_only and state.get("engine_family") != "generated":
             return None, "This intervention requires a generated encounter with an explicit response rule."
+        if a.get("operation") == "continue" and kind in _FIXED_DOSE_KINDS:
+            # A decision to change nothing is answered from the record, the way a
+            # repeated consult is, instead of demanding a dose nobody meant to give.
+            given = _already_given(validation_state, kind, a.get("agent"))
+            if given is None:
+                return None, (f"No {a.get('agent') or kind} is recorded as given. "
+                              "Specify the dose and route to start it.")
+            a["given_at_min"] = given
+            normalized.append(a)
+            continue
         if kind == "clarification":
             return None, str(a.get("message") or "Please clarify the order before it is executed.")
         if kind == "diagnostic":
@@ -664,6 +694,10 @@ def _order(state, a):
         tr[kind] = {"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"]}
         duration = 5
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} administered"
+    elif a.get("operation") == "continue" and kind in _FIXED_DOSE_KINDS:
+        agent = a.get("agent") or kind
+        label = f"{agent} already given at minute {a.get('given_at_min', 0)}; not repeated"
+        duration = 0
     elif kind in {"ppi", "aspirin", "anticoagulation"}:
         f[{"anticoagulation": "anticoagulated"}.get(kind, kind)] = True
         tr[kind] = deepcopy(a)
@@ -878,7 +912,8 @@ def _order(state, a):
     for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "service", "destination", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
         if key in a:
             summary[key] = a[key]
-    if kind in _MEDICINES or kind == "anticoagulation":
+    if (kind in _MEDICINES or kind == "anticoagulation") and a.get("operation") != "continue":
+        # A continuation gave nothing, so it is not an administration.
         record = {key: deepcopy(summary[key]) for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route") if key in summary}
         record.setdefault("agent", kind)
         record["time_min"] = int(state.get("sim_time", 0))

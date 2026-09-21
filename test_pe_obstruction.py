@@ -152,3 +152,52 @@ def test_the_case_without_a_declared_risk_has_no_major_bleed(engine):
     state, labels = course(engine, [OXYGEN, LYSE, "Reassess in 60 minutes."])
     assert "Bleeding from" not in labels
     assert state["family_state"].get("major_bleed_reported") is None
+
+
+# Found playing the pulmonary embolism correctly (2026-09-21): "Mantén la
+# heparina" — a decision to change nothing — held the whole turn, reassessment
+# included, asking for a dose the resident never meant to give.
+
+def continuation(engine, case_id, *orders):
+    from family_engine import execute_family_bundle
+    from family_parser import parse_family_actions
+    state = encounter(engine, "pulmonary_embolism", case_id)["state"]
+    results = []
+    for order in orders:
+        results.append(execute_family_bundle(state, parse_family_actions(order)))
+    return state, results
+
+
+GIVE = "Give heparin 5000 units IV. Reassess in 20 minutes."
+
+
+@pytest.mark.parametrize("text", ["Mantén la heparina. Reevalúa en 30 minutos.",
+                                  "Continue heparin. Reassess in 30 minutes."])
+def test_continuing_a_dose_already_given_is_recorded_not_questioned(engine, text):
+    state, (_, kept) = continuation(engine, "pulmonary_embolism_33f", GIVE, text)
+    assert kept["executed"], kept.get("clarification")
+    labels = [str(summary.get("label", summary)) for summary in kept["action_summaries"]]
+    assert any("already given at minute" in label and "not repeated" in label for label in labels), labels
+    # The clock moved: the reassessment in the same turn was not lost with it.
+    assert state["sim_time"] == 50
+
+
+def test_continuing_what_was_never_given_still_asks(engine):
+    _, (result,) = continuation(engine, "pulmonary_embolism_33f", "Continue aspirin. Reassess in 10 minutes.")
+    assert not result["executed"]
+    assert "No aspirin is recorded as given" in result["clarification"]
+
+
+def test_a_continuation_administers_nothing(engine):
+    state, _ = continuation(engine, "pulmonary_embolism_33f", GIVE,
+                            "Mantén la heparina. Reevalúa en 30 minutos.")
+    given = [record for record in state["treatments"]["administered_medications"]
+             if str(record.get("agent", "")).lower() == "heparin"]
+    assert len(given) == 1, given
+
+
+def test_stopping_a_fixed_dose_is_still_not_an_order(engine):
+    _, (_, stopped) = continuation(engine, "pulmonary_embolism_33f", GIVE,
+                                   "Suspende la heparina. Reevalúa en 10 minutos.")
+    assert not stopped["executed"]
+    assert "explicit new dose" in stopped["clarification"]
