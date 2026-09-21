@@ -9,15 +9,24 @@ needs; and an end for apnoea that is never supported.
 Teaching magnitudes pending faculty review, and only the bank opioid family uses
 them.
 """
-DECAY_PER_MIN = .999               # a short-acting opioid: about eleven hours
+# Faculty decision 2026-09-21: the short-acting opioid was barely moving inside
+# the encounter (an eleven-hour half-life), so nothing the resident watched ever
+# wore off. Four hours is the most acceleration that keeps the other teaching
+# intact: an unsupported patient still arrests at twenty minutes, because the
+# suppression has not yet lifted him above the apnoeic threshold.
+DECAY_PER_MIN = .99712             # a short-acting opioid: a four-hour half-life
 LONG_ACTING_DECAY_PER_MIN = .9997  # a long-acting one outlasts the encounter
 NALOXONE_DECAY_PER_MIN = .975      # about twenty-seven minutes
 
 # An infusion holds the antidote where a bolus cannot.
 INFUSION_LEVEL_PER_MG_H = 2.5      # 0.4 mg/h holds a level of about 1.0
 
-# Withdrawal: the price of titrating to consciousness.
-WITHDRAWAL_LEVEL = 1.2
+# Withdrawal: the price of titrating to consciousness. It is precipitated by the
+# antidote that exceeds the agonist on board, not by an absolute dose (faculty,
+# 2026-09-21): a heavier intoxication needs more naloxone before it withdraws,
+# and a patient must never be depressed and withdrawing at the same time.
+WITHDRAWAL_MARGIN = .2
+WITHDRAWAL_LEVEL = 1.0 + WITHDRAWAL_MARGIN   # what it is for a case that arrives at 1.0
 WITHDRAWAL_HR = 25
 WITHDRAWAL_SBP = 20
 WITHDRAWAL_RR = 6
@@ -46,8 +55,12 @@ def suppression(f):
 
 
 def withdrawal(f):
-    """How far past the ventilation target the antidote has been pushed."""
-    return max(0.0, naloxone_level(f) - WITHDRAWAL_LEVEL)
+    """How far past the ventilation target the antidote has been pushed.
+
+    Measured against the opioid still on board: reversing what is there is the
+    treatment, and only the excess over it is withdrawal.
+    """
+    return max(0.0, naloxone_level(f) - (float(f.get("opioid") or 0) + WITHDRAWAL_MARGIN))
 
 
 def step(state):

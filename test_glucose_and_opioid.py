@@ -177,3 +177,41 @@ def test_ventilation_prevents_the_arrest(engine):
     assert state["family_state"].get("arrest_at") is None
     assert "Respiratory arrest" not in labels
     assert state["observable"]["pulse_present"] is True
+
+
+# Faculty review of the opioid magnitudes, 2026-09-21.
+
+def test_withdrawal_is_measured_against_the_opioid_on_board():
+    # Reversing what is there is the treatment; only the excess over it withdraws.
+    heavy = {"opioid": 2.5, "naloxone": 1.3}
+    light = {"opioid": 0.5, "naloxone": 0.9}
+    assert opi.withdrawal(heavy) == 0
+    assert opi.suppression(heavy) > 0          # still depressed, and not withdrawing
+    assert opi.withdrawal(light) == pytest.approx(0.2)
+    assert opi.suppression(light) == 0
+
+
+def test_a_patient_is_never_depressed_and_withdrawing_at_once():
+    for opioid in (0.5, 1.0, 2.0, 3.0):
+        for naloxone in (0.0, 0.5, 1.0, 2.0, 4.0):
+            f = {"opioid": opioid, "naloxone": naloxone}
+            assert not (opi.suppression(f) > 0 and opi.withdrawal(f) > 0), (opioid, naloxone)
+
+
+def test_the_case_that_arrives_at_one_unit_withdraws_where_it_always_did():
+    assert opi.WITHDRAWAL_LEVEL == pytest.approx(1.0 + opi.WITHDRAWAL_MARGIN)
+    assert opi.withdrawal({"opioid": 1.0, "naloxone": opi.WITHDRAWAL_LEVEL}) == 0
+    assert opi.withdrawal({"opioid": 1.0, "naloxone": opi.WITHDRAWAL_LEVEL + .1}) == pytest.approx(.1)
+
+
+def test_the_short_acting_opioid_halves_within_the_encounter():
+    # Eleven hours meant nothing the resident watched ever wore off.
+    assert opi.DECAY_PER_MIN ** 240 == pytest.approx(0.5, rel=.02)
+    assert opi.LONG_ACTING_DECAY_PER_MIN ** 240 > .9
+
+
+def test_it_is_still_slow_enough_to_arrest_unsupported(engine):
+    # Four hours is the most acceleration that keeps the arrest: at twenty
+    # minutes the suppression has not yet lifted the patient off the floor.
+    state, _ = course(engine, "opioid", "opioid_35m", ["Reassess in 25 minutes."])
+    assert state["family_state"]["arrest_at"] == opi.ARREST_AFTER_MIN

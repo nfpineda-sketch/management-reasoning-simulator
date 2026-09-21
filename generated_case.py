@@ -197,7 +197,7 @@ from pe_obstruction import SUSTAINED_HYPOTENSION_MIN as _PE_SUSTAINED, HYPOTENSI
     TOLERATED_ML_PER_MIN as _PE_TOLERATED, BLEED_RISK_TEXT as _PE_RISKS
 from glucose_rescue import SEIZURE_AFTER_MIN as _SEIZURE_MIN, SEIZURE_GLUCOSE as _SEIZURE_GLUCOSE, \
     WERNICKE_WINDOW_MIN as _WERNICKE_MIN
-from opioid_reversal import ARREST_AFTER_MIN as _ARREST_MIN, WITHDRAWAL_LEVEL as _WITHDRAWAL
+from opioid_reversal import ARREST_AFTER_MIN as _ARREST_MIN, WITHDRAWAL_MARGIN as _WITHDRAWAL_MARGIN
 from family_engine import GI_BLEED as _GI
 from generated_metabolic_consistency import HYPOGLYCAEMIA_MG_DL as _HYPO_MG_DL, OPIOID_RR as _OPIOID_RR
 from generated_bleeding_consistency import ANAEMIA_G_DL as _ANAEMIA
@@ -225,7 +225,8 @@ AUTHOR_INSTRUCTIONS += (
     f"{_WERNICKE_MIN} minutes of the glucose.\n"
     "- engine.opioid_toxidrome (long_acting): required when the history or the examination points to an opioid and the "
     f"respiratory rate is below {_OPIOID_RR}/min. The antidote then wears off before the drug, an infusion holds a "
-    f"long-acting one, pushing past {_WITHDRAWAL:g} units of antidote precipitates withdrawal, and "
+    f"long-acting one, antidote beyond the opioid on board by more than {_WITHDRAWAL_MARGIN:g} units "
+    f"precipitates withdrawal, and "
     f"{_ARREST_MIN} minutes of unsupported apnoeic breathing end in arrest.\n"
     "- engine.active_bleeding (established): required when the case describes melena, haematemesis, black stools or "
     f"other blood being lost. An established bleed must arrive anaemic ({_ANAEMIA} g/dL or less). The engine then "
