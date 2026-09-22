@@ -181,3 +181,24 @@ def test_an_nsaid_in_a_bleeding_patient_is_questioned():
     state = {"family_state": {"elapsed": 0, "circulation": 1.0}, "engine_family": "gi_bleed",
              "encounter_spec": {"clinical_case": {"investigations": {}}}}
     assert "bleeding from the gut" in antipyretics.record_dose(state, "ibuprofen", 600, "IV")
+
+
+# Found playing the left main (2026-09-21): "inicia dobutamina a 5 mcg/kg/min e
+# instala sonda Foley" executed the catheter and lost the inotrope without a
+# word. Two causes: the imperative normalization rewrites the word after "e", so
+# the conjunction rule stopped matching, and the support order answered for a
+# clause that was not only about the support.
+
+@pytest.mark.parametrize("text, expected", [
+    ("Inicia dobutamina a 5 mcg/kg/min e instala sonda Foley.", ["dobutamine", "urinary_catheter"]),
+    ("Instala sonda Foley e inicia dobutamina a 5 mcg/kg/min.", ["urinary_catheter", "dobutamine"]),
+    ("Administra aspirina 300 mg VO e instala monitor.", ["aspirin", "monitoring"]),
+    ("Pide hemograma e instala sonda Foley.", ["diagnostic", "urinary_catheter"]),
+])
+def test_a_nursing_order_never_swallows_the_treatment_beside_it(text, expected):
+    assert kinds(text) == expected
+
+
+def test_the_conjunction_still_leaves_a_trailing_letter_alone():
+    # "Vitamina e" has no order after it: there is nothing to split.
+    assert kinds("Administra vitamina e.") == ["clarification"]

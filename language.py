@@ -345,6 +345,16 @@ _RULES = (
   r"Se recolectaron \1 mL de orina entre el minuto \2 y el minuto \3 (unos \4 mL/h)."),
  (r"([\w-]+) withheld by mouth: the patient is ([\w ]+) and swallowing is not safe",
   r"\1 no administrado por boca: el paciente está \2 y la deglución no es segura"),
+ (r"([\w-]+) is an NSAID and this patient (.+?)\. The analgesia is real and so is the risk; "
+  r"the decision is whether this is the drug for this patient\.",
+  r"\1 es un AINE y este paciente \2. La analgesia es real y el riesgo también; la decisión es "
+  r"si este es el fármaco para este paciente."),
+ (r"\bhas a creatinine of ([\d.]+) mg/dL\b", r"tiene una creatinina de \1 mg/dL"),
+ (r"\bis not perfusing well\b", "no está perfundiendo bien"),
+ (r"\bis bleeding from the gut\b", "está sangrando del tubo digestivo"),
+ # The reasons are joined in English; this fires only between two that have
+ # already been said in Spanish.
+ (r"\band\b(?=\s+(?:no está|está|tiene una creatinina))", "y"),
  (r"([\w-]+) on top of ([\w-]+): two NSAIDs are one class\. The second adds the risks and very little of the effect\.",
   r"\1 sobre \2: dos AINE son una sola clase. El segundo suma los riesgos y muy poco del efecto."),
  (r"(\w+) already given at minute (\d+); not repeated", r"\1 ya administrado en el minuto \2; no se repite"),

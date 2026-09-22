@@ -136,8 +136,22 @@ _SUPPORT_ORDERS = (
 )
 
 
+_NAMES_A_DRUG = None
+
+
 def _support_order(body, verb):
-    """A nursing or support order, with the state it is in and no physiology."""
+    """A nursing or support order, with the state it is in and no physiology.
+
+    It answers only for a clause that is about the support itself. A clause that
+    also names a drug belongs to the ordinary parsing, so a nursing order can
+    never speak for — and silently discard — a treatment beside it.
+    """
+    global _NAMES_A_DRUG
+    if _NAMES_A_DRUG is None:
+        _NAMES_A_DRUG = re.compile(r"\b(?:" + "|".join(
+            pattern for agents in _AGENTS.values() for pattern in agents.values()) + r")\b")
+    if _NAMES_A_DRUG.search(body) or re.search(_NAMED_INFUSION, body):
+        return None
     named_vital = re.search(r"\b(?:presion|saturacion|frecuencia|spo2|estado mental|perfusion|"
                             r"blood pressure|saturation|heart rate|mental status)\b", body)
     if verb == "monitorizar" and not named_vital:
@@ -1019,7 +1033,7 @@ def _order_after_reasoning(text):
             continue
         # "check for early fluid overload" or "get the right level of care" is still
         # reasoning: the clause counts only if it names an order the parser knows.
-        first = re.split(r"\s*(?:,|\+|\band\b|\by\b|\be\b(?=\s+h?i)|\bthen\b|\bluego\b)\s*", rest, maxsplit=1)[0]
+        first = re.split(r"\s*(?:,|\+|\band\b|\by\b|\be\b(?=\s+[a-z])|\bthen\b|\bluego\b)\s*", rest, maxsplit=1)[0]
         parsed, _ = _parse_piece(first)
         if not any(action["type"] != "clarification" for action in parsed):
             continue
@@ -1075,7 +1089,7 @@ def parse_family_actions(text) -> dict:
         negated = False
         # Do not split the clinical device name "bag and mask".
         sentence = re.sub(r"\bbag and mask\b", "bag-mask", sentence)
-        pieces = re.split(r"\s*(?:,|\+|\band\b|\by\b|\be\b(?=\s+h?i)|\bthen\b|\bluego\b)\s*", sentence)
+        pieces = re.split(r"\s*(?:,|\+|\band\b|\by\b|\be\b(?=\s+[a-z])|\bthen\b|\bluego\b)\s*", sentence)
         # Ventilator settings written naturally ("intubate, VC/AC, FiO2 100% and
         # PEEP 5") belong to the airway order, not to separate orders.
         merged = []

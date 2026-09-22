@@ -28,7 +28,8 @@ NO_FEVER_BELOW_C = 37.5       # an antipyretic does not make anybody cold
 # What an NSAID has to be checked against before it is given.
 CREATININE_CAUTION = 1.5
 PERFUSION_CAUTION_BURDEN = .15    # a circulation that is not perfusing a kidney
-NSAID_CAUTION = ("{agent} is an NSAID and this patient is {reason}. The analgesia is real and so is "
+# Every reason is a full clause, so any combination of them reads as a sentence.
+NSAID_CAUTION = ("{agent} is an NSAID and this patient {reason}. The analgesia is real and so is "
                  "the risk; the decision is whether this is the drug for this patient.")
 DUPLICATE_NSAID = ("{agent} on top of {other}: two NSAIDs are one class. The second adds the risks "
                    "and very little of the effect.")
