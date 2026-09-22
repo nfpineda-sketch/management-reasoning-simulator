@@ -11,7 +11,7 @@
 | Documento | Para quién | Regla de extensión |
 |---|---|---|
 | **Management Trace** | El residente | Tantas páginas como decisiones y evidencia haya |
-| **Faculty Brief compacto** | El docente, en la mesa | Dos páginas: lo que se lee y se decide, y la tabla de sugerencias |
+| **Faculty Brief compacto** | El docente, en la mesa | La página de lectura y la tabla de sugerencias; dos páginas cuando el encuentro lo permite, más si no |
 | **Faculty Brief completo** | El docente, para verificar | Tantas páginas como objetivos y texto haya |
 
 Los tres salen de **una misma representación del encuentro y del análisis**: el registro
@@ -48,9 +48,13 @@ El sexto se llama `POINT TO REVISIT` únicamente cuando el texto del modelo form
 
 ### Faculty Brief compacto
 
-**Página 1**: síntesis · contexto de asistencia · prioridades de revisión · preguntas de
-debriefing. **Página 2**: tabla de sugerencias por objetivo · alcance · llamado a la acción ·
+**Primera página**: síntesis · contexto de asistencia · prioridades de revisión · preguntas de
+debriefing. **Después**: tabla de sugerencias por objetivo · alcance · llamado a la acción ·
 pie con procedencia breve.
+
+Dos páginas es lo habitual y lo deseable, no una obligación: con muchos objetivos, justificaciones
+largas o una sugerencia retenida, la tabla necesita más espacio. Antes que recortar una
+justificación o achicar la letra, el compacto crece.
 
 Las sugerencias van **después** de la evidencia y las preocupaciones, nunca antes.
 
@@ -103,8 +107,9 @@ sí es una orden nueva. Ningún informe convierte la llegada de un resultado en 
 - Una decisión que ocupa dos páginas se parte **entre secciones numeradas**, y la página que
   sólo la continúa se encabeza `DECISION N · CONTINUED`. Una página donde empieza otra decisión
   no lleva ese encabezado.
-- **No se fuerza un número de páginas** recortando información relevante ni achicando la letra.
-  La única extensión fija es el compacto, que resume sin cambiar el significado.
+- **No se fuerza un número de páginas** recortando información relevante ni achicando la letra,
+  en ninguno de los tres. El compacto resume, pero no cambia el significado ni pierde una
+  justificación para caber.
 
 ## Originales y correcciones
 
