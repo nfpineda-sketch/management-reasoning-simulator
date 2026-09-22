@@ -99,3 +99,13 @@ def temperature(f, baseline_c):
 
 def relief(f):
     return _active(f)[1]
+
+
+def temperature_drop(f, baseline_c):
+    """How much of the fever is down right now, as a positive number of °C.
+
+    The generated engine composes its observable from deltas, so it needs the
+    fall rather than the absolute temperature (2026-09-22).
+    """
+    baseline = float(baseline_c or 37)
+    return max(0.0, baseline - temperature(f, baseline))

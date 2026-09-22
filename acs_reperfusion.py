@@ -100,7 +100,10 @@ def nitrate_drop(f, equivalent_mcg_min, baseline_sbp, fluid_ml):
 
 # Actions a declared coronary mechanism authorises in a generated case, which would
 # otherwise need an authored response rule of their own.
-MECHANISM_ACTIONS = frozenset({"thrombolysis", "stress_test"})
+# The block this pathway makes is treated with these, in either engine
+# (2026-09-22): a declared coronary authorises them, as it authorises the
+# reperfusion itself.
+MECHANISM_ACTIONS = frozenset({"thrombolysis", "stress_test", "atropine", "transcutaneous_pacing"})
 
 # The generated adapter receives observable deltas, not the bank's internal variables,
 # exactly as the nitrate hazard does.
@@ -117,7 +120,7 @@ AV_BLOCK_RAMP_MIN = 5.0
 GENERATED_SBP_FLOOR = -30.0        # the mechanism never pushes the core past this
 
 
-def generated_effects(f):
+def generated_effects(f, spec=None):
     """Observable deltas for a generated case: (sbp, dbp, hr).
 
     The pathway keeps its bookkeeping in the shared family_state, where the burden
@@ -129,10 +132,18 @@ def generated_effects(f):
     sbp, dbp, hr = -SBP_PER_BURDEN * burden, -DBP_PER_BURDEN * burden, HR_PER_BURDEN * burden
     block = f.get("av_block_at")
     if block is not None and not is_open(f):
+        import bradycardia_support
         share = min(1.0, (f["elapsed"] - block) / AV_BLOCK_RAMP_MIN)
-        sbp += AV_BLOCK_SBP_DELTA * share
-        dbp += AV_BLOCK_SBP_DELTA * .6 * share
-        hr += AV_BLOCK_HR_DELTA * share
+        # Atropine and a capturing pacer give the rate back, and the pressure
+        # the lost rate was costing comes back with it — the same treatment the
+        # bank runs, told to the core in the deltas it understands.
+        missing = -AV_BLOCK_HR_DELTA
+        rate = bradycardia_support.effective_rate(f, spec or {}, AV_BLOCK_RATE)
+        regained = max(0.0, min(missing, rate - AV_BLOCK_RATE))
+        remaining = 1 - (regained / missing if missing else 0.0)
+        sbp += AV_BLOCK_SBP_DELTA * share * remaining
+        dbp += AV_BLOCK_SBP_DELTA * .6 * share * remaining
+        hr += (AV_BLOCK_HR_DELTA + regained) * share
     return max(GENERATED_SBP_FLOOR, sbp), max(GENERATED_SBP_FLOOR * .6, dbp), hr
 
 

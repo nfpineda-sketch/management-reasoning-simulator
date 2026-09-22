@@ -33,7 +33,11 @@ BOUNDS = {
 }
 _ACTIVE = frozenset({"oxygen", "niv", "bag_mask", "intubation", "ventilator_adjustment", "norepinephrine", "dobutamine", "nitroglycerin"})
 _RESPIRATORY = frozenset({"oxygen", "niv", "bag_mask", "intubation", "ventilator_adjustment"})
-_ADMIN = frozenset({"consult", "reperfusion_referral", "disposition", "airway_preparation"})
+# Orders that are recorded and change no physiology run in every engine: a
+# resident who writes "instala una via" must not lose the turn for it in a
+# generated case and keep it in a bank one (faculty, 2026-09-22).
+_ADMIN = frozenset({"consult", "reperfusion_referral", "disposition", "airway_preparation",
+                    "vascular_access", "monitoring", "npo", "urinary_catheter", "gastric_tube"})
 _DOSE_FIELDS = {
     "beta_blocker": "dose_mg", "diltiazem": "dose_mg", "amiodarone": "dose_mg", "procedural_sedation": "dose_mg", "fluid": "volume_ml", "blood": "units", "dextrose": "dose_g", "naloxone": "dose_mg",
     "antibiotics": "dose_mg", "bronchodilator": "dose_mg", "steroid": "dose_mg",

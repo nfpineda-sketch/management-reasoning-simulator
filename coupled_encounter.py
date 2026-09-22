@@ -16,6 +16,10 @@ import clinical_diagnostics as diagnostic_core
 
 CORE_KINDS=frozenset({'fluid','oxygen','niv','bag_mask','intubation','ventilator_adjustment','norepinephrine','dobutamine','nitroglycerin','beta_blocker','diltiazem','amiodarone','diuretic','cardioversion','airway_preparation','antibiotics'})
 CORE_NUMERIC=frozenset({'sbp','dbp','hr','spo2','crt','respiratory_rate'})
+# Paracetamol and the NSAIDs need no declared mechanism: the fever they treat is
+# a core observation (faculty decision 14, carried to the generated engine).
+from antipyretics import AGENTS as _ANTIPYRETICS
+ANTIPYRETIC_AGENTS=frozenset(_ANTIPYRETICS)
 
 
 def enabled(case):
@@ -165,9 +169,19 @@ def prepare_inputs(state):
     if g.get('nitrate_drop'):
         from nitrate_hazard import DBP_FRACTION
         delta['sbp']=delta.get('sbp',0)-g['nitrate_drop'];delta['dbp']=delta.get('dbp',0)-DBP_FRACTION*g['nitrate_drop']
+    import antipyretics
+    # The ward's antipyretics belong to no mechanism: any patient with a fever
+    # can be given one, in either engine (2026-09-22).
+    # The baseline has to be the one the projection adds the delta to, or a
+    # patient with a normal temperature could be cooled below it.
+    fever_drop=antipyretics.temperature_drop(
+        state['family_state'],
+        g.get('baseline_values',{}).get('temperature_c',
+              state['encounter_spec']['clinical_case']['observable'].get('temperature_c')))
+    if fever_drop:delta['temperature_c']=delta.get('temperature_c',0)-fever_drop
     import acs_reperfusion,generated_airway
     if acs_reperfusion.coronary(state) is not None:
-        sbp,dbp,hr=acs_reperfusion.generated_effects(state['family_state'])
+        sbp,dbp,hr=acs_reperfusion.generated_effects(state['family_state'],acs_reperfusion.coronary(state))
         delta['sbp']=delta.get('sbp',0)+sbp;delta['dbp']=delta.get('dbp',0)+dbp
         delta['hr']=delta.get('hr',0)+hr
     if generated_airway.spec(state) is not None:
@@ -397,8 +411,12 @@ def arrival_core_pocus(case):
 
 def collect(state,study,duration):
     from generated_engine import _collect_diagnostic
-    result=_collect_diagnostic(state,study,duration)
     import acs_reperfusion
+    from family_engine import _ADDITIONAL_LEADS
+    if study in _ADDITIONAL_LEADS and acs_reperfusion.coronary(state) is not None:
+        return {'type':'diagnostic','diagnostic_type':study,'duration_min':duration,
+                'result':acs_reperfusion.additional_leads(state,study)}
+    result=_collect_diagnostic(state,study,duration)
     spec=acs_reperfusion.coronary(state)
     if spec is not None and study=='troponin' and 'value_ng_l' in result['result']:
         # The troponin follows the infarct, as it does in a bank case.
@@ -460,7 +478,11 @@ def execute(state,parsed):
                 coronary_spec(state) is not None and a['type'] in MECHANISM_ACTIONS) or (
                 generated_airway.spec(state) is not None and a['type'] in AIRWAY_MECHANISM_ACTIONS) or (
                 generated_pe.spec(state) is not None and a['type'] in generated_pe.MECHANISM_ACTIONS)
-            if not native(a) and not mechanism and a['type'] not in _ADMIN|{'reassessment','diagnostic'} and not rules:
+            # A ward treatment belongs to no mechanism and is not part of the
+            # core's own physiology: it is executed and its effect is added to
+            # the observable like any mechanism's (2026-09-22).
+            ward=a['type']=='antipyretic' and str(a.get('agent','')).lower() in ANTIPYRETIC_AGENTS
+            if not native(a) and not mechanism and not ward and a['type'] not in _ADMIN|{'reassessment','diagnostic'} and not rules:
                 return _failure('Order understood, but this treatment is outside the main/IA core and has no declared disease-specific response. No orders were executed.')
             selected.append(rules)
         candidate=deepcopy(state);initialize(candidate);g=candidate['generated_state'];s=candidate['coupled_state'];summaries=[];reassess=None
@@ -469,7 +491,8 @@ def execute(state,parsed):
             k=a['type']
             if k=='reassessment':reassess=a['delay_min'];continue
             if k=='diagnostic':
-                delay=1 if a['diagnostic']=='ecg' else case['investigations'][a['diagnostic']].get('duration_min',0)
+                from family_engine import _ADDITIONAL_LEADS
+                delay=1 if a['diagnostic'] in {'ecg'}|_ADDITIONAL_LEADS else case['investigations'][a['diagnostic']].get('duration_min',0)
                 pending.append({'available_at':candidate['sim_time']+delay,'summary':collect(candidate,a['diagnostic'],delay)});continue
             summary=_order(candidate,a)
             if k=='fluid' and a.get('operation')=='stop':summaries.append(summary);continue

@@ -40,6 +40,8 @@ _EXPOSURE_MG = {
 # own except the collection a catheter makes possible (faculty decision 13).
 # The label is what the response card says after "After …", so it stays short;
 # what the order does and does not do is said once, on its own line.
+# The leads a coronary case can always record, whichever engine runs it.
+_ADDITIONAL_LEADS = frozenset({"ecg_right", "ecg_posterior"})
 _SUPPORT_ORDERS = {
     "vascular_access": ("peripheral intravenous access", "placed", 3,
                         "Intravenous orders were already being given through a working line."),
@@ -322,7 +324,12 @@ def _validate(state, parsed):
             study = _case(state).get("investigations", {}).get(a.get("diagnostic"), {})
             if str(study.get("result", {}).get("report", "")).startswith("No result is recorded"):
                 return None, "That investigation has no available result in this encounter. It has not been reported as normal."
-            if a.get("diagnostic") != "ecg" and a.get("diagnostic") not in _case(state).get("investigations", {}):
+            # A declared coronary carries its own additional leads in either
+            # engine: they are read off the same declaration (2026-09-22).
+            if (a.get("diagnostic") in _ADDITIONAL_LEADS
+                    and acs_reperfusion.coronary(state) is not None):
+                pass
+            elif a.get("diagnostic") != "ecg" and a.get("diagnostic") not in _case(state).get("investigations", {}):
                 return None, f"Requested study {a.get('diagnostic')!r} is unavailable. Available studies: {', '.join(sorted(_case(state).get('investigations', {})))}; ecg. No orders in this submission were executed."
         elif kind == "reassessment":
             if not _number(a.get("delay_min"), 0, 120):
