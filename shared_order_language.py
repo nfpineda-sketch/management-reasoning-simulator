@@ -10,7 +10,28 @@ def _normalize(text):
     # end of three sentences: the order splitter would cut the clause apart.
     text = re.sub(r"\b([ievs])\.\s*([vmoc])\.", r"\1\2", text)
     # A decimal comma is numeric, whereas a comma separating orders is not.
-    return re.sub(r"(?<=\d),(?=\d)", ".", text)
+    text = re.sub(r"(?<=\d),(?=\d)", ".", text)
+    # Found playing the left main case in Spanish (2026-09-22): fentanyl is
+    # always prescribed in micrograms, and "fentanilo 50 microgramos" lost its
+    # dose and came back asking for milligrams. The unit spelled out is the same
+    # unit, so it is read as the same unit.
+    text = re.sub(r"\bmicro\s*(?:gramos?|grams?)\b", "mcg", text)
+    text = re.sub(r"\bmili\s*gramos?\b|\bmilligrams?\b", "mg", text)
+    text = re.sub(r"\bmililitros?\b|\bmillilit(?:er|re)s?\b", "ml", text)
+    # An infusion rate dictated in words is the same rate: "0.1 mcg por kilo por
+    # minuto". Only a unit immediately before the "por" is rewritten, so a pacing
+    # rate ("a 70 por minuto") keeps its own wording.
+    unit = r"(?<=\b)(mcg|ug|mg|ml|cc|u|units?|unidades?)\s*(?:/|\s(?:por|per)\s)\s*"
+    per_kg = r"kilo(?:gramo|gram)?s?|kg"
+    per_min = r"min(?:uto|ute)?s?"
+    per_hour = r"h(?:ora|our)?s?"
+    text = re.sub(unit + r"(?:" + per_kg + r")\s*(?:/|\s(?:por|per)\s)\s*(?:" + per_min + r")\b",
+                  r"\1/kg/min", text)
+    text = re.sub(unit + r"(?:" + per_kg + r")\s*(?:/|\s(?:por|per)\s)\s*(?:" + per_hour + r")\b",
+                  r"\1/kg/h", text)
+    text = re.sub(unit + r"(?:" + per_min + r")\b", r"\1/min", text)
+    text = re.sub(unit + r"(?:" + per_hour + r")\b", r"\1/h", text)
+    return re.sub(unit + r"(?:" + per_kg + r")\b", r"\1/kg", text)
 
 def _route(text):
     found = []

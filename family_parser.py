@@ -414,7 +414,12 @@ _QUANTITY_ONLY = re.compile(
 _REPORTS_OR_WITHHOLDS = re.compile(
     r"\b(?:received|receives|was given|were given|already|previously|had|has|have|"
     r"after|following|improved|worsened|responded|no|not|never|without|"
-    r"recibio|recibe|ya|previamente|tras|despues|luego de|mejoro|empeoro|respondio|sin)\b", re.I)
+    r"recibio|recibe|ya|previamente|tras|despues|luego de|mejoro|empeoro|respondio|sin|"
+    # Urine is the one volume the patient produces rather than receives, so a
+    # millilitre attached to it is a measurement. Found playing the left main
+    # case (2026-09-22): "diuresis de 54 mL/h" inside the finding was quoted back
+    # as an unrecognized order and held the whole submission.
+    r"diuresis|gasto urinario|debito urinario|urine output|urinary output)\b", re.I)
 
 
 def _names_a_substance(body):
