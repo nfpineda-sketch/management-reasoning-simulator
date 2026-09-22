@@ -38,15 +38,17 @@ _EXPOSURE_MG = {
 }
 # Nursing and support orders: recorded, with a state, and no physiology of their
 # own except the collection a catheter makes possible (faculty decision 13).
+# The label is what the response card says after "After …", so it stays short;
+# what the order does and does not do is said once, on its own line.
 _SUPPORT_ORDERS = {
-    "vascular_access": ("peripheral intravenous access", 3,
-                        "a working line; intravenous orders were already being given through one"),
-    "monitoring": ("continuous monitoring and pulse oximetry", 2,
-                   "the monitor is on; it watches the patient and treats nothing"),
-    "npo": ("nil by mouth", 1, "recorded; nothing is to be given by mouth"),
-    "urinary_catheter": ("urinary catheter", 4,
-                         "urine is now collected and measured; the catheter does not make any"),
-    "gastric_tube": ("nasogastric tube", 4, "placed; what it is for belongs to the indication"),
+    "vascular_access": ("peripheral intravenous access", "placed", 3,
+                        "Intravenous orders were already being given through a working line."),
+    "monitoring": ("continuous monitoring and pulse oximetry", "started", 2,
+                   "The monitor watches the patient and treats nothing."),
+    "npo": ("nil by mouth", "recorded", 1, "Nothing is to be given by mouth."),
+    "urinary_catheter": ("urinary catheter", "placed", 4,
+                         "Urine is collected and measured from now on; the catheter does not make any."),
+    "gastric_tube": ("nasogastric tube", "placed", 4, "What it is for belongs to the indication."),
 }
 _MEDICINES = {
     "antibiotics": ({"IV", "IO", "PO"}, .01, 20000),
@@ -868,7 +870,7 @@ def _order(state, a):
             tr.update({kind + "_rate": reported_rate if rate else 0, kind + "_units": reported_units})
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
     elif kind in _SUPPORT_ORDERS:
-        name, minutes, note = _SUPPORT_ORDERS[kind]
+        name, done, minutes, note = _SUPPORT_ORDERS[kind]
         field = {"urinary_catheter": "urinary_catheter", "vascular_access": "iv_access",
                  "monitoring": "monitoring", "npo": "npo", "gastric_tube": "gastric_tube"}[kind]
         already = bool(f.get(field))
@@ -877,7 +879,20 @@ def _order(state, a):
             label = f"{name} removed"
         else:
             f[field] = True
-            label = (f"{name} already in place; not repeated" if already else f"{name}: {note}")
+            label = f"{name} already in place; not repeated" if already else f"{name} {done}"
+            if not already:
+                f.setdefault("procedure_events", []).append(
+                    {"type": "procedure", "label": note,
+                     "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
+                if kind == "urinary_catheter":
+                    # What was in the bladder before the catheter is drained now;
+                    # it is not urine made during the collection that follows.
+                    residual = float(f.get("urine_since_report_ml", 0.0))
+                    f["urine_since_report_ml"] = 0.0
+                    f["urine_report_min"] = 0
+                    if residual >= 1:
+                        f["procedure_events"][-1]["label"] += (
+                            f" {residual:.0f} mL drained on placement, made before the catheter went in.")
         tr.setdefault("support_orders", {})[kind] = bool(f.get(field))
         duration = 0 if already else minutes
     elif kind == "neuromuscular_blockade":
@@ -934,10 +949,12 @@ def _order(state, a):
                 f["pacing_ma"] = float(a["output_ma"])
             f.setdefault("pacing_threshold_ma", bradycardia_support.PACING_DEFAULT_THRESHOLD_MA)
             captured = bradycardia_support.capturing(f)
-            label = (f"transcutaneous pacing at {f.get('pacing_rate'):g}/min and {f.get('pacing_ma') or 0:g} mA: "
-                     + ("pacing spikes are followed by wide complexes and a palpable pulse; capture is confirmed"
-                        if captured else
-                        "pacing spikes appear without a following complex: there is no capture at this output"))
+            label = f"transcutaneous pacing at {f.get('pacing_rate'):g}/min and {f.get('pacing_ma') or 0:g} mA"
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "time_min": int(state.get("sim_time", 0)), "duration_min": 0,
+                 "label": ("Pacing spikes are followed by wide complexes and a palpable pulse: capture is confirmed."
+                           if captured else
+                           "Pacing spikes appear without a following complex: there is no capture at this output.")})
         tr["transcutaneous_pacing"] = bool(f.get("pacing_rate"))
         duration = 2
     elif kind in {"octreotide", "glucagon", "thiamine"}:
