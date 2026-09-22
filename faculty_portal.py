@@ -7,6 +7,8 @@ from urllib.parse import urlsplit
 import streamlit as st
 from reportlab.platypus import LayoutError
 
+import record_findings as findings
+
 from account_store import AccountError
 from faculty_analysis import FacultyAnalysisError, generate_faculty_brief, source_fingerprint
 from faculty_analysis_store import FacultyBriefStore
@@ -144,9 +146,14 @@ def render_faculty_analysis(context, record):
             _pdf_download(context, report, record, compact=True)
             st.caption("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification.")
             labels = {item["ref"]: item["label"] for item in evidence_items(record["payload"])}
+            # The same held state the PDFs show: a negative suggestion whose
+            # basis the record cannot settle waits for the faculty's reading.
+            limits = findings.encounter_limits(
+                ((record.get("payload") or {}).get("session") or {}).get("management_trace") or [])
             st.dataframe([
                 {"Objective": key["objective_id"] + " · " + OBJECTIVES[key["objective_id"]]["title"],
-                 "AI suggestion": RECOMMENDATIONS[key["recommendation"]],
+                 "AI suggestion": (findings.HELD_STATUS if findings.hold_for_review(key, limits)
+                                   else RECOMMENDATIONS[key["recommendation"]]),
                  "Depth": (key["depth"] or "Faculty judgment needed").capitalize(),
                  "Autonomy": (key["autonomy"] or "Not established").capitalize()}
                 for key in analysis["objectives"]
@@ -203,7 +210,16 @@ def render_suggestion_loader(context, record, objective_id, widget_prefix):
         report = None
     if report:
         suggestion = next(item for item in report["analysis"]["objectives"] if item["objective_id"] == objective_id)
-        st.caption("AI draft: " + RECOMMENDATIONS[suggestion["recommendation"]])
+        limits = findings.encounter_limits(
+            ((record.get("payload") or {}).get("session") or {}).get("management_trace") or [])
+        held = findings.hold_for_review(suggestion, limits)
+        if held:
+            st.caption("AI draft: " + findings.HELD_STATUS)
+            st.info("AI suggestion on record: " + RECOMMENDATIONS[suggestion["recommendation"]]
+                    + ". It is held for your reading because " + held[0]
+                    + ". No new rating was assigned and no recorded judgment was changed.")
+        else:
+            st.caption("AI draft: " + RECOMMENDATIONS[suggestion["recommendation"]])
         st.write(suggestion["rationale"])
         if st.button("Load AI suggestion into editable form", key=widget_prefix + "_load_ai"):
             values = {

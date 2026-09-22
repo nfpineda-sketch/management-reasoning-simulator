@@ -162,8 +162,8 @@ def test_default_concise_pdf_preserves_suggestions_citations_and_faculty_route()
     assert "Not assessed in this encounter" in flat
     assert "D1 00:46" in text
     assert "Reflection 1" in text
-    assert "Not known / not documented" in text
-    assert text.count("Assistance and autonomy:") == 1
+    assert "Not known / not documented" in flat
+    assert flat.count("Assistance and autonomy:") == 1
     assert "Autonomy cannot be assessed because assistance is unknown" not in text
     assert "selected review priorities" in text
     assert "rationale excerpts and evidence anchors are a reading aid" in flat

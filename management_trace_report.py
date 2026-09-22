@@ -25,6 +25,7 @@ from reportlab.platypus import (
 )
 
 
+import record_findings as findings
 import report_presentation as presentation
 
 RENDERER_VERSION = "1.1"
@@ -319,6 +320,35 @@ def _observed_studies(event):
     return lines
 
 
+def _decision_title(item, event, stage):
+    """The decision's own heading, complete.
+
+    A title cut at the schema's limit is not shown as a title. What the
+    decision did is already recorded, so the heading is built from the
+    executed actions instead (faculty request 2026-09-23).
+    """
+    written = _text(item.get("title"))
+    if not presentation.was_truncated(written, presentation.TITLE_CAPS):
+        return written
+    names = []
+    for phrase in presentation.action_lines(event.get("executed_actions", [])):
+        name = phrase.split(" · ")[0].split(";")[0]
+        name = re.sub(r"\s*\(.*?\)\s*$", "", name)
+        name = re.sub(r"\s+requested$", "", name)
+        name = re.sub(r"\s+already in place.*$", "", name).strip()
+        if name and name.lower() not in {n.lower() for n in names}:
+            names.append(name)
+    for study in stage.get("awaiting", []):
+        name = presentation.study_name(study)
+        if name.lower() not in {n.lower() for n in names}:
+            names.append(name)
+    if not names:
+        return "Recorded decision"
+    shown, extra = names[:4], len(names) - 4
+    heading = shown[0] if len(shown) == 1 else ", ".join(shown[:-1]) + " and " + shown[-1]
+    return heading + (f", and {extra} more" if extra > 0 else "")
+
+
 def _recorded_course(timeline):
     """A factual summary of the chart, for when the AI passage was cut short.
 
@@ -407,7 +437,12 @@ def render_management_trace_pdf(
         subject="Source-bound AI interpretation of management decisions and observed patient response",
         pageCompression=1,
     )
-    status = "REVIEW COMPLETE" if review_completed else "DRAFT - REVIEW IN PROGRESS"
+    incomplete = [claim for claim in _all_claims(analysis)
+                  if presentation.was_truncated(_mapping(claim).get("text"))]
+    incomplete += [moment for moment in analysis.get("pivotal_decisions") or []
+                   if presentation.was_truncated(moment.get("title"), presentation.TITLE_CAPS)]
+    status = ("AI INTERPRETATION INCOMPLETE" if incomplete
+              else "REVIEW COMPLETE" if review_completed else "DRAFT - REVIEW IN PROGRESS")
     story = []
 
     def p(text, style="body"):
@@ -472,6 +507,9 @@ def render_management_trace_pdf(
     raw_trace = payload.get("trace") if isinstance(payload, dict) else None
     case_id = _text(_mapping(_mapping((raw_trace or [{}])[0]).get("state_before")).get("case_id"))
     encounter_id = presentation.identifier(case_id, _text(case_label), fallback=_text(case_label))
+    stages = findings.order_stages(raw_trace)
+    limits = findings.encounter_limits(raw_trace)
+    urine_line = findings.urine_statement(raw_trace)
     decision_marks = [(_number(event.get("decision_time_min")) or 0, f"D{event['decision_number']}")
                       for event in timeline if event.get("decision_number") is not None]
 
@@ -486,7 +524,13 @@ def render_management_trace_pdf(
     story.append(p("AI synthesis of your recorded decisions and subsequent reflection. It is a learning report: it does not award a grade, establish competence or infer a cognitive bias. Every interpretation below is provisional until your faculty reviews it.", "small"))
 
     story.append(p("The encounter in perspective", "heading"))
-    story.append(claim_paragraph(analysis["overview"]))
+    if presentation.was_truncated(_mapping(analysis["overview"]).get("text")):
+        story.append(p("The AI synthesis for this encounter stopped at the analysis length limit and is "
+                       "not shown here; the incomplete fragment is kept in the technical record at the "
+                       "end. What follows is read from the record, and is not an interpretation.", "note"))
+        story.append(Paragraph("<b>Recorded course:</b> " + _recorded_course(timeline), styles["body"]))
+    else:
+        story.append(claim_paragraph(analysis["overview"]))
 
     story.append(p("Recorded patient trajectory", "heading"))
     trend_width = (content_width - 12) / 2
@@ -496,7 +540,13 @@ def render_management_trace_pdf(
     for event in timeline:
         if event.get("decision_number") is None:
             continue
-        done = presentation.action_lines(event.get("executed_actions", []))
+        stage = stages.get(event["source_ref"], {"reported": [], "awaiting": []})
+        elsewhere = {row["study"] for row in stage["reported"] if not row["requested_here"]}
+        done = presentation.action_lines(
+            [action for action in event.get("executed_actions", [])
+             if not (isinstance(action, dict)
+                     and str(action.get("diagnostic") or action.get("diagnostic_type") or "") in elsewhere)])
+        done += [presentation.study_name(study) + " requested" for study in stage["awaiting"]]
         summary = "; ".join(done[:2]) if done else "no executed action recorded"
         if len(done) > 2:
             summary += f"; +{len(done) - 2} more"
@@ -521,19 +571,12 @@ def render_management_trace_pdf(
     story.append(panel_row([charts[2], charts[3]]))
     story.append(panel_row([charts[4], legend]))
     story.append(p("Points are recorded observations; lines connect them and do not show continuous monitoring. Missing values interrupt the line, and each panel has its own vertical scale. The dashed marks are the minutes at which D1-D" + str(len(decision_marks) or 1) + " were taken: they show when you acted, and a change after a mark does not establish that the action caused it.", "tiny"))
-    story.append(p("AI interpretation of the trajectory", "label"))
-    story.append(claim_paragraph(analysis["trajectory"]))
-    # When a passage was cut at the analysis length limit, the report does not
-    # continue the sentence: it states the course from the chart instead, and
-    # says plainly that the interpretation is incomplete (2026-09-23).
-    if presentation.was_truncated(_mapping(analysis["overview"]).get("text")) or \
-            presentation.was_truncated(_mapping(analysis["trajectory"]).get("text")):
-        story.append(KeepTogether([
-            p("THE INTERPRETATION ABOVE IS INCOMPLETE", "label"),
-            p("One or more AI passages stopped at the analysis length limit and were not continued. "
-              "What follows is not an interpretation: it is the recorded course, read from the chart.", "note"),
-            Paragraph("<b>Recorded course:</b> " + _recorded_course(timeline), styles["body"]),
-        ]))
+    if presentation.was_truncated(_mapping(analysis["trajectory"]).get("text")):
+        story.append(p("The AI reading of the trajectory also stopped at the length limit and is kept in "
+                       "the technical record at the end.", "note"))
+    else:
+        story.append(p("AI interpretation of the trajectory", "label"))
+        story.append(claim_paragraph(analysis["trajectory"]))
 
     story.append(p("What to carry forward", "heading"))
     story.append(p("PATTERNS TO PRESERVE", "label"))
@@ -550,12 +593,16 @@ def render_management_trace_pdf(
     story.append(p("Decisions worth revisiting", "heading"))
     story.append(p("Each decision is shown as it happened: what you had observed, how you reasoned, what you ordered, what you expected, what was recorded next, and what changed after it. Your later reflection is summarised separately by the model, because it is retrospective and does not describe what you necessarily knew at the time.", "small"))
 
-    fates = presentation.order_fates(payload.get("trace") if isinstance(payload, dict) else [])
     for item in analysis["pivotal_decisions"]:
         event = index[item["decision_ref"]]
         reasoning = _mapping(event.get("recorded_reasoning"))
         composed = set(event.get("app_composed_reasoning_slots") or [])
-        lines = presentation.action_lines(event.get("executed_actions", []))
+        stage = stages.get(item["decision_ref"], {"requested": [], "reported": [], "awaiting": []})
+        elsewhere = {row["study"] for row in stage["reported"] if not row["requested_here"]}
+        lines = presentation.action_lines(
+            [action for action in event.get("executed_actions", [])
+             if not (isinstance(action, dict)
+                     and str(action.get("diagnostic") or action.get("diagnostic_type") or "") in elsewhere)])
         time_range = f"{_time(event.get('decision_time_min'))} to {_time(event.get('response_time_min'))}"
         changed, unchanged = _observed_vitals(event)
         studies = _observed_studies(event)
@@ -568,7 +615,7 @@ def render_management_trace_pdf(
             Spacer(1, 9), HRFlowable(width="100%", thickness=1, color=LINE),
             _OpenDecision(open_decision, event["decision_number"]),
             p(f"DECISION {event['decision_number']} · {time_range} · {_text(event.get('execution_status')).replace('_', ' ') or 'not recorded'}", "label"),
-            p(correct(presentation.claim_text(item["title"], presentation.TITLE_CAPS)), "card_title"),
+            p(_decision_title(item, event, stage), "card_title"),
             p("1 · WHAT YOU HAD OBSERVED", "label"),
             p(observed_before or "No observations were recorded before this decision."),
         ]))
@@ -608,10 +655,27 @@ def render_management_trace_pdf(
             result_bits.append("No before/after observations were recorded.")
         for heading, body in studies:
             result_bits.append(f"<b>{_xml(heading)}:</b> " + _xml(body))
-        # A request is not an execution, and a missing result is not an
-        # omission by the resident (faculty request 2026-09-23).
-        for line in fates.get(item["decision_ref"], []):
-            result_bits.append('<font color="#607482">' + _xml(line) + "</font>")
+        # Request, sample and report are three moments, and a missing result is
+        # not an omission by the resident (faculty request 2026-09-23).
+        for row in stage["reported"]:
+            parts = []
+            if row["sampled_at_min"] is not None:
+                parts.append(f"sampled at {row['sampled_at_min']:g} min")
+            if row["reported_at_min"] is not None:
+                parts.append(f"reported at {row['reported_at_min']:g} min")
+            if not row["requested_here"]:
+                parts.append(f"requested at decision {row['requested_at_decision']}")
+            if parts:
+                result_bits.append('<font color="#607482">'
+                                   + _xml(presentation.study_name(row["study"]) + ": " + ", ".join(parts))
+                                   + "</font>")
+        closed = limits.get("closed_at_min")
+        ending = f" before the encounter closed at {closed:g} min" if closed is not None else ""
+        for study in stage["awaiting"]:
+            result_bits.append('<font color="#607482">' + _xml(
+                presentation.study_name(study) + f": requested; no result was recorded{ending}") + "</font>")
+        if any(findings.URINE_WORDS.search(line) for line in lines):
+            result_bits.append('<font color="#607482">' + _xml(urine_line) + "</font>")
         compare = Table([
             [p("4 · WHAT YOU EXPECTED", "label"), p("5 · WHAT WAS RECORDED NEXT", "label")],
             [p(expectation), Paragraph("<br/>".join(result_bits), styles["body"])],
@@ -654,15 +718,19 @@ def render_management_trace_pdf(
 
     # --- what the learner wrote afterwards, then the metadata ---------------
     entered_plan = _mapping(adaptation_plan)
-    story.append(Spacer(1, 14))
-    story.append(p("Your later adaptation plan", "heading"))
-    story.append(p("Written by you after the comparison. It is your own text and is not part of the AI analysis above.", "small"))
+    # The plan the learner wrote is read as one thing, so it travels as one.
+    plan_block = [
+        Spacer(1, 14),
+        p("Your later adaptation plan", "heading"),
+        p("Written by you after the comparison. It is your own text and is not part of the AI analysis above.", "small"),
+    ]
     if not any(_text(entered_plan.get(key)).strip() for key, _ in PLAN_FIELDS):
-        story.append(p("Not yet recorded. Complete your comparison and adaptation plan in the app.", "body"))
+        plan_block.append(p("Not yet recorded. Complete your comparison and adaptation plan in the app.", "body"))
     else:
         for key, label in PLAN_FIELDS:
-            story.append(p(label, "label"))
-            story.append(p(_text(entered_plan.get(key)) or "Not recorded."))
+            plan_block.append(p(label, "label"))
+            plan_block.append(p(_text(entered_plan.get(key)) or "Not recorded."))
+    story.append(KeepTogether(plan_block))
 
     # The metadata closes the document; it must not be left alone on a page.
     truncated = sum(1 for claim in _all_claims(analysis)
@@ -683,11 +751,18 @@ def render_management_trace_pdf(
         "tiny"),
     ]
     closing += [p("Correction: " + reason, "tiny") for reason in correct.lines()]
+    if incomplete:
+        closing.append(p("Technical record — AI passages that stopped at the analysis length limit and "
+                         "were therefore not used in the reading above:", "tiny"))
+        for claim in incomplete:
+            mapped = _mapping(claim)
+            if "text" in mapped:
+                fragment, caps = mapped.get("text"), presentation.CLAIM_CAPS
+            else:
+                fragment, caps = mapped.get("title"), presentation.TITLE_CAPS
+            closing.append(p("· " + presentation.claim_text(fragment, caps), "tiny"))
     # Pull it back beside the last plan field, label and value together, so the
     # metadata never stands on its own and no heading is left behind.
-    tail = []
-    while story and isinstance(story[-1], Paragraph) and len(tail) < 2:
-        tail.insert(0, story.pop())
-    story.append(KeepTogether(tail + closing) if tail else KeepTogether(closing))
+    story.append(KeepTogether(closing))
     document.build(story, onFirstPage=footer, onLaterPages=footer)
     return output.getvalue()

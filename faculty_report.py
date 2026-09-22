@@ -48,7 +48,14 @@ ASSISTANCE_LABELS = {
 }
 
 
+import record_findings as findings
 import report_presentation as presentation
+
+
+def _record_limits(record):
+    """What this encounter's record cannot settle, read from the record."""
+    session = ((record or {}).get("payload") or {}).get("session") or {}
+    return findings.encounter_limits(session.get("management_trace") or [])
 
 
 def _encounter_identifier(record):
@@ -270,6 +277,7 @@ def _render_full(report, record, inputs, correct=None):
     # break that left an empty page and stranded the tail of an objective on a
     # page of its own once the text grew (faculty review 2026-09-23).
     ordered = {item["objective_id"]: item for item in objectives}
+    limits = _record_limits(record)
     story.append(PageBreak())
     story.append(p("PROVISIONAL OBJECTIVE ASSESSMENTS", "eyebrow"))
     story.append(p("Review, edit and record", "heading"))
@@ -290,11 +298,24 @@ def _render_full(report, record, inputs, correct=None):
         # be shown; that is different from a weak demonstration (2026-09-23).
         no_opportunity = (recommendation == "insufficient_evidence"
                           and not [ref for ref in item.get("evidence_refs", []) if ref])
+        # A negative suggestion the record cannot settle is held for the faculty
+        # rather than shown as a judgment; the suggestion itself is preserved.
+        held = findings.hold_for_review(item, limits)
+        if held:
+            label_style = ParagraphStyle(f"FacultyHeld{position}", parent=styles["status"], textColor=MUTED)
         block = [
             p(f"{objective_id} | {catalog['title']}", "subhead"),
-            Paragraph(_xml("Not assessed in this encounter - no recorded opportunity to demonstrate it"
+            Paragraph(_xml(findings.HELD_STATUS if held else
+                           "Not assessed in this encounter - no recorded opportunity to demonstrate it"
                            if no_opportunity else RECOMMENDATIONS[recommendation]), label_style),
-            p(catalog["scope"], "small"),
+            p(catalog["scope"], "small"),]
+        if held:
+            block += [
+                p("AI suggestion on record: " + RECOMMENDATIONS[recommendation]
+                  + ". It is held for your reading because " + held[0]
+                  + ". No new rating was assigned and no recorded faculty judgment was changed.", "small"),
+            ]
+        block += [
             p("AI rationale", "subhead"), p(item.get("rationale")),
             p(f"Suggested depth: {depth.capitalize() if depth in DEPTH_LEVELS else 'Needs faculty judgment'} | "
               f"Suggested autonomy: {autonomy.capitalize() if autonomy in AUTONOMY_LEVELS else 'Needs faculty judgment'}",
@@ -420,6 +441,7 @@ def _render_compact(report, record, inputs, app_url, correct=None):
     analysis, objectives, supported, index, decisions = inputs
     destination = _encounter_url(app_url, report["attempt_id"])
     encounter_id = _encounter_identifier(record)
+    limits = _record_limits(record)
     _fonts()
     out = BytesIO()
     width, height = A4
@@ -515,9 +537,9 @@ def _render_compact(report, record, inputs, app_url, correct=None):
                                     "Read the full synthesis in the app before judging this encounter.")
         story.append(p(summary))
         story.append(Spacer(1, 4))
-        story.append(p("AI draft. Every suggestion in this brief stays provisional until you record your own judgment.", "muted"))
         assistance = ASSISTANCE_LABELS.get(_string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"])
-        story.extend([Spacer(1, 6), box("Assistance and autonomy: " + assistance)])
+        story.append(p("AI draft. Every suggestion in this brief stays provisional until you record your own "
+                       "judgment. Assistance and autonomy: " + assistance, "muted"))
         review_points = analysis.get("review_points", [])
         review_points = review_points if isinstance(review_points, list) else []
         story.extend([Spacer(1, 7), p(f"{min(3, len(review_points))} selected review priorities", "heading")])
@@ -586,20 +608,26 @@ def _render_compact(report, record, inputs, app_url, correct=None):
             # honest label is that it was not assessed here.
             no_opportunity = (recommendation == "insufficient_evidence"
                               and not [ref for ref in item.get("evidence_refs", []) if ref])
+            held = findings.hold_for_review(item, limits)
             status_style = ParagraphStyle(
                 "CompactStatus" + objective_id, parent=styles["bold"],
-                textColor=ORANGE if recommendation == "needs_improvement" else (
-                    MUTED if recommendation == "insufficient_evidence" else BLUE),
+                textColor=MUTED if held or recommendation == "insufficient_evidence" else (
+                    ORANGE if recommendation == "needs_improvement" else BLUE),
             )
-            status_text = ("Not assessed in this encounter" if no_opportunity
+            status_text = (findings.HELD_STATUS if held
+                           else "Not assessed in this encounter" if no_opportunity
                            else _COMPACT_RECOMMENDATIONS[recommendation])
-            depth_text = ("No recorded opportunity" if no_opportunity
+            depth_text = ("AI suggested " + _COMPACT_RECOMMENDATIONS[recommendation].lower() if held
+                          else "No recorded opportunity" if no_opportunity
                           else "Depth: " + (depth.capitalize() if depth in DEPTH_LEVELS else "To establish"))
             rationale = _sentence_excerpt(
                 correct(item.get("rationale")), rationale_limit,
                 "Review the full rationale in the app before judging this objective.",
                 maximum_sentences=1,
             )
+            if held:
+                # The status already says it is held; the row carries the reason.
+                rationale += " Held because " + held[0] + "."
             rows.append([
                 [p(objective_id, "label"), p(_COMPACT_TITLES.get(objective_id, OBJECTIVES[objective_id]["title"]))],
                 [Paragraph(_xml(status_text), status_style), Spacer(1, 4), p(depth_text, "muted")],
@@ -614,10 +642,10 @@ def _render_compact(report, record, inputs, app_url, correct=None):
             ("LINEBELOW", (0, 1), (-1, -1), .5, LINE),
             ("LEFTPADDING", (0, 0), (-1, -1), 7),
             ("RIGHTPADDING", (0, 0), (-1, -1), 7),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
         ]))
-        story.extend([matrix, Spacer(1, 7)])
+        story.extend([matrix, Spacer(1, 6)])
         return story
 
     def page_height(elements):
