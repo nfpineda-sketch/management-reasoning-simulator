@@ -659,8 +659,14 @@ def execute_generated_bundle(state, parsed):
             except ValueError as error:
                 return _failure(str(error) + " No orders in this submission were executed.")
     elapsed = reassess if reassess is not None else max(max((item["available_at"] - candidate["sim_time"] for item in pending), default=0), max((s["duration_min"] for s in summaries), default=0))
-    if candidate["generated_state"]["elapsed"] + elapsed > _case(candidate)["engine"].get("horizon_min", 180):
-        return _failure("This order extends beyond the generated scenario's supported time horizon. Please choose a shorter reassessment interval or finish the encounter.")
+    remaining = _case(candidate)["engine"].get("horizon_min", 180) - candidate["generated_state"]["elapsed"]
+    if elapsed > remaining:
+        # The closing disposition hands the patient over; its reassessment happens
+        # in the receiving unit, so the clock stops at the horizon rather than the
+        # order being refused (2026-09-22).
+        if not any(action.get("type") == "disposition" for action in actions):
+            return _failure("This order extends beyond the generated scenario's supported time horizon. Please choose a shorter reassessment interval or finish the encounter.")
+        elapsed = max(0, remaining)
     def release_ready():
         ready = [item for item in pending if item["available_at"] <= candidate["sim_time"]]
         for item in ready:

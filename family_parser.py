@@ -691,11 +691,20 @@ def _parse_piece_core(piece, inherited=None):
         # The coronary unit is a cardiovascular critical-care bed under all its
         # names, and "UCO" is how it is asked for here (faculty, 2026-09-21).
         destination = "coronary care unit" if re.search(_CORONARY_UNIT, body) else None
-        if destination is None and re.search(r"\b(?:icu|uci)\b|intensive care|cuidados intensivos", body):
+        # "UPC" is what a critical-care bed is called here; the unit that takes
+        # this patient is the intensive one (2026-09-22, playing the generated
+        # cardiogenic shock case, where the order was held asking for a name the
+        # resident had already given).
+        if destination is None and re.search(r"\b(?:icu|uci|upc)\b|intensive care|cuidados intensivos|"
+                                             r"unidad de paciente critico|paciente critico", body):
             destination = "ICU"
         if re.search(r"\bward\b|\bsala\b|hospital ward", body):
             destination = "ward"
-        if destination is None and re.search(r"step[- ]down|intermediate care|intermedios?\b|\bui\b|unidad de cuidados intermedios", body):
+        # "Unidad de tratamiento intermedio" is the other half of the UPC. The
+        # bare "UTI" is deliberately absent: in English it is an infection.
+        if destination is None and re.search(r"step[- ]down|intermediate care|intermedios?\b|\bui\b|"
+                                             r"unidad de cuidados intermedios|"
+                                             r"(?:unidad de )?tratamiento intermedio", body):
             destination = "intermediate care"
         if destination is None:
             return [_clarification("Specify where the patient is admitted or transferred: the ICU, the "

@@ -530,7 +530,17 @@ def execute(state,parsed):
             else:_record_effect(candidate,a,rules,summary)
             summaries.append(summary)
         elapsed=reassess if reassess is not None else 0
-        if g['elapsed']+elapsed>case['engine'].get('horizon_min',180):return _failure('Choose a reassessment within this case\'s supported time horizon.')
+        # A disposition is the closing decision: the patient is handed over and
+        # the variables named in the order are checked in the receiving unit, not
+        # here. Found playing the generated cardiogenic shock case (2026-09-22):
+        # at the horizon the reasoning gate demanded a reassessment time and the
+        # horizon refused every one, so the encounter could not be closed at all.
+        # The clock therefore stops at the horizon instead of rejecting the order.
+        remaining=case['engine'].get('horizon_min',180)-g['elapsed']
+        if elapsed>remaining:
+            if not any(a.get('type')=='disposition' for a in actions):
+                return _failure('Choose a reassessment within this case\'s supported time horizon.')
+            elapsed=max(0,remaining)
         def release():
             for item in list(pending):
                 if item['available_at']<=candidate['sim_time']:

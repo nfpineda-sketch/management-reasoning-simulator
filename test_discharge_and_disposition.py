@@ -72,3 +72,28 @@ def test_what_counts_as_coming_back(observable, expected):
 
 def test_the_transport_delay_is_declared():
     assert DISCHARGE_RETURN_DELAY_MIN == 20
+
+
+# The names a critical-care bed is asked for here. Found playing the generated
+# cardiogenic shock case (2026-09-22): "hospitalízalo en la unidad de paciente
+# crítico" was held asking for a destination the resident had already named.
+
+@pytest.mark.parametrize("order, destination", [
+    ("Hospitalizalo en la unidad de paciente critico.", "ICU"),
+    ("Hospitalizalo en la UPC.", "ICU"),
+    ("Hospitalizalo en la unidad de cuidados intensivos.", "ICU"),
+    ("Hospitalizalo en la unidad de tratamiento intermedio.", "intermediate care"),
+    ("Hospitalizalo en intermedio.", "intermediate care"),
+    ("Hospitalizalo en la unidad coronaria.", "coronary care unit"),
+    ("Hospitalizalo en sala.", "ward"),
+])
+def test_the_names_a_critical_care_bed_is_asked_for(order, destination):
+    assert parse_family_actions(order)["actions"] == [
+        {"type": "disposition", "destination": destination}]
+
+
+def test_an_english_urinary_infection_is_not_a_bed():
+    # "UTI" is the intermediate unit here and an infection in English, so the
+    # abbreviation is deliberately not read as a destination.
+    actions = parse_family_actions("Admit him for a UTI.")["actions"]
+    assert actions[0]["type"] == "clarification"

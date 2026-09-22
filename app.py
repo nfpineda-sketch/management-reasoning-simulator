@@ -9185,7 +9185,7 @@ with st.container(key="encounter-console"):
 
         result = execute_bundle(parsed)
         trace_state_after = management_state_snapshot(st.session_state.state)
-        record_management_trace(
+        recorded_trace_event = record_management_trace(
             trace_input, parsed, result, trace_state_before, trace_state_after
         )
 
@@ -9387,6 +9387,15 @@ with st.container(key="encounter-console"):
                     "I preserved your input, but this build does not yet execute that action."
                 )
 
+        # The events this order produced are appended above, after the decision
+        # was recorded, so the recorded response window used to end just before
+        # its own response. The Management Trace analysis is validated against
+        # that window, and was rejected for citing the very update it described
+        # (2026-09-22, preparing the learner report). The cursor is therefore
+        # advanced once the response is on the record.
+        recorded_trace_event["state_after"]["encounter_event_count"] = len(
+            st.session_state.get("events") or []
+        )
         rerun_app()
 
     st.divider()
