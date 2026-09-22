@@ -8,9 +8,11 @@ for every rerun and administrative mutations also require authorization there.
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import streamlit as st
 
@@ -75,16 +77,43 @@ def _start_session(token: str, user: dict[str, Any]) -> None:
 
 
 @st.cache_resource(show_spinner=False)
+def _redacted(error: Exception, url: str) -> str:
+    """The provider's own words, with anything that identifies the connection removed."""
+    text = " ".join(str(error).split())[:300]
+    password = urlsplit(url).password if url else None
+    for secret in (password, url):
+        if secret and len(secret) >= 4:
+            text = text.replace(secret, "***")
+    return text or "(no message)"
+
+
 def _configured_store(url: str, allow_sqlite: bool, username: str, password_hash: str, schema_version: int = 2) -> AccountStore:
     """Cache connection configuration only; identities and permissions are never cached.
 
     AccountStore opens a separate transaction/connection for each operation and
     holds no session-specific state. This avoids running schema initialization
     on every Streamlit rerun without sharing a learner's authentication result.
+
+    A failure here reaches the browser as one closed-access sentence, because a
+    database error can carry the connection string. It is written to the
+    application log as well, redacted and with the step that failed named, or
+    the administrator has nothing to act on (2026-09-23).
     """
-    store = AccountStore(url, allow_sqlite=allow_sqlite)
+    try:
+        store = AccountStore(url, allow_sqlite=allow_sqlite)
+    except Exception as error:
+        logging.getLogger("mrs.accounts").error(
+            "opening the account store failed at connection: %s: %s",
+            type(error).__name__, _redacted(error, url))
+        raise
     if username and password_hash:
-        store.bootstrap_admin(username, password_hash)
+        try:
+            store.bootstrap_admin(username, password_hash)
+        except Exception as error:
+            logging.getLogger("mrs.accounts").error(
+                "opening the account store failed at administrator bootstrap: %s: %s",
+                type(error).__name__, _redacted(error, url))
+            raise
     return store
 
 
