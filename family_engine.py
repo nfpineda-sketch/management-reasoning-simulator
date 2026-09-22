@@ -1633,6 +1633,12 @@ def _surface(state):
             # arrived: the ischaemic pain goes, it does not linger at a floor.
             f["pain_baseline"] = 0.0
         spec = acs_reperfusion.coronary(state) or {}
+        # The failing ventricle loads the lung, and the recovering one unloads
+        # it (faculty request 2026-09-22): this axis used to be inert.
+        congestion = acs_reperfusion.congestion_load(f, spec, f["niv"], f["invasive"])
+        spo2 -= congestion * acs_reperfusion.CONGESTION_SPO2
+        rr += congestion * acs_reperfusion.CONGESTION_RR
+        effort = 1 + congestion
         if f.get("av_block_at") is not None and not acs_reperfusion.is_open(f):
             hr = bradycardia_support.effective_rate(f, spec, acs_reperfusion.AV_BLOCK_RATE)
             f["surface_rhythm"] = bradycardia_support.rhythm(f)

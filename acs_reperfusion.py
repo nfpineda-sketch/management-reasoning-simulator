@@ -76,6 +76,43 @@ WALL_MOTION = (
 TERRITORY_WALL = {"inferior": "inferior wall", "anterior": "anterior wall and apex",
                   "lateral": "lateral wall", "posterior": "posterior wall",
                   "left_main": "anterior and lateral walls", "subendocardial": "left ventricle diffusely"}
+# Faculty request 2026-09-22, from playing the left main case: the saturation,
+# the rate and the visible effort did not move once in 230 minutes, with
+# congestion on the film and crackles at the bedside. What wets this lung is the
+# ischaemic left ventricle: as the wall fails, filling pressures rise; as the
+# reperfused wall recovers, the lung dries again. A right ventricular infarct
+# fails forward instead, so the load is read from the left ventricle and
+# discounted where the right one is the problem. Magnitudes stated here for the
+# first time, pending faculty review.
+CONGESTION_SPO2 = 10.0            # saturation points from arrival to an akinetic wall
+CONGESTION_RR = 12.0              # breaths per minute over the same span
+# How much of the left ventricle each territory takes with it.
+CONGESTION_TERRITORY = {"left_main": 1.0, "anterior": .9, "lateral": .6,
+                        "subendocardial": .5, "posterior": .4, "inferior": .3}
+CONGESTION_RV_SHARE = .5          # an infarct that also takes the right ventricle
+# Positive pressure unloads the ventricle and recruits the wet lung.
+CONGESTION_RELIEF = {"niv": .55, "invasive": .70}
+
+
+def congestion_load(f, spec=None, niv=False, invasive=False):
+    """How much further than on arrival this left ventricle is loading the lung.
+
+    Zero while the wall is where the case wrote it, so the authored words stand
+    on arrival; one when it is akinetic; slightly negative once reperfusion has
+    recovered the wall past the value it arrived with.
+    """
+    lv = float(f.get("lv_function", ARRIVAL_LV))
+    load = max(-1.0, min(1.0, (ARRIVAL_LV - lv) / (ARRIVAL_LV - LV_FLOOR)))
+    spec = spec or {}
+    load *= CONGESTION_TERRITORY.get(spec.get("territory"), .6)
+    if spec.get("rv_involvement"):
+        load *= CONGESTION_RV_SHARE
+    if load > 0:
+        load *= 1 - (CONGESTION_RELIEF["invasive"] if invasive
+                     else CONGESTION_RELIEF["niv"] if niv else 0.0)
+    return load
+
+
 # Reperfusion resolves the injury current; the ECG the resident repeats says so.
 RESOLVED_PROFILE = "baseline"
 
