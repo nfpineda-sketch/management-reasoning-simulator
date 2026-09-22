@@ -141,7 +141,11 @@ def test_the_continuation_marker_is_absent_where_nothing_continues():
 
 def test_a_correction_applies_in_both_faculty_documents():
     report, record = faculty_pair()
-    original = report["analysis"]["objectives"][0]["rationale"]
+    # An objective that keeps its full row in the concise brief: the ones
+    # suggested satisfactory are shown there as one line, by design.
+    target = next(item for item in report["analysis"]["objectives"]
+                  if item["recommendation"] != "satisfactory")
+    original = target["rationale"]
     correction = [{"original": original, "replacement": "A corrected rationale sentence.",
                    "reason": "checked against the record"}]
     for compact in (True, False):
@@ -149,4 +153,47 @@ def test_a_correction_applies_in_both_faculty_documents():
         assert "A corrected rationale sentence." in text
         assert "factual correction" in text
     # The stored brief is untouched.
-    assert report["analysis"]["objectives"][0]["rationale"] == original
+    assert target["rationale"] == original
+
+
+# --- the concise brief directs attention without losing an objective --------
+
+def test_every_objective_reaches_the_concise_brief():
+    report, record = faculty_pair()
+    text = text_of(render_faculty_brief_pdf(report, record))
+    for item in report["analysis"]["objectives"]:
+        assert item["objective_id"] in text, item["objective_id"]
+
+
+def test_what_needs_a_decision_keeps_its_rationale_in_the_concise_brief():
+    report, record = faculty_pair()
+    target = next(item for item in report["analysis"]["objectives"]
+                  if item["recommendation"] != "satisfactory")
+    first_sentence = target["rationale"].split(".")[0]
+    assert first_sentence in text_of(render_faculty_brief_pdf(report, record))
+
+
+def test_a_settled_satisfactory_objective_is_one_line_with_its_evidence():
+    report, record = faculty_pair()
+    settled = next(item for item in report["analysis"]["objectives"]
+                   if item["recommendation"] == "satisfactory")
+    compact = text_of(render_faculty_brief_pdf(report, record))
+    full = text_of(render_faculty_brief_pdf(report, record, compact=False))
+    assert "Suggested satisfactory, and settled by the record" in compact
+    # Its judgment and evidence are shown; its rationale is read in the full PDF.
+    assert settled["objective_id"] in compact
+    assert settled["rationale"].split(".")[0] not in compact
+    assert settled["rationale"].split(".")[0] in full
+
+
+def test_a_held_suggestion_never_becomes_a_one_line_entry():
+    report, record = faculty_pair()
+    target = report["analysis"]["objectives"][0]
+    target["recommendation"] = "needs_improvement"
+    target["rationale"] = "Support began 15 minutes later than it could have."
+    # The first decision's interval is what the record cannot separate from it.
+    first = record["payload"]["session"]["management_trace"][0]
+    first["decision_time_min"], first["response_time_min"] = 0, 15
+    compact = text_of(render_faculty_brief_pdf(report, record))
+    assert "Requires faculty review" in compact
+    assert target["rationale"].split(".")[0] in compact

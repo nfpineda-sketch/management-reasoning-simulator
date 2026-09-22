@@ -591,8 +591,18 @@ def _render_compact(report, record, inputs, app_url, correct=None):
                  Spacer(1, 7)]
         ordered = {item["objective_id"]: item for item in objectives}
         columns = [usable * .20, usable * .195, usable * .605]
+        # A concise brief is for directing attention. An objective suggested as
+        # satisfactory and settled by the record takes one line, and its
+        # rationale is read in the complete PDF; everything that needs the
+        # faculty to decide keeps its full row (faculty request 2026-09-23).
+        def needs_attention(objective_id):
+            item = ordered[objective_id]
+            return bool(findings.hold_for_review(item, limits)) or item["recommendation"] != "satisfactory"
+
+        attention = [key for key in supported if needs_attention(key)]
+        settled = [key for key in supported if not needs_attention(key)]
         rows = [[p("OBJECTIVE", "bold"), p("AI SUGGESTION", "bold"), p("RATIONALE EXCERPT · EVIDENCE", "bold")]]
-        for objective_id in supported:
+        for objective_id in attention:
             item = ordered[objective_id]
             depth = item.get("depth")
             recommendation = item["recommendation"]
@@ -638,7 +648,23 @@ def _render_compact(report, record, inputs, app_url, correct=None):
             ("TOPPADDING", (0, 0), (-1, -1), 3),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
         ]))
-        story.extend([matrix, Spacer(1, 5)])
+        story.extend([matrix, Spacer(1, 6)])
+        if settled:
+            story.append(p("Suggested satisfactory, and settled by the record", "label"))
+            story.append(p("One line each; the rationale and the evidence for these are in the complete "
+                           "PDF and in the app. They still need your judgment to be recorded.", "muted"))
+            for objective_id in settled:
+                item = ordered[objective_id]
+                depth = item.get("depth")
+                depth_text = depth.capitalize() if depth in DEPTH_LEVELS else "To establish"
+                anchors = _compact_references(item["evidence_refs"], index, maximum=3)
+                story.append(Paragraph(
+                    "<b>" + _xml(objective_id) + "</b> · "
+                    + _xml(_COMPACT_TITLES.get(objective_id, OBJECTIVES[objective_id]["title"]))
+                    + " — " + _xml(_COMPACT_RECOMMENDATIONS[item["recommendation"]])
+                    + " · " + _xml(depth_text) + (" · " + _xml(anchors) if anchors else ""),
+                    styles["body"]))
+            story.append(Spacer(1, 6))
         # Scope, the report's own limit and the route back to the app close the
         # reading page, where there is room for them.
         story.append(p("What this encounter can and cannot show", "heading"))

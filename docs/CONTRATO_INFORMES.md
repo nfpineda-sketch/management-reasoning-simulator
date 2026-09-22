@@ -11,7 +11,7 @@
 | Documento | Para quién | Regla de extensión |
 |---|---|---|
 | **Management Trace** | El residente | Tantas páginas como decisiones y evidencia haya |
-| **Faculty Brief compacto** | El docente, en la mesa | La página de lectura y la tabla de sugerencias; dos páginas cuando el encuentro lo permite, más si no |
+| **Faculty Brief compacto** | El docente, en la mesa | La página de lectura y la de sugerencias; dos páginas salvo que la evidencia pida más |
 | **Faculty Brief completo** | El docente, para verificar | Tantas páginas como objetivos y texto haya |
 
 Los tres salen de **una misma representación del encuentro y del análisis**: el registro
@@ -52,8 +52,13 @@ El sexto se llama `POINT TO REVISIT` únicamente cuando el texto del modelo form
 debriefing. **Después**: tabla de sugerencias por objetivo · alcance · llamado a la acción ·
 pie con procedencia breve.
 
-Dos páginas es lo habitual y lo deseable, no una obligación: con muchos objetivos, justificaciones
-largas o una sugerencia retenida, la tabla necesita más espacio. Antes que recortar una
+**El compacto dirige la atención.** Un objetivo sugerido como satisfactorio y que el registro
+resuelve ocupa **una línea** —identificador, título, sugerencia, profundidad y anclas de
+evidencia— y su justificación se lee en el completo y en la app. Todo lo que necesita una
+decisión del docente conserva su **fila completa** con la justificación: lo retenido, lo que
+sugiere mejorar y lo no evaluable.
+
+Ningún objetivo desaparece del compacto. Dos páginas es lo habitual; antes que recortar una
 justificación o achicar la letra, el compacto crece.
 
 Las sugerencias van **después** de la evidencia y las preocupaciones, nunca antes.

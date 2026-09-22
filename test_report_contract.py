@@ -166,7 +166,9 @@ def test_without_the_store_nothing_is_corrected(monkeypatch):
 def test_a_faculty_record_reads_the_same_store(tmp_path, monkeypatch):
     report, record = brief_example()
     record.setdefault("payload", {}).setdefault("session", {})["state"] = {"case_id": "CE-contract-check"}
-    original = report["analysis"]["objectives"][0]["rationale"]
+    target = next(item for item in report["analysis"]["objectives"]
+                  if item["recommendation"] != "satisfactory")
+    original = target["rationale"]
     (tmp_path / "CE-contract-check.json").write_text(json.dumps({"corrections": [
         {"original": original, "replacement": "A CORRECTED FACULTY RATIONALE.", "reason": "checked"}]}))
     monkeypatch.setenv(report_corrections.ENV, str(tmp_path))
@@ -174,7 +176,7 @@ def test_a_faculty_record_reads_the_same_store(tmp_path, monkeypatch):
         assert "A CORRECTED FACULTY RATIONALE." in " ".join(
             pages(render_faculty_brief_pdf(report, record, compact=compact)))
     # The stored brief is never modified.
-    assert report["analysis"]["objectives"][0]["rationale"] == original
+    assert target["rationale"] == original
 
 
 def test_a_malformed_store_does_not_break_a_report(tmp_path, monkeypatch):
