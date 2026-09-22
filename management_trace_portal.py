@@ -10,7 +10,7 @@ from account_store import AccountError
 from management_trace_analysis import (
     ManagementTraceAnalysisError, build_analysis_source,
     generate_management_trace_analysis, source_fingerprint,
-    validate_management_trace_analysis,
+    usable_analysis, validate_management_trace_analysis,
 )
 from management_trace_store import ManagementTraceStore
 
@@ -32,7 +32,10 @@ def _reference_labels(source):
 
 
 def _claim(claim, labels, correct=None):
-    # The screen and the PDF show the same corrected text (2026-09-23).
+    # The screen and the PDF show the same corrected text (2026-09-23). A
+    # withheld passage is absent, not shown with a warning (decision B3).
+    if not claim:
+        return
     st.write(correct(claim["text"]) if correct else claim["text"])
     st.caption("Evidence: " + "; ".join(labels.get(ref, ref) for ref in claim["evidence_refs"]))
 
@@ -119,7 +122,13 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
     if report is None:
         return None
     st.session_state[cache_key] = report
+    # A format fault in one passage is withheld, not fatal (decision B3).
+    report, withheld = usable_analysis(report, payload)
     analysis = report["analysis"]
+    if withheld:
+        st.warning(f"Partial analysis: {len(withheld)} passage(s) were withheld because they broke a "
+                   "formatting rule of this report. They are listed in the PDF's technical record. "
+                   "Your complete encounter record is unaffected.")
     import report_corrections
     import report_presentation
     correct = report_presentation.CorrectionLog(report_corrections.for_payload(payload))

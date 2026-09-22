@@ -32,6 +32,21 @@ CLAIM_MAX_CHARS = 900
 TITLE_MAX_CHARS = 140
 CLAIM_CAPS = (600, CLAIM_MAX_CHARS)
 TITLE_CAPS = (90, TITLE_MAX_CHARS)
+# The caps each prompt version wrote under. A length is only evidence of a cut
+# against the cap that applied, or a title that happens to be ninety characters
+# long under the newer limit reads as if it had been chopped.
+CAPS_BY_PROMPT = {
+    "1.0": {"claim": (600,), "title": (90,)},
+    "1.1": {"claim": (CLAIM_MAX_CHARS,), "title": (TITLE_MAX_CHARS,)},
+}
+
+
+def caps_for(prompt_version):
+    """(claim caps, title caps) for a report written under this prompt."""
+    known = CAPS_BY_PROMPT.get(str(prompt_version or "").strip())
+    if known:
+        return known["claim"], known["title"]
+    return CLAIM_CAPS, TITLE_CAPS
 TRUNCATION_NOTE = " […interrupted: the analysis reached its length limit]"
 _SENTENCE_END = ".!?\"')]»"
 _AI_PREFIX = re.compile(r"^\s*(?:AI\s+interpretation|AI\s+synthesis|Interpretación\s+de\s+la\s+IA)\s*[:\-—]\s*", re.I)

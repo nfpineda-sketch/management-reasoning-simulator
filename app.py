@@ -3528,7 +3528,9 @@ def generate_problem_config(challenge_id):
     if challenge_id not in CHALLENGES:
         raise ValueError("Choose an implemented clinical problem.")
     from offline_cases import launch_options
-    generation, scene_key = launch_options(_runtime_secret("OPENAI_API_KEY"))
+    account = globals().get("ACCOUNT_CONTEXT") or {}
+    generation, scene_key = launch_options(
+        _runtime_secret("OPENAI_API_KEY"), (account.get("user") or {}).get("role"))
     try:
         with ScenePreparation(scene_key,
                               _runtime_secret("MRS_IMAGE_MODEL") or "gpt-image-1.5",

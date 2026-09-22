@@ -6,7 +6,7 @@ from io import BytesIO
 import pytest
 from pypdf import PdfReader
 
-from management_trace_analysis import source_fingerprint
+from management_trace_analysis import PROMPT_VERSION, SCHEMA_VERSION, source_fingerprint
 from management_trace_report import render_management_trace_pdf, trend_points
 
 
@@ -99,7 +99,7 @@ def report_example():
                         "adaptation": claim(adaptation, ref, f"trace:{number + 1}") if number < 3 else claim(adaptation, ref),
                         "reflection_insight": claim("In the later reflection, the learner identifies effort and engagement as reasons to revise the priority.", "reflection:decision_3") if number == 2 else None})
     report = {
-        "schema_version": "management_trace_analysis_v1", "prompt_version": "1.0",
+        "schema_version": SCHEMA_VERSION, "prompt_version": PROMPT_VERSION,
         "source_hash": source_fingerprint(payload), "generated_at": "2026-09-13T18:00:00+00:00",
         "model": "synthetic-layout-example-no-model-call",
         "analysis": {

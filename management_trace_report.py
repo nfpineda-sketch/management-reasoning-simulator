@@ -327,7 +327,7 @@ def _observed_studies(event):
     return lines
 
 
-def _decision_title(item, event, stage):
+def _decision_title(item, event, stage, title_caps=presentation.TITLE_CAPS):
     """The decision's own heading, complete.
 
     A title cut at the schema's limit is not shown as a title. What the
@@ -335,7 +335,7 @@ def _decision_title(item, event, stage):
     executed actions instead (faculty request 2026-09-23).
     """
     written = _text(item.get("title"))
-    if not presentation.was_truncated(written, presentation.TITLE_CAPS):
+    if written and not presentation.was_truncated(written, title_caps):
         return written
     names = []
     for phrase in presentation.action_lines(event.get("executed_actions", [])):
@@ -417,11 +417,12 @@ def render_management_trace_pdf(
     input or fingerprint. Review status labels distinguish completed learning
     cycles from exports made before the comparison/adaptation is finished.
     """
-    from management_trace_analysis import (
-        build_analysis_source, validate_management_trace_analysis,
-    )
+    from management_trace_analysis import build_analysis_source, usable_analysis
 
-    validate_management_trace_analysis(report, payload)
+    # A format fault in one passage withholds that passage, not the report
+    # (faculty decision B3). Everything else still refuses it.
+    report, withheld = usable_analysis(report, payload)
+    claim_caps, title_caps = presentation.caps_for(report.get("prompt_version"))
     source = build_analysis_source(payload)
     timeline = source["timeline"]
     index = {event["source_ref"]: event for event in timeline}
@@ -447,10 +448,11 @@ def render_management_trace_pdf(
         pageCompression=1,
     )
     incomplete = [claim for claim in _all_claims(analysis)
-                  if presentation.was_truncated(_mapping(claim).get("text"))]
+                  if claim is not None and presentation.was_truncated(_mapping(claim).get("text"), claim_caps)]
     incomplete += [moment for moment in analysis.get("pivotal_decisions") or []
-                   if presentation.was_truncated(moment.get("title"), presentation.TITLE_CAPS)]
-    status = ("AI INTERPRETATION INCOMPLETE" if incomplete
+                   if presentation.was_truncated(moment.get("title"), title_caps)]
+    status = ("AI INTERPRETATION PARTIAL" if withheld
+              else "AI INTERPRETATION INCOMPLETE" if incomplete
               else "REVIEW COMPLETE" if review_completed else "DRAFT - REVIEW IN PROGRESS")
     story = []
 
@@ -481,7 +483,7 @@ def render_management_trace_pdf(
     def claim_paragraph(claim, style="body"):
         claim = _mapping(claim)
         refs = claim.get("evidence_refs", [])
-        text = _xml(correct(presentation.claim_text(claim.get("text", ""))))
+        text = _xml(correct(presentation.claim_text(claim.get("text", ""), claim_caps)))
         if refs:
             seen, labels = set(), []
             for ref in refs:
@@ -539,10 +541,10 @@ def render_management_trace_pdf(
     story.append(p("AI synthesis of your recorded decisions and subsequent reflection. It is a learning report: it does not award a grade, establish competence or infer a cognitive bias. Every interpretation below is provisional until your faculty reviews it.", "small"))
 
     story.append(p("The encounter in perspective", "heading"))
-    if presentation.was_truncated(_mapping(analysis["overview"]).get("text")):
-        story.append(p("The AI synthesis for this encounter stopped at the analysis length limit and is "
-                       "not shown here; the incomplete fragment is kept in the technical record at the "
-                       "end. What follows is read from the record, and is not an interpretation.", "note"))
+    if analysis["overview"] is None or presentation.was_truncated(_mapping(analysis["overview"]).get("text"), claim_caps):
+        story.append(p("The AI synthesis is not shown here: it was withheld, and the passage is kept in "
+                       "the technical record at the end with the reason. What follows is read from the "
+                       "record, and is not an interpretation.", "note"))
         story.append(Paragraph("<b>Recorded course:</b> " + _recorded_course(timeline), styles["body"]))
     else:
         story.append(claim_paragraph(analysis["overview"]))
@@ -586,9 +588,9 @@ def render_management_trace_pdf(
     story.append(panel_row([charts[2], charts[3]]))
     story.append(panel_row([charts[4], legend]))
     story.append(p("Points are recorded observations; lines connect them and do not show continuous monitoring. Missing values interrupt the line, and each panel has its own vertical scale. The dashed marks are the minutes at which D1-D" + str(len(decision_marks) or 1) + " were taken: they show when you acted, and a change after a mark does not establish that the action caused it.", "tiny"))
-    if presentation.was_truncated(_mapping(analysis["trajectory"]).get("text")):
-        story.append(p("The AI reading of the trajectory also stopped at the length limit and is kept in "
-                       "the technical record at the end.", "note"))
+    if analysis["trajectory"] is None or presentation.was_truncated(_mapping(analysis["trajectory"]).get("text"), claim_caps):
+        story.append(p("The AI reading of the trajectory is not shown here; it is kept in the technical "
+                       "record at the end with the reason.", "note"))
     else:
         story.append(p("AI interpretation of the trajectory", "label"))
         story.append(claim_paragraph(analysis["trajectory"]))
@@ -657,7 +659,7 @@ def render_management_trace_pdf(
             Spacer(1, 9), HRFlowable(width="100%", thickness=1, color=LINE),
             _OpenDecision(marks, event["decision_number"]),
             p(f"DECISION {event['decision_number']} · {time_range} · {_text(event.get('execution_status')).replace('_', ' ') or 'not recorded'}", "label"),
-            p(_decision_title(item, event, stage), "card_title"),
+            p(_decision_title(item, event, stage, title_caps), "card_title"),
             p("1 · WHAT YOU HAD OBSERVED", "label"),
             p(observed_before or "No observations were recorded before this decision."),
         ]))
@@ -784,7 +786,7 @@ def render_management_trace_pdf(
 
     # The metadata closes the document; it must not be left alone on a page.
     truncated = sum(1 for claim in _all_claims(analysis)
-                    if presentation.was_truncated(_mapping(claim).get("text")))
+                    if claim is not None and presentation.was_truncated(_mapping(claim).get("text"), claim_caps))
     closing = [
         Spacer(1, 10),
         HRFlowable(width="100%", thickness=.6, color=LINE),
@@ -801,15 +803,21 @@ def render_management_trace_pdf(
         "tiny"),
     ]
     closing += [p("Correction: " + reason, "tiny") for reason in correct.lines()]
+    if withheld:
+        closing.append(p(f"Technical record — {len(withheld)} AI passage(s) withheld from the reading "
+                         "above, kept here with the reason:", "tiny"))
+        for item in withheld:
+            closing.append(p(f"· {item['section']} — withheld for {item['reason']}: "
+                             + " ".join(str(item.get("text") or "").split())[:400], "tiny"))
     if incomplete:
         closing.append(p("Technical record — AI passages that stopped at the analysis length limit and "
                          "were therefore not used in the reading above:", "tiny"))
         for claim in incomplete:
             mapped = _mapping(claim)
             if "text" in mapped:
-                fragment, caps = mapped.get("text"), presentation.CLAIM_CAPS
+                fragment, caps = mapped.get("text"), claim_caps
             else:
-                fragment, caps = mapped.get("title"), presentation.TITLE_CAPS
+                fragment, caps = mapped.get("title"), title_caps
             closing.append(p("· " + presentation.claim_text(fragment, caps), "tiny"))
     # Pull it back beside the last plan field, label and value together, so the
     # metadata never stands on its own and no heading is left behind.

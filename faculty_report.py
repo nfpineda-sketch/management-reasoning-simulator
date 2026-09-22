@@ -279,6 +279,7 @@ def _render_full(report, record, inputs, correct=None):
     # page of its own once the text grew (faculty review 2026-09-23).
     ordered = {item["objective_id"]: item for item in objectives}
     limits = _record_limits(record)
+    last_objective = None
     story.append(PageBreak())
     story.append(p("PROVISIONAL OBJECTIVE ASSESSMENTS", "eyebrow"))
     story.append(p("Review, edit and record", "heading"))
@@ -338,10 +339,15 @@ def _render_full(report, record, inputs, correct=None):
                 block.append(Paragraph('<link href="' + escape(mapping["source_url"], {'"': '&quot;'})
                     + '">' + _xml(label) + '</link>', styles["small"]))
                 block.append(p(mapping.get("source_locator", ""), "small"))
-        story.append(KeepTogether(block))
+        if objective_id == supported[-1]:
+            last_objective = block          # closes the document with the metadata
+        else:
+            story.append(KeepTogether(block))
 
     # The limits of the analysis close the document with its metadata rather
-    # than stranding the tail of the first section on a page of its own.
+    # than stranding the tail of the first section, or the metadata itself, on
+    # a page of its own: they travel with the last objective.
+    story_before_closing = len(story)
     story.extend([Spacer(1, 12), HRFlowable(width="100%", thickness=.6, color=LINE), Spacer(1, 5)])
     story.append(p("Interpretation limits", "subhead"))
     bullets(analysis.get("limits"))
@@ -358,6 +364,9 @@ def _render_full(report, record, inputs, correct=None):
                        "time; the stored brief keeps the original wording.", "small"))
         for reason in correct.lines():
             story.append(p("Correction: " + reason, "small"))
+    closing = story[story_before_closing:]
+    del story[story_before_closing:]
+    story.append(KeepTogether((last_objective or []) + closing))
     document.build(story, onFirstPage=page_header, onLaterPages=page_header)
     return out.getvalue()
 

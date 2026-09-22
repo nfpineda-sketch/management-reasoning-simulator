@@ -15,13 +15,12 @@ import re
 
 
 SCHEMA_VERSION = "management_trace_analysis_v1"
-# The instructions below were revised on 2026-09-23 (finish the sentence inside
-# the limit; no repeated prefix; what a single measurement does and does not
-# establish). The version is deliberately NOT bumped yet: source_fingerprint
-# binds a stored analysis to the prompt version, so bumping it invalidates every
-# analysis already saved and forces one paid regeneration per encounter. That is
-# a faculty decision, and it is also exactly what verifying this change costs.
-PROMPT_VERSION = "1.0"
+# 1.1 (2026-09-23): finish the sentence inside the limit, no repeated prefix,
+# and what a single measurement does and does not establish. The limits rose to
+# 900 and 140 characters with it. source_fingerprint binds a stored analysis to
+# this version, so an analysis written under 1.0 is not reused under 1.1: the
+# faculty authorised the regeneration that this bump requires, and it was run.
+PROMPT_VERSION = "1.1"
 MAX_TRACE_EVENTS = 120
 MAX_ENCOUNTER_EVENTS = 600
 MAX_INPUT_BYTES = 240_000
@@ -401,16 +400,94 @@ def _check_schema(value, schema):
             raise ManagementTraceAnalysisError("The AI analysis cites evidence outside this encounter.")
 
 
-def _validate_claim(claim):
+def _validate_claim(claim, numerals=True):
     if len(claim["evidence_refs"]) != len(set(claim["evidence_refs"])):
         raise ManagementTraceAnalysisError("The AI analysis contains duplicated evidence references.")
     # Exact measurements/doses/timestamps are rendered from the source timeline.
     # Prose may use clinical variable names such as SpO2, but no numerical claims.
-    if re.search(r"(?<![A-Za-z])\d", claim["text"]):
+    # ``numerals=False`` evaluates everything else, so a format fault can be
+    # withheld on its own instead of discarding the report (faculty decision B3).
+    if numerals and re.search(r"(?<![A-Za-z])\d", claim["text"]):
         raise ManagementTraceAnalysisError("The AI synthesis must leave numerical values to the recorded evidence.")
 
 
-def validate_management_trace_analysis(report, payload):
+NUMERAL_IN_PROSE = re.compile(r"(?<![A-Za-z])\d")
+NUMERAL_REASON = "a numeral in prose, which this report reserves for the recorded evidence"
+
+
+def _numeral(text):
+    return bool(NUMERAL_IN_PROSE.search(str(text or "")))
+
+
+def usable_analysis(report, payload):
+    """The part of an analysis that validates on its own, and what was withheld.
+
+    Faculty decision B3: a format rule broken in one passage must not discard a
+    whole report, and an invalid passage must not be shown with a warning
+    either. Exactly one class of fault is withheld here — a numeral in prose,
+    which is a format rule and cannot change what a passage means — and only
+    from places that stand alone: the synthesis, the trajectory, a strength, a
+    question, a later-reflection summary. A required part of a decision takes
+    that whole decision with it, because half a decision is not a decision.
+
+    Everything else still refuses the report: provenance, citation membership,
+    chronology and the decision-time boundaries are what make this a record
+    rather than prose, and none of them is a formatting slip.
+
+    Returns ``(report, withheld)``; ``withheld`` carries the section, the reason
+    and the original text, for the technical record. Raises when the fault is
+    not of the withheld class, or when too little would be left to present.
+    """
+    try:
+        return validate_management_trace_analysis(report, payload), []
+    except ManagementTraceAnalysisError:
+        pass
+    # Everything except the format rule has to hold, or the report is refused.
+    validate_management_trace_analysis(report, payload, numerals=False)
+    candidate = deepcopy(report)
+    analysis = candidate["analysis"]
+    withheld = []
+
+    def drop(section, text):
+        withheld.append({"section": section, "reason": NUMERAL_REASON, "text": str(text or "")})
+
+    for key in ("overview", "trajectory"):
+        if _numeral(analysis[key]["text"]):
+            drop(key, analysis[key]["text"])
+            analysis[key] = None
+    for key in ("strengths", "questions"):
+        kept = []
+        for position, claim in enumerate(analysis.get(key) or []):
+            if _numeral(claim.get("text")):
+                drop(f"{key}[{position}]", claim["text"])
+            else:
+                kept.append(claim)
+        analysis[key] = kept
+    moments = []
+    for position, moment in enumerate(analysis["pivotal_decisions"]):
+        required = [key for key in ("interpretation", "expected_vs_observed", "adaptation")
+                    if _numeral(moment[key]["text"])]
+        if required:
+            drop(f"pivotal_decisions[{position}]",
+                 " ".join(moment[key]["text"] for key in required))
+            continue
+        if _numeral(moment["title"]):
+            drop(f"pivotal_decisions[{position}].title", moment["title"])
+            moment = {**moment, "title": ""}
+        insight = moment.get("reflection_insight")
+        if isinstance(insight, dict) and _numeral(insight.get("text")):
+            drop(f"pivotal_decisions[{position}].reflection_insight", insight["text"])
+            moment = {**moment, "reflection_insight": None}
+        moments.append(moment)
+    analysis["pivotal_decisions"] = moments
+    if not moments and analysis["overview"] is None and analysis["trajectory"] is None:
+        raise ManagementTraceAnalysisError(
+            "Too little of this AI analysis validates to present it. The complete encounter record "
+            "remains available.")
+    return candidate, withheld
+
+
+def validate_management_trace_analysis(report, payload, numerals=True):
     """Check cache provenance, citation membership and decision-time boundaries."""
     source = build_analysis_source(payload)
     if (not isinstance(report, dict) or set(report) != {
@@ -456,11 +533,11 @@ def validate_management_trace_analysis(report, payload):
             if not all(ref in reflection_map.get(item, []) for item in insight["evidence_refs"]):
                 raise ManagementTraceAnalysisError("A retrospective insight must cite a reflection linked to that decision.")
             all_claims.append(insight)
-        if re.search(r"(?<![A-Za-z])\d", moment["title"]):
+        if numerals and re.search(r"(?<![A-Za-z])\d", moment["title"]):
             raise ManagementTraceAnalysisError("Pivotal headings must leave numerical values to the recorded evidence.")
         all_claims.extend(moment[field] for field in ("interpretation", "expected_vs_observed", "adaptation"))
     for claim in all_claims:
-        _validate_claim(claim)
+        _validate_claim(claim, numerals)
     return deepcopy(report)
 
 

@@ -23,15 +23,17 @@ def offline_cases_enabled():
     return os.environ.get("MRS_OFFLINE_CASES", "").strip().lower() in {"1", "true", "yes", "on"}
 
 
-def replay_record():
-    """A saved AI-generated encounter to play again locally, or None.
+def replay_record(require_offline=True):
+    """A saved AI-generated encounter to play again, or None.
 
     ``MRS_REPLAY_CASE`` names a JSON record written by a paid run (it must hold
-    the launched ``state``). It applies only in offline mode, so replaying never
-    pays for a generation, an image or a normalization.
+    the launched ``state``). In offline mode it is the only way an encounter
+    starts, so replaying never pays for a generation, an image or a
+    normalization. It is also used to serve a saved case to someone who may not
+    start a paid one.
     """
     path = os.environ.get("MRS_REPLAY_CASE", "").strip()
-    if not path or not offline_cases_enabled():
+    if not path or (require_offline and not offline_cases_enabled()):
         return None
     import json
     from pathlib import Path
@@ -42,10 +44,34 @@ def replay_record():
     return record
 
 
-def launch_options(api_key):
+def paid_generation_allowed(role=None):
+    """Who may start an encounter that pays a provider.
+
+    Faculty decision B1, 2026-09-23: sharing the app's URL must not share the
+    card. With ``MRS_PAID_GENERATION`` set to ``admin``, only an administrator
+    starts a generated case and everyone else is served a saved, validated one.
+    Offline mode still overrides everything.
+    """
+    if offline_cases_enabled():
+        return False
+    setting = str(os.environ.get("MRS_PAID_GENERATION", "")).strip().lower()
+    if setting in {"admin", "administrator"}:
+        return str(role or "").strip().lower() == "admin"
+    if setting in {"none", "off", "0", "false", "no"}:
+        return False
+    return True
+
+
+def launch_options(api_key, role=None):
     """Keyword arguments for ``generate_encounter`` and the key the scene may use."""
     if offline_cases_enabled():
         record = replay_record()
+        if record is not None:
+            return {"generation_mode": "replay", "replay": record, "api_key": ""}, ""
+        return {"generation_mode": "authored", "api_key": ""}, ""
+    if not paid_generation_allowed(role):
+        # A saved, validated case instead of a paid generation.
+        record = replay_record(require_offline=False)
         if record is not None:
             return {"generation_mode": "replay", "replay": record, "api_key": ""}, ""
         return {"generation_mode": "authored", "api_key": ""}, ""

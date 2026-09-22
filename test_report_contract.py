@@ -22,7 +22,8 @@ import record_findings as findings
 import report_corrections
 import report_presentation as presentation
 from faculty_report import render_faculty_brief_pdf
-from management_trace_analysis import build_analysis_source, source_fingerprint
+from management_trace_analysis import (PROMPT_VERSION, SCHEMA_VERSION,
+                                       build_analysis_source, source_fingerprint)
 from management_trace_report import render_management_trace_pdf
 from test_faculty_report import brief_example
 
@@ -37,6 +38,8 @@ def analysis_for(payload, *, truncate=False):
     def claim(text, refs):
         return {"text": text, "evidence_refs": list(dict.fromkeys(refs))[:12]}
 
+    claim_caps, title_caps = presentation.caps_for(PROMPT_VERSION)
+
     def moment(row):
         before = row["state_before"]["encounter_evidence_refs"]
         after = row["state_after"]["encounter_evidence_refs"]
@@ -44,7 +47,7 @@ def analysis_for(payload, *, truncate=False):
                    if row["source_ref"] in reflections else None)
         return {
             "decision_ref": row["source_ref"],
-            "title": ("A" * 90) if truncate else "A recorded decision and its response",
+            "title": ("A" * title_caps[-1]) if truncate else "A recorded decision and its response",
             "interpretation": claim("The record before this step is described here.",
                                     [row["source_ref"]] + list(before)[:3]),
             "expected_vs_observed": claim("The stated expectation is compared with the recorded response.",
@@ -55,9 +58,9 @@ def analysis_for(payload, *, truncate=False):
         }
 
     first = executed[0]["source_ref"]
-    overview = ("B" * 600) if truncate else "The encounter is summarised here in one finished sentence."
+    overview = ("B" * claim_caps[-1]) if truncate else "The encounter is summarised here in one finished sentence."
     return {
-        "schema_version": "management_trace_analysis_v1", "prompt_version": "1.0",
+        "schema_version": SCHEMA_VERSION, "prompt_version": PROMPT_VERSION,
         "source_hash": source_fingerprint(payload),
         "generated_at": "2026-09-22T00:00:00+00:00", "model": "authored-fixture-no-model-call",
         "analysis": {
