@@ -10,6 +10,11 @@ in a browser. This runs the same checks locally and reports the cause in words.
 It never prints the URL, the password or the provider's raw error. It creates
 nothing unless --create is passed, which opens the store exactly as the
 application does, tables included.
+
+    MRS_ADMIN_PASSWORD_HASH='pbkdf2_sha256$...' python check_database.py --admin-hash
+
+checks the administrator bootstrap hash the same way the application does, and
+says which part of it is wrong. It never prints the hash.
 """
 import argparse
 import os
@@ -41,12 +46,36 @@ def describe(url):
     return None
 
 
+def describe_admin_hash(value):
+    """Why the application will refuse this bootstrap hash, or None.
+
+    The hash is what ``setup_accounts.py --print-bootstrap`` prints. The
+    judgement is the store's own, so this tool and the running application
+    always agree; the hash itself is never printed.
+    """
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from account_store import describe_password_hash
+    if not str(value or "").strip():
+        return "MRS_ADMIN_PASSWORD_HASH is empty or unset."
+    return describe_password_hash(str(value).strip("\r\n"))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--create", action="store_true",
                         help="open the store as the application does, creating its tables")
+    parser.add_argument("--admin-hash", action="store_true",
+                        help="check MRS_ADMIN_PASSWORD_HASH instead of the database URL")
     arguments = parser.parse_args()
+    if arguments.admin_hash:
+        complaint = describe_admin_hash(os.environ.get("MRS_ADMIN_PASSWORD_HASH", ""))
+        if complaint:
+            print("The administrator hash is not usable:", complaint)
+            return 1
+        print("The administrator hash is well formed. Paste it into Secrets exactly as printed, "
+              "on one line, between double quotes.")
+        return 0
     url = os.environ.get("MRS_DATABASE_URL", "").strip()
     complaint = describe(url)
     if complaint:

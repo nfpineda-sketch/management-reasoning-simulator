@@ -45,17 +45,46 @@ def hash_password(password: str) -> str:
     return f"pbkdf2_sha256${PASSWORD_ROUNDS}${salt}${digest}"
 
 
-def _valid_password_hash(value: str) -> bool:
+def describe_password_hash(value: str) -> str | None:
+    """Why this encoded hash is unusable, in words an administrator can act on.
+
+    A deployment sets the bootstrap hash by hand, and "invalid" tells whoever
+    pasted it nothing. This says which part is wrong without ever repeating the
+    hash, so it is safe to log and to print.
+    """
+    if not isinstance(value, str) or not value.strip():
+        return "it is empty or unset."
+    if value != value.strip():
+        return "it has whitespace around it."
+    if value != value.strip('"').strip("'"):
+        return "it is wrapped in quotes. TOML supplies those; the value itself must not."
+    if any(character.isspace() for character in value):
+        return "it contains a space or a line break, so it was wrapped when copied. It has to be one unbroken line."
+    parts = value.split("$")
+    if len(parts) != 4:
+        return (f"it has {len(parts)} part(s) separated by $, and a hash has four. "
+                "This looks like a placeholder rather than a generated hash.")
+    algorithm, rounds, salt, digest = parts
+    if algorithm != "pbkdf2_sha256":
+        return f"its algorithm reads {algorithm!r}; it has to be pbkdf2_sha256."
     try:
-        algorithm, rounds, salt, digest = value.split("$")
-        return (
-            algorithm == "pbkdf2_sha256"
-            and PASSWORD_ROUNDS <= int(rounds) <= 2_000_000
-            and len(bytes.fromhex(salt)) == 16
-            and len(bytes.fromhex(digest)) == 32
-        )
-    except (AttributeError, TypeError, ValueError):
-        return False
+        rounds = int(rounds)
+    except ValueError:
+        return "its rounds field is not a number."
+    if not PASSWORD_ROUNDS <= rounds <= 2_000_000:
+        return (f"it was made with {rounds} rounds and this build requires between "
+                f"{PASSWORD_ROUNDS} and 2000000. Generate it again with this checkout.")
+    for name, part, length in (("salt", salt, 16), ("digest", digest, 32)):
+        try:
+            if len(bytes.fromhex(part)) != length:
+                return f"its {name} is {len(part)} characters long; it has to be {length * 2} hexadecimal characters."
+        except ValueError:
+            return f"its {name} is not hexadecimal, so the value was altered on the way here."
+    return None
+
+
+def _valid_password_hash(value: str) -> bool:
+    return describe_password_hash(value) is None
 
 
 def _verify_password(password: str, encoded: str | None) -> bool:
@@ -287,8 +316,9 @@ class AccountStore:
         This method belongs to trusted deployment setup, never the signup UI.
         """
         username = _username(username)
-        if not _valid_password_hash(password_hash):
-            raise AccountError("The administrator password hash is invalid.")
+        complaint = describe_password_hash(password_hash)
+        if complaint:
+            raise AccountError(f"The administrator password hash is unusable: {complaint}")
         with self._transaction(write=True) as connection:
             if self._execute(connection, "SELECT id FROM mrs_users WHERE role = 'admin' LIMIT 1").fetchone():
                 return False
