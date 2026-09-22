@@ -26,7 +26,8 @@ Todo esto existe como archivo y lo puedes abrir ahora mismo. Está en
 | **Imagen del paciente** | `patient_scene.png` | Una generación `gpt-image-1.5` + una revisión `gpt-5-mini`, aceptada a la primera |
 | El encuentro completo del que salen los tres | `session_for_faculty.json`, `management_trace_payload.json` | Caso generado por IA, jugado sin costo por replay |
 
-El caso es el que ya teníamos generado: **`AI-57d0c4847311ae24`**, hombre de 58 años con
+No hay caso nuevo generado: gasté seis intentos pagados y ninguno pasó la validación
+(sección D). El caso que se usa es el que ya teníamos: **`AI-57d0c4847311ae24`**, hombre de 58 años con
 disnea progresiva e hipotensión, insuficiencia cardíaca descompensada con shock cardiogénico.
 Se jugó una trayectoria correcta de cinco decisiones (estudios sin volumen → VNI y
 noradrenalina → dobutamina → furosemida y sonda → UPC), se completó el ciclo entero de
@@ -47,7 +48,8 @@ MRS_OFFLINE_CASES=1 MRS_REPLAY_CASE=local-data/paid_runs/2026-09-22_R1-05_seed20
 Streamlit Community Cloud despliega desde GitHub con **tu** cuenta. No tengo ni debo tener
 acceso. Lo que sí está listo de mi lado:
 
-- La rama `clinical-encounter-v0.13` está 150 commits adelante de `main`, con la suite verde.
+- La rama `clinical-encounter-v0.13` está 151 commits adelante de `main`. Suite completa
+  verde al cierre de la noche: **2.429 pruebas, 210 subtests, 56/56 scripts de regresión**.
 - No hay ninguna credencial versionada (`.streamlit/secrets.toml` está en `.gitignore`).
 - No hay rutas absolutas en el código versionado.
 - Las tipografías que necesitan los PDF (`assets/fonts/LiberationSans-*.ttf`) sí están versionadas.
@@ -90,11 +92,20 @@ fuera de la ventana permitida. El diseño es correcto; el modelo chico no lo cum
 Cuando falla, el residente ve *"Your analysis was not available"* con un botón de reintentar.
 No hay reintento automático, porque tu regla lo prohíbe.
 
-**Opciones:** (a) cambiar `MRS_TRACE_MODEL` y `MRS_FACULTY_MODEL` a `gpt-5`, que cuesta más por
-llamada pero falla menos; (b) dejar `gpt-5-mini` y aceptar que a veces haya que reintentar;
-(c) `gpt-5` sólo para el informe docente y `gpt-5-mini` para el del residente.
-**Mi recomendación: (a) para la demo**, y medir con calma después. Para la reunión de mañana
-los PDF que ya tienes fueron hechos con `gpt-5`.
+**Pero hay un problema de tiempo.** El cliente de la aplicación usa un timeout de **90
+segundos** para esta llamada. Medí la llamada de este encuentro con `gpt-5`: **83,8 segundos**.
+Cabe, pero por seis segundos. Y cuando la probé *a través del portal* —que es el camino que
+usa el residente de verdad— falló con *"AI Management Trace analysis is temporarily
+unavailable"*. Con una variación normal alrededor de 84 s contra un techo de 90 s, eso va a
+pasar seguido, y un encuentro más largo que estas cinco decisiones no cabe.
+
+**Opciones:** (a) `gpt-5` **y subir el timeout** a 180 s: es un cambio de una línea, pero
+significa que el residente puede quedarse mirando una rueda tres minutos; (b) dejar
+`gpt-5-mini` y aceptar el reintento manual; (c) `gpt-5` sólo para el informe docente, que es
+asincrónico y lo lee el profesor, y `gpt-5-mini` para el del residente.
+**Mi recomendación: (a) para la demo**, porque lo que se muestra es el PDF y no la espera; y
+medir (c) con calma después. Los PDF que ya tienes fueron hechos con `gpt-5`, llamándolo
+directamente con un timeout más largo.
 
 ### B2bis. El generador de casos **no** puede usar `gpt-5`
 
@@ -183,6 +194,27 @@ Se podría agregar un interruptor explícito y apagado por omisión (`MRS_REPLAY
 habilite la clave *sólo* para la escena durante un replay. No lo hice porque debilita una
 propiedad de seguridad que definiste tú y prefiero que la autorices.
 
+### B10. El rendimiento del generador de casos
+
+Seis intentos anoche, cero casos. El detalle está en la sección D. La decisión es qué hacer con
+eso, y hay tres caminos que no se excluyen:
+
+1. **Aceptarlo y no depender de la generación en vivo.** Para enseñar tenemos veintiún casos
+   del banco y uno generado guardado. La generación queda como investigación, no como la vía
+   por la que un residente empieza un encuentro. Es lo que recomiendo para la demo.
+2. **Arreglar el revisor.** El rechazo de (d) fue por pedir algo que sus instrucciones le
+   prohíben pedir. Se puede endurecer esa parte del prompt, o agregar un chequeo determinista
+   que descarte ese tipo de issue antes de rechazar el caso. Eso sí es código y lo puedo hacer,
+   pero toca el contrato de revisión y prefiero que lo autorices.
+3. **Subir el presupuesto de tiempo y generar con `gpt-5`.** Más caro por intento, más lento,
+   probablemente mucho mejor rendimiento. No lo sé: sólo tengo un intento con `gpt-5` y murió
+   por el reloj, no por el contenido. Si quieres, mido esto con tres intentos más.
+
+**Lo que no haría sin que lo digas**: relajar el validador para que pasen más casos. El
+validador es lo que impide que un residente reciba un caso donde el tratamiento correcto no se
+puede ejecutar. Esta semana ya corrigió dos contradicciones suyas propias (el TEP de alto
+riesgo y la terapia del mecanismo declarado); relajarlo por rendimiento es otra cosa.
+
 ---
 
 ## C. Defectos encontrados y arreglados esta noche
@@ -226,7 +258,9 @@ El cursor ahora avanza cuando la respuesta ya está en el registro. Dos pruebas.
 ## D. Registro de gasto
 
 Todo con la clave de `.streamlit/secrets.toml`, que nunca se imprimió ni se guardó en ningún
-archivo.
+archivo. **Veintisiete peticiones al proveedor en total**, repartidas así.
+
+### Los informes y la imagen
 
 | # | Qué | Modelo | Llamadas | Resultado |
 |---|---|---|---|---|
@@ -237,12 +271,53 @@ archivo.
 | 5 | Informe del residente | gpt-5 | 1 | **Aceptado** → `management_trace.pdf` |
 | 6 | Informe docente | gpt-5 | 1 | **Aceptado** a la primera → los dos PDF |
 | 7 | Imagen del paciente | gpt-image-1.5 + gpt-5-mini | 2 | **Aceptada** a la primera |
+| 8 | El mismo informe, pero a través del portal | gpt-5 | 1 | Falló con error de proveedor; lo más probable es el timeout de 90 s (ver B2) |
+| 9 | Medición del tiempo de esa llamada | gpt-5 | 1 | 83,8 s |
 
 El error de la fila 1 fue mío y lo corregí: el guion ahora deja la clave **sólo** para la
 llamada de análisis, y el encuentro se juega con el modo offline puesto, que retiene la clave
 en todas partes. Las corridas posteriores confirman cero llamadas durante el encuentro.
 
----
+### Las generaciones de casos: seis intentos, ningún caso
+
+Esto es lo más importante que medí anoche y no lo esperaba.
+
+| Intento | Desafío | Modelo | Llamadas | Tokens | Resultado |
+|---|---|---|---|---|---|
+| a | R2-02 | gpt-5 | 1 | 23.605 | `CASE-CORRECTION-BUDGET` — la autoría tardó 119,8 s contra un presupuesto de 90 s por etapa |
+| b | R1-06 | gpt-5 | ~1 | — | Lo detuve al ver la falla de (a); la petición ya había salido |
+| d | R2-02 | gpt-5-mini | 3 | 54.814 | `CASE-REVIEW-REVIEW` |
+| e | R1-06 | gpt-5-mini | 3 | 54.135 | `CASE-REVIEW-REVIEW` |
+| f | R3-01 | gpt-5-mini | 2 | 42.137 | `CASE-CORRECTION-CONTRACT` |
+| g | R2-05 | gpt-5-mini | 2 | 42.088 | `CASE-CORRECTION-CONTRACT` |
+
+**Cero casos lanzados en seis intentos, unos 217.000 tokens.** Sumado a las corridas del día
+anterior (uno lanzado en tres), el rendimiento real del generador está cerca de **un caso
+utilizable cada siete intentos**.
+
+Las razones no son aleatorias y vale la pena mirarlas juntas:
+
+- **`CASE-REVIEW-REVIEW`** — el revisor de consistencia rechazó el caso. En (d) el motivo fue
+  que el *preview* del motor compartido mostraba una caída del estado mental que ninguna regla
+  autorada explicaba, y exigió agregar una regla. Sus propias instrucciones le dicen lo
+  contrario, textualmente: *"el motor nativo aporta la evolución no tratada aunque
+  `untreated_drift_per_min` esté vacío; nunca pidas drift autorado para reparar una trayectoria
+  nativa"*. O sea: **el revisor rechazó el caso por algo que tiene prohibido pedir.**
+- **`CASE-CORRECTION-CONTRACT`** — el autor no logró satisfacer el contrato declarativo ni
+  después de la corrección: reglas de estado en conflicto, dosis sin el campo correcto,
+  congestión pulmonar sin declarar, frecuencia respiratoria de llegada incompatible con los
+  parámetros ocultos que él mismo escribió.
+
+Todo esto es lo mismo de fondo que la sección B2: **`gpt-5-mini` no cumple de forma confiable
+instrucciones largas y precisas**, y este proyecto está construido sobre instrucciones largas y
+precisas a propósito, porque de ahí viene la seguridad del simulador. El contrato es correcto;
+el modelo chico es el cuello de botella. Y `gpt-5`, que sí las cumpliría mejor, no cabe en los
+presupuestos de tiempo que se calibraron para el modelo chico.
+
+**Esa tensión es, me parece, el tema más interesante que puedes llevar a la reunión**: el
+validador funciona —rechaza casos que no son manejables, y esta semana ya corrigió dos
+contradicciones suyas propias— pero el costo de la garantía es un rendimiento de generación
+que hoy no sirve para producción.
 
 ## E. Lo que sigue pendiente de antes
 
