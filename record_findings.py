@@ -20,9 +20,11 @@ trace:
 * **what backs a statement about urine**, which is a measured volume, an
   engine narrative, or nothing at all.
 
-``unsettled`` then reads a claim and answers which of those the claim depends
-on. It is used to hold a negative suggestion for faculty review rather than to
-overturn it: the judgment stays with the faculty.
+``unsettled`` reads a claim's words and answers which of those the claim
+depends on; ``unsettled_by_evidence`` asks the same of the references it cites,
+which does not depend on how the claim was phrased. Both are used to hold a
+negative suggestion for faculty review rather than to overturn it: the judgment
+stays with the faculty.
 """
 from __future__ import annotations
 
@@ -242,6 +244,21 @@ def orders_without_result(trace):
     return missing
 
 
+def decisions_with_unanswered_orders(trace):
+    """Decisions that asked for something the record never answered."""
+    return [ref for ref, value in order_stages(trace).items() if value["awaiting"]]
+
+
+def first_decision_ref(trace):
+    """The decision whose interval is the first one, or None."""
+    for position, event in enumerate(trace or []):
+        if not isinstance(event, dict):
+            continue
+        if _number(event.get("decision_time_min")) is not None:
+            return f"trace:{position}"
+    return None
+
+
 def encounter_limits(trace):
     """Everything the record cannot settle on its own, in one place."""
     return {
@@ -251,6 +268,8 @@ def encounter_limits(trace):
         "inert_observables": inert_observables(trace),
         "unresponsive_to_support": unresponsive_to_support(trace),
         "urine": urine_evidence(trace),
+        "first_decision_ref": first_decision_ref(trace),
+        "decisions_with_unanswered_orders": decisions_with_unanswered_orders(trace),
     }
 
 
@@ -294,6 +313,33 @@ def unsettled(text, limits):
     return reasons
 
 
+def unsettled_by_evidence(evidence_refs, limits):
+    """The same question asked of the evidence a claim cites, not of its words.
+
+    Reading the model's prose is fragile: the same judgment written another way
+    escapes the check. These two rules read the references instead, so they hold
+    whatever the wording. They are deliberately few, because holding a sound
+    suggestion has a cost of its own: a mark the faculty stops trusting.
+    """
+    refs = [ref for ref in (evidence_refs or []) if isinstance(ref, str)]
+    decisions = [ref for ref in refs if ref.startswith("trace:")]
+    reasons = []
+    first = (limits or {}).get("first_decision_ref")
+    interval = (limits or {}).get("first_interval_min")
+    if decisions and first and interval and set(decisions) == {first}:
+        reasons.append(
+            f"the only decision this rests on is the first one, whose interval was {interval:g} min, "
+            "so the record cannot separate what was decided from the interval the encounter advances in")
+    unanswered = set((limits or {}).get("decisions_with_unanswered_orders") or [])
+    shared = [ref for ref in decisions if ref in unanswered]
+    if shared:
+        closed = (limits or {}).get("closed_at_min")
+        ending = f" and the encounter closed at {closed:g} min" if closed is not None else ""
+        reasons.append("a decision this rests on asked for something the record never answered"
+                       + ending + ", so an unexecuted order cannot be told apart from the end of the encounter")
+    return reasons
+
+
 HELD_STATUS = "Requires faculty review"
 
 
@@ -308,4 +354,8 @@ def hold_for_review(item, limits):
     if item.get("recommendation") != "needs_improvement":
         return []
     text = " ".join(str(item.get(key) or "") for key in ("rationale", "feedback", "context"))
-    return unsettled(text, limits)
+    reasons = unsettled(text, limits)
+    for reason in unsettled_by_evidence(item.get("evidence_refs"), limits):
+        if reason not in reasons:
+            reasons.append(reason)
+    return reasons

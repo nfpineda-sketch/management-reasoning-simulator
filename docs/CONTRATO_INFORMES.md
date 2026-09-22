@@ -120,7 +120,13 @@ sí es una orden nueva. Ningún informe convierte la llegada de un resultado en 
 En [`record_findings.py`](../record_findings.py), sobre el registro congelado:
 
 `order_stages` · `urine_evidence` · `first_interval` · `inert_observables` ·
-`unresponsive_to_support` · `unsettled` · `hold_for_review`
+`unresponsive_to_support` · `unsettled` · `unsettled_by_evidence` · `hold_for_review`
+
+`unsettled` lee las palabras de una afirmación; `unsettled_by_evidence` lee **las referencias de
+evidencia que cita**, así que no depende de cómo esté redactada. Dos reglas estructurales: una
+sugerencia cuya única ancla es la primera decisión —cuyo intervalo es el primero del encuentro— y
+una que se apoya en una decisión que pidió algo que el registro nunca respondió. Se suman al
+criterio textual y sólo actúan sobre sugerencias negativas.
 
 ## Verificaciones de regresión
 

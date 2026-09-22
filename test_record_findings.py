@@ -148,3 +148,60 @@ def test_holding_does_not_change_the_recommendation():
     item = {"recommendation": "needs_improvement", "rationale": "Support began 15 minutes later."}
     findings.hold_for_review(item, limits)
     assert item["recommendation"] == "needs_improvement"
+
+
+# --- the same question asked of the evidence, not of the wording -------------
+
+def test_a_judgment_is_held_however_it_is_phrased():
+    # Nothing in this sentence trips the textual check; the evidence does.
+    limits = findings.encounter_limits(TRACE)
+    item = {"recommendation": "needs_improvement",
+            "rationale": "The opening approach could have been stronger.",
+            "evidence_refs": ["trace:0"]}
+    assert findings.unsettled(item["rationale"], limits) == []
+    assert findings.hold_for_review(item, limits)
+
+
+def test_the_first_interval_reason_needs_the_first_decision_alone():
+    limits = findings.encounter_limits(TRACE)
+    alone = findings.unsettled_by_evidence(["trace:0"], limits)
+    with_later = findings.unsettled_by_evidence(["trace:0", "trace:1"], limits)
+    assert any("interval the encounter advances in" in reason for reason in alone)
+    assert not any("interval the encounter advances in" in reason for reason in with_later)
+
+
+def test_a_decision_whose_order_was_never_answered_is_held():
+    limits = findings.encounter_limits(TRACE)
+    reasons = findings.unsettled_by_evidence(["trace:2"], limits)
+    assert reasons and "never answered" in reasons[0]
+
+
+def test_a_favourable_suggestion_is_not_held_by_the_evidence_rule():
+    limits = findings.encounter_limits(TRACE)
+    item = {"recommendation": "satisfactory", "rationale": "Well sequenced.",
+            "evidence_refs": ["trace:0"]}
+    assert findings.hold_for_review(item, limits) == []
+
+
+def test_a_claim_with_no_decision_anchor_is_not_held_structurally():
+    limits = findings.encounter_limits(TRACE)
+    assert findings.unsettled_by_evidence([], limits) == []
+    assert findings.unsettled_by_evidence(["reflection:1"], limits) == []
+
+
+def test_the_two_rules_do_not_report_the_same_reason_twice():
+    limits = findings.encounter_limits(TRACE)
+    item = {"recommendation": "needs_improvement",
+            "rationale": "Support began 15 minutes later.",
+            "evidence_refs": ["trace:0"]}
+    reasons = findings.hold_for_review(item, limits)
+    assert len(reasons) == len(set(reasons))
+
+
+def test_the_structural_rule_adds_no_hold_where_the_record_settles_it():
+    # A negative judgment anchored on decisions the record does settle stands.
+    limits = findings.encounter_limits(TRACE)
+    item = {"recommendation": "needs_improvement",
+            "rationale": "The working model was never revised.",
+            "evidence_refs": ["trace:1"]}
+    assert findings.hold_for_review(item, limits) == []
