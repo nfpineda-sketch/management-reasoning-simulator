@@ -10,6 +10,7 @@ own audit. Tests that need a provider pass an explicit stub client or an
 Set ``MRS_ALLOW_NETWORK_TESTS=1`` to opt out, for a deliberate paid run.
 """
 import os
+from pathlib import Path
 import socket
 
 import pytest
@@ -56,6 +57,22 @@ def _offline_suite():
         socket.socket.connect_ex = _real_connect_ex
 
 
+_PROVIDER_SECRETS = ("OPENAI_API_KEY",)
+
+
+def _configured_provider_key():
+    """The provider key configured on this machine, read once and never logged."""
+    path = Path(__file__).resolve().parent / ".streamlit" / "secrets.toml"
+    if not path.exists():
+        return ""
+    import tomllib
+    try:
+        loaded = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ""
+    return str(loaded.get("OPENAI_API_KEY") or "")
+
+
 @pytest.fixture(autouse=True)
 def _no_deployment_key(monkeypatch):
     """A real key on this machine must not reach the app under test.
@@ -69,6 +86,24 @@ def _no_deployment_key(monkeypatch):
     for name in ("OPENAI_API_KEY", "MRS_FACULTY_MODEL", "MRS_IMAGE_MODEL",
                  "MRS_IMAGE_REVIEW_MODEL", "MRS_GENERATOR_MODEL", "OPENAI_MODEL"):
         monkeypatch.delenv(name, raising=False)
+    # Clearing the environment was only half of it: the docstring above already
+    # said Streamlit reads the file, and it was still being read. The day a real
+    # key was configured on this machine (2026-09-22) the suite started seeing
+    # it, and a test that asserts what the app does without a provider failed.
+    # Only the value that is actually on disk is blanked, so a test that sets a
+    # fictional key on its own AppTest instance still exercises the AI path.
+    on_disk = _configured_provider_key()
+    if not on_disk:
+        return
+    import streamlit as st
+    secrets_type = type(st.secrets)
+    original = secrets_type.get
+
+    def without_the_real_key(self, key, default=None):
+        value = original(self, key, default)
+        return "" if key in _PROVIDER_SECRETS and value == on_disk else value
+
+    monkeypatch.setattr(secrets_type, "get", without_the_real_key, raising=False)
 
 
 @pytest.fixture(autouse=True)

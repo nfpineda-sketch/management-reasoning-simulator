@@ -102,6 +102,28 @@ UNMODELLED_THERAPIES = {
     'blood components other than packed red cells': ('fresh frozen plasma', 'platelet transfusion',
                                                      'cryoprecipitate', 'prothrombin complex'),
 }
+# A mechanism the case declares authorises its own therapies, so what is
+# unmodelled is a property of the case and not of a fixed list. Found by the
+# paid run of 2026-09-22: a draft that declared engine.pulmonary_obstruction —
+# which authorises thrombolysis, and whose physiology the engine runs end to
+# end — was still rejected for resting on "a therapy the engine cannot
+# execute", and the correction it bought was rejected for the same reason.
+MECHANISM_THERAPIES = {
+    'pulmonary_obstruction': frozenset({'thrombolysis'}),
+    'coronary': frozenset({'thrombolysis', 'percutaneous coronary intervention'}),
+}
+
+
+def authorised_therapies(case):
+    """Therapies the mechanisms this case declares make executable."""
+    engine = case.get('engine') or {}
+    allowed = set()
+    for mechanism, therapies in MECHANISM_THERAPIES.items():
+        if engine.get(mechanism) is not None:
+            allowed |= set(therapies)
+    return allowed
+
+
 # The engine does execute the decision to involve someone else.
 _REFERRAL_WORDS = ('consult', 'refer', 'referral', 'transfer', 'disposition', 'admit',
                    'activate', 'call ', 'escalate', 'arrange', 'request', 'organise',
@@ -128,7 +150,10 @@ def unexecutable_path_issues(case):
         lowered = path.lower()
         if any(word in lowered for word in _REFERRAL_WORDS):
             continue
+        allowed = authorised_therapies(case)
         for therapy, terms in sorted(UNMODELLED_THERAPIES.items()):
+            if therapy in allowed:
+                continue
             matched = [term for term in terms if term in lowered]
             if not matched:
                 continue
@@ -177,13 +202,26 @@ def executable_definitive_managements():
                                   'airway_preparation'})
 
 
+# The therapy each syndrome turns on, so that a case which declares the
+# mechanism that delivers it is manageable here after all.
+SYNDROME_THERAPY = {
+    'high-risk pulmonary embolism': 'thrombolysis',
+    'ST-elevation myocardial infarction': 'percutaneous coronary intervention',
+}
+
+
 def unmanageable_diagnosis_issues(case):
     """The confirmed diagnosis must be manageable with the executable actions."""
     diagnosis = (case.get('faculty') or {}).get('diagnosis')
     if not isinstance(diagnosis, str):
         return []
+    allowed = authorised_therapies(case)
     lowered = ' ' + diagnosis.lower() + ' '
     for syndrome, (terms, severities) in sorted(REPERFUSION_DEPENDENT_SYNDROMES.items()):
+        if SYNDROME_THERAPY.get(syndrome) in allowed:
+            # The case declared the mechanism that runs this pathway, so the
+            # engine does execute its defining management.
+            continue
         matched = [term for term in terms if term in lowered]
         if not matched:
             continue
