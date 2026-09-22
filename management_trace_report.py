@@ -41,6 +41,9 @@ TREND_FIELDS = (
     ("sbp", "Systolic pressure", "mmHg"),
     ("spo2", "Oxygen saturation", "%"),
     ("respiratory_rate", "Respiratory rate", "/min"),
+    # Faculty request 2026-09-23: this encounter turns on perfusion, and the
+    # capillary refill is the bedside sign that carried it.
+    ("crt", "Capillary refill", "s"),
 )
 PLAN_FIELDS = (
     ("cue", "Clinical cue to watch"),
@@ -164,10 +167,31 @@ def trend_points(timeline, field):
     return points
 
 
+class _OpenDecision(Flowable):
+    """A zero-height mark that records which decision is open at this point.
+
+    A decision that needs two pages must say so on the second one. The page
+    handler runs at the start of each page, after everything on the previous
+    page has been drawn, so the mark left by the last decision drawn tells it
+    which decision is continuing (faculty request 2026-09-23).
+    """
+
+    def __init__(self, state, number):
+        super().__init__()
+        self.width = self.height = 0
+        self._state, self._number = state, number
+
+    def wrap(self, *args):
+        return 0, 0
+
+    def draw(self):
+        self._state["open"] = self._number
+
+
 class _Trend(Flowable):
     """A vector small-multiple with a true time axis and exact endpoint labels."""
 
-    def __init__(self, points, label, unit, width=238, height=140, markers=()):
+    def __init__(self, points, label, unit, width=238, height=126, markers=()):
         super().__init__()
         self.width, self.height = width, height
         self.points, self.label, self.unit = points, label, unit
@@ -295,48 +319,30 @@ def _observed_studies(event):
     return lines
 
 
-_ECG_STUDIES = frozenset({"ecg", "ecg_right", "ecg_posterior"})
+def _recorded_course(timeline):
+    """A factual summary of the chart, for when the AI passage was cut short.
 
-
-def _studies_without_a_result(event, closed_at_min=None):
-    """Studies this decision ordered whose result is not in the record yet.
-
-    Faculty request 2026-09-23: an order never written, one written and not
-    executed, one still pending at the close and one whose result was never
-    recorded are four different things, and only the first is a decision the
-    resident did not take.
+    Derived only from the recorded observations, so it states the course
+    without continuing a sentence the model never finished.
     """
-    arrived = set(_mapping(_mapping(event.get("state_after")).get("diagnostics_available")))
-    already = set(_mapping(_mapping(event.get("state_before")).get("diagnostics_available")))
-    # An electrocardiogram's result is the tracing itself, kept with the
-    # encounter rather than as a written report. Counting it as a missing result
-    # would read as a gap the resident left, which it is not.
-    tracings_before = len(_mapping(event.get("state_before")).get("ecg_recordings") or [])
-    tracings_after = len(_mapping(event.get("state_after")).get("ecg_recordings") or [])
-    lines = []
-    for action in event.get("executed_actions", []) or []:
-        if not isinstance(action, dict) or action.get("type") != "diagnostic":
+    if not timeline:
+        return ""
+    first, last = timeline[0], timeline[-1]
+    start = _number(first.get("decision_time_min"))
+    finish = _number(last.get("response_time_min"))
+    span = (f"{len(timeline)} recorded decisions between {start:g} and {finish:g} min"
+            if start is not None and finish is not None else f"{len(timeline)} recorded decisions")
+    opening = _mapping(_mapping(first.get("state_before")).get("observable"))
+    closing = _mapping(_mapping(last.get("state_after")).get("observable"))
+    moves = []
+    for key, label, unit in TREND_FIELDS:
+        before, after = _scalar(opening.get(key)), _scalar(closing.get(key))
+        if not before and not after:
             continue
-        key = str(action.get("diagnostic") or action.get("diagnostic_type") or "")
-        if not key or key in arrived - already:
-            continue
-        name = presentation.study_name(key)
-        if key in _ECG_STUDIES:
-            if tracings_after > tracings_before:
-                lines.append(f"{name}: acquired; the tracing is kept with the encounter record")
-            else:
-                lines.append(f"{name}: requested; no tracing recorded in this interval")
-            continue
-        result = action.get("result") if isinstance(action.get("result"), dict) else {}
-        ready = _number(result.get("time_min"))
-        response = _number(event.get("response_time_min"))
-        if ready is not None and response is not None and ready > response:
-            lines.append(f"{name}: requested; the result was not due until {_time(ready)}")
-        elif closed_at_min is not None and response is not None and response >= closed_at_min:
-            lines.append(f"{name}: requested; still pending when the encounter closed")
-        else:
-            lines.append(f"{name}: requested; no result recorded in this interval")
-    return lines
+        suffix = f" {unit}" if unit else ""
+        moves.append(f"{_xml(label)} {_xml(before)}{_xml(suffix)} unchanged" if before == after
+                     else f"{_xml(label)} {_xml(before)} &#8594; {_xml(after)}{_xml(suffix)}")
+    return _xml(span) + ". " + "; ".join(moves) + "." if moves else _xml(span) + "."
 
 
 def _observed_response(event):
@@ -366,7 +372,7 @@ def _all_claims(analysis):
 
 def render_management_trace_pdf(
     report, payload, *, case_label="", learner_label="", review_completed=False,
-    adaptation_plan=None,
+    adaptation_plan=None, corrections=None,
 ):
     """Render a learner report; the report must match frozen source + reflection.
 
@@ -385,6 +391,9 @@ def render_management_trace_pdf(
     reflection_index = {item["source_ref"]: item for item in source.get("reflections", [])}
     encounter_index = {item["source_ref"]: item for item in source.get("encounter_events", [])}
     analysis = report["analysis"]
+    # Recorded factual corrections to the model's own text. The saved analysis
+    # is untouched; what was corrected is listed with the metadata.
+    correct = presentation.CorrectionLog(corrections)
     _fonts()
     styles = _styles()
     output = BytesIO()
@@ -423,7 +432,7 @@ def render_management_trace_pdf(
     def claim_paragraph(claim, style="body"):
         claim = _mapping(claim)
         refs = claim.get("evidence_refs", [])
-        text = _xml(presentation.claim_text(claim.get("text", "")))
+        text = _xml(correct(presentation.claim_text(claim.get("text", ""))))
         if refs:
             seen, labels = set(), []
             for ref in refs:
@@ -435,6 +444,8 @@ def render_management_trace_pdf(
             text += '<br/><font size="7.6" color="#607482">' + _xml(suffix) + "</font>"
         return Paragraph(text, styles[style])
 
+    open_decision = {"open": None}
+
     def footer(canvas, doc):
         canvas.saveState()
         canvas.setStrokeColor(LINE)
@@ -444,6 +455,10 @@ def render_management_trace_pdf(
         canvas.drawString(margin, height - 25, "MANAGEMENT REASONING SIMULATOR")
         canvas.setFillColor(BLUE)
         canvas.drawRightString(width - margin, height - 25, status)
+        if open_decision["open"] is not None:
+            canvas.setFont("TraceSans-Bold", 8.6)
+            canvas.setFillColor(BLUE)
+            canvas.drawString(margin, height - 47, f"DECISION {open_decision['open']} · CONTINUED")
         canvas.line(margin, 49, width - margin, 49)
         canvas.setFont("TraceSans", 6.8)
         canvas.setFillColor(MUTED)
@@ -477,36 +492,65 @@ def render_management_trace_pdf(
     trend_width = (content_width - 12) / 2
     charts = [_Trend(trend_points(timeline, key), label, unit, width=trend_width, markers=decision_marks)
               for key, label, unit in TREND_FIELDS]
-    chart_table = Table([[charts[0], charts[1]], [charts[2], charts[3]]],
-                        colWidths=[content_width / 2] * 2)
-    chart_table.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 0),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
-    ]))
-    story.append(chart_table)
+    legend_lines = []
+    for event in timeline:
+        if event.get("decision_number") is None:
+            continue
+        done = presentation.action_lines(event.get("executed_actions", []))
+        summary = "; ".join(done[:2]) if done else "no executed action recorded"
+        if len(done) > 2:
+            summary += f"; +{len(done) - 2} more"
+        legend_lines.append(f'<b>D{event["decision_number"]}</b> · {_time(event.get("decision_time_min"))} — {summary}')
+    legend = [p("WHAT EACH MARK WAS", "label")]
+    legend += [Paragraph(_xml(line).replace("&lt;b&gt;", "<b>").replace("&lt;/b&gt;", "</b>"), styles["tiny"])
+               for line in legend_lines]
+    # Two tables rather than one, so the panels can break between rows instead
+    # of jumping whole to the next page and leaving one empty behind them.
+    def panel_row(cells):
+        table = Table([cells], colWidths=[content_width / 2] * 2)
+        table.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+        ]))
+        return table
+
+    story.append(panel_row([charts[0], charts[1]]))
+    story.append(panel_row([charts[2], charts[3]]))
+    story.append(panel_row([charts[4], legend]))
     story.append(p("Points are recorded observations; lines connect them and do not show continuous monitoring. Missing values interrupt the line, and each panel has its own vertical scale. The dashed marks are the minutes at which D1-D" + str(len(decision_marks) or 1) + " were taken: they show when you acted, and a change after a mark does not establish that the action caused it.", "tiny"))
     story.append(p("AI interpretation of the trajectory", "label"))
     story.append(claim_paragraph(analysis["trajectory"]))
+    # When a passage was cut at the analysis length limit, the report does not
+    # continue the sentence: it states the course from the chart instead, and
+    # says plainly that the interpretation is incomplete (2026-09-23).
+    if presentation.was_truncated(_mapping(analysis["overview"]).get("text")) or \
+            presentation.was_truncated(_mapping(analysis["trajectory"]).get("text")):
+        story.append(KeepTogether([
+            p("THE INTERPRETATION ABOVE IS INCOMPLETE", "label"),
+            p("One or more AI passages stopped at the analysis length limit and were not continued. "
+              "What follows is not an interpretation: it is the recorded course, read from the chart.", "note"),
+            Paragraph("<b>Recorded course:</b> " + _recorded_course(timeline), styles["body"]),
+        ]))
 
     story.append(p("What to carry forward", "heading"))
     story.append(p("PATTERNS TO PRESERVE", "label"))
     for claim in analysis.get("strengths", []):
-        story.append(claim_paragraph(claim))
+        story.append(KeepTogether([claim_paragraph(claim)]))
     if not analysis.get("strengths"):
         story.append(p("No additional evidence-supported pattern was identified.", "note"))
     story.append(p("QUESTIONS FOR YOUR NEXT ENCOUNTER", "label"))
     for claim in analysis.get("questions", []):
-        story.append(claim_paragraph(claim))
+        story.append(KeepTogether([claim_paragraph(claim)]))
 
     # --- the decisions, each read in the order a clinician reads one --------
-    story.append(PageBreak())
+    story.append(Spacer(1, 12))
     story.append(p("Decisions worth revisiting", "heading"))
-    story.append(p("Each decision is shown as it happened: what you had observed, how you reasoned, what you ordered, what you expected, what was recorded next, and one point to revisit. Your later reflection is kept separate, because it describes your retrospective understanding and not what you necessarily knew at the time.", "small"))
+    story.append(p("Each decision is shown as it happened: what you had observed, how you reasoned, what you ordered, what you expected, what was recorded next, and what changed after it. Your later reflection is summarised separately by the model, because it is retrospective and does not describe what you necessarily knew at the time.", "small"))
 
-    closed_at = max((_number(event.get("response_time_min")) or 0) for event in timeline) if timeline else None
+    fates = presentation.order_fates(payload.get("trace") if isinstance(payload, dict) else [])
     for item in analysis["pivotal_decisions"]:
         event = index[item["decision_ref"]]
         reasoning = _mapping(event.get("recorded_reasoning"))
@@ -522,8 +566,9 @@ def render_management_trace_pdf(
 
         story.append(KeepTogether([
             Spacer(1, 9), HRFlowable(width="100%", thickness=1, color=LINE),
+            _OpenDecision(open_decision, event["decision_number"]),
             p(f"DECISION {event['decision_number']} · {time_range} · {_text(event.get('execution_status')).replace('_', ' ') or 'not recorded'}", "label"),
-            p(presentation.claim_text(item["title"], presentation.TITLE_CAPS), "card_title"),
+            p(correct(presentation.claim_text(item["title"], presentation.TITLE_CAPS)), "card_title"),
             p("1 · WHAT YOU HAD OBSERVED", "label"),
             p(observed_before or "No observations were recorded before this decision."),
         ]))
@@ -563,7 +608,9 @@ def render_management_trace_pdf(
             result_bits.append("No before/after observations were recorded.")
         for heading, body in studies:
             result_bits.append(f"<b>{_xml(heading)}:</b> " + _xml(body))
-        for line in _studies_without_a_result(event, closed_at):
+        # A request is not an execution, and a missing result is not an
+        # omission by the resident (faculty request 2026-09-23).
+        for line in fates.get(item["decision_ref"], []):
             result_bits.append('<font color="#607482">' + _xml(line) + "</font>")
         compare = Table([
             [p("4 · WHAT YOU EXPECTED", "label"), p("5 · WHAT WAS RECORDED NEXT", "label")],
@@ -586,17 +633,24 @@ def render_management_trace_pdf(
         else:
             story.extend([compare, plan_line])
         story.append(claim_paragraph(item["expected_vs_observed"]))
+        # The model's adaptation field describes what changed next. Calling it
+        # a point to revisit implied a reflective question it does not contain
+        # unless it actually asks one (faculty request 2026-09-23).
+        adaptation_text = presentation.claim_text(_mapping(item["adaptation"]).get("text"))
+        adaptation_label = ("6 · POINT TO REVISIT" if adaptation_text.rstrip().endswith("?")
+                            else "6 · NEXT MANAGEMENT ADJUSTMENT")
         story.append(KeepTogether([
-            p("6 · POINT TO REVISIT", "label"),
+            p(adaptation_label, "label"),
             claim_paragraph(item["adaptation"]),
         ]))
         if item.get("reflection_insight"):
             story.append(KeepTogether([
-                p("YOUR LATER REFLECTION — WRITTEN AFTER THE ENCOUNTER", "label"),
-                p("This is retrospective. It does not establish what you understood while deciding.", "tiny"),
+                p("AI SUMMARY OF YOUR LATER REFLECTION", "label"),
+                p("Written by the model from what you wrote after the encounter. It is retrospective and does not establish what you understood while deciding.", "tiny"),
                 Spacer(1, 3),
                 claim_paragraph(item["reflection_insight"], "ai"),
             ]))
+        story.append(_OpenDecision(open_decision, None))
 
     # --- what the learner wrote afterwards, then the metadata ---------------
     entered_plan = _mapping(adaptation_plan)
@@ -610,18 +664,30 @@ def render_management_trace_pdf(
             story.append(p(label, "label"))
             story.append(p(_text(entered_plan.get(key)) or "Not recorded."))
 
-    story.append(Spacer(1, 16))
-    story.append(HRFlowable(width="100%", thickness=.6, color=LINE))
-    story.append(p("Report provenance", "label"))
+    # The metadata closes the document; it must not be left alone on a page.
     truncated = sum(1 for claim in _all_claims(analysis)
                     if presentation.was_truncated(_mapping(claim).get("text")))
-    story.append(p(
+    closing = [
+        Spacer(1, 10),
+        HRFlowable(width="100%", thickness=.6, color=LINE),
+        p("Report provenance", "label"),
+        p(
         f"Encounter: {encounter_id} | Generated: {_timestamp(report.get('generated_at'))} | Model: {_text(report.get('model'))}\n"
         f"Analysis: {_text(report.get('schema_version'))} | Prompt: {_text(report.get('prompt_version'))} | Renderer: {RENDERER_VERSION}\n"
         f"Source fingerprint: {_text(report.get('source_hash'))}\n"
         "The source fingerprint binds this analysis to the frozen encounter and locked reflections. "
         "The full encounter record remains available separately."
-        + (f"\n{truncated} interpretation field(s) reached the analysis length limit and are marked where they stop." if truncated else ""),
-        "tiny"))
+        + (f"\n{truncated} interpretation field(s) reached the analysis length limit and are marked where they stop." if truncated else "")
+        + (f"\n{len(correct.applied)} factual correction(s) were applied to the AI text at render time; "
+           "the saved analysis keeps the original wording." if correct.applied else ""),
+        "tiny"),
+    ]
+    closing += [p("Correction: " + reason, "tiny") for reason in correct.lines()]
+    # Pull it back beside the last plan field, label and value together, so the
+    # metadata never stands on its own and no heading is left behind.
+    tail = []
+    while story and isinstance(story[-1], Paragraph) and len(tail) < 2:
+        tail.insert(0, story.pop())
+    story.append(KeepTogether(tail + closing) if tail else KeepTogether(closing))
     document.build(story, onFirstPage=footer, onLaterPages=footer)
     return output.getvalue()

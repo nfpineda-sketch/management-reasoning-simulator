@@ -94,7 +94,9 @@ def test_brief_pdf_preserves_user_text_provenance_and_distinct_recommendations()
     pdf = render_faculty_brief_pdf(report, record, compact=False)
     reader = PdfReader(BytesIO(pdf))
     text = "\n".join(page.extract_text() for page in reader.pages)
-    assert len(reader.pages) == 5
+    # Each objective travels as one block since 2026-09-23, so the document is
+    # as long as its content needs rather than two objectives per page.
+    assert 5 <= len(reader.pages) <= 7
     assert "SYNTHETIC DESIGN EXAMPLE" in text
     assert "Mantendré" in text and "SpO2 > 94%" in text
     assert "<b>Literal learner text</b> & reasoning." in " ".join(text.split())
@@ -165,10 +167,17 @@ def test_default_concise_pdf_preserves_suggestions_citations_and_faculty_route()
     assert "Autonomy cannot be assessed because assistance is unknown" not in text
     assert "selected review priorities" in text
     assert "rationale excerpts and evidence anchors are a reading aid" in flat
-    assert "Full citations, feedback and rationales" in text
-    assert "not image acquisition" in text
+    assert "citations and rationales in the complete PDF" in " ".join(text.split())
+    assert "not image acquisition" in " ".join(text.split())
     assert "review and record your assessment" in text
-    assert "Prompt 1.0" in text
+    # The generation record moved to the complete PDF (faculty review
+    # 2026-09-23); the concise one carries the encounter and the model and
+    # points at the rest.
+    assert "Prompt 1.0" not in text
+    assert str(report["model"]) in " ".join(text.split())
+    full_text = "\n".join(page.extract_text() for page in PdfReader(BytesIO(
+        render_faculty_brief_pdf(report, record, compact=False))).pages)
+    assert "Prompt version: 1.0" in " ".join(full_text.split())
     assert "PRIVATE_TOKEN" not in text
     assert "DO_NOT_PRINT" not in text
     links = [
@@ -242,7 +251,10 @@ def test_mapped_challenge_brief_stays_concise_and_full_report_has_sources(challe
     compact_text = "\n".join(page.extract_text() for page in compact.pages)
     assert 2 <= len(compact.pages) <= 3
     assert challenge in compact_text
-    assert "Royal College" in compact.pages[0].extract_text()
+    # The competency correspondence lives in the complete PDF; the compact
+    # points to it rather than repeating it (faculty review 2026-09-23).
+    assert "Royal College" not in compact_text
+    assert "complete PDF" in compact_text
     full = PdfReader(BytesIO(render_faculty_brief_pdf(report, record, compact=False)))
     text = "\n".join(page.extract_text() for page in full.pages)
     assert "Competency correspondence" in text and "ACGME" in text and "Royal College" in text

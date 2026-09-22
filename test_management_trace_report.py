@@ -128,8 +128,14 @@ def test_synthesis_preserves_distinct_evidence_interpretation_and_locked_reflect
     assert "SYNTHETIC LAYOUT EXAMPLE" in text
     # The six blocks the faculty asked for on 2026-09-23, in order.
     for label in ("1 · WHAT YOU HAD OBSERVED", "2 · HOW YOU REASONED", "3 · WHAT YOU ORDERED",
-                  "4 · WHAT YOU EXPECTED", "5 · WHAT WAS RECORDED NEXT", "6 · POINT TO REVISIT"):
+                  "4 · WHAT YOU EXPECTED", "5 · WHAT WAS RECORDED NEXT"):
         assert label in text, label
+    # The sixth block is named for what it holds: the model's adaptation field
+    # describes the next change unless it actually asks a question.
+    asks = [moment for moment in report["analysis"]["pivotal_decisions"]
+            if str(moment["adaptation"]["text"]).rstrip().endswith("?")]
+    assert ("6 · POINT TO REVISIT" in text) == bool(asks)
+    assert ("6 · NEXT MANAGEMENT ADJUSTMENT" in text) == (len(asks) < len(report["analysis"]["pivotal_decisions"]))
     assert text.count("4 · WHAT YOU EXPECTED") == 4
     assert "YOUR LATER REFLECTION" in text
     assert "D3" in text and "8 min to 12 min" in text

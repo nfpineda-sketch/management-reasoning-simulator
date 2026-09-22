@@ -32,7 +32,7 @@ CLAIM_MAX_CHARS = 900
 TITLE_MAX_CHARS = 140
 CLAIM_CAPS = (600, CLAIM_MAX_CHARS)
 TITLE_CAPS = (90, TITLE_MAX_CHARS)
-TRUNCATION_NOTE = " […interrumpido: el análisis alcanzó su límite de extensión]"
+TRUNCATION_NOTE = " […interrupted: the analysis reached its length limit]"
 _SENTENCE_END = ".!?\"')]»"
 _AI_PREFIX = re.compile(r"^\s*(?:AI\s+interpretation|AI\s+synthesis|Interpretación\s+de\s+la\s+IA)\s*[:\-—]\s*", re.I)
 
@@ -86,6 +86,8 @@ _STUDY_NAMES = {
     "temperature": "temperature", "abg": "arterial blood gas", "vbg": "venous blood gas",
     "blood_gas": "blood gas", "liver_panel": "liver panel",
 }
+_ALREADY_IN_PLACE = re.compile(
+    r"already (?:in place|contacted|requested|running)|not repeated", re.I)
 _SUPPORT_NAMES = {
     "vascular_access": "peripheral IV access", "monitoring": "continuous monitoring and pulse oximetry",
     "urinary_catheter": "urinary catheter", "gastric_tube": "gastric tube", "npo": "nil by mouth",
@@ -160,6 +162,12 @@ def action_phrase(action):
     """
     if not isinstance(action, dict):
         return ""
+    # The engine already writes the plain sentence for something that was
+    # standing rather than started. Found 2026-09-23: an intravenous line
+    # recorded as "already in place; not repeated" was printed as "(started)".
+    label = " ".join(str(action.get("label") or "").split())
+    if label and _ALREADY_IN_PLACE.search(label):
+        return label[:1].upper() + label[1:]
     kind = str(action.get("type") or action.get("support_type") or "").strip()
     route = _ROUTES.get(str(action.get("route") or ""), str(action.get("route") or ""))
     operation = _OPERATION.get(str(action.get("operation") or ""), "")
@@ -262,6 +270,123 @@ def action_lines(actions):
             seen.add(phrase)
             lines.append(phrase)
     return lines
+
+
+def understood_but_not_executed(event):
+    """Orders the engine read in this submission that produced no action.
+
+    A request is not an execution, and an execution is not a result. Found
+    2026-09-23 reading D4 of the demonstration encounter: the resident asked
+    for a control lactate, the engine understood it, and no lactate was drawn,
+    yet the analysis read the missing value as monitoring the resident had
+    failed to do.
+    """
+    if not isinstance(event, dict):
+        return []
+    executed = set()
+    for action in (event.get("executed_actions") or event.get("action_summaries") or []):
+        if not isinstance(action, dict):
+            continue
+        key = action.get("diagnostic") or action.get("diagnostic_type")
+        executed.add(("diagnostic", str(key)) if key else (str(action.get("type") or ""), ""))
+    missing = []
+    for action in event.get("interpreted_action") or []:
+        if not isinstance(action, dict):
+            continue
+        kind = str(action.get("type") or "")
+        if kind in {"reassessment", "clarification"}:
+            continue
+        key = action.get("diagnostic") or action.get("diagnostic_type")
+        signature = ("diagnostic", str(key)) if key else (kind, "")
+        if signature in executed:
+            continue
+        name = study_name(key) if key else kind.replace("_", " ")
+        if name and (signature, name) not in [(s, n) for s, n in missing]:
+            missing.append((signature, name))
+    return missing
+
+
+def order_fates(trace):
+    """For every decision, what became of each order the engine understood.
+
+    Four states, which the record distinguishes and a reader must not confuse:
+    executed here, executed later in the encounter, never executed, and never
+    executed because the encounter ended first.
+    """
+    trace = [event for event in (trace or []) if isinstance(event, dict)]
+    executed_later = {}
+    for position, event in enumerate(trace):
+        for action in (event.get("executed_actions") or event.get("action_summaries") or []):
+            if not isinstance(action, dict):
+                continue
+            key = action.get("diagnostic") or action.get("diagnostic_type")
+            signature = ("diagnostic", str(key)) if key else (str(action.get("type") or ""), "")
+            executed_later.setdefault(signature, []).append((position, action))
+    closes = [_number(event.get("response_time_min")) for event in trace]
+    close = max([minute for minute in closes if minute is not None] or [None]) if trace else None
+    fates = {}
+    for position, event in enumerate(trace):
+        lines = []
+        for signature, name in understood_but_not_executed(event):
+            later = [(index, action) for index, action in executed_later.get(signature, []) if index > position]
+            if later:
+                index, action = later[0]
+                result = action.get("result") if isinstance(action.get("result"), dict) else {}
+                minute = result.get("time_min")
+                when = f" at {float(minute):g} min" if isinstance(minute, (int, float)) else ""
+                lines.append(f"{name}: requested here; the result was reported{when}, under decision {index + 1}")
+            else:
+                # No inference about why. The time the encounter closed is the
+                # fact a reader needs to tell a missing result from an omission.
+                ending = f" before the encounter closed at {close:g} min" if close is not None else ""
+                lines.append(f"{name}: requested; no result was recorded{ending}")
+        fates[f"trace:{position}"] = lines
+    return fates
+
+
+# --- corrections to the model's own text, applied in the open ---------------
+
+class CorrectionLog:
+    """Applies recorded factual corrections and remembers which ones landed.
+
+    The saved analysis is never modified. A correction is an exact substring
+    written for one passage, so it applies to that passage or to nothing, and
+    the document that used it lists what was corrected and why.
+    """
+
+    def __init__(self, corrections=None):
+        self.corrections = [c for c in (corrections or []) if isinstance(c, dict)]
+        self.applied = []
+
+    def __call__(self, text):
+        result, applied = apply_corrections(text, self.corrections)
+        for correction in applied:
+            if correction not in self.applied:
+                self.applied.append(correction)
+        return result
+
+    def lines(self):
+        return [f"{c.get('reason') or 'factual correction'}"
+                for c in self.applied]
+
+
+def apply_corrections(text, corrections):
+    """Replace a model sentence that the record does not support.
+
+    Corrections are exact substrings, never patterns, so a correction either
+    applies to the text it was written for or does not apply at all. The
+    original analysis is never modified; this runs at render time and every
+    applied correction is reported in the document.
+    """
+    applied = []
+    result = str(text or "")
+    for correction in corrections or []:
+        original = str((correction or {}).get("original") or "")
+        replacement = str((correction or {}).get("replacement") or "")
+        if original and original in result:
+            result = result.replace(original, replacement)
+            applied.append(correction)
+    return result, applied
 
 
 # --- what the record does and does not establish ----------------------------

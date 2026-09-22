@@ -161,7 +161,7 @@ def _validated_inputs(report, record):
     return analysis, objectives, supported, index, decisions
 
 
-def _render_full(report, record, inputs):
+def _render_full(report, record, inputs, correct=None):
     """Preserve the complete stored analysis, allowing paragraphs to flow."""
     analysis, objectives, supported, index, decisions = inputs
     _fonts()
@@ -178,9 +178,10 @@ def _render_full(report, record, inputs):
         pageCompression=1,
     )
     story = []
+    correct = correct or presentation.CorrectionLog()
 
     def p(value, style="body"):
-        return Paragraph(_xml(value), styles[style])
+        return Paragraph(_xml(correct(value)), styles[style])
 
     def section(title, text):
         story.append(p(title, "subhead"))
@@ -188,7 +189,7 @@ def _render_full(report, record, inputs):
 
     def bullets(values):
         for value in values if isinstance(values, list) else []:
-            story.append(Paragraph("<b>•</b> " + _xml(value), styles["body"]))
+            story.append(Paragraph("<b>•</b> " + _xml(correct(value)), styles["body"]))
 
     def reference_text(refs):
         return "; ".join(f"{index[ref]['label']} | {index[ref]['time']} [{ref}]" for ref in refs)
@@ -247,12 +248,6 @@ def _render_full(report, record, inputs):
     story.append(p("Interpretation limits", "subhead"))
     bullets(analysis.get("limits"))
     story.append(p("This brief does not save an assessment, add observations, or confirm an objective. Only the supported simulated components are considered.", "small"))
-    story.extend([Spacer(1, 7), HRFlowable(width="100%", thickness=.6, color=LINE), Spacer(1, 5)])
-    story.append(p("Generation record", "subhead"))
-    story.append(p(
-        f"Attempt ID: {_string(report.get('attempt_id'))}\n"
-        f"Source revision: {report.get('attempt_revision')} | Schema: {_string(report.get('schema_version'))} | "
-        f"Prompt version: {_string(report.get('prompt_version'))}", "small"))
 
     story.append(PageBreak())
     story.append(p("DECISION REVIEW", "eyebrow"))
@@ -261,26 +256,26 @@ def _render_full(report, record, inputs):
     for number, item in enumerate(decisions, 1):
         refs = item["evidence_refs"]
         first = next((index[ref] for ref in refs if index[ref]["input"]), None)
-        heading = p(f"{number:02d} | {reference_text(refs) or 'No cited decision'}", "subhead")
-        story.extend([heading, p("AI interpretation", "eyebrow"), p(item.get("analysis"))])
+        block = [p(f"{number:02d} | {reference_text(refs) or 'No cited decision'}", "subhead"),
+                 p("AI interpretation", "eyebrow"), p(item.get("analysis"))]
         if first:
             source = first["input"]
             excerpt = source if len(source) <= 450 else source[:450].rsplit(" ", 1)[0] + " [...]"
-            story.append(p(f"Recorded learner excerpt - {first['label']}: {excerpt}", "quote"))
-        story.append(p("Debrief question", "subhead"))
-        story.append(p(item.get("question")))
-        story.extend([Spacer(1, 5), HRFlowable(width="100%", thickness=.6, color=LINE), Spacer(1, 6)])
+            block.append(p(f"Recorded learner excerpt - {first['label']}: {excerpt}", "quote"))
+        block.extend([p("Debrief question", "subhead"), p(item.get("question")),
+                      Spacer(1, 5), HRFlowable(width="100%", thickness=.6, color=LINE), Spacer(1, 6)])
+        story.append(KeepTogether(block))
 
-    # Two objectives per planned page keep the usual six-objective brief at
-    # five pages. Long paragraphs flow naturally onto additional pages.
+    # One objective is one block. The former rule of two per page forced a
+    # break that left an empty page and stranded the tail of an objective on a
+    # page of its own once the text grew (faculty review 2026-09-23).
     ordered = {item["objective_id"]: item for item in objectives}
+    story.append(PageBreak())
+    story.append(p("PROVISIONAL OBJECTIVE ASSESSMENTS", "eyebrow"))
+    story.append(p("Review, edit and record", "heading"))
     for position, objective_id in enumerate(supported):
-        if position % 2 == 0:
-            story.append(PageBreak())
-            story.append(p("PROVISIONAL OBJECTIVE ASSESSMENTS", "eyebrow"))
-            story.append(p("Review, edit and record", "heading"))
-        else:
-            story.extend([Spacer(1, 15), HRFlowable(width="100%", thickness=1, color=LINE), Spacer(1, 10)])
+        if position:
+            story.extend([Spacer(1, 13), HRFlowable(width="100%", thickness=1, color=LINE), Spacer(1, 9)])
         item = ordered[objective_id]
         catalog = OBJECTIVES[objective_id]
         recommendation = item["recommendation"]
@@ -295,33 +290,46 @@ def _render_full(report, record, inputs):
         # be shown; that is different from a weak demonstration (2026-09-23).
         no_opportunity = (recommendation == "insufficient_evidence"
                           and not [ref for ref in item.get("evidence_refs", []) if ref])
-        story.append(KeepTogether([
+        block = [
             p(f"{objective_id} | {catalog['title']}", "subhead"),
             Paragraph(_xml("Not assessed in this encounter - no recorded opportunity to demonstrate it"
                            if no_opportunity else RECOMMENDATIONS[recommendation]), label_style),
             p(catalog["scope"], "small"),
-        ]))
-        section("AI rationale", item.get("rationale"))
-        story.append(p(
-            f"Suggested depth: {depth.capitalize() if depth in DEPTH_LEVELS else 'Needs faculty judgment'} | "
-            f"Suggested autonomy: {autonomy.capitalize() if autonomy in AUTONOMY_LEVELS else 'Needs faculty judgment'}",
-            "small",
-        ))
-        section("Observed context", item.get("context"))
-        section("Recorded evidence to inspect", reference_text(item["evidence_refs"]) or "No supporting references were selected. Do not infer an observed skill from absence of evidence.")
-        section("Feedback draft - editable in the app", item.get("feedback"))
+            p("AI rationale", "subhead"), p(item.get("rationale")),
+            p(f"Suggested depth: {depth.capitalize() if depth in DEPTH_LEVELS else 'Needs faculty judgment'} | "
+              f"Suggested autonomy: {autonomy.capitalize() if autonomy in AUTONOMY_LEVELS else 'Needs faculty judgment'}",
+              "small"),
+            p("Observed context", "subhead"), p(item.get("context")),
+            p("Recorded evidence to inspect", "subhead"),
+            p(reference_text(item["evidence_refs"]) or "No supporting references were selected. Do not infer an observed skill from absence of evidence."),
+            p("Feedback draft - editable in the app", "subhead"), p(item.get("feedback")),
+        ]
         if item.get("questions"):
-            story.append(p("Questions before recording", "subhead"))
-            bullets(item.get("questions"))
-        story.append(p("Scope limit: " + catalog["limitation"], "small"))
+            block.append(p("Questions before recording", "subhead"))
+            block += [Paragraph("<b>•</b> " + _xml(correct(value)), styles["body"])
+                      for value in item.get("questions") if isinstance(item.get("questions"), list)]
+        block.append(p("Scope limit: " + catalog["limitation"], "small"))
         if catalog.get("competency_mapping"):
-            story.append(p("Competency correspondence · local simulated evidence", "subhead"))
+            block.append(p("Competency correspondence · local simulated evidence", "subhead"))
             for mapping in catalog["competency_mapping"]:
                 label = mapping["framework"] + " · " + mapping["code"]
-                story.append(Paragraph('<link href="' + escape(mapping["source_url"], {'"': '&quot;'})
+                block.append(Paragraph('<link href="' + escape(mapping["source_url"], {'"': '&quot;'})
                     + '">' + _xml(label) + '</link>', styles["small"]))
-                story.append(p(mapping.get("source_locator", ""), "small"))
+                block.append(p(mapping.get("source_locator", ""), "small"))
+        story.append(KeepTogether(block))
 
+    story.extend([Spacer(1, 12), HRFlowable(width="100%", thickness=.6, color=LINE), Spacer(1, 5)])
+    story.append(p("Generation record", "subhead"))
+    story.append(p(
+        f"Encounter: {_encounter_identifier(record)}\n"
+        f"Attempt ID: {_string(report.get('attempt_id'))}\n"
+        f"Source revision: {report.get('attempt_revision')} | Schema: {_string(report.get('schema_version'))} | "
+        f"Prompt version: {_string(report.get('prompt_version'))}", "small"))
+    if correct.applied:
+        story.append(p(f"{len(correct.applied)} factual correction(s) were applied to the AI text at render "
+                       "time; the stored brief keeps the original wording.", "small"))
+        for reason in correct.lines():
+            story.append(p("Correction: " + reason, "small"))
     document.build(story, onFirstPage=page_header, onLaterPages=page_header)
     return out.getvalue()
 
@@ -402,7 +410,7 @@ def _compact_references(refs, index, maximum=3):
     return " · ".join(anchors) or "No supporting reference selected"
 
 
-def _render_compact(report, record, inputs, app_url):
+def _render_compact(report, record, inputs, app_url, correct=None):
     """Two-page reading route through an unchanged, optionally verbose report.
 
     The matrix does not replace the rationale, feedback or complete decision
@@ -430,8 +438,10 @@ def _render_compact(report, record, inputs, app_url):
         "label": ParagraphStyle("CompactLabel", parent=base, fontName="FacultySans-Bold", textColor=BLUE, spaceAfter=4),
     }
 
+    correct = correct or presentation.CorrectionLog()
+
     def p(text, style="body"):
-        return Paragraph(_xml(text), styles[style])
+        return Paragraph(_xml(correct(text)), styles[style])
 
     document = SimpleDocTemplate(
         out, pagesize=A4, leftMargin=margin, rightMargin=margin,
@@ -466,8 +476,8 @@ def _render_compact(report, record, inputs, app_url):
             ("LINEBEFORE", (0, 0), (0, -1), 3, accent),
             ("LEFTPADDING", (0, 0), (-1, -1), 11),
             ("RIGHTPADDING", (0, 0), (-1, -1), 11),
-            ("TOPPADDING", (0, 0), (-1, -1), 8),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ]))
         return element
 
@@ -501,16 +511,18 @@ def _render_compact(report, record, inputs, app_url):
                       p("1  Read the synthesis and concerns  ·  2  Check the evidence  ·  3  Record your judgment", "bold"),
                       Spacer(1, 8)])
         story.append(p("Performance synthesis", "heading"))
-        summary = _sentence_excerpt(analysis.get("summary"), max(review_limit, 320),
+        summary = _sentence_excerpt(correct(analysis.get("summary")), max(review_limit, 320),
                                     "Read the full synthesis in the app before judging this encounter.")
         story.append(p(summary))
         story.append(Spacer(1, 4))
         story.append(p("AI draft. Every suggestion in this brief stays provisional until you record your own judgment.", "muted"))
+        assistance = ASSISTANCE_LABELS.get(_string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"])
+        story.extend([Spacer(1, 6), box("Assistance and autonomy: " + assistance)])
         review_points = analysis.get("review_points", [])
         review_points = review_points if isinstance(review_points, list) else []
         story.extend([Spacer(1, 7), p(f"{min(3, len(review_points))} selected review priorities", "heading")])
         for number, point in enumerate(review_points[:3], 1):
-            excerpt = _sentence_excerpt(point, review_limit, "Read this review point in full in the app; its context cannot be safely shortened here.")
+            excerpt = _sentence_excerpt(correct(point), review_limit, "Read this review point in full in the app; its context cannot be safely shortened here.")
             table = Table([[p(f"0{number}", "label"), p(excerpt)]], colWidths=[31, usable - 31])
             table.setStyle(TableStyle([
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -527,7 +539,7 @@ def _render_compact(report, record, inputs, app_url):
             story.append(p("No review points were provided. Verify the source evidence before accepting any suggestion.", "muted"))
         story.extend([Spacer(1, 7), p("Focused debrief prompts", "heading")])
         for item in decisions[:3]:
-            question = _sentence_excerpt(item.get("question"), question_limit, "Review this decision's full debrief question in the app.")
+            question = _sentence_excerpt(correct(item.get("question")), question_limit, "Review this decision's full debrief question in the app.")
             story.append(KeepTogether([
                 p(_compact_references(item["evidence_refs"], index, maximum=2), "label"),
                 p(question), Spacer(1, 8),
@@ -535,11 +547,10 @@ def _render_compact(report, record, inputs, app_url):
         if len(decisions) > 3:
             story.append(p(f"3 of {len(decisions)} decision prompts shown; full analysis contains the rest.", "muted"))
         story.extend([Spacer(1, 7), p("What this encounter can and cannot show", "heading")])
-        story.append(p("TD1/F1/C1: simulated support, prioritization and reassessment; not real teamwork or full critical-care competence. C3/C4: recorded airway, oxygen and sedation reasoning; not hands-on airway or procedural skill. C14: use of supplied POCUS findings; not image acquisition.", "muted"))
-        mapped = [key for key in supported if OBJECTIVES[key].get("competency_mapping")]
-        if mapped:
-            story.append(Spacer(1, 4))
-            story.append(p("Challenge " + ", ".join(mapped) + ": assess the recorded reasoning behaviors. ACGME and Royal College correspondence and source locations are in the full PDF; a local observation does not award a Milestone level or EPA.", "muted"))
+        story.append(p("This is recorded reasoning under simulation: not teamwork, not hands-on airway or "
+                       "procedural skill, and not image acquisition. A local observation does not award a "
+                       "Milestone level or an EPA. The complete PDF carries the scope of each objective and "
+                       "its competency correspondence.", "muted"))
         limits = analysis.get("limits", [])
         if isinstance(limits, list):
             # Assistance is shown once, beside the suggestions. Keep a distinct
@@ -548,13 +559,21 @@ def _render_compact(report, record, inputs, app_url):
             if distinct_limit:
                 story.append(Spacer(1, 4))
                 story.append(p("Selected analysis limit: " + _sentence_excerpt(distinct_limit, 250, "Review the analysis-specific limits in the app."), "muted"))
+        story.extend([Spacer(1, 9), call_to_action(), Spacer(1, 5)])
+        tail = ("D = recorded decision and simulation time. Reflection = post-encounter evidence and does not "
+                "establish what was understood during care. Suggestions add no credit and save no assessment. "
+                f"Encounter {encounter_id} · revision {report.get('attempt_revision')} · "
+                f"{_string(report.get('model'))}. Full generation record, citations and rationales in the complete PDF.")
+        if correct.applied:
+            tail += f" {len(correct.applied)} factual correction(s) applied to the AI text; the stored brief keeps the original wording."
+        story.append(p(tail, "muted"))
         return story
 
     def assessments_page(rationale_limit):
         """Page two: the provisional suggestions, then the scope and provenance."""
         story = [p("Suggested assessments", "title"),
-                 p("Provisional. The AI text is unchanged; the rationale excerpts and evidence anchors are a reading aid. Resolve the concerns on page 1 before accepting a suggestion.", "muted"),
-                 Spacer(1, 9)]
+                 p("Provisional, AI text unchanged. Resolve the concerns on page 1 before accepting a suggestion; the rationale excerpts and evidence anchors are a reading aid.", "muted"),
+                 Spacer(1, 7)]
         ordered = {item["objective_id"]: item for item in objectives}
         columns = [usable * .225, usable * .215, usable * .56]
         rows = [[p("OBJECTIVE", "bold"), p("AI SUGGESTION", "bold"), p("RATIONALE EXCERPT · EVIDENCE", "bold")]]
@@ -577,7 +596,7 @@ def _render_compact(report, record, inputs, app_url):
             depth_text = ("No recorded opportunity" if no_opportunity
                           else "Depth: " + (depth.capitalize() if depth in DEPTH_LEVELS else "To establish"))
             rationale = _sentence_excerpt(
-                item.get("rationale"), rationale_limit,
+                correct(item.get("rationale")), rationale_limit,
                 "Review the full rationale in the app before judging this objective.",
                 maximum_sentences=1,
             )
@@ -593,24 +612,12 @@ def _render_compact(report, record, inputs, app_url):
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
             ("LINEBELOW", (0, 0), (-1, 0), .8, LINE),
             ("LINEBELOW", (0, 1), (-1, -1), .5, LINE),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ("TOPPADDING", (0, 0), (-1, -1), 7),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+            ("LEFTPADDING", (0, 0), (-1, -1), 7),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
         ]))
-        story.extend([matrix, Spacer(1, 9)])
-        assistance = ASSISTANCE_LABELS.get(_string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"])
-        story.append(box("Assistance and autonomy: " + assistance))
-        story.extend([Spacer(1, 10), call_to_action(), Spacer(1, 6),
-                      p("In the app, review or edit feedback and record each objective separately. Suggestions do not add credit or save an assessment. Previously recorded judgments remain editable through the correction workflow.", "muted")])
-        provenance = (
-            f"Encounter {encounter_id} · revision {report.get('attempt_revision')}\n"
-            f"Generated {_timestamp(report.get('generated_at'))} · {_string(report.get('model'))} · "
-            f"Prompt {_string(report.get('prompt_version'))}\n"
-            f"Source {_string(report.get('source_hash'))[:16]}… · Full generation record in the complete PDF."
-        )
-        story.extend([Spacer(1, 7), p(provenance, "muted")])
-        story.extend([Spacer(1, 5), p("D = recorded decision and simulation time. Reflection = post-encounter evidence; it does not establish what was understood during care. Full citations, feedback and rationales remain available in the app and the full PDF.", "muted")])
+        story.extend([matrix, Spacer(1, 7)])
         return story
 
     def page_height(elements):
@@ -629,6 +636,14 @@ def _render_compact(report, record, inputs, app_url):
     # The first page is fitted by choosing fewer complete source sentences,
     # never by shrinking the font or clipping a paragraph.
     available = height - document.topMargin - document.bottomMargin - 12
+    # The suggestion page is built first: it is where most corrections land, and
+    # the first page reports how many were applied.
+    page_two = assessments_page(520)
+    for rationale_limit in (520, 430, 390, 330):
+        candidate = assessments_page(rationale_limit)
+        page_two = candidate
+        if page_height(candidate) <= available:
+            break
     for review_limit, question_limit in ((550, 300), (400, 250), (300, 200), (200, 150), (90, 90)):
         page_one = review_page(review_limit, question_limit)
         if page_height(page_one) <= available:
@@ -639,12 +654,6 @@ def _render_compact(report, record, inputs, app_url):
     # it needs one (faculty request 2026-09-23: readable text first, and a
     # rationale replaced by "read it in the app" is not a reading aid). The
     # table repeats its header row, so a split reads correctly.
-    page_two = assessments_page(390)
-    for rationale_limit in (390, 330, 280, 230):
-        candidate = assessments_page(rationale_limit)
-        page_two = candidate
-        if page_height(candidate) <= available:
-            break
     story = page_one + [PageBreak()] + page_two
 
     def build(counter):
@@ -665,7 +674,7 @@ def _render_compact(report, record, inputs, app_url):
     return build(total)[0]
 
 
-def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None):
+def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corrections=None):
     """Render an unchanged stored brief as a concise review or the full report.
 
     The default is a two-page reading aid. ``compact=False`` retains complete
@@ -673,6 +682,9 @@ def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None):
     adds an encounter selector link; authentication remains enforced by the app.
     """
     inputs = _validated_inputs(report, record)
+    # Recorded factual corrections are applied to the model's text at render
+    # time; the stored brief keeps the original wording (2026-09-23).
+    correct = presentation.CorrectionLog(corrections)
     if compact:
-        return _render_compact(report, record, inputs, app_url)
-    return _render_full(report, record, inputs)
+        return _render_compact(report, record, inputs, app_url, correct)
+    return _render_full(report, record, inputs, correct)

@@ -137,3 +137,104 @@ def test_a_study_is_named_the_way_it_is_asked_for():
     assert presentation.study_name("pocus") == "bedside ultrasound (POCUS)"
     assert presentation.study_name("ecg_right") == "right-sided ECG (V3R-V4R)"
     assert presentation.study_name("something_new") == "something new"
+
+
+# --- what became of an order, in four distinguishable states -----------------
+
+def trace_fixture():
+    """Two decisions: one order reported later, one never reported."""
+    return [
+        {"interpreted_action": [{"type": "diagnostic", "diagnostic": "lactate"},
+                                {"type": "diagnostic", "diagnostic": "troponin"},
+                                {"type": "reassessment", "delay_min": 15}],
+         "executed_actions": [{"type": "diagnostic", "diagnostic_type": "ecg"}],
+         "response_time_min": 15},
+        {"interpreted_action": [{"type": "diagnostic", "diagnostic": "lactate"}],
+         "executed_actions": [{"type": "diagnostic", "diagnostic_type": "lactate",
+                               "result": {"time_min": 20}}],
+         "response_time_min": 60},
+    ]
+
+
+def test_an_order_reported_later_says_where_it_was_reported():
+    fates = presentation.order_fates(trace_fixture())
+    assert fates["trace:0"][0] == "lactate: requested here; the result was reported at 20 min, under decision 2"
+
+
+def test_an_order_never_reported_names_the_time_the_encounter_closed():
+    fates = presentation.order_fates(trace_fixture())
+    assert fates["trace:0"][1] == "troponin: requested; no result was recorded before the encounter closed at 60 min"
+
+
+def test_a_reassessment_is_not_an_unexecuted_order():
+    fates = presentation.order_fates(trace_fixture())
+    assert not any("reassessment" in line for line in fates["trace:0"])
+
+
+def test_an_executed_order_is_not_reported_as_missing():
+    fates = presentation.order_fates(trace_fixture())
+    assert fates["trace:1"] == []
+
+
+def test_the_fate_is_stated_without_inferring_a_reason():
+    # It says what the record holds and when the encounter ended. It does not
+    # say the resident failed to do anything.
+    for lines in presentation.order_fates(trace_fixture()).values():
+        for line in lines:
+            assert "fail" not in line.lower() and "omit" not in line.lower()
+
+
+# --- an order that was already standing -------------------------------------
+
+def test_an_order_the_engine_says_was_already_in_place_keeps_those_words():
+    phrase = presentation.action_phrase({
+        "type": "vascular_access", "operation": "start",
+        "label": "peripheral intravenous access already in place; not repeated"})
+    assert phrase == "Peripheral intravenous access already in place; not repeated"
+    assert "(started)" not in phrase
+
+
+def test_an_ordinary_order_is_still_written_by_the_renderer():
+    # The label is only preferred when it reports something standing.
+    assert presentation.action_phrase({
+        "type": "norepinephrine", "rate": 0.1, "units": "mcg/kg/min", "operation": "start",
+        "label": "Norepinephrine start at 0.1 mcg/kg/min"}) == "Norepinephrine 0.1 mcg/kg/min (started)"
+
+
+# --- corrections are exact, audited, and never touch the stored analysis ----
+
+CORRECTION = {"original": "lactate remained elevated",
+              "replacement": "a single elevated lactate was recorded, with no control value",
+              "reason": "One measurement does not establish that a value remained elevated."}
+
+
+def test_a_correction_replaces_only_the_text_it_was_written_for():
+    log = presentation.CorrectionLog([CORRECTION])
+    assert log("Despite the pressure, lactate remained elevated.") == (
+        "Despite the pressure, a single elevated lactate was recorded, with no control value.")
+    assert log("An unrelated sentence.") == "An unrelated sentence."
+
+
+def test_a_correction_that_does_not_match_is_not_reported_as_applied():
+    log = presentation.CorrectionLog([CORRECTION])
+    log("An unrelated sentence.")
+    assert log.applied == []
+    assert log.lines() == []
+
+
+def test_every_applied_correction_carries_its_reason():
+    log = presentation.CorrectionLog([CORRECTION])
+    log("lactate remained elevated")
+    assert log.lines() == [CORRECTION["reason"]]
+
+
+def test_a_correction_is_counted_once_however_often_it_applies():
+    log = presentation.CorrectionLog([CORRECTION])
+    log("lactate remained elevated")
+    log("and again lactate remained elevated")
+    assert len(log.applied) == 1
+
+
+def test_the_interface_message_is_in_the_language_of_the_report():
+    assert "interrupted" in presentation.TRUNCATION_NOTE
+    assert "interrumpido" not in presentation.TRUNCATION_NOTE

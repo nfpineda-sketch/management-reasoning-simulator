@@ -90,3 +90,63 @@ def test_the_learner_report_shows_no_machine_reference_in_its_reading_text():
     text = text_of(render_management_trace_pdf(report, payload))
     assert "trace:" not in text and "reflection:decision" not in text and "encounter:" not in text
     assert "Based on:" in text
+
+
+# --- pagination: nothing empty, nothing stranded ----------------------------
+
+def pages(data):
+    return [" ".join(page.extract_text().split()) for page in PdfReader(BytesIO(data)).pages]
+
+
+def test_no_page_of_any_document_is_empty():
+    report, record = faculty_pair()
+    learner, payload = report_example()
+    documents = {
+        "compact": render_faculty_brief_pdf(report, record),
+        "full": render_faculty_brief_pdf(report, record, compact=False),
+        "learner": render_management_trace_pdf(learner, payload),
+    }
+    for name, data in documents.items():
+        for number, page in enumerate(pages(data), 1):
+            # A page carrying only the running header and footer is empty.
+            body = page.replace("MANAGEMENT REASONING SIMULATOR", "")
+            assert len(body) > 350, (name, number, len(body))
+
+
+def test_the_compact_brief_is_two_pages_with_its_rationales_intact():
+    report, record = faculty_pair()
+    printed = pages(render_faculty_brief_pdf(report, record))
+    assert len(printed) == 2
+    assert "Review the full rationale in the app" not in " ".join(printed)
+
+
+def test_a_decision_that_spans_two_pages_says_it_continues():
+    report, payload = report_example()
+    printed = pages(render_management_trace_pdf(report, payload))
+    for number, page in enumerate(printed):
+        if "CONTINUED" not in page:
+            continue
+        # A continuation names its decision and is never the first page.
+        assert number > 0
+        assert "DECISION" in page.split("CONTINUED")[0][-40:]
+
+
+def test_the_continuation_marker_is_absent_where_nothing_continues():
+    report, payload = report_example()
+    printed = pages(render_management_trace_pdf(report, payload))
+    assert "CONTINUED" not in printed[0]
+
+
+# --- the same correction reaches every document that shows the text ---------
+
+def test_a_correction_applies_in_both_faculty_documents():
+    report, record = faculty_pair()
+    original = report["analysis"]["objectives"][0]["rationale"]
+    correction = [{"original": original, "replacement": "A corrected rationale sentence.",
+                   "reason": "checked against the record"}]
+    for compact in (True, False):
+        text = text_of(render_faculty_brief_pdf(report, record, compact=compact, corrections=correction))
+        assert "A corrected rationale sentence." in text
+        assert "factual correction" in text
+    # The stored brief is untouched.
+    assert report["analysis"]["objectives"][0]["rationale"] == original
