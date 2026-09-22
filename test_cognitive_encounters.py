@@ -26,7 +26,10 @@ ORDERS = {
     "pulmonary_embolism": "Give heparin 5000 units IV; consult PERT",
     "asthma": "Give salbutamol 5 mg nebulized",
     "gi_bleed": "Transfuse 1 unit packed red blood cells",
-    "hypoglycemia": "Give dextrose 25 g IV",
+    # Faculty decision 8 of 2026-09-21: one of these patients arrives with a line
+    # that is not in the vein, so the management of a hypoglycaemia now includes
+    # making sure the dextrose can reach them.
+    "hypoglycemia": "Place a peripheral IV line; give dextrose 25 g IV",
     "opioid": "Give naloxone 0.4 mg IV",
 }
 
@@ -77,9 +80,8 @@ def test_real_patient_variants_execute_their_management_without_af_state(engine,
     if family == "gi_bleed":
         assert current["sbp"] > old["sbp"] and current["crt"] < old["crt"]
     if family in {"hypoglycemia", "opioid"}:
-        # The thiamine-depleted patient wakes only once the deficiency is treated too.
-        thiamine_case = session.state["encounter_spec"]["clinical_case"]["engine"].get("thiamine_deficient")
-        assert current["mental_status"] == ("Confused" if thiamine_case else "Alert")
+        # Glucose that reaches the patient wakes them, thiamine or no thiamine.
+        assert current["mental_status"] == "Alert"
     if family in {"acs", "pulmonary_embolism"}:
         # Giving an antithrombotic or calling a specialist is not reperfusion.
         assert session.state["ecg_profile"] == frozen["ecg_profile"]

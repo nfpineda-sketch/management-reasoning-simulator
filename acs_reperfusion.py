@@ -51,7 +51,12 @@ FAMILY_DRIFT_PER_MIN = .001       # what the engine adds for the family; importe
 # used to recover the wall on POCUS while the circulation kept sliding, so the
 # reward for a good door-to-balloon was an isolated ultrasound finding. The
 # recovery now gives back what the occlusion took, at the rate it took it.
-CIRCULATION_ARRIVAL = 1.0         # the circulation the case describes on arrival
+# Faculty decision 3 of 2026-09-21: a patient who arrives with a time-dependent
+# emergency and is treated well should end better than they arrived, because
+# what they arrived with was their own baseline plus the acute event. The
+# recovery therefore runs past arrival, and stops at the circulation this
+# patient had before the artery closed.
+CIRCULATION_BASELINE = .85        # the circulation this patient had before the event
 # Faculty 2026-09-20: the block is conditional, but it must not be rare. It belongs
 # to the inferior territory, it needs the artery still shut, and the case can exclude
 # it with av_block_risk false.
@@ -215,7 +220,7 @@ def step(state):
             before = f.get("lv_function", ARRIVAL_LV)
             f["lv_function"] = min(LV_RECOVERY_CEILING, before + LV_RECOVERY_PER_MIN)
             # The wall that comes back brings the pressure and the perfusion with it.
-            f["circulation"] = max(CIRCULATION_ARRIVAL,
+            f["circulation"] = max(CIRCULATION_BASELINE,
                                    f["circulation"] - circulation_per_lv(spec) * (f["lv_function"] - before))
         if since <= 60:
             f["troponin_peak_at"] = now

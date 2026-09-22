@@ -114,21 +114,37 @@ def test_neuroglycopenia_left_alone_seizes(engine):
     assert state["observable"]["mental_status"] == "Unresponsive"
 
 
-def test_glucose_without_thiamine_leaves_the_brain_confused(engine):
-    state, labels = course(engine, "hypoglycemia", "hypoglycemia_54m_thiamine", [DEXTROSE, "Reassess in 30 minutes."])
-    assert state["family_state"]["glucose"] > 110
-    assert state["observable"]["mental_status"] == "Confused"
-    assert "thiamine-depleted brain" in labels
-    execute_family_bundle(state, parse_family_actions("Give thiamine 500 mg IV. Reassess in 60 minutes."))
-    assert state["observable"]["mental_status"] == "Alert"
+# Faculty decision 8 of 2026-09-21 retired the established encephalopathy this
+# case used to produce. What it teaches now is that an ordered dose and a
+# received dose are not the same thing: the line this patient arrives with is
+# not in the vein, the bedside shows it, and the emergency can be resolved
+# without thiamine ever being ordered.
+
+def test_the_dose_that_does_not_reach_the_patient_does_not_treat_them(engine):
+    state, labels = course(engine, "hypoglycemia", "hypoglycemia_54m_thiamine", [DEXTROSE, "Reassess in 20 minutes."])
+    assert state["family_state"]["glucose"] < 70
+    assert state["observable"]["mental_status"] != "Alert"
+    assert "forearm swells around the cannula" in labels
 
 
-def test_thiamine_with_the_glucose_prevents_it(engine):
+def test_replacing_the_line_is_what_changes_the_course(engine):
     state, labels = course(engine, "hypoglycemia", "hypoglycemia_54m_thiamine",
-                           ["Give thiamine 100 mg IV and dextrose 25 g IV. Reassess in 20 minutes.",
-                            "Reassess in 40 minutes."])
+                           [DEXTROSE, "Place a peripheral IV line. Reassess in 5 minutes.",
+                            DEXTROSE, "Reassess in 20 minutes."])
+    assert "The new line runs freely" in labels
+    assert state["family_state"]["glucose"] > 110
+    # And the emergency is resolved without thiamine having been ordered at all.
     assert state["observable"]["mental_status"] == "Alert"
-    assert "thiamine-depleted brain" not in labels
+    assert not any(record.get("agent") == "thiamine"
+                   for record in state["treatments"].get("administered_medications", []))
+
+
+def test_thiamine_is_the_second_objective_and_not_the_one_that_wakes_him(engine):
+    state, _ = course(engine, "hypoglycemia", "hypoglycemia_54m_thiamine",
+                      ["Give thiamine 500 mg IV. Reassess in 30 minutes."])
+    # It neither wakes the patient nor, by its absence, deteriorates one.
+    assert state["observable"]["mental_status"] != "Alert"
+    assert state["family_state"]["glucose"] < 70
 
 
 def test_a_titrated_dose_reverses_without_withdrawal(engine):
@@ -147,12 +163,21 @@ def test_too_much_antidote_precipitates_withdrawal(engine):
 
 
 def test_a_long_acting_opioid_outlasts_a_bolus(engine):
-    short, _ = course(engine, "opioid", "opioid_35m",
-                      ["Give naloxone 0.4 mg IV. Reassess in 30 minutes.", "Reassess in 30 minutes."])
-    long_acting, _ = course(engine, "opioid", "opioid_67f",
-                            ["Give naloxone 0.4 mg IV. Reassess in 30 minutes.", "Reassess in 30 minutes."])
+    # Measured late enough to be a comparison of the drugs: the short-acting one
+    # is still being absorbed for the first hour (faculty decision 3b), so the
+    # difference between them is what happens after that.
+    # Ventilated, so that what is being compared is the two drugs and not which
+    # patient arrests first while nobody supports them.
+    watch = ["Start bag-mask ventilation. Give naloxone 0.4 mg IV. Reassess in 30 minutes."] + \
+            ["Reassess in 120 minutes."] * 3
+    short, _ = course(engine, "opioid", "opioid_35m", watch)
+    long_acting, _ = course(engine, "opioid", "opioid_67f", watch)
+    import opioid_reversal
     assert long_acting["family_state"]["opioid"] > short["family_state"]["opioid"]
-    assert long_acting["observable"]["respiratory_rate"] <= 9
+    # Under a bag-mask the rendered rate is the ventilator's, so the comparison
+    # is the depression itself: one drug is still doing it and the other is not.
+    assert opioid_reversal.suppression(long_acting["family_state"]) > 0
+    assert opioid_reversal.suppression(short["family_state"]) == 0
 
 
 def test_an_infusion_holds_what_the_bolus_cannot(engine):

@@ -140,8 +140,14 @@ def test_opioid_oxygen_is_not_ventilation_and_naloxone_can_wear_off():
     run(antidote, {"type": "naloxone", "dose_mg": .4, "route": "IV"})
     assert antidote["observable"]["respiratory_rate"] >= 12
     assert antidote["observable"]["mental_status"] == "Alert"
+    reversed_rate = antidote["observable"]["respiratory_rate"]
     run(antidote, wait(60))
-    assert antidote["observable"]["respiratory_rate"] < 10
+    # The antidote has gone and the agonist has not: the patient slips back.
+    # Faculty decision 3b of 2026-09-21 separated concentration from effect, so
+    # a short-acting drug that is already being eliminated comes back milder
+    # than it arrived — it comes back, which is the teaching, and not all the
+    # way down to the apnoea it started from.
+    assert antidote["observable"]["respiratory_rate"] < reversed_rate
     assert antidote["observable"]["mental_status"] != "Alert"
 
 

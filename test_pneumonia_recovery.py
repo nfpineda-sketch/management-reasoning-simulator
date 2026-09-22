@@ -158,17 +158,23 @@ def test_a_brain_without_sugar_never_wakes(engine):
     assert state["observable"]["mental_status"] != "Alert"
 
 
-def test_the_thiamine_depleted_brain_stays_confused_too(engine):
-    # Glucose normal, circulation normal, and still not awake: the deficit is
-    # not one the perfusion can answer.
+def test_the_brain_this_case_is_about_is_the_one_without_sugar(engine):
+    # Faculty decision 8 of 2026-09-21 retired the established encephalopathy.
+    # What keeps this patient down is the glucose that never reached him, and
+    # the perfusion rule cannot answer that either: the mental recovery of the
+    # bank is for hypoperfusion, and this brain is short of substrate.
     state = encounter(engine, "hypoglycemia", "hypoglycemia_54m_thiamine")["state"]
     execute_family_bundle(state, parse_family_actions("Give 25 g dextrose IV. Reassess in 30 minutes."))
     for _ in range(3):
         execute_family_bundle(state, parse_family_actions(WAIT.format(30)))
     o = state["observable"]
-    assert o["glucose_mg_dl"] >= 70 and o["sbp"] >= MENTAL_RECOVERY["sbp"]
-    assert state["family_state"].get("mental_recovered") is True
-    assert o["mental_status"] == "Confused"
+    assert o["glucose_mg_dl"] < 70, "the line is not in the vein"
+    assert o["sbp"] >= MENTAL_RECOVERY["sbp"] and o["mental_status"] != "Alert"
+    # And once it does reach him, he wakes, with no thiamine anywhere.
+    execute_family_bundle(state, parse_family_actions(
+        "Place a peripheral IV line. Give 25 g dextrose IV. Reassess in 20 minutes."))
+    assert state["observable"]["glucose_mg_dl"] >= 70
+    assert state["observable"]["mental_status"] == "Alert"
 
 
 def test_a_generated_case_keeps_its_own_metabolic_brain():

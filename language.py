@@ -322,6 +322,13 @@ _RULES = (
  (r"([\d.]+) mL drained on placement, made before the catheter went in\.",
   r"\1 mL drenados al instalarla, producidos antes de que la sonda entrara."),
  (r"\bperipheral intravenous access placed\b", "acceso venoso periférico instalado"),
+ (r"\bperipheral intravenous access replaced\b", "acceso venoso periférico reemplazado"),
+ (r"The dextrose does not run: the forearm swells around the cannula and the infusion slows to a stop\. "
+  r"What was ordered is not what reached the patient\.",
+  "La glucosa no pasa: el antebrazo se hincha alrededor del catéter y la infusión se detiene. "
+  "Lo que se indicó no es lo que llegó al paciente."),
+ (r"The new line runs freely\. What is given now reaches the circulation\.",
+  "La vía nueva pasa sin resistencia. Lo que se administre ahora llega a la circulación."),
  (r"\bcontinuous monitoring and pulse oximetry started\b", "monitorización continua y oximetría de pulso iniciadas"),
  (r"\bnil by mouth recorded\b", "régimen cero registrado"),
  (r"\burinary catheter placed\b", "sonda vesical instalada"),

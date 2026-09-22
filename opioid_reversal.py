@@ -33,9 +33,13 @@ WITHDRAWAL_RR = 6
 WITHDRAWAL_TEXT = ("Acute withdrawal: the patient is agitated, retching and sweating, with a rising pressure and "
                    "rate. The target of the antidote is ventilation, not consciousness.")
 
-# Apnoea nobody supports.
+# Apnoea nobody supports. The threshold is the depth of the ventilatory
+# suppression rather than the rate the monitor renders, so that reshaping the
+# dose-response curve (faculty decision 3b, 2026-09-21) cannot quietly remove
+# the arrest this family is built on.
 APNOEA_RR = 6
 APNOEA_SPO2 = 80
+APNOEA_SUPPRESSION = .85
 ARREST_AFTER_MIN = 20
 ARREST_TEXT = ("Respiratory arrest after twenty minutes of unsupported apnoeic breathing, and the circulation "
                "follows it. Ventilation was the treatment that was missing, with or without the antidote.")
@@ -46,12 +50,50 @@ def long_acting(state):
     return bool(case.get("recurrence_risk"))
 
 
+# Faculty decision 3b of 2026-09-21: concentration and effect are not the same
+# thing, and the model was treating them as one, so the patient stayed sleepy
+# for as long as any drug remained. Below a threshold of free agonist the
+# clinical effect is gone although the drug is not, which is what lets an
+# isolated immediate-release overdose recover fully and become a candidate for
+# discharge after an adequate observation, without waiting for zero.
+#
+# The two effects are separate and have different sensitivities, which is the
+# same teaching the antidote carries: ventilation comes back first and
+# consciousness follows it, so a patient can be breathing adequately and still
+# be too drowsy to send home.
+VENTILATION_THRESHOLD = .50       # free agonist below which breathing is normal
+CONSCIOUSNESS_THRESHOLD = .32     # and below which the patient is properly awake
+EFFECT_CEILING = 1.0              # the free agonist at which the case's own state is described
+
+# An oral dose is still being absorbed when the patient arrives, so the
+# concentration rises before it falls. The depot is what has not been absorbed
+# yet, as a share of the arrival concentration, and this is how fast it enters.
+ABSORPTION_PER_MIN = .035         # about a twenty-minute absorption half-life
+
+
+def _effect(free, threshold):
+    if free <= threshold:
+        return 0.0
+    return min(1.0, (free - threshold) / max(1e-6, EFFECT_CEILING - threshold))
+
+
 def naloxone_level(f):
     return max(0.0, float(f.get("naloxone") or 0))
 
 
-def suppression(f):
+def free_agonist(f):
+    """Agonist on board that the antidote is not holding."""
     return max(0.0, float(f.get("opioid") or 0) - naloxone_level(f))
+
+
+def suppression(f):
+    """The ventilatory depression, which is what the antidote is titrated to."""
+    return _effect(free_agonist(f), VENTILATION_THRESHOLD)
+
+
+def sedation(f):
+    """The depression of consciousness, which recovers after the breathing."""
+    return _effect(free_agonist(f), CONSCIOUSNESS_THRESHOLD)
 
 
 def withdrawal(f):
@@ -66,6 +108,13 @@ def withdrawal(f):
 def step(state):
     """One minute of opioid, antidote and the breathing between them."""
     f = state["family_state"]
+    # What was swallowed and not yet absorbed keeps arriving, so an oral
+    # overdose is still climbing when the resident meets it.
+    depot = float(f.get("opioid_depot") or 0)
+    if depot > 0:
+        entering = depot * ABSORPTION_PER_MIN
+        f["opioid_depot"] = depot - entering
+        f["opioid"] = float(f.get("opioid") or 0) + entering
     f["opioid"] *= LONG_ACTING_DECAY_PER_MIN if long_acting(state) else DECAY_PER_MIN
     # The antidote is cleared here, so both engines share one decay.
     f["naloxone"] = float(f.get("naloxone") or 0) * NALOXONE_DECAY_PER_MIN
@@ -78,7 +127,8 @@ def step(state):
     observable = state.get("observable", {})
     unsupported = not (f.get("bag_mask") or f.get("invasive"))
     # The core reports a fractional rate, so compare with a tolerance.
-    failing = (float(observable.get("respiratory_rate", 12)) <= APNOEA_RR + .5
+    failing = (suppression(f) >= APNOEA_SUPPRESSION
+               or float(observable.get("respiratory_rate", 12)) <= APNOEA_RR + .5
                or float(observable.get("spo2", 100)) <= APNOEA_SPO2)
     if unsupported and failing:
         f["apnoea_min"] = f.get("apnoea_min", 0.0) + 1

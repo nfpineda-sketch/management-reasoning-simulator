@@ -195,8 +195,7 @@ from asthma_ventilation import PLATEAU_LIMIT_CMH2O as _PLATEAU_LIMIT, SEDATION_D
 from asthma_complications import LATE_EXPOSURE_MIN as _LATE_MIN, BAROTRAUMA_THRESHOLD as _BAROTRAUMA
 from pe_obstruction import SUSTAINED_HYPOTENSION_MIN as _PE_SUSTAINED, HYPOTENSION_SBP as _PE_SBP, \
     TOLERATED_ML_PER_MIN as _PE_TOLERATED, BLEED_RISK_TEXT as _PE_RISKS
-from glucose_rescue import SEIZURE_AFTER_MIN as _SEIZURE_MIN, SEIZURE_GLUCOSE as _SEIZURE_GLUCOSE, \
-    WERNICKE_WINDOW_MIN as _WERNICKE_MIN
+from glucose_rescue import SEIZURE_AFTER_MIN as _SEIZURE_MIN, SEIZURE_GLUCOSE as _SEIZURE_GLUCOSE
 from opioid_reversal import ARREST_AFTER_MIN as _ARREST_MIN, WITHDRAWAL_MARGIN as _WITHDRAWAL_MARGIN
 from family_engine import GI_BLEED as _GI
 from generated_metabolic_consistency import HYPOGLYCAEMIA_MG_DL as _HYPO_MG_DL, OPIOID_RR as _OPIOID_RR
@@ -221,8 +220,8 @@ AUTHOR_INSTRUCTIONS += (
     f"{_HYPO_MG_DL} mg/dL. A declared sulfonylurea must be named among the medicines and a declared thiamine "
     "deficiency explained by alcohol or weeks without food. The engine then keeps the glucose falling, answers to the "
     f"ampoule, glucagon, oral carbohydrate and a 10% infusion, seizes after {_SEIZURE_MIN} minutes below "
-    f"{_SEIZURE_GLUCOSE} mg/dL, and leaves a thiamine-depleted brain confused unless thiamine is given within "
-    f"{_WERNICKE_MIN} minutes of the glucose.\n"
+    f"{_SEIZURE_GLUCOSE} mg/dL. Faculty decision of 2026-09-21: a thiamine deficiency is a reason to give thiamine "
+    "and never a reason for the patient to stay confused once the glucose has reached them.\n"
     "- engine.opioid_toxidrome (long_acting): required when the history or the examination points to an opioid and the "
     f"respiratory rate is below {_OPIOID_RR}/min. The antidote then wears off before the drug, an infusion holds a "
     f"long-acting one, antidote beyond the opioid on board by more than {_WITHDRAWAL_MARGIN:g} units "

@@ -61,7 +61,9 @@ def mental_status(state):
     f = state["family_state"]
     if opioid_reversal.withdrawal(f) > 0:
         return "Agitated"
-    suppression = opioid_reversal.suppression(f)
+    # The breathing and the consciousness recover on their own schedules
+    # (faculty decision 3b, 2026-09-21).
+    suppression = opioid_reversal.sedation(f)
     if suppression < .2:
         return "Alert"
     if suppression < .55:

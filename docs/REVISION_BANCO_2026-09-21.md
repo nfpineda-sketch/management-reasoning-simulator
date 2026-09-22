@@ -22,7 +22,7 @@
 | B1–B8 | Defectos de lenguaje y de órdenes | **arreglados** |
 | 7 | Derivadas derechas y posteriores | **implementada** · `docs/DECISIONES_7_9_MAGNITUDES.md` |
 | 9 | Trabajo respiratorio en todas las familias | **implementada** · mismo documento |
-| 3, 3b, 4, 8 | Magnitudes (techo, opioide, volumen en VD, tiamina) | pendientes |
+| 3, 3b, 4, 8 | Magnitudes: techo, opioide corto, volumen en VD, vía perdida | **implementadas** · `docs/DECISIONES_3_4_8_MAGNITUDES.md` |
 | 11 | Inducción, bloqueo neuromuscular y sedación en infusión | **implementada** · `docs/DECISIONES_11_A_14_MAGNITUDES.md` |
 | 12 | Diuresis medible | **implementada** · mismo documento |
 | 13 | Órdenes de enfermería y soporte | **implementada** · mismo documento |

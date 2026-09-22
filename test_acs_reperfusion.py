@@ -236,9 +236,13 @@ def test_the_pressure_follows_the_ventricle_back(engine):
     assert last[2]["circulation"] < first[2]["circulation"]
 
 
-def test_the_recovery_stops_at_the_state_the_case_described(engine):
+def test_the_recovery_stops_at_the_baseline_the_patient_had_before_the_event(engine):
+    # Faculty decision 3 of 2026-09-21: what the patient arrived with was their
+    # own baseline plus the acute event, so a patient treated in time ends past
+    # arrival — and stops at the baseline, not at normality.
     _, rows = trajectory(engine, "acs_61m_posterior", ACTIVATE, waits=20, step=60)
-    assert min(row[2]["circulation"] for row in rows) >= acs.CIRCULATION_ARRIVAL
+    assert min(row[2]["circulation"] for row in rows) >= acs.CIRCULATION_BASELINE
+    assert min(row[2]["circulation"] for row in rows) < 1.0
 
 
 def test_an_artery_that_stays_closed_still_deteriorates(engine):
@@ -252,7 +256,9 @@ def test_a_lesion_that_never_occluded_keeps_its_normal_ventricle(engine):
     # nothing for the circulation to repay.
     _, rows = trajectory(engine, "acs_48m_wellens", ACTIVATE, waits=5, step=40)
     assert all(row[2].get("lv_function") is None for row in rows)
-    assert rows[-1][2]["circulation"] == pytest.approx(acs.CIRCULATION_ARRIVAL)
+    # Nothing was lost, so nothing is repaid: this one stays exactly where the
+    # case put it, which is the arrival value and not the baseline below it.
+    assert rows[-1][2]["circulation"] == pytest.approx(1.0)
     assert rows[-1][1]["sbp"] == rows[0][1]["sbp"]
 
 

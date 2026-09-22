@@ -250,7 +250,8 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
           examination, observable, investigations, diagnosis, findings, focus,
           questions, actions, *, ecg="baseline", visual=None, recurrence=False,
           history_source="Patient", congestion=None, coronary=None, lysis_bleeding_risk=None,
-          thiamine_deficient=False, endogenous_insulin=False):
+          thiamine_deficient=False, endogenous_insulin=False, opioid_depot=0.0,
+          iv_access_failed=False, glycogen_depleted=False):
     return {
         "id": identifier,
         "patient": {"age_years": age, "sex": sex,
@@ -266,10 +267,13 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
             "baseline_hemoglobin": investigations["hemoglobin"]["result"]["hemoglobin_g_dl"],
             "baseline_lactate": investigations["lactate"]["result"]["lactate_mmol_l"],
             "recurrence_risk": recurrence,
+            **({"opioid_depot": opioid_depot} if opioid_depot else {}),
             **({"congestion": dict(congestion)} if congestion else {}),
             **({"coronary": dict(coronary)} if coronary else {}),
             **({"lysis_bleeding_risk": lysis_bleeding_risk} if lysis_bleeding_risk else {}),
             **({"thiamine_deficient": True} if thiamine_deficient else {}),
+            **({"iv_access_failed": True} if iv_access_failed else {}),
+            **({"glycogen_depleted": True} if glycogen_depleted else {}),
             **({"endogenous_insulin": True} if endogenous_insulin else {}),
         },
         "faculty": {"diagnosis": diagnosis, "discriminating_findings": list(findings),
@@ -888,7 +892,12 @@ FAMILIES["hypoglycemia"]["variants"].append(_case(
      "Unsteady gaze and nystagmus, which glucose alone will not correct"],
     "Correct the glucose without precipitating an encephalopathy, and treat the deficiency that made it possible.",
     ["What did the gaze findings add to the glucose result?", "Which treatment did the glucose itself make urgent?"],
+    # Faculty decision 8 of 2026-09-21: the case is about recognising the
+    # hypoglycaemia and getting the treatment into the patient. The line he
+    # arrives with is not in the vein, which is a state of the case and is
+    # visible at the bedside. Thiamine stays as the second objective.
     ["dextrose", "thiamine", "reassessment"], thiamine_deficient=True, endogenous_insulin=True,
+    iv_access_failed=True, glycogen_depleted=True,
     visual=_visual(skin="mild pallor", sweating="mild")))
 
 
@@ -920,6 +929,10 @@ FAMILIES["opioid"]["variants"].append(_case(
     "Support ventilation promptly and reassess response to an opioid antagonist without relying on exposure labels alone.",
     ["What was the immediate physiological threat?", "How did you assess ventilation rather than oxygen saturation alone?"],
     ["naloxone", "bag_mask", "reassessment"],
+    # An immediate-release tablet taken about an hour ago: a third of it has not
+    # been absorbed yet, so the concentration is still climbing when the
+    # resident meets him (faculty decision 3b, 2026-09-21).
+    opioid_depot=.33,
     visual=_visual(expression="passive")))
 
 _o = _observable(104, 62, 62, 84, 8, wob="Reduced", mental="Obtunded", temperature=36.3, glucose=112)

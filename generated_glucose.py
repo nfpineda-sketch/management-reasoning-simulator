@@ -60,7 +60,10 @@ def mental_status(state):
         return "Obtunded"
     if glucose < 70:
         return "Drowsy"
-    return "Confused" if glucose_rescue.wernicke_share(f) > .35 else None
+    # Faculty decision 8 of 2026-09-21 retired the established encephalopathy: a
+    # thiamine deficiency is a reason to give thiamine, never a reason for the
+    # patient to stay confused once the glucose has reached them.
+    return None
 
 
 def generated_effects(state):

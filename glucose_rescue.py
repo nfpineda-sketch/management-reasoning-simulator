@@ -24,6 +24,10 @@ GLUCAGON_DURATION_MIN = 25
 GLUCAGON_MG_DL_PER_MIN = 1.6           # about 40 mg/dL from the first dose
 GLYCOGEN_SECOND_DOSE_SHARE = .5        # a second dose mobilises half as much
 GLYCOGEN_EXHAUSTED_AFTER = 2
+# Glucagon works on the liver's glycogen, so a patient who has not eaten for days
+# has little for it to mobilise (faculty decision 8, 2026-09-21). The case
+# declares the reserve; everyone else has a full one.
+DEPLETED_GLYCOGEN_SHARE = .3
 
 # Oral carbohydrate: only for an airway the patient can protect.
 ORAL_ONSET_MIN = 5
@@ -51,11 +55,21 @@ SEIZURE_GLUCOSE = 40
 SEIZURE_AFTER_MIN = 20
 POST_ICTAL_MIN = 10
 
-# Thiamine: glucose given to a depleted brain without it.
-WERNICKE_WINDOW_MIN = 30               # thiamine given within this of the glucose prevents it
-THIAMINE_RECOVERY_TAU_MIN = 30.0
-WERNICKE_TEXT = ("Confusion persists with nystagmus and an unsteady gaze although the glucose is now normal: "
-                 "glucose was given to a thiamine-depleted brain. Thiamine is the missing treatment.")
+# Thiamine. Faculty decision 8 of 2026-09-21 retired the established
+# encephalopathy this case used to produce: glucose that reaches the patient
+# corrects the hypoglycaemia and the consciousness with it, thiamine or no
+# thiamine. Thiamine stays as the second objective — recognising who needs it
+# and starting it in time — and it neither wakes a patient nor, by its absence,
+# deteriorates one. What the case teaches instead is that an ordered dose and a
+# received dose are not the same thing.
+#
+# A line that is not in the vein: the glucose is ordered, and this much of it
+# arrives. The state is the case's own and it is visible at the bedside, never
+# hidden and never random.
+FAILED_ACCESS_SHARE = .15
+FAILED_ACCESS_TEXT = ("The dextrose does not run: the forearm swells around the cannula and the infusion slows to a "
+                      "stop. What was ordered is not what reached the patient.")
+NEW_ACCESS_TEXT = "The new line runs freely. What is given now reaches the circulation."
 
 
 def profile(state):
@@ -97,6 +111,7 @@ def treatment_gain(f):
     """Glucose added this minute by glucagon, oral carbohydrate and the infusion."""
     doses = f.get("glucagon_doses", 0)
     scale = 1.0 if doses <= 1 else (GLYCOGEN_SECOND_DOSE_SHARE if doses < GLYCOGEN_EXHAUSTED_AFTER + 1 else 0.0)
+    scale *= DEPLETED_GLYCOGEN_SHARE if f.get("glycogen_depleted") else 1.0
     gain = _window_gain(f, "glucagon_at", GLUCAGON_ONSET_MIN, GLUCAGON_DURATION_MIN, GLUCAGON_MG_DL_PER_MIN, scale)
     gain += _window_gain(f, "oral_carbohydrate_at", ORAL_ONSET_MIN, ORAL_DURATION_MIN, ORAL_MG_DL_PER_MIN)
     rate = float(f.get("dextrose_infusion_ml_h") or 0)
@@ -122,12 +137,6 @@ def step(state):
         f["seizure_at"] = f["elapsed"]
         return ("Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and "
                 "leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant.")
-    if profile(state)["thiamine_deficient"] and f.get("glucose_given_at") is not None:
-        thiamine = f.get("thiamine_at")
-        in_time = thiamine is not None and thiamine - f["glucose_given_at"] <= WERNICKE_WINDOW_MIN
-        if not in_time and not f.get("wernicke_at"):
-            f["wernicke_at"] = f["elapsed"]
-            return WERNICKE_TEXT
     return None
 
 
@@ -136,11 +145,8 @@ def post_ictal(f):
     return seizure is not None and f["elapsed"] - seizure <= POST_ICTAL_MIN
 
 
-def wernicke_share(f):
-    """How much of the encephalopathy is still present: 1.0 until thiamine is given."""
-    if f.get("wernicke_at") is None:
-        return 0.0
-    thiamine = f.get("thiamine_at")
-    if thiamine is None or thiamine < f["wernicke_at"]:
-        return 1.0
-    return math.exp(-(f["elapsed"] - thiamine) / THIAMINE_RECOVERY_TAU_MIN)
+def delivered_share(f, route):
+    """The share of an intravenous dose that actually reaches the circulation."""
+    if route in {"IV", "IO"} and f.get("iv_access_failed"):
+        return FAILED_ACCESS_SHARE
+    return 1.0

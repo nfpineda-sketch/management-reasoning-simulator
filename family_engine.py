@@ -529,6 +529,9 @@ def _initialize(state):
         "hemoglobin": float(engine.get("baseline_hemoglobin", 12)),
         "lactate": float(engine.get("baseline_lactate", 1.5)),
         "opioid": 1.0, "naloxone": 0.0, "bronchodilation": 0.0,
+        "opioid_depot": float(engine.get("opioid_depot", 0.0)),
+        "iv_access_failed": bool(engine.get("iv_access_failed")),
+        "glycogen_depleted": bool(engine.get("glycogen_depleted")),
         "antibiotic_at": None, "steroid_at": None, "diuretic_at": None, "discharged_at": None,
         "antibiotic_exposure": 0, "steroid_exposure": 0, "anticoagulant_exposure": 0,
         "diuretic_dose": 0, "nitroglycerin": 0, "norepinephrine": 0, "epinephrine": 0,
@@ -566,7 +569,9 @@ def _medicine_effect(state, a, amount):
     """
     f, kind = state["family_state"], a["type"]
     if kind == "dextrose":
-        f["dextrose_g"] += amount
+        # An ordered dose and a received dose are not the same thing when the
+        # line is not in the vein (faculty decision 8, 2026-09-21).
+        f["dextrose_g"] += amount * glucose_rescue.delivered_share(f, a.get("route"))
         f.setdefault("glucose_given_at", f["elapsed"])
     elif kind == "opioid_analgesia":
         # Fentanyl is written in mcg; 100 mcg is about 10 mg of morphine.
@@ -739,6 +744,11 @@ def _order(state, a):
         duration = int(30 * a["units"])
         label = f"Packed red cells {a['units']:g} unit{'' if a['units'] == 1 else 's'} started"
     elif kind == "dextrose":
+        if f.get("iv_access_failed") and a.get("route") in {"IV", "IO"} and not f.get("failed_access_reported"):
+            f["failed_access_reported"] = True
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": glucose_rescue.FAILED_ACCESS_TEXT,
+                 "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
         if not timed:
             _medicine_effect(state, a, a["dose_g"])
         duration = 3 if a["route"] in {"IV", "IO"} else 10
@@ -873,14 +883,16 @@ def _order(state, a):
         name, done, minutes, note = _SUPPORT_ORDERS[kind]
         field = {"urinary_catheter": "urinary_catheter", "vascular_access": "iv_access",
                  "monitoring": "monitoring", "npo": "npo", "gastric_tube": "gastric_tube"}[kind]
-        already = bool(f.get(field))
+        # A line that is there and does not run is not "already in place".
+        already = bool(f.get(field)) and not (kind == "vascular_access" and f.get("iv_access_failed"))
         if a.get("operation") == "stop":
             f[field] = False
             label = f"{name} removed"
         else:
             f[field] = True
             label = f"{name} already in place; not repeated" if already else f"{name} {done}"
-            if not already:
+            replacing = kind == "vascular_access" and f.get("iv_access_failed")
+            if not already and not replacing:
                 f.setdefault("procedure_events", []).append(
                     {"type": "procedure", "label": note,
                      "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
@@ -893,6 +905,12 @@ def _order(state, a):
                     if residual >= 1:
                         f["procedure_events"][-1]["label"] += (
                             f" {residual:.0f} mL drained on placement, made before the catheter went in.")
+        if kind == "vascular_access" and a.get("operation") != "stop" and f.get("iv_access_failed"):
+            f["iv_access_failed"] = False
+            label = "peripheral intravenous access replaced"
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": glucose_rescue.NEW_ACCESS_TEXT,
+                 "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
         tr.setdefault("support_orders", {})[kind] = bool(f.get(field))
         duration = 0 if already else minutes
     elif kind == "neuromuscular_blockade":
@@ -957,6 +975,8 @@ def _order(state, a):
                            "Pacing spikes appear without a following complex: there is no capture at this output.")})
         tr["transcutaneous_pacing"] = bool(f.get("pacing_rate"))
         duration = 2
+    elif kind == "dextrose_failed_access_marker":
+        pass
     elif kind in {"octreotide", "glucagon", "thiamine"}:
         f[kind + "_at"] = f["elapsed"]
         if kind == "glucagon":
@@ -1366,6 +1386,14 @@ def _minute(state):
             if spec.get("rv_involvement"):
                 # A preload-dependent right ventricle: nitroglycerin can collapse it.
                 acs_reperfusion.nitrate_drop(f, _nitro_equivalent(f), float(f["baseline"].get("sbp", 120)), fluid)
+            # Volume answers to the haemodynamics, not to having had a nitrate
+            # first (faculty decision 4, 2026-09-21).
+            import preload_response
+            overload = preload_response.step(state, spec, fluid)
+            if overload:
+                f.setdefault("procedure_events", []).append(
+                    {"type": "procedure", "label": overload,
+                     "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
             event = acs_reperfusion.step(state)
             if event:
                 f.setdefault("procedure_events", []).append(
@@ -1569,14 +1597,16 @@ def _surface(state):
             hr = max(72, float(base.get("hr", 100)) - 18)
         if glucose_rescue.post_ictal(f):
             mental = "Unresponsive"
-        elif glucose_rescue.wernicke_share(f) > .35 and mental == "Alert":
-            # The glucose is normal; the brain is not.
-            mental = "Confused"
+
     elif family == "opioid":
+        # Breathing and consciousness are depressed by the same drug and recover
+        # on their own schedules (faculty decision 3b, 2026-09-21).
         suppression = opioid_reversal.suppression(f)
+        sedation_level = opioid_reversal.sedation(f)
         rr = 14 - (14 - float(base.get("respiratory_rate", 6))) * suppression
         spo2 = 97 - (97 - float(base.get("spo2", 85))) * suppression
-        mental = "Alert" if suppression < .2 else "Drowsy" if suppression < .55 else "Obtunded" if suppression < .95 else str(base.get("mental_status", "Obtunded"))
+        mental = ("Alert" if sedation_level < .2 else "Drowsy" if sedation_level < .55
+                  else "Obtunded" if sedation_level < .95 else str(base.get("mental_status", "Obtunded")))
         effort = 1
         excess = opioid_reversal.withdrawal(f)
         if excess:
@@ -1591,8 +1621,10 @@ def _surface(state):
     elif family == "acs" and acs_reperfusion.coronary(state):
         import bradycardia_support
         if acs_reperfusion.is_open(f):
-            # "The discomfort settles" is what the reperfusion event already says.
-            f["pain_baseline"] = min(float(f.get("pain_baseline") or 0), 2.0)
+            # "The discomfort settles" is what the reperfusion event already says,
+            # and decision 3 says a patient treated in time ends better than they
+            # arrived: the ischaemic pain goes, it does not linger at a floor.
+            f["pain_baseline"] = 0.0
         spec = acs_reperfusion.coronary(state) or {}
         if f.get("av_block_at") is not None and not acs_reperfusion.is_open(f):
             hr = bradycardia_support.effective_rate(f, spec, acs_reperfusion.AV_BLOCK_RATE)
