@@ -146,6 +146,8 @@ def render_faculty_analysis(context, record):
             _pdf_download(context, report, record, compact=True)
             st.caption("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification.")
             labels = {item["ref"]: item["label"] for item in evidence_items(record["payload"])}
+            import report_corrections, report_presentation
+            correct = report_presentation.CorrectionLog(report_corrections.for_record(record))
             # The same held state the PDFs show: a negative suggestion whose
             # basis the record cannot settle waits for the faculty's reading.
             limits = findings.encounter_limits(
@@ -178,7 +180,7 @@ def render_faculty_analysis(context, record):
                     st.write(value)
                 for suggestion in analysis["objectives"]:
                     st.markdown("**" + suggestion["objective_id"] + " · " + OBJECTIVES[suggestion["objective_id"]]["title"] + "**")
-                    st.write(suggestion["rationale"])
+                    st.write(correct(suggestion["rationale"]))
                     st.caption(_reference_text(suggestion["evidence_refs"], labels))
                     st.write(suggestion["feedback"])
                     for question in suggestion["questions"]:
@@ -220,7 +222,9 @@ def render_suggestion_loader(context, record, objective_id, widget_prefix):
                     + ". No new rating was assigned and no recorded judgment was changed.")
         else:
             st.caption("AI draft: " + RECOMMENDATIONS[suggestion["recommendation"]])
-        st.write(suggestion["rationale"])
+        import report_corrections, report_presentation
+        correct = report_presentation.CorrectionLog(report_corrections.for_record(record))
+        st.write(correct(suggestion["rationale"]))
         if st.button("Load AI suggestion into editable form", key=widget_prefix + "_load_ai"):
             values = {
                 "decision": {"satisfactory": "Satisfactory", "needs_improvement": "Needs improvement"}.get(suggestion["recommendation"]),

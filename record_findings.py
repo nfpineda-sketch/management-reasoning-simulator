@@ -198,6 +198,40 @@ def inert_observables(trace):
     return inert
 
 
+VENTILATORY = ("oxygen", "niv", "invasive_ventilation", "bag_mask", "airway", "ventilation")
+RESPIRATORY = (("work_of_breathing", "work of breathing"), ("respiratory_rate", "respiratory rate"))
+
+
+def unresponsive_to_support(trace):
+    """Respiratory descriptors that never move once support has been given.
+
+    Support was given and the descriptor did not change afterwards. The record
+    cannot say whether the patient did not respond or whether this build does
+    not move that descriptor with ventilation, so a claim that the resident
+    failed to adjust ventilation cannot rest on it alone.
+    """
+    trace = [event for event in (trace or []) if isinstance(event, dict)]
+    first = None
+    for position, event in enumerate(trace):
+        for action in _executed(event):
+            kind = str(action.get("type") or action.get("support_type") or "").lower()
+            if any(word in kind for word in VENTILATORY):
+                first = position if first is None else first
+    if first is None:
+        return []
+    frozen = []
+    for key, label in RESPIRATORY:
+        values = []
+        for event in trace[first:]:
+            for side in ("state_before", "state_after"):
+                value = (_observable(event, side) or {}).get(key)
+                if value is not None:
+                    values.append(str(value))
+        if len(values) > 2 and len(set(values)) == 1:
+            frozen.append(label)
+    return frozen
+
+
 def orders_without_result(trace):
     """Studies requested whose result never reached the record."""
     missing = []
@@ -215,6 +249,7 @@ def encounter_limits(trace):
         "closed_at_min": closing_minute(trace),
         "orders_without_result": orders_without_result(trace),
         "inert_observables": inert_observables(trace),
+        "unresponsive_to_support": unresponsive_to_support(trace),
         "urine": urine_evidence(trace),
     }
 
@@ -247,6 +282,11 @@ def unsettled(text, limits):
     if URINE_WORDS.search(text) and (limits or {}).get("urine", {}).get("kind") != "measured":
         reasons.append("no urine volume was measured, so a statement about output rests on an engine "
                        "message rather than on a measurement")
+    adjustment = re.search(r"\badjust|escalat|titrat|increase|wean\b", text, re.I)
+    for label in (limits or {}).get("unresponsive_to_support") or []:
+        if adjustment and re.search(r"\b" + re.escape(label) + r"\b", text, re.I):
+            reasons.append(f"the {label} does not change in this record after ventilatory support was "
+                           "given, so whether it could respond to an adjustment is not established here")
     for label in (limits or {}).get("inert_observables") or []:
         if re.search(r"\b" + re.escape(label) + r"\b", text, re.I):
             reasons.append(f"the {label} never changes in this record, which may be the patient or may "

@@ -31,8 +31,9 @@ def _reference_labels(source):
     return labels
 
 
-def _claim(claim, labels):
-    st.write(claim["text"])
+def _claim(claim, labels, correct=None):
+    # The screen and the PDF show the same corrected text (2026-09-23).
+    st.write(correct(claim["text"]) if correct else claim["text"])
     st.caption("Evidence: " + "; ".join(labels.get(ref, ref) for ref in claim["evidence_refs"]))
 
 
@@ -119,11 +120,14 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
         return None
     st.session_state[cache_key] = report
     analysis = report["analysis"]
+    import report_corrections
+    import report_presentation
+    correct = report_presentation.CorrectionLog(report_corrections.for_payload(payload))
     labels = _reference_labels(source)
     st.caption("AI interpretation of your recorded encounter · your original decisions and locked reflection are preserved.")
-    _claim(analysis["overview"], labels)
+    _claim(analysis["overview"], labels, correct)
     _trends(source)
-    _claim(analysis["trajectory"], labels)
+    _claim(analysis["trajectory"], labels, correct)
     indexed = {row["source_ref"]: row for row in source["timeline"]}
     for moment in analysis["pivotal_decisions"]:
         event = indexed[moment["decision_ref"]]
@@ -141,14 +145,14 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
                 st.write(reasoning.get("expected_effect") or "No explicit expectation was recorded.")
             with right:
                 st.markdown("**AI interpretation**")
-                _claim(moment["interpretation"], labels)
+                _claim(moment["interpretation"], labels, correct)
                 st.markdown("**Expectation and observed response**")
-                _claim(moment["expected_vs_observed"], labels)
+                _claim(moment["expected_vs_observed"], labels, correct)
             st.markdown("**How your management evolved**")
-            _claim(moment["adaptation"], labels)
+            _claim(moment["adaptation"], labels, correct)
             if moment["reflection_insight"]:
                 with st.expander("Your later reflection"):
-                    _claim(moment["reflection_insight"], labels)
+                    _claim(moment["reflection_insight"], labels, correct)
             with st.expander("Recorded order and patient response"):
                 st.markdown("**Order as entered**")
                 st.write(event["learner_input"])
@@ -179,13 +183,13 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
     with left:
         st.markdown("**Patterns to retain**")
         for claim in analysis["strengths"]:
-            _claim(claim, labels)
+            _claim(claim, labels, correct)
         if not analysis["strengths"]:
             st.write("No additional evidence-supported pattern was identified.")
     with right:
         st.markdown("**Questions for your next encounter**")
         for claim in analysis["questions"]:
-            _claim(claim, labels)
+            _claim(claim, labels, correct)
     from management_trace_report import RENDERER_VERSION, render_management_trace_pdf
     pdf_key = cache_key + "_pdf_" + hashlib.sha256(json.dumps(
         [report, adaptation_plan, bool(review_completed), case_label, RENDERER_VERSION],

@@ -194,9 +194,13 @@ def _render_full(report, record, inputs, correct=None):
         story.append(p(title, "subhead"))
         story.append(p(text))
 
-    def bullets(values):
+    def bullets(values, limits=None):
         for value in values if isinstance(values, list) else []:
-            story.append(Paragraph("<b>•</b> " + _xml(correct(value)), styles["body"]))
+            written = correct(value)
+            story.append(Paragraph("<b>•</b> " + _xml(written), styles["body"]))
+            caveat = findings.unsettled(written, limits) if limits else []
+            if caveat:
+                story.append(p("Ask this rather than judge it: " + caveat[0] + ".", "small"))
 
     def reference_text(refs):
         return "; ".join(f"{index[ref]['label']} | {index[ref]['time']} [{ref}]" for ref in refs)
@@ -250,11 +254,8 @@ def _render_full(report, record, inputs, correct=None):
     story.append(p("Strengths supported by the record", "subhead"))
     bullets(analysis.get("strengths"))
     story.append(p("Points for faculty review", "subhead"))
-    bullets(analysis.get("review_points"))
+    bullets(analysis.get("review_points"), _record_limits(record))
     section("Reasoning during the encounter and later reflection", analysis.get("learning_cycle"))
-    story.append(p("Interpretation limits", "subhead"))
-    bullets(analysis.get("limits"))
-    story.append(p("This brief does not save an assessment, add observations, or confirm an objective. Only the supported simulated components are considered.", "small"))
 
     story.append(PageBreak())
     story.append(p("DECISION REVIEW", "eyebrow"))
@@ -339,7 +340,13 @@ def _render_full(report, record, inputs, correct=None):
                 block.append(p(mapping.get("source_locator", ""), "small"))
         story.append(KeepTogether(block))
 
+    # The limits of the analysis close the document with its metadata rather
+    # than stranding the tail of the first section on a page of its own.
     story.extend([Spacer(1, 12), HRFlowable(width="100%", thickness=.6, color=LINE), Spacer(1, 5)])
+    story.append(p("Interpretation limits", "subhead"))
+    bullets(analysis.get("limits"))
+    story.append(p("This brief does not save an assessment, add observations, or confirm an objective. Only the supported simulated components are considered.", "small"))
+    story.append(Spacer(1, 8))
     story.append(p("Generation record", "subhead"))
     story.append(p(
         f"Encounter: {_encounter_identifier(record)}\n"
@@ -545,7 +552,12 @@ def _render_compact(report, record, inputs, app_url, correct=None):
         story.extend([Spacer(1, 7), p(f"{min(3, len(review_points))} selected review priorities", "heading")])
         for number, point in enumerate(review_points[:3], 1):
             excerpt = _sentence_excerpt(correct(point), review_limit, "Read this review point in full in the app; its context cannot be safely shortened here.")
-            table = Table([[p(f"0{number}", "label"), p(excerpt)]], colWidths=[31, usable - 31])
+            # A concern the record cannot settle is asked, not asserted.
+            caveat = findings.unsettled(excerpt, limits)
+            cell = [p(excerpt)]
+            if caveat:
+                cell.append(p("Ask this rather than judge it: " + caveat[0] + ".", "muted"))
+            table = Table([[p(f"0{number}", "label"), cell]], colWidths=[31, usable - 31])
             table.setStyle(TableStyle([
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
                 ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FCF5ED")),
@@ -568,36 +580,17 @@ def _render_compact(report, record, inputs, app_url, correct=None):
             ]))
         if len(decisions) > 3:
             story.append(p(f"3 of {len(decisions)} decision prompts shown; full analysis contains the rest.", "muted"))
-        story.extend([Spacer(1, 7), p("What this encounter can and cannot show", "heading")])
-        story.append(p("This is recorded reasoning under simulation: not teamwork, not hands-on airway or "
-                       "procedural skill, and not image acquisition. A local observation does not award a "
-                       "Milestone level or an EPA. The complete PDF carries the scope of each objective and "
-                       "its competency correspondence.", "muted"))
-        limits = analysis.get("limits", [])
-        if isinstance(limits, list):
-            # Assistance is shown once, beside the suggestions. Keep a distinct
-            # report-specific limitation rather than repeating that global caveat.
-            distinct_limit = next((value for value in limits if not re.search(r"assistance|autonomy", _string(value), re.I)), None)
-            if distinct_limit:
-                story.append(Spacer(1, 4))
-                story.append(p("Selected analysis limit: " + _sentence_excerpt(distinct_limit, 250, "Review the analysis-specific limits in the app."), "muted"))
-        story.extend([Spacer(1, 9), call_to_action(), Spacer(1, 5)])
-        tail = ("D = recorded decision and simulation time. Reflection = post-encounter evidence and does not "
-                "establish what was understood during care. Suggestions add no credit and save no assessment. "
-                f"Encounter {encounter_id} · revision {report.get('attempt_revision')} · "
-                f"{_string(report.get('model'))}. Full generation record, citations and rationales in the complete PDF.")
-        if correct.applied:
-            tail += f" {len(correct.applied)} factual correction(s) applied to the AI text; the stored brief keeps the original wording."
-        story.append(p(tail, "muted"))
         return story
 
     def assessments_page(rationale_limit):
         """Page two: the provisional suggestions, then the scope and provenance."""
         story = [p("Suggested assessments", "title"),
-                 p("Provisional, AI text unchanged. Resolve the concerns on page 1 before accepting a suggestion; the rationale excerpts and evidence anchors are a reading aid.", "muted"),
+                 p("AI suggestions are provisional; documented factual corrections have been applied. "
+                   "Resolve the concerns on page 1 before accepting a suggestion; the rationale excerpts "
+                   "and evidence anchors are a reading aid.", "muted"),
                  Spacer(1, 7)]
         ordered = {item["objective_id"]: item for item in objectives}
-        columns = [usable * .225, usable * .215, usable * .56]
+        columns = [usable * .20, usable * .195, usable * .605]
         rows = [[p("OBJECTIVE", "bold"), p("AI SUGGESTION", "bold"), p("RATIONALE EXCERPT · EVIDENCE", "bold")]]
         for objective_id in supported:
             item = ordered[objective_id]
@@ -642,10 +635,32 @@ def _render_compact(report, record, inputs, app_url, correct=None):
             ("LINEBELOW", (0, 1), (-1, -1), .5, LINE),
             ("LEFTPADDING", (0, 0), (-1, -1), 7),
             ("RIGHTPADDING", (0, 0), (-1, -1), 7),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
         ]))
-        story.extend([matrix, Spacer(1, 6)])
+        story.extend([matrix, Spacer(1, 5)])
+        # Scope, the report's own limit and the route back to the app close the
+        # reading page, where there is room for them.
+        story.append(p("What this encounter can and cannot show", "heading"))
+        story.append(p("Recorded reasoning under simulation: not teamwork, hands-on airway or procedural "
+                       "skill, and not image acquisition. A local observation awards no Milestone level or "
+                       "EPA. Scope per objective and competency correspondence are in the complete PDF.", "muted"))
+        analysis_limits = analysis.get("limits", [])
+        if isinstance(analysis_limits, list):
+            distinct_limit = next((value for value in analysis_limits
+                                   if not re.search(r"assistance|autonomy", _string(value), re.I)), None)
+            if distinct_limit:
+                story.append(Spacer(1, 3))
+                story.append(p("Selected analysis limit: " + _sentence_excerpt(
+                    distinct_limit, 250, "Review the analysis-specific limits in the app."), "muted"))
+        story.extend([Spacer(1, 8), call_to_action(), Spacer(1, 5)])
+        tail = ("D = recorded decision and simulation time. Reflection = post-encounter evidence and does not "
+                "establish what was understood during care. Suggestions add no credit and save no assessment. "
+                f"Encounter {encounter_id} · revision {report.get('attempt_revision')} · "
+                f"{_string(report.get('model'))}. Full generation record, citations and rationales in the complete PDF.")
+        if correct.applied:
+            tail += f" {len(correct.applied)} factual correction(s) applied to the AI text; the stored brief keeps the original wording."
+        story.append(p(tail, "muted"))
         return story
 
     def page_height(elements):
@@ -667,7 +682,7 @@ def _render_compact(report, record, inputs, app_url, correct=None):
     # The suggestion page is built first: it is where most corrections land, and
     # the first page reports how many were applied.
     page_two = assessments_page(520)
-    for rationale_limit in (520, 430, 390, 330):
+    for rationale_limit in (520, 430, 390, 330, 300, 275):
         candidate = assessments_page(rationale_limit)
         page_two = candidate
         if page_height(candidate) <= available:
@@ -712,7 +727,9 @@ def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corr
     inputs = _validated_inputs(report, record)
     # Recorded factual corrections are applied to the model's text at render
     # time; the stored brief keeps the original wording (2026-09-23).
-    correct = presentation.CorrectionLog(corrections)
+    import report_corrections
+    correct = presentation.CorrectionLog(
+        corrections if corrections is not None else report_corrections.for_record(record))
     if compact:
         return _render_compact(report, record, inputs, app_url, correct)
     return _render_full(report, record, inputs, correct)

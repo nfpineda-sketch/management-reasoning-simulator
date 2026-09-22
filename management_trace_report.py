@@ -8,6 +8,7 @@ the model cannot supply a chart value. This renderer never reads faculty data.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from copy import deepcopy
 from io import BytesIO
 import math
 from pathlib import Path
@@ -169,24 +170,30 @@ def trend_points(timeline, field):
 
 
 class _OpenDecision(Flowable):
-    """A zero-height mark that records which decision is open at this point.
+    """A zero-height mark recording where each decision opens and closes.
 
-    A decision that needs two pages must say so on the second one. The page
-    handler runs at the start of each page, after everything on the previous
-    page has been drawn, so the mark left by the last decision drawn tells it
-    which decision is continuing (faculty request 2026-09-23).
+    A decision that needs two pages says so on the second one, and only when
+    the page holds nothing but that continuation: a page where the previous
+    decision ends and the next one begins is not a continuation page. Which
+    page a mark lands on is known only once the document has been laid out, so
+    the document is built twice and the header reads the first pass.
     """
 
-    def __init__(self, state, number):
+    def __init__(self, marks, number):
         super().__init__()
         self.width = self.height = 0
-        self._state, self._number = state, number
+        self._marks, self._number = marks, number
+
+    def __deepcopy__(self, memo):
+        # The layout pass copies the story; the marks must still reach the
+        # original list, or the second pass has nothing to read.
+        return _OpenDecision(self._marks, self._number)
 
     def wrap(self, *args):
         return 0, 0
 
     def draw(self):
-        self._state["open"] = self._number
+        self._marks.append((self.canv.getPageNumber(), self._number))
 
 
 class _Trend(Flowable):
@@ -423,7 +430,9 @@ def render_management_trace_pdf(
     analysis = report["analysis"]
     # Recorded factual corrections to the model's own text. The saved analysis
     # is untouched; what was corrected is listed with the metadata.
-    correct = presentation.CorrectionLog(corrections)
+    import report_corrections
+    correct = presentation.CorrectionLog(
+        corrections if corrections is not None else report_corrections.for_payload(payload))
     _fonts()
     styles = _styles()
     output = BytesIO()
@@ -464,6 +473,11 @@ def render_management_trace_pdf(
         decision = index.get(reflection.get("decision_ref"), {})
         return f"your later reflection on D{decision.get('decision_number', '?')}"
 
+    def claim_caveat(text):
+        """A claim the record cannot settle carries the reason, in the open."""
+        reasons = findings.unsettled(text, limits)
+        return p("The record cannot settle this: " + reasons[0] + ".", "tiny") if reasons else None
+
     def claim_paragraph(claim, style="body"):
         claim = _mapping(claim)
         refs = claim.get("evidence_refs", [])
@@ -479,7 +493,7 @@ def render_management_trace_pdf(
             text += '<br/><font size="7.6" color="#607482">' + _xml(suffix) + "</font>"
         return Paragraph(text, styles[style])
 
-    open_decision = {"open": None}
+    marks, continued_pages = [], {}
 
     def footer(canvas, doc):
         canvas.saveState()
@@ -490,10 +504,11 @@ def render_management_trace_pdf(
         canvas.drawString(margin, height - 25, "MANAGEMENT REASONING SIMULATOR")
         canvas.setFillColor(BLUE)
         canvas.drawRightString(width - margin, height - 25, status)
-        if open_decision["open"] is not None:
+        carried = continued_pages.get(doc.page)
+        if carried is not None:
             canvas.setFont("TraceSans-Bold", 8.6)
             canvas.setFillColor(BLUE)
-            canvas.drawString(margin, height - 47, f"DECISION {open_decision['open']} · CONTINUED")
+            canvas.drawString(margin, height - 47, f"DECISION {carried} · CONTINUED")
         canvas.line(margin, 49, width - margin, 49)
         canvas.setFont("TraceSans", 6.8)
         canvas.setFillColor(MUTED)
@@ -586,7 +601,11 @@ def render_management_trace_pdf(
         story.append(p("No additional evidence-supported pattern was identified.", "note"))
     story.append(p("QUESTIONS FOR YOUR NEXT ENCOUNTER", "label"))
     for claim in analysis.get("questions", []):
-        story.append(KeepTogether([claim_paragraph(claim)]))
+        block = [claim_paragraph(claim)]
+        caveat = claim_caveat(correct(presentation.claim_text(_mapping(claim).get("text"))))
+        if caveat:
+            block.append(caveat)
+        story.append(KeepTogether(block))
 
     # --- the decisions, each read in the order a clinician reads one --------
     story.append(Spacer(1, 12))
@@ -598,11 +617,34 @@ def render_management_trace_pdf(
         reasoning = _mapping(event.get("recorded_reasoning"))
         composed = set(event.get("app_composed_reasoning_slots") or [])
         stage = stages.get(item["decision_ref"], {"requested": [], "reported": [], "awaiting": []})
-        elsewhere = {row["study"] for row in stage["reported"] if not row["requested_here"]}
+        # What was ordered here is what the engine understood here. A study
+        # reported here but asked for earlier belongs to the response, not to
+        # this list, and a study asked for here appears even when its result
+        # came later (faculty request 2026-09-23).
         lines = presentation.action_lines(
             [action for action in event.get("executed_actions", [])
-             if not (isinstance(action, dict)
-                     and str(action.get("diagnostic") or action.get("diagnostic_type") or "") in elsewhere)])
+             if isinstance(action, dict)
+             and not (action.get("diagnostic") or action.get("diagnostic_type"))])
+        answered = {}
+        for rows in stages.values():
+            for row in rows["reported"]:
+                if row["requested_at_decision"] == event["decision_number"]:
+                    answered.setdefault(row["study"], row)
+        for study in stage["requested"]:
+            phrase = presentation.study_name(study) + " requested"
+            row = answered.get(study)
+            if row:
+                when = []
+                if row["sampled_at_min"] is not None:
+                    when.append(f"sampled at {row['sampled_at_min']:g} min")
+                if row["reported_at_min"] is not None:
+                    when.append(f"result at {row['reported_at_min']:g} min")
+                if when:
+                    phrase += " · " + ", ".join(when)
+            elif study in stage["awaiting"]:
+                phrase += " · no result recorded"
+            lines.append(phrase if phrase[:2].isupper() else phrase[:1].upper() + phrase[1:])
+
         time_range = f"{_time(event.get('decision_time_min'))} to {_time(event.get('response_time_min'))}"
         changed, unchanged = _observed_vitals(event)
         studies = _observed_studies(event)
@@ -613,7 +655,7 @@ def render_management_trace_pdf(
 
         story.append(KeepTogether([
             Spacer(1, 9), HRFlowable(width="100%", thickness=1, color=LINE),
-            _OpenDecision(open_decision, event["decision_number"]),
+            _OpenDecision(marks, event["decision_number"]),
             p(f"DECISION {event['decision_number']} · {time_range} · {_text(event.get('execution_status')).replace('_', ' ') or 'not recorded'}", "label"),
             p(_decision_title(item, event, stage), "card_title"),
             p("1 · WHAT YOU HAD OBSERVED", "label"),
@@ -658,6 +700,10 @@ def render_management_trace_pdf(
         # Request, sample and report are three moments, and a missing result is
         # not an omission by the resident (faculty request 2026-09-23).
         for row in stage["reported"]:
+            # A study asked for here already carries its times in the order
+            # list; only one asked for earlier needs its provenance here.
+            if row["requested_here"]:
+                continue
             parts = []
             if row["sampled_at_min"] is not None:
                 parts.append(f"sampled at {row['sampled_at_min']:g} min")
@@ -697,6 +743,10 @@ def render_management_trace_pdf(
         else:
             story.extend([compare, plan_line])
         story.append(claim_paragraph(item["expected_vs_observed"]))
+        caveat = claim_caveat(correct(presentation.claim_text(
+            _mapping(item["expected_vs_observed"]).get("text"))))
+        if caveat:
+            story.append(caveat)
         # The model's adaptation field describes what changed next. Calling it
         # a point to revisit implied a reflective question it does not contain
         # unless it actually asks one (faculty request 2026-09-23).
@@ -714,7 +764,7 @@ def render_management_trace_pdf(
                 Spacer(1, 3),
                 claim_paragraph(item["reflection_insight"], "ai"),
             ]))
-        story.append(_OpenDecision(open_decision, None))
+        story.append(_OpenDecision(marks, None))
 
     # --- what the learner wrote afterwards, then the metadata ---------------
     entered_plan = _mapping(adaptation_plan)
@@ -764,5 +814,26 @@ def render_management_trace_pdf(
     # Pull it back beside the last plan field, label and value together, so the
     # metadata never stands on its own and no heading is left behind.
     story.append(KeepTogether(closing))
+    # First pass learns the layout; the header of the second pass uses it.
+    SimpleDocTemplate(
+        BytesIO(), pagesize=A4, leftMargin=margin, rightMargin=margin,
+        topMargin=49, bottomMargin=62, pageCompression=1,
+    ).build(deepcopy(story), onFirstPage=footer, onLaterPages=footer)
+    layout = list(marks)
+    marks.clear()
+    # Which decision is open when each page begins, and which decisions open on
+    # it. A page that only continues one is the page that says so.
+    last_page = max([page for page, _ in layout] or [1])
+    by_page = {}
+    for page, number in layout:
+        by_page.setdefault(page, []).append(number)
+    standing = None
+    for page in range(1, last_page + 1):
+        at_start = standing
+        opened_here = [number for number in by_page.get(page, []) if number is not None]
+        if at_start is not None and not opened_here:
+            continued_pages[page] = at_start
+        for number in by_page.get(page, []):
+            standing = number
     document.build(story, onFirstPage=footer, onLaterPages=footer)
     return output.getvalue()
