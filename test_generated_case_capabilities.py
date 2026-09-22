@@ -16,7 +16,15 @@ def test_capabilities_cover_only_existing_actions_and_remain_json_ready():
     assert set(constraints["action_contracts"]) == set(ACTIONS)
     assert json.loads(json.dumps(constraints, allow_nan=False)) == constraints
     assert constraints["trajectory_numeric_bounds"] == {key: list(value) for key, value in BOUNDS.items()}
+    # Atropine, morphine and the ward's antipyretics joined the bank engine with
+    # faculty decisions 5, 10 and 14 of 2026-09-21 and are deliberately not
+    # offered to a case author yet: the generated engine does not execute them.
+    # Every medicine that IS offered still has to carry the bounds the bank
+    # engine enforces.
+    assert set(_MEDICINES) - set(ACTIONS) == {"atropine", "opioid_analgesia", "antipyretic"}
     for kind, (_, lower, upper) in _MEDICINES.items():
+        if kind not in ACTIONS:
+            continue
         assert constraints["action_contracts"][kind]["reference_dose_software_bounds"] == {
             "minimum": lower, "maximum": upper,
         }

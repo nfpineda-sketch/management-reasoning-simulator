@@ -90,10 +90,18 @@ def test_the_guard_does_not_invent_a_question(text):
     "Intuba con ketamina 100 mg y ventilación controlada por volumen, FiO2 100%, PEEP 5.",
 ])
 def test_an_induction_agent_does_not_split_the_airway_order(text):
+    """The settings stay with the airway, and the drug is confirmed beside it.
+
+    The induction agent used to disappear into the airway order. Faculty
+    decision 11 of 2026-09-21: every component of a rapid sequence is confirmed
+    as its own order, so the ventilator settings still belong to the tube and
+    the hypnotic is recorded as the drug it is.
+    """
     parsed = actions(text)
-    assert [a["type"] for a in parsed] == ["intubation"], parsed
+    assert [a["type"] for a in parsed] == ["intubation", "procedural_sedation"], parsed
     assert parsed[0]["ventilator_mode"] == "VC/AC"
     assert parsed[0]["fio2_percent"] == 100.0 and parsed[0]["peep_cmh2o"] == 5.0
+    assert parsed[1]["agent"] == "ketamine" and parsed[1]["dose_mg"] == 100.0
 
 
 @pytest.fixture

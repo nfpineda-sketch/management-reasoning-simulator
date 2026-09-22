@@ -116,7 +116,9 @@ def test_missing_dose_or_route_is_not_invented():
 
 
 @pytest.mark.parametrize("phrase", [
-    "Give atropine 1 mg IV", "Order brain MRI", "Start dopamine 5 mcg/kg/min",
+    # Atropine became a supported order with faculty decision 5 of 2026-09-21;
+    # dopamine has not.
+    "Order brain MRI", "Start dopamine 5 mcg/kg/min",
     "Give ceftriaxone 2 g IV azithromycin 500 mg IV",
     "Give 25 g dextrose 500 mL saline IV", "Give prednisone 1 mg/kg PO",
     "Give naloxone 2 units IV", "Start nitroglycerin 1 mcg/kg/min",

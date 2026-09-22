@@ -29,6 +29,8 @@ INVESTIGATION_IDS = (
     "pocus", "lactate", "vbg", "abg", "basic_labs", "temperature",
     "poc_glucose", "chest_xray", "urinalysis", "blood_cultures",
     "troponin", "ctpa", "hemoglobin",
+    # The additional leads of a coronary case (faculty decision 7, 2026-09-21).
+    "ecg_right", "ecg_posterior",
 )
 
 
@@ -229,6 +231,21 @@ def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
     return result
 
 
+def _with_additional_leads(investigations, coronary):
+    """A coronary case can record right-sided and posterior leads; others cannot.
+
+    Faculty decision 7 of 2026-09-21. Where the data does not exist the study
+    stays absent, and the encounter says it is not available, rather than
+    handing back a standard twelve-lead in its place.
+    """
+    if coronary is None:
+        return investigations
+    result = dict(investigations)
+    result["ecg_right"] = _study({"report": "Right-sided leads."}, 2)
+    result["ecg_posterior"] = _study({"report": "Posterior leads."}, 2)
+    return result
+
+
 def _case(identifier, family, age, sex, comorbidities, presentation, history,
           examination, observable, investigations, diagnosis, findings, focus,
           questions, actions, *, ecg="baseline", visual=None, recurrence=False,
@@ -241,7 +258,7 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
                     "comorbidities": list(comorbidities)},
         "presentation": presentation, "history": history, "history_source": history_source,
         "examination": examination, "observable": observable,
-        "ecg_profile": ecg, "investigations": investigations,
+        "ecg_profile": ecg, "investigations": _with_additional_leads(investigations, coronary),
         "visual_profile": visual or _visual(),
         "engine": {
             "family": family, "definitive_actions": list(actions),

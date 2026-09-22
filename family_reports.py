@@ -8,6 +8,7 @@ TEST_LABELS = {
     "temperature": "Temperature", "chest_xray": "Chest X-ray", "urinalysis": "Urinalysis",
     "blood_cultures": "Blood cultures", "troponin": "Troponin", "ctpa": "CT pulmonary angiography",
     "hemoglobin": "Hemoglobin",
+    "ecg_right": "Right-sided ECG (V3R-V4R)", "ecg_posterior": "Posterior ECG (V7-V9)",
 }
 FIELDS = {
     "cortisol_ug_dl": "Cortisol (µg/dL)", "tsh_miu_l": "TSH (mIU/L)",
@@ -29,6 +30,7 @@ FIELDS = {
 TIMING_VERBS = {
     "chest_xray": "Performed", "head_ct": "Performed", "abdominal_ct": "Performed",
     "ctpa": "Performed", "ecg": "Performed", "temperature": "Measured",
+    "ecg_right": "Performed", "ecg_posterior": "Performed",
 }
 
 

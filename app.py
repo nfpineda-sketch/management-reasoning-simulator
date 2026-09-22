@@ -998,7 +998,7 @@ def _summary_source_position(summary, learner_input, fallback_index=0):
         patterns = ([r"\bintubat(?:e|ion|ing)\b"] if summary.get("operation") == "start"
                     else [r"\b(?:peep|fio2|ventilator|ventilation|ventilator\s+settings?)\b"])
     elif support == "disposition":
-        patterns = [r"\b(?:admit|admission|transfer|icu|intensive\s+care)\b"]
+        patterns = [r"\b(?:admit|admission|transfer|discharge|home|icu|intensive\s+care|coronary)\b"]
     elif support == "antibiotics" or agent:
         terms = [x for x in (agent, "ceftriaxone", "azithromycin", "antibiotics") if x]
         patterns = [rf"\b(?:{'|'.join(re.escape(x) for x in terms)})\b"]
@@ -1101,7 +1101,8 @@ def _trace_action_text(event):
                 f'FiO₂ {s.get("fio2_percent", 100):g}% · PEEP {s.get("peep_cmh2o", 8):g} cm H₂O'
             )
         elif s.get("support_type") == "disposition":
-            labels.append(f'Admit to {s.get("destination", "ICU")}')
+            labels.append('Discharge home' if s.get("destination") == "home"
+                          else f'Admit to {s.get("destination", "ICU")}')
         elif s.get("support_type") == "antibiotics":
             name = str(s.get("agent_name") or "broad-spectrum antibiotics")
             if name.lower() == "ceftriaxone + azithromycin":
@@ -8198,6 +8199,7 @@ def _ecg_strip_svg(observable, duration_seconds=5.0):
 
 
 def _vitals_grid_html(snapshot, variant="live"):
+    import language
     cells = "".join(
         '<div class="mrs-vital-cell">'
         f'<div class="mrs-vital-label">{escape(str(label))}</div>'
@@ -8380,7 +8382,19 @@ def format_clinical_update():
 
     return text
 
+# Faculty decision 16 of 2026-09-21: the record is stored in English, which is
+# the engine's canonical form, and presented in the reading language. The
+# resident's own words and the authored narrative are never rewritten, so a
+# sentence in one language is never spliced into a sentence in the other.
+_TRANSLATED_EVENTS = frozenset({
+    "clinical_update", "clarification", "procedure", "diagnostic_result",
+    "prototype", "reasoning_note", "reasoning_completion",
+})
+
+
 def render_event(event):
+    import language
+    body = language.say(event["text"]) if event["kind"] in _TRANSLATED_EVENTS else event["text"]
     labels = {
         "patient_history": "PATIENT HISTORY",
         "examination": "EXAMINATION",
@@ -8396,17 +8410,39 @@ def render_event(event):
     }
     if event["kind"] == "clinical_update":
         with st.container(border=True):
-            st.markdown(f"**PATIENT RESPONSE · {sim_time_label(event['time'])}**")
-            st.write(event["text"])
+            st.markdown(f"**{language.say('PATIENT RESPONSE')} · {sim_time_label(event['time'])}**")
+            st.write(body)
             snapshot = event.get("learner_vitals")
             if snapshot:
                 st.markdown(_vitals_grid_html(snapshot, variant="response"), unsafe_allow_html=True)
         return
-    st.markdown(f"**{labels.get(event['kind'], event['kind'].upper())} · {sim_time_label(event['time'])}**")
+    st.markdown(f"**{language.say(labels.get(event['kind'], event['kind'].upper()))} · {sim_time_label(event['time'])}**")
     # A structured report such as POCUS uses one line per section; markdown would
     # otherwise run the lines together.
-    st.write(str(event["text"]).replace("\n", "  \n"))
+    st.write(str(body).replace("\n", "  \n"))
 
+def _language_selector():
+    """Choose the language the encounter is presented in.
+
+    It changes nothing but the presentation: the same stored encounter is shown
+    again, with the same numbers, doses, times and drug names (faculty decision
+    16, 2026-09-21). Writing an order in Spanish does not move it.
+    """
+    if not (st.session_state.get("_shared_access_granted") or globals().get("ACCOUNT_CONTEXT")):
+        # Nothing but the password belongs on the access screen.
+        return
+    import language
+    options = list(language.LANGUAGES)
+    if st.session_state.get("presentation_language") not in options:
+        st.session_state["presentation_language"] = language.configured()
+    st.sidebar.selectbox(
+        "Idioma · Language", options, key="presentation_language",
+        format_func=lambda code: language.LANGUAGES[code],
+        help="Presentation only. Orders are read in Spanish and English either way.",
+    )
+
+
+_language_selector()
 st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
@@ -8660,15 +8696,17 @@ with st.container(key="encounter-console"):
                 # Naming the rhythm here does the resident's interpretation for
                 # them. The bedside waveform and the 12-lead are where it is read.
                 if not o.get("pulse_present", True):
-                    st.write("BP: no measurable blood pressure")
-                    st.write(f'Monitor: organized electrical activity at {o["hr"]}/min, no palpable pulse')
-                    st.write("SpO₂: no reliable reading")
-                    st.write("CRT: not measurable")
+                    import language as _lang
+                    st.write(_lang.say("BP: no measurable blood pressure"))
+                    st.write(_lang.say(f'Monitor: organized electrical activity at {o["hr"]}/min, no palpable pulse'))
+                    st.write(_lang.say("SpO₂: no reliable reading"))
+                    st.write(_lang.say("CRT: not measurable"))
                 else:
-                    st.write(f'BP: {o["sbp"]}/{o["dbp"]} mmHg')
-                    st.write(f'HR: {o["hr"]}/min')
-                    st.write(f'SpO₂: {o["spo2"]}%')
-                    st.write(f'CRT: {o["crt"]} s')
+                    import language as _lang
+                    st.write(_lang.say(f'BP: {o["sbp"]}/{o["dbp"]} mmHg'))
+                    st.write(_lang.say(f'HR: {o["hr"]}/min'))
+                    st.write(_lang.say(f'SpO₂: {o["spo2"]}%'))
+                    st.write(_lang.say(f'CRT: {o["crt"]} s'))
             with st.expander("ECG", expanded=False):
                 st.caption("Acquire and compare 12-lead tracings using ECG above.")
 
@@ -8682,8 +8720,9 @@ with st.container(key="encounter-console"):
                     for test_id, result in diagnostics.items():
                         if not isinstance(result, dict):
                             continue
-                        st.markdown(_patient_diagnostic_heading(TEST_LABELS.get(test_id, "Investigation"), result))
-                        st.write(format_result(test_id, result).replace("\n", "  \n"))
+                        import language as _lang
+                        st.markdown(_lang.say(_patient_diagnostic_heading(TEST_LABELS.get(test_id, "Investigation"), result)))
+                        st.write(_lang.say(format_result(test_id, result)).replace("\n", "  \n"))
             elif any(diagnostics.get(k) for k in ["pocus", "lactate", "vbg", "abg", "basic_labs"]):
                 with st.expander("Diagnostics", expanded=True):
                     p = diagnostics.get("pocus")
@@ -8917,7 +8956,8 @@ with st.container(key="encounter-console"):
     submission_parsed = None
     with orders_panel:
         if not st.session_state.encounter_ended and (encounter_mode in {"Tests", "Treat"} or st.session_state.get("pending_reasoning")):
-            st.markdown("### Orders" if encounter_mode == "Tests" else "### Management")
+            import language as _lang
+            st.markdown(_lang.say("### Orders" if encounter_mode == "Tests" else "### Management"))
             st.caption(
                 "State your priority, action, expected effect and reassessment."
             )
@@ -9191,8 +9231,13 @@ with st.container(key="encounter-console"):
                                           else f'contacting {service} (no intervention yet)')
                             continue
                     elif s.get("type") == "disposition":
-                        labels.append(f'admission to {s.get("destination")} already requested (not repeated)'
-                                      if s.get("repeated") else f'requesting admission to {s.get("destination")}')
+                        # Going home is a discharge, not an admission to a place.
+                        home = s.get("destination") == "home"
+                        labels.append(
+                            ('discharge home already requested (not repeated)' if home else
+                             f'admission to {s.get("destination")} already requested (not repeated)')
+                            if s.get("repeated") else
+                            ('discharging the patient home' if home else f'requesting admission to {s.get("destination")}'))
                     elif "volume_ml" in s and s.get("fluid_type"):
                         labels.append(_fluid_order_label(s, st.session_state.state["sim_time"]))
                     elif s.get("label"):

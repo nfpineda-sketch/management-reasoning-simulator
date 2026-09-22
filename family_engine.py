@@ -16,8 +16,12 @@ import asthma_complications
 import asthma_ventilation
 import glucose_rescue
 import opioid_reversal
+import airway_pharmacology
+import antipyretics
 import pe_obstruction
 import re
+import urine_output
+import work_of_breathing
 
 FAMILY_ENGINE_VERSION = 1
 FAMILIES = frozenset({"pneumonia", "pulmonary_edema", "acs", "pulmonary_embolism", "asthma", "gi_bleed", "hypoglycemia", "opioid"})
@@ -32,12 +36,27 @@ _EXPOSURE_MG = {
     "steroid": {"prednisone": 40, "methylprednisolone": 32,
                 "hydrocortisone": 160, "dexamethasone": 6},
 }
+# Nursing and support orders: recorded, with a state, and no physiology of their
+# own except the collection a catheter makes possible (faculty decision 13).
+_SUPPORT_ORDERS = {
+    "vascular_access": ("peripheral intravenous access", 3,
+                        "a working line; intravenous orders were already being given through one"),
+    "monitoring": ("continuous monitoring and pulse oximetry", 2,
+                   "the monitor is on; it watches the patient and treats nothing"),
+    "npo": ("nil by mouth", 1, "recorded; nothing is to be given by mouth"),
+    "urinary_catheter": ("urinary catheter", 4,
+                         "urine is now collected and measured; the catheter does not make any"),
+    "gastric_tube": ("nasogastric tube", 4, "placed; what it is for belongs to the indication"),
+}
 _MEDICINES = {
     "antibiotics": ({"IV", "IO", "PO"}, .01, 20000),
     "bronchodilator": ({"nebulized", "inhaled"}, .01, 20),
     "steroid": ({"IV", "IO", "PO"}, .01, 1000),
     "dextrose": ({"IV", "IO", "PO"}, .1, 50),
     "naloxone": ({"IV", "IO", "IM", "IN"}, .01, 10),
+    "atropine": ({"IV", "IO"}, .1, 3),
+    "opioid_analgesia": ({"IV", "IO", "IM", "SC"}, .5, 30),
+    "antipyretic": ({"IV", "IO", "PO", "IM"}, 10, 4000),
     "ppi": ({"IV", "PO"}, 1, 160),
     "aspirin": ({"PO"}, 1, 650),
     "diuretic": ({"IV", "PO"}, .1, 250),
@@ -262,10 +281,16 @@ def _validate(state, parsed):
         if context_error:
             return None, context_error
         kind = a.get("type")
+        if a.get("dose_mg_per_kg") is not None and a.get("dose_mg") is None and kind != "neuromuscular_blockade":
+            # "Ketamina 2 mg/kg" is a dose; the weight is the case's own.
+            a = {**a, "dose_mg": round(a["dose_mg_per_kg"] * float(
+                _case(validation_state).get("patient", {}).get("weight_kg") or 70), 3)}
         if validation_state.get("family_state", {}).get("invasive") and kind in {"oxygen", "niv", "bag_mask"}:
             return None, "The patient is receiving invasive ventilation. Please specify ventilator settings or clarify the intended airway change."
         # Ventilator settings are the treatment in a ventilated asthmatic.
-        generated_only = {"beta_blocker", "diltiazem", "amiodarone", "cardioversion", "dobutamine"}
+        # Dobutamine left this set on 2026-09-21 (faculty decision 6): the
+        # inotrope decision belongs to a cardiogenic shock in any engine.
+        generated_only = {"beta_blocker", "diltiazem", "amiodarone", "cardioversion"}
         if state.get("engine_family") != "asthma":
             generated_only = generated_only | {"ventilator_adjustment"}
         if kind in generated_only and state.get("engine_family") != "generated":
@@ -447,6 +472,36 @@ def _validate(state, parsed):
         elif kind == "disposition":
             if not str(a.get("destination") or "").strip():
                 return None, "Where would you like to transfer or admit the patient?"
+        elif kind in _SUPPORT_ORDERS:
+            pass
+        elif kind == "neuromuscular_blockade":
+            if a.get("dose_mg") is None and a.get("dose_mg_per_kg") is None:
+                return None, "Specify the neuromuscular blocker dose, in mg or mg/kg."
+            if a.get("route") is None:
+                # There is no other route for a blocker; asking would be a quibble.
+                a = {**a, "route": "IV"}
+            if a.get("route") not in {"IV", "IO"}:
+                return None, "A neuromuscular blocker is given IV or IO, not by that route."
+            if a.get("agent") not in airway_pharmacology.BLOCKERS:
+                return None, "That neuromuscular blocker is not supported in this encounter."
+        elif kind == "sedation_infusion":
+            if a.get("operation") != "stop" and not a.get("rate"):
+                return None, "Specify the infusion rate and its units (for example, propofol 2 mg/kg/h)."
+        elif kind == "transcutaneous_pacing":
+            import bradycardia_support
+            if a.get("operation") != "stop":
+                missing = [name for name, given in (("the pacing rate in beats per minute", a.get("rate_per_min")),
+                                                    ("the output current in mA", a.get("output_ma"))) if given is None]
+                # Choosing a rate is not pacing: without a current there is no
+                # capture to confirm (faculty decision 5, 2026-09-21).
+                if missing and a.get("operation") == "start":
+                    return None, "Specify " + _listed(missing) + "."
+                if a.get("rate_per_min") is not None and not _number(
+                        a["rate_per_min"], bradycardia_support.PACING_MIN_RATE, bradycardia_support.PACING_MAX_RATE):
+                    return None, (f"Set a pacing rate between {bradycardia_support.PACING_MIN_RATE} and "
+                                  f"{bradycardia_support.PACING_MAX_RATE} beats per minute.")
+                if a.get("output_ma") is not None and not _number(a["output_ma"], 1, bradycardia_support.PACING_MAX_MA):
+                    return None, f"Set a pacing output between 1 and {bradycardia_support.PACING_MAX_MA} mA."
         elif kind in {"bag_mask", "airway_preparation"}:
             pass
         else:
@@ -472,9 +527,16 @@ def _initialize(state):
         "hemoglobin": float(engine.get("baseline_hemoglobin", 12)),
         "lactate": float(engine.get("baseline_lactate", 1.5)),
         "opioid": 1.0, "naloxone": 0.0, "bronchodilation": 0.0,
-        "antibiotic_at": None, "steroid_at": None, "diuretic_at": None,
+        "antibiotic_at": None, "steroid_at": None, "diuretic_at": None, "discharged_at": None,
         "antibiotic_exposure": 0, "steroid_exposure": 0, "anticoagulant_exposure": 0,
         "diuretic_dose": 0, "nitroglycerin": 0, "norepinephrine": 0, "epinephrine": 0,
+        "dobutamine": 0, "dobutamine_effect": 0.0,
+        "atropine_doses": [], "pacing_rate": None, "pacing_ma": None, "antipyretic_doses": [],
+        "urine_ml": 0.0, "urine_since_report_ml": 0.0, "urine_report_min": 0,
+        "urinary_catheter": False, "iv_access": True, "monitoring": False, "npo": False,
+        "gastric_tube": False, "furosemide_doses": [],
+        "morphine_mg": 0.0, "morphine_relief": 0.0, "morphine_preload_drop": 0.0,
+        "morphine_reversed_mg": 0.0, "pain_baseline": None,
         "epi_bolus_pool": 0.0, "continuous_bronchodilator_mg_h": 0.0, "ketamine_mg": 0.0,
         "sedation_bp_drop": 0.0,
         "pending_fluid_ml": 0, "pending_blood_units": 0, "dextrose_g": 0,
@@ -504,6 +566,9 @@ def _medicine_effect(state, a, amount):
     if kind == "dextrose":
         f["dextrose_g"] += amount
         f.setdefault("glucose_given_at", f["elapsed"])
+    elif kind == "opioid_analgesia":
+        # Fentanyl is written in mcg; 100 mcg is about 10 mg of morphine.
+        f["morphine_mg"] = f.get("morphine_mg", 0.0) + (amount if a.get("agent") != "fentanyl" else amount * 10)
     elif kind == "naloxone":
         # 0.4 mg IV is one unit of antidote. Larger doses are not capped at the
         # ventilation target: pushing past it is how withdrawal is precipitated.
@@ -630,6 +695,9 @@ def _order(state, a):
     f = state["family_state"]
     tr = state["treatments"]
     kind = a["type"]
+    if a.get("dose_mg_per_kg") is not None and a.get("dose_mg") is None and kind != "neuromuscular_blockade":
+        # A dose written by weight is the same dose (faculty decision 11).
+        a = {**a, "dose_mg": a["dose_mg_per_kg"] * float(_case(state).get("patient", {}).get("weight_kg") or 70)}
     # Generated cases schedule timed delivery in generated_delivery; only bank cases queue here.
     timed = a.get("administration_duration_min") is not None and state.get("engine_family") != "generated"
     duration = 1
@@ -673,9 +741,32 @@ def _order(state, a):
             _medicine_effect(state, a, a["dose_g"])
         duration = 3 if a["route"] in {"IV", "IO"} else 10
         label = f"Glucose {a['dose_g']:g} g {a['route']}"
+    elif kind == "antipyretic":
+        if a.get("route") == "PO" and str(state.get("observable", {}).get("mental_status") or "Alert") not in {
+                "Alert", "Agitated"}:
+            label = (f"{a.get('agent')} withheld by mouth: the patient is "
+                     f"{str(state.get('observable', {}).get('mental_status')).lower()} and swallowing is not safe")
+            withheld = True
+            duration = 1
+        else:
+            caution = antipyretics.record_dose(state, a.get("agent"), a.get("dose_mg"), a.get("route"))
+            label = f"{a.get('agent')} {a.get('dose_mg'):g} mg {a.get('route')} administered"
+            if caution:
+                f.setdefault("procedure_events", []).append(
+                    {"type": "procedure", "label": caution,
+                     "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
+            duration = 2 if a.get("route") in {"IV", "IO"} else 4
+    elif kind == "opioid_analgesia":
+        if not timed:
+            _medicine_effect(state, a, a["dose_mg"])
+        duration = 2 if a["route"] in {"IV", "IO"} else 5
+        label = f"{a.get('agent', 'morphine')} {a['dose_mg']:g} mg {a['route']} administered"
     elif kind == "naloxone":
         if not timed:
             _medicine_effect(state, a, a["dose_mg"])
+        # Naloxone answers whatever opioid is on board, including the one the
+        # resident gave: the analgesia goes with the sedation.
+        f["morphine_reversed_mg"] = float(f.get("morphine_mg") or 0)
         duration = 2 if a["route"] in {"IV", "IO"} else 4
         label = f"Naloxone {a['dose_mg']:g} mg {a['route']}"
     elif kind == "bronchodilator":
@@ -694,6 +785,8 @@ def _order(state, a):
             f[field] = f["elapsed"]
         if not timed:
             _medicine_effect(state, a, a["dose_mg"])
+        if kind == "diuretic":
+            urine_output.record_dose(state, a.get("dose_mg"), a.get("route"))
         if kind == "diuretic" and state.get("engine_family") == "pulmonary_edema":
             congestion = _case(state).get("engine", {}).get("congestion", {})
             factor = 1.0 if f["lung"] <= EDEMA["diuretic_resolved_lung"] else EDEMA["diuretic_early_factor"]
@@ -774,6 +867,79 @@ def _order(state, a):
         else:
             tr.update({kind + "_rate": reported_rate if rate else 0, kind + "_units": reported_units})
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
+    elif kind in _SUPPORT_ORDERS:
+        name, minutes, note = _SUPPORT_ORDERS[kind]
+        field = {"urinary_catheter": "urinary_catheter", "vascular_access": "iv_access",
+                 "monitoring": "monitoring", "npo": "npo", "gastric_tube": "gastric_tube"}[kind]
+        already = bool(f.get(field))
+        if a.get("operation") == "stop":
+            f[field] = False
+            label = f"{name} removed"
+        else:
+            f[field] = True
+            label = (f"{name} already in place; not repeated" if already else f"{name}: {note}")
+        tr.setdefault("support_orders", {})[kind] = bool(f.get(field))
+        duration = 0 if already else minutes
+    elif kind == "neuromuscular_blockade":
+        weight = float(_case(state).get("patient", {}).get("weight_kg") or 70)
+        onset, duration = airway_pharmacology.blocker_duration(
+            a.get("agent"), a.get("dose_mg"), a.get("dose_mg_per_kg"), weight)
+        f["paralysis_until"] = f["elapsed"] + onset + duration
+        f["paralysis_unsedated_reported"] = False
+        dose = (f"{a['dose_mg_per_kg']:g} mg/kg" if a.get("dose_mg_per_kg") is not None
+                else f"{a.get('dose_mg', 0):g} mg")
+        tr.setdefault("administered_medications", []).append(
+            {"agent": a.get("agent"), "dose_mg": a.get("dose_mg"), "dose_mg_per_kg": a.get("dose_mg_per_kg"),
+             "route": a.get("route"), "time_min": int(state.get("sim_time", 0))})
+        label = (f"{a.get('agent')} {dose} {a.get('route')} administered: movement is abolished for about "
+                 f"{duration:.0f} minutes. It does not sedate and it does not relieve pain.")
+        duration = 2
+    elif kind == "sedation_infusion":
+        if a.get("operation") == "stop":
+            f["sedation_infusion"] = None
+            label = f"{a.get('agent')} infusion stopped"
+        else:
+            f["sedation_infusion"] = {"agent": a.get("agent"), "rate": a.get("rate"), "units": a.get("units")}
+            verb = "adjusted to" if a.get("operation") == "adjust" else "started at"
+            label = f"{a.get('agent')} infusion {verb} {a.get('rate'):g} {a.get('units')}"
+            if a.get("agent") in airway_pharmacology.ANALGESIC_INFUSIONS:
+                label += "; this is analgesia, not sedation"
+        tr["sedation_infusion"] = bool(f.get("sedation_infusion"))
+        duration = 2
+    elif kind == "atropine":
+        import bradycardia_support
+        given = f.setdefault("atropine_doses", [])
+        total = bradycardia_support.atropine_total_mg(f)
+        spec = acs_reperfusion.coronary(state) or {}
+        withheld = total + a["dose_mg"] > bradycardia_support.ATROPINE_MAX_MG + 1e-9
+        if withheld:
+            label = (f"atropine withheld: {total:g} mg has already been given and "
+                     f"{bradycardia_support.ATROPINE_MAX_MG:g} mg is the maximum; this block needs pacing, "
+                     "not more atropine")
+        else:
+            given.append({"index": len(given), "at": f["elapsed"], "dose_mg": a["dose_mg"]})
+            label = f"atropine {a['dose_mg']:g} mg {a['route']} administered"
+            if f.get("av_block_at") is not None and bradycardia_support.location(spec) == "infranodal":
+                label += "; the atrial rate rises and the ventricular escape does not follow"
+        duration = 1
+    elif kind == "transcutaneous_pacing":
+        import bradycardia_support
+        if a.get("operation") == "stop":
+            f.update(pacing_rate=None, pacing_ma=None)
+            label = "transcutaneous pacing stopped"
+        else:
+            if a.get("rate_per_min") is not None:
+                f["pacing_rate"] = float(a["rate_per_min"])
+            if a.get("output_ma") is not None:
+                f["pacing_ma"] = float(a["output_ma"])
+            f.setdefault("pacing_threshold_ma", bradycardia_support.PACING_DEFAULT_THRESHOLD_MA)
+            captured = bradycardia_support.capturing(f)
+            label = (f"transcutaneous pacing at {f.get('pacing_rate'):g}/min and {f.get('pacing_ma') or 0:g} mA: "
+                     + ("pacing spikes are followed by wide complexes and a palpable pulse; capture is confirmed"
+                        if captured else
+                        "pacing spikes appear without a following complex: there is no capture at this output"))
+        tr["transcutaneous_pacing"] = bool(f.get("pacing_rate"))
+        duration = 2
     elif kind in {"octreotide", "glucagon", "thiamine"}:
         f[kind + "_at"] = f["elapsed"]
         if kind == "glucagon":
@@ -910,16 +1076,23 @@ def _order(state, a):
         label = examination_finding(state, a["region"])
         duration = 0
         examined = a["region"]
-    elif kind == "examination":
-        label = examination_finding(state, a["region"])
-        duration = 0
     elif kind == "disposition":
         repeated = tr.get("disposition") == a["destination"]
         state["disposition"] = a["destination"]
         tr["disposition"] = a["destination"]
         f["handoff_requested"] = True
-        label = (f"Admission to {a['destination']} already requested; not repeated" if repeated
-                 else f"Transfer/admission requested: {a['destination']}")
+        if a["destination"] == "home":
+            f["discharged_at"] = f["elapsed"]
+            f.pop("discharge_alarm_at", None)
+            f.pop("discharge_return_reported", None)
+            label = ("Discharge home already requested; not repeated" if repeated
+                     else "Discharge home requested")
+            # A patient who is already alarming when the discharge is written
+            # comes back without waiting for the resident to let time run.
+            _discharge_return(state)
+        else:
+            label = (f"Admission to {a['destination']} already requested; not repeated" if repeated
+                     else f"Transfer/admission requested: {a['destination']}")
         duration = 0
     else:
         repeated = False
@@ -937,7 +1110,8 @@ def _order(state, a):
     for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "service", "destination", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
         if key in a:
             summary[key] = a[key]
-    if (kind in _MEDICINES or kind == "anticoagulation") and a.get("operation") != "continue":
+    if ((kind in _MEDICINES or kind == "anticoagulation") and a.get("operation") != "continue"
+            and not locals().get("withheld")):
         # A continuation gave nothing, so it is not an administration.
         record = {key: deepcopy(summary[key]) for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route") if key in summary}
         record.setdefault("agent", kind)
@@ -1015,6 +1189,54 @@ def _endoscopy_minute(state):
         text = (f"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated "
                 f"({', '.join(reasons)}); they will re-check every {g['endoscopy_retry_min']} minutes.")
     f.setdefault("procedure_events", []).append({"type": "procedure", "label": text, "time_min": now, "duration_min": 0})
+
+
+# Faculty decision 2026-09-21: a discharge decided while the problem is still
+# running is answered by the patient coming back, in a plausible time, rather
+# than by the encounter simply ending. The engine keeps running the same
+# physiology and watches for the finding that should have kept them in.
+DISCHARGE_RETURN_DELAY_MIN = 20
+_AWAKE = frozenset({"Alert", "Agitated", "Sedated", "Awake and fighting the ventilator"})
+
+
+def _discharge_alarm(state):
+    """What the patient was brought back with, or None while they are well."""
+    o = state.get("observable", {}) or {}
+    mental = str(o.get("mental_status") or "")
+    glucose, rate = o.get("glucose_mg_dl"), o.get("respiratory_rate")
+    if mental and mental not in _AWAKE:
+        return f"found {mental.lower()} at home"
+    if glucose is not None and glucose < 60:
+        return f"unwell again, with a capillary glucose of {int(glucose)} mg/dL"
+    if rate is not None and rate < 10:
+        return f"breathing {rate:g} times a minute"
+    if o.get("spo2") is not None and o["spo2"] < 90:
+        return f"with a saturation of {o['spo2']:g}% on room air"
+    if o.get("sbp") is not None and o["sbp"] < 90:
+        return f"with a systolic pressure of {o['sbp']:g} mmHg"
+    return None
+
+
+def _discharge_return(state):
+    f = state["family_state"]
+    if f.get("discharged_at") is None or f.get("discharge_return_reported"):
+        return
+    if f.get("discharge_alarm_at") is None:
+        alarm = _discharge_alarm(state)
+        if alarm is None:
+            return
+        f["discharge_alarm_at"], f["discharge_alarm"] = f["elapsed"], alarm
+    if f["elapsed"] - f["discharge_alarm_at"] < DISCHARGE_RETURN_DELAY_MIN:
+        return
+    f["discharge_return_reported"] = True
+    f["discharged_at"] = None
+    state["disposition"] = None
+    state["treatments"]["disposition"] = None
+    f.setdefault("procedure_events", []).append({
+        "type": "procedure", "duration_min": 0,
+        "time_min": int(state.get("sim_time", 0)) + DISCHARGE_RETURN_DELAY_MIN,
+        "label": ("The patient was brought back to the emergency department after being sent home: "
+                  + f["discharge_alarm"] + ". The problem that sent them home had not finished.")})
 
 
 def _minute(state):
@@ -1131,6 +1353,26 @@ def _minute(state):
             if event:
                 f.setdefault("procedure_events", []).append(
                     {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
+    urine_event = urine_output.step(state)
+    if urine_event:
+        f.setdefault("procedure_events", []).append(
+            {"type": "procedure", "label": urine_event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
+    airway_event = airway_pharmacology.step(state)
+    if airway_event:
+        f.setdefault("procedure_events", []).append(
+            {"type": "procedure", "label": airway_event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
+    # One more minute of carrying the load the last surface measured.
+    work_of_breathing.count_minute(f, bool(f.get("invasive") or f.get("niv") or f.get("bag_mask")))
+    import analgesia
+    pain_event = analgesia.step(state, float(state.get("observable", {}).get("sbp") or 110))
+    if pain_event:
+        f.setdefault("procedure_events", []).append(
+            {"type": "procedure", "label": pain_event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
+    import inotrope_support
+    event = inotrope_support.step(state)
+    if event:
+        f.setdefault("procedure_events", []).append(
+            {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     if f.get("nitro_bolus_pool"):
         f["nitro_bolus_pool"] *= math.exp(-1 / EDEMA["nitro_bolus_tau_min"])
         if f["nitro_bolus_pool"] < 1:
@@ -1195,9 +1437,18 @@ def transfusion_overload(state):
 
 
 def _sedated(f):
-    """Induction wears off: maintenance sedation is a decision, not a given."""
-    given = f.get("sedation_at")
-    return given is not None and f["elapsed"] - given <= asthma_ventilation.SEDATION_DURATION_MIN
+    """Induction wears off: maintenance sedation is a decision, not a given.
+
+    A running sedation infusion is that decision. A neuromuscular blocker is
+    not: it removes the patient's breaths, which is what the mechanics need to
+    know, and it removes nothing else (faculty decision 11, 2026-09-21).
+    """
+    return airway_pharmacology.sedated_now(f, asthma_ventilation.SEDATION_DURATION_MIN)
+
+
+def _no_spontaneous_effort(f):
+    """True when nothing of the patient's own is reaching the ventilator."""
+    return _sedated(f) or airway_pharmacology.paralysed(f)
 
 
 def _epinephrine_equivalent(f):
@@ -1214,10 +1465,15 @@ def _airway_relaxation(f):
 
 
 def _surface(state):
+    import analgesia, inotrope_support
     f, family = state["family_state"], state["engine_family"]
+    if f.get("pain_baseline") is None:
+        f["pain_baseline"] = analgesia.arrival_pain(state)
     base = f["baseline"]
     o = state.setdefault("observable", {})
-    circulation = f["circulation"]
+    # A running inotrope carries part of the low-output burden; stopping it
+    # gives the burden straight back, so the relief is never written into it.
+    circulation = max(1.0, f["circulation"] - inotrope_support.burden_relief(f)) if f["circulation"] > 1 else f["circulation"]
     lung = f["lung"]
     effort = 1.0
     sbp = float(base.get("sbp", 110)) - (circulation - 1) * 45
@@ -1265,7 +1521,7 @@ def _surface(state):
         hr += (obstruction - 1) * 25 + asthma_complications.fatigue_tachycardia(f) + min(12, f["bronchodilation"] * 12)
         if f["invasive"]:
             # Trapped gas raises intrathoracic pressure and obstructs venous return.
-            mech = asthma_ventilation.mechanics(state, obstruction, _sedated(f))
+            mech = asthma_ventilation.mechanics(state, obstruction, _no_spontaneous_effort(f))
             auto_peep = asthma_ventilation.effective_auto_peep(f, mech["auto_peep_cmh2o"])
             tension = asthma_complications.tension_fraction(f)
             penalty = asthma_complications.intubation_penalty(f)
@@ -1312,17 +1568,30 @@ def _surface(state):
             dbp += opioid_reversal.WITHDRAWAL_SBP * .6 * min(1.5, excess)
             rr += opioid_reversal.WITHDRAWAL_RR * min(1.5, excess)
             mental = "Agitated"
-        if f.get("arrest_at") is not None:
-            f["surface_arrest"] = True
         if f["bag_mask"] or f["invasive"]:
             spo2 = 96
             rr = 12
     elif family == "acs" and acs_reperfusion.coronary(state):
+        import bradycardia_support
+        if acs_reperfusion.is_open(f):
+            # "The discomfort settles" is what the reperfusion event already says.
+            f["pain_baseline"] = min(float(f.get("pain_baseline") or 0), 2.0)
+        spec = acs_reperfusion.coronary(state) or {}
         if f.get("av_block_at") is not None and not acs_reperfusion.is_open(f):
-            hr = acs_reperfusion.AV_BLOCK_RATE
-            f["surface_rhythm"] = "Complete AV block"
+            hr = bradycardia_support.effective_rate(f, spec, acs_reperfusion.AV_BLOCK_RATE)
+            f["surface_rhythm"] = bradycardia_support.rhythm(f)
+            # The rate the block costs is paid in pressure, and given back when
+            # atropine or capture restores it (faculty decision 5, 2026-09-21).
+            penalty = bradycardia_support.pressure_penalty(
+                f, spec, acs_reperfusion.AV_BLOCK_RATE, base.get("hr", 60))
+            sbp -= penalty
+            dbp -= penalty * .6
         else:
             f.pop("surface_rhythm", None)
+        if bradycardia_support.capturing(f):
+            # A pacer left running keeps the floor it was set to, block or no block.
+            hr = max(hr, float(f["pacing_rate"]))
+            f["surface_rhythm"] = bradycardia_support.rhythm(f)
         drop = f.get("nitrate_drop", 0.0)
         sbp -= drop
         dbp -= drop * .6
@@ -1338,7 +1607,11 @@ def _surface(state):
         hr += strain_circulation * 25
         spo2 -= (circulation - 1 + strain_lung) * 8
         rr += (circulation - 1 + strain_lung) * 10
+        # The load is the obstruction the right ventricle and the lung are
+        # carrying, not the saturation an oxygen mask can lift.
+        effort = 1 + (circulation - 1) + strain_lung + strain_circulation
     elif family == "gi_bleed":
+        effort = 1 + (circulation - 1)
         # Tachypnoea of hemorrhagic hypoperfusion eases as circulation recovers and
         # worsens as it fails (faculty request 2026-09-19; magnitude pending review).
         rr = max(GI_BLEED["rr_floor"], rr + (circulation - 1) * GI_BLEED["rr_per_circulation"])
@@ -1352,6 +1625,20 @@ def _surface(state):
     if family != "pulmonary_edema":
         sbp -= min(45, _nitro_equivalent(f) * .3)
         dbp -= min(25, _nitro_equivalent(f) * .15)
+    sedation_drop = airway_pharmacology.infusion_pressure_cost(
+        f, float(_case(state).get("patient", {}).get("weight_kg") or 70))
+    sbp -= sedation_drop
+    dbp -= sedation_drop * .6
+    import analgesia
+    morphine_drop = float(f.get("morphine_preload_drop") or 0)
+    sbp -= morphine_drop
+    dbp -= morphine_drop * .6
+    sedation_steps, rr_cost = analgesia.sedation(state)
+    rr = max(4.0, rr - rr_cost)
+    inotrope_sbp, inotrope_hr = inotrope_support.surface(state)
+    sbp += inotrope_sbp
+    dbp += inotrope_sbp * .6
+    hr += inotrope_hr
     vasopressor_boost = min(35, f["norepinephrine"] * 1.5)
     equivalent = _epinephrine_equivalent(f)
     vasopressor_boost += min(EPINEPHRINE["max_sbp"], EPINEPHRINE["sbp_per_mcg_min"] * equivalent)
@@ -1377,37 +1664,39 @@ def _surface(state):
     elif family not in {"hypoglycemia", "opioid"}:
         mental = _mental_after_recovery(f, str(base.get("mental_status", "Alert")), mental)
     if f["invasive"]:
-        sedated = _sedated(f)
-        mental = "Sedated" if sedated else "Awake and fighting the ventilator"
-        wob = "Ventilator-supported" if sedated else "Ventilator dyssynchrony"
+        mental, wob = airway_pharmacology.mental_and_effort(f)
     elif family == "opioid":
         spontaneous_rr = 14 - (14 - float(base.get("respiratory_rate", 6))) * max(0, f["opioid"] - f["naloxone"])
         wob = "Reduced" if spontaneous_rr < 10 else "Normal"
-    elif family in {"pneumonia", "pulmonary_edema", "asthma"}:
-        baseline_wob = str(base.get("work_of_breathing", "Normal"))
-        levels = ["Normal", "Mildly increased", "Moderately increased", "Markedly increased", "Severe"]
-        index = {"normal": 0, "mildly increased": 1, "increased": 2, "moderately increased": 2, "markedly increased": 3, "severe": 4}.get(baseline_wob.lower(), 2)
-        change = int(round((effort - 1) * 3))
-        wob = baseline_wob if change == 0 else levels[int(_clamp(index + change, 0, 4))]
-        if family == "pneumonia":
-            # The five-level scale only moved when the effort changed by a third,
-            # so hours of antibiotic bought no visible change. One level per ~8%
-            # of effort puts it roughly where the respiratory rate moves 1.5/min,
-            # which is about when it becomes visible at the bedside. The case's
-            # own wording is kept while the patient is where the case left them.
-            position = int(_clamp(round(index + (effort - 1) * PNEUMONIA_WOB_PER_EFFORT), 0, 4))
-            wob = baseline_wob if position == index else levels[position]
-        if family == "pulmonary_edema" and effort < 1:
-            # Resolving oedema returns the work of breathing towards normal in proportion.
-            wob = levels[int(_clamp(round(index * effort), 0, 4))]
-
     else:
-        wob = str(base.get("work_of_breathing", "Normal"))
+        # Faculty decision 9 of 2026-09-21: every family recomputes the effort
+        # from its own load, and none of them reports the authoring word for a
+        # patient who has moved. The load itself is family-specific and was set
+        # above; a family that has no respiratory load carries 1.0 and stays put.
+        baseline_wob = str(base.get("work_of_breathing", "Normal"))
+        f["respiratory_load"] = float(effort)
+        wob = work_of_breathing.describe(family, baseline_wob, effort, f, support)
+        if family == "pulmonary_edema" and effort < 1 and not work_of_breathing.exhausted(f, support):
+            # Resolving oedema returns the work of breathing towards normal in proportion.
+            index = work_of_breathing.load_index(baseline_wob)
+            wob = work_of_breathing.LEVELS[int(_clamp(round(index * effort), 0, 4))]
+    # Morphine on board takes consciousness down the same ladder every other
+    # cause uses, and the pain it relieved is reported beside the vital signs.
+    if sedation_steps and mental in _MENTAL_LADDER:
+        mental = _MENTAL_LADDER[max(0, _MENTAL_LADDER.index(mental) - sedation_steps)]
+    o["temperature_c"] = antipyretics.temperature(f, float(base.get("temperature_c") or 37))
+    pain_score = max(0.0, analgesia.pain(state) - antipyretics.relief(f))
+    o["pain_score"] = round(pain_score, 1)
+    o["discomfort"] = analgesia.descriptor(pain_score)
     o.update(sbp=sbp, dbp=dbp, map=int(round((sbp + 2 * dbp) / 3)), hr=int(round(_clamp(hr, 42, 180))), spo2=spo2,
              respiratory_rate=int(round(_clamp(rr, 3, 45))), work_of_breathing=wob, mental_status=mental,
              crt=round(crt, 1), peripheral_perfusion=perfusion, glucose_mg_dl=int(round(f["glucose"])),
              rhythm=str(base.get("rhythm", "Sinus rhythm")), pulse_present=True,
              extremities=extremities)
+    if f.get("arrest_at") is not None:
+        # An arrest is an arrest in any family: paralysis without ventilation
+        # reaches it the same way apnoea does (2026-09-21).
+        f["surface_arrest"] = True
     if f.get("surface_rhythm"):
         o["rhythm"] = f["surface_rhythm"]
     if f.get("surface_arrest"):
@@ -1458,6 +1747,11 @@ def _diagnostic(state, diagnostic, duration):
         state["diagnostics"].setdefault("ecg", []).append(deepcopy(result))
         state["diagnostic_history"].append({"diagnostic_type": "ecg", "result": deepcopy(result)})
         return {"type": "diagnostic", "diagnostic_type": "ecg", "result": result, "duration_min": duration}
+    if diagnostic in {"ecg_right", "ecg_posterior"}:
+        # These leads are their own study, never a second standard tracing.
+        result = acs_reperfusion.additional_leads(state, diagnostic)
+        state["diagnostic_history"].append({"diagnostic_type": diagnostic, "result": deepcopy(result)})
+        return {"type": "diagnostic", "diagnostic_type": diagnostic, "result": result, "duration_min": duration}
     result = deepcopy(case["investigations"][diagnostic]["result"])
     o = state["observable"]
     if diagnostic == "poc_glucose":
@@ -1530,7 +1824,7 @@ def _diagnostic(state, diagnostic, duration):
 
             if state["engine_family"] == "asthma" and f["invasive"]:
                 # Permissive hypercapnia: what the set minute ventilation leaves behind.
-                ventilated, _ = asthma_ventilation.blood_gas(state, factor, _sedated(f))
+                ventilated, _ = asthma_ventilation.blood_gas(state, factor, _no_spontaneous_effort(f))
                 pco2 = _clamp(ventilated, 30, 130)
             elif f["bag_mask"] or f["invasive"]:
                 pco2 = min(pco2, 46)
@@ -1617,6 +1911,7 @@ def execute_family_bundle(state, parsed):
         _minute(candidate)
         candidate["sim_time"] = int(candidate.get("sim_time", 0)) + 1
         _surface(candidate)
+        _discharge_return(candidate)
         for summary in due.get(minute, []):
             summaries.append(_release_diagnostic(candidate, summary, candidate["sim_time"]))
     # Events the patient's course produced on its own (an endoscopy) are reported
@@ -1707,6 +2002,11 @@ def clinical_update(state):
             f"SpO₂ {o.get('spo2')}% · RR {o.get('respiratory_rate')}/min. "
             f"{o.get('mental_status', 'Not recorded')}; respiratory effort {str(o.get('work_of_breathing', 'not recorded')).lower()}; "
             f"capillary refill {o.get('crt')} s.")
+    if o.get("discomfort") and o.get("discomfort") != "no pain":
+        text += f" The patient reports {o['discomfort']}."
+    elif o.get("pain_score") is not None and float(o.get("pain_score") or 0) < .5 and state.get(
+            "family_state", {}).get("pain_baseline"):
+        text += " The patient reports no pain."
     mechanics = state.get("family_state", {}).get("ventilator_mechanics")
     if mechanics and state.get("family_state", {}).get("invasive"):
         text += " " + asthma_ventilation.pressure_report(mechanics, mechanics["auto_peep_cmh2o"])

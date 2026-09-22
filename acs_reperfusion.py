@@ -323,3 +323,39 @@ def pathway_note(spec, f, now):
                 "angiography and rules out provocation testing, even though the patient is pain-free.")
     return (f"Cath lab activated {where}: the artery is expected to be open at minute {now + delay} "
             f"(door to balloon {delay} minutes).")
+
+
+# Faculty decision 7 of 2026-09-21: the right-sided and posterior leads are
+# studies of their own. Asking for them is not asking for another 12-lead, and a
+# standard tracing must never be presented as if it were either of them. Until
+# the renderer draws these leads, the result is an explicitly labelled textual
+# report; the findings come from the case's own coronary declaration and from
+# where the artery is now, so ordering the study never guarantees a positive.
+ADDITIONAL_LEAD_NOTE = ("Textual report: this encounter records the additional leads in words; "
+                        "the rendered tracing shows the standard twelve.")
+
+
+def additional_leads(state, study):
+    """The report for the right-sided (V3R-V4R) or posterior (V7-V9) leads."""
+    spec = coronary(state) or {}
+    f = state.get("family_state", {})
+    opened = is_open(f)
+    if study == "ecg_right":
+        leads = "Right-sided leads V3R and V4R, recorded alongside the standard twelve"
+        if spec.get("rv_involvement") and not opened:
+            finding = ("ST elevation of 1.5 mm in V4R, with 1 mm in V3R. The inferior elevation is "
+                       "unchanged in this tracing.")
+        elif spec.get("rv_involvement"):
+            finding = "The V4R elevation has resolved since the artery was opened."
+        else:
+            finding = "No ST elevation in V3R or V4R."
+    else:
+        leads = "Posterior leads V7, V8 and V9, recorded alongside the standard twelve"
+        if spec.get("territory") == "posterior" and not opened:
+            finding = ("ST elevation of 1 mm in V7 to V9, concordant with the reciprocal depression "
+                       "already present anteriorly.")
+        elif spec.get("territory") == "posterior":
+            finding = "The posterior elevation has resolved since the artery was opened."
+        else:
+            finding = "No ST elevation in V7, V8 or V9."
+    return {"report": leads + ". " + finding + " " + ADDITIONAL_LEAD_NOTE}

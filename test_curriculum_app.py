@@ -111,7 +111,10 @@ def test_existing_shared_gate_remains_closed_until_password(monkeypatch):
 def test_resident_assignment_oxygen_persistence_and_private_ui(cohort):
     store, admin, token = cohort
     at = open_app(token)
-    assert not at.selectbox
+    # The only selector a resident may see is the language of presentation
+    # (faculty decision 16, 2026-09-21). The faculty's challenge picker and
+    # every other private control must still be absent.
+    assert [w.key for w in at.selectbox] == ["presentation_language"]
     assert resident_navigation(at) == "Clinical encounters"
     assert_progress_hidden(at)
     click(at, "Begin Encounter")
@@ -162,7 +165,7 @@ def test_resident_assignment_oxygen_persistence_and_private_ui(cohort):
     assert new.session_state.state["encounter_spec"] == assigned_state["encounter_spec"]
     assert new.session_state.rng_counter == saved_rng
     click(new, "Save & return to dashboard")
-    assert not new.selectbox
+    assert [w.key for w in new.selectbox] == ["presentation_language"]
     assert resident_navigation(new) == "Clinical encounters"
     assert_progress_hidden(new)
     teacher = open_app(admin)
@@ -357,12 +360,12 @@ def test_full_app_multiobjective_faculty_assessment_and_resident_progress(cohort
     click(faculty, "Confirm simulated-component achievement")
     assert not faculty.error
     learner = open_app(resident)
-    assert not learner.selectbox
+    assert [w.key for w in learner.selectbox] == ["presentation_language"]
     assert resident_navigation(learner) == "Clinical encounters"
     assert_progress_hidden(learner)
     resident_navigation(learner, "My progress")
     assert any(item.value == "My progress" for item in learner.subheader)
-    assert not learner.selectbox
+    assert [w.key for w in learner.selectbox] == ["presentation_language"]
     assert not any(b.label in {"Record objective assessment", "Save program target"} for b in learner.button)
     assert not any(b.label in {"Begin Encounter", "Resume encounter"} for b in learner.button)
     table = learner.dataframe[0].value

@@ -47,6 +47,24 @@ _CANCEL = re.compile(r'(?:cancel|omit|skip|drop|forget|cancelar|omitir|olvidar)'
                      r'(?: (?:one|item|order|study|test|examen|estudio|orden))?', re.I)
 
 
+# A genuine answer to a held question is a fragment: "IV", "0.4 mg IV",
+# "nasal cannula 4 L/min". A stated priority or a reassessment instruction only
+# appears in a whole new turn. Found playing the hypoglycaemia and opioid cases
+# (2026-09-21): the held order was completed with words taken out of the next
+# turn's prose, which set the route to PO from "the oral drug lasts hours" and
+# kept 0.04 mg when the resident had just asked for 0.1 mg.
+_FRESH_TURN = re.compile(
+    r"\b(?:la|mi|nuestra)?\s*prioridad\s+(?:ahora\s+)?es\b"
+    r"|\b(?:el|mi|nuestro)?\s*objetivo\s+(?:ahora\s+)?es\b"
+    r"|\bpriority\s+(?:now\s+)?is\b"
+    r"|\breevalu\w+\s+en\s+\d+"
+    r"|\breassess\s+in\s+\d+", re.I)
+
+
+def _is_a_fresh_turn(text):
+    return bool(_FRESH_TURN.search(_normalize(text)))
+
+
 def _is_a_new_submission(reply):
     """True when the reply is an order in its own right, not an answer.
 
@@ -62,6 +80,8 @@ def _is_a_new_submission(reply):
 
 def complete_bundle(pending, text):
     body = _normalize(text).strip()
+    if _is_a_fresh_turn(text):
+        return {'superseded': True}
     original = pending['parsed']['actions'][pending['index']]
     if original.get('type') == 'clarification':
         parsed = deepcopy(pending['parsed'])

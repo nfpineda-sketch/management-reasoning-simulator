@@ -93,8 +93,10 @@ def test_the_response_card_after_an_order_never_names_the_rhythm(encounter):
 
 def test_the_vitals_panel_reports_a_rate_and_not_a_diagnosis():
     source = (ROOT / "app.py").read_text()
-    assert "st.write(f'HR: {o[\"hr\"]}/min')" in source
-    assert "st.write(f'HR: {o[\"hr\"]}/min · {o[\"rhythm\"]}')" not in source
+    # The line is now read in the presentation language (faculty decision 16),
+    # which changes how it is written and not what it says.
+    assert "st.write(_lang.say(f'HR: {o[\"hr\"]}/min'))" in source
+    assert "{o[\"hr\"]}/min · {o[\"rhythm\"]}" not in source
     # Arrest is an interpretation too: report the finding, not the label.
     assert "organized electrical activity at {o[\"hr\"]}/min, no palpable pulse" in source
     assert "· {o[\"rhythm\"]}')" not in source
