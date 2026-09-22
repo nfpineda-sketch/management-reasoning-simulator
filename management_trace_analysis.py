@@ -15,6 +15,12 @@ import re
 
 
 SCHEMA_VERSION = "management_trace_analysis_v1"
+# The instructions below were revised on 2026-09-23 (finish the sentence inside
+# the limit; no repeated prefix; what a single measurement does and does not
+# establish). The version is deliberately NOT bumped yet: source_fingerprint
+# binds a stored analysis to the prompt version, so bumping it invalidates every
+# analysis already saved and forces one paid regeneration per encounter. That is
+# a faculty decision, and it is also exactly what verifying this change costs.
 PROMPT_VERSION = "1.0"
 MAX_TRACE_EVENTS = 120
 MAX_ENCOUNTER_EVENTS = 600
@@ -344,12 +350,12 @@ def _object(properties):
 def _generation_schema(source):
     refs = [row["source_ref"] for row in source["timeline"] + source["reflections"] + source["encounter_events"]]
     executed = [row["source_ref"] for row in source["timeline"] if row["execution_status"] == "executed"]
-    claim = _object({"text": {"type": "string", "minLength": 1, "maxLength": 600},
+    claim = _object({"text": {"type": "string", "minLength": 1, "maxLength": 900},
                      "evidence_refs": {"type": "array", "minItems": 1, "maxItems": 12,
                                        "items": {"type": "string", "enum": refs}}})
     moment = _object({
         "decision_ref": {"type": "string", "enum": executed},
-        "title": {"type": "string", "minLength": 1, "maxLength": 90},
+        "title": {"type": "string", "minLength": 1, "maxLength": 140},
         "interpretation": deepcopy(claim), "expected_vs_observed": deepcopy(claim),
         "adaptation": deepcopy(claim),
         "reflection_insight": {"anyOf": [deepcopy(claim), {"type": "null"}]},
@@ -520,6 +526,27 @@ Do not include numerical values, doses, times, decision numbers or source IDs in
 prose or titles: the report supplies exact numbers directly from source evidence.
 Evidence IDs belong only in evidence_refs/decision_ref fields. Use few short
 sentences, no Markdown, and avoid repeating the same point across sections.
+
+Finish every field inside its length limit. A field is cut off at the limit and
+reaches the learner unfinished, so write fewer sentences rather than a longer
+one, and never end mid-sentence. Do not begin a field with 'AI interpretation'
+or any similar prefix: the report already labels every passage as interpretation.
+
+Read the record for what it establishes, and no further:
+- One measurement at one time is one measurement. It does not establish a trend,
+  a persistence or a failure to improve. Say 'was recorded as' rather than
+  'remained' or 'persisted' unless two separated observations support it.
+- Distinguish an order that was never written from one that was written and not
+  executed, from one still pending when the encounter closed, and from one whose
+  result was never recorded. Only executed_actions were performed, and a missing
+  result is missing from the record, not refused by the learner.
+- Do not treat a limitation of the simulation as the learner's decision. Time
+  advances in the intervals the encounter allows, an unavailable study cannot be
+  obtained, and a variable the record never moves may not be modelled here. None
+  of these is evidence about the learner.
+- Do not ask for a response outside the observed window. If an effect would only
+  be visible after the last recorded observation, say the record does not yet
+  show it.
 """
 
 

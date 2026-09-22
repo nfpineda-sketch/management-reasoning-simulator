@@ -126,13 +126,19 @@ def test_synthesis_preserves_distinct_evidence_interpretation_and_locked_reflect
     assert 3 <= len(reader.pages) <= 5
     assert "Management Trace" in text
     assert "SYNTHETIC LAYOUT EXAMPLE" in text
-    assert "RECORDED REASONING" in text and "AI INTERPRETATION" in text
-    assert "YOUR RECORDED EXPECTATION" in text
-    assert text.count("YOUR RECORDED EXPECTATION") == 4
-    assert "LATER REFLECTION - AI INTERPRETATION" in text
+    # The six blocks the faculty asked for on 2026-09-23, in order.
+    for label in ("1 · WHAT YOU HAD OBSERVED", "2 · HOW YOU REASONED", "3 · WHAT YOU ORDERED",
+                  "4 · WHAT YOU EXPECTED", "5 · WHAT WAS RECORDED NEXT", "6 · POINT TO REVISIT"):
+        assert label in text, label
+    assert text.count("4 · WHAT YOU EXPECTED") == 4
+    assert "YOUR LATER REFLECTION" in text
     assert "D3" in text and "8 min to 12 min" in text
-    assert "[trace:2]" in text and "[reflection:decision_3]" in text
-    assert "flow lpm: 3" in text and "ipap cmh2o: 10" in text
+    # References are readable rather than machine ids (faculty request 2026-09-23),
+    # and every claim still says what it rests on.
+    assert "Based on:" in text and "trace:" not in text and "reflection:decision" not in text
+    assert "your later reflection on D" in text
+    # Settings survive the readable rewrite of the ordered actions.
+    assert "3 L/min" in text and "10 cm H2O IPAP" in text
     assert "98" in text and "108" in text and "Drowsy" in text
     assert "DRAFT - REVIEW IN PROGRESS" in text
     assert "synthetic-layout-example-no-model-call" in text
@@ -179,7 +185,7 @@ def test_final_later_plan_does_not_change_or_relabel_the_frozen_ai_source():
     ))
     assert "REVIEW COMPLETE" in text
     assert "DRAFT - REVIEW IN PROGRESS" not in text
-    assert "Learner-entered after reflection/comparison" in text
+    assert "Written by you after the comparison" in text
     assert "Reevaluaré SpO2 > 94%" in text and "<b>literal</b>" in text
     assert report["source_hash"] in text
 
@@ -208,7 +214,7 @@ def test_acquired_result_keeps_collection_and_availability_times_and_actual_seda
         "private_mechanism": "PRIVATE_ACTION"})
     report["source_hash"] = source_fingerprint(payload)
     _, text = _pdf_text(render_management_trace_pdf(report, payload))
-    assert "Available at 4 min; sampled at 2 min" in " ".join(text.split())
-    assert "glucose mg dl: 83" in text
-    assert "Medication: agent: example; dose mg: 2; route: IV" in " ".join(text.split())
+    assert "available at 4 min, sampled at 2 min" in " ".join(text.split())
+    assert "glucose 83 mg/dL" in text
+    assert "with example 2 mg IV" in " ".join(text.split())
     assert "PRIVATE_" not in text

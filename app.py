@@ -6573,6 +6573,17 @@ def ai_interpretation_enabled():
     return bool(_runtime_secret("OPENAI_API_KEY"))
 
 
+def ai_language_interpretation_enabled():
+    """True only when the paid per-order language normalization is switched on.
+
+    A key alone no longer turns it on: it is a cost of one provider request per
+    submission, and the deterministic parser reads the Spanish this faculty
+    writes. Set MRS_AI_LANGUAGE to enable it.
+    """
+    setting = str(_runtime_secret("MRS_AI_LANGUAGE", "")).strip().lower()
+    return bool(_runtime_secret("OPENAI_API_KEY")) and setting in {"1", "true", "yes", "on"}
+
+
 def _numeric_tokens(text):
     """Return quantities whose preservation is clinically safety-relevant.
 
@@ -6605,6 +6616,13 @@ def normalize_clinical_turn(text):
     falls back to the original text. This helper is used before direct orders,
     pending-order clarifications, and reasoning completions alike.
     """
+    # Faculty decision B4, 2026-09-23: the deterministic parser is the default.
+    # This helper runs before every order, every clarification and every
+    # reasoning completion, so with a key configured it cost one paid request
+    # per submission — measured as six requests in a five-order encounter. It is
+    # now opt-in, and the engine understands Spanish without it.
+    if not ai_language_interpretation_enabled():
+        return text, {"mode": "deterministic"}
     api_key = _runtime_secret("OPENAI_API_KEY")
     if not api_key:
         return text, {"mode": "deterministic"}
@@ -8445,7 +8463,7 @@ def _language_selector():
 _language_selector()
 st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
 if faculty_access():
-    st.caption("AI language interpretation is active." if ai_interpretation_enabled() else "Local language interpretation is active.")
+    st.caption("AI language interpretation is active." if ai_language_interpretation_enabled() else "Local language interpretation is active.")
 
 if not st.session_state.started:
     if ACCOUNT_CONTEXT:

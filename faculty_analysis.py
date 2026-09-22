@@ -17,11 +17,20 @@ from competency_mapping import objective_is_eligible
 
 
 SCHEMA_VERSION = "faculty_brief_v1"
-PROMPT_VERSION = "1.2"
-SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", PROMPT_VERSION)
+# 1.3 (2026-09-23): what a single measurement does and does not establish, the
+# four states an order can be in, a simulation limitation is not the learner's
+# decision, and an objective with no recorded opportunity is named as such.
+# The faculty fingerprint binds the record and not the prompt, so briefs stored
+# under 1.0-1.2 keep rendering; only new briefs use the revised rubric.
+PROMPT_VERSION = "1.3"
+SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", "1.2", PROMPT_VERSION)
 ASSISTANCE_CONTEXTS = ("unknown", *AUTONOMY_LEVELS)
 # Preserve the six-objective legacy envelope for already saved faculty drafts.
 SUPPORTED_OBJECTIVES = ("TD1", "F1", "C1", "C3", "C4", "C14")
+# Prompt versions that ask for the record's own objective list rather than the
+# fixed six. A stored brief must be read with the list it was written against,
+# so a later prompt revision cannot make an earlier brief unreadable.
+DYNAMIC_OBJECTIVE_PROMPTS = ("1.2", "1.3")
 MAX_INPUT_BYTES = 260_000
 MAX_TRACE_EVENTS = 120
 MAX_OUTPUT_TOKENS = 10_000
@@ -370,6 +379,26 @@ Use these writing budgets:
   and material record limitations once, with no generic legal boilerplate.
 Select only the evidence references needed to support each claim. Keep all supplied
 objective recommendations distinct, even when the same decision informs several.
+
+Read the record for what it establishes, and no further:
+- One measurement at one time is one measurement. It does not establish a trend,
+  a persistence or a failure to improve. Say 'was recorded as' rather than
+  'remained' or 'persisted' unless two separated observations support it.
+- Distinguish an order never written from one written and not executed, from one
+  still pending when the encounter closed, and from one whose result was never
+  recorded. A missing result is missing from the record, not refused by the learner.
+- Do not treat a limitation of the simulation as the learner's decision. Time
+  advances only in the intervals the encounter allows, an unavailable study cannot
+  be obtained, and a variable the record never moves may not be modelled at all.
+  None of these is evidence about the learner, and none belongs in a review point.
+- Do not ask for a response outside the observed window. If an effect would only
+  be visible after the last recorded observation, say the record does not show it
+  yet rather than treating it as absent.
+- When an objective had no recorded opportunity to be shown, recommend
+  insufficient_evidence, select no evidence reference, and say in the rationale
+  that the encounter offered no occasion to demonstrate it. That is different
+  from a weak demonstration and must not read as one.
+Every suggestion is provisional: the faculty member records the judgment.
 """.strip()
 
 
@@ -494,7 +523,8 @@ def validate_brief(report, record, assistance_context=None):
     source = build_analysis_source(record, context)
     refs = {row["evidence_ref"] for row in source["decision_events"] if row["evidence_ref"]}
     refs.update(row["evidence_ref"] for row in source["recorded_reflections"])
-    objective_ids = supported_objectives(record) if report["prompt_version"] == PROMPT_VERSION else SUPPORTED_OBJECTIVES
+    objective_ids = (supported_objectives(record) if report["prompt_version"] in DYNAMIC_OBJECTIVE_PROMPTS
+                     else SUPPORTED_OBJECTIVES)
     _check_schema(report["analysis"], _analysis_schema(refs, objective_ids))
     analysis = report["analysis"]
     if {row["objective_id"] for row in analysis["objectives"]} != set(objective_ids):

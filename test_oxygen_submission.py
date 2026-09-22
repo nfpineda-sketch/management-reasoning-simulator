@@ -51,6 +51,10 @@ def use_ai(at, monkeypatch, transform):
         return AIInterpretation(transform(text), "high", (), "test-model")
     monkeypatch.setattr(ai_interpreter, "normalize_with_ai", normalize)
     at.secrets["OPENAI_API_KEY"] = "test-only-not-a-real-key"
+    # Faculty decision B4, 2026-09-23: a key no longer switches the paid
+    # normalizer on by itself. These tests are about that path, so they ask
+    # for it explicitly.
+    at.secrets["MRS_AI_LANGUAGE"] = "1"
 
 
 @pytest.mark.parametrize("normalization", ["local", "echo", "omitted", "changed_device", "error"])

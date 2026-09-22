@@ -5,6 +5,7 @@ clinical findings. Only explicit metadata and reference labels are selected
 from the attempt; engine state and evidence ``details`` are never serialized.
 """
 
+from copy import deepcopy
 from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
@@ -23,7 +24,8 @@ from reportlab.platypus import (
 )
 
 from objectives import AUTONOMY_LEVELS, DEPTH_LEVELS, OBJECTIVES, evidence_items
-from faculty_analysis import PROMPT_VERSION, SUPPORTED_OBJECTIVES, supported_objectives
+from faculty_analysis import (DYNAMIC_OBJECTIVE_PROMPTS, PROMPT_VERSION,
+                              SUPPORTED_OBJECTIVES, supported_objectives)
 
 
 NAVY = colors.HexColor("#16324F")
@@ -44,6 +46,16 @@ ASSISTANCE_LABELS = {
     "prompted": "Prompted - additional prompts were needed (faculty-reported).",
     "independent": "Independent - faculty has verified no additional help.",
 }
+
+
+import report_presentation as presentation
+
+
+def _encounter_identifier(record):
+    """The same visible identifier the learner report prints for this encounter."""
+    session = ((record or {}).get("payload") or {}).get("session") or {}
+    case_id = str(((session.get("state") or {}).get("case_id")) or "")
+    return presentation.identifier(case_id, str((record or {}).get("challenge_id") or ""))
 
 
 def _string(value):
@@ -72,19 +84,19 @@ def _fonts():
 
 def _styles():
     body = ParagraphStyle(
-        "FacultyBody", fontName="FacultySans", fontSize=9.3, leading=13.1,
+        "FacultyBody", fontName="FacultySans", fontSize=11, leading=15.2,
         textColor=INK, spaceAfter=6, splitLongWords=True, allowWidows=0,
         allowOrphans=0,
     )
     return {
         "body": body,
-        "small": ParagraphStyle("FacultySmall", parent=body, fontSize=8, leading=10.8, textColor=MUTED),
+        "small": ParagraphStyle("FacultySmall", parent=body, fontSize=9, leading=12.2, textColor=MUTED),
         "title": ParagraphStyle("FacultyTitle", parent=body, fontName="FacultySans-Bold", fontSize=27, leading=30, textColor=NAVY, spaceAfter=9),
         "heading": ParagraphStyle("FacultyHeading", parent=body, fontName="FacultySans-Bold", fontSize=17, leading=21, textColor=NAVY, spaceBefore=4, spaceAfter=8, keepWithNext=True),
         "subhead": ParagraphStyle("FacultySubhead", parent=body, fontName="FacultySans-Bold", fontSize=10, leading=13, textColor=NAVY, spaceBefore=7, spaceAfter=3, keepWithNext=True),
         "eyebrow": ParagraphStyle("FacultyEyebrow", parent=body, fontName="FacultySans-Bold", fontSize=8, leading=10, textColor=BLUE, spaceAfter=6, keepWithNext=True),
-        "quote": ParagraphStyle("FacultyQuote", parent=body, fontSize=8.5, leading=11.5, textColor=BLUE, leftIndent=9, borderColor=LINE, borderWidth=1, borderPadding=7, spaceBefore=3, spaceAfter=9),
-        "status": ParagraphStyle("FacultyStatus", parent=body, fontName="FacultySans-Bold", fontSize=9, leading=12, textColor=BLUE, spaceAfter=6),
+        "quote": ParagraphStyle("FacultyQuote", parent=body, fontSize=10, leading=13.5, textColor=BLUE, leftIndent=9, borderColor=LINE, borderWidth=1, borderPadding=7, spaceBefore=3, spaceAfter=9),
+        "status": ParagraphStyle("FacultyStatus", parent=body, fontName="FacultySans-Bold", fontSize=10.5, leading=14, textColor=BLUE, spaceAfter=6),
         "footer": ParagraphStyle("FacultyFooter", parent=body, fontSize=6.7, leading=8.6, textColor=MUTED, spaceAfter=0),
     }
 
@@ -130,7 +142,8 @@ def _validated_inputs(report, record):
     if not isinstance(analysis, dict):
         raise ValueError("The faculty brief has no analysis.")
     objectives = analysis.get("objectives", [])
-    supported = list(supported_objectives(record) if report.get("prompt_version") == PROMPT_VERSION else SUPPORTED_OBJECTIVES)
+    supported = list(supported_objectives(record) if report.get("prompt_version") in DYNAMIC_OBJECTIVE_PROMPTS
+                     else SUPPORTED_OBJECTIVES)
     if not isinstance(objectives, list) or len(objectives) != len(supported) or {
         item.get("objective_id") for item in objectives if isinstance(item, dict)
     } != set(supported):
@@ -213,7 +226,7 @@ def _render_full(report, record, inputs):
     case_id = _string(state.get("case_id")) or _string(session.get("selected_case")) or "Not recorded"
     rows = [
         [p("RESIDENT", "eyebrow"), p("ENCOUNTER", "eyebrow"), p("COMPLETED RECORD", "eyebrow")],
-        [p(_string(record.get("username"))), p(f"{_string(record.get('challenge_id'))} | {case_id}"), p(_timestamp(record.get("updated_at")))],
+        [p(_string(record.get("username"))), p(_encounter_identifier(record)), p(_timestamp(record.get("updated_at")))],
     ]
     metadata = Table(rows, colWidths=[content_width * .3, content_width * .3, content_width * .4])
     metadata.setStyle(TableStyle([
@@ -278,9 +291,14 @@ def _render_full(report, record, inputs):
             textColor=ORANGE if recommendation == "needs_improvement" else (
                 MUTED if recommendation == "insufficient_evidence" else BLUE),
         )
+        # An objective with no evidence anchor at all had no recorded chance to
+        # be shown; that is different from a weak demonstration (2026-09-23).
+        no_opportunity = (recommendation == "insufficient_evidence"
+                          and not [ref for ref in item.get("evidence_refs", []) if ref])
         story.append(KeepTogether([
             p(f"{objective_id} | {catalog['title']}", "subhead"),
-            Paragraph(_xml(RECOMMENDATIONS[recommendation]), label_style),
+            Paragraph(_xml("Not assessed in this encounter - no recorded opportunity to demonstrate it"
+                           if no_opportunity else RECOMMENDATIONS[recommendation]), label_style),
             p(catalog["scope"], "small"),
         ]))
         section("AI rationale", item.get("rationale"))
@@ -393,18 +411,19 @@ def _render_compact(report, record, inputs, app_url):
     """
     analysis, objectives, supported, index, decisions = inputs
     destination = _encounter_url(app_url, report["attempt_id"])
+    encounter_id = _encounter_identifier(record)
     _fonts()
     out = BytesIO()
     width, height = A4
     margin = 38
     usable = width - 2 * margin
     base = ParagraphStyle(
-        "CompactBody", fontName="FacultySans", fontSize=9.3, leading=12,
+        "CompactBody", fontName="FacultySans", fontSize=11, leading=14.5,
         textColor=INK, spaceAfter=0, allowWidows=0, allowOrphans=0,
     )
     styles = {
         "body": base,
-        "muted": ParagraphStyle("CompactMuted", parent=base, textColor=MUTED),
+        "muted": ParagraphStyle("CompactMuted", parent=base, fontSize=9.4, leading=12.6, textColor=MUTED),
         "bold": ParagraphStyle("CompactBold", parent=base, fontName="FacultySans-Bold", textColor=NAVY),
         "title": ParagraphStyle("CompactTitle", parent=base, fontName="FacultySans-Bold", fontSize=25, leading=28, textColor=NAVY, spaceAfter=6),
         "heading": ParagraphStyle("CompactHeading", parent=base, fontName="FacultySans-Bold", fontSize=14, leading=17, textColor=NAVY, spaceBefore=5, spaceAfter=7),
@@ -423,7 +442,7 @@ def _render_compact(report, record, inputs, app_url):
         pageCompression=1,
     )
 
-    def page_frame(canvas, doc):
+    def page_frame(canvas, doc, total=None):
         canvas.saveState()
         canvas.setStrokeColor(LINE)
         canvas.line(margin, height - 34, width - margin, height - 34)
@@ -436,8 +455,8 @@ def _render_compact(report, record, inputs, app_url):
         canvas.line(margin, 34, width - margin, 34)
         canvas.setFont("FacultySans", 8)
         canvas.setFillColor(MUTED)
-        canvas.drawString(margin, 22, f"{_string(record.get('challenge_id'))} · revision {report.get('attempt_revision')} · Faculty judgment required")
-        canvas.drawRightString(width - margin, 22, f"{doc.page} / 2")
+        canvas.drawString(margin, 22, f"{encounter_id} · revision {report.get('attempt_revision')} · Faculty judgment required")
+        canvas.drawRightString(width - margin, 22, f"{doc.page} / {total}" if total else str(doc.page))
         canvas.restoreState()
 
     def box(text, background=PALE, accent=BLUE):
@@ -469,59 +488,27 @@ def _render_compact(report, record, inputs, app_url):
             return element
         return box("In the app: open this encounter, inspect the evidence, then edit and save each objective assessment.")
 
-    def first_page(rationale_limit):
-        story = [p("Faculty Assessment Brief", "title")]
-        story.append(p(f"{_string(record.get('username'))}  |  {_string(record.get('challenge_id'))}  |  {_timestamp(record.get('updated_at'))}", "muted"))
-        story.extend([Spacer(1, 10), p("1  Review suggestions     2  Check the concerns     3  Record your judgment", "bold"), Spacer(1, 8)])
-        story.append(p("Suggested assessments", "heading"))
-        story.append(p("AI suggestions below are unchanged. Rationale excerpts and selected evidence anchors are a reading aid; check the concerns on page 2 before accepting a suggestion.", "muted"))
-        story.append(Spacer(1, 9))
-        ordered = {item["objective_id"]: item for item in objectives}
-        columns = [usable * .225, usable * .205, usable * .57]
-        rows = [[p("OBJECTIVE", "bold"), p("AI SUGGESTION", "bold"), p("RATIONALE EXCERPT · EVIDENCE", "bold")]]
-        for objective_id in supported:
-            item = ordered[objective_id]
-            depth = item.get("depth")
-            recommendation = item["recommendation"]
-            status_style = ParagraphStyle(
-                "CompactStatus" + objective_id, parent=styles["bold"],
-                textColor=ORANGE if recommendation == "needs_improvement" else (
-                    MUTED if recommendation == "insufficient_evidence" else BLUE),
-            )
-            rationale = _sentence_excerpt(
-                item.get("rationale"), rationale_limit,
-                "Review the full rationale in the app before judging this objective.",
-                maximum_sentences=1,
-            )
-            rows.append([
-                [p(objective_id, "label"), p(_COMPACT_TITLES.get(objective_id, OBJECTIVES[objective_id]["title"]))],
-                [Paragraph(_xml(_COMPACT_RECOMMENDATIONS[recommendation]), status_style), Spacer(1, 4),
-                 p("Depth: " + (depth.capitalize() if depth in DEPTH_LEVELS else "To establish"), "muted")],
-                [p(rationale), Spacer(1, 5), p(_compact_references(item["evidence_refs"], index), "muted")],
-            ])
-        matrix = Table(rows, colWidths=columns, repeatRows=1, hAlign="LEFT")
-        matrix.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), PALE),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7F9FB")]),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LINEBELOW", (0, 0), (-1, 0), .8, LINE),
-            ("LINEBELOW", (0, 1), (-1, -1), .5, LINE),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ("TOPPADDING", (0, 0), (-1, -1), 8),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ]))
-        story.extend([matrix, Spacer(1, 10)])
-        assistance = ASSISTANCE_LABELS.get(_string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"])
-        story.append(box("Assistance and autonomy: " + assistance))
+    def review_page(review_limit, question_limit):
+        """Page one: the synthesis, the concerns and the prompts to debrief with.
 
-        return story
-    def second_page(review_limit, question_limit):
-        story = []
-        story.extend([p("Before recording", "title"), p("Verify the evidence, resolve the concerns and make your own judgment.", "muted"), Spacer(1, 9)])
+        Faculty request 2026-09-23: the suggested ratings are read last, after
+        the evidence they rest on, so that reading the brief is reviewing the
+        encounter rather than accepting a verdict.
+        """
+        story = [p("Faculty Assessment Brief", "title")]
+        story.append(p(f"{_string(record.get('username'))}  |  {encounter_id}  |  {_timestamp(record.get('updated_at'))}", "muted"))
+        story.extend([Spacer(1, 10),
+                      p("1  Read the synthesis and concerns  ·  2  Check the evidence  ·  3  Record your judgment", "bold"),
+                      Spacer(1, 8)])
+        story.append(p("Performance synthesis", "heading"))
+        summary = _sentence_excerpt(analysis.get("summary"), max(review_limit, 320),
+                                    "Read the full synthesis in the app before judging this encounter.")
+        story.append(p(summary))
+        story.append(Spacer(1, 4))
+        story.append(p("AI draft. Every suggestion in this brief stays provisional until you record your own judgment.", "muted"))
         review_points = analysis.get("review_points", [])
         review_points = review_points if isinstance(review_points, list) else []
-        story.append(p(f"{min(3, len(review_points))} selected review priorities", "heading"))
+        story.extend([Spacer(1, 7), p(f"{min(3, len(review_points))} selected review priorities", "heading")])
         for number, point in enumerate(review_points[:3], 1):
             excerpt = _sentence_excerpt(point, review_limit, "Read this review point in full in the app; its context cannot be safely shortened here.")
             table = Table([[p(f"0{number}", "label"), p(excerpt)]], colWidths=[31, usable - 31])
@@ -538,7 +525,6 @@ def _render_compact(report, record, inputs, app_url):
             story.append(p(f"First 3 of {len(review_points)} review points, in the analysis's original order. Read the remaining {len(review_points) - 3} in the full analysis before finalizing.", "muted"))
         if not review_points:
             story.append(p("No review points were provided. Verify the source evidence before accepting any suggestion.", "muted"))
-
         story.extend([Spacer(1, 7), p("Focused debrief prompts", "heading")])
         for item in decisions[:3]:
             question = _sentence_excerpt(item.get("question"), question_limit, "Review this decision's full debrief question in the app.")
@@ -548,29 +534,85 @@ def _render_compact(report, record, inputs, app_url):
             ]))
         if len(decisions) > 3:
             story.append(p(f"3 of {len(decisions)} decision prompts shown; full analysis contains the rest.", "muted"))
-        story.extend([Spacer(1, 2), p("Scope to preserve", "heading")])
-        story.append(p("TD1/F1/C1: simulated support, prioritization and reassessment; not real teamwork or full critical-care competence. C3/C4: recorded airway, oxygen and sedation reasoning; not hands-on airway or procedural skill. C14: use of supplied POCUS findings; not image acquisition."))
+        story.extend([Spacer(1, 7), p("What this encounter can and cannot show", "heading")])
+        story.append(p("TD1/F1/C1: simulated support, prioritization and reassessment; not real teamwork or full critical-care competence. C3/C4: recorded airway, oxygen and sedation reasoning; not hands-on airway or procedural skill. C14: use of supplied POCUS findings; not image acquisition.", "muted"))
         mapped = [key for key in supported if OBJECTIVES[key].get("competency_mapping")]
         if mapped:
-            story.append(Spacer(1, 5))
+            story.append(Spacer(1, 4))
             story.append(p("Challenge " + ", ".join(mapped) + ": assess the recorded reasoning behaviors. ACGME and Royal College correspondence and source locations are in the full PDF; a local observation does not award a Milestone level or EPA.", "muted"))
         limits = analysis.get("limits", [])
         if isinstance(limits, list):
-            # Assistance is already shown once in the matrix page. Keep a distinct
+            # Assistance is shown once, beside the suggestions. Keep a distinct
             # report-specific limitation rather than repeating that global caveat.
             distinct_limit = next((value for value in limits if not re.search(r"assistance|autonomy", _string(value), re.I)), None)
             if distinct_limit:
-                story.append(Spacer(1, 5))
+                story.append(Spacer(1, 4))
                 story.append(p("Selected analysis limit: " + _sentence_excerpt(distinct_limit, 250, "Review the analysis-specific limits in the app."), "muted"))
-        story.extend([Spacer(1, 11), call_to_action(), Spacer(1, 7), p("In the app, review or edit feedback and record each objective separately. Suggestions do not add credit or save an assessment. Previously recorded judgments remain editable through the correction workflow.", "muted")])
+        return story
+
+    def assessments_page(rationale_limit):
+        """Page two: the provisional suggestions, then the scope and provenance."""
+        story = [p("Suggested assessments", "title"),
+                 p("Provisional. The AI text is unchanged; the rationale excerpts and evidence anchors are a reading aid. Resolve the concerns on page 1 before accepting a suggestion.", "muted"),
+                 Spacer(1, 9)]
+        ordered = {item["objective_id"]: item for item in objectives}
+        columns = [usable * .225, usable * .215, usable * .56]
+        rows = [[p("OBJECTIVE", "bold"), p("AI SUGGESTION", "bold"), p("RATIONALE EXCERPT · EVIDENCE", "bold")]]
+        for objective_id in supported:
+            item = ordered[objective_id]
+            depth = item.get("depth")
+            recommendation = item["recommendation"]
+            # An objective the encounter never gave a chance to show is not the
+            # same as one shown weakly: with no evidence anchor at all, the
+            # honest label is that it was not assessed here.
+            no_opportunity = (recommendation == "insufficient_evidence"
+                              and not [ref for ref in item.get("evidence_refs", []) if ref])
+            status_style = ParagraphStyle(
+                "CompactStatus" + objective_id, parent=styles["bold"],
+                textColor=ORANGE if recommendation == "needs_improvement" else (
+                    MUTED if recommendation == "insufficient_evidence" else BLUE),
+            )
+            status_text = ("Not assessed in this encounter" if no_opportunity
+                           else _COMPACT_RECOMMENDATIONS[recommendation])
+            depth_text = ("No recorded opportunity" if no_opportunity
+                          else "Depth: " + (depth.capitalize() if depth in DEPTH_LEVELS else "To establish"))
+            rationale = _sentence_excerpt(
+                item.get("rationale"), rationale_limit,
+                "Review the full rationale in the app before judging this objective.",
+                maximum_sentences=1,
+            )
+            rows.append([
+                [p(objective_id, "label"), p(_COMPACT_TITLES.get(objective_id, OBJECTIVES[objective_id]["title"]))],
+                [Paragraph(_xml(status_text), status_style), Spacer(1, 4), p(depth_text, "muted")],
+                [p(rationale), Spacer(1, 5), p(_compact_references(item["evidence_refs"], index), "muted")],
+            ])
+        matrix = Table(rows, colWidths=columns, repeatRows=1, hAlign="LEFT")
+        matrix.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), PALE),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7F9FB")]),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LINEBELOW", (0, 0), (-1, 0), .8, LINE),
+            ("LINEBELOW", (0, 1), (-1, -1), .5, LINE),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 7),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+        ]))
+        story.extend([matrix, Spacer(1, 9)])
+        assistance = ASSISTANCE_LABELS.get(_string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"])
+        story.append(box("Assistance and autonomy: " + assistance))
+        story.extend([Spacer(1, 10), call_to_action(), Spacer(1, 6),
+                      p("In the app, review or edit feedback and record each objective separately. Suggestions do not add credit or save an assessment. Previously recorded judgments remain editable through the correction workflow.", "muted")])
         provenance = (
+            f"Encounter {encounter_id} · revision {report.get('attempt_revision')}\n"
             f"Generated {_timestamp(report.get('generated_at'))} · {_string(report.get('model'))} · "
             f"Prompt {_string(report.get('prompt_version'))}\n"
             f"Source {_string(report.get('source_hash'))[:16]}… · Full generation record in the complete PDF."
         )
-        story.extend([Spacer(1, 8), p(provenance, "muted")])
-        story.extend([Spacer(1, 6), p("D = recorded decision and simulation time. Reflection = post-encounter evidence; it does not establish what was understood during care. Full citations, feedback and rationales remain available in the app and the full PDF.", "muted")])
+        story.extend([Spacer(1, 7), p(provenance, "muted")])
+        story.extend([Spacer(1, 5), p("D = recorded decision and simulation time. Reflection = post-encounter evidence; it does not establish what was understood during care. Full citations, feedback and rationales remain available in the app and the full PDF.", "muted")])
         return story
+
     def page_height(elements):
         total = 0
         for element in elements:
@@ -584,20 +626,43 @@ def _render_compact(report, record, inputs, app_url):
     # Fit by choosing fewer complete source sentences, never by shrinking the
     # font or clipping a paragraph. Oversized first sentences become explicit
     # review cues, and the full report continues to retain every character.
+    # The first page is fitted by choosing fewer complete source sentences,
+    # never by shrinking the font or clipping a paragraph.
     available = height - document.topMargin - document.bottomMargin - 12
-    for rationale_limit in (390, 310, 230, 160, 90):
-        page_one = first_page(rationale_limit)
+    for review_limit, question_limit in ((550, 300), (400, 250), (300, 200), (200, 150), (90, 90)):
+        page_one = review_page(review_limit, question_limit)
         if page_height(page_one) <= available:
             break
-    for review_limit, question_limit in ((550, 300), (400, 250), (300, 200), (200, 150), (90, 90)):
-        page_two = second_page(review_limit, question_limit)
-        if page_height(page_two) <= available:
-            break
-    if page_height(page_one) > available or page_height(page_two) > available:
+    if page_height(page_one) > available:
         raise ValueError("This report metadata is too long for the concise PDF; download the full analysis.")
+    # The suggestion matrix keeps its rationale and flows onto a further page if
+    # it needs one (faculty request 2026-09-23: readable text first, and a
+    # rationale replaced by "read it in the app" is not a reading aid). The
+    # table repeats its header row, so a split reads correctly.
+    page_two = assessments_page(390)
+    for rationale_limit in (390, 330, 280, 230):
+        candidate = assessments_page(rationale_limit)
+        page_two = candidate
+        if page_height(candidate) <= available:
+            break
     story = page_one + [PageBreak()] + page_two
-    document.build(story, onFirstPage=page_frame, onLaterPages=page_frame)
-    return out.getvalue()
+
+    def build(counter):
+        buffer = BytesIO()
+        pages = SimpleDocTemplate(
+            buffer, pagesize=A4, leftMargin=margin, rightMargin=margin,
+            topMargin=48, bottomMargin=45,
+            title="Faculty Assessment Brief - concise review",
+            author="Management Reasoning Simulator",
+            subject="Selected evidence and provisional suggestions for faculty review",
+            pageCompression=1,
+        )
+        frame = lambda canvas, doc: page_frame(canvas, doc, counter)
+        pages.build(deepcopy(story), onFirstPage=frame, onLaterPages=frame)
+        return buffer.getvalue(), pages.page
+
+    _, total = build(None)
+    return build(total)[0]
 
 
 def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None):

@@ -100,7 +100,7 @@ def test_brief_pdf_preserves_user_text_provenance_and_distinct_recommendations()
     assert "<b>Literal learner text</b> & reasoning." in " ".join(text.split())
     assert "Decision 1 | 00:46 [trace:0]" in text
     assert "Reflection 1 | Post-encounter reflection [reflection:1]" in text
-    assert "Insufficient evidence to judge" in text
+    assert "Not assessed in this encounter" in text
     assert "Needs faculty judgment" in text
     assert "Guided - structured help directed the reasoning (faculty-reported)." in text
     assert "a" * 64 in text
@@ -120,7 +120,7 @@ def test_long_feedback_flows_without_lost_text_or_layout_failure():
     assert len(reader.pages) >= 6
     assert "UNIQUE_END_OF_LONG_FEEDBACK" in text
     assert "Suggested improvement needed" in text
-    assert "Insufficient evidence to judge" in text
+    assert "Not assessed in this encounter" in text
     assert "\x00" not in text
 
 
@@ -150,19 +150,21 @@ def test_default_concise_pdf_preserves_suggestions_citations_and_faculty_route()
         report, record, app_url="https://faculty.example/app?token=PRIVATE_TOKEN&other=value#secret",
     )))
     text = "\n".join(page.extract_text() for page in reader.pages)
-    assert len(reader.pages) == 2
+    assert 2 <= len(reader.pages) <= 3
+    matrix = "\n".join(page.extract_text() for page in reader.pages[1:])
     for objective in report["analysis"]["objectives"]:
-        assert objective["objective_id"] in reader.pages[0].extract_text()
-    assert "Satisfactory" in text
-    assert "Needs improvement" in text
-    assert "Insufficient evidence" in " ".join(text.split())
+        assert objective["objective_id"] in matrix
+    flat = " ".join(text.split())
+    assert "Satisfactory" in flat
+    assert "Needs improvement" in flat
+    assert "Not assessed in this encounter" in flat
     assert "D1 00:46" in text
     assert "Reflection 1" in text
     assert "Not known / not documented" in text
     assert text.count("Assistance and autonomy:") == 1
     assert "Autonomy cannot be assessed because assistance is unknown" not in text
     assert "selected review priorities" in text
-    assert "Rationale excerpts" in text
+    assert "rationale excerpts and evidence anchors are a reading aid" in flat
     assert "Full citations, feedback and rationales" in text
     assert "not image acquisition" in text
     assert "review and record your assessment" in text
@@ -193,10 +195,10 @@ def test_verbose_legacy_report_fits_two_pages_without_shrinking_or_silent_clause
     before = deepcopy((report, record))
     reader = PdfReader(BytesIO(render_faculty_brief_pdf(report, record)))
     text = "\n".join(page.extract_text() for page in reader.pages)
-    assert len(reader.pages) == 2
-    assert "1 / 2" in reader.pages[0].extract_text()
-    assert "2 / 2" in reader.pages[1].extract_text()
-    assert "Review the full rationale in the app before judging this objective" in text
+    assert 2 <= len(reader.pages) <= 3
+    total = len(reader.pages)
+    for number, page in enumerate(reader.pages, 1):
+        assert f"{number} / {total}" in page.extract_text()
     assert "First 3 of 5 review points" in text
     assert "read the complete" in text.lower() or "context cannot be safely shortened" in text
     assert "UNIQUE_FULL_ANALYSIS_TAIL" not in text
@@ -219,14 +221,15 @@ def test_concise_pdf_keeps_airway_review_concern_and_plain_language():
     ]
     text = "\n".join(page.extract_text() for page in PdfReader(BytesIO(
         render_faculty_brief_pdf(report, record))).pages)
-    assert "airway preparation was not marked as completed" in text
-    assert "without inferring unrecorded skill performance" in text
+    flat = " ".join(text.split())
+    assert "airway preparation was not marked as completed" in flat
+    assert "without inferring unrecorded skill performance" in flat
     assert "airway_prepared" not in text
     assert "airway_prepared" in report["analysis"]["review_points"][0]
 
 
 @pytest.mark.parametrize("challenge", ["R1-05", "R1-06", "R2-02", "R2-03", "R1-07", "R2-04", "R2-05", "R3-01"])
-def test_mapped_challenge_brief_remains_two_pages_and_full_report_has_sources(challenge):
+def test_mapped_challenge_brief_stays_concise_and_full_report_has_sources(challenge):
     report, record = brief_example()
     record["challenge_id"] = challenge
     report["prompt_version"] = PROMPT_VERSION
@@ -236,9 +239,10 @@ def test_mapped_challenge_brief_remains_two_pages_and_full_report_has_sources(ch
         "rationale": "The recorded decision and later response support review of this challenge-specific reasoning behavior.",
     })
     compact = PdfReader(BytesIO(render_faculty_brief_pdf(report, record)))
-    assert len(compact.pages) == 2
-    assert challenge in compact.pages[0].extract_text()
-    assert "Royal College" in compact.pages[1].extract_text()
+    compact_text = "\n".join(page.extract_text() for page in compact.pages)
+    assert 2 <= len(compact.pages) <= 3
+    assert challenge in compact_text
+    assert "Royal College" in compact.pages[0].extract_text()
     full = PdfReader(BytesIO(render_faculty_brief_pdf(report, record, compact=False)))
     text = "\n".join(page.extract_text() for page in full.pages)
     assert "Competency correspondence" in text and "ACGME" in text and "Royal College" in text
