@@ -78,6 +78,110 @@ def record():
     }
 
 
+PE_CASE = "pulmonary_embolism_33f"
+
+
+def _pe_state(minute, sbp=110, dbp=70, hr=124, spo2=90, rr=30, crt=3):
+    return {"sim_time_min": minute,
+            "observable": {"sbp": sbp, "dbp": dbp, "hr": hr, "spo2": spo2,
+                           "respiratory_rate": rr, "work_of_breathing": "Increased",
+                           "crt": crt, "mental_status": "Alert", "pulse_present": True,
+                           "rhythm": "Sinus tachycardia"},
+            "treatments": {"anticoagulated": minute >= 30}, "diagnostics": {}}
+
+
+def record_embolism():
+    """The embolism as it was played on 2026-09-22, including the thrombolysis.
+
+    A second encounter for the rubric, chosen because a defined critical event
+    did occur in it: systemic thrombolysis without sustained hypotension in a
+    patient operated on twelve days earlier.
+    """
+    trace = [
+        {"execution_status": "not_executed", "decision_time_min": 0, "response_time_min": 0,
+         "learner_input": ("Sospecho un tromboembolismo pulmonar, porque tiene disnea subita, "
+                           "taquicardia e hipoxemia con dolor pleuritico. Mi prioridad es "
+                           "confirmarlo y evaluar la repercusion del ventriculo derecho. Doy "
+                           "oxigeno por naricera a 4 L/min, pido POCUS, dimero D, gases "
+                           "arteriales, ECG y troponina. Espero que suba la saturacion sobre "
+                           "94%. Reevaluo en 10 minutos."),
+         "reasoning": {"problem_representation": "Tromboembolismo pulmonar",
+                       "management_priority": "Confirmarlo y evaluar el ventriculo derecho",
+                       "expected_effect": "Que suba la saturacion sobre 94%",
+                       "reassessment": "En 10 minutos"},
+         "interpreted_action": [], "action_summaries": [],
+         "state_before": _pe_state(0), "state_after": _pe_state(0)},
+        {"execution_status": "executed", "decision_time_min": 0, "response_time_min": 15,
+         "learner_input": ("El POCUS muestra dilatacion del ventriculo derecho. Mi prioridad es "
+                           "anticoagular. Doy heparina 5000 UI ev en bolo. Espero que no "
+                           "progrese el trombo. Reevaluo en 15 minutos."),
+         "reasoning": {"problem_representation": "Dilatacion del ventriculo derecho",
+                       "management_priority": "Anticoagular",
+                       "expected_effect": "Que no progrese el trombo",
+                       "reassessment": "En 15 minutos"},
+         "interpreted_action": [{"type": "anticoagulation", "agent": "heparin", "dose": 5000,
+                                 "units": "units", "route": "IV"}],
+         "action_summaries": [{"type": "anticoagulation", "agent": "heparin", "dose": 5000,
+                               "units": "units", "route": "IV", "time_min": 0,
+                               "label": "heparin 5000 units IV administered"}],
+         "state_before": _pe_state(0), "state_after": _pe_state(15, sbp=109, crt=3.1)},
+        {"execution_status": "executed", "decision_time_min": 15, "response_time_min": 20,
+         "learner_input": "Pido angiotac de torax",
+         "reasoning": {}, "interpreted_action": [{"type": "diagnostic", "diagnostic": "ctpa"}],
+         "action_summaries": [{"type": "diagnostic", "diagnostic": "ctpa", "time_min": 15,
+                               "label": "CT pulmonary angiography requested"}],
+         "state_before": _pe_state(15, sbp=109, crt=3.1),
+         "state_after": _pe_state(20, sbp=108, hr=125, crt=3.1)},
+        {"execution_status": "executed", "decision_time_min": 20, "response_time_min": 40,
+         "learner_input": ("Sigue taquicardica e hipoxemica. Mi prioridad es decidir si "
+                           "trombolizo. Doy alteplasa 100 mg ev en 2 horas. Espero mejoria "
+                           "hemodinamica. Reevaluo en 20 minutos."),
+         "reasoning": {"problem_representation": "Sigue taquicardica e hipoxemica",
+                       "management_priority": "Decidir si trombolizo",
+                       "expected_effect": "Mejoria hemodinamica",
+                       "reassessment": "En 20 minutos"},
+         "interpreted_action": [{"type": "thrombolysis", "agent": "alteplase", "dose_mg": 100,
+                                 "route": "IV"}],
+         "action_summaries": [
+             {"type": "thrombolysis", "agent": "alteplase", "dose_mg": 100, "route": "IV",
+              "time_min": 20, "label": "alteplase 100 mg IV given started over 120 min"},
+             {"type": "consequence", "time_min": 20,
+              "label": ("Systemic thrombolysis given before the hypotension was sustained "
+                        "(systolic 108 mmHg, low for 0 of the 15 minutes the indication "
+                        "requires): the bleeding risk is taken without the indication, and "
+                        "the obstruction is unchanged.")},
+             {"type": "consequence", "time_min": 20,
+              "label": ("Bleeding from the surgical site operated on twelve days ago: the "
+                        "haemoglobin is falling and the pressure with it. This is the risk "
+                        "the thrombolytic carries, and it was taken in a patient who had a "
+                        "reason to bleed.")}],
+         "state_before": _pe_state(20, sbp=108, hr=125, crt=3.1),
+         "state_after": _pe_state(40, sbp=107, hr=125, rr=31, crt=3.2)},
+    ]
+    return {
+        "id": "example-rubric-embolism", "revision": 2, "status": "completed",
+        "username": "EXAMPLE - synthetic learner", "challenge_id": "R2-02",
+        "updated_at": 1790000500, "is_sandbox": False,
+        "encounter": {"presentation": ("A 33-year-old woman arrives with sudden breathlessness "
+                                       "and sharp right-sided chest discomfort. She wonders "
+                                       "whether anxiety could explain the episode; this has not "
+                                       "been assessed.")},
+        "payload": {"session": {
+            "selected_case": "R2-02", "review_completed": True,
+            "encounter": {"authored_case_id": PE_CASE},
+            "management_trace": trace,
+            "precomparison_decision_review": {"decision_1": {
+                "working_model_update": "The right ventricle was already involved.",
+                "priority_trigger": "A falling pressure would change my priority.",
+                "alternative_action": "I would have checked the surgical history first.",
+                "expected_response_reassessment": "I would repeat the POCUS."}},
+            "review_prompts": [{"review_id": "decision_1", "decision": 1, "time": "00:00"}],
+            "adaptation_plan": {"next_priority": "Check bleeding risk before thrombolysis."},
+        }},
+    }
+
+
+
 def proposal(source_hash, attempt_id, revision):
     """ILLUSTRATIVE. Hand-written in the schema's shape; no model produced it."""
     def domain(domain_id, score, rationale, contrary, limits, quote_minute, quote):
@@ -108,9 +212,11 @@ def proposal(source_hash, attempt_id, revision):
                 domain("D2", 3,
                        "The ECG was read as an anterior T-wave pattern and named; laboratory, "
                        "troponin and POCUS were requested together at minute 0.",
-                       "The troponin below the reference limit was read at minute 15 as "
-                       "positive, which the record does not support.",
-                       "The second submission was held, so its reasoning was not acted on.",
+                       "The second submission asserts the troponin is positive, and no troponin "
+                       "result is recorded in this encounter: the claim rests on nothing the "
+                       "record contains.",
+                       "No study result was reported within the observed window, so how "
+                       "discordant data would be integrated cannot be seen.",
                        0, first),
                 domain("D3", 2,
                        "Aspirin 250 mg PO was executed at minute 0. The second submission's "
@@ -135,9 +241,10 @@ def proposal(source_hash, attempt_id, revision):
             ],
             "critical_events": [],
             "concerns_for_review": [{
-                "concern": ("The troponin was read as positive when the record shows 12 ng/mL "
-                            "against an upper reference of 19. No defined event covers a "
-                            "misread result, so this is flagged rather than deducted."),
+                "concern": ("The second submission states the troponin is positive while no "
+                            "troponin result appears anywhere in the record. No defined event "
+                            "covers a claim with no result behind it, so this is flagged for "
+                            "the faculty rather than deducted."),
                 "evidence_refs": ["trace:0"]}],
             "assistance_recorded": ["No hint or assistance is recorded in this encounter."],
             "record_limits": [
@@ -164,12 +271,22 @@ def build():
                         "decision.")},
         events=[{"event_id": "acs_no_antiplatelet", "status": "dismissed",
                  "justification": "Aspirin 250 mg PO was executed at minute 0."}],
-        justifications={"D2": ("Reading a troponin of 12 against a limit of 19 as positive is a "
-                               "misinterpretation of essential information, which the descriptor "
-                               "for 3 excludes. It did not compromise management, so not a 0 or 1.")},
+        justifications={"D2": ("Asserting a positive troponin with no result in the record is a "
+                               "claim about essential information that the record does not "
+                               "support, which the descriptor for 3 excludes. It did not "
+                               "compromise management, so not a 0 or 1.")},
         status="confirmed", proposal=report)
     review = {**review, "reviewer": "EXAMPLE - faculty", "sequence": 2}
     return encounter, report, review
+
+
+# The real run is part of this document, not an edit made on top of it: a
+# generated file that someone appends to loses the appendix the next time it
+# is generated.
+REAL_RUN = '\n---\n\n## 6 · La corrida real con un modelo (2026-09-23)\n\n**Una llamada pagada, autorizada explícitamente.** Modelo `gpt-5-mini`, ~3.500 tokens de\nentrada, 77 s, sin reintentos. Costo estimado bajo US$0,03. La propuesta cruda está en\n`local-data/paid_runs/2026-09-23_rubric_proposal_wellens.json`. Se corrió contra **el mismo\nregistro** de este documento.\n\n### Qué propuso\n\n| Dominio | Modelo real | Ilustración escrita a mano |\n|---|---|---|\n| D1 | 2 | 3 |\n| D2 | 2 | 3 |\n| D3 | 2 | 2 |\n| D4 | 2 | 2 |\n| D5 | **1** | **No evaluable** |\n| Eventos críticos | ninguno | ninguno |\n\n### Qué respetó\n\n- **No inventó ningún evento.** Propuso cero, correctamente: la aspirina sí se ejecutó, así\n  que `acs_no_antiplatelet` no aplica, y nadie pidió una prueba de provocación.\n- **Separó lo ejecutado de lo no ejecutado, con rigor.** Sobre la segunda entrega, retenida\n  por el intérprete: *"appears in the record as learner intention but was not executed during\n  the observed encounter"*, y *"cannot be used to upgrade the in-encounter plan"*.\n- **Usó el canal de preocupaciones** para algo que ningún evento cubre.\n- **Declaró límites del registro**, incluido que el ECG no viene como imagen y que el puntaje\n  descansa en la interpretación declarada por el residente.\n- **Usó las limitaciones del motor** que el caso declara: *"engine limitation: angiography\n  results are not available"*.\n\n### Dónde discrepó, y por qué importa\n\n**D5.** El modelo puntuó **1**; la ilustración decía **no evaluable**. La orden de destino\n—"Admit to coronary unit"— existe en el registro, pero **nunca se ejecutó porque el intérprete\nretuvo toda la entrega** por una nitroglicerina mal escrita. El modelo reconoció que no se\nejecutó y aun así puntuó al residente por una continuidad incompleta.\n\nEsa es, exactamente, la frontera que la especificación más cuida: *"no atribuir al residente\nfallas del motor"* y *"no evaluable no equivale a cero"*. La instrucción está escrita, el\nmodelo leyó los límites, y aun así puntuó en vez de declarar la falta de oportunidad.\n\n**No es un defecto del contrato: es la razón por la que el docente confirma.** El esquema\nimpidió lo que debía impedir —inventar un evento, devolver un total— y dejó a la vista un\njuicio discutible para que un humano lo resuelva.\n\n### Un error de la ilustración que el modelo no cometió\n\nLa versión escrita a mano afirmaba que *"el registro muestra 12 ng/mL contra un límite de 19"*.\n**El registro no muestra eso**: la palabra "troponina" aparece sólo como solicitud y en las\npropias palabras del residente; ningún resultado se informó en la ventana observada. El modelo\nreal lo dijo correctamente —*"No troponin result or POCUS result recorded"*— y la ilustración\ninventó un valor, que es precisamente la regla que estas instrucciones prohíben. La ilustración\nquedó corregida el 2026-09-23 para afirmar sólo lo que el registro sostiene.\n\n### Qué queda por observar\n\nUna sola corrida no establece comportamiento. Lo que conviene vigilar con más encuentros:\n\n- **Rango comprimido**: cuatro dominios en 2 y uno en 1. Puede ser el encuentro, que es corto,\n  o tendencia central del modelo.\n- **La frontera cero / no evaluable**, que es donde discrepó.\n- **Si alguna vez intenta un evento no definido**, que el esquema rechazaría, pero conviene\n  saber con qué frecuencia lo intenta.\n'
+
+
+SECOND_RUN = '\n---\n\n## 7 · Segunda corrida real: un encuentro donde el evento sí ocurrió (2026-09-23)\n\nLa primera corrida no pudo probar lo más importante, porque en ese encuentro **no ocurrió\nningún evento crítico**. Esta segunda usa el tromboembolismo `pulmonary_embolism_33f` tal como\nse jugó el 2026-09-22, donde el residente administró alteplasa sin hipotensión sostenida en una\npaciente operada doce días antes. **Una llamada a `gpt-5-mini`, 54 s, costo estimado bajo\nUS$0,03.** Propuesta cruda en `local-data/paid_runs/2026-09-23_rubric_proposal_embolism.json`.\n\n### Qué propuso\n\n| Dominio | Puntaje | |\n|---|---|---|\n| D1 · Gravedad y priorización | **3** | Reconoció la presentación de alto riesgo contra el anclaje de ansiedad y buscó evidencia objetiva del ventrículo derecho |\n| D2 · Evaluación e interpretación | **3** | |\n| D3 · Manejo seguro | **0** | *"administered systemic thrombolysis (alteplase 100 mg) despite the record showing no sustained hypotension and a recent surgical site"* |\n| D4 · Seguimiento | **2** | |\n| D5 · Adaptación y continuidad | **1** | |\n\n**Evento crítico propuesto:** `pe_unindicated_thrombolysis`, el que el caso define.\n\n> Evidencia del disparador: *"An executed thrombolysis action is recorded (trace:3). The same\n> trace documents that the systolic blood pressure was not sustained in the hypotensive range."*\n>\n> Exclusiones revisadas: *"the record does not show sustained hypotension within the engine\'s\n> own criterion; the surgical history indicating a recent operative site is present."*\n\n**No propuso `pe_no_anticoagulation`**, el otro evento definido para este caso, y es correcto:\nla heparina sí se administró.\n\n### La aritmética completa, con el docente confirmando\n\n```\nBase 9/15 · Penalty -3 · Adjusted 6/15 · 1 confirmed critical event(s)\n```\n\nAquí se ve **el doble peso declarado**: el mismo hecho baja D3 a 0 **y además** cuesta la\npenalización de seguridad. Es deliberado, y los informes lo dicen con esas palabras.\n\n### Qué demuestra esta corrida que la primera no\n\n- El modelo **propone el evento definido cuando corresponde**, citando la decisión y el minuto.\n- **Revisa las exclusiones antes de proponer**, que es lo que impide culpar al residente de una\n  limitación del motor.\n- **No propone el otro evento definido** cuando no aplica: no dispara todo lo que tiene a mano.\n- El descriptor de D3 se usó como está escrito: *"ordena algo claramente peligroso en este\n  contexto"* es exactamente un 0, no un 1.\n\n### Lo que sigue sin establecerse\n\nDos encuentros no son comportamiento. El rango sigue siendo estrecho en los dominios que no\ntocan el evento, y la frontera cero / no evaluable —donde discrepó en la primera corrida— no\nvolvió a ponerse a prueba aquí.\n'
 
 
 def main():
@@ -229,7 +346,8 @@ def main():
             "presenta como un puntaje sobre 15.", "",
             "## 5 · La propuesta cruda, como se guarda", "", "```json",
             json.dumps(report, indent=2, ensure_ascii=False)[:6000], "```", ""]
-    (docs / "EJEMPLO_RUBRICA.md").write_text("\n".join(out) + "\n", encoding="utf-8")
+    (docs / "EJEMPLO_RUBRICA.md").write_text(
+        "\n".join(out) + "\n" + REAL_RUN + SECOND_RUN, encoding="utf-8")
     return encounter, report, review, assessment
 
 

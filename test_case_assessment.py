@@ -88,3 +88,13 @@ def test_the_published_matrix_is_the_one_the_code_declares():
     published = Path(__file__).with_name("docs") / "COBERTURA_CASOS.md"
     assert published.read_text(encoding="utf-8") == tools_coverage_matrix.build(), (
         "docs/COBERTURA_CASOS.md is out of date; run tools_coverage_matrix.py")
+
+
+def test_the_worked_example_is_the_one_the_code_produces():
+    """It is generated, so an edit made on top of it would be lost silently."""
+    from pathlib import Path
+    import tools_rubric_example
+    published = Path(__file__).with_name("docs") / "EJEMPLO_RUBRICA.md"
+    body = published.read_text(encoding="utf-8")
+    assert tools_rubric_example.REAL_RUN in body, "the real run section is missing"
+    assert "ILLUSTRATIVE-NOT-A-MODEL-CALL" in body, "the illustrative proposal is not labelled"

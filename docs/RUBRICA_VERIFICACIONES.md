@@ -36,7 +36,11 @@ Las nueve que pediste, cada una con el archivo que la sostiene.
 
 **Sin llamadas pagadas.** Todo lo anterior corre con encuentros sintéticos y clientes falsos. El ejemplo completo de [`docs/EJEMPLO_RUBRICA.md`](EJEMPLO_RUBRICA.md) usa una propuesta **ilustrativa**, escrita a mano con la forma exacta del esquema y validada contra él; el modelo figura como `ILLUSTRATIVE-NOT-A-MODEL-CALL`.
 
-**Lo que todavía no se ha hecho:** ninguna propuesta real de un modelo ha pasado por este esquema. El prompt está escrito y el esquema lo restringe, pero **el comportamiento real del modelo bajo estas instrucciones no se ha observado**. Esa es la primera llamada pagada que esta función pediría, y requiere tu autorización con alcance y costo estimado.
+**Una corrida real, autorizada el 2026-09-23.** Una llamada a `gpt-5-mini`, ~3.500 tokens de entrada, 77 s, sin reintentos, costo estimado bajo US$0,03. Resultado y análisis en [`EJEMPLO_RUBRICA.md`](EJEMPLO_RUBRICA.md) §6. El modelo **no inventó ningún evento**, separó lo ejecutado de lo retenido, usó el canal de preocupaciones y declaró los límites del registro. **Discrepó en D5**: puntuó 1 donde la orden de destino existía pero el intérprete la había retenido, es decir, en la frontera exacta entre cero y no evaluable. Eso es lo que el docente confirma.
+
+**Segunda corrida, 2026-09-23.** Una llamada más a `gpt-5-mini`, 54 s, sobre el tromboembolismo donde el residente trombolizó sin hipotensión sostenida en una paciente operada doce días antes. El modelo **propuso el evento definido** `pe_unindicated_thrombolysis` citando la decisión y revisando sus exclusiones, **no propuso** el otro evento definido del caso porque no aplicaba, y usó el descriptor de D3 como está escrito: 0 por una conducta claramente peligrosa. Con el docente confirmando: `Base 9/15 · Penalty -3 · Adjusted 6/15`, con el doble peso a la vista.
+
+**Lo que dos corridas no establecen:** comportamiento. El rango sigue estrecho en los dominios que no tocan el evento, y la frontera cero / no evaluable sólo se puso a prueba una vez.
 
 ## Limitaciones que hay que declarar
 
@@ -69,8 +73,8 @@ Las nueve que pediste, cada una con el archivo que la sostiene.
 
 | | |
 |---|---|
-| Pruebas nuevas de la rúbrica | **144** |
+| Pruebas nuevas de la rúbrica | **145** |
 | Casos del banco con cobertura completa | **21 de 21** |
 | Discrepancias entre declaración y caso | **0** |
 | Eventos críticos definidos | **16** |
-| Llamadas pagadas realizadas | **0** |
+| Llamadas pagadas realizadas | **2** (autorizadas, ~US$0,06 en total) |
