@@ -427,7 +427,8 @@ def test_targets_match_program_supplied_catalog_without_multiplying_by_depth(coh
     challenges = [item for item in values if item["objective_id"].startswith("R")]
     assert len(challenges) == 8 and all(item["target"] == 3 for item in challenges)
     assert all(item["count"] == 0 and not item["confirmed"] for item in values)
-    assert all("not independently verified" in item["target_source"] for item in values if not item["objective_id"].startswith("R"))
+    assert all("does not satisfy the EPA" in item["target_source"]
+               for item in values if not item["objective_id"].startswith("R"))
     assert {item["status"] for item in values} == {"not_observed", "not_available"}
     targets = progress.list_targets(users["faculty"]["token"])
     assert {item["objective_id"]: item["target"] for item in targets} == {

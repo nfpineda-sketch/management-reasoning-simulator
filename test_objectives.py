@@ -49,7 +49,13 @@ def test_targets_preserve_legacy_scopes_and_add_explicitly_local_cognitive_objec
     for key, value in OBJECTIVES.items():
         assert value["scope"] and value["limitation"]
         if key not in BIAS_CHALLENGES:
-            assert "not independently verified" in value["target_source"]
+            # The count itself was verified against the guide on 2026-09-23, so
+            # the provenance now names it. What must never disappear is the part
+            # that says reaching it here does not satisfy the EPA: the guide's
+            # own conditions -- clinical settings, paediatric presentations,
+            # several observers -- are not reproduced by a simulator.
+            assert "Royal College" in value["target_source"]
+            assert "does not satisfy the EPA" in value["target_source"]
         else:
             assert "local" in value["target_source"].lower()
         assert value["assessment_scope"] == (

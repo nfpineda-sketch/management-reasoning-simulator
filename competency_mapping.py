@@ -21,6 +21,20 @@ SOURCES = {
         "url": "https://www.royalcollege.ca/content/dam/documents/ibd/emergency-medicine/epa-guide-emergency-med-e.pdf",
         "verified_on": "2026-09-13",
         "page_convention": "1-based PDF page (59-page edition)",
+        # The same guide circulates in more than one edition and the page
+        # numbers move between them. Re-checked on 2026-09-23 against the
+        # 51-page 2018 VERSION 1.0: every EPA, milestone number, CanMEDS code
+        # and milestone text below matched exactly, and only the pagination
+        # differed. Page 57 does not exist in that edition, so a reader holding
+        # it needs its own numbers rather than a reference that cannot resolve.
+        "other_editions": {
+            "2018 VERSION 1.0 (51-page edition)": {
+                "verified_on": "2026-09-23",
+                "pages": {"C5": 22, "TP6": 49},
+                "matched": "EPA titles, milestone numbers, CanMEDS codes and milestone text",
+                "differs": "pagination only",
+            },
+        },
     },
 }
 

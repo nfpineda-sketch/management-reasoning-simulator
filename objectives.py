@@ -17,7 +17,12 @@ from copy import deepcopy
 
 OBJECTIVE_CATALOG_VERSION = "0.2.0"
 TARGET_SOURCE = (
-    "Program target supplied by the user; official EPA count not independently verified."
+    "Observation count stated by the Royal College Emergency Medicine EPA Guide (2018), "
+    "verified against the 51-page 2018 VERSION 1.0 on 2026-09-23: TD1 10 (p.4), F1 15 (p.10), "
+    "C1 40 (p.18), C2 25 (p.19), C3 20 (p.20), C4 20 (p.21), C14 50 (p.36), C15 5 (p.38). "
+    "The guide's own conditions -- clinical rather than simulated settings, paediatric "
+    "presentations, several observers -- are NOT reproduced here, so reaching this count in "
+    "the simulator does not satisfy the EPA."
 )
 DEPTH_LEVELS = ("foundational", "integrated", "complex")
 AUTONOMY_LEVELS = ("guided", "prompted", "independent")
