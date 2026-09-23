@@ -468,13 +468,22 @@ def _check_schema(value, schema):
     """Validate the small response schema locally without provider trust."""
     kind = schema["type"]
     choices = kind if isinstance(kind, list) else [kind]
+    # A boolean is an int in Python and must never satisfy "integer": True would
+    # otherwise pass an enum of [0, 1, 2, 3] as the score 1.
+    whole = isinstance(value, int) and not isinstance(value, bool)
     valid_type = ((value is None and "null" in choices)
                   or (isinstance(value, str) and "string" in choices)
+                  or (whole and "integer" in choices)
                   or (isinstance(value, list) and "array" in choices)
                   or (isinstance(value, dict) and "object" in choices))
-    if not valid_type or ("enum" in schema and value not in schema["enum"]):
+    if not valid_type or ("enum" in schema and not any(
+            item is value or (type(item) is type(value) and item == value) for item in schema["enum"])):
         raise FacultyAnalysisError("The AI brief did not pass local validation.")
     if value is None:
+        return
+    if whole:
+        if not schema.get("minimum", -10**9) <= value <= schema.get("maximum", 10**9):
+            raise FacultyAnalysisError("The AI brief contains a value outside its bounds.")
         return
     if isinstance(value, str):
         if not schema.get("minLength", 0) <= len(value) <= schema.get("maxLength", 20_000) or not value.strip():

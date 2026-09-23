@@ -50,6 +50,7 @@ ASSISTANCE_LABELS = {
 
 import record_findings as findings
 import report_presentation as presentation
+import rubric_presentation
 
 
 def _record_limits(record):
@@ -168,7 +169,109 @@ def _validated_inputs(report, record):
     return analysis, objectives, supported, index, decisions
 
 
-def _render_full(report, record, inputs, correct=None):
+
+def _domain_label(domain_id):
+    """"D3" is a decision in these documents; a rubric domain is spelled out."""
+    return "Domain " + str(domain_id).lstrip("Dd")
+
+
+def _rubric_section(assessment, styles, content_width, *, compact):
+    """The five-domain profile, shared by both briefs so they cannot disagree.
+
+    Built from one reading of the assessment (``rubric_presentation.summary``),
+    which the application renders from as well. The compact carries the profile,
+    the headline and the alerts; the full adds the reasoning, the evidence and
+    the traceability. Neither invents a number: the totals arrive computed.
+    """
+    if not assessment:
+        return []
+
+    # The two briefs name their styles differently; the section belongs to both.
+    def style(*names):
+        return next((styles[name] for name in names if name in styles), styles["body"])
+
+    def p(text, *names):
+        return Paragraph(_xml(text), style(*names) if names else styles["body"])
+
+    flow = [p("MANAGEMENT REASONING RUBRIC", "eyebrow", "label"),
+            p(assessment["status"]["label"], "status", "bold")]
+    # A partial assessment says its coverage once, not twice.
+    if assessment.get("complete") and assessment.get("headline"):
+        flow.append(p(assessment["headline"], "subhead", "bold"))
+    if assessment.get("coverage_label"):
+        flow.append(p(assessment["coverage_label"], "subhead" if not assessment.get("complete")
+                      else "small", "bold" if not assessment.get("complete") else "muted"))
+
+    # Markup is escaped in these documents, so weight comes from a style.
+    head = lambda text: Paragraph(_xml(text), style("eyebrow", "label"))
+    rows = [[head("Domain"), head("Score"), head("Basis")]]
+    for row in assessment["profile"]:
+        basis = row["reason"] or row["rationale"] or ""
+        if row["changed"]:
+            basis = (f"Changed from the proposed {row['proposed']}: "
+                     f"{row['change_justification']} ") + basis
+        if not compact and row["contrary_evidence"]:
+            basis = f"{basis} Against: {row['contrary_evidence']}"
+        if not compact and row["limits"]:
+            basis = f"{basis} Limits: {row['limits']}"
+        if compact:
+            # The reading page carries the profile, the headline and the alerts.
+            # A full justification is read in the app and in the full brief.
+            basis = presentation.claim_text(basis, (190,))
+        # Decisions in these documents are already cited as D1, D2, D3. A rubric
+        # domain beside them has to read as a different thing, so it is spelled
+        # out: "Domain 2" next to "D2 at 15 min" cannot be mistaken for it.
+        rows.append([[Paragraph(_xml(_domain_label(row["domain_id"])), style("eyebrow", "label")),
+                      p(row["title"], "small", "muted")],
+                     p(row["score_label"], "small", "muted"), p(basis or "—", "small", "muted")])
+    # The score column holds "Not assessable" without breaking the word in half.
+    table = Table(rows, colWidths=[content_width * .30, content_width * .16, content_width * .54])
+    table.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LINEBELOW", (0, 0), (-1, 0), .6, LINE),
+        ("LINEBELOW", (0, 1), (-1, -2), .3, LINE),
+        ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    flow.append(table)
+
+    confirmed = [a for a in assessment["alerts"] if a["status"] == "confirmed"]
+    waiting = [a for a in assessment["alerts"] if a["status"] == "awaiting_review"]
+    if confirmed:
+        # The alert stays whatever the total is, and says that the event both
+        # weighs on a domain and carries the penalty.
+        flow.append(p("CRITICAL EVENTS CONFIRMED", "eyebrow", "label"))
+        for alert in confirmed:
+            note = alert["action"] or alert["event_id"]
+            flow.append(p(f"{alert['event_id']} - {note}"
+                          + (f" {alert['justification']}" if alert["justification"] else "")))
+        flow.append(p("A confirmed event can both lower a domain and carry the safety penalty. "
+                      "That double weight is deliberate.", "small", "muted"))
+    if waiting:
+        flow.append(p("AWAITING YOUR DECISION", "eyebrow", "label"))
+        for alert in waiting:
+            flow.append(p(f"{alert['event_id']} - proposed by the AI and not yet "
+                          f"confirmed or dismissed. It carries no penalty until you decide."))
+    if not compact:
+        for concern in assessment["concerns"]:
+            flow.append(p(f"Flagged for review, carrying no deduction: {concern['concern']}", "small", "muted"))
+        for row in assessment["profile"]:
+            for quote in row["quotes"]:
+                flow.append(p(f"{_domain_label(row['domain_id'])}, "
+                              f"{_minute(quote['minute'])}: "
+                              f"\u201c{quote['quote']}\u201d", "small", "muted"))
+        for label, value in assessment["traceability"]:
+            flow.append(p(f"{label}: {value}", "small", "muted"))
+    if compact:
+        flow.append(p("Pilot rubric " + assessment["rubric_version"]
+                      + ". Not ACGME Milestone levels, Canadian stages or EPA supervision levels.",
+                      "small", "muted"))
+        return [KeepTogether(flow[:4])] + flow[4:]
+    flow.append(p(assessment["notice"], "small", "muted"))
+    return flow
+
+
+def _render_full(report, record, inputs, correct=None, assessment=None):
     """Preserve the complete stored analysis, allowing paragraphs to flow."""
     analysis, objectives, supported, index, decisions = inputs
     _fonts()
@@ -249,6 +352,7 @@ def _render_full(report, record, inputs, correct=None):
     ]))
     story.extend([metadata, Spacer(1, 9)])
     section("Performance synthesis", analysis.get("summary"))
+    story.extend(_rubric_section(assessment, styles, content_width, compact=False))
     section("Assistance context", ASSISTANCE_LABELS.get(
         _string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"]))
     story.append(p("Strengths supported by the record", "subhead"))
@@ -447,7 +551,7 @@ def _compact_references(refs, index, maximum=3):
     return " · ".join(anchors) or "No supporting reference selected"
 
 
-def _render_compact(report, record, inputs, app_url, correct=None):
+def _render_compact(report, record, inputs, app_url, correct=None, assessment=None):
     """Two-page reading route through an unchanged, optionally verbose report.
 
     The matrix does not replace the rationale, feedback or complete decision
@@ -556,6 +660,8 @@ def _render_compact(report, record, inputs, app_url, correct=None):
         assistance = ASSISTANCE_LABELS.get(_string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"])
         story.append(p("AI draft. Every suggestion in this brief stays provisional until you record your own "
                        "judgment. Assistance and autonomy: " + assistance, "muted"))
+        # The rubric profile is what the faculty reads first at the table.
+        story.extend(_rubric_section(assessment, styles, usable, compact=True))
         review_points = analysis.get("review_points", [])
         review_points = review_points if isinstance(review_points, list) else []
         story.extend([Spacer(1, 7), p(f"{min(3, len(review_points))} selected review priorities", "heading")])
@@ -726,8 +832,12 @@ def _render_compact(report, record, inputs, app_url, correct=None):
         page_one = review_page(review_limit, question_limit)
         if page_height(page_one) <= available:
             break
-    if page_height(page_one) > available:
-        raise ValueError("This report metadata is too long for the concise PDF; download the full analysis.")
+    # When even the shortest excerpts do not fit, the reading page flows onto a
+    # further page rather than refusing to render. The closed report contract of
+    # 2026-09-23 is explicit: before cutting a justification or shrinking the
+    # type, the concise brief grows. A rubric profile can be what tips it over,
+    # and a faculty member at the table needs the profile more than they need
+    # the page count.
     # The suggestion matrix keeps its rationale and flows onto a further page if
     # it needs one (faculty request 2026-09-23: readable text first, and a
     # rationale replaced by "read it in the app" is not a reading aid). The
@@ -752,7 +862,8 @@ def _render_compact(report, record, inputs, app_url, correct=None):
     return build(total)[0]
 
 
-def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corrections=None):
+def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corrections=None,
+                             assessment=None):
     """Render an unchanged stored brief as a concise review or the full report.
 
     The default is a two-page reading aid. ``compact=False`` retains complete
@@ -766,5 +877,5 @@ def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corr
     correct = presentation.CorrectionLog(
         corrections if corrections is not None else report_corrections.for_record(record))
     if compact:
-        return _render_compact(report, record, inputs, app_url, correct)
-    return _render_full(report, record, inputs, correct)
+        return _render_compact(report, record, inputs, app_url, correct, assessment)
+    return _render_full(report, record, inputs, correct, assessment)

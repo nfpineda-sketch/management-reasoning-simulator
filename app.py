@@ -2462,6 +2462,12 @@ def _review_payload(
         },
         "encounter": {
             "case_id": clean_final_state.get("case_id"),
+            # Which authored case this was, read before the spec is stripped. The
+            # spec itself never leaves the engine: it holds the answers. This is
+            # only its identifier, and the rubric cannot look up a case's declared
+            # opportunities and critical events without it.
+            "authored_case_id": str((((final_state or {}).get("encounter_spec") or {})
+                                     .get("clinical_case") or {}).get("id") or ""),
             "case_label": case_label,
             "closed_time_min": int(closed_time_min or 0),
             "final_patient_state": clean_final_state,

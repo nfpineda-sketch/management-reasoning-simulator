@@ -79,7 +79,7 @@ def _public_app_url():
     return value
 
 
-def _pdf_download(context, report, record, *, compact):
+def _pdf_download(context, report, record, *, compact, assessment=None):
     # Reauthorize even when PDF bytes already exist in this Streamlit session.
     # Always render from the separately stored faculty source, never a caller's
     # learner-owned payload or a stale UI role.
@@ -88,12 +88,16 @@ def _pdf_download(context, report, record, *, compact):
     # A presentation version also invalidates byte caches for existing reports.
     app_url = _public_app_url()
     mode = "concise" if compact else "full"
-    pdf_key = ("faculty_pdf_v3", context["user"]["id"], report["brief_id"], mode, app_url)
+    # The assessment revision is part of the key: a saved change must not be
+    # served from a cached document that predates it.
+    stamp = (assessment or {}).get("traceability")
+    pdf_key = ("faculty_pdf_v4", context["user"]["id"], report["brief_id"], mode, app_url,
+               repr(stamp) if stamp else "")
     cache_key = repr(pdf_key)
     if cache_key not in st.session_state:
         try:
             st.session_state[cache_key] = render_faculty_brief_pdf(
-                report, record, compact=compact, app_url=app_url)
+                report, record, compact=compact, app_url=app_url, assessment=assessment)
         except (ValueError, LayoutError):
             if compact:
                 st.warning("This report could not be fitted into the concise PDF. Open the full analysis below; you can still review and record assessments.")
@@ -112,6 +116,23 @@ def render_faculty_analysis(context, record):
     session = (record.get("payload") or {}).get("session") or {}
     if record.get("status") != "completed" or session.get("review_completed") is not True:
         return
+    # The rubric panel is rendered first so a decision saved in this run reaches
+    # the documents offered below it, rather than a revision behind.
+    from rubric_portal import render_rubric_assessment
+    import rubric_presentation
+    try:
+        saved_review = render_rubric_assessment(context, record)
+    except AccountError as error:
+        st.warning(str(error))
+        saved_review = None
+    assessment = None
+    if saved_review is not None:
+        from rubric_store import RubricStore
+        try:
+            proposal = RubricStore(context["store"]).latest_proposal(context["token"], record["id"])
+        except AccountError:
+            proposal = None
+        assessment = rubric_presentation.summary(saved_review, proposal)
     try:
         record = _staff_record(context, record)
         brief_store = FacultyBriefStore(context["store"])
@@ -143,7 +164,7 @@ def render_faculty_analysis(context, record):
                 return
             st.caption("Generated " + report["generated_at"] + " · " + report["model"])
             analysis = report["analysis"]
-            _pdf_download(context, report, record, compact=True)
+            _pdf_download(context, report, record, compact=True, assessment=assessment)
             st.caption("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification.")
             labels = {item["ref"]: item["label"] for item in evidence_items(record["payload"])}
             import report_corrections, report_presentation
@@ -161,7 +182,7 @@ def render_faculty_analysis(context, record):
                 for key in analysis["objectives"]
             ], hide_index=True, use_container_width=True)
             with st.expander("Read the analysis and debriefing questions"):
-                _pdf_download(context, report, record, compact=False)
+                _pdf_download(context, report, record, compact=False, assessment=assessment)
                 st.markdown("**Performance synthesis**")
                 st.write(analysis["summary"])
                 for title, values in (("Strengths", analysis["strengths"]),

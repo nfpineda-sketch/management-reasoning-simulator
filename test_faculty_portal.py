@@ -135,10 +135,10 @@ def test_concise_and_full_downloads_reuse_saved_analysis_without_credit(cohort):
 def test_compact_layout_failure_preserves_full_report_and_manual_assessment(cohort, monkeypatch):
     import faculty_portal
     render = faculty_portal.render_faculty_brief_pdf
-    def oversized(report, record, *, compact=True, app_url=None):
+    def oversized(report, record, *, compact=True, app_url=None, assessment=None):
         if compact:
             raise ValueError("Content exceeds compact page budget")
-        return render(report, record, compact=False, app_url=app_url)
+        return render(report, record, compact=False, app_url=app_url, assessment=assessment)
     monkeypatch.setattr(faculty_portal, "render_faculty_brief_pdf", oversized)
     attempt_id, _ = setup_brief(cohort)
     app = page(cohort, attempt_id)
