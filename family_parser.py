@@ -16,7 +16,7 @@ from shared_order_language import _normalize, _route, _amount
 
 NEW_TREATMENT_ACTIONS = frozenset({
     "fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator",
-    "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin", "nitroglycerin_bolus",
+    "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin", "p2y12", "nitroglycerin_bolus",
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
     "magnesium", "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
     "ventilator_disconnect", "chest_decompression", "thrombolysis", "stress_test",
@@ -60,6 +60,11 @@ _AGENTS = {
     "opioid_analgesia": {"morphine": r"morphine|morfina", "fentanyl": r"fentanyl|fentanilo"},
     "ppi": {"pantoprazole": r"pantoprazole|pantoprazol", "omeprazole": r"omeprazole|omeprazol"},
     "aspirin": {"aspirin": r"aspirin|aspirina|asa|aas"},
+    # The second antiplatelet of a coronary syndrome. Aspirin is the first one
+    # and stays; this is what is added to it (faculty decision, 2026-09-22).
+    "p2y12": {"clopidogrel": r"clopidogrel|clopidrogrel|plavix",
+              "ticagrelor": r"ticagrelor|brilinta|brilique",
+              "prasugrel": r"prasugrel|effient"},
     "anticoagulation": {"heparin": r"heparin|heparina", "enoxaparin": r"enoxaparin|enoxaparina"},
     "beta_blocker": {"metoprolol": r"metoprolol", "propranolol": r"propranolol"},
     "diltiazem": {"diltiazem": r"diltiazem|dilt"},

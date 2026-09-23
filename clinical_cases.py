@@ -148,7 +148,10 @@ POCUS = {
 
 def _observable(sbp, dbp, hr, spo2, rr, *, wob="Normal", crt=2,
                 extremities="Warm", mental="Alert", temperature=36.8,
-                glucose=110, perfusion="preserved"):
+                glucose=110, perfusion="preserved", pain_score=None):
+    # A case whose presentation says the patient is comfortable has to say so
+    # here too. Without it the family default applies, and the Wellens patient
+    # who "feels fine" was reported in severe pain (played 2026-09-22).
     return {
         "sbp": sbp, "dbp": dbp, "hr": hr, "spo2": spo2,
         "respiratory_rate": rr, "work_of_breathing": wob,
@@ -157,6 +160,7 @@ def _observable(sbp, dbp, hr, spo2, rr, *, wob="Normal", crt=2,
                    "Sinus bradycardia" if hr < 60 else "Sinus rhythm"),
         "pulse_present": True, "temperature_c": temperature,
         "glucose_mg_dl": glucose, "peripheral_perfusion": perfusion,
+        **({} if pain_score is None else {"pain_score": float(pain_score)}),
     }
 
 
@@ -556,7 +560,7 @@ FAMILIES["acs"]["variants"].append(_case(
               "pci_capable": True, "symptom_onset_min": 40},
     visual=_visual(skin="mild pallor", sweating="marked")))
 
-_o = _observable(138, 84, 76, 97, 18, crt=2, temperature=36.6, glucose=112)
+_o = _observable(138, 84, 76, 97, 18, crt=2, temperature=36.6, glucose=112, pain_score=0)
 FAMILIES["acs"]["variants"].append(_case(
     "acs_48m_wellens", "acs", 48, "male", ["smoking"],
     "A 48-year-old man is pain-free now after three episodes of chest pressure today, the last one an hour ago.",
@@ -576,15 +580,23 @@ FAMILIES["acs"]["variants"].append(_case(
     _investigations(_o, lactate=1.4, hemoglobin=15.3, wbc=8.8, creatinine=1.0,
         abg=(7.42, 39, 88), vbg=(7.38, 45),
         pocus=POCUS["acs"][4],
-        chest_xray="No acute cardiopulmonary abnormality.", troponin=42),
+        chest_xray="No acute cardiopulmonary abnormality.", troponin=12),
     "Wellens syndrome: critical proximal anterior stenosis, transiently reperfused",
     ["Resolved episodes of rest pain in a patient who now looks well",
      "Biphasic or deeply inverted T waves in V2-V4 with preserved R waves and no ST shift",
+     "A troponin below the reference limit, which is what the pattern requires and what "
+     "separates it from an infarction without ST elevation",
      "Normal resting wall motion, which does not exclude the lesion"],
     "Recognize a pattern that demands scheduled angiography, and never provocation testing.",
-    ["What did feeling well at this moment establish, and what did it not?", "Which investigation would have been unsafe here, and why?"],
+    ["What did feeling well and an unraised troponin establish at this moment, and what did they not?",
+     "What would a raised troponin have changed about the urgency of angiography?",
+     "Which investigation would have been unsafe here, and why?"],
     ["aspirin", "consult", "reperfusion_referral"], ecg="wellens",
     coronary={"omi": True, "active_occlusion": False, "territory": "anterior", "rv_involvement": False,
+              # The pattern is defined by a troponin that is not raised. A raised
+              # one makes this an infarction without ST elevation, whose urgency
+              # and whose answer are different (faculty, 2026-09-22).
+              "myocardial_injury": False,
               "pci_capable": True, "symptom_onset_min": 180},
     visual=_visual()))
 

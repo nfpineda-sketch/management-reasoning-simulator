@@ -125,7 +125,17 @@ class ClinicalCaseBankTests(unittest.TestCase):
                                                         "posterior_infarct", "de_winter", "wellens",
                                                         "diffuse_st_depression_avr"})
                     self.assertIn("omi", case["engine"]["coronary"])
-                    self.assertGreater(case["investigations"]["troponin"]["result"]["value_ng_l"], 19)
+                    # A coronary syndrome is not always an infarction. Wellens is
+                    # defined by a troponin that is NOT raised; a raised one makes
+                    # it an infarction without ST elevation, which is a different
+                    # case (faculty, 2026-09-22). Each case says which it is, and
+                    # its troponin has to agree.
+                    troponin = case["investigations"]["troponin"]["result"]
+                    upper = troponin["upper_reference_ng_l"]
+                    if case["engine"]["coronary"].get("myocardial_injury", True):
+                        self.assertGreater(troponin["value_ng_l"], upper)
+                    else:
+                        self.assertLessEqual(troponin["value_ng_l"], upper)
                 if family == "pneumonia":
                     self.assertIn("consolidation", json.dumps(case["investigations"]["pocus"]).lower())
                 if family == "pulmonary_edema":

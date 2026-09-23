@@ -152,7 +152,7 @@ def test_repeated_measurements_keep_the_old_result_and_observe_the_new_state(eng
 def test_unsupported_second_order_does_not_partially_execute_supported_first_order(engine):
     session = initialize(engine, encounter(engine, "acs")["state"])
     before = deepcopy(session.state)
-    parsed, result, _, _ = execute_turn(engine, "Give aspirin 324 mg PO and clopidogrel 300 mg PO")
+    parsed, result, _, _ = execute_turn(engine, "Give aspirin 324 mg PO and colchicine 0.5 mg PO")
     assert any(a["type"] == "clarification" for a in parsed["actions"])
     assert not result["executed"] and result["clarification"]
     assert session.state == before

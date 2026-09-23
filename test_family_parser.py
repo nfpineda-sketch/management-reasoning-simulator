@@ -130,7 +130,9 @@ def test_unsupported_or_ambiguous_orders_require_clarification(phrase):
 
 
 def test_unsupported_extra_order_is_not_silently_discarded():
-    result = actions("Give aspirin 324 mg PO and clopidogrel 300 mg PO")
+    # Colchicine stands for anything the bank does not model. It used to be
+    # clopidogrel, which became a supported order on 2026-09-22.
+    result = actions("Give aspirin 324 mg PO and colchicine 0.5 mg PO")
     assert [a["type"] for a in result] == ["aspirin", "clarification"]
 
 
@@ -206,7 +208,7 @@ def test_ambiguous_or_unknown_compound_order_does_not_partially_treat_patient():
     state = generate_cognitive_encounter("R2-02", {"sim_time": 0, "hidden": {}, "treatments": {}},
                                         family_id="acs", seed=1)["state"]
     before = deepcopy(state)
-    parsed = parse_family_actions("Give aspirin 324 mg PO and clopidogrel 300 mg PO")
+    parsed = parse_family_actions("Give aspirin 324 mg PO and colchicine 0.5 mg PO")
     result = execute_family_bundle(state, parsed)
     assert not result["executed"]
     assert result["clarification"]

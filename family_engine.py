@@ -63,6 +63,7 @@ _MEDICINES = {
     "antipyretic": ({"IV", "IO", "PO", "IM"}, 10, 4000),
     "ppi": ({"IV", "PO"}, 1, 160),
     "aspirin": ({"PO"}, 1, 650),
+    "p2y12": ({"PO"}, 1, 600),
     "diuretic": ({"IV", "PO"}, .1, 250),
     "beta_blocker": ({"IV", "PO"}, .001, 1000),
     "diltiazem": ({"IV", "PO"}, .001, 1000),
@@ -246,7 +247,74 @@ def _listed(items):
 
 
 # Everything given as a dose rather than run as an infusion or a setting.
+# Classes whose name is an abbreviation nobody says at the bedside.
+_CLASS_ONLY_KINDS = frozenset({"p2y12"})
 _FIXED_DOSE_KINDS = frozenset(_MEDICINES) | {"anticoagulation", "ppi", "aspirin"}
+
+
+def _held_message(current, actions):
+    """Every order in this submission the interpreter could not read, not the first.
+
+    A resident wrote a misspelled nitroglycerin and a clopidogrel the bank did
+    not know. The reply quoted the nitroglycerin, said the rest was held, and
+    the clopidogrel vanished without being named: repairing the first order
+    would have walked into a second wall nobody had mentioned (2026-09-22).
+    """
+    fragments, seen = [], set()
+    for action in actions if isinstance(actions, list) else []:
+        if not isinstance(action, dict) or action.get("type") != "clarification":
+            continue
+        fragment = str(action.get("unrecognized_text") or "").strip()
+        if fragment and fragment.lower() not in seen:
+            seen.add(fragment.lower())
+            fragments.append(fragment)
+    own = str(current.get("message") or "").strip()
+    if len(fragments) < 2 or not current.get("unrecognized_text"):
+        if fragments and not current.get("unrecognized_text"):
+            # A different question came first; the unreadable orders are still
+            # named, so repairing one does not uncover the others one by one.
+            quoted = "; ".join(f'"{fragment}"' for fragment in fragments)
+            plural = "These orders were" if len(fragments) > 1 else "This order was"
+            return f"{own} {plural} also not recognized: {quoted}."
+        return own or "Please clarify the order before it is executed."
+    quoted = "; ".join(f'"{fragment}"' for fragment in fragments)
+    return (f"These orders were not recognized: {quoted}. Replace each with a supported "
+            "intervention, dose/settings and route, or say cancel. The other orders in "
+            "this submission are held until then.")
+
+
+def _second_antiplatelet_error(state, a):
+    """Refuse a second P2Y12 inhibitor; the class is one drug, chosen once.
+
+    Dual antiplatelet therapy is aspirin plus one of clopidogrel, ticagrelor or
+    prasugrel -- not two of them. Aspirin is the first agent and is not replaced
+    by this one; it is missing only when the patient cannot take it.
+    """
+    agent = str(a.get("agent") or "").strip().lower()
+    on_board = str(state.get("family_state", {}).get("p2y12") or "").lower()
+    if not on_board or not agent or on_board == agent:
+        return None
+    return (f"{on_board.capitalize()} is already on board. Dual antiplatelet therapy is aspirin "
+            f"plus one P2Y12 inhibitor, so {agent} would be a second one rather than a change. "
+            f"Stop {on_board} explicitly if you mean to replace it.")
+
+
+def _rate_complaint(kind, rate, lower, upper, units):
+    """Say how far outside the range the rate is, not merely that it is outside.
+
+    "Specify the rate in mcg/min" told a resident who wrote 30 mg/min nothing:
+    the order was read as 30,000 mcg/min, seventy-five times the ceiling, and
+    the number is the whole lesson (played 2026-09-22). A rate that was never a
+    number is a different question and keeps the plain request.
+    """
+    if not isinstance(rate, (int, float)) or isinstance(rate, bool):
+        return f"Specify or confirm the {kind} rate in {units}."
+    said = f"{rate:g} {units}"
+    over = f"{rate / upper:g} times the supported maximum" if rate > upper else None
+    edge = f"{said} is {over}." if over else f"{said} is below the supported minimum."
+    return (f"{edge} This encounter runs {kind} between {lower:g} and {upper:g} {units}. "
+            "A rate written in mg is one thousand times the same number in mcg; "
+            f"confirm the intended {kind} rate in {units}.")
 
 
 def _already_given(state, kind, agent):
@@ -319,7 +387,7 @@ def _validate(state, parsed):
             normalized.append(a)
             continue
         if kind == "clarification":
-            return None, str(a.get("message") or "Please clarify the order before it is executed.")
+            return None, _held_message(a, actions)
         if kind == "diagnostic":
             study = _case(state).get("investigations", {}).get(a.get("diagnostic"), {})
             if str(study.get("result", {}).get("report", "")).startswith("No result is recorded"):
@@ -338,11 +406,19 @@ def _validate(state, parsed):
         elif kind in _MEDICINES:
             field = "dose_g" if kind == "dextrose" else "dose_mg"
             routes, lower, upper = _MEDICINES[kind]
+            # A class name is not something a resident wrote. Ask about the drug
+            # they named when the class has no everyday name of its own.
+            named = str(a.get("agent") or "").strip() if kind in _CLASS_ONLY_KINDS else ""
+            spoken = named or kind
             if not _number(a.get(field), lower, upper):
-                return None, f"Please specify or confirm the {kind} dose in {'grams' if field == 'dose_g' else 'milligrams'}."
+                return None, f"Please specify or confirm the {spoken} dose in {'grams' if field == 'dose_g' else 'milligrams'}."
             a["route"] = _ROUTES.get(str(a.get("route", "")).strip().lower())
             if a["route"] not in routes:
-                return None, f"Please specify a supported route for {kind}."
+                return None, f"Please specify a supported route for {spoken}."
+            if kind == "p2y12":
+                error = _second_antiplatelet_error(validation_state, a)
+                if error:
+                    return None, error
             if kind not in {"dextrose", "naloxone", "aspirin"} and not str(a.get("agent", "")).strip():
                 return None, f"Which {kind} medication would you like to administer?"
             if kind in _EXPOSURE_MG and str(a.get("agent", "")).lower() not in _EXPOSURE_MG[kind]:
@@ -420,13 +496,16 @@ def _validate(state, parsed):
                 return None, "Specify whether to start, adjust, continue, or stop the infusion."
             if a["operation"] != "stop":
                 if kind == "nitroglycerin" and not _number(a.get("rate_mcg_min"), .1, 400):
-                    return None, "Specify or confirm the nitroglycerin rate in mcg/min."
+                    return None, _rate_complaint("nitroglycerin", a.get("rate_mcg_min"), .1, 400, "mcg/min")
                 if kind in {"norepinephrine", "dobutamine", "epinephrine"}:
                     units = str(a.get("units", "")).lower().replace("μ", "u").replace("µ", "u")
                     aliases = {"mcg/min": "mcg/min", "ug/min": "mcg/min", "mcg/kg/min": "mcg/kg/min", "ug/kg/min": "mcg/kg/min"}
                     a["units"] = aliases.get(units)
                     ceiling = {"dobutamine": (10000, 50), "norepinephrine": (100, 1.5), "epinephrine": (60, 1.0)}[kind]
-                    if a["units"] is None or not _number(a.get("rate"), .001, ceiling[0] if a["units"] == "mcg/min" else ceiling[1]):
+                    top = ceiling[0] if a["units"] == "mcg/min" else ceiling[1]
+                    if a["units"] is None or not _number(a.get("rate"), .001, top):
+                        if a["units"] and isinstance(a.get("rate"), (int, float)):
+                            return None, _rate_complaint(kind, a.get("rate"), .001, top, a["units"])
                         return None, f"Specify or confirm {kind} dose and units (mcg/min or mcg/kg/min)."
         elif kind == "oral_carbohydrate":
             mental = str(validation_state.get("observable", {}).get("mental_status"))
@@ -555,7 +634,7 @@ def _initialize(state):
         "blood_delivered_units": 0, "fluid_delivered_ml": 0,
         "oxygen_fio2": .21, "oxygen_device": "Room air", "niv": False,
         "invasive": False, "bag_mask": False, "consultations": [],
-        "anticoagulated": False, "aspirin": False, "ppi": False,
+        "anticoagulated": False, "aspirin": False, "ppi": False, "p2y12": None,
         "recurrence_risk": bool(engine.get("recurrence_risk", False)),
     }
     state.setdefault("treatments", {})
@@ -819,8 +898,9 @@ def _order(state, a):
         agent = a.get("agent") or kind
         label = f"{agent} already given at minute {a.get('given_at_min', 0)}; not repeated"
         duration = 0
-    elif kind in {"ppi", "aspirin", "anticoagulation"}:
-        f[{"anticoagulation": "anticoagulated"}.get(kind, kind)] = True
+    elif kind in {"ppi", "aspirin", "anticoagulation", "p2y12"}:
+        f[{"anticoagulation": "anticoagulated"}.get(kind, kind)] = (
+            str(a.get("agent") or "").lower() if kind == "p2y12" else True)
         tr[kind] = deepcopy(a)
         if kind == "anticoagulation" and not timed:
             _medicine_effect(state, a, a["dose"])

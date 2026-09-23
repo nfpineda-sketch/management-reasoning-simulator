@@ -17,11 +17,13 @@ def test_capabilities_cover_only_existing_actions_and_remain_json_ready():
     assert json.loads(json.dumps(constraints, allow_nan=False)) == constraints
     assert constraints["trajectory_numeric_bounds"] == {key: list(value) for key, value in BOUNDS.items()}
     # Atropine, morphine and the ward's antipyretics joined the bank engine with
-    # faculty decisions 5, 10 and 14 of 2026-09-21 and are deliberately not
-    # offered to a case author yet: the generated engine does not execute them.
+    # faculty decisions 5, 10 and 14 of 2026-09-21, and the P2Y12 inhibitor on
+    # 2026-09-22. They are deliberately not offered to a case author yet. The
+    # engine reads them in any family, including a generated one; what a case
+    # author cannot do is declare a bespoke response to them.
     # Every medicine that IS offered still has to carry the bounds the bank
     # engine enforces.
-    assert set(_MEDICINES) - set(ACTIONS) == {"atropine", "opioid_analgesia", "antipyretic"}
+    assert set(_MEDICINES) - set(ACTIONS) == {"atropine", "opioid_analgesia", "antipyretic", "p2y12"}
     for kind, (_, lower, upper) in _MEDICINES.items():
         if kind not in ACTIONS:
             continue
