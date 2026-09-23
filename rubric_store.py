@@ -289,6 +289,40 @@ class RubricStore:
             return row
         return None
 
+    def progress(self, token, user_id=None):
+        """Every confirmed review of one resident, oldest first.
+
+        Staff may read any resident's; a resident may read only their own, and
+        only what a faculty member confirmed. A draft is somebody's work in
+        progress and is never part of a profile.
+        """
+        with self.accounts._transaction() as connection:
+            actor = self.accounts._actor(connection, token)
+            if actor["role"] in STAFF:
+                target = user_id or actor["id"]
+            elif user_id in (None, actor["id"]):
+                target = actor["id"]
+            else:
+                raise AccountError("Your account does not have permission for this action.")
+            rows = self._execute(connection, """SELECT r.*, a.challenge_id, a.updated_at
+                FROM mrs_rubric_reviews r JOIN mrs_attempts a ON a.id = r.attempt_id
+                WHERE a.user_id = ? AND r.status = 'confirmed'
+                ORDER BY r.created_at ASC, r.sequence ASC""", (target,)).fetchall()
+            # One encounter contributes once: the latest confirmed revision of
+            # it, not every revision a reviewer saved on the way there.
+            latest = {}
+            for row in rows or []:
+                try:
+                    review = json.loads(row["review_json"])
+                except (TypeError, ValueError):
+                    raise AccountError("A saved rubric review could not be read.") from None
+                latest[row["attempt_id"]] = {
+                    **review, "review_id": row["id"], "attempt_id": row["attempt_id"],
+                    "challenge_id": row["challenge_id"], "created_at": row["created_at"],
+                    "sequence": row["sequence"], "totals": totals_of(review)}
+            return sorted(latest.values(),
+                          key=lambda item: (item["created_at"], item["sequence"]))
+
     def history(self, token, attempt_id):
         """Every review revision, newest first. Nothing is ever overwritten."""
         with self.accounts._transaction() as connection:

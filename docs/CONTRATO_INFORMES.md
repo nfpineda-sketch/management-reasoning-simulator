@@ -1,4 +1,4 @@
-# Contrato de los tres informes
+# Contrato de los cuatro informes
 
 > Versión de referencia, cerrada el 2026-09-23. Vale para **cualquier** encuentro, del banco o
 > generado por IA. No depende de correcciones manuales, identificadores ni frases de ningún caso.
@@ -6,18 +6,25 @@
 > A partir de aquí los informes se modifican sólo por defectos de fidelidad, funcionamiento o
 > legibilidad, o por una petición explícita del docente.
 
-## Los tres documentos
+## Los cuatro documentos
 
 | Documento | Para quién | Regla de extensión |
 |---|---|---|
 | **Management Trace** | El residente | Tantas páginas como decisiones y evidencia haya |
 | **Faculty Brief compacto** | El docente, en la mesa | La página de lectura y la de sugerencias; dos páginas salvo que la evidencia pida más |
 | **Faculty Brief completo** | El docente, para verificar | Tantas páginas como objetivos y texto haya |
+| **Evaluación por rúbrica** | El docente, hasta que la complete | Tantas páginas como evidencia sostenga el puntaje |
 
-Los tres salen de **una misma representación del encuentro y del análisis**: el registro
-congelado (`payload` / `record.payload.session`) y el análisis guardado. La app usa los mismos
-renderizadores y el mismo almacén de correcciones, así que la descarga desde la aplicación y el
-archivo revisado aquí son el mismo documento.
+Los cuatro salen de **una misma representación del encuentro**: el registro congelado
+(`payload` / `record.payload.session`). Los tres primeros añaden el análisis guardado del brief;
+el cuarto añade la propuesta de rúbrica y la decisión del docente, que viven en sus propias
+tablas. La app usa los mismos renderizadores y el mismo almacén de correcciones, así que la
+descarga desde la aplicación y el archivo revisado aquí son el mismo documento.
+
+**El compacto no se extrae del completo.** Los dos leen el mismo análisis guardado: el compacto
+selecciona y el completo conserva todo. Por eso no pueden divergir — no hay un original y una
+copia, hay una fuente y dos lecturas. La misma regla vale para la rúbrica: la app, los dos
+briefs y el informe de rúbrica leen `rubric_presentation.summary`, y ninguno recalcula un total.
 
 ## Secciones
 
@@ -68,6 +75,46 @@ Las sugerencias van **después** de la evidencia y las preocupaciones, nunca ant
 Síntesis · fortalezas · puntos de revisión · límites · decisiones citadas · un bloque por
 objetivo · registro de generación al final. Cada objetivo y cada decisión citada viajan enteros.
 
+### Evaluación por rúbrica
+
+**Cuarto documento, agregado el 2026-09-23 a petición del docente.** Su tema es un número, y es
+el único que lo tiene.
+
+**Primero el puntaje**, grande: el total ajustado sobre 15, con la base y la penalización a su
+lado, y el gráfico de araña de los cinco dominios junto a él. Cuando la evaluación es parcial no
+hay número: hay una frase que dice cuántos dominios fueron evaluables y por qué un subtotal no
+es comparable con un episodio completo.
+
+**Después, un dominio por fila**: el puntaje, el fundamento y **las palabras del residente**
+tomadas del Management Trace que lo sostienen, con su minuto. Si el docente cambió el puntaje
+propuesto, la fila dice de cuál lo cambió y por qué. Si un dominio no es evaluable, la fila
+lleva el motivo en lugar de un puntaje.
+
+**Al final**: los eventos críticos confirmados con su doble peso declarado, los propuestos que
+el docente aún no decidió —que no cuestan nada hasta que decida—, las preocupaciones que ningún
+evento cubre y que no deducen, la trazabilidad y el aviso de instrumento piloto.
+
+**Quién lo recibe.** Es del docente mientras no lo haya completado. El documento se niega a
+renderizarse para el residente si la revisión es un borrador o no existe, y esa negativa vive en
+el renderizador y no en quien lo llama, porque un documento se copia y un punto de llamada no.
+Confirmado, el encuentro entra en el perfil del residente.
+
+**El gráfico de araña.** Cinco ejes, uno por dominio, de 0 a 3. Dos reglas, que son las de la
+rúbrica:
+
+- Un dominio **no evaluable se dibuja como un hueco**, nunca en el centro. Un punto en el centro
+  se lee como un cero, y "no evaluable" no es un cero. El contorno se abre en el hueco y se
+  dibuja **sin relleno**, porque un relleno abierto lo cierra el renderizador y esa línea cruza
+  justamente el eje que el hueco existe para dejar vacío. El eje se rotula en gris y la pantalla
+  además lo dice con palabras.
+- **La penalización no se resta de ningún eje.** Un evento de seguridad es un evento, no una
+  fracción de uno; va en el titular al lado del gráfico.
+
+El perfil longitudinal usa el mismo gráfico con un segundo contorno: el promedio del residente.
+**Cada dominio promedia sólo los encuentros en que fue evaluable**, lleva su propio conteo, y el
+pie lo dice cuando los conteos no coinciden. Un borrador no entra; un encuentro sin evaluar está
+ausente, no en cero.
+
 ## Qué se distingue siempre
 
 | Categoría | Cómo se presenta |
@@ -105,7 +152,7 @@ sí es una orden nueva. Ningún informe convierte la llegada de un resultado en 
 
 ## Estilo y paginación
 
-- Cuerpo de 11 puntos en los tres. Etiquetas de sección en versalitas azules.
+- Cuerpo de 11 puntos en los cuatro. Etiquetas de sección en versalitas azules.
 - Referencias breves y legibles (*"D2 at 15 min"*, *"study result at 20 min"*), sin
   identificadores de máquina en el texto de lectura.
 - Ninguna página vacía; ninguna sección aislada; ninguna frase partida entre páginas.
@@ -113,7 +160,7 @@ sí es una orden nueva. Ningún informe convierte la llegada de un resultado en 
   sólo la continúa se encabeza `DECISION N · CONTINUED`. Una página donde empieza otra decisión
   no lleva ese encabezado.
 - **No se fuerza un número de páginas** recortando información relevante ni achicando la letra,
-  en ninguno de los tres. El compacto resume, pero no cambia el significado ni pierde una
+  en ninguno de los cuatro. El compacto resume, pero no cambia el significado ni pierde una
   justificación para caber.
 
 ## Originales y correcciones
@@ -147,4 +194,8 @@ terminado, y desbordamiento o vaciado de página con texto extenso.
 
 En `test_report_contract.py`, la estructura sobre encuentros distintos: uno largo y uno corto, con
 análisis completo e incompleto, y el almacén de correcciones compartido leído por los tres
-documentos sin que nadie se lo pase.
+primeros documentos sin que nadie se lo pase.
+
+El cuarto tiene los suyos en `test_rubric_document.py` (quién puede leerlo, qué número imprime,
+qué evidencia lleva), `test_rubric_radar.py` (el hueco que no es un cero) y
+`test_rubric_progress.py` (lo que un perfil se niega a contar).

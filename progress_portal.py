@@ -280,9 +280,15 @@ def _render_observation_correction(context, progress, user_id, goals):
 
 
 def render_progress_dashboard(context, title="Objective progress"):
-    """Render resident-owned progress or faculty cohort review, without assignment controls."""
+    """Render resident-owned progress or faculty cohort review, without assignment controls.
+
+    Returns the resident whose record is on screen, or ``None`` for a viewer
+    looking at their own. The page composes what goes beside this; nothing in
+    this module knows the rubric exists, and that separation is structural
+    rather than a habit (see test_rubric_is_separate_from_challenges).
+    """
     if not context:
-        return
+        return None
     _flash(context)
     try:
         progress = ProgressStore(context["store"])
@@ -292,7 +298,7 @@ def render_progress_dashboard(context, title="Objective progress"):
         if user["role"] == "resident":
             goals = progress.get_progress(context["token"])["objectives"]
             _progress_table(goals)
-            return
+            return None
         learners = progress.list_residents(context["token"])
         if learners:
             labels = {learner["id"]: learner["username"] for learner in learners}
@@ -303,6 +309,7 @@ def render_progress_dashboard(context, title="Objective progress"):
             _render_faculty_decisions(context, progress, selected_user, goals)
             _render_observation_correction(context, progress, selected_user, goals)
         else:
+            selected_user = None
             st.info("No resident accounts are available yet.")
         _render_target_settings(context, progress)
         with st.expander("Progress audit history"):
@@ -312,5 +319,7 @@ def render_progress_dashboard(context, title="Objective progress"):
                 st.json(audit, expanded=False)
             else:
                 st.caption("No progress changes have been recorded.")
+        return selected_user
     except AccountError as exc:
         st.error(str(exc))
+        return None

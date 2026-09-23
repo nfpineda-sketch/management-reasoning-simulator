@@ -166,6 +166,7 @@ def render_dashboard(context, initial_state, reset_session):
             # Render only the selected page. Hidden tabs/expanders would still
             # send objective labels and feedback with the encounter launch UI.
             render_progress_dashboard(context, title="My progress")
+            _render_rubric_profile(context)
             return
     attempts = store.list_attempts(token)
     own = [a for a in attempts if a["user_id"] == user["id"]]
@@ -278,7 +279,25 @@ def render_dashboard(context, initial_state, reset_session):
                 with st.expander("Complete encounter record and export"):
                     st.json((record.get("payload") or {}).get("evidence", {}), expanded=False)
                     st.download_button("Download faculty record", json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
-        render_progress_dashboard(context)
+        _render_rubric_profile(context, render_progress_dashboard(context))
+
+
+def _render_rubric_profile(context, user_id=None):
+    """The rubric profile, beside the objective record and never inside it.
+
+    Two instruments: an objective is observed behaviour a faculty member
+    recorded against a curriculum, and the rubric is a score for one encounter.
+    The page shows both; neither module imports the other, and neither number
+    is computed from the other.
+    """
+    if not context:
+        return
+    with st.expander("Management reasoning rubric profile", expanded=False):
+        st.caption("A pilot instrument. These are not ACGME Milestone levels, Canadian stages "
+                   "or EPA supervision levels, and they neither feed nor replace the objective "
+                   "record above. Only assessments a faculty member has confirmed appear here.")
+        from rubric_portal import render_rubric_profile
+        render_rubric_profile(context, user_id)
 
 
 def render_learning_focus(context):

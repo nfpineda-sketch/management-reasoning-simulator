@@ -110,6 +110,47 @@ def _pdf_download(context, report, record, *, compact, assessment=None):
                        mime="application/pdf", key="download_faculty_" + mode + "_" + record["id"])
 
 
+def _rubric_pdf_download(context, review, proposal, record):
+    """The rubric assessment as its own document, for the faculty only.
+
+    It does not depend on an AI faculty brief existing: the rubric is a
+    separate report of a separate thing, and a reviewer who scored the five
+    domains can print that decision without generating anything else.
+    """
+    from rubric_report import RubricReportError, render_rubric_report_pdf
+    import rubric_progress
+    from rubric_store import RubricStore
+    try:
+        others = [row for row in RubricStore(context["store"]).progress(
+            context["token"], record.get("user_id")) if row.get("attempt_id") != record["id"]]
+    except AccountError:
+        others = []
+    summary = rubric_progress.aggregate(others)
+    average = rubric_progress.average_series(summary)
+    if average:
+        average = {**average, "caption": rubric_progress.caption(summary)}
+    # The revision and the status are part of the key: a document served from a
+    # cache that predates a saved change would show a score nobody confirmed.
+    cache_key = repr(("rubric_pdf_v1", context["user"]["id"], record["id"],
+                      review.get("sequence"), review.get("status"),
+                      (proposal or {}).get("proposal_id"), summary["encounters"]))
+    if cache_key not in st.session_state:
+        try:
+            st.session_state[cache_key] = render_rubric_report_pdf(
+                review, proposal, record, average=average)
+        except (RubricReportError, ValueError, LayoutError):
+            st.caption("The rubric document could not be prepared. The assessment above is "
+                       "unchanged and remains available.")
+            return
+    st.download_button(
+        "Download rubric assessment (PDF)", st.session_state[cache_key],
+        file_name="rubric_assessment_" + record["id"][:12] + ".pdf",
+        mime="application/pdf", key="download_rubric_" + record["id"])
+    st.caption("Faculty document. It is not released to the resident until you have reviewed "
+               "and completed it." if review.get("status") != "confirmed" else
+               "Confirmed. The resident's profile now includes this encounter.")
+
+
 def render_faculty_analysis(context, record):
     if not context or context["user"]["role"] not in {"faculty", "admin"}:
         return
@@ -133,6 +174,7 @@ def render_faculty_analysis(context, record):
         except AccountError:
             proposal = None
         assessment = rubric_presentation.summary(saved_review, proposal)
+        _rubric_pdf_download(context, saved_review, proposal, record)
     try:
         record = _staff_record(context, record)
         brief_store = FacultyBriefStore(context["store"])

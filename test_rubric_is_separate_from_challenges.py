@@ -63,6 +63,7 @@ def test_neither_module_imports_the_other():
     root = Path(__file__).parent
     rubric_files = ["rubric.py", "rubric_analysis.py", "rubric_store.py",
                     "rubric_portal.py", "rubric_presentation.py",
+                    "rubric_radar.py", "rubric_progress.py", "rubric_report.py",
                     "case_assessment.py", "case_assessment_bank.py"]
     progress_files = ["progress_store.py", "progress_portal.py", "objectives.py"]
 
@@ -79,6 +80,11 @@ def test_neither_module_imports_the_other():
         assert not (imports(path) & {"progress_store", "progress_portal", "objectives"}), path
     for path in progress_files:
         assert not {name for name in imports(path) if name.startswith(("rubric", "case_assessment"))}, path
+    # The rubric profile appears beside the objective dashboard on the resident
+    # and faculty pages. The page composes them; neither module learns about
+    # the other to make that happen (2026-09-23).
+    assert "rubric" not in (root / "progress_portal.py").read_text().split(
+        "def render_progress_dashboard")[0].lower()
 
 
 def test_the_two_records_live_in_different_tables(cohort):

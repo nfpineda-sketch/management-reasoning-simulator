@@ -9,8 +9,11 @@ sees before saving is the number that gets saved.
 from __future__ import annotations
 
 import os
+from html import escape
 
 import streamlit as st
+
+import report_palette as palette
 
 from account_store import AccountError
 from case_assessment import declared, events as defined_events
@@ -169,6 +172,10 @@ def _review_form(store, token, record, case_id, proposal, review):
         if not preview["coverage"]["complete"]:
             st.caption("A partial assessment keeps its events and their penalty but has no "
                        "total comparable with a complete episode.")
+        # The shape of what is on screen, redrawn as the selectboxes move, so a
+        # reviewer sees the profile they are about to save rather than the one
+        # they saved last time.
+        _live_shape(store, token, record, {"scores": scores}, proposal)
     columns = st.columns(2)
     action = None
     if columns[0].button("Save draft", key=_key(record, "draft")):
@@ -187,6 +194,23 @@ def _review_form(store, token, record, case_id, proposal, review):
         return saved
     _history(store, token, record)
     return review
+
+
+def _live_shape(store, token, record, pending, proposal):
+    """The five domains as a shape, beside this resident's running average."""
+    import rubric_progress
+    import rubric_radar
+    try:
+        # This encounter is excluded: a profile compared against itself is not
+        # a comparison.
+        reviews = [review for review in store.progress(token, record.get("user_id"))
+                   if review.get("attempt_id") != record["id"]]
+    except AccountError:
+        reviews = []
+    summary = rubric_progress.aggregate(reviews)
+    average = rubric_progress.average_series(summary, colour=rubric_radar.SERIES_COLOURS[1])
+    render_rubric_shape(pending, proposal, average=average,
+                        caption=rubric_progress.caption(summary))
 
 
 def _event_controls(record, case_id, proposed_events, saved_events):
@@ -247,3 +271,93 @@ def _history(store, token, record):
             for domain, change in (row.get("changes") or {}).items():
                 st.caption(f"   {domain}: proposed {change['proposed']} → "
                            f"{change['confirmed']} — {change['justification']}")
+
+
+def _radar_html(series, language, caption=""):
+    """The radar, sized to its column, with the caption under it."""
+    import rubric_radar
+    chart = rubric_radar.svg(series, size=240, language=language)
+    legend = "".join(
+        f'<span class="mrs-radar-key"><i style="background:{item["colour"]}"></i>'
+        f'{escape(str(item["label"]))}</span>'
+        for item in rubric_radar.geometry(series, language=language)["series"] if item["label"])
+    note = f'<p class="mrs-radar-note">{escape(caption)}</p>' if caption else ""
+    return f"""
+    <div class="mrs-radar">{chart}<div class="mrs-radar-legend">{legend}</div>{note}</div>
+    <style>
+      .mrs-radar {{ width: 100%; max-width: 420px; margin: .2rem 0 .6rem; }}
+      .mrs-radar svg {{ display: block; width: 100%; height: auto; }}
+      .mrs-radar-legend {{ display: flex; flex-wrap: wrap; gap: .9rem; font-size: .78rem;
+                           color: {palette.MUTED}; margin-top: .1rem; }}
+      .mrs-radar-key i {{ display: inline-block; width: .62rem; height: .62rem;
+                          border-radius: 2px; margin-right: .32rem; }}
+      .mrs-radar-note {{ font-size: .76rem; color: {palette.MUTED}; margin: .3rem 0 0; }}
+    </style>
+    """
+
+
+def render_rubric_shape(review, proposal=None, *, language="en", average=None, caption=""):
+    """The one encounter's profile as a shape, beside its numbers."""
+    import rubric_radar
+    if review is None:
+        return
+    series = [rubric_radar.series_from_review(review, language=language)]
+    if average:
+        series.append(average)
+    st.markdown(_radar_html(series, language, caption), unsafe_allow_html=True)
+    gaps = [domain for domain in DOMAIN_IDS
+            if (review.get("scores") or {}).get(domain) in (None, NOT_ASSESSABLE)]
+    if gaps:
+        # Said in words as well as drawn, because an axis with no point is
+        # quieter than a low one and it must not read as a zero.
+        st.caption("Drawn as a gap rather than at the centre, because it is not a zero: "
+                   + ", ".join(f"domain {domain[1:]}" for domain in gaps)
+                   + (" was" if len(gaps) == 1 else " were") + " not assessable in this encounter.")
+
+
+def render_rubric_profile(context, user_id=None, *, language="en"):
+    """A resident's confirmed assessments, taken together.
+
+    Read from confirmed reviews only. A resident sees their own; staff see the
+    resident they selected. Nothing here is a grade, and the page says so.
+    """
+    import rubric_progress
+    import rubric_radar
+    if not context:
+        return None
+    try:
+        reviews = RubricStore(context["store"]).progress(context["token"], user_id)
+    except AccountError as error:
+        st.caption(str(error))
+        return None
+    summary = rubric_progress.aggregate(reviews)
+    st.markdown("**Management reasoning profile** (pilot rubric "
+                + (summary["rubric_versions"][0] if summary["rubric_versions"] else "1.0-pilot")
+                + ")")
+    if not summary["encounters"]:
+        st.caption("No encounter has a rubric assessment a faculty member has confirmed yet. "
+                   "An encounter nobody has assessed is absent from this profile, not a zero.")
+        return summary
+    latest = reviews[-1]
+    series = [{**rubric_radar.series_from_review(latest, language=language),
+               "label": "Latest encounter" if language != "es" else "Último encuentro"}]
+    average = rubric_progress.average_series(summary, language, colour=rubric_radar.SERIES_COLOURS[1])
+    if average:
+        series.append(average)
+    st.markdown(_radar_html(series, language, rubric_progress.caption(summary, language)),
+                unsafe_allow_html=True)
+    for row in rubric_progress.table(summary, language):
+        st.markdown(f"**Domain {row['domain_id'][1:]} · {row['title']}** — {row['mean_label']}")
+        st.caption(row["note"])
+    if summary["mean_adjusted"] is not None:
+        st.caption(f"Mean adjusted total {summary['mean_adjusted']}/{summary['maximum']} over "
+                   f"{summary['complete_encounters']} encounter(s) where all five domains were "
+                   f"assessable. Partial assessments keep their events but have no comparable total.")
+    if summary["critical_events"]:
+        st.caption(f"{summary['critical_events']} confirmed critical event(s) across these "
+                   "encounters. A safety event is counted, never averaged into a domain.")
+    if summary["weakest"]:
+        st.caption(f"Lowest mean: domain {summary['weakest'][1:]} · "
+                   f"{DOMAINS[summary['weakest']]['title']}. This is where the shape is pulled "
+                   "in, not a judgement about the resident.")
+    return summary

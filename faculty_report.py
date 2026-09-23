@@ -26,15 +26,16 @@ from reportlab.platypus import (
 from objectives import AUTONOMY_LEVELS, DEPTH_LEVELS, OBJECTIVES, evidence_items
 from faculty_analysis import (DYNAMIC_OBJECTIVE_PROMPTS, PROMPT_VERSION,
                               SUPPORTED_OBJECTIVES, supported_objectives)
+import report_palette as palette
 
 
-NAVY = colors.HexColor("#16324F")
-BLUE = colors.HexColor("#1671A6")
-ORANGE = colors.HexColor("#D57C2A")
-INK = colors.HexColor("#243746")
-MUTED = colors.HexColor("#63788A")
-PALE = colors.HexColor("#F0F5F9")
-LINE = colors.HexColor("#D8E2EB")
+NAVY = colors.HexColor(palette.NAVY)
+BLUE = colors.HexColor(palette.BLUE)
+ORANGE = colors.HexColor(palette.ORANGE)
+INK = colors.HexColor(palette.INK)
+MUTED = colors.HexColor(palette.MUTED)
+PALE = colors.HexColor(palette.PALE)
+LINE = colors.HexColor(palette.LINE)
 RECOMMENDATIONS = {
     "satisfactory": "Suggested satisfactory demonstration",
     "needs_improvement": "Suggested improvement needed",
