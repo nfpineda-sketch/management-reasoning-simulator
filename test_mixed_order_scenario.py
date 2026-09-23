@@ -18,6 +18,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 from test_problem_launch import install_author
+from conftest import onboarded
 
 APP = str(Path(__file__).with_name("app.py"))
 ORDER = ("patient in shock. Give 1000 NS, start oxygen 4l/m nasal cannula. "
@@ -39,6 +40,7 @@ def encounter(tmp_path, monkeypatch):
     teacher = store.authenticate("teacher", "local-test-password")
     invite = store.create_invite(teacher, "resident", 1)
     token = store.register("mixed-order-resident", "local-resident-password", invite)
+    onboarded(store, token)
     app = AppTest.from_file(APP, default_timeout=120)
     app.session_state["_account_token"] = token
     app.run()

@@ -59,7 +59,7 @@ def _key(record, *parts):
     return "_".join(("rubric", record["id"][:16], *(str(p) for p in parts)))
 
 
-def render_rubric_assessment(context, record):
+def render_rubric_assessment(context, record, *, training_year=None):
     """The rubric panel. Returns the saved review to pass to the PDFs, or None."""
     if not context or context["user"]["role"] not in STAFF:
         return None
@@ -90,7 +90,7 @@ def render_rubric_assessment(context, record):
                     "no critical event is defined for this case.")
 
         _proposal_controls(store, token, record, proposal)
-        return _review_form(store, token, record, case_id, proposal, review)
+        return _review_form(store, token, record, case_id, proposal, review, training_year)
 
 
 def _proposal_controls(store, token, record, proposal):
@@ -122,7 +122,7 @@ def _proposal_controls(store, token, record, proposal):
         st.rerun()
 
 
-def _review_form(store, token, record, case_id, proposal, review):
+def _review_form(store, token, record, case_id, proposal, review, training_year=None):
     saved_scores = (review or {}).get("scores", {})
     saved_reasons = (review or {}).get("reasons", {})
     saved_changes = (review or {}).get("changes", {})
@@ -175,7 +175,7 @@ def _review_form(store, token, record, case_id, proposal, review):
         # The shape of what is on screen, redrawn as the selectboxes move, so a
         # reviewer sees the profile they are about to save rather than the one
         # they saved last time.
-        _live_shape(store, token, record, {"scores": scores}, proposal)
+        _live_shape(store, token, record, {"scores": scores}, proposal, training_year)
     columns = st.columns(2)
     action = None
     if columns[0].button("Save draft", key=_key(record, "draft")):
@@ -196,7 +196,7 @@ def _review_form(store, token, record, case_id, proposal, review):
     return review
 
 
-def _live_shape(store, token, record, pending, proposal):
+def _live_shape(store, token, record, pending, proposal, training_year=None):
     """The five domains as a shape, beside this resident's running average."""
     import rubric_progress
     import rubric_radar
@@ -212,9 +212,8 @@ def _live_shape(store, token, record, pending, proposal):
     import resident_profile
     render_rubric_shape(pending, proposal, average=average,
                         caption=rubric_progress.caption(summary),
-                        badge=resident_profile.badge(
-                            store.accounts, token, record.get("user_id"),
-                            (record.get("training_year") if isinstance(record, dict) else None)))
+                        badge=resident_profile.badge(store.accounts, token,
+                                                     record.get("user_id"), training_year))
 
 
 def _event_controls(record, case_id, proposed_events, saved_events):
@@ -330,7 +329,7 @@ def render_rubric_shape(review, proposal=None, *, language="en", average=None, c
                    + (" was" if len(gaps) == 1 else " were") + " not assessable in this encounter.")
 
 
-def render_rubric_profile(context, user_id=None, *, language="en"):
+def render_rubric_profile(context, user_id=None, *, language="en", training_year=None):
     """A resident's confirmed assessments, taken together.
 
     Read from confirmed reviews only. A resident sees their own; staff see the
@@ -347,9 +346,7 @@ def render_rubric_profile(context, user_id=None, *, language="en"):
         return None
     summary = rubric_progress.aggregate(reviews)
     import resident_profile
-    badge = resident_profile.badge(context["store"], context["token"], user_id,
-                                   (context["user"].get("training_year")
-                                    if user_id in (None, context["user"]["id"]) else None))
+    badge = resident_profile.badge(context["store"], context["token"], user_id, training_year)
     st.markdown("**Management reasoning profile** (pilot rubric "
                 + (summary["rubric_versions"][0] if summary["rubric_versions"] else "1.0-pilot")
                 + ")")

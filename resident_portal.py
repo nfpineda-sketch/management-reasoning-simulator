@@ -274,7 +274,7 @@ def render_account_export(context, encounters=None):
                f"{bundle['rubric_profile']['encounters_assessed']} with a confirmed assessment.")
 
 
-def render_photo_and_initials(context):
+def render_photo_and_initials(context, *, heading=True):
     """Accept the agreement, then store a face and initials. Or remove them.
 
     Nothing is stored before the agreement is accepted, which is why the
@@ -290,7 +290,8 @@ def render_photo_and_initials(context):
         st.caption(str(error))
         return
 
-    st.markdown("**Your photograph and initials**")
+    if heading:
+        st.markdown("**Your photograph and initials**")
     st.caption("Shown in one place: the centre of your profile chart, and on the assessment "
                "documents that carry it. You and faculty of this programme can see it. "
                "No other resident can see your photograph, your chart or anything else of yours.")
@@ -342,3 +343,86 @@ def render_photo_and_initials(context):
         else:
             st.success("Deleted.")
             st.rerun()
+
+
+def needs_setup(context):
+    """Whether this person has still to be asked about the photograph.
+
+    Asked once, at the start, rather than buried in a page they may never
+    open. Once they have decided either way, never again for that version of
+    the agreement (faculty, 2026-09-23).
+    """
+    import resident_profile
+    if context["user"]["role"] != "resident":
+        return False
+    try:
+        return resident_profile.ProfileStore(context["store"]).decision(context["token"]) is None
+    except AccountError:
+        return False
+
+
+def render_setup(context):
+    """The first thing a new resident sees, before any encounter.
+
+    It is a step, not a toll. The agreement says that withdrawing the
+    photograph does not affect their standing in the programme, and a wall
+    that stopped them training until they agreed would contradict that and
+    make the consent worthless. So "Not now" is a real answer, recorded, and
+    the controls stay available afterwards under My progress.
+    """
+    import resident_profile
+    store = resident_profile.ProfileStore(context["store"])
+    st.subheader("Set up your account")
+    st.caption("One step, once. Everything else about your account is already ready.")
+
+    st.markdown("**Your photograph and initials**")
+    st.caption("Encounters in this programme are reviewed at a distance. A face beside your "
+               "initials and your training year helps a faculty member keep one encounter "
+               "apart from another. It appears in one place: the centre of your profile "
+               "chart. No other resident can see it.")
+    with st.expander("Read the agreement", expanded=True):
+        st.markdown(resident_profile.AGREEMENT)
+
+    columns = st.columns(2)
+    if columns[0].button("I have read this and agree", type="primary", key="_setup_agree"):
+        try:
+            store.accept(context["token"])
+        except AccountError as error:
+            st.error(str(error))
+        else:
+            st.rerun()
+    if columns[1].button("Not now", key="_setup_decline"):
+        try:
+            store.decline(context["token"])
+        except AccountError as error:
+            st.error(str(error))
+        else:
+            st.rerun()
+    st.caption("Choosing 'Not now' changes nothing else: you can begin encounters immediately, "
+               "and you can add a photograph later from My progress, or never.")
+
+
+def needs_photo_step(context):
+    """Just agreed, nothing stored yet, and has not said "later" in this visit."""
+    import resident_profile
+    if context["user"]["role"] != "resident" or st.session_state.get("_resident_setup_done"):
+        return False
+    store = resident_profile.ProfileStore(context["store"])
+    try:
+        if store.decision(context["token"]) != "accepted":
+            return False
+        profile = store.get(context["token"])
+    except AccountError:
+        return False
+    return not (profile["photo"] or profile["initials"])
+
+
+def render_setup_photo(context):
+    """Right after agreeing: the photograph itself, and a way past it."""
+    st.subheader("Set up your account")
+    st.caption("Thank you. One last optional step, and you are ready to begin.")
+    render_photo_and_initials(context)
+    if st.button("Continue to my encounters", type="primary", key="_setup_continue"):
+        st.session_state["_resident_setup_done"] = True
+        st.rerun()
+    st.caption("You can also do this later, or not at all.")

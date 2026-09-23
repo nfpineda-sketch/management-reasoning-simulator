@@ -162,6 +162,8 @@ def _date(value):
 
 def render_dashboard(context, initial_state, reset_session):
     user, store, token = context["user"], context["store"], context["token"]
+    if user["role"] == "resident" and _render_setup(context):
+        return
     if user["role"] == "resident":
         view = st.sidebar.radio(
             "Navigation", ("Clinical encounters", "My progress"),
@@ -288,6 +290,42 @@ def render_dashboard(context, initial_state, reset_session):
         _render_rubric_profile(context, render_progress_dashboard(context))
 
 
+def _render_setup(context):
+    """The one-time account setup, before anything else. True when it showed.
+
+    Asked at the start rather than buried in a page a resident may never open
+    (faculty, 2026-09-23). It is a step and not a toll: declining is recorded,
+    costs nothing, and is never asked again.
+    """
+    import resident_portal
+    if resident_portal.needs_setup(context):
+        resident_portal.render_setup(context)
+        return True
+    if resident_portal.needs_photo_step(context):
+        resident_portal.render_setup_photo(context)
+        return True
+    return False
+
+
+def _training_year(context, user_id=None):
+    """The year of the person whose profile is on screen, not of the reader.
+
+    A faculty member has none of their own, and taking theirs left the badge
+    with a face and initials and no year -- which is the third of the three
+    things a reviewer at a distance was given it for.
+    """
+    if user_id in (None, context["user"]["id"]):
+        return context["user"].get("training_year")
+    from progress_store import ProgressStore
+    try:
+        for person in ProgressStore(context["store"]).list_residents(context["token"]):
+            if person["id"] == user_id:
+                return person.get("training_year")
+    except Exception:
+        return None
+    return None
+
+
 def _render_own_record(context):
     """The resident's own encounters, plans and record, on their own page.
 
@@ -296,7 +334,9 @@ def _render_own_record(context):
     """
     import resident_portal
     with st.expander("Your photograph and initials"):
-        resident_portal.render_photo_and_initials(context)
+        # The expander already carries the title; repeating it inside printed
+        # it twice on the page (seen in the resident's first sign-in).
+        resident_portal.render_photo_and_initials(context, heading=False)
     encounters = resident_portal.render_my_encounters(context)
     with st.expander("What you said you would do differently"):
         resident_portal.render_adaptation_thread(context, encounters)
@@ -319,7 +359,10 @@ def _render_rubric_profile(context, user_id=None):
                    "or EPA supervision levels, and they neither feed nor replace the objective "
                    "record above. Only assessments a faculty member has confirmed appear here.")
         from rubric_portal import render_rubric_profile
-        render_rubric_profile(context, user_id)
+        # The year is read here and passed in: the rubric must not import the
+        # objective record, and the page is what knows both.
+        render_rubric_profile(context, user_id,
+                              training_year=_training_year(context, user_id))
 
 
 def render_learning_focus(context):

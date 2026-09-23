@@ -139,6 +139,15 @@ class ProfileStore:
             )""",
             """CREATE INDEX IF NOT EXISTS mrs_resident_agreements_user
                 ON mrs_resident_agreements(user_id, agreement_version)""",
+            # Asked once, and what they chose. Separate from the acceptance
+            # record above because a decline is not an acceptance and must
+            # still stop the question from being asked again.
+            """CREATE TABLE IF NOT EXISTS mrs_resident_setup (
+                user_id TEXT PRIMARY KEY REFERENCES mrs_users(id),
+                agreement_version TEXT NOT NULL,
+                decision TEXT NOT NULL CHECK (decision IN ('accepted', 'declined')),
+                decided_at BIGINT NOT NULL
+            )""",
             """CREATE TABLE IF NOT EXISTS mrs_resident_profiles (
                 user_id TEXT PRIMARY KEY REFERENCES mrs_users(id),
                 initials TEXT NOT NULL DEFAULT '',
@@ -175,7 +184,41 @@ class ProfileStore:
             actor = self.accounts._actor(connection, token)
             self._execute(connection, "INSERT INTO mrs_resident_agreements VALUES (?, ?, ?, ?)",
                           (uuid.uuid4().hex, actor["id"], str(version), int(time.time())))
+            self._decide(connection, actor["id"], "accepted", version)
             return actor["id"]
+
+    def decline(self, token, version=AGREEMENT_VERSION):
+        """Recorded so the question is asked once, and never asked again.
+
+        A decline stores nothing about the person beyond the fact that they
+        were asked and said no. It changes nothing else about their account:
+        the whole point of an agreement is that refusing it costs nothing.
+        """
+        with self.accounts._transaction(write=True) as connection:
+            actor = self.accounts._actor(connection, token)
+            self._decide(connection, actor["id"], "declined", version)
+            return actor["id"]
+
+    def _decide(self, connection, user_id, decision, version):
+        now = int(time.time())
+        existing = self._execute(connection, "SELECT user_id FROM mrs_resident_setup "
+                                 "WHERE user_id = ?", (user_id,)).fetchone()
+        if existing is None:
+            self._execute(connection, "INSERT INTO mrs_resident_setup VALUES (?, ?, ?, ?)",
+                          (user_id, str(version), decision, now))
+        else:
+            self._execute(connection, """UPDATE mrs_resident_setup
+                SET agreement_version = ?, decision = ?, decided_at = ? WHERE user_id = ?""",
+                (str(version), decision, now, user_id))
+
+    def decision(self, token, user_id=None, version=AGREEMENT_VERSION):
+        """"accepted", "declined", or None when they have never been asked."""
+        with self.accounts._transaction() as connection:
+            _, target = self._target(connection, token, user_id)
+            row = self._execute(connection, """SELECT decision FROM mrs_resident_setup
+                WHERE user_id = ? AND agreement_version = ?""",
+                (target, str(version))).fetchone()
+            return row["decision"] if row is not None else None
 
     def get(self, token, user_id=None):
         """The initials and the photograph, or empty ones. Never another's."""

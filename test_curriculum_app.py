@@ -7,6 +7,7 @@ from streamlit.testing.v1 import AppTest
 from account_store import AccountStore, hash_password
 from cognitive_catalog import BIAS_CHALLENGES
 from objectives import OBJECTIVES
+from conftest import onboarded
 
 APP = str(Path(__file__).with_name("app.py"))
 
@@ -38,6 +39,7 @@ def cohort(tmp_path, monkeypatch):
     admin = store.authenticate("teacher", "local-test-password")
     code = store.create_invite(admin, "resident", 1)
     resident = store.register("resident-one", "local-resident-password", code)
+    onboarded(store, resident)
     return store, admin, resident
 
 

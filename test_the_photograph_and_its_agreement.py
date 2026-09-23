@@ -264,3 +264,149 @@ def test_a_photograph_that_cannot_be_decoded_still_draws_the_chart():
                                badge={"image": "data:image/jpeg;base64,!!!not base64!!!",
                                       "initials": "NP", "year": 1})
     assert art.contents
+
+
+# --- asked once, at the start ----------------------------------------------
+
+def test_a_new_resident_has_not_been_asked_yet(cohort):
+    _, people, profiles = cohort
+    assert profiles.decision(people["resident_one"]["token"]) is None
+
+
+def test_agreeing_records_the_decision(cohort):
+    _, people, profiles = cohort
+    token = people["resident_one"]["token"]
+    profiles.accept(token)
+    assert profiles.decision(token) == "accepted"
+
+
+def test_declining_records_it_too_so_the_question_stops(cohort):
+    _, people, profiles = cohort
+    token = people["resident_one"]["token"]
+    profiles.decline(token)
+    assert profiles.decision(token) == "declined"
+
+
+def test_declining_stores_nothing_about_the_person(cohort):
+    _, people, profiles = cohort
+    token = people["resident_one"]["token"]
+    profiles.decline(token)
+    stored = profiles.get(token)
+    assert stored["photo"] == "" and stored["initials"] == ""
+    # And it is not an acceptance: storing anything is still refused.
+    assert profiles.accepted(token) is None
+    with pytest.raises(AccountError):
+        profiles.save(token, initials="NP")
+
+
+def test_declining_and_then_agreeing_later_works(cohort):
+    _, people, profiles = cohort
+    token = people["resident_one"]["token"]
+    profiles.decline(token)
+    profiles.accept(token)
+    assert profiles.decision(token) == "accepted"
+    profiles.save(token, initials="NP")
+    assert profiles.get(token)["initials"] == "NP"
+
+
+def test_a_new_agreement_version_is_asked_about_again(cohort):
+    _, people, profiles = cohort
+    token = people["resident_one"]["token"]
+    profiles.accept(token, version="1.0-pilot")
+    assert profiles.decision(token, version="1.0-pilot") == "accepted"
+    assert profiles.decision(token, version="2.0") is None
+
+
+def test_one_residents_decision_is_not_anothers(cohort):
+    _, people, profiles = cohort
+    profiles.accept(people["resident_one"]["token"])
+    assert profiles.decision(people["resident_two"]["token"]) is None
+
+
+def test_a_resident_cannot_read_a_peers_decision(cohort):
+    _, people, profiles = cohort
+    profiles.accept(people["resident_one"]["token"])
+    with pytest.raises(AccountError):
+        profiles.decision(people["resident_two"]["token"], people["resident_one"]["id"])
+
+
+# --- the year belongs to the person, not to the reader ---------------------
+
+PROFILE_APP = """
+import streamlit as st
+from account_store import AccountStore
+from rubric_portal import render_rubric_profile
+store = AccountStore(st.session_state['database_url'], allow_sqlite=True)
+token = st.session_state['test_token']
+context = {'store': store, 'token': token, 'user': store.get_user(token)}
+target = st.session_state.get('target')
+# The page computes the year and passes it in; the rubric must not import the
+# objective record to find it out.
+import ast, pathlib
+from curriculum_runtime import _training_year
+render_rubric_profile(context, target, training_year=_training_year(context, target))
+"""
+
+
+def profile_page(store, token, target=None):
+    from streamlit.testing.v1 import AppTest
+    app = AppTest.from_string(PROFILE_APP, default_timeout=20)
+    app.session_state["database_url"] = store._url
+    app.session_state["test_token"] = token
+    app.session_state["target"] = target
+    app.run()
+    assert not app.exception
+    return " ".join(item.value for item in app.markdown)
+
+
+def assessed(store, people, who="resident_two"):
+    import rubric
+    from rubric_store import RubricStore
+    token = people[who]["token"]
+    attempt = store.create_attempt(token, "R1-03", {"presentation": "x"})
+    store.save_attempt(token, attempt, {"schema_version": "mrs_attempt_v1", "session": {
+        "review_completed": True, "encounter": {"authored_case_id": "acs_48m_wellens"},
+        "management_trace": [{"execution_status": "executed", "learner_input": "Give aspirin.",
+                              "decision_time_min": 0, "response_time_min": 1,
+                              "reasoning": {"problem_representation": "m"},
+                              "state_before": {"observable": {}},
+                              "state_after": {"observable": {}}}]}}, status="completed")
+    RubricStore(store).save_review(people["faculty_one"]["token"], attempt,
+                                   scores={d: 2 for d in rubric.DOMAIN_IDS}, status="confirmed")
+    return attempt
+
+
+def test_the_badge_carries_the_year_on_the_residents_own_page(cohort):
+    store, people, profiles = cohort
+    token = people["resident_two"]["token"]           # a second-year resident
+    profiles.accept(token)
+    profiles.save(token, initials="AM", photo=photo_bytes())
+    assessed(store, people)
+    own = profile_page(store, token)
+    assert "R2" in own and "<image" in own
+
+
+def test_a_faculty_reader_sees_the_residents_year_and_not_their_own(cohort):
+    store, people, profiles = cohort
+    token = people["resident_two"]["token"]
+    profiles.accept(token)
+    profiles.save(token, initials="AM", photo=photo_bytes())
+    assessed(store, people)
+    # A faculty member has no training year of their own; the badge must still
+    # carry the resident's, which is the whole point of showing it.
+    seen = profile_page(store, people["faculty_one"]["token"], people["resident_two"]["id"])
+    assert "R2" in seen and "<image" in seen
+    assert "R1" not in seen
+
+
+def test_the_rubric_never_learns_about_the_objective_record():
+    """Where the year is read from is the page's business, not the rubric's."""
+    import ast
+    from pathlib import Path
+    names = set()
+    for node in ast.walk(ast.parse(Path("rubric_portal.py").read_text(encoding="utf-8"))):
+        if isinstance(node, ast.Import):
+            names.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            names.add(node.module)
+    assert not (names & {"progress_store", "progress_portal", "objectives"})

@@ -54,13 +54,29 @@ residente tenga su registro completo bajo la misma cuenta.
 - **Su contraseña**, que ahora puede cambiar. `change_password` existía desde el principio y no
   llegaba a ninguna pantalla.
 
+## El primer ingreso
+
+Lo primero que ve un residente nuevo **no es un encuentro**: es la pantalla de configuración de
+su cuenta, con el acuerdo de la foto. Se pregunta una vez, y una vez que decidió —en cualquiera
+de los dos sentidos— no se le vuelve a preguntar para esa versión del acuerdo.
+
+**Es un paso, no un peaje.** El acuerdo que firma dice que retirar la foto no afecta su
+situación en el programa; un muro que le impidiera entrenar hasta aceptar contradiría eso en la
+misma frase, y un consentimiento obtenido así no sirve para defender el almacenamiento de una
+cara ante nadie. Por eso **"Ahora no" es una respuesta real**: queda registrada, no guarda nada
+de esa persona, no se vuelve a preguntar, y lo deja entrar al simulador de inmediato. Los
+controles quedan disponibles después en *My progress*, para siempre o para nunca.
+
+El registro de la decisión vive en `mrs_resident_setup` y es distinto del registro de
+aceptación: un rechazo no es una aceptación, y aun así tiene que detener la pregunta.
+
 ## La foto y su acuerdo
 
 La foto es el **primer dato personal identificable** que esta aplicación guarda, así que no
 entra en silencio.
 
 - **Nada se guarda sin acuerdo firmado.** `save` se niega si esa persona no aceptó la versión
-  vigente. Una versión nueva del acuerdo hay que volver a aceptarla.
+  vigente. Una versión nueva del acuerdo hay que volver a aceptarla, y se vuelve a preguntar.
 - **Se muestra en un solo lugar**: el centro del gráfico de araña, y los documentos que lo
   llevan. La ven el dueño y el docente.
 - **El archivo se re-codifica, no se guarda.** Lo que llega se decodifica, se recorta cuadrado,

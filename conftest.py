@@ -146,3 +146,20 @@ def _streamlit_layout_context_is_not_inherited():
     reset()
     yield
     reset()
+
+
+def onboarded(store, token):
+    """A resident who has already been through the one-time account setup.
+
+    Since 2026-09-23 the first thing a resident sees is the photograph
+    agreement, before any encounter. That is deliberate and it is what a real
+    first sign-in looks like, so a test that drives a resident *past* that
+    point has to go through it the way a person would. Declining is the
+    cheapest honest answer: it records the decision, stores nothing, and costs
+    nothing.
+
+    A test about the setup screen itself does not call this.
+    """
+    from resident_profile import ProfileStore
+    ProfileStore(store).decline(token)
+    return token

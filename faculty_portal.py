@@ -184,7 +184,8 @@ def render_faculty_analysis(context, record):
     from rubric_portal import render_rubric_assessment
     import rubric_presentation
     try:
-        saved_review = render_rubric_assessment(context, record)
+        saved_review = render_rubric_assessment(
+            context, record, training_year=_training_year(context, record))
     except AccountError as error:
         st.warning(str(error))
         saved_review = None

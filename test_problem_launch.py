@@ -4,6 +4,7 @@ from pathlib import Path
 from streamlit.testing.v1 import AppTest
 from curriculum import CHALLENGES
 from test_generated_case import AuthorClient, novel_payload, approval
+from conftest import onboarded
 
 
 def install_author(monkeypatch, payload_factory=None, review=None):
@@ -123,6 +124,7 @@ def test_new_ai_case_is_persisted_and_resumed_without_reauthoring(tmp_path, monk
     teacher = store.authenticate('teacher', 'local-test-password')
     invite = store.create_invite(teacher, 'resident', 1)
     token = store.register('novel-resident', 'local-resident-password', invite)
+    onboarded(store, token)
 
     def open_resident():
         app = AppTest.from_file(str(Path(__file__).with_name('app.py')), default_timeout=30)
