@@ -147,7 +147,14 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
                 st.caption(f"Against it: {suggestion['contrary_evidence']}")
             for item in suggestion.get("learner_evidence", []):
                 st.caption(f"At minute {item.get('minute')}: “{item.get('quote', '')}”")
-        default = saved_scores.get(domain, proposed if proposed in _CHOICES else 2)
+        # Faculty decision of 2026-09-23: an untouched domain starts at "not
+        # assessable", not at what the AI proposed. Across thirteen real
+        # proposals the model chose "not assessable" exactly never -- including
+        # two encounters where it wrote in its own limits that the encounter
+        # closed before the opportunity -- so starting at its score pushed a
+        # reviewer towards scoring. Starting here pushes towards deciding: a
+        # domain left alone cannot be confirmed without a written reason.
+        default = saved_scores.get(domain, NOT_ASSESSABLE)
         value = st.selectbox("Your score", _CHOICES, index=_CHOICES.index(default),
                              format_func=_label, key=_key(record, "score", domain))
         scores[domain] = value

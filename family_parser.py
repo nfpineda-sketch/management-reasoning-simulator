@@ -119,7 +119,10 @@ _DIAGNOSTICS = {
     # "Angiotomografia de torax" is how the study is written here in full; only
     # its abbreviations were listed, so the written form was refused (2026-09-23).
     "ctpa": r"ctpa|ct pulmonary angiogra(?:phy|m)|pulmonary ct angiogra(?:phy|m)|angio(?:[- ]?tc|tac|tomografia)(?:\s+(?:de\s+)?(?:torax|pulmonar))?",
-    "hemoglobin": r"hemoglobin|hemoglobina|hb",
+    # The British spelling as well: the documents of this project are written
+    # in it, so a resident reading "haemoglobin" there and typing it back was
+    # refused while the Spanish "hemoglobina" was accepted (2026-09-23).
+    "hemoglobin": r"h(?:a?e)moglobin|hemoglobina|hb",
     # Faculty decision 7 of 2026-09-21: these are studies of their own, and they
     # are matched before the plain twelve-lead so that asking for them never
     # returns a standard tracing instead.

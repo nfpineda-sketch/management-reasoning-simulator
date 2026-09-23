@@ -51,6 +51,19 @@ def widget(app, kind, label):
     return next(item for item in getattr(app, kind) if item.label == label)
 
 
+def score_every_domain(app, value=2):
+    """Pick a score for each of the five, the way a reviewer has to.
+
+    Since 2026-09-23 the selector starts every domain at "not assessable", so a
+    confirmation that nobody touched is refused for want of five written
+    reasons. That is the point of the default, and a test that confirms an
+    assessment has to do what a reviewer does.
+    """
+    for item in [s for s in app.selectbox if s.label == "Your score"]:
+        item.set_value(value)
+    return app.run()
+
+
 def test_the_five_domains_and_the_defined_events_are_on_the_screen(cohort):
     accounts, _, users = cohort
     attempt_id = attempt_on_case(accounts, users["resident"]["token"])
@@ -97,6 +110,7 @@ def test_a_draft_is_saved_as_a_draft_and_confirming_is_a_second_revision(cohort)
     assert saved["status"] == "draft" and saved["sequence"] == 1
 
     app.run()
+    score_every_domain(app)
     widget(app, "button", "Confirm assessment").click().run()
     assert not app.exception
     confirmed = store.latest_review(token, attempt_id)
@@ -121,6 +135,7 @@ def test_confirming_an_event_shows_the_penalty_before_it_is_saved(cohort):
     accounts, _, users = cohort
     attempt_id = attempt_on_case(accounts, users["resident"]["token"])
     app = page(cohort, attempt_id)
+    score_every_domain(app)
     radios = [r for r in app.radio if r.label == "Your decision"]
     assert radios, "the defined events offer a decision"
     radios[0].set_value("confirmed").run()
@@ -136,3 +151,52 @@ def test_an_encounter_with_no_authored_case_still_offers_the_five_domains(cohort
     assert len([s for s in app.selectbox if s.label == "Your score"]) == len(rubric.DOMAIN_IDS)
     assert not [r for r in app.radio if r.label == "Your decision"]
     assert any("does not name an authored case" in item.value for item in app.info)
+
+
+def test_an_untouched_domain_starts_at_not_assessable(cohort):
+    """Faculty decision of 2026-09-23.
+
+    Across thirteen real proposals the model chose "not assessable" exactly
+    never -- including two encounters where it wrote in its own limits field
+    that the encounter had closed before the opportunity. Starting the selector
+    at its proposed score pushed a reviewer towards scoring; starting it here
+    pushes towards deciding, because a domain left alone cannot be confirmed
+    without a written reason.
+    """
+    accounts, _, users = cohort
+    attempt_id = attempt_on_case(accounts, users["resident"]["token"])
+    app = page(cohort, attempt_id)
+    chosen = [s.value for s in app.selectbox if s.label == "Your score"]
+    assert chosen == [rubric.NOT_ASSESSABLE] * len(rubric.DOMAIN_IDS)
+
+
+def test_confirming_without_touching_anything_is_refused(cohort):
+    accounts, _, users = cohort
+    attempt_id = attempt_on_case(accounts, users["resident"]["token"])
+    app = page(cohort, attempt_id)
+    widget(app, "button", "Confirm assessment").click().run()
+    assert any("reason" in item.value.lower() for item in app.error)
+    assert RubricStore(accounts).latest_review(users["faculty"]["token"], attempt_id) is None
+
+
+def test_a_draft_may_still_be_saved_untouched(cohort):
+    # A draft is work in progress. Requiring five reasons to save one would
+    # mean no draft could be saved at all.
+    accounts, _, users = cohort
+    attempt_id = attempt_on_case(accounts, users["resident"]["token"])
+    app = page(cohort, attempt_id)
+    widget(app, "button", "Save draft").click().run()
+    assert not app.exception
+    saved = RubricStore(accounts).latest_review(users["faculty"]["token"], attempt_id)
+    assert saved["status"] == "draft"
+    assert saved["totals"]["coverage"]["assessed"] == 0
+
+
+def test_a_saved_score_is_what_comes_back_not_the_default(cohort):
+    accounts, _, users = cohort
+    attempt_id = attempt_on_case(accounts, users["resident"]["token"])
+    RubricStore(accounts).save_review(users["faculty"]["token"], attempt_id,
+                                      scores={d: 3 for d in rubric.DOMAIN_IDS},
+                                      status="confirmed")
+    app = page(cohort, attempt_id)
+    assert [s.value for s in app.selectbox if s.label == "Your score"] == [3] * len(rubric.DOMAIN_IDS)

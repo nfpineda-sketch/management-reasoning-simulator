@@ -88,8 +88,26 @@ def _scalar(value):
     return ""
 
 
-def _xml(value):
-    text = _text(value).translate(str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789"))
+def _say(text, language=None):
+    """The page furniture, which is drawn on the canvas and never sees _xml."""
+    import report_language
+    from language import current as _reader_language
+    return report_language.t(text, language or _reader_language())
+
+
+def _xml(value, language=None):
+    """Make text inert inside ReportLab's paragraphs, in the reader's language.
+
+    The single funnel every string in this document passes through, which is
+    why the translation happens here rather than at two hundred call sites.
+    ``report_language.t`` returns anything it does not know unchanged, so the
+    model's own prose and the resident's quoted words pass through untouched --
+    only the document's own words are in that table (2026-09-23).
+    """
+    import report_language
+    from language import current as _reader_language
+    text = report_language.t(_text(value), language or _reader_language())
+    text = text.translate(str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789"))
     text = text.replace("\u2011", "-").replace("\u2013", "-").replace("\u2014", "-")
     text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", text)
     return escape(text).replace("\n", "<br/>")
@@ -221,7 +239,7 @@ class _Trend(Flowable):
         canvas.drawRightString(self.width - 12, self.height - 18, self.unit)
         available = [point for point in self.points if point["value"] is not None]
         if not available:
-            canvas.drawString(12, self.height / 2, "No recorded measurements")
+            canvas.drawString(12, self.height / 2, _say("No recorded measurements"))
             canvas.restoreState()
             return
         times = [point["time_min"] for point in self.points]
@@ -276,7 +294,7 @@ class _Trend(Flowable):
         if len({point["value"] for point in available}) == 1 and len(available) > 1:
             canvas.setFillColor(MUTED)
             canvas.setFont("TraceSans", 6.6)
-            canvas.drawString(x0, y1 + 12, "no recorded change")
+            canvas.drawString(x0, y1 + 12, _say("no recorded change"))
         canvas.setFillColor(MUTED)
         canvas.setFont("TraceSans", 7)
         if first == last:
@@ -540,18 +558,18 @@ def render_management_trace_pdf(
         canvas.line(margin, height - 33, width - margin, height - 33)
         canvas.setFont("TraceSans-Bold", 7)
         canvas.setFillColor(NAVY)
-        canvas.drawString(margin, height - 25, "MANAGEMENT REASONING SIMULATOR")
+        canvas.drawString(margin, height - 25, _say("MANAGEMENT REASONING SIMULATOR"))
         canvas.setFillColor(BLUE)
         canvas.drawRightString(width - margin, height - 25, status)
         carried = continued_pages.get(doc.page)
         if carried is not None:
             canvas.setFont("TraceSans-Bold", 8.6)
             canvas.setFillColor(BLUE)
-            canvas.drawString(margin, height - 47, f"DECISION {carried} · CONTINUED")
+            canvas.drawString(margin, height - 47, _say("DECISION {n} · CONTINUED").format(n=carried))
         canvas.line(margin, 49, width - margin, 49)
         canvas.setFont("TraceSans", 6.8)
         canvas.setFillColor(MUTED)
-        canvas.drawString(margin, 37, f"Learner report · AI interpretation · Renderer {RENDERER_VERSION}")
+        canvas.drawString(margin, 37, _say("Learner report · AI interpretation · Renderer {v}").format(v=RENDERER_VERSION))
         canvas.drawString(margin, 26, "Recorded changes do not establish a treatment's causal effect.")
         canvas.drawRightString(width - margin, 31, str(doc.page))
         canvas.restoreState()

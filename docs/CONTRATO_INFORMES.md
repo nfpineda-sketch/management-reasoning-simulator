@@ -169,6 +169,39 @@ de la historia que resume, y entonces dos documentos discrepan sobre lo que dijo
 Agregar un campo a esa lista se lo entrega a todos los residentes en todos los encuentros: es
 una decisión clínica, no de formato, y vive en `arrival_brief.HANDED_OVER`.
 
+## El idioma de los documentos
+
+**Decisión docente del 2026-09-23.** Los documentos siguen el idioma que el lector eligió. El
+inglés es el predeterminado y su camino no cambió en absoluto.
+
+**Se traducen las palabras propias del documento**: títulos de sección, etiquetas, leyendas,
+avisos, el encabezado y el pie. Tres cosas no se traducen, y cada una por su razón:
+
+- **Las palabras del residente**, citadas literalmente, en el idioma en que las escribió.
+  Traducir dentro de una cita sería ponerle palabras en la boca a alguien.
+- **La prosa del modelo**, que se genera en inglés por contrato. Un documento en español lleva
+  entonces rótulos en español y razonamiento en inglés, y **lo dice en la página** en vez de
+  dejar que se note.
+- **Los identificadores clínicos** —dosis, unidades, nombres de fármacos, tiempos, identificadores
+  de evento— que son los mismos en ambos idiomas por diseño, para que un cambio de idioma no
+  pueda alterar fisiología, tiempos ni evaluación.
+
+La tabla está en `report_language.py` y se consulta en un único embudo: `_xml`, por donde pasa
+todo el texto de los dos informes, más `_say` para lo que se dibuja directo en el lienzo. Una
+cadena que la tabla no conoce pasa intacta, que es exactamente lo que corresponde a la prosa del
+modelo y a las citas del residente.
+
+**Lo que la tabla no puede hacer, declarado.** Una frase construida alrededor de un valor
+—`f"{n} prioridades de revisión seleccionadas"`— se arma en tiempo de ejecución y no coincide
+con ninguna clave, así que sale en inglés. Arreglarla significa convertir la f-string en una
+plantilla completa para que el español ponga el número donde lo pone el español. Quedan **15 en
+el Management Trace y 14 en los briefs**, listadas por `composed_prose` y contadas por una
+prueba que falla si aparece una nueva. Ese número sólo puede bajar.
+
+`test_the_documents_speak_the_readers_language` recorre los renderizadores y falla cuando la
+tabla no sabe decir alguna de sus cadenas. Sin esa prueba la tabla se pudre en silencio: alguien
+edita una frase en inglés y el documento en español imprime esa línea en inglés sin avisar.
+
 ## Qué se distingue siempre
 
 | Categoría | Cómo se presenta |

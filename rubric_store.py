@@ -67,7 +67,13 @@ def build_review(*, case_id, scores, reasons, events, justifications, status, pr
             raise AccountError(f"{domain} must be 0-3 or not assessable.")
         decided[domain] = value
         if value == NOT_ASSESSABLE:
-            why[domain] = _text(reasons.get(domain), required=True, field="reason for not assessable")
+            # A confirmed assessment must say why; a draft is work in progress
+            # and is allowed to be incomplete. Since the reviewer's selector
+            # starts every domain at "not assessable" (2026-09-23), requiring
+            # the reason to save a draft would mean no draft could be saved at
+            # all without writing five of them first.
+            why[domain] = _text(reasons.get(domain), required=(status == "confirmed"),
+                                field="reason for not assessable")
         elif reasons.get(domain):
             why[domain] = _text(reasons.get(domain), field="note")
         if domain in proposed_scores and proposed_scores[domain] != value:

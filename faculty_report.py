@@ -71,10 +71,26 @@ def _string(value):
     return value if isinstance(value, str) else ""
 
 
-def _xml(value):
-    """Make user/model text inert inside ReportLab's XML-like paragraphs."""
-    text = _string(value).translate(str.maketrans(
-        "₀₁₂₃₄₅₆₇₈₉", "0123456789"))
+def _say(text, language=None):
+    """The page furniture, which is drawn on the canvas and never sees _xml."""
+    import report_language
+    from language import current as _reader_language
+    return report_language.t(text, language or _reader_language())
+
+
+def _xml(value, language=None):
+    """Make user/model text inert inside ReportLab's XML-like paragraphs.
+
+    The single funnel every string in these documents passes through, which is
+    why the translation happens here rather than at two hundred call sites.
+    ``report_language.t`` returns anything it does not know unchanged, so the
+    model's own prose and the resident's quoted words pass through untouched --
+    only the document's own words are in that table (2026-09-23).
+    """
+    import report_language
+    from language import current as _reader_language
+    text = report_language.t(_string(value), language or _reader_language())
+    text = text.translate(str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789"))
     text = text.replace("\u2011", "-").replace("\u2013", "-").replace("\u2014", "-")
     text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", text)
     return escape(text).replace("\n", "<br/>")
@@ -357,9 +373,9 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
         canvas.line(margin, height - 33, width - margin, height - 33)
         canvas.setFont("FacultySans-Bold", 7.4)
         canvas.setFillColor(NAVY)
-        canvas.drawString(margin, height - 25, "MANAGEMENT REASONING SIMULATOR")
+        canvas.drawString(margin, height - 25, _say("MANAGEMENT REASONING SIMULATOR"))
         canvas.setFillColor(BLUE)
-        canvas.drawRightString(width - margin, height - 25, "FACULTY REVIEW • AI DRAFT")
+        canvas.drawRightString(width - margin, height - 25, _say("FACULTY REVIEW • AI DRAFT"))
         canvas.setStrokeColor(LINE)
         canvas.line(margin, 53, width - margin, 53)
         footer = p(
@@ -644,14 +660,15 @@ def _render_compact(report, record, inputs, app_url, correct=None, assessment=No
         canvas.line(margin, height - 34, width - margin, height - 34)
         canvas.setFillColor(NAVY)
         canvas.setFont("FacultySans-Bold", 8)
-        canvas.drawString(margin, height - 25, "MANAGEMENT REASONING SIMULATOR")
+        canvas.drawString(margin, height - 25, _say("MANAGEMENT REASONING SIMULATOR"))
         canvas.setFillColor(BLUE)
-        canvas.drawRightString(width - margin, height - 25, "FACULTY REVIEW · AI DRAFT")
+        canvas.drawRightString(width - margin, height - 25, _say("FACULTY REVIEW · AI DRAFT"))
         canvas.setStrokeColor(LINE)
         canvas.line(margin, 34, width - margin, 34)
         canvas.setFont("FacultySans", 8)
         canvas.setFillColor(MUTED)
-        canvas.drawString(margin, 22, f"{encounter_id} · revision {report.get('attempt_revision')} · Faculty judgment required")
+        canvas.drawString(margin, 22, _say("{id} · revision {n} · Faculty judgment required").format(
+            id=encounter_id, n=report.get("attempt_revision")))
         canvas.drawRightString(width - margin, 22, f"{doc.page} / {total}" if total else str(doc.page))
         canvas.restoreState()
 

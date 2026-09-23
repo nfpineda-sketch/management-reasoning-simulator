@@ -96,6 +96,24 @@ def test_not_assessable_must_carry_its_reason():
     assert review["reasons"]["D4"]
 
 
+def test_a_draft_may_be_saved_before_the_reasons_are_written():
+    """A draft is work in progress; the confirmation is where it is held.
+
+    The reviewer's selector starts every domain at "not assessable"
+    (2026-09-23), so requiring the reason to save a draft would mean no draft
+    could be saved without writing five of them first.
+    """
+    scores = {domain: rubric.NOT_ASSESSABLE for domain in rubric.DOMAIN_IDS}
+    draft = build_review(case_id=CASE, scores=scores, reasons={}, events=(),
+                         justifications={}, status="draft")
+    assert draft["status"] == "draft"
+    assert draft["totals"]["coverage"]["assessed"] == 0
+    # Confirming the same thing is still refused until each one says why.
+    with pytest.raises(AccountError):
+        build_review(case_id=CASE, scores=scores, reasons={}, events=(),
+                     justifications={}, status="confirmed")
+
+
 def test_changing_a_proposed_score_requires_a_justification():
     record = {"id": "a", "revision": 0}
     proposal = {"proposal": {"domains": [{"domain_id": d, "score": 2} for d in rubric.DOMAIN_IDS],
