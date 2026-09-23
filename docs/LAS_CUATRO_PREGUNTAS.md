@@ -127,6 +127,42 @@ y cuando falta, «Hallazgos mencionados: no explicitados» o «Relación con la
 interpretación: no explicitada». La misma información y la misma procedencia en
 el registro, la interfaz y los PDF. No se reabrió el diseño de los documentos.
 
+## 5. El modelo como lector de hallazgos — construido y apagado
+
+`MRS_AI_CUES` con tres valores:
+
+| Valor | Qué cuesta |
+|---|---|
+| `off` (por defecto) | nada. Sólo leen los patrones. |
+| `held` | **nada adicional**. La pregunta por los hallazgos viaja en la misma petición que una orden detenida ya iba a hacer. |
+| `always` | **una petición por decisión**. Es la diferencia entre una excepción y un cobro por orden. |
+
+Categorías y cues son **una sola operación**, nunca dos, y nunca una llamada por
+campo (§8).
+
+Las mismas dos propiedades que ya tenía el segundo lector, extendidas a las
+cues: cada hallazgo debe aparecer **textualmente** en lo que escribió el
+residente o se descarta, y un vínculo que se afirma sin el conector citado
+conserva el hallazgo y pierde la afirmación — la observación sigue siendo suya.
+Los patrones conservan sus filas; el modelo sólo agrega donde ellos no vieron
+nada, y cada fila dice cuál de los dos la leyó. En el trace aparece «algunos
+leídos por un modelo».
+
+Si el modelo falla, el texto queda íntegro y los patrones ya lo leyeron: nada se
+presenta como información que el residente hubiera omitido (§8).
+
+### El presupuesto dejó de ser una promesa
+
+`MRS_AI_CALL_BUDGET`, ocho peticiones por encuentro por defecto, contadas en
+`ai_calls_spent` y con un registro de para qué fue cada una. **Todas** las rutas
+pagadas pasan por el mismo contador: la normalización de lenguaje, el segundo
+lector de órdenes detenidas y la lectura de hallazgos. Agotado el presupuesto,
+cada una vuelve a su lectura determinista y lo dice en el registro — que el
+motivo fue el presupuesto, no el residente.
+
+Hasta ahora el presupuesto acotado era una condición que yo cumplía a mano. Ahora
+es un contador que se detiene.
+
 ## Lo que queda abierto
 
 - **«Información consultada»** sólo existe para la historia (`history_review`).
@@ -135,5 +171,9 @@ el registro, la interfaz y los PDF. No se reabrió el diseño de los documentos.
   medias.
 - El vínculo **entre frases** no se reconoce (ver arriba). Es la mayor parte de
   lo que quedaría para un modelo.
-- **Cues por modelo** (§3 con IA) no está hecho: cuesta una llamada por decisión,
-  no por orden detenida, y espera autorización de presupuesto.
+- **Cues por modelo** está construido y **apagado**. No se ha gastado ninguna
+  petición en él. Lo que falta es medir cuánto agrega sobre los patrones, y esa
+  medición cuesta peticiones: ver abajo.
+- **Nadie ha medido** si el modelo captura los 2 hallazgos que los patrones
+  perdieron y los 2 vínculos entre frases sin inventar nada. Esa es la única
+  incertidumbre que queda y la única razón para gastar.

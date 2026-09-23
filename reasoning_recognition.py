@@ -67,33 +67,95 @@ class Recognition:
     absent: tuple[str, ...] = ()
     rejected: tuple[str, ...] = ()
     model: str = ""
+    cues: tuple = ()
+    cues_rejected: int = 0
 
     def __bool__(self):
-        return bool(self.slots)
+        return bool(self.slots or self.cues)
 
 
-def _schema(fields):
+#: The four states a finding can be held in, matching ``reasoning_cues``.
+POLARITIES = ("present", "absent", "trend", "uncertain")
+
+
+def _cue_schema():
+    return {
+        "type": "array",
+        "maxItems": 12,
+        "items": {
+            "type": "object",
+            "properties": {
+                "finding": {"type": "string", "maxLength": 160},
+                "polarity": {"type": "string", "enum": list(POLARITIES)},
+                "linked": {"type": "boolean"},
+                "link_marker": {"type": "string", "maxLength": 60},
+            },
+            "required": ["finding", "polarity", "linked", "link_marker"],
+            "additionalProperties": False,
+        },
+    }
+
+
+def _schema(fields, with_cues=False):
+    properties = {
+        name: {
+            "type": "object",
+            "properties": {
+                "present": {"type": "boolean"},
+                "quote": {"type": "string", "maxLength": 600},
+            },
+            "required": ["present", "quote"],
+            "additionalProperties": False,
+        }
+        for name in fields
+    }
+    if with_cues:
+        properties["cues"] = _cue_schema()
     return {
         "type": "object",
-        "properties": {
-            name: {
-                "type": "object",
-                "properties": {
-                    "present": {"type": "boolean"},
-                    "quote": {"type": "string", "maxLength": 600},
-                },
-                "required": ["present", "quote"],
-                "additionalProperties": False,
-            }
-            for name in fields
-        },
-        "required": list(fields),
+        "properties": properties,
+        "required": list(properties),
         "additionalProperties": False,
     }
 
 
-def _instructions(fields):
+_CUE_INSTRUCTIONS = """
+
+Also list, in "cues", the clinical findings the resident named in this message:
+what they observed about this patient. For each one:
+- finding: the exact words they used, copied from the message. Not your
+  paraphrase and not the name of a condition they concluded.
+- polarity: "present" when they say it is there; "absent" when they say it is
+  not ("sin crepitantes", "no wheeze"); "trend" when they describe it changing
+  or persisting ("la presion mejoro", "still confused"); "uncertain" when they
+  hedge it ("podria estar hipotenso").
+- linked: true only when the resident said in that same sentence that this
+  finding supported or questioned their interpretation.
+- link_marker: the exact connector they used ("porque", "me preocupa que",
+  "which suggests"), copied from the message, or the empty string.
+
+What is not a cue:
+- The order. "Dar suero" names no finding, and you may not conclude
+  hypovolaemia, dehydration or blood loss from it. This is the rule that
+  matters most: never work backwards from the treatment to a finding.
+- The interpretation. "Creo que esta en shock" is a conclusion; "edema
+  pulmonar cardiogenico" is the name of a condition. Neither is an observation.
+- An expectation or a plan. "Espero que suba la presion" and "reevaluo la
+  presion en 10 minutos" describe what they want and what they will do.
+- Anything from the chart or the monitor that the resident did not write.
+
+Return an empty list when the resident named no finding. A finding whose words
+are not in the message is discarded, so copy accurately or leave it out.
+"""
+
+
+def _instructions(fields, with_cues=False):
     wanted = "\n".join(f"- {name}: {_DESCRIPTIONS[name]}" for name in fields)
+    return (_base_instructions(wanted)
+            + (_CUE_INSTRUCTIONS if with_cues else "")).strip()
+
+
+def _base_instructions(wanted):
     return f"""
 You read one message written by a resident physician during an emergency
 medicine simulation and report which of the following categories the resident
@@ -162,13 +224,19 @@ def recognize(
     learner_text: str,
     fields,
     *,
+    cues: bool = False,
     api_key: str = "",
     model: str = "gpt-5.6-luna",
     client: Any = None,
 ) -> Recognition:
-    """Ask the second reader about ``fields`` only, and validate every answer."""
+    """Ask the second reader about ``fields`` only, and validate every answer.
+
+    The categories and the findings are one question, never two. A separate call
+    per field, or a second call for the cues, is the shape this deliberately
+    avoids (faculty specification 2026-09-23, section 8).
+    """
     asked = tuple(name for name in CATEGORIES if name in set(fields or ()))
-    if not asked:
+    if not asked and not cues:
         raise ReasoningRecognitionError("No category was asked about.")
     if not str(learner_text or "").strip():
         raise ReasoningRecognitionError("The learner message is empty.")
@@ -185,13 +253,13 @@ def recognize(
     try:
         response = client.responses.create(
             model=model,
-            instructions=_instructions(asked),
+            instructions=_instructions(asked, cues),
             input=json.dumps({"resident_message": str(learner_text)}, ensure_ascii=False),
             text={
                 "format": {
                     "type": "json_schema",
                     "name": "reasoning_category_recognition",
-                    "schema": _schema(asked),
+                    "schema": _schema(asked, cues),
                     "strict": True,
                 }
             },
@@ -199,11 +267,12 @@ def recognize(
         data = json.loads(response.output_text)
     except Exception as exc:
         raise ReasoningRecognitionError("The recognition request failed.") from exc
-    return validate(data, learner_text, asked, model)
+    return validate(data, learner_text, asked, model, cues=cues)
 
 
-def validate(data: Mapping[str, Any], learner_text: str, asked, model="") -> Recognition:
-    """Keep only the categories whose quote is genuinely the learner's."""
+def validate(data: Mapping[str, Any], learner_text: str, asked, model="",
+             cues: bool = False) -> Recognition:
+    """Keep only the categories and findings whose words are genuinely the learner's."""
     slots, absent, rejected = {}, [], []
     for name in asked:
         answer = (data or {}).get(name) or {}
@@ -215,4 +284,35 @@ def validate(data: Mapping[str, Any], learner_text: str, asked, model="") -> Rec
             rejected.append(name)
             continue
         slots[name] = quote
-    return Recognition(slots, tuple(absent), tuple(rejected), str(model or ""))
+
+    found, refused = [], 0
+    if cues:
+        seen = set()
+        for row in (data or {}).get("cues") or ():
+            if not isinstance(row, dict):
+                refused += 1
+                continue
+            finding = verbatim(row.get("finding", ""), learner_text)
+            if finding is None or row.get("polarity") not in POLARITIES:
+                refused += 1
+                continue
+            key = _normalise(finding)
+            if key in seen:
+                continue
+            seen.add(key)
+            # A link the resident is said to have expressed has to carry the
+            # connector they wrote. A claimed link with no such words is kept as
+            # the finding without the claim, never dropped: the observation is
+            # still theirs.
+            marker = verbatim(row.get("link_marker", ""), learner_text) or ""
+            found.append({
+                "finding": finding,
+                "polarity": row["polarity"],
+                "linked": bool(row.get("linked")) and bool(marker),
+                "link_marker": marker,
+                "contrast": False,
+                "statement": "",
+                "source": "model",
+            })
+    return Recognition(slots, tuple(absent), tuple(rejected), str(model or ""),
+                       tuple(found), refused)

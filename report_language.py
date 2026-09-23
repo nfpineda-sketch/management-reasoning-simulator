@@ -58,6 +58,8 @@ KEEP = frozenset({
 })
 
 ES = {
+    "some read by a model":
+        "algunos leídos por un modelo",
     'Findings mentioned':
         'Hallazgos mencionados',
     'Link expressed':

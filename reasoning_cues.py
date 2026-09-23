@@ -254,6 +254,19 @@ def cues(text):
     return found
 
 
+def key(finding):
+    """How two findings are compared, so the same one is never listed twice.
+
+    Case, accents and run-together whitespace are transcription, not content:
+    "Hipotenso" and "hipotenso" are one finding.
+    """
+    lowered = str(finding or "").lower()
+    for source, target in (("á", "a"), ("é", "e"), ("í", "i"), ("ó", "o"),
+                           ("ú", "u"), ("ü", "u"), ("ñ", "n")):
+        lowered = lowered.replace(source, target)
+    return re.sub(r"\s+", " ", lowered).strip(" .,;:")
+
+
 def mentioned(text):
     """Just the findings, for a caller that does not need the rest."""
     return [cue["finding"] for cue in cues(text)]
@@ -280,5 +293,8 @@ def sanitise(rows):
             "link_marker": str(row.get("link_marker") or "")[:60],
             "contrast": bool(row.get("contrast")),
             "statement": str(row.get("statement") or "")[:300],
+            # Which reader saw it. A faculty member reading a cue should know
+            # whether the patterns found it or a model was asked.
+            "source": "model" if row.get("source") == "model" else "pattern",
         })
     return clean[:24]

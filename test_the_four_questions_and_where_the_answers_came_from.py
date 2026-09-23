@@ -330,3 +330,159 @@ def test_a_field_left_as_extracted_keeps_the_hand_that_wrote_it(encounter):
     provenance = resolved["parsed"]["reasoning"]["slot_provenance"]
     assert provenance["problem_representation"] == reasoning_provenance.STATED
     assert provenance["expected_effect"] == reasoning_provenance.COMPLETED
+
+
+# --- the model as a reader of findings, and the budget that stops it ---------
+
+class CueStub:
+    """A provider that answers from a script and counts what it was asked."""
+
+    def __init__(self, answer):
+        self.answer = answer
+        self.calls = []
+        self.responses = self
+
+    def create(self, **kwargs):
+        import json
+        self.calls.append(kwargs)
+        return type("R", (), {"output_text": json.dumps(self.answer)})()
+
+
+ENTRY = "Está hipotenso y confuso, me preocupa que esté en shock. Pásale 1000 cc."
+
+
+def test_the_categories_and_the_findings_are_one_question_not_two():
+    from reasoning_recognition import recognize
+
+    client = CueStub({"working_model": {"present": True, "quote": "esté en shock"},
+                      "cues": [{"finding": "hipotenso", "polarity": "present",
+                                "linked": True, "link_marker": "me preocupa que"}]})
+    found = recognize(ENTRY, ["working_model"], cues=True, client=client)
+    assert len(client.calls) == 1
+    assert found.slots == {"working_model": "esté en shock"}
+    assert [row["finding"] for row in found.cues] == ["hipotenso"]
+
+
+def test_a_finding_the_resident_never_wrote_is_refused():
+    from reasoning_recognition import recognize
+
+    client = CueStub({"cues": [
+        {"finding": "oliguria", "polarity": "present", "linked": False, "link_marker": ""},
+        {"finding": "confuso", "polarity": "present", "linked": False, "link_marker": ""},
+    ]})
+    found = recognize(ENTRY, (), cues=True, client=client)
+    assert [row["finding"] for row in found.cues] == ["confuso"]
+    assert found.cues_rejected == 1
+
+
+def test_a_claimed_link_without_the_connector_keeps_the_finding_and_drops_the_claim():
+    from reasoning_recognition import recognize
+
+    client = CueStub({"cues": [{"finding": "confuso", "polarity": "present",
+                                "linked": True, "link_marker": "which clearly indicates"}]})
+    found = recognize(ENTRY, (), cues=True, client=client)
+    assert found.cues[0]["finding"] == "confuso"
+    assert found.cues[0]["linked"] is False
+
+
+def test_the_patterns_keep_their_rows_and_the_model_only_adds(encounter):
+    engine = encounter
+    parsed = engine["clinical_interpreter"](ENTRY)
+    before = [row["finding"] for row in parsed["reasoning"]["mentioned_findings"]]
+    assert before == ["hipotenso", "confuso"]
+    engine["merge_cues"](parsed, [
+        {"finding": "hipotenso", "polarity": "present", "linked": False,
+         "link_marker": "", "contrast": False, "statement": "", "source": "model"},
+        {"finding": "1000 cc", "polarity": "present", "linked": False,
+         "link_marker": "", "contrast": False, "statement": "", "source": "model"},
+    ])
+    rows = parsed["reasoning"]["mentioned_findings"]
+    assert [row["finding"] for row in rows] == ["hipotenso", "confuso", "1000 cc"]
+    assert [row["source"] for row in rows] == ["pattern", "pattern", "model"]
+    assert parsed["cue_recognition"]["added_by_model"] == 1
+
+
+def test_the_budget_is_a_counter_that_stops(encounter):
+    engine = encounter
+    session = engine["st"].session_state
+    session["ai_calls_spent"] = 0
+    session["ai_call_ledger"] = []
+    budget = engine["ai_call_budget"]()
+    assert budget == 8
+    for _ in range(budget):
+        assert engine["spend_ai_call"]("test") is True
+    assert engine["spend_ai_call"]("test") is False
+    assert engine["ai_calls_spent"]() == budget
+
+
+def test_the_ledger_says_what_each_request_was_for(encounter):
+    engine = encounter
+    engine["st"].session_state["ai_calls_spent"] = 0
+    engine["st"].session_state["ai_call_ledger"] = []
+    engine["spend_ai_call"]("held-order recognition")
+    ledger = engine["st"].session_state["ai_call_ledger"]
+    assert ledger == [{"purpose": "held-order recognition", "minute": 0}]
+
+
+def test_an_exhausted_budget_falls_back_rather_than_failing(encounter):
+    engine = encounter
+    engine["st"].session_state["ai_calls_spent"] = 99
+    parsed = engine["clinical_interpreter"](ENTRY)
+    engine["recognize_cues_for"](parsed)
+    # Off by default, so nothing is attempted and nothing is claimed either way.
+    assert parsed.get("cue_recognition") is None
+    assert [row["finding"] for row in parsed["reasoning"]["mentioned_findings"]] == [
+        "hipotenso", "confuso"]
+
+
+def test_reading_the_findings_with_a_model_is_off_unless_asked_for(encounter):
+    assert encounter["ai_cue_mode"]() == "off"
+    assert encounter["ai_reasoning_recognition_enabled"]() is False
+
+
+# --- the measurement tool cannot spend more than it was authorised ----------
+
+def test_the_measurement_refuses_to_run_without_a_number():
+    import tools_cue_recognition_runs as tool
+
+    with pytest.raises(SystemExit):
+        tool.main(["--yes"])          # a promise is not a scope
+    with pytest.raises(SystemExit):
+        tool.main([])                 # neither is silence
+
+
+def test_the_dry_run_sends_nothing_and_still_says_what_the_patterns_did(capsys):
+    import tools_cue_recognition_runs as tool
+
+    assert tool.main(["--dry-run"]) == 0
+    printed = capsys.readouterr().out
+    assert "requests 0" in printed
+    assert "invented 0" in printed
+
+
+def test_the_counter_refuses_the_request_past_the_cap():
+    import httpx
+
+    import tools_cue_recognition_runs as tool
+
+    # The cap is enforced by the counter itself, not by the loop that calls it:
+    # a retry inside the SDK cannot buy a request the faculty did not authorise.
+    sent = []
+    original = httpx.Client.send
+
+    def counted(self, request, *args, **kwargs):
+        if len(sent) >= 2:
+            raise RuntimeError("refused")
+        sent.append(request)
+        raise RuntimeError("no network in this suite")
+
+    try:
+        httpx.Client.send = counted
+        for _ in range(2):
+            with pytest.raises(RuntimeError):
+                httpx.Client().send(object())
+        with pytest.raises(RuntimeError, match="refused"):
+            httpx.Client().send(object())
+    finally:
+        httpx.Client.send = original
+    assert len(sent) == 2

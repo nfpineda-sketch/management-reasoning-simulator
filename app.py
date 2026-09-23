@@ -572,6 +572,9 @@ def reset_session():
     st.session_state.pending_reasoning = None
     st.session_state.reasoning_gate_counter = 0
     st.session_state.last_executed_action = None
+    # A new encounter gets a new budget, and only a new encounter does.
+    st.session_state.ai_calls_spent = 0
+    st.session_state.ai_call_ledger = []
 
 if "started" not in st.session_state:
     reset_session()
@@ -592,6 +595,8 @@ for _key, _default in {
     "prior_attempt_summary": None,
     "prior_attempt_record": None,
     "pending_reasoning": None,
+    "ai_calls_spent": 0,
+    "ai_call_ledger": [],
     "reasoning_gate_counter": 0,
 }.items():
     if _key not in st.session_state:
@@ -774,6 +779,7 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         "reasoning": deepcopy(parsed.get("reasoning", {})),
         "reasoning_observations": deepcopy(parsed.get("reasoning_observations", [])),
         "reasoning_recognition": deepcopy(parsed.get("reasoning_recognition")),
+        "cue_recognition": deepcopy(parsed.get("cue_recognition")),
         "reasoning_gate": deepcopy(parsed.get("reasoning_gate", {"required": False, "status": "not_required"})),
         "recognized_future_actions": deepcopy(parsed.get("recognized_future_actions", [])),
         "interpretation_mode": parsed.get("interpretation_mode", "deterministic"),
@@ -6738,6 +6744,8 @@ def normalize_clinical_turn(text):
         return text, {"mode": "deterministic"}
 
     model = _runtime_secret("OPENAI_MODEL", "gpt-5.6-luna")
+    if not spend_ai_call("language normalization"):
+        return text, {"mode": "deterministic", "fallback_reason": "encounter call budget spent"}
     visible_state = deepcopy((st.session_state.get("state") or {}).get("observable") or {})
     try:
         normalized = normalize_with_ai(text, visible_state, api_key=api_key, model=model)
@@ -6942,6 +6950,123 @@ def apply_carried_reasoning(parsed, missing):
     return reasoning_gate_missing(parsed)
 
 
+def ai_call_budget():
+    """How many provider requests one encounter may spend, at most.
+
+    A bounded budget has been the standing condition on every paid call in this
+    project. Until now it was a promise kept by hand; this is the counter that
+    keeps it. Set MRS_AI_CALL_BUDGET to change it.
+    """
+    raw = str(_runtime_secret("MRS_AI_CALL_BUDGET", "")).strip()
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        return 8
+
+
+def ai_calls_spent():
+    return int(st.session_state.get("ai_calls_spent", 0) or 0)
+
+
+def spend_ai_call(purpose):
+    """Take one request from this encounter's budget, or refuse it.
+
+    Refusing is not an error. Every caller of this falls back to the
+    deterministic reading it would have used anyway, and says in the record that
+    the budget was the reason rather than the resident.
+    """
+    if ai_calls_spent() >= ai_call_budget():
+        return False
+    st.session_state.ai_calls_spent = ai_calls_spent() + 1
+    ledger = list(st.session_state.get("ai_call_ledger", []) or [])
+    ledger.append({
+        "purpose": str(purpose),
+        "minute": (st.session_state.get("state") or {}).get("sim_time"),
+    })
+    st.session_state.ai_call_ledger = ledger[:200]
+    return True
+
+
+def ai_cue_mode():
+    """Whether a model is asked to read the findings, and how often.
+
+    ``held`` costs nothing beyond what is already being spent: the question
+    rides along on the request a held order was going to make anyway. ``always``
+    reads every decision and costs one request each, which is the difference
+    between an exception and a per-order charge. Set MRS_AI_CUES.
+    """
+    setting = str(_runtime_secret("MRS_AI_CUES", "")).strip().lower()
+    if setting not in {"held", "always"} or not _runtime_secret("OPENAI_API_KEY"):
+        return "off"
+    return setting
+
+
+def merge_cues(parsed, found, refused=0):
+    """Add what the model read to what the patterns read, without duplicating.
+
+    The patterns come first and keep their rows: they carry the statement behind
+    each finding, and they are free. A model row survives only where the
+    patterns saw nothing, and says so, because the faculty reading a cue should
+    know which of the two read it.
+    """
+    import reasoning_cues
+
+    reasoning = parsed.setdefault("reasoning", {})
+    existing = list(reasoning.get("mentioned_findings") or [])
+    for row in existing:
+        row.setdefault("source", "pattern")
+    seen = {reasoning_cues.key(row.get("finding")) for row in existing}
+    added = 0
+    for row in found or ():
+        key = reasoning_cues.key(row.get("finding"))
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        existing.append(dict(row))
+        added += 1
+    if existing:
+        reasoning["mentioned_findings"] = reasoning_cues.sanitise(existing)
+    audit = dict(parsed.get("cue_recognition") or {})
+    audit.update({"status": "read", "added_by_model": added, "rejected": int(refused)})
+    parsed["cue_recognition"] = audit
+    return parsed
+
+
+def recognize_cues_for(parsed):
+    """Ask a model for the findings in a decision that was not held.
+
+    This is the one path that costs a request per decision rather than per held
+    order, so it is off unless MRS_AI_CUES is "always" and it takes its request
+    from the same encounter budget as everything else.
+    """
+    if ai_cue_mode() != "always":
+        return parsed
+    text = str(parsed.get("raw_text") or "").strip()
+    if not text or not any(a.get("type") in REASONING_GATE_ACTION_TYPES
+                           for a in parsed.get("actions", []) or []):
+        return parsed
+    if not spend_ai_call("cue recognition"):
+        parsed["cue_recognition"] = {"status": "budget_exhausted",
+                                     "spent": ai_calls_spent(),
+                                     "budget": ai_call_budget()}
+        return parsed
+
+    from reasoning_recognition import ReasoningRecognitionError, recognize
+    try:
+        found = recognize(
+            text, (), cues=True,
+            api_key=_runtime_secret("OPENAI_API_KEY"),
+            model=_runtime_secret("OPENAI_MODEL", "gpt-5.6-luna"),
+        )
+    except ReasoningRecognitionError as exc:
+        # A failure of the model is a failure of the model. The entry is intact
+        # and the patterns already read it; nothing is presented as something
+        # the resident omitted (specification section 8).
+        parsed["cue_recognition"] = {"status": "unavailable", "reason": str(exc)}
+        return parsed
+    return merge_cues(parsed, found.cues, found.cues_rejected)
+
+
 def ai_reasoning_recognition_enabled():
     """True only when the second reader for held orders is switched on.
 
@@ -6977,9 +7102,17 @@ def recognize_held_reasoning(parsed, missing):
     # only have been noted as well: the answer enriches the trace for free.
     asked = missing + [field for field in reasoning_gate_noted(parsed)
                        if field in SLOT_FIELDS and field not in missing]
+    if not spend_ai_call("held-order recognition"):
+        parsed["reasoning_recognition"] = {"status": "budget_exhausted",
+                                           "spent": ai_calls_spent(),
+                                           "budget": ai_call_budget()}
+        return missing
+    # The findings ride along on a request that is already being paid for, so
+    # asking for them here costs nothing beyond it (specification section 8).
+    with_cues = ai_cue_mode() != "off"
     try:
         found = recognize(
-            text, asked,
+            text, asked, cues=with_cues,
             api_key=_runtime_secret("OPENAI_API_KEY"),
             model=_runtime_secret("OPENAI_MODEL", "gpt-5.6-luna"),
         )
@@ -6987,6 +7120,8 @@ def recognize_held_reasoning(parsed, missing):
         # An unavailable second reader holds the order exactly as before.
         parsed["reasoning_recognition"] = {"status": "unavailable", "reason": str(exc)}
         return missing
+    if with_cues:
+        merge_cues(parsed, found.cues, found.cues_rejected)
 
     reasoning = parsed.setdefault("reasoning", {})
     for category, quote in found.slots.items():
@@ -9573,6 +9708,8 @@ with st.container(key="encounter-console"):
             parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
                                         "noted": reasoning_gate_noted(parsed)}
             gate_status = "complete"
+
+        recognize_cues_for(parsed)
 
         for observation in parsed.get("reasoning_observations", []) or []:
             add_event("reasoning_note", observation)

@@ -788,9 +788,16 @@ def render_management_trace_pdf(
         # absent from the record, not what the resident failed to notice.
         named_findings = event.get("mentioned_findings") or []
         if named_findings:
+            # Which reader saw them. A model was asked here only if the faculty
+            # switched that on, and a reader of this page should not have to
+            # guess which of the two produced a line.
+            by_model = [row for row in named_findings if row.get("source") == "model"]
+            read_by = (f' <font size="8" color="#607482">({_xml(_t("some read by a model"))})</font>'
+                       if by_model else "")
             block.append(Paragraph(
                 f"<b>{_xml(_t('Findings mentioned'))}:</b> "
-                + _xml("; ".join(str(row.get("finding") or "") for row in named_findings)),
+                + _xml("; ".join(str(row.get("finding") or "") for row in named_findings))
+                + read_by,
                 styles["body"]))
             linked = [row for row in named_findings if row.get("linked")]
             if linked:

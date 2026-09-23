@@ -11,6 +11,7 @@ from html import escape
 from io import BytesIO
 import json
 import math
+import os
 from pathlib import Path
 import random
 import re
@@ -54,7 +55,7 @@ def load_engine():
                 nodes.append(node)
     st = FakeStreamlit()
     namespace = {
-        "st": st, "re": re, "math": math, "random": random,
+        "st": st, "re": re, "math": math, "random": random, "os": os,
         "json": json, "deepcopy": deepcopy, "escape": escape,
         "BytesIO": BytesIO, "__file__": str(ROOT / "app.py"),
     }
