@@ -109,6 +109,9 @@ _DIAGNOSTICS = {
                   r"rx(?:\s+de)?(?:\s+torax)?|placa(?:\s+(?:de\s+)?torax)?|x[- ]?rays?|radiograph",
     "urinalysis": r"urinalysis|urine analysis|urine dip|orina completa|examen de orina",
     "blood_cultures": r"blood cultures?|hemocultivos?",
+    # The first test of the embolism algorithm, and it did not exist: a request
+    # for it held the whole submission as unreadable (played 2026-09-22).
+    "d_dimer": r"d[- ]?dimer|dd[- ]?dimer|dimero[- ]?d|d[- ]?dimero|dimero|dimeros? d",
     # "Cardiac markers" and "cardiac enzymes" are how the request is spoken; in
     # this encounter the marker is the troponin, and the result says so.
     "troponin": r"troponin|troponina|marcadores? cardiacos?|enzimas cardiacas|"
@@ -370,15 +373,27 @@ _FLOW = r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(?:l\s*/\s*(?:min|m)\b|lpm|lts?\s*/\s*mi
 
 # Examining the patient, written as an order rather than clicked in the Examine
 # control: "examina el abdomen", "ausculta el torax", "revisa el neurologico".
-_EXAMINATION_VERBS = (r"examinar|examina|examine|examine[ns]|explorar|explora|auscultar|ausculta|"
-                      r"auscultate|palpar|palpa|palpate|revisar|revisa|inspeccionar|inspecciona|inspect")
+# First person as well as the imperative: faculty write "examino las piernas",
+# not "examina las piernas", and the examination was simply lost (2026-09-22).
+_EXAMINATION_VERBS = (r"examinar|examina|examino|examine|examine[ns]|explorar|explora|exploro|"
+                      r"auscultar|ausculta|ausculto|auscultate|palpar|palpa|palpo|palpate|"
+                      r"revisar|revisa|reviso|inspeccionar|inspecciona|inspecciono|inspect|"
+                      r"busco|buscar|busca")
 _EXAMINATION_REGIONS = (
     ("General appearance", r"apariencia\s+general|aspecto\s+general|estado\s+general|general\s+appearance|"
                            r"aspecto\s+del?\s+paciente"),
     ("Breathing", r"respiraci[oó]n|patr[oó]n\s+respiratorio|breathing|trabajo\s+respiratorio|"
                   r"work\s+of\s+breathing"),
     ("Peripheral perfusion", r"perfusi[oó]n(?:\s+perif[eé]rica)?|llene\s+capilar|peripheral\s+perfusion|"
-                             r"capillary\s+refill|extremidades"),
+                             r"capillary\s+refill"),
+    # The legs are their own examination, not a reading of perfusion. "Examine
+    # the extremities" was refused and "examina las extremidades" answered with
+    # the capillary refill, so the calf swelling that turns "maybe it is
+    # anxiety" into a pulmonary embolism could not be asked for in either
+    # language (played 2026-09-22). Where a case authors no finding there, the
+    # engine still answers with the perfusion it always had.
+    ("Extremities", r"extremidades|extremities|extremidad|extremity|piernas|legs|pierna|leg|"
+                    r"pantorrillas?|calf|calves|miembros\s+inferiores|gemelos"),
     ("Cardiac", r"cardiaco|card[ií]aco|coraz[oó]n|cardiac|heart|cardiovascular"),
     ("Respiratory", r"respiratorio|pulmones|pulmonar|t[oó]rax|chest|lungs|respiratory|campos\s+pulmonares"),
     ("Abdomen", r"abdomen|abdominal|vientre"),
@@ -643,8 +658,11 @@ def _parse_piece_core(piece, inherited=None):
     if examined is not None:
         if examined:
             return [{"type": "examination", "region": examined}], verb or "examine"
-        return [_clarification("Name the part of the examination to perform: general appearance, breathing, "
-                               "peripheral perfusion, cardiac, respiratory, abdomen or neurological.")], verb
+        # Derived from the table above. Written out by hand it drifted: the
+        # engine offered Extremities and this sentence never named it.
+        named = [region.lower() for region, _ in _EXAMINATION_REGIONS]
+        return [_clarification("Name the part of the examination to perform: "
+                               + ", ".join(named[:-1]) + " or " + named[-1] + ".")], verb
 
     other_region = re.search(r"\b(?:abdomen|abdominal|pelvis|pelvic|spine|columna|craneo|skull|"
                              r"extremidad|extremity|limb|rodilla|knee|cadera|hip)\b", body)

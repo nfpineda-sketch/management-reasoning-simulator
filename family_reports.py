@@ -6,7 +6,7 @@ TEST_LABELS = {
     "pocus": "POCUS", "ecg": "ECG", "vbg": "Venous blood gas", "abg": "Arterial blood gas",
     "lactate": "Lactate", "basic_labs": "Laboratory results", "poc_glucose": "Bedside glucose",
     "temperature": "Temperature", "chest_xray": "Chest X-ray", "urinalysis": "Urinalysis",
-    "blood_cultures": "Blood cultures", "troponin": "Troponin", "ctpa": "CT pulmonary angiography",
+    "blood_cultures": "Blood cultures", "troponin": "Troponin", "ctpa": "CT pulmonary angiography", "d_dimer": "D-dimer",
     "hemoglobin": "Hemoglobin",
     "ecg_right": "Right-sided ECG (V3R-V4R)", "ecg_posterior": "Posterior ECG (V7-V9)",
 }
@@ -24,6 +24,8 @@ FIELDS = {
     "creatinine_mg_dl": "Creatinine (mg/dL)", "glucose_mg_dl": "Glucose (mg/dL)",
     "crp_mg_l": "CRP (mg/L)", "temperature_c": "Temperature (°C)",
     "value_ng_l": "Troponin (ng/L)", "upper_reference_ng_l": "Upper reference (ng/L)",
+    "d_dimer_ng_ml_feu": "D-dimer (ng/mL FEU)",
+    "upper_reference_ng_ml_feu": "Upper reference, age-adjusted (ng/mL FEU)",
     "finding": "Finding", "history": "History",
 }
 

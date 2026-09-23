@@ -245,6 +245,14 @@ _RULES = (
  (r"\bRight-sided ECG \(V3R-V4R\)", "ECG con derivadas derechas (V3R-V4R)"),
  (r"\bPosterior ECG \(V7-V9\)", "ECG con derivaciones posteriores (V7-V9)"),
  (r"\bGlucose (\d+) mg/dL", r"Glucosa \1 mg/dL"),
+ # The age-adjusted rule reads before the plain one: rules apply in order.
+ (r"Age-adjusted upper reference: (\d+) ng/mL FEU up to (\d+) years, age x 10 above it\.",
+  r"Referencia superior ajustada por edad: \1 ng/mL FEU hasta los \2 años, y edad x 10 por encima."),
+ (r"Above the limit: this does not establish a diagnosis and does not exclude one\.",
+  "Sobre el límite: esto no establece un diagnóstico ni lo descarta."),
+ (r"At or below the limit for this age\.", "En el límite o por debajo para esta edad."),
+ (r"\bUpper reference, age-adjusted\b", "Referencia superior ajustada por edad"),
+ (r"\bD-dimer\b", "Dímero D"),
  (r"\bUpper reference\b", "Referencia superior"),
  # --- the monitor's own labels ---------------------------------------------
  (r"^SIM TIME$", "TIEMPO SIM"), (r"^BP · MAP$", "PA · PAM"), (r"^HR$", "FC"),

@@ -379,7 +379,13 @@ def _validate(state, parsed):
             continue
         if kind == "examination":
             regions = available_regions(validation_state)
-            match = next((r for r in regions if r.lower() == str(a.get("region", "")).lower()), None)
+            wanted = str(a.get("region", ""))
+            match = next((r for r in regions if r.lower() == wanted.lower()), None)
+            if match is None and wanted == "Extremities":
+                # A case that authors no finding for the legs still has a
+                # perfusion to report, which is what asking for them used to
+                # give. Refusing instead would be a new way to lose an order.
+                match = next((r for r in regions if r == "Peripheral perfusion"), None)
             if match is None:
                 return None, ("That examination is not available in this encounter. You may examine "
                               + ", ".join(regions[:-1]) + " or " + regions[-1] + ".")

@@ -29,6 +29,8 @@ INVESTIGATION_IDS = (
     "pocus", "lactate", "vbg", "abg", "basic_labs", "temperature",
     "poc_glucose", "chest_xray", "urinalysis", "blood_cultures",
     "troponin", "ctpa", "hemoglobin",
+    # The first test of the embolism algorithm (faculty decision, 2026-09-22).
+    "d_dimer",
     # The additional leads of a coronary case (faculty decision 7, 2026-09-21).
     "ecg_right", "ecg_posterior",
 )
@@ -206,9 +208,43 @@ def _study(result, duration=5):
             "result": {"report": result} if isinstance(result, str) else result}
 
 
+AGE_ADJUSTED_D_DIMER_FROM = 50
+D_DIMER_FIXED_LIMIT = 500
+
+
+def age_adjusted_d_dimer_limit(age_years):
+    """The upper reference of a D-dimer for this patient, in ng/mL FEU.
+
+    Fixed at 500 up to fifty years and age x 10 above it. The adjustment exists
+    because the fixed limit turns positive with age and loses the ability to
+    exclude that the test is ordered for (faculty decision, 2026-09-22). The
+    limit is derived from the case's own age, never written beside it, so the
+    two cannot drift apart.
+    """
+    age = int(age_years)
+    return D_DIMER_FIXED_LIMIT if age <= AGE_ADJUSTED_D_DIMER_FROM else age * 10
+
+
+def _with_age_adjusted_d_dimer(investigations, age_years):
+    study = investigations.get("d_dimer")
+    if not study:
+        return investigations
+    limit = age_adjusted_d_dimer_limit(age_years)
+    value = study["result"]["d_dimer_ng_ml_feu"]
+    study["result"]["upper_reference_ng_ml_feu"] = limit
+    study["result"]["report"] = (
+        f"Age-adjusted upper reference: {D_DIMER_FIXED_LIMIT} ng/mL FEU up to "
+        f"{AGE_ADJUSTED_D_DIMER_FROM} years, age x 10 above it. "
+        + ("Above the limit: this does not establish a diagnosis and does not exclude one."
+           if value > limit else
+           "At or below the limit for this age.")
+    )
+    return investigations
+
+
 def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
                     pocus, chest_xray, troponin=8, sodium=138, potassium=4.1,
-                    bun=18, ctpa=None):
+                    bun=18, ctpa=None, d_dimer=None):
     # An unauthored study is absent, never silently reported as a negative test.
     result = {
         "pocus": _study(pocus, 2),
@@ -232,6 +268,9 @@ def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
     }
     if ctpa is not None:
         result["ctpa"] = _study(ctpa, 20)
+    if d_dimer is not None:
+        # The upper reference is filled in from the case's age by _case.
+        result["d_dimer"] = _study({"d_dimer_ng_ml_feu": d_dimer}, 10)
     return result
 
 
@@ -263,7 +302,8 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
                     "comorbidities": list(comorbidities)},
         "presentation": presentation, "history": history, "history_source": history_source,
         "examination": examination, "observable": observable,
-        "ecg_profile": ecg, "investigations": _with_additional_leads(investigations, coronary),
+        "ecg_profile": ecg, "investigations": _with_age_adjusted_d_dimer(
+            _with_additional_leads(investigations, coronary), age),
         "visual_profile": visual or _visual(),
         "engine": {
             "family": family, "definitive_actions": list(actions),
@@ -657,7 +697,8 @@ FAMILIES["pulmonary_embolism"]["variants"].append(_case(
         abg=(7.47, 30, 59), vbg=(7.43, 37),
         pocus=POCUS["pulmonary_embolism"][0],
         chest_xray="No focal consolidation, edema or pneumothorax.", troponin=31,
-        ctpa="Acute lobar and segmental filling defects in the right and left pulmonary arteries. Mild RV enlargement."),
+        ctpa="Acute lobar and segmental filling defects in the right and left pulmonary arteries. Mild RV enlargement.",
+        d_dimer=2400),
     "Acute pulmonary embolism with hypoxemia, initially without hypotension",
     ["Abrupt pleuritic dyspnea", "Thromboembolic risk factors", "Confirmed pulmonary arterial filling defects"],
     "Establish the thromboembolic diagnosis and treatment plan while monitoring for deterioration.",
@@ -688,7 +729,8 @@ FAMILIES["pulmonary_embolism"]["variants"].append(_case(
         abg=(7.43, 28, 55), vbg=(7.39, 35),
         pocus=POCUS["pulmonary_embolism"][1],
         chest_xray="No focal consolidation or pulmonary edema.", troponin=76,
-        ctpa="Extensive acute bilateral main and lobar pulmonary arterial filling defects with RV enlargement and septal flattening."),
+        ctpa="Extensive acute bilateral main and lobar pulmonary arterial filling defects with RV enlargement and septal flattening.",
+        d_dimer=5200),
     "High-risk pulmonary embolism with obstructive shock",
     ["Hypotension with impaired perfusion", "Acute RV pressure overload", "Active cancer and venous thrombosis findings"],
     "Support the patient and rapidly involve a reperfusion-capable team; reassess transport and imaging feasibility.",
