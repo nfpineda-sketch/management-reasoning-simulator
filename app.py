@@ -6688,7 +6688,7 @@ REASONING_GATE_ACTION_TYPES = {
     "ventilator_adjustment", "ventilator_continuation", "dobutamine",
     "norepinephrine", "oxygen", "procedural_sedation", "cardioversion",
     "antibiotics", "disposition",
-    "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "dextrose",
+    "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "p2y12", "diuretic", "dextrose",
     "naloxone", "blood", "anticoagulation", "bag_mask", "consult", "nitroglycerin_bolus", "magnesium",
     "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
     # Named by its role; the engine resolves which infusion before it runs.
@@ -6787,7 +6787,7 @@ def _reasoning_gate_action_summary(parsed):
             volume = action.get("volume_ml")
             fluid = action.get("fluid_type") or "crystalloid"
             labels.append(f"{volume:g} mL {fluid}" if volume is not None else fluid)
-        elif atype in {"beta_blocker", "diltiazem", "amiodarone", "furosemide", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "diuretic", "naloxone", "magnesium"}:
+        elif atype in {"beta_blocker", "diltiazem", "amiodarone", "furosemide", "antibiotics", "bronchodilator", "steroid", "ppi", "aspirin", "p2y12", "diuretic", "naloxone", "magnesium"}:
             agent = action.get("agent") or atype.replace("_", " ")
             dose = action.get("dose_mg")
             route = action.get("route") or ""

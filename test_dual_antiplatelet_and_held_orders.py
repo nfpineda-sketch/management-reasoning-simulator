@@ -109,3 +109,26 @@ def test_an_infusion_rate_says_how_far_outside_the_range_it_is(state):
 def test_a_rate_inside_the_range_is_simply_given(state):
     result = run(state, "Start iv nitroglycerin 30 mcg/min")
     assert result["executed"], result["clarification"]
+
+
+def test_the_antiplatelet_is_held_for_reasoning_like_every_other_treatment():
+    """Adding a drug to the parser is not enough to make it a decision.
+
+    The P2Y12 inhibitor was readable, executable and invisible: it did not ask
+    the resident for a working model the way aspirin and the anticoagulant do,
+    and a held turn did not say it had understood it. Found by replaying the
+    Wellens case right after adding the drug (2026-09-22).
+    """
+    import app
+    assert "p2y12" in app.REASONING_GATE_ACTION_TYPES
+    for companion in ("aspirin", "anticoagulation"):
+        assert companion in app.REASONING_GATE_ACTION_TYPES
+
+
+def test_a_held_turn_says_it_understood_the_antiplatelet():
+    import app
+    parsed = parse_family_actions(
+        "Start iv nytroglicerin 30 mg/min, clopidrogrel 180 mg po, heparin 5000 IU iv")
+    understood = app._held_order_summary(parsed)
+    assert "clopidogrel 180 mg PO" in understood
+    assert "heparin" in understood

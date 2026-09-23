@@ -69,3 +69,39 @@ def test_the_replay_record_still_needs_offline_by_default(monkeypatch, tmp_path)
     monkeypatch.setenv("MRS_REPLAY_CASE", str(record))
     assert offline_cases.replay_record() is None
     assert offline_cases.replay_record(require_offline=False) is not None
+
+
+def test_the_pinned_variant_is_the_case_an_authored_launch_opens_on(monkeypatch):
+    """MRS_DEFAULT_VARIANT, the companion of MRS_DEFAULT_CHALLENGE.
+
+    Without it each restart drew a new variant, so a defect found in one case
+    could not be re-examined after fixing it (2026-09-22).
+    """
+    import offline_cases
+    monkeypatch.setenv("MRS_OFFLINE_CASES", "1")
+    monkeypatch.delenv("MRS_REPLAY_CASE", raising=False)
+
+    monkeypatch.delenv("MRS_DEFAULT_VARIANT", raising=False)
+    options, scene = offline_cases.launch_options("sk-live-key")
+    assert "variant_id" not in options and options["api_key"] == "" and scene == ""
+
+    monkeypatch.setenv("MRS_DEFAULT_VARIANT", "acs_48m_wellens")
+    options, _ = offline_cases.launch_options("sk-live-key")
+    assert options["variant_id"] == "acs_48m_wellens"
+    assert options["api_key"] == ""          # pinning a case is not a way to pay
+
+    # An identifier that is not in the bank is a typo in a local convenience,
+    # not a reason to refuse the launch.
+    monkeypatch.setenv("MRS_DEFAULT_VARIANT", "acs_48m_wellens_typo")
+    assert "variant_id" not in offline_cases.launch_options("")[0]
+
+
+def test_a_pinned_variant_reaches_the_encounter_it_names(monkeypatch):
+    from encounter_generator import generate_encounter
+    monkeypatch.setenv("MRS_OFFLINE_CASES", "1")
+    monkeypatch.setenv("MRS_DEFAULT_VARIANT", "acs_48m_wellens")
+    import offline_cases
+    options, _ = offline_cases.launch_options("")
+    base = {"sim_time": 0, "hidden": {}, "treatments": {}}
+    generated = generate_encounter("R2-02", base, **options)
+    assert generated["state"]["encounter_spec"]["clinical_case"]["id"] == "acs_48m_wellens"

@@ -62,19 +62,46 @@ def paid_generation_allowed(role=None):
     return True
 
 
+DEFAULT_VARIANT = "MRS_DEFAULT_VARIANT"
+
+
+def pinned_variant():
+    """The bank case an authored launch opens on, or None.
+
+    The companion of MRS_DEFAULT_CHALLENGE. Without it every restart draws a new
+    variant from the challenge's families, so "play that case again" was a
+    lottery: a defect found in one case could not be re-examined after a fix. An
+    unknown identifier is ignored rather than raised, because this is a local
+    convenience and not a reason to refuse a launch.
+    """
+    import os
+    choice = str(os.environ.get(DEFAULT_VARIANT, "")).strip()
+    if not choice:
+        return None
+    from clinical_cases import FAMILIES
+    known = {case["id"] for family in FAMILIES.values() for case in family.get("variants", [])}
+    return choice if choice in known else None
+
+
+def _authored(extra=None):
+    variant = pinned_variant()
+    options = {"generation_mode": "authored", "api_key": "", **(extra or {})}
+    return ({**options, "variant_id": variant} if variant else options), ""
+
+
 def launch_options(api_key, role=None):
     """Keyword arguments for ``generate_encounter`` and the key the scene may use."""
     if offline_cases_enabled():
         record = replay_record()
         if record is not None:
             return {"generation_mode": "replay", "replay": record, "api_key": ""}, ""
-        return {"generation_mode": "authored", "api_key": ""}, ""
+        return _authored()
     if not paid_generation_allowed(role):
         # A saved, validated case instead of a paid generation.
         record = replay_record(require_offline=False)
         if record is not None:
             return {"generation_mode": "replay", "replay": record, "api_key": ""}, ""
-        return {"generation_mode": "authored", "api_key": ""}, ""
+        return _authored()
     return {"api_key": api_key}, api_key
 
 
