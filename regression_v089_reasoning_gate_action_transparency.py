@@ -24,6 +24,7 @@ state_names = {
     "INITIAL_STATE", "PRESENTATION", "PS002_PRESENTATION", "CASE_CONFIGS",
     "REASONING_GATE_ACTION_TYPES", "REASONING_GATE_FIELD_LABELS",
     "REASONING_GATE_OVERRIDE",
+    "REASONING_GATE_BLOCKING", "REASONING_GATE_NOTED",
 }
 for node in tree.body:
     if isinstance(node, ast.FunctionDef):
@@ -111,9 +112,15 @@ assert analgesia["recognized_future_actions"] == ["fentanyl 50 mcg for analgesia
 initialize()
 treatment_only = namespace["clinical_interpreter"]("Give diltiazem 5 mg IV.")
 assert treatment_only["reasoning"] == {}, treatment_only
+# Since 2026-09-23 the gate holds an order for the four categories the faculty
+# named — the working model, the expectation, the reassessment, and the order
+# itself. A missing priority or reassessment time is recorded and travels with
+# the decision instead of standing in the doorway.
 assert namespace["reasoning_gate_missing"](treatment_only) == [
-    "working_model", "management_priority", "expected_effect",
-    "reassessment_target", "reassessment_timing",
+    "working_model", "expected_effect", "reassessment_target",
+]
+assert namespace["reasoning_gate_noted"](treatment_only) == [
+    "management_priority", "reassessment_timing",
 ]
 before = deepcopy(st.session_state.state)
 prompt = namespace["hold_pending_reasoning"](treatment_only)

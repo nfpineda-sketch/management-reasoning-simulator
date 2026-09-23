@@ -773,6 +773,7 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         "interpreted_action": deepcopy(parsed.get("actions", [])),
         "reasoning": deepcopy(parsed.get("reasoning", {})),
         "reasoning_observations": deepcopy(parsed.get("reasoning_observations", [])),
+        "reasoning_recognition": deepcopy(parsed.get("reasoning_recognition")),
         "reasoning_gate": deepcopy(parsed.get("reasoning_gate", {"required": False, "status": "not_required"})),
         "recognized_future_actions": deepcopy(parsed.get("recognized_future_actions", [])),
         "interpretation_mode": parsed.get("interpretation_mode", "deterministic"),
@@ -5756,7 +5757,7 @@ def extract_explicit_reasoning(text):
 
     if "expected_effect" not in reasoning:
         natural_expectation = re.search(
-            r"\b(?:i|we)\s+(?:expect|anticipate)\s+(.+?)"
+            r"\b(?:(?:i|we)\s+(?:expect|anticipate)|expecting|anticipating|esperando)\s+(.+?)"
             r"(?=\s*,?\s*(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
             joined,
             re.I,
@@ -5765,6 +5766,60 @@ def extract_explicit_reasoning(text):
             reasoning["expected_effect"] = _clean_reasoning_phrase(
                 natural_expectation.group(1)
             )
+
+    # A purpose clause is an expectation written the short way. "500 mL to raise
+    # the MAP" and "salbutamol para mejorar el broncoespasmo" say what the
+    # learner expects the intervention to do; held orders in the 2026-09-23
+    # measurement were lost to exactly this phrasing. The clause must name a
+    # physiologic direction, so "fentanyl for analgesia" stays an indication,
+    # and it must not already belong to another slot, so a priority written as
+    # "my priority is to reduce afterload" is not counted twice.
+    if "expected_effect" not in reasoning:
+        direction = (r"(?:rais|increas|improv|restor|reestablish|lower|drop|reduc|decreas|"
+                     r"limit|control|correct|stabili[sz]|reliev|revers|unload|support|"
+                     r"maintain|prevent|avoid|clear|open|oxygenat|perfus|convert|"
+                     # Spanish is matched by stem: a resident writes "suba",
+                     # "baje" and "orine", not the infinitive the parser knows.
+                     r"sub[ai]|baj|mejor|aument|disminu|limit|corrig|correg|estabiliz|"
+                     r"alivi|reviert|revert|descarg|manten|preven|evit|abr|oxigen|"
+                     r"perfund|compens|fren|orin|diure|ced|normaliz|recuper)")
+        purpose = re.search(
+            r"\b(?:to|para|a\s+fin\s+de|con\s+el\s+fin\s+de|buscando|"
+            r"in\s+order\s+to)\s+(" + direction + r"\w*\s+.+?)"
+            r"(?=\s*,?\s*(?:and\s+|y\s+)?(?:reassess|recheck|reevaluate|reevaluar|"
+            r"revaluar|controlo|controlar|then|luego)\b|[.;]|$)",
+            joined, re.I,
+        )
+        candidate = _clean_reasoning_phrase(purpose.group(1)) if purpose else None
+        if candidate:
+            claimed = " ".join(
+                str(reasoning.get(key) or "")
+                for key in ("management_priority", "problem_representation", "rationale")
+            ).lower()
+            if candidate.lower() not in claimed:
+                reasoning["expected_effect"] = candidate
+
+    # A stated aim is an expectation written forwards: "busco subir la presion",
+    # "quiero frenar la agregacion", "the aim is to unload the work of
+    # breathing". The candidate has to name a physiologic direction, so "quiero
+    # dar aspirina" stays an order and does not become an expectation.
+    if "expected_effect" not in reasoning:
+        aim = re.search(
+            r"\b(?:busco|buscando|quiero|pretendo|intento|apunto\s+a|apuntando\s+a|"
+            r"la\s+idea\s+es(?:\s+que)?|el\s+plan\s+es|me\s+interesa|"
+            r"the\s+(?:goal|aim|idea|plan)\s+is(?:\s+to)?|my\s+(?:goal|aim)\s+is(?:\s+to)?|"
+            r"i\s+am\s+aiming\s+(?:for|to)|aiming\s+(?:for|to)|looking\s+to)\s+"
+            r"(.+?)(?=\s*,?\s*(?:and\s+|y\s+)?(?:reassess|recheck|reevaluate|reevaluar|"
+            r"reevalu[oa]|controlo|control\s+de|reviso|then|luego|i\s+will\s+\w+)\b|[.;]|$)",
+            joined, re.I,
+        )
+        candidate = _clean_reasoning_phrase(aim.group(1)) if aim else None
+        target_value = re.search(
+            r"\b(?:sobre|bajo|mayor|menor|arriba|encima|debajo|above|below|over|under|"
+            r"at\s+least|to)\s*(?:de\s+|que\s+)?[<>]?\s*\d|[<>]\s*\d",
+            candidate or "", re.I)
+        if candidate and (re.search(direction, candidate, re.I) or target_value):
+            reasoning["expected_effect"] = candidate
 
     # Explicit reassessment target only; timing remains in the action schema.
     reassessment_matches = list(re.finditer(
@@ -5819,6 +5874,21 @@ def extract_explicit_reasoning(text):
             if target and target.lower() not in {"him", "her", "patient", "again", "general"}:
                 reasoning["reassessment_target"] = target
 
+    # A resident who says what they will watch has named the reassessment, even
+    # without the word "reassess": "I will look at the sat and the RR in 10
+    # minutes". Tried last, so it never displaces an explicit reassessment.
+    if "reassessment_target" not in reasoning:
+        watched = re.search(
+            r"\b(?:i|we)\s+(?:will\s+|am\s+going\s+to\s+)?"
+            r"(?:look\s+at|keep\s+an\s+eye\s+on|watch|follow|track)\s+"
+            r"(?:the\s+)?(.+?)(?=\s+(?:in|after)\s+\d|[.;]|$)",
+            joined, re.I,
+        )
+        if watched:
+            target = _clean_reasoning_phrase(watched.group(1))
+            if target and target.lower() not in {"him", "her", "patient", "again"}:
+                reasoning["reassessment_target"] = target
+
     # If the learner explicitly states the clinical problem and anticipated
     # physiologic direction, that combination can faithfully express the
     # management priority even without the words "priority" or "first". Keep
@@ -5858,6 +5928,10 @@ def extract_explicit_reasoning(text):
                           r"frecuencia|trabajo|congesti[oó]n|oxigenaci[oó]n|perfusi[oó]n|lactato|hipoxemia|"
                           r"spo2|saturaci[oó]n|resistencia|demanda|consumo)\b")
         _ES_TIME = r"(?:en|a\s+los|tras|despu[eé]s\s+de)\s+\d+(?:[.,]\d+)?\s*(?:min|mins|minutos?|h|horas?)\b"
+        _ES_REASSESS = (r"reevaluar|revaluar|re-evaluar|reeval[uú][oae]|controlar|controla|"
+                        r"controlo|chequear|chequeo|vigilar|vigilo|revisar|reviso|"
+                        r"medir|mido|monitorizar|monitorizo|monitorear|monitoreo|"
+                        r"volver\s+a\s+evaluar")
         # The separator is mandatory: without it "sin inundar el pulmon" ended the
         # priority at "inun", because "dar" matched inside the word.
         gap = r"(?:\s*,\s*|\s+)"
@@ -5931,15 +6005,21 @@ def extract_explicit_reasoning(text):
         if "reassessment_target" not in reasoning:
             # "reevaluar SpO2 y FR en 15 minutos" and "reevaluar en 15 minutos SpO2 y FR".
             m = re.search(
-                r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú][oae]|controlar|controla|volver\s+a\s+evaluar)\s+"
+                r"\b(?:" + _ES_REASSESS + r")\s+"
                 r"(?!" + _ES_TIME + r")(?:(?:el|la|los|las)\s+)?(.+?)(?=\s+" + _ES_TIME + r"|[.;]|$)",
                 joined, re.I,
             )
             target = _clean_reasoning_phrase(m.group(1)) if m else None
             if not target:
                 m = re.search(
-                    r"\b(?:reevaluar|revaluar|re-evaluar|reeval[uú][oae]|controlar|controla)\s+" + _ES_TIME +
+                    r"\b(?:" + _ES_REASSESS + r")\s+" + _ES_TIME +
                     r"\s*,?\s*(?:(?:el|la|los|las)\s+)?(.+?)(?=[.;]|$)",
+                    joined, re.I,
+                )
+                target = _clean_reasoning_phrase(m.group(1)) if m else None
+            if not target:
+                m = re.search(
+                    r"\bcontrol(?:es)?\s+de\s+(?:(?:el|la|los|las)\s+)?(.+?)\s+" + _ES_TIME,
                     joined, re.I,
                 )
                 target = _clean_reasoning_phrase(m.group(1)) if m else None
@@ -6725,9 +6805,26 @@ REASONING_GATE_FIELD_STEMS = {
 
 REASONING_GATE_OVERRIDE = "execute without complete reasoning"
 
+# The four things a management order has to carry: the working model, what the
+# learner expects, what they will reassess, and the action itself. The action is
+# the fourth, and it is what makes the gate fire at all, so it can never be the
+# field that is missing.
+#
+# Two fields that used to hold an order no longer do. Measured on 2026-09-23
+# against fifteen orders that named all four categories in ordinary prose, seven
+# were held; in five of those the only absent field was management_priority. The
+# resident had written the model, the expectation, the reassessment and the
+# order, and the encounter stopped to ask for a heading. Reassessment timing
+# behaved the same way. Both are still extracted, still recorded, and still
+# reach the faculty as gaps in ``reasoning_gate["noted"]`` — noted rather than
+# enforced, which is how this simulator treats every other omission a resident
+# makes rather than standing in the doorway over it.
+REASONING_GATE_BLOCKING = ("working_model", "expected_effect", "reassessment_target")
+REASONING_GATE_NOTED = ("management_priority", "reassessment_timing")
 
-def reasoning_gate_missing(parsed):
-    """Return prospective reasoning fields missing from a management order."""
+
+def reasoning_gate_gaps(parsed):
+    """Return every prospective reasoning field absent from a management order."""
     if parsed.get("clarification"):
         return []
     actions = parsed.get("actions", []) or []
@@ -6736,23 +6833,106 @@ def reasoning_gate_missing(parsed):
         return []
 
     reasoning = parsed.get("reasoning", {}) or {}
-    missing = []
+    gaps = []
     # A causal explanation can itself be the learner's working model even when
     # it was not introduced with the literal phrase "my working model is".
     if not (reasoning.get("problem_representation") or reasoning.get("rationale")):
-        missing.append("working_model")
+        gaps.append("working_model")
     if not reasoning.get("management_priority"):
-        missing.append("management_priority")
+        gaps.append("management_priority")
     if not reasoning.get("expected_effect"):
-        missing.append("expected_effect")
+        gaps.append("expected_effect")
 
     reassessments = [a for a in actions if a.get("type") == "reassessment"]
     timed_reassessment = any(a.get("delay_min") is not None for a in reassessments)
     if not reasoning.get("reassessment_target"):
-        missing.append("reassessment_target")
+        gaps.append("reassessment_target")
     if not timed_reassessment:
-        missing.append("reassessment_timing")
-    return missing
+        gaps.append("reassessment_timing")
+    return gaps
+
+
+def reasoning_gate_missing(parsed):
+    """Return the prospective fields whose absence holds the order."""
+    return [field for field in reasoning_gate_gaps(parsed)
+            if field in REASONING_GATE_BLOCKING]
+
+
+def reasoning_gate_noted(parsed):
+    """Return prospective gaps that are recorded and never hold the order.
+
+    These travel with the decision into the Management Trace, so the faculty
+    reads "no stated priority" where it happened instead of the encounter
+    refusing to move until the resident supplies the word.
+    """
+    return [field for field in reasoning_gate_gaps(parsed)
+            if field in REASONING_GATE_NOTED]
+
+
+def ai_reasoning_recognition_enabled():
+    """True only when the second reader for held orders is switched on.
+
+    It is deliberately separate from MRS_AI_LANGUAGE. That one normalizes every
+    submission and costs a request per order; this one is asked only about an
+    order the deterministic parser was about to hold, so a resident who writes
+    the four categories in a way the patterns already read never buys anything.
+    Set MRS_AI_REASONING to enable it.
+    """
+    setting = str(_runtime_secret("MRS_AI_REASONING", "")).strip().lower()
+    return bool(_runtime_secret("OPENAI_API_KEY")) and setting in {"1", "true", "yes", "on"}
+
+
+def recognize_held_reasoning(parsed, missing):
+    """One last look before an order is held: did the resident already write it?
+
+    Returns the fields that are still missing afterwards. The model may only
+    point at the resident's own words — every span it returns is checked against
+    the submission and dropped unless it is in it verbatim — so this can rescue
+    an order from a phrasing the patterns did not know, and cannot put a
+    sentence the resident never wrote into the record the faculty assesses.
+    """
+    missing = list(missing or [])
+    if not missing or not ai_reasoning_recognition_enabled():
+        return missing
+    from reasoning_recognition import (
+        SLOT_FIELDS, ReasoningRecognitionError, recognize)
+
+    text = str(parsed.get("raw_text") or "").strip()
+    if not text:
+        return missing
+    # The request is already being paid for, so ask about the gaps that would
+    # only have been noted as well: the answer enriches the trace for free.
+    asked = missing + [field for field in reasoning_gate_noted(parsed)
+                       if field in SLOT_FIELDS and field not in missing]
+    try:
+        found = recognize(
+            text, asked,
+            api_key=_runtime_secret("OPENAI_API_KEY"),
+            model=_runtime_secret("OPENAI_MODEL", "gpt-5.6-luna"),
+        )
+    except ReasoningRecognitionError as exc:
+        # An unavailable second reader holds the order exactly as before.
+        parsed["reasoning_recognition"] = {"status": "unavailable", "reason": str(exc)}
+        return missing
+
+    reasoning = parsed.setdefault("reasoning", {})
+    for category, quote in found.slots.items():
+        slot = SLOT_FIELDS.get(category)
+        if slot and not reasoning.get(slot):
+            reasoning[slot] = quote
+    if found.slots:
+        reasoning["recognized_slots"] = sorted(
+            set(reasoning.get("recognized_slots") or ()) | set(found.slots))
+    parsed["reasoning_recognition"] = {
+        "status": "read",
+        "model": found.model,
+        "recognized": sorted(found.slots),
+        "absent": list(found.absent),
+        # A span the model did not copy accurately is refused, and saying so is
+        # how a drift in its behaviour becomes visible rather than silent.
+        "rejected": list(found.rejected),
+    }
+    return reasoning_gate_missing(parsed)
 
 
 def reasoning_state_observations(parsed, state):
@@ -7033,7 +7213,8 @@ def complete_pending_reasoning_fields(
             "missing": missing,
         }
 
-    held["reasoning_gate"] = {"required": True, "status": "complete", "missing": []}
+    held["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
+                              "noted": reasoning_gate_noted(held)}
     st.session_state.pending_reasoning = None
     clear_reasoning_gate_clarification()
     return {"parsed": held, "overridden": False, "transcript": transcript}
@@ -7058,6 +7239,7 @@ def resolve_pending_reasoning(text):
             "required": True,
             "status": "overridden",
             "missing": list(pending.get("missing") or []),
+            "noted": reasoning_gate_noted(held),
         }
         st.session_state.pending_reasoning = None
         clear_reasoning_gate_clarification()
@@ -7100,7 +7282,8 @@ def resolve_pending_reasoning(text):
         }
         return {"clarification": reasoning_gate_prompt(held, missing), "missing": missing}
 
-    held["reasoning_gate"] = {"required": True, "status": "complete", "missing": []}
+    held["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
+                              "noted": reasoning_gate_noted(held)}
     st.session_state.pending_reasoning = None
     clear_reasoning_gate_clarification()
     return {"parsed": held, "overridden": False}
@@ -9198,6 +9381,8 @@ with st.container(key="encounter-console"):
             parsed, st.session_state.state
         )
         missing_reasoning = reasoning_gate_missing(parsed)
+        if missing_reasoning:
+            missing_reasoning = recognize_held_reasoning(parsed, missing_reasoning)
         gate_status = (parsed.get("reasoning_gate") or {}).get("status")
         if missing_reasoning and gate_status != "overridden":
             st.session_state.last_parse = parsed
@@ -9208,7 +9393,8 @@ with st.container(key="encounter-console"):
             action.get("type") in REASONING_GATE_ACTION_TYPES
             for action in parsed.get("actions", [])
         ):
-            parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": []}
+            parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
+                                        "noted": reasoning_gate_noted(parsed)}
             gate_status = "complete"
 
         for observation in parsed.get("reasoning_observations", []) or []:

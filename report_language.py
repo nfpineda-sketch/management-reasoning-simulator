@@ -58,6 +58,12 @@ KEEP = frozenset({
 })
 
 ES = {
+    "Not stated before this order: {elements}.":
+        "No se enunció antes de esta orden: {elements}.",
+    "which problem was being addressed first":
+        "qué problema se estaba abordando primero",
+    "when the reassessment would happen":
+        "cuándo ocurriría la reevaluación",
     '" color="#FFFFFF"><b>Open this encounter → review and record your assessment</b></link>':
         '" color="#FFFFFF"><b>Abrir este encuentro → revisar y registrar su evaluación</b></link>',
     '- proposed by the AI and not yet confirmed or dismissed. It carries no penalty until you decide.':

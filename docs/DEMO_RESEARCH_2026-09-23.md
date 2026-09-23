@@ -239,6 +239,10 @@ Una disposición es la entrega del paciente: lo que el residente dice que va a c
 controla en la unidad que lo recibe. Ahora el reloj **se detiene** en el horizonte en vez de
 rechazar la orden. Seis pruebas.
 
+> Nota posterior del mismo día: el portón ya no exige el tiempo de reevaluación. Lo anota y
+> deja correr la orden — ver `JUGABILIDAD_Y_LAS_CUATRO_CATEGORIAS.md`. El reloj que se
+> detiene en el horizonte sigue siendo necesario por su propia razón.
+
 ### C3. El informe del residente se rechazaba por citar su propia respuesta
 
 Este es el importante. Cada decisión guarda una ventana de evidencia: qué había visto el

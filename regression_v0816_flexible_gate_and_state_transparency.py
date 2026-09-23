@@ -21,6 +21,7 @@ state_names = {
     "INITIAL_STATE", "PRESENTATION", "PS002_PRESENTATION", "CASE_CONFIGS",
     "REASONING_GATE_ACTION_TYPES", "REASONING_GATE_FIELD_LABELS",
     "REASONING_GATE_FIELD_STEMS", "REASONING_GATE_OVERRIDE",
+    "REASONING_GATE_BLOCKING", "REASONING_GATE_NOTED",
 }
 for node in tree.body:
     if isinstance(node, ast.FunctionDef):
@@ -80,16 +81,22 @@ assert "urinalysis positive for infection" in reasoning["problem_representation"
 assert reasoning["management_priority"] == "improve arterial pressure and tissue perfusion", reasoning
 assert "pressure to increase" in reasoning["expected_effect"].lower(), reasoning
 assert all(token in reasoning["reassessment_target"].lower() for token in ("perfusion", "hr", "bp")), reasoning
-assert namespace["reasoning_gate_missing"](parsed) == ["reassessment_timing"], parsed
+# An unstated reassessment time no longer holds the turn; it is recorded as a
+# gap the faculty reads in the Management Trace (faculty decision 2026-09-23).
+assert namespace["reasoning_gate_missing"](parsed) == [], parsed
+assert namespace["reasoning_gate_noted"](parsed) == ["reassessment_timing"], parsed
 
 timed = namespace["clinical_interpreter"](literal + " in 5 minutes")
 assert namespace["reasoning_gate_missing"](timed) == [], timed
+assert namespace["reasoning_gate_noted"](timed) == [], timed
 
 # Relaxation remains bounded: an order alone must not manufacture reasoning.
 treatment_only = namespace["clinical_interpreter"]("Give 2000 cc NS.")
 assert namespace["reasoning_gate_missing"](treatment_only) == [
-    "working_model", "management_priority", "expected_effect",
-    "reassessment_target", "reassessment_timing",
+    "working_model", "expected_effect", "reassessment_target",
+], treatment_only
+assert namespace["reasoning_gate_noted"](treatment_only) == [
+    "management_priority", "reassessment_timing",
 ], treatment_only
 
 # A mismatch with current data is a neutral observation and never a gate item.
@@ -97,7 +104,7 @@ current = {"observable": {"hr": 96, "rhythm": "Sinus rhythm"}}
 notes = namespace["reasoning_state_observations"](parsed, current)
 assert notes and "current HR is 96/min" in notes[0], notes
 assert "does not block" in notes[0], notes
-assert namespace["reasoning_gate_missing"](parsed) == ["reassessment_timing"]
+assert namespace["reasoning_gate_noted"](parsed) == ["reassessment_timing"]
 assert namespace["reasoning_state_observations"](
     parsed, {"observable": {"hr": 110, "rhythm": "Sinus rhythm"}}
 ) == []

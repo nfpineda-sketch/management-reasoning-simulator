@@ -35,6 +35,7 @@ state_names = {
     "REASONING_GATE_FIELD_LABELS",
     "REASONING_GATE_FIELD_STEMS",
     "REASONING_GATE_OVERRIDE",
+    "REASONING_GATE_BLOCKING", "REASONING_GATE_NOTED",
 }
 for node in tree.body:
     if isinstance(node, ast.FunctionDef):

@@ -350,6 +350,29 @@ _ES_PROCLITIC = re.compile(
 )
 
 
+# "Given the hypoxemia I will start NIV" and "como esta hipotenso le voy a pasar
+# volumen" announce an order in the middle of a sentence that opens with the
+# reason for it. The command pattern is anchored to the start of a clause, so
+# without a comma the order was read as prose and nothing happened at all —
+# neither an execution nor a question (measured 2026-09-23). A declared
+# intention starts its own clause.
+_DECLARED_INTENTION = re.compile(
+    r"(?<=[^.;,\n])\s+(?=(?:i\s+(?:will|am\s+going\s+to)|i'll|i'm\s+going\s+to|"
+    r"(?:le\s+|les\s+)?voy\s+a|vamos\s+a)\s+\w)", re.I)
+
+
+# In Spanish the intention is a periphrasis around the infinitive the parser
+# already knows: "le voy a pasar volumen" is "pasar volumen" announced. Removing
+# the periphrasis puts the infinitive where a clause-initial order belongs.
+_ES_INTENTION = re.compile(
+    r"(^|[.;,\n]\s*)(?:(?:me|te|se|nos|le|les|lo|la|los|las)\s+)?"
+    r"(?:voy\s+a|vamos\s+a)\s+(?=\w)", re.I)
+
+
+def _declared_intention(text):
+    return _ES_INTENTION.sub(r"\1", _DECLARED_INTENTION.sub(", ", str(text or "")))
+
+
 def _spanish_proclitics(text):
     """Drop a pronoun standing between the clause and its verb."""
     def replace(match):
@@ -364,9 +387,18 @@ def _spanish_proclitics(text):
     return _ES_PROCLITIC.sub(replace, text)
 
 
+# "Parto con volumen", "partamos con noradrenalina": a periphrasis of beginning.
+# "Parto" on its own is a noun in clinical Spanish, so only the form that takes
+# "con" is read as the order it is.
+_ES_START_PERIPHRASIS = re.compile(
+    r"\b(?:partir|parto|parte|partamos|partimos|arrancar|arranco|"
+    r"comenzar|comienzo)\s+con\s+", re.I)
+
+
 def _spanish_imperatives(text):
     """Read a clause-initial imperative as the infinitive the parser knows."""
     text = _ES_STOP_PERIPHRASIS.sub("suspender ", text)
+    text = _ES_START_PERIPHRASIS.sub("administrar ", text)
     def replace(match):
         if match[2] in _ES_NOUN_FORMS and _ES_NOUN_PHRASE.match(match.string[match.end():]):
             return match[0]
@@ -465,6 +497,91 @@ def _examination_order(body):
 
 def _clarification(message):
     return {"type": "clarification", "message": message}
+
+
+# The physiologic direction a resident states as a goal or an expectation.
+_GOAL_VERB = (r"sub[ai]r|bajar|mejorar|aumentar|disminuir|reducir|limitar|controlar|"
+              r"corregir|estabilizar|aliviar|revertir|frenar|mantener|prevenir|evitar|"
+              r"lograr|conseguir|optimizar|descargar|oxigenar|perfundir|compensar|"
+              r"raise|lower|improve|increase|decrease|reduce|limit|control|correct|"
+              r"stabili[sz]e|relieve|reverse|maintain|prevent|avoid|achieve|"
+              r"optimi[sz]e|unload|restore|support")
+
+# What a resident watches. These are read off a monitor or a chart; none of them
+# is a region of the physical examination.
+_MONITORED_VARIABLE = (r"presi[oó]n(?:\s+arterial)?|pam|pas|pad|ta\b|frecuencia(?:\s+\w+)?|fc\b|fr\b|"
+                       r"saturaci[oó]n|spo2|sat\b|hgt|glicemia|glucemia|glucosa|diuresis|"
+                       r"d[eé]bito\s+urinario|gasto\s+urinario|llene\s+capilar|perfusi[oó]n|"
+                       r"conciencia|estado\s+mental|ritmo|lactato|temperatura|dolor|ecg|"
+                       r"bp\b|hr\b|rr\b|map\b|saturation|mental\s+status|perfusion|rhythm|"
+                       r"capillary\s+refill|urine\s+output|lactate|pain|glucose")
+
+# A clause that states why, what for, or what will be watched is reasoning, and
+# reasoning is not an unreadable order.
+#
+# Found on 2026-09-23 measuring fifteen orders that named all four categories in
+# ordinary prose: eight of them had a reasoning clause quoted back as "This order
+# was not recognized" — "quiero frenar la agregacion", "the goal is to limit
+# thrombus growth", "apunto a PAM sobre 65", "controlo PAM", "llene capilar".
+# The resident had written exactly what the simulator asks for and the simulator
+# held the turn over it. These clauses produce nothing here; the reasoning
+# extractor reads them into the slots they belong to.
+_REASONING_CLAUSE = re.compile(
+    r"^\s*(?:[,;]\s*)?(?:y|e|and|then|luego)?\s*(?:"
+    r"(?:quiero|busco|buscando|apunto|apuntando|pretendo|intento|espero|anticipo|preveo|"
+    r"me\s+interesa|la\s+idea\s+es|mi\s+(?:objetivo|meta|prioridad)|el\s+(?:objetivo|fin)|"
+    r"la\s+(?:prioridad|meta)|i\s+want|i\s+aim|i\s+expect|i\s+anticipate|i\s+hope|"
+    r"my\s+(?:goal|aim|priority)|the\s+(?:goal|aim|idea|priority|plan)|hoping|looking\s+to)\b"
+    r"|(?:para|to|a\s+fin\s+de|con\s+el\s+fin\s+de|in\s+order\s+to)\s+(?:" + _GOAL_VERB + r")\b"
+    r")", re.I)
+
+_WATCHED_CLAUSE = re.compile(
+    r"^\s*(?:[,;]\s*)?(?:y|e|and|then|luego)?\s*"
+    r"(?:(?:" + _EXAMINATION_VERBS + r"|controlo|controlar|controla|chequeo|chequear|"
+    r"vigilo|vigilar|mido|medir|monitorizo|monitorizar|monitoreo|monitorear|"
+    r"control(?:es)?|check|monitor|watch|follow|recheck|track)\s+)?"
+    # The clause reaches here with its verb already removed, so "control de PAM"
+    # arrives as "de pam": the particles between the verb and the variable are
+    # optional and repeatable.
+    r"(?:(?:de|del|el|la|los|las|the|of|a|al)\s+)*(?:" + _MONITORED_VARIABLE + r")\b",
+    re.I)
+
+# The disturbance a resident says they are trying to move. This list is closed
+# on purpose: a bare infinitive with an open-ended object reads "reducir la
+# dobutamina" as a goal and drops a titration order in silence, which is worse
+# than any spurious question this guard was written to remove.
+_PHYSIOLOGIC_TARGET = (r"congesti[oó]n|precarga|poscarga|postcarga|disnea|hipoxemia|hipoxia|"
+                       r"hipotensi[oó]n|hipertensi[oó]n|taquicardia|bradicardia|acidosis|"
+                       r"agregaci[oó]n|broncoespasmo|inflamaci[oó]n|isquemia|edema|sangrado|"
+                       r"hemorragia|fiebre|agitaci[oó]n|ansiedad|s[ií]ntomas|trabajo\s+respiratorio|"
+                       r"esfuerzo\s+respiratorio|obstrucci[oó]n|shock|sepsis|infecci[oó]n|"
+                       r"congestion|preload|afterload|dyspnea|dyspnoea|hypoxemia|hypoxaemia|"
+                       r"hypotension|hypertension|tachycardia|bradycardia|acidosis|aggregation|"
+                       r"bronchospasm|inflammation|ischemia|ischaemia|edema|oedema|bleeding|"
+                       r"haemorrhage|hemorrhage|fever|agitation|anxiety|symptoms|"
+                       r"work\s+of\s+breathing|obstruction|thrombus|clot|infection")
+
+# A bare infinitive can be a goal ("disminuir la congestion") or an order
+# ("bajar la nitroglicerina a 20"). What separates them is what is being moved:
+# a disturbance, or a drug.
+_GOAL_INFINITIVE = re.compile(
+    r"^\s*(?:[,;]\s*)?(?:y|e|and|then|luego)?\s*(?:(?:" + _GOAL_VERB + r")\s+)"
+    r"(?:(?:el|la|los|las|the|su)\s+)?(?:" + _PHYSIOLOGIC_TARGET + r"|"
+    + _MONITORED_VARIABLE + r")\b", re.I)
+
+
+def _is_reasoning(body):
+    """True when a clause states a goal, an expectation, or what will be watched.
+
+    The guard is deliberately one-sided: a clause naming an administered
+    quantity is an order whatever else it says, so "adrenalina 0.5 mg IM" is
+    still quoted back as unsupported rather than quietly read as a wish.
+    """
+    text = " ".join(str(body or "").split())
+    if not text or _ADMINISTERED_QUANTITY.search(text):
+        return False
+    return bool(_REASONING_CLAUSE.match(text) or _WATCHED_CLAUSE.match(text)
+                or _GOAL_INFINITIVE.match(text))
 
 
 # A quantity that can only be administered: volume, dose, or shock energy. The
@@ -721,6 +838,13 @@ def _parse_piece_core(piece, inherited=None):
     if examined is not None:
         if examined:
             return [{"type": "examination", "region": examined}], verb or "examine"
+        # "Busco subir la presion" and "reviso diuresis y saturacion" share a verb
+        # with the physical examination and are not one: the first is a goal, the
+        # second names what the resident will watch. Neither is an order, and
+        # asking which body part they meant stopped the encounter over language
+        # the reasoning extractor already reads.
+        if _is_reasoning(text):
+            return [], None
         # Derived from the table above. Written out by hand it drifted: the
         # engine offered Extremities and this sentence never named it.
         named = [region.lower() for region, _ in _EXAMINATION_REGIONS]
@@ -745,6 +869,12 @@ def _parse_piece_core(piece, inherited=None):
                  r"ergometr[ií]a|prueba\s+de\s+esfuerzo)\b", body):
         return [{"type": "stress_test"}], verb or "order"
     if verb in _DIAG_VERBS and verb not in {"order", "perform", "do", "realizar", "hacer"}:
+        # "Control de PAM en 15 min" and "mido la saturacion" share a verb with a
+        # study request and ask for neither: they name what the resident will
+        # watch. Asking which study they meant held turns whose reassessment was
+        # already stated (measured 2026-09-23).
+        if _is_reasoning(text):
+            return [], None
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
@@ -1066,6 +1196,11 @@ def _parse_piece_core(piece, inherited=None):
             medication_text = body + " nebulized" if verb in {"nebulize", "nebulizar"} else body
             return [_medication(medication_text, kind, agent)], verb or "give"
     if verb:
+        # A goal or an expectation is not an unreadable order. It carries no
+        # dose, and quoting it back as one held turns whose reasoning was
+        # complete (measured 2026-09-23).
+        if _is_reasoning(text):
+            return [], None
         # The rest of the submission is held rather than discarded.
         return [_unreadable(piece)], verb
     return [], None
@@ -1154,7 +1289,8 @@ def parse_family_actions(text) -> dict:
     A conditional instruction is retained as a future plan, never executed now.
     """
     raw = str(text or "")
-    normalized = _spanish_imperatives(_spanish_proclitics(_normalize(raw)))
+    normalized = _spanish_imperatives(
+        _spanish_proclitics(_declared_intention(_normalize(raw))))
     actions, future = [], []
     queue = re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
     while queue:

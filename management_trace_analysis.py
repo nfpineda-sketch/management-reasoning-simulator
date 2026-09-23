@@ -116,6 +116,26 @@ def _derived_slots(reasoning):
     return sorted(str(value) for value in values if value in REASONING_FIELDS)
 
 
+#: What the gate records rather than enforces, as a reader-facing label.
+UNSTATED_LABELS = {
+    "management_priority": "which problem was being addressed first",
+    "reassessment_timing": "when the reassessment would happen",
+}
+
+
+def _unstated(gate):
+    """Prospective elements the resident did not state, in the order they are asked.
+
+    Since 2026-09-23 these do not hold the order. They are carried here so that
+    the omission is read where it happened instead of disappearing because the
+    encounter was allowed to continue.
+    """
+    values = (gate or {}).get("noted") if isinstance(gate, dict) else None
+    if not isinstance(values, (list, tuple, set)):
+        return []
+    return [UNSTATED_LABELS[value] for value in UNSTATED_LABELS if value in set(values)]
+
+
 def _diagnostic(value, at_time):
     # A numerical value in hidden state is not evidence of a performed test.
     if not isinstance(value, dict) or value.get("status", "available") != "available":
@@ -291,6 +311,7 @@ def build_analysis_source(payload):
             "learner_input": _text(event.get("learner_input", "")),
             "recorded_reasoning": _answers(event.get("reasoning"), REASONING_FIELDS),
             "app_composed_reasoning_slots": _derived_slots(event.get("reasoning")),
+            "unstated_prospective_elements": _unstated(event.get("reasoning_gate")),
             "executed_actions": _actions(event.get("action_summaries"), end) if status == "executed" else [],
             "state_before": before_source, "state_after": after_source,
         })

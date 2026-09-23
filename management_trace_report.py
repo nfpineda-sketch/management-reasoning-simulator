@@ -764,6 +764,13 @@ def render_management_trace_pdf(
             block.append(Paragraph(f"<b>{label}:</b> " + _xml(value) + suffix, styles["body"]))
         if not recorded_any:
             block.append(p("No explicit working model, priority or rationale was recorded.", "note"))
+        # The order ran without these, and the omission is still part of the
+        # decision. Recorded here so it is read where it happened rather than
+        # inferred later from a silence (faculty decision 2026-09-23).
+        unstated = [_t(str(value)) for value in (event.get("unstated_prospective_elements") or []) if value]
+        if unstated:
+            block.append(p(_t("Not stated before this order: {elements}.").format(
+                elements="; ".join(unstated)), "note"))
         block.append(p("3 · WHAT YOU ORDERED", "label"))
         if lines:
             for line in lines:

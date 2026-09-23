@@ -127,13 +127,21 @@ def test_one_incomplete_order_alone_is_not_dressed_as_a_held_bundle(edema):
     assert held[-1] == "Specify the NIV expiratory pressure in cm H₂O, from 0 to 20."
 
 
+# These two turns state the working model and the reassessment and leave out the
+# expectation, so the gate still fires. Until 2026-09-23 they also left out the
+# management priority, which was enough on its own to hold an order that named
+# everything else; it no longer is, and the gate is exercised here by a gap the
+# resident really left.
+HELD_TURN = ("El paciente está hipoperfundido, porque el llene está prolongado. "
+             "Pásale 1000 mL de suero fisiológico IV{extras}. "
+             "Reevalúa en 20 minutos presión arterial.")
+
+
 def test_the_reasoning_gate_names_the_investigations_it_holds(edema):
     # The two holds must describe a turn the same way. The gate used to list the
     # interventions only, so a resident who also ordered tests saw half the turn.
     at = edema
-    submit(at, "El paciente está hipoperfundido, porque el llene está prolongado. Pásale 1000 mL de "
-               "suero fisiológico IV y pídele un lactato y una radiografía. Espero que suba la presión. "
-               "Reevalúa en 20 minutos presión arterial.")
+    submit(at, HELD_TURN.format(extras=" y pídele un lactato y una radiografía"))
     held = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"]
     assert held, [e["kind"] for e in at.session_state.events]
     text = held[-1]
@@ -145,7 +153,25 @@ def test_the_reasoning_gate_names_the_investigations_it_holds(edema):
 
 def test_a_turn_with_no_investigations_still_reads_cleanly(edema):
     at = edema
-    submit(at, "El paciente está hipoperfundido, porque el llene está prolongado. Pásale 1000 mL de "
-               "suero fisiológico IV. Espero que suba la presión. Reevalúa en 20 minutos presión arterial.")
+    submit(at, HELD_TURN.format(extras=""))
     text = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"][-1]
     assert "I understood: **1000 mL normal saline**." in text
+
+
+def test_a_stated_priority_is_no_longer_what_holds_an_order(edema):
+    """The order that was held for a heading it did not need.
+
+    The resident names the problem, the order, the expectation and the
+    reassessment. Nothing here says the word "prioridad", and until 2026-09-23
+    that alone stopped the encounter.
+    """
+    at = edema
+    submit(at, "El paciente está hipoperfundido, porque el llene está prolongado. Pásale 1000 mL de "
+               "suero fisiológico IV. Espero que suba la presión. Reevalúa en 20 minutos presión arterial.")
+    held = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"]
+    assert not [text for text in held if "REASONING REQUIRED" in text], held
+    assert at.session_state.state["sim_time"] > 0
+    # What was missing is still recorded where the faculty reads it.
+    gate = at.session_state.management_trace[-1]["reasoning_gate"]
+    assert gate["status"] == "complete"
+    assert gate["noted"] == ["management_priority"]
