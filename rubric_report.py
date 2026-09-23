@@ -165,8 +165,32 @@ def _profile_table(assessment, styles, width, language):
     return table
 
 
-def _events_block(assessment, styles, language):
+def _unasked_note(rows, styles, language):
+    """What this event turned on that nobody asked the patient about.
+
+    Recorded beside the event because it is why the event no longer waits: the
+    information was available on asking, and not asking is part of the
+    omission rather than an excuse for it (faculty, 2026-09-23).
+    """
+    if not rows:
+        return []
+    listed = "; ".join(f"{row['label']} ({row['tells_them']})" for row in rows)
+    if language == "es":
+        text = ("Disponible preguntando y nunca preguntado: " + listed + ". El paciente "
+                "responde durante todo el encuentro, así que esto estaba disponible: no "
+                "preguntarlo es parte de la omisión, no una excusa para ella.")
+    else:
+        text = ("Available on asking and never asked about: " + listed + ". The patient "
+                "answers for the whole encounter, so this was available: not asking is part "
+                "of the omission rather than an excuse for it.")
+    return [Paragraph(_xml(text), styles["small"])]
+
+
+def _events_block(assessment, styles, language, unasked=()):
     flow = []
+    by_event = {}
+    for row in unasked:
+        by_event.setdefault(row["event_id"], []).append(row)
     confirmed = [a for a in assessment["alerts"] if a["status"] == "confirmed"]
     waiting = [a for a in assessment["alerts"] if a["status"] == "awaiting_review"]
     dismissed = [a for a in assessment["alerts"] if a["status"] == "dismissed"]
@@ -179,6 +203,7 @@ def _events_block(assessment, styles, language):
             if alert["justification"]:
                 text += f" {alert['justification']}"
             flow.append(Paragraph(_xml(text), styles["body"]))
+            flow += _unasked_note(by_event.get(alert["event_id"], ()), styles, language)
         flow.append(Paragraph(_xml(
             "Un evento confirmado puede bajar un dominio y además llevar la penalización de "
             "seguridad. Ese doble peso es deliberado." if language == "es" else
@@ -196,6 +221,7 @@ def _events_block(assessment, styles, language):
                     "penalty until you decide.")), styles["body"]))
             if alert.get("trigger_evidence"):
                 flow.append(Paragraph(_xml(alert["trigger_evidence"]), styles["quote"]))
+            flow += _unasked_note(by_event.get(alert["event_id"], ()), styles, language)
     if dismissed:
         flow.append(Paragraph(_xml("DESCARTADOS" if language == "es" else "DISMISSED"),
                               styles["eyebrow"]))
@@ -258,7 +284,12 @@ def build_rubric_document(review, proposal=None, record=None, *, language="en",
     flow.append(Spacer(0, 10))
     flow.append(_profile_table(assessment, styles, width, language))
     flow.append(Spacer(0, 6))
-    flow += _events_block(assessment, styles, language)
+    unasked = ()
+    if record:
+        import history_review
+        from faculty_analysis import case_id_of
+        unasked = history_review.unasked_for_events(record, case_id_of(record))
+    flow += _events_block(assessment, styles, language, unasked)
 
     flow.append(Spacer(0, 6))
     flow.append(Paragraph(_xml("TRAZABILIDAD" if spanish else "TRACEABILITY"), styles["eyebrow"]))

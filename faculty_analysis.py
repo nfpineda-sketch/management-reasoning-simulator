@@ -197,6 +197,48 @@ def _answers(mapping, fields):
     return {key: _text(mapping[key]) for key in fields if key in mapping}
 
 
+HISTORY_AVAILABILITY = (
+    "The patient, or the collateral source the case names, is present for the whole encounter "
+    "and answers what they are asked. A topic under unasked_history_topics was available and "
+    "nobody asked: that is an omission of the learner's, not information the record lacked, "
+    "and it is never a reason to withhold a judgement or to excuse one."
+)
+
+
+def case_id_of(record):
+    """The authored case this encounter was played on, or "" when there is none.
+
+    Only the identifier. The case specification is stripped from every record
+    because it holds the answers; without the identifier the rubric cannot look
+    up a case's declared opportunities or its defined critical events.
+
+    Three places carry it, and all three are read. ``encounter.authored_case_id``
+    is what the export writes. A saved session has no such key -- the app stores
+    the session fields and nothing else -- so the id is read from the state the
+    session does carry. Until 2026-09-23 only the first was read, and every real
+    encounter therefore looked like a case with no declaration at all: no
+    declared opportunities, and **no defined critical events**. Every test that
+    exercised the layer set the export-shaped field by hand, so nothing failed.
+    """
+    session = (record or {}).get("payload", {}).get("session", {}) or {}
+    if not isinstance(session, dict):
+        return ""
+    encounter = session.get("encounter") if isinstance(session.get("encounter"), dict) else {}
+    identifier = encounter.get("authored_case_id")
+    if identifier:
+        return str(identifier)
+    for key in ("encounter_closed_state", "state"):
+        state = session.get(key)
+        if not isinstance(state, dict):
+            continue
+        spec = state.get("encounter_spec")
+        case = spec.get("clinical_case") if isinstance(spec, dict) else None
+        identifier = case.get("id") if isinstance(case, dict) else None
+        if identifier:
+            return str(identifier)
+    return ""
+
+
 def build_analysis_source(record, assistance_context="unknown"):
     """Return only data the learner could see and recorded learner reasoning.
 
@@ -270,6 +312,13 @@ def build_analysis_source(record, assistance_context="unknown"):
             raise FacultyAnalysisError("The saved reflection mapping has an invalid format.")
         links.append(_pick_scalars(prompt, frozenset(("review_id", "decision", "time"))))
     encounter = record.get("encounter") or {}
+    # Asking a question is not an order: it costs no simulated time and changes
+    # no observable, so it lives in the encounter's events and not in the
+    # trace. Until 2026-09-23 nothing here could see it, and an analysis could
+    # say a history was absent when the resident had obtained it (or, worse,
+    # treat a history the resident never asked for as unavailable).
+    import history_review
+    history = history_review.review(record, case_id_of(record))
     source = {
         "schema_version": "faculty_analysis_source_v1",
         "assistance_context": assistance_context,
@@ -281,6 +330,17 @@ def build_analysis_source(record, assistance_context="unknown"):
         "recorded_reflections": reflections,
         "later_expert_comparison_responses": comparisons,
         "later_adaptation_plan": _answers(session.get("adaptation_plan"), _PLAN),
+        "history_obtained": [{
+            "minute": item["minute"],
+            "asked": _text(item["asked"], 2_000),
+            "answered": _text(item["answered"], 4_000),
+        } for item in history["exchanges"][:60]],
+        "history_topics_offered": [row["label"] for row in history["offered"]],
+        # The patient answers what they are asked, for the whole encounter.
+        # These are topics nobody asked about: an omission of the learner's,
+        # never a limitation of the record.
+        "unasked_history_topics": [row["label"] for row in history["not_named"]],
+        "history_availability": HISTORY_AVAILABILITY,
         "objective_rubric": [{"objective_id": key, **{field: OBJECTIVES[key][field] for field in (
             "title", "scope", "limitation", "observable_behaviors", "evidence_requirements", "competency_mapping")
             if field in OBJECTIVES[key]}} for key in supported_objectives(record)],
@@ -309,6 +369,14 @@ Separate reasoning expressed during management, locked pre-comparison reflection
 later expert comparison, and the later plan. Later insight is learning evidence;
 it must not be presented as reasoning demonstrated during the encounter. If the
 timing of reflection is unverified, say so. Do not regenerate an expert answer key.
+
+The history is not in the trace, because asking is not an order. history_obtained holds every
+question the learner asked and the answer they were given. The patient, or the collateral
+source the case names, is present for the whole encounter and answers: everything under
+history_topics_offered was therefore available, whether or not anyone asked. A topic under
+unasked_history_topics is an omission of the learner's, never information the record lacked,
+and never a reason to call an objective unobservable. Where a decision was taken without
+asking something the patient would have answered, say so and name the topic.
 
 Use exactly the supplied objective scopes; cover each supplied objective once.
 For cognitive challenges assess the observable management behaviors in the

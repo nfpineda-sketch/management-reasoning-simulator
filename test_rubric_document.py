@@ -287,3 +287,31 @@ def test_the_spanish_document_says_the_model_wrote_in_english():
     assert "se genera en inglés" in words
     assert "se genera en inglés" not in page_text(
         review=review(), proposal=proposal(), record=RECORD)
+
+
+def test_a_confirmed_event_records_what_nobody_asked_about():
+    # The faculty's rule of 2026-09-23: the information was available, so not
+    # asking is part of the omission. The document says which topic that was.
+    events = [{"event_id": "hypo_unsafe_discharge", "status": "confirmed",
+               "justification": "Discharged home with no observation."}]
+    decided = {**review(events=events), "case_id": "hypoglycemia_76f"}
+    record = {**RECORD, "payload": {"session": {
+        "encounter": {"authored_case_id": "hypoglycemia_76f"}, "events": []}}}
+    words = page_text(review=decided, proposal=proposal(), record=record)
+    assert "Available on asking and never asked about" in words
+    assert "Medications" in words and "glimepiride" in words
+    assert "not asking is part of the omission" in words
+
+
+def test_asking_about_it_leaves_no_such_note():
+    events = [{"event_id": "hypo_unsafe_discharge", "status": "confirmed",
+               "justification": "Discharged home with no observation."}]
+    decided = {**review(events=events), "case_id": "hypoglycemia_76f"}
+    record = {**RECORD, "payload": {"session": {
+        "encounter": {"authored_case_id": "hypoglycemia_76f"},
+        "events": [{"kind": "you", "time": 0, "text": "¿Qué medicamentos toma?"},
+                   {"kind": "patient_history", "time": 0, "text": "Glimepirida."},
+                   {"kind": "you", "time": 1, "text": "¿Hace cuánto empezó?"},
+                   {"kind": "patient_history", "time": 1, "text": "Dos días."}]}}}
+    assert "Available on asking and never asked about" not in page_text(
+        review=decided, proposal=proposal(), record=record)

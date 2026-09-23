@@ -81,15 +81,16 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `acs_no_antiplatelet` — **Omisión crítica.** No antiplatelet is given in a recognised acute coronary syndrome.
   - Se activa cuando: The ECG is reported and the presentation is ischaemic, and no aspirin or P2Y12 inhibitor is executed within the window.
-  - Información que debía estar disponible: The 12-lead ECG result; the presenting history.
+  - Información que debía estar en el registro: The 12-lead ECG result.
   - Ventana y oportunidad: 0–30 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (the ischaemic presentation in the patient's own words); **Allergies** (whether aspirin can be given at all).
   - Alternativas aceptables: A P2Y12 inhibitor when aspirin is contraindicated or refused, stated as such; withholding it with a stated contraindication such as active bleeding or allergy.
   - Evidencia necesaria: An executed antiplatelet action, or its absence across every executed turn in the window.
   - Exclusiones: The encounter closed before the ECG was reported; the interpreter refused the order and the resident was never told what it could accept.
   - Dominios sobre los que pesa: D3.
 - `acs_provocation_test` — **Acción peligrosa.** A provocation or stress test is ordered in an unstable coronary syndrome.
   - Se activa cuando: A stress test is ordered while the presentation is an acute coronary syndrome.
-  - Información que debía estar disponible: The 12-lead ECG result; the troponin result when it was requested.
+  - Información que debía estar en el registro: The 12-lead ECG result; the troponin result when it was requested.
   - Ventana y oportunidad: 0–180 min.
   - Alternativas aceptables: Angiography, invasive assessment or specialist consultation; scheduled outpatient testing stated as after this episode, not now.
   - Evidencia necesaria: An executed or ordered stress test action in the record.
@@ -126,15 +127,16 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `acs_no_antiplatelet` — **Omisión crítica.** No antiplatelet is given in a recognised acute coronary syndrome.
   - Se activa cuando: The ECG is reported and the presentation is ischaemic, and no aspirin or P2Y12 inhibitor is executed within the window.
-  - Información que debía estar disponible: The 12-lead ECG result; the presenting history.
+  - Información que debía estar en el registro: The 12-lead ECG result.
   - Ventana y oportunidad: 0–30 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (the ischaemic presentation in the patient's own words); **Allergies** (whether aspirin can be given at all).
   - Alternativas aceptables: A P2Y12 inhibitor when aspirin is contraindicated or refused, stated as such; withholding it with a stated contraindication such as active bleeding or allergy.
   - Evidencia necesaria: An executed antiplatelet action, or its absence across every executed turn in the window.
   - Exclusiones: The encounter closed before the ECG was reported; the interpreter refused the order and the resident was never told what it could accept.
   - Dominios sobre los que pesa: D3.
 - `acs_provocation_test` — **Acción peligrosa.** A provocation or stress test is ordered in an unstable coronary syndrome.
   - Se activa cuando: A stress test is ordered while the presentation is an acute coronary syndrome.
-  - Información que debía estar disponible: The 12-lead ECG result; the troponin result when it was requested.
+  - Información que debía estar en el registro: The 12-lead ECG result; the troponin result when it was requested.
   - Ventana y oportunidad: 0–180 min.
   - Alternativas aceptables: Angiography, invasive assessment or specialist consultation; scheduled outpatient testing stated as after this episode, not now.
   - Evidencia necesaria: An executed or ordered stress test action in the record.
@@ -171,15 +173,16 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `acs_no_antiplatelet` — **Omisión crítica.** No antiplatelet is given in a recognised acute coronary syndrome.
   - Se activa cuando: The ECG is reported and the presentation is ischaemic, and no aspirin or P2Y12 inhibitor is executed within the window.
-  - Información que debía estar disponible: The 12-lead ECG result; the presenting history.
+  - Información que debía estar en el registro: The 12-lead ECG result.
   - Ventana y oportunidad: 0–30 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (the ischaemic presentation in the patient's own words); **Allergies** (whether aspirin can be given at all).
   - Alternativas aceptables: A P2Y12 inhibitor when aspirin is contraindicated or refused, stated as such; withholding it with a stated contraindication such as active bleeding or allergy.
   - Evidencia necesaria: An executed antiplatelet action, or its absence across every executed turn in the window.
   - Exclusiones: The encounter closed before the ECG was reported; the interpreter refused the order and the resident was never told what it could accept.
   - Dominios sobre los que pesa: D3.
 - `acs_provocation_test` — **Acción peligrosa.** A provocation or stress test is ordered in an unstable coronary syndrome.
   - Se activa cuando: A stress test is ordered while the presentation is an acute coronary syndrome.
-  - Información que debía estar disponible: The 12-lead ECG result; the troponin result when it was requested.
+  - Información que debía estar en el registro: The 12-lead ECG result; the troponin result when it was requested.
   - Ventana y oportunidad: 0–180 min.
   - Alternativas aceptables: Angiography, invasive assessment or specialist consultation; scheduled outpatient testing stated as after this episode, not now.
   - Evidencia necesaria: An executed or ordered stress test action in the record.
@@ -216,15 +219,16 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `acs_no_antiplatelet` — **Omisión crítica.** No antiplatelet is given in a recognised acute coronary syndrome.
   - Se activa cuando: The ECG is reported and the presentation is ischaemic, and no aspirin or P2Y12 inhibitor is executed within the window.
-  - Información que debía estar disponible: The 12-lead ECG result; the presenting history.
+  - Información que debía estar en el registro: The 12-lead ECG result.
   - Ventana y oportunidad: 0–30 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (the ischaemic presentation in the patient's own words); **Allergies** (whether aspirin can be given at all).
   - Alternativas aceptables: A P2Y12 inhibitor when aspirin is contraindicated or refused, stated as such; withholding it with a stated contraindication such as active bleeding or allergy.
   - Evidencia necesaria: An executed antiplatelet action, or its absence across every executed turn in the window.
   - Exclusiones: The encounter closed before the ECG was reported; the interpreter refused the order and the resident was never told what it could accept.
   - Dominios sobre los que pesa: D3.
 - `acs_provocation_test` — **Acción peligrosa.** A provocation or stress test is ordered in an unstable coronary syndrome.
   - Se activa cuando: A stress test is ordered while the presentation is an acute coronary syndrome.
-  - Información que debía estar disponible: The 12-lead ECG result; the troponin result when it was requested.
+  - Información que debía estar en el registro: The 12-lead ECG result; the troponin result when it was requested.
   - Ventana y oportunidad: 0–180 min.
   - Alternativas aceptables: Angiography, invasive assessment or specialist consultation; scheduled outpatient testing stated as after this episode, not now.
   - Evidencia necesaria: An executed or ordered stress test action in the record.
@@ -261,15 +265,16 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `acs_no_antiplatelet` — **Omisión crítica.** No antiplatelet is given in a recognised acute coronary syndrome.
   - Se activa cuando: The ECG is reported and the presentation is ischaemic, and no aspirin or P2Y12 inhibitor is executed within the window.
-  - Información que debía estar disponible: The 12-lead ECG result; the presenting history.
+  - Información que debía estar en el registro: The 12-lead ECG result.
   - Ventana y oportunidad: 0–30 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (the ischaemic presentation in the patient's own words); **Allergies** (whether aspirin can be given at all).
   - Alternativas aceptables: A P2Y12 inhibitor when aspirin is contraindicated or refused, stated as such; withholding it with a stated contraindication such as active bleeding or allergy.
   - Evidencia necesaria: An executed antiplatelet action, or its absence across every executed turn in the window.
   - Exclusiones: The encounter closed before the ECG was reported; the interpreter refused the order and the resident was never told what it could accept.
   - Dominios sobre los que pesa: D3.
 - `acs_provocation_test` — **Acción peligrosa.** A provocation or stress test is ordered in an unstable coronary syndrome.
   - Se activa cuando: A stress test is ordered while the presentation is an acute coronary syndrome.
-  - Información que debía estar disponible: The 12-lead ECG result; the troponin result when it was requested.
+  - Información que debía estar en el registro: The 12-lead ECG result; the troponin result when it was requested.
   - Ventana y oportunidad: 0–180 min.
   - Alternativas aceptables: Angiography, invasive assessment or specialist consultation; scheduled outpatient testing stated as after this episode, not now.
   - Evidencia necesaria: An executed or ordered stress test action in the record.
@@ -306,15 +311,16 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `acs_no_antiplatelet` — **Omisión crítica.** No antiplatelet is given in a recognised acute coronary syndrome.
   - Se activa cuando: The ECG is reported and the presentation is ischaemic, and no aspirin or P2Y12 inhibitor is executed within the window.
-  - Información que debía estar disponible: The 12-lead ECG result; the presenting history.
+  - Información que debía estar en el registro: The 12-lead ECG result.
   - Ventana y oportunidad: 0–30 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (the ischaemic presentation in the patient's own words); **Allergies** (whether aspirin can be given at all).
   - Alternativas aceptables: A P2Y12 inhibitor when aspirin is contraindicated or refused, stated as such; withholding it with a stated contraindication such as active bleeding or allergy.
   - Evidencia necesaria: An executed antiplatelet action, or its absence across every executed turn in the window.
   - Exclusiones: The encounter closed before the ECG was reported; the interpreter refused the order and the resident was never told what it could accept.
   - Dominios sobre los que pesa: D3.
 - `acs_provocation_test` — **Acción peligrosa.** A provocation or stress test is ordered in an unstable coronary syndrome.
   - Se activa cuando: A stress test is ordered while the presentation is an acute coronary syndrome.
-  - Información que debía estar disponible: The 12-lead ECG result; the troponin result when it was requested.
+  - Información que debía estar en el registro: The 12-lead ECG result; the troponin result when it was requested.
   - Ventana y oportunidad: 0–180 min.
   - Alternativas aceptables: Angiography, invasive assessment or specialist consultation; scheduled outpatient testing stated as after this episode, not now.
   - Evidencia necesaria: An executed or ordered stress test action in the record.
@@ -351,8 +357,9 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `asthma_no_bronchodilator` — **Omisión crítica.** No bronchodilator is given in an asthma exacerbation.
   - Se activa cuando: The presentation is an asthma exacerbation with increased work of breathing and no bronchodilator is executed in the window.
-  - Información que debía estar disponible: Arrival observables; the presenting history.
+  - Información que debía estar en el registro: Arrival observables.
   - Ventana y oportunidad: 0–30 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (that this is asthma and how severe it has been before); **Medications** (the reliever already used today).
   - Alternativas aceptables: Continuous nebulised bronchodilator; an intravenous bronchodilator stated as such.
   - Evidencia necesaria: An executed bronchodilator action, or its absence across the window.
   - Exclusiones: The encounter closed before any order could be executed.
@@ -388,16 +395,18 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `asthma_no_bronchodilator` — **Omisión crítica.** No bronchodilator is given in an asthma exacerbation.
   - Se activa cuando: The presentation is an asthma exacerbation and no bronchodilator is executed in the window.
-  - Información que debía estar disponible: Arrival observables; the presenting history.
+  - Información que debía estar en el registro: Arrival observables.
   - Ventana y oportunidad: 0–30 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (the asthma and the previous ventilated admission); **Medications** (the reliever already used today).
   - Alternativas aceptables: Continuous nebulised bronchodilator; an intravenous bronchodilator stated as such.
   - Evidencia necesaria: An executed bronchodilator action, or its absence across the window.
   - Exclusiones: The encounter closed before any order could be executed.
   - Dominios sobre los que pesa: D3.
 - `asthma_no_ventilatory_support` — **Omisión crítica.** Ventilatory failure is left without any support or preparation for it.
   - Se activa cuando: The blood gas or the recorded effort shows ventilatory failure and neither oxygen, non-invasive support, bag-mask nor intubation is executed or prepared.
-  - Información que debía estar disponible: The blood gas result or the recorded work of breathing.
+  - Información que debía estar en el registro: The blood gas result or the recorded work of breathing.
   - Ventana y oportunidad: 0–60 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (the previous admission that required ventilation).
   - Alternativas aceptables: Non-invasive support; bag-mask ventilation; intubation; stating a ceiling of treatment.
   - Evidencia necesaria: The absence of any executed airway or ventilation action in the window.
   - Exclusiones: The gas was never reported within the encounter; the resident's support order was refused by the interpreter.
@@ -433,8 +442,9 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `gi_no_resuscitation` — **Omisión crítica.** Haemorrhagic hypoperfusion is left without volume or blood.
   - Se activa cuando: The arrival observables show hypoperfusion from bleeding and neither blood nor fluid is executed in the window.
-  - Información que debía estar disponible: Arrival observables; the presenting history of bleeding.
+  - Información que debía estar en el registro: Arrival observables.
   - Ventana y oportunidad: 0–40 min.
+  - Disponible preguntando, se haya preguntado o no: **Bleeding symptoms** (the melena and how long it has been going on); **Medications** (the anti-inflammatory that caused it).
   - Alternativas aceptables: Packed red cells; crystalloid stated as the bridge to blood; a stated ceiling of treatment.
   - Evidencia necesaria: The absence of any executed blood or fluid action in the window.
   - Exclusiones: The encounter closed before any order could be executed; vascular access failed in the engine and the resident addressed it.
@@ -470,8 +480,9 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `gi_no_resuscitation` — **Omisión crítica.** Haemorrhagic hypoperfusion is left without volume or blood.
   - Se activa cuando: The arrival observables show hypoperfusion from bleeding and neither blood nor fluid is executed in the window.
-  - Información que debía estar disponible: Arrival observables; the presenting history of bleeding.
+  - Información que debía estar en el registro: Arrival observables.
   - Ventana y oportunidad: 0–40 min.
+  - Disponible preguntando, se haya preguntado o no: **Bleeding symptoms** (the melena and how long it has been going on); **Medications** (the anti-inflammatory that caused it).
   - Alternativas aceptables: Packed red cells; crystalloid stated as the bridge to blood; a stated ceiling of treatment.
   - Evidencia necesaria: The absence of any executed blood or fluid action in the window.
   - Exclusiones: The encounter closed before any order could be executed; vascular access failed in the engine and the resident addressed it.
@@ -507,7 +518,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `hypo_no_glucose` — **Omisión crítica.** Neuroglycopenia is left uncorrected.
   - Se activa cuando: The bedside glucose is low and the patient is not alert, and no dextrose, glucagon or oral carbohydrate is executed in the window.
-  - Información que debía estar disponible: The bedside glucose result; the recorded mental status.
+  - Información que debía estar en el registro: The bedside glucose result; the recorded mental status.
   - Ventana y oportunidad: 0–30 min.
   - Alternativas aceptables: Intravenous dextrose; glucagon when there is no vascular access; oral carbohydrate once the patient is alert enough to swallow.
   - Evidencia necesaria: The absence of any executed glucose-raising action in the window.
@@ -544,16 +555,17 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `hypo_no_glucose` — **Omisión crítica.** Neuroglycopenia is left uncorrected.
   - Se activa cuando: The bedside glucose is low and the patient is not alert, and no dextrose, glucagon or oral carbohydrate is executed in the window.
-  - Información que debía estar disponible: The bedside glucose result; the recorded mental status.
+  - Información que debía estar en el registro: The bedside glucose result; the recorded mental status.
   - Ventana y oportunidad: 0–30 min.
   - Alternativas aceptables: Intravenous dextrose; glucagon when there is no vascular access; oral carbohydrate once the patient is alert enough to swallow.
   - Evidencia necesaria: The absence of any executed glucose-raising action in the window.
   - Exclusiones: Vascular access failed in the engine and the resident addressed it; the encounter closed before the glucose was reported.
   - Dominios sobre los que pesa: D3.
 - `hypo_unsafe_discharge` — **Omisión crítica.** A patient whose hypoglycaemia was caused by a long-acting agent is discharged without observation.
-  - Se activa cuando: A discharge disposition is executed after a sulfonylurea-associated hypoglycaemia, without any recorded plan for continued observation.
-  - Información que debía estar disponible: The history of the causative agent; the recorded recurrence risk.
+  - Se activa cuando: A discharge disposition is executed after a hypoglycaemia this case attributes to a sulfonylurea, without any recorded plan for continued observation. It applies whether or not the learner asked what caused it: the agent is available on asking, and never asking is part of the omission rather than an excuse for it.
+  - Información que debía estar en el registro: An executed discharge disposition.
   - Ventana y oportunidad: 0–180 min.
+  - Disponible preguntando, se haya preguntado o no: **Medications** (the glimepiride she kept taking while eating almost nothing); **Onset and course** (the two days of poor intake that made it recur).
   - Alternativas aceptables: Admission; observation with a stated duration; discharge with an explicitly arranged early review.
   - Evidencia necesaria: An executed discharge disposition with no observation stated in the same encounter.
   - Exclusiones: The encounter reached its horizon before any disposition was decided.
@@ -589,7 +601,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `hypo_no_glucose` — **Omisión crítica.** Neuroglycopenia is left uncorrected.
   - Se activa cuando: The bedside glucose is low and the patient is not alert, and no dextrose, glucagon or oral carbohydrate is executed in the window.
-  - Información que debía estar disponible: The bedside glucose result; the recorded mental status.
+  - Información que debía estar en el registro: The bedside glucose result; the recorded mental status.
   - Ventana y oportunidad: 0–30 min.
   - Alternativas aceptables: Intravenous dextrose; glucagon when there is no vascular access; oral carbohydrate once the patient is alert enough to swallow.
   - Evidencia necesaria: The absence of any executed glucose-raising action in the window.
@@ -597,8 +609,9 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Dominios sobre los que pesa: D3.
 - `hypo_no_thiamine` — **Omisión crítica.** Glucose is given to a thiamine-depleted patient and no thiamine is given.
   - Se activa cuando: Dextrose is executed in a patient the case declares thiamine-depleted and no thiamine is executed within the window.
-  - Información que debía estar disponible: The history of chronic alcohol use or malnutrition.
+  - Información que debía estar en el registro: An executed dextrose action.
   - Ventana y oportunidad: 0–60 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (the daily drinking); **Eating and drinking** (the week with almost nothing to eat).
   - Alternativas aceptables: Thiamine before the dextrose; thiamine in the same submission.
   - Evidencia necesaria: An executed dextrose action with no executed thiamine action in the window.
   - Exclusiones: The encounter closed before a second order could be executed.
@@ -634,7 +647,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `opioid_no_ventilatory_support` — **Omisión crítica.** Ventilatory depression is left without support or reversal.
   - Se activa cuando: The recorded respiratory rate is depressed and neither oxygen, bag-mask ventilation, an antagonist nor intubation is executed in the window.
-  - Información que debía estar disponible: Arrival observables, including the respiratory rate.
+  - Información que debía estar en el registro: Arrival observables, including the respiratory rate.
   - Ventana y oportunidad: 0–20 min.
   - Alternativas aceptables: Bag-mask ventilation; an opioid antagonist; intubation; oxygen stated as the bridge while the antagonist is drawn up.
   - Evidencia necesaria: The absence of any executed airway, oxygen or antagonist action in the window.
@@ -671,7 +684,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `opioid_no_ventilatory_support` — **Omisión crítica.** Ventilatory depression is left without support or reversal.
   - Se activa cuando: The recorded respiratory rate is depressed and neither oxygen, bag-mask ventilation, an antagonist nor intubation is executed in the window.
-  - Información que debía estar disponible: Arrival observables, including the respiratory rate.
+  - Información que debía estar en el registro: Arrival observables, including the respiratory rate.
   - Ventana y oportunidad: 0–20 min.
   - Alternativas aceptables: Bag-mask ventilation; an opioid antagonist; intubation; oxygen stated as the bridge while the antagonist is drawn up.
   - Evidencia necesaria: The absence of any executed airway, oxygen or antagonist action in the window.
@@ -679,8 +692,9 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Dominios sobre los que pesa: D1, D3.
 - `opioid_unsafe_discharge` — **Omisión crítica.** A patient exposed to a long-acting opioid is discharged on the response to a short-acting antagonist.
   - Se activa cuando: A discharge disposition is executed after an antagonist was given for a long-acting exposure, with no observation stated in the encounter.
-  - Información que debía estar disponible: The history of the exposure; the recorded response to the antagonist.
+  - Información que debía estar en el registro: An executed antagonist action; the recorded response to it.
   - Ventana y oportunidad: 0–180 min.
+  - Disponible preguntando, se haya preguntado o no: **Recent exposures** (the long-acting agent she took); **Medications** (what was on her list before this).
   - Alternativas aceptables: Admission; observation with a stated duration; an antagonist infusion.
   - Evidencia necesaria: An executed discharge disposition with no observation stated.
   - Exclusiones: The encounter reached its horizon before any disposition was decided.
@@ -716,8 +730,9 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `pneumonia_no_antibiotic` — **Omisión crítica.** No antibiotic is given in a pneumonia with hypoperfusion.
   - Se activa cuando: The presentation is a pneumonia with impaired perfusion and no antibiotic is executed in the window.
-  - Información que debía estar disponible: Arrival observables; the presenting history; the chest radiograph where it was requested.
+  - Información que debía estar en el registro: Arrival observables; the chest radiograph where it was requested.
   - Ventana y oportunidad: 0–60 min.
+  - Disponible preguntando, se haya preguntado o no: **Associated symptoms** (the new cough and the days it has lasted); **Onset and course** (when the breathing changed).
   - Alternativas aceptables: Any of the antibiotics the engine models, with a route; a stated ceiling of treatment.
   - Evidencia necesaria: The absence of an executed antibiotic action in the window.
   - Exclusiones: The encounter closed before any order could be executed; the interpreter refused the agent and never said what it accepts.
@@ -753,15 +768,16 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `pneumonia_no_antibiotic` — **Omisión crítica.** No antibiotic is given in a pneumonia with hypoperfusion.
   - Se activa cuando: The presentation is a pneumonia with impaired perfusion and no antibiotic is executed in the window.
-  - Información que debía estar disponible: Arrival observables; the presenting history; the chest radiograph where it was requested.
+  - Información que debía estar en el registro: Arrival observables; the chest radiograph where it was requested.
   - Ventana y oportunidad: 0–60 min.
+  - Disponible preguntando, se haya preguntado o no: **Associated symptoms** (the new cough and the days it has lasted); **Onset and course** (when the breathing changed).
   - Alternativas aceptables: Any of the antibiotics the engine models, with a route; a stated ceiling of treatment.
   - Evidencia necesaria: The absence of an executed antibiotic action in the window.
   - Exclusiones: The encounter closed before any order could be executed; the interpreter refused the agent and never said what it accepts.
   - Dominios sobre los que pesa: D3.
 - `pneumonia_unexamined_altered_state` — **Omisión crítica.** A new altered mental state is never investigated.
   - Se activa cuando: The patient arrives with an altered mental state and no glucose, neurological examination or imaging of the head is obtained in the window.
-  - Información que debía estar disponible: Arrival observables, including the mental status.
+  - Información que debía estar en el registro: Arrival observables, including the mental status.
   - Ventana y oportunidad: 0–60 min.
   - Alternativas aceptables: A bedside glucose; a neurological examination; stating that the infection explains it and checking the glucose anyway.
   - Evidencia necesaria: The absence of any executed glucose, neurological examination or head imaging.
@@ -798,7 +814,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `edema_no_ventilatory_support` — **Omisión crítica.** Respiratory failure from congestion is left without oxygen or ventilatory support.
   - Se activa cuando: The arrival observables show hypoxaemia with increased work of breathing and no oxygen, non-invasive support or intubation is executed in the window.
-  - Información que debía estar disponible: Arrival observables.
+  - Información que debía estar en el registro: Arrival observables.
   - Ventana y oportunidad: 0–30 min.
   - Alternativas aceptables: Non-invasive support; oxygen at a stated device and flow; intubation.
   - Evidencia necesaria: The absence of any executed oxygen or ventilation action in the window.
@@ -806,7 +822,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Dominios sobre los que pesa: D1, D3.
 - `edema_volume_loading` — **Acción peligrosa.** A fluid bolus is given in acute cardiogenic pulmonary oedema.
   - Se activa cuando: A crystalloid bolus is executed while the record shows congestion and no cause of hypovolaemia has been established.
-  - Información que debía estar disponible: Arrival observables; the POCUS or radiograph where it was requested.
+  - Información que debía estar en el registro: Arrival observables; the POCUS or radiograph where it was requested.
   - Ventana y oportunidad: 0–180 min.
   - Alternativas aceptables: A small stated challenge with an explicit hypovolaemic rationale and a reassessment attached; withholding fluid.
   - Evidencia necesaria: An executed fluid action with a recorded congested state.
@@ -843,7 +859,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `edema_no_ventilatory_support` — **Omisión crítica.** Respiratory failure from congestion is left without oxygen or ventilatory support.
   - Se activa cuando: The arrival observables show hypoxaemia with increased work of breathing and no oxygen, non-invasive support or intubation is executed in the window.
-  - Información que debía estar disponible: Arrival observables.
+  - Información que debía estar en el registro: Arrival observables.
   - Ventana y oportunidad: 0–30 min.
   - Alternativas aceptables: Non-invasive support; oxygen at a stated device and flow; intubation.
   - Evidencia necesaria: The absence of any executed oxygen or ventilation action in the window.
@@ -851,7 +867,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Dominios sobre los que pesa: D1, D3.
 - `edema_volume_loading` — **Acción peligrosa.** A fluid bolus is given in acute cardiogenic pulmonary oedema.
   - Se activa cuando: A crystalloid bolus is executed while the record shows congestion and no cause of hypovolaemia has been established.
-  - Información que debía estar disponible: Arrival observables; the POCUS or radiograph where it was requested.
+  - Información que debía estar en el registro: Arrival observables; the POCUS or radiograph where it was requested.
   - Ventana y oportunidad: 0–180 min.
   - Alternativas aceptables: A small stated challenge with an explicit hypovolaemic rationale and a reassessment attached; withholding fluid.
   - Evidencia necesaria: An executed fluid action with a recorded congested state.
@@ -888,16 +904,18 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `pe_no_anticoagulation` — **Omisión crítica.** No anticoagulation is given or stated as withheld in a recognised embolism.
   - Se activa cuando: Objective or clinical evidence of embolism is recorded and no anticoagulation is executed in the window, with no contraindication stated.
-  - Información que debía estar disponible: The POCUS, angiogram or D-dimer where requested; the presenting history.
+  - Información que debía estar en el registro: The POCUS, angiogram or D-dimer where requested.
   - Ventana y oportunidad: 0–60 min.
+  - Disponible preguntando, se haya preguntado o no: **Relevant exposures and risk factors** (the immobility and the active cancer); **Medications** (whether an anticoagulant is already running).
   - Alternativas aceptables: Anticoagulation of any modelled agent and route; withholding it with a stated bleeding contraindication; proceeding directly to reperfusion with a stated reason.
   - Evidencia necesaria: The absence of an executed anticoagulation action in the window.
   - Exclusiones: The encounter closed before the confirming study was reported.
   - Dominios sobre los que pesa: D3.
 - `pe_unindicated_thrombolysis` — **Acción peligrosa.** Systemic thrombolysis is given without sustained hypotension, in a patient with a recent operation.
   - Se activa cuando: A thrombolytic is executed while the record shows no sustained hypotension and the history carries a recent surgical site.
-  - Información que debía estar disponible: Arrival and subsequent observables; the surgical history.
+  - Información que debía estar en el registro: Arrival and subsequent observables.
   - Ventana y oportunidad: 0–180 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (the operation twelve days ago); **Bleeding symptoms** (whether the surgical site has bled).
   - Alternativas aceptables: Anticoagulation; arranging a reperfusion-capable team without giving the drug; thrombolysis after sustained hypotension is recorded.
   - Evidencia necesaria: An executed thrombolysis action with the record showing no sustained hypotension.
   - Exclusiones: The record shows sustained hypotension within the engine's own criterion.
@@ -933,8 +951,9 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 - `pe_no_anticoagulation` — **Omisión crítica.** No anticoagulation is given or stated as withheld in a recognised embolism.
   - Se activa cuando: Objective or clinical evidence of embolism is recorded and no anticoagulation is executed in the window, with no contraindication stated.
-  - Información que debía estar disponible: The POCUS, angiogram or D-dimer where requested; the presenting history.
+  - Información que debía estar en el registro: The POCUS, angiogram or D-dimer where requested.
   - Ventana y oportunidad: 0–60 min.
+  - Disponible preguntando, se haya preguntado o no: **Relevant exposures and risk factors** (the immobility and the active cancer); **Medications** (whether an anticoagulant is already running).
   - Alternativas aceptables: Anticoagulation of any modelled agent and route; withholding it with a stated bleeding contraindication; proceeding directly to reperfusion with a stated reason.
   - Evidencia necesaria: The absence of an executed anticoagulation action in the window.
   - Exclusiones: The encounter closed before the confirming study was reported.

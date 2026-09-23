@@ -17,11 +17,27 @@ def _d(opportunity, expected, alternatives, window, **requires):
 
 
 def _event(event_id, kind, action, trigger, information_required, window,
-           alternatives, evidence_required, exclusions, domains):
+           alternatives, evidence_required, exclusions, domains, on_asking=()):
+    """One defined critical event.
+
+    ``information_required`` is what has to be **in the record**: arrival
+    observables, a study result, an executed action. ``on_asking`` is what the
+    patient or the collateral source will say **if the resident asks** — each
+    entry a (history topic, what it tells them) pair, where the topic is a key
+    the case actually authors and ``case_assessment.verify`` checks that.
+
+    Faculty decision of 2026-09-23: information available on asking is
+    available, whether or not the learner asked. The patient is in front of
+    them and can be asked; a resident who never asks has not been deprived of
+    the information, they have omitted to obtain it. So an unasked history
+    never excuses an event, and the omission is itself something the reports
+    name and the score reflects.
+    """
     return {"event_id": event_id, "kind": kind, "action": action, "trigger": trigger,
             "information_required": tuple(information_required), "window_min": window,
             "alternatives": tuple(alternatives), "evidence_required": evidence_required,
-            "exclusions": tuple(exclusions), "domains": tuple(domains)}
+            "exclusions": tuple(exclusions), "domains": tuple(domains),
+            "information_on_asking": tuple((topic, tells) for topic, tells in on_asking)}
 
 
 # --- the antiplatelet omission, shared by every coronary case ----------------
@@ -31,13 +47,15 @@ def _aspirin_omission(window=(0, 30)):
         "No antiplatelet is given in a recognised acute coronary syndrome.",
         "The ECG is reported and the presentation is ischaemic, and no aspirin or P2Y12 "
         "inhibitor is executed within the window.",
-        ["The 12-lead ECG result", "the presenting history"], window,
+        ["The 12-lead ECG result"], window,
         ["A P2Y12 inhibitor when aspirin is contraindicated or refused, stated as such",
          "withholding it with a stated contraindication such as active bleeding or allergy"],
         "An executed antiplatelet action, or its absence across every executed turn in the window.",
         ["The encounter closed before the ECG was reported",
          "the interpreter refused the order and the resident was never told what it could accept"],
-        ["D3"])
+        ["D3"],
+        [("chief_complaint", "the ischaemic presentation in the patient's own words"),
+         ("allergies", "whether aspirin can be given at all")])
 
 
 def _stress_test_event():
@@ -211,10 +229,12 @@ CASES.update({
                 "No bronchodilator is given in an asthma exacerbation.",
                 "The presentation is an asthma exacerbation with increased work of breathing and "
                 "no bronchodilator is executed in the window.",
-                ["Arrival observables", "the presenting history"], (0, 30),
+                ["Arrival observables"], (0, 30),
                 ["Continuous nebulised bronchodilator", "an intravenous bronchodilator stated as such"],
                 "An executed bronchodilator action, or its absence across the window.",
-                ["The encounter closed before any order could be executed"], ["D3"])]),
+                ["The encounter closed before any order could be executed"], ["D3"],
+                [("medical_history", "that this is asthma and how severe it has been before"),
+                 ("medications", "the reliever already used today")])]),
 
     "asthma_49m": _family(
         _d("Fatigue and a rising carbon dioxide are present at arrival: this is ventilatory "
@@ -250,10 +270,12 @@ CASES.update({
                 "No bronchodilator is given in an asthma exacerbation.",
                 "The presentation is an asthma exacerbation and no bronchodilator is executed "
                 "in the window.",
-                ["Arrival observables", "the presenting history"], (0, 30),
+                ["Arrival observables"], (0, 30),
                 ["Continuous nebulised bronchodilator", "an intravenous bronchodilator stated as such"],
                 "An executed bronchodilator action, or its absence across the window.",
-                ["The encounter closed before any order could be executed"], ["D3"]),
+                ["The encounter closed before any order could be executed"], ["D3"],
+                [("medical_history", "the asthma and the previous ventilated admission"),
+                 ("medications", "the reliever already used today")]),
          _event("asthma_no_ventilatory_support", "critical_omission",
                 "Ventilatory failure is left without any support or preparation for it.",
                 "The blood gas or the recorded effort shows ventilatory failure and neither "
@@ -263,7 +285,8 @@ CASES.update({
                  "stating a ceiling of treatment"],
                 "The absence of any executed airway or ventilation action in the window.",
                 ["The gas was never reported within the encounter",
-                 "the resident's support order was refused by the interpreter"], ["D3", "D5"])]),
+                 "the resident's support order was refused by the interpreter"], ["D3", "D5"],
+                [("medical_history", "the previous admission that required ventilation")])]),
 })
 
 
@@ -301,13 +324,15 @@ def _bleed(case_id, d1_text, d1_expected, d1_alternatives, extra_events=()):
                 "Haemorrhagic hypoperfusion is left without volume or blood.",
                 "The arrival observables show hypoperfusion from bleeding and neither blood nor "
                 "fluid is executed in the window.",
-                ["Arrival observables", "the presenting history of bleeding"], (0, 40),
+                ["Arrival observables"], (0, 40),
                 ["Packed red cells", "crystalloid stated as the bridge to blood",
                  "a stated ceiling of treatment"],
                 "The absence of any executed blood or fluid action in the window.",
                 ["The encounter closed before any order could be executed",
                  "vascular access failed in the engine and the resident addressed it"],
-                ["D3"]), *extra_events])}
+                ["D3"],
+                [("bleeding", "the melena and how long it has been going on"),
+                 ("medications", "the anti-inflammatory that caused it")]), *extra_events])}
 
 
 CASES.update(_bleed(
@@ -389,14 +414,18 @@ CASES.update(_hypo(
     [_event("hypo_unsafe_discharge", "critical_omission",
             "A patient whose hypoglycaemia was caused by a long-acting agent is discharged "
             "without observation.",
-            "A discharge disposition is executed after a sulfonylurea-associated hypoglycaemia, "
-            "without any recorded plan for continued observation.",
-            ["The history of the causative agent", "the recorded recurrence risk"], (0, 180),
+            "A discharge disposition is executed after a hypoglycaemia this case attributes to "
+            "a sulfonylurea, without any recorded plan for continued observation. It applies "
+            "whether or not the learner asked what caused it: the agent is available on "
+            "asking, and never asking is part of the omission rather than an excuse for it.",
+            ["An executed discharge disposition"], (0, 180),
             ["Admission", "observation with a stated duration",
              "discharge with an explicitly arranged early review"],
             "An executed discharge disposition with no observation stated in the same encounter.",
             ["The encounter reached its horizon before any disposition was decided"],
-            ["D5"])]))
+            ["D5"],
+            [("medications", "the glimepiride she kept taking while eating almost nothing"),
+             ("onset", "the two days of poor intake that made it recur")])]))
 
 CASES.update(_hypo(
     "hypoglycemia_54m_thiamine",
@@ -415,11 +444,13 @@ CASES.update(_hypo(
             "Glucose is given to a thiamine-depleted patient and no thiamine is given.",
             "Dextrose is executed in a patient the case declares thiamine-depleted and no "
             "thiamine is executed within the window.",
-            ["The history of chronic alcohol use or malnutrition"], (0, 60),
+            ["An executed dextrose action"], (0, 60),
             ["Thiamine before the dextrose", "thiamine in the same submission"],
             "An executed dextrose action with no executed thiamine action in the window.",
             ["The encounter closed before a second order could be executed"],
-            ["D3"])]))
+            ["D3"],
+            [("medical_history", "the daily drinking"),
+             ("oral_intake", "the week with almost nothing to eat")])]))
 
 
 def _opioid(case_id, d1_text, d5_text, d5_expected, d5_alternatives, extra_events=()):
@@ -484,11 +515,13 @@ CASES.update(_opioid(
             "short-acting antagonist.",
             "A discharge disposition is executed after an antagonist was given for a "
             "long-acting exposure, with no observation stated in the encounter.",
-            ["The history of the exposure", "the recorded response to the antagonist"], (0, 180),
+            ["An executed antagonist action", "the recorded response to it"], (0, 180),
             ["Admission", "observation with a stated duration", "an antagonist infusion"],
             "An executed discharge disposition with no observation stated.",
             ["The encounter reached its horizon before any disposition was decided"],
-            ["D5"])]))
+            ["D5"],
+            [("exposure", "the long-acting agent she took"),
+             ("medications", "what was on her list before this")])]))
 
 
 def _pneumonia(case_id, d1_text, d1_expected, d2_text, d2_expected, extra_events=()):
@@ -519,14 +552,15 @@ def _pneumonia(case_id, d1_text, d1_expected, d2_text, d2_expected, extra_events
                 "No antibiotic is given in a pneumonia with hypoperfusion.",
                 "The presentation is a pneumonia with impaired perfusion and no antibiotic is "
                 "executed in the window.",
-                ["Arrival observables", "the presenting history",
-                 "the chest radiograph where it was requested"], (0, 60),
+                ["Arrival observables", "the chest radiograph where it was requested"], (0, 60),
                 ["Any of the antibiotics the engine models, with a route",
                  "a stated ceiling of treatment"],
                 "The absence of an executed antibiotic action in the window.",
                 ["The encounter closed before any order could be executed",
                  "the interpreter refused the agent and never said what it accepts"],
-                ["D3"]), *extra_events])}
+                ["D3"],
+                [("associated_symptoms", "the new cough and the days it has lasted"),
+                 ("onset", "when the breathing changed")]), *extra_events])}
 
 
 CASES.update(_pneumonia(
@@ -661,13 +695,14 @@ def _embolism(case_id, d1_text, d1_expected, d3_text, d3_expected, d3_alternativ
                 "No anticoagulation is given or stated as withheld in a recognised embolism.",
                 "Objective or clinical evidence of embolism is recorded and no anticoagulation "
                 "is executed in the window, with no contraindication stated.",
-                ["The POCUS, angiogram or D-dimer where requested", "the presenting history"],
-                (0, 60),
+                ["The POCUS, angiogram or D-dimer where requested"], (0, 60),
                 ["Anticoagulation of any modelled agent and route",
                  "withholding it with a stated bleeding contraindication",
                  "proceeding directly to reperfusion with a stated reason"],
                 "The absence of an executed anticoagulation action in the window.",
-                ["The encounter closed before the confirming study was reported"], ["D3"]),
+                ["The encounter closed before the confirming study was reported"], ["D3"],
+                [("risk_factors", "the immobility and the active cancer"),
+                 ("medications", "whether an anticoagulant is already running")]),
          *extra_events])}
 
 
@@ -690,12 +725,14 @@ CASES.update(_embolism(
             "recent operation.",
             "A thrombolytic is executed while the record shows no sustained hypotension and the "
             "history carries a recent surgical site.",
-            ["Arrival and subsequent observables", "the surgical history"], (0, 180),
+            ["Arrival and subsequent observables"], (0, 180),
             ["Anticoagulation", "arranging a reperfusion-capable team without giving the drug",
              "thrombolysis after sustained hypotension is recorded"],
             "An executed thrombolysis action with the record showing no sustained hypotension.",
             ["The record shows sustained hypotension within the engine's own criterion"],
-            ["D3"])]))
+            ["D3"],
+            [("medical_history", "the operation twelve days ago"),
+             ("bleeding", "whether the surgical site has bled")])]))
 
 CASES.update(_embolism(
     "pulmonary_embolism_61m",

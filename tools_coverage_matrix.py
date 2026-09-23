@@ -4,6 +4,7 @@ Generated, never hand-maintained: a matrix typed out by hand drifts from the
 code it describes, and this one exists to be trusted.
 """
 from case_assessment import COVERAGE_VERSION, declared, events, matrix
+from history_topics import HISTORY_TOPIC_LABELS
 from rubric import DOMAIN_IDS, DOMAINS, VERSION
 
 
@@ -70,8 +71,13 @@ def build():
             kind = "Acción peligrosa" if event["kind"] == "dangerous_action" else "Omisión crítica"
             out += [f"- `{event['event_id']}` — **{kind}.** {event['action']}",
                     f"  - Se activa cuando: {event['trigger']}",
-                    f"  - Información que debía estar disponible: {'; '.join(event['information_required'])}.",
-                    f"  - Ventana y oportunidad: {start}–{end} min.",
+                    f"  - Información que debía estar en el registro: {'; '.join(event['information_required'])}.",
+                    f"  - Ventana y oportunidad: {start}–{end} min.",]
+            if event["information_on_asking"]:
+                out.append("  - Disponible preguntando, se haya preguntado o no: "
+                           + "; ".join(f"**{HISTORY_TOPIC_LABELS.get(topic, topic)}** ({tells})"
+                                       for topic, tells in event["information_on_asking"]) + ".")
+            out += [
                     f"  - Alternativas aceptables: {'; '.join(event['alternatives'])}.",
                     f"  - Evidencia necesaria: {event['evidence_required']}",
                     f"  - Exclusiones: {'; '.join(event['exclusions'])}.",

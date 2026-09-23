@@ -217,6 +217,10 @@ def _event_controls(record, case_id, proposed_events, saved_events):
     defined = defined_events(case_id) if case_id else ()
     if not defined:
         return []
+    # Whether the resident asked is the fact a reviewer needs in front of them
+    # here, because it is exactly what the event no longer waits for.
+    import history_review
+    asked_topics = set(history_review.review(record, case_id)["named"])
     st.markdown("**Critical events defined for this case**")
     st.caption("Each is defined before the encounter. A confirmed event costs 3 points and "
                "stays visible however high the total is. Anything else that concerns you is "
@@ -231,6 +235,12 @@ def _event_controls(record, case_id, proposed_events, saved_events):
                    f"{event['window_min'][1]} min")
         st.caption("Acceptable alternatives: " + "; ".join(event["alternatives"]))
         st.caption("Does not count when: " + "; ".join(event["exclusions"]))
+        for row in event["information_on_asking"]:
+            topic, tells = row
+            state = "asked about" if topic in asked_topics else "**never asked about**"
+            st.caption(f"Available on asking — {topic.replace('_', ' ')} ({tells}): {state}. "
+                       "The patient answers for the whole encounter, so this was available "
+                       "either way; not asking is part of the omission, not an excuse for it.")
         if proposed:
             st.warning("The AI proposes this event occurred. Confirm or dismiss it.")
         options = ["proposed", "confirmed", "dismissed"] if proposed else ["proposed", "confirmed"]

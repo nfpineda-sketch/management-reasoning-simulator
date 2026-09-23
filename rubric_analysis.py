@@ -13,10 +13,11 @@ the defined identifiers, and the arithmetic belongs to ``rubric``.
 from datetime import datetime, timezone
 import json
 
-from case_assessment import COVERAGE_VERSION, declared, events as defined_events
+from case_assessment import (ASKING_RULE, COVERAGE_VERSION, declared,
+                             events as defined_events)
 from faculty_analysis import (FacultyAnalysisError, _canonical, _check_schema as _check_shared,
                               _eligible, _string, _array, _object, _text, build_analysis_source,
-                              source_fingerprint)
+                              case_id_of, source_fingerprint)
 from rubric import DOMAIN_IDS, DOMAINS, NOT_ASSESSABLE, SEPARATION_NOTE, VERSION
 
 
@@ -37,19 +38,6 @@ def _check_schema(value, schema):
     except FacultyAnalysisError as error:
         raise RubricAnalysisError(
             str(error).replace("The AI brief", "The rubric proposal")) from None
-
-
-def case_id_of(record):
-    """The authored case this encounter was played on, or "" when there is none.
-
-    Saved by the export as ``encounter.authored_case_id``. The case spec itself
-    is stripped from every record because it holds the answers; this is only
-    the identifier, and without it the declared opportunities and the defined
-    critical events of the case cannot be looked up.
-    """
-    session = (record or {}).get("payload", {}).get("session", {}) or {}
-    encounter = session.get("encounter") if isinstance(session.get("encounter"), dict) else {}
-    return str(encounter.get("authored_case_id") or "")
 
 
 def build_rubric_source(record, assistance_context="unknown"):
@@ -91,7 +79,13 @@ def build_rubric_source(record, assistance_context="unknown"):
         "acceptable_alternatives": list(event["alternatives"]),
         "evidence_required": event["evidence_required"],
         "exclusions": list(event["exclusions"]), "domains": list(event["domains"]),
+        # What the patient answers if asked. Available whether or not they were
+        # asked, which is why it is a separate field from the record-borne one.
+        "information_available_on_asking": [
+            {"history_topic": topic, "tells_them": tells}
+            for topic, tells in event["information_on_asking"]],
     } for event in defined_events(case_id)] if case_id else []
+    source["information_on_asking_rule"] = ASKING_RULE
     return source
 
 
@@ -139,9 +133,23 @@ WHAT NOT TO DO
 - Record any hint or assistance the encounter gave. Asking for help appropriately is not a
   failure and is never scored as one.
 
+INFORMATION AVAILABLE ON ASKING
+- The patient, or the collateral source the case names, is present for the whole encounter and
+  answers what they are asked. Everything under information_available_on_asking was therefore
+  available to the learner, whether or not they asked for it.
+- Never treat an unasked history as information the learner lacked. They were not deprived of
+  it; they omitted to obtain it.
+- Say so where it matters. A decision taken without asking something the patient would have
+  answered is an incomplete assessment (D2) and, where it decided the disposition, an
+  incomplete continuity decision (D5). Name the topic that was not asked about.
+- unasked_history_topics lists what the case offered and nobody asked. It is an omission of
+  the learner's, not a limitation of the record, and must not be reported as one.
+
 CRITICAL EVENTS
 - You may propose only an event listed in defined_critical_events, by its exact event_id,
   when its trigger, its information and its window are all satisfied by the record.
+- An event's information_available_on_asking is satisfied by the case offering it. An unasked
+  history NEVER excuses an event and is never a reason to withhold one.
 - You may not invent an event, a penalty or a criterion. If something concerns you that is
   not defined, put it in "concerns_for_review": it is flagged for the faculty and carries no
   deduction.

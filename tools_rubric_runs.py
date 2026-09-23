@@ -347,6 +347,10 @@ def play(case_id):
             spo2=observable.get("spo2"), rr=observable.get("respiratory_rate"),
             crt=observable.get("crt"), ms=observable.get("mental_status")))
     trace = deepcopy(session["management_trace"])
+    # Asking is not an order, so the history lives here and not in the trace.
+    # A scripted encounter asks nothing, which is itself the thing under test
+    # in the cases whose events no longer wait for the resident to ask.
+    events = deepcopy(session.get("events") or [])
     record = {
         "id": f"pilot-{case_id}", "revision": 1, "status": "completed",
         "username": "PILOT - scripted learner", "challenge_id": script["family"],
@@ -356,6 +360,7 @@ def play(case_id):
             "selected_case": script["family"], "review_completed": True,
             "encounter": {"authored_case_id": case_id},
             "management_trace": trace,
+            "events": events,
             "precomparison_decision_review": {"decision_1": dict(script["reflection"])},
             "review_prompts": [{"review_id": "decision_1", "decision": 1, "time": "00:00"}],
             "adaptation_plan": dict(script["plan"]),
@@ -427,12 +432,23 @@ def main(argv=None):
     record, report, transcript, usage = propose(args.propose, args.model)
     out = ROOT / args.out
     out.mkdir(parents=True, exist_ok=True)
-    (out / f"{args.propose}.json").write_text(
+    # A run is evidence and is never overwritten. Re-proposing the same case
+    # writes the next number beside the first, so a before-and-after survives:
+    # the verification of 2026-09-23 overwrote its own baseline before this
+    # existed, and the comparison had to be reconstructed from a transcript.
+    stem = args.propose
+    if (out / f"{stem}.json").exists():
+        run = 2
+        while (out / f"{stem}.{run}.json").exists():
+            run += 1
+        stem = f"{stem}.{run}"
+    (out / f"{stem}.json").write_text(
         json.dumps({"usage": usage, "report": report}, indent=1, ensure_ascii=False),
         encoding="utf-8")
-    (out / f"{args.propose}.record.json").write_text(
+    (out / f"{stem}.record.json").write_text(
         json.dumps(record, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
-    (out / f"{args.propose}.transcript.txt").write_text(transcript, encoding="utf-8")
+    (out / f"{stem}.transcript.txt").write_text(transcript, encoding="utf-8")
+    print("written:", out / f"{stem}.json")
     print(f"requests={usage['requests']} seconds={usage['seconds']}")
     for row in report["proposal"]["domains"]:
         print(f"  {row['domain_id']} = {row['score']}")

@@ -176,6 +176,48 @@ def _domain_label(domain_id):
     return "Domain " + str(domain_id).lstrip("Dd")
 
 
+def _history_section(record, styles, *, compact):
+    """What the resident asked, and what the case offered that nobody asked.
+
+    The history is not in the Management Trace, because asking is not an order.
+    It appears here because a decision taken without asking something the
+    patient would have answered is a decision worth seeing, and because an
+    unasked topic is the resident's omission rather than a gap in the record
+    (faculty, 2026-09-23).
+    """
+    import history_review
+    from faculty_analysis import case_id_of
+    summary = history_review.review(record, case_id_of(record))
+    if not summary["offered"] and not summary["exchanges"]:
+        return []
+
+    def style(*names):
+        return next((styles[name] for name in names if name in styles), styles["body"])
+
+    def p(text, *names):
+        return Paragraph(_xml(text), style(*names) if names else styles["body"])
+
+    flow = [p("HISTORY OBTAINED", "eyebrow", "label")]
+    if not summary["exchanges"]:
+        flow.append(p("No question was asked of the patient or the available history source."))
+    elif compact:
+        flow.append(p(f"{len(summary['exchanges'])} question(s) asked. "
+                      + "; ".join(f"\u201c{item['asked']}\u201d"
+                                  for item in summary["exchanges"][:4])))
+    else:
+        for item in summary["exchanges"][:40]:
+            flow.append(p(f"{_minute(item['minute'])} \u201c{item['asked']}\u201d "
+                          f"- {item['answered']}", "small", "muted"))
+    if summary["not_named"]:
+        flow.append(p("Available and not asked about: "
+                      + ", ".join(row["label"] for row in summary["not_named"]) + "."))
+        flow.append(p("The patient answers for the whole encounter, so these were available. "
+                      "Not asking is an omission of the resident's, not a limitation of the "
+                      "record, and it is not a reason to withhold a judgement.",
+                      "small", "muted"))
+    return flow
+
+
 def _rubric_section(assessment, styles, content_width, *, compact):
     """The five-domain profile, shared by both briefs so they cannot disagree.
 
@@ -354,6 +396,7 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
     story.extend([metadata, Spacer(1, 9)])
     section("Performance synthesis", analysis.get("summary"))
     story.extend(_rubric_section(assessment, styles, content_width, compact=False))
+    story.extend(_history_section(record, styles, compact=False))
     section("Assistance context", ASSISTANCE_LABELS.get(
         _string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"]))
     story.append(p("Strengths supported by the record", "subhead"))
@@ -663,6 +706,7 @@ def _render_compact(report, record, inputs, app_url, correct=None, assessment=No
                        "judgment. Assistance and autonomy: " + assistance, "muted"))
         # The rubric profile is what the faculty reads first at the table.
         story.extend(_rubric_section(assessment, styles, usable, compact=True))
+        story.extend(_history_section(record, styles, compact=True))
         review_points = analysis.get("review_points", [])
         review_points = review_points if isinstance(review_points, list) else []
         story.extend([Spacer(1, 7), p(f"{min(3, len(review_points))} selected review priorities", "heading")])

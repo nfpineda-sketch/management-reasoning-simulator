@@ -89,16 +89,33 @@ def verify(case_or_id):
     for reason in entry.get("not_assessable", {}).values():
         if not str(reason).strip():
             problems.append(f"{case['id']}: a domain is declared not assessable without a reason.")
+    # What the patient will answer, by the topics this case actually writes. A
+    # declaration cannot promise that asking reveals something the case never
+    # authored, for the same reason it cannot promise an absent study.
+    topics = set(case.get("history", {}))
     for event in entry.get("critical_events", ()):
-        problems.extend(_verify_event(case, event, studies, actions))
+        problems.extend(_verify_event(case, event, studies, actions, topics))
     return problems
 
 
 _EVENT_FIELDS = ("event_id", "kind", "action", "trigger", "information_required",
-                 "window_min", "alternatives", "evidence_required", "exclusions", "domains")
+                 "window_min", "alternatives", "evidence_required", "exclusions", "domains",
+                 "information_on_asking")
+
+# Faculty decision of 2026-09-23. It travels with every request, because the
+# model read "its information is satisfied by the record" as "the resident must
+# have obtained it", and refused an event on the strength of the resident's own
+# omission.
+ASKING_RULE = (
+    "Information the case supplies on asking is available whether or not the learner asked. "
+    "The patient, or the collateral source the case names, is present for the whole encounter "
+    "and answers. A learner who never asked was not deprived of the information; they omitted "
+    "to obtain it. So an unasked history never excuses a critical event, and failing to ask "
+    "for it is itself an omission the assessment names."
+)
 
 
-def _verify_event(case, event, studies, actions):
+def _verify_event(case, event, studies, actions, topics=()):
     problems = []
     for field in _EVENT_FIELDS:
         if field not in event:
@@ -119,6 +136,20 @@ def _verify_event(case, event, studies, actions):
     for domain in event.get("domains", ()):
         if domain not in DOMAIN_IDS:
             problems.append(f"{case['id']} {identifier}: unknown domain {domain!r}.")
+    if not (event.get("information_required") or event.get("information_on_asking")):
+        problems.append(f"{case['id']} {identifier}: states nothing that has to be known to judge it.")
+    for entry in event.get("information_on_asking", ()):
+        if not isinstance(entry, tuple) or len(entry) != 2:
+            problems.append(f"{case['id']} {identifier}: an on-asking entry is not a "
+                            "(history topic, what it tells them) pair.")
+            continue
+        topic, tells = entry
+        if topic not in topics:
+            problems.append(f"{case['id']} {identifier}: promises the history topic "
+                            f"{topic!r}, which this case does not author.")
+        if not str(tells).strip():
+            problems.append(f"{case['id']} {identifier}: the topic {topic!r} is named "
+                            "without saying what asking about it would tell them.")
     return problems
 
 

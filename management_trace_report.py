@@ -407,6 +407,43 @@ def _all_claims(analysis):
                 yield moment[key]
 
 
+HISTORY_RULE = ("The patient answers what you ask, for the whole encounter. A topic you did "
+                "not ask about was available to you: it is not missing from the record, it "
+                "was not obtained.")
+
+
+def _history_section(payload, p, styles):
+    """What was asked and what was never asked about, as recorded facts.
+
+    Not an interpretation: the questions are the resident's own words and the
+    unasked topics are the ones the case authors. It appears because asking is
+    not an order and therefore appears nowhere else in this document -- and
+    because a decision taken without asking is a decision worth seeing
+    (faculty, 2026-09-23).
+    """
+    import history_review
+    from faculty_analysis import case_id_of
+    summary = history_review.review({"payload": payload}, case_id_of({"payload": payload}))
+    if not summary["offered"] and not summary["exchanges"]:
+        return []
+    story = [Spacer(1, 12), p("The history you took", "heading")]
+    if summary["exchanges"]:
+        story.append(p("WHAT YOU ASKED, AND WHAT YOU WERE TOLD", "label"))
+        for item in summary["exchanges"][:40]:
+            story.append(KeepTogether([
+                Paragraph(_xml(f"{_time(item['minute'])} \u00b7 \u201c{item['asked']}\u201d"),
+                          styles["quote"]),
+                Paragraph(_xml(item["answered"]), styles["small"])]))
+    else:
+        story.append(p("No question was asked of the patient or the available history source "
+                       "during this encounter.", "note"))
+    if summary["not_named"]:
+        story.append(p("AVAILABLE AND NOT ASKED ABOUT", "label"))
+        story.append(p(", ".join(row["label"] for row in summary["not_named"]) + ".", "body"))
+        story.append(p(HISTORY_RULE, "note"))
+    return story
+
+
 def render_management_trace_pdf(
     report, payload, *, case_label="", learner_label="", review_completed=False,
     adaptation_plan=None, corrections=None,
@@ -608,6 +645,9 @@ def render_management_trace_pdf(
         if caveat:
             block.append(caveat)
         story.append(KeepTogether(block))
+
+    # --- the history, which is a record fact and not an interpretation ------
+    story += _history_section(payload, p, styles)
 
     # --- the decisions, each read in the order a clinician reads one --------
     story.append(Spacer(1, 12))

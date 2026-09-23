@@ -11,25 +11,10 @@ import streamlit as st
 
 SCENE_RENDER_VERSION = 12
 
-# Only recorded patient-history topics are exposed to conversational retrieval.
-# The full case specification also includes diagnoses and teaching objectives.
-HISTORY_TOPIC_LABELS = {
-    'chief_complaint': 'Presenting symptoms',
-    'onset': 'Onset and course',
-    'associated_symptoms': 'Associated symptoms',
-    'medical_history': 'Previous health',
-    'medications': 'Medications',
-    'allergies': 'Allergies',
-    'risk_factors': 'Relevant exposures and risk factors',
-    'chest_pain': 'Chest discomfort',
-    'breathing': 'Breathing symptoms',
-    'bleeding': 'Bleeding symptoms',
-    'oral_intake': 'Eating and drinking',
-    'exposure': 'Recent exposures',
-    'urinary_symptoms': 'Urinary symptoms',
-    'neurological_symptoms': 'Neurological symptoms',
-    'leg_symptoms': 'Leg symptoms',
-}
+# Defined in history_topics, a leaf module with no imports, so that a PDF
+# renderer or a rubric declaration can read them without importing Streamlit
+# and PIL through this module. Re-exported here for every existing reader.
+from history_topics import HISTORY_TOPIC_LABELS          # noqa: F401  (re-export)
 
 
 def _clinical_case(state):
