@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 
 import streamlit as st
 
-from account_store import AccountError, AccountStore
+from account_store import AccountError, AccountLocked, AccountStore
 
 
 _TOKEN_KEY = "_account_token"
@@ -177,6 +177,10 @@ def require_account_access() -> dict[str, Any]:
                 user = store.get_user(new_token)
                 if not user:
                     raise AccountError("Sign in failed.")
+            except AccountLocked as locked:
+                # The throttle is a wait, not a wrong password. Saying which
+                # spares the administrator retyping credentials that are right.
+                st.error(str(locked))
             except AccountError:
                 st.error("Unable to sign in. Check your credentials or try again later.")
             except Exception:

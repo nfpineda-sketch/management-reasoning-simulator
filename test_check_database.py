@@ -64,3 +64,54 @@ def test_the_complaint_never_repeats_the_hash():
         complaint = check_database.describe_admin_hash(value) or ""
         assert good.split("$")[3] not in complaint
         assert good.split("$")[2] not in complaint
+
+
+def _store(tmp_path):
+    from account_store import AccountStore, hash_password
+    url = "sqlite:///" + str(tmp_path / "accounts.sqlite3")
+    store = AccountStore(url, allow_sqlite=True)
+    store.bootstrap_admin("npineda", hash_password("una-clave-larga-de-prueba"))
+    return url, store
+
+
+def test_it_separates_a_missing_account_from_a_throttled_one(tmp_path, capsys, monkeypatch):
+    from account_store import AccountError
+    url, store = _store(tmp_path)
+    monkeypatch.setenv("MRS_DATABASE_URL", url)
+
+    assert check_database.main(["--account", "npineda"]) == 0
+    reported = capsys.readouterr().out
+    assert "exists" in reported and "admin" in reported and "active" in reported
+    assert "throttle" not in reported
+
+    assert check_database.main(["--account", "otronombre"]) == 0
+    reported = capsys.readouterr().out
+    assert "No account named" in reported
+    assert "1 administrator account(s)" in reported
+    assert "npineda" in reported          # the name to type is what is missing
+
+    for _ in range(6):
+        with pytest.raises(AccountError):
+            store.authenticate("npineda", "la-clave-equivocada")
+    assert check_database.main(["--account", "npineda"]) == 0
+    reported = capsys.readouterr().out
+    assert "locked by the sign-in throttle" in reported
+    assert "minute(s)" in reported
+
+
+def test_it_says_when_no_administrator_was_ever_created(tmp_path, capsys, monkeypatch):
+    from account_store import AccountStore
+    url = "sqlite:///" + str(tmp_path / "empty.sqlite3")
+    AccountStore(url, allow_sqlite=True)
+    monkeypatch.setenv("MRS_DATABASE_URL", url)
+    assert check_database.main(["--account", "npineda"]) == 0
+    reported = capsys.readouterr().out
+    assert "0 administrator account(s)" in reported
+    assert "MRS_ADMIN_USERNAME" in reported
+
+
+def test_the_account_report_never_prints_a_hash(tmp_path, capsys, monkeypatch):
+    url, store = _store(tmp_path)
+    monkeypatch.setenv("MRS_DATABASE_URL", url)
+    check_database.main(["--account", "npineda"])
+    assert "pbkdf2_sha256" not in capsys.readouterr().out

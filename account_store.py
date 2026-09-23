@@ -24,6 +24,18 @@ class AccountError(Exception):
     """An intentionally non-sensitive message safe to display to the user."""
 
 
+class AccountLocked(AccountError):
+    """The sign-in throttle refused the attempt, whatever the credentials were.
+
+    A subclass, so every existing ``except AccountError`` keeps working. It is
+    separate only so the sign-in screen can say "wait" instead of "check your
+    credentials", which is the difference between a solvable wait and a user
+    retyping a password that was never the problem. Saying so reveals nothing:
+    the throttle counts attempts against the submitted name whether or not an
+    account bears it.
+    """
+
+
 PASSWORD_ROUNDS = 600_000
 ROLES = frozenset({"resident", "faculty", "admin"})
 ATTEMPT_STATUSES = frozenset({"active", "completed", "abandoned"})
@@ -316,12 +328,15 @@ class AccountStore:
         This method belongs to trusted deployment setup, never the signup UI.
         """
         username = _username(username)
-        complaint = describe_password_hash(password_hash)
-        if complaint:
-            raise AccountError(f"The administrator password hash is unusable: {complaint}")
         with self._transaction(write=True) as connection:
             if self._execute(connection, "SELECT id FROM mrs_users WHERE role = 'admin' LIMIT 1").fetchone():
                 return False
+            # Judged only once it is needed. A deployment whose administrator
+            # already exists must not be closed by a bootstrap secret nobody
+            # is going to use.
+            complaint = describe_password_hash(password_hash)
+            if complaint:
+                raise AccountError(f"The administrator password hash is unusable: {complaint}")
             if self._execute(connection, "SELECT id FROM mrs_users WHERE username = ?", (username,)).fetchone():
                 raise AccountError("That username is already registered.")
             self._execute(connection, "INSERT INTO mrs_users VALUES (?, ?, ?, 'admin', NULL, 1, ?)",
@@ -340,7 +355,10 @@ class AccountStore:
         with self._transaction(write=True) as connection:
             row = self._execute(connection, "SELECT * FROM mrs_login_attempts WHERE bucket = ?", (bucket,)).fetchone()
             if row and now - row["started_at"] < 900 and row["failures"] >= 5:
-                raise AccountError("Too many sign-in attempts. Try again in 15 minutes.")
+                minutes = max(1, (900 - (now - row["started_at"]) + 59) // 60)
+                raise AccountLocked(
+                    f"Too many sign-in attempts. Try again in {minutes} minute(s)."
+                )
             started_at = row["started_at"] if row and now - row["started_at"] < 900 else now
             failures = row["failures"] if row and now - row["started_at"] < 900 else 0
             user = self._execute(connection, "SELECT * FROM mrs_users WHERE username = ?", (username,)).fetchone()

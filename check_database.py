@@ -19,6 +19,7 @@ says which part of it is wrong. It never prints the hash.
 import argparse
 import os
 import sys
+import time
 from urllib.parse import urlsplit
 
 PLACEHOLDERS = ("USUARIO", "CLAVE", "HOST", "BASE", "USER", "PASSWORD", "DATABASE", "...")
@@ -46,6 +47,67 @@ def describe(url):
     return None
 
 
+def report_account(url, username):
+    """Say whether an account exists, may sign in, and is currently throttled.
+
+    A sign-in screen cannot say any of this without telling a stranger which
+    usernames exist. Run against the deployment's own database by whoever holds
+    its URL, it separates "no such account" from "locked out for nine minutes",
+    which look identical from the browser. No password or hash is read.
+    """
+    sqlite = str(url).startswith("sqlite:")
+    if not sqlite:
+        complaint = describe(url)
+        if complaint:
+            print("The database URL is not usable:", complaint)
+            return 1
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from account_store import AccountStore, _digest, _username
+    try:
+        name = _username(username)
+    except Exception as error:
+        print("That username cannot be used:", error)
+        return 1
+    store = AccountStore(url, allow_sqlite=sqlite)
+    with store._transaction() as connection:
+        user = store._execute(
+            connection, "SELECT role, active FROM mrs_users WHERE username = ?", (name,)
+        ).fetchone()
+        attempt = store._execute(
+            connection, "SELECT failures, started_at FROM mrs_login_attempts WHERE bucket = ?",
+            (_digest(name),)
+        ).fetchone()
+        admins = store._execute(
+            connection, "SELECT username, active FROM mrs_users WHERE role = 'admin' ORDER BY username"
+        ).fetchall()
+    if user is None:
+        print(f"No account named {name!r} exists.")
+        print(f"The database holds {len(admins)} administrator account(s).")
+        if not admins:
+            print("None at all: the bootstrap secrets never created one. Set "
+                  "MRS_ADMIN_USERNAME and MRS_ADMIN_PASSWORD_HASH, then reboot the app.")
+        else:
+            # Knowing which name to type is the whole question here, and whoever
+            # holds the database URL can already read the table.
+            print("Sign in as one of these instead:")
+            for row in admins:
+                print(f"   {row['username']}"
+                      + ("" if row["active"] else "   (disabled — it cannot sign in)"))
+    else:
+        print(f"{name!r} exists, role {user['role']}, "
+              f"{'active' if user['active'] else 'DISABLED — it cannot sign in'}.")
+    if attempt:
+        waited = int(time.time()) - int(attempt["started_at"])
+        if waited < 900 and attempt["failures"] >= 5:
+            print(f"It is locked by the sign-in throttle for another "
+                  f"{max(1, (900 - waited + 59) // 60)} minute(s). The password is not the issue "
+                  "until that passes.")
+        elif waited < 900:
+            print(f"{attempt['failures']} failed attempt(s) in the last "
+                  f"{waited // 60} minute(s); five within fifteen minutes lock it.")
+    return 0
+
+
 def describe_admin_hash(value):
     """Why the application will refuse this bootstrap hash, or None.
 
@@ -60,14 +122,18 @@ def describe_admin_hash(value):
     return describe_password_hash(str(value).strip("\r\n"))
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--create", action="store_true",
                         help="open the store as the application does, creating its tables")
     parser.add_argument("--admin-hash", action="store_true",
                         help="check MRS_ADMIN_PASSWORD_HASH instead of the database URL")
-    arguments = parser.parse_args()
+    parser.add_argument("--account", metavar="USERNAME",
+                        help="report whether this account exists, is active, and is throttled")
+    arguments = parser.parse_args(argv)
+    if arguments.account:
+        return report_account(os.environ.get("MRS_DATABASE_URL", ""), arguments.account)
     if arguments.admin_hash:
         complaint = describe_admin_hash(os.environ.get("MRS_ADMIN_PASSWORD_HASH", ""))
         if complaint:
