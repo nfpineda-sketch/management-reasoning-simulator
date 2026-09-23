@@ -289,6 +289,43 @@ def _render_admin_controls(context: dict[str, Any]) -> None:
                 st.rerun()
 
 
+def _render_password_change(context: dict[str, Any]) -> None:
+    """Change one's own password. Every role, including the resident.
+
+    ``change_password`` existed in the store from the beginning and reached no
+    screen, so nobody could rotate the password they were given (2026-09-23).
+    Changing it revokes every other session and issues a fresh one here, which
+    is what makes it useful after a password has been shared or seen.
+    """
+    with st.sidebar.expander("Change your password"):
+        with st.form("account_password", clear_on_submit=True):
+            current = st.text_input("Current password", type="password", max_chars=1024)
+            fresh = st.text_input("New password", type="password", max_chars=1024)
+            again = st.text_input("Repeat the new password", type="password", max_chars=1024)
+            st.caption("At least 12 characters. Signing in again will be required "
+                       "everywhere else you are signed in.")
+            submitted = st.form_submit_button("Change password")
+        if not submitted:
+            return
+        if fresh != again:
+            st.error("The two new passwords do not match.")
+            return
+        try:
+            token = context["store"].change_password(context["token"], current, fresh)
+        except AccountError as error:
+            st.error(str(error))
+            return
+        except Exception:
+            st.error("Account storage is temporarily unavailable.")
+            return
+        # Every session was revoked, including this one. Keeping the fresh
+        # token leaves the person signed in where they are standing, and signs
+        # out anywhere else -- which is the point of changing it.
+        st.session_state[_TOKEN_KEY] = token
+        st.session_state["_account_notice"] = "Password changed. Other sessions were signed out."
+        st.rerun()
+
+
 def render_account_sidebar(context: dict[str, Any]) -> None:
     """Show identity and role-appropriate account controls after the access gate."""
     user = context["user"]
@@ -297,6 +334,9 @@ def render_account_sidebar(context: dict[str, Any]) -> None:
     st.sidebar.caption(str(user["role"]).capitalize())
     if st.sidebar.button("Sign out", key="_account_sign_out"):
         _sign_out(context)
+    if st.session_state.get("_account_notice"):
+        st.sidebar.success(st.session_state.pop("_account_notice"))
+    _render_password_change(context)
     if user["role"] == "admin":
         if st.session_state.get("_account_admin_notice"):
             st.sidebar.success(st.session_state.pop("_account_admin_notice"))

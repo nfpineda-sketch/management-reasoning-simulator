@@ -126,7 +126,12 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
             raise AccountError("Choose an implemented faculty challenge.")
         assignment = {"challenge_id": faculty_choice, "reason": "faculty_sandbox", "assignment_seed": seed}
     else:
-        assignment = assign_challenge(user["training_year"], own, seed)
+        # What this resident has never been placed in, computed here and passed
+        # in, so that curriculum.py keeps knowing nothing about the rubric. It
+        # breaks a tie between candidates the curriculum already chose.
+        import challenge_targeting
+        assignment = assign_challenge(user["training_year"], own, seed,
+                                      challenge_targeting.unmet(own, CHALLENGES))
     from offline_cases import launch_options
     generation, scene_key = launch_options(_secret("OPENAI_API_KEY"))
     with ScenePreparation(scene_key,
@@ -167,6 +172,7 @@ def render_dashboard(context, initial_state, reset_session):
             # send objective labels and feedback with the encounter launch UI.
             render_progress_dashboard(context, title="My progress")
             _render_rubric_profile(context)
+            _render_own_record(context)
             return
     attempts = store.list_attempts(token)
     own = [a for a in attempts if a["user_id"] == user["id"]]
@@ -280,6 +286,22 @@ def render_dashboard(context, initial_state, reset_session):
                     st.json((record.get("payload") or {}).get("evidence", {}), expanded=False)
                     st.download_button("Download faculty record", json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
         _render_rubric_profile(context, render_progress_dashboard(context))
+
+
+def _render_own_record(context):
+    """The resident's own encounters, plans and record, on their own page.
+
+    Their work used to disappear the moment they finished it: the Management
+    Trace was downloadable during the encounter and never again (2026-09-23).
+    """
+    import resident_portal
+    with st.expander("Your photograph and initials"):
+        resident_portal.render_photo_and_initials(context)
+    encounters = resident_portal.render_my_encounters(context)
+    with st.expander("What you said you would do differently"):
+        resident_portal.render_adaptation_thread(context, encounters)
+    with st.expander("Download your complete record"):
+        resident_portal.render_account_export(context, encounters)
 
 
 def _render_rubric_profile(context, user_id=None):

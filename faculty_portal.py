@@ -110,6 +110,22 @@ def _pdf_download(context, report, record, *, compact, assessment=None):
                        mime="application/pdf", key="download_faculty_" + mode + "_" + record["id"])
 
 
+def _training_year(context, record):
+    """The year of the resident this encounter belongs to, when it is known.
+
+    Read through the progress store, which faculty may use; ``list_users``
+    is the administrator's and would answer nothing for a reviewer.
+    """
+    from progress_store import ProgressStore
+    try:
+        for person in ProgressStore(context["store"]).list_residents(context["token"]):
+            if person["id"] == record.get("user_id"):
+                return person.get("training_year")
+    except Exception:
+        return None
+    return None
+
+
 def _rubric_pdf_download(context, review, proposal, record):
     """The rubric assessment as its own document, for the faculty only.
 
@@ -131,13 +147,19 @@ def _rubric_pdf_download(context, review, proposal, record):
         average = {**average, "caption": rubric_progress.caption(summary)}
     # The revision and the status are part of the key: a document served from a
     # cache that predates a saved change would show a score nobody confirmed.
-    cache_key = repr(("rubric_pdf_v1", context["user"]["id"], record["id"],
+    # The face, the initials and the year, for a reviewer working at a
+    # distance. Absent when the resident has not agreed to store one.
+    import resident_profile
+    badge = resident_profile.badge(context["store"], context["token"],
+                                   record.get("user_id"), _training_year(context, record))
+    cache_key = repr(("rubric_pdf_v2", context["user"]["id"], record["id"],
                       review.get("sequence"), review.get("status"),
-                      (proposal or {}).get("proposal_id"), summary["encounters"]))
+                      (proposal or {}).get("proposal_id"), summary["encounters"],
+                      bool(badge), (badge or {}).get("initials")))
     if cache_key not in st.session_state:
         try:
             st.session_state[cache_key] = render_rubric_report_pdf(
-                review, proposal, record, average=average)
+                review, proposal, record, average=average, badge=badge)
         except (RubricReportError, ValueError, LayoutError):
             st.caption("The rubric document could not be prepared. The assessment above is "
                        "unchanged and remains available.")

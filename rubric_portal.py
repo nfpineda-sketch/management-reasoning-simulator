@@ -209,8 +209,12 @@ def _live_shape(store, token, record, pending, proposal):
         reviews = []
     summary = rubric_progress.aggregate(reviews)
     average = rubric_progress.average_series(summary, colour=rubric_radar.SERIES_COLOURS[1])
+    import resident_profile
     render_rubric_shape(pending, proposal, average=average,
-                        caption=rubric_progress.caption(summary))
+                        caption=rubric_progress.caption(summary),
+                        badge=resident_profile.badge(
+                            store.accounts, token, record.get("user_id"),
+                            (record.get("training_year") if isinstance(record, dict) else None)))
 
 
 def _event_controls(record, case_id, proposed_events, saved_events):
@@ -283,10 +287,10 @@ def _history(store, token, record):
                            f"{change['confirmed']} — {change['justification']}")
 
 
-def _radar_html(series, language, caption=""):
+def _radar_html(series, language, caption="", badge=None):
     """The radar, sized to its column, with the caption under it."""
     import rubric_radar
-    chart = rubric_radar.svg(series, size=240, language=language)
+    chart = rubric_radar.svg(series, size=240, language=language, badge=badge)
     legend = "".join(
         f'<span class="mrs-radar-key"><i style="background:{item["colour"]}"></i>'
         f'{escape(str(item["label"]))}</span>'
@@ -306,7 +310,8 @@ def _radar_html(series, language, caption=""):
     """
 
 
-def render_rubric_shape(review, proposal=None, *, language="en", average=None, caption=""):
+def render_rubric_shape(review, proposal=None, *, language="en", average=None, caption="",
+                        badge=None):
     """The one encounter's profile as a shape, beside its numbers."""
     import rubric_radar
     if review is None:
@@ -314,7 +319,7 @@ def render_rubric_shape(review, proposal=None, *, language="en", average=None, c
     series = [rubric_radar.series_from_review(review, language=language)]
     if average:
         series.append(average)
-    st.markdown(_radar_html(series, language, caption), unsafe_allow_html=True)
+    st.markdown(_radar_html(series, language, caption, badge), unsafe_allow_html=True)
     gaps = [domain for domain in DOMAIN_IDS
             if (review.get("scores") or {}).get(domain) in (None, NOT_ASSESSABLE)]
     if gaps:
@@ -341,6 +346,10 @@ def render_rubric_profile(context, user_id=None, *, language="en"):
         st.caption(str(error))
         return None
     summary = rubric_progress.aggregate(reviews)
+    import resident_profile
+    badge = resident_profile.badge(context["store"], context["token"], user_id,
+                                   (context["user"].get("training_year")
+                                    if user_id in (None, context["user"]["id"]) else None))
     st.markdown("**Management reasoning profile** (pilot rubric "
                 + (summary["rubric_versions"][0] if summary["rubric_versions"] else "1.0-pilot")
                 + ")")
@@ -354,7 +363,7 @@ def render_rubric_profile(context, user_id=None, *, language="en"):
     average = rubric_progress.average_series(summary, language, colour=rubric_radar.SERIES_COLOURS[1])
     if average:
         series.append(average)
-    st.markdown(_radar_html(series, language, rubric_progress.caption(summary, language)),
+    st.markdown(_radar_html(series, language, rubric_progress.caption(summary, language), badge),
                 unsafe_allow_html=True)
     for row in rubric_progress.table(summary, language):
         st.markdown(f"**Domain {row['domain_id'][1:]} · {row['title']}** — {row['mean_label']}")

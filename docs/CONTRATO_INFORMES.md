@@ -121,8 +121,11 @@ renderizarse para el residente si la revisión es un borrador o no existe, y esa
 el renderizador y no en quien lo llama, porque un documento se copia y un punto de llamada no.
 Confirmado, el encuentro entra en el perfil del residente.
 
-**El gráfico de araña.** Cinco ejes, uno por dominio, de 0 a 3. Dos reglas, que son las de la
-rúbrica:
+**El gráfico de araña.** Cinco ejes, uno por dominio, de 0 a 3. En el centro, cuando el
+residente lo ha aceptado y guardado, su foto recortada en círculo con sus iniciales y su año
+(`NP · R2`); sin foto, las iniciales son el badge. Está descrito en
+[`CUENTA_DEL_RESIDENTE.md`](CUENTA_DEL_RESIDENTE.md), incluido el acuerdo sin el cual no se
+guarda nada. Tres reglas, y la primera es la de la rúbrica:
 
 - Un dominio **no evaluable se dibuja como un hueco**, nunca en el centro. Un punto en el centro
   se lee como un cero, y "no evaluable" no es un cero. El contorno se abre en el hueco y se
@@ -131,6 +134,9 @@ rúbrica:
   además lo dice con palabras.
 - **La penalización no se resta de ningún eje.** Un evento de seguridad es un evento, no una
   fracción de uno; va en el titular al lado del gráfico.
+- **Una foto no puede esconder un cero.** El badge se dibuja debajo de los contornos y su radio
+  es el 21% del radio, dentro del anillo más interno, así que nunca tapa un 1. Un cero, que se
+  dibuja en el centro exacto, va encima con un anillo del color de la página alrededor.
 
 El perfil longitudinal usa el mismo gráfico con un segundo contorno: el promedio del residente.
 **Cada dominio promedia sólo los encuentros en que fue evaluable**, lleva su propio conteo, y el

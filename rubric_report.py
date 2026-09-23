@@ -103,7 +103,7 @@ def _headline_block(assessment, styles, language):
     return flow
 
 
-def _radar_block(assessment, language, *, average=None):
+def _radar_block(assessment, language, *, average=None, badge=None):
     series = [{
         "key": "encounter",
         "label": "Este encuentro" if language == "es" else "This encounter",
@@ -117,7 +117,7 @@ def _radar_block(assessment, language, *, average=None):
             "values": average.get("values") or {},
             "colour": palette.ORANGE, "opacity": 0.09,
         })
-    return rubric_radar.drawing(series, size=138, language=language)
+    return rubric_radar.drawing(series, size=138, language=language, badge=badge)
 
 
 def _profile_table(assessment, styles, width, language):
@@ -236,7 +236,7 @@ def _events_block(assessment, styles, language, unasked=()):
 
 
 def build_rubric_document(review, proposal=None, record=None, *, language="en",
-                          audience="faculty", average=None):
+                          audience="faculty", average=None, badge=None):
     """The flowables of the document, so a test can read it without a PDF."""
     if audience not in {"faculty", "learner"}:
         raise RubricReportError("A rubric report is rendered for faculty or for a learner.")
@@ -266,7 +266,7 @@ def build_rubric_document(review, proposal=None, record=None, *, language="en",
     flow.append(Spacer(0, 8))
 
     header = Table([[_headline_block(assessment, styles, language),
-                     _radar_block(assessment, language, average=average)]],
+                     _radar_block(assessment, language, average=average, badge=badge)]],
                    colWidths=[width * .52, width * .48])
     header.setStyle(TableStyle([
         ("VALIGN", (0, 0), (0, 0), "MIDDLE"), ("VALIGN", (1, 0), (1, 0), "TOP"),
@@ -314,10 +314,10 @@ def build_rubric_document(review, proposal=None, record=None, *, language="en",
 
 
 def render_rubric_report_pdf(review, proposal=None, record=None, *, language="en",
-                             audience="faculty", average=None):
+                             audience="faculty", average=None, badge=None):
     """One page where it fits, and as many as the evidence needs where it does not."""
     flow, assessment = build_rubric_document(review, proposal, record, language=language,
-                                             audience=audience, average=average)
+                                             audience=audience, average=average, badge=badge)
     buffer = BytesIO()
     document = SimpleDocTemplate(
         buffer, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN,

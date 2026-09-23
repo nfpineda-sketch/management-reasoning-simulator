@@ -142,7 +142,50 @@ def geometry(series, *, size=260, language="en", label_room=74):
         })
     return {"width": width, "height": height, "size": size,
             "centre": (centre_x, centre_y), "radius": radius,
-            "rings": rings, "axes": axes, "series": drawn, "levels": RINGS}
+            "rings": rings, "axes": axes, "series": drawn, "levels": RINGS,
+            # Small enough to sit inside the innermost ring, which is at a
+            # third of the radius: the badge must not reach a score of 1.
+            "badge_radius": radius * 0.21}
+
+
+def _badge_svg(badge, centre_x, centre_y, radius):
+    """The face, the initials and the year, at the centre and under the data."""
+    if not badge:
+        return []
+    from xml.sax.saxutils import quoteattr
+    identifier = f"mrsbadge{abs(hash((badge.get('initials'), badge.get('year')))) % 10 ** 8}"
+    parts = []
+    if badge.get("image"):
+        parts.append(f'<clipPath id="{identifier}"><circle cx="{centre_x:.2f}" '
+                     f'cy="{centre_y:.2f}" r="{radius:.2f}"/></clipPath>')
+        parts.append(f'<image href={quoteattr(badge["image"])} '
+                     f'x="{centre_x - radius:.2f}" y="{centre_y - radius:.2f}" '
+                     f'width="{radius * 2:.2f}" height="{radius * 2:.2f}" '
+                     f'preserveAspectRatio="xMidYMid slice" clip-path="url(#{identifier})"/>')
+    else:
+        # No photograph: the initials become the badge, which is what an avatar
+        # without a picture looks like anywhere else.
+        parts.append(f'<circle cx="{centre_x:.2f}" cy="{centre_y:.2f}" r="{radius:.2f}" '
+                     f'fill="{palette.PALE}"/>')
+        if badge.get("initials"):
+            parts.append(f'<text x="{centre_x:.2f}" y="{centre_y:.2f}" text-anchor="middle" '
+                         f'dominant-baseline="central" font-size="{radius * 0.62:.1f}" '
+                         f'font-weight="700" fill="{palette.NAVY}">'
+                         f'{escape(badge["initials"])}</text>')
+    parts.append(f'<circle cx="{centre_x:.2f}" cy="{centre_y:.2f}" r="{radius:.2f}" '
+                 f'fill="none" stroke="{palette.LINE}" stroke-width="1.2"/>')
+    caption = " · ".join(str(part) for part in (
+        (badge.get("initials") if badge.get("image") else ""),
+        _year_label(badge.get("year"))) if part)
+    if caption:
+        parts.append(f'<text x="{centre_x:.2f}" y="{centre_y + radius + 11:.2f}" '
+                     f'text-anchor="middle" font-size="9.5" font-weight="700" '
+                     f'fill="{palette.INK}">{escape(caption)}</text>')
+    return parts
+
+
+def _year_label(year):
+    return f"R{year}" if isinstance(year, int) and not isinstance(year, bool) else ""
 
 
 def _path(run, closed):
@@ -151,8 +194,14 @@ def _path(run, closed):
     return body + (" Z" if closed else "")
 
 
-def svg(series, *, size=260, language="en", title=None):
-    """The same chart as an inline SVG, for the application."""
+def svg(series, *, size=260, language="en", title=None, badge=None):
+    """The same chart as an inline SVG, for the application.
+
+    ``badge`` optionally puts a face, initials and a training year at the
+    centre. It is drawn **under** the outlines, and a domain scored 0 -- whose
+    point is the centre itself -- keeps a ring of the page colour around it so
+    it stays readable on top of a photograph. A picture must not hide a zero.
+    """
     plan = geometry(series, size=size, language=language)
     centre_x, centre_y = plan["centre"]
     label = title or ("Perfil por dominio" if language == "es" else "Profile by domain")
@@ -168,11 +217,14 @@ def svg(series, *, size=260, language="en", title=None):
         parts.append(f'<line x1="{centre_x:.2f}" y1="{centre_y:.2f}" '
                      f'x2="{axis["x"]:.2f}" y2="{axis["y"]:.2f}" '
                      f'stroke="{palette.LINE}" stroke-width="0.7"/>')
+    parts += _badge_svg(badge, centre_x, centre_y, plan["badge_radius"])
     for item in plan["series"]:
         for run in item["runs"]:
             if len(run) == 1:
                 x, y = run[0]
-                parts.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="3.4" fill="{item["colour"]}"/>')
+                halo = (' stroke="#FFFFFF" stroke-width="1.6"' if badge else "")
+                parts.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="3.4" '
+                             f'fill="{item["colour"]}"{halo}/>')
                 continue
             # An open run carries no fill. A filled open path is closed by the
             # renderer, and that closing line crosses the axis the gap exists
@@ -183,7 +235,9 @@ def svg(series, *, size=260, language="en", title=None):
                          f'stroke="{item["colour"]}" stroke-width="2" stroke-linejoin="round" '
                          f'stroke-linecap="round"/>')
             for x, y in run:
-                parts.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="2.6" fill="{item["colour"]}"/>')
+                halo = (' stroke="#FFFFFF" stroke-width="1.6"' if badge else "")
+                parts.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="2.6" '
+                             f'fill="{item["colour"]}"{halo}/>')
     for axis in plan["axes"]:
         missing = all(axis["domain_id"] in item["gaps"] for item in plan["series"])
         colour = palette.MUTED if missing else palette.INK
@@ -194,9 +248,9 @@ def svg(series, *, size=260, language="en", title=None):
     return "\n".join(parts)
 
 
-def drawing(series, *, size=150, language="en"):
+def drawing(series, *, size=150, language="en", badge=None):
     """The same chart as a ReportLab drawing, for the documents."""
-    from reportlab.graphics.shapes import Circle, Drawing, Line, Polygon, PolyLine, String
+    from reportlab.graphics.shapes import Circle, Drawing, Image, Line, Polygon, PolyLine, String
     from reportlab.lib import colors
 
     plan = geometry(series, size=size, language=language, label_room=size * 0.34)
@@ -216,6 +270,8 @@ def drawing(series, *, size=150, language="en"):
         end = point(axis["x"], axis["y"])
         art.add(Line(start[0], start[1], end[0], end[1],
                      strokeColor=colors.HexColor(palette.LINE), strokeWidth=0.5))
+    if badge:
+        _badge_drawing(art, badge, point(centre_x, centre_y), plan["badge_radius"])
     for item in plan["series"]:
         colour = colors.HexColor(item["colour"])
         for run in item["runs"]:
@@ -229,7 +285,11 @@ def drawing(series, *, size=150, language="en"):
                 art.add(PolyLine(flat, strokeColor=colour, strokeWidth=1.6))
             for x, y in run:
                 cx, cy = point(x, y)
-                art.add(Circle(cx, cy, 2.0, fillColor=colour, strokeColor=None))
+                # A zero is drawn at the centre, on top of the badge; the ring
+                # of page colour is what keeps it visible over a photograph.
+                art.add(Circle(cx, cy, 2.0, fillColor=colour,
+                               strokeColor=colors.white if badge else None,
+                               strokeWidth=1.2 if badge else 0))
     for axis in plan["axes"]:
         missing = all(axis["domain_id"] in item["gaps"] for item in plan["series"])
         x, y = point(axis["label_x"], axis["label_y"])
@@ -238,6 +298,46 @@ def drawing(series, *, size=150, language="en"):
         text.textAnchor = axis["anchor"]
         art.add(text)
     return art
+
+
+def _badge_drawing(art, badge, centre, radius):
+    """The same badge on the page: a face or the initials, and the year."""
+    import base64
+    import io
+    from reportlab.graphics.shapes import Circle, Image, String
+    from reportlab.lib import colors
+    from reportlab.lib.utils import ImageReader
+    x, y = centre
+    drew_image = False
+    uri = str(badge.get("image") or "")
+    if uri.startswith("data:image/"):
+        try:
+            raw = base64.b64decode(uri.split(",", 1)[1])
+            art.add(Image(x - radius, y - radius, radius * 2, radius * 2,
+                          ImageReader(io.BytesIO(raw))))
+            drew_image = True
+        except Exception:
+            # A stored photograph that cannot be decoded is not a reason to
+            # withhold the chart; the initials stand in for it.
+            drew_image = False
+    if not drew_image:
+        art.add(Circle(x, y, radius, fillColor=colors.HexColor(palette.PALE), strokeColor=None))
+        if badge.get("initials"):
+            text = String(x, y - radius * 0.22, str(badge["initials"]),
+                          fontName="FacultySans-Bold", fontSize=radius * 0.62,
+                          fillColor=colors.HexColor(palette.NAVY))
+            text.textAnchor = "middle"
+            art.add(text)
+    art.add(Circle(x, y, radius, fillColor=None,
+                   strokeColor=colors.HexColor(palette.LINE), strokeWidth=1.0))
+    caption = " \u00b7 ".join(part for part in (
+        (str(badge.get("initials")) if drew_image and badge.get("initials") else ""),
+        _year_label(badge.get("year"))) if part)
+    if caption:
+        label = String(x, y - radius - 9, caption, fontName="FacultySans-Bold",
+                       fontSize=6.6, fillColor=colors.HexColor(palette.INK))
+        label.textAnchor = "middle"
+        art.add(label)
 
 
 def series_from_review(review, *, label=None, language="en"):

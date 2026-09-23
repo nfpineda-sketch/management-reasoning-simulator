@@ -63,13 +63,22 @@ def evidence_summary(payload):
     return {"recorded": out, "interpretation": "Recorded evidence for faculty review; presence does not establish quality or competence."}
 
 
-def assign_challenge(training_year, attempts, seed):
+def assign_challenge(training_year, attempts, seed, unmet=None):
     """Balance exposure and revisit evidence gaps, without pass/fail automation.
 
     Initially expose each available challenge, introducing the varied-case
     cognitive catalog before the older circulatory foundations. Thereafter choose the largest
     gap in the most recent review, interleaving away from the last challenge
     where possible. Sandbox/abandoned/incomplete attempts never confer credit.
+
+    ``unmet`` optionally maps a challenge to how many situations it would offer
+    that this resident has not been placed in before (``challenge_targeting``
+    computes it, and passes it in rather than being imported here, so this
+    module keeps knowing nothing about the rubric). It **only orders the
+    candidates this rule was already choosing between at random**: the
+    curriculum decides what is eligible and what the gap is, and targeting
+    breaks the tie. Without it, or when every candidate offers the same, the
+    random pick is unchanged (faculty request, 2026-09-23).
     """
     eligible = eligible_challenges(training_year)
     completed = sorted([a for a in attempts if a.get("status") == "completed" and not a.get("is_sandbox") and a.get("challenge_id") in eligible], key=lambda a: str(a.get("updated_at", "")))
@@ -87,6 +96,25 @@ def assign_challenge(training_year, attempts, seed):
             gaps[key] = sum(not evidence[field] for field in CHALLENGES[key]["evidence_fields"])
         choices = [key for key in candidates if gaps[key] == max(gaps.values())]
         reason = "interleaved_evidence_review"
-    return {"challenge_id": random.Random(seed).choice(choices), "reason": reason,
+    targeted = _targeted(choices, unmet)
+    return {"challenge_id": random.Random(seed).choice(targeted), "reason": reason,
+            "targeting": "unmet_situations" if targeted != choices else "none",
             "curriculum_version": CURRICULUM_VERSION, "assignment_seed": seed,
             "competence_decision": "Not assessed automatically"}
+
+
+def _targeted(choices, unmet):
+    """The candidates that would newly offer the most, or all of them.
+
+    A tie-break, never an override: the list it returns is always a subset of
+    the choices the curriculum rule already made, and it is the whole list
+    whenever the counts do not discriminate.
+    """
+    if not unmet or len(choices) < 2:
+        return choices
+    counts = {key: unmet.get(key, 0) for key in choices}
+    best = max(counts.values())
+    if best <= 0:
+        return choices
+    narrowed = [key for key in choices if counts[key] == best]
+    return narrowed if 0 < len(narrowed) < len(choices) else choices

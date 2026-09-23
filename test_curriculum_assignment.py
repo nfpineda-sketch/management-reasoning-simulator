@@ -194,9 +194,10 @@ def runtime_functions(fake_st):
     selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in {"render_dashboard", "render_learning_focus"}]
     namespace = {"st": fake_st, "CHALLENGES": CHALLENGES,
                  "render_progress_dashboard": lambda context, title=None: None,
-                 # A separate pane with its own visibility tests; what these
-                 # tests watch is which objective labels reach a learner.
+                 # Separate panes with their own tests; what these tests watch
+                 # is which objective labels reach a learner.
                  "_render_rubric_profile": lambda context, user_id=None: None,
+                 "_render_own_record": lambda context: None,
                  "render_attempt_assessment": lambda context, record: None}
     exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), namespace)
     return namespace

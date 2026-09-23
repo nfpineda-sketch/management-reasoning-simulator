@@ -289,6 +289,53 @@ class RubricStore:
             return row
         return None
 
+    def released(self, token, attempt_id):
+        """One encounter's **confirmed** assessment, for the person it is about.
+
+        The reviewing methods refuse the owner on purpose: a resident must not
+        read a draft, and must never be the reviewer of their own encounter.
+        This is the other side of that rule -- once a faculty member completes
+        the assessment it belongs to the resident too, which is the decision
+        recorded on 2026-09-23. A draft answers ``None``, not a score.
+
+        Returns ``(review, proposal)`` or ``(None, None)``.
+        """
+        with self.accounts._transaction() as connection:
+            actor = self.accounts._actor(connection, token)
+            row = self._execute(connection, """SELECT a.*, u.username, u.role AS owner_role
+                FROM mrs_attempts a JOIN mrs_users u ON u.id = a.user_id WHERE a.id = ?""",
+                (attempt_id,)).fetchone()
+            if row is None:
+                raise AccountError("The encounter was not found.")
+            if actor["role"] not in STAFF and row["user_id"] != actor["id"]:
+                raise AccountError("Your account does not have permission for this action.")
+            record = self.accounts._attempt(row)
+            fingerprint = source_fingerprint(record)
+            review_row = self._execute(connection, """SELECT r.*, u.username AS reviewer
+                FROM mrs_rubric_reviews r JOIN mrs_users u ON u.id = r.reviewer_user_id
+                WHERE r.attempt_id = ? AND r.source_hash = ? AND r.attempt_revision = ?
+                  AND r.status = 'confirmed'
+                ORDER BY r.sequence DESC LIMIT 1""",
+                (attempt_id, fingerprint, record["revision"])).fetchone()
+            if review_row is None:
+                return None, None
+            try:
+                review = json.loads(review_row["review_json"])
+            except (TypeError, ValueError):
+                raise AccountError("A saved rubric review could not be read.") from None
+            review = {**review, "review_id": review_row["id"],
+                      "reviewer": review_row["reviewer"], "created_at": review_row["created_at"],
+                      "sequence": review_row["sequence"], "totals": totals_of(review)}
+            proposal = None
+            proposal_row = self._execute(connection, """SELECT report_json FROM mrs_rubric_proposals
+                WHERE id = ?""", (review_row["proposal_id"],)).fetchone() if review_row["proposal_id"] else None
+            if proposal_row is not None:
+                try:
+                    proposal = json.loads(proposal_row["report_json"])
+                except (TypeError, ValueError):
+                    proposal = None
+            return review, proposal
+
     def progress(self, token, user_id=None):
         """Every confirmed review of one resident, oldest first.
 
