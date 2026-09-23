@@ -3624,7 +3624,14 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     st.session_state.reasoning_gate_counter = 0
     st.session_state.last_executed_action = None
     st.session_state.started = True
-    add_event("presentation", cfg["presentation"], 0)
+    # The presentation is the clinician's one-line identity; the handover is
+    # what the patient or the informant says, and when it began. Together they
+    # are what a resident is given before they ask anything. Faculty request of
+    # 2026-09-23: enough to situate a line of thinking, and no more -- the
+    # observables are on the monitor and the appearance is in the photograph.
+    import arrival_brief
+    add_event("presentation",
+              cfg["presentation"] + arrival_brief.handover(st.session_state.state), 0)
     return deepcopy(st.session_state.prior_attempt_summary)
 
 
@@ -8526,7 +8533,9 @@ if not st.session_state.started:
         st.session_state.pending_reasoning = None
         st.session_state.last_executed_action = None
         st.session_state.started = True
-        add_event("presentation", cfg["presentation"], 0)
+        import arrival_brief
+        add_event("presentation",
+                  cfg["presentation"] + arrival_brief.handover(st.session_state.state), 0)
         rerun_app()
     st.stop()
 

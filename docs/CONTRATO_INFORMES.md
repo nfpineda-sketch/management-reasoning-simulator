@@ -36,15 +36,30 @@ briefs y el informe de rúbrica leen `rubric_presentation.summary`, y ninguno re
 2. *The encounter in perspective* — síntesis.
 3. *Recorded patient trajectory* — gráficos y leyenda.
 4. *What to carry forward* — patrones y preguntas.
-5. *Decisions worth revisiting* — cada decisión en seis bloques.
-6. *Report provenance* — metadatos al final.
+5. *The history you took* — lo preguntado y lo nunca preguntado.
+6. *Decisions worth revisiting* — cada decisión en seis bloques.
+7. *Report provenance* — metadatos al final.
 
 **Condicionales:**
 
+- *The history you took*: sólo si el caso declara temas de historia o el residente preguntó algo.
 - *Your later adaptation plan*: sólo si el residente escribió uno.
 - *AI summary of your later reflection*: sólo si hay reflexión enlazada a esa decisión.
 - *Technical record*: sólo si algún pasaje del análisis quedó cortado.
 - El aviso de interpretación incompleta y el **curso registrado**: sólo si la síntesis se cortó.
+
+**La historia, agregada el 2026-09-23 a decisión del docente.** Preguntar no es una orden:
+no consume tiempo simulado y no cambia ningún observable, así que vive en los eventos del
+encuentro y no en la traza. Hasta esa fecha ningún informe la veía, y un análisis podía decir
+que no había historia de medicamentos cuando el residente sí la había obtenido —o, peor, tratar
+como no disponible una historia que el residente nunca pidió.
+
+La sección lleva dos cosas, ambas **hechos registrados**, sin atribución:
+
+- **lo que preguntó y lo que le respondieron**, con su minuto y en sus propias palabras;
+- **los temas que el caso ofrece y nadie preguntó**, con la frase que los explica: *el paciente
+  responde lo que se le pregunte, durante todo el encuentro; un tema que no preguntaste estaba
+  disponible: no falta en el registro, no se obtuvo*.
 
 **Los seis bloques de una decisión**, siempre en este orden y con estos nombres:
 
@@ -74,6 +89,13 @@ Las sugerencias van **después** de la evidencia y las preocupaciones, nunca ant
 
 Síntesis · fortalezas · puntos de revisión · límites · decisiones citadas · un bloque por
 objetivo · registro de generación al final. Cada objetivo y cada decisión citada viajan enteros.
+
+### La historia, en los dos briefs
+
+`HISTORY OBTAINED`. El compacto cuenta cuántas preguntas se hicieron y cita las primeras; el
+completo lleva cada pregunta con su respuesta. Los dos nombran los temas disponibles que nadie
+preguntó, y los dos dicen por qué eso no es una limitación del registro: **no preguntar es una
+omisión del residente y no es motivo para retener un juicio.**
 
 ### Evaluación por rúbrica
 
@@ -115,6 +137,32 @@ El perfil longitudinal usa el mismo gráfico con un segundo contorno: el promedi
 pie lo dice cuando los conteos no coinciden. Un borrador no entra; un encuentro sin evaluar está
 ausente, no en cero.
 
+## Lo que el encuentro dice antes de que pregunten
+
+**Decisión docente del 2026-09-23.** Todo caso abre con algo que permita situarse en una vía de
+pensamiento, y con nada más que eso. La primera entrada del encuentro —`INITIAL PRESENTATION`—
+lleva dos partes:
+
+1. **La presentación**: quién es, edad y sexo, y qué lo trae.
+2. **La entrega**: el motivo en las palabras de quien lo cuenta, cómo empezó y cómo evolucionó,
+   y de quién viene la historia cuando no es el propio paciente.
+
+Se construye desde dos campos de la historia del caso —`chief_complaint` y `onset`— y desde
+ningún otro. No se escribe una tercera versión del relato: una entrega redactada aparte se aleja
+de la historia que resume, y entonces dos documentos discrepan sobre lo que dijo el paciente.
+
+**Tres cosas están deliberadamente ausentes**, y cada una tiene su lugar:
+
+- **Los signos vitales**, que están en el monitor.
+- **Cómo se ve el paciente**, que está en la fotografía.
+- **Todo lo demás que el caso guarda** —medicamentos, antecedentes, exposiciones, factores de
+  riesgo—. Eso está disponible preguntando, y preguntarlo es el trabajo del residente. Entregar
+  la lista de medicamentos en la puerta eliminaría la omisión que la rúbrica tiene instrucción
+  de puntuar.
+
+Agregar un campo a esa lista se lo entrega a todos los residentes en todos los encuentros: es
+una decisión clínica, no de formato, y vive en `arrival_brief.HANDED_OVER`.
+
 ## Qué se distingue siempre
 
 | Categoría | Cómo se presenta |
@@ -127,6 +175,10 @@ ausente, no en cero.
 Y cuatro ausencias que no son lo mismo:
 
 - **Dato ausente** — no se informa como cero. Una diuresis sin medición se dice así.
+- **Información disponible y no obtenida** — lo contrario de un dato ausente. El paciente, o la
+  fuente colateral que el caso nombra, está presente todo el encuentro y responde. Un tema que
+  nadie preguntó **estaba disponible**: es una omisión del residente, nunca una limitación del
+  registro, y nunca una razón para excusar un evento crítico ni para retener un juicio.
 - **Resultado pendiente** — se nombra la solicitud, su hora y el cierre del encuentro.
 - **Objetivo no evaluable** — *"Not assessed in this encounter — no recorded opportunity"*.
 - **Análisis incompleto** — el pasaje sale de la lectura, se conserva en el registro técnico y

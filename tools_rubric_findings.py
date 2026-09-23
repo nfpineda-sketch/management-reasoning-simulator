@@ -42,6 +42,17 @@ INTENT = {
 }
 
 
+# The baseline of the one case that was re-run. Declared here because the
+# verification of 2026-09-23 wrote over its own raw file before --propose
+# learned not to; the numbers below are the ones that run printed, and its
+# reasoning is quoted in section 6 from the same output. Every other row in
+# the table is read from the raw file it came from.
+SUPERSEDED = {
+    "hypoglycemia_76f": {"scores": {"D1": 2, "D2": 2, "D3": 2, "D4": 2, "D5": 1},
+                         "events": [], "seconds": 74.1},
+}
+
+
 def load():
     runs = []
     for path in sorted(PILOT.glob("*.json")):
@@ -84,15 +95,19 @@ def main():
         "código antes de ver la respuesta del modelo. Sin eso, \"el modelo propuso el evento\" "
         "no se puede leer contra nada.", "",
         "## 2 · Los trece encuentros", "",
+        "> La fila de `hypoglycemia_76f` es la **primera** corrida. Ese caso se volvió a correr "
+        "después, para verificar tu decisión; el antes y el después están en §6.", "",
         "| Caso | Qué se quiso provocar | D1 | D2 | D3 | D4 | D5 | Evento esperado | Evento propuesto |",
         "|---|---|:-:|:-:|:-:|:-:|:-:|---|---|",
     ]
     hits = misses = false_positives = 0
     for report, _ in runs:
         case_id = report["case_id"]
-        scores = _scores(report)
+        baseline = SUPERSEDED.get(case_id)
+        scores = baseline["scores"] if baseline else _scores(report)
         expected = INTENT.get(case_id, ("", None))
-        proposed = [row["event_id"] for row in report["proposal"]["critical_events"]]
+        proposed = (list(baseline["events"]) if baseline
+                    else [row["event_id"] for row in report["proposal"]["critical_events"]])
         if expected[1]:
             if expected[1] in proposed:
                 hits += 1
@@ -108,7 +123,8 @@ def main():
     distribution = Counter()
     per_domain = {domain: Counter() for domain in rubric.DOMAIN_IDS}
     for report, _ in runs:
-        for domain, value in _scores(report).items():
+        baseline = SUPERSEDED.get(report["case_id"])
+        for domain, value in (baseline["scores"] if baseline else _scores(report)).items():
             distribution[value] += 1
             per_domain[domain][value] += 1
     total = sum(distribution.values())
@@ -228,18 +244,86 @@ y en vez de asumirla, mandó la preocupación al canal que existe para eso:
 **Eso es el comportamiento correcto**, y es el mismo error que cometí yo el 2026-09-23 cuando
 mi propuesta ilustrativa inventó un valor de troponina que el registro no contenía.
 
-Pero deja una decisión clínica sobre la mesa, y es tuya, no mía:
+### Tu decisión, y lo que cambió por ella (2026-09-23)
 
-> Cuando el caso declara que la hipoglicemia es por un agente de acción prolongada y el
-> residente da el alta **sin haber preguntado nunca**, ¿el evento debe dispararse igual?
->
-> **Lectura actual:** no, porque el registro no contiene el agente. No preguntar es una falla
-> de D2 y D5, no un evento de seguridad.
->
-> **La otra lectura:** sí, porque no saber es precisamente la falla. Tal como está escrito, la
-> omisión del residente lo protege del evento.
+Te planteé la pregunta y la respondiste: **el evento se dispara igual.** El paciente está ahí y
+se le puede preguntar; si el residente no lo hace, eso debe ser un punto de análisis explícito
+en el Management Trace y en el Faculty Brief, y debe reflejarse en el puntaje.
 
-No lo cambié. Cambia el significado de la rúbrica y la rúbrica es tuya.
+Eso es ahora una regla del instrumento, no un parche a un caso:
+
+> **La información disponible preguntando está disponible, se haya preguntado o no.** El
+> paciente, o la fuente colateral que el caso nombra, está presente todo el encuentro y
+> responde. Un residente que nunca preguntó no fue privado de la información: omitió
+> obtenerla. Una historia no preguntada **nunca excusa un evento crítico**, y no haberla
+> preguntado es en sí una omisión que la evaluación nombra.
+
+Cómo quedó implementada:
+
+- Cada evento declara ahora, por separado, **lo que tenía que estar en el registro** (los
+  observables, un resultado, una acción ejecutada) y **lo que el caso responde si le preguntan**
+  —cada uno como un par (tema de historia, qué le diría)—. `case_assessment.verify` comprueba
+  que el tema prometido sea uno que el caso realmente escribe, igual que ya comprobaba que un
+  estudio prometido esté entre sus investigaciones. **21 de 21 casos, cero discrepancias.**
+- Nueve de los dieciséis eventos tenían una exigencia de historia; todas se movieron.
+- La regla viaja con cada solicitud y está en las instrucciones de la rúbrica y del brief.
+
+### La verificación, con una llamada pagada (2026-09-23)
+
+Corrí **el mismo encuentro otra vez**, sin cambiar una sola orden del residente, para que la
+comparación fuera directa. Una llamada, 65 s.
+
+| | Antes | Después |
+|---|---|---|
+| D1 | 2 | 2 |
+| D2 | 2 | **3** |
+| D3 | 2 | 2 |
+| D4 | 2 | 2 |
+| D5 | 1 | **0** |
+| Evento | ninguno | **`hypo_unsafe_discharge`** |
+| Con el docente confirmando | `Base 9/15` | `Base 9/15 · Penalización −3 · Ajustado 6/15` |
+
+El modelo propuso el evento y citó la orden del residente en sus propias palabras:
+
+> *"An executed discharge disposition was recorded (trace:3 decision at minute 26: 'La envio a
+> su casa...')... The case provides that the hypoglycaemia is attributable to a sulfonylurea
+> **available on asking**; failure to arrange observation after such an episode meets the event
+> trigger."*
+
+Vale la pena notar que esa orden sólo existe en el registro porque anoche se arregló que `a su
+casa` fuera un alta. Antes, la orden se evaporaba en silencio y con ella el evento.
+
+Y D5 pasó a 0 con el fundamento escrito como la regla:
+
+> *"The case specifies the hypoglycaemia is attributable to a long-acting sulfonylurea
+> (information available on asking); discharging without observation after such an episode is
+> unsafe."*
+
+**Dónde no funcionó todavía.** D2 **subió** de 2 a 3. El modelo sí nombró la omisión, en la
+evidencia en contra —*"The learner did not ask about medications (medication history is
+available on asking)"*— y en dos preocupaciones señaladas. Pero no dejó que moviera el número:
+*"this omission does not negate that relevant diagnostic data were obtained"*.
+
+Es decir: **la regla llegó al evento y a la continuidad, y no llegó a la evaluación.** No lo
+forcé con más instrucciones; es exactamente el tipo de juicio que el docente confirma, y ahora
+tiene la omisión escrita delante en los tres documentos para hacerlo.
+
+### Dos defectos silenciosos que la pregunta destapó
+
+**La historia era invisible para todo.** Preguntar no es una orden: no consume tiempo simulado
+y no cambia ningún observable, así que vive en los eventos del encuentro y no en la traza.
+**Nada que construyera un análisis miraba ahí.** Cuando el modelo escribió *"No explicit
+medication history in the encounter"* estaba diciendo la verdad sobre lo que le habían
+mostrado, y algo falso sobre el encuentro. Ahora la historia obtenida, los temas ofrecidos y
+los temas que nadie preguntó viajan en la misma fuente que leen los cuatro documentos.
+
+**El caso también era invisible.** `case_id_of` leía sólo el campo que escribe la exportación, y
+una sesión guardada no tiene ese campo: la app guarda sus campos de sesión y nada más. **Todo
+encuentro real parecía un caso sin declaración: sin oportunidades declaradas y sin ningún evento
+crítico definido.** Cada prueba que ejercitaba esa capa ponía el campo a mano, así que la suite
+estaba verde mientras el camino de producción estaba muerto. Se lee ahora también desde el
+estado que la sesión sí guarda, con una prueba que construye el payload campo por campo como lo
+arma la app.
 
 ## 7 · Lo que el rango sugiere
 
@@ -255,7 +339,7 @@ No lo cambié. Cambia el significado de la rúbrica y la rúbrica es tuya.
 Con trece encuentros esto es una señal, no una medición. Pero si el piloto se corre con
 residentes reales, **D4 y D5 son los descriptores que conviene mirar primero**.
 
-## 8 · Dos cosas que conviene que decidas tú
+## 8 · Dos cosas que siguen pendientes de ti
 
 **El idioma del fundamento.** El contrato le pide al modelo que responda *en inglés*, y por eso
 el informe de rúbrica en español lleva los rótulos, los dominios y la decisión docente en
@@ -289,6 +373,23 @@ se llevaba el evento con él; `angiotomografía de tórax` escrita completa se r
 equipo de tromboembolismo sólo existía por su sigla en inglés.
 
 Los cinco están corregidos, con pruebas, en `test_spanish_pronoun_before_the_verb.py`.
+
+### Y uno que introduje yo
+
+Al hacer visible la historia, `history_review` alcanzaba las etiquetas de los temas a través de
+`clinical_scene`, que importa Streamlit y PIL. Es decir: un PDF docente y una declaración de
+rúbrica importaban Streamlit **para saber que `medications` se llama "Medications"**. Cuando un
+hilo lo importaba mientras un hilo de script de Streamlit ya tenía tomado el lock de importación
+de ese módulo, la suite completa se quedó detenida **dos horas** en
+`test_exploring_patient_preserves_state_and_management_remains_reachable`.
+
+Las etiquetas viven ahora en `history_topics.py`, una hoja sin ninguna importación, y
+`clinical_scene` las reexporta para que ningún lector existente cambie. Hay una prueba que
+arranca un intérprete limpio y verifica que importar `history_review` no traiga Streamlit ni
+PIL.
+
+Lo encontró la disciplina de correr la suite completa antes de cada commit, no una prueba: el
+síntoma era una suite que no terminaba nunca, que es peor que una que falla.
 """
 
 

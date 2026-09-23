@@ -20,6 +20,9 @@ Las nueve que pediste, cada una con el archivo que la sostiene.
 | **El informe de rúbrica no se entrega antes de tiempo** | Renderizarlo para el residente con la revisión en borrador, o sin revisión, falla; la negativa vive en el renderizador y no en quien lo llama | `test_rubric_document.py` |
 | **Un hueco en el gráfico no es un cero** | Un dominio no evaluable no se dibuja en el centro, el contorno abierto no lleva relleno, y la pantalla lo dice además con palabras | `test_rubric_radar.py`, `test_rubric_profile_screen.py` |
 | **Un perfil longitudinal no inventa lo que no observó** | Un borrador no entra; un encuentro sin evaluar está ausente y no en cero; cada dominio promedia sólo donde fue evaluable y lleva su conteo; un encuentro revisado tres veces cuenta una | `test_rubric_progress.py`, `test_rubric_profile_visibility.py` |
+| **La historia no preguntada no excusa nada** | La información que el caso responde si le preguntan se declara aparte de la que tiene que estar en el registro; el tema prometido tiene que ser uno que el caso escribe; la regla viaja en la fuente y en las instrucciones | `test_history_is_part_of_the_record.py`, `test_case_assessment.py` |
+| **El caso autorizado se encuentra en el payload que la app guarda** | Un payload construido campo por campo como lo arma `curriculum_runtime` devuelve su caso y, con él, sus eventos críticos definidos | `test_history_is_part_of_the_record.py` |
+| **Leer una etiqueta no cuesta importar el bedside** | Un intérprete limpio importa `history_review` sin traer Streamlit ni PIL; las etiquetas viven en una hoja sin importaciones y `clinical_scene` las reexporta | `test_history_is_part_of_the_record.py` |
 | **Ausencia de regresiones** | La suite completa del proyecto, incluidos challenges, Management Trace e informes existentes | suite completa |
 | **La rúbrica no otorga ni revoca un challenge** | 15/15 confirmado no crea ninguna observación; 0/15 no revoca ninguna; ningún módulo de rúbrica importa `progress_store`, `progress_portal` ni `objectives`, ni al revés; las dos cosas viven en tablas distintas | `test_rubric_is_separate_from_challenges.py` |
 
@@ -50,6 +53,8 @@ Las nueve que pediste, cada una con el archivo que la sostiene.
 - **Cero usos de "no evaluable" en 65 puntajes de dominio.** Incluidos dos encuentros escritos para forzarlo, en uno de los cuales el propio modelo escribió que el encuentro cerró antes de la oportunidad y puntuó igual.
 - **D3 es el único dominio que llega a 0**, y llega exactamente donde hay un evento. **D4 nunca bajó de 2** y **D5 nunca llegó a 3**, en trece encuentros.
 
+**Decisión docente del 2026-09-23, y lo que destapó.** El evento se dispara igual cuando el residente nunca preguntó: la información disponible preguntando está disponible. Aplicarlo destapó dos defectos silenciosos, ambos corregidos con pruebas: **la historia era invisible para todo informe y para toda evaluación** (preguntar no es una orden, así que vive en los eventos y no en la traza, y nada miraba ahí), y **el caso autorizado era invisible en producción** (`case_id_of` leía sólo el campo que escribe la exportación, de modo que todo encuentro real parecía un caso sin oportunidades declaradas y **sin ningún evento crítico definido**; las pruebas ponían el campo a mano y por eso nada fallaba). Detalle en [`RUBRICA_PILOTO_CORRIDAS.md`](RUBRICA_PILOTO_CORRIDAS.md) §6.
+
 **Lo que trece corridas siguen sin establecer:** concordancia entre evaluadores, comportamiento con residentes reales, y comparabilidad entre casos. Todas las corridas usan un solo modelo y un solo autor de guiones.
 
 ## Limitaciones que hay que declarar
@@ -65,6 +70,8 @@ Las nueve que pediste, cada una con el archivo que la sostiene.
 
 - Cobertura completa en los 21 casos es **requisito para comparar totales**, no prueba de dificultad equivalente ni validación psicométrica.
 - Las ventanas temporales son decisiones clínicas declaradas caso a caso, no umbrales derivados de datos.
+- **Lo disponible preguntando** se declara por evento como pares (tema de historia, qué le diría), y `verify` comprueba que el tema sea uno que el caso escribe. Es una decisión clínica declarada, no una derivación: que la historia de medicamentos sea lo que un alta insegura requiere es un juicio docente, no un umbral.
+- El emparejamiento entre una pregunta escrita libremente y el tema que toca usa una tabla de patrones en `history_review.py`, deliberadamente amplia: acreditar de más una pregunta que el residente sí hizo es un error menor que decirle a un docente que nunca preguntó cuando sí lo hizo. El tema pedido con el control de temas es exacto.
 - Los **casos generados por IA** no tienen declaración de cobertura: se puntúan los cinco dominios desde el registro, sin eventos críticos definidos. La app lo dice en pantalla.
 
 **De la trazabilidad de las fuentes:**
