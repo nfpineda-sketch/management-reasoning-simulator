@@ -480,5 +480,89 @@ ES = {
         'DECISIÓN {n} · CONTINUACIÓN',
     'Learner report · AI interpretation · Renderer {v}':
         'Informe del residente · interpretación de IA · renderizador {v}',
+    ', and {n} more':
+        ', y {n} más',
+    '3 of {n} decision prompts shown; full analysis contains the rest.':
+        '3 de {n} indicaciones de decisión mostradas; el análisis completo contiene el resto.',
+    'AI draft - faculty judgment required | Model: {model} | Generated: {when}\nEncounter revision {revision} | Source: {source}':
+        'Borrador de IA - requiere juicio docente | Modelo: {model} | Generado: {when}\nRevisión del encuentro {revision} | Origen: {source}',
+    'Changed from the proposed {score}:':
+        'Cambiado respecto de lo propuesto ({score}):',
+    'D = recorded decision and simulation time. Reflection = post-encounter evidence and does not establish what was understood during care. Suggestions add no credit and save no assessment. Encounter {encounter} · revision {revision} · {model}. Full generation record, citations and rationales in the complete PDF.':
+        'D = decisión registrada y tiempo de simulación. Reflexión = evidencia posterior al encuentro; no establece qué se comprendió durante la atención. Las sugerencias no otorgan crédito ni guardan evaluación. Encuentro {encounter} · revisión {revision} · {model}. El registro de generación completo, las citas y los fundamentos están en el PDF completo.',
+    'Encounter: {encounter}\nAttempt ID: {attempt}\nSource revision: {revision} | Schema: {schema} | Prompt version: {prompt}':
+        'Encuentro: {encounter}\nIdentificador del intento: {attempt}\nRevisión de origen: {revision} | Esquema: {schema} | Versión del prompt: {prompt}',
+    'Encounter: {encounter} | Generated: {when} | Model: {model}\nAnalysis: {schema} | Prompt: {prompt} | Renderer: {renderer}\nSource fingerprint: {fingerprint}\nThe source fingerprint binds this analysis to the frozen encounter and locked reflections. The full encounter record remains available separately.':
+        'Encuentro: {encounter} | Generado: {when} | Modelo: {model}\nAnálisis: {schema} | Prompt: {prompt} | Renderizador: {renderer}\nHuella de origen: {fingerprint}\nLa huella de origen liga este análisis al encuentro congelado y a las reflexiones bloqueadas. El registro completo del encuentro queda disponible por separado.',
+    "First 3 of {total} review points, in the analysis's original order. Read the remaining {rest} in the full analysis before finalizing.":
+        'Los primeros 3 de {total} puntos de revisión, en el orden original del análisis. Lea los {rest} restantes en el análisis completo antes de finalizar.',
+    'Flagged for review, carrying no deduction: {concern}':
+        'Señalado para revisión, sin deducción: {concern}',
+    'Recorded learner excerpt - {label}: {excerpt}':
+        'Extracto registrado del residente - {label}: {excerpt}',
+    'Suggested depth: {depth} | Suggested autonomy: {autonomy}':
+        'Profundidad sugerida: {depth} | Autonomía sugerida: {autonomy}',
+    'Technical record — {n} AI passage(s) withheld from the reading above, kept here with the reason:':
+        'Registro técnico — {n} pasaje(s) de IA retenidos de la lectura anterior, conservados aquí con su motivo:',
+    'before the encounter closed at {n:g} min':
+        ' antes de que el encuentro cerrara a los {n:g} min',
+    'reported at {n:g} min':
+        'informado a los {n:g} min',
+    'requested at decision {n}':
+        'solicitado en la decisión {n}',
+    'result at {n:g} min':
+        'resultado a los {n:g} min',
+    'sampled at {n:g} min':
+        'muestra tomada a los {n:g} min',
+    'your later reflection on D{n}':
+        'su reflexión posterior sobre D{n}',
+    '{event} - proposed by the AI and not yet confirmed or dismissed. It carries no penalty until you decide.':
+        '{event} - propuesto por la IA y aún no confirmado ni descartado. No lleva penalización hasta que usted decida.',
+    '{n} factual correction(s) applied to the AI text; the stored brief keeps the original wording.':
+        '{n} corrección(es) factual(es) aplicada(s) al texto de IA; el informe guardado conserva la redacción original.',
+    '{n} factual correction(s) were applied to the AI text at render time; the saved analysis keeps the original wording.':
+        '{n} corrección(es) factual(es) aplicada(s) al texto de IA al renderizar; el análisis guardado conserva la redacción original.',
+    '{n} factual correction(s) were applied to the AI text at render time; the stored brief keeps the original wording.':
+        '{n} corrección(es) factual(es) aplicada(s) al texto de IA al renderizar; el informe guardado conserva la redacción original.',
+    '{n} interpretation field(s) reached the analysis length limit and are marked where they stop.':
+        '{n} campo(s) de interpretación alcanzaron el límite de longitud del análisis y están marcados donde se detienen.',
+    '{n} question(s) asked.':
+        '{n} pregunta(s) hecha(s).',
+    '{n} recorded decisions':
+        '{n} decisiones registradas',
+    '{n} recorded decisions between {start:g} and {finish:g} min':
+        '{n} decisiones registradas entre los {start:g} y los {finish:g} min',
+    '{n} selected review priorities':
+        '{n} prioridades de revisión seleccionadas',
+    '· {section} — withheld for {reason}:':
+        '· {section} — retenido por {reason}: ',
+    'AI draft. Every suggestion in this brief stays provisional until you record your own judgment. Assistance and autonomy: {assistance}':
+        'Borrador de IA. Toda sugerencia de este informe es provisional hasta que usted registre su propio juicio. Asistencia y autonomía: {assistance}',
+    'Points are recorded observations; lines connect them and do not show continuous monitoring. Missing values interrupt the line, and each panel has its own vertical scale. The dashed marks are the minutes at which D1-D{last} were taken: they show when you acted, and a change after a mark does not establish that the action caused it.':
+        'Los puntos son observaciones registradas; las líneas los unen y no representan monitorización continua. Los valores faltantes interrumpen la línea, y cada panel tiene su propia escala vertical. Las marcas punteadas son los minutos en que se tomaron D1-D{last}: muestran cuándo actuó, y un cambio posterior a una marca no establece que la acción lo haya causado.',
+    'Recorded reassessment plan: {plan}':
+        'Plan de reevaluación registrado: {plan}',
+    'Selected analysis limit: {limit}':
+        'Límite del análisis seleccionado: {limit}',
+    'The AI reasoning, the clinical identifiers and the curriculum objective titles are written in English; the scores, the sections and the recorded judgements are the same in both languages.':
+        'El razonamiento de la IA, los identificadores clínicos y los títulos de los objetivos del currículo están en inglés; los puntajes, las secciones y los juicios registrados son los mismos en ambos idiomas.',
+    '<b>Recorded course:</b> {course}':
+        '<b>Curso registrado:</b> {course}',
+    '<link href="{url}" color="#FFFFFF"><b>Open this encounter → review and record your assessment</b></link>':
+        '<link href="{url}" color="#FFFFFF"><b>Abrir este encuentro → revisar y registrar su evaluación</b></link>',
+    'AI suggestion on record: {suggestion}. It is held for your reading because {reason}. No new rating was assigned and no recorded faculty judgment was changed.':
+        'Sugerencia de IA registrada: {suggestion}. Queda retenida para su lectura porque {reason}. No se asignó ninguna calificación nueva ni se cambió ningún juicio docente registrado.',
+    'Ask this rather than judge it: {caveat}.':
+        'Pregunte esto en vez de juzgarlo: {caveat}.',
+    'Available and not asked about: {topics}.':
+        'Disponible y no preguntado: {topics}.',
+    'Held because {reason}.':
+        'Retenido porque {reason}.',
+    'Pilot rubric {version}. Not ACGME Milestone levels, Canadian stages or EPA supervision levels.':
+        'Rúbrica piloto {version}. No son niveles de Milestone de ACGME, etapas canadienses ni niveles de supervisión de APC.',
+    'Scope limit: {limit}':
+        'Límite de alcance: {limit}',
+    'The record cannot settle this: {reason}.':
+        'El registro no puede resolver esto: {reason}.',
 }
 TABLES = {"es": ES}

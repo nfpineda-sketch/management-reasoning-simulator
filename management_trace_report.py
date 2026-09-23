@@ -88,6 +88,22 @@ def _scalar(value):
     return ""
 
 
+def _language_note(p, language=None):
+    """Said on the page, in a document not wholly written in the reader's language."""
+    from faculty_report import LANGUAGE_NOTE
+    from language import current as _reader_language
+    if (language or _reader_language()) == "en":
+        return []
+    return [p(LANGUAGE_NOTE, "tiny")]
+
+
+def _t(text, language=None):
+    """A whole sentence, with its values named, so Spanish can reorder them."""
+    import report_language
+    from language import current as _reader_language
+    return report_language.t(text, language or _reader_language())
+
+
 def _say(text, language=None):
     """The page furniture, which is drawn on the canvas and never sees _xml."""
     import report_language
@@ -371,7 +387,7 @@ def _decision_title(item, event, stage, title_caps=presentation.TITLE_CAPS):
         return "Recorded decision"
     shown, extra = names[:4], len(names) - 4
     heading = shown[0] if len(shown) == 1 else ", ".join(shown[:-1]) + " and " + shown[-1]
-    return heading + (f", and {extra} more" if extra > 0 else "")
+    return heading + (_t(", and {n} more").format(n=extra) if extra > 0 else "")
 
 
 def _recorded_course(timeline):
@@ -385,8 +401,10 @@ def _recorded_course(timeline):
     first, last = timeline[0], timeline[-1]
     start = _number(first.get("decision_time_min"))
     finish = _number(last.get("response_time_min"))
-    span = (f"{len(timeline)} recorded decisions between {start:g} and {finish:g} min"
-            if start is not None and finish is not None else f"{len(timeline)} recorded decisions")
+    span = (_t("{n} recorded decisions between {start:g} and {finish:g} min").format(
+                n=len(timeline), start=start, finish=finish)
+            if start is not None and finish is not None
+            else _t("{n} recorded decisions").format(n=len(timeline)))
     opening = _mapping(_mapping(first.get("state_before")).get("observable"))
     closing = _mapping(_mapping(last.get("state_after")).get("observable"))
     moves = []
@@ -528,12 +546,14 @@ def render_management_trace_pdf(
             return f"{kind} at {_time(event.get('time_min'))}"
         reflection = reflection_index.get(ref, {})
         decision = index.get(reflection.get("decision_ref"), {})
-        return f"your later reflection on D{decision.get('decision_number', '?')}"
+        return _t("your later reflection on D{n}").format(
+            n=decision.get("decision_number", "?"))
 
     def claim_caveat(text):
         """A claim the record cannot settle carries the reason, in the open."""
         reasons = findings.unsettled(text, limits)
-        return p("The record cannot settle this: " + reasons[0] + ".", "tiny") if reasons else None
+        return (p(_t("The record cannot settle this: {reason}.").format(reason=reasons[0]),
+                  "tiny") if reasons else None)
 
     def claim_paragraph(claim, style="body"):
         claim = _mapping(claim)
@@ -560,7 +580,7 @@ def render_management_trace_pdf(
         canvas.setFillColor(NAVY)
         canvas.drawString(margin, height - 25, _say("MANAGEMENT REASONING SIMULATOR"))
         canvas.setFillColor(BLUE)
-        canvas.drawRightString(width - margin, height - 25, status)
+        canvas.drawRightString(width - margin, height - 25, _say(status))
         carried = continued_pages.get(doc.page)
         if carried is not None:
             canvas.setFont("TraceSans-Bold", 8.6)
@@ -570,7 +590,7 @@ def render_management_trace_pdf(
         canvas.setFont("TraceSans", 6.8)
         canvas.setFillColor(MUTED)
         canvas.drawString(margin, 37, _say("Learner report · AI interpretation · Renderer {v}").format(v=RENDERER_VERSION))
-        canvas.drawString(margin, 26, "Recorded changes do not establish a treatment's causal effect.")
+        canvas.drawString(margin, 26, _say("Recorded changes do not establish a treatment's causal effect."))
         canvas.drawRightString(width - margin, 31, str(doc.page))
         canvas.restoreState()
 
@@ -600,7 +620,8 @@ def render_management_trace_pdf(
         story.append(p("The AI synthesis is not shown here: it was withheld, and the passage is kept in "
                        "the technical record at the end with the reason. What follows is read from the "
                        "record, and is not an interpretation.", "note"))
-        story.append(Paragraph("<b>Recorded course:</b> " + _recorded_course(timeline), styles["body"]))
+        story.append(Paragraph(_t("<b>Recorded course:</b> {course}").format(
+            course=_recorded_course(timeline)), styles["body"]))
     else:
         story.append(claim_paragraph(analysis["overview"]))
 
@@ -642,7 +663,12 @@ def render_management_trace_pdf(
     story.append(panel_row([charts[0], charts[1]]))
     story.append(panel_row([charts[2], charts[3]]))
     story.append(panel_row([charts[4], legend]))
-    story.append(p("Points are recorded observations; lines connect them and do not show continuous monitoring. Missing values interrupt the line, and each panel has its own vertical scale. The dashed marks are the minutes at which D1-D" + str(len(decision_marks) or 1) + " were taken: they show when you acted, and a change after a mark does not establish that the action caused it.", "tiny"))
+    story.append(p(_t(
+        "Points are recorded observations; lines connect them and do not show continuous "
+        "monitoring. Missing values interrupt the line, and each panel has its own vertical "
+        "scale. The dashed marks are the minutes at which D1-D{last} were taken: they show "
+        "when you acted, and a change after a mark does not establish that the action caused "
+        "it.").format(last=len(decision_marks) or 1), "tiny"))
     if analysis["trajectory"] is None or presentation.was_truncated(_mapping(analysis["trajectory"]).get("text"), claim_caps):
         story.append(p("The AI reading of the trajectory is not shown here; it is kept in the technical "
                        "record at the end with the reason.", "note"))
@@ -696,9 +722,9 @@ def render_management_trace_pdf(
             if row:
                 when = []
                 if row["sampled_at_min"] is not None:
-                    when.append(f"sampled at {row['sampled_at_min']:g} min")
+                    when.append(_t("sampled at {n:g} min").format(n=row["sampled_at_min"]))
                 if row["reported_at_min"] is not None:
-                    when.append(f"result at {row['reported_at_min']:g} min")
+                    when.append(_t("result at {n:g} min").format(n=row["reported_at_min"]))
                 if when:
                     phrase += " · " + ", ".join(when)
             elif study in stage["awaiting"]:
@@ -766,20 +792,23 @@ def render_management_trace_pdf(
                 continue
             parts = []
             if row["sampled_at_min"] is not None:
-                parts.append(f"sampled at {row['sampled_at_min']:g} min")
+                parts.append(_t("sampled at {n:g} min").format(n=row["sampled_at_min"]))
             if row["reported_at_min"] is not None:
-                parts.append(f"reported at {row['reported_at_min']:g} min")
+                parts.append(_t("reported at {n:g} min").format(n=row["reported_at_min"]))
             if not row["requested_here"]:
-                parts.append(f"requested at decision {row['requested_at_decision']}")
+                parts.append(_t("requested at decision {n}").format(
+                    n=row["requested_at_decision"]))
             if parts:
                 result_bits.append('<font color="#607482">'
                                    + _xml(presentation.study_name(row["study"]) + ": " + ", ".join(parts))
                                    + "</font>")
         closed = limits.get("closed_at_min")
-        ending = f" before the encounter closed at {closed:g} min" if closed is not None else ""
+        ending = (_t(" before the encounter closed at {n:g} min").format(n=closed)
+                  if closed is not None else "")
         for study in stage["awaiting"]:
             result_bits.append('<font color="#607482">' + _xml(
-                presentation.study_name(study) + f": requested; no result was recorded{ending}") + "</font>")
+                presentation.study_name(study)
+                + _t(": requested; no result was recorded") + ending) + "</font>")
         if any(findings.URINE_WORDS.search(line) for line in lines):
             result_bits.append('<font color="#607482">' + _xml(urine_line) + "</font>")
         compare = Table([
@@ -796,7 +825,7 @@ def render_management_trace_pdf(
             ("TOPPADDING", (0, 0), (-1, -1), 4),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ]))
-        plan_line = p("Recorded reassessment plan: " + plan, "note")
+        plan_line = p(_t("Recorded reassessment plan: {plan}").format(plan=plan), "note")
         panel_height = compare.wrap(content_width, height)[1] + plan_line.wrap(content_width, height)[1]
         if panel_height < height - 190:
             story.append(KeepTogether([compare, plan_line]))
@@ -849,24 +878,32 @@ def render_management_trace_pdf(
         Spacer(1, 10),
         HRFlowable(width="100%", thickness=.6, color=LINE),
         p("Report provenance", "label"),
+        *_language_note(p),
         p(
-        f"Encounter: {encounter_id} | Generated: {_timestamp(report.get('generated_at'))} | Model: {_text(report.get('model'))}\n"
-        f"Analysis: {_text(report.get('schema_version'))} | Prompt: {_text(report.get('prompt_version'))} | Renderer: {RENDERER_VERSION}\n"
-        f"Source fingerprint: {_text(report.get('source_hash'))}\n"
-        "The source fingerprint binds this analysis to the frozen encounter and locked reflections. "
-        "The full encounter record remains available separately."
-        + (f"\n{truncated} interpretation field(s) reached the analysis length limit and are marked where they stop." if truncated else "")
-        + (f"\n{len(correct.applied)} factual correction(s) were applied to the AI text at render time; "
-           "the saved analysis keeps the original wording." if correct.applied else ""),
+        _t("Encounter: {encounter} | Generated: {when} | Model: {model}\n"
+           "Analysis: {schema} | Prompt: {prompt} | Renderer: {renderer}\n"
+           "Source fingerprint: {fingerprint}\n"
+           "The source fingerprint binds this analysis to the frozen encounter and locked "
+           "reflections. The full encounter record remains available separately.").format(
+               encounter=encounter_id, when=_timestamp(report.get("generated_at")),
+               model=_text(report.get("model")), schema=_text(report.get("schema_version")),
+               prompt=_text(report.get("prompt_version")), renderer=RENDERER_VERSION,
+               fingerprint=_text(report.get("source_hash")))
+        + ("\n" + _t("{n} interpretation field(s) reached the analysis length limit and are "
+                     "marked where they stop.").format(n=truncated) if truncated else "")
+        + ("\n" + _t("{n} factual correction(s) were applied to the AI text at render time; "
+                     "the saved analysis keeps the original wording.").format(
+                         n=len(correct.applied)) if correct.applied else ""),
         "tiny"),
     ]
     closing += [p("Correction: " + reason, "tiny") for reason in correct.lines()]
     if withheld:
-        closing.append(p(f"Technical record — {len(withheld)} AI passage(s) withheld from the reading "
-                         "above, kept here with the reason:", "tiny"))
+        closing.append(p(_t("Technical record — {n} AI passage(s) withheld from the reading "
+                            "above, kept here with the reason:").format(n=len(withheld)), "tiny"))
         for item in withheld:
-            closing.append(p(f"· {item['section']} — withheld for {item['reason']}: "
-                             + " ".join(str(item.get("text") or "").split())[:400], "tiny"))
+            closing.append(p(_t("· {section} — withheld for {reason}: ").format(
+                section=item["section"], reason=item["reason"])
+                + " ".join(str(item.get("text") or "").split())[:400], "tiny"))
     if incomplete:
         closing.append(p("Technical record — AI passages that stopped at the analysis length limit and "
                          "were therefore not used in the reading above:", "tiny"))

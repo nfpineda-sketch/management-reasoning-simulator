@@ -191,16 +191,30 @@ todo el texto de los dos informes, más `_say` para lo que se dibuja directo en 
 cadena que la tabla no conoce pasa intacta, que es exactamente lo que corresponde a la prosa del
 modelo y a las citas del residente.
 
-**Lo que la tabla no puede hacer, declarado.** Una frase construida alrededor de un valor
-—`f"{n} prioridades de revisión seleccionadas"`— se arma en tiempo de ejecución y no coincide
-con ninguna clave, así que sale en inglés. Arreglarla significa convertir la f-string en una
-plantilla completa para que el español ponga el número donde lo pone el español. Quedan **15 en
-el Management Trace y 14 en los briefs**, listadas por `composed_prose` y contadas por una
-prueba que falla si aparece una nueva. Ese número sólo puede bajar.
+**Las frases construidas alrededor de un valor son plantillas completas.** Una f-string o una
+concatenación se arma en tiempo de ejecución y no coincide con ninguna clave, así que salía en
+inglés aunque la frase estuviera traducida. Cada una es ahora una plantilla con sus valores
+nombrados —`"{n} prioridades de revisión seleccionadas"`— para que el español ponga el número
+donde lo pone el español. **Quedan cero**, y una prueba falla si aparece una nueva.
+
+Una traducción que pierda o escriba mal un `{marcador}` no es una errata: **revienta al
+renderizar**, delante de un lector. Hay una prueba que compara los marcadores de cada par y otra
+que formatea las 250 plantillas en los dos idiomas.
+
+**Lo que sigue en inglés, y se dice en la página.** Los títulos de los objetivos del currículo
+llevan la redacción oficial de sus mapeos de competencias; traducirlos cambiaría lo que dice el
+currículo, no cómo se rotula una sección. Un documento en español lleva por eso una línea que
+declara qué partes están en inglés: el razonamiento de la IA, los identificadores clínicos y los
+títulos de los objetivos.
 
 `test_the_documents_speak_the_readers_language` recorre los renderizadores y falla cuando la
 tabla no sabe decir alguna de sus cadenas. Sin esa prueba la tabla se pudre en silencio: alguien
 edita una frase en inglés y el documento en español imprime esa línea en inglés sin avisar.
+
+Pero una tabla completa no basta, y esa fue la lección: **ocho cadenas estaban traducidas y la
+página seguía en inglés**, porque se armaban por concatenación. Así que además se **renderizan
+los tres documentos en español y se mira el resultado**. Esa es la prueba que las habría
+encontrado, y es la que las encontró.
 
 ## Qué se distingue siempre
 

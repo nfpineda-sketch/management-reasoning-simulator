@@ -58,7 +58,7 @@ def visible_strings(name):
         import re as _re
         if _re.search(r"\\[sdwb]|\.\*|\(\?:", node.value):
             continue
-        words = _re.sub(r"<[^>]*>", "", text).strip()
+        words = _re.sub(r"<[^>]*>?", "", text).strip()
         if len(words) > 12 and " " in words and any(c.isalpha() for c in words) \
                 and not text.startswith("%"):
             found.append(text)
@@ -132,14 +132,25 @@ def composed_prose(name):
     import re
     tree = ast.parse((ROOT / name).read_text(encoding="utf-8"))
     found = []
+    pieces = []
     for node in ast.walk(tree):
-        if not isinstance(node, ast.JoinedStr):
-            continue
-        parts = [p.value for p in node.values
-                 if isinstance(p, ast.Constant) and isinstance(p.value, str)]
+        if isinstance(node, ast.JoinedStr):
+            pieces.append([p.value for p in node.values
+                           if isinstance(p, ast.Constant) and isinstance(p.value, str)])
+        elif isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            # "a literal " + value is the same failure as an f-string, and it
+            # is the one that slipped through first: eight strings were in the
+            # table and still printed in English (2026-09-23).
+            sides = [node.left, node.right]
+            literals = [side.value for side in sides
+                        if isinstance(side, ast.Constant) and isinstance(side.value, str)]
+            if literals and len(literals) < len(sides):
+                pieces.append(literals)
+    for parts in pieces:
         prose = "".join(parts)
         # Two or more words of prose around a value, and not a path, a style
         # name or a font file.
+        prose = re.sub(r"<[^>]*>?", "", prose)
         if len(re.findall(r"[A-Za-z]{3,}", prose)) < 2:
             continue
         if any(token in prose for token in (".ttf", "Faculty", "Trace", "://", "%")):
@@ -172,4 +183,109 @@ def test_the_sentences_built_around_a_value_are_listed(name):
 # The count today, so that it can only fall. Each one prints an English word
 # in a Spanish document; they are listed by ``composed_prose`` and converting
 # one means making its whole sentence the key.
-LEFT_TO_CONVERT = {"management_trace_report.py": 15, "faculty_report.py": 14}
+# Zero, and it stays zero: every sentence built around a value is now a whole
+# template whose Spanish can put the value where Spanish puts it.
+LEFT_TO_CONVERT = {"management_trace_report.py": 0, "faculty_report.py": 0}
+
+
+def placeholders(text):
+    """The named values a template expects, ignoring any format spec."""
+    import string
+    return {name.split("!")[0].split(":")[0]
+            for _, name, _, _ in string.Formatter().parse(text) if name}
+
+
+def test_a_translation_keeps_every_value_its_sentence_needs():
+    """A dropped or misspelled placeholder is a crash, not a typo.
+
+    These are ``.format()`` templates: the renderer passes the values by name.
+    A Spanish sentence that loses one raises KeyError while a document is being
+    built, which is a failure in front of a reader rather than in a test.
+    """
+    wrong = []
+    for english, spanish in report_language.ES.items():
+        if placeholders(english) != placeholders(spanish):
+            wrong.append((english[:60], sorted(placeholders(english)),
+                          sorted(placeholders(spanish))))
+    assert not wrong, wrong
+
+
+def test_every_template_can_actually_be_formatted():
+    """Formatting each one with its own names, in both languages."""
+    for english, spanish in report_language.ES.items():
+        names = placeholders(english)
+        if not names:
+            continue
+        # A numeric format spec needs a number; everything else takes a string.
+        values = {name: 1 for name in names}
+        for text in (english, spanish):
+            try:
+                text.format(**values)
+            except (KeyError, IndexError, ValueError) as error:
+                raise AssertionError(f"{text[:70]!r} cannot be formatted: {error}") from None
+
+
+# --- the documents themselves ----------------------------------------------
+
+def rendered(language):
+    """The three documents as text, in one language."""
+    import io
+    import os
+    from unittest import mock
+    from pypdf import PdfReader
+
+    def text_of(blob):
+        return " ".join(" ".join(page.extract_text() or ""
+                                 for page in PdfReader(io.BytesIO(blob)).pages).split())
+
+    with mock.patch.dict(os.environ, {"MRS_LANGUAGE": language}):
+        from faculty_report import render_faculty_brief_pdf
+        from management_trace_report import render_management_trace_pdf
+        from test_faculty_report import brief_example
+        from test_management_trace_report import report_example
+        report, record = brief_example()
+        trace_report, payload = report_example()
+        return {
+            "compact": text_of(render_faculty_brief_pdf(report, record, compact=True)),
+            "full": text_of(render_faculty_brief_pdf(report, record, compact=False)),
+            "trace": text_of(render_management_trace_pdf(trace_report, payload,
+                                                         case_label="c", learner_label="l")),
+        }
+
+
+# The curriculum's own objective titles stay in English: they carry official
+# competency wording, and translating them would change what the programme
+# says rather than how a document labels a section. The Spanish pages say so.
+CURRICULUM_ENGLISH = ("Recognize instability",)
+
+
+def test_no_document_word_stays_english_when_the_reader_chose_spanish():
+    """The test that would have caught the misses.
+
+    A table can be complete and the page still English: a sentence assembled
+    from pieces never matches a key. Eight strings were in the table and still
+    printed in English until this rendered the documents and looked.
+    """
+    for name, text in rendered("es").items():
+        leaks = [source for source in report_language.ES
+                 if "{" not in source and len(source) > 20 and source in text
+                 and not source.startswith(CURRICULUM_ENGLISH)]
+        assert not leaks, f"{name}: {leaks[:5]}"
+
+
+def test_the_english_documents_are_unchanged_by_any_of_this():
+    english = rendered("en")
+    for name, text in english.items():
+        assert text, name
+    # The words the English documents are built from are still in them.
+    assert "Decisions worth revisiting" in english["trace"]
+    assert "Performance synthesis" in english["full"]
+
+
+def test_the_spanish_documents_say_what_is_still_in_english():
+    from faculty_report import LANGUAGE_NOTE
+    spanish = rendered("es")
+    said = report_language.t(LANGUAGE_NOTE, "es")[:40]
+    assert said in spanish["full"] and said in spanish["trace"]
+    for text in rendered("en").values():
+        assert LANGUAGE_NOTE not in text
