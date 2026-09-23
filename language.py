@@ -51,6 +51,34 @@ def current():
 
 # Whole messages, where a sentence has to be said rather than substituted.
 MESSAGES = {
+ 'What do you think is going on?':
+ '¿Qué crees que está pasando?',
+ 'What are you going to do?':
+ '¿Qué vas a hacer?',
+ 'What do you expect to happen, or what are you trying to clarify?':
+ '¿Qué esperas que ocurra o qué buscas aclarar?',
+ 'What will you check, and when?':
+ '¿Qué vas a revisar y cuándo?',
+ 'What will you check?':
+ '¿Qué vas a revisar?',
+ 'Which problem are you addressing first? (optional)':
+ '¿Qué problema estás abordando primero? (opcional)',
+ 'Your current explanation of the problem and the findings that support it. You do not need a definitive diagnosis.':
+ 'Tu explicación actual del problema y los hallazgos que la apoyan. No necesitas un diagnóstico definitivo.',
+ 'The interventions, studies or measures you want to order.':
+ 'Las intervenciones, estudios o medidas que quieres indicar.',
+ 'The response you anticipate, or the information you expect to obtain to guide management.':
+ 'La respuesta que anticipas o la información que esperas obtener para orientar el manejo.',
+ 'The variables or findings you will check, and the moment or condition for doing so.':
+ 'Las variables o hallazgos que comprobarás y el momento o condición para hacerlo.',
+ 'This is what the engine understood. To change it, cancel and write the order again below.':
+ 'Esto es lo que entendió el motor. Para cambiarlo, cancela y escribe la orden de nuevo abajo.',
+ 'I will check in… minutes':
+ 'Voy a revisar en… minutos',
+ '#### Answer what is missing':
+ '#### Responde lo que falta',
+ 'Write what you are doing in your own words: what you think is going on, what you are going to do, what you expect, and what you will check.':
+ 'Escribe lo que estás haciendo con tus propias palabras: qué crees que está pasando, qué vas a hacer, qué esperas y qué vas a revisar.',
  "The blocker is still working and the hypnotic is not: the patient cannot move and is not sedated. Nothing on the monitor will say so.":
  "El bloqueador sigue actuando y el hipnótico no: el paciente no puede moverse y no está sedado. Nada en el monitor lo va a decir.",
  "Complete atrioventricular block: the inferior infarct has taken the AV node. The rate falls and the pressure falls with it.":

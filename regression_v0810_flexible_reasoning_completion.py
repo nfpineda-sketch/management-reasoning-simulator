@@ -14,9 +14,11 @@ assert 'SIMULATOR_VERSION = "0.8.21"' in source
 assert "MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry" in source
 # The encounter UI no longer displays the old sentence-starter instructions.
 # Keep the semantic completion assertions below as the regression contract.
-assert "My working model is…" in source
-assert "My management priority is…" in source
-assert "I will reassess these variables…" in source
+# The guided fields ask the four questions in words rather than naming the
+# application's own slots (faculty specification 2026-09-23, section 4).
+assert "What do you think is going on?" in source
+assert "Which problem are you addressing first? (optional)" in source
+assert "What will you check?" in source
 assert "complete_pending_reasoning_fields" in source
 assert "upsert_reasoning_gate_clarification" in source
 

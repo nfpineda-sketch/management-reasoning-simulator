@@ -58,6 +58,34 @@ KEEP = frozenset({
 })
 
 ES = {
+    'Findings mentioned':
+        'Hallazgos mencionados',
+    'Link expressed':
+        'Relación expresada',
+    'these findings were given as the reason: "{marker}"':
+        'esos hallazgos se dieron como la razón: «{marker}»',
+    'Link to the interpretation: not stated.':
+        'Relación con la interpretación: no explicitada.',
+    'Findings mentioned: not stated.':
+        'Hallazgos mencionados: no explicitados.',
+    'stated earlier, in decision {n} at {minute:g} min':
+        'enunciado antes, en la decisión {n} al minuto {minute:g}',
+    'stated in this entry':
+        'enunciado en esta entrada',
+    'stated earlier in this encounter':
+        'enunciado antes en este encuentro',
+    'completed in the follow-up':
+        'completado en el formulario',
+    'composed by the application from your other words':
+        'compuesto por la aplicación a partir de sus otras palabras',
+    'Working model':
+        'Modelo de trabajo',
+    'Priority':
+        'Prioridad',
+    'Rationale':
+        'Fundamento',
+    'Preserve':
+        'Preservar',
     "Not stated before this order: {elements}.":
         "No se enunció antes de esta orden: {elements}.",
     "which problem was being addressed first":

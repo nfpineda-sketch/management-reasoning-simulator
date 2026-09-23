@@ -136,6 +136,46 @@ def _unstated(gate):
     return [UNSTATED_LABELS[value] for value in UNSTATED_LABELS if value in set(values)]
 
 
+def _provenance(reasoning):
+    """Where each recorded slot came from, validated against the known values."""
+    import reasoning_provenance
+    values = (reasoning or {}).get("slot_provenance") if isinstance(reasoning, dict) else None
+    return reasoning_provenance.sanitise(values)
+
+
+def _findings(reasoning):
+    """The findings the resident named, with the words that support each one."""
+    import reasoning_cues
+    values = (reasoning or {}).get("mentioned_findings") if isinstance(reasoning, dict) else None
+    return reasoning_cues.sanitise(values)
+
+
+def _carried_from(reasoning):
+    """The decision and minute an interpretation was first stated in, if carried."""
+    value = (reasoning or {}).get("carried_from") if isinstance(reasoning, dict) else None
+    if not isinstance(value, dict):
+        return None
+    decision, minute = value.get("decision"), value.get("minute")
+    if not isinstance(decision, int) or isinstance(decision, bool) or decision < 1:
+        return None
+    if minute is not None and not isinstance(minute, (int, float)):
+        return None
+    return {"decision": decision, "minute": minute}
+
+
+def _sealed(gate):
+    """When this decision's justification was fixed, and whether that was late."""
+    if not isinstance(gate, dict):
+        return {}
+    minute = gate.get("sealed_at_min")
+    row = {}
+    if isinstance(minute, (int, float)) and not isinstance(minute, bool):
+        row["reasoning_sealed_at_min"] = minute
+    if gate.get("completed_after_results") is True:
+        row["reasoning_completed_after_results"] = True
+    return row
+
+
 def _diagnostic(value, at_time):
     # A numerical value in hidden state is not evidence of a performed test.
     if not isinstance(value, dict) or value.get("status", "available") != "available":
@@ -312,6 +352,10 @@ def build_analysis_source(payload):
             "recorded_reasoning": _answers(event.get("reasoning"), REASONING_FIELDS),
             "app_composed_reasoning_slots": _derived_slots(event.get("reasoning")),
             "unstated_prospective_elements": _unstated(event.get("reasoning_gate")),
+            "reasoning_provenance": _provenance(event.get("reasoning")),
+            "mentioned_findings": _findings(event.get("reasoning")),
+            "interpretation_carried_from": _carried_from(event.get("reasoning")),
+            **_sealed(event.get("reasoning_gate")),
             "executed_actions": _actions(event.get("action_summaries"), end) if status == "executed" else [],
             "state_before": before_source, "state_after": after_source,
         })

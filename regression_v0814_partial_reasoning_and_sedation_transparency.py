@@ -93,10 +93,12 @@ assert [(m["agent"], m["dose"], m["route"]) for m in sedation["medications"]] ==
 # The clarification must hold sedation and cardioversion together; neither can
 # produce a patient response until the missing effect is supplied.
 prompt = namespace["hold_pending_reasoning"](learner_turn)
-assert "Expected effect" in prompt, prompt
-assert "Working model" not in prompt, prompt
-assert "Management priority" not in prompt, prompt
-assert "Reassessment target" not in prompt, prompt
+# Since 2026-09-23 the hold names what it recognised before what is missing, in
+# the questions a person asks. Only the expectation is still to state.
+assert "Still to state: what you expect to happen." in prompt, prompt
+assert "I recognised what you want to do, what you think is going on and what you will check." in prompt, prompt
+assert "What do you expect to happen, or what are you trying to clarify?" in prompt, prompt
+assert "What do you think is going on?" not in prompt, prompt
 assert "etomidate 8 mg" in prompt and "midazolam 2 mg" in prompt, prompt
 assert prompt.index("procedural sedation") < prompt.index("synchronized cardioversion"), prompt
 assert "not executable" not in prompt, prompt

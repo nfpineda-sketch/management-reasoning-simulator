@@ -754,16 +754,55 @@ def render_management_trace_pdf(
         reasoning_fields = (("problem_representation", "Working model"),
                             ("management_priority", "Priority"), ("rationale", "Rationale"),
                             ("preservation_goal", "Preserve"))
+        # Where each slot came from: your sentence, something you said earlier
+        # about another decision, an answer typed into the follow-up, or the
+        # application's own phrasing (faculty specification 2026-09-23, §6).
+        import reasoning_provenance
+        provenance = event.get("reasoning_provenance") or {}
+        carried_from = event.get("interpretation_carried_from") or {}
+
+        def _origin(key):
+            source = provenance.get(key) or (reasoning_provenance.COMPOSED if key in composed else "")
+            if not source:
+                return ""
+            if source == reasoning_provenance.CARRIED and carried_from.get("decision"):
+                note = _t("stated earlier, in decision {n} at {minute:g} min").format(
+                    n=carried_from["decision"], minute=carried_from.get("minute") or 0)
+            else:
+                note = _t(reasoning_provenance.LABELS[source])
+            return f' <font size="8" color="#607482">({_xml(note)})</font>'
+
         recorded_any = False
         for key, label in reasoning_fields:
             value = _text(reasoning.get(key))
             if not value:
                 continue
             recorded_any = True
-            suffix = "" if key not in composed else ' <font size="8" color="#607482">(composed by the application from your other words, not typed by you)</font>'
-            block.append(Paragraph(f"<b>{label}:</b> " + _xml(value) + suffix, styles["body"]))
+            block.append(Paragraph(f"<b>{_xml(_t(label))}:</b> " + _xml(value) + _origin(key),
+                                   styles["body"]))
         if not recorded_any:
             block.append(p("No explicit working model, priority or rationale was recorded.", "note"))
+
+        # The findings the resident named, and whether they said what those
+        # findings meant. "Not stated" is the honest phrase: it says what is
+        # absent from the record, not what the resident failed to notice.
+        named_findings = event.get("mentioned_findings") or []
+        if named_findings:
+            block.append(Paragraph(
+                f"<b>{_xml(_t('Findings mentioned'))}:</b> "
+                + _xml("; ".join(str(row.get("finding") or "") for row in named_findings)),
+                styles["body"]))
+            linked = [row for row in named_findings if row.get("linked")]
+            if linked:
+                block.append(Paragraph(
+                    f"<b>{_xml(_t('Link expressed'))}:</b> "
+                    + _xml(_t('these findings were given as the reason: "{marker}"').format(
+                        marker=str(linked[0].get("link_marker") or ""))),
+                    styles["body"]))
+            else:
+                block.append(p(_t("Link to the interpretation: not stated."), "note"))
+        elif recorded_any:
+            block.append(p(_t("Findings mentioned: not stated."), "note"))
         # The order ran without these, and the omission is still part of the
         # decision. Recorded here so it is read where it happened rather than
         # inferred later from a silence (faculty decision 2026-09-23).

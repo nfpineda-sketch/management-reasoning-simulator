@@ -5939,7 +5939,11 @@ def extract_explicit_reasoning(text):
                 r"|" + gap + r"(?:y\s+)?(?:" + _ES_GOAL_VERBS + r")\b(?!\s+" + _ES_PHYSIOLOGY + r")"
                 # A connector introduces the order that follows, not more priority.
                 r"|" + gap + r"(?:as[ií]\s+que|por\s+lo\s+que|entonces)\b"
-                r"|" + gap + r"(?:y\s+)?(?:espero|anticipo)\b|[.;]|$)")
+                r"|" + gap + r"(?:y\s+)?(?:espero|anticipo)\b"
+                # The reassessment clause belongs to its own slot: without this
+                # "espero que suba la presion, reevaluo PAM en 10 minutos" kept
+                # the whole tail as the expectation.
+                r"|" + gap + r"(?:y\s+)?(?:" + _ES_REASSESS + r")\b|[.;]|$)")
 
         # A Spanish causal statement is the resident's working model: "Esto es una
         # crisis asmática grave porque se quedó sin su inhalador", "La obstrucción
@@ -6059,7 +6063,18 @@ def extract_explicit_reasoning(text):
             reasoning["problem_representation"].strip().lower() == reasoning["rationale"].strip().lower()):
         reasoning.pop("rationale", None)
 
-    return {k: v for k, v in reasoning.items() if v}
+    reasoning = {k: v for k, v in reasoning.items() if v}
+
+    # The findings the learner named, inside the working model and never as a
+    # fifth requirement: their absence alone holds nothing (faculty
+    # specification 2026-09-23, section 3).
+    import reasoning_cues
+    import reasoning_provenance
+
+    named = reasoning_cues.cues(text)
+    if named:
+        reasoning["mentioned_findings"] = named
+    return reasoning_provenance.mark(reasoning, reasoning_provenance.STATED)
 
 
 def parse_procedural_sedation_order(text):
@@ -6789,18 +6804,18 @@ REASONING_GATE_ACTION_TYPES = {
 }
 
 REASONING_GATE_FIELD_LABELS = {
-    "working_model": "Working model — what you think is happening and why it matters now",
-    "management_priority": "Management priority — what problem you are addressing first",
-    "expected_effect": "Expected effect — what clinical change you expect from the intervention",
-    "reassessment_target": "Reassessment variables — what you will check",
-    "reassessment_timing": "Reassessment timing — when you will check them",
+    "working_model": "What do you think is going on?",
+    "management_priority": "Which problem are you addressing first? (optional)",
+    "expected_effect": "What do you expect to happen, or what are you trying to clarify?",
+    "reassessment_target": "What will you check, and when?",
+    "reassessment_timing": "When will you check it?",
 }
 
 REASONING_GATE_FIELD_STEMS = {
-    "working_model": "My working model is…",
-    "management_priority": "My management priority is…",
-    "expected_effect": "I expect…",
-    "reassessment_target": "I will reassess these variables…",
+    "working_model": "What do you think is going on?",
+    "management_priority": "Which problem are you addressing first? (optional)",
+    "expected_effect": "What do you expect to happen, or what are you trying to clarify?",
+    "reassessment_target": "What will you check?",
 }
 
 REASONING_GATE_OVERRIDE = "execute without complete reasoning"
@@ -6867,6 +6882,64 @@ def reasoning_gate_noted(parsed):
     """
     return [field for field in reasoning_gate_gaps(parsed)
             if field in REASONING_GATE_NOTED]
+
+
+def carried_reasoning(trace=None):
+    """The interpretation the resident last stated, and the decision they said it in.
+
+    A resident who explained what they think is happening does not have to write
+    it again before every order in the same encounter. Carrying it is not the
+    same as hearing it twice: the attribution points at the decision and the
+    minute where it was actually said, so the record never reads as a fresh
+    reaffirmation (faculty decision 2026-09-23, section 6).
+
+    Only the interpretation travels. An expectation and a reassessment plan
+    belong to the action that produced them, and carrying those would attach a
+    resident's words to a decision they were never about.
+    """
+    import reasoning_provenance
+
+    events = list(trace if trace is not None
+                  else st.session_state.get("management_trace", []) or [])
+    for index in range(len(events) - 1, -1, -1):
+        event = events[index]
+        if event.get("execution_status") != "executed":
+            continue
+        reasoning = event.get("reasoning") or {}
+        provenance = reasoning.get("slot_provenance") or {}
+        # Look for where it was said, not for where it was carried, so a third
+        # order still names the first.
+        firsthand = {reasoning_provenance.STATED, reasoning_provenance.COMPLETED}
+        found = {field: reasoning[field] for field in reasoning_provenance.CARRYABLE
+                 if reasoning.get(field) and provenance.get(field) in firsthand}
+        if found.get("problem_representation") or found.get("rationale"):
+            return {"reasoning": found, "decision": index + 1,
+                    "minute": event.get("decision_time_min")}
+    return None
+
+
+def apply_carried_reasoning(parsed, missing):
+    """Fill a working model the resident already gave, rather than asking again."""
+    import reasoning_provenance
+
+    missing = list(missing or [])
+    if "working_model" not in missing:
+        return missing
+    carried = carried_reasoning()
+    if not carried:
+        return missing
+
+    reasoning = parsed.setdefault("reasoning", {})
+    provenance = dict(reasoning.get("slot_provenance") or {})
+    for field, value in carried["reasoning"].items():
+        if reasoning.get(field):
+            continue
+        reasoning[field] = value
+        provenance[field] = reasoning_provenance.CARRIED
+    reasoning["slot_provenance"] = provenance
+    reasoning["carried_from"] = {"decision": carried["decision"],
+                                 "minute": carried["minute"]}
+    return reasoning_gate_missing(parsed)
 
 
 def ai_reasoning_recognition_enabled():
@@ -6944,7 +7017,7 @@ def reasoning_state_observations(parsed, state):
     reasoning = parsed.get("reasoning", {}) or {}
     text = " ".join(
         [str(parsed.get("raw_text") or "")]
-        + [str(value or "") for value in reasoning.values()]
+        + [str(value or "") for value in reasoning.values() if isinstance(value, str)]
     ).lower()
     observable = (state or {}).get("observable", {}) or {}
     notes = []
@@ -7044,15 +7117,39 @@ def _held_order_summary(parsed):
     return " + ".join(_understood_order_labels(parsed)) or "management intervention"
 
 
+def _joined_clauses(items):
+    """"a", "a and b", "a, b and c" — said the way a person says a short list."""
+    items = [item for item in items if item]
+    if len(items) <= 1:
+        return items[0] if items else ""
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
+
 def reasoning_gate_prompt(parsed, missing):
-    """Targeted clarification that keeps the interpreted order visibly on hold."""
+    """Say what was recognised before saying what is missing.
+
+    A hold that only lists demands reads as a rejection of the whole entry. The
+    resident wrote most of this; naming that first is the difference between
+    "you did not do it right" and "two of the four are here"
+    (faculty specification 2026-09-23, section 4).
+    """
+    missing = list(missing)
+    import reasoning_questions
+
+    recognised = ["action"] + [field for field, _, _ in reasoning_questions.QUESTIONS
+                               if field != "action" and field not in missing]
     lines = [
         "**ORDER HELD — REASONING REQUIRED**",
         "",
         f"I understood: **{_held_order_summary(parsed)}**.",
         "The order has not been executed and the patient state has not changed.",
         "",
-        "Before execution, please add:",
+        "I recognised " + _joined_clauses(
+            [reasoning_questions.SHORT[field] for field in recognised]) + ".",
+        "Still to state: " + _joined_clauses(
+            [reasoning_questions.SHORT[field] for field in missing]) + ".",
+        "",
+        "In your own words, or in the fields on screen:",
     ]
     lines.extend(f"- {REASONING_GATE_FIELD_LABELS[field]}" for field in missing)
     recognized_unmodeled = [
@@ -7067,8 +7164,7 @@ def reasoning_gate_prompt(parsed, missing):
         ])
     lines.extend([
         "",
-        "Use your own words, or complete the guided sentence starters on screen. "
-        "You do not need to repeat the order.",
+        "You do not need to repeat the order. What you already wrote is kept.",
     ])
     return "\n".join(lines)
 
@@ -7107,14 +7203,47 @@ def hold_pending_reasoning(parsed, missing=None):
     existing = st.session_state.get("pending_reasoning") or {}
     if existing:
         gate_id = int(existing.get("gate_id") or 1)
+        held_at = existing.get("held_at_min")
+        held_after = existing.get("held_after_decisions")
     else:
         gate_id = next_reasoning_gate_id()
+        held_at = (st.session_state.get("state") or {}).get("sim_time")
+        held_after = len(st.session_state.get("management_trace", []) or [])
     st.session_state.pending_reasoning = {
         "parsed": deepcopy(parsed),
         "missing": missing,
         "gate_id": gate_id,
+        # The moment the order was held, so that an explanation written later can
+        # be told from one written before this decision had any results. A held
+        # order cannot execute and no other order runs while it waits, so these
+        # should never move; recording them is how a future change that opens
+        # that door becomes visible instead of quietly improving a score.
+        "held_at_min": held_at,
+        "held_after_decisions": held_after,
     }
     return reasoning_gate_prompt(parsed, missing)
+
+
+def _seal_reasoning(held, pending):
+    """Record when this decision's justification was fixed, and against what.
+
+    Faculty decision 2026-09-23, sections 6 and 7: a follow-up that completes a
+    decision must happen before that decision's own results are revealed, and an
+    explanation written afterwards must never be attributed back to it.
+    """
+    now = (st.session_state.get("state") or {}).get("sim_time")
+    decisions = len(st.session_state.get("management_trace", []) or [])
+    held_at = (pending or {}).get("held_at_min")
+    held_after = (pending or {}).get("held_after_decisions")
+    late = bool(
+        (held_at is not None and now is not None and now != held_at)
+        or (held_after is not None and decisions != held_after)
+    )
+    gate = dict(held.get("reasoning_gate") or {})
+    gate["sealed_at_min"] = now
+    gate["completed_after_results"] = late
+    held["reasoning_gate"] = gate
+    return held
 
 
 def cancel_pending_order():
@@ -7140,6 +7269,8 @@ def complete_pending_reasoning_fields(
     if not pending:
         return None
 
+    import reasoning_provenance
+
     held = deepcopy(pending.get("parsed") or {})
     reasoning = deepcopy(held.get("reasoning", {}) or {})
     field_values = {
@@ -7148,12 +7279,21 @@ def complete_pending_reasoning_fields(
         "expected_effect": expected_effect,
         "reassessment_target": reassessment_target,
     }
+    provenance = dict(reasoning.get("slot_provenance") or {})
     for field, value in field_values.items():
         cleaned = _clean_reasoning_phrase(str(value or ""))
+        # The form arrives prefilled with what was extracted, so a field the
+        # resident left untouched keeps the hand that first wrote it. Only a
+        # field they actually changed or supplied becomes theirs to own here.
+        if cleaned != str(reasoning.get(field) or ""):
+            provenance[field] = reasoning_provenance.COMPLETED
         if cleaned:
             reasoning[field] = cleaned
         else:
             reasoning.pop(field, None)
+            provenance.pop(field, None)
+    reasoning["slot_provenance"] = provenance
+    reasoning_provenance.mark(reasoning, reasoning_provenance.COMPLETED)
     held["reasoning"] = reasoning
 
     delay = None
@@ -7215,6 +7355,7 @@ def complete_pending_reasoning_fields(
 
     held["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
                               "noted": reasoning_gate_noted(held)}
+    _seal_reasoning(held, pending)
     st.session_state.pending_reasoning = None
     clear_reasoning_gate_clarification()
     return {"parsed": held, "overridden": False, "transcript": transcript}
@@ -7241,18 +7382,27 @@ def resolve_pending_reasoning(text):
             "missing": list(pending.get("missing") or []),
             "noted": reasoning_gate_noted(held),
         }
+        _seal_reasoning(held, pending)
         st.session_state.pending_reasoning = None
         clear_reasoning_gate_clarification()
         return {"parsed": held, "overridden": True}
 
+    import reasoning_provenance
+
     supplemental = clinical_interpreter(text)
     merged_reasoning = deepcopy(held.get("reasoning", {}))
+    provenance = dict(merged_reasoning.get("slot_provenance") or {})
     # A natural-language follow-up is primarily completing missing slots. Do
     # not let a bounded inference from the supplemental sentence overwrite a
     # field the learner already stated in the held turn.
     for key, value in deepcopy(supplemental.get("reasoning", {})).items():
+        if key in ("slot_provenance", "derived_slots"):
+            continue
         if not merged_reasoning.get(key):
             merged_reasoning[key] = value
+            provenance[key] = reasoning_provenance.COMPLETED
+    merged_reasoning["slot_provenance"] = provenance
+    reasoning_provenance.mark(merged_reasoning, reasoning_provenance.COMPLETED)
 
     held_actions = deepcopy(held.get("actions", []))
     supplemental_reassessment = [
@@ -7284,6 +7434,7 @@ def resolve_pending_reasoning(text):
 
     held["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
                               "noted": reasoning_gate_noted(held)}
+    _seal_reasoning(held, pending)
     st.session_state.pending_reasoning = None
     clear_reasoning_gate_clarification()
     return {"parsed": held, "overridden": False}
@@ -9176,9 +9327,10 @@ with st.container(key="encounter-console"):
         if not st.session_state.encounter_ended and (encounter_mode in {"Tests", "Treat"} or st.session_state.get("pending_reasoning")):
             import language as _lang
             st.markdown(_lang.say("### Orders" if encounter_mode == "Tests" else "### Management"))
-            st.caption(
-                "State your priority, action, expected effect and reassessment."
-            )
+            st.caption(_lang.say(
+                "Write what you are doing in your own words: what you think is going on, "
+                "what you are going to do, what you expect, and what you will check."
+            ))
             pending_reasoning = st.session_state.get("pending_reasoning")
             if pending_reasoning:
                 pending_missing = pending_reasoning.get("missing", []) or []
@@ -9210,52 +9362,73 @@ with st.container(key="encounter-console"):
                     )
                 for observation in held_parsed.get("reasoning_observations", []) or []:
                     st.info(observation)
-                st.markdown("  \n".join(
-                    f"{'○' if field in pending_missing else '✓'} {label}"
-                    for field, label in REASONING_GATE_FIELD_LABELS.items()
-                ))
+                import reasoning_questions as _questions
+                st.markdown(_lang.say("  \n".join(
+                    ("○ " if field in pending_missing else "✓ ") + question
+                    for field, question, _ in _questions.QUESTIONS
+                )))
 
-                st.markdown("#### Complete the sentence starters")
+                st.markdown(_lang.say("#### Answer what is missing"))
                 with st.form(f"reasoning_completion_form_{gate_id}"):
                     left, right = st.columns(2)
                     with left:
                         guided_working_model = st.text_area(
-                            REASONING_GATE_FIELD_STEMS["working_model"],
+                            _lang.say(_questions.QUESTION["working_model"]),
                             value=str(
                                 held_reasoning.get("problem_representation")
                                 or held_reasoning.get("rationale")
                                 or ""
                             ),
                             height=78,
+                            help=_lang.say(_questions.HELP["working_model"]),
                             key=f"reasoning_model_{gate_id}",
                         )
                         guided_expected_effect = st.text_area(
-                            REASONING_GATE_FIELD_STEMS["expected_effect"],
+                            _lang.say(_questions.QUESTION["expected_effect"]),
                             value=str(held_reasoning.get("expected_effect") or ""),
                             height=78,
+                            help=_lang.say(_questions.HELP["expected_effect"]),
                             key=f"reasoning_effect_{gate_id}",
                         )
                     with right:
-                        guided_priority = st.text_area(
-                            REASONING_GATE_FIELD_STEMS["management_priority"],
-                            value=str(held_reasoning.get("management_priority") or ""),
+                        # The action is one of the four and the only one that is
+                        # never a field here. This form completes the reasoning
+                        # around an order the engine already read; a box that
+                        # could change it would let the follow-up administer a
+                        # drug, and it provably cannot (specification §4).
+                        st.text_area(
+                            _lang.say(_questions.QUESTION["action"]),
+                            value=_held_order_summary(held_parsed),
                             height=78,
-                            key=f"reasoning_priority_{gate_id}",
+                            disabled=True,
+                            help=_lang.say(
+                                "This is what the engine understood. To change it, cancel "
+                                "and write the order again below."),
+                            key=f"reasoning_action_{gate_id}",
                         )
                         guided_reassessment_target = st.text_area(
-                            REASONING_GATE_FIELD_STEMS["reassessment_target"],
+                            _lang.say(_questions.QUESTION["reassessment_target"]),
                             value=str(held_reasoning.get("reassessment_target") or ""),
                             height=78,
+                            help=_lang.say(_questions.HELP["reassessment_target"]),
                             key=f"reasoning_reassessment_{gate_id}",
                             placeholder="e.g. HR and rhythm, BP/MAP, capillary refill, mental status",
                         )
                     guided_reassessment_delay = st.number_input(
-                        "I will reassess in… minutes",
+                        _lang.say("I will check in… minutes"),
                         min_value=1,
                         max_value=240,
                         value=min(240, max(1, int(held_reassessment.get("delay_min") or 5))),
                         step=1,
                         key=f"reasoning_delay_{gate_id}",
+                    )
+                    # Recorded because it is useful to read, never because it
+                    # holds anything. It is asked last and says it is optional.
+                    guided_priority = st.text_area(
+                        _lang.say(REASONING_GATE_FIELD_STEMS["management_priority"]),
+                        value=str(held_reasoning.get("management_priority") or ""),
+                        height=68,
+                        key=f"reasoning_priority_{gate_id}",
                     )
                     guided_submitted = st.form_submit_button(
                         "Complete reasoning & execute held order",
@@ -9381,6 +9554,10 @@ with st.container(key="encounter-console"):
             parsed, st.session_state.state
         )
         missing_reasoning = reasoning_gate_missing(parsed)
+        # Free before paid: what the resident already said in this encounter is
+        # consulted before a model is asked to read this submission again.
+        if missing_reasoning:
+            missing_reasoning = apply_carried_reasoning(parsed, missing_reasoning)
         if missing_reasoning:
             missing_reasoning = recognize_held_reasoning(parsed, missing_reasoning)
         gate_status = (parsed.get("reasoning_gate") or {}).get("status")

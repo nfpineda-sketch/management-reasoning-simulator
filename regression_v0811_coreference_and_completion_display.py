@@ -79,7 +79,10 @@ learner_turn = namespace["clinical_interpreter"](
 reasoning = learner_turn["reasoning"]
 assert reasoning["problem_representation"] == "heart rate is the primary problem", reasoning
 assert reasoning["management_priority"] == "heart rate", reasoning
-assert "it is the primary problem" not in set(reasoning.values())
+# Only the slots that carry words: reasoning also holds the derived-slot list,
+# the provenance of each slot and the findings the learner named.
+assert "it is the primary problem" not in {
+    value for value in reasoning.values() if isinstance(value, str)}
 assert namespace["reasoning_gate_missing"](learner_turn) == ["reassessment_target"]
 
 # Without a high-confidence antecedent the parser must ask rather than invent a

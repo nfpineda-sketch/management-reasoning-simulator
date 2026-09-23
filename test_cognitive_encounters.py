@@ -254,15 +254,15 @@ def test_new_treatment_requires_reasoning_then_executes_the_held_order_once(shar
     assert not shared_app.exception
     assert shared_app.session_state.pending_reasoning
     assert shared_app.session_state.state == generated["state"]
-    widget(shared_app.text_area, "My working model is…").set_value(
+    widget(shared_app.text_area, "What do you think is going on?").set_value(
         "A reversible metabolic cause may explain the altered consciousness.")
-    widget(shared_app.text_area, "My management priority is…").set_value(
+    widget(shared_app.text_area, "Which problem are you addressing first? (optional)").set_value(
         "Restore glucose availability while monitoring breathing.")
-    widget(shared_app.text_area, "I expect…").set_value(
+    widget(shared_app.text_area, "What do you expect to happen, or what are you trying to clarify?").set_value(
         "Improved alertness; persistent abnormalities would require further evaluation.")
-    widget(shared_app.text_area, "I will reassess these variables…").set_value(
+    widget(shared_app.text_area, "What will you check, and when?").set_value(
         "Mental status, glucose, respiratory rate and blood pressure.")
-    widget(shared_app.number_input, "I will reassess in… minutes").set_value(5)
+    widget(shared_app.number_input, "I will check in… minutes").set_value(5)
     widget(shared_app.button, "Complete reasoning & execute held order").click().run()
     assert not shared_app.exception
     assert not shared_app.session_state.pending_reasoning
