@@ -1,0 +1,433 @@
+{
+  "rows": [
+    {
+      "entry": "Paciente taquicardico, mal perfundido, frio y sudoroso. Impresiona shock cardiogenico.",
+      "reference": [
+        "taquicardico",
+        "mal perfundido",
+        "frio",
+        "sudoroso"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "taquicardico",
+          "mal perfundido",
+          "frio",
+          "sudoroso"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": true
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "Paciente taquicardico",
+          "mal perfundido",
+          "frio",
+          "sudoroso"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": true,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "PA 80/50, FC 130, sat 88%. Creo que es sepsis de foco urinario porque tiene orina turbia.",
+      "reference": [
+        "PA 80/50",
+        "FC 130",
+        "sat 88%",
+        "orina turbia"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "PA 80/50",
+          "FC 130",
+          "sat 88%"
+        ],
+        "missed": [
+          "orina turbia"
+        ],
+        "invented": [],
+        "linked": false,
+        "link_expected": true
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "PA 80/50",
+          "FC 130",
+          "sat 88%",
+          "tiene orina turbia"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": true,
+        "link_expected": true,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Dar suero.",
+      "reference": [],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false
+      },
+      "model": {
+        "reader": "model",
+        "caught": [],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Creo que está en shock.",
+      "reference": [],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false
+      },
+      "model": {
+        "reader": "model",
+        "caught": [],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Espero que mejore la hipotension. Reevaluo la presion en 10 minutos.",
+      "reference": [],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false
+      },
+      "model": {
+        "reader": "model",
+        "caught": [],
+        "missed": [],
+        "invented": [
+          "la hipotension"
+        ],
+        "linked": false,
+        "link_expected": false,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Furosemida 40 mg EV. Reviso diuresis en 30 minutos.",
+      "reference": [],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false
+      },
+      "model": {
+        "reader": "model",
+        "caught": [],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Está hipotenso y confuso; me preocupa que esté en shock.",
+      "reference": [
+        "hipotenso",
+        "confuso"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "hipotenso",
+          "confuso"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": true,
+        "link_expected": true
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "Está hipotenso",
+          "confuso"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": true,
+        "link_expected": true,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "La presión mejoró, pero sigue confuso.",
+      "reference": [
+        "presion",
+        "confuso"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "La presión mejoró",
+          "confuso"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "La presión mejoró",
+          "sigue confuso"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Tiene crepitantes bibasales e ingurgitacion yugular, lo que sugiere congestion.",
+      "reference": [
+        "crepitantes",
+        "ingurgitacion yugular"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "crepitantes",
+          "ingurgitacion yugular"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": true,
+        "link_expected": true
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "crepitantes bibasales",
+          "ingurgitacion yugular"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": true,
+        "link_expected": true,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Sibilancias difusas con uso de musculatura accesoria. Crisis asmatica grave.",
+      "reference": [
+        "sibilancias",
+        "uso de musculatura accesoria"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "Sibilancias",
+          "uso de musculatura accesoria"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "Sibilancias difusas",
+          "con uso de musculatura accesoria"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Dolor toracico opresivo con supradesnivel del ST en cara inferior.",
+      "reference": [
+        "dolor toracico",
+        "supradesnivel"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "Dolor toracico",
+          "supradesnivel"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "Dolor toracico opresivo",
+          "supradesnivel del ST en cara inferior"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "HGT 35, comprometido de conciencia. Debe ser hipoglicemia.",
+      "reference": [
+        "HGT 35",
+        "comprometido de conciencia"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "HGT 35",
+          "comprometido de conciencia"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "HGT 35",
+          "comprometido de conciencia"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Sin fiebre, sin crepitantes. No impresiona neumonia.",
+      "reference": [
+        "fiebre",
+        "crepitantes"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "fiebre",
+          "crepitantes"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "Sin fiebre",
+          "sin crepitantes"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": false,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "The patient is hypotensive and confused, concerning for shock.",
+      "reference": [
+        "hypotensive",
+        "confused"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "hypotensive",
+          "confused"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": true,
+        "link_expected": true
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "hypotensive",
+          "confused"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": true,
+        "link_expected": true,
+        "refused_by_the_check": 0
+      }
+    },
+    {
+      "entry": "Still tachycardic and the lactate is 4, so I suspect ongoing hypoperfusion.",
+      "reference": [
+        "tachycardic",
+        "lactate is 4"
+      ],
+      "pattern": {
+        "reader": "patterns",
+        "caught": [
+          "tachycardic",
+          "lactate is 4"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": true,
+        "link_expected": true
+      },
+      "model": {
+        "reader": "model",
+        "caught": [
+          "Still tachycardic",
+          "the lactate is 4"
+        ],
+        "missed": [],
+        "invented": [],
+        "linked": false,
+        "link_expected": true,
+        "refused_by_the_check": 0
+      }
+    }
+  ]
+}

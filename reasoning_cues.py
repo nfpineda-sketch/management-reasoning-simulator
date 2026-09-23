@@ -86,6 +86,15 @@ _NAMED_FINDINGS = (
     r"hiperkalemia|hyperkalemia|hipoglic\w*|hypoglyc\w*|hiperglic\w*|hyperglyc\w*|"
     r"anemi[ac][oa]?|an[ae]mic|leucocitosis|leukocytosis|"
     r"troponina\s+(?:alta|elevada|positiva)|(?:raised|elevated)\s+troponin|"
+    # what a sample or a surface looks like. Added 2026-09-23 after a paid
+    # measurement: the model read "orina turbia" and the lexicon could not,
+    # because the lexicon is closed. This closes part of that gap without
+    # pretending the rest of it is closed.
+    r"orina\s+(?:turbia|concentrada|oscura|hemat[uú]rica|f[eé]tida)|"
+    r"(?:cloudy|dark|concentrated|foul[- ]smelling)\s+urine|"
+    r"esputo\s+(?:purulento|hem[oá]ptico|herrumbroso)|purulent\s+sputum|"
+    r"herida\s+(?:infectada|purulenta)|celulitis|cellulitis|"
+    r"eritema|erythema|exantema|rash|petequias|petechiae|p[uú]rpura|purpura|"
     # symptoms
     r"dolor\s+(?:tor[aá]cico|precordial|abdominal|retroesternal)|"
     r"chest\s+pain|abdominal\s+pain|palpitaciones|palpitations|"

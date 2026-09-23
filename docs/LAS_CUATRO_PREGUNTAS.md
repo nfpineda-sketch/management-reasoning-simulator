@@ -151,6 +151,52 @@ leídos por un modelo».
 Si el modelo falla, el texto queda íntegro y los patrones ya lo leyeron: nada se
 presenta como información que el residente hubiera omitido (§8).
 
+### La medición pagada: 25 autorizadas, 25 usadas
+
+Una petición por entrada, contra texto congelado. Sin encuentro, sin fisiología,
+sin reloj: una corrida aquí no puede cambiar un paciente ni un puntaje.
+
+**Las primeras 15 salieron mal por culpa mía.** Diez de quince fallaron con un
+timeout de cliente de 12 segundos copiado de `ai_interpreter`, y mi envoltorio
+decía «The recognition request failed» sin la causa — así que la única forma de
+diagnosticarlo habría sido otra corrida pagada. Una petición de diagnóstico, con
+la causa ya pasando a través, lo resolvió. Corregido: la excepción viaja con el
+mensaje, el timeout es de 45 s y `max_retries=0`, porque un reintento de la
+librería es una segunda petición que nadie autorizó.
+
+Las 9 restantes midieron las 9 entradas que faltaban. Las quince, completas:
+
+| | Patrones | Modelo |
+|---|---|---|
+| Hallazgos reconocidos | 25 | **26** |
+| Perdidos | 1 | **0** |
+| **Inventados** | **0** | **1** |
+| Vínculo como un lector | 13/15 | 13/15 |
+
+**El modelo agregó uno y se inventó uno.** El que agregó fue «orina turbia» — un
+hallazgo de vocabulario abierto que el léxico cerrado no podía alcanzar. El que
+se inventó fue «la hipotensión», tomado de *«Espero que mejore la hipotensión»*:
+convertir una expectativa en un hallazgo presente, que es exactamente la falla
+que §3 nombra. Los patrones la rechazaron correctamente.
+
+También falló un vínculo que los patrones acertaron: en *«so I suspect ongoing
+hypoperfusion»* dijo que no había relación expresada.
+
+Vale la pena decir qué **no** protege la verificación textual: las 24 citas
+fueron exactas, cero rechazos. La única invención estaba **correctamente
+citada** y usada en el rol equivocado. La comprobación garantiza que las
+palabras son del residente, no que el papel sea el correcto.
+
+**Qué hice con eso.** El único aporte real señalaba un léxico cerrado, así que lo
+abrí donde apuntaba: aspecto de la orina, del esputo, de la piel y la herida.
+Con eso el lector determinista queda en **26 reconocidos, 0 perdidos, 0
+inventados, vínculo 14/15** — iguala al modelo en hallazgos, lo supera en el
+vínculo, y cuesta cero.
+
+**Recomendación: `always` se queda apagado.** No compra nada que los patrones no
+den gratis, y compra un riesgo que los patrones no tienen. `held` sí tiene
+sentido: viaja en una petición que ya se estaba pagando.
+
 ### El presupuesto dejó de ser una promesa
 
 `MRS_AI_CALL_BUDGET`, ocho peticiones por encuentro por defecto, contadas en
@@ -171,9 +217,11 @@ es un contador que se detiene.
   medias.
 - El vínculo **entre frases** no se reconoce (ver arriba). Es la mayor parte de
   lo que quedaría para un modelo.
-- **Cues por modelo** está construido y **apagado**. No se ha gastado ninguna
-  petición en él. Lo que falta es medir cuánto agrega sobre los patrones, y esa
-  medición cuesta peticiones: ver abajo.
-- **Nadie ha medido** si el modelo captura los 2 hallazgos que los patrones
-  perdieron y los 2 vínculos entre frases sin inventar nada. Esa es la única
-  incertidumbre que queda y la única razón para gastar.
+- **El léxico sigue cerrado.** Se abrió donde la medición señaló, pero un
+  hallazgo que nadie anticipó sigue fuera de su alcance. Ése es el precio de no
+  inventar nada, y por ahora es el precio correcto.
+- **El vínculo entre frases** sigue sin reconocerse, y el modelo tampoco lo
+  resolvió: falló uno que los patrones acertaron.
+- **La verificación textual no protege el rol**, sólo las palabras. Una cita
+  exacta usada como hallazgo cuando era una expectativa pasa la comprobación.
+  Ocurrió una vez en quince.

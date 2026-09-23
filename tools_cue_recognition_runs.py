@@ -93,8 +93,10 @@ def compare(entry, expected, linked_expected, rows, label):
             "link_expected": linked_expected}
 
 
-def run(limit, *, paid, model="gpt-5-mini"):
-    entries = CORPUS[:limit]
+def run(limit, *, paid, model="gpt-5-mini", only=None):
+    """``only`` re-reads named entries instead of the first ``limit`` of them."""
+    entries = ([row for row in CORPUS if row[0] in set(only)][:limit] if only
+               else CORPUS[:limit])
     sent = []
     original = None
     if paid:
@@ -173,6 +175,8 @@ def main(argv=None):
                         help="confirm that paid requests may be sent")
     parser.add_argument("--model", default="gpt-5-mini")
     parser.add_argument("--out", default="")
+    parser.add_argument("--rerun", default="",
+                        help="a previous --out file; re-reads only the entries that failed")
     args = parser.parse_args(argv)
 
     if not args.dry_run and not args.yes:
@@ -181,7 +185,13 @@ def main(argv=None):
         parser.error("--yes needs --limit N, so the scope is a number and not a promise")
 
     limit = args.limit or len(CORPUS)
-    result = run(limit, paid=bool(args.yes), model=args.model)
+    only = None
+    if args.rerun:
+        previous = json.loads(Path(args.rerun).read_text(encoding="utf-8"))
+        only = [row["entry"] for row in previous["rows"]
+                if "error" in (row.get("model") or {})]
+        print(f"re-reading {len(only)} entries that failed before")
+    result = run(limit, paid=bool(args.yes), model=args.model, only=only)
     print(summarise(result))
     if args.out:
         Path(args.out).write_text(json.dumps(result, ensure_ascii=False, indent=2),

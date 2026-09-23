@@ -227,6 +227,7 @@ def recognize(
     cues: bool = False,
     api_key: str = "",
     model: str = "gpt-5.6-luna",
+    timeout: float = 45.0,
     client: Any = None,
 ) -> Recognition:
     """Ask the second reader about ``fields`` only, and validate every answer.
@@ -248,7 +249,9 @@ def recognize(
             from openai import OpenAI
         except Exception as exc:  # pragma: no cover - depends on deployment extras
             raise ReasoningRecognitionError("The OpenAI SDK is unavailable.") from exc
-        client = OpenAI(api_key=api_key, timeout=12.0, max_retries=1)
+        # No retry: a retry is a second request, and a budget that counts
+        # requests must not be spent by a library deciding to try again.
+        client = OpenAI(api_key=api_key, timeout=timeout, max_retries=0)
 
     try:
         response = client.responses.create(
@@ -266,7 +269,11 @@ def recognize(
         )
         data = json.loads(response.output_text)
     except Exception as exc:
-        raise ReasoningRecognitionError("The recognition request failed.") from exc
+        # The cause travels with the refusal. A generic message here cost ten of
+        # fifteen authorised requests on 2026-09-23 and told nobody why, which
+        # made the only way to diagnose it another paid run.
+        raise ReasoningRecognitionError(
+            f"The recognition request failed: {type(exc).__name__}: {exc}") from exc
     return validate(data, learner_text, asked, model, cues=cues)
 
 

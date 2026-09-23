@@ -486,3 +486,26 @@ def test_the_counter_refuses_the_request_past_the_cap():
     finally:
         httpx.Client.send = original
     assert len(sent) == 2
+
+
+def test_the_findings_the_paid_measurement_exposed():
+    """What one run of twenty-five requests bought, kept as a test.
+
+    The model read "orina turbia" and the closed lexicon could not; that gap is
+    closed. The model also read "la hipotension" out of "Espero que mejore la
+    hipotension" -- an expectation turned into a present finding, which is the
+    failure the specification names. The patterns refused it then and must keep
+    refusing it.
+    """
+    assert [row["finding"] for row in reasoning_cues.cues(
+        "Creo que es sepsis de foco urinario porque tiene orina turbia.")] == ["orina turbia"]
+    assert reasoning_cues.cues("Espero que mejore la hipotension.") == []
+    assert reasoning_cues.cues(
+        "Espero que mejore la hipotension. Reevaluo la presion en 10 minutos.") == []
+
+
+def test_the_link_the_widened_lexicon_now_carries():
+    rows = reasoning_cues.cues(
+        "Creo que es sepsis de foco urinario porque tiene orina turbia.")
+    assert rows[0]["linked"] is True
+    assert rows[0]["link_marker"].lower() == "porque"
