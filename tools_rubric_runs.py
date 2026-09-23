@@ -396,7 +396,7 @@ def propose(case_id, model="gpt-5-mini"):
     started = datetime.now(timezone.utc)
     try:
         report = generate_rubric_proposal(record, api_key=_key(), model=model,
-                                          assistance_context="none")
+                                          assistance_context="independent")
     finally:
         httpx.Client.send = original
     elapsed = (datetime.now(timezone.utc) - started).total_seconds()

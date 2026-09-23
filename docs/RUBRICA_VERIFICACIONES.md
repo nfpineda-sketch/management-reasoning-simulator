@@ -16,7 +16,10 @@ Las nueve que pediste, cada una con el archivo que la sostiene.
 | **Separación entre provisional y confirmada** | Sólo `status='confirmed'` penaliza; un borrador se guarda como borrador; confirmar exige los cinco dominios y resolver cada evento propuesto | `test_rubric.py`, `test_rubric_store.py`, `test_rubric_portal.py` |
 | **Conservación de cambios docentes e historial** | Cada guardado es una revisión nueva con su número; tres guardados dejan tres filas; cambiar un puntaje propuesto exige justificación y ésta se guarda | `test_rubric_store.py`, `test_rubric_portal.py` |
 | **Evidencia que corresponde a la decisión citada** | Las referencias son un enum construido desde el registro congelado; un dominio con puntaje sin referencias se rechaza | `test_rubric_analysis.py` |
-| **Consistencia entre interfaz y PDF** | Los dos PDF se renderizan desde la **misma** `rubric_presentation.summary` que usa la app y se comparan en cada escenario | `test_rubric_reports.py` |
+| **Consistencia entre interfaz y PDF** | Los tres PDF se renderizan desde la **misma** `rubric_presentation.summary` que usa la app y se comparan en cada escenario | `test_rubric_reports.py`, `test_rubric_document.py` |
+| **El informe de rúbrica no se entrega antes de tiempo** | Renderizarlo para el residente con la revisión en borrador, o sin revisión, falla; la negativa vive en el renderizador y no en quien lo llama | `test_rubric_document.py` |
+| **Un hueco en el gráfico no es un cero** | Un dominio no evaluable no se dibuja en el centro, el contorno abierto no lleva relleno, y la pantalla lo dice además con palabras | `test_rubric_radar.py`, `test_rubric_profile_screen.py` |
+| **Un perfil longitudinal no inventa lo que no observó** | Un borrador no entra; un encuentro sin evaluar está ausente y no en cero; cada dominio promedia sólo donde fue evaluable y lleva su conteo; un encuentro revisado tres veces cuenta una | `test_rubric_progress.py`, `test_rubric_profile_visibility.py` |
 | **Ausencia de regresiones** | La suite completa del proyecto, incluidos challenges, Management Trace e informes existentes | suite completa |
 | **La rúbrica no otorga ni revoca un challenge** | 15/15 confirmado no crea ninguna observación; 0/15 no revoca ninguna; ningún módulo de rúbrica importa `progress_store`, `progress_portal` ni `objectives`, ni al revés; las dos cosas viven en tablas distintas | `test_rubric_is_separate_from_challenges.py` |
 
@@ -40,7 +43,14 @@ Las nueve que pediste, cada una con el archivo que la sostiene.
 
 **Segunda corrida, 2026-09-23.** Una llamada más a `gpt-5-mini`, 54 s, sobre el tromboembolismo donde el residente trombolizó sin hipotensión sostenida en una paciente operada doce días antes. El modelo **propuso el evento definido** `pe_unindicated_thrombolysis` citando la decisión y revisando sus exclusiones, **no propuso** el otro evento definido del caso porque no aplicaba, y usó el descriptor de D3 como está escrito: 0 por una conducta claramente peligrosa. Con el docente confirmando: `Base 9/15 · Penalty -3 · Adjusted 6/15`, con el doble peso a la vista.
 
-**Lo que dos corridas no establecen:** comportamiento. El rango sigue estrecho en los dominios que no tocan el evento, y la frontera cero / no evaluable sólo se puso a prueba una vez.
+**Once corridas más, 2026-09-23 (madrugada).** Once encuentros nuevos, jugados a través del motor de producción con `tools_rubric_runs.py` y evaluados con una llamada cada uno. **Trece encuentros en total, trece solicitudes, cero reintentos, costo estimado bajo US$0,40.** El análisis completo está en [`RUBRICA_PILOTO_CORRIDAS.md`](RUBRICA_PILOTO_CORRIDAS.md). En resumen:
+
+- **7 de 8 eventos esperados propuestos, 0 eventos propuestos sin motivo, 0 eventos inventados.** Cada propuesta cita la decisión, el minuto y los observables, y revisa las exclusiones declaradas antes de proponer.
+- **El único que faltó, faltó con razón**, y el error fue del diseño del guión: `hypo_unsafe_discharge` exige que el registro contenga el agente causal, y el residente nunca preguntó por los medicamentos. El modelo se negó a asumirlo y mandó la preocupación al canal que existe para eso.
+- **Cero usos de "no evaluable" en 65 puntajes de dominio.** Incluidos dos encuentros escritos para forzarlo, en uno de los cuales el propio modelo escribió que el encuentro cerró antes de la oportunidad y puntuó igual.
+- **D3 es el único dominio que llega a 0**, y llega exactamente donde hay un evento. **D4 nunca bajó de 2** y **D5 nunca llegó a 3**, en trece encuentros.
+
+**Lo que trece corridas siguen sin establecer:** concordancia entre evaluadores, comportamiento con residentes reales, y comparabilidad entre casos. Todas las corridas usan un solo modelo y un solo autor de guiones.
 
 ## Limitaciones que hay que declarar
 
