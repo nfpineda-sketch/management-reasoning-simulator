@@ -138,3 +138,48 @@ def test_the_embolism_team_is_asked_for_by_its_spanish_name(text):
 def test_calling_a_service_in_the_first_person_reaches_it():
     assert parse_family_actions("Llamo a hemodinamia")["actions"] == [
         {"type": "consult", "service": "cath lab"}]
+
+
+@pytest.mark.parametrize("text", [
+    "La envio a su casa con indicacion de volver si se repite",
+    "La envio a su casa con indicaciones de volver si vuelve a pasar",
+    "La envio a su casa y le indico volver si se repite",
+    "La envio a su casa, indicandole volver si se repite",
+    "La envio a su casa con control en 24 horas si persiste",
+    "Discharge home with instructions to return if it recurs",
+])
+def test_safety_netting_advice_does_not_make_the_discharge_conditional(text):
+    # The advice carries its own condition. Read as one conditional, the whole
+    # submission was dropped in silence -- and a discharge is the trigger of
+    # two defined critical events, so the event went with it (2026-09-23).
+    assert parse_family_actions(text)["actions"] == [
+        {"type": "disposition", "destination": "home"}]
+
+
+def test_the_advice_is_kept_as_something_the_resident_said_they_would_do():
+    parsed = parse_family_actions(
+        "La envio a su casa con indicacion de volver si se repite")
+    assert parsed["recognized_future_actions"] == [
+        "con indicacion de volver si se repite"]
+
+
+@pytest.mark.parametrize("text", [
+    "Hospitalizar en sala si empeora",
+    "Doy oxigeno si baja la saturacion",
+    "Intubar si se agota",
+])
+def test_an_order_that_really_is_conditional_stays_conditional(text):
+    # The condition attaches to the order's own verb here, not to advice that
+    # follows it. Nothing is executed on a condition that has not happened.
+    assert parse_family_actions(text)["actions"] == []
+
+
+def test_an_unconditional_order_before_a_conditional_one_still_executes():
+    parsed = parse_family_actions(
+        "Inicio nitroglicerina a 50 mcg/min, y si baja la presion la suspendo")
+    assert [a["type"] for a in parsed["actions"]] == ["nitroglycerin"]
+
+
+def test_an_order_beside_advice_is_not_swallowed_by_it():
+    assert [a["type"] for a in parse_family_actions(
+        "Doy aspirina 300 mg vo e indico reposo si tiene dolor")["actions"]] == ["aspirin"]

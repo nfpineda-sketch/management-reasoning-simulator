@@ -42,11 +42,16 @@ INTENT = {
 }
 
 
-# The baseline of the one case that was re-run. Declared here because the
+# Run after the rule changed, to verify it, and therefore not part of the
+# thirteen that the first-pass table and the distribution describe. They are
+# read in section 6 instead, where the comparison is the point.
+VERIFICATIONS = ("opioid_67f",)
+
+# The baseline of the one case that was both. Declared here because the
 # verification of 2026-09-23 wrote over its own raw file before --propose
 # learned not to; the numbers below are the ones that run printed, and its
-# reasoning is quoted in section 6 from the same output. Every other row in
-# the table is read from the raw file it came from.
+# reasoning is quoted in section 6 from the same output. Every other row in the
+# table is read from the raw file it came from.
 SUPERSEDED = {
     "hypoglycemia_76f": {"scores": {"D1": 2, "D2": 2, "D3": 2, "D4": 2, "D5": 1},
                          "events": [], "seconds": 74.1},
@@ -56,7 +61,7 @@ SUPERSEDED = {
 def load():
     runs = []
     for path in sorted(PILOT.glob("*.json")):
-        if path.name.endswith(".record.json"):
+        if path.name.endswith(".record.json") or path.stem in VERIFICATIONS:
             continue
         payload = json.loads(path.read_text(encoding="utf-8"))
         runs.append((payload["report"], payload.get("usage", {})))
@@ -153,11 +158,15 @@ def main():
                  + f" | {distribution[rubric.NOT_ASSESSABLE]} | |")
 
     lines += ["", FINDINGS.strip(), "", "## 10 · Costo y procedencia", "",
-              f"- **{requests or len(runs)} solicitudes pagadas**, una por encuentro, "
-              f"{round(seconds)} segundos en total de las once nuevas.",
+              f"- **{requests or len(runs)} solicitudes pagadas** en la primera pasada, una "
+              f"por encuentro, {round(seconds)} segundos en total de las once nuevas.",
+              "- **Dos verificaciones más** después del cambio de regla, una por cada caso de "
+              "alta insegura (`hypoglycemia_76f` y `opioid_67f`), 116 s en total.",
+              "- **Quince solicitudes en total**, de las veinte autorizadas.",
               "- Modelo `gpt-5-mini`. Ningún reintento automático: el guión cuenta las "
-              "solicitudes y aborta antes de una segunda.",
-              "- Costo estimado por debajo de US$0,40 en total.",
+              "solicitudes y aborta antes de una segunda, y una corrida nueva no sobrescribe "
+              "una anterior: escribe el número siguiente al lado.",
+              "- Costo estimado por debajo de US$0,45 en total.",
               "- Las propuestas crudas están en `local-data/paid_runs/rubric_pilot/`, junto con "
               "el registro jugado y la transcripción de cada encuentro.",
               "- Los guiones están en `tools_rubric_runs.py`; `--play` reproduce cualquier "
@@ -220,7 +229,7 @@ Y, sobre todo, **no propuso los que no correspondían**:
   paciente** tras el broncodilatador. Puntuó la decisión, no el desenlace, que es lo que la
   instrucción pide.
 
-## 6 · El único evento que faltó, y por qué el modelo tenía razón
+## 6 · El único evento que faltó, por qué el modelo tenía razón, y lo que decidiste
 
 `hypoglycemia_76f`: el residente corrige la glicemia y manda a la paciente a la casa. La
 paciente toma glimepirida. El evento `hypo_unsafe_discharge` existe para eso, y el modelo **no
@@ -304,9 +313,51 @@ evidencia en contra —*"The learner did not ask about medications (medication h
 available on asking)"*— y en dos preocupaciones señaladas. Pero no dejó que moviera el número:
 *"this omission does not negate that relevant diagnostic data were obtained"*.
 
-Es decir: **la regla llegó al evento y a la continuidad, y no llegó a la evaluación.** No lo
-forcé con más instrucciones; es exactamente el tipo de juicio que el docente confirma, y ahora
-tiene la omisión escrita delante en los tres documentos para hacerlo.
+Es decir: **la regla llegó al evento y a la continuidad; a la evaluación, en esta corrida, no.**
+La segunda verificación, más abajo, matiza cuánto de eso es la regla y cuánto es este encuentro.
+
+### La segunda verificación: otro caso, otra alta insegura
+
+`opioid_67f`. Mujer de 67 años, morfina de liberación prolongada en su lista. El residente
+ventila, revierte con naloxona, la paciente despierta, y la manda a la casa. Nunca pregunta qué
+opioide tomaba. Una llamada, 51 s.
+
+**Propuso `opioid_unsafe_discharge`**, y esta vez usó la regla como *argumento a favor* del
+evento, no como algo que salvar:
+
+> *"Naloxone 0.4 mg IV was given (trace:1) and a discharge home disposition was executed
+> (trace:4) with no documented observation period or admission. **The case offered exposure
+> details on asking (long-acting agent), which were not obtained.**"*
+
+D5 = 0, *"given the information the case offered about exposure"*. Y notó lo que el residente
+escribió creyendo que bastaba:
+
+> *"The learner did state 'Reevaluo en 15 minutos' at the time of discharge, but this does not
+> constitute a documented plan for observation, admission, or duration that would mitigate the
+> known risk of recurrence following short-acting reversal."*
+
+Con el docente confirmando: `Base 9/15 · Penalización −3 · Ajustado 6/15`, igual que el otro.
+
+**D2 en las dos verificaciones.** Nombró la omisión las dos veces en la evidencia en contra
+—aquí *"They did not ask about the specific opioid or formulation"*— y la puntuó distinto: 3 en
+la hipoglicemia, 2 en el opioide. Nombrarla es consistente; dejar que mueva el número, no. Esa
+sigue siendo la parte del juicio que el docente pone.
+
+### Un tercer defecto del intérprete, encontrado al escribir el segundo guión
+
+`La envio a su casa con indicacion de volver si se repite` no producía **nada**: el `si` de la
+recomendación hacía condicional toda la frase, incluida el alta. El consejo lleva su propia
+condición y la orden que lo precede no depende de ella. Leída como una sola condicional, la
+disposición se evaporaba en silencio —y un alta es el disparador de dos eventos críticos
+definidos, así que el evento se iba con ella.
+
+Es la tercera vez en dos días que el mismo tipo de defecto aparece en la misma frase: la que
+cierra el encuentro. Las tres estaban en español y las tres borraban el dominio 5.
+
+Corregido para `con indicación de`, `con instrucciones de`, `indicándole`, `le indico`, `con
+control en`, `with instructions to`, `advised to` y `return precautions`. Una orden que sí es
+condicional —`hospitalizar en sala si empeora`, `doy oxígeno si baja la saturación`— sigue
+siendo condicional, y hay pruebas de las dos cosas.
 
 ### Dos defectos silenciosos que la pregunta destapó
 

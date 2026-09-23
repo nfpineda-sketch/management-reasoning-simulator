@@ -214,6 +214,31 @@ SCRIPTS = [
         plan={"next_priority": "Dejar escrito el umbral de re-dosis de naloxona."},
     ),
     _script(
+        "opioid_67f", "opioid",
+        "Ventilation supported and reversed, then sent home on the response to the first "
+        "dose. The second unsafe discharge: expect opioid_unsafe_discharge.",
+        [
+            "Creo que es una depresion ventilatoria por opioides, porque respira 8 por minuto, "
+            "esta obnubilada y satura 84%. Mi prioridad es la ventilacion antes que el "
+            "diagnostico. Ventilo con bolsa mascarilla con oxigeno al 100%. Espero que suba la "
+            "saturacion sobre 94%. Reevaluo en 5 minutos.",
+            "Mi prioridad es revertir el efecto opioide. Doy naloxona 0.4 mg ev. Espero que "
+            "suba la frecuencia respiratoria sobre 12 por minuto. Reevaluo en 5 minutos.",
+            "Pido gases arteriales; pido glicemia capilar",
+            "Examino el estado neurologico",
+            "Desperto, respira bien y esta orientada. Mi prioridad es liberar el box. La envio "
+            "a su casa con indicacion de volver si se repite. Espero que no vuelva a pasar. "
+            "Reevaluo en 15 minutos.",
+        ],
+        reflection={
+            "working_model_update": "Era una depresion ventilatoria por opioides.",
+            "priority_trigger": "Una nueva caida de la frecuencia respiratoria me habria hecho repetir la naloxona.",
+            "alternative_action": "Habria revisado que opioide tomaba.",
+            "expected_response_reassessment": "Le pediria control con su medico.",
+        },
+        plan={"next_priority": "Preguntar siempre que opioide y en que formulacion."},
+    ),
+    _script(
         "pneumonia_83m", "pneumonia",
         "Pneumonia treated well; the new confusion never investigated. "
         "Expect pneumonia_unexamined_altered_state and not pneumonia_no_antibiotic.",

@@ -385,6 +385,14 @@ _NON_ORDER = re.compile(
     r"pienso|creo|sospecho|espero|anticip[oae]|mi hipotesis|mi impresion|mi plan|porque|para mejorar|"
     r"(?:mi|la|el|nuestra|nuestro)\s+(?:prioridad|objetivo|meta))\b"
 )
+# How a discharge instruction is written, in both languages. The condition that
+# follows one of these belongs to the advice, not to the order before it.
+_ADVICE_CLAUSE = re.compile(
+    r"\b(?:con\s+(?:indicaci[oó]n(?:es)?|instrucci[oó]n(?:es)?)\s+de|"
+    r"con\s+control(?:\s+\w+)?\s+(?:en|a\s+las)|"
+    r"indic[aáo]ndole\s+|indic(?:ar|o|ando)(?:le)?\s+(?=\w)|"
+    r"with\s+instructions\s+to|advised\s+to|told\s+to|"
+    r"safety[- ]net(?:ting)?|return\s+precautions?)\b", re.I)
 _CONDITIONAL = re.compile(
     r"\b(?:if|unless|consider|considering|might|could|would|perhaps|maybe|si|salvo que|considerar|considero|podria|quizas|tal vez)\b"
 )
@@ -1170,7 +1178,23 @@ def parse_family_actions(text) -> dict:
             # unconditional first order. "Give oxygen if sats fall" does not.
             boundary = next((match for match in re.finditer(r"(?:,\s*)?\b(?:and|y|then|luego)\s+", sentence)
                              if match.end() == conditional.start()), None)
-            if boundary:
+            # Safety-netting advice carries its own condition, and the order it
+            # follows is not conditional on it: "la envio a su casa con
+            # indicacion de volver si se repite" is a discharge that happened,
+            # plus advice about what would bring her back. Read as one
+            # conditional, the disposition vanished in silence -- and a
+            # discharge is the trigger of two defined critical events, so the
+            # event went with it (2026-09-23).
+            advice = (None if boundary else
+                      _ADVICE_CLAUSE.search(sentence[:conditional.start()]))
+            if advice:
+                future.append(sentence[advice.start():])
+                # The conjunction that introduced the advice goes with it.
+                sentence = re.sub(r"(?:,\s*)?\b(?:and|y|then|luego)\s*$", "",
+                                  sentence[:advice.start()].strip(" ,")).strip(" ,")
+                if not sentence:
+                    continue
+            elif boundary:
                 future.append(sentence[conditional.start():])
                 sentence = sentence[:boundary.start()].strip(" ,")
                 if not sentence:
