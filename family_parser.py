@@ -116,7 +116,9 @@ _DIAGNOSTICS = {
     # this encounter the marker is the troponin, and the result says so.
     "troponin": r"troponin|troponina|marcadores? cardiacos?|enzimas cardiacas|"
                 r"cardiac (?:markers?|enzymes)|biomarcadores? cardiacos?|curva de troponinas?",
-    "ctpa": r"ctpa|ct pulmonary angiogra(?:phy|m)|pulmonary ct angiogra(?:phy|m)|angio(?:[- ]?tc|tac)(?:\s+(?:de\s+)?(?:torax|pulmonar))?",
+    # "Angiotomografia de torax" is how the study is written here in full; only
+    # its abbreviations were listed, so the written form was refused (2026-09-23).
+    "ctpa": r"ctpa|ct pulmonary angiogra(?:phy|m)|pulmonary ct angiogra(?:phy|m)|angio(?:[- ]?tc|tac|tomografia)(?:\s+(?:de\s+)?(?:torax|pulmonar))?",
     "hemoglobin": r"hemoglobin|hemoglobina|hb",
     # Faculty decision 7 of 2026-09-21: these are studies of their own, and they
     # are matched before the plain twelve-lead so that asking for them never
@@ -198,8 +200,14 @@ _PACING_SETTING = re.compile(
 
 # Sending the patient home, and the cardiovascular critical-care bed under every
 # name it is given (faculty decisions 1 and 2 of 2026-09-21).
+# "La envio a su casa" and "lo mando a domicilio" are how a discharge is
+# written; only "a la casa" was listed, so the possessive and the formal word
+# both fell through and the disposition produced no action at all. A discharge
+# is the trigger of a defined critical event, so the silence removed the event
+# with it (2026-09-23).
 _DISCHARGE = (r"\bde\s+alta\b|\balta\s+(?:a\s+)?(?:domicilio|(?:a\s+)?la\s+casa|medica|hospitalaria)\b"
-              r"|\bdischarge\b|\bsend(?:\s+\w+)?\s+home\b|\ba\s+(?:la\s+)?casa\b")
+              r"|\bdischarge\b|\bsend(?:\s+\w+)?\s+home\b"
+              r"|\ba\s+(?:la\s+|su\s+)?casa\b|\ba\s+domicilio\b")
 _CORONARY_UNIT = (r"\buco\b|unidad coronaria|unidad de cuidados coronarios|coronary (?:care )?unit"
                   r"|\bccu\b|(?:cardiac|cardiovascular|coronary)\s+(?:icu|intensive care)|\bcvicu\b"
                   r"|uci coronaria|unidad de cuidados criticos cardiovasculares")
@@ -260,7 +268,7 @@ _ES_IMPERATIVES = {
     "iniciar": "inicia comienza comience empieza empiece comenzar empezar conecta conecte conectar",
     # "pasa un litro" and "cargale 2 g" are how these orders are spoken; each
     # maps to the canonical infinitive the command pattern already knows.
-    "administrar": "administra pasa pase pasar carga cargue cargar",
+    "administrar": "administra pasa pase pasar paso carga cargue cargar",
     "dar": "da", "poner": "pon ponga",
     # "Instalar" is how a device is ordered at the bedside here. Without it the
     # whole clause had no verb and was dropped in silence, so a transcutaneous
@@ -276,12 +284,13 @@ _ES_IMPERATIVES = {
     "continuar": "continua continuo", "mantener": "manten mantenga mantengo", "ajustar": "ajusta ajuste ajusto",
     "cambiar": "cambia cambie", "transfundir": "transfunde transfunda transfundo", "nebulizar": "nebuliza nebulice nebulizo",
     "consultar": "consulta consulto", "interconsultar": "interconsulta interconsulte interconsulto",
-    "llamar": "llama llame avisa avise avisar aviso", "activar": "activa active",
+    "llamar": "llama llame llamo avisa avise avisar aviso", "activar": "activa active",
     "monitorizar": "monitoriza monitorice monitorea monitoree monitorear monitorizo",
     "hospitalizar": "hospitaliza hospitalice hospitalizo", "ingresar": "ingresa ingrese ingreso",
     # Inducing and sedating are the airway drug's own verbs.
     "induce": "induce induzca inducir induzco", "sedate": "seda sede sedar sedo",
-    "trasladar": "traslada traslade deriva derive derivar manda mande mandar traslado derivo mando", "intubar": "intuba intube", "ventilar": "ventila ventile ventilo",
+    "trasladar": "traslada traslade deriva derive derivar manda mande mandar traslado derivo mando "
+                 "envia envie enviar envio", "intubar": "intuba intube", "ventilar": "ventila ventile ventilo",
     "reevaluar": "reevalua reevalue",
 }
 _ES_IMPERATIVE_FORMS = {form: verb for verb, forms in _ES_IMPERATIVES.items() for form in forms.split()}
@@ -317,8 +326,39 @@ _ES_STOP_PERIPHRASIS = re.compile(r"\bdeja(?:r|le|lo|la)?\s+de\s+", re.I)
 # respiratorio" and "retiro del tubo" are descriptions; the same words with a
 # direct object are orders (2026-09-21).
 _ES_NOUN_FORMS = frozenset({"aumento", "retiro", "saco", "ingreso", "traslado",
-                            "mando", "aviso", "titulo", "control"})
+                            "mando", "aviso", "titulo", "control", "paso"})
 _ES_NOUN_PHRASE = re.compile(r"^\s+(?:de|del)\b")
+
+
+# Spanish also puts the pronoun *before* the verb, and that is how a resident
+# writes the decision that closes an encounter: "lo hospitalizo en sala", "le
+# doy aspirina 300 mg vo", "la traslado a UCI". Nothing read the clause-initial
+# pronoun, so the clause had no verb: "le doy aspirina" was held as an
+# unrecognized order, and "lo hospitalizo" and "le pido un electrocardiograma"
+# produced no action and no message at all. Silence is worse than a hold, and it
+# fell on the disposition, which is the whole of the continuity domain.
+#
+# The test is the verb that follows, read from the tables that already exist
+# rather than from a third list: a pronoun in front of something the parser
+# cannot execute is not an order and is left alone ("la saturacion sigue baja").
+_ES_PROCLITIC = re.compile(
+    r"(^|[.;\n,+:]\s*|\b(?:y|e(?=\s+h?i)|luego|and|then)\s+)"
+    r"(?:(?:me|te|se|nos|le|les|lo|la|los|las)\s+){1,2}(\w+)\b"
+)
+
+
+def _spanish_proclitics(text):
+    """Drop a pronoun standing between the clause and its verb."""
+    def replace(match):
+        form = match[2]
+        if form in _ES_IMPERATIVE_FORMS:
+            # Resolved here rather than by the pass below, because the pronoun
+            # already settles what these words are: "el ingreso del paciente" is
+            # a noun, "lo ingreso" is not, and the noun guard there would put
+            # the order back to sleep.
+            return match[1] + _ES_IMPERATIVE_FORMS[form]
+        return match[1] + form if _COMMAND.match(match.string[match.start(2):]) else match[0]
+    return _ES_PROCLITIC.sub(replace, text)
 
 
 def _spanish_imperatives(text):
@@ -593,6 +633,10 @@ def _oxygen_order(body, verb):
     return {"type": "oxygen", "device": device, "flow_lpm": float(flows[0][1]) if flows else None, **({"operation": _operation(verb)} if _operation(verb) in {"adjust", "continue"} and (device is None or not flows) else {})}
 
 
+_DISPOSITION_VERBS = frozenset({"admit", "transfer", "discharge", "dar de alta",
+                                "hospitalizar", "ingresar", "trasladar"})
+
+
 def _parse_piece_core(piece, inherited=None):
     if re.fullmatch(r"\s*(?:prepare|set up|get ready|preparar|prepara)(?:\s+(?:for|para))?\s+(?:intubation|intubacion|airway|via aerea)\s*[.!]?", piece):
         return [{"type": "airway_preparation"}], "prepare"
@@ -600,6 +644,14 @@ def _parse_piece_core(piece, inherited=None):
     text = re.sub(r"^(?:please|por favor|then|luego|despues)\s+", "", text)
     command = _COMMAND.match(text)
     verb = command["verb"] if command else inherited
+    # A disposition names one destination and takes no list. "Hospitalizar en
+    # sala para continuar broncodilatadores y corticoides" is one admission and
+    # a purpose; inherited, the trailing "corticoides" became a second
+    # admission with nowhere to go, and its clarification held the whole
+    # submission, so the disposition that was written never executed. Found by
+    # playing the asthma case for the rubric pilot (2026-09-23).
+    if command is None and verb in _DISPOSITION_VERBS:
+        return [], None
     body = text[command.end():].strip() if command else text
     if _NEGATION.match(body):
         return [], None
@@ -700,7 +752,12 @@ def _parse_piece_core(piece, inherited=None):
 
     if re.search(r"\b(?:consult|call|consultar|interconsultar|llamar)\b", text) or verb in {"activate", "activar"}:
         service = None
-        for name, pattern in (("PERT", r"\bpert\b"), ("cardiology", r"cardiolog"), ("cath lab", r"cath(?:eterization)? lab|hemodinamia|hemodinamica"), ("gastroenterology", r"gastroenterolog|endoscop"), ("ICU", r"\bicu\b|\buci\b|intensive care|cuidados intensivos")):
+        # The pulmonary embolism response team is asked for by its name here,
+        # and the case declares involving it as what D3 turns on; only the
+        # English acronym was listed (2026-09-23).
+        for name, pattern in (("PERT", r"\bpert\b|equipo (?:de |para )?(?:respuesta )?"
+                                       r"(?:de |a )?(?:tromboembolismo|tep|embolia pulmonar)"),
+                              ("cardiology", r"cardiolog"), ("cath lab", r"cath(?:eterization)? lab|hemodinamia|hemodinamica"), ("gastroenterology", r"gastroenterolog|endoscop"), ("ICU", r"\bicu\b|\buci\b|intensive care|cuidados intensivos")):
             if re.search(pattern, body):
                 service = name
                 break
@@ -1086,7 +1143,7 @@ def parse_family_actions(text) -> dict:
     A conditional instruction is retained as a future plan, never executed now.
     """
     raw = str(text or "")
-    normalized = _spanish_imperatives(_normalize(raw))
+    normalized = _spanish_imperatives(_spanish_proclitics(_normalize(raw)))
     actions, future = [], []
     queue = re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
     while queue:
