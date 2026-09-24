@@ -17,14 +17,18 @@ import asthma_ventilation
 import glucose_rescue
 import opioid_reversal
 import airway_pharmacology
+import anaphylaxis_reaction
 import antipyretics
+import bradycardia_toxicology
 import pe_obstruction
 import re
 import urine_output
 import work_of_breathing
 
 FAMILY_ENGINE_VERSION = 1
-FAMILIES = frozenset({"pneumonia", "pulmonary_edema", "acs", "pulmonary_embolism", "asthma", "gi_bleed", "hypoglycemia", "opioid"})
+FAMILIES = frozenset({"pneumonia", "pulmonary_edema", "acs", "pulmonary_embolism", "asthma",
+                      "gi_bleed", "hypoglycemia", "opioid", "anaphylaxis", "renal_colic",
+                      "bradycardia"})
 _ROUTES = {"iv": "IV", "intravenous": "IV", "io": "IO", "intraosseous": "IO", "im": "IM", "intramuscular": "IM", "po": "PO", "oral": "PO", "in": "IN", "intranasal": "IN", "nebulized": "nebulized", "nebulised": "nebulized", "inhaled": "inhaled", "sc": "SC", "subcutaneous": "SC"}
 _DEVICES = {"none": "Room air", "room air": "Room air", "nasal cannula": "Nasal cannula", "nc": "Nasal cannula", "non-rebreather mask": "Non-rebreather mask", "non rebreather mask": "Non-rebreather mask", "nrb": "Non-rebreather mask", "non-rebreather": "Non-rebreather mask", "simple mask": "Simple mask"}
 # Reference exposures are authored adult teaching-model scales, not prescribing
@@ -72,7 +76,12 @@ _MEDICINES = {
     "magnesium": ({"IV", "IO"}, 500, 4000),
     "thrombolysis": ({"IV", "IO"}, 5, 200),
     "octreotide": ({"SC", "IV", "IM"}, .025, .5),
-    "glucagon": ({"IM", "IV", "IN", "SC"}, .5, 2),
+    # Up to 10 mg: the hypoglycaemia dose is 1 mg and the dose that answers a
+    # beta-blocker or calcium-channel poisoning is five to ten times it, which
+    # the old ceiling of 2 mg refused (2026-09-23).
+    "glucagon": ({"IM", "IV", "IN", "SC"}, .5, 10),
+    # Written in grams at the bedside: one ampoule of gluconate is about 1 g.
+    "calcium": ({"IV", "IO"}, 200, 4000),
     "thiamine": ({"IV", "IO", "IM"}, 50, 1000),
     # Induction and maintenance sedation are part of intubating an asthmatic, so
     # they are no longer restricted to generated encounters.
@@ -478,6 +487,16 @@ def _validate(state, parsed):
                     return None, "Specify CPAP or BiPAP."
                 if a["mode"].lower() == "bipap" and (not _number(a.get("ipap_cmh2o"), a["epap_cmh2o"], 35)):
                     return None, "Specify an inspiratory pressure at least as high as expiratory pressure."
+        elif kind == "epinephrine_im":
+            # The adult anaphylaxis dose is 0.5 mg; 0.15 and 0.3 are the
+            # autoinjector strengths. The range is wide enough to let a
+            # resident be wrong in a way the record can show.
+            if not _number(a.get("dose_mg"), .05, 2):
+                return None, "Specify an intramuscular epinephrine dose from 0.05 to 2 mg (0.5 mg is the usual adult dose)."
+            route = str(a.get("route") or "IM").upper()
+            if route not in {"IM", "SC"}:
+                return None, "An intramuscular epinephrine dose is given IM or SC; for the intravenous route, order a diluted bolus or an infusion."
+            a["route"] = route
         elif kind == "epinephrine_bolus":
             if not _number(a.get("dose_mcg"), 10, 500):
                 return None, "Specify an epinephrine IV bolus from 10 to 500 mcg (50-150 mcg is the usual diluted bolus)."
@@ -934,8 +953,21 @@ def _order(state, a):
                                            + (" (assumed; titrate as needed)" if a.get("fio2_assumed") else "")
                                            if f["niv"] else "")
         duration = 3
+    elif kind == "epinephrine_im":
+        # The muscle holds it and gives it back over minutes. Which is the
+        # point of the order, and the reason the engine keeps the route.
+        import anaphylaxis_reaction
+        anaphylaxis_reaction.give_epinephrine(f, a["dose_mg"], a["route"])
+        f["epinephrine_im_doses"] = f.get("epinephrine_im_doses", 0) + 1
+        f.setdefault("epinephrine_im_at", f["elapsed"])
+        tr["administered_medications"].append({"agent": "epinephrine", "dose": a["dose_mg"], "units": "mg",
+                                               "route": a["route"], "time_min": int(state.get("sim_time", 0))})
+        label = f"Epinephrine {a['dose_mg']:g} mg {a['route']} administered"
+        duration = 1
     elif kind == "epinephrine_bolus":
         f["epi_bolus_pool"] = f.get("epi_bolus_pool", 0.0) + a["dose_mcg"]
+        import anaphylaxis_reaction
+        anaphylaxis_reaction.give_epinephrine(f, a["dose_mcg"] / 1000, "IV")
         tr["administered_medications"].append({"agent": "epinephrine", "dose": a["dose_mcg"], "units": "mcg",
                                                "route": "IV", "time_min": int(state.get("sim_time", 0))})
         label = f"Epinephrine {a['dose_mcg']:g} mcg IV bolus"
@@ -1070,10 +1102,17 @@ def _order(state, a):
         duration = 2
     elif kind == "dextrose_failed_access_marker":
         pass
-    elif kind in {"octreotide", "glucagon", "thiamine"}:
+    elif kind in {"octreotide", "glucagon", "thiamine", "calcium"}:
         f[kind + "_at"] = f["elapsed"]
         if kind == "glucagon":
             f["glucagon_doses"] = f.get("glucagon_doses", 0) + 1
+        if kind == "calcium":
+            # Chloride carries about three times the elemental calcium of the
+            # gluconate for the same mass, and the engine keeps that rather
+            # than treating an ampoule as an ampoule.
+            strength = 3.0 if a["agent"] == "calcium chloride" else 1.0
+            f["calcium_units"] = f.get("calcium_units", 0.0) + a["dose_mg"] * strength / 1000
+            f.setdefault("calcium_at", f["elapsed"])
         tr.setdefault("administered_medications", []).append(
             {"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"], "time_min": int(state.get("sim_time", 0))})
         dose = f"{a['dose_mg'] * 1000:g} mcg" if kind == "octreotide" else f"{a['dose_mg']:g} mg"
@@ -1410,8 +1449,12 @@ def _minute(state):
         f["crystalloid_boost"] -= leak
         f["circulation"] += leak
         f["hemoglobin"] -= fluid * g["hemodilution_g_dl_per_ml"]
-    elif family == "pneumonia":
+    elif family in {"pneumonia", "renal_colic"}:
         f["circulation"] -= fluid * .00025 + blood * .36
+    elif family == "anaphylaxis":
+        # Volume is part of the treatment of a distributive shock, and it is not
+        # the whole of it: it buys pressure and does nothing to the reaction.
+        f["circulation"] -= fluid * .00022 + blood * .36
     elif family == "pulmonary_embolism":
         # Volume is neither the treatment nor the insult until it is given fast:
         # pe_obstruction prices the rate, not the total.
@@ -1456,6 +1499,39 @@ def _minute(state):
         bleeding = _gi_bleeding_fraction(f)
         f["circulation"] += (.003 + .002 * f["anticoagulant_exposure"]) * bleeding
         f["hemoglobin"] -= (.009 + .006 * f["anticoagulant_exposure"]) * bleeding
+    elif family == "bradycardia":
+        # No drift: the poisoning is on board and the block is where it is. What
+        # changes the rate is what the resident gives, which is the whole point
+        # of a family where doing nothing looks stable and is not.
+        pass
+
+    elif family == "renal_colic":
+        # Two courses from one presentation. An uncomplicated colic does not
+        # deteriorate: the pain is the illness and the analgesia is the
+        # treatment, and nothing here should invent a decline to make the case
+        # feel urgent. An infected obstruction is a sepsis with a source, and
+        # the source is behind a stone.
+        renal = _case(state).get("engine", {}).get("renal", {}) or {}
+        if renal.get("infected"):
+            elapsed_abx = -1 if f["antibiotic_at"] is None else f["elapsed"] - f["antibiotic_at"]
+            antibiotic_effect = 0 if elapsed_abx < 60 else .0022 * f["antibiotic_exposure"]
+            # An antibiotic reaches an obstructed collecting system poorly, and
+            # this engine does not decompress anything: a referral is recorded,
+            # never its result. So treatment slows the course and cannot turn
+            # it, which is exactly what the case is asking the resident to see.
+            f["circulation"] += .0032 - antibiotic_effect
+
+    elif family == "anaphylaxis":
+        # Glucagon is already an executable order, and in this family it is what
+        # a blocked beta receptor answers to.
+        if f.get("glucagon_doses", 0) > f.get("anaphylaxis_glucagon_seen", 0):
+            anaphylaxis_reaction.give_glucagon(
+                f, (f["glucagon_doses"] - f.get("anaphylaxis_glucagon_seen", 0)) * 1.0)
+            f["anaphylaxis_glucagon_seen"] = f["glucagon_doses"]
+        event = anaphylaxis_reaction.step(state)
+        if event:
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     elif family == "hypoglycemia":
         event = glucose_rescue.step(state)
         if event:
@@ -1684,6 +1760,53 @@ def _surface(state):
         # nebulization peaks lower, and the old .4 threshold left them drowsy at 97%.
         if obstruction < .6 and spo2 + oxygen_gain >= 90:
             mental = "Alert"
+    elif family == "bradycardia":
+        import bradycardia_support
+        which = bradycardia_toxicology.cause(state)
+        brady = _case(state).get("engine", {}).get("bradycardia", {}) or {}
+        escape = float(brady.get("escape_rate", base.get("hr", 40)))
+        antidote_beats, antidote_sbp = bradycardia_toxicology.antidote_gain(f, which)
+        # Atropine answers a nodal block and nothing else, which is what the
+        # existing module already knows; the declaration travels with the case.
+        rate = bradycardia_support.effective_rate(f, brady, escape) + antidote_beats
+        hr = rate
+        recovered = max(0.0, min(1.0, (rate - escape) / max(1.0, float(
+            brady.get("target_rate", 70)) - escape)))
+        sbp = float(base.get("sbp", 80)) + bradycardia_support.SBP_PER_LOST_RATE * recovered + antidote_sbp
+        dbp = float(base.get("dbp", 50)) + (bradycardia_support.SBP_PER_LOST_RATE * recovered + antidote_sbp) * .55
+        # Whether this is a block is the case's declaration, not an inference
+        # from whether atropine works: a calcium-channel blockade is a slow
+        # sinus rhythm that atropine also cannot lift.
+        if brady.get("block") or bradycardia_support.capturing(f):
+            f["surface_rhythm"] = bradycardia_support.rhythm(f)
+        else:
+            f.pop("surface_rhythm", None)
+        if sbp >= 95:
+            mental = "Alert"
+        f["bradycardia_rate"] = rate
+
+    elif family == "anaphylaxis":
+        # Two threats from one reaction: the airway closes and the circulation
+        # opens. A bronchodilator touches the first and nothing else; only
+        # adrenaline touches both, which is what the family is built to show.
+        reaction = anaphylaxis_reaction.observables(f, state)
+        obstruction = max(.15, 1 + reaction["obstruction"] - f["bronchodilation"] - _airway_relaxation(f))
+        spo2 -= (obstruction - 1) * 16
+        rr += (obstruction - 1) * 16
+        sbp -= reaction["sbp_drop"]
+        dbp -= reaction["sbp_drop"] * .55
+        hr += reaction["hr_rise"] + min(12, f["bronchodilation"] * 12)
+        effort = obstruction
+        f["upper_airway_stridor"] = bool(reaction["stridor"])
+        if reaction["stridor"]:
+            # An upper airway that is closing is not relieved by a nebulizer.
+            spo2 -= 6
+            effort = max(effort, 1.5)
+        if f.get("reaction", 0) < anaphylaxis_reaction.RESOLVED:
+            mental = "Alert"
+        elif sbp < 70:
+            mental = "Drowsy"
+
     elif family == "hypoglycemia":
         mental = "Alert" if f["glucose"] >= 70 else "Drowsy" if f["glucose"] >= 45 else "Obtunded" if f["glucose"] >= 25 else "Unresponsive"
         if f["glucose"] >= 70:
@@ -1836,7 +1959,12 @@ def _surface(state):
     pain_score = max(0.0, analgesia.pain(state) - antipyretics.relief(f))
     o["pain_score"] = round(pain_score, 1)
     o["discomfort"] = analgesia.descriptor(pain_score)
-    o.update(sbp=sbp, dbp=dbp, map=int(round((sbp + 2 * dbp) / 3)), hr=int(round(_clamp(hr, 42, 180))), spo2=spo2,
+    # The floor of 42 is a guard against a family's own arithmetic running away.
+    # The bradycardia family's arrival rate is below it on purpose, so the guard
+    # would erase the case: there the floor is the lowest rate this engine will
+    # show with a pulse (2026-09-23).
+    hr_floor = 20 if family == "bradycardia" else 42
+    o.update(sbp=sbp, dbp=dbp, map=int(round((sbp + 2 * dbp) / 3)), hr=int(round(_clamp(hr, hr_floor, 180))), spo2=spo2,
              respiratory_rate=int(round(_clamp(rr, 3, 45))), work_of_breathing=wob, mental_status=mental,
              crt=round(crt, 1), peripheral_perfusion=perfusion, glucose_mg_dl=int(round(f["glucose"])),
              rhythm=str(base.get("rhythm", "Sinus rhythm")), pulse_present=True,

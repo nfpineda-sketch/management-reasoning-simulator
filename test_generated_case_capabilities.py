@@ -23,7 +23,11 @@ def test_capabilities_cover_only_existing_actions_and_remain_json_ready():
     # author cannot do is declare a bespoke response to them.
     # Every medicine that IS offered still has to carry the bounds the bank
     # engine enforces.
-    assert set(_MEDICINES) - set(ACTIONS) == {"atropine", "opioid_analgesia", "antipyretic", "p2y12"}
+    # Calcium joined the list on 2026-09-23 with the bradycardia family. Like
+    # the four before it, it is a medicine the bank's own engine administers and
+    # not one a generated case may declare it can.
+    assert set(_MEDICINES) - set(ACTIONS) == {
+        "atropine", "opioid_analgesia", "antipyretic", "p2y12", "calcium"}
     for kind, (_, lower, upper) in _MEDICINES.items():
         if kind not in ACTIONS:
             continue

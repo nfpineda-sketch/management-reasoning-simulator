@@ -11,7 +11,7 @@ simulation and are not quoted observations or guideline-prescribed trajectories.
 """
 from copy import deepcopy
 
-from visual_observations import hypoperfusion_visual_profile
+from visual_observations import distributive_visual_profile, hypoperfusion_visual_profile
 
 
 CASE_BANK_VERSION = "1.0.0"
@@ -24,6 +24,9 @@ SOURCE_URLS = {
     "gi_bleed": "https://pubmed.ncbi.nlm.nih.gov/33929377/",
     "hypoglycemia": "https://abcd.care/sites/default/files/site_uploads/JBDS_Guidelines_Current/JBDS_01_Hypo_Guideline_with_QR_code_January_2023.pdf",
     "opioid": "https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/adult-and-pediatric-special-circumstances-of-resuscitation",
+    "anaphylaxis": "https://www.worldallergy.org/wao-journal/anaphylaxis-guidance-2020",
+    "renal_colic": "https://uroweb.org/guidelines/urolithiasis",
+    "bradycardia": "https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/adult-basic-and-advanced-life-support",
 }
 INVESTIGATION_IDS = (
     "pocus", "lactate", "vbg", "abg", "basic_labs", "temperature",
@@ -33,6 +36,10 @@ INVESTIGATION_IDS = (
     "d_dimer",
     # The additional leads of a coronary case (faculty decision 7, 2026-09-21).
     "ecg_right", "ecg_posterior",
+    # The study of the flank-pain family (2026-09-23). It is a formal renal
+    # ultrasound and not part of the emergency POCUS protocol, which is why it
+    # is its own investigation the way the angiogram is for the embolism family.
+    "renal_ultrasound",
 )
 
 
@@ -145,6 +152,27 @@ POCUS = {
         _pocus(lv="Preserved contraction", ivc="1.8 cm; minimal respiratory variation with shallow breaths"),
         _pocus(lv="Preserved contraction", ivc="1.9 cm; minimal respiratory variation with shallow breaths"),
     ),
+    "renal_colic": (
+        _pocus(lv="Preserved, vigorous contraction", ivc="1.4 cm; >50% inspiratory collapse"),
+        _pocus(lv="Preserved, vigorous contraction", ivc="1.0 cm; >50% inspiratory collapse"),
+    ),
+    # The study does not name the poison either. A slow, poorly contracting
+    # ventricle looks the same whatever stopped it.
+    "bradycardia": (
+        _pocus(lv="Globally reduced contraction at a slow rate; no regional difference identified",
+               ivc="1.9 cm; <50% inspiratory collapse"),
+        _pocus(lv="Preserved contraction at a slow, regular ventricular rate independent of the atria",
+               ivc="1.7 cm; <50% inspiratory collapse"),
+    ),
+    # Distributive shock: the ventricle is full and fast and the vein is empty,
+    # which is what separates it on the screen from the congested ones. The
+    # study does not say "anaphylaxis" and nothing here interprets it.
+    "anaphylaxis": (
+        _pocus(lv="Vigorous, hyperdynamic contraction with near-obliteration in systole",
+               ivc="0.9 cm; >50% inspiratory collapse"),
+        _pocus(lv="Preserved contraction without the hyperdynamic pattern",
+               ivc="1.1 cm; >50% inspiratory collapse"),
+    ),
 }
 
 
@@ -166,10 +194,11 @@ def _observable(sbp, dbp, hr, spo2, rr, *, wob="Normal", crt=2,
     }
 
 
-def _visual(*, shock=False, expression="uncomfortable", skin="natural",
-            sweating="absent"):
-    if shock:
-        profile = hypoperfusion_visual_profile()
+def _visual(*, shock=False, distributive=False, expression="uncomfortable",
+            skin="natural", sweating="absent"):
+    if shock or distributive:
+        profile = (distributive_visual_profile() if distributive
+                   else hypoperfusion_visual_profile())
         profile["baseline"]["diaphoresis"] = sweating
         return profile
     return {
@@ -244,7 +273,8 @@ def _with_age_adjusted_d_dimer(investigations, age_years):
 
 def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
                     pocus, chest_xray, troponin=8, sodium=138, potassium=4.1,
-                    bun=18, ctpa=None, d_dimer=None):
+                    bun=18, ctpa=None, d_dimer=None, renal_ultrasound=None,
+                    urinalysis=None):
     # An unauthored study is absent, never silently reported as a negative test.
     result = {
         "pocus": _study(pocus, 2),
@@ -263,9 +293,12 @@ def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
         "troponin": _study({"value_ng_l": troponin,
                               "upper_reference_ng_l": 19,
                               "report": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample."}, 10),
-        "urinalysis": _study("No leukocyte esterase, nitrite or blood detected.", 8),
+        "urinalysis": _study(
+            urinalysis or "No leukocyte esterase, nitrite or blood detected.", 8),
         "blood_cultures": _study("Samples collected; culture identification and susceptibility results are pending.", 2),
     }
+    if renal_ultrasound is not None:
+        result["renal_ultrasound"] = _study(renal_ultrasound, 15)
     if ctpa is not None:
         result["ctpa"] = _study(ctpa, 20)
     if d_dimer is not None:
@@ -294,7 +327,8 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
           questions, actions, *, ecg="baseline", visual=None, recurrence=False,
           history_source="Patient", congestion=None, coronary=None, lysis_bleeding_risk=None,
           thiamine_deficient=False, endogenous_insulin=False, opioid_depot=0.0,
-          iv_access_failed=False, glycogen_depleted=False):
+          iv_access_failed=False, glycogen_depleted=False, anaphylaxis=None, renal=None,
+          bradycardia=None):
     return {
         "id": identifier,
         "patient": {"age_years": age, "sex": sex,
@@ -319,6 +353,9 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
             **({"iv_access_failed": True} if iv_access_failed else {}),
             **({"glycogen_depleted": True} if glycogen_depleted else {}),
             **({"endogenous_insulin": True} if endogenous_insulin else {}),
+            **({"anaphylaxis": dict(anaphylaxis)} if anaphylaxis else {}),
+            **({"renal": dict(renal)} if renal else {}),
+            **({"bradycardia": dict(bradycardia)} if bradycardia else {}),
         },
         "faculty": {"diagnosis": diagnosis, "discriminating_findings": list(findings),
                     "management_focus": focus, "review_questions": list(questions),
@@ -335,6 +372,15 @@ FAMILIES = {
     "gi_bleed": {"label": "Weakness or syncope with blood loss", "variants": []},
     "hypoglycemia": {"label": "Acute altered behavior or consciousness", "variants": []},
     "opioid": {"label": "Reduced consciousness with slow breathing", "variants": []},
+    # The label says what arrives, not what it is: a resident who reads
+    # "anaphylaxis" on the door has been given the diagnosis.
+    "anaphylaxis": {"label": "Acute rash, swelling or breathlessness after an exposure", "variants": []},
+    # The two variants arrive with the same complaint and the same ultrasound.
+    # What separates them is everything else, and the label says neither.
+    "renal_colic": {"label": "Acute flank pain", "variants": []},
+    # The monitor says the rate. It does not say what took it, and that is the
+    # whole of this family.
+    "bradycardia": {"label": "Slow heart rate with poor perfusion", "variants": []},
 }
 
 
@@ -1018,6 +1064,261 @@ FAMILIES["opioid"]["variants"].append(_case(
     visual=_visual(expression="passive")))
 
 
+# ANAPHYLAXIS: one reaction, two circulations. The first answers to adrenaline
+# and shows what the intramuscular route costs in minutes; the second answers a
+# third as well because of a beta blocker nobody asked about, and the information
+# that says so is in the medication history.
+_o = _observable(84, 46, 126, 91, 28, wob="Increased", crt=3,
+                 extremities="Warm", temperature=36.7, glucose=108,
+                 perfusion="impaired", pain_score=2)
+FAMILIES["anaphylaxis"]["variants"].append(_case(
+    "anaphylaxis_29f", "anaphylaxis", 29, "female", ["seasonal rhinitis"],
+    "A 29-year-old woman arrives from a restaurant with a spreading rash, a swollen face and noisy breathing. She is anxious and speaks in short phrases.",
+    _history("My face and throat feel like they are closing and my whole body is itching.",
+        ["The rash came up everywhere within minutes and my lips are swollen.",
+         "I feel light-headed and my chest is tight."],
+        "I have hay fever; I have never had a reaction like this and I have no asthma.",
+        "I take no regular medication. I have no adrenaline autoinjector.",
+        "It began about fifteen minutes into the meal and has worsened since.",
+        "I ate a dish with a satay sauce; I have avoided peanuts since childhood without ever being tested.",
+        exposure="The meal contained a peanut sauce; there was no sting, no new medicine and no contrast.",
+        breathing="My chest feels tight and my throat feels narrow when I breathe in.",
+        chest_pain="There is tightness across the chest but no crushing central pain.",
+        oral_intake="I had eaten only a few mouthfuls when it started.",
+        urinary_symptoms="I have no burning or frequency when passing urine.",
+        bleeding="I have not coughed or vomited blood."),
+    {"Cardiac": "Rapid regular pulse; the peripheries are warm and well filled.",
+     "Respiratory": "Increased effort with widespread expiratory wheeze and audible inspiratory stridor.",
+     "Abdomen": "Soft; mild diffuse discomfort without guarding.",
+     "General appearance": "Widespread urticarial wheals, flushing and periorbital and lip swelling.",
+     "Neurological": "Awake, oriented and anxious; answers are short because of the breathing."}, _o,
+    _investigations(_o, lactate=3.4, hemoglobin=13.4, wbc=11.2, creatinine=0.9,
+        abg=(7.34, 33, 61), vbg=(7.31, 40),
+        pocus=POCUS["anaphylaxis"][0],
+        chest_xray="Hyperinflated lung fields without consolidation, edema or pneumothorax.", troponin=9),
+    "Anaphylaxis with upper-airway involvement, bronchospasm and distributive shock",
+    ["Urticaria and angioedema minutes after a food exposure",
+     "stridor with wheeze", "hypotension with warm peripheries"],
+    "Give intramuscular adrenaline first and reassess the airway, the breathing and the pressure on the interval that route needs.",
+    ["What did you expect the first dose to have done, and when did you look?",
+     "What told you the reaction was still going, or had settled?"],
+    ["epinephrine_im", "fluid", "oxygen"],
+    visual=_visual(distributive=True, sweating="mild"),
+    anaphylaxis={"severity": 1.0, "beta_blocked": False, "biphasic": True}))
+
+_o = _observable(76, 42, 64, 89, 26, wob="Increased", crt=4,
+                 extremities="Warm", mental="Drowsy", temperature=36.4, glucose=132,
+                 perfusion="impaired")
+FAMILIES["anaphylaxis"]["variants"].append(_case(
+    "anaphylaxis_63m_betablocked", "anaphylaxis", 63, "male",
+    ["hypertension", "atrial fibrillation"],
+    "A 63-year-old man is brought in after a wasp sting in his garden. He is flushed, wheezing and difficult to rouse fully.",
+    _history("His wife says he was stung, came inside saying he felt strange, and then became grey and floppy.",
+        ["His wife reports a rash over his chest and arms within minutes.",
+         "He complained of tightness in the throat before he stopped speaking clearly."],
+        "His wife reports high blood pressure and an irregular heart rhythm. He has been stung before without a reaction.",
+        "His wife lists atenolol and apixaban, taken every morning; he took both today.",
+        "The sting was about twenty minutes ago and he deteriorated within ten.",
+        "He keeps bees at the end of the garden and has been stung several times over the years.",
+        exposure="His wife saw the wasp and the sting site on the forearm; no new medicine and no food were involved.",
+        breathing="His wife says the wheeze began before he became drowsy.",
+        chest_pain="His wife reports no complaint of chest pain before he stopped speaking.",
+        neurological_symptoms="There was no witnessed seizure, head strike or focal weakness.",
+        oral_intake="He had eaten breakfast several hours earlier.",
+        bleeding="There is no bleeding from the sting site or elsewhere."),
+    {"Cardiac": "Irregular pulse at a rate that does not rise with the low pressure; peripheries warm.",
+     "Respiratory": "Increased effort with widespread wheeze; no stridor heard.",
+     "Abdomen": "Soft and non-tender.",
+     "General appearance": "Flushing over the chest and arms with scattered wheals; a sting site on the right forearm.",
+     "Neurological": "Opens eyes to voice and follows simple commands slowly; moves all limbs."}, _o,
+    _investigations(_o, lactate=4.6, hemoglobin=14.1, wbc=12.8, creatinine=1.3,
+        abg=(7.29, 36, 57), vbg=(7.26, 43),
+        pocus=POCUS["anaphylaxis"][1],
+        chest_xray="No consolidation, edema or pneumothorax.", troponin=22),
+    "Anaphylaxis refractory to adrenaline in a beta-blocked patient",
+    ["Reaction minutes after a sting", "shock with warm peripheries and no compensatory tachycardia",
+     "beta blockade in the medication history"],
+    "Give adrenaline, and when the response is smaller than it should be, ask what is blunting it rather than only repeating the dose.",
+    ["What did you expect after the adrenaline, and what did you actually see?",
+     "What in the history explains the difference?"],
+    ["epinephrine_im", "glucagon", "fluid"],
+    visual=_visual(distributive=True, sweating="mild"),
+    anaphylaxis={"severity": 1.15, "beta_blocked": True, "biphasic": False,
+                 # A blocked receptor does not mount the tachycardia of shock
+                 # either, and the rate that never rises is the finding.
+                 "hr_response": 0.25}))
+
+
+# RENAL COLIC: the same complaint and the same dilatation on the ultrasound.
+# What separates them is the temperature, the urine, the perfusion and the
+# lactate -- and asking. The study does not decide; the resident does.
+_RENAL_US_MILD = ("Mild right pelvicalyceal dilatation with a 5 mm calculus at the "
+                  "vesicoureteric junction. The left kidney is normal. No perinephric "
+                  "collection. The bladder is not distended.")
+_RENAL_US_MODERATE = ("Moderate left pelvicalyceal dilatation with a dilated proximal "
+                      "ureter and a 9 mm calculus at the pelviureteric junction. The right "
+                      "kidney is normal. No perinephric collection is demonstrated. The "
+                      "bladder is not distended.")
+
+_o = _observable(142, 84, 94, 98, 18, crt=2, extremities="Warm", temperature=36.8,
+                 glucose=104, perfusion="preserved", pain_score=9)
+FAMILIES["renal_colic"]["variants"].append(_case(
+    "renal_colic_34m", "renal_colic", 34, "male", [],
+    "A 34-year-old man arrives with severe right-sided flank pain that comes in waves. He cannot stay still on the trolley.",
+    _history("The pain grips my right side and goes down into my groin, in waves.",
+        ["I have vomited twice with the pain.", "There is no fever and no burning when I pass urine."],
+        "I have never had a stone or a kidney problem and I take nothing regularly.",
+        "I have taken paracetamol at home with no relief. No antibiotics.",
+        "The pain started abruptly four hours ago and comes and goes every few minutes.",
+        "I have been drinking little in the heat and I work outdoors.",
+        urinary_symptoms="There is no burning, no frequency and no visible blood, but the urine looks concentrated.",
+        exposure="There has been no instrumentation, no catheter and no recent hospital stay.",
+        oral_intake="I have been drinking very little water for several days.",
+        breathing="My breathing is normal; it is the pain that makes me restless.",
+        chest_pain="There is no chest pain."), 
+    {"Cardiac": "Regular pulse at a normal rate; peripheries warm and well filled.",
+     "Respiratory": "Normal effort with clear breath sounds.",
+     "Abdomen": "Soft, with right renal angle tenderness; no guarding, rebound or palpable mass.",
+     "General appearance": "Restless and in evident pain, moving constantly; no rash and no pallor.",
+     "Neurological": "Awake, oriented and fully cooperative."}, _o,
+    _investigations(_o, lactate=1.4, hemoglobin=15.1, wbc=9.8, creatinine=1.1,
+        abg=(7.41, 38, 92), vbg=(7.38, 44),
+        pocus=POCUS["renal_colic"][0],
+        chest_xray="Clear lung fields; no free subdiaphragmatic air.", troponin=4,
+        renal_ultrasound=_RENAL_US_MILD,
+        urinalysis="Blood +++. No leukocyte esterase and no nitrite. Few red cells; no white cells or bacteria."),
+    "Uncomplicated ureteric colic from a distal calculus",
+    ["Colicky loin-to-groin pain with a normal temperature",
+     "haematuria without pyuria or nitrite", "preserved perfusion and a normal lactate"],
+    "Relieve the pain, confirm there is no infection or obstruction requiring admission, and define the follow-up and the reasons to return.",
+    ["What made you confident this was not an infected obstruction?",
+     "What did you tell the patient would bring them back?"],
+    ["antipyretic", "opioid_analgesia", "disposition"],
+    visual=_visual(expression="markedly uncomfortable"),
+    renal={"infected": False, "side": "right"}))
+
+_o = _observable(94, 54, 118, 95, 24, crt=4, extremities="Cool", temperature=38.9,
+                 glucose=138, perfusion="impaired", pain_score=7)
+FAMILIES["renal_colic"]["variants"].append(_case(
+    "obstructive_pyelonephritis_58f", "renal_colic", 58, "female", ["type 2 diabetes"],
+    "A 58-year-old woman arrives with left-sided flank pain and fever. She is flushed, shivering and slow to answer.",
+    _history("My left side has ached for two days and today I started shaking with fever.",
+        ["I have been burning when I pass urine and going very often.",
+         "I have vomited and I feel weak standing up."],
+        "I have type 2 diabetes. I had a stone on the left three years ago that passed by itself.",
+        "I take metformin. I have taken no antibiotic for this.",
+        "The pain began two days ago and the fever and shaking started this morning.",
+        "I have diabetes and a previous stone on the same side.",
+        urinary_symptoms="The urine burns, I go constantly and it has looked cloudy and smelt strong since yesterday.",
+        exposure="I have had no catheter, no procedure and no recent hospital admission.",
+        oral_intake="I have kept almost nothing down since yesterday.",
+        breathing="My breathing feels faster than usual but I am not short of breath.",
+        bleeding="I have not seen blood in the urine or anywhere else."),
+    {"Cardiac": "Rapid regular pulse; peripheries cool with delayed capillary refill.",
+     "Respiratory": "Mildly increased rate with clear breath sounds.",
+     "Abdomen": "Marked left renal angle tenderness; the abdomen is otherwise soft without guarding.",
+     "General appearance": "Flushed and shivering; looks unwell and answers slowly.",
+     "Neurological": "Awake and oriented but slowed; moves all limbs normally."}, _o,
+    _investigations(_o, lactate=4.2, hemoglobin=12.4, wbc=19.8, creatinine=1.9,
+        abg=(7.33, 31, 78), vbg=(7.30, 38),
+        pocus=POCUS["renal_colic"][1],
+        chest_xray="Clear lung fields; no consolidation and no free subdiaphragmatic air.", troponin=14,
+        renal_ultrasound=_RENAL_US_MODERATE,
+        urinalysis="Leukocyte esterase +++ and nitrite positive. Blood ++. Numerous white cells and bacteria."),
+    "Obstructive pyelonephritis: an infected, obstructed collecting system with sepsis",
+    ["Fever and rigors with flank pain", "pyuria with nitrite on a pelvicalyceal dilatation",
+     "tachycardia, delayed refill and a raised lactate"],
+    "Treat the sepsis and recognise that an obstructed infected kidney is not treated by antibiotics alone: involve urology for decompression and say what is watched until it happens.",
+    ["What did the ultrasound change, and what did it not settle?",
+     "Who had to be involved for this to be treated, and when did you involve them?"],
+    ["antibiotics", "fluid", "consult"],
+    visual=_visual(shock=True, sweating="marked"),
+    renal={"infected": True, "side": "left"}))
+
+
+# BRADYCARDIA: the monitor says the rate and does not say what took it. Both
+# arrive slow and underperfused; one answers to a drug the resident has to ask
+# for the reason to give, and the other answers to a wire.
+_o = _observable(74, 44, 38, 96, 18, crt=4, extremities="Cool", temperature=36.2,
+                 glucose=214, perfusion="impaired")
+FAMILIES["bradycardia"]["variants"].append(_case(
+    "bradycardia_ccb_68m", "bradycardia", 68, "male", ["hypertension", "atrial fibrillation"],
+    "A 68-year-old man is brought in after collapsing at home. He is pale, cold and very slow on the monitor.",
+    _history("His daughter says he has felt dizzy and weak all afternoon and then slumped in his chair.",
+        ["His daughter reports no chest pain and no breathlessness before the collapse.",
+         "He has been nauseated and vomited once."],
+        "His daughter reports high blood pressure and an irregular heart rhythm treated for years.",
+        "His daughter brought the boxes: verapamil, which he doubled last week on advice, and enalapril. "
+        "She thinks he may have taken extra today because of palpitations.",
+        "The dizziness began this afternoon; the collapse was about forty minutes ago.",
+        "He lives alone and manages his own medication; the doses were changed last week.",
+        neurological_symptoms="There was no seizure, no head strike and no focal weakness afterwards.",
+        chest_pain="His daughter reports no chest pain before or after the collapse.",
+        breathing="His daughter says the breathing has looked normal throughout.",
+        oral_intake="He has eaten little today and vomited once.",
+        exposure="There is no other medicine in the house and no alcohol or drug use she knows of."),
+    {"Cardiac": "Very slow regular pulse; peripheries cool with delayed capillary refill; no murmur.",
+     "Respiratory": "Normal rate and effort with clear breath sounds.",
+     "Abdomen": "Soft and non-tender.",
+     "General appearance": "Pale and cold; alert but slow to answer, with no rash or swelling.",
+     "Neurological": "Awake, oriented and moving all limbs; no focal deficit."}, _o,
+    _investigations(_o, lactate=3.9, hemoglobin=13.8, wbc=9.1, creatinine=1.5,
+        abg=(7.31, 34, 84), vbg=(7.28, 41), potassium=4.4,
+        pocus=POCUS["bradycardia"][0],
+        chest_xray="Clear lung fields; no consolidation, edema or pneumothorax.", troponin=26),
+    "Calcium-channel blocker poisoning with bradycardia and vasodilatory shock",
+    ["Profound bradycardia with a normal potassium",
+     "hyperglycaemia without a diabetic history", "the changed verapamil dose in the medication history"],
+    "Recognise that the rate is a symptom of a poisoning, treat it with the antidote the cause calls for, and ask for the help that this engine cannot give.",
+    ["What made you look past the rate for a cause?",
+     "Which finding pointed at the poison rather than at the heart?"],
+    ["calcium", "glucagon", "consult"],
+    visual=_visual(shock=True),
+    history_source="Daughter",
+    bradycardia={"cause": "ccb", "block": False, "av_block_location": "infranodal",
+                 "escape_rate": 38, "target_rate": 75}))
+
+_o = _observable(78, 46, 32, 95, 20, crt=4, extremities="Cool", mental="Drowsy",
+                 temperature=36.5, glucose=104, perfusion="impaired")
+_o["rhythm"] = "Complete AV block"
+FAMILIES["bradycardia"]["variants"].append(_case(
+    "bradycardia_avb3_78f", "bradycardia", 78, "female", ["hypertension", "chronic kidney disease"],
+    "A 78-year-old woman is brought in after repeated blackouts at home. She is grey, cold and difficult to keep awake.",
+    _history("Her son says she has blacked out three times today, each time without warning.",
+        ["Her son reports no chest pain and no palpitations that she described.",
+         "She has been increasingly breathless on stairs for a fortnight."],
+        "Her son reports high blood pressure and kidney disease; she has never had a heart attack.",
+        "Her son lists amlodipine and atorvastatin. He is certain there is no beta blocker and no digoxin, "
+        "and the doses have not changed.",
+        "The blackouts began this morning and have become more frequent through the day.",
+        "She has had two weeks of exertional breathlessness before today.",
+        neurological_symptoms="The episodes were sudden, brief and without shaking, tongue-biting or confusion afterwards.",
+        chest_pain="Her son reports no chest pain at any point.",
+        breathing="The breathlessness on exertion has been building for a fortnight.",
+        exposure="There is no new medicine, no overdose and no herbal preparation.",
+        oral_intake="She has been eating and drinking normally."),
+    {"Cardiac": "Very slow regular pulse with cannon waves in the neck; peripheries cool.",
+     "Respiratory": "Normal effort with clear breath sounds.",
+     "Abdomen": "Soft and non-tender.",
+     "General appearance": "Grey and cold; rouses to voice and drifts back.",
+     "Neurological": "Opens eyes to voice, follows simple commands slowly, moves all limbs."}, _o,
+    _investigations(_o, lactate=3.4, hemoglobin=11.6, wbc=8.4, creatinine=2.1,
+        abg=(7.33, 33, 82), vbg=(7.30, 40), potassium=4.8,
+        pocus=POCUS["bradycardia"][1],
+        chest_xray="Clear lung fields; no consolidation or edema.", troponin=31),
+    "Complete infranodal atrioventricular block with an inadequate escape rhythm",
+    ["Complete atrioventricular dissociation on the tracing",
+     "cannon waves with recurrent syncope", "no drug and no electrolyte cause in the history or the laboratory"],
+    "Recognise that no dose of atropine treats an infranodal block, support the rate electrically, and arrange the definitive pacing this engine does not perform.",
+    ["What did the response to the atropine tell you?",
+     "How did you confirm that the pacing was capturing?"],
+    ["atropine", "transcutaneous_pacing", "consult"],
+    visual=_visual(shock=True),
+    history_source="Son",
+    bradycardia={"cause": "avb3", "block": True, "av_block_location": "infranodal",
+                 "escape_rate": 32, "target_rate": 70}))
+
+
 _COLLATERAL_SOURCES = {
     "pneumonia_83m": "Daughter",
     "asthma_49m": "Partner",
@@ -1026,12 +1327,17 @@ _COLLATERAL_SOURCES = {
     "hypoglycemia_54m_thiamine": "Shelter staff and the paramedic record",
     "opioid_35m": "Accompanying friend",
     "opioid_67f": "Spouse and medication list",
+    "anaphylaxis_63m_betablocked": "Wife",
+    "bradycardia_ccb_68m": "Daughter",
+    "bradycardia_avb3_78f": "Son",
 }
 _HANDOVER_CONTEXT = {
     "pneumonia_83m": "The referral note suggests possible dehydration after poor intake; no diagnosis has been established.",
     "acs_54m_inferior": "The triage note records 'indigestion?' as an unconfirmed impression.",
     "pulmonary_embolism_33f": "She wonders whether anxiety could explain the episode; this has not been assessed.",
     "asthma_49m": "Handover notes that the wheeze sounds quieter than it did earlier.",
+    "anaphylaxis_63m_betablocked": "Handover notes a sting and a rash; the medication list came with the family, not with the patient.",
+    "bradycardia_ccb_68m": "Handover notes a collapse and a slow rate; the boxes came in with the daughter.",
 }
 for _family in FAMILIES.values():
     for _variant in _family["variants"]:

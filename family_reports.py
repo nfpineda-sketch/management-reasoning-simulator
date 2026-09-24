@@ -9,6 +9,7 @@ TEST_LABELS = {
     "blood_cultures": "Blood cultures", "troponin": "Troponin", "ctpa": "CT pulmonary angiography", "d_dimer": "D-dimer",
     "hemoglobin": "Hemoglobin",
     "ecg_right": "Right-sided ECG (V3R-V4R)", "ecg_posterior": "Posterior ECG (V7-V9)",
+    "renal_ultrasound": "Renal tract ultrasound",
 }
 FIELDS = {
     "cortisol_ug_dl": "Cortisol (µg/dL)", "tsh_miu_l": "TSH (mIU/L)",

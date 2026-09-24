@@ -97,9 +97,15 @@ def test_a_titration_is_not_read_as_a_goal(text, expected):
 
 
 def test_an_administered_quantity_keeps_a_clause_an_order():
-    # "IM adrenaline 0.5 mg" is an unsupported intervention, and being unsupported
-    # it must be quoted back rather than mistaken for something the resident hoped.
-    assert held("IM adrenaline 0.5 mg")
+    # A dose is an order whatever else the clause says. Intramuscular adrenaline
+    # was the example here until the anaphylaxis family made it executable on
+    # 2026-09-23; it is now an order rather than a refusal, which is the point.
+    assert types("IM adrenaline 0.5 mg") == ["epinephrine_im"]
+    # The guard itself: a clause naming an administered quantity is an order
+    # whatever else it says, so the goal reading can never reach it.
+    from family_parser import _is_reasoning
+    assert _is_reasoning("busco subir la presion")
+    assert not _is_reasoning("busco subir la presion con 500 cc de suero")
 
 
 def test_a_withheld_order_is_still_not_an_order():

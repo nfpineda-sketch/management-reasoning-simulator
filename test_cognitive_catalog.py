@@ -27,7 +27,10 @@ class CognitiveCatalogTests(unittest.TestCase):
     def test_distinct_biases_cover_multiple_real_clinical_families(self):
         self.assertEqual(len(BIAS_CHALLENGES), 8)
         self.assertEqual(len({c["bias_id"] for c in BIAS_CHALLENGES.values()}), 8)
-        self.assertEqual(len(FAMILY_LABELS), 8)
+        # Eleven since 2026-09-23: anaphylaxis, the flank-pain pair and the
+        # unstable bradycardia. Every family is still covered by a challenge,
+        # which is the property below and the one that matters.
+        self.assertEqual(len(FAMILY_LABELS), 11)
         covered = set()
         for challenge in BIAS_CHALLENGES.values():
             with self.subTest(bias=challenge["bias_id"]):

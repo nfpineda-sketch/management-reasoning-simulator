@@ -18,9 +18,9 @@ NEW_TREATMENT_ACTIONS = frozenset({
     "fluid", "oxygen", "niv", "nitroglycerin", "antibiotics", "bronchodilator",
     "beta_blocker", "diltiazem", "amiodarone", "procedural_sedation", "cardioversion", "ventilator_adjustment", "steroid", "dextrose", "naloxone", "blood", "ppi", "aspirin", "p2y12", "nitroglycerin_bolus",
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
-    "magnesium", "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
+    "magnesium", "epinephrine", "epinephrine_bolus", "epinephrine_im", "continuous_bronchodilator",
     "ventilator_disconnect", "chest_decompression", "thrombolysis", "stress_test",
-    "octreotide", "glucagon", "thiamine", "oral_carbohydrate", "dextrose_infusion", "naloxone_infusion",
+    "octreotide", "glucagon", "calcium", "thiamine", "oral_carbohydrate", "dextrose_infusion", "naloxone_infusion",
     "atropine", "transcutaneous_pacing", "opioid_analgesia",
     "neuromuscular_blockade", "sedation_infusion",
     "vascular_access", "monitoring", "npo", "urinary_catheter", "gastric_tube", "antipyretic",
@@ -46,6 +46,14 @@ _AGENTS = {
                      "streptokinase": r"streptokinase|estreptoquinasa"},
     "octreotide": {"octreotide": r"octreotide|octre[oó]tido|octreotida"},
     "glucagon": {"glucagon": r"glucagon|glucag[oó]n"},
+    # The membrane stabiliser of a calcium-channel blockade and of a severe
+    # hyperkalaemia, added with the bradycardia family (2026-09-23). The two
+    # salts are not interchangeable in strength and the engine keeps which one.
+    "calcium": {
+        "calcium gluconate": r"(?:gluconato\s+de\s+)?calcio\s+gluconato|calcium\s+gluconate|"
+                             r"gluconato\s+de\s+calcio",
+        "calcium chloride": r"cloruro\s+de\s+calcio|calcium\s+chloride",
+    },
     "thiamine": {"thiamine": r"thiamine|tiamina|vitamin b1|vitamina b1"},
     "naloxone": {"naloxone": r"naloxone|naloxona|narcan"},
     "atropine": {"atropine": r"atropine|atropina"},
@@ -89,7 +97,12 @@ _DIAGNOSTICS = {
     "thyroid_function": r"thyroid function|thyroid tests|tsh|perfil tiroideo|funcion tiroidea",
     "ketones": r"ketones|beta[- ]hydroxybutyrate|cetonas|cetonemia|beta[- ]hidroxibutirato",
     "toxicology": r"toxicology|toxicology screen|toxicologia|screening toxicologico",
-    "pocus": r"pocus|point[- ]of[- ]care ultrasound|bedside ultrasound|ecografia(?:\s+a pie de cama)?|ultrasonido",
+    # A qualified ultrasound is the study it names, not the emergency protocol:
+    # "ecografia renal" used to return both (2026-09-23).
+    "pocus": r"pocus|point[- ]of[- ]care ultrasound|bedside ultrasound|"
+             r"ecograf[ií]a(?!\s*(?:renal|reno|de\s+(?:las?\s+)?v[ií]as?\s+urinarias?|"
+             r"de\s+ri[nñ][oó]n))(?:\s+a pie de cama)?|"
+             r"ultrasonido(?!\s*(?:renal|reno))",
     "lactate": r"lactate|lactato",
     "vbg": r"vbg|venous blood gases?|venous blood gas|gasometria venosa|gases venosos",
     "abg": r"abg|arterial blood gases?|arterial blood gas|gasometria arterial|gases arteriales",
@@ -119,6 +132,19 @@ _DIAGNOSTICS = {
     # "Angiotomografia de torax" is how the study is written here in full; only
     # its abbreviations were listed, so the written form was refused (2026-09-23).
     "ctpa": r"ctpa|ct pulmonary angiogra(?:phy|m)|pulmonary ct angiogra(?:phy|m)|angio(?:[- ]?tc|tac|tomografia)(?:\s+(?:de\s+)?(?:torax|pulmonar))?",
+    # The study of the flank-pain family (2026-09-23). Matched before the plain
+    # ultrasound words so that asking for "ecografia renal" never returns the
+    # emergency POCUS protocol instead.
+    "renal_ultrasound": r"(?:eco(?:graf[ií]a)?|ultrasoni?d[oe]|ultrasound|us)\s*"
+                        r"(?:renal(?:es)?(?:\s+y\s+vesical)?|de\s+(?:las?\s+)?v[ií]as?\s+urinarias?|"
+                        r"reno[- ]?vesical|vesico[- ]?renal|de\s+ri[nñ][oó]n(?:es)?|kidney|renal\s+tract)|"
+                        r"(?:renal|urinary\s+tract)\s+ultrasound|pielo[- ]?tac|"
+                        r"(?:tc|tac|ct)\s+(?:de\s+)?(?:abdomen\s+y\s+pelvis\s+)?sin\s+contraste\s+(?:renal|urinari[ao])|"
+                        r"uro[- ]?(?:tc|tac|ct)|ct\s+(?:kub|urogram)|"
+                        # "Eco renal y vesical" is one request; the clause
+                        # splitter makes two, and the second was held as an
+                        # unrecognized study (2026-09-23).
+                        r"vesical|bladder\s+ultrasound",
     # The British spelling as well: the documents of this project are written
     # in it, so a resident reading "haemoglobin" there and typing it back was
     # refused while the Spanish "hemoglobina" was accepted (2026-09-23).
@@ -208,7 +234,10 @@ _PACING_SETTING = re.compile(
 # both fell through and the disposition produced no action at all. A discharge
 # is the trigger of a defined critical event, so the silence removed the event
 # with it (2026-09-23).
+# "Alta con analgesia oral y control en 7 dias" is a discharge; only the forms
+# with "de alta" or a named destination were listed (2026-09-23).
 _DISCHARGE = (r"\bde\s+alta\b|\balta\s+(?:a\s+)?(?:domicilio|(?:a\s+)?la\s+casa|medica|hospitalaria)\b"
+              r"|^\s*alta\b(?!mente)"
               r"|\bdischarge\b|\bsend(?:\s+\w+)?\s+home\b"
               r"|\ba\s+(?:la\s+|su\s+)?casa\b|\ba\s+domicilio\b")
 _CORONARY_UNIT = (r"\buco\b|unidad coronaria|unidad de cuidados coronarios|coronary (?:care )?unit"
@@ -497,6 +526,11 @@ def _examination_order(body):
 
 def _clarification(message):
     return {"type": "clarification", "message": message}
+
+
+#: A procedure only one service performs. Naming it is asking for that service.
+_SERVICE_PROCEDURE = (r"nefrostom[ií]a|nephrostomy|cat[eé]ter\s+doble\s+j|doble\s+j|"
+                      r"double[- ]j|ureteral\s+stent|stent\s+ureteral")
 
 
 # The physiologic direction a resident states as a goal or an expectation.
@@ -834,6 +868,21 @@ def _parse_piece_core(piece, inherited=None):
             return [_clarification("Specify the reassessment interval in minutes.")], verb
         return [{"type": "reassessment", "delay_min": delay if delay is not None else 0}], verb
 
+    # "Pido nefrostomia percutanea" is a request for urology, not for a study,
+    # and the study dispatch owns the verb that introduced it. Asked before it,
+    # so the service is reached rather than the refusal (2026-09-23).
+    if re.search(_SERVICE_PROCEDURE, body):
+        return [{"type": "consult", "service": "urology"}], verb or "consult"
+
+    # What a discharge is given with is part of the discharge, not a second
+    # order: "de alta con control ambulatorio y criterios de reconsulta" held
+    # the disposition the colic case is built around (2026-09-23).
+    if re.match(r"(?:con\s+)?(?:criterios?\s+de\s+)?"
+                r"(?:reconsulta|consulta\s+precoz|control\s+(?:ambulatorio|precoz|"
+                r"con\s+\w+)|seguimiento|indicaciones|analgesia\s+oral|"
+                r"return\s+precautions|safety\s+net(?:ting)?|follow[- ]up)\b", body):
+        return [], None
+
     examined = _examination_order(body)
     if examined is not None:
         if examined:
@@ -878,10 +927,20 @@ def _parse_piece_core(piece, inherited=None):
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
-        shorthand = r"(?:synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía)"
+        shorthand = r"(?:synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|epinephrine|epinefrina|adrenaline|adrenalina|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía)"
         medication_start = any(re.match(r"(?:" + pattern + r")\b", body) for agents in _AGENTS.values() for pattern in agents.values())
         quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
-        if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start):
+        # A route written first is how the order is spoken in English: "IM
+        # adrenaline 0.5 mg". The route is not the order, so it is stepped over
+        # rather than made one.
+        route_first = r"(?:im|iv|io|sc|ev|po|in)\s+"
+        # A disposition written without a verb is still a disposition. "Alta con
+        # analgesia oral y control en 7 dias" produced no action and no question
+        # at all -- the closing decision of the encounter, lost in silence
+        # (2026-09-23).
+        if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start
+                or re.match(route_first + shorthand + r"\b", body)
+                or re.match(r"(?:alta|discharge|hospitaliza|ingresa|traslada|admit|transfer)", body)):
             return [], None
         if re.search(r"\b(?:was|were|has been|had been|previously|already|caused|improved|worsened|fue|recibio|previamente|ya recibio|mejoro|empeoro)\b", body):
             return [], None
@@ -891,14 +950,24 @@ def _parse_piece_core(piece, inherited=None):
     if medication_count > 1 or (medication_count and has_fluid):
         return [_clarification("Separate each medication or fluid with its own dose and route so the order is unambiguous.")], verb
 
-    if re.search(r"\b(?:consult|call|consultar|interconsultar|llamar)\b", text) or verb in {"activate", "activar"}:
+    if (re.search(r"\b(?:consult|call|consultar|interconsultar|llamar)\b", text)
+            or re.search(_SERVICE_PROCEDURE, body) or verb in {"activate", "activar"}):
         service = None
         # The pulmonary embolism response team is asked for by its name here,
         # and the case declares involving it as what D3 turns on; only the
         # English acronym was listed (2026-09-23).
         for name, pattern in (("PERT", r"\bpert\b|equipo (?:de |para )?(?:respuesta )?"
                                        r"(?:de |a )?(?:tromboembolismo|tep|embolia pulmonar)"),
-                              ("cardiology", r"cardiolog"), ("cath lab", r"cath(?:eterization)? lab|hemodinamia|hemodinamica"), ("gastroenterology", r"gastroenterolog|endoscop"), ("ICU", r"\bicu\b|\buci\b|intensive care|cuidados intensivos")):
+                              ("cardiology", r"cardiolog"), ("cath lab", r"cath(?:eterization)? lab|hemodinamia|hemodinamica"), ("gastroenterology", r"gastroenterolog|endoscop"),
+                              # The service that decompresses an obstructed,
+                              # infected kidney, asked for by its name or by what
+                              # it is being asked to do (2026-09-23).
+                              ("urology", r"urolog|nefrostom[ií]a|nephrostomy|"
+                                          r"cat[eé]ter\s+doble\s+j|doble\s+j|double[- ]j|"
+                                          r"ureteral\s+stent|stent\s+ureteral|"
+                                          r"desobstru|descompresi[oó]n\s+(?:de\s+la\s+)?v[ií]a\s+urinaria"),
+                              ("surgery", r"cirug[ií]a general|general surgery|cirujano"),
+                              ("ICU", r"\bicu\b|\buci\b|intensive care|cuidados intensivos")):
             if re.search(pattern, body):
                 service = name
                 break
@@ -1071,6 +1140,18 @@ def _parse_piece_core(piece, inherited=None):
             r"pastilla|dosis\s+unica|dosis\s+única)\b", body)
         mass_dose = None if rate_match else re.search(
             r"(?<![\w.])((?:\d+(?:\.\d+)?|\.\d+))\s*(mcg|ug|mg)\b(?!\s*/)", body)
+        # The intramuscular dose of anaphylaxis. Until 2026-09-23 this fell
+        # through to "this engine runs these drugs only as continuous
+        # infusions", so the one order the specialty is most insistent about was
+        # refused. The route is the order here, not a detail of it.
+        intramuscular = re.search(
+            r"\b(?:im|intramuscular(?:ly|es)?|intramuscul[ao]r|"
+            r"sc|subcutaneous(?:ly)?|subcut[aá]ne[ao]|"
+            r"muslo|thigh|vasto\s+lateral|vastus\s+lateralis|deltoides|deltoid)\b", body)
+        if kind == "epinephrine" and not rate_match and mass_dose and intramuscular:
+            milligrams = float(mass_dose[1]) / (1000 if mass_dose[2] in {"mcg", "ug"} else 1)
+            route = "SC" if re.search(r"\b(?:sc|subcutaneous(?:ly)?|subcut[aá]ne[ao])\b", body) else "IM"
+            return [{"type": "epinephrine_im", "dose_mg": milligrams, "route": route}], verb or "give"
         if kind == "epinephrine" and not rate_match and mass_dose and (
                 single_dose or re.search(r"\b(?:iv|ev|intravenous|intravenos[ao])\b", body)):
             # Diluted epinephrine is also given as small IV boluses (50-150 mcg).

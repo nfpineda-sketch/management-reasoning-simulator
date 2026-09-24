@@ -31,6 +31,12 @@ ORDERS = {
     # making sure the dextrose can reach them.
     "hypoglycemia": "Place a peripheral IV line; give dextrose 25 g IV",
     "opioid": "Give naloxone 0.4 mg IV",
+    # The three families of 2026-09-23, each ordered the way its own treatment
+    # is written: a route that is the order, a service that is the treatment,
+    # and an antidote the rate alone would not have suggested.
+    "anaphylaxis": "Give epinephrine 0.5 mg IM",
+    "renal_colic": "Give ceftriaxone 2 g IV; consult urology",
+    "bradycardia": "Give calcium gluconate 2 g IV",
 }
 
 

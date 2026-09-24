@@ -509,3 +509,23 @@ def test_the_link_the_widened_lexicon_now_carries():
         "Creo que es sepsis de foco urinario porque tiene orina turbia.")
     assert rows[0]["linked"] is True
     assert rows[0]["link_marker"].lower() == "porque"
+
+
+def test_one_finding_written_at_two_lengths_is_one_finding(encounter):
+    """From the first real encounter with the second reader switched on.
+
+    The patterns read "crepitantes"; the model read "crepitantes en la base
+    derecha". Listing both would count one observation twice, and a rubric that
+    is told not to reward the number of cues would be counting them.
+    """
+    engine = encounter
+    parsed = engine["clinical_interpreter"](
+        "Paciente febril con crepitantes en la base derecha. Ceftriaxona 1 g EV.")
+    engine["merge_cues"](parsed, [
+        {"finding": "crepitantes en la base derecha", "polarity": "present",
+         "linked": False, "link_marker": "", "contrast": False, "statement": "",
+         "source": "model"}])
+    findings = [row["finding"] for row in parsed["reasoning"]["mentioned_findings"]]
+    assert findings.count("crepitantes") == 1
+    assert "crepitantes en la base derecha" not in findings
+    assert parsed["cue_recognition"]["added_by_model"] == 0

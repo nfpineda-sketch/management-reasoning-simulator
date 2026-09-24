@@ -12,21 +12,25 @@ CASES = [(family, case) for family, entry in FAMILIES.items() for case in entry[
 
 
 class ClinicalCaseBankTests(unittest.TestCase):
-    def test_eight_clinical_families_have_distinct_complete_variants(self):
-        self.assertEqual(set(FAMILIES), {
-            "pneumonia", "pulmonary_edema", "acs", "pulmonary_embolism",
-            "asthma", "gi_bleed", "hypoglycemia", "opioid",
-        })
+    #: The bank, stated once. A family or a variant that appears or vanishes
+    #: without this table changing is a drift, which is what this guard is for.
+    #: Two per family is the rule; the exceptions are the four ACS occlusion
+    #: equivalents added 2026-09-19 and the thiamine-depleted hypoglycaemia case
+    #: added 2026-09-20.
+    EXPECTED_VARIANTS = {
+        "pneumonia": 2, "pulmonary_edema": 2, "acs": 6, "pulmonary_embolism": 2,
+        "asthma": 2, "gi_bleed": 2, "hypoglycemia": 3, "opioid": 2,
+        "anaphylaxis": 2, "renal_colic": 2, "bradycardia": 2,
+    }
+
+    def test_every_clinical_family_has_distinct_complete_variants(self):
+        self.assertEqual(set(FAMILIES), set(self.EXPECTED_VARIANTS))
         identifiers = [case["id"] for _, case in CASES]
-        # Two per family, the four ACS occlusion equivalents added 2026-09-19 and the
-        # thiamine-depleted hypoglycaemia case added 2026-09-20.
-        self.assertEqual(len(identifiers), 21)
-        self.assertEqual(len([case for family, case in CASES if family == "acs"]), 6)
-        self.assertEqual(len(set(identifiers)), 21)
+        self.assertEqual(len(identifiers), sum(self.EXPECTED_VARIANTS.values()))
+        self.assertEqual(len(set(identifiers)), len(identifiers))
         for family, entry in FAMILIES.items():
             with self.subTest(family=family):
-                expected = {"acs": 6, "hypoglycemia": 3}.get(family, 2)
-                self.assertEqual(len(entry["variants"]), expected)
+                self.assertEqual(len(entry["variants"]), self.EXPECTED_VARIANTS[family])
                 # Every variant of a family is a different patient, not a relabelling.
                 for first, second in combinations(entry["variants"], 2):
                     self.assertNotEqual(first["patient"], second["patient"])
@@ -159,7 +163,13 @@ class ClinicalCaseBankTests(unittest.TestCase):
                 if family == "opioid":
                     self.assertEqual(visible["expression"], "passive")
                 if case["observable"]["peripheral_perfusion"] == "impaired":
-                    self.assertIn(visible["skin_color"], {"mild pallor", "pallor"})
+                    # A distributive shock is warm and red: the colour does not
+                    # follow the falling pressure, and a picture that showed
+                    # pallor would contradict the examination the same case
+                    # authors (anaphylaxis family, 2026-09-23).
+                    expected = ({"flushed"} if family == "anaphylaxis"
+                                else {"mild pallor", "pallor"})
+                    self.assertIn(visible["skin_color"], expected)
                 if family == "hypoglycemia":
                     self.assertIn(visible["diaphoresis"], {"mild", "marked"})
 

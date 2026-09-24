@@ -15,6 +15,14 @@ def make_state(family):
         "gi_bleed": (86, 52, 118, 97, 24, 5, "Alert", 112),
         "hypoglycemia": (126, 76, 102, 97, 18, 2, "Obtunded", 34),
         "opioid": (104, 66, 74, 82, 6, 2, "Obtunded", 105),
+        # Warm, fast and empty: a distributive shock reads differently from the
+        # cold ones above, which is the point of the family.
+        "anaphylaxis": (84, 46, 126, 91, 28, 3, "Alert", 108),
+        # Flank pain with a sepsis behind it: the fever and the lactate move,
+        # the lungs do not.
+        "renal_colic": (94, 54, 118, 95, 24, 4, "Alert", 138),
+        # Slow and underperfused, with the glucose that names the poison.
+        "bradycardia": (74, 44, 38, 96, 18, 4, "Alert", 214),
     }[family]
     o = dict(zip(("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt", "mental_status", "glucose_mg_dl"), values))
     o.update(rhythm="Sinus bradycardia" if family == "acs" else "Sinus rhythm", work_of_breathing="Reduced" if family == "opioid" else "Markedly increased", extremities="Cool", temperature_c=38.5 if family == "pneumonia" else 36.7, pulse_present=True, peripheral_perfusion="impaired")
@@ -27,7 +35,12 @@ def make_state(family):
         "vbg": {"duration_min": 5, "result": {"pco2_mm_hg": 64, "ph": 7.22}},
         "abg": {"duration_min": 5, "result": {"paco2_mm_hg": 64, "pao2_mm_hg": 50, "ph": 7.22, "sao2_percent": 84}},
     }
-    case = {"observable": deepcopy(o), "engine": {"family": family, "baseline_glucose": values[-1], "recurrence_risk": family in {"hypoglycemia", "opioid"}, "baseline_hemoglobin": 6.8 if family == "gi_bleed" else 12, "baseline_lactate": 3.2}, "investigations": investigations, "examination": {"Respiratory": "Case-authored breathing", "Neurological": "Case-authored pupils"}, "visual_profile": {"baseline": {"expression": "uncomfortable", "diaphoresis": "mild"}}}
+    case = {"observable": deepcopy(o), "engine": {
+        **({"anaphylaxis": {"severity": 1.0}} if family == "anaphylaxis" else {}),
+        **({"renal": {"infected": True, "side": "left"}} if family == "renal_colic" else {}),
+        **({"bradycardia": {"cause": "ccb", "block": False, "av_block_location": "infranodal",
+                            "escape_rate": 38, "target_rate": 75}} if family == "bradycardia" else {}),
+        "family": family, "baseline_glucose": values[-1], "recurrence_risk": family in {"hypoglycemia", "opioid"}, "baseline_hemoglobin": 6.8 if family == "gi_bleed" else 12, "baseline_lactate": 3.2}, "investigations": investigations, "examination": {"Respiratory": "Case-authored breathing", "Neurological": "Case-authored pupils"}, "visual_profile": {"baseline": {"expression": "uncomfortable", "diaphoresis": "mild"}}}
     return {"engine_family": family, "encounter_spec": {"clinical_case": case, "ecg_profile": "inferior_stemi" if family == "acs" else "baseline"}, "observable": o, "hidden": {}, "sim_time": 0, "treatments": {}, "diagnostics": {}}
 
 

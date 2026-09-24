@@ -156,7 +156,10 @@ def test_history_topic_results_are_copies_and_nonhistory_fields_are_excluded():
 
 def test_every_real_case_variant_preserves_its_own_history_and_patient_identity():
     from clinical_cases import FAMILIES
-    assert len(FAMILIES) == 8
+    # Eleven since 2026-09-23. The property this guards is that every family
+    # keeps its own history and its own patient, which the loop below checks;
+    # the count is here so a family cannot vanish without anyone noticing.
+    assert len(FAMILIES) == 11
     checked = 0
     for family, group in FAMILIES.items():
         for case in group['variants']:
@@ -174,7 +177,7 @@ def test_every_real_case_variant_preserves_its_own_history_and_patient_identity(
             checked += 1
     # Four ACS occlusion equivalents (2026-09-19) and one thiamine-depleted
     # hypoglycaemia case (2026-09-20).
-    assert checked == 21
+    assert checked == 27
 
 
 def test_neurological_and_leg_history_remain_accessible_without_revealing_diagnoses():

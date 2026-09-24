@@ -749,3 +749,471 @@ CASES.update(_embolism(
     "decisions, and they depend on the pressure.",
     ["Decides transport and level of care on the observed haemodynamics",
      "states what is pending and who is responsible"]))
+
+
+# --- anaphylaxis -------------------------------------------------------------
+# The family added 2026-09-23. What it declares is the same everywhere; what
+# separates the two cases is the fifth domain, because one is a reaction that
+# will come back and the other is a reaction that answers a third as well as it
+# should.
+def _anaphylaxis_no_epinephrine():
+    return _event(
+        "anaphylaxis_no_epinephrine", "critical_omission",
+        "No adrenaline is given in a reaction that presents as anaphylaxis.",
+        "The arrival record carries an acute reaction after an exposure with airway, "
+        "breathing or circulatory involvement, and no adrenaline is executed by any "
+        "route within the window.",
+        ["Arrival observables", "the examination of the skin and the chest"], (0, 15),
+        ["Adrenaline by any route, stated as such",
+         "withholding it with a stated reason the record supports"],
+        "An executed adrenaline action, or its absence across every executed turn in the window.",
+        ["The encounter closed before the window opened",
+         "the interpreter refused the order and the resident was never told what it could accept"],
+        ["D1", "D3"],
+        [("exposure", "what the patient was exposed to and when"),
+         ("chief_complaint", "the reaction in the patient's or the family's own words")])
+
+
+def _anaphylaxis_antihistamine_only():
+    return _event(
+        "anaphylaxis_antihistamine_only", "dangerous_action",
+        "The reaction is treated with a steroid or a bronchodilator instead of adrenaline.",
+        "A steroid or a bronchodilator is executed within the window and no adrenaline is, "
+        "so the treatment given cannot act on the reaction.",
+        ["Arrival observables"], (0, 20),
+        ["The same drugs given after adrenaline, as adjuncts",
+         "a bronchodilator for a wheeze in a patient who has already had adrenaline"],
+        "An executed steroid or bronchodilator with no executed adrenaline action before it "
+        "or within the window.",
+        ["Adrenaline was executed first or in the same turn"],
+        ["D3"],
+        [("medical_history", "whether this patient has asthma, which a wheeze alone would not settle")])
+
+
+_ANA_D1 = _d(
+    "The reaction is in front of the resident on arrival: the skin, the airway and the "
+    "pressure all carry it, and there is a priority to decide between treating it and "
+    "investigating what caused it.",
+    ["Names the reaction or the threat it represents within the window",
+     "treats before pursuing confirmation"],
+    ["Naming it as an allergic reaction without the word anaphylaxis",
+     "acting first and naming it in the same turn"],
+    (0, 15), examination=("General appearance",))
+
+_ANA_D2 = _d(
+    "The exposure, the timing and the medication list are all available for the asking, and "
+    "the examination separates a warm shock from a cold one.",
+    ["Obtains the exposure and its timing",
+     "relates the skin, the chest and the peripheries to one explanation"],
+    ["Reaching the explanation from the examination without naming the trigger",
+     "using POCUS to exclude the congested alternatives"],
+    (0, 30), studies=("pocus",), examination=("General appearance", "Respiratory"))
+
+_ANA_D3 = _d(
+    "Adrenaline is executable by the intramuscular route and as a diluted intravenous dose or "
+    "an infusion; volume, oxygen and the adjuncts are all available.",
+    ["Executes adrenaline with a dose and a route",
+     "adds volume and oxygen to the reaction rather than instead of it"],
+    ["An autoinjector strength stated as such",
+     "the intravenous route with the dilution stated"],
+    (0, 20), actions=("epinephrine_im", "fluid", "oxygen"))
+
+_ANA_D4 = _d(
+    "The intramuscular route takes minutes to act, and the engine runs a clock: what the "
+    "first dose did, and when, is observable.",
+    ["States a reassessment interval and what will be checked",
+     "checks the pressure, the saturation and the airway after the dose"],
+    ["Reassessing on the airway alone when that is the threat",
+     "a shorter interval than stated"],
+    (2, 60), actions=("reassessment",))
+
+
+def _anaphylaxis(case_id, d5_opportunity, d5_expected, d5_alternatives, critical_events):
+    return {case_id: {
+        "domains": {"D1": _ANA_D1, "D2": _ANA_D2, "D3": _ANA_D3, "D4": _ANA_D4,
+                    "D5": _d(d5_opportunity, d5_expected, d5_alternatives, (15, 180),
+                             actions=("consult", "disposition"))},
+        "information": ("Arrival observables and the monitor",
+                        "the exposure, its timing and the medication list, on asking",
+                        "the examination of the skin, the chest and the peripheries",
+                        "laboratory, POCUS and chest radiograph"),
+        "closure": "A disposition is decided, or the horizon of the encounter is reached.",
+        "engine_limits": ("The engine does not perform a serum tryptase; the diagnosis is clinical here.",
+                          "A referral to allergy is recorded, not its result."),
+        "critical_events": critical_events,
+    }}
+
+
+CASES.update(_anaphylaxis(
+    "anaphylaxis_29f",
+    "The reaction settles, and the decision is what happens next: how long this patient is "
+    "watched, and what they leave with.",
+    ["Decides an observation period rather than a discharge on the response alone",
+     "states what would bring the patient back and what they leave with"],
+    ["Admission stated as the observation",
+     "a discharge with the return criteria and the autoinjector stated"],
+    [_anaphylaxis_no_epinephrine(), _anaphylaxis_antihistamine_only(),
+     _event(
+         "anaphylaxis_unsafe_discharge", "critical_omission",
+         "The patient is discharged after the reaction settles without an observation period "
+         "or stated return criteria.",
+         "A discharge disposition is executed after the reaction settles, and the record "
+         "carries neither an observation period nor the criteria for returning. It applies "
+         "whether or not the learner asked how quickly it came on: the patient is in front "
+         "of them and can be asked, and never asking is part of the omission rather than an "
+         "excuse for it.",
+         ["An executed discharge disposition", "the observables at the time of that decision"],
+         (15, 180),
+         ["An observation period stated with its length",
+          "a discharge with the return criteria and the prescribed adrenaline stated",
+          "handover to a service that will observe"],
+         "An executed discharge action with no observation period or return criteria in any "
+         "executed turn of the encounter.",
+         ["The encounter reached its horizon before any disposition was decided"],
+         ["D1", "D5"],
+         [("onset", "how quickly the reaction came on, which is what a biphasic one repeats"),
+          ("medical_history", "whether this has happened before")])]))
+
+CASES.update(_anaphylaxis(
+    "anaphylaxis_63m_betablocked",
+    "The response to the adrenaline is smaller than it should be, and the decision is "
+    "whether to repeat it or to ask what is blunting it.",
+    ["Compares the observed response with the one they expected",
+     "pursues the reason for the gap rather than only repeating the dose"],
+    ["Glucagon with the beta blockade stated",
+     "an adrenaline infusion with the inadequate response stated",
+     "asking for help with the refractory reaction named"],
+    [_anaphylaxis_no_epinephrine(), _anaphylaxis_antihistamine_only(),
+     _event(
+         "anaphylaxis_unexamined_refractory", "critical_omission",
+         "Adrenaline is repeated without the reason for its inadequate response being pursued.",
+         "Two or more adrenaline doses are executed, the observables show an inadequate "
+         "response, and nothing in the record pursues why: no medication history is obtained, "
+         "no glucagon is given, and no help is asked for. It applies whether or not the "
+         "learner asked about the medications: the family is present and can be asked, and "
+         "never asking is part of the omission rather than an excuse for it.",
+         ["Two or more executed adrenaline actions", "the observables after each of them"],
+         (10, 120),
+         ["Glucagon", "an adrenaline infusion with the inadequate response stated",
+          "a consultation with the refractory reaction named"],
+         "Two or more executed adrenaline actions with no glucagon, no consultation and no "
+         "recorded history of the medications in any executed turn of the window.",
+         ["Only one adrenaline dose was executed",
+          "the response recorded after the second dose was adequate"],
+         ["D2", "D5"],
+         [("medications", "the atenolol he took this morning"),
+          ("medical_history", "the rhythm the beta blocker is for")])]))
+
+
+# --- renal colic and obstructive pyelonephritis -------------------------------
+# Two patients with the same complaint and the same dilatation on the study. The
+# family is declared twice because what is being assessed genuinely differs: one
+# is a decision not to admit, the other is a decision about who has to be
+# involved for the treatment to work at all.
+_COLIC_D2 = _d(
+    "The urine, the temperature, the lactate and the renal study are all available, and "
+    "together they separate a colic from an infected obstruction.",
+    ["Requests the urine and the temperature", "relates them to the dilatation on the study"],
+    ["Reaching the same separation from the examination and the urine without the lactate",
+     "the renal study read alongside the urine rather than before it"],
+    (0, 40), studies=("urinalysis", "temperature", "renal_ultrasound", "lactate"),
+    examination=("Abdomen",))
+
+CASES.update({
+    "renal_colic_34m": {
+        "domains": {
+            "D1": _d(
+                "Severe pain with preserved perfusion and a normal temperature: the priority is "
+                "to relieve the pain and to establish that this is not the infected obstruction "
+                "the same presentation can be.",
+                ["Names the threat that has to be excluded, or excludes it",
+                 "treats the pain within the window"],
+                ["Treating the pain first and naming the exclusion in the same turn"],
+                (0, 20), actions=("antipyretic", "opioid_analgesia")),
+            "D2": _COLIC_D2,
+            "D3": _d(
+                "Analgesia is executable, and so is the antiemetic the vomiting calls for; the "
+                "engine gives both and changes the pain score.",
+                ["Executes an analgesic with a dose and a route",
+                 "chooses an agent and a route the vomiting allows"],
+                ["An opioid where the anti-inflammatory is contraindicated or refused",
+                 "an anti-inflammatory stated as first line"],
+                (0, 30), actions=("antipyretic", "opioid_analgesia")),
+            "D4": _d(
+                "Pain is a number this engine reports and changes: what the analgesia did, and "
+                "when, is observable.",
+                ["States what will be checked and when",
+                 "checks the pain and the observables after the analgesia"],
+                ["Reassessing the pain alone when the observables are normal"],
+                (10, 90), actions=("reassessment",)),
+            "D5": _d(
+                "Nothing here requires admission, so the continuity decision is what this patient "
+                "leaves with and what brings them back.",
+                ["Decides the disposition on the findings rather than on the pain alone",
+                 "states the follow-up and the reasons to return"],
+                ["Admission with a stated reason such as intractable pain or a solitary kidney",
+                 "a period of observation stated as such"],
+                (20, 180), actions=("disposition", "consult")),
+        },
+        "information": ("Arrival observables and the monitor",
+                        "the urinary symptoms, the exposure and the fluid intake, on asking",
+                        "the examination of the abdomen and the renal angles",
+                        "urine, laboratory, lactate and the renal ultrasound"),
+        "closure": "A disposition is decided, or the horizon of the encounter is reached.",
+        "engine_limits": ("The engine does not pass or remove a stone; the course inside the "
+                          "encounter is the pain and the observables.",
+                          "An outpatient urology appointment is recorded, not its result."),
+        "critical_events": [
+            _event(
+                "colic_missed_infection", "critical_omission",
+                "The patient is discharged without the urine or the temperature having been obtained.",
+                "A discharge disposition is executed and neither a urinalysis nor a temperature "
+                "appears anywhere in the record. It applies whether or not the learner asked "
+                "about urinary symptoms: the patient is in front of them and can be asked, and "
+                "never asking is part of the omission rather than an excuse for it.",
+                ["An executed discharge disposition"], (0, 180),
+                ["A urinalysis or a temperature obtained at any point before the discharge",
+                 "admission or observation instead of discharge"],
+                "An executed discharge action with no urinalysis and no temperature in any "
+                "executed turn of the encounter.",
+                ["The encounter reached its horizon before any disposition was decided"],
+                ["D2", "D5"],
+                [("urinary_symptoms", "the absence of burning, frequency and visible blood"),
+                 ("exposure", "the absence of instrumentation or a recent admission")])],
+    },
+})
+
+CASES.update({
+    "obstructive_pyelonephritis_58f": {
+        "domains": {
+            "D1": _d(
+                "Fever, tachycardia, delayed refill and a raised lactate on a dilated collecting "
+                "system: the priority is the sepsis and its source, before the pain.",
+                ["Names the sepsis and its urinary source within the window",
+                 "acts on the circulation before completing the investigation"],
+                ["Naming it as an infected obstruction without the word sepsis",
+                 "acting first and naming it in the same turn"],
+                (0, 20), actions=("fluid", "antibiotics")),
+            "D2": _COLIC_D2,
+            "D3": _d(
+                "Cultures, antibiotics, volume and the urology referral are all executable, and "
+                "the engine keeps the source behind the stone.",
+                ["Takes cultures before or with the antibiotic and executes the antibiotic",
+                 "resuscitates the circulation"],
+                ["An antibiotic given before the cultures with the urgency stated",
+                 "vasopressor support where volume has not restored the pressure"],
+                (0, 60), actions=("antibiotics", "fluid", "diagnostic")),
+            "D4": _d(
+                "The engine runs a clock and answers to what is given: the pressure, the rate "
+                "and the lactate all move, and the antibiotic takes an hour to do anything.",
+                ["States a reassessment interval and what will be checked",
+                 "checks the response to the volume and the antibiotic"],
+                ["Reassessing the perfusion rather than the pressure alone",
+                 "a shorter interval than stated"],
+                (10, 120), actions=("reassessment",)),
+            "D5": _d(
+                "An antibiotic does not drain an obstructed kidney. The continuity decision is "
+                "who decompresses it, when, and what is watched until they do.",
+                ["Involves urology, or asks for decompression by name",
+                 "states the level of care and what is watched while it is arranged"],
+                ["Transfer to a centre with urology stated as the decompression pathway",
+                 "a critical-care bed decided alongside the referral"],
+                (15, 180), actions=("consult", "disposition")),
+        },
+        "information": ("Arrival observables and the monitor",
+                        "the urinary symptoms, the diabetes and the previous stone, on asking",
+                        "the examination of the abdomen and the renal angles",
+                        "urine, cultures, laboratory, lactate and the renal ultrasound"),
+        "closure": "A disposition is decided, or the horizon of the encounter is reached.",
+        "engine_limits": ("The engine does not decompress a kidney; the referral is recorded, "
+                          "never its result, so the course inside the encounter is what "
+                          "treatment can and cannot do without it.",
+                          "Culture identification and susceptibility are always pending here."),
+        "critical_events": [
+            _event(
+                "pyelo_no_antibiotic", "critical_omission",
+                "No antibiotic is given in a recognised infected obstruction.",
+                "The urine and the temperature are in the record and no antibiotic is executed "
+                "within the window.",
+                ["Arrival observables", "the urinalysis or the temperature result"], (0, 60),
+                ["An antibiotic withheld with a stated allergy and an alternative given"],
+                "An executed antibiotic action, or its absence across every executed turn in "
+                "the window.",
+                ["The encounter closed before the window opened",
+                 "the interpreter refused the order and the resident was never told what it could accept"],
+                ["D3"],
+                [("allergies", "whether the antibiotic can be given at all"),
+                 ("urinary_symptoms", "the cloudy, strong-smelling urine and the burning")]),
+            _event(
+                "pyelo_no_source_control", "critical_omission",
+                "Urology is not involved and no decompression is asked for in an infected, "
+                "obstructed kidney with sepsis.",
+                "The renal study reports the dilatation, the urine is infected, the observables "
+                "carry the sepsis, and no urology consultation and no decompression appear in "
+                "the record within the window. It applies whether or not the learner asked "
+                "about the previous stone: the patient is in front of them and can be asked, "
+                "and never asking is part of the omission rather than an excuse for it.",
+                ["The renal ultrasound result", "the urinalysis result", "arrival observables"],
+                (0, 90),
+                ["Urology asked for by name", "a nephrostomy or a ureteric stent asked for",
+                 "transfer to a centre with urology stated as the decompression pathway"],
+                "An executed consultation with urology, or a request for decompression, or "
+                "their absence across every executed turn in the window.",
+                ["The encounter closed before the renal study was reported"],
+                ["D3", "D5"],
+                [("medical_history", "the stone on the same side three years ago"),
+                 ("urinary_symptoms", "the burning and the cloudy urine")]),
+            _event(
+                "pyelo_unsafe_discharge", "critical_omission",
+                "The patient is sent home or to an ambulatory pathway with the sepsis still "
+                "recorded.",
+                "A discharge disposition is executed while the record still carries fever, "
+                "tachycardia or hypotension.",
+                ["An executed discharge disposition", "the observables at the time of that decision"],
+                (0, 180),
+                ["Admission, a critical-care bed or transfer",
+                 "a discharge after the observables have returned, with the follow-up stated"],
+                "An executed discharge action with fever, tachycardia or hypotension in the "
+                "observables recorded at that decision.",
+                ["The encounter reached its horizon before any disposition was decided"],
+                ["D1", "D5"],
+                [("onset", "the two days of pain and the rigors this morning")])],
+    },
+})
+
+
+# --- unstable bradycardia -----------------------------------------------------
+# The monitor says the rate. It does not say what took it, and in both of these
+# the treatment that works is the one the cause calls for. The shared omission
+# is leaving a symptomatic bradycardia unsupported; what separates the cases is
+# whether the answer is a drug or a wire.
+def _bradycardia_no_support(window=(0, 20)):
+    return _event(
+        "bradycardia_no_support", "critical_omission",
+        "A symptomatic bradycardia is left without any attempt to support the rate or the "
+        "circulation.",
+        "The arrival record carries a rate below 50 with hypotension or an altered mental "
+        "state, and no atropine, pacing, chronotropic infusion or antidote is executed "
+        "within the window.",
+        ["Arrival observables and the monitor"], window,
+        ["Atropine, pacing, a chronotropic infusion or the antidote the cause calls for",
+         "an antidote given without atropine where the cause is already known"],
+        "An executed rate-supporting or antidote action, or its absence across every "
+        "executed turn in the window.",
+        ["The encounter closed before the window opened",
+         "the interpreter refused the order and the resident was never told what it could accept"],
+        ["D1", "D3"],
+        [("chief_complaint", "what happened before the collapse, in the family's own words"),
+         ("medications", "what this patient takes and whether a dose changed")])
+
+
+_BRADY_D1 = _d(
+    "The rate, the pressure and the perfusion are all on arrival: the priority is to support "
+    "the circulation while the cause is being established, not after it.",
+    ["Names the instability within the window", "acts on it before completing the investigation"],
+    ["Naming the threat without naming a cause", "acting first and naming it in the same turn"],
+    (0, 15), actions=("atropine", "transcutaneous_pacing", "calcium", "glucagon"))
+
+_BRADY_D4 = _d(
+    "The engine answers to what is given and runs a clock: a dose that does nothing, and an "
+    "antidote that fades, are both observable.",
+    ["States a reassessment interval and what will be checked",
+     "checks the rate, the pressure and the perfusion after each attempt"],
+    ["Reassessing the rhythm as well as the rate", "a shorter interval than stated"],
+    (5, 90), actions=("reassessment",))
+
+
+def _bradycardia(case_id, d2, d3, d5, critical_events):
+    return {case_id: {
+        "domains": {"D1": _BRADY_D1, "D2": d2, "D3": d3, "D4": _BRADY_D4, "D5": d5},
+        "information": ("Arrival observables, the monitor and the twelve-lead",
+                        "the medication list and the course of the day, on asking",
+                        "the examination of the pulse, the neck and the peripheries",
+                        "laboratory including the potassium and the glucose, and POCUS"),
+        "closure": "A disposition is decided, or the horizon of the encounter is reached.",
+        "engine_limits": ("The engine does not place a transvenous wire; a referral is "
+                          "recorded, not its result.",
+                          "It does not run extracorporeal support or high-dose insulin "
+                          "euglycaemic therapy; what it runs is what is listed as executable."),
+        "critical_events": critical_events,
+    }}
+
+
+CASES.update(_bradycardia(
+    "bradycardia_ccb_68m",
+    _d("The glucose, the potassium and the medication list together separate a poisoning "
+       "from a primary conduction problem, and the boxes came in with the daughter.",
+       ["Obtains the medication history", "relates the glucose and the normal potassium to it"],
+       ["Reaching the poisoning from the history alone",
+        "the glucose noticed on the arrival observables rather than requested"],
+       (0, 40), studies=("basic_labs", "poc_glucose", "ecg"), examination=("Cardiac",)),
+    _d("Calcium and glucagon are both executable, and the engine prices them by the cause: "
+       "one of them answers this blockade and the other barely does.",
+       ["Executes the antidote the cause calls for, with a dose and a route",
+        "does not stop at atropine once it has done nothing"],
+       ["Both antidotes given in sequence with the uncertainty stated",
+        "a chronotropic infusion alongside the antidote"],
+       (0, 40), actions=("calcium", "glucagon", "atropine")),
+    _d("The antidote fades and this engine does not run the definitive therapy: the "
+       "continuity decision is who is involved and where this patient is watched.",
+       ["Asks for help with the poisoning named",
+        "decides the level of care and states what is watched as the antidote wears off"],
+       ["Toxicology or the poisons centre named as the help",
+        "a critical-care bed decided alongside the referral"],
+       (15, 180), actions=("consult", "disposition")),
+    [_bradycardia_no_support(),
+     _event(
+         "bradycardia_cause_unexamined", "critical_omission",
+         "The rate is treated without the cause being pursued, in a patient whose poisoning "
+         "is in the medication history.",
+         "Atropine or pacing is executed, the response is inadequate, and nothing in the "
+         "record pursues the cause: no medication history is obtained and no antidote is "
+         "given within the window. It applies whether or not the learner asked about the "
+         "medicines: the daughter is present with the boxes and can be asked, and never "
+         "asking is part of the omission rather than an excuse for it.",
+         ["An executed rate-supporting action", "the observables after it"], (5, 90),
+         ["An antidote given", "a recorded medication history",
+          "a toxicology consultation with the poisoning named"],
+         "An executed atropine or pacing action with no antidote, no consultation and no "
+         "recorded medication history in any executed turn of the window.",
+         ["The encounter closed before any rate-supporting action was executed"],
+         ["D2", "D5"],
+         [("medications", "the verapamil and the dose that was doubled last week"),
+          ("exposure", "that there is no other medicine in the house")])]))
+
+CASES.update(_bradycardia(
+    "bradycardia_avb3_78f",
+    _d("The twelve-lead carries the dissociation, and the potassium, the glucose and the "
+       "medication list are all available to exclude the causes that have an antidote.",
+       ["Requests the twelve-lead and interprets the block",
+        "excludes a drug or an electrolyte cause from the history and the laboratory"],
+       ["Naming the block from the monitor and confirming it on the twelve-lead",
+        "excluding the drug cause from the history without the laboratory"],
+       (0, 40), studies=("ecg", "basic_labs"), examination=("Cardiac",)),
+    _d("Atropine, pacing and a chronotropic infusion are all executable, and the pacer has "
+       "a rate and an output that this patient's threshold answers separately.",
+       ["Paces when the atropine does nothing",
+        "sets an output and confirms capture rather than accepting the set rate"],
+       ["A chronotropic infusion while the pacer is being set up",
+        "pacing first with the atropine stated as unlikely to work"],
+       (0, 45), actions=("atropine", "transcutaneous_pacing")),
+    _d("Transcutaneous pacing is a bridge and this engine does not place a wire: the "
+       "continuity decision is who does, and what holds the patient until then.",
+       ["Arranges the definitive pacing or the service that provides it",
+        "states what is watched while it is arranged"],
+       ["Transfer stated as the pacing pathway",
+        "a critical-care bed decided alongside the referral"],
+       (15, 180), actions=("consult", "disposition")),
+    [_bradycardia_no_support(),
+     _event(
+         "bradycardia_pacing_unconfirmed", "dangerous_action",
+         "Pacing is started and capture is never confirmed.",
+         "A transcutaneous pacing action is executed and no reassessment of the pulse, the "
+         "pressure or the perfusion follows it within the window, so a monitor showing the "
+         "set rate is treated as a circulation.",
+         ["An executed transcutaneous pacing action"], (0, 30),
+         ["A reassessment naming the pulse, the pressure or the perfusion after pacing",
+          "the output raised after an explicit failure to capture"],
+         "An executed pacing action with no reassessment action in the window that follows it.",
+         ["The encounter closed before the window that follows the pacing"],
+         ["D3", "D4"])]))

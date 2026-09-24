@@ -11,7 +11,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 | Casos | Cobertura completa | Evaluación parcial | Discrepancias | Eventos críticos |
 |---|---|---|---|---|
-| 21 | 21 | 0 | 0 | 16 definiciones distintas |
+| 27 | 27 | 0 | 0 | 27 definiciones distintas |
 
 ## Por caso
 
@@ -23,8 +23,12 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 | `acs_52m_de_winter` | acs | ✅ | ✅ | ✅ | ✅ | ✅ | `acs_no_antiplatelet`, `acs_provocation_test` |
 | `acs_48m_wellens` | acs | ✅ | ✅ | ✅ | ✅ | ✅ | `acs_no_antiplatelet`, `acs_provocation_test` |
 | `acs_70f_left_main` | acs | ✅ | ✅ | ✅ | ✅ | ✅ | `acs_no_antiplatelet`, `acs_provocation_test` |
+| `anaphylaxis_29f` | anaphylaxis | ✅ | ✅ | ✅ | ✅ | ✅ | `anaphylaxis_no_epinephrine`, `anaphylaxis_antihistamine_only`, `anaphylaxis_unsafe_discharge` |
+| `anaphylaxis_63m_betablocked` | anaphylaxis | ✅ | ✅ | ✅ | ✅ | ✅ | `anaphylaxis_no_epinephrine`, `anaphylaxis_antihistamine_only`, `anaphylaxis_unexamined_refractory` |
 | `asthma_24f` | asthma | ✅ | ✅ | ✅ | ✅ | ✅ | `asthma_no_bronchodilator` |
 | `asthma_49m` | asthma | ✅ | ✅ | ✅ | ✅ | ✅ | `asthma_no_bronchodilator`, `asthma_no_ventilatory_support` |
+| `bradycardia_ccb_68m` | bradycardia | ✅ | ✅ | ✅ | ✅ | ✅ | `bradycardia_no_support`, `bradycardia_cause_unexamined` |
+| `bradycardia_avb3_78f` | bradycardia | ✅ | ✅ | ✅ | ✅ | ✅ | `bradycardia_no_support`, `bradycardia_pacing_unconfirmed` |
 | `gi_bleed_57m` | gi_bleed | ✅ | ✅ | ✅ | ✅ | ✅ | `gi_no_resuscitation` |
 | `gi_bleed_72f` | gi_bleed | ✅ | ✅ | ✅ | ✅ | ✅ | `gi_no_resuscitation` |
 | `hypoglycemia_28m` | hypoglycemia | ✅ | ✅ | ✅ | ✅ | ✅ | `hypo_no_glucose` |
@@ -38,6 +42,8 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 | `pulmonary_edema_75f` | pulmonary_edema | ✅ | ✅ | ✅ | ✅ | ✅ | `edema_no_ventilatory_support`, `edema_volume_loading` |
 | `pulmonary_embolism_33f` | pulmonary_embolism | ✅ | ✅ | ✅ | ✅ | ✅ | `pe_no_anticoagulation`, `pe_unindicated_thrombolysis` |
 | `pulmonary_embolism_61m` | pulmonary_embolism | ✅ | ✅ | ✅ | ✅ | ✅ | `pe_no_anticoagulation` |
+| `renal_colic_34m` | renal_colic | ✅ | ✅ | ✅ | ✅ | ✅ | `colic_missed_infection` |
+| `obstructive_pyelonephritis_58f` | renal_colic | ✅ | ✅ | ✅ | ✅ | ✅ | `pyelo_no_antibiotic`, `pyelo_no_source_control`, `pyelo_unsafe_discharge` |
 
 ## Los cinco dominios
 
@@ -327,6 +333,118 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Exclusiones: The order was considered in writing but never submitted as an order.
   - Dominios sobre los que pesa: D3.
 
+### `anaphylaxis_29f`
+
+- **D1** · ventana 0–15 min. The reaction is in front of the resident on arrival: the skin, the airway and the pressure all carry it, and there is a priority to decide between treating it and investigating what caused it.
+  - Esperado: Names the reaction or the threat it represents within the window; treats before pursuing confirmation.
+  - Alternativas aceptables: Naming it as an allergic reaction without the word anaphylaxis; acting first and naming it in the same turn.
+- **D2** · ventana 0–30 min. The exposure, the timing and the medication list are all available for the asking, and the examination separates a warm shock from a cold one.
+  - Esperado: Obtains the exposure and its timing; relates the skin, the chest and the peripheries to one explanation.
+  - Alternativas aceptables: Reaching the explanation from the examination without naming the trigger; using POCUS to exclude the congested alternatives.
+- **D3** · ventana 0–20 min. Adrenaline is executable by the intramuscular route and as a diluted intravenous dose or an infusion; volume, oxygen and the adjuncts are all available.
+  - Esperado: Executes adrenaline with a dose and a route; adds volume and oxygen to the reaction rather than instead of it.
+  - Alternativas aceptables: An autoinjector strength stated as such; the intravenous route with the dilution stated.
+- **D4** · ventana 2–60 min. The intramuscular route takes minutes to act, and the engine runs a clock: what the first dose did, and when, is observable.
+  - Esperado: States a reassessment interval and what will be checked; checks the pressure, the saturation and the airway after the dose.
+  - Alternativas aceptables: Reassessing on the airway alone when that is the threat; a shorter interval than stated.
+- **D5** · ventana 15–180 min. The reaction settles, and the decision is what happens next: how long this patient is watched, and what they leave with.
+  - Esperado: Decides an observation period rather than a discharge on the response alone; states what would bring the patient back and what they leave with.
+  - Alternativas aceptables: Admission stated as the observation; a discharge with the return criteria and the autoinjector stated.
+
+**Información accesible:** Arrival observables and the monitor; the exposure, its timing and the medication list, on asking; the examination of the skin, the chest and the peripheries; laboratory, POCUS and chest radiograph.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine does not perform a serum tryptase; the diagnosis is clinical here.
+- A referral to allergy is recorded, not its result.
+
+**Eventos críticos:**
+
+- `anaphylaxis_no_epinephrine` — **Omisión crítica.** No adrenaline is given in a reaction that presents as anaphylaxis.
+  - Se activa cuando: The arrival record carries an acute reaction after an exposure with airway, breathing or circulatory involvement, and no adrenaline is executed by any route within the window.
+  - Información que debía estar en el registro: Arrival observables; the examination of the skin and the chest.
+  - Ventana y oportunidad: 0–15 min.
+  - Disponible preguntando, se haya preguntado o no: **Recent exposures** (what the patient was exposed to and when); **Presenting symptoms** (the reaction in the patient's or the family's own words).
+  - Alternativas aceptables: Adrenaline by any route, stated as such; withholding it with a stated reason the record supports.
+  - Evidencia necesaria: An executed adrenaline action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened; the interpreter refused the order and the resident was never told what it could accept.
+  - Dominios sobre los que pesa: D1, D3.
+- `anaphylaxis_antihistamine_only` — **Acción peligrosa.** The reaction is treated with a steroid or a bronchodilator instead of adrenaline.
+  - Se activa cuando: A steroid or a bronchodilator is executed within the window and no adrenaline is, so the treatment given cannot act on the reaction.
+  - Información que debía estar en el registro: Arrival observables.
+  - Ventana y oportunidad: 0–20 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (whether this patient has asthma, which a wheeze alone would not settle).
+  - Alternativas aceptables: The same drugs given after adrenaline, as adjuncts; a bronchodilator for a wheeze in a patient who has already had adrenaline.
+  - Evidencia necesaria: An executed steroid or bronchodilator with no executed adrenaline action before it or within the window.
+  - Exclusiones: Adrenaline was executed first or in the same turn.
+  - Dominios sobre los que pesa: D3.
+- `anaphylaxis_unsafe_discharge` — **Omisión crítica.** The patient is discharged after the reaction settles without an observation period or stated return criteria.
+  - Se activa cuando: A discharge disposition is executed after the reaction settles, and the record carries neither an observation period nor the criteria for returning. It applies whether or not the learner asked how quickly it came on: the patient is in front of them and can be asked, and never asking is part of the omission rather than an excuse for it.
+  - Información que debía estar en el registro: An executed discharge disposition; the observables at the time of that decision.
+  - Ventana y oportunidad: 15–180 min.
+  - Disponible preguntando, se haya preguntado o no: **Onset and course** (how quickly the reaction came on, which is what a biphasic one repeats); **Previous health** (whether this has happened before).
+  - Alternativas aceptables: An observation period stated with its length; a discharge with the return criteria and the prescribed adrenaline stated; handover to a service that will observe.
+  - Evidencia necesaria: An executed discharge action with no observation period or return criteria in any executed turn of the encounter.
+  - Exclusiones: The encounter reached its horizon before any disposition was decided.
+  - Dominios sobre los que pesa: D1, D5.
+
+### `anaphylaxis_63m_betablocked`
+
+- **D1** · ventana 0–15 min. The reaction is in front of the resident on arrival: the skin, the airway and the pressure all carry it, and there is a priority to decide between treating it and investigating what caused it.
+  - Esperado: Names the reaction or the threat it represents within the window; treats before pursuing confirmation.
+  - Alternativas aceptables: Naming it as an allergic reaction without the word anaphylaxis; acting first and naming it in the same turn.
+- **D2** · ventana 0–30 min. The exposure, the timing and the medication list are all available for the asking, and the examination separates a warm shock from a cold one.
+  - Esperado: Obtains the exposure and its timing; relates the skin, the chest and the peripheries to one explanation.
+  - Alternativas aceptables: Reaching the explanation from the examination without naming the trigger; using POCUS to exclude the congested alternatives.
+- **D3** · ventana 0–20 min. Adrenaline is executable by the intramuscular route and as a diluted intravenous dose or an infusion; volume, oxygen and the adjuncts are all available.
+  - Esperado: Executes adrenaline with a dose and a route; adds volume and oxygen to the reaction rather than instead of it.
+  - Alternativas aceptables: An autoinjector strength stated as such; the intravenous route with the dilution stated.
+- **D4** · ventana 2–60 min. The intramuscular route takes minutes to act, and the engine runs a clock: what the first dose did, and when, is observable.
+  - Esperado: States a reassessment interval and what will be checked; checks the pressure, the saturation and the airway after the dose.
+  - Alternativas aceptables: Reassessing on the airway alone when that is the threat; a shorter interval than stated.
+- **D5** · ventana 15–180 min. The response to the adrenaline is smaller than it should be, and the decision is whether to repeat it or to ask what is blunting it.
+  - Esperado: Compares the observed response with the one they expected; pursues the reason for the gap rather than only repeating the dose.
+  - Alternativas aceptables: Glucagon with the beta blockade stated; an adrenaline infusion with the inadequate response stated; asking for help with the refractory reaction named.
+
+**Información accesible:** Arrival observables and the monitor; the exposure, its timing and the medication list, on asking; the examination of the skin, the chest and the peripheries; laboratory, POCUS and chest radiograph.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine does not perform a serum tryptase; the diagnosis is clinical here.
+- A referral to allergy is recorded, not its result.
+
+**Eventos críticos:**
+
+- `anaphylaxis_no_epinephrine` — **Omisión crítica.** No adrenaline is given in a reaction that presents as anaphylaxis.
+  - Se activa cuando: The arrival record carries an acute reaction after an exposure with airway, breathing or circulatory involvement, and no adrenaline is executed by any route within the window.
+  - Información que debía estar en el registro: Arrival observables; the examination of the skin and the chest.
+  - Ventana y oportunidad: 0–15 min.
+  - Disponible preguntando, se haya preguntado o no: **Recent exposures** (what the patient was exposed to and when); **Presenting symptoms** (the reaction in the patient's or the family's own words).
+  - Alternativas aceptables: Adrenaline by any route, stated as such; withholding it with a stated reason the record supports.
+  - Evidencia necesaria: An executed adrenaline action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened; the interpreter refused the order and the resident was never told what it could accept.
+  - Dominios sobre los que pesa: D1, D3.
+- `anaphylaxis_antihistamine_only` — **Acción peligrosa.** The reaction is treated with a steroid or a bronchodilator instead of adrenaline.
+  - Se activa cuando: A steroid or a bronchodilator is executed within the window and no adrenaline is, so the treatment given cannot act on the reaction.
+  - Información que debía estar en el registro: Arrival observables.
+  - Ventana y oportunidad: 0–20 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (whether this patient has asthma, which a wheeze alone would not settle).
+  - Alternativas aceptables: The same drugs given after adrenaline, as adjuncts; a bronchodilator for a wheeze in a patient who has already had adrenaline.
+  - Evidencia necesaria: An executed steroid or bronchodilator with no executed adrenaline action before it or within the window.
+  - Exclusiones: Adrenaline was executed first or in the same turn.
+  - Dominios sobre los que pesa: D3.
+- `anaphylaxis_unexamined_refractory` — **Omisión crítica.** Adrenaline is repeated without the reason for its inadequate response being pursued.
+  - Se activa cuando: Two or more adrenaline doses are executed, the observables show an inadequate response, and nothing in the record pursues why: no medication history is obtained, no glucagon is given, and no help is asked for. It applies whether or not the learner asked about the medications: the family is present and can be asked, and never asking is part of the omission rather than an excuse for it.
+  - Información que debía estar en el registro: Two or more executed adrenaline actions; the observables after each of them.
+  - Ventana y oportunidad: 10–120 min.
+  - Disponible preguntando, se haya preguntado o no: **Medications** (the atenolol he took this morning); **Previous health** (the rhythm the beta blocker is for).
+  - Alternativas aceptables: Glucagon; an adrenaline infusion with the inadequate response stated; a consultation with the refractory reaction named.
+  - Evidencia necesaria: Two or more executed adrenaline actions with no glucagon, no consultation and no recorded history of the medications in any executed turn of the window.
+  - Exclusiones: Only one adrenaline dose was executed; the response recorded after the second dose was adequate.
+  - Dominios sobre los que pesa: D2, D5.
+
 ### `asthma_24f`
 
 - **D1** · ventana 0–15 min. Severe airflow obstruction is present at arrival and the work of breathing is visible on the monitor.
@@ -411,6 +529,99 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Evidencia necesaria: The absence of any executed airway or ventilation action in the window.
   - Exclusiones: The gas was never reported within the encounter; the resident's support order was refused by the interpreter.
   - Dominios sobre los que pesa: D3, D5.
+
+### `bradycardia_ccb_68m`
+
+- **D1** · ventana 0–15 min. The rate, the pressure and the perfusion are all on arrival: the priority is to support the circulation while the cause is being established, not after it.
+  - Esperado: Names the instability within the window; acts on it before completing the investigation.
+  - Alternativas aceptables: Naming the threat without naming a cause; acting first and naming it in the same turn.
+- **D2** · ventana 0–40 min. The glucose, the potassium and the medication list together separate a poisoning from a primary conduction problem, and the boxes came in with the daughter.
+  - Esperado: Obtains the medication history; relates the glucose and the normal potassium to it.
+  - Alternativas aceptables: Reaching the poisoning from the history alone; the glucose noticed on the arrival observables rather than requested.
+- **D3** · ventana 0–40 min. Calcium and glucagon are both executable, and the engine prices them by the cause: one of them answers this blockade and the other barely does.
+  - Esperado: Executes the antidote the cause calls for, with a dose and a route; does not stop at atropine once it has done nothing.
+  - Alternativas aceptables: Both antidotes given in sequence with the uncertainty stated; a chronotropic infusion alongside the antidote.
+- **D4** · ventana 5–90 min. The engine answers to what is given and runs a clock: a dose that does nothing, and an antidote that fades, are both observable.
+  - Esperado: States a reassessment interval and what will be checked; checks the rate, the pressure and the perfusion after each attempt.
+  - Alternativas aceptables: Reassessing the rhythm as well as the rate; a shorter interval than stated.
+- **D5** · ventana 15–180 min. The antidote fades and this engine does not run the definitive therapy: the continuity decision is who is involved and where this patient is watched.
+  - Esperado: Asks for help with the poisoning named; decides the level of care and states what is watched as the antidote wears off.
+  - Alternativas aceptables: Toxicology or the poisons centre named as the help; a critical-care bed decided alongside the referral.
+
+**Información accesible:** Arrival observables, the monitor and the twelve-lead; the medication list and the course of the day, on asking; the examination of the pulse, the neck and the peripheries; laboratory including the potassium and the glucose, and POCUS.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine does not place a transvenous wire; a referral is recorded, not its result.
+- It does not run extracorporeal support or high-dose insulin euglycaemic therapy; what it runs is what is listed as executable.
+
+**Eventos críticos:**
+
+- `bradycardia_no_support` — **Omisión crítica.** A symptomatic bradycardia is left without any attempt to support the rate or the circulation.
+  - Se activa cuando: The arrival record carries a rate below 50 with hypotension or an altered mental state, and no atropine, pacing, chronotropic infusion or antidote is executed within the window.
+  - Información que debía estar en el registro: Arrival observables and the monitor.
+  - Ventana y oportunidad: 0–20 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (what happened before the collapse, in the family's own words); **Medications** (what this patient takes and whether a dose changed).
+  - Alternativas aceptables: Atropine, pacing, a chronotropic infusion or the antidote the cause calls for; an antidote given without atropine where the cause is already known.
+  - Evidencia necesaria: An executed rate-supporting or antidote action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened; the interpreter refused the order and the resident was never told what it could accept.
+  - Dominios sobre los que pesa: D1, D3.
+- `bradycardia_cause_unexamined` — **Omisión crítica.** The rate is treated without the cause being pursued, in a patient whose poisoning is in the medication history.
+  - Se activa cuando: Atropine or pacing is executed, the response is inadequate, and nothing in the record pursues the cause: no medication history is obtained and no antidote is given within the window. It applies whether or not the learner asked about the medicines: the daughter is present with the boxes and can be asked, and never asking is part of the omission rather than an excuse for it.
+  - Información que debía estar en el registro: An executed rate-supporting action; the observables after it.
+  - Ventana y oportunidad: 5–90 min.
+  - Disponible preguntando, se haya preguntado o no: **Medications** (the verapamil and the dose that was doubled last week); **Recent exposures** (that there is no other medicine in the house).
+  - Alternativas aceptables: An antidote given; a recorded medication history; a toxicology consultation with the poisoning named.
+  - Evidencia necesaria: An executed atropine or pacing action with no antidote, no consultation and no recorded medication history in any executed turn of the window.
+  - Exclusiones: The encounter closed before any rate-supporting action was executed.
+  - Dominios sobre los que pesa: D2, D5.
+
+### `bradycardia_avb3_78f`
+
+- **D1** · ventana 0–15 min. The rate, the pressure and the perfusion are all on arrival: the priority is to support the circulation while the cause is being established, not after it.
+  - Esperado: Names the instability within the window; acts on it before completing the investigation.
+  - Alternativas aceptables: Naming the threat without naming a cause; acting first and naming it in the same turn.
+- **D2** · ventana 0–40 min. The twelve-lead carries the dissociation, and the potassium, the glucose and the medication list are all available to exclude the causes that have an antidote.
+  - Esperado: Requests the twelve-lead and interprets the block; excludes a drug or an electrolyte cause from the history and the laboratory.
+  - Alternativas aceptables: Naming the block from the monitor and confirming it on the twelve-lead; excluding the drug cause from the history without the laboratory.
+- **D3** · ventana 0–45 min. Atropine, pacing and a chronotropic infusion are all executable, and the pacer has a rate and an output that this patient's threshold answers separately.
+  - Esperado: Paces when the atropine does nothing; sets an output and confirms capture rather than accepting the set rate.
+  - Alternativas aceptables: A chronotropic infusion while the pacer is being set up; pacing first with the atropine stated as unlikely to work.
+- **D4** · ventana 5–90 min. The engine answers to what is given and runs a clock: a dose that does nothing, and an antidote that fades, are both observable.
+  - Esperado: States a reassessment interval and what will be checked; checks the rate, the pressure and the perfusion after each attempt.
+  - Alternativas aceptables: Reassessing the rhythm as well as the rate; a shorter interval than stated.
+- **D5** · ventana 15–180 min. Transcutaneous pacing is a bridge and this engine does not place a wire: the continuity decision is who does, and what holds the patient until then.
+  - Esperado: Arranges the definitive pacing or the service that provides it; states what is watched while it is arranged.
+  - Alternativas aceptables: Transfer stated as the pacing pathway; a critical-care bed decided alongside the referral.
+
+**Información accesible:** Arrival observables, the monitor and the twelve-lead; the medication list and the course of the day, on asking; the examination of the pulse, the neck and the peripheries; laboratory including the potassium and the glucose, and POCUS.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine does not place a transvenous wire; a referral is recorded, not its result.
+- It does not run extracorporeal support or high-dose insulin euglycaemic therapy; what it runs is what is listed as executable.
+
+**Eventos críticos:**
+
+- `bradycardia_no_support` — **Omisión crítica.** A symptomatic bradycardia is left without any attempt to support the rate or the circulation.
+  - Se activa cuando: The arrival record carries a rate below 50 with hypotension or an altered mental state, and no atropine, pacing, chronotropic infusion or antidote is executed within the window.
+  - Información que debía estar en el registro: Arrival observables and the monitor.
+  - Ventana y oportunidad: 0–20 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (what happened before the collapse, in the family's own words); **Medications** (what this patient takes and whether a dose changed).
+  - Alternativas aceptables: Atropine, pacing, a chronotropic infusion or the antidote the cause calls for; an antidote given without atropine where the cause is already known.
+  - Evidencia necesaria: An executed rate-supporting or antidote action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened; the interpreter refused the order and the resident was never told what it could accept.
+  - Dominios sobre los que pesa: D1, D3.
+- `bradycardia_pacing_unconfirmed` — **Acción peligrosa.** Pacing is started and capture is never confirmed.
+  - Se activa cuando: A transcutaneous pacing action is executed and no reassessment of the pulse, the pressure or the perfusion follows it within the window, so a monitor showing the set rate is treated as a circulation.
+  - Información que debía estar en el registro: An executed transcutaneous pacing action.
+  - Ventana y oportunidad: 0–30 min.
+  - Alternativas aceptables: A reassessment naming the pulse, the pressure or the perfusion after pacing; the output raised after an explicit failure to capture.
+  - Evidencia necesaria: An executed pacing action with no reassessment action in the window that follows it.
+  - Exclusiones: The encounter closed before the window that follows the pacing.
+  - Dominios sobre los que pesa: D3, D4.
 
 ### `gi_bleed_57m`
 
@@ -958,4 +1169,98 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Evidencia necesaria: The absence of an executed anticoagulation action in the window.
   - Exclusiones: The encounter closed before the confirming study was reported.
   - Dominios sobre los que pesa: D3.
+
+### `renal_colic_34m`
+
+- **D1** · ventana 0–20 min. Severe pain with preserved perfusion and a normal temperature: the priority is to relieve the pain and to establish that this is not the infected obstruction the same presentation can be.
+  - Esperado: Names the threat that has to be excluded, or excludes it; treats the pain within the window.
+  - Alternativas aceptables: Treating the pain first and naming the exclusion in the same turn.
+- **D2** · ventana 0–40 min. The urine, the temperature, the lactate and the renal study are all available, and together they separate a colic from an infected obstruction.
+  - Esperado: Requests the urine and the temperature; relates them to the dilatation on the study.
+  - Alternativas aceptables: Reaching the same separation from the examination and the urine without the lactate; the renal study read alongside the urine rather than before it.
+- **D3** · ventana 0–30 min. Analgesia is executable, and so is the antiemetic the vomiting calls for; the engine gives both and changes the pain score.
+  - Esperado: Executes an analgesic with a dose and a route; chooses an agent and a route the vomiting allows.
+  - Alternativas aceptables: An opioid where the anti-inflammatory is contraindicated or refused; an anti-inflammatory stated as first line.
+- **D4** · ventana 10–90 min. Pain is a number this engine reports and changes: what the analgesia did, and when, is observable.
+  - Esperado: States what will be checked and when; checks the pain and the observables after the analgesia.
+  - Alternativas aceptables: Reassessing the pain alone when the observables are normal.
+- **D5** · ventana 20–180 min. Nothing here requires admission, so the continuity decision is what this patient leaves with and what brings them back.
+  - Esperado: Decides the disposition on the findings rather than on the pain alone; states the follow-up and the reasons to return.
+  - Alternativas aceptables: Admission with a stated reason such as intractable pain or a solitary kidney; a period of observation stated as such.
+
+**Información accesible:** Arrival observables and the monitor; the urinary symptoms, the exposure and the fluid intake, on asking; the examination of the abdomen and the renal angles; urine, laboratory, lactate and the renal ultrasound.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine does not pass or remove a stone; the course inside the encounter is the pain and the observables.
+- An outpatient urology appointment is recorded, not its result.
+
+**Eventos críticos:**
+
+- `colic_missed_infection` — **Omisión crítica.** The patient is discharged without the urine or the temperature having been obtained.
+  - Se activa cuando: A discharge disposition is executed and neither a urinalysis nor a temperature appears anywhere in the record. It applies whether or not the learner asked about urinary symptoms: the patient is in front of them and can be asked, and never asking is part of the omission rather than an excuse for it.
+  - Información que debía estar en el registro: An executed discharge disposition.
+  - Ventana y oportunidad: 0–180 min.
+  - Disponible preguntando, se haya preguntado o no: **Urinary symptoms** (the absence of burning, frequency and visible blood); **Recent exposures** (the absence of instrumentation or a recent admission).
+  - Alternativas aceptables: A urinalysis or a temperature obtained at any point before the discharge; admission or observation instead of discharge.
+  - Evidencia necesaria: An executed discharge action with no urinalysis and no temperature in any executed turn of the encounter.
+  - Exclusiones: The encounter reached its horizon before any disposition was decided.
+  - Dominios sobre los que pesa: D2, D5.
+
+### `obstructive_pyelonephritis_58f`
+
+- **D1** · ventana 0–20 min. Fever, tachycardia, delayed refill and a raised lactate on a dilated collecting system: the priority is the sepsis and its source, before the pain.
+  - Esperado: Names the sepsis and its urinary source within the window; acts on the circulation before completing the investigation.
+  - Alternativas aceptables: Naming it as an infected obstruction without the word sepsis; acting first and naming it in the same turn.
+- **D2** · ventana 0–40 min. The urine, the temperature, the lactate and the renal study are all available, and together they separate a colic from an infected obstruction.
+  - Esperado: Requests the urine and the temperature; relates them to the dilatation on the study.
+  - Alternativas aceptables: Reaching the same separation from the examination and the urine without the lactate; the renal study read alongside the urine rather than before it.
+- **D3** · ventana 0–60 min. Cultures, antibiotics, volume and the urology referral are all executable, and the engine keeps the source behind the stone.
+  - Esperado: Takes cultures before or with the antibiotic and executes the antibiotic; resuscitates the circulation.
+  - Alternativas aceptables: An antibiotic given before the cultures with the urgency stated; vasopressor support where volume has not restored the pressure.
+- **D4** · ventana 10–120 min. The engine runs a clock and answers to what is given: the pressure, the rate and the lactate all move, and the antibiotic takes an hour to do anything.
+  - Esperado: States a reassessment interval and what will be checked; checks the response to the volume and the antibiotic.
+  - Alternativas aceptables: Reassessing the perfusion rather than the pressure alone; a shorter interval than stated.
+- **D5** · ventana 15–180 min. An antibiotic does not drain an obstructed kidney. The continuity decision is who decompresses it, when, and what is watched until they do.
+  - Esperado: Involves urology, or asks for decompression by name; states the level of care and what is watched while it is arranged.
+  - Alternativas aceptables: Transfer to a centre with urology stated as the decompression pathway; a critical-care bed decided alongside the referral.
+
+**Información accesible:** Arrival observables and the monitor; the urinary symptoms, the diabetes and the previous stone, on asking; the examination of the abdomen and the renal angles; urine, cultures, laboratory, lactate and the renal ultrasound.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine does not decompress a kidney; the referral is recorded, never its result, so the course inside the encounter is what treatment can and cannot do without it.
+- Culture identification and susceptibility are always pending here.
+
+**Eventos críticos:**
+
+- `pyelo_no_antibiotic` — **Omisión crítica.** No antibiotic is given in a recognised infected obstruction.
+  - Se activa cuando: The urine and the temperature are in the record and no antibiotic is executed within the window.
+  - Información que debía estar en el registro: Arrival observables; the urinalysis or the temperature result.
+  - Ventana y oportunidad: 0–60 min.
+  - Disponible preguntando, se haya preguntado o no: **Allergies** (whether the antibiotic can be given at all); **Urinary symptoms** (the cloudy, strong-smelling urine and the burning).
+  - Alternativas aceptables: An antibiotic withheld with a stated allergy and an alternative given.
+  - Evidencia necesaria: An executed antibiotic action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened; the interpreter refused the order and the resident was never told what it could accept.
+  - Dominios sobre los que pesa: D3.
+- `pyelo_no_source_control` — **Omisión crítica.** Urology is not involved and no decompression is asked for in an infected, obstructed kidney with sepsis.
+  - Se activa cuando: The renal study reports the dilatation, the urine is infected, the observables carry the sepsis, and no urology consultation and no decompression appear in the record within the window. It applies whether or not the learner asked about the previous stone: the patient is in front of them and can be asked, and never asking is part of the omission rather than an excuse for it.
+  - Información que debía estar en el registro: The renal ultrasound result; the urinalysis result; arrival observables.
+  - Ventana y oportunidad: 0–90 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (the stone on the same side three years ago); **Urinary symptoms** (the burning and the cloudy urine).
+  - Alternativas aceptables: Urology asked for by name; a nephrostomy or a ureteric stent asked for; transfer to a centre with urology stated as the decompression pathway.
+  - Evidencia necesaria: An executed consultation with urology, or a request for decompression, or their absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the renal study was reported.
+  - Dominios sobre los que pesa: D3, D5.
+- `pyelo_unsafe_discharge` — **Omisión crítica.** The patient is sent home or to an ambulatory pathway with the sepsis still recorded.
+  - Se activa cuando: A discharge disposition is executed while the record still carries fever, tachycardia or hypotension.
+  - Información que debía estar en el registro: An executed discharge disposition; the observables at the time of that decision.
+  - Ventana y oportunidad: 0–180 min.
+  - Disponible preguntando, se haya preguntado o no: **Onset and course** (the two days of pain and the rigors this morning).
+  - Alternativas aceptables: Admission, a critical-care bed or transfer; a discharge after the observables have returned, with the follow-up stated.
+  - Evidencia necesaria: An executed discharge action with fever, tachycardia or hypotension in the observables recorded at that decision.
+  - Exclusiones: The encounter reached its horizon before any disposition was decided.
+  - Dominios sobre los que pesa: D1, D5.
 

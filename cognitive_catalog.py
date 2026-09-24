@@ -16,6 +16,9 @@ FAMILY_LABELS = {
     "gi_bleed": "Upper gastrointestinal hemorrhage",
     "hypoglycemia": "Hypoglycemic altered mental status",
     "opioid": "Opioid-associated hypoventilation",
+    "anaphylaxis": "Anaphylaxis",
+    "renal_colic": "Ureteric colic and obstructive pyelonephritis",
+    "bradycardia": "Unstable bradycardia",
 }
 
 EVIDENCE_INTERPRETATION = (
@@ -66,7 +69,10 @@ BIAS_CHALLENGES = {
         ),
         "year": 1,
         "evidence_fields": ("expected_effect", "reassessment", "reflection"),
-        "families": ("hypoglycemia", "opioid"),
+        # The biphasic anaphylactic reaction is this challenge without any
+        # contrivance: the reaction settles, the resident decides it is over,
+        # and more than an hour later it comes back (2026-09-23).
+        "families": ("hypoglycemia", "opioid", "anaphylaxis"),
         "debrief_questions": (
             "What did the initial response explain, and what remained uncertain?",
             "What did you reassess before considering the immediate problem addressed?",
@@ -137,7 +143,9 @@ BIAS_CHALLENGES = {
         ),
         "year": 2,
         "evidence_fields": ("working_model", "management_priority", "reflection"),
-        "families": ("acs", "pulmonary_embolism"),
+        # A bradycardia that is not cardiac: the rate is the presentation and
+        # the cause is in the medication boxes (2026-09-23).
+        "families": ("acs", "pulmonary_embolism", "bradycardia"),
         "debrief_questions": (
             "Which features differed from the presentation you expected?",
             "What evidence kept a consequential alternative under consideration?",
@@ -154,7 +162,10 @@ BIAS_CHALLENGES = {
         ),
         "year": 2,
         "evidence_fields": ("working_model", "management_priority", "reassessment", "reflection"),
-        "families": ("gi_bleed", "pneumonia"),
+        # Flank pain with a stone on the ultrasound: the first positive finding
+        # explains the pain and says nothing about the fever, the lactate or
+        # who has to decompress the kidney (2026-09-23).
+        "families": ("gi_bleed", "pneumonia", "renal_colic"),
         "debrief_questions": (
             "What did the first positive finding explain?",
             "Which abnormalities or immediate needs remained unresolved?",
@@ -172,7 +183,10 @@ BIAS_CHALLENGES = {
         ),
         "year": 3,
         "evidence_fields": ("management_priority", "expected_effect", "reassessment", "reflection"),
-        "families": ("pulmonary_edema", "asthma"),
+        # A beta-blocked reaction answers a third as well as it should. The
+        # next action is not another dose of the same thing, and what says so
+        # is the response the resident just watched.
+        "families": ("pulmonary_edema", "asthma", "anaphylaxis"),
         "debrief_questions": (
             "What additional benefit did you expect from the next intervention?",
             "What response or potential harm would make you modify that plan?",

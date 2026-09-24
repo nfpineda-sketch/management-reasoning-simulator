@@ -28,7 +28,12 @@ VISUAL_CHOICES = {
         "neutral", "uncomfortable", "markedly uncomfortable", "passive",
         "sedated", "not recorded",
     ),
-    "skin_color": ("natural", "mild pallor", "pallor", "not recorded"),
+    # "Flushed" was added for the anaphylaxis family (2026-09-23). A
+    # distributive shock is warm and red, and a picture that shows pallor
+    # because the perfusion is impaired would contradict the examination the
+    # same case authors. It is a colour, not an interpretation: nothing here
+    # decides what caused it.
+    "skin_color": ("natural", "flushed", "mild pallor", "pallor", "not recorded"),
     "diaphoresis": ("absent", "mild", "marked", "not recorded"),
 }
 _PILOT_CHALLENGES = ("R1-03", "R1-04", "R2-01")
@@ -52,6 +57,27 @@ def hypoperfusion_visual_profile():
             "impaired": {"expression": "uncomfortable", "skin_color": "mild pallor"},
             "severely impaired": {"expression": "markedly uncomfortable", "skin_color": "pallor"},
             "critical": {"expression": "markedly uncomfortable", "skin_color": "pallor"},
+        },
+    }
+
+
+def distributive_visual_profile():
+    """A warm, red shock: the colour does not follow the falling pressure.
+
+    The peripheral-flow categories still drive the expression, because the
+    patient is still unwell, but the skin stays flushed while the reaction is
+    what is wrong with them. Authored for the anaphylaxis family; nothing
+    infers it from a number.
+    """
+    return {
+        "id": "distributive_flush_v1",
+        "baseline": {"expression": "uncomfortable", "skin_color": "flushed"},
+        "perfusion_appearance": {
+            "preserved": {"expression": "neutral", "skin_color": "natural"},
+            "mildly impaired": {"expression": "uncomfortable", "skin_color": "flushed"},
+            "impaired": {"expression": "uncomfortable", "skin_color": "flushed"},
+            "severely impaired": {"expression": "markedly uncomfortable", "skin_color": "flushed"},
+            "critical": {"expression": "markedly uncomfortable", "skin_color": "flushed"},
         },
     }
 

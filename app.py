@@ -6806,7 +6806,7 @@ REASONING_GATE_ACTION_TYPES = {
     "antibiotics", "disposition",
     "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "p2y12", "diuretic", "dextrose",
     "naloxone", "blood", "anticoagulation", "bag_mask", "consult", "nitroglycerin_bolus", "magnesium",
-    "epinephrine", "epinephrine_bolus", "continuous_bronchodilator",
+    "epinephrine", "epinephrine_bolus", "epinephrine_im", "continuous_bronchodilator",
     # Named by its role; the engine resolves which infusion before it runs.
     "infusion_adjustment",
 }
@@ -7019,7 +7019,11 @@ def merge_cues(parsed, found, refused=0):
     added = 0
     for row in found or ():
         key = reasoning_cues.key(row.get("finding"))
-        if not key or key in seen:
+        # One finding written twice at different lengths is one finding. A real
+        # encounter on 2026-09-23 produced "crepitantes" from the patterns and
+        # "crepitantes en la base derecha" from the model, and listing both
+        # would count one observation as two.
+        if not key or any(key in other or other in key for other in seen):
             continue
         seen.add(key)
         existing.append(dict(row))
@@ -7206,6 +7210,8 @@ def _reasoning_gate_action_summary(parsed):
         elif atype == "cardioversion":
             energy = action.get("energy_j")
             labels.append(f"synchronized cardioversion {energy:g} J" if energy is not None else "synchronized cardioversion")
+        elif atype == "epinephrine_im":
+            labels.append(f"epinephrine {action.get('dose_mg', 0):g} mg {action.get('route') or 'IM'}")
         elif atype == "procedural_sedation":
             labels.append(procedural_sedation_label(action))
         elif atype in {"norepinephrine", "dobutamine"}:
