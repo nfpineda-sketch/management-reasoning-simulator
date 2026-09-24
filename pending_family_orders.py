@@ -26,9 +26,15 @@ def hold_incomplete_bundle(parsed, state=None):
     parsed = deepcopy(parsed)
     parsed['actions'] = [deepcopy(a.get('pending_action', a)) for a in parsed.get('actions', [])]
     if state is not None:
+        # Only a study nobody can ask for is held for a replacement. A recognised
+        # study this case does not carry is recorded by the engine as asked for
+        # and not modelled, and the rest of the bundle runs (faculty, 2026-09-24):
+        # asking the resident to swap it for another would be the old refusal.
+        from family_reports import TEST_LABELS
         available = state.get('encounter_spec', {}).get('clinical_case', {}).get('investigations', {})
         for a in parsed.get('actions', []):
-            if a.get('type') == 'diagnostic' and a.get('diagnostic') not in available and a.get('diagnostic') != 'ecg':
+            if (a.get('type') == 'diagnostic' and a.get('diagnostic') not in available
+                    and a.get('diagnostic') != 'ecg' and a.get('diagnostic') not in TEST_LABELS):
                 a['requested_diagnostic'] = a.get('diagnostic')
                 a['diagnostic'] = None
     indices = [i for i,a in enumerate(parsed.get('actions', [])) if missing_fields(a)]

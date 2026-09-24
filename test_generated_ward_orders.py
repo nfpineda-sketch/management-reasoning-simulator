@@ -154,9 +154,16 @@ def test_the_additional_leads_are_recordable_when_a_coronary_is_declared():
     assert reports and "V4R" in reports[0]["result"]["report"]
 
 
-def test_without_a_coronary_the_additional_leads_are_unavailable():
+def test_without_a_coronary_the_additional_leads_are_asked_for_and_not_invented():
+    """Until 2026-09-24 the whole order was refused as "unavailable". The
+    request is now recorded as not modelled in this version of the simulator,
+    the rest runs, and no V4R is invented for a heart nobody declared."""
+    from family_engine import STUDY_NOT_PERFORMED
     result = run(fresh(), "Quiero descartar compromiso derecho, porque la presion esta baja. La prioridad "
                           "ahora es registrar. Pide un electrocardiograma con derivadas derechas. "
                           "Espero ver V4R. Reevalua en 10 minutos presion.")
-    assert not result["executed"]
-    assert "unavailable" in result["clarification"]
+    assert result["executed"], result.get("clarification")
+    [asked] = [s for s in result["action_summaries"] if s.get("type") == STUDY_NOT_PERFORMED]
+    assert asked["diagnostic"] == "ecg_right" and asked["not_performed"] == "not_modeled"
+    assert not [s for s in result["action_summaries"] if s.get("diagnostic_type") == "ecg_right"]
+    assert "unavailable" not in asked["label"].lower()

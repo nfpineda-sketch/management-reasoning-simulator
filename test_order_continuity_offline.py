@@ -26,9 +26,19 @@ class ContinuityTests(unittest.TestCase):
   self.assertTrue(s['pending_investigations']);self.assertEqual(s['family_state']['fluid_delivered_ml'],0)
   execute(s,parse_family_actions('Reassess in 1 min'))
   self.assertEqual(s['family_state']['fluid_delivered_ml'],100)
- def test_replacement_preserves_treatments_and_reassessment(self):
+ def test_a_recognised_study_the_case_lacks_is_recorded_and_the_rest_runs(self):
+  # Until 2026-09-24 this refused the whole bundle; the fluid and the oxygen
+  # went with the troponin. The request is now recorded as not modelled.
   s=state();p=parse_family_actions('Give 1000 NS. Start oxygen 4l/m nasal cannula. Troponin. Reassess in 1 min')
   s['encounter_spec']['clinical_case']['investigations'].pop('troponin',None)
+  self.assertIsNone(hold_incomplete_bundle(p,s))
+  result=execute(s,p);self.assertTrue(result['executed'])
+  self.assertEqual([a.get('not_performed') for a in result['action_summaries'] if a.get('diagnostic')=='troponin'],['not_modeled'])
+  self.assertEqual(s['family_state']['fluid_delivered_ml'],50)
+ def test_replacement_preserves_treatments_and_reassessment(self):
+  # A study nobody can ask for is still refused, and held for a replacement.
+  s=state();p=parse_family_actions('Give 1000 NS. Start oxygen 4l/m nasal cannula. Troponin. Reassess in 1 min')
+  p['actions'][2]['diagnostic']='troponin_iv'
   self.assertFalse(execute(s,p)['executed']);self.assertEqual(s['sim_time'],0)
   held=hold_incomplete_bundle(p,s)
   resolved=complete_bundle(held,'ok basic labs')['parsed']
