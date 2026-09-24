@@ -270,6 +270,8 @@ _RULES = (
  (r"\bTroponin\b", "Troponina"), (r"\bLactate\b", "Lactato"), (r"\bHemoglobin\b", "Hemoglobina"),
  (r"\bTemperature\b", "Temperatura"), (r"\bUrinalysis\b", "Orina completa"),
  (r"\bCT pulmonary angiography\b", "AngioTAC de tórax"),
+ (r"\bHead CT\b", "Tomografía de cerebro"), (r"\bAbdominal CT\b", "Tomografía de abdomen"),
+ (r"\bBlood group and crossmatch\b", "Grupo y pruebas cruzadas"),
  (r"\bRight-sided ECG \(V3R-V4R\)", "ECG con derivadas derechas (V3R-V4R)"),
  (r"\bPosterior ECG \(V7-V9\)", "ECG con derivaciones posteriores (V7-V9)"),
  (r"\bGlucose (\d+) mg/dL", r"Glucosa \1 mg/dL"),
@@ -294,6 +296,7 @@ _RULES = (
  (r"\bPATIENT HISTORY\b", "ANAMNESIS"), (r"\bEXAMINATION\b", "EXAMEN FÍSICO"),
  (r"\bCLINICAL UPDATE\b", "ACTUALIZACIÓN CLÍNICA"), (r"\bCLARIFICATION\b", "ACLARACIÓN"),
  (r"\bDIAGNOSTIC RESULTS\b", "RESULTADOS DE EXÁMENES"), (r"\bPROCEDURE\b", "PROCEDIMIENTO"),
+ (r"\bSTUDY REQUESTED\b", "ESTUDIO SOLICITADO"),
  (r"\bREASONING COMPLETION\b", "COMPLETAR EL RAZONAMIENTO"),
  (r"\bCONTEXT CHECK — DOES NOT BLOCK EXECUTION\b", "REVISIÓN DE CONTEXTO — NO BLOQUEA LA EJECUCIÓN"),
  (r"^YOU$", "TÚ"), (r"^PROTOTYPE$", "PROTOTIPO"),
@@ -354,6 +357,17 @@ _RULES = (
  (r"Specify the dose, the dose units and the route\.", "Indica la dosis, sus unidades y la vía."),
  (r"\bSpecify the ", "Indica "), (r"\bSpecify an? ", "Indica "), (r"\bSpecify one ", "Indica un solo "),
  (r"Requested study '([\w_]+)' is unavailable\.", r"El examen solicitado '\1' no está disponible."),
+ # A study recognised and not modelled (2026-09-24). The study's own name is
+ # translated by the label table below; the sentence around it here.
+ (r"Study requested; not modelled in this version of the simulator: (.+?)\. The request is recorded "
+  r"with its time; no result will be produced and none is invented\.",
+  r"Estudio solicitado; no modelado en esta versión del simulador: \1. La solicitud queda "
+  r"registrada con su hora; no habrá resultado y no se inventa ninguno."),
+ (r"Not available in this service: (.+?)\. ", r"No disponible en este servicio: \1. "),
+ (r"Specify whether to transfuse these units now, with the number of units, or to request a "
+  r"crossmatch to have them reserved\.",
+  "Indica si quieres transfundir estas unidades ahora, con el número de unidades, o pedir "
+  "grupo y pruebas cruzadas para dejarlas reservadas."),
  (r"Available studies:", "Exámenes disponibles:"),
  (r"No orders in this submission were executed\.", "No se ejecutó ninguna orden de esta entrega."),
  (r"Choose a reassessment within this case's supported time horizon\.",

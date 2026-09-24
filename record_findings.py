@@ -99,9 +99,13 @@ def order_stages(trace):
     for position, event in enumerate(trace):
         if not _ran(event):
             continue
+        unperformed = _not_performed(event)
         for action in event.get("interpreted_action") or []:
             key = _study_key(action) if isinstance(action, dict) else None
-            if not key:
+            if not key or str(key) in unperformed:
+                # A study this simulator does not produce for the case is not
+                # waiting for anything: it is recorded as requested and not
+                # modelled, never as a result that failed to arrive.
                 continue
             key = str(key)
             taken = claimed.setdefault(key, set())
@@ -141,8 +145,17 @@ def order_stages(trace):
                 if request_position == position and report_index is None:
                     awaiting.append(key)
         stages[f"trace:{position}"] = {"requested": requested, "reported": reported,
-                                       "awaiting": awaiting}
+                                       "awaiting": awaiting,
+                                       "not_performed": sorted(_not_performed(event))
+                                       if _ran(event) else []}
     return stages
+
+
+def _not_performed(event):
+    """Studies asked for in this decision that the simulator does not produce."""
+    return {str(action.get("diagnostic")) for action in (event.get("action_summaries") or [])
+            if isinstance(action, dict) and action.get("type") == "study_not_performed"
+            and action.get("diagnostic")}
 
 
 def urine_evidence(trace):

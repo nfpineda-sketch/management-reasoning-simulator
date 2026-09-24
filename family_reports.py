@@ -11,6 +11,9 @@ TEST_LABELS = {
     "ecg_right": "Right-sided ECG (V3R-V4R)", "ecg_posterior": "Posterior ECG (V7-V9)",
     "renal_ultrasound": "Renal tract ultrasound",
     "efast": "E-FAST", "pelvis_xray": "Pelvis X-ray",
+    # Recognised and not modelled in any case yet (faculty, 2026-09-24): a
+    # request is recorded, never answered with an invented result.
+    "crossmatch": "Blood group and crossmatch",
 }
 FIELDS = {
     "cortisol_ug_dl": "Cortisol (µg/dL)", "tsh_miu_l": "TSH (mIU/L)",

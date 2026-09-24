@@ -91,9 +91,14 @@ def test_the_d_dimer_is_ordered_where_it_exists_and_refused_where_it_does_not(en
     state = encounter(engine, "pulmonary_embolism", "pulmonary_embolism_33f")["state"]
     assert run(state, "pido dimero D")["executed"]
     # An unauthored study is absent, never silently reported as a negative test.
+    # Since 2026-09-24 the request is recorded as asked for and not modelled for
+    # this case, rather than refusing the submission -- and still nothing comes back.
     elsewhere = encounter(engine, "pneumonia", "pneumonia_46f")["state"]
-    refused = run(elsewhere, "pido dimero D")
-    assert not refused["executed"] and "unavailable" in refused["clarification"]
+    recorded = run(elsewhere, "pido dimero D")
+    assert recorded["executed"]
+    [summary] = recorded["action_summaries"]
+    assert summary["type"] == "study_not_performed" and summary["diagnostic"] == "d_dimer"
+    assert "d_dimer" not in (elsewhere.get("diagnostics") or {})
 
 
 def test_the_result_reads_in_spanish():

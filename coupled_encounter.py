@@ -490,6 +490,10 @@ def execute(state,parsed):
         for a,rules in zip(actions,selected):
             k=a['type']
             if k=='reassessment':reassess=a['delay_min'];continue
+            if k=='diagnostic' and a.get('not_performed'):
+                # Recorded as asked for, with its time; nothing is invented (2026-09-24).
+                from family_engine import not_performed_summary
+                summaries.append(not_performed_summary(a,candidate['sim_time']));continue
             if k=='diagnostic':
                 from family_engine import _ADDITIONAL_LEADS
                 delay=1 if a['diagnostic'] in {'ecg'}|_ADDITIONAL_LEADS else case['investigations'][a['diagnostic']].get('duration_min',0)

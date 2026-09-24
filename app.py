@@ -8988,7 +8988,7 @@ def format_clinical_update():
 # sentence in one language is never spliced into a sentence in the other.
 _TRANSLATED_EVENTS = frozenset({
     "clinical_update", "clarification", "procedure", "diagnostic_result",
-    "prototype", "reasoning_note", "reasoning_completion",
+    "prototype", "reasoning_note", "reasoning_completion", "study_not_performed",
 })
 
 
@@ -9007,6 +9007,9 @@ def render_event(event):
         "prototype": "PROTOTYPE",
         "diagnostic_result": "DIAGNOSTIC RESULTS",
         "procedure": "PROCEDURE",
+        # A study asked for that produces no result, with the reason in the text
+        # (2026-09-24): recorded, never answered with an invented result.
+        "study_not_performed": "STUDY REQUESTED",
     }
     if event["kind"] == "clinical_update":
         with st.container(border=True):
@@ -9976,6 +9979,8 @@ with st.container(key="encounter-console"):
                                  (ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"]))
                                 for ds in diagnostic_summaries]
                 timed_events += [("procedure", x["label"], x["time_min"]) for x in summaries if x.get("type") == "procedure"]
+                timed_events += [("study_not_performed", x["label"], x["time_min"])
+                                 for x in summaries if x.get("type") == "study_not_performed"]
                 timed_events += [("examination", x["label"], x.get("time_min", st.session_state.state["sim_time"]))
                                  for x in summaries if x.get("type") == "examination"]
                 # The reperfusion pathway is reported as its own entry, at the minute

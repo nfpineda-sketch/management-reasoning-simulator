@@ -91,9 +91,27 @@ _AGENTS = {
     },
     "diuretic": {"furosemide": r"furosemide|furosemida|lasix"},
 }
+CROSSMATCH = (r"crossmatch|cross[- ]match|type_and_screen|type and (?:screen|cross(?:match)?)|"
+              r"blood typ(?:e|ing)|grupo_y_pruebas|grupo y (?:pruebas cruzadas|rh|factor(?: rh)?)|"
+              r"grupo sanguineo|grupo y rh|pruebas cruzadas|pruebas de compatibilidad|"
+              r"tipificacion(?: sanguinea)?|clasificacion (?:sanguinea|abo)|"
+              r"reserv(?:a|ar|o|e)\w*\s+(?:de\s+)?(?:\d+\s+)?(?:(?:unidades?|u)\s+(?:de\s+)?)?"
+              r"(?:sangre|globulos rojos|hematies|gr\b)")
+_TRANSFUSING = re.compile(r"\b(?:transfund\w*|transfus\w*|pas(?:ar|o|e|a)|administr\w*|d(?:ar|oy|e)|give|"
+                          r"start|inici\w*|instal\w*|infund\w*)\b")
+
 _DIAGNOSTICS = {
-    "head_ct": r"head ct|ct head|brain ct|ct brain|tac(?:\s+de)?\s+cerebro|tc(?:\s+de)?\s+cerebro|tomografia(?:\s+de)?\s+cerebro",
+    # How a head CT is asked for here, found missing on 2026-09-24: "TC de
+    # craneo", "TAC cerebral", "tomografia computada de encefalo", "scanner".
+    "head_ct": r"head ct|ct head|brain ct|ct brain|ct (?:scan )?of the (?:head|brain)|head ct scan|"
+               r"(?:tac|tc|scanner|escaner|tomografia(?:\s+(?:axial\s+)?computa(?:da|rizada))?)"
+               r"(?:\s+de)?\s+(?:cerebro|craneo|encefalo)|"
+               r"(?:tac|tc|scanner|escaner|tomografia(?:\s+(?:axial\s+)?computa(?:da|rizada))?)\s+cerebral",
     "abdominal_ct": r"abdominal ct|ct abdomen|ct of the abdomen|tac(?:\s+de)?\s+abdomen|tc(?:\s+de)?\s+abdomen",
+    # The blood bank's request, recognised on 2026-09-24 and modelled in no case
+    # yet: it is recorded as asked for and answered with nothing invented. A
+    # reservation of units is this request too, and never a transfusion.
+    "crossmatch": CROSSMATCH,
     "cortisol": r"cortisol",
     "thyroid_function": r"thyroid function|thyroid tests|tsh|perfil tiroideo|funcion tiroidea",
     "ketones": r"ketones|beta[- ]hydroxybutyrate|cetonas|cetonemia|beta[- ]hidroxibutirato",
@@ -999,7 +1017,12 @@ def _parse_piece_core(piece, inherited=None):
         match = re.search(r"\b(?:" + pattern + r")\b", body)
         if diagnostic == "chest_xray" and other_region and not re.search(r"\btorax\b|\bchest\b", body):
             continue
-        if match and (verb in _DIAG_VERBS or re.fullmatch(r"\s*(?:" + pattern + r")\s*\??", body)):
+        # A crossmatch is asked for without a study verb as often as with one
+        # ("reservar 2 unidades", "grupo y pruebas cruzadas"). Only a verb that
+        # gives the blood makes the sentence a transfusion instead.
+        crossmatch = diagnostic == "crossmatch" and match and not _TRANSFUSING.search(body)
+        if match and (verb in _DIAG_VERBS or crossmatch
+                      or re.fullmatch(r"\s*(?:" + pattern + r")\s*\??", body)):
             diagnostics.append((match.start(), {"type": "diagnostic", "diagnostic": diagnostic}))
     if diagnostics:
         return [action for _, action in sorted(diagnostics, key=lambda x: x[0])], verb or "order"
@@ -1016,6 +1039,13 @@ def _parse_piece_core(piece, inherited=None):
         # already stated (measured 2026-09-23).
         if _is_reasoning(text):
             return [], None
+        # "Pido 2 unidades de globulos rojos" asks the blood bank for units, and
+        # whether to give them now or to have them reserved is the resident's to
+        # say: "the study was not recognized" named neither (2026-09-24).
+        if re.search(r"\b(?:unidades?|units?|u)\b", body) and re.search(
+                r"\b(?:prbcs?|packed red (?:blood )?cells|blood|sangre|globulos rojos|hematies)\b", body):
+            return [_clarification("Specify whether to transfuse these units now, with the number "
+                                   "of units, or to request a crossmatch to have them reserved.")], verb
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
@@ -1522,8 +1552,12 @@ def parse_family_actions(text) -> dict:
                 continue
         inherited = None
         negated = False
-        # Do not split the clinical device name "bag and mask".
+        # Do not split the clinical device name "bag and mask", nor the blood
+        # bank's two-word requests: "grupo" alone is not a study (2026-09-24).
         sentence = re.sub(r"\bbag and mask\b", "bag-mask", sentence)
+        sentence = re.sub(r"\bgrupo y (?=pruebas cruzadas|rh\b|factor)", "grupo_y_pruebas ", sentence)
+        sentence = re.sub(r"\btype and (?=screen|cross)", "type_and_", sentence)
+        sentence = re.sub(r"\btype_and_(?:screen|cross(?:match)?)\b", "type_and_screen", sentence)
         pieces = re.split(r"\s*(?:,|\+|\band\b|\by\b|\be\b(?=\s+[a-z])|\bthen\b|\bluego\b)\s*", sentence)
         # Ventilator settings written naturally ("intubate, VC/AC, FiO2 100% and
         # PEEP 5") belong to the airway order, not to separate orders.

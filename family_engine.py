@@ -343,6 +343,33 @@ def _already_given(state, kind, agent):
     return None
 
 
+STUDY_NOT_PERFORMED = "study_not_performed"
+NOT_MODELED_LABEL = "Study requested; not modelled in this version of the simulator"
+UNAVAILABLE_LABEL = "Not available in this service"
+
+
+def not_performed_summary(action, minute):
+    """A study the resident asked for that produces no result, and says why.
+
+    Two reasons and only two. ``not_modeled``: this version of the simulator has
+    no result for it in this case -- a limitation of the simulator, never of the
+    service and never the resident's. ``unavailable_in_service``: the scenario
+    itself withholds the resource, and the case states the reason. Nothing is
+    invented: no result, no normal report, no time spent waiting for one.
+    """
+    from family_reports import TEST_LABELS
+    key = str(action.get("diagnostic") or "")
+    name = TEST_LABELS.get(key, key.replace("_", " "))
+    if action.get("not_performed") == "unavailable_in_service":
+        label = f"{UNAVAILABLE_LABEL}: {name}. {action.get('reason', '')}".strip()
+    else:
+        label = (f"{NOT_MODELED_LABEL}: {name}. The request is recorded with its time; "
+                 "no result will be produced and none is invented.")
+    return {"type": STUDY_NOT_PERFORMED, "diagnostic": key,
+            "not_performed": action.get("not_performed", "not_modeled"),
+            "time_min": int(minute), "duration_min": 0, "label": label}
+
+
 def _failure(message):
     return {"executed": False, "clarification": message, "action_summaries": [], "reassess_delay": None, "elapsed_min": 0}
 
@@ -405,16 +432,38 @@ def _validate(state, parsed):
         if kind == "clarification":
             return None, _held_message(a, actions)
         if kind == "diagnostic":
-            study = _case(state).get("investigations", {}).get(a.get("diagnostic"), {})
-            if str(study.get("result", {}).get("report", "")).startswith("No result is recorded"):
-                return None, "That investigation has no available result in this encounter. It has not been reported as normal."
+            key = a.get("diagnostic")
+            # A resource the scenario itself withholds is a design decision
+            # stated in the case, with its reason: it is the only way a study
+            # may read as "not available in this service" (faculty, 2026-09-24).
+            withheld = (_case(state).get("resources_unavailable") or {}).get(key)
+            study = _case(state).get("investigations", {}).get(key, {})
+            if withheld:
+                a = {**a, "not_performed": "unavailable_in_service", "reason": str(withheld)}
+            elif str(study.get("result", {}).get("report", "")).startswith("No result is recorded"):
+                a = {**a, "not_performed": "not_modeled"}
             # A declared coronary carries its own additional leads in either
             # engine: they are read off the same declaration (2026-09-22).
-            if (a.get("diagnostic") in _ADDITIONAL_LEADS
+            elif (key in _ADDITIONAL_LEADS
                     and acs_reperfusion.coronary(state) is not None):
                 pass
-            elif a.get("diagnostic") != "ecg" and a.get("diagnostic") not in _case(state).get("investigations", {}):
-                return None, f"Requested study {a.get('diagnostic')!r} is unavailable. Available studies: {', '.join(sorted(_case(state).get('investigations', {})))}; ecg. No orders in this submission were executed."
+            elif key != "ecg" and key not in _case(state).get("investigations", {}):
+                from family_reports import TEST_LABELS
+                if key not in TEST_LABELS:
+                    # Not a study anybody can ask for: a malformed order, and the
+                    # whole submission is refused as it always was.
+                    return None, (f"Requested study {key!r} is unavailable. Available studies: "
+                                  f"{', '.join(sorted(_case(state).get('investigations', {})))}; ecg. "
+                                  "No orders in this submission were executed.")
+                # Recognised, and not something this version of the simulator
+                # can produce for this case. Until 2026-09-24 this refused the
+                # whole submission -- the glucose went with the head CT -- and
+                # read as though the service did not have the study. It is now
+                # recorded as asked for, with its time, and the rest runs.
+                a = {**a, "not_performed": "not_modeled"}
+            if a.get("not_performed"):
+                normalized.append(a)
+                continue
         elif kind == "reassessment":
             if not _number(a.get("delay_min"), 0, 120):
                 return None, "Specify a reassessment interval from 0 to 120 minutes."
@@ -2434,6 +2483,8 @@ def execute_family_bundle(state, parsed):
     for a in actions:
         if a["type"] == "reassessment":
             reassess = a["delay_min"]
+        elif a["type"] == "diagnostic" and a.get("not_performed"):
+            summaries.append(not_performed_summary(a, started_at))
         elif a["type"] == "diagnostic":
             declared = 1 if a["diagnostic"] == "ecg" else int(
                 _case(candidate)["investigations"][a["diagnostic"]].get("duration_min", 0))
@@ -2506,7 +2557,7 @@ def execute_family_bundle(state, parsed):
     # at the minute they happened, not as part of the resident's order.
     summaries.extend(candidate.get("family_state", {}).pop("procedure_events", []))
     candidate.get("family_state", {}).pop("endoscopy_deferral_reported", None)
-    if elapsed == 0 and summaries and any(s.get("type") not in {"consult", "reperfusion_referral", "disposition", "diagnostic", "procedure"} for s in summaries):
+    if elapsed == 0 and summaries and any(s.get("type") not in {"consult", "reperfusion_referral", "disposition", "diagnostic", "procedure", STUDY_NOT_PERFORMED} for s in summaries):
         _surface(candidate)
     state.clear()
     state.update(candidate)

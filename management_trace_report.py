@@ -746,6 +746,9 @@ def render_management_trace_pdf(
                     when.append(_t("result at {n:g} min").format(n=row["reported_at_min"]))
                 if when:
                     phrase += " · " + ", ".join(when)
+            elif study in stage.get("not_performed", ()):
+                # Recorded as asked for; the simulator has no result for it here.
+                phrase += " · " + _t("not modelled in this version of the simulator")
             elif study in stage["awaiting"]:
                 phrase += " · no result recorded"
             lines.append(phrase if phrase[:2].isupper() else phrase[:1].upper() + phrase[1:])

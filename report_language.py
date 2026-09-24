@@ -300,6 +300,8 @@ ES = {
         'Entrada no ejecutada',
     'Information obtained':
         'Información obtenida',
+    'not modelled in this version of the simulator':
+        'no modelado en esta versión del simulador',
     'Not assessed in this encounter':
         'No evaluado en este encuentro',
     'Not assessed in this encounter - no recorded opportunity to demonstrate it':

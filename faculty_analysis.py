@@ -52,7 +52,18 @@ _DIAGNOSTIC_FIELDS = frozenset("history finding report time_min collected_at_min
 # Every POCUS structure must reach the analysis, not only the original five.
 from pocus_report import POCUS_KEYS as _POCUS_KEYS
 _DIAGNOSTIC_FIELDS = _DIAGNOSTIC_FIELDS | frozenset(_POCUS_KEYS)
-_ACTION_FIELDS = frozenset("type volume_ml fluid_type cumulative_ml duration_min time_min agent dose dose_mg dose_g route support_type device flow_lpm operation rate units old_rate old_units rhythm_before rhythm_after energy_j diagnostic_type diagnostic service label agent_name rate_mcg_min mode pressure_cmh2o ipap_cmh2o epap_cmh2o fio2_percent ventilator_mode peep_cmh2o destination delay_min focus purpose synchronized cardioversion_success pre_rhythm administration_duration_min delivery_starts_at_min delivery_due_at_min administration_status ordered_dose_mg ordered_dose_g completed_at_min".split())
+# Six studies the bank carries never reached the brief or the rubric: a D-dimer,
+# an E-FAST, a pelvis film, a renal ultrasound and the additional leads were
+# requested, reported to the resident, and invisible to the analysis (found
+# 2026-09-24). The brief binds the record, not this source, so every saved brief
+# still renders.
+_DIAGNOSTIC_TYPES = _DIAGNOSTIC_TYPES | frozenset(
+    "d_dimer efast pelvis_xray renal_ultrasound ecg_right ecg_posterior".split())
+_DIAGNOSTIC_FIELDS = _DIAGNOSTIC_FIELDS | frozenset(
+    "d_dimer_ng_ml_feu upper_reference_ng_ml_feu lung_m_mode lung_sliding_left lung_sliding_right "
+    "luq_pleural luq_splenorenal luq_subdiaphragmatic ruq_morison ruq_pleural ruq_subdiaphragmatic "
+    "suprapubic_longitudinal suprapubic_transverse".split())
+_ACTION_FIELDS = frozenset("not_performed type volume_ml fluid_type cumulative_ml duration_min time_min agent dose dose_mg dose_g route support_type device flow_lpm operation rate units old_rate old_units rhythm_before rhythm_after energy_j diagnostic_type diagnostic service label agent_name rate_mcg_min mode pressure_cmh2o ipap_cmh2o epap_cmh2o fio2_percent ventilator_mode peep_cmh2o destination delay_min focus purpose synchronized cardioversion_success pre_rhythm administration_duration_min delivery_starts_at_min delivery_due_at_min administration_status ordered_dose_mg ordered_dose_g completed_at_min".split())
 _MEDICATION_FIELDS = frozenset(("dose_g", "ordered_dose_mg", "ordered_dose_g", "ordered_dose", "administration_status", "completed_at_min", "agent", "dose", "dose_mg", "route", "units"))
 _REASONING = frozenset("problem_representation management_priority rationale expected_effect preservation_goal reassessment_target".split())
 _REFLECTION = ("working_model_update", "priority_trigger", "alternative_action", "expected_response_reassessment")
