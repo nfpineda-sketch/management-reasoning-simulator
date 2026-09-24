@@ -368,3 +368,82 @@ def test_the_interval_spent_obtaining_information_is_in_the_trace(bedside):
     assert entry["interpreted_action"] == []
     assert entry["reasoning_gate"]["status"] == "not_required"
     assert "state_before" in entry and "state_after" in entry
+
+
+# --- a sequence the resident stated is a sequence the engine keeps -----------
+
+SEQ_REASON = (" Creo que es una neumonia grave. Espero que mejore la perfusion. "
+              "Reevaluo presion y saturacion en 5 minutos.")
+
+
+@pytest.mark.parametrize("text", [
+    "Pido un lactato y espero el resultado, luego doy ceftriaxona 2 g EV.",
+    "Pido un lactato. Cuando llegue, entonces doy ceftriaxona 2 g EV.",
+    "Pido un lactato. Tras el resultado, entonces doy ceftriaxona 2 g EV.",
+    "Order a lactate and wait for the result, then give ceftriaxone 2 g IV.",
+])
+def test_an_order_told_to_wait_for_a_result_says_so(engine, text):
+    parsed = engine["clinical_interpreter"](text + SEQ_REASON)
+    treatment = next(a for a in parsed["actions"] if a["type"] == "antibiotics")
+    assert treatment["after_result"] == "lactate"
+
+
+@pytest.mark.parametrize("text", [
+    "Doy oxigeno por mascarilla de no reinhalacion 15 L/min y luego reevaluo en 10 minutos.",
+    "Doy ceftriaxona 2 g EV y luego pido un lactato.",
+    "Give ceftriaxone 2 g IV, then reassess in 10 minutes.",
+])
+def test_merely_sequencing_two_orders_is_not_a_dependency(engine, text):
+    parsed = engine["clinical_interpreter"](text + SEQ_REASON)
+    assert not any(a.get("after_result") for a in parsed["actions"]), text
+
+
+def test_the_held_order_does_not_run_until_its_result_is_back(engine):
+    session, results = play(engine, "pneumonia", "pneumonia_46f", [
+        "Pido un panel de laboratorio y espero el resultado, luego doy ceftriaxona 2 g EV."
+        + SEQ_REASON])
+    assert session["state"]["treatments"].get("administered_medications", []) == []
+    held = [s for s in results[0]["action_summaries"] if s.get("type") == "deferred"]
+    assert held and "Held as instructed until basic labs is back" in held[0]["label"]
+    assert "expected at 10 min" in held[0]["label"]
+    assert family_engine.deferred_orders(session["state"])[0]["after_result"] == "basic_labs"
+
+
+def test_it_runs_at_the_minute_the_result_arrives(engine):
+    session, results = play(engine, "pneumonia", "pneumonia_46f", [
+        "Pido un panel de laboratorio y espero el resultado, luego doy ceftriaxona 2 g EV."
+        + SEQ_REASON,
+        "Reevalua saturacion en 5 minutos.",
+        "Reevalua saturacion en 8 minutos."])
+    assert len(session["state"]["treatments"]["administered_medications"]) == 1
+    given = session["state"]["treatments"]["administered_medications"][0]
+    assert given["time_min"] >= 10, "not before the result it was told to wait for"
+    assert family_engine.deferred_orders(session["state"]) == []
+
+
+def test_the_engine_does_not_reorder_it_to_be_helpful(engine):
+    """The same two orders without the instruction run at once; with it they do not."""
+    together, _ = play(engine, "pneumonia", "pneumonia_46f", [
+        "Pido un panel de laboratorio y doy ceftriaxona 2 g EV." + SEQ_REASON])
+    assert len(together["state"]["treatments"]["administered_medications"]) == 1
+    sequenced, _ = play(engine, "pneumonia", "pneumonia_46f", [
+        "Pido un panel de laboratorio y espero el resultado, luego doy ceftriaxona 2 g EV."
+        + SEQ_REASON])
+    assert sequenced["state"]["treatments"].get("administered_medications", []) == []
+
+
+def test_a_held_order_runs_exactly_once(engine):
+    session, _ = play(engine, "pneumonia", "pneumonia_46f", [
+        "Pido un lactato y espero el resultado, luego doy ceftriaxona 2 g EV." + SEQ_REASON,
+        "Reevalua saturacion en 10 minutos.",
+        "Reevalua saturacion en 10 minutos.",
+        "Reevalua saturacion en 10 minutos."])
+    assert len(session["state"]["treatments"]["administered_medications"]) == 1
+
+
+def test_a_held_order_still_answers_for_its_reasoning(engine):
+    """Waiting for a result does not excuse a management order from the four."""
+    parsed = engine["clinical_interpreter"](
+        "Pido un lactato y espero el resultado, luego doy ceftriaxona 2 g EV.")
+    assert engine["reasoning_gate_missing"](parsed) == [
+        "working_model", "expected_effect", "reassessment_target"]

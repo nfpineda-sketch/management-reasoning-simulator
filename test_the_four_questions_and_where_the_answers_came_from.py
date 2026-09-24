@@ -529,3 +529,19 @@ def test_one_finding_written_at_two_lengths_is_one_finding(encounter):
     assert findings.count("crepitantes") == 1
     assert "crepitantes en la base derecha" not in findings
     assert parsed["cue_recognition"]["added_by_model"] == 0
+
+
+def test_the_nearest_marker_decides_how_a_finding_was_held():
+    """An absent finding printed as present is the opposite of what was seen."""
+    rows = {row["finding"]: row["polarity"] for row in reasoning_cues.cues(
+        "La presion mejoro, pero sigue confuso, sin crepitantes ni fiebre.")}
+    assert rows["La presion mejoro"] == "trend"
+    assert rows["confuso"] == "trend"
+    assert rows["crepitantes"] == "absent"
+    assert rows["fiebre"] == "absent", "the 'ni' carries the negation on"
+
+
+def test_the_document_says_how_each_finding_was_held():
+    source = open("management_trace_report.py", encoding="utf-8").read()
+    assert 'polarity_words = {"absent"' in source
+    assert "prints the opposite of what they observed" in source

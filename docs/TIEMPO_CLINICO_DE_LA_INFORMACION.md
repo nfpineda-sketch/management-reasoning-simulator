@@ -159,16 +159,73 @@ preguntar cobra 2 minutos, examinar cobra 2, **cambiar de pantalla y
 re-renderizar cobran 0**, y el intervalo queda en el trace con su tipo, su
 duración y el estado antes y después.
 
-## 8 · Lo que queda pendiente
+## 8 · La deriva de las doce familias
+
+Pediste revisar si alguna avanza demasiado lento. Medí las 31 casos sin tratar a
+los 10, 30 y 60 minutos.
+
+**Una sola estaba genuinamente congelada: la bradicardia.** Un hombre a 74/44 con
+frecuencia 38 seguía exactamente igual una hora después, en las cuatro
+variantes. Eso enseña que una bradicardia inestable no es urgente.
+
+Ahora cada causa progresa por su propia razón, y ninguna por el hecho de que
+pase el tiempo:
+
+| Variante | Por qué avanza | A los 60 min sin tratar |
+|---|---|---|
+| Bloqueador de calcio | el comprimido sigue absorbiéndose | 74/44 FC 38 → **57/35 FC 20**, y el motor declara el fin |
+| Betabloqueo | lo mismo | 80/48 FC 40 → **62/38 FC 23** |
+| BAV completo | un ritmo de escape que nadie sostiene no es de fiar | 78/46 FC 32 → **68/41 FC 21** |
+| Hiperkalemia | un paciente anúrico sigue fabricando potasio | 84/50 FC 38 K 7,6 → **72/43 FC 26 K 8,2** |
+
+La presión ahora **sigue a la frecuencia**: antes se medía la recuperación contra
+el escape actual, así que sólo podía ser cero y la presión nunca se movía.
+
+### Las que quedan en cero, y por qué está bien
+
+| Caso | |
+|---|---|
+| `acs_48m_wellens` | un patrón de estenosis crítica **sin** oclusión actual; el paciente se ve bien y ésa es la enseñanza |
+| `hypoglycemia_*` (3) | **no están congeladas**: la glicemia cae 34→29, la conciencia va de Drowsy a Unresponsive y la convulsión se dispara. Mi métrica sólo miraba presión y saturación |
+| `renal_colic_34m` | no debe deteriorarse: la decisión es **no** hospitalizar, y fabricar un declive para que el caso se sienta urgente sería inventar |
+
+### Las lentas que dejé como están
+
+`pneumonia`, `gi_bleed` y la pielonefritis pierden ~9 puntos en una hora. Son
+procesos subagudos y la cifra es defendible. El edema pulmonar mantiene la
+presión fija —es hipertensivo— pero la conciencia va de Alert a Obtunded, así
+que el paciente sí se agota. El asma mueve la frecuencia de 132 a 152 por la vía
+del agotamiento, que ya estaba modelada.
+
+## 9 · La dependencia explícita entre órdenes
+
+«Primero espera el resultado y después trata» ahora se respeta.
+
+```
+t= 1   pido un panel de laboratorio y espero el resultado, luego ceftriaxona 2 g EV
+       → Held as instructed until basic labs is back: ceftriaxone; expected at 10 min
+t= 6   reevalúo                        → sigue en espera
+t=14   reevalúo                        → el resultado llegó al minuto 10, y el
+                                          antibiótico se administró entonces
+```
+
+El disparador es **deliberadamente estrecho**: tiene que nombrar la espera
+—«espero el resultado», «cuando llegue», «tras el resultado», «wait for the
+result», «once it is back»— y no basta con encadenar dos órdenes. «Doy oxígeno y
+luego reevalúo» se sigue leyendo exactamente como antes.
+
+Y una orden en espera **sigue respondiendo por su razonamiento**: esperar un
+resultado no exime a una orden de manejo de las cuatro categorías.
+
+## 10 · Lo que queda pendiente
 
 - **Los tiempos son supuestos**, centralizados y documentados, sin calibración
   clínica. Cambiar cualquiera es cambiar un número en `clinical_time.py`.
-- **La magnitud del deterioro es del caso, no de esta corrección.** La neumonía
-  deriva despacio (92/58 a 90/57 en 25 minutos) y la anafilaxia rápido. Si
-  alguna familia te parece demasiado lenta para lo que enseña, es su fisiología
-  lo que hay que revisar, no el reloj.
-- **La dependencia explícita entre órdenes** —«primero espera el resultado y
-  después trata»— no se representa todavía: el residente puede escribirla, y el
-  motor ejecuta ambas en el mismo turno. Es lo siguiente que haría.
+- **La deriva se revisó entera** (sección 8). Las cifras de cada familia siguen
+  siendo supuestos: la bradicardia está calibrada contra un solo punto —peri-paro
+  a los 60 minutos sin tratar— y los demás no se tocaron.
+- **La dependencia sólo entiende una espera por entrada.** «Espera el lactato y
+  después trata, y cuando llegue la radiografía hospitaliza» reconoce la primera
+  y no la segunda.
 - **El panel «Talk» y el botón «Examine»** ahora cobran tiempo; el resto de la
   interfaz no pasa por el reloj y no debe hacerlo.

@@ -542,6 +542,39 @@ def _clarification(message):
     return {"type": "clarification", "message": message}
 
 
+# An explicit instruction to wait for a result before acting. Deliberately
+# narrow: it has to name the waiting, not merely sequence two orders, because
+# "give oxygen and then reassess" is not a dependency and must keep parsing as
+# it always has.
+_WAIT_FOR_RESULT = re.compile(
+    r"\s*(?:,\s*)?(?:y\s+|and\s+)?"
+    r"(?:(?:espero|espera|esperar|esperamos|esperemos|aguardo|aguarda|aguardar)\s+"
+    r"(?:(?:el|los|la|las)\s+)?(?:resultados?\b|\w+)"
+    r"|(?:una\s+vez\s+que\s+)?(?:cuando|una\s+vez)\s+(?:llegue|llegen|lleguen|vuelva|vuelvan|"
+    r"est[eé]|est[eé]n|tenga|tengamos|salga|salgan)"
+    r"|(?:tras|con|despu[eé]s\s+de|segun|seg[uú]n)\s+(?:el|los|la|las)\s+resultados?"
+    r"|wait\s+for\s+(?:the\s+)?(?:results?\b|\w+)"
+    r"|once\s+(?:the\s+)?\w+\s+(?:is|are)\s+back"
+    r"|(?:after|with)\s+the\s+results?"
+    r"|when\s+(?:the\s+)?\w+\s+(?:comes?|returns?)\s+back)"
+    r"[^.;]*?(?:,\s*|\s+)(?:y\s+|and\s+)?"
+    r"(?:luego|despu[eé]s|entonces|then|after\s+that|posteriormente)\s+",
+    re.I)
+
+
+def _sequenced(normalized):
+    """Split an entry that says to wait for a result before acting.
+
+    Returns ``(what_waits, what_happens_now)``. The text is left untouched when
+    nothing says to wait, so every entry that is not a dependency parses exactly
+    as it did before.
+    """
+    match = _WAIT_FOR_RESULT.search(normalized)
+    if not match:
+        return "", normalized
+    return normalized[match.end():].strip(), normalized[:match.start()].strip(" ,")
+
+
 #: A procedure only one service performs. Naming it is asking for that service.
 _SERVICE_PROCEDURE = (r"nefrostom[ií]a|nephrostomy|cat[eé]ter\s+doble\s+j|doble\s+j|"
                       r"double[- ]j|ureteral\s+stent|stent\s+ureteral")
@@ -1431,6 +1464,11 @@ def parse_family_actions(text) -> dict:
     raw = str(text or "")
     normalized = _spanish_imperatives(
         _spanish_proclitics(_declared_intention(_normalize(raw))))
+    # A resident who says to wait for a result before treating has said
+    # something about sequence that the engine must not optimise away (faculty
+    # specification 2026-09-23, section 5). The two halves are parsed
+    # separately and the second half is marked as waiting on the first.
+    held_until, normalized = _sequenced(normalized)
     actions, future = [], []
     queue = re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
     while queue:
@@ -1553,7 +1591,19 @@ def parse_family_actions(text) -> dict:
                 inherited = None
                 continue
             actions.extend(parsed)
-    return {"raw_text": raw, "actions": _one_sample_each(actions), "recognized_future_actions": future}
+    actions = _one_sample_each(actions)
+    if held_until:
+        deferred = parse_family_actions(held_until)
+        study = next((a["diagnostic"] for a in actions if a.get("type") == "diagnostic"), None)
+        for action in deferred["actions"]:
+            if action.get("type") in {"clarification", "reassessment"}:
+                continue
+            # What it waits for: the study named in the same entry when there is
+            # one, and otherwise every result that is still out.
+            action["after_result"] = study or "any_pending"
+            actions.append(action)
+        future.extend(deferred.get("recognized_future_actions", []))
+    return {"raw_text": raw, "actions": actions, "recognized_future_actions": future}
 
 
 _LEAD_STUDIES = ("ecg_right", "ecg_posterior")

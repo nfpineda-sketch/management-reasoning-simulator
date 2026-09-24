@@ -6080,7 +6080,11 @@ def extract_explicit_reasoning(text):
         if "expected_effect" not in reasoning:
             # "Espero" is also "I wait": "Espero 10 minutos" is not an expectation.
             m = re.search(
-                r"\b(?P<neg>no\s+)?(?:espero|anticipo|preveo)(?!\s+(?:\d|a\s|hasta\b|unos?\b|un\s+momento))"
+                # "Espero" is also "I wait": "espero el resultado" is waiting for
+                # a laboratory, not an expectation about the patient (2026-09-24).
+                r"\b(?P<neg>no\s+)?(?:espero|anticipo|preveo)"
+                r"(?!\s+(?:\d|a\s|hasta\b|unos?\b|un\s+momento"
+                r"|(?:el|los|la|las)\s+(?:resultados?|examen|ex[aá]menes|laboratorio)))"
                 r"(?:\s+que)?\s+(?P<effect>.+?)" + stop,
                 joined, re.I,
             )

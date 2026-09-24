@@ -168,8 +168,8 @@ _LINK = re.compile(r"\b(?:" + _LINK_EVIDENCE + r"|" + _LINK_CONCLUSION + r")\b",
 _CONCLUSION_MARKER = re.compile(r"\b(?:" + _LINK_CONCLUSION + r")\b", re.I)
 
 _ABSENT = re.compile(
-    r"\b(?:sin|no|niega|nega\w*|ausencia\s+de|ausente|without|no\s+evidence\s+of|"
-    r"denies|absent|free\s+of)\b", re.I)
+    r"\b(?:sin|ni|no|niega|nega\w*|ausencia\s+de|ausente|without|nor|"
+    r"no\s+evidence\s+of|denies|absent|free\s+of)\b", re.I)
 
 _TREND = re.compile(
     r"\b(?:mejor[oó]|mejorando|empeor[oó]|empeorando|subi[oó]|baj[oó]|"
@@ -210,13 +210,28 @@ def _statements(text):
             yield cleaned
 
 
+def _nearest(pattern, text):
+    """Where the last match of ``pattern`` ends, or -1. Nearest wins."""
+    last = -1
+    for match in pattern.finditer(text):
+        last = match.end()
+    return last
+
+
 def _polarity(statement, start):
-    """How the resident held this finding: present, absent, changing, uncertain."""
+    """How the resident held this finding: present, absent, changing, uncertain.
+
+    When two markers are in front of the same finding the nearest one governs
+    it. "La presion mejoro, pero sigue confuso, sin crepitantes ni fiebre" has a
+    change marker and a negation in the same breath, and reading the first one
+    printed absent findings as present ones (2026-09-24).
+    """
     before = statement[max(0, start - 60):start]
-    if _ABSENT.search(before) and not _TREND.search(before):
+    absent, trend = _nearest(_ABSENT, before), _nearest(_TREND, before)
+    if absent > trend:
         return "absent"
     window = before + statement[start:start + 40]
-    if _TREND.search(window):
+    if trend >= 0 or _TREND.search(window):
         return "trend"
     if _UNCERTAIN.search(before):
         return "uncertain"

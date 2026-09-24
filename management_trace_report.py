@@ -794,11 +794,24 @@ def render_management_trace_pdf(
             by_model = [row for row in named_findings if row.get("source") == "model"]
             read_by = (f' <font size="8" color="#607482">({_xml(_t("some read by a model"))})</font>'
                        if by_model else "")
+            # How the resident held each one. Printing "crepitantes" for
+            # "sin crepitantes" prints the opposite of what they observed, and
+            # a faculty member reading this document cannot tell (2026-09-24).
+            polarity_words = {"absent": _t("not present"), "trend": _t("changing"),
+                              "uncertain": _t("uncertain")}
+
+            def finding_text(row):
+                name = str(row.get("finding") or "")
+                word = polarity_words.get(row.get("polarity"))
+                return f"{name} ({word})" if word else name
+
             block.append(Paragraph(
                 f"<b>{_xml(_t('Findings mentioned'))}:</b> "
-                + _xml("; ".join(str(row.get("finding") or "") for row in named_findings))
+                + _xml("; ".join(finding_text(row) for row in named_findings))
                 + read_by,
                 styles["body"]))
+            if any(row.get("contrast") for row in named_findings):
+                block.append(p(_t("The resident set these against one another."), "note"))
             linked = [row for row in named_findings if row.get("linked")]
             if linked:
                 block.append(Paragraph(

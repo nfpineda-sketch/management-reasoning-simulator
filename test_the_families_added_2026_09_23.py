@@ -161,21 +161,56 @@ def test_urology_is_reachable_by_name_and_by_what_it_is_asked_to_do():
 
 # --- unstable bradycardia ---------------------------------------------------
 
+BRADY_REASON = (" Creo que es una bradicardia sintomatica. Espero que suba la frecuencia. "
+                "Reevaluo frecuencia y presion en 5 minutos.")
+
+
+def untreated(engine, case_id, turns):
+    """The same case over the same clock with nothing given.
+
+    Since 2026-09-24 this family has a course of its own -- the tablet is still
+    being absorbed, the escape rhythm is not reliable, the potassium climbs --
+    so "this drug does nothing" is read against what happens anyway, not
+    against a frozen number.
+    """
+    _, seen = play(engine, "bradycardia", case_id,
+                   ["Reevalua frecuencia y presion en 5 minutos."] * turns)
+    return seen[-1]
+
+
 def test_no_dose_of_atropine_lifts_a_block_below_the_node(engine):
-    reason = (" Creo que es una bradicardia sintomatica. Espero que suba la frecuencia. "
-              "Reevaluo frecuencia y presion en 5 minutos.")
     _, seen = play(engine, "bradycardia", "bradycardia_avb3_78f", [
-        "Doy atropina 1 mg EV." + reason,
-        "Doy atropina 1 mg EV otra vez." + reason])
-    assert seen[-1]["hr"] == seen[0]["hr"] == 32
+        "Doy atropina 1 mg EV." + BRADY_REASON,
+        "Doy atropina 1 mg EV otra vez." + BRADY_REASON])
+    assert seen[-1]["hr"] == untreated(engine, "bradycardia_avb3_78f", 2)["hr"]
+    assert seen[-1]["hr"] < seen[0]["hr"], "and the block does not wait"
 
 
 def test_atropine_does_not_lift_a_calcium_channel_blockade_either(engine):
-    reason = (" Creo que es una bradicardia sintomatica. Espero que suba la frecuencia. "
-              "Reevaluo frecuencia y presion en 5 minutos.")
     _, seen = play(engine, "bradycardia", "bradycardia_ccb_68m", [
-        "Doy atropina 1 mg EV." + reason])
-    assert seen[-1]["hr"] == seen[0]["hr"] == 38
+        "Doy atropina 1 mg EV." + BRADY_REASON])
+    assert seen[-1]["hr"] == untreated(engine, "bradycardia_ccb_68m", 1)["hr"]
+
+
+def test_an_untreated_bradycardia_does_not_stand_still(engine):
+    """The finding of 2026-09-24: this was the one family that did not move."""
+    for case_id in ("bradycardia_ccb_68m", "bradycardia_bb_54f",
+                    "bradycardia_avb3_78f", "bradycardia_hyperk_63m"):
+        _, seen = play(engine, "bradycardia", case_id,
+                       ["Reevalua frecuencia y presion en 30 minutos."])
+        assert seen[-1]["hr"] < seen[0]["hr"] - 4, case_id
+        assert seen[-1]["sbp"] < seen[0]["sbp"] - 4, case_id
+
+
+def test_an_untreated_poisoning_reaches_the_end_of_its_rate(engine):
+    generated = build_encounter(engine, "bradycardia", "bradycardia_ccb_68m")
+    session = initialize(engine, deepcopy(generated["state"]))
+    labels = []
+    for _ in range(4):
+        _, result, _, _ = execute_turn(engine, "Reevalua frecuencia y presion en 15 minutos.")
+        labels.extend(str(s.get("label") or "") for s in result["action_summaries"])
+    assert any("the rate was the only thing holding the output up" in text.lower()
+               for text in labels), labels
 
 
 def test_calcium_answers_the_blockade_and_does_not_last(engine):
@@ -190,11 +225,9 @@ def test_calcium_answers_the_blockade_and_does_not_last(engine):
 
 
 def test_calcium_does_nothing_to_a_block(engine):
-    reason = (" Creo que es un bloqueo completo. Espero que suba la frecuencia. "
-              "Reevaluo frecuencia y presion en 5 minutos.")
     _, seen = play(engine, "bradycardia", "bradycardia_avb3_78f", [
-        "Doy gluconato de calcio 2 g EV." + reason])
-    assert seen[-1]["hr"] == seen[0]["hr"]
+        "Doy gluconato de calcio 2 g EV." + BRADY_REASON])
+    assert seen[-1]["hr"] == untreated(engine, "bradycardia_avb3_78f", 1)["hr"]
 
 
 def test_a_set_rate_is_not_a_circulation_until_it_captures(engine):
@@ -204,7 +237,9 @@ def test_a_set_rate_is_not_a_circulation_until_it_captures(engine):
         "Inicio marcapasos transcutaneo a 70 por minuto con 50 mA." + reason,
         "Subo el marcapasos a 90 mA." + reason])
     arrival, uncaptured, captured = seen
-    assert uncaptured["hr"] == arrival["hr"], "spikes without capture are not a rate"
+    assert uncaptured["hr"] == untreated(engine, "bradycardia_avb3_78f", 1)["hr"], (
+        "spikes without capture are not a rate")
+    assert uncaptured["hr"] < arrival["hr"]
     assert "without capture" in uncaptured["rhythm"]
     assert captured["hr"] == 70
     assert "capture confirmed" in captured["rhythm"]
@@ -291,27 +326,38 @@ def test_the_calcium_does_not_lower_the_potassium_and_says_so(engine):
         "Doy gluconato de calcio 2 g EV." + reason,
         "Reevalua frecuencia, presion y conciencia en 30 minutos.",
         "Reevalua frecuencia, presion y conciencia en 30 minutos."])
-    assert session["state"]["family_state"]["potassium"] == 7.6
+    # It protects the membrane and removes nothing, so an anuric patient's
+    # potassium is higher afterwards than it was on arrival, not lower.
+    assert session["state"]["family_state"]["potassium"] > 7.6
     # And what it bought comes back, because nothing has removed any of it.
     assert seen[1]["qrs_ms"] < seen[-1]["qrs_ms"]
 
 
 def test_a_nebulised_beta_agonist_moves_the_potassium_itself(engine):
+    """It shifts what an anuric patient keeps making, so it buys against a rise."""
     reason = (" Sospecho hiperkalemia. Espero bajar el potasio. "
               "Reevaluo frecuencia y QRS en 10 minutos.")
-    session, _ = play(engine, "bradycardia", "bradycardia_hyperk_63m", [
-        "Doy salbutamol 10 mg nebulizado." + reason,
-        "Reevalua frecuencia, presion y conciencia en 30 minutos."])
-    assert session["state"]["family_state"]["potassium"] < 7.6
+    def potassium_after(orders):
+        # The value, not the session: initialize() hands back the one shared
+        # session state, so holding a reference to it reads whichever run
+        # finished last.
+        session, _ = play(engine, "bradycardia", "bradycardia_hyperk_63m", orders)
+        return float(session["state"]["family_state"]["potassium"])
+
+    treated = potassium_after(["Doy salbutamol 10 mg nebulizado." + reason,
+                               "Reevalua frecuencia, presion y conciencia en 30 minutos."])
+    control = potassium_after(["Reevalua frecuencia y presion en 10 minutos.",
+                               "Reevalua frecuencia, presion y conciencia en 30 minutos."])
+    assert treated < control
 
 
-def test_waiting_for_the_laboratory_changes_nothing(engine):
-    """The window of the event runs from the tracing, and so does the case."""
+def test_waiting_for_the_laboratory_buys_nothing_and_costs_the_interval(engine):
+    """The event's window runs from the tracing, and so does the patient's course."""
     _, seen = play(engine, "bradycardia", "bradycardia_hyperk_63m", [
         "Pido un panel de laboratorio.",
         "Reevalua frecuencia, presion y conciencia en 20 minutos."])
-    assert seen[-1]["hr"] == seen[0]["hr"]
-    assert seen[-1]["qrs_ms"] == seen[0]["qrs_ms"]
+    assert seen[-1]["hr"] < seen[0]["hr"], "the potassium did not wait for the result"
+    assert seen[-1]["qrs_ms"] == seen[0]["qrs_ms"] == 180, "and the complex stays broad"
 
 
 def test_the_event_of_the_potassium_case_starts_at_the_tracing():

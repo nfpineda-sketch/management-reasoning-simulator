@@ -107,10 +107,63 @@ def step_potassium(f, state):
     # this engine does not run.
     rebound = K_REBOUND_PER_MIN if f.get("shifted_k", 0.0) > 0 else 0.0
     f["shifted_k"] = max(0.0, f.get("shifted_k", 0.0) + shift - rebound)
-    f["potassium"] = max(3.0, float(spec(state).get("potassium", 7.4)) - f["shifted_k"])
+    # An anuric patient keeps making potassium nobody is removing, so the number
+    # climbs while the shift only borrows against it (2026-09-24).
+    f["retained_k"] = f.get("retained_k", 0.0) + K_RISE_PER_MIN
+    arrival = float(spec(state).get("potassium", 7.4))
+    f["potassium"] = max(3.0, min(9.5, arrival + f["retained_k"] - f["shifted_k"]))
 #: What the antidotes buy fades: neither is definitive, which is why the case
 #: is about asking for what is.
 DECAY_TAU_MIN = 22.0
+
+# --- what happens while nothing is done -------------------------------------
+# Measured on 2026-09-24 across the whole bank: this was the one family whose
+# patient did not move at all. A man at 74/44 with a rate of 38 sat there
+# unchanged for an hour, which teaches that an unstable bradycardia is not
+# urgent. Each cause progresses in its own way and for its own reason, and none
+# of it is a penalty for time passing.
+#
+#: Beats the rate still loses per simulated minute, untreated.
+# Calibrated against one clinical endpoint: an untreated patient of each of
+# these is peri-arrest at about an hour, which is where the rate reaches
+# ARREST_RATE from that case's own arrival.
+PROGRESSION_BEATS_PER_MIN = {
+    # A tablet is still being absorbed, and a sustained-release one for hours.
+    "ccb": .30,
+    "bb": .28,
+    # An escape rhythm nobody is supporting is not one to rely on, and the
+    # hypoperfusion it causes makes conduction worse rather than better.
+    "avb3": .18,
+    # The potassium climbs as well, and a repeat panel shows a worse number.
+    "hyperk": .20,
+}
+#: An anuric patient's potassium keeps climbing: about 0.6 mmol/L an hour.
+K_RISE_PER_MIN = .010
+
+#: The rate at which this engine stops pretending there is an output.
+ARREST_RATE = 20
+ARREST_TEXT = (
+    "The rate has fallen away and the circulation with it. Nothing given so far "
+    "reached the cause, and the rate was the only thing holding the output up."
+)
+
+
+def step(f, state):
+    """Advance one minute of an untreated bradycardia.
+
+    The antidotes are added on top of what this takes, so treatment outpaces the
+    course while it lasts and stops outpacing it when it fades.
+    """
+    step_potassium(f, state)
+    f["rate_lost"] = f.get("rate_lost", 0.0) + PROGRESSION_BEATS_PER_MIN[cause(state)]
+
+
+def arrest_event(f, rate):
+    """The moment the rate stops being an output, said once."""
+    if rate > ARREST_RATE or f.get("bradycardia_arrest"):
+        return None
+    f["bradycardia_arrest"] = True
+    return ARREST_TEXT
 
 
 def spec(state):

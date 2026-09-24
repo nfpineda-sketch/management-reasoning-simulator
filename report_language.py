@@ -58,6 +58,14 @@ KEEP = frozenset({
 })
 
 ES = {
+    'not present':
+        'no presente',
+    'changing':
+        'en cambio',
+    'uncertain':
+        'incierto',
+    'The resident set these against one another.':
+        'El residente los contrastó entre sí.',
     "some read by a model":
         "algunos leídos por un modelo",
     'Findings mentioned':

@@ -679,6 +679,8 @@ def _initialize(state):
         # Studies requested and not back yet (2026-09-23): a result waits for
         # its own minute instead of holding the resident until it arrives.
         "pending_diagnostics": [],
+        # Orders the resident asked to hold until a named result is back.
+        "deferred_orders": [],
     }
     state.setdefault("treatments", {})
     state["treatments"].setdefault("administered_medications", [])
@@ -1609,11 +1611,11 @@ def _minute(state):
                 {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
 
     elif family == "bradycardia":
-        # No drift from a poisoning or a block: what is on board is on board,
-        # and what changes the rate is what the resident gives. A potassium is
-        # the exception, because what was given shifts it and the shift wears
-        # off (faculty decision 2026-09-23).
-        bradycardia_toxicology.step_potassium(f, state)
+        # Nothing here is a penalty for time passing: a tablet is still being
+        # absorbed, an escape rhythm nobody supports is not reliable, and an
+        # anuric patient's potassium keeps climbing. Measured 2026-09-24, this
+        # was the one family whose patient did not move at all in an hour.
+        bradycardia_toxicology.step(f, state)
 
     elif family == "renal_colic":
         # Two courses from one presentation. An uncomplicated colic does not
@@ -1894,6 +1896,7 @@ def _surface(state):
         # A potassium is not a fixed escape rate: the rate it leaves and the
         # width of the complex move together, and the calcium holds both off
         # without lowering the potassium itself.
+        arrival_rate = escape
         if which == "hyperk":
             protection = bradycardia_toxicology.membrane_protection(f)
             potassium = float(f.get("potassium", brady.get("potassium", 7.4)))
@@ -1901,12 +1904,19 @@ def _surface(state):
                 potassium, protection)
             o["qrs_ms"] = round(bradycardia_toxicology.qrs_ms(potassium, protection))
             antidote_beats = 0.0   # already priced through the membrane protection
+        # What the untreated course has taken so far. The antidotes are added on
+        # top of it, so treatment outpaces the course while it lasts and stops
+        # outpacing it when it fades.
+        escape = max(10.0, escape - float(f.get("rate_lost", 0.0)))
         # Atropine answers a nodal block and nothing else, which is what the
         # existing module already knows; the declaration travels with the case.
         rate = bradycardia_support.effective_rate(f, brady, escape) + antidote_beats
         hr = rate
-        recovered = max(0.0, min(1.0, (rate - escape) / max(1.0, float(
-            brady.get("target_rate", 70)) - escape)))
+        # Measured from the rate the patient arrived with, so that losing beats
+        # costs pressure as well. Against the current escape it could only ever
+        # be zero, and the pressure never moved (2026-09-24).
+        span = max(1.0, float(brady.get("target_rate", 70)) - arrival_rate)
+        recovered = max(-1.0, min(1.0, (rate - arrival_rate) / span))
         sbp = float(base.get("sbp", 80)) + bradycardia_support.SBP_PER_LOST_RATE * recovered + antidote_sbp
         dbp = float(base.get("dbp", 50)) + (bradycardia_support.SBP_PER_LOST_RATE * recovered + antidote_sbp) * .55
         # Whether this is a block is the case's declaration, not an inference
@@ -1919,6 +1929,11 @@ def _surface(state):
         if sbp >= 95:
             mental = "Alert"
         f["bradycardia_rate"] = rate
+        terminal = bradycardia_toxicology.arrest_event(f, rate)
+        if terminal:
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": terminal,
+                 "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
 
     elif family == "anaphylaxis":
         # Two threats from one reaction: the airway closes and the circulation
@@ -2283,6 +2298,48 @@ def _release_diagnostic(state, summary, available_time):
     return summary
 
 
+def _deferred_label(state, order, study):
+    """Say what is being held and what it is waiting for, in the resident's terms."""
+    name = "every result still outstanding" if study == "any_pending" else str(study).replace("_", " ")
+    agent = order.get("agent") or order.get("fluid_type") or order.get("device")
+    what = [f"{agent}" if agent else str(order.get("type", "order")).replace("_", " ")]
+    when = next((int(item["due_min"]) for item in state.get("family_state", {}).get("pending_diagnostics", [])
+                 if item.get("summary", {}).get("diagnostic_type") == study), None)
+    tail = f"; it is expected at {when} min" if when is not None else ""
+    return f"Held as instructed until {name} is back: {' + '.join(what)}{tail}"
+
+
+def _release_due_orders(state):
+    """Execute every held order whose result has arrived, and say so."""
+    held = state.get("family_state", {}).get("deferred_orders") or []
+    if not held:
+        return []
+    available = set(state.get("diagnostics", {}))
+    outstanding = {item.get("summary", {}).get("diagnostic_type")
+                   for item in state.get("family_state", {}).get("pending_diagnostics", [])}
+    released, still_waiting = [], []
+    for item in held:
+        study = item.get("after_result")
+        ready = (not outstanding) if study == "any_pending" else study in available
+        if ready:
+            summary = _order(state, item["action"])
+            summary["released_after"] = study
+            summary["held_from_min"] = int(item.get("requested_at_min", 0))
+            released.append(summary)
+        else:
+            still_waiting.append(item)
+    state["family_state"]["deferred_orders"] = still_waiting
+    return released
+
+
+def deferred_orders(state):
+    """Orders the resident asked to hold, and what each is waiting for."""
+    return [{"after_result": item.get("after_result"),
+             "requested_at_min": int(item.get("requested_at_min", 0)),
+             "order": str(item.get("action", {}).get("type", ""))}
+            for item in state.get("family_state", {}).get("deferred_orders") or []]
+
+
 def _release_due_diagnostics(state, now):
     """Publish every pending result whose time has come, oldest first."""
     pending = state.get("family_state", {}).get("pending_diagnostics") or []
@@ -2333,7 +2390,10 @@ def advance_clinical_time(state, minutes, *, label=""):
         candidate["sim_time"] = int(candidate.get("sim_time", 0)) + 1
         _surface(candidate)
         _discharge_return(candidate)
-        summaries.extend(_release_due_diagnostics(candidate, candidate["sim_time"]))
+        arrived = _release_due_diagnostics(candidate, candidate["sim_time"])
+        summaries.extend(arrived)
+        if arrived:
+            summaries.extend(_release_due_orders(candidate))
     summaries.extend(candidate.get("family_state", {}).pop("procedure_events", []))
     state.clear()
     state.update(candidate)
@@ -2366,6 +2426,11 @@ def execute_family_bundle(state, parsed):
     reassess = None
     started_at = int(candidate.get("sim_time", 0))
     examined_regions, study_active = [], 0
+    # An order the resident said to hold until a result is back is held until
+    # that result is back. The engine does not reorder it to be helpful
+    # (faculty specification 2026-09-23, section 5).
+    waiting_orders = [a for a in actions if a.get("after_result")]
+    actions = [a for a in actions if not a.get("after_result")]
     for a in actions:
         if a["type"] == "reassessment":
             reassess = a["delay_min"]
@@ -2417,13 +2482,26 @@ def execute_family_bundle(state, parsed):
         for summary in due.pop(candidate["sim_time"], []):
             summaries.append(_release_diagnostic(candidate, summary, candidate["sim_time"]))
         # A result that an earlier turn left pending comes back at its own
-        # minute, inside whatever the resident happens to be doing then.
-        summaries.extend(_release_due_diagnostics(candidate, candidate["sim_time"]))
+        # minute, inside whatever the resident happens to be doing then -- and
+        # an order that was waiting for it runs then too.
+        arrived = _release_due_diagnostics(candidate, candidate["sim_time"])
+        summaries.extend(arrived)
+        if arrived:
+            summaries.extend(_release_due_orders(candidate))
     # What is still not back waits for a later turn rather than holding this one.
     pending = candidate["family_state"].setdefault("pending_diagnostics", [])
     for due_at, waiting in sorted(due.items()):
         for summary in waiting:
             pending.append({"due_min": int(due_at), "summary": deepcopy(summary)})
+    for order in waiting_orders:
+        study = str(order.get("after_result") or "any_pending")
+        held = candidate["family_state"].setdefault("deferred_orders", [])
+        held.append({"after_result": study, "action": deepcopy(order),
+                     "requested_at_min": started_at})
+        summaries.append({
+            "type": "deferred", "duration_min": 0, "after_result": study,
+            "label": _deferred_label(candidate, order, study)})
+    summaries.extend(_release_due_orders(candidate))
     # Events the patient's course produced on its own (an endoscopy) are reported
     # at the minute they happened, not as part of the resident's order.
     summaries.extend(candidate.get("family_state", {}).pop("procedure_events", []))
