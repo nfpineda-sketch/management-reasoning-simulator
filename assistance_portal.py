@@ -20,7 +20,8 @@ def _secret(name):
         value = st.secrets.get(name, "")
     except Exception:
         value = ""
-    return str(value or os.environ.get(name, "") or "").strip()
+    from offline_cases import withhold
+    return withhold(name, str(value or os.environ.get(name, "") or "").strip())
 
 
 def synthetic_accounts():

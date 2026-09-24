@@ -302,6 +302,18 @@ ES = {
         'Información obtenida',
     'Autonomy not determined: requires faculty confirmation':
         'Autonomía no determinada: requiere confirmación docente',
+    'No external help': 'Sin ayuda externa',
+    'External help received': 'Con ayuda externa',
+    'Not reported': 'No informado',
+    '(declared by the resident)': '(declaración de la persona residente)',
+    '(declared by faculty)': '(declaración docente)',
+    '(declared by an administrator)': '(declaración de administración)',
+    '(declared)': '(declarado)',
+    '(nobody has declared it)': '(nadie lo ha declarado)',
+    'Synthetic test: automated run without external assistance':
+        'Prueba sintética: ejecución automatizada sin asistencia externa',
+    'An autonomy the record cannot establish is left for faculty confirmation.':
+        'Una autonomía que el registro no permite establecer queda para confirmación docente.',
     'not modelled in this version of the simulator':
         'no modelado en esta versión del simulador',
     'Not assessed in this encounter':

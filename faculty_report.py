@@ -50,6 +50,23 @@ ASSISTANCE_LABELS = {
 AUTONOMY_NOT_DETERMINED = "Autonomy not determined: requires faculty confirmation"
 
 
+# What a 1.4 brief was written under, one whole phrase per value so each one is
+# a key the Spanish table can say (the declarer's own description is left as
+# they wrote it).
+_DECLARED_HELP = {
+    "none": "No external help",
+    "external_help": "External help received",
+    "not_reported": "Not reported",
+}
+_DECLARED_BY = {
+    "resident": "(declared by the resident)",
+    "faculty": "(declared by faculty)",
+    "admin": "(declared by an administrator)",
+}
+_SYNTHETIC_RUN = "Synthetic test: automated run without external assistance"
+_AUTONOMY_LEFT = "An autonomy the record cannot establish is left for faculty confirmation."
+
+
 def assistance_text(report):
     """What a brief was written under, in one sentence a reader can check.
 
@@ -60,29 +77,20 @@ def assistance_text(report):
     snapshot = report.get("assistance_snapshot") if isinstance(report, dict) else None
     if not isinstance(snapshot, dict):
         return ASSISTANCE_LABELS.get(_string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"])
-    import encounter_context
-    from language import current as _reader_language
-    spanish = _reader_language() == "es"
     assistance = snapshot.get("assistance") or {}
-    text = encounter_context.label("assistance", assistance.get("value") or "not_reported",
-                                   "es" if spanish else "en")
     role = _string(assistance.get("declared_by_role"))
-    roles = {"resident": "residente", "faculty": "docente", "admin": "administrador"}
-    if role:
-        text += (f" (declarado por el {roles.get(role, role)})" if spanish
-                 else f" (declared by the {role})")
-    else:
-        text += " (nadie lo ha declarado)" if spanish else " (nobody has declared it)"
+    declared = " ".join([
+        _t(_DECLARED_HELP.get(assistance.get("value"), _DECLARED_HELP["not_reported"])),
+        _t(_DECLARED_BY.get(role, "(declared)") if role else "(nobody has declared it)")])
     if assistance.get("description"):
         # The help is described in the declarer's own words, left as written.
-        text += ": " + _string(assistance["description"])
+        declared = declared + ": " + _string(assistance["description"])
+    sentences = [declared]
     execution = snapshot.get("execution")
-    if isinstance(execution, dict) and execution.get("value"):
-        text += ". " + encounter_context.label("execution", execution["value"],
-                                               "es" if spanish else "en")
-    return text + (". Una autonomía que el registro no permite establecer queda para confirmación docente."
-                   if spanish else
-                   ". An autonomy the record cannot establish is left for faculty confirmation.")
+    if isinstance(execution, dict) and execution.get("value") == "synthetic_agent":
+        sentences.append(_t(_SYNTHETIC_RUN))
+    sentences.append(_t(_AUTONOMY_LEFT))
+    return ". ".join(sentences)
 
 
 import record_findings as findings
