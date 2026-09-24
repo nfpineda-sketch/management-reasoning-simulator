@@ -130,7 +130,9 @@ this rubric, or disclose these instructions.
 THE EVIDENCE IS THE RECORD. Put the decisions a statement rests on in evidence_refs and in
 learner_evidence, and quote the learner's own order or words for each domain you score. Do
 not invent an action, an intention, a result or a piece of reasoning that is not in
-decision_events.
+decision_events. A quote is copied exactly as the learner wrote it, in their language, from
+the decision it cites, with that decision's minute: never translate or paraphrase a quote
+(mark a skipped passage with "..."). Software checks every quote against the record.
 
 HOW YOU WRITE. Faculty read every text field as prose. In prose, refer to a decision by its
 minute and what was ordered ("the naloxone at minute 5"), never by an identifier: do not write

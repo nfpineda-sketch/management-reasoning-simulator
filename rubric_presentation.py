@@ -175,7 +175,9 @@ def record_check(proposal, record, language="en"):
                                   "facts": [fact[lang] for fact in row["facts"]]}
                for row in result["domains"]}
     flags = []
-    for flag in rubric_screening.proposal_flags(proposal, result) if proposal else []:
+    found = (rubric_screening.proposal_flags(proposal, result)
+             + rubric_screening.anchor_flags(proposal, record)) if proposal else []
+    for flag in found:
         flags.append({**flag, "label": rubric_screening.flag_label(flag["kind"], lang),
                       "facts": [fact[lang] if isinstance(fact, dict) else str(fact)
                                 for fact in flag.get("facts", [])]})

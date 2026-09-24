@@ -235,8 +235,10 @@ def _flag_block(assessment, styles, language):
     return flow
 
 
-def _events_block(assessment, styles, language, unasked=()):
-    flow = _flag_block(assessment, styles, language)
+def _events_block(assessment, styles, language, unasked=(), faculty=True):
+    # "Check before deciding" is addressed to the faculty member who decides.
+    # The resident reads a decision already taken, and never those marks.
+    flow = _flag_block(assessment, styles, language) if faculty else []
     by_event = {}
     for row in unasked:
         by_event.setdefault(row["event_id"], []).append(row)
@@ -340,7 +342,7 @@ def build_rubric_document(review, proposal=None, record=None, *, language="en",
         import history_review
         from faculty_analysis import case_id_of
         unasked = history_review.unasked_for_events(record, case_id_of(record))
-    flow += _events_block(assessment, styles, language, unasked)
+    flow += _events_block(assessment, styles, language, unasked, faculty=audience == "faculty")
 
     flow.append(Spacer(0, 6))
     flow.append(Paragraph(_xml("TRAZABILIDAD" if spanish else "TRACEABILITY"), styles["eyebrow"]))

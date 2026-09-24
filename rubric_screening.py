@@ -827,6 +827,122 @@ def proposal_flags(proposal_report, result):
     return flags
 
 
+# --- whether a score rests on what the record holds ----------------------------
+_ELLIPSIS = re.compile(r"\.{3}|\u2026")
+_MAXIMUM = re.compile(r"^\W*(?:maximum\s+level\s+reached|nivel\s+m[aá]ximo\s+alcanzado)\W*$", re.I)
+_PLAIN = str.maketrans("áéíóúüñ\u201c\u201d\u2018\u2019", "aeiouun\"\"''")
+
+
+def _plain(text):
+    """Case, accents, quotation marks and spacing folded: how a quote is transcribed."""
+    return re.sub(r"\s+", " ", str(text or "").lower().translate(_PLAIN)).strip(" .,;:\"'")
+
+
+def _said(record):
+    """What the resident wrote at each entry of the record, keyed by its evidence ref."""
+    said, ordinal = {}, 0
+    for position, event in enumerate(_trace(record)):
+        status = event.get("execution_status")
+        if status in ("executed", "terminal_locked"):
+            ordinal += 1
+        reasoning = event.get("reasoning") if isinstance(event.get("reasoning"), dict) else {}
+        words = [str(event.get("learner_input") or "")] + [
+            value for value in reasoning.values() if isinstance(value, str)]
+        minutes = {_number(event.get("decision_time_min")), _number(event.get("response_time_min"))}
+        said[f"trace:{position}"] = {
+            "text": _plain(" ".join(words)), "minutes": {m for m in minutes if m is not None},
+            "decision": f"D{ordinal}" if status in ("executed", "terminal_locked") else None,
+            "minute": _number(event.get("decision_time_min"))}
+    reviews = _session(record).get("precomparison_decision_review")
+    for key, answers in (reviews.items() if isinstance(reviews, dict) else ()):
+        if isinstance(answers, dict):
+            said[f"reflection:{key}"] = {
+                "text": _plain(" ".join(v for v in answers.values() if isinstance(v, str))),
+                "minutes": None, "decision": None, "minute": None}
+    return said
+
+
+def _quoted(quote, text):
+    """Whether the quotation's words are in ``text``, in order; an ellipsis may skip."""
+    parts = [_plain(part) for part in _ELLIPSIS.split(str(quote or ""))]
+    parts = [part for part in parts if len(part) >= 3]
+    at = 0
+    for part in parts:
+        found = text.find(part, at)
+        if found < 0:
+            return False
+        at = found + len(part)
+    return True
+
+
+def _where_said(entry):
+    if entry.get("decision"):
+        return (f"decision {entry['decision']} at {_minutes(entry['minute'])} min",
+                f"la decisión {entry['decision']}, a los {_minutes(entry['minute'])} min")
+    if entry.get("minute") is not None:
+        return (f"the entry at {_minutes(entry['minute'])} min",
+                f"la entrada de los {_minutes(entry['minute'])} min")
+    return ("the reflection cited", "la reflexión citada")
+
+
+def anchor_flags(proposal_report, record):
+    """Where a proposed score is not anchored in the record it cites.
+
+    Evaluator variability, 2026-09-24: the same orders, replayed, give the same
+    record -- the encounter is deterministic -- and the model scored it
+    differently. One domain named the same omission both times and scored it 3
+    and then 2. Nothing here decides which reading is right; it shows the
+    reviewer where a score and its own anchor disagree:
+
+    * ``domain_quote_not_in_record`` -- words quoted as the learner's that are
+      not in the decision cited (a paraphrase or a translation is not a quote);
+    * ``domain_quote_minute_mismatch`` -- a quotation dated at a minute that is
+      neither the decision's nor its response's;
+    * ``domain_gap_at_maximum`` -- the maximum proposed while naming what the
+      record lacks for the level (prompt 1.1);
+    * ``domain_gap_missing`` -- a level below the maximum with nothing named as
+      missing for the next one, or with "maximum level reached" (prompt 1.1).
+    """
+    body = (proposal_report or {}).get("proposal") or {}
+    said = _said(record)
+    flags = []
+    for row in body.get("domains", []) if isinstance(body.get("domains"), list) else []:
+        if not isinstance(row, dict):
+            continue
+        domain = row.get("domain_id")
+        for item in row.get("learner_evidence") or []:
+            if not isinstance(item, dict):
+                continue
+            entry = said.get(item.get("evidence_ref"))
+            if entry is None:
+                continue
+            where = _where_said(entry)
+            quote = str(item.get("quote") or "")
+            if not _quoted(quote, entry["text"]):
+                flags.append({"kind": "domain_quote_not_in_record", "domain_id": domain,
+                              "quote": quote, "refs": [item.get("evidence_ref")],
+                              "facts": [_say(f"Quoted from {where[0]}; those words are not in it.",
+                                             f"Citado de {where[1]}; esas palabras no están en ella.")]})
+            minute = _number(item.get("minute"))
+            if entry["minutes"] and minute is not None and minute not in entry["minutes"]:
+                flags.append({"kind": "domain_quote_minute_mismatch", "domain_id": domain,
+                              "refs": [item.get("evidence_ref")],
+                              "facts": [_say(f"Dated {_minutes(minute)} min; it is from {where[0]}.",
+                                             f"Fechada a los {_minutes(minute)} min; es de {where[1]}.")]})
+        if "next_level_gap" not in row:
+            continue
+        gap = str(row.get("next_level_gap") or "").strip()
+        at_maximum = bool(_MAXIMUM.match(gap))
+        score = row.get("score")
+        if score == 3 and gap and not at_maximum:
+            flags.append({"kind": "domain_gap_at_maximum", "domain_id": domain, "score": score,
+                          "quote": gap, "facts": []})
+        elif isinstance(score, int) and not isinstance(score, bool) and score < 3 and (not gap or at_maximum):
+            flags.append({"kind": "domain_gap_missing", "domain_id": domain, "score": score,
+                          "facts": []})
+    return flags
+
+
 FLAG_LABELS = {
     "event_contradicted": ("Proposed, but the record contradicts it",
                            "Propuesto, pero el registro lo contradice"),
@@ -838,6 +954,14 @@ FLAG_LABELS = {
                       "El registro verifica parte del gatillo y no se propuso: lea el resto"),
     "domain_without_opportunity": ("Scored, although its declared window never opened",
                                    "Puntuado, aunque su ventana declarada nunca se abrió"),
+    "domain_quote_not_in_record": ("The words quoted as the learner's are not in the decision cited",
+                                   "Las palabras citadas como del residente no están en la decisión citada"),
+    "domain_quote_minute_mismatch": ("A quotation is dated at a minute that is not the decision's",
+                                     "Una cita está fechada en un minuto que no es el de la decisión"),
+    "domain_gap_at_maximum": ("Scored at the maximum while naming something the record lacks",
+                              "Puntuado en el máximo, aunque nombra algo que el registro no muestra"),
+    "domain_gap_missing": ("Scored below the maximum without naming what the next level needs",
+                           "Puntuado bajo el máximo sin nombrar qué le falta para el nivel siguiente"),
 }
 
 
