@@ -47,6 +47,42 @@ ASSISTANCE_LABELS = {
     "prompted": "Prompted - additional prompts were needed (faculty-reported).",
     "independent": "Independent - faculty has verified no additional help.",
 }
+AUTONOMY_NOT_DETERMINED = "Autonomy not determined: requires faculty confirmation"
+
+
+def assistance_text(report):
+    """What a brief was written under, in one sentence a reader can check.
+
+    A 1.4 brief carries the declared context -- what help, declared by whom,
+    when -- and says so; an older brief carries the faculty-reported context of
+    its time and keeps saying exactly that.
+    """
+    snapshot = report.get("assistance_snapshot") if isinstance(report, dict) else None
+    if not isinstance(snapshot, dict):
+        return ASSISTANCE_LABELS.get(_string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"])
+    import encounter_context
+    from language import current as _reader_language
+    spanish = _reader_language() == "es"
+    assistance = snapshot.get("assistance") or {}
+    text = encounter_context.label("assistance", assistance.get("value") or "not_reported",
+                                   "es" if spanish else "en")
+    role = _string(assistance.get("declared_by_role"))
+    roles = {"resident": "residente", "faculty": "docente", "admin": "administrador"}
+    if role:
+        text += (f" (declarado por el {roles.get(role, role)})" if spanish
+                 else f" (declared by the {role})")
+    else:
+        text += " (nadie lo ha declarado)" if spanish else " (nobody has declared it)"
+    if assistance.get("description"):
+        # The help is described in the declarer's own words, left as written.
+        text += ": " + _string(assistance["description"])
+    execution = snapshot.get("execution")
+    if isinstance(execution, dict) and execution.get("value"):
+        text += ". " + encounter_context.label("execution", execution["value"],
+                                               "es" if spanish else "en")
+    return text + (". Una autonomía que el registro no permite establecer queda para confirmación docente."
+                   if spanish else
+                   ". An autonomy the record cannot establish is left for faculty confirmation.")
 
 
 import record_findings as findings
@@ -454,8 +490,7 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
     section("Performance synthesis", analysis.get("summary"))
     story.extend(_rubric_section(assessment, styles, content_width, compact=False))
     story.extend(_history_section(record, styles, compact=False))
-    section("Assistance context", ASSISTANCE_LABELS.get(
-        _string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"]))
+    section("Assistance context", assistance_text(report))
     story.append(p("Strengths supported by the record", "subhead"))
     bullets(analysis.get("strengths"))
     story.append(p("Points for faculty review", "subhead"))
@@ -532,7 +567,7 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
                 depth=(depth.capitalize() if depth in DEPTH_LEVELS
                        else _t("Needs faculty judgment")),
                 autonomy=(autonomy.capitalize() if autonomy in AUTONOMY_LEVELS
-                          else _t("Needs faculty judgment"))), "small"),
+                          else _t(AUTONOMY_NOT_DETERMINED))), "small"),
             p("Observed context", "subhead"), p(item.get("context")),
             p("Recorded evidence to inspect", "subhead"),
             p(reference_text(item["evidence_refs"]) or "No supporting references were selected. Do not infer an observed skill from absence of evidence."),
@@ -776,7 +811,7 @@ def _render_compact(report, record, inputs, app_url, correct=None, assessment=No
                                     "Read the full synthesis in the app before judging this encounter.")
         story.append(p(summary))
         story.append(Spacer(1, 4))
-        assistance = ASSISTANCE_LABELS.get(_string(report.get("assistance_context")), ASSISTANCE_LABELS["unknown"])
+        assistance = assistance_text(report)
         story.append(p(_t("AI draft. Every suggestion in this brief stays provisional until "
                           "you record your own judgment. Assistance and autonomy: "
                           "{assistance}").format(assistance=_t(assistance)), "muted"))

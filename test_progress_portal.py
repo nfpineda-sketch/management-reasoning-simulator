@@ -77,7 +77,12 @@ def goal(accounts, objective_id):
 
 def submit_assessment(app, objective_id="C4", satisfactory=True):
     widget(app, "selectbox", "Objective observed in this encounter").set_value(objective_id).run()
-    widget(app, "checkbox", "Satisfactory demonstration of this simulated component").set_value(satisfactory)
+    # Every field is the faculty's explicit choice: the form no longer starts at
+    # "foundational" and "guided" (2026-09-24), which recorded both unchosen.
+    widget(app, "selectbox", "Faculty assessment decision").set_value(
+        "Satisfactory" if satisfactory else "Needs improvement")
+    widget(app, "selectbox", "Observed depth").set_value("foundational")
+    widget(app, "selectbox", "Observed autonomy").set_value("guided")
     widget(app, "text_input", "Observed clinical context").set_value("Simulated procedural care and reassessment")
     widget(app, "multiselect", "Evidence supporting your judgment").set_value(["trace:0"])
     widget(app, "text_area", "Faculty rationale and feedback").set_value("The selected decision supports this observed component.")
@@ -108,7 +113,8 @@ def test_multiple_objectives_are_reviewed_separately_and_duplicate_form_is_remov
     attempt_id = completed_attempt(accounts)
     accounts["progress"].set_target(accounts["admin"], "C4", 1, "UI cap regression")
     app = page(accounts, attempt_id=attempt_id)
-    assert widget(app, "checkbox", "Satisfactory demonstration of this simulated component").value is False
+    assert widget(app, "selectbox", "Faculty assessment decision").value is None
+    assert widget(app, "selectbox", "Observed autonomy").value is None
     options = widget(app, "selectbox", "Objective observed in this encounter").options
     assert not any(option.startswith(("C2 ·", "C15 ·")) for option in options)
     submit_assessment(app, "C4")

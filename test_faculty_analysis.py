@@ -102,9 +102,10 @@ def test_legacy_six_objective_draft_stays_readable_for_cognitive_challenge():
 
 
 def sample_brief(record=None, context="unknown"):
+    """A 1.3 brief: the faculty-reported context of its time, stored and still readable."""
     record = record or sample_record()
     return {
-        "schema_version": SCHEMA_VERSION, "prompt_version": PROMPT_VERSION,
+        "schema_version": SCHEMA_VERSION, "prompt_version": "1.3",
         "attempt_id": record["id"], "attempt_revision": record["revision"],
         "source_hash": source_fingerprint(record),
         "generated_at": datetime.now(timezone.utc).isoformat(), "model": "test-model",

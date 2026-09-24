@@ -109,7 +109,8 @@ def test_unknown_autonomy_requires_faculty_input_and_draft_does_not_bleed_betwee
     widget(app, "text_area", "Faculty rationale and feedback").set_value("Unsaved TD1-specific edit")
     widget(app, "selectbox", "Objective observed in this encounter").set_value("C4").run()
     assert widget(app, "text_area", "Faculty rationale and feedback").value != "Unsaved TD1-specific edit"
-    assert not any(item.label == "Faculty assessment decision" for item in app.selectbox)
+    # The TD1 draft does not bleed into C4: its decision starts unanswered.
+    assert widget(app, "selectbox", "Faculty assessment decision").value is None
     assert count(cohort) == 0
 
 
@@ -155,17 +156,22 @@ def test_public_pdf_url_rejects_credentials_and_private_query_parameters(monkeyp
     assert faculty_portal._public_app_url() is None
 
 
-def test_changing_assistance_invalidates_loaded_draft_and_acknowledgement(cohort):
-    attempt_id, _ = setup_brief(cohort, assistance="independent")
+def test_a_newer_brief_invalidates_the_loaded_draft_and_its_acknowledgement(cohort):
+    """The draft came from one brief. A brief written later -- for instance under a
+    newer assistance declaration -- makes it stale; the earlier brief stays on record."""
+    accounts, storage, users = cohort
+    attempt_id, first = setup_brief(cohort, assistance="independent")
     app = page(cohort, attempt_id)
     widget(app, "button", "Load AI suggestion into editable form").click().run()
     widget(app, "checkbox", "I reviewed the AI draft and confirmed the assessment fields").set_value(True).run()
     assert widget(app, "selectbox", "Observed autonomy").value == "independent"
-    widget(app, "selectbox", "Assistance received during this encounter").set_value("guided").run()
+    record = accounts.get_attempt(users["faculty"]["token"], attempt_id)
+    later = storage.save(users["faculty"]["token"], attempt_id, brief(record, "guided"))
+    app.run()
     assert not app.exception
-    assert not any(item.label == "Faculty assessment decision" for item in app.selectbox)
     assert widget(app, "selectbox", "Observed autonomy").value != "independent"
     assert not any(item.label == "I reviewed the AI draft and confirmed the assessment fields" for item in app.checkbox)
+    assert later["brief_id"] != first["brief_id"]
     assert count(cohort) == 0
 
 
@@ -229,7 +235,10 @@ def test_generation_is_explicit_saved_once_and_rerun_uses_saved_result(cohort, m
     monkeypatch.setattr(faculty_portal, "_secret", lambda name, default="": "fixture-key" if name == "OPENAI_API_KEY" else "fixture-model")
     def generate(record, **kwargs):
         calls.append(record["id"])
-        return brief(record, kwargs["assistance_context"])
+        # The declared context arrives as a snapshot, never as an autonomy level.
+        assert kwargs["context"]["assistance"]["value"] == "not_reported"
+        assert "assistance_context" not in kwargs
+        return brief(record)
     monkeypatch.setattr(faculty_portal, "generate_faculty_brief", generate)
     app = page(cohort, attempt_id)
     assert calls == []

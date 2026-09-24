@@ -17,6 +17,12 @@ from objectives import AUTONOMY_LEVELS, DEPTH_LEVELS, OBJECTIVES, evidence_items
 
 
 STAFF = {"faculty", "admin"}
+# The faculty's explicit judgment that the level of autonomy could not be
+# determined from what was observed (faculty specification 2026-09-24, §7).
+# It is not "guided", not a failure and not independence: the observation is
+# recorded and counts on its own merits, and the autonomy is said to be unknown.
+AUTONOMY_NOT_DETERMINED = "not_determined"
+DRAFT_FIELDS = ("satisfactory", "depth", "autonomy", "context", "evidence_refs", "notes", "ai_brief_id")
 
 
 def _text(value, label, maximum=4000):
@@ -82,6 +88,19 @@ class ProgressStore:
                 count_at_confirmation INTEGER, observation_ids_json TEXT,
                 PRIMARY KEY (user_id, objective_id)
             )""",
+            # A faculty member's work in progress on one objective of one
+            # encounter. Append-only; never counted; never shown to a resident.
+            """CREATE TABLE IF NOT EXISTS mrs_progress_drafts (
+                id TEXT PRIMARY KEY,
+                attempt_id TEXT NOT NULL REFERENCES mrs_attempts(id),
+                objective_id TEXT NOT NULL REFERENCES mrs_progress_targets(objective_id),
+                sequence INTEGER NOT NULL CHECK (sequence >= 1),
+                author_id TEXT NOT NULL REFERENCES mrs_users(id),
+                draft_json TEXT NOT NULL,
+                created_at BIGINT NOT NULL
+            )""",
+            """CREATE INDEX IF NOT EXISTS mrs_progress_drafts_attempt
+                ON mrs_progress_drafts(attempt_id, objective_id, sequence)""",
             """CREATE TABLE IF NOT EXISTS mrs_progress_audit (
                 id TEXT PRIMARY KEY, action TEXT NOT NULL,
                 actor_id TEXT NOT NULL REFERENCES mrs_users(id),
@@ -281,8 +300,12 @@ class ProgressStore:
                 raise AccountError("Choose whether the simulated component was demonstrated satisfactorily.")
             if assessment.get("depth") not in DEPTH_LEVELS:
                 raise AccountError("Choose a valid simulation depth.")
-            if assessment.get("autonomy") not in AUTONOMY_LEVELS:
-                raise AccountError("Choose a valid level of assistance.")
+            if assessment.get("autonomy") not in (*AUTONOMY_LEVELS, AUTONOMY_NOT_DETERMINED):
+                # Asked for here, when this objective is confirmed, and only
+                # here: the brief, the rubric and a draft never need it.
+                raise AccountError("To confirm this objective, choose the level of autonomy observed, "
+                                   "or record that it could not be determined. Everything else can "
+                                   "be kept as a draft in the meantime.")
             context = _text(assessment.get("context"), "the case context", 1000)
             notes = _text(assessment.get("notes"), "your assessment rationale")
             refs = assessment.get("evidence_refs")
@@ -328,6 +351,118 @@ class ProgressStore:
                          **({"ai_brief_id": ai_brief_id} if ai_brief_id is not None else {})})
             return {"status": status, "observation_id": observation_id,
                     "count": count + int(assessment["satisfactory"]), "target": target}
+
+    def _assessable_attempt(self, connection, actor, attempt_id, objective_id):
+        definition = _objective(objective_id)
+        if not definition["supported"]:
+            raise AccountError("This objective is not supported by the current simulator.")
+        attempt = self._execute(connection, """SELECT a.*, u.username, u.role AS owner_role
+            FROM mrs_attempts a JOIN mrs_users u ON u.id = a.user_id WHERE a.id = ?""",
+            (attempt_id,)).fetchone()
+        if (attempt is None or attempt["owner_role"] != "resident" or attempt["is_sandbox"]
+                or attempt["status"] != "completed" or attempt["user_id"] == actor["id"]):
+            raise AccountError("Review requires a completed, non-sandbox resident encounter.")
+        return attempt
+
+    def save_draft(self, token, attempt_id, objective_id, draft):
+        """Keep a faculty member's unfinished assessment, with whatever is still pending.
+
+        Saving the encounter, saving the AI's analysis, saving a draft and
+        confirming an observation are four different things (2026-09-24, §7);
+        the first three accept missing data. A draft never counts, never reaches
+        the resident, and never replaces a recorded observation.
+        """
+        if not isinstance(draft, dict):
+            raise AccountError("The draft has an invalid format.")
+        clean = {}
+        for field in DRAFT_FIELDS:
+            value = draft.get(field)
+            if value is None:
+                continue
+            if field == "satisfactory" and not isinstance(value, bool):
+                raise AccountError("The draft decision has an invalid format.")
+            if field == "depth" and value not in DEPTH_LEVELS:
+                raise AccountError("Choose a valid simulation depth.")
+            if field == "autonomy" and value not in (*AUTONOMY_LEVELS, AUTONOMY_NOT_DETERMINED):
+                raise AccountError("Choose a valid level of autonomy.")
+            if field in ("context", "notes", "ai_brief_id"):
+                value = str(value)
+                if len(value) > 4000:
+                    raise AccountError("A draft field is too long.")
+            if field == "evidence_refs":
+                if not isinstance(value, list) or len(value) > 100 or any(not isinstance(r, str) for r in value):
+                    raise AccountError("The draft evidence has an invalid format.")
+                value = list(dict.fromkeys(value))
+            clean[field] = value
+        with self.accounts._transaction(write=True) as connection:
+            actor = self.accounts._actor(connection, token, STAFF)
+            attempt = self._assessable_attempt(connection, actor, attempt_id, objective_id)
+            if clean.get("evidence_refs"):
+                payload = json.loads(attempt["payload_json"])
+                available = {item["ref"] for item in evidence_items(payload)}
+                if any(ref not in available for ref in clean["evidence_refs"]):
+                    raise AccountError("The selected evidence is not present in this completed encounter.")
+            highest = self._execute(connection, """SELECT COALESCE(MAX(sequence), 0) AS highest
+                FROM mrs_progress_drafts WHERE attempt_id = ? AND objective_id = ?""",
+                (attempt_id, objective_id)).fetchone()
+            sequence = int(highest["highest"] or 0) + 1
+            self._execute(connection, """INSERT INTO mrs_progress_drafts
+                (id, attempt_id, objective_id, sequence, author_id, draft_json, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (uuid.uuid4().hex, attempt_id, objective_id, sequence, actor["id"], _json(clean),
+                 int(time.time())))
+            return {"sequence": sequence, "draft": clean, "pending": pending_fields(clean)}
+
+    def latest_draft(self, token, attempt_id, objective_id):
+        """The most recent draft of one objective for one encounter, or None."""
+        with self.accounts._transaction() as connection:
+            actor = self.accounts._actor(connection, token, STAFF)
+            self._assessable_attempt(connection, actor, attempt_id, objective_id)
+            row = self._execute(connection, """SELECT d.*, u.username AS author
+                FROM mrs_progress_drafts d JOIN mrs_users u ON u.id = d.author_id
+                WHERE d.attempt_id = ? AND d.objective_id = ?
+                ORDER BY d.sequence DESC LIMIT 1""", (attempt_id, objective_id)).fetchone()
+            if row is None:
+                return None
+            draft = json.loads(row["draft_json"])
+            return {"sequence": row["sequence"], "author": row["author"],
+                    "created_at": row["created_at"], "draft": draft, "pending": pending_fields(draft)}
+
+    def pending_reviews(self, token, user_id=None):
+        """What is waiting on the faculty, encounter by encounter.
+
+        For every completed resident encounter: which supported objectives still
+        have no observation recorded, and which of those have a draft. Nothing
+        here is a count of achievement.
+        """
+        from competency_mapping import objective_is_eligible
+        with self.accounts._transaction() as connection:
+            actor = self.accounts._actor(connection, token, STAFF)
+            sql = """SELECT a.*, u.username, u.role AS owner_role FROM mrs_attempts a
+                JOIN mrs_users u ON u.id = a.user_id
+                WHERE u.role = 'resident' AND a.status = 'completed' AND a.is_sandbox = 0"""
+            parameters = ()
+            if user_id is not None:
+                sql += " AND a.user_id = ?"
+                parameters = (user_id,)
+            rows = self._execute(connection, sql + " ORDER BY a.updated_at", parameters).fetchall()
+            waiting = []
+            for row in rows or []:
+                record = self.accounts._attempt(row)
+                assessed = {r["objective_id"] for r in self._execute(connection, """SELECT objective_id
+                    FROM mrs_progress_observations WHERE attempt_id = ? AND voided_at IS NULL""",
+                    (row["id"],)).fetchall()}
+                drafted = {r["objective_id"] for r in self._execute(connection, """SELECT DISTINCT objective_id
+                    FROM mrs_progress_drafts WHERE attempt_id = ?""", (row["id"],)).fetchall()}
+                eligible = [key for key, value in OBJECTIVES.items()
+                            if value["supported"] and objective_is_eligible(key, record)]
+                pending = [key for key in eligible if key not in assessed]
+                waiting.append({"attempt_id": row["id"], "user_id": row["user_id"],
+                                "username": row["username"], "challenge_id": row["challenge_id"],
+                                "updated_at": row["updated_at"], "pending_objectives": pending,
+                                "drafted_objectives": sorted(drafted & set(pending)),
+                                "assessed_objectives": sorted(assessed)})
+            return waiting
 
     def set_target(self, token, objective_id, target, reason):
         """Set a program target; never truncate previously accepted evidence."""
@@ -433,3 +568,21 @@ class ProgressStore:
                 item["details"] = json.loads(item.pop("details_json"))
                 result.append(item)
             return result
+
+
+def pending_fields(draft):
+    """What a draft still needs before it can be confirmed, in plain words."""
+    missing = []
+    if not isinstance((draft or {}).get("satisfactory"), bool):
+        missing.append("the decision")
+    if (draft or {}).get("depth") not in DEPTH_LEVELS:
+        missing.append("the depth")
+    if (draft or {}).get("autonomy") not in (*AUTONOMY_LEVELS, AUTONOMY_NOT_DETERMINED):
+        missing.append("the autonomy (a level, or that it could not be determined)")
+    if not str((draft or {}).get("context") or "").strip():
+        missing.append("the clinical context")
+    if not (draft or {}).get("evidence_refs"):
+        missing.append("the supporting evidence")
+    if not str((draft or {}).get("notes") or "").strip():
+        missing.append("the rationale and feedback")
+    return missing

@@ -94,6 +94,20 @@ def render_rubric_assessment(context, record, *, training_year=None):
         return _review_form(store, token, record, case_id, proposal, review, training_year)
 
 
+def _declared_context(store, token, record):
+    """The help declaration as it stands now, frozen into the request.
+
+    The rubric records it and never scores it; an encounter nobody declared
+    anything about is "not reported", a valid state.
+    """
+    import encounter_context
+    try:
+        current = encounter_context.EncounterContextStore(store.accounts).current(token, record["id"])
+    except AccountError:
+        current = {}
+    return encounter_context.snapshot(current)
+
+
 def _proposal_controls(store, token, record, proposal):
     api_key = _secret("OPENAI_API_KEY")
     if proposal:
@@ -113,7 +127,8 @@ def _proposal_controls(store, token, record, proposal):
             return
         with st.spinner("Requesting one bounded proposal..."):
             try:
-                report = generate_rubric_proposal(record, api_key=api_key, model=model)
+                report = generate_rubric_proposal(record, api_key=api_key, model=model,
+                                                  context=_declared_context(store, token, record))
                 store.save_proposal(token, record["id"], report)
             except (RubricAnalysisError, AccountError) as error:
                 # A failure leaves the encounter and its reports untouched. It is

@@ -22,15 +22,25 @@ SCHEMA_VERSION = "faculty_brief_v1"
 # decision, and an objective with no recorded opportunity is named as such.
 # The faculty fingerprint binds the record and not the prompt, so briefs stored
 # under 1.0-1.2 keep rendering; only new briefs use the revised rubric.
-PROMPT_VERSION = "1.3"
-SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", "1.2", PROMPT_VERSION)
+# 1.4 (2026-09-24): the assistance context is a declaration of its own --
+# who declared what help, and when (encounter_context) -- and no longer one of
+# the autonomy levels. An autonomy the record cannot support is left empty and
+# shown as "not determined: requires faculty confirmation"; the brief is always
+# generated. Also: identifiers stay out of the prose, and a study the simulator
+# does not model is judged for its pertinence, never for its missing result.
+PROMPT_VERSION = "1.4"
+SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", "1.2", "1.3", PROMPT_VERSION)
+# Briefs from 1.0 to 1.3 carry the faculty-reported context they were written
+# under, one of these, and keep validating against it. From 1.4 the stored
+# value is always "unknown": nobody pre-declares an autonomy level any more.
 ASSISTANCE_CONTEXTS = ("unknown", *AUTONOMY_LEVELS)
+DECLARED_CONTEXT_PROMPTS = ("1.4",)
 # Preserve the six-objective legacy envelope for already saved faculty drafts.
 SUPPORTED_OBJECTIVES = ("TD1", "F1", "C1", "C3", "C4", "C14")
 # Prompt versions that ask for the record's own objective list rather than the
 # fixed six. A stored brief must be read with the list it was written against,
 # so a later prompt revision cannot make an earlier brief unreadable.
-DYNAMIC_OBJECTIVE_PROMPTS = ("1.2", "1.3")
+DYNAMIC_OBJECTIVE_PROMPTS = ("1.2", "1.3", "1.4")
 MAX_INPUT_BYTES = 260_000
 MAX_TRACE_EVENTS = 120
 MAX_OUTPUT_TOKENS = 10_000
@@ -255,12 +265,40 @@ def case_id_of(record):
     return ""
 
 
-def build_analysis_source(record, assistance_context="unknown"):
+def _prompted(event):
+    """Which reasoning categories the application asked for, and how they came back.
+
+    A neutral request to complete a category is not clinical help (faculty,
+    2026-09-24); it is recorded so a reader can tell what was spontaneous from
+    what was prompted. Older records keep only that a gate was sealed.
+    """
+    gate = event.get("reasoning_gate") if isinstance(event.get("reasoning_gate"), dict) else {}
+    asked = gate.get("asked_for") if isinstance(gate.get("asked_for"), list) else []
+    return {
+        "held_for_reasoning": bool(gate.get("sealed_at_min") is not None or asked
+                                   or gate.get("status") == "overridden"),
+        "categories_asked_for": [str(item) for item in asked if isinstance(item, str)][:8],
+        "answered_via": str(gate.get("answered_via") or ""),
+    }
+
+
+def _provenance(event):
+    reasoning = event.get("reasoning") if isinstance(event.get("reasoning"), dict) else {}
+    values = reasoning.get("slot_provenance") if isinstance(reasoning.get("slot_provenance"), dict) else {}
+    return {str(key): str(value) for key, value in values.items()
+            if isinstance(value, str) and key in _REASONING}
+
+
+def build_analysis_source(record, assistance_context="unknown", context=None):
     """Return only data the learner could see and recorded learner reasoning.
 
     Raw trace indices match objectives.evidence_items; filtered display ordinals
     remain separate. The final outcome is never substituted for decision-time
     information. Later comparisons and plans have their own, labeled sections.
+
+    ``context`` is the encounter's declared assistance context, frozen by
+    ``encounter_context.snapshot`` when the analysis is requested (1.4). Without
+    it the source carries the older faculty-reported context instead.
     """
     session = _eligible(record)
     if assistance_context not in ASSISTANCE_CONTEXTS:
@@ -303,6 +341,8 @@ def build_analysis_source(record, assistance_context="unknown"):
             "executed_action_summaries": _actions(event.get("action_summaries"), response_time) if status == "executed" else [],
             "state_before": _state(before, decision_time),
             "state_after": _state(after, response_time),
+            "reasoning_prompted": _prompted(event),
+            "reasoning_provenance": _provenance(event),
         })
     reflections = []
     has_frozen_reflection = bool(session.get("precomparison_decision_review"))
@@ -335,10 +375,22 @@ def build_analysis_source(record, assistance_context="unknown"):
     # treat a history the resident never asked for as unavailable).
     import history_review
     history = history_review.review(record, case_id_of(record))
+    if context is not None:
+        # Declared, with who declared it and when; the role, never an account.
+        assistance = {"assistance_declaration": {
+                          key: context["assistance"].get(key) for key in
+                          ("value", "label", "declared_by_role", "declared_at", "description",
+                           "affected_refs")},
+                      "execution_provenance": None if not context.get("execution") else {
+                          key: context["execution"].get(key) for key in
+                          ("value", "label", "declared_by_role", "declared_at")}}
+    else:
+        assistance = {"assistance_context": assistance_context,
+                      "assistance_provenance": ("faculty_reported" if assistance_context != "unknown"
+                                                else "not_recorded")}
     source = {
         "schema_version": "faculty_analysis_source_v1",
-        "assistance_context": assistance_context,
-        "assistance_provenance": "faculty_reported" if assistance_context != "unknown" else "not_recorded",
+        **assistance,
         "case_label": _text(session.get("selected_case", ""), 200),
         "initial_presentation": _text(encounter.get("presentation", "")) if isinstance(encounter, dict) else "",
         "decision_events": events,
@@ -414,10 +466,42 @@ ventilation reasoning, not hands-on intubation. Scope C14 concerns supplied POCU
 interpretation and management use, not acquisition. C4 requires actual sedation
 reasoning; mentioning sedation or performing cardioversion alone is insufficient.
 
-Autonomy refers to assistance, never prose quality. If assistance_context is
-unknown, return null for every autonomy and flag that faculty must establish it.
-Otherwise use exactly the faculty-reported guided, prompted, or independent value
-when proposing autonomy; never upgrade it. Describe that provenance explicitly.
+Three things are kept apart: the assistance context (the help the learner
+received, as declared in assistance_declaration, with who declared it), the
+observable performance (the record), and autonomy (the level shown for each
+objective, which the faculty confirms). Autonomy is never prose quality and is
+never simply the assistance context.
+- If assistance_declaration is "not_reported", or execution_provenance marks a
+  synthetic automated run, return null autonomy for every objective: autonomy is
+  not determined and requires faculty confirmation. A synthetic run describes a
+  test, not a resident's clinical autonomy. Say so once, in limits.
+- If external help was declared, never propose "independent" for an objective
+  resting on a decision the help affected, nor for any objective when the
+  affected decisions are not stated. Name the help once, in limits.
+- "No external help" does not make the performance competent or the autonomy
+  independent. Propose a level only when the record supports it; otherwise null.
+- reasoning_prompted shows the reasoning categories the application asked for
+  after an order was held, and reasoning_provenance which answers were stated,
+  carried from an earlier decision, completed on request, or composed by the
+  application. A neutral request to complete a category, a format clarification
+  or a correction of the application's recognition is not clinical help and is
+  not by itself a loss of autonomy; say what was spontaneous and what was prompted.
+- Every other part of the analysis is produced whatever the assistance context:
+  a missing declaration never withholds the summary, the decisions or a
+  recommendation the record supports.
+
+A study the learner asked for that this simulator does not model is recorded as
+requested and not modelled for this case. Judge whether asking for it was
+pertinent and timely; its missing result is never the learner's omission, and
+never proof that asking was wrong. If that limitation leaves an objective
+unobservable, recommend insufficient_evidence and say that the simulator could not
+show it.
+
+Never write an internal identifier in prose: not an evidence_ref such as
+"trace:3" or "reflection:decision-2", not an input field name such as
+unasked_history_topics or decision_events. Name a decision by its minute and what
+was ordered, and a list by what it holds ("the history topics nobody asked about").
+The identifiers belong in evidence_refs.
 
 All citations must use supplied evidence_ref values exactly. Key decisions must
 include a trace reference. Distinguish observation, interpretation and uncertainty
@@ -584,16 +668,65 @@ def _check_schema(value, schema):
             _check_schema(value[key], child)
 
 
+_SNAPSHOT_KEYS = {"assistance", "execution"}
+
+
+def _snapshot(value):
+    """A frozen declaration as the envelope stores it, or a refusal."""
+    if not isinstance(value, dict) or set(value) != _SNAPSHOT_KEYS:
+        raise FacultyAnalysisError("The AI brief's assistance context has an invalid format.")
+    assistance = value["assistance"]
+    if not isinstance(assistance, dict) or assistance.get("value") not in ("none", "external_help",
+                                                                           "not_reported"):
+        raise FacultyAnalysisError("The AI brief's assistance context has an invalid format.")
+    refs = assistance.get("affected_refs")
+    if not isinstance(refs, list) or any(not isinstance(ref, str) for ref in refs):
+        raise FacultyAnalysisError("The AI brief's assistance context has an invalid format.")
+    execution = value["execution"]
+    if execution is not None and (not isinstance(execution, dict)
+                                  or execution.get("value") != "synthetic_agent"):
+        raise FacultyAnalysisError("The AI brief's assistance context has an invalid format.")
+    return value
+
+
+def autonomy_allowed(row, snapshot):
+    """Whether a proposed autonomy is one the declared context lets a model propose.
+
+    Returns ``None`` when it may stand, or the reason it may not. Null is always
+    allowed: it reads "not determined: requires faculty confirmation".
+    """
+    autonomy = row.get("autonomy")
+    if autonomy is None:
+        return None
+    if (snapshot.get("execution") or {}).get("value") == "synthetic_agent":
+        return "a synthetic run demonstrates no resident's autonomy"
+    declared = snapshot["assistance"]["value"]
+    if declared == "not_reported":
+        return "the assistance context was not reported"
+    if declared == "external_help" and autonomy == "independent":
+        affected = set(snapshot["assistance"].get("affected_refs") or [])
+        if not affected or affected & set(row.get("evidence_refs") or []):
+            return "external help was declared for the decisions it rests on"
+    return None
+
+
 def validate_brief(report, record, assistance_context=None):
     """Return a detached validated envelope or fail closed, without grading.
 
     ``assistance_context=None`` validates against the saved envelope's declared
     context. Passing a context also binds it to the currently selected faculty
     input. A persisted store may add its own ID outside this strict envelope.
+
+    A 1.4 brief carries the declaration it was written under
+    (``assistance_snapshot``) and the objectives whose proposed autonomy was
+    withheld because that declaration did not allow it (``autonomy_withheld``).
     """
     _eligible(record)
     required = {"schema_version", "prompt_version", "source_hash", "attempt_id", "attempt_revision",
                 "generated_at", "model", "assistance_context", "analysis"}
+    declared_prompt = isinstance(report, dict) and report.get("prompt_version") in DECLARED_CONTEXT_PROMPTS
+    if declared_prompt:
+        required = required | {"assistance_snapshot", "autonomy_withheld"}
     if not isinstance(report, dict) or set(report) != required:
         raise FacultyAnalysisError("The saved AI brief has an invalid format.")
     if (report["schema_version"] != SCHEMA_VERSION or report["prompt_version"] not in SUPPORTED_PROMPT_VERSIONS
@@ -605,6 +738,14 @@ def validate_brief(report, record, assistance_context=None):
     context = report["assistance_context"]
     if context not in ASSISTANCE_CONTEXTS or (assistance_context is not None and context != assistance_context):
         raise FacultyAnalysisError("The AI brief does not match the faculty's assistance context.")
+    snapshot = None
+    if declared_prompt:
+        if context != "unknown":
+            raise FacultyAnalysisError("The AI brief does not match the faculty's assistance context.")
+        snapshot = _snapshot(report["assistance_snapshot"])
+        withheld = report["autonomy_withheld"]
+        if not isinstance(withheld, list) or any(not isinstance(item, str) for item in withheld):
+            raise FacultyAnalysisError("The saved AI brief has an invalid format.")
     _text(report["model"], 100, empty=False)
     try:
         generated = datetime.fromisoformat(report["generated_at"].replace("Z", "+00:00"))
@@ -613,7 +754,7 @@ def validate_brief(report, record, assistance_context=None):
     except (TypeError, AttributeError, ValueError) as exc:
         raise FacultyAnalysisError("The AI brief generation time is invalid.") from exc
     # Build again to ensure bounds and eligibility apply to loaded reports too.
-    source = build_analysis_source(record, context)
+    source = build_analysis_source(record, context, snapshot)
     refs = {row["evidence_ref"] for row in source["decision_events"] if row["evidence_ref"]}
     refs.update(row["evidence_ref"] for row in source["recorded_reflections"])
     objective_ids = (supported_objectives(record) if report["prompt_version"] in DYNAMIC_OBJECTIVE_PROMPTS
@@ -634,15 +775,31 @@ def validate_brief(report, record, assistance_context=None):
                 raise FacultyAnalysisError("Insufficient evidence cannot establish depth or autonomy.")
         elif row["depth"] is None or not any(ref.startswith("trace:") for ref in row["evidence_refs"]):
             raise FacultyAnalysisError("An assessment suggestion requires depth and executed decision evidence.")
-        if (context == "unknown" and row["autonomy"] is not None
+        if snapshot is not None:
+            if autonomy_allowed(row, snapshot):
+                raise FacultyAnalysisError("The AI brief cannot infer or upgrade the recorded level of assistance.")
+        elif (context == "unknown" and row["autonomy"] is not None
                 or context != "unknown" and row["autonomy"] not in (None, context)):
             raise FacultyAnalysisError("The AI brief cannot infer or upgrade the recorded level of assistance.")
     return deepcopy(report)
 
 
-def generate_faculty_brief(record, *, api_key, model, assistance_context="unknown", client=None):
-    """Make one bounded structured request; a failure never creates a substitute."""
-    source = build_analysis_source(record, assistance_context)
+def generate_faculty_brief(record, *, api_key, model, assistance_context="unknown", client=None,
+                           context=None):
+    """Make one bounded structured request; a failure never creates a substitute.
+
+    ``context`` is the declared assistance context (``encounter_context.snapshot``);
+    without one the encounter is "not reported", which is a valid state and
+    never a reason to withhold the brief. An autonomy the declaration does not
+    let a model propose is withheld -- left empty, "not determined" -- and the
+    objective is named in ``autonomy_withheld``; the rest of the brief stands.
+    """
+    if assistance_context != "unknown":
+        raise FacultyAnalysisError("The assistance context is declared on its own now; it is no "
+                                   "longer an autonomy level chosen before the analysis.")
+    import encounter_context
+    context = _snapshot(context if context is not None else encounter_context.not_reported())
+    source = build_analysis_source(record, assistance_context, context)
     fingerprint = source_fingerprint(record)
     if not isinstance(model, str) or not model.strip() or len(model) > 100:
         raise FacultyAnalysisError("A faculty analysis model must be configured.")
@@ -672,9 +829,17 @@ def generate_faculty_brief(record, *, api_key, model, assistance_context="unknow
     except Exception as exc:
         # A provider may echo credentials or private request contents in errors.
         raise FacultyAnalysisError("Faculty analysis could not be generated. No assessment was recorded.") from exc
+    # The one field the declaration governs. A value it does not allow is left
+    # empty and named, rather than failing a brief the faculty needs.
+    withheld = []
+    for row in analysis.get("objectives", []):
+        if isinstance(row, dict) and autonomy_allowed(row, context):
+            row["autonomy"] = None
+            withheld.append(str(row.get("objective_id")))
     return validate_brief({
         "schema_version": SCHEMA_VERSION, "prompt_version": PROMPT_VERSION,
         "source_hash": fingerprint, "attempt_id": record["id"], "attempt_revision": record["revision"],
         "generated_at": datetime.now(timezone.utc).isoformat(), "model": model.strip(),
-        "assistance_context": assistance_context, "analysis": analysis,
+        "assistance_context": assistance_context, "assistance_snapshot": context,
+        "autonomy_withheld": withheld, "analysis": analysis,
     }, record, assistance_context)

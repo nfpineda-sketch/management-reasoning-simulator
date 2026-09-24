@@ -221,7 +221,10 @@ def test_completed_review_readonly_and_revision_conflict_recovery(cohort):
     final_record = store.get_attempt(token, record["id"])
     completed = open_app(token)
     click(completed, "Open review")
-    assert not completed.text_area
+    # The review is read-only. The one open field is the optional question about
+    # help received, which lives beside the record and can be answered later
+    # (2026-09-24); answering it never changes the attempt's revision.
+    assert all(area.form_id.startswith("closing_assistance_") for area in completed.text_area)
     assert any("read-only" in str(c.value) for c in completed.caption)
     assert store.get_attempt(token, record["id"])["revision"] == final_record["revision"]
     click(completed, "Next Encounter with This Adaptation Plan")
@@ -259,7 +262,10 @@ def test_full_app_faculty_brief_remains_visible_after_every_objective_is_assesse
     assert any(item.label == "AI faculty assessment brief" for item in faculty.expander)
     generate = next(item for item in faculty.button if item.label == "Generate AI faculty brief")
     assert generate.disabled  # The faculty panel remains visible without a configured provider key.
-    assert any(item.label == "Assistance received during this encounter" for item in faculty.selectbox)
+    # The assistance context is declared, not chosen as an autonomy level; an
+    # encounter nobody declared anything about says so and blocks nothing.
+    assert any("nobody has declared it yet" in str(item.value) for item in faculty.caption)
+    assert not any(item.label == "Assistance received during this encounter" for item in faculty.selectbox)
     assert not any(item.label == "Record objective assessment" for item in faculty.button)
     assert store.get_attempt(resident, attempt_id) == original
     assert progress.get_progress(resident) == recorded_progress
@@ -337,7 +343,7 @@ def test_full_app_multiobjective_faculty_assessment_and_resident_progress(cohort
     for objective in ("C4", "F1"):
         widget(faculty, "selectbox", "Objective observed in this encounter").set_value(objective).run()
         assert not faculty.exception
-        widget(faculty, "checkbox", "Satisfactory demonstration of this simulated component").check()
+        widget(faculty, "selectbox", "Faculty assessment decision").set_value("Satisfactory")
         widget(faculty, "selectbox", "Observed depth").set_value("integrated")
         widget(faculty, "selectbox", "Observed autonomy").set_value("prompted")
         widget(faculty, "text_input", "Observed clinical context").set_value("Faculty review fixture: rhythm and perfusion.")

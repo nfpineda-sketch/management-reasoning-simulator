@@ -199,6 +199,7 @@ def runtime_functions(fake_st):
                  "_render_rubric_profile": lambda context, user_id=None: None,
                  "_render_own_record": lambda context: None,
                  "_render_setup": lambda context: False,
+                 "_awaiting_review": lambda context: {},
                  "render_attempt_assessment": lambda context, record: None}
     exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), namespace)
     return namespace

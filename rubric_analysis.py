@@ -48,14 +48,15 @@ def _check_schema(value, schema):
             str(error).replace("The AI brief", "The rubric proposal")) from None
 
 
-def build_rubric_source(record, assistance_context="unknown"):
+def build_rubric_source(record, assistance_context="unknown", context=None):
     """The frozen encounter, the rubric, and what this case declared beforehand.
 
     The declaration travels with the request so the model scores against the
     opportunities and windows the case actually offers, rather than against an
-    idea of what the case might have contained.
+    idea of what the case might have contained. ``context`` is the declared
+    assistance context (``encounter_context.snapshot``), when there is one.
     """
-    source = build_analysis_source(record, assistance_context)
+    source = build_analysis_source(record, assistance_context, context)
     case_id = case_id_of(record)
     entry = declared(case_id) if case_id else None
     source.pop("objective_rubric", None)
@@ -189,6 +190,9 @@ WHAT NOT TO DO
 - Record any hint or assistance the encounter gave. Asking for help appropriately is not a
   failure and is never scored as one. A neutral request to complete a missing reasoning
   category, or to clarify an order's format, is not clinical help.
+- assistance_declaration is what someone declared about external help, and who. Record it
+  in assistance_recorded; never score it. "not_reported" is not a deficit and "none" is not
+  a merit: the domains score the record, whatever was declared.
 
 INFORMATION AVAILABLE ON ASKING
 - The patient, or the collateral source the case names, is present for the whole encounter and
@@ -382,9 +386,12 @@ def validate_rubric_proposal(report, record, assistance_context=None):
     return report
 
 
-def generate_rubric_proposal(record, *, api_key, model, assistance_context="unknown", client=None):
+def generate_rubric_proposal(record, *, api_key, model, assistance_context="unknown", client=None,
+                             context=None):
     """One bounded structured request. A failure never creates a substitute score."""
-    source = build_rubric_source(record, assistance_context)
+    import encounter_context
+    source = build_rubric_source(record, assistance_context,
+                                 context if context is not None else encounter_context.not_reported())
     if not isinstance(model, str) or not model.strip() or len(model) > 100:
         raise RubricAnalysisError("A rubric analysis model must be configured.")
     if client is None and (not isinstance(api_key, str) or not api_key.strip()):

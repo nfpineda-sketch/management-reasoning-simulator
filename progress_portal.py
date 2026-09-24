@@ -13,8 +13,16 @@ from objectives import (
     OBJECTIVES, DEPTH_LEVELS, AUTONOMY_LEVELS,
     DEPTH_DESCRIPTIONS, AUTONOMY_DESCRIPTIONS, evidence_items,
 )
-from progress_store import ProgressStore
+from progress_store import AUTONOMY_NOT_DETERMINED, ProgressStore, pending_fields
 from faculty_portal import render_suggestion_loader
+
+AUTONOMY_CHOICES = (*AUTONOMY_LEVELS, AUTONOMY_NOT_DETERMINED)
+
+
+def _autonomy_label(key):
+    if key == AUTONOMY_NOT_DETERMINED:
+        return "Could not be determined"
+    return str(key or "").capitalize()
 
 
 def _date(value):
@@ -50,7 +58,7 @@ def _history_rows(observations):
         "Observed": _date(row.get("created_at")),
         "Satisfactory": "Yes" if row.get("satisfactory") else "No",
         "Depth": str(row.get("depth", "")).capitalize(),
-        "Autonomy": str(row.get("autonomy", "")).capitalize(),
+        "Autonomy": _autonomy_label(row.get("autonomy")),
         "Context": row.get("context", ""),
         "Assessor": row.get("assessor", ""),
         "Status": "Voided" if row.get("voided") else "Recorded",
@@ -155,22 +163,40 @@ def render_attempt_assessment(context, record):
         except AccountError as exc:
             st.error(str(exc))
             return
+        # A saved draft of this objective comes back into the form when no AI
+        # draft is loaded over it: work in progress is not lost between visits.
+        saved = progress.latest_draft(context["token"], record["id"], objective_id)
+        restore_key = widget_prefix + "_restored"
+        if saved and not draft and st.session_state.get(restore_key) != saved["sequence"]:
+            values = saved["draft"]
+            st.session_state[widget_prefix + "_decision"] = (
+                None if values.get("satisfactory") is None
+                else "Satisfactory" if values["satisfactory"] else "Needs improvement")
+            for field, key in (("depth", "depth"), ("autonomy", "autonomy"), ("context", "context"),
+                               ("evidence_refs", "evidence"), ("notes", "notes")):
+                if values.get(field) is not None:
+                    st.session_state[widget_prefix + "_" + key] = values[field]
+            st.session_state[restore_key] = saved["sequence"]
+        if saved:
+            st.caption(f"Draft {saved['sequence']} saved by {saved['author']}. Still needed to confirm: "
+                       + (", ".join(saved["pending"]) if saved["pending"] else "nothing") + ".")
         with st.form(widget_prefix):
-            decision = None
-            if draft:
-                decision = st.selectbox("Faculty assessment decision", ["Satisfactory", "Needs improvement"],
-                                        index=None, key=widget_prefix + "_decision",
-                                        placeholder="Choose your assessment after reviewing the evidence")
-                satisfactory = decision == "Satisfactory"
-            else:
-                satisfactory = st.checkbox("Satisfactory demonstration of this simulated component", value=False)
+            decision = st.selectbox("Faculty assessment decision", ["Satisfactory", "Needs improvement"],
+                                    index=None, key=widget_prefix + "_decision",
+                                    placeholder="Choose your assessment after reviewing the evidence")
+            satisfactory = None if decision is None else decision == "Satisfactory"
             depth = st.selectbox("Observed depth", DEPTH_LEVELS, format_func=str.capitalize,
-                                 key=widget_prefix + "_depth", index=None if draft else 0,
+                                 key=widget_prefix + "_depth", index=None,
+                                 placeholder="Pending",
                                  help="\n\n".join(key.capitalize() + ": " + DEPTH_DESCRIPTIONS[key] for key in DEPTH_LEVELS))
-            autonomy = st.selectbox("Observed autonomy", AUTONOMY_LEVELS, format_func=str.capitalize,
-                                    key=widget_prefix + "_autonomy", index=None if draft else 0,
-                                    help="\n\n".join(key.capitalize() + ": " + AUTONOMY_DESCRIPTIONS[key] for key in AUTONOMY_LEVELS))
-            st.caption("Depth and autonomy are local observation descriptors, not ACGME milestone levels or residency years.")
+            autonomy = st.selectbox("Observed autonomy", AUTONOMY_CHOICES, format_func=_autonomy_label,
+                                    key=widget_prefix + "_autonomy", index=None,
+                                    placeholder="Not determined: requires your confirmation",
+                                    help="\n\n".join(key.capitalize() + ": " + AUTONOMY_DESCRIPTIONS[key] for key in AUTONOMY_LEVELS)
+                                    + "\n\nCould not be determined: the record does not let you judge it. "
+                                      "It is not a negative result and not independence.")
+            st.caption("Depth and autonomy are local observation descriptors, not ACGME milestone levels or residency years. "
+                       "Autonomy is asked for only to confirm this objective; a draft can keep it pending.")
             encounter_context = st.text_input("Observed clinical context", max_chars=500, key=widget_prefix + "_context")
             references = {item["ref"]: item["label"] for item in items}
             selected_refs = st.multiselect("Evidence supporting your judgment", list(references), format_func=references.get,
@@ -180,10 +206,26 @@ def render_attempt_assessment(context, record):
                                  help="Explain the judgment using the selected evidence, including any limits or areas for improvement.")
             acknowledged = st.checkbox("I reviewed the AI draft and confirmed the assessment fields", value=False,
                                         key=widget_prefix + "_ack") if draft else True
-            submitted = st.form_submit_button("Record objective assessment")
+            columns = st.columns(2)
+            keep = columns[0].form_submit_button("Save draft")
+            submitted = columns[1].form_submit_button("Record objective assessment")
+        if keep:
+            kept = progress.save_draft(context["token"], record["id"], objective_id, {
+                "satisfactory": satisfactory, "depth": depth, "autonomy": autonomy,
+                "context": encounter_context or None, "evidence_refs": selected_refs or None,
+                "notes": notes or None, **({"ai_brief_id": draft["brief_id"]} if draft else {}),
+            })
+            st.session_state[widget_prefix + "_restored"] = kept["sequence"]
+            _saved(context, "Draft saved. It counts for nothing until you record the assessment."
+                   + (" Still needed: " + ", ".join(kept["pending"]) + "." if kept["pending"] else ""))
         if submitted:
-            if draft and (decision is None or depth is None or autonomy is None or not acknowledged):
-                st.error("Choose your assessment, depth and autonomy, and confirm your review of the AI draft before saving.")
+            missing = pending_fields({"satisfactory": satisfactory, "depth": depth, "autonomy": autonomy,
+                                      "context": encounter_context, "evidence_refs": selected_refs,
+                                      "notes": notes})
+            if missing or (draft and not acknowledged):
+                st.error(("To record this objective, complete: " + ", ".join(missing) + "." if missing else "")
+                         + (" Before recording, confirm your review of the AI draft." if draft and not acknowledged else "")
+                         + " You can save everything else as a draft; nothing is lost.")
                 return
             result = progress.assess(context["token"], record["id"], objective_id, {
                 "satisfactory": satisfactory, "depth": depth, "autonomy": autonomy,

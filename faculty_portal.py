@@ -16,6 +16,9 @@ from faculty_report import render_faculty_brief_pdf
 from objectives import OBJECTIVES, evidence_items
 
 
+# The context a brief written before 2026-09-24 was generated under: the
+# faculty chose one of the autonomy levels before the analysis. Kept to read
+# those briefs; no longer offered.
 ASSISTANCE = {
     "unknown": "Not known / not documented",
     "guided": "Guided - structured help directed the reasoning",
@@ -51,15 +54,80 @@ def _staff_record(context, record):
     return fresh
 
 
-def _assistance_key(record):
-    return "faculty_assistance_" + record["id"]
-
-
 def _current_report(context, record):
-    assistance = st.session_state.get(_assistance_key(record))
-    return FacultyBriefStore(context["store"]).get_latest(
-        context["token"], record["id"], assistance_context=assistance,
-    )
+    """The latest saved brief for this encounter revision, whatever it was written under."""
+    return FacultyBriefStore(context["store"]).get_latest(context["token"], record["id"])
+
+
+def _when(value):
+    from datetime import datetime, timezone
+    try:
+        return datetime.fromtimestamp(int(value), tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    except (TypeError, ValueError, OverflowError, OSError):
+        return "time not recorded"
+
+
+def _declared(row, field="assistance"):
+    """One line: what was declared, by whom and when -- or that nobody declared it."""
+    import encounter_context
+    if row is None:
+        return (encounter_context.label(field, "not_reported") + " - nobody has declared it yet"
+                if field == "assistance" else "")
+    text = (encounter_context.label(field, row["value"]) + " - declared by the "
+            + str(row["declared_by_role"]) + " (" + str(row["declared_by"]) + "), "
+            + _when(row["declared_at"]))
+    if row.get("description"):
+        text += ". Help described: " + row["description"]
+    if row.get("note"):
+        text += ". Note: " + row["note"]
+    return text
+
+
+def render_assistance_context(context, record):
+    """The declared assistance context, its history, and the faculty's own entry.
+
+    Faculty specification of 2026-09-24, section 8: who declared what help and
+    when; the clinical help recorded, if any; and a way to complete or correct
+    the declaration without overwriting anything already confirmed.
+    """
+    import encounter_context
+    store = encounter_context.EncounterContextStore(context["store"])
+    current = store.current(context["token"], record["id"])
+    st.markdown("**Assistance context**")
+    st.caption(_declared(current["assistance"]))
+    if current["execution"] is not None:
+        st.caption(_declared(current["execution"], "execution"))
+    st.caption(encounter_context.NO_CLINICAL_HELP_FEATURE[0])
+    history = store.history(context["token"], record["id"])
+    if len(history) > 1:
+        with st.expander(f"Declaration history ({len(history)})"):
+            for row in history:
+                st.caption(f"{row['field']} {row['sequence']}: {_declared(row, row['field'])}")
+    with st.expander("Complete or correct the assistance context"):
+        st.caption("A new declaration is added to the history; nothing earlier is overwritten, "
+                   "and no assessment already confirmed changes.")
+        decisions = {item["ref"]: item["label"] for item in evidence_items(record["payload"])
+                     if item["kind"] == "decision"}
+        with st.form("assistance_context_" + record["id"]):
+            value = st.radio("Help received during the encounter", list(encounter_context.ASSISTANCE),
+                             format_func=lambda key: encounter_context.label("assistance", key),
+                             index=None, horizontal=True)
+            description = st.text_area("What help, if any (optional)", max_chars=1000)
+            affected = st.multiselect("Decisions the help affected (optional)", list(decisions),
+                                      format_func=decisions.get)
+            note = st.text_input("Why you are completing or correcting it (optional)", max_chars=1000)
+            submitted = st.form_submit_button("Save declaration")
+        if submitted:
+            if value is None:
+                st.error("Choose what is known about the help received.")
+            else:
+                store.declare(context["token"], record["id"], value=value,
+                              description=description if value == "external_help" else "",
+                              affected_refs=affected if value == "external_help" else (),
+                              note=note)
+                st.success("Declaration saved and added to the history.")
+                current = store.current(context["token"], record["id"])
+    return current
 
 
 def _reference_text(refs, labels):
@@ -226,17 +294,13 @@ def render_faculty_analysis(context, record):
     try:
         record = _staff_record(context, record)
         brief_store = FacultyBriefStore(context["store"])
-        latest = brief_store.get_latest(context["token"], record["id"])
-        assistance_key = _assistance_key(record)
-        if assistance_key not in st.session_state:
-            st.session_state[assistance_key] = latest["assistance_context"] if latest else "unknown"
+        report = brief_store.get_latest(context["token"], record["id"])
         with st.expander("AI faculty assessment brief", expanded=True):
             st.caption("Private decision support for faculty. Review suggestions against the recorded evidence before making an assessment.")
-            assistance = st.selectbox("Assistance received during this encounter", list(ASSISTANCE),
-                                      format_func=ASSISTANCE.get, key=assistance_key)
-            st.caption("Select what you know about help received. The wording of an entry alone cannot establish independence.")
-            report = latest if latest and latest["assistance_context"] == assistance else brief_store.get_latest(
-                context["token"], record["id"], assistance)
+            import encounter_context
+            declared = render_assistance_context(context, record)
+            st.caption("An unreported context is a valid state: the brief is generated either way, "
+                       "and an autonomy the record cannot establish is left for your confirmation.")
             api_key = _secret("OPENAI_API_KEY")
             if not api_key:
                 st.info("AI generation is unavailable until OPENAI_API_KEY is configured in the private deployment secrets. Saved reports remain available.")
@@ -245,14 +309,29 @@ def render_faculty_analysis(context, record):
                 record = _staff_record(context, record)
                 model = _secret("MRS_FACULTY_MODEL", _secret("OPENAI_MODEL", "gpt-5.6-luna"))
                 with st.spinner("Analyzing the completed encounter and its recorded evidence..."):
-                    generated = generate_faculty_brief(record, api_key=api_key, model=model,
-                                                       assistance_context=assistance)
+                    generated = generate_faculty_brief(
+                        record, api_key=api_key, model=model,
+                        context=encounter_context.snapshot(declared))
                     report = brief_store.save(context["token"], record["id"], generated)
                 st.success("Faculty analysis saved. Review it here or download the PDF.")
             if not report:
                 st.caption("Generate a brief to review the reasoning, key decisions, evidence by objective, and suggested feedback.")
                 return
             st.caption("Generated " + report["generated_at"] + " · " + report["model"])
+            written_under = (report.get("assistance_snapshot") or {}).get("assistance")
+            if written_under is None:
+                st.caption("Written under the faculty-reported context of its time: "
+                           + ASSISTANCE.get(report["assistance_context"], report["assistance_context"]))
+            else:
+                st.caption("Written under: " + str(written_under.get("label")))
+                current = declared.get("assistance")
+                if (current or {}).get("sequence", 0) != written_under.get("sequence", 0):
+                    st.info("The assistance context was declared again after this brief was "
+                            "written. The brief is kept exactly as written; generate a new one to "
+                            "use the current declaration, and both will remain on record.")
+            if report.get("autonomy_withheld"):
+                st.caption("Autonomy the declared context did not allow the AI to propose was left "
+                           "for your confirmation: " + ", ".join(report["autonomy_withheld"]) + ".")
             analysis = report["analysis"]
             _pdf_download(context, report, record, compact=True, assessment=assessment)
             st.caption("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification.")
@@ -267,7 +346,8 @@ def render_faculty_analysis(context, record):
                  "AI suggestion": (findings.HELD_STATUS if findings.hold_for_review(key, limits)
                                    else RECOMMENDATIONS[key["recommendation"]]),
                  "Depth": (key["depth"] or "Faculty judgment needed").capitalize(),
-                 "Autonomy": (key["autonomy"] or "Not established").capitalize()}
+                 "Autonomy": ((key["autonomy"] or "").capitalize()
+                              or encounter_context.AUTONOMY_NOT_DETERMINED[0])}
                 for key in analysis["objectives"]
             ], hide_index=True, use_container_width=True)
             with st.expander("Read the analysis and debriefing questions"):
@@ -306,20 +386,22 @@ def render_suggestion_loader(context, record, objective_id, widget_prefix):
     marker_key = widget_prefix + "_ai_draft"
     field_names = ("decision", "depth", "autonomy", "context", "evidence", "notes", "ack")
     marker = st.session_state.get(marker_key)
-    selected_assistance = st.session_state.get(_assistance_key(record))
-    if marker and (marker.get("source_hash") != source_fingerprint(record)
-                   or selected_assistance is not None and marker.get("assistance_context") != selected_assistance):
-        for field in field_names:
-            st.session_state.pop(widget_prefix + "_" + field, None)
-        st.session_state.pop(marker_key, None)
-        marker = None
     try:
         report = _current_report(context, record)
     except AccountError as exc:
         # A report-storage failure must not relabel populated AI fields as a
         # manual assessment or bypass their acknowledgement/provenance.
         st.warning(str(exc))
-        report = None
+        report = False
+    # A draft loaded from one brief does not survive a newer brief or a changed
+    # encounter: its fields came from somewhere that is no longer current.
+    if marker and (marker.get("source_hash") != source_fingerprint(record)
+                   or (report and marker.get("brief_id") != report.get("brief_id"))):
+        for field in field_names:
+            st.session_state.pop(widget_prefix + "_" + field, None)
+        st.session_state.pop(marker_key, None)
+        marker = None
+    report = report or None
     if report:
         suggestion = next(item for item in report["analysis"]["objectives"] if item["objective_id"] == objective_id)
         limits = findings.encounter_limits(
@@ -334,6 +416,9 @@ def render_suggestion_loader(context, record, objective_id, widget_prefix):
             st.caption("AI draft: " + RECOMMENDATIONS[suggestion["recommendation"]])
         correct = _prose(record)
         st.write(correct(suggestion["rationale"]))
+        if suggestion.get("autonomy") is None and suggestion["recommendation"] != "insufficient_evidence":
+            import encounter_context
+            st.caption(encounter_context.AUTONOMY_NOT_DETERMINED[0] + ".")
         if st.button("Load AI suggestion into editable form", key=widget_prefix + "_load_ai"):
             # What is loaded becomes the faculty's draft, and a saved
             # observation is read by the resident: it arrives with the

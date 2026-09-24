@@ -263,7 +263,11 @@ def render_dashboard(context, initial_state, reset_session):
         with st.expander("Resident activity and recorded evidence", expanded=bool(requested)):
             resident_attempts = [a for a in attempts if not a["is_sandbox"]]
             st.caption("Single-program pilot. These are activity records and evidence prompts for faculty review, not competency scores.")
-            st.dataframe([{"Resident": a["username"], "Challenge": a["challenge_id"], "Status": a["status"], "Updated": _date(a["updated_at"])} for a in resident_attempts], hide_index=True)
+            waiting = _awaiting_review(context)
+            st.dataframe([{"Resident": a["username"], "Challenge": a["challenge_id"], "Status": a["status"],
+                           "Updated": _date(a["updated_at"]),
+                           "Awaiting your review": waiting.get(a["id"], "")}
+                          for a in resident_attempts], hide_index=True)
             if resident_attempts:
                 # A PDF link selects from the already authorized list; it never
                 # fetches an arbitrary ID or bypasses the staff review gates.
@@ -288,6 +292,38 @@ def render_dashboard(context, initial_state, reset_session):
                     st.json((record.get("payload") or {}).get("evidence", {}), expanded=False)
                     st.download_button("Download faculty record", json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
         _render_rubric_profile(context, render_progress_dashboard(context))
+
+
+def _awaiting_review(context):
+    """For each completed encounter, what is still the faculty's to decide.
+
+    The rubric (no confirmed review yet) and the objectives with no recorded
+    observation, with how many already have a draft. Suggestions pending review
+    are exactly that: nothing here is an achievement.
+    """
+    from account_store import AccountError
+    from progress_store import ProgressStore
+    from rubric_store import RubricStore
+    rows = {}
+    try:
+        pending = ProgressStore(context["store"]).pending_reviews(context["token"])
+        rubric = RubricStore(context["store"])
+        for item in pending:
+            parts = []
+            try:
+                review = rubric.latest_review(context["token"], item["attempt_id"])
+            except AccountError:
+                review = None
+            if not review or review.get("status") != "confirmed":
+                parts.append("rubric" + (" (draft)" if review else ""))
+            if item["pending_objectives"]:
+                drafted = len(item["drafted_objectives"])
+                parts.append(f"{len(item['pending_objectives'])} challenge objective(s)"
+                             + (f", {drafted} drafted" if drafted else ""))
+            rows[item["attempt_id"]] = " · ".join(parts) if parts else "nothing pending"
+    except AccountError:
+        return {}
+    return rows
 
 
 def _render_setup(context):

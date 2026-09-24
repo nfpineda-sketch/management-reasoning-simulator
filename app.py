@@ -7453,16 +7453,37 @@ def hold_pending_reasoning(parsed, missing=None):
         # that door becomes visible instead of quietly improving a score.
         "held_at_min": held_at,
         "held_after_decisions": held_after,
+        # What the application asked for, each time it asked (2026-09-24): a
+        # neutral request is not clinical help, and a reader must be able to
+        # tell what was said spontaneously from what was said when asked.
+        "asked": list(existing.get("asked") or []) + [{"minute": held_at, "missing": missing}],
     }
     return reasoning_gate_prompt(parsed, missing)
 
 
-def _seal_reasoning(held, pending):
+def _rehold(held, pending, missing):
+    """Hold again after a partial answer, keeping when it was first held and what was asked."""
+    now = (st.session_state.get("state") or {}).get("sim_time")
+    st.session_state.pending_reasoning = {
+        "parsed": deepcopy(held),
+        "missing": missing,
+        "gate_id": next_reasoning_gate_id(),
+        "held_at_min": (pending or {}).get("held_at_min"),
+        "held_after_decisions": (pending or {}).get("held_after_decisions"),
+        "asked": list((pending or {}).get("asked") or []) + [{"minute": now, "missing": missing}],
+    }
+
+
+def _seal_reasoning(held, pending, via=""):
     """Record when this decision's justification was fixed, and against what.
 
     Faculty decision 2026-09-23, sections 6 and 7: a follow-up that completes a
     decision must happen before that decision's own results are revealed, and an
     explanation written afterwards must never be attributed back to it.
+
+    Since 2026-09-24 it also records which categories the application asked
+    for (``asked_for``) and how the answer came back (``answered_via``: the four
+    questions' form, free text, or a facilitator override).
     """
     now = (st.session_state.get("state") or {}).get("sim_time")
     decisions = len(st.session_state.get("management_trace", []) or [])
@@ -7475,6 +7496,14 @@ def _seal_reasoning(held, pending):
     gate = dict(held.get("reasoning_gate") or {})
     gate["sealed_at_min"] = now
     gate["completed_after_results"] = late
+    asked = [entry for entry in ((pending or {}).get("asked") or []) if isinstance(entry, dict)]
+    if not asked and (pending or {}).get("missing"):
+        asked = [{"minute": held_at, "missing": list(pending.get("missing") or [])}]
+    gate["asked_for"] = list(dict.fromkeys(
+        field for entry in asked for field in (entry.get("missing") or []) if isinstance(field, str)))
+    gate["prompts"] = asked
+    if via:
+        gate["answered_via"] = via
     held["reasoning_gate"] = gate
     return held
 
@@ -7576,11 +7605,7 @@ def complete_pending_reasoning_fields(
 
     missing = reasoning_gate_missing(held)
     if missing:
-        st.session_state.pending_reasoning = {
-            "parsed": deepcopy(held),
-            "missing": missing,
-            "gate_id": next_reasoning_gate_id(),
-        }
+        _rehold(held, pending, missing)
         return {
             "clarification": reasoning_gate_prompt(held, missing),
             "missing": missing,
@@ -7588,7 +7613,7 @@ def complete_pending_reasoning_fields(
 
     held["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
                               "noted": reasoning_gate_noted(held)}
-    _seal_reasoning(held, pending)
+    _seal_reasoning(held, pending, "form")
     st.session_state.pending_reasoning = None
     clear_reasoning_gate_clarification()
     return {"parsed": held, "overridden": False, "transcript": transcript}
@@ -7615,7 +7640,7 @@ def resolve_pending_reasoning(text):
             "missing": list(pending.get("missing") or []),
             "noted": reasoning_gate_noted(held),
         }
-        _seal_reasoning(held, pending)
+        _seal_reasoning(held, pending, "override")
         st.session_state.pending_reasoning = None
         clear_reasoning_gate_clarification()
         return {"parsed": held, "overridden": True}
@@ -7658,16 +7683,12 @@ def resolve_pending_reasoning(text):
 
     missing = reasoning_gate_missing(held)
     if missing:
-        st.session_state.pending_reasoning = {
-            "parsed": deepcopy(held),
-            "missing": missing,
-            "gate_id": next_reasoning_gate_id(),
-        }
+        _rehold(held, pending, missing)
         return {"clarification": reasoning_gate_prompt(held, missing), "missing": missing}
 
     held["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
                               "noted": reasoning_gate_noted(held)}
-    _seal_reasoning(held, pending)
+    _seal_reasoning(held, pending, "free_text")
     st.session_state.pending_reasoning = None
     clear_reasoning_gate_clarification()
     return {"parsed": held, "overridden": False}
@@ -9115,6 +9136,12 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
     render_learning_focus(ACCOUNT_CONTEXT)
     frozen_trace = st.session_state.get("encounter_closed_trace") or []
     frozen_state = st.session_state.get("encounter_closed_state") or {}
+    # The answer about help received can be given or changed after the review
+    # is locked: it lives beside the record, not inside it.
+    import language
+    from assistance_portal import render_closing_question
+    render_closing_question(ACCOUNT_CONTEXT, st.session_state.get("_attempt_id"), frozen_trace,
+                            language=language.current())
     _render_analyzed_management_trace()
     with st.expander("Original decision-by-decision record", expanded=False):
         render_management_trace(frozen_trace)
@@ -10066,6 +10093,13 @@ with st.container(key="encounter-console"):
             frozen_trace = st.session_state.encounter_closed_trace
         frozen_state = st.session_state.get("encounter_closed_state") or management_state_snapshot(st.session_state.state)
         render_learning_focus(ACCOUNT_CONTEXT)
+        # One short, optional question about help received, at the close and
+        # never before (faculty specification 2026-09-24, section 3).
+        if ACCOUNT_CONTEXT:
+            import language
+            from assistance_portal import render_closing_question
+            render_closing_question(ACCOUNT_CONTEXT, st.session_state.get("_attempt_id"),
+                                    frozen_trace, language=language.current())
         with st.expander("Original decision-by-decision record", expanded=False):
             st.caption("Your original orders, stated reasoning and recorded responses remain unchanged.")
             render_management_trace(frozen_trace)

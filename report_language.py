@@ -300,6 +300,8 @@ ES = {
         'Entrada no ejecutada',
     'Information obtained':
         'Información obtenida',
+    'Autonomy not determined: requires faculty confirmation':
+        'Autonomía no determinada: requiere confirmación docente',
     'not modelled in this version of the simulator':
         'no modelado en esta versión del simulador',
     'Not assessed in this encounter':
