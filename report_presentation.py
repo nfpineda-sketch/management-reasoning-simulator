@@ -96,6 +96,7 @@ _STUDY_NAMES = {
     "ecg_posterior": "posterior ECG (V7-V9)", "pocus": "bedside ultrasound (POCUS)",
     "chest_xray": "chest X-ray", "ctpa": "CT pulmonary angiography",
     "renal_ultrasound": "renal tract ultrasound",
+    "efast": "extended FAST", "pelvis_xray": "pelvis X-ray",
     "basic_labs": "basic laboratory panel", "poc_glucose": "capillary glucose",
     "troponin": "troponin", "lactate": "lactate", "hemoglobin": "haemoglobin",
     "blood_cultures": "blood cultures", "urinalysis": "urinalysis",

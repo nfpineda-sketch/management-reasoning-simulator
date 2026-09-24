@@ -11,7 +11,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 | Casos | Cobertura completa | Evaluación parcial | Discrepancias | Eventos críticos |
 |---|---|---|---|---|
-| 27 | 27 | 0 | 0 | 27 definiciones distintas |
+| 31 | 31 | 0 | 0 | 33 definiciones distintas |
 
 ## Por caso
 
@@ -29,6 +29,8 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 | `asthma_49m` | asthma | ✅ | ✅ | ✅ | ✅ | ✅ | `asthma_no_bronchodilator`, `asthma_no_ventilatory_support` |
 | `bradycardia_ccb_68m` | bradycardia | ✅ | ✅ | ✅ | ✅ | ✅ | `bradycardia_no_support`, `bradycardia_cause_unexamined` |
 | `bradycardia_avb3_78f` | bradycardia | ✅ | ✅ | ✅ | ✅ | ✅ | `bradycardia_no_support`, `bradycardia_pacing_unconfirmed` |
+| `bradycardia_bb_54f` | bradycardia | ✅ | ✅ | ✅ | ✅ | ✅ | `bradycardia_no_support`, `bradycardia_cause_unexamined` |
+| `bradycardia_hyperk_63m` | bradycardia | ✅ | ✅ | ✅ | ✅ | ✅ | `bradycardia_no_support`, `hyperk_calcium_awaited_the_laboratory`, `hyperk_no_definitive_removal` |
 | `gi_bleed_57m` | gi_bleed | ✅ | ✅ | ✅ | ✅ | ✅ | `gi_no_resuscitation` |
 | `gi_bleed_72f` | gi_bleed | ✅ | ✅ | ✅ | ✅ | ✅ | `gi_no_resuscitation` |
 | `hypoglycemia_28m` | hypoglycemia | ✅ | ✅ | ✅ | ✅ | ✅ | `hypo_no_glucose` |
@@ -44,6 +46,8 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 | `pulmonary_embolism_61m` | pulmonary_embolism | ✅ | ✅ | ✅ | ✅ | ✅ | `pe_no_anticoagulation` |
 | `renal_colic_34m` | renal_colic | ✅ | ✅ | ✅ | ✅ | ✅ | `colic_missed_infection` |
 | `obstructive_pyelonephritis_58f` | renal_colic | ✅ | ✅ | ✅ | ✅ | ✅ | `pyelo_no_antibiotic`, `pyelo_no_source_control`, `pyelo_unsafe_discharge` |
+| `trauma_limb_hemorrhage_27m` | trauma | ✅ | ✅ | ✅ | ✅ | ✅ | `trauma_no_hemorrhage_control`, `trauma_crystalloid_instead_of_blood` |
+| `trauma_hemothorax_41m` | trauma | ✅ | ✅ | ✅ | ✅ | ✅ | `trauma_undrained_hemothorax`, `trauma_drained_and_never_looked_again` |
 
 ## Los cinco dominios
 
@@ -622,6 +626,109 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Evidencia necesaria: An executed pacing action with no reassessment action in the window that follows it.
   - Exclusiones: The encounter closed before the window that follows the pacing.
   - Dominios sobre los que pesa: D3, D4.
+
+### `bradycardia_bb_54f`
+
+- **D1** · ventana 0–15 min. The rate, the pressure and the perfusion are all on arrival: the priority is to support the circulation while the cause is being established, not after it.
+  - Esperado: Names the instability within the window; acts on it before completing the investigation.
+  - Alternativas aceptables: Naming the threat without naming a cause; acting first and naming it in the same turn.
+- **D2** · ventana 0–40 min. The glucose, the potassium and the empty packet the partner brought together separate this poisoning from the one that looks identical on the monitor.
+  - Esperado: Obtains the medication history; distinguishes it from the other drugs that slow a heart.
+  - Alternativas aceptables: Reaching the poisoning from the packet alone; the normal glucose used to exclude the calcium-channel blockade.
+- **D3** · ventana 0–40 min. Calcium and glucagon are both executable and the engine prices them by the cause: here the one that answers is not the one that answered the last case.
+  - Esperado: Executes the antidote this blockade answers to, with a dose and a route; does not stop at atropine once it has done nothing.
+  - Alternativas aceptables: Both antidotes in sequence with the uncertainty stated; a chronotropic infusion alongside the antidote.
+- **D4** · ventana 5–90 min. The engine answers to what is given and runs a clock: a dose that does nothing, and an antidote that fades, are both observable.
+  - Esperado: States a reassessment interval and what will be checked; checks the rate, the pressure and the perfusion after each attempt.
+  - Alternativas aceptables: Reassessing the rhythm as well as the rate; a shorter interval than stated.
+- **D5** · ventana 15–180 min. The antidote fades and this engine does not run the definitive therapy: the continuity decision is who is involved and where this patient is watched.
+  - Esperado: Asks for help with the poisoning named; decides the level of care and states what is watched as the antidote wears off.
+  - Alternativas aceptables: Toxicology or the poisons centre named as the help; a critical-care bed decided alongside the referral; mental-health involvement stated for the intent.
+
+**Información accesible:** Arrival observables, the monitor and the twelve-lead; the medication list and the course of the day, on asking; the examination of the pulse, the neck and the peripheries; laboratory including the potassium and the glucose, and POCUS.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine does not place a transvenous wire; a referral is recorded, not its result.
+- It does not run extracorporeal support or high-dose insulin euglycaemic therapy; what it runs is what is listed as executable.
+
+**Eventos críticos:**
+
+- `bradycardia_no_support` — **Omisión crítica.** A symptomatic bradycardia is left without any attempt to support the rate or the circulation.
+  - Se activa cuando: The arrival record carries a rate below 50 with hypotension or an altered mental state, and no atropine, pacing, chronotropic infusion or antidote is executed within the window.
+  - Información que debía estar en el registro: Arrival observables and the monitor.
+  - Ventana y oportunidad: 0–20 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (what happened before the collapse, in the family's own words); **Medications** (what this patient takes and whether a dose changed).
+  - Alternativas aceptables: Atropine, pacing, a chronotropic infusion or the antidote the cause calls for; an antidote given without atropine where the cause is already known.
+  - Evidencia necesaria: An executed rate-supporting or antidote action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened; the interpreter refused the order and the resident was never told what it could accept.
+  - Dominios sobre los que pesa: D1, D3.
+- `bradycardia_cause_unexamined` — **Omisión crítica.** The rate is treated without the cause being pursued, in a patient whose poisoning is in the medication history.
+  - Se activa cuando: Atropine or pacing is executed, the response is inadequate, and nothing in the record pursues the cause: no medication history is obtained and no antidote is given within the window. It applies whether or not the learner asked: the partner is present with the packet and can be asked, and never asking is part of the omission rather than an excuse for it.
+  - Información que debía estar en el registro: An executed rate-supporting action; the observables after it.
+  - Ventana y oportunidad: 5–90 min.
+  - Disponible preguntando, se haya preguntado o no: **Medications** (the empty propranolol pack and the full one that was there yesterday); **Relevant exposures and risk factors** (the argument and the weeks she had been low).
+  - Alternativas aceptables: An antidote given; a recorded medication history; a toxicology consultation with the poisoning named.
+  - Evidencia necesaria: An executed atropine or pacing action with no antidote, no consultation and no recorded medication history in any executed turn of the window.
+  - Exclusiones: The encounter closed before any rate-supporting action was executed.
+  - Dominios sobre los que pesa: D2, D5.
+
+### `bradycardia_hyperk_63m`
+
+- **D1** · ventana 0–15 min. The rate, the pressure and the perfusion are all on arrival: the priority is to support the circulation while the cause is being established, not after it.
+  - Esperado: Names the instability within the window; acts on it before completing the investigation.
+  - Alternativas aceptables: Naming the threat without naming a cause; acting first and naming it in the same turn.
+- **D2** · ventana 0–30 min. The tracing carries the severity before any number does: the complex widens as the rate falls. The missed dialysis and the potassium-retaining drug are there for the asking, and the laboratory confirms rather than reveals.
+  - Esperado: Reads the broad complex and the slow rate together; obtains the dialysis history and requests the potassium.
+  - Alternativas aceptables: Naming the hyperkalaemia from the tracing and the history before the result; the venous gas used for the potassium rather than the panel.
+- **D3** · ventana 0–30 min. Calcium, a nebulised beta agonist and dextrose are all executable, and the engine keeps them apart: one protects the membrane and the others move the potassium.
+  - Esperado: Executes calcium on the suspicion, before the result; adds a shifting treatment rather than stopping at the calcium.
+  - Alternativas aceptables: Calcium chloride instead of the gluconate, stated as such; the shifting treatments started while the result is awaited.
+- **D4** · ventana 5–90 min. The engine answers to what is given and runs a clock: a dose that does nothing, and an antidote that fades, are both observable.
+  - Esperado: States a reassessment interval and what will be checked; checks the rate, the pressure and the perfusion after each attempt.
+  - Alternativas aceptables: Reassessing the rhythm as well as the rate; a shorter interval than stated.
+- **D5** · ventana 15–180 min. Nothing given here removes any potassium, and this engine does not dialyse: the continuity decision is who does, and what holds this patient until then.
+  - Esperado: Arranges the treatment that removes the potassium, or the service that provides it; states what is watched as the calcium and the shift wear off.
+  - Alternativas aceptables: Nephrology or the dialysis unit named; transfer stated as the pathway to dialysis; a critical-care bed decided alongside the referral.
+
+**Información accesible:** Arrival observables, the monitor and the twelve-lead; the medication list and the course of the day, on asking; the examination of the pulse, the neck and the peripheries; laboratory including the potassium and the glucose, and POCUS.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine does not place a transvenous wire; a referral is recorded, not its result.
+- It does not run extracorporeal support or high-dose insulin euglycaemic therapy; what it runs is what is listed as executable.
+
+**Eventos críticos:**
+
+- `bradycardia_no_support` — **Omisión crítica.** A symptomatic bradycardia is left without any attempt to support the rate or the circulation.
+  - Se activa cuando: The arrival record carries a rate below 50 with hypotension or an altered mental state, and no atropine, pacing, chronotropic infusion or antidote is executed within the window.
+  - Información que debía estar en el registro: Arrival observables and the monitor.
+  - Ventana y oportunidad: 0–20 min.
+  - Disponible preguntando, se haya preguntado o no: **Presenting symptoms** (what happened before the collapse, in the family's own words); **Medications** (what this patient takes and whether a dose changed).
+  - Alternativas aceptables: Atropine, pacing, a chronotropic infusion or the antidote the cause calls for; an antidote given without atropine where the cause is already known.
+  - Evidencia necesaria: An executed rate-supporting or antidote action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened; the interpreter refused the order and the resident was never told what it could accept.
+  - Dominios sobre los que pesa: D1, D3.
+- `hyperk_calcium_awaited_the_laboratory` — **Omisión crítica.** Calcium is not given on the clinical suspicion, and the encounter waits for the potassium result instead.
+  - Se activa cuando: The tracing carries a broad complex with a bradycardia, and no calcium is executed within the window. The window runs from the arrival tracing and not from the laboratory, because the treatment is given on the suspicion: a resident who waits for the number has already waited. It applies whether or not the learner asked about the dialysis: the patient is in front of them and can be asked, and never asking is part of the omission rather than an excuse for it.
+  - Información que debía estar en el registro: Arrival observables and the monitor; the arrival tracing.
+  - Ventana y oportunidad: 0–20 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (the dialysis and the sessions that were missed); **Medications** (the spironolactone started a month ago).
+  - Alternativas aceptables: Calcium by either salt; calcium withheld with a stated reason the record supports.
+  - Evidencia necesaria: An executed calcium action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened; the interpreter refused the order and the resident was never told what it could accept.
+  - Dominios sobre los que pesa: D1, D3.
+- `hyperk_no_definitive_removal` — **Omisión crítica.** The potassium is shifted and nobody is asked to remove it.
+  - Se activa cuando: Calcium or a shifting treatment is executed and no consultation and no disposition addresses removing the potassium within the window, so the encounter ends with a patient whose potassium is still in them.
+  - Información que debía estar en el registro: An executed calcium or shifting action.
+  - Ventana y oportunidad: 15–180 min.
+  - Disponible preguntando, se haya preguntado o no: **Previous health** (that he is on haemodialysis three times a week).
+  - Alternativas aceptables: Nephrology or the dialysis unit involved; transfer stated as the pathway to dialysis; admission to a unit stated as being for dialysis.
+  - Evidencia necesaria: An executed calcium or shifting action with no consultation and no disposition naming the removal in any executed turn of the window.
+  - Exclusiones: The encounter reached its horizon before the window closed.
+  - Dominios sobre los que pesa: D5.
 
 ### `gi_bleed_57m`
 
@@ -1263,4 +1370,97 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Evidencia necesaria: An executed discharge action with fever, tachycardia or hypotension in the observables recorded at that decision.
   - Exclusiones: The encounter reached its horizon before any disposition was decided.
   - Dominios sobre los que pesa: D1, D5.
+
+### `trauma_limb_hemorrhage_27m`
+
+- **D1** · ventana 0–10 min. The bleeding is visible on arrival and it is compressible: the priority is to stop it before the airway, the breathing or the imaging, which is what the x of the algorithm means.
+  - Esperado: Controls the bleeding within the window; does it before the other elements of the primary survey.
+  - Alternativas aceptables: Direct pressure first with a tourniquet when it does not hold; control applied while another member of the team begins the rest.
+- **D2** · ventana 0–40 min. The E-FAST reports all five windows and the pelvis is filmed; the examination and the history separate a source that can be compressed from one that cannot.
+  - Esperado: Looks for the source rather than only treating the shock; relates the study and the examination to one explanation of where the blood is.
+  - Alternativas aceptables: Reaching the source from the examination and the chest film; the E-FAST read alongside the examination rather than instead of it.
+- **D3** · ventana 0–30 min. A tourniquet, direct pressure and packing are all executable; blood, tranexamic acid and warmed fluid are the resuscitation the loss calls for.
+  - Esperado: Executes a control measure naming the site; replaces with blood rather than with crystalloid alone.
+  - Alternativas aceptables: Packing where a tourniquet cannot be applied; tranexamic acid early, stated as an adjunct and not a substitute.
+- **D4** · ventana 2–60 min. The engine runs a clock and bleeds on it: what a measure stopped, and what it did not, is visible within minutes.
+  - Esperado: States a reassessment interval and what will be checked; checks the pressure, the rate and the perfusion after each measure.
+  - Alternativas aceptables: Reassessing the perfusion rather than the pressure alone; a shorter interval than stated.
+- **D5** · ventana 10–180 min. A controlled limb source still needs the wound managed and the volume accounted for: the continuity decision is who takes over and what they are told.
+  - Esperado: Arranges the definitive management of the wound; states the blood given, the tourniquet time and what is watched.
+  - Alternativas aceptables: Surgery or the trauma team named; theatre stated as the destination with the tourniquet time handed over.
+
+**Información accesible:** Arrival observables and the monitor; the mechanism and the course since it, on asking; the examination of the wound, the chest, the abdomen and the pelvis; the E-FAST, the chest film, the pelvis film and the laboratory.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine has no operating theatre; a referral is recorded, never its result, so the encounter is about recognising that one is needed and holding the patient until it is.
+- It does not perform a resuscitative thoracotomy or place an endovascular balloon.
+
+**Eventos críticos:**
+
+- `trauma_no_hemorrhage_control` — **Omisión crítica.** Exsanguinating external bleeding is not controlled before the rest of the primary survey.
+  - Se activa cuando: The arrival record carries visible external bleeding with shock, and no tourniquet, direct pressure or packing is executed within the window, whatever else was done first. The window is ten minutes because that is what the x of the algorithm means.
+  - Información que debía estar en el registro: Arrival observables; the examination of the wound.
+  - Ventana y oportunidad: 0–10 min.
+  - Disponible preguntando, se haya preguntado o no: **Bleeding symptoms** (that it has not stopped and the dressing is soaked through); **Presenting symptoms** (the injury in the patient's own words).
+  - Alternativas aceptables: A tourniquet, direct pressure or packing; control applied while another member of the team begins the rest.
+  - Evidencia necesaria: An executed hemorrhage-control action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened; the interpreter refused the order and the resident was never told what it could accept.
+  - Dominios sobre los que pesa: D1, D3.
+- `trauma_crystalloid_instead_of_blood` — **Acción peligrosa.** A large volume of crystalloid is given to replace blood that is still being lost.
+  - Se activa cuando: More than two litres of crystalloid is executed and no blood is, in a patient whose record carries continuing haemorrhage.
+  - Información que debía estar en el registro: Arrival observables; the executed fluid volumes.
+  - Ventana y oportunidad: 0–60 min.
+  - Alternativas aceptables: Blood given alongside or instead; warmed fluid while blood is being prepared; crystalloid stated as the bridge to blood.
+  - Evidencia necesaria: Executed crystalloid above two litres with no executed blood action in the window.
+  - Exclusiones: Blood was executed at any point in the window.
+  - Dominios sobre los que pesa: D3.
+
+### `trauma_hemothorax_41m`
+
+- **D1** · ventana 0–20 min. Reduced air entry with dullness and shock: the priority is to drain the chest and to resuscitate at the same time, not one after the other.
+  - Esperado: Names the threat within the window; drains and resuscitates together.
+  - Alternativas aceptables: Naming it as a haemothorax without the word massive; resuscitation begun while the drain is being prepared.
+- **D2** · ventana 0–40 min. The E-FAST reports all five windows and the pelvis is filmed; the examination and the history separate a source that can be compressed from one that cannot.
+  - Esperado: Looks for the source rather than only treating the shock; relates the study and the examination to one explanation of where the blood is.
+  - Alternativas aceptables: Reaching the source from the examination and the chest film; the E-FAST read alongside the examination rather than instead of it.
+- **D3** · ventana 0–30 min. A chest tube drains this collection and a needle does not; blood and tranexamic acid are the resuscitation. The engine keeps the chest filling after the drain.
+  - Esperado: Drains with a tube on the correct side; replaces with blood rather than with crystalloid alone.
+  - Alternativas aceptables: A needle first with the tube stated as following; tranexamic acid early, stated as an adjunct.
+- **D4** · ventana 2–60 min. The engine runs a clock and bleeds on it: what a measure stopped, and what it did not, is visible within minutes.
+  - Esperado: States a reassessment interval and what will be checked; checks the pressure, the rate and the perfusion after each measure.
+  - Alternativas aceptables: Reassessing the perfusion rather than the pressure alone; a shorter interval than stated.
+- **D5** · ventana 10–180 min. The chest has been drained and the patient is still unstable. The decision is whether another site is bleeding, and when there is nowhere else, that the treatment is a theatre this engine does not have.
+  - Esperado: Looks again for another site after the drain rather than only transfusing; asks for surgery once the other sites are excluded.
+  - Alternativas aceptables: The E-FAST or the pelvis film repeated after the drain; surgery involved with the continuing output stated; transfer stated as the pathway to theatre.
+
+**Información accesible:** Arrival observables and the monitor; the mechanism and the course since it, on asking; the examination of the wound, the chest, the abdomen and the pelvis; the E-FAST, the chest film, the pelvis film and the laboratory.
+
+**Criterio de cierre:** A disposition is decided, or the horizon of the encounter is reached.
+
+**Límites reales del motor:**
+- The engine has no operating theatre; a referral is recorded, never its result, so the encounter is about recognising that one is needed and holding the patient until it is.
+- It does not perform a resuscitative thoracotomy or place an endovascular balloon.
+
+**Eventos críticos:**
+
+- `trauma_undrained_hemothorax` — **Omisión crítica.** A massive haemothorax with shock is not drained.
+  - Se activa cuando: The examination and the chest film carry a large collection with shock, and no chest tube is executed within the window.
+  - Información que debía estar en el registro: Arrival observables; the chest radiograph or the E-FAST result.
+  - Ventana y oportunidad: 0–30 min.
+  - Disponible preguntando, se haya preguntado o no: **Breathing symptoms** (that it began immediately and is worse lying flat); **Chest discomfort** (the left-sided pain that is worse with breathing).
+  - Alternativas aceptables: A chest tube on the correct side; a needle first with the tube following in the same window.
+  - Evidencia necesaria: An executed chest-tube action, or its absence across every executed turn in the window.
+  - Exclusiones: The encounter closed before the window opened.
+  - Dominios sobre los que pesa: D1, D3.
+- `trauma_drained_and_never_looked_again` — **Omisión crítica.** The chest is drained, the patient stays unstable, and no other site is looked for.
+  - Se activa cuando: A chest tube is executed, the observables afterwards still carry hypotension or delayed capillary refill, and no E-FAST, no pelvis film and no surgical consultation appears after the drain. The faculty's rule of 2026-09-23: a massive haemothorax is defined by the instability and not by the volume that came out, so a resident who transfuses and waits has stopped looking. It applies whether or not the learner asked about the mechanism: the patient is in front of them and can be asked, and never asking is part of the omission rather than an excuse for it.
+  - Información que debía estar en el registro: An executed chest-tube action; the observables recorded after it.
+  - Ventana y oportunidad: 10–180 min.
+  - Disponible preguntando, se haya preguntado o no: **Recent exposures** (the seatbelt bruising across the chest and abdomen); **Bleeding symptoms** (that no external source has been found).
+  - Alternativas aceptables: An E-FAST or a pelvis film requested after the drain; surgery involved with the continuing instability stated; theatre decided as the destination.
+  - Evidencia necesaria: An executed chest-tube action with persisting instability and no study and no surgical consultation in any executed turn after it.
+  - Exclusiones: The observables recorded after the drain no longer carry instability; the encounter reached its horizon before the window closed.
+  - Dominios sobre los que pesa: D2, D5.
 

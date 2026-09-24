@@ -1217,3 +1217,269 @@ CASES.update(_bradycardia(
          "An executed pacing action with no reassessment action in the window that follows it.",
          ["The encounter closed before the window that follows the pacing"],
          ["D3", "D4"])]))
+
+
+CASES.update(_bradycardia(
+    "bradycardia_bb_54f",
+    _d("The glucose, the potassium and the empty packet the partner brought together "
+       "separate this poisoning from the one that looks identical on the monitor.",
+       ["Obtains the medication history",
+        "distinguishes it from the other drugs that slow a heart"],
+       ["Reaching the poisoning from the packet alone",
+        "the normal glucose used to exclude the calcium-channel blockade"],
+       (0, 40), studies=("basic_labs", "poc_glucose", "ecg"), examination=("Cardiac",)),
+    _d("Calcium and glucagon are both executable and the engine prices them by the cause: "
+       "here the one that answers is not the one that answered the last case.",
+       ["Executes the antidote this blockade answers to, with a dose and a route",
+        "does not stop at atropine once it has done nothing"],
+       ["Both antidotes in sequence with the uncertainty stated",
+        "a chronotropic infusion alongside the antidote"],
+       (0, 40), actions=("glucagon", "calcium", "atropine")),
+    _d("The antidote fades and this engine does not run the definitive therapy: the "
+       "continuity decision is who is involved and where this patient is watched.",
+       ["Asks for help with the poisoning named",
+        "decides the level of care and states what is watched as the antidote wears off"],
+       ["Toxicology or the poisons centre named as the help",
+        "a critical-care bed decided alongside the referral",
+        "mental-health involvement stated for the intent"],
+       (15, 180), actions=("consult", "disposition")),
+    [_bradycardia_no_support(),
+     _event(
+         "bradycardia_cause_unexamined", "critical_omission",
+         "The rate is treated without the cause being pursued, in a patient whose poisoning "
+         "is in the medication history.",
+         "Atropine or pacing is executed, the response is inadequate, and nothing in the "
+         "record pursues the cause: no medication history is obtained and no antidote is "
+         "given within the window. It applies whether or not the learner asked: the partner "
+         "is present with the packet and can be asked, and never asking is part of the "
+         "omission rather than an excuse for it.",
+         ["An executed rate-supporting action", "the observables after it"], (5, 90),
+         ["An antidote given", "a recorded medication history",
+          "a toxicology consultation with the poisoning named"],
+         "An executed atropine or pacing action with no antidote, no consultation and no "
+         "recorded medication history in any executed turn of the window.",
+         ["The encounter closed before any rate-supporting action was executed"],
+         ["D2", "D5"],
+         [("medications", "the empty propranolol pack and the full one that was there yesterday"),
+          ("risk_factors", "the argument and the weeks she had been low")])]))
+
+# The potassium case is declared apart from the other three because the window
+# of its critical event does not start where theirs do. Faculty decision
+# 2026-09-23: the calcium is given on the clinical suspicion, and the tracing is
+# what raises it. A resident who waits for the laboratory has already waited.
+CASES.update(_bradycardia(
+    "bradycardia_hyperk_63m",
+    _d("The tracing carries the severity before any number does: the complex widens as the "
+       "rate falls. The missed dialysis and the potassium-retaining drug are there for the "
+       "asking, and the laboratory confirms rather than reveals.",
+       ["Reads the broad complex and the slow rate together",
+        "obtains the dialysis history and requests the potassium"],
+       ["Naming the hyperkalaemia from the tracing and the history before the result",
+        "the venous gas used for the potassium rather than the panel"],
+       (0, 30), studies=("ecg", "basic_labs", "vbg"), examination=("Cardiac",)),
+    _d("Calcium, a nebulised beta agonist and dextrose are all executable, and the engine "
+       "keeps them apart: one protects the membrane and the others move the potassium.",
+       ["Executes calcium on the suspicion, before the result",
+        "adds a shifting treatment rather than stopping at the calcium"],
+       ["Calcium chloride instead of the gluconate, stated as such",
+        "the shifting treatments started while the result is awaited"],
+       (0, 30), actions=("calcium", "bronchodilator", "dextrose")),
+    _d("Nothing given here removes any potassium, and this engine does not dialyse: the "
+       "continuity decision is who does, and what holds this patient until then.",
+       ["Arranges the treatment that removes the potassium, or the service that provides it",
+        "states what is watched as the calcium and the shift wear off"],
+       ["Nephrology or the dialysis unit named",
+        "transfer stated as the pathway to dialysis",
+        "a critical-care bed decided alongside the referral"],
+       (15, 180), actions=("consult", "disposition")),
+    [_bradycardia_no_support(),
+     _event(
+         "hyperk_calcium_awaited_the_laboratory", "critical_omission",
+         "Calcium is not given on the clinical suspicion, and the encounter waits for the "
+         "potassium result instead.",
+         "The tracing carries a broad complex with a bradycardia, and no calcium is executed "
+         "within the window. The window runs from the arrival tracing and not from the "
+         "laboratory, because the treatment is given on the suspicion: a resident who waits "
+         "for the number has already waited. It applies whether or not the learner asked "
+         "about the dialysis: the patient is in front of them and can be asked, and never "
+         "asking is part of the omission rather than an excuse for it.",
+         ["Arrival observables and the monitor", "the arrival tracing"], (0, 20),
+         ["Calcium by either salt", "calcium withheld with a stated reason the record supports"],
+         "An executed calcium action, or its absence across every executed turn in the window.",
+         ["The encounter closed before the window opened",
+          "the interpreter refused the order and the resident was never told what it could accept"],
+         ["D1", "D3"],
+         [("medical_history", "the dialysis and the sessions that were missed"),
+          ("medications", "the spironolactone started a month ago")]),
+     _event(
+         "hyperk_no_definitive_removal", "critical_omission",
+         "The potassium is shifted and nobody is asked to remove it.",
+         "Calcium or a shifting treatment is executed and no consultation and no disposition "
+         "addresses removing the potassium within the window, so the encounter ends with a "
+         "patient whose potassium is still in them.",
+         ["An executed calcium or shifting action"], (15, 180),
+         ["Nephrology or the dialysis unit involved",
+          "transfer stated as the pathway to dialysis",
+          "admission to a unit stated as being for dialysis"],
+         "An executed calcium or shifting action with no consultation and no disposition "
+         "naming the removal in any executed turn of the window.",
+         ["The encounter reached its horizon before the window closed"],
+         ["D5"],
+         [("medical_history", "that he is on haemodialysis three times a week")])]))
+
+
+# --- trauma -------------------------------------------------------------------
+# Faculty decisions 2.1 to 2.4 of 2026-09-23. One mechanism per case, because a
+# combined one makes it impossible to say which omission the patient answered
+# for. What both declare is a sequence rather than a list of interventions.
+_TRAUMA_D2 = _d(
+    "The E-FAST reports all five windows and the pelvis is filmed; the examination and the "
+    "history separate a source that can be compressed from one that cannot.",
+    ["Looks for the source rather than only treating the shock",
+     "relates the study and the examination to one explanation of where the blood is"],
+    ["Reaching the source from the examination and the chest film",
+     "the E-FAST read alongside the examination rather than instead of it"],
+    (0, 40), studies=("efast", "pelvis_xray", "chest_xray"),
+    examination=("General appearance", "Abdomen"))
+
+_TRAUMA_D4 = _d(
+    "The engine runs a clock and bleeds on it: what a measure stopped, and what it did not, "
+    "is visible within minutes.",
+    ["States a reassessment interval and what will be checked",
+     "checks the pressure, the rate and the perfusion after each measure"],
+    ["Reassessing the perfusion rather than the pressure alone",
+     "a shorter interval than stated"],
+    (2, 60), actions=("reassessment",))
+
+
+def _trauma(case_id, d1, d3, d5, critical_events):
+    return {case_id: {
+        "domains": {"D1": d1, "D2": _TRAUMA_D2, "D3": d3, "D4": _TRAUMA_D4, "D5": d5},
+        "information": ("Arrival observables and the monitor",
+                        "the mechanism and the course since it, on asking",
+                        "the examination of the wound, the chest, the abdomen and the pelvis",
+                        "the E-FAST, the chest film, the pelvis film and the laboratory"),
+        "closure": "A disposition is decided, or the horizon of the encounter is reached.",
+        "engine_limits": ("The engine has no operating theatre; a referral is recorded, never "
+                          "its result, so the encounter is about recognising that one is "
+                          "needed and holding the patient until it is.",
+                          "It does not perform a resuscitative thoracotomy or place an "
+                          "endovascular balloon."),
+        "critical_events": critical_events,
+    }}
+
+
+CASES.update(_trauma(
+    "trauma_limb_hemorrhage_27m",
+    _d("The bleeding is visible on arrival and it is compressible: the priority is to stop it "
+       "before the airway, the breathing or the imaging, which is what the x of the algorithm "
+       "means.",
+       ["Controls the bleeding within the window",
+        "does it before the other elements of the primary survey"],
+       ["Direct pressure first with a tourniquet when it does not hold",
+        "control applied while another member of the team begins the rest"],
+       (0, 10), actions=("hemorrhage_control",)),
+    _d("A tourniquet, direct pressure and packing are all executable; blood, tranexamic acid "
+       "and warmed fluid are the resuscitation the loss calls for.",
+       ["Executes a control measure naming the site",
+        "replaces with blood rather than with crystalloid alone"],
+       ["Packing where a tourniquet cannot be applied",
+        "tranexamic acid early, stated as an adjunct and not a substitute"],
+       (0, 30), actions=("hemorrhage_control", "blood", "tranexamic_acid")),
+    _d("A controlled limb source still needs the wound managed and the volume accounted for: "
+       "the continuity decision is who takes over and what they are told.",
+       ["Arranges the definitive management of the wound",
+        "states the blood given, the tourniquet time and what is watched"],
+       ["Surgery or the trauma team named",
+        "theatre stated as the destination with the tourniquet time handed over"],
+       (10, 180), actions=("consult", "disposition")),
+    [_event(
+        "trauma_no_hemorrhage_control", "critical_omission",
+        "Exsanguinating external bleeding is not controlled before the rest of the primary "
+        "survey.",
+        "The arrival record carries visible external bleeding with shock, and no tourniquet, "
+        "direct pressure or packing is executed within the window, whatever else was done "
+        "first. The window is ten minutes because that is what the x of the algorithm means.",
+        ["Arrival observables", "the examination of the wound"], (0, 10),
+        ["A tourniquet, direct pressure or packing",
+         "control applied while another member of the team begins the rest"],
+        "An executed hemorrhage-control action, or its absence across every executed turn in "
+        "the window.",
+        ["The encounter closed before the window opened",
+         "the interpreter refused the order and the resident was never told what it could accept"],
+        ["D1", "D3"],
+        [("bleeding", "that it has not stopped and the dressing is soaked through"),
+         ("chief_complaint", "the injury in the patient's own words")]),
+     _event(
+         "trauma_crystalloid_instead_of_blood", "dangerous_action",
+         "A large volume of crystalloid is given to replace blood that is still being lost.",
+         "More than two litres of crystalloid is executed and no blood is, in a patient whose "
+         "record carries continuing haemorrhage.",
+         ["Arrival observables", "the executed fluid volumes"], (0, 60),
+         ["Blood given alongside or instead", "warmed fluid while blood is being prepared",
+          "crystalloid stated as the bridge to blood"],
+         "Executed crystalloid above two litres with no executed blood action in the window.",
+         ["Blood was executed at any point in the window"],
+         ["D3"])]))
+
+CASES.update(_trauma(
+    "trauma_hemothorax_41m",
+    _d("Reduced air entry with dullness and shock: the priority is to drain the chest and to "
+       "resuscitate at the same time, not one after the other.",
+       ["Names the threat within the window", "drains and resuscitates together"],
+       ["Naming it as a haemothorax without the word massive",
+        "resuscitation begun while the drain is being prepared"],
+       (0, 20), actions=("chest_decompression", "blood")),
+    _d("A chest tube drains this collection and a needle does not; blood and tranexamic acid "
+       "are the resuscitation. The engine keeps the chest filling after the drain.",
+       ["Drains with a tube on the correct side",
+        "replaces with blood rather than with crystalloid alone"],
+       ["A needle first with the tube stated as following",
+        "tranexamic acid early, stated as an adjunct"],
+       (0, 30), actions=("chest_decompression", "blood", "tranexamic_acid")),
+    # Faculty decision 2.4, in their own words: the massive haemothorax is not
+    # defined by the drained volume but by the instability that persists, and
+    # what it demands is that the resident looks again.
+    _d("The chest has been drained and the patient is still unstable. The decision is whether "
+       "another site is bleeding, and when there is nowhere else, that the treatment is a "
+       "theatre this engine does not have.",
+       ["Looks again for another site after the drain rather than only transfusing",
+        "asks for surgery once the other sites are excluded"],
+       ["The E-FAST or the pelvis film repeated after the drain",
+        "surgery involved with the continuing output stated",
+        "transfer stated as the pathway to theatre"],
+       (10, 180), actions=("consult", "disposition", "diagnostic")),
+    [_event(
+        "trauma_undrained_hemothorax", "critical_omission",
+        "A massive haemothorax with shock is not drained.",
+        "The examination and the chest film carry a large collection with shock, and no chest "
+        "tube is executed within the window.",
+        ["Arrival observables", "the chest radiograph or the E-FAST result"], (0, 30),
+        ["A chest tube on the correct side",
+         "a needle first with the tube following in the same window"],
+        "An executed chest-tube action, or its absence across every executed turn in the window.",
+        ["The encounter closed before the window opened"],
+        ["D1", "D3"],
+        [("breathing", "that it began immediately and is worse lying flat"),
+         ("chest_pain", "the left-sided pain that is worse with breathing")]),
+     _event(
+         "trauma_drained_and_never_looked_again", "critical_omission",
+         "The chest is drained, the patient stays unstable, and no other site is looked for.",
+         "A chest tube is executed, the observables afterwards still carry hypotension or "
+         "delayed capillary refill, and no E-FAST, no pelvis film and no surgical consultation "
+         "appears after the drain. The faculty's rule of 2026-09-23: a massive haemothorax is "
+         "defined by the instability and not by the volume that came out, so a resident who "
+         "transfuses and waits has stopped looking. It applies whether or not the learner "
+         "asked about the mechanism: the patient is in front of them and can be asked, and "
+         "never asking is part of the omission rather than an excuse for it.",
+         ["An executed chest-tube action", "the observables recorded after it"], (10, 180),
+         ["An E-FAST or a pelvis film requested after the drain",
+          "surgery involved with the continuing instability stated",
+          "theatre decided as the destination"],
+         "An executed chest-tube action with persisting instability and no study and no "
+         "surgical consultation in any executed turn after it.",
+         ["The observables recorded after the drain no longer carry instability",
+          "the encounter reached its horizon before the window closed"],
+         ["D2", "D5"],
+         [("exposure", "the seatbelt bruising across the chest and abdomen"),
+          ("bleeding", "that no external source has been found")])]))

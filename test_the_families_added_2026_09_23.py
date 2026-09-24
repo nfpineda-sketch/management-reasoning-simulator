@@ -239,3 +239,253 @@ def test_each_new_case_declares_what_it_offers_without_discrepancy(case_id):
 def test_each_new_family_hangs_from_a_decision_challenge(family):
     from cognitive_catalog import BIAS_CHALLENGES
     assert [key for key, item in BIAS_CHALLENGES.items() if family in item["families"]]
+
+
+# --- the two bradycardia variants the faculty signed off on -----------------
+
+def test_calcium_is_the_answer_to_one_blockade_and_glucagon_to_the_other(engine):
+    """The same two drugs, the opposite sizes. That is the whole differential."""
+    reason = (" Creo que es una intoxicacion. Espero que suba la frecuencia. "
+              "Reevaluo frecuencia y presion en 5 minutos.")
+    _, ccb = play(engine, "bradycardia", "bradycardia_ccb_68m", [
+        "Doy gluconato de calcio 2 g EV." + reason])
+    _, bb = play(engine, "bradycardia", "bradycardia_bb_54f", [
+        "Doy gluconato de calcio 2 g EV." + reason])
+    assert ccb[-1]["hr"] - ccb[0]["hr"] > bb[-1]["hr"] - bb[0]["hr"]
+
+    _, ccb_g = play(engine, "bradycardia", "bradycardia_ccb_68m", [
+        "Doy glucagon 5 mg EV." + reason])
+    _, bb_g = play(engine, "bradycardia", "bradycardia_bb_54f", [
+        "Doy glucagon 5 mg EV." + reason])
+    assert bb_g[-1]["hr"] - bb_g[0]["hr"] > ccb_g[-1]["hr"] - ccb_g[0]["hr"]
+
+
+def test_the_tracing_carries_the_severity_before_any_number_does(engine):
+    """Faculty, 2026-09-23: the sicker the patient, the slower and the wider."""
+    import bradycardia_toxicology as tox
+    widths = [tox.qrs_ms(k) for k in (5.5, 6.2, 7.0, 7.6)]
+    rates = [tox.potassium_rate_loss(k) for k in (5.5, 6.2, 7.0, 7.6)]
+    assert widths == sorted(widths) and widths[0] < widths[-1]
+    assert rates == sorted(rates) and rates[0] < rates[-1]
+    _, seen = play(engine, "bradycardia", "bradycardia_hyperk_63m", [])
+    assert seen[0]["qrs_ms"] >= 170, "the arrival tracing is already broad"
+    assert seen[0]["hr"] < 45
+
+
+def test_calcium_given_on_the_suspicion_narrows_the_complex(engine):
+    reason = (" Sospecho hiperkalemia por el QRS ancho y la bradicardia. Espero que se "
+              "angoste el QRS. Reevaluo frecuencia, QRS y presion en 5 minutos.")
+    _, seen = play(engine, "bradycardia", "bradycardia_hyperk_63m", [
+        "Doy gluconato de calcio 2 g EV." + reason])
+    arrival, after = seen
+    assert after["qrs_ms"] < arrival["qrs_ms"] - 50
+    assert after["hr"] > arrival["hr"] + 20
+    assert after["sbp"] > arrival["sbp"] + 10
+
+
+def test_the_calcium_does_not_lower_the_potassium_and_says_so(engine):
+    """It protects the membrane. The number in the record is unchanged."""
+    reason = (" Sospecho hiperkalemia. Espero que se angoste el QRS. "
+              "Reevaluo frecuencia y QRS en 5 minutos.")
+    session, seen = play(engine, "bradycardia", "bradycardia_hyperk_63m", [
+        "Doy gluconato de calcio 2 g EV." + reason,
+        "Reevalua frecuencia, presion y conciencia en 30 minutos.",
+        "Reevalua frecuencia, presion y conciencia en 30 minutos."])
+    assert session["state"]["family_state"]["potassium"] == 7.6
+    # And what it bought comes back, because nothing has removed any of it.
+    assert seen[1]["qrs_ms"] < seen[-1]["qrs_ms"]
+
+
+def test_a_nebulised_beta_agonist_moves_the_potassium_itself(engine):
+    reason = (" Sospecho hiperkalemia. Espero bajar el potasio. "
+              "Reevaluo frecuencia y QRS en 10 minutos.")
+    session, _ = play(engine, "bradycardia", "bradycardia_hyperk_63m", [
+        "Doy salbutamol 10 mg nebulizado." + reason,
+        "Reevalua frecuencia, presion y conciencia en 30 minutos."])
+    assert session["state"]["family_state"]["potassium"] < 7.6
+
+
+def test_waiting_for_the_laboratory_changes_nothing(engine):
+    """The window of the event runs from the tracing, and so does the case."""
+    _, seen = play(engine, "bradycardia", "bradycardia_hyperk_63m", [
+        "Pido un panel de laboratorio.",
+        "Reevalua frecuencia, presion y conciencia en 20 minutos."])
+    assert seen[-1]["hr"] == seen[0]["hr"]
+    assert seen[-1]["qrs_ms"] == seen[0]["qrs_ms"]
+
+
+def test_the_event_of_the_potassium_case_starts_at_the_tracing():
+    from case_assessment_bank import CASES
+    events = {e["event_id"]: e for e in CASES["bradycardia_hyperk_63m"]["critical_events"]}
+    calcium = events["hyperk_calcium_awaited_the_laboratory"]
+    assert calcium["window_min"] == (0, 20)
+    assert "the arrival tracing" in calcium["information_required"]
+    assert "laborator" in calcium["trigger"]
+
+
+def test_the_ecg_draws_the_width_the_case_declares():
+    import ecg12
+    narrow = ecg12._parameters(38, "sinus", "baseline")
+    broad = ecg12._parameters(38, "sinus", "baseline", qrs_s=.180)
+    assert broad["qrs_s"] > narrow["qrs_s"]
+    # And a width outside the readable range is refused rather than drawn.
+    assert ecg12._qrs_override({"qrs_ms": 999}) is None
+    assert ecg12._qrs_override({"qrs_ms": "wide"}) is None
+    assert ecg12._qrs_override({"qrs_ms": 168}) == pytest.approx(.168)
+
+
+@pytest.mark.parametrize("case_id", ["bradycardia_bb_54f", "bradycardia_hyperk_63m"])
+def test_the_signed_variants_declare_what_they_offer(case_id):
+    from case_assessment import verify
+    assert verify(case_id) == []
+
+
+# --- trauma: the x of xABCDE, and a haemothorax that is not a volume --------
+
+TRAUMA_REASON = (" Creo que es un shock hemorragico. Espero que suba la presion. "
+                 "Reevaluo presion, frecuencia y perfusion en 5 minutos.")
+
+
+def test_the_minutes_before_the_tourniquet_are_paid_for_in_blood(engine):
+    """Faculty decision 2.2: the x comes first, and the engine holds them to it."""
+    _, early = play(engine, "trauma", "trauma_limb_hemorrhage_27m", [
+        "Pongo un torniquete en el muslo." + TRAUMA_REASON,
+        wait(10)])
+    session, late = play(engine, "trauma", "trauma_limb_hemorrhage_27m", [
+        wait(10),
+        "Pongo un torniquete en el muslo." + TRAUMA_REASON])
+    assert late[-1]["sbp"] < early[-1]["sbp"] - 30
+    assert late[-1]["mental_status"] != "Alert"
+    assert session["state"]["family_state"]["blood_lost_ml"] > 2000
+
+
+def test_a_tourniquet_stops_it_and_does_not_raise_the_pressure_by_itself(engine):
+    session, seen = play(engine, "trauma", "trauma_limb_hemorrhage_27m", [
+        "Pongo un torniquete en el muslo." + TRAUMA_REASON, wait(15)])
+    lost = session["state"]["family_state"]["blood_lost_ml"]
+    assert lost == pytest.approx(700, abs=1), "seeded from the arrival deficit and then frozen"
+    assert seen[-1]["sbp"] == seen[0]["sbp"], "stopping the loss is not replacing it"
+
+
+def test_blood_replaces_what_was_lost_and_crystalloid_less_of_it(engine):
+    """Two units carry what a litre of salt cannot, and the engine prices that.
+
+    Compared once both have actually run in. A unit of packed cells takes time
+    in this engine and a litre of crystalloid does not, so at twenty minutes the
+    salt is ahead -- which is true, and is not what this test is about.
+    """
+    _, with_blood = play(engine, "trauma", "trauma_limb_hemorrhage_27m", [
+        "Pongo un torniquete en el muslo." + TRAUMA_REASON,
+        "Transfundo 2 unidades de globulos rojos." + TRAUMA_REASON, wait(60)])
+    _, with_fluid = play(engine, "trauma", "trauma_limb_hemorrhage_27m", [
+        "Pongo un torniquete en el muslo." + TRAUMA_REASON,
+        "Paso 1000 cc de suero fisiologico EV." + TRAUMA_REASON, wait(60)])
+    assert with_blood[-1]["sbp"] > with_fluid[-1]["sbp"]
+    assert with_fluid[-1]["sbp"] > with_fluid[0]["sbp"], "and salt is not nothing"
+
+
+def test_uncontrolled_bleeding_reaches_an_arrest_and_says_why(engine):
+    generated = build_encounter(engine, "trauma", "trauma_limb_hemorrhage_27m")
+    session = initialize(engine, deepcopy(generated["state"]))
+    labels = []
+    for order in (wait(15), wait(15)):
+        _, result, _, _ = execute_turn(engine, order)
+        labels.extend(str(s.get("label") or "") for s in result.get("action_summaries", []))
+    assert any("arrest" in text.lower() for text in labels), labels
+    assert any("no volume replaces a source that is still open" in text.lower()
+               for text in labels), labels
+
+
+def test_a_needle_does_not_drain_a_haemothorax(engine):
+    session, _ = play(engine, "trauma", "trauma_hemothorax_41m", [
+        "Hago descompresion con aguja del torax izquierdo." + TRAUMA_REASON])
+    assert session["state"]["family_state"].get("thoracostomy_at") is None
+
+
+def test_the_tube_drains_and_the_chest_keeps_filling(engine):
+    """Faculty decision 2.4: it is the instability and not the volume."""
+    session, seen = play(engine, "trauma", "trauma_hemothorax_41m", [
+        "Instalo un tubo pleural izquierdo." + TRAUMA_REASON, wait(15)])
+    f = session["state"]["family_state"]
+    assert f["thoracostomy_at"] is not None
+    assert f["thoracic_drained_ml"] > 1000
+    assert seen[-1]["sbp"] < seen[0]["sbp"], "draining is not stopping"
+
+
+def test_looking_again_only_counts_after_the_drain(engine):
+    import trauma_hemorrhage
+    before = {"thoracostomy_at": 20, "efast_at": 5, "pelvis_xray_at": None}
+    after = {"thoracostomy_at": 20, "efast_at": 25, "pelvis_xray_at": None}
+    never = {"thoracostomy_at": None, "efast_at": 25}
+    assert not trauma_hemorrhage.searched_again(before)
+    assert trauma_hemorrhage.searched_again(after)
+    assert not trauma_hemorrhage.searched_again(never)
+
+
+def test_the_theatre_is_indicated_by_the_sequence_and_not_by_a_volume():
+    import trauma_hemorrhage
+    unstable = {"sbp": 78, "crt": 4}
+    stable = {"sbp": 118, "crt": 2}
+    drained_and_searched = {"thoracostomy_at": 10, "efast_at": 20}
+    assert trauma_hemorrhage.theatre_indicated(drained_and_searched, unstable)
+    assert not trauma_hemorrhage.theatre_indicated(drained_and_searched, stable)
+    assert not trauma_hemorrhage.theatre_indicated({"thoracostomy_at": 10}, unstable)
+    assert not trauma_hemorrhage.theatre_indicated(
+        {**drained_and_searched, "other_site_found": True}, unstable)
+
+
+# --- the E-FAST the faculty wrote ------------------------------------------
+
+def test_the_efast_has_the_five_windows_the_faculty_listed():
+    import efast_report
+    assert [name for name, _ in efast_report.SECTIONS] == [
+        "Right upper quadrant", "Left upper quadrant", "Suprapubic", "Subxiphoid", "Lung"]
+    # The suprapubic window is looked at twice, longitudinally and transversely.
+    suprapubic = dict(efast_report.SECTIONS)["Suprapubic"]
+    assert len(suprapubic) == 2
+
+
+def test_every_window_is_reported_including_the_normal_ones():
+    import efast_report
+    result = efast_report.study(ruq_morison="Free fluid in the hepatorenal recess")
+    assert efast_report.missing_windows(result) == []
+    assert set(result) == set(efast_report.KEYS)
+
+
+def test_the_report_says_which_windows_were_positive_and_interprets_nothing():
+    import efast_report
+    result = efast_report.study(ruq_morison="Free fluid in the hepatorenal recess",
+                                pericardium="Pericardial fluid, circumferential")
+    assert efast_report.free_fluid(result) == ["ruq_morison", "pericardium"]
+    # And nothing in a normal study says "negative" or "no tamponade".
+    for text in efast_report.NORMAL.values():
+        lowered = text.lower()
+        assert "negative" not in lowered and "tamponade" not in lowered
+        assert "normal" not in lowered
+
+
+def test_sliding_excludes_a_pneumothorax_and_its_absence_is_named():
+    import efast_report
+    assert efast_report.pneumothorax_windows(efast_report.study()) == []
+    absent = efast_report.study(lung_sliding_left="Absent on the left")
+    assert efast_report.pneumothorax_windows(absent) == ["lung_sliding_left"]
+
+
+def test_the_cardiac_windows_come_first_in_penetrating_trauma():
+    """Assessed, never enforced: the order is a decision, not a setting."""
+    import efast_report
+    assert efast_report.cardiac_first(["pericardium", "ruq_morison"])
+    assert not efast_report.cardiac_first(["ruq_morison", "pericardium"])
+    assert not efast_report.cardiac_first([]), "nobody looked is not a yes"
+
+
+def test_a_window_outside_the_protocol_is_refused():
+    import efast_report
+    with pytest.raises(ValueError):
+        efast_report.study(spleen="Free fluid")
+
+
+@pytest.mark.parametrize("case_id", ["trauma_limb_hemorrhage_27m", "trauma_hemothorax_41m"])
+def test_the_trauma_cases_declare_what_they_offer(case_id):
+    from case_assessment import verify
+    assert verify(case_id) == []

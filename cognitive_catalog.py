@@ -19,6 +19,7 @@ FAMILY_LABELS = {
     "anaphylaxis": "Anaphylaxis",
     "renal_colic": "Ureteric colic and obstructive pyelonephritis",
     "bradycardia": "Unstable bradycardia",
+    "trauma": "Injury with haemorrhagic shock",
 }
 
 EVIDENCE_INTERPRETATION = (
@@ -145,7 +146,7 @@ BIAS_CHALLENGES = {
         "evidence_fields": ("working_model", "management_priority", "reflection"),
         # A bradycardia that is not cardiac: the rate is the presentation and
         # the cause is in the medication boxes (2026-09-23).
-        "families": ("acs", "pulmonary_embolism", "bradycardia"),
+        "families": ("acs", "pulmonary_embolism", "bradycardia", "trauma"),
         "debrief_questions": (
             "Which features differed from the presentation you expected?",
             "What evidence kept a consequential alternative under consideration?",
@@ -164,8 +165,10 @@ BIAS_CHALLENGES = {
         "evidence_fields": ("working_model", "management_priority", "reassessment", "reflection"),
         # Flank pain with a stone on the ultrasound: the first positive finding
         # explains the pain and says nothing about the fever, the lactate or
-        # who has to decompress the kidney (2026-09-23).
-        "families": ("gi_bleed", "pneumonia", "renal_colic"),
+        # who has to decompress the kidney (2026-09-23). A chest that has been
+        # drained and a patient who is still unstable is the same challenge:
+        # the drain explained the dullness and not the shock.
+        "families": ("gi_bleed", "pneumonia", "renal_colic", "trauma"),
         "debrief_questions": (
             "What did the first positive finding explain?",
             "Which abnormalities or immediate needs remained unresolved?",

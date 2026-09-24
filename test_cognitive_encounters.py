@@ -37,6 +37,8 @@ ORDERS = {
     "anaphylaxis": "Give epinephrine 0.5 mg IM",
     "renal_colic": "Give ceftriaxone 2 g IV; consult urology",
     "bradycardia": "Give calcium gluconate 2 g IV",
+    # The x of xABCDE: this is the order that comes before the others.
+    "trauma": "Apply a tourniquet to the limb",
 }
 
 

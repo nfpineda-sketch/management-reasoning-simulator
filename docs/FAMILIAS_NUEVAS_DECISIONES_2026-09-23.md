@@ -1,9 +1,12 @@
 # Cinco familias nuevas — decisiones clínicas a resolver
 
 > Preparado mientras trabajaba de noche, 2026-09-23. Cada decisión trae **una
-> recomendación**, no una lista de opciones: lo que sigue es lo que voy a
-> implementar salvo que digas otra cosa. Las marcadas **⚠ REQUIERE TU FIRMA**
-> son las que no puedo resolver desde lo ya decidido históricamente.
+> recomendación**, no una lista de opciones.
+>
+> **TODAS FIRMADAS por el docente el 2026-09-23.** Lo que sigue está aprobado.
+> Tres decisiones cambiaron con la firma y ahora son mejores que mi propuesta —
+> están marcadas **✍ CORREGIDA POR EL DOCENTE** y hay que leerlas, no
+> hojearlas: 2.3 (E-FAST), 2.4 (hemotórax masivo) y 3.3 (hiperkalemia).
 
 El banco actual tiene **21 casos en 8 familias**, todos con cobertura completa
 de los cinco dominios y sin discrepancias. Todo lo nuevo tiene que entrar con el
@@ -130,17 +133,52 @@ Torniquete · compresión directa · empaquetamiento · faja pélvica · toracos
 con dedo y con tubo · transfusión masiva · **ácido tranexámico** · inmovilización
 cervical · ecografía FAST · pelvis y tórax AP.
 
-De éstas, la **FAST** merece una decisión propia: ya existe `pocus`. Propongo
-que FAST **sea** el POCUS del caso de trauma, con los cuatro espacios, en vez de
-un estudio nuevo. Menos código y clínicamente honesto.
+De éstas, la **FAST** merece una decisión propia: ya existe `pocus`. Propuse que
+FAST **fuera** el POCUS del caso de trauma, con los cuatro espacios.
 
-### Decisión 2.4 — Qué pasa cuando el residente hace lo correcto ⚠ REQUIERE TU FIRMA
+### ✍ CORREGIDA POR EL DOCENTE — el E-FAST son cinco ventanas, no cuatro
 
-En hemotórax masivo, drenar da un retorno inmediato de sangre. ¿Cuánto? Propongo
-**1200 mL iniciales** en el caso masivo, que es el umbral clásico de
-toracotomía, y que el motor entonces **abra una segunda decisión**: seguir
-reanimando o pedir cirugía. Ése es el momento educativo del caso. Necesito que
-confirmes el umbral o me des el que uses.
+El protocolo, tal como lo escribió el docente:
+
+| Ventana | Qué busca |
+|---|---|
+| **1 · Cuadrante superior derecho** | líquido libre en el espacio de Morrison (hepatorrenal), el subdiafragmático y el receso pleural |
+| **2 · Cuadrante superior izquierdo** | líquido libre en el espacio esplenorrenal, el subdiafragmático y el receso pleural |
+| **3 · Suprapúbica**, longitudinal y transversal | líquido libre entre vejiga y colon; en mujeres, el fondo de saco de Douglas |
+| **4 · Subxifoidea** | líquido libre en el pericardio |
+| **5 · Pulmonar** | presencia de *lung sliding*; en modo M el signo de la playa, en modo B las colas de cometa. **Su presencia excluye el neumotórax** |
+
+Y una regla de orden que es evaluable por sí sola:
+
+> **En trauma abierto o penetrante se hacen primero las ventanas cardíacas.**
+
+Esto cambia el diseño: el E-FAST es un estudio propio con cinco secciones (no el
+POCUS de siempre), cada caso las reporta todas —incluidas las normales, como
+hace el resto del banco—, y el **orden** en el trauma penetrante es una
+oportunidad declarada en D1, no una preferencia.
+
+### Decisión 2.4 — ✍ CORREGIDA POR EL DOCENTE
+
+Propuse un umbral de 1200 mL drenados. **El docente lo reemplazó por algo
+mejor**, y hay que implementar esto en vez de un número:
+
+> El hemotórax masivo se define hoy no sólo por el volumen sino **también por la
+> inestabilidad hemodinámica, independiente del volumen inicial que se drene**.
+> Si se drena y sigue inestable, se debe volver a buscar un sitio de sangrado —
+> intraabdominal, pelvis por ejemplo. Si se ha descartado otro sitio y sigue
+> hipotenso y mal perfundido **con el tubo pleural instalado, debe ir a
+> pabellón**.
+
+Esto es mejor que un umbral porque convierte el caso en una **secuencia
+evaluable** en vez de en un número que se lee:
+
+1. drenar → ¿se estabilizó?
+2. si no → **volver a buscar**: abdomen y pelvis, que es donde el E-FAST y la
+   radiografía de pelvis vuelven a servir;
+3. si no hay otro sitio y sigue inestable con el tubo puesto → **pabellón**.
+
+El evento crítico ya no es «no drenó». Es **«drenó, siguió inestable, y no
+volvió a buscar»**, que es el error real y el que la rúbrica puede sostener.
 
 ---
 
@@ -180,10 +218,24 @@ minutos**. Propongo un segundo evento crítico:
 - `hyperk_no_membrane_stabilisation` — potasio informado ≥ 6,5 con QRS ancho y
   no se ejecuta calcio en (0, 15). Dominios D1 y D3.
 
-Pregunta: ¿quieres que el potasio esté en los `basic_labs` de llegada, o que
-haya que pedirlo? **Mi recomendación: que haya que pedirlo**, y que el ECG lo
-sugiera. Si llega en la bandeja, el caso enseña a leer un número, no a
-sospechar.
+### ✍ PRECISADA POR EL DOCENTE
+
+Confirmado que hay que pedirlo, y con dos precisiones que cambian el caso:
+
+> Que el ECG lo sugiera: **mientras más enfermo el paciente, más lenta la
+> frecuencia y más ancho el QRS**. Debe sospechar y actuar **incluso antes de
+> tener el resultado**. El gluconato de calcio debe administrarse **apenas
+> exista la sospecha clínica**.
+
+Dos consecuencias de diseño:
+
+- El ECG tiene que **graduarse con la gravedad**, no ser un dibujo fijo: la
+  anchura del QRS y la frecuencia se mueven juntas con el potasio. Eso es
+  fisiología nueva en `ecg12`, y es la que hace que el caso se pueda leer.
+- El evento crítico **no es no dar calcio tras el resultado**. Es **no darlo
+  ante la sospecha**, con la ventana corriendo desde el ECG y no desde el
+  laboratorio. Un residente que espera el potasio para tratar ya llegó tarde, y
+  la declaración tiene que decir eso.
 
 ---
 
@@ -202,6 +254,22 @@ distintos:
 | `tox_salicylate_67f` | alcalosis respiratoria con acidosis metabólica; **no intubar sin plan**, que es la trampa clásica |
 
 La cuarta es la más difícil de modelar bien. Si hay que sacrificar una, es ésa.
+
+### ✍ AMPLIADA POR EL DOCENTE
+
+Agregar **alcohol, cocaína y benzodiacepinas**. Con eso la familia queda en
+siete, y las tres nuevas cubren lo que más entra por la puerta:
+
+| Variante | Por qué ésta |
+|---|---|
+| `tox_alcohol_*` | el diagnóstico que oculta otro: el traumatismo, la hipoglicemia y la abstinencia viven debajo |
+| `tox_cocaine_*` | la simpaticomimética; el betabloqueo es la trampa clásica y el diazepam es el tratamiento |
+| `tox_benzodiazepine_*` | depresión respiratoria sin miosis; **el flumazenil es la trampa**, no el antídoto |
+
+Siete variantes es más de lo que una familia del banco ha tenido nunca (el
+máximo son las seis coronarias). Propongo entregarlas en dos tandas: primero
+TCA, paracetamol y benzodiacepinas —las tres donde el error de manejo es más
+nítido— y después organofosforado, salicilato, alcohol y cocaína.
 
 ### Decisión 4.2 — El paciente que se ve bien
 
@@ -280,3 +348,15 @@ Por orden, y cada una entra completa o no entra:
 Donde una decisión marcada ⚠ bloquee, tomo la recomendación que escribí aquí,
 la implemento así, y lo dejo anotado en el caso para que se pueda cambiar sin
 rehacer nada.
+
+---
+
+## Estado tras la firma (2026-09-23)
+
+| Familia | Estado |
+|---|---|
+| **Anafilaxia** | entregada, 2 variantes |
+| **Cólico renal** | entregada, 2 variantes |
+| **Bradicardia** | 2 de 4 variantes entregadas; faltan betabloqueo e hiperkalemia |
+| **Toxicología** | diseñada, 7 variantes, no implementada |
+| **Trauma** | diseñada con el E-FAST y la secuencia del hemotórax, no implementada |

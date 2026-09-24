@@ -23,6 +23,8 @@ def make_state(family):
         "renal_colic": (94, 54, 118, 95, 24, 4, "Alert", 138),
         # Slow and underperfused, with the glucose that names the poison.
         "bradycardia": (74, 44, 38, 96, 18, 4, "Alert", 214),
+        # Bleeding: fast, cold and falling, with nothing wrong with the lungs.
+        "trauma": (88, 52, 128, 97, 26, 4, "Alert", 128),
     }[family]
     o = dict(zip(("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt", "mental_status", "glucose_mg_dl"), values))
     o.update(rhythm="Sinus bradycardia" if family == "acs" else "Sinus rhythm", work_of_breathing="Reduced" if family == "opioid" else "Markedly increased", extremities="Cool", temperature_c=38.5 if family == "pneumonia" else 36.7, pulse_present=True, peripheral_perfusion="impaired")
@@ -40,6 +42,7 @@ def make_state(family):
         **({"renal": {"infected": True, "side": "left"}} if family == "renal_colic" else {}),
         **({"bradycardia": {"cause": "ccb", "block": False, "av_block_location": "infranodal",
                             "escape_rate": 38, "target_rate": 75}} if family == "bradycardia" else {}),
+        **({"trauma": {"sources": {"external": 1.0}, "arrival_deficit": .12}} if family == "trauma" else {}),
         "family": family, "baseline_glucose": values[-1], "recurrence_risk": family in {"hypoglycemia", "opioid"}, "baseline_hemoglobin": 6.8 if family == "gi_bleed" else 12, "baseline_lactate": 3.2}, "investigations": investigations, "examination": {"Respiratory": "Case-authored breathing", "Neurological": "Case-authored pupils"}, "visual_profile": {"baseline": {"expression": "uncomfortable", "diaphoresis": "mild"}}}
     return {"engine_family": family, "encounter_spec": {"clinical_case": case, "ecg_profile": "inferior_stemi" if family == "acs" else "baseline"}, "observable": o, "hidden": {}, "sim_time": 0, "treatments": {}, "diagnostics": {}}
 

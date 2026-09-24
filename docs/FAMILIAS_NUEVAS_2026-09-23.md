@@ -1,18 +1,18 @@
-# Tres familias nuevas: anafilaxia, cólico renal y bradicardia inestable
+# Cuatro familias nuevas: anafilaxia, cólico renal, bradicardia y trauma
 
-> 2026-09-23. El banco pasa de **21 casos en 8 familias** a **27 casos en 11**,
+> 2026-09-23. El banco pasa de **21 casos en 8 familias** a **31 casos en 12**,
 > todos con cobertura completa de los cinco dominios y cero discrepancias.
-> Las decisiones clínicas que quedaron abiertas están en
-> `FAMILIAS_NUEVAS_DECISIONES_2026-09-23.md`, con la recomendación que tomé en
-> cada una.
+> Las decisiones clínicas están en `FAMILIAS_NUEVAS_DECISIONES_2026-09-23.md`,
+> **todas firmadas por el docente**, y tres de ellas corregidas por él de una
+> forma que mejoró el diseño.
 
 | | Antes | Después |
 |---|---|---|
-| Casos | 21 | **27** |
-| Familias | 8 | **11** |
-| Cobertura completa | 21 de 21 | **27 de 27** |
+| Casos | 21 | **31** |
+| Familias | 8 | **12** |
+| Cobertura completa | 21 de 21 | **31 de 31** |
 | Discrepancias | 0 | **0** |
-| Eventos críticos definidos | 16 | **27** |
+| Eventos críticos definidos | 16 | **33** |
 
 ---
 
@@ -162,6 +162,48 @@ Tres cosas quedan separadas y observables:
 envenenamiento, 104 en el bloqueo. Ninguno tiene un potasio que explique la
 frecuencia.
 
+### Las cuatro variantes
+
+Tras la firma se completaron las cuatro que pediste:
+
+| Variante | Lo que la revela | Lo que la trata |
+|---|---|---|
+| `bradycardia_ccb_68m` | glicemia 214 sin diabetes; el verapamilo que duplicó | **calcio** |
+| `bradycardia_bb_54f` | el blíster vacío de propranolol que trajo la pareja | **glucagón** |
+| `bradycardia_avb3_78f` | disociación AV en el ECG, ondas cañón | **marcapasos** |
+| `bradycardia_hyperk_63m` | QRS ancho que se ensancha con la bradicardia | **calcio ante la sospecha** |
+
+El calcio y el glucagón están en los dos envenenamientos con los tamaños
+invertidos: el que responde en uno apenas responde en el otro, y eso es el
+diagnóstico diferencial completo.
+
+### La hiperkalemia, como la precisaste
+
+> «Mientras más enfermo el paciente, más lenta la FC y más ancho el QRS… debe
+> sospechar y hacer incluso antes de tener el resultado. El gluconato de calcio
+> debe administrarse apenas exista la sospecha clínica.»
+
+Implementado literalmente. El ancho del QRS y la frecuencia **se mueven juntos
+con el potasio**, y `ecg12` dibuja el complejo ancho de verdad:
+
+```
+llegada                      84/50  FC 38  QRS 180 ms   K desconocido
+gluconato de calcio 2 g     100/59  FC 66  QRS 108 ms   K 7,60  ← ante la sospecha
++15 min                      96/57  FC 58  QRS 128 ms   K 7,60  ← vuelve a ensancharse
++55 min                      89/53  FC 46  QRS 158 ms   K 7,48
+```
+
+El calcio **no baja el potasio**: protege la membrana y cede. El salbutamol
+nebulizado sí lo mueve, despacio, y vuelve a subir porque nada de lo que hay
+aquí lo saca del cuerpo. El caso termina en una derivación a diálisis.
+
+Y el que espera el laboratorio no ve nada cambiar: 38 de frecuencia y 180 ms a
+los 30 minutos, con la atropina sin efecto.
+
+**El evento crítico no es no dar calcio tras el resultado.** Es
+`hyperk_calcium_awaited_the_laboratory`, con la ventana corriendo **desde el
+trazado**, no desde el laboratorio.
+
 ### Decisiones tomadas
 
 - **El calcio es una orden nueva**, con los dos gluconatos separados: el cloruro
@@ -176,6 +218,81 @@ frecuencia.
 - **La hiperkalemia grave y el betabloqueo puro** quedan para la siguiente
   tanda: la primera necesita fisiología del potasio y cambios del QRS que el
   motor no tiene.
+
+---
+
+---
+
+## Familia 4 · Trauma
+
+`trauma_limb_hemorrhage_27m` · `trauma_hemothorax_41m`
+Challenges: **R2-04** (enfermedad fuera del patrón) y **R2-05** (lo que queda
+después del primer hallazgo).
+
+Dos mecanismos, **uno a la vez**, como firmaste en 2.1: un caso combinado hace
+imposible decir por cuál omisión respondió el paciente, y la rúbrica tiene que
+poder decirlo.
+
+### La x de xABCDE, y lo que cuesta no respetarla
+
+Firmaste que el motor lo castigue. Lo hace, sin negarse a nada: la herida sangra
+145 mL por minuto hasta que alguien la detiene.
+
+```
+el torniquete primero                      intubar primero
+  llegada   96/54  FC 132  Alert             llegada   96/54  FC 132  Alert
+  torniquete                                 (intubación, 10 min)
+  +25 min  103/58  FC 127  Alert             +10 min   50/25  FC 178  Obtunded
+           700 mL perdidos                             2150 mL perdidos
+```
+
+El torniquete después sigue funcionando. Lo que no vuelve es la sangre.
+
+Sin control, a los ~17 minutos el motor declara el paro y dice por qué:
+*«no volume replaces a source that is still open»*.
+
+### El hemotórax, como lo redefiniste
+
+Propuse un umbral de 1200 mL drenados. Lo reemplazaste por una **secuencia**, y
+es mejor:
+
+> «No sólo por el volumen sino también por la inestabilidad hemodinámica,
+> independiente del volumen inicial que se drene. Si se drena y sigue
+> inestable, se debe volver a buscar un sitio de sangrado… Si se ha descartado
+> otro sitio y sigue hipotenso, mal perfundido con el tubo pleural instalado,
+> debe ir a pabellón.»
+
+```
+tubo pleural izquierdo   → 1200 mL drenados de inmediato, y sigue llenándose
+  +5 min    79/45  FC 133  Drowsy
+  2 unidades de glóbulos rojos
+  +10 min   73/42  FC 138  Drowsy      ← drenar no es detener
+  E-FAST y radiografía de pelvis        ← volver a buscar
+  cirugía                               ← y cuando no hay otro sitio, pabellón
+```
+
+El evento crítico ya no es «no drenó». Es
+**`trauma_drained_and_never_looked_again`**: drenó, siguió inestable, y no
+volvió a buscar. Y una aguja no drena un hemotórax — el motor lo dice con esas
+palabras en vez de ejecutarlo.
+
+### El E-FAST, con tus cinco ventanas
+
+`efast_report.py` lleva el protocolo tal como lo escribiste: cuadrante superior
+derecho (Morrison, subdiafragmático, receso pleural), cuadrante superior
+izquierdo (esplenorrenal, subdiafragmático, receso pleural), suprapúbica
+longitudinal y transversal, subxifoidea y pulmonar con *lung sliding*, signo de
+la playa en modo M y colas de cometa en modo B.
+
+Doce campos, y **cada caso reporta los doce**, incluidos los normales — por la
+misma razón que reporta todo el protocolo POCUS: una ventana ausente de un
+informe es una ventana que nadie miró, y no puede leerse como un hallazgo
+negativo. Ninguna frase normal dice «negativo» ni «sin taponamiento».
+
+La regla de que **en trauma penetrante las ventanas cardíacas van primero** está
+implementada como `cardiac_first()`: el motor no se lo impide a nadie. Registra
+qué miró primero, y la rúbrica lo lee — porque el orden es una decisión, no una
+configuración.
 
 ---
 
@@ -202,15 +319,15 @@ del encuentro, perdida en silencio.
 
 ## Lo que no está
 
-- **Trauma (xABCDE)** y **toxicología** no están implementadas. Las dos están
-  diseñadas en detalle en el documento de decisiones, con las órdenes nuevas que
-  cada una necesita y las preguntas que requieren tu firma. Trauma es la más
-  grande de las cinco: tres fisiologías distintas más el control de hemorragia
-  como orden con consecuencia temporal.
+- **Toxicología** no está implementada. Está diseñada con siete variantes tras
+  tu ampliación (alcohol, cocaína y benzodiacepinas sobre las cuatro que
+  propuse), y sugerí entregarla en dos tandas: primero TCA, paracetamol y
+  benzodiacepinas, que son donde el error de manejo es más nítido.
+- **De trauma falta la tercera variante**, la fractura inestable de pelvis. La
+  faja pélvica ya es una orden ejecutable y el modelo ya la contempla como
+  fuente; lo que falta es el caso.
 - **La quinta familia que elegí fue anafilaxia**, y está entregada.
-- De la bradicardia faltan dos variantes de las cuatro que pediste.
 
-Preferí tres familias que cumplen todos los criterios antes que cinco a medio
-construir. Cada una entró con sus cinco dominios declarados, sus eventos
-críticos con ventana clínica, `case_assessment.verify` sin discrepancias, y
-pruebas que fijan la enseñanza y no sólo que el código corre.
+Cada familia entró con sus cinco dominios declarados, sus eventos críticos con
+ventana clínica, `case_assessment.verify` sin discrepancias, y pruebas que fijan
+la enseñanza clínica y no sólo que el código corre.

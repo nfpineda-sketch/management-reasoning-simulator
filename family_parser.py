@@ -20,6 +20,7 @@ NEW_TREATMENT_ACTIONS = frozenset({
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
     "magnesium", "epinephrine", "epinephrine_bolus", "epinephrine_im", "continuous_bronchodilator",
     "ventilator_disconnect", "chest_decompression", "thrombolysis", "stress_test",
+    "hemorrhage_control", "pelvic_binder", "tranexamic_acid",
     "octreotide", "glucagon", "calcium", "thiamine", "oral_carbohydrate", "dextrose_infusion", "naloxone_infusion",
     "atropine", "transcutaneous_pacing", "opioid_analgesia",
     "neuromuscular_blockade", "sedation_infusion",
@@ -132,6 +133,12 @@ _DIAGNOSTICS = {
     # "Angiotomografia de torax" is how the study is written here in full; only
     # its abbreviations were listed, so the written form was refused (2026-09-23).
     "ctpa": r"ctpa|ct pulmonary angiogra(?:phy|m)|pulmonary ct angiogra(?:phy|m)|angio(?:[- ]?tc|tac|tomografia)(?:\s+(?:de\s+)?(?:torax|pulmonar))?",
+    # The two studies a trauma resident looks again with, after the chest is
+    # drained and the patient is still unstable (faculty decision 2.4).
+    "efast": r"e[- ]?fast|extended\s+fast|\bfast\b(?:\s+(?:exam|examen|scan))?|"
+             r"eco(?:graf[ií]a)?\s+(?:fast|de\s+trauma)|trauma\s+ultrasound",
+    "pelvis_xray": r"(?:radiograf[ií]a|rx|placa|x[- ]?ray)\s+(?:de\s+)?(?:la\s+)?pelvis|"
+                   r"pelvi[cs]\s+(?:x[- ]?ray|radiograph|film)|rx\s+p[eé]lvi[sc]a?",
     # The study of the flank-pain family (2026-09-23). Matched before the plain
     # ultrasound words so that asking for "ecografia renal" never returns the
     # emergency POCUS protocol instead.
@@ -871,6 +878,37 @@ def _parse_piece_core(piece, inherited=None):
     # "Pido nefrostomia percutanea" is a request for urology, not for a study,
     # and the study dispatch owns the verb that introduced it. Asked before it,
     # so the service is reached rather than the refusal (2026-09-23).
+    # The x of xABCDE. A tourniquet, direct pressure and packing are the three
+    # measures this engine performs, and each names where it is applied.
+    bleeding = re.search(
+        r"\b(?:torniquete|tourniquet|"
+        r"(?:compresi[oó]n|presi[oó]n)\s+(?:directa|manual|externa)|direct\s+pressure|"
+        r"empaquetamiento|packing|taponamiento|"
+        r"(?:vendaje|ap[oó]sito)\s+(?:compresivo|hemost[aá]tico)|"
+        r"(?:h[ae]mostatic|pressure)\s+dressing|control\s+de\s+(?:la\s+)?hemorragia|"
+        r"h[ae]morrhage\s+control|bleeding\s+control)\b", body)
+    if bleeding:
+        measure = ("tourniquet" if re.search(r"torniquete|tourniquet", body)
+                   else "packing" if re.search(r"empaquet|packing|taponamiento", body)
+                   else "direct pressure")
+        site = ("limb" if re.search(r"\b(?:extremidad|pierna|brazo|muslo|antebrazo|limb|leg|arm|thigh|"
+                                    r"forearm|miembro)\b", body)
+                else "wound")
+        return [{"type": "hemorrhage_control", "measure": measure, "site": site}], verb or "apply"
+
+    if re.search(r"\b(?:faja\s+p[eé]lvica|cintur[oó]n\s+p[eé]lvico|pelvic\s+binder|"
+                 r"binder\s+p[eé]lvico|sabana\s+p[eé]lvica|pelvic\s+(?:sheet|wrap))\b", body):
+        return [{"type": "pelvic_binder"}], verb or "apply"
+
+    if re.search(r"\b(?:[aá]cido\s+tranex[aá]mico|tranexamic\s+acid|tranexamico|\btxa\b|"
+                 r"exacyl|cyklokapron)\b", body):
+        dose = re.search(r"(\d+(?:[.,]\d+)?)\s*(mg|g)\b", body)
+        grams = None
+        if dose:
+            value = float(dose[1].replace(",", "."))
+            grams = value / 1000 if dose[2] == "mg" else value
+        return [{"type": "tranexamic_acid", "dose_g": grams, "route": _route(body) or "IV"}], verb or "give"
+
     if re.search(_SERVICE_PROCEDURE, body):
         return [{"type": "consult", "service": "urology"}], verb or "consult"
 

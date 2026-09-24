@@ -30,7 +30,7 @@ class CognitiveCatalogTests(unittest.TestCase):
         # Eleven since 2026-09-23: anaphylaxis, the flank-pain pair and the
         # unstable bradycardia. Every family is still covered by a challenge,
         # which is the property below and the one that matters.
-        self.assertEqual(len(FAMILY_LABELS), 11)
+        self.assertEqual(len(FAMILY_LABELS), 12)
         covered = set()
         for challenge in BIAS_CHALLENGES.values():
             with self.subTest(bias=challenge["bias_id"]):

@@ -11,6 +11,7 @@ simulation and are not quoted observations or guideline-prescribed trajectories.
 """
 from copy import deepcopy
 
+from efast_report import study as _efast
 from visual_observations import distributive_visual_profile, hypoperfusion_visual_profile
 
 
@@ -27,6 +28,7 @@ SOURCE_URLS = {
     "anaphylaxis": "https://www.worldallergy.org/wao-journal/anaphylaxis-guidance-2020",
     "renal_colic": "https://uroweb.org/guidelines/urolithiasis",
     "bradycardia": "https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/adult-basic-and-advanced-life-support",
+    "trauma": "https://www.facs.org/quality-programs/trauma/education/advanced-trauma-life-support/",
 }
 INVESTIGATION_IDS = (
     "pocus", "lactate", "vbg", "abg", "basic_labs", "temperature",
@@ -40,6 +42,9 @@ INVESTIGATION_IDS = (
     # ultrasound and not part of the emergency POCUS protocol, which is why it
     # is its own investigation the way the angiogram is for the embolism family.
     "renal_ultrasound",
+    # The two studies of the trauma family (2026-09-23). The E-FAST is its own
+    # protocol with its own five windows, written in efast_report.
+    "efast", "pelvis_xray",
 )
 
 
@@ -158,6 +163,15 @@ POCUS = {
     ),
     # The study does not name the poison either. A slow, poorly contracting
     # ventricle looks the same whatever stopped it.
+    # An empty ventricle and a flat vein: the POCUS says the tank, and the
+    # E-FAST is the study that says where it went.
+    "trauma": (
+        _pocus(lv="Vigorous contraction with near-obliteration in systole",
+               ivc="0.7 cm; complete inspiratory collapse"),
+        _pocus(lv="Vigorous contraction with near-obliteration in systole",
+               ivc="0.8 cm; complete inspiratory collapse",
+               lung_consolidation="Left pleural effusion with echogenic contents; no consolidation"),
+    ),
     "bradycardia": (
         _pocus(lv="Globally reduced contraction at a slow rate; no regional difference identified",
                ivc="1.9 cm; <50% inspiratory collapse"),
@@ -274,7 +288,7 @@ def _with_age_adjusted_d_dimer(investigations, age_years):
 def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
                     pocus, chest_xray, troponin=8, sodium=138, potassium=4.1,
                     bun=18, ctpa=None, d_dimer=None, renal_ultrasound=None,
-                    urinalysis=None):
+                    urinalysis=None, efast=None, pelvis_xray=None):
     # An unauthored study is absent, never silently reported as a negative test.
     result = {
         "pocus": _study(pocus, 2),
@@ -299,6 +313,13 @@ def _investigations(o, *, lactate, hemoglobin, wbc, creatinine, abg, vbg,
     }
     if renal_ultrasound is not None:
         result["renal_ultrasound"] = _study(renal_ultrasound, 15)
+    if efast is not None:
+        # Every window, including the normal ones, exactly as the POCUS protocol
+        # is reported: a window missing from a report is a window nobody looked
+        # at, and it must not read as a negative finding.
+        result["efast"] = _study(efast, 4)
+    if pelvis_xray is not None:
+        result["pelvis_xray"] = _study(pelvis_xray, 6)
     if ctpa is not None:
         result["ctpa"] = _study(ctpa, 20)
     if d_dimer is not None:
@@ -328,7 +349,7 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
           history_source="Patient", congestion=None, coronary=None, lysis_bleeding_risk=None,
           thiamine_deficient=False, endogenous_insulin=False, opioid_depot=0.0,
           iv_access_failed=False, glycogen_depleted=False, anaphylaxis=None, renal=None,
-          bradycardia=None):
+          bradycardia=None, trauma=None):
     return {
         "id": identifier,
         "patient": {"age_years": age, "sex": sex,
@@ -356,6 +377,7 @@ def _case(identifier, family, age, sex, comorbidities, presentation, history,
             **({"anaphylaxis": dict(anaphylaxis)} if anaphylaxis else {}),
             **({"renal": dict(renal)} if renal else {}),
             **({"bradycardia": dict(bradycardia)} if bradycardia else {}),
+            **({"trauma": dict(trauma)} if trauma else {}),
         },
         "faculty": {"diagnosis": diagnosis, "discriminating_findings": list(findings),
                     "management_focus": focus, "review_questions": list(questions),
@@ -381,6 +403,8 @@ FAMILIES = {
     # The monitor says the rate. It does not say what took it, and that is the
     # whole of this family.
     "bradycardia": {"label": "Slow heart rate with poor perfusion", "variants": []},
+    # The label says the mechanism and nothing about what is bleeding.
+    "trauma": {"label": "Injury with shock", "variants": []},
 }
 
 
@@ -1319,6 +1343,176 @@ FAMILIES["bradycardia"]["variants"].append(_case(
                  "escape_rate": 32, "target_rate": 70}))
 
 
+_o = _observable(80, 48, 40, 97, 16, crt=4, extremities="Cool", temperature=36.4,
+                 glucose=96, perfusion="impaired")
+FAMILIES["bradycardia"]["variants"].append(_case(
+    "bradycardia_bb_54f", "bradycardia", 54, "female", ["hypertension", "migraine"],
+    "A 54-year-old woman is brought in after being found drowsy at home beside an empty blister pack. She is cold and very slow.",
+    _history("Her partner says she was upset last night and he found her like this this morning.",
+        ["Her partner reports no chest pain and no breathlessness that she described.",
+         "She has vomited once since he found her."],
+        "Her partner reports high blood pressure and migraine; he knows of no heart disease.",
+        "Her partner brought an empty blister pack of propranolol and says a full one was there yesterday. "
+        "She also takes losartan.",
+        "She was last seen well around midnight and was found drowsy at about seven this morning.",
+        "Her partner says there had been an argument and she had been low for weeks.",
+        neurological_symptoms="There was no seizure and no head strike that he saw.",
+        chest_pain="Her partner reports no complaint of chest pain.",
+        breathing="Her partner says the breathing has looked slow but regular.",
+        oral_intake="She has eaten nothing since last night and vomited once.",
+        exposure="He found no other empty packet and no alcohol."),
+    {"Cardiac": "Very slow regular pulse; peripheries cold with delayed refill; no murmur.",
+     "Respiratory": "Slow regular breathing with clear breath sounds.",
+     "Abdomen": "Soft and non-tender.",
+     "General appearance": "Cold and pale; drowsy but rousable, with no rash.",
+     "Neurological": "Opens eyes to voice, follows simple commands slowly, moves all limbs."}, _o,
+    _investigations(_o, lactate=3.2, hemoglobin=13.2, wbc=8.6, creatinine=1.0,
+        abg=(7.32, 40, 88), vbg=(7.29, 47), potassium=4.2,
+        pocus=POCUS["bradycardia"][0],
+        chest_xray="Clear lung fields; no consolidation or edema.", troponin=18),
+    "Beta-blocker poisoning with bradycardia and impaired contractility",
+    ["Profound bradycardia with a normal glucose and a normal potassium",
+     "an empty propranolol pack in the history", "cold peripheries with a slow, regular rhythm"],
+    "Recognise the poisoning behind the rate, give the antidote this blockade answers to rather than the one the last case answered to, and ask for help.",
+    ["What separated this poisoning from the other drugs that slow a heart?",
+     "What did the response to each thing you gave tell you?"],
+    ["glucagon", "calcium", "consult"],
+    visual=_visual(shock=True),
+    history_source="Partner",
+    bradycardia={"cause": "bb", "block": False, "av_block_location": "infranodal",
+                 "escape_rate": 40, "target_rate": 72}))
+
+# The potassium is not on the monitor and it is not in the arrival tray. What
+# is on the monitor is a rate that falls and a complex that widens together,
+# and the calcium is given on that (faculty decision 2026-09-23).
+_o = _observable(84, 50, 38, 96, 18, crt=4, extremities="Cool", temperature=36.6,
+                 glucose=118, perfusion="impaired")
+_o["qrs_ms"] = 180
+FAMILIES["bradycardia"]["variants"].append(_case(
+    "bradycardia_hyperk_63m", "bradycardia", 63, "male",
+    ["end-stage kidney disease on haemodialysis", "type 2 diabetes"],
+    "A 63-year-old man on dialysis arrives weak and nauseated after missing sessions. He is cold, slow and short of breath on minimal effort.",
+    _history("I have felt weak and sick and my legs will not hold me.",
+        ["I have been short of breath climbing the stairs since yesterday.",
+         "My hands and feet feel numb and tingling."],
+        "I am on dialysis three times a week for kidney failure, and I have diabetes.",
+        "I take calcium carbonate with meals, insulin, and a tablet for blood pressure. "
+        "I was started on spironolactone a month ago.",
+        "The weakness began two days ago and is worse today.",
+        "I missed my last two dialysis sessions because the transport did not come.",
+        oral_intake="I have eaten and drunk as usual, including fruit and potatoes.",
+        urinary_symptoms="I pass almost no urine; that has been true for years.",
+        breathing="The breathlessness is on effort, not at rest, and it is new since yesterday.",
+        chest_pain="I have no chest pain.",
+        neurological_symptoms="The numbness in my hands and feet is new and there has been no weakness on one side."),
+    {"Cardiac": "Very slow regular pulse; peripheries cool with delayed refill.",
+     "Respiratory": "Slightly increased rate with clear breath sounds; no crackles.",
+     "Abdomen": "Soft and non-tender; no bladder palpable.",
+     "General appearance": "Pale and unwell with a dialysis fistula in the left forearm.",
+     "Neurological": "Awake and oriented; reduced power in both legs with reduced reflexes."}, _o,
+    _investigations(_o, lactate=2.4, hemoglobin=9.8, wbc=7.2, creatinine=8.4, bun=94,
+        abg=(7.24, 30, 86), vbg=(7.21, 36), potassium=7.6, sodium=133,
+        pocus=POCUS["bradycardia"][0],
+        chest_xray="Clear lung fields; no consolidation or pulmonary edema.", troponin=42),
+    "Severe hyperkalaemia with a broad-complex bradycardia in missed dialysis",
+    ["A broad complex that widens as the rate falls",
+     "missed dialysis with a potassium-retaining drug", "no drug in the history that slows a heart"],
+    "Suspect the potassium from the tracing and give calcium on that suspicion, before the result; then shift it and arrange the treatment that removes it.",
+    ["What on the tracing made you act before the laboratory came back?",
+     "What did the calcium change, and what did it not?"],
+    ["calcium", "bronchodilator", "consult"],
+    visual=_visual(shock=True),
+    bradycardia={"cause": "hyperk", "block": False, "av_block_location": "infranodal",
+                 "potassium": 7.6, "well_rate": 72, "escape_rate": 38, "target_rate": 72}))
+
+
+# TRAUMA: two mechanisms, one at a time. Faculty decision 2.1 of 2026-09-23:
+# not combined, because a combined case makes it impossible to say which
+# omission the patient answered for, and the rubric has to be able to say it.
+_o = _observable(96, 54, 132, 97, 26, crt=4, extremities="Cool", temperature=36.1,
+                 glucose=128, perfusion="impaired", pain_score=8)
+FAMILIES["trauma"]["variants"].append(_case(
+    "trauma_limb_hemorrhage_27m", "trauma", 27, "male", [],
+    "A 27-year-old man arrives by ambulance after a machinery injury to the right thigh. A soaked dressing is in place and blood is running off the trolley.",
+    _history("My leg is bleeding and I feel like I am going to pass out.",
+        ["The dressing they put on has not stopped it.",
+         "I feel cold and my hands are shaking."],
+        "I have no medical problems and I take nothing.",
+        "I take no medication and no blood thinner.",
+        "The injury was about twenty minutes ago at work.",
+        "There was no fall from height, no vehicle and no head strike; the machine caught the thigh.",
+        bleeding="It has been bleeding steadily since it happened and the dressing is soaked through.",
+        neurological_symptoms="He did not lose consciousness and has no neck pain.",
+        breathing="His breathing is fast but he is not short of breath.",
+        chest_pain="There is no chest or abdominal pain.",
+        exposure="No other wound has been found and he was fully exposed in the ambulance."),
+    {"Cardiac": "Fast, thready pulse; peripheries cold with delayed capillary refill.",
+     "Respiratory": "Increased rate with equal air entry and no chest wall injury.",
+     "Abdomen": "Soft and non-tender; the pelvis is stable to gentle assessment.",
+     "General appearance": "Pale, cold and sweating; a soaked dressing over a deep right thigh wound that is bleeding.",
+     "Neurological": "Fully alert and oriented; moves all limbs."}, _o,
+    _investigations(_o, lactate=4.4, hemoglobin=10.2, wbc=14.2, creatinine=1.0,
+        abg=(7.28, 30, 94), vbg=(7.25, 37),
+        pocus=POCUS["trauma"][0],
+        chest_xray="No pneumothorax, haemothorax or mediastinal widening.", troponin=6,
+        efast=_efast(),
+        pelvis_xray="No pelvic fracture and no diastasis of the symphysis or the sacroiliac joints."),
+    "Exsanguinating external haemorrhage from a penetrating thigh injury",
+    ["Ongoing external bleeding through a dressing",
+     "cold peripheries with a thready tachycardia", "no other source on examination or imaging"],
+    "Stop the bleeding before anything else: the x of xABCDE is first because every minute spent elsewhere is measured in blood.",
+    ["What did you do first, and why that?",
+     "How much blood do you estimate he lost while you were doing the rest?"],
+    ["hemorrhage_control", "blood", "tranexamic_acid"],
+    visual=_visual(shock=True, sweating="marked"),
+    trauma={"sources": {"external": 1.0}, "arrival_deficit": .14}))
+
+# The haemothorax, as the faculty redefined it on 2026-09-23: not a volume but
+# an instability, and a sequence -- drain, look again, and when there is nowhere
+# else to look, theatre.
+_o = _observable(88, 50, 126, 91, 28, wob="Increased", crt=4, extremities="Cool",
+                 temperature=36.3, glucose=134, perfusion="impaired", pain_score=7)
+FAMILIES["trauma"]["variants"].append(_case(
+    "trauma_hemothorax_41m", "trauma", 41, "male", [],
+    "A 41-year-old man arrives after a high-speed collision. He is pale and breathing hard, with reduced air entry on the left.",
+    _history("I cannot get a proper breath and my left side hurts when I try.",
+        ["The seatbelt caught me across the chest.",
+         "I feel dizzy when they sit me up."],
+        "I have no medical problems and take no medication.",
+        "I take nothing, including no blood thinner.",
+        "The collision was about twenty-five minutes ago.",
+        "He was the restrained driver in a head-on collision at speed; the airbag deployed.",
+        bleeding="There is no external bleeding anywhere that has been found.",
+        breathing="The breathlessness began immediately and is worse lying flat.",
+        chest_pain="The pain is across the left chest and worse with breathing.",
+        neurological_symptoms="He did not lose consciousness and has no neck pain or limb weakness.",
+        exposure="He was fully exposed; there is bruising across the chest and abdomen from the belt."),
+    {"Cardiac": "Fast, thready pulse; peripheries cold; heart sounds heard without a rub.",
+     "Respiratory": "Increased effort with markedly reduced air entry and dullness at the left base.",
+     "Abdomen": "Seatbelt bruising with mild generalised tenderness; the pelvis is stable.",
+     "General appearance": "Pale and cold with seatbelt marking across the chest and abdomen.",
+     "Neurological": "Alert and oriented; moves all limbs."}, _o,
+    _investigations(_o, lactate=4.8, hemoglobin=9.4, wbc=16.1, creatinine=1.1,
+        abg=(7.27, 33, 66), vbg=(7.24, 41),
+        pocus=POCUS["trauma"][1],
+        chest_xray="Dense opacification of the left hemithorax with a meniscus and loss of the "
+                   "left hemidiaphragm outline; the mediastinum is not shifted; no pneumothorax.",
+        troponin=22,
+        efast=_efast(luq_pleural="Fluid in the left pleural recess",
+                     luq_subdiaphragmatic="No free fluid above the spleen"),
+        pelvis_xray="No pelvic fracture and no diastasis of the symphysis or the sacroiliac joints."),
+    "Massive haemothorax with continuing intrathoracic haemorrhage",
+    ["Reduced air entry and dullness with shock", "fluid in the left pleural recess on the E-FAST",
+     "no external source and no abdominal or pelvic source demonstrated"],
+    "Drain the chest, and when the patient is still unstable afterwards, look again for another site before concluding that the chest is still the source and that the treatment is an operating theatre.",
+    ["After the drain, what told you the bleeding had not stopped?",
+     "Where did you look next, and what did that exclude?"],
+    ["chest_decompression", "blood", "consult"],
+    visual=_visual(shock=True, sweating="mild"),
+    trauma={"sources": {"thoracic": 1.0}, "arrival_deficit": .16,
+            "thoracic_side": "left", "thoracic_collection": .24}))
+
+
 _COLLATERAL_SOURCES = {
     "pneumonia_83m": "Daughter",
     "asthma_49m": "Partner",
@@ -1330,6 +1524,7 @@ _COLLATERAL_SOURCES = {
     "anaphylaxis_63m_betablocked": "Wife",
     "bradycardia_ccb_68m": "Daughter",
     "bradycardia_avb3_78f": "Son",
+    "bradycardia_bb_54f": "Partner",
 }
 _HANDOVER_CONTEXT = {
     "pneumonia_83m": "The referral note suggests possible dehydration after poor intake; no diagnosis has been established.",

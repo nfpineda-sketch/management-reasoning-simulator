@@ -83,6 +83,20 @@ def _bump(t, center, halfwidth):
     return .5 * (1 + math.cos(math.pi * x)) if abs(x) < 1 else 0.0
 
 
+def _qrs_override(observable):
+    """The QRS width a case declares, in seconds, or None.
+
+    Written by the engine onto the observable as milliseconds, because that is
+    how it is read and reported at the bedside.
+    """
+    value = (observable or {}).get("qrs_ms")
+    try:
+        width = float(value)
+    except (TypeError, ValueError):
+        return None
+    return width / 1000 if 60 <= width <= 400 else None
+
+
 def _plateau(t, onset, end):
     if t <= onset or t >= end:
         return 0.0
@@ -90,9 +104,22 @@ def _plateau(t, onset, end):
     return min(1.0, (t - onset) / ramp, (end - t) / .06)
 
 
-def _parameters(rate, rhythm, profile):
+#: The widest QRS this waveform model will draw, in seconds. Beyond this the
+#: complex stops being a complex, which is the point the sine wave of a severe
+#: hyperkalaemia is heading towards and which this model does not attempt.
+QRS_MAX_S = .200
+
+
+def _parameters(rate, rhythm, profile, qrs_s=None):
     rr = 60 / rate if rate else 1
     qrs = .150 if rhythm == "vt" else .090
+    # A case may widen the complex. Faculty decision 2026-09-23: in a severe
+    # hyperkalaemia the sicker the patient the slower the rate and the wider the
+    # QRS, and the resident has to read that off the tracing before the
+    # potassium comes back. The width is an authored observable, never an
+    # inference this module makes from a number.
+    if qrs_s is not None:
+        qrs = max(qrs, min(QRS_MAX_S, float(qrs_s)))
     # Rate adaptation is illustrative. It does not model drug/electrolyte QT effects.
     qt = max(qrs + .12, min(.48, .39 * rr ** (1 / 3)))
     pr = max(.120, min(.180, .16 * rr ** .12)) if rhythm == "sinus" else None
@@ -161,8 +188,9 @@ def _coefficients(profile, axis, rhythm):
     return c
 
 
-def _signals(rate, rhythm, profile, seed, duration=DURATION_SECONDS, sample_hz=SAMPLE_HZ):
-    pars = _parameters(rate, rhythm, profile)
+def _signals(rate, rhythm, profile, seed, duration=DURATION_SECONDS, sample_hz=SAMPLE_HZ,
+             qrs_s=None):
+    pars = _parameters(rate, rhythm, profile, qrs_s)
     coeffs = _coefficients(profile, pars["axis_deg"], rhythm)
     times = _beat_times(rate, rhythm, duration, seed)
     # Complete block has an independent atrial clock (AV dissociation).
@@ -232,12 +260,14 @@ def acquire_ecg(state):
             raise ValueError("This morphology/rhythm combination has not been implemented.")
         # Seed is fixed per encounter: repeat recordings at the same state agree.
         seed = int(state.get("seed") or state.get("encounter_spec", {}).get("seed") or 0)
-        pars = _parameters(rate, rhythm, profile)
+        qrs_s = _qrs_override(observable)
+        pars = _parameters(rate, rhythm, profile, qrs_s)
         snapshot.update({"status": "available", "profile": profile, "rhythm": rhythm,
-                         "heart_rate": rate, "seed": seed,
+                         "heart_rate": rate, "seed": seed, "qrs_s": pars["qrs_s"],
                          "parameters": pars, "pulse_present": observable.get("pulse_present", True)})
         # This is provenance, not an automated diagnostic interpretation.
         digest_input = {"rate": rate, "rhythm": rhythm, "profile": profile, "seed": seed,
+                        "qrs": round(pars["qrs_s"], 4),
                         "time": snapshot["acquired_at_minutes"], "version": MODEL_VERSION}
         snapshot["recording_id"] = hashlib.sha256(json.dumps(digest_input, sort_keys=True).encode()).hexdigest()[:16]
     except (TypeError, ValueError, OverflowError) as error:
@@ -253,7 +283,8 @@ def ecg_signals(snapshot):
         raise ValueError("This recording requires its original waveform model version.")
     signals, _, _ = _signals(snapshot["heart_rate"], snapshot["rhythm"],
                              snapshot["profile"], snapshot["seed"],
-                             snapshot["duration_seconds"], snapshot["sample_hz"])
+                             snapshot["duration_seconds"], snapshot["sample_hz"],
+                             snapshot.get("qrs_s"))
     return signals
 
 
@@ -322,7 +353,8 @@ def monitor_wave_svg(observable, profile="baseline", seed=0):
             raise ValueError("Morphology unavailable")
         if rhythm in ("vt", "vf", "asystole") and profile != "baseline":
             raise ValueError("Morphology/rhythm combination unavailable")
-        signals, _, _ = _signals(rate, rhythm, profile, int(seed), duration=4, sample_hz=250)
+        signals, _, _ = _signals(rate, rhythm, profile, int(seed), duration=4, sample_hz=250,
+                                 qrs_s=_qrs_override(observable))
         path = _path(signals["II"], 0, 4, 250, 10, 80, 145, 42)
         return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 132" role="img" aria-label="Bedside lead II monitor"><rect width="600" height="132" fill="#08131b"/><text x="12" y="22" fill="#71ef9b" font-size="16" font-family="monospace">II</text><path d="' + path + '" fill="none" stroke="#71ef9b" stroke-width="1.8" stroke-linejoin="round"/><style>@keyframes mrs-ecg-sweep {from {transform:translateX(0)} to {transform:translateX(632px)}} .mrs-ecg-sweep {animation:mrs-ecg-sweep 4s linear infinite} @media (prefers-reduced-motion:reduce) {.mrs-ecg-sweep {display:none}}</style><g class="mrs-ecg-sweep"><rect x="-32" y="28" width="24" height="101" fill="#08131b"/><path d="M-8 28v101" stroke="#71ef9b" stroke-opacity=".20" stroke-width="1"/></g></svg>'
     except (ValueError, TypeError, OverflowError):

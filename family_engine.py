@@ -20,6 +20,7 @@ import airway_pharmacology
 import anaphylaxis_reaction
 import antipyretics
 import bradycardia_toxicology
+import trauma_hemorrhage
 import pe_obstruction
 import re
 import urine_output
@@ -28,7 +29,7 @@ import work_of_breathing
 FAMILY_ENGINE_VERSION = 1
 FAMILIES = frozenset({"pneumonia", "pulmonary_edema", "acs", "pulmonary_embolism", "asthma",
                       "gi_bleed", "hypoglycemia", "opioid", "anaphylaxis", "renal_colic",
-                      "bradycardia"})
+                      "bradycardia", "trauma"})
 _ROUTES = {"iv": "IV", "intravenous": "IV", "io": "IO", "intraosseous": "IO", "im": "IM", "intramuscular": "IM", "po": "PO", "oral": "PO", "in": "IN", "intranasal": "IN", "nebulized": "nebulized", "nebulised": "nebulized", "inhaled": "inhaled", "sc": "SC", "subcutaneous": "SC"}
 _DEVICES = {"none": "Room air", "room air": "Room air", "nasal cannula": "Nasal cannula", "nc": "Nasal cannula", "non-rebreather mask": "Non-rebreather mask", "non rebreather mask": "Non-rebreather mask", "nrb": "Non-rebreather mask", "non-rebreather": "Non-rebreather mask", "simple mask": "Simple mask"}
 # Reference exposures are authored adult teaching-model scales, not prescribing
@@ -487,6 +488,15 @@ def _validate(state, parsed):
                     return None, "Specify CPAP or BiPAP."
                 if a["mode"].lower() == "bipap" and (not _number(a.get("ipap_cmh2o"), a["epap_cmh2o"], 35)):
                     return None, "Specify an inspiratory pressure at least as high as expiratory pressure."
+        elif kind == "hemorrhage_control":
+            if str(a.get("measure") or "") not in {"tourniquet", "direct pressure", "packing"}:
+                return None, "Specify a tourniquet, direct pressure or wound packing."
+        elif kind == "tranexamic_acid":
+            if a.get("dose_g") is None:
+                a["dose_g"] = 1.0
+            if not _number(a.get("dose_g"), .5, 4):
+                return None, "Specify a tranexamic acid dose from 0.5 to 4 g."
+            a["route"] = str(a.get("route") or "IV").upper()
         elif kind == "epinephrine_im":
             # The adult anaphylaxis dose is 0.5 mg; 0.15 and 0.3 are the
             # autoinjector strengths. The range is wide enough to let a
@@ -550,7 +560,8 @@ def _validate(state, parsed):
                 return None, "A stress test is not an executable study in this encounter."
         elif kind == "chest_decompression":
             import generated_airway
-            if validation_state.get("engine_family") != "asthma" and generated_airway.spec(validation_state) is None:
+            if (validation_state.get("engine_family") not in {"asthma", "trauma"}
+                    and generated_airway.spec(validation_state) is None):
                 return None, "Chest decompression is not an executable intervention in this encounter."
             if str(a.get("side")) not in {"left", "right"}:
                 return None, "Specify which side of the chest to decompress."
@@ -953,6 +964,37 @@ def _order(state, a):
                                            + (" (assumed; titrate as needed)" if a.get("fio2_assumed") else "")
                                            if f["niv"] else "")
         duration = 3
+    elif kind == "hemorrhage_control":
+        import trauma_hemorrhage
+        measure, site = a["measure"], a.get("site", "wound")
+        # A tourniquet stops an arterial limb source; pressure and packing hold
+        # a compressible one. The engine prices what the measure can do, and
+        # the case declares which source it is being applied to.
+        source = "external"
+        if source in trauma_hemorrhage.sources(state):
+            achieved = 1.0 if measure == "tourniquet" else .75
+            trauma_hemorrhage.control(f, source, achieved)
+            label = f"{measure.capitalize()} applied to the {site}: the external bleeding is controlled"
+        else:
+            label = f"{measure.capitalize()} applied to the {site}: there is no external source bleeding here"
+        tr["hemorrhage_control"] = measure
+        duration = 2
+    elif kind == "pelvic_binder":
+        import trauma_hemorrhage
+        if "pelvic" in trauma_hemorrhage.sources(state):
+            trauma_hemorrhage.control(f, "pelvic", 1.0)
+            label = "Pelvic binder applied at the greater trochanters; the pelvic volume is reduced"
+        else:
+            label = "Pelvic binder applied at the greater trochanters"
+        tr["pelvic_binder"] = True
+        duration = 3
+    elif kind == "tranexamic_acid":
+        f["txa_at"] = f["elapsed"]
+        tr.setdefault("administered_medications", []).append(
+            {"agent": "tranexamic acid", "dose_g": a["dose_g"], "route": a["route"],
+             "time_min": int(state.get("sim_time", 0))})
+        label = f"Tranexamic acid {a['dose_g']:g} g {a['route']} administered"
+        duration = 2
     elif kind == "epinephrine_im":
         # The muscle holds it and gives it back over minutes. Which is the
         # point of the order, and the reason the engine keeps the route.
@@ -1173,7 +1215,32 @@ def _order(state, a):
         duration = 10
     elif kind == "chest_decompression":
         side, device = a["side"], a.get("device", "needle")
-        if f.get("pneumothorax_at") is None:
+        if state.get("engine_family") == "trauma":
+            import trauma_hemorrhage
+            declared = _case(state).get("engine", {}).get("trauma", {}).get("thoracic_side", "left")
+            if "thoracic" not in trauma_hemorrhage.sources(state):
+                label = (f"{device.capitalize()} decompression of the {side} chest: "
+                         "nothing was released and no blood drained")
+            elif side != declared:
+                label = (f"{device.capitalize()} decompression of the {side} chest: "
+                         "the collection is on the other side")
+            elif device != "chest tube":
+                # A needle does not drain a haemothorax, and saying so is the
+                # difference between decompressing air and draining blood.
+                label = (f"Needle decompression of the {side} chest: no air under tension was "
+                         "released. A haemothorax is drained with a tube, not a needle")
+            else:
+                trauma_hemorrhage.control(f, "thoracic", 1.0)
+                f["thoracostomy_at"] = f["elapsed"]
+                drained = round(trauma_hemorrhage.BLOOD_VOLUME_ML
+                                * float(_case(state).get("engine", {}).get("trauma", {})
+                                        .get("thoracic_collection", .22)))
+                f["thoracic_drained_ml"] = drained
+                tr["chest_tube_drained_ml"] = drained
+                label = (f"Chest tube in the {side} chest: {drained:g} mL of blood drained "
+                         "immediately and it continues to fill")
+            duration = 5
+        elif f.get("pneumothorax_at") is None:
             label = f"{device.capitalize()} decompression of the {side} chest: no air under tension was released"
         elif side != f.get("pneumothorax_side"):
             label = f"{device.capitalize()} decompression of the {side} chest: the pneumothorax is on the other side"
@@ -1451,6 +1518,11 @@ def _minute(state):
         f["hemoglobin"] -= fluid * g["hemodilution_g_dl_per_ml"]
     elif family in {"pneumonia", "renal_colic"}:
         f["circulation"] -= fluid * .00025 + blood * .36
+    elif family == "trauma":
+        # Nothing here: trauma_hemorrhage reads the delivered totals directly,
+        # so that blood and crystalloid are priced differently against a deficit
+        # rather than both being a number subtracted from circulation.
+        pass
     elif family == "anaphylaxis":
         # Volume is part of the treatment of a distributive shock, and it is not
         # the whole of it: it buys pressure and does nothing to the reaction.
@@ -1499,11 +1571,18 @@ def _minute(state):
         bleeding = _gi_bleeding_fraction(f)
         f["circulation"] += (.003 + .002 * f["anticoagulant_exposure"]) * bleeding
         f["hemoglobin"] -= (.009 + .006 * f["anticoagulant_exposure"]) * bleeding
+    elif family == "trauma":
+        event = trauma_hemorrhage.step(f, state)
+        if event:
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
+
     elif family == "bradycardia":
-        # No drift: the poisoning is on board and the block is where it is. What
-        # changes the rate is what the resident gives, which is the whole point
-        # of a family where doing nothing looks stable and is not.
-        pass
+        # No drift from a poisoning or a block: what is on board is on board,
+        # and what changes the rate is what the resident gives. A potassium is
+        # the exception, because what was given shifts it and the shift wears
+        # off (faculty decision 2026-09-23).
+        bradycardia_toxicology.step_potassium(f, state)
 
     elif family == "renal_colic":
         # Two courses from one presentation. An uncomplicated colic does not
@@ -1760,12 +1839,37 @@ def _surface(state):
         # nebulization peaks lower, and the old .4 threshold left them drowsy at 97%.
         if obstruction < .6 and spo2 + oxygen_gain >= 90:
             mental = "Alert"
+    elif family == "trauma":
+        # The deficit, as a difference from what the patient arrived with. A
+        # resident who controls the source in the first minutes never sees most
+        # of this; one who intubates first pays for the minutes in pressure.
+        f.setdefault("arrival_deficit", float(
+            _case(state).get("engine", {}).get("trauma", {}).get("arrival_deficit", 0.0)))
+        moved = trauma_hemorrhage.observables(f)
+        sbp -= moved["sbp_drop"]
+        dbp -= moved["sbp_drop"] * .55
+        hr += moved["hr_rise"]
+        if sbp < 80:
+            mental = "Drowsy"
+        if sbp < 65:
+            mental = "Obtunded"
+
     elif family == "bradycardia":
         import bradycardia_support
         which = bradycardia_toxicology.cause(state)
         brady = _case(state).get("engine", {}).get("bradycardia", {}) or {}
         escape = float(brady.get("escape_rate", base.get("hr", 40)))
         antidote_beats, antidote_sbp = bradycardia_toxicology.antidote_gain(f, which)
+        # A potassium is not a fixed escape rate: the rate it leaves and the
+        # width of the complex move together, and the calcium holds both off
+        # without lowering the potassium itself.
+        if which == "hyperk":
+            protection = bradycardia_toxicology.membrane_protection(f)
+            potassium = float(f.get("potassium", brady.get("potassium", 7.4)))
+            escape = float(brady.get("well_rate", 72)) - bradycardia_toxicology.potassium_rate_loss(
+                potassium, protection)
+            o["qrs_ms"] = round(bradycardia_toxicology.qrs_ms(potassium, protection))
+            antidote_beats = 0.0   # already priced through the membrane protection
         # Atropine answers a nodal block and nothing else, which is what the
         # existing module already knows; the declaration travels with the case.
         rate = bradycardia_support.effective_rate(f, brady, escape) + antidote_beats

@@ -20,7 +20,7 @@ class ClinicalCaseBankTests(unittest.TestCase):
     EXPECTED_VARIANTS = {
         "pneumonia": 2, "pulmonary_edema": 2, "acs": 6, "pulmonary_embolism": 2,
         "asthma": 2, "gi_bleed": 2, "hypoglycemia": 3, "opioid": 2,
-        "anaphylaxis": 2, "renal_colic": 2, "bradycardia": 2,
+        "anaphylaxis": 2, "renal_colic": 2, "bradycardia": 4, "trauma": 2,
     }
 
     def test_every_clinical_family_has_distinct_complete_variants(self):
