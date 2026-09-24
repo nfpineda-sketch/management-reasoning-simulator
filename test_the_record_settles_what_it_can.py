@@ -13,10 +13,6 @@
 Every encounter here is played through the production interpreter and engine
 with the provider key withheld. Nothing opens a socket.
 """
-import os
-
-os.environ.setdefault("MRS_OFFLINE_CASES", "1")
-
 import pytest
 
 import rubric
@@ -117,11 +113,13 @@ def test_the_record_contradicts_the_opioid_omission_when_support_was_given(venti
     row = screen["opioid_no_ventilatory_support"]
     assert row["status"] == "contradicted"
     text = " ".join(fact["en"] for fact in row["facts"])
-    assert "bag-mask ventilation executed at 0 min (D1)" in text
-    assert "naloxone executed at 5 min (D2)" in text
+    assert text == ("Executed inside the window 0-20 min: bag-mask ventilation at 0 min (D1); "
+                    "naloxone at 5 min (D2).")
     assert row["refs"] == ["trace:0", "trace:1"]
     # The same facts in the reviewer's language.
-    assert "naloxona ejecutado a los 5 min (D2)" in " ".join(f["es"] for f in row["facts"])
+    assert " ".join(f["es"] for f in row["facts"]) == (
+        "Ejecutado dentro de la ventana 0-20 min: ventilación con bolsa-mascarilla a los 0 min (D1); "
+        "naloxona a los 5 min (D2).")
 
 
 def test_encounter_7_as_it_was_proposed_is_flagged_twice(ventilated_and_reversed):

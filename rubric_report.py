@@ -210,7 +210,15 @@ def _flag_block(assessment, styles, language):
     flow = [Paragraph(_xml("REVISAR ANTES DE DECIDIR · LA PROPUESTA Y EL REGISTRO NO COINCIDEN"
                            if language == "es" else
                            "CHECK BEFORE DECIDING - THE PROPOSAL AND THE RECORD DISAGREE"),
-                      styles["eyebrow"])]
+                      styles["eyebrow"]),
+            # Said before the marks rather than after them, so the note is never
+            # left alone at the top of the next page.
+            Paragraph(_xml(
+                "Estas marcas no cambian ninguna propuesta ni ninguna decisión: señalan lo que el "
+                "registro verifica por sí mismo, para que usted lo lea antes de confirmar."
+                if language == "es" else
+                "These marks change no proposal and no decision: they point to what the record "
+                "settles on its own, for you to read before confirming."), styles["small"])]
     for flag in flags:
         subject = flag.get("event_id") or (("Dominio " if language == "es" else "Domain ")
                                             + str(flag.get("domain_id", ""))[1:])
@@ -224,11 +232,6 @@ def _flag_block(assessment, styles, language):
             flow.append(Paragraph(_xml((
                 "Veredicto de la IA: " if language == "es" else "The AI's verdict: ")
                 + (flag.get("model_verdict") or "") + " - " + flag["model_reason"]), styles["quote"]))
-    flow.append(Paragraph(_xml(
-        "Estas marcas no cambian ninguna propuesta ni ninguna decisión: señalan lo que el registro "
-        "verifica por sí mismo, para que usted lo lea antes de confirmar." if language == "es" else
-        "These marks change no proposal and no decision: they point to what the record settles on "
-        "its own, for you to read before confirming."), styles["small"]))
     return flow
 
 

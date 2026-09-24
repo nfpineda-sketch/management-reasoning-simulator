@@ -17,7 +17,12 @@ record is being built.
 import os
 import sys
 
-os.environ.setdefault("MRS_OFFLINE_CASES", "1")
+# Run as a script, the key is withheld at every resolver before anything else
+# is imported. Imported by a test or another tool, the importer decides: a
+# module that set this on import leaked it into every later test of the same
+# process (found 2026-09-24, fourteen unrelated failures).
+if __name__ == "__main__":
+    os.environ.setdefault("MRS_OFFLINE_CASES", "1")
 
 import argparse
 import json

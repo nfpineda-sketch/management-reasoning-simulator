@@ -480,6 +480,15 @@ def _history_section(payload, p, styles):
     return story
 
 
+def _raw_event(payload, ref):
+    """The stored trace entry a timeline row was built from."""
+    match = re.fullmatch(r"trace:(\d+)", str(ref or ""))
+    trace = (payload or {}).get("trace") or []
+    if match and int(match.group(1)) < len(trace) and isinstance(trace[int(match.group(1))], dict):
+        return trace[int(match.group(1))]
+    return {}
+
+
 def render_management_trace_pdf(
     report, payload, *, case_label="", learner_label="", review_completed=False,
     adaptation_plan=None, corrections=None,
@@ -506,7 +515,10 @@ def render_management_trace_pdf(
     # is untouched; what was corrected is listed with the metadata.
     import report_corrections
     correct = presentation.CorrectionLog(
-        corrections if corrections is not None else report_corrections.for_payload(payload))
+        corrections if corrections is not None else report_corrections.for_payload(payload),
+        references=presentation.reference_labels(payload.get("trace") or [],
+                                                 payload.get("encounter_events") or []),
+        language="en")
     _fonts()
     styles = _styles()
     output = BytesIO()
@@ -536,7 +548,14 @@ def render_management_trace_pdf(
         """A reference a reader can follow: what it is and when, not its id."""
         if ref in index:
             event = index[ref]
-            label = f"D{event['decision_number']}" if event.get("decision_number") is not None else "Non-executed entry"
+            if event.get("decision_number") is not None:
+                label = f"D{event['decision_number']}"
+            elif event.get("execution_status") == "information":
+                # A question or an examination is information obtained, not
+                # an order that failed (2026-09-24).
+                label = _t("Information obtained")
+            else:
+                label = _t("Non-executed entry")
             return f"{label} at {_time(event.get('decision_time_min'))}"
         if ref in encounter_index:
             event = encounter_index[ref]
@@ -760,14 +779,20 @@ def render_management_trace_pdf(
         import reasoning_provenance
         provenance = event.get("reasoning_provenance") or {}
         carried_from = event.get("interpretation_carried_from") or {}
+        # The number is resolved from the stored trace, not from the source:
+        # the source is fingerprinted, and older records wrote a position.
+        raw_event = _raw_event(payload, event.get("source_ref"))
+        raw_carried = ((raw_event.get("reasoning") or {}).get("carried_from")
+                       if isinstance(raw_event.get("reasoning"), dict) else None) or carried_from
 
         def _origin(key):
             source = provenance.get(key) or (reasoning_provenance.COMPOSED if key in composed else "")
             if not source:
                 return ""
-            if source == reasoning_provenance.CARRIED and carried_from.get("decision"):
+            stated_in = presentation.carried_decision(raw_carried, payload.get("trace") or [])
+            if source == reasoning_provenance.CARRIED and stated_in:
                 note = _t("stated earlier, in decision {n} at {minute:g} min").format(
-                    n=carried_from["decision"], minute=carried_from.get("minute") or 0)
+                    n=stated_in, minute=carried_from.get("minute") or 0)
             else:
                 note = _t(reasoning_provenance.LABELS[source])
             return f' <font size="8" color="#607482">({_xml(note)})</font>'

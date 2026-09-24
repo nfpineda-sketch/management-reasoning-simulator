@@ -100,8 +100,11 @@ def test_brief_pdf_preserves_user_text_provenance_and_distinct_recommendations()
     assert "SYNTHETIC DESIGN EXAMPLE" in text
     assert "Mantendré" in text and "SpO2 > 94%" in text
     assert "<b>Literal learner text</b> & reasoning." in " ".join(text.split())
-    assert "Decision 1 | 00:46 [trace:0]" in text
-    assert "Reflection 1 | Post-encounter reflection [reflection:1]" in text
+    assert "Decision 1 | 00:46" in text
+    # The stored identifier stays in the record, not on the page (2026-09-24).
+    assert "[trace:0]" not in text
+    assert "Reflection 1 | Post-encounter reflection" in text
+    assert "[reflection:1]" not in text
     assert "Not assessed in this encounter" in text
     assert "Needs faculty judgment" in text
     assert "Guided - structured help directed the reasoning (faculty-reported)." in text

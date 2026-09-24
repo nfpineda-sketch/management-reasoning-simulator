@@ -230,7 +230,18 @@ def _where(row):
 
 def _label(row, language):
     """The kind of order, and the agent when the record names one."""
-    agent = str((row.get("action") or {}).get("agent") or "").strip()
+    action = row.get("action") or {}
+    if row["type"] == "disposition":
+        destination = str(action.get("destination") or "").strip()
+        if destination.lower() in ("home", "discharge"):
+            return "un alta a domicilio" if language == "es" else "a discharge home"
+        if destination:
+            return (f"un traslado u hospitalización ({destination})" if language == "es"
+                    else f"an admission or transfer ({destination})")
+    if row["type"] == "consult" and action.get("service"):
+        return (f"una interconsulta ({action['service']})" if language == "es"
+                else f"a consultation ({action['service']})")
+    agent = str(action.get("agent") or "").strip()
     name = _name(row["type"], language)
     # The agent is said only when the kind is a class ("a bronchodilator
     # (albuterol)"); naloxone given as naloxone is said once.
@@ -251,13 +262,13 @@ def _distinct(rows):
 
 
 def _executed_fact(rows, window):
+    # Said as a list after a colon, so no participle has to agree with a noun
+    # it cannot see ("ventilación ... ejecutado").
     rows = _distinct(rows)
-    en = "; ".join(f"{_label(r, 'en')} executed at {_minutes(r['minute'])} min{_where(r)}"
-                   for r in rows)
-    es = "; ".join(f"{_label(r, 'es')} ejecutado a los {_minutes(r['minute'])} min{_where(r)}"
-                   for r in rows)
-    return _say(f"{en}, inside the window {window[0]}-{window[1]} min.",
-                f"{es}, dentro de la ventana {window[0]}-{window[1]} min.")
+    en = "; ".join(f"{_label(r, 'en')} at {_minutes(r['minute'])} min{_where(r)}" for r in rows)
+    es = "; ".join(f"{_label(r, 'es')} a los {_minutes(r['minute'])} min{_where(r)}" for r in rows)
+    return _say(f"Executed inside the window {window[0]}-{window[1]} min: {en}.",
+                f"Ejecutado dentro de la ventana {window[0]}-{window[1]} min: {es}.")
 
 
 def _absent_fact(kinds, window):
@@ -267,13 +278,18 @@ def _absent_fact(kinds, window):
                 f"Nada de esto se ejecutó entre los {window[0]} y los {window[1]} min: {es}.")
 
 
+_WITHHELD = {"clarification_required": ("held for a clarification", "retenido para una aclaración"),
+             "not_executed": ("not executed", "no ejecutado"),
+             "deferred": ("deferred", "diferido")}
+
+
 def _withheld_fact(rows):
     rows = _distinct(rows)
-    en = "; ".join(f"{_label(r, 'en')} written at {_minutes(r['minute'])} min but not executed "
-                   f"({r['status'].replace('_', ' ')})" for r in rows)
-    es = "; ".join(f"{_label(r, 'es')} escrito a los {_minutes(r['minute'])} min pero no ejecutado "
-                   f"({r['status'].replace('_', ' ')})" for r in rows)
-    return _say(en + ".", es + ".")
+    en = "; ".join(f"{_label(r, 'en')} at {_minutes(r['minute'])} min "
+                   f"({_WITHHELD.get(r['status'], (r['status'],) * 2)[0]})" for r in rows)
+    es = "; ".join(f"{_label(r, 'es')} a los {_minutes(r['minute'])} min "
+                   f"({_WITHHELD.get(r['status'], (r['status'],) * 2)[1]})" for r in rows)
+    return _say(f"Written but not executed: {en}.", f"Escrito pero no ejecutado: {es}.")
 
 
 def _closed_fact(closed):

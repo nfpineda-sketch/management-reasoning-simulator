@@ -63,7 +63,32 @@ def _current_report(context, record):
 
 
 def _reference_text(refs, labels):
-    return "; ".join(labels.get(ref, ref) + " (" + ref + ")" for ref in refs)
+    # What a reader follows is the decision and its time; the stored
+    # identifier stays in the record (2026-09-24).
+    return "; ".join(labels.get(ref, "Reference unavailable") for ref in refs)
+
+
+def _labels(record):
+    """"Decision 2 · 00:04" for every citable item, from the same map the documents use."""
+    import report_presentation
+    session = ((record.get("payload") or {}).get("session") or {})
+    resolved = report_presentation.reference_labels(session.get("management_trace") or [])
+    labels = {}
+    for item in evidence_items(record["payload"]):
+        at = (resolved.get(item["ref"]) or {}).get("en", "")
+        clock = at.split(" · ", 1)[1] if " · " in at else ""
+        labels[item["ref"]] = item["label"] + (" · " + clock if clock else "")
+    return labels
+
+
+def _prose(record):
+    """The model's words for a screen: recorded corrections, then identifiers resolved."""
+    import report_corrections, report_presentation
+    session = ((record.get("payload") or {}).get("session") or {})
+    return report_presentation.CorrectionLog(
+        report_corrections.for_record(record),
+        references=report_presentation.reference_labels(session.get("management_trace") or []),
+        language="en")
 
 
 def _public_app_url():
@@ -196,7 +221,7 @@ def render_faculty_analysis(context, record):
             proposal = RubricStore(context["store"]).latest_proposal(context["token"], record["id"])
         except AccountError:
             proposal = None
-        assessment = rubric_presentation.summary(saved_review, proposal)
+        assessment = rubric_presentation.summary(saved_review, proposal, record=record)
         _rubric_pdf_download(context, saved_review, proposal, record)
     try:
         record = _staff_record(context, record)
@@ -231,9 +256,8 @@ def render_faculty_analysis(context, record):
             analysis = report["analysis"]
             _pdf_download(context, report, record, compact=True, assessment=assessment)
             st.caption("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification.")
-            labels = {item["ref"]: item["label"] for item in evidence_items(record["payload"])}
-            import report_corrections, report_presentation
-            correct = report_presentation.CorrectionLog(report_corrections.for_record(record))
+            labels = _labels(record)
+            correct = _prose(record)
             # The same held state the PDFs show: a negative suggestion whose
             # basis the record cannot settle waits for the faculty's reading.
             limits = findings.encounter_limits(
@@ -249,28 +273,28 @@ def render_faculty_analysis(context, record):
             with st.expander("Read the analysis and debriefing questions"):
                 _pdf_download(context, report, record, compact=False, assessment=assessment)
                 st.markdown("**Performance synthesis**")
-                st.write(analysis["summary"])
+                st.write(correct(analysis["summary"]))
                 for title, values in (("Strengths", analysis["strengths"]),
                                       ("Points to review", analysis["review_points"])):
                     st.markdown("**" + title + "**")
                     for value in values:
-                        st.write(value)
+                        st.write(correct(value))
                 for decision in analysis["key_decisions"]:
                     st.caption(_reference_text(decision["evidence_refs"], labels))
-                    st.write(decision["analysis"])
-                    st.write("Discuss: " + decision["question"])
+                    st.write(correct(decision["analysis"]))
+                    st.write("Discuss: " + correct(decision["question"]))
                 st.markdown("**Reflection and adaptation**")
-                st.write(analysis["learning_cycle"])
+                st.write(correct(analysis["learning_cycle"]))
                 st.markdown("**Limits of this analysis**")
                 for value in analysis["limits"]:
-                    st.write(value)
+                    st.write(correct(value))
                 for suggestion in analysis["objectives"]:
                     st.markdown("**" + suggestion["objective_id"] + " · " + OBJECTIVES[suggestion["objective_id"]]["title"] + "**")
                     st.write(correct(suggestion["rationale"]))
                     st.caption(_reference_text(suggestion["evidence_refs"], labels))
-                    st.write(suggestion["feedback"])
+                    st.write(correct(suggestion["feedback"]))
                     for question in suggestion["questions"]:
-                        st.write("Discuss: " + question)
+                        st.write("Discuss: " + correct(question))
             st.caption("Select an objective below to load its suggestion as an editable draft. Only Record objective assessment saves your final judgment.")
     except (AccountError, FacultyAnalysisError) as exc:
         st.error(str(exc))
@@ -308,15 +332,17 @@ def render_suggestion_loader(context, record, objective_id, widget_prefix):
                     + ". No new rating was assigned and no recorded judgment was changed.")
         else:
             st.caption("AI draft: " + RECOMMENDATIONS[suggestion["recommendation"]])
-        import report_corrections, report_presentation
-        correct = report_presentation.CorrectionLog(report_corrections.for_record(record))
+        correct = _prose(record)
         st.write(correct(suggestion["rationale"]))
         if st.button("Load AI suggestion into editable form", key=widget_prefix + "_load_ai"):
+            # What is loaded becomes the faculty's draft, and a saved
+            # observation is read by the resident: it arrives with the
+            # identifiers already written as decisions.
             values = {
                 "decision": {"satisfactory": "Satisfactory", "needs_improvement": "Needs improvement"}.get(suggestion["recommendation"]),
                 "depth": suggestion["depth"], "autonomy": suggestion["autonomy"],
-                "context": suggestion["context"], "evidence": list(suggestion["evidence_refs"]),
-                "notes": suggestion["feedback"], "ack": False,
+                "context": correct(suggestion["context"]), "evidence": list(suggestion["evidence_refs"]),
+                "notes": correct(suggestion["feedback"]), "ack": False,
             }
             for field, value in values.items():
                 st.session_state[widget_prefix + "_" + field] = value

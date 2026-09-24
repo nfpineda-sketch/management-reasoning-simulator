@@ -7006,7 +7006,13 @@ def carried_reasoning(trace=None):
         found = {field: reasoning[field] for field in reasoning_provenance.CARRYABLE
                  if reasoning.get(field) and provenance.get(field) in firsthand}
         if found.get("problem_representation") or found.get("rationale"):
-            return {"reasoning": found, "decision": index + 1,
+            # The decision's own number among the decisions the resident made,
+            # not its stored position plus one: questions, examinations and
+            # held orders sit in the same list (2026-09-24). The position is
+            # kept too, so a reader can always resolve it again.
+            ordinal = sum(1 for earlier in events[:index + 1]
+                          if earlier.get("execution_status") in ("executed", "terminal_locked"))
+            return {"reasoning": found, "decision": ordinal, "trace_index": index,
                     "minute": event.get("decision_time_min")}
     return None
 
@@ -7031,6 +7037,7 @@ def apply_carried_reasoning(parsed, missing):
         provenance[field] = reasoning_provenance.CARRIED
     reasoning["slot_provenance"] = provenance
     reasoning["carried_from"] = {"decision": carried["decision"],
+                                 "trace_index": carried["trace_index"],
                                  "minute": carried["minute"]}
     return reasoning_gate_missing(parsed)
 

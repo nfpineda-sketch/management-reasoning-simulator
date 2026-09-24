@@ -62,6 +62,12 @@ def _study_key(action):
     return action.get("diagnostic") or action.get("diagnostic_type")
 
 
+def _ran(event):
+    """Whether a stored entry was executed. An entry with no status is an older
+    or hand-written one, and is read as the decision it has always been read as."""
+    return event.get("execution_status") in (None, "executed")
+
+
 def order_stages(trace):
     """Request, sample and report for every study, kept apart and paired.
 
@@ -71,6 +77,14 @@ def order_stages(trace):
     ``{"trace:i": {"requested": [...], "reported": [...], "awaiting": [...]}}``.
     """
     trace = [event for event in (trace or []) if isinstance(event, dict)]
+    # A decision is numbered by its place among the decisions the resident
+    # made. The stored position plus one is a different decision whenever a
+    # question, an examination or a held order came first (2026-09-24).
+    ordinal_of, count = {}, 0
+    for position, event in enumerate(trace):
+        if event.get("execution_status") in (None, "executed", "terminal_locked"):
+            count += 1
+            ordinal_of[position] = count
     reports = {}
     for position, event in enumerate(trace):
         for action in _executed(event):
@@ -78,9 +92,13 @@ def order_stages(trace):
             if key:
                 reports.setdefault(str(key), []).append((position, action))
     # Each request claims the next unclaimed report of its study, at or after
-    # the decision that asked for it.
+    # the decision that asked for it. Only an executed decision asked for
+    # anything: a refused or held submission ran nothing, and its copy of an
+    # order used to claim the result of the resubmission that did run.
     claimed, origin_of = {}, {}
     for position, event in enumerate(trace):
+        if not _ran(event):
+            continue
         for action in event.get("interpreted_action") or []:
             key = _study_key(action) if isinstance(action, dict) else None
             if not key:
@@ -102,7 +120,7 @@ def order_stages(trace):
     stages = {}
     for position, event in enumerate(trace):
         requested, reported, awaiting = [], [], []
-        for action in event.get("interpreted_action") or []:
+        for action in (event.get("interpreted_action") or [] if _ran(event) else []):
             key = _study_key(action) if isinstance(action, dict) else None
             if key:
                 requested.append(str(key))
@@ -113,7 +131,7 @@ def order_stages(trace):
                 result = action.get("result") if isinstance(action.get("result"), dict) else {}
                 origin = report_origin.get((key, index), position)
                 reported.append({
-                    "study": key, "requested_at_decision": origin + 1,
+                    "study": key, "requested_at_decision": ordinal_of.get(origin),
                     "requested_here": origin == position,
                     "sampled_at_min": _number(result.get("collected_at_min")),
                     "reported_at_min": _number(result.get("time_min")),

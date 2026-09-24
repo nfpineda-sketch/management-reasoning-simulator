@@ -141,6 +141,7 @@ def _render_flags(check):
 def _review_form(store, token, record, case_id, proposal, review, training_year=None):
     import rubric_presentation
     check = rubric_presentation.record_check(proposal, record)
+    prose = rubric_presentation.model_prose(record)
     _render_flags(check)
     saved_scores = (review or {}).get("scores", {})
     saved_reasons = (review or {}).get("reasons", {})
@@ -163,9 +164,11 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
         for fact in domain_check.get("facts", []):
             st.caption(f"Record: {fact}")
         if suggestion:
-            st.caption(f"AI proposes **{_label(proposed)}**. {suggestion.get('rationale', '')}")
+            st.caption(f"AI proposes **{_label(proposed)}**. {prose(suggestion.get('rationale', ''))}")
             if suggestion.get("contrary_evidence"):
-                st.caption(f"Against it: {suggestion['contrary_evidence']}")
+                st.caption(f"Against it: {prose(suggestion['contrary_evidence'])}")
+            if suggestion.get("next_level_gap"):
+                st.caption(f"For the next level: {prose(suggestion['next_level_gap'])}")
             for item in suggestion.get("learner_evidence", []):
                 st.caption(f"At minute {item.get('minute')}: “{item.get('quote', '')}”")
         # Faculty decision of 2026-09-23: an untouched domain starts at "not

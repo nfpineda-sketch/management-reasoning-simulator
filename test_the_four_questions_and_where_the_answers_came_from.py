@@ -210,7 +210,7 @@ def test_an_interpretation_stated_earlier_is_not_asked_for_again(encounter):
     assert parsed["reasoning"]["slot_provenance"]["problem_representation"] == (
         reasoning_provenance.CARRIED)
     # Not presented as a fresh statement: the record names where it was said.
-    assert parsed["reasoning"]["carried_from"] == {"decision": 1, "minute": 0}
+    assert parsed["reasoning"]["carried_from"] == {"decision": 1, "trace_index": 0, "minute": 0}
 
 
 def test_a_carried_interpretation_names_the_decision_it_was_stated_in(encounter):

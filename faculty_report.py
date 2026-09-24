@@ -401,7 +401,9 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
                     caveat=caveat[0]), "small"))
 
     def reference_text(refs):
-        return "; ".join(f"{index[ref]['label']} | {index[ref]['time']} [{ref}]" for ref in refs)
+        # The label and the time are what a reader follows; the stored
+        # identifier stays in the record, not on the page (2026-09-24).
+        return "; ".join(f"{index[ref]['label']} | {index[ref]['time']}" for ref in refs)
 
     def page_header(canvas, doc):
         canvas.saveState()
@@ -472,8 +474,10 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
         if first:
             source = first["input"]
             excerpt = source if len(source) <= 450 else source[:450].rsplit(" ", 1)[0] + " [...]"
-            block.append(p(_t("Recorded learner excerpt - {label}: {excerpt}").format(
-                label=first["label"], excerpt=excerpt), "quote"))
+            # The resident's own words are printed as they wrote them: no
+            # correction and no rewriting of identifiers reaches a quotation.
+            block.append(Paragraph(_xml(_t("Recorded learner excerpt - {label}: {excerpt}").format(
+                label=first["label"], excerpt=excerpt)), styles["quote"]))
         block.extend([p("Debrief question", "subhead"), p(item.get("question")),
                       Spacer(1, 5), HRFlowable(width="100%", thickness=.6, color=LINE), Spacer(1, 6)])
         story.append(KeepTogether(block))
@@ -650,10 +654,15 @@ def _compact_references(refs, index, maximum=3):
     for ref in refs[:maximum]:
         item = index[ref]
         if ref.startswith("trace:"):
-            anchors.append(f"D{int(ref.split(':', 1)[1]) + 1} {item['time']}")
+            # The decision's own number, from the same ordinal every other
+            # surface uses. Until 2026-09-24 this was the stored position plus
+            # one, which is a different decision whenever a question, an
+            # examination or a held order came before it.
+            number = re.fullmatch(r"Decision (\d+)", item["label"] or "")
+            anchors.append(f"D{number.group(1)} {item['time']}" if number
+                           else f"{item['label']} {item['time']}")
         else:
-            label = item["label"].replace("Reflection ", "Reflection ")
-            anchors.append(label)
+            anchors.append(item["label"])
     if len(refs) > maximum:
         anchors.append(f"+{len(refs) - maximum} in app")
     return " · ".join(anchors) or "No supporting reference selected"
@@ -998,8 +1007,11 @@ def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corr
     # Recorded factual corrections are applied to the model's text at render
     # time; the stored brief keeps the original wording (2026-09-23).
     import report_corrections
+    session = ((record or {}).get("payload") or {}).get("session") or {}
     correct = presentation.CorrectionLog(
-        corrections if corrections is not None else report_corrections.for_record(record))
+        corrections if corrections is not None else report_corrections.for_record(record),
+        references=presentation.reference_labels(session.get("management_trace") or []),
+        language="en")
     if compact:
         return _render_compact(report, record, inputs, app_url, correct, assessment)
     return _render_full(report, record, inputs, correct, assessment)

@@ -102,6 +102,12 @@ _STUDY_NAMES = {
     "blood_cultures": "blood cultures", "urinalysis": "urinalysis",
     "temperature": "temperature", "abg": "arterial blood gas", "vbg": "venous blood gas",
     "blood_gas": "blood gas", "liver_panel": "liver panel",
+    # Printed as "head ct" and "d dimer" until 2026-09-24: every study the
+    # parser recognises has a bedside name.
+    "head_ct": "head CT", "abdominal_ct": "abdominal CT", "d_dimer": "D-dimer",
+    "cortisol": "cortisol", "thyroid_function": "thyroid function tests",
+    "ketones": "ketones", "toxicology": "toxicology screen",
+    "crossmatch": "blood group and crossmatch",
 }
 _ALREADY_IN_PLACE = re.compile(
     r"already (?:in place|contacted|requested|running)|not repeated", re.I)
@@ -351,7 +357,9 @@ def order_fates(trace):
                 result = action.get("result") if isinstance(action.get("result"), dict) else {}
                 minute = result.get("time_min")
                 when = f" at {float(minute):g} min" if isinstance(minute, (int, float)) else ""
-                lines.append(f"{name}: requested here; the result was reported{when}, under decision {index + 1}")
+                number = decision_ordinals(trace).get(index)
+                under = f", under decision {number}" if number else ""
+                lines.append(f"{name}: requested here; the result was reported{when}{under}")
             else:
                 # No inference about why. The time the encounter closed is the
                 # fact a reader needs to tell a missing result from an omission.
@@ -369,22 +377,231 @@ class CorrectionLog:
     The saved analysis is never modified. A correction is an exact substring
     written for one passage, so it applies to that passage or to nothing, and
     the document that used it lists what was corrected and why.
+
+    Given ``references`` -- the labels of one encounter, from
+    ``reference_labels`` -- it also writes the internal identifiers a model
+    left in its prose back as what they point to (faculty review 2026-09-24).
+    That runs after the corrections, because a correction is written against
+    the stored words.
     """
 
-    def __init__(self, corrections=None):
+    def __init__(self, corrections=None, references=None, language="en"):
         self.corrections = [c for c in (corrections or []) if isinstance(c, dict)]
         self.applied = []
+        self.references = references
+        self.language = language
+        self.unresolved = []
 
     def __call__(self, text):
         result, applied = apply_corrections(text, self.corrections)
         for correction in applied:
             if correction not in self.applied:
                 self.applied.append(correction)
+        if self.references is not None:
+            result = humanize(result, self.references, self.language, self.unresolved)
         return result
 
     def lines(self):
         return [f"{c.get('reason') or 'factual correction'}"
                 for c in self.applied]
+
+
+# --- identifiers the model wrote into its prose ------------------------------
+#
+# Faculty review of 2026-09-24, across the 45 documents of a batch: no empty
+# page, no cut text, and two kinds of internal name inside the sentences a
+# model wrote -- ``trace:0`` for a decision the same document calls
+# "D1 · 00:04", and ``unasked_history_topics``, the name of an input field.
+# The citation fields were already written as labels; the prose was not.
+#
+# One conversion, used by every renderer, from the encounter's own map. A
+# decision's number is its place among the decisions the resident actually
+# made, never its position in the stored list plus one: the list also holds
+# questions, examinations and orders that were not executed.
+
+REFERENCE_UNAVAILABLE = {"en": "reference unavailable", "es": "referencia no disponible"}
+# A decision or an encounter record is a number; a reflection is its review key.
+_REFERENCE = re.compile(
+    r"`?(?<![\w:/-])(?:(trace|encounter):(\d+)|(reflection):([A-Za-z0-9](?:[A-Za-z0-9_-]*[A-Za-z0-9])?))"
+    r"(?![\w-])`?")
+# Field names a model has been seen, or could be expected, to copy from its
+# input. What each means, in each language -- and no more than what it means:
+# "history topics not explored" is not "a relevant omission".
+FIELD_PHRASES = {
+    "unasked_history_topics": ("history topics not explored", "antecedentes no explorados"),
+    "history_topics_offered": ("history topics the case offers", "temas de anamnesis que ofrece el caso"),
+    "history_obtained": ("history obtained", "anamnesis obtenida"),
+    "history_availability": ("history availability", "disponibilidad de la anamnesis"),
+    "decision_events": ("the recorded decisions", "las decisiones registradas"),
+    "recorded_reasoning": ("the recorded reasoning", "el razonamiento registrado"),
+    "learner_input": ("the resident's entry", "la entrada del residente"),
+    "interpreted_actions": ("the orders as understood", "las órdenes interpretadas"),
+    "interpreted_action": ("the orders as understood", "las órdenes interpretadas"),
+    "executed_action_summaries": ("the executed orders", "las órdenes ejecutadas"),
+    "execution_status": ("the execution status", "el estado de ejecución"),
+    "state_before": ("the state before the decision", "el estado antes de la decisión"),
+    "state_after": ("the state after the decision", "el estado después de la decisión"),
+    "diagnostics_available": ("the results available", "los resultados disponibles"),
+    "results_pending": ("the results pending", "los resultados pendientes"),
+    "information_available_on_asking": ("the information available on asking",
+                                        "la información disponible al preguntar"),
+    "information_on_asking_rule": ("the rule on information available on asking",
+                                   "la regla de la información disponible al preguntar"),
+    "defined_critical_events": ("the critical events defined for the case",
+                                "los eventos críticos definidos para el caso"),
+    "case_opportunities": ("the opportunities the case declares",
+                           "las oportunidades que declara el caso"),
+    "case_information_available": ("the information the case makes available",
+                                   "la información que el caso pone a disposición"),
+    "engine_limitations": ("the simulator's limitations", "las limitaciones del simulador"),
+    "record_screening": ("the record check", "la verificación del registro"),
+    "acceptable_alternatives": ("the acceptable alternatives", "las alternativas aceptables"),
+    "evidence_refs": ("the cited evidence", "la evidencia citada"),
+    "evidence_ref": ("the cited evidence", "la evidencia citada"),
+    "learner_evidence": ("the resident's words", "las palabras del residente"),
+    "reflection_decision_links": ("the reflections and the decisions they discuss",
+                                  "las reflexiones y las decisiones que comentan"),
+    "recorded_reflections": ("the recorded reflections", "las reflexiones registradas"),
+    "later_expert_comparison_responses": ("the later comparison with the expert",
+                                          "la comparación posterior con el experto"),
+    "later_adaptation_plan": ("the later adaptation plan", "el plan de adaptación posterior"),
+    "assistance_context": ("the assistance context", "el contexto de asistencia"),
+    "assistance_provenance": ("where the assistance context came from",
+                              "la procedencia del contexto de asistencia"),
+    "management_trace": ("the Management Trace", "el Management Trace"),
+    "reasoning_gate": ("the reasoning check", "la verificación del razonamiento"),
+    "decision_time_min": ("the decision time", "la hora de la decisión"),
+    "response_time_min": ("the response time", "la hora de la respuesta"),
+    "airway_prepared": ("airway preparation", "la preparación de la vía aérea"),
+}
+_FIELD = re.compile(r"`?\b(" + "|".join(sorted(map(re.escape, FIELD_PHRASES), key=len, reverse=True))
+                    + r")\b`?")
+# Whole phrases whose field name also carries a value: rewriting the name alone
+# would leave "airway preparation remained false", which says something else.
+PHRASE_REWRITES = (
+    (re.compile(r"`?airway_prepared`?\s+(?:remained|was|stayed)\s+false", re.I),
+     ("airway preparation was not marked as completed",
+      "la preparación de la vía aérea no quedó marcada como completada")),
+)
+
+
+def _clock(value):
+    number = _number(value)
+    if number is None or number < 0:
+        return None
+    minute = int(number)
+    return f"{minute // 60:02d}:{minute % 60:02d}"
+
+
+def decision_ordinals(trace):
+    """``{stored position: decision number}`` for the decisions the resident made."""
+    ordinals, count = {}, 0
+    for position, event in enumerate(trace or []):
+        if isinstance(event, dict) and event.get("execution_status") in (None, "executed", "terminal_locked"):
+            count += 1
+            ordinals[position] = count
+    return ordinals
+
+
+def carried_decision(carried_from, trace):
+    """The decision number an interpretation was first stated in.
+
+    Records saved before 2026-09-24 wrote the stored position plus one; newer
+    ones write the decision number and keep the position beside it. Both are
+    resolved against the trace, so an old record prints the right decision too.
+    """
+    carried_from = carried_from if isinstance(carried_from, dict) else {}
+    ordinals = decision_ordinals(trace)
+    position = carried_from.get("trace_index")
+    if isinstance(position, int) and not isinstance(position, bool):
+        return ordinals.get(position)
+    decision = carried_from.get("decision")
+    if isinstance(decision, int) and not isinstance(decision, bool) and decision >= 1:
+        return ordinals.get(decision - 1)
+    return None
+
+
+def reference_labels(trace=None, encounter_events=None):
+    """The real label of every reference one encounter can be cited by.
+
+    ``{"trace:4": {"en": "D2 · 00:04", "es": "D2 · 00:04"}, ...}``. A decision is
+    numbered by its place among executed decisions -- the same ordinal the
+    evidence selector, the trace and the review use. An entry that was not a
+    decision is named for what it was. A reflection written about decisions is
+    named by them. Anything this map does not hold is unavailable, and is
+    said to be.
+    """
+    labels = {}
+    ordinal = 0
+    for position, event in enumerate(trace or []):
+        if not isinstance(event, dict):
+            continue
+        status = event.get("execution_status")
+        clock = _clock(event.get("decision_time_min"))
+        at = f" · {clock}" if clock else ""
+        if status in (None, "executed", "terminal_locked"):
+            ordinal += 1
+            label = {"en": f"D{ordinal}{at}", "es": f"D{ordinal}{at}"}
+        elif status == "information":
+            label = {"en": f"information obtained{at}", "es": f"información obtenida{at}"}
+        else:
+            label = {"en": f"order not executed{at}", "es": f"orden no ejecutada{at}"}
+        labels[f"trace:{position}"] = label
+    for position, event in enumerate(encounter_events or []):
+        if not isinstance(event, dict):
+            continue
+        clock = _clock(event.get("time_min"))
+        at = f" · {clock}" if clock else ""
+        labels[f"encounter:{position}"] = {"en": f"encounter record{at}",
+                                           "es": f"registro del encuentro{at}"}
+    return labels
+
+
+def _reflection_label(key):
+    """``decision-3`` and ``decisions-2-3`` are display ordinals, as the review writes them."""
+    single = re.fullmatch(r"decision[-_](\d+)", key or "")
+    if single:
+        return {"en": f"later reflection on D{single.group(1)}",
+                "es": f"reflexión posterior sobre D{single.group(1)}"}
+    span = re.fullmatch(r"decisions[-_](\d+)[-_](\d+)", key or "")
+    if span:
+        return {"en": f"later reflection on D{span.group(1)}-D{span.group(2)}",
+                "es": f"reflexión posterior sobre D{span.group(1)}-D{span.group(2)}"}
+    return None
+
+
+def humanize(text, labels, language="en", unresolved=None):
+    """Write every internal identifier in a passage as what it points to.
+
+    Whole tokens only: ``trace:1`` is never read inside ``trace:10``. A
+    reference this encounter cannot resolve becomes "reference unavailable"
+    and is added to ``unresolved`` -- never guessed at. The language is the
+    passage's own: an English sentence keeps English words, because a Spanish
+    phrase inside an English sentence is the mixed sentence decision 16 refused.
+    """
+    lang = "es" if language == "es" else "en"
+    labels = labels or {}
+
+    def reference(match):
+        kind = match.group(1) or match.group(3)
+        key = match.group(2) or match.group(4)
+        token = f"{kind}:{key}"
+        label = labels.get(token)
+        if label is None and kind == "reflection":
+            label = _reflection_label(key)
+        if label is None:
+            if unresolved is not None and token not in unresolved:
+                unresolved.append(token)
+                import logging
+                logging.getLogger("mrs.references").warning(
+                    "An internal reference in model prose could not be resolved: %s", token)
+            return REFERENCE_UNAVAILABLE[lang]
+        return label[lang]
+
+    result = _REFERENCE.sub(reference, str(text or ""))
+    for pattern, replacement in PHRASE_REWRITES:
+        result = pattern.sub(replacement[1 if lang == "es" else 0], result)
+    return _FIELD.sub(lambda match: FIELD_PHRASES[match.group(1)][1 if lang == "es" else 0], result)
 
 
 def apply_corrections(text, corrections):

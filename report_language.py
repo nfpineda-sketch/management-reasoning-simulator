@@ -298,6 +298,8 @@ ES = {
         'No se seleccionó ninguna referencia de respaldo. No infiera una habilidad observada a partir de la ausencia de evidencia.',
     'Non-executed entry':
         'Entrada no ejecutada',
+    'Information obtained':
+        'Información obtenida',
     'Not assessed in this encounter':
         'No evaluado en este encuentro',
     'Not assessed in this encounter - no recorded opportunity to demonstrate it':

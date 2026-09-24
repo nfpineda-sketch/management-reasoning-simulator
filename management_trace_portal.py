@@ -131,7 +131,11 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
                    "Your complete encounter record is unaffected.")
     import report_corrections
     import report_presentation
-    correct = report_presentation.CorrectionLog(report_corrections.for_payload(payload))
+    correct = report_presentation.CorrectionLog(
+        report_corrections.for_payload(payload),
+        references=report_presentation.reference_labels(payload.get("trace") or [],
+                                                        payload.get("encounter_events") or []),
+        language="en")
     labels = _reference_labels(source)
     st.caption("AI interpretation of your recorded encounter · your original decisions and locked reflection are preserved.")
     _claim(analysis["overview"], labels, correct)

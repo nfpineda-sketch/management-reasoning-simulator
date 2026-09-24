@@ -30,7 +30,11 @@ def score_label(value, language="en"):
     return "—"
 
 
-def profile(review, proposal=None, language="en"):
+def _plain(text):
+    return text
+
+
+def profile(review, proposal=None, language="en", prose=_plain):
     """One row per domain, in rubric order, whatever the review contains.
 
     A domain nobody decided is shown as undecided rather than dropped, because
@@ -61,9 +65,10 @@ def profile(review, proposal=None, language="en"):
             "changed": domain in changes,
             "change_justification": changes.get(domain, {}).get("justification", ""),
             "reason": reasons.get(domain, ""),
-            "rationale": source.get("rationale", ""),
-            "contrary_evidence": source.get("contrary_evidence", ""),
-            "limits": source.get("limits", ""),
+            "rationale": prose(source.get("rationale", "")),
+            "contrary_evidence": prose(source.get("contrary_evidence", "")),
+            "limits": prose(source.get("limits", "")),
+            "next_level_gap": prose(source.get("next_level_gap", "")),
             "evidence_refs": list(source.get("evidence_refs", ())),
             "quotes": [
                 {"minute": item.get("minute"), "quote": item.get("quote", ""),
@@ -74,7 +79,7 @@ def profile(review, proposal=None, language="en"):
     return rows
 
 
-def alerts(review, proposal=None, language="en"):
+def alerts(review, proposal=None, language="en", prose=_plain):
     """Confirmed events first, then anything still waiting on the faculty.
 
     A safety alert stays visible however high the total is, and an event the
@@ -94,7 +99,7 @@ def alerts(review, proposal=None, language="en"):
             continue
         rows.append({"event_id": event_id, "status": "awaiting_review", "kind": "",
                      "action": "", "proposed_by_ai": True,
-                     "trigger_evidence": row.get("trigger_evidence", ""),
+                     "trigger_evidence": prose(row.get("trigger_evidence", "")),
                      "justification": ""})
     for row in (review or {}).get("critical_events", []):
         if row["status"] == "dismissed":
@@ -105,9 +110,9 @@ def alerts(review, proposal=None, language="en"):
     return rows
 
 
-def concerns(proposal, language="en"):
+def concerns(proposal, language="en", prose=_plain):
     """Worries the case never defined as events. They carry no deduction."""
-    return [{"concern": row.get("concern", ""), "evidence_refs": list(row.get("evidence_refs", ()))}
+    return [{"concern": prose(row.get("concern", "")), "evidence_refs": list(row.get("evidence_refs", ()))}
             for row in (proposal or {}).get("proposal", {}).get("concerns_for_review", [])]
 
 
@@ -126,6 +131,22 @@ def status_line(review, proposal=None, language="en"):
     else:
         label = "Confirmed by faculty" if confirmed else "Provisional - faculty draft"
     return {"state": review.get("status"), "confirmed": confirmed, "label": label}
+
+
+def model_prose(record, unresolved=None):
+    """How the model's words reach a reader: with this encounter's identifiers resolved.
+
+    The proposal is generated in English by contract, so its identifiers are
+    written back in English whatever the document's language (see
+    ``report_presentation.humanize``). Without a record there is no map, and
+    the text is left exactly as stored.
+    """
+    if not record:
+        return _plain
+    import report_presentation
+    session = ((record or {}).get("payload") or {}).get("session") or {}
+    labels = report_presentation.reference_labels(session.get("management_trace") or [])
+    return lambda text: report_presentation.humanize(text, labels, "en", unresolved)
 
 
 def record_check(proposal, record, language="en"):
@@ -166,6 +187,7 @@ def summary(review, proposal=None, language="en", record=None):
     totals = (review or {}).get("totals") or {}
     complete = bool(totals.get("coverage", {}).get("complete"))
     check = record_check(proposal, record, language)
+    prose = model_prose(record)
     return {
         "rubric_version": (review or proposal or {}).get("rubric_version", VERSION),
         "status": status_line(review, proposal, language),
@@ -173,9 +195,9 @@ def summary(review, proposal=None, language="en", record=None):
         "totals": totals,
         "complete": complete,
         "coverage_label": _coverage_label(totals, language),
-        "profile": profile(review, proposal, language),
-        "alerts": alerts(review, proposal, language),
-        "concerns": concerns(proposal, language),
+        "profile": profile(review, proposal, language, prose),
+        "alerts": alerts(review, proposal, language, prose),
+        "concerns": concerns(proposal, language, prose),
         "notice": PILOT_NOTICE_ES if language == "es" else PILOT_NOTICE,
         "traceability": traceability(review, proposal, language),
         "record_check": check,
