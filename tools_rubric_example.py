@@ -12,9 +12,12 @@ from pathlib import Path
 
 import rubric
 import rubric_presentation as present
+from rubric_analysis import proposed_event_rows
 from case_assessment import events as defined_events
 from faculty_analysis import source_fingerprint
-from rubric_analysis import PROMPT_VERSION, SCHEMA_VERSION, validate_rubric_proposal
+# The worked example is a 1.0 proposal, the shape that is saved in the database
+# from the pilot; it keeps validating under that version.
+from rubric_analysis import LEGACY_PROMPT_VERSION as PROMPT_VERSION, SCHEMA_VERSION, validate_rubric_proposal
 from rubric_store import build_review
 
 CASE = "acs_48m_wellens"
@@ -314,7 +317,7 @@ def main():
         out.append(f"| **{row['domain_id']}** | {label} | {row['rationale']} | "
                    f"{row['contrary_evidence']} | {row['limits']} |")
     out += ["", "**Eventos críticos propuestos:** "
-            + (", ".join(f"`{e['event_id']}`" for e in report["proposal"]["critical_events"])
+            + (", ".join(f"`{e['event_id']}`" for e in proposed_event_rows(report))
                or "ninguno"), "",
             "**Señalado para revisión, sin deducción:**", ""]
     for concern in report["proposal"]["concerns_for_review"]:

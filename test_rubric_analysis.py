@@ -13,8 +13,9 @@ import json
 import pytest
 
 import rubric
-from rubric_analysis import (PROMPT_VERSION, SCHEMA_VERSION, RubricAnalysisError,
-                             build_rubric_source, case_id_of, generate_rubric_proposal,
+from rubric_analysis import (LEGACY_PROMPT_VERSION, PROMPT_VERSION, SCHEMA_VERSION,
+                             RubricAnalysisError, build_rubric_source, case_id_of,
+                             event_verdicts, generate_rubric_proposal, proposed_event_rows,
                              validate_rubric_proposal)
 from faculty_analysis import source_fingerprint
 from test_faculty_analysis import sample_record
@@ -49,9 +50,30 @@ def sample_proposal(refs=("trace:0",), events=()):
     }
 
 
-def envelope(record, proposal):
+def sample_proposal_v11(record, occurred=(), refs=("trace:0",), opportunity="observed"):
+    """The 1.1 shape: every domain states its opportunity, every defined event a verdict."""
+    body = sample_proposal(refs)
+    body.pop("critical_events")
+    for row in body["domains"]:
+        row["opportunity"] = opportunity
+        row["next_level_gap"] = "Targets and alarm thresholds were not set."
+    defined = [e["event_id"] for e in build_rubric_source(record)["defined_critical_events"]]
+    if defined:
+        body["event_verdicts"] = {event_id: {
+            "verdict": "occurred" if event_id in occurred else "did_not_occur",
+            "evidence_refs": list(refs),
+            "trigger_evidence": "Nothing of this kind was executed in the window."
+                                if event_id in occurred else "The trigger is not met by the record.",
+            "exclusions_checked": "No exclusion applies." if event_id in occurred
+                                  else "Not proposed: the trigger is not met.",
+        } for event_id in defined}
+    return body
+
+
+def envelope(record, proposal, version=LEGACY_PROMPT_VERSION):
+    """1.0 by default: those proposals are saved in the database and must keep validating."""
     return {
-        "schema_version": SCHEMA_VERSION, "prompt_version": PROMPT_VERSION,
+        "schema_version": SCHEMA_VERSION, "prompt_version": version,
         "rubric_version": rubric.VERSION, "coverage_version": "1.0",
         "source_hash": source_fingerprint(record), "attempt_id": record["id"],
         "attempt_revision": record["revision"],
@@ -200,9 +222,10 @@ def test_one_request_is_made_and_it_carries_the_defined_events():
                 seen.update(kwargs)
                 seen["calls"] = seen.get("calls", 0) + 1
                 return SimpleNamespace(status="completed",
-                                       output_text=json.dumps(sample_proposal()))
+                                       output_text=json.dumps(sample_proposal_v11(record)))
 
     saved = generate_rubric_proposal(record, api_key="k", model="gpt-test", client=Once())
+    assert saved["prompt_version"] == PROMPT_VERSION
     assert seen["calls"] == 1
     assert seen["store"] is False
     assert "acs_no_antiplatelet" in seen["input"]
@@ -251,3 +274,72 @@ def test_a_concern_outside_the_defined_events_is_flagged_and_carries_no_penalty(
     result = rubric.score({d: 2 for d in rubric.DOMAIN_IDS},
                           saved["proposal"]["critical_events"])
     assert result["penalty"] == 0
+
+
+# --- prompt 1.1: a verdict for every event, an opportunity for every domain ---
+def test_a_1_1_proposal_validates_and_its_proposed_events_are_the_occurred_verdicts():
+    record = record_on_case()
+    saved = validate_rubric_proposal(
+        envelope(record, sample_proposal_v11(record, occurred=("acs_no_antiplatelet",)), PROMPT_VERSION),
+        record)
+    assert [row["event_id"] for row in proposed_event_rows(saved)] == ["acs_no_antiplatelet"]
+    assert set(event_verdicts(saved)) == {"acs_no_antiplatelet", "acs_provocation_test"}
+
+
+def test_a_1_1_proposal_cannot_leave_a_defined_event_without_a_verdict():
+    """Encounter 8 of 2026-09-24: the event the model never proposed had nowhere to be refused."""
+    record = record_on_case()
+    body = sample_proposal_v11(record)
+    del body["event_verdicts"]["acs_provocation_test"]
+    with pytest.raises(RubricAnalysisError):
+        validate_rubric_proposal(envelope(record, body, PROMPT_VERSION), record)
+
+
+def test_the_1_1_request_schema_demands_a_verdict_per_event_and_an_opportunity_per_domain():
+    record = record_on_case()
+    seen = {}
+
+    class Once:
+        class responses:
+            @staticmethod
+            def create(**kwargs):
+                seen.update(kwargs)
+                return SimpleNamespace(status="completed",
+                                       output_text=json.dumps(sample_proposal_v11(record)))
+
+    generate_rubric_proposal(record, api_key="k", model="m", client=Once())
+    schema = seen["text"]["format"]["schema"]
+    verdicts = schema["properties"]["event_verdicts"]
+    assert set(verdicts["required"]) == {"acs_no_antiplatelet", "acs_provocation_test"}
+    assert verdicts["additionalProperties"] is False
+    domain = schema["properties"]["domains"]["items"]
+    assert "opportunity" in domain["required"] and "next_level_gap" in domain["required"]
+    # The request carries what the record settles, computed before any reading.
+    source = json.loads(seen["input"])
+    assert {row["event_id"] for row in source["record_screening"]["events"]} == {
+        "acs_no_antiplatelet", "acs_provocation_test"}
+    assert [row["domain_id"] for row in source["record_screening"]["domains"]] == list(rubric.DOMAIN_IDS)
+
+
+def test_the_1_1_instructions_keep_identifiers_out_of_prose():
+    from rubric_analysis import _INSTRUCTIONS
+    assert "never by an identifier" in _INSTRUCTIONS
+    # The old instruction asked for the identifier in the prose itself.
+    assert "Cite decisions by their evidence_ref and name the minute" not in _INSTRUCTIONS
+    assert "Give a verdict for every event" in _INSTRUCTIONS
+
+
+def test_a_saved_1_0_proposal_still_reads_its_events():
+    record = record_on_case()
+    saved = validate_rubric_proposal(
+        envelope(record, sample_proposal(events=("acs_no_antiplatelet",))), record)
+    assert [row["event_id"] for row in proposed_event_rows(saved)] == ["acs_no_antiplatelet"]
+    assert event_verdicts(saved) == {}
+
+
+def test_an_encounter_without_defined_events_has_no_verdict_field():
+    record = record_on_case("")
+    body = sample_proposal_v11(record)
+    assert "event_verdicts" not in body
+    saved = validate_rubric_proposal(envelope(record, body, PROMPT_VERSION), record)
+    assert proposed_event_rows(saved) == []

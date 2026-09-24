@@ -133,6 +133,8 @@ def _profile_table(assessment, styles, width, language):
     rows = [[head("Dominio" if language == "es" else "Domain"),
              head("Puntaje" if language == "es" else "Score"),
              head("Evidencia del encuentro" if language == "es" else "Evidence from the encounter")]]
+    domain_checks = (assessment.get("record_check") or {}).get("domains", {})
+    record_label = "Registro" if language == "es" else "Record"
     for row in assessment["profile"]:
         basis = row["reason"] or row["rationale"] or ""
         if row["changed"]:
@@ -146,6 +148,10 @@ def _profile_table(assessment, styles, width, language):
             details.append(Paragraph(_xml(f"{against}: {row['contrary_evidence']}"), styles["small"]))
         if row["limits"]:
             details.append(Paragraph(_xml(f"{limits_label}: {row['limits']}"), styles["small"]))
+        for fact in (domain_checks.get(row["domain_id"]) or {}).get("facts", []):
+            # What the record settles about this domain's window, computed by
+            # software and set apart from the model's words.
+            details.append(Paragraph(_xml(f"{record_label}: {fact}"), styles["small"]))
         rows.append([
             [Paragraph(_xml(domain_word + " " + row["domain_id"][1:]), styles["eyebrow"]),
              Paragraph(_xml(row["title"]), styles["small"])],
@@ -186,8 +192,48 @@ def _unasked_note(rows, styles, language):
     return [Paragraph(_xml(text), styles["small"])]
 
 
+def _record_note(event_id, assessment, styles, language):
+    """What the record settles about one event, when it disagrees with a proposal."""
+    check = ((assessment.get("record_check") or {}).get("events") or {}).get(event_id)
+    if not check or check["status"] not in ("contradicted", "excluded"):
+        return []
+    head = ("El registro lo contradice: " if language == "es"
+            else "The record contradicts it: ")
+    return [Paragraph(_xml(head + " ".join(check["facts"])), styles["small"])]
+
+
+def _flag_block(assessment, styles, language):
+    """Where the proposal and the record disagree, said once, before the events."""
+    flags = (assessment.get("record_check") or {}).get("flags") or []
+    if not flags:
+        return []
+    flow = [Paragraph(_xml("REVISAR ANTES DE DECIDIR · LA PROPUESTA Y EL REGISTRO NO COINCIDEN"
+                           if language == "es" else
+                           "CHECK BEFORE DECIDING - THE PROPOSAL AND THE RECORD DISAGREE"),
+                      styles["eyebrow"])]
+    for flag in flags:
+        subject = flag.get("event_id") or (("Dominio " if language == "es" else "Domain ")
+                                            + str(flag.get("domain_id", ""))[1:])
+        text = f"{subject} - {flag['label']}."
+        if flag.get("facts"):
+            text += " " + " ".join(flag["facts"])
+        flow.append(Paragraph(_xml(text), styles["small"]))
+        if flag.get("quote"):
+            flow.append(Paragraph(_xml("“" + flag["quote"] + "”"), styles["quote"]))
+        if flag["kind"] == "event_not_proposed" and flag.get("model_reason"):
+            flow.append(Paragraph(_xml((
+                "Veredicto de la IA: " if language == "es" else "The AI's verdict: ")
+                + (flag.get("model_verdict") or "") + " - " + flag["model_reason"]), styles["quote"]))
+    flow.append(Paragraph(_xml(
+        "Estas marcas no cambian ninguna propuesta ni ninguna decisión: señalan lo que el registro "
+        "verifica por sí mismo, para que usted lo lea antes de confirmar." if language == "es" else
+        "These marks change no proposal and no decision: they point to what the record settles on "
+        "its own, for you to read before confirming."), styles["small"]))
+    return flow
+
+
 def _events_block(assessment, styles, language, unasked=()):
-    flow = []
+    flow = _flag_block(assessment, styles, language)
     by_event = {}
     for row in unasked:
         by_event.setdefault(row["event_id"], []).append(row)
@@ -203,6 +249,7 @@ def _events_block(assessment, styles, language, unasked=()):
             if alert["justification"]:
                 text += f" {alert['justification']}"
             flow.append(Paragraph(_xml(text), styles["body"]))
+            flow += _record_note(alert["event_id"], assessment, styles, language)
             flow += _unasked_note(by_event.get(alert["event_id"], ()), styles, language)
         flow.append(Paragraph(_xml(
             "Un evento confirmado puede bajar un dominio y además llevar la penalización de "
@@ -221,6 +268,7 @@ def _events_block(assessment, styles, language, unasked=()):
                     "penalty until you decide.")), styles["body"]))
             if alert.get("trigger_evidence"):
                 flow.append(Paragraph(_xml(alert["trigger_evidence"]), styles["quote"]))
+            flow += _record_note(alert["event_id"], assessment, styles, language)
             flow += _unasked_note(by_event.get(alert["event_id"], ()), styles, language)
     if dismissed:
         flow.append(Paragraph(_xml("DESCARTADOS" if language == "es" else "DISMISSED"),
@@ -250,7 +298,7 @@ def build_rubric_document(review, proposal=None, record=None, *, language="en",
             "released to the resident.")
     _fonts()
     styles = _big_styles(_styles(), language)
-    assessment = presentation.summary(review, proposal, language)
+    assessment = presentation.summary(review, proposal, language, record=record)
     width = A4[0] - 2 * MARGIN
 
     spanish = language == "es"

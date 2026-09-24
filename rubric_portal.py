@@ -18,7 +18,8 @@ import report_palette as palette
 from account_store import AccountError
 from case_assessment import declared, events as defined_events
 from rubric import DOMAIN_IDS, DOMAINS, NOT_ASSESSABLE, headline, score as compute_score
-from rubric_analysis import RubricAnalysisError, case_id_of, generate_rubric_proposal
+from rubric_analysis import (RubricAnalysisError, case_id_of, generate_rubric_proposal,
+                             proposed_event_rows)
 from rubric_store import RubricStore
 
 STAFF = {"faculty", "admin"}
@@ -122,13 +123,30 @@ def _proposal_controls(store, token, record, proposal):
         st.rerun()
 
 
+def _render_flags(check):
+    """Where the proposal and the record disagree, before anything is decided."""
+    flags = check.get("flags") or []
+    if not flags:
+        return
+    lines = []
+    for flag in flags:
+        subject = (f"`{flag['event_id']}`" if flag.get("event_id")
+                   else f"Domain {str(flag.get('domain_id', ''))[1:]}")
+        lines.append(f"- {subject}: {flag['label']}. " + " ".join(flag.get("facts") or []))
+    st.warning("**Check before deciding: the proposal and the record disagree.**\n\n"
+               + "\n".join(lines)
+               + "\n\nThese marks change nothing by themselves; the decision stays yours.")
+
+
 def _review_form(store, token, record, case_id, proposal, review, training_year=None):
+    import rubric_presentation
+    check = rubric_presentation.record_check(proposal, record)
+    _render_flags(check)
     saved_scores = (review or {}).get("scores", {})
     saved_reasons = (review or {}).get("reasons", {})
     saved_changes = (review or {}).get("changes", {})
     saved_events = {row["event_id"]: row for row in (review or {}).get("critical_events", [])}
-    proposed_events = {row["event_id"] for row
-                       in (proposal or {}).get("proposal", {}).get("critical_events", [])}
+    proposed_events = {row["event_id"] for row in proposed_event_rows(proposal)}
 
     scores, reasons, justifications = {}, {}, {}
     for domain in DOMAIN_IDS:
@@ -141,6 +159,9 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
         with st.popover(f"Descriptors for domain {domain[1:]}"):
             for level, text in sorted(DOMAINS[domain]["levels"].items()):
                 st.markdown(f"**{level}** — {text}")
+        domain_check = (check.get("domains") or {}).get(domain) or {}
+        for fact in domain_check.get("facts", []):
+            st.caption(f"Record: {fact}")
         if suggestion:
             st.caption(f"AI proposes **{_label(proposed)}**. {suggestion.get('rationale', '')}")
             if suggestion.get("contrary_evidence"):
@@ -159,9 +180,14 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
                              format_func=_label, key=_key(record, "score", domain))
         scores[domain] = value
         if value == NOT_ASSESSABLE:
+            # When the record itself says the window never opened, the reason
+            # is offered already written, in the record's words: the reviewer
+            # can keep it, change it, or score the domain instead.
+            offered = (" ".join(domain_check.get("facts", []))
+                       if domain_check.get("suggestion") == "no_opportunity" else "")
             reasons[domain] = st.text_input(
                 "Why is it not assessable? (a zero is a demonstrated failure; this is not one)",
-                value=saved_reasons.get(domain, ""), key=_key(record, "reason", domain))
+                value=saved_reasons.get(domain, offered), key=_key(record, "reason", domain))
         if suggestion and proposed in _CHOICES and value != proposed:
             justifications[domain] = st.text_input(
                 f"Why you changed it from the proposed {_label(proposed)}",
@@ -169,7 +195,7 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
                 key=_key(record, "why", domain))
         st.divider()
 
-    events = _event_controls(record, case_id, proposed_events, saved_events)
+    events = _event_controls(record, case_id, proposed_events, saved_events, check)
     try:
         preview = compute_score(scores, events)
     except Exception:
@@ -223,7 +249,7 @@ def _live_shape(store, token, record, pending, proposal, training_year=None):
                                                      record.get("user_id"), training_year))
 
 
-def _event_controls(record, case_id, proposed_events, saved_events):
+def _event_controls(record, case_id, proposed_events, saved_events, check=None):
     defined = defined_events(case_id) if case_id else ()
     if not defined:
         return []
@@ -251,7 +277,19 @@ def _event_controls(record, case_id, proposed_events, saved_events):
             st.caption(f"Available on asking — {topic.replace('_', ' ')} ({tells}): {state}. "
                        "The patient answers for the whole encounter, so this was available "
                        "either way; not asking is part of the omission, not an excuse for it.")
-        if proposed:
+        screen = ((check or {}).get("events") or {}).get(event["event_id"]) or {}
+        against = screen.get("status") in ("contradicted", "excluded")
+        if screen.get("facts"):
+            label = {"contradicted": "The record contradicts this event",
+                     "excluded": "A declared exclusion is established by the record",
+                     "met": "Every condition the record can settle is met",
+                     "reading": "The record is compatible; part of the trigger needs your reading"
+                     }.get(screen.get("status"), "Record")
+            st.caption(f"**{label}.** " + " ".join(screen["facts"]))
+        if proposed and against:
+            st.error("The AI proposes this event, but the record contradicts it. Confirming it "
+                     "requires your written reason.")
+        elif proposed:
             st.warning("The AI proposes this event occurred. Confirm or dismiss it.")
         options = ["proposed", "confirmed", "dismissed"] if proposed else ["proposed", "confirmed"]
         labels = {"proposed": "Not decided yet", "confirmed": "Confirmed - applies the penalty",
@@ -262,7 +300,12 @@ def _event_controls(record, case_id, proposed_events, saved_events):
                          format_func=labels.get, horizontal=True,
                          key=_key(record, "event", event["event_id"]))
         justification = ""
-        if state != "proposed" and not proposed:
+        if state == "confirmed" and against:
+            justification = st.text_input(
+                "Why you confirm it although the record contradicts it",
+                value=saved.get("justification", ""),
+                key=_key(record, "eventagainst", event["event_id"]))
+        elif state != "proposed" and not proposed:
             justification = st.text_input(
                 "Why (the AI did not propose this one)", value=saved.get("justification", ""),
                 key=_key(record, "eventwhy", event["event_id"]))

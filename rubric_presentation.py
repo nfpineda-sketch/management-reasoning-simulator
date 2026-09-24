@@ -87,7 +87,8 @@ def alerts(review, proposal=None, language="en"):
             rows.append({"event_id": event_id, "status": "confirmed", "kind": row.get("kind", ""),
                          "action": row.get("action", ""), "proposed_by_ai": row.get("proposed_by_ai", False),
                          "justification": row.get("justification", "")})
-    for row in (proposal or {}).get("proposal", {}).get("critical_events", []):
+    from rubric_analysis import proposed_event_rows
+    for row in proposed_event_rows(proposal):
         event_id = row["event_id"]
         if event_id in decided and decided[event_id]["status"] != "proposed":
             continue
@@ -127,10 +128,44 @@ def status_line(review, proposal=None, language="en"):
     return {"state": review.get("status"), "confirmed": confirmed, "label": label}
 
 
-def summary(review, proposal=None, language="en"):
+def record_check(proposal, record, language="en"):
+    """What the record itself settles, beside what the proposal says.
+
+    Returned as plain rows for a screen or a page: per event, the screening's
+    status and its facts in the reader's language; per domain, whether its
+    window opened; and the flags where the proposal and the record disagree.
+    Nothing here changes the proposal or the review.
+    """
+    if not record:
+        return {"events": {}, "domains": {}, "flags": []}
+    import rubric_screening
+    from rubric_analysis import case_id_of
+    case_id = case_id_of(record)
+    if not case_id:
+        return {"events": {}, "domains": {}, "flags": []}
+    result = rubric_screening.screening(record, case_id)
+    lang = "es" if language == "es" else "en"
+    events = {row["event_id"]: {"status": row["status"],
+                                "facts": [fact[lang] for fact in row["facts"]],
+                                "refs": row["refs"]} for row in result["events"]}
+    domains = {row["domain_id"]: {"window_min": row["window_min"],
+                                  "window_opened": row["window_opened"],
+                                  "suggestion": row["suggestion"],
+                                  "facts": [fact[lang] for fact in row["facts"]]}
+               for row in result["domains"]}
+    flags = []
+    for flag in rubric_screening.proposal_flags(proposal, result) if proposal else []:
+        flags.append({**flag, "label": rubric_screening.flag_label(flag["kind"], lang),
+                      "facts": [fact[lang] if isinstance(fact, dict) else str(fact)
+                                for fact in flag.get("facts", [])]})
+    return {"events": events, "domains": domains, "flags": flags}
+
+
+def summary(review, proposal=None, language="en", record=None):
     """Everything a surface needs, computed once, in one shape."""
     totals = (review or {}).get("totals") or {}
     complete = bool(totals.get("coverage", {}).get("complete"))
+    check = record_check(proposal, record, language)
     return {
         "rubric_version": (review or proposal or {}).get("rubric_version", VERSION),
         "status": status_line(review, proposal, language),
@@ -143,6 +178,7 @@ def summary(review, proposal=None, language="en"):
         "concerns": concerns(proposal, language),
         "notice": PILOT_NOTICE_ES if language == "es" else PILOT_NOTICE,
         "traceability": traceability(review, proposal, language),
+        "record_check": check,
     }
 
 

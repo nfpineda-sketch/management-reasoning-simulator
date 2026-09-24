@@ -348,10 +348,19 @@ def _engine():
 
 def play(case_id):
     """Play one scripted encounter offline. Returns (record, transcript)."""
+    return play_orders(BY_ID[case_id])
+
+
+def play_orders(script):
+    """Play any script of the same shape offline: the pilot's, or a test's own.
+
+    ``script`` needs ``case_id``, ``family``, ``orders``, ``reflection`` and
+    ``plan``. Nothing here reads a key or opens a socket.
+    """
     from test_cognitive_encounters import encounter as build_encounter
     from test_curriculum_trajectories import execute_turn, initialize
 
-    script = BY_ID[case_id]
+    case_id = script["case_id"]
     engine = _engine()
     generated = build_encounter(engine, script["family"], case_id)
     session = initialize(engine, deepcopy(generated["state"]))
@@ -425,8 +434,11 @@ def propose(case_id, model="gpt-5-mini"):
     httpx.Client.send = counted
     started = datetime.now(timezone.utc)
     try:
+        # A scripted encounter is played by software, not by a resident: its
+        # assistance is not "independent", it is not known (faculty,
+        # 2026-09-24). The rubric does not need it to score the record.
         report = generate_rubric_proposal(record, api_key=_key(), model=model,
-                                          assistance_context="independent")
+                                          assistance_context="unknown")
     finally:
         httpx.Client.send = original
     elapsed = (datetime.now(timezone.utc) - started).total_seconds()
@@ -477,7 +489,8 @@ def main(argv=None):
     print(f"requests={usage['requests']} seconds={usage['seconds']}")
     for row in report["proposal"]["domains"]:
         print(f"  {row['domain_id']} = {row['score']}")
-    print("  events:", ", ".join(e["event_id"] for e in report["proposal"]["critical_events"])
+    from rubric_analysis import proposed_event_rows
+    print("  events:", ", ".join(e["event_id"] for e in proposed_event_rows(report))
           or "none")
     return 0
 

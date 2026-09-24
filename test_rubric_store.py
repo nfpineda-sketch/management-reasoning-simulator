@@ -8,7 +8,7 @@ import pytest
 import rubric
 from account_store import AccountError, AccountStore
 from faculty_analysis import source_fingerprint
-from rubric_analysis import PROMPT_VERSION, SCHEMA_VERSION
+from rubric_analysis import LEGACY_PROMPT_VERSION as PROMPT_VERSION, SCHEMA_VERSION
 from rubric_store import RubricStore, build_review, totals_of
 
 CASE = "acs_48m_wellens"

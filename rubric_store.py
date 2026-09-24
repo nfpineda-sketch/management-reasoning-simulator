@@ -24,7 +24,8 @@ from case_assessment import event_by_id, events as defined_events
 from faculty_analysis import FacultyAnalysisError, source_fingerprint
 from rubric import (DOMAIN_IDS, NOT_ASSESSABLE, RubricError, VERSION as RUBRIC_VERSION,
                     headline, score as compute_score, valid_score)
-from rubric_analysis import RubricAnalysisError, case_id_of, validate_rubric_proposal
+from rubric_analysis import (RubricAnalysisError, case_id_of, proposed_event_rows,
+                             validate_rubric_proposal)
 
 
 STAFF = frozenset({"faculty", "admin"})
@@ -43,12 +44,19 @@ def _text(value, *, required=False, field="justification"):
     return value
 
 
-def build_review(*, case_id, scores, reasons, events, justifications, status, proposal=None):
+def build_review(*, case_id, scores, reasons, events, justifications, status, proposal=None,
+                 screening=None):
     """Validate a faculty decision and compute its totals. No database, no model.
 
     ``justifications`` explains each domain the faculty changed from the
     proposal. A change without one is refused: the record of why an assessment
     moved is the part that makes it reviewable later.
+
+    ``screening`` is what ``rubric_screening`` read from the record. Confirming
+    an event the record contradicts needs a written reason, exactly like
+    confirming one the AI never proposed: the penalty of encounter 7 of the
+    2026-09-24 batch was confirmed without anyone reading the two orders that
+    made it impossible.
     """
     if status not in REVIEW_STATUSES:
         raise AccountError("A review is either a draft or confirmed.")
@@ -83,7 +91,9 @@ def build_review(*, case_id, scores, reasons, events, justifications, status, pr
                                        field="justification for changing a proposed score"),
             }
 
-    proposed_events = {row["event_id"] for row in (proposal or {}).get("proposal", {}).get("critical_events", [])}
+    proposed_events = {row["event_id"] for row in proposed_event_rows(proposal)}
+    against_record = {row["event_id"] for row in (screening or {}).get("events", [])
+                      if row.get("status") in ("contradicted", "excluded")}
     known = {event["event_id"] for event in defined_events(case_id)} if case_id else set()
     decided_events, seen = [], set()
     for entry in events or []:
@@ -97,14 +107,20 @@ def build_review(*, case_id, scores, reasons, events, justifications, status, pr
         if state not in EVENT_STATUSES:
             raise AccountError("A critical event is proposed, confirmed or dismissed.")
         definition = event_by_id(case_id, event_id) if case_id else None
+        if state == "confirmed" and event_id in against_record:
+            justification = _text(entry.get("justification"), required=True,
+                                  field="reason for confirming an event the record contradicts")
+        else:
+            justification = _text(entry.get("justification"),
+                                  required=state != "proposed" and event_id not in proposed_events,
+                                  field="justification for a critical event the AI did not propose")
         decided_events.append({
             "event_id": event_id, "status": state,
             "kind": (definition or {}).get("kind", ""),
             "action": (definition or {}).get("action", ""),
             "proposed_by_ai": event_id in proposed_events,
-            "justification": _text(entry.get("justification"),
-                                   required=state != "proposed" and event_id not in proposed_events,
-                                   field="justification for a critical event the AI did not propose"),
+            "record_contradicts": event_id in against_record,
+            "justification": justification,
         })
     if status == "confirmed":
         unresolved = sorted(proposed_events - {e["event_id"] for e in decided_events
@@ -270,10 +286,13 @@ class RubricStore:
                 if row is None:
                     raise AccountError("That rubric proposal does not belong to this encounter revision.")
                 proposal = json.loads(row["report_json"])
+            import rubric_screening
+            case_id = case_id_of(record)
             review = build_review(
-                case_id=case_id_of(record), scores=dict(scores or {}),
+                case_id=case_id, scores=dict(scores or {}),
                 reasons=dict(reasons or {}), events=list(events or ()),
-                justifications=dict(justifications or {}), status=status, proposal=proposal)
+                justifications=dict(justifications or {}), status=status, proposal=proposal,
+                screening=rubric_screening.screening(record, case_id) if case_id else None)
             body = json.dumps(review, ensure_ascii=False, sort_keys=True)
             if len(body.encode("utf-8")) > MAX_REPORT_BYTES:
                 raise AccountError("The rubric review is too large to store.")
