@@ -27,6 +27,9 @@ SESSION_FIELDS = (
     "carry_forward_plan", "prior_attempt_summary", "prior_attempt_record", "last_parse",
     "rng_counter", "pending_action", "pending_bundle", "pending_reasoning",
     "reasoning_gate_counter", "last_executed_action", "encounter_assignment",
+    # The encounter's AI budget travels with it: resuming an encounter is not a
+    # new encounter, and until 2026-09-24 it quietly granted a fresh budget.
+    "ai_calls_spent", "ai_call_ledger",
 )
 
 

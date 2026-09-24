@@ -137,6 +137,27 @@ el registro, la interfaz y los PDF. No se reabrió el diseño de los documentos.
 | `held` | **nada adicional**. La pregunta por los hallazgos viaja en la misma petición que una orden detenida ya iba a hacer. |
 | `always` | **una petición por decisión**. Es la diferencia entre una excepción y un cobro por orden. |
 
+**Actualización 2026-09-24 — `held` ejercitado** (`test_the_findings_read_on_a_held_order.py`):
+
+- `held` depende del segundo lector (`MRS_AI_REASONING`): es su petición la que lleva la
+  pregunta por los hallazgos. Sin ese lector no hay petición que acompañar y `held`
+  equivale a `off`. Antes el modo informaba `held` sin leer nada; ahora informa `off`.
+- Una orden detenida hace **una** petición, con las dos preguntas. Completarla (en texto
+  libre o en el formulario) no hace otra. Si se cancela, lo que el modelo leyó desaparece
+  con ella: nada queda en el registro ni en lo que el encuentro guarda.
+- Sin presupuesto, o si el modelo falla, la orden queda detenida exactamente como antes
+  y los hallazgos de los patrones quedan intactos.
+- La orden detenida, con lo que el modelo leyó, se guarda y se recupera al reanudar el
+  encuentro. El **presupuesto** también: hasta hoy, reanudar un encuentro lo reiniciaba.
+- Lo que el modelo lee pasa por la misma regla que los patrones: una palabra dentro de una
+  expectativa o un plan («espero que suba la glicemia») no es una observación y se
+  rechaza; una que el residente no escribió («glicemia 40») también. Sin esa regla, una
+  respuesta esperada podía quedar registrada como un hallazgo que el residente vio.
+- Nada de lo leído se muestra al residente mientras decide. El brief docente, la propuesta
+  de rúbrica y la verificación del registro se construyen **con la misma entrada** haya o
+  no hallazgos leídos por el modelo: no pueden acreditarlos ni penalizarlos. Sólo el
+  análisis del Management Trace del residente los recibe, marcados con quién los leyó.
+
 Categorías y cues son **una sola operación**, nunca dos, y nunca una llamada por
 campo (§8).
 

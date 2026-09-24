@@ -7083,12 +7083,22 @@ def ai_cue_mode():
     """Whether a model is asked to read the findings, and how often.
 
     ``held`` costs nothing beyond what is already being spent: the question
-    rides along on the request a held order was going to make anyway. ``always``
-    reads every decision and costs one request each, which is the difference
-    between an exception and a per-order charge. Set MRS_AI_CUES.
+    rides along on the request a held order was going to make anyway -- the
+    second reader's, MRS_AI_REASONING -- so without that reader there is no
+    request to ride and ``held`` is ``off`` (2026-09-24: it used to report
+    ``held`` and read nothing). ``always`` reads every decision and costs one
+    request each, which is the difference between an exception and a per-order
+    charge. Set MRS_AI_CUES.
+
+    What a model reads is only ever the resident's own words about one of their
+    decisions: nothing it returns is shown to the resident while they decide,
+    and nothing it returns reaches the faculty brief, the rubric or the record's
+    screening -- those read the record, never the cues.
     """
     setting = str(_runtime_secret("MRS_AI_CUES", "")).strip().lower()
     if setting not in {"held", "always"} or not _runtime_secret("OPENAI_API_KEY"):
+        return "off"
+    if setting == "held" and not ai_reasoning_recognition_enabled():
         return "off"
     return setting
 
@@ -7109,6 +7119,8 @@ def merge_cues(parsed, found, refused=0):
         row.setdefault("source", "pattern")
     seen = {reasoning_cues.key(row.get("finding")) for row in existing}
     added = 0
+    not_observations = 0
+    text = str(parsed.get("raw_text") or "")
     for row in found or ():
         key = reasoning_cues.key(row.get("finding"))
         # One finding written twice at different lengths is one finding. A real
@@ -7117,13 +7129,21 @@ def merge_cues(parsed, found, refused=0):
         # would count one observation as two.
         if not key or any(key in other or other in key for other in seen):
             continue
+        # The patterns' rule binds the model too: words inside an expectation or
+        # a plan are not something the resident observed, and recording them as
+        # a finding would present an expected response as one they had seen.
+        if not reasoning_cues.observed(text, row.get("finding")):
+            not_observations += 1
+            continue
         seen.add(key)
         existing.append(dict(row))
         added += 1
     if existing:
         reasoning["mentioned_findings"] = reasoning_cues.sanitise(existing)
     audit = dict(parsed.get("cue_recognition") or {})
-    audit.update({"status": "read", "added_by_model": added, "rejected": int(refused)})
+    audit.update({"status": "read", "added_by_model": added,
+                  "rejected": int(refused) + not_observations,
+                  "not_an_observation": not_observations})
     parsed["cue_recognition"] = audit
     return parsed
 
@@ -7174,6 +7194,22 @@ def ai_reasoning_recognition_enabled():
     """
     setting = str(_runtime_secret("MRS_AI_REASONING", "")).strip().lower()
     return bool(_runtime_secret("OPENAI_API_KEY")) and setting in {"1", "true", "yes", "on"}
+
+
+def reasoning_still_missing(parsed):
+    """The categories a submission still lacks once everything free has been tried.
+
+    Free before paid: what the resident already said in this encounter is
+    consulted before a model is asked to read this submission again, and a
+    model is asked only about an order that would otherwise be held. With
+    ``MRS_AI_CUES=held``, that one request also reads the findings.
+    """
+    missing = reasoning_gate_missing(parsed)
+    if missing:
+        missing = apply_carried_reasoning(parsed, missing)
+    if missing:
+        missing = recognize_held_reasoning(parsed, missing)
+    return missing
 
 
 def recognize_held_reasoning(parsed, missing):
@@ -9827,13 +9863,7 @@ with st.container(key="encounter-console"):
         parsed["reasoning_observations"] = reasoning_state_observations(
             parsed, st.session_state.state
         )
-        missing_reasoning = reasoning_gate_missing(parsed)
-        # Free before paid: what the resident already said in this encounter is
-        # consulted before a model is asked to read this submission again.
-        if missing_reasoning:
-            missing_reasoning = apply_carried_reasoning(parsed, missing_reasoning)
-        if missing_reasoning:
-            missing_reasoning = recognize_held_reasoning(parsed, missing_reasoning)
+        missing_reasoning = reasoning_still_missing(parsed)
         gate_status = (parsed.get("reasoning_gate") or {}).get("status")
         if missing_reasoning and gate_status != "overridden":
             st.session_state.last_parse = parsed

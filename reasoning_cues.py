@@ -278,6 +278,41 @@ def cues(text):
     return found
 
 
+_FOLD = str.maketrans("áéíóúüñ", "aeiouun")
+
+
+def _fold(text):
+    """Case and accents folded one character for one, so positions still line up."""
+    return "".join(ch.lower() if len(ch.lower()) == 1 else ch for ch in str(text or "")).translate(_FOLD)
+
+
+def observed(text, finding):
+    """Whether ``finding`` is written somewhere in ``text`` as an observation.
+
+    The patterns' own rule, applied to a finding a model read: a finding word
+    inside a wish, an expectation or a plan is not an observation of it
+    ("espero que suba la presion"), and neither is one inside the conclusion of
+    an interpretation with no link back to it. The model is told the same; this
+    is how it is held to it rather than trusted with it (2026-09-24). Without
+    it, an expected response could be recorded as something the resident saw.
+    """
+    words = _fold(finding).strip(" .,;:").split()
+    if not words:
+        return False
+    pattern = re.compile(r"\s+".join(re.escape(word) for word in words))
+    for statement in _statements(text):
+        for match in pattern.finditer(_fold(statement)):
+            start = match.start()
+            clause_start = max(statement.rfind(",", 0, start), statement.rfind(";", 0, start)) + 1
+            if _NOT_AN_OBSERVATION.search(statement[clause_start:start]):
+                continue
+            conclusion = _CONCLUSION_MARKER.search(statement[:start])
+            if conclusion and not _LINK.search(statement[conclusion.end():start]):
+                continue
+            return True
+    return False
+
+
 def key(finding):
     """How two findings are compared, so the same one is never listed twice.
 
