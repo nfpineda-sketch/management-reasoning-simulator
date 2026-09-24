@@ -105,6 +105,10 @@ def test_real_case_diagnostics_preserve_discriminating_findings(engine, family, 
     session = initialize(engine, generated["state"])
     _, result, _, after = execute_turn(engine, "Order POCUS; order arterial blood gas; order basic labs")
     assert result["executed"], result
+    # Since 2026-09-23 a study the resident sends away does not hold them until
+    # it is back: requesting costs a minute and the result arrives on its own.
+    # The bedside one is there at once; the others need their own minutes.
+    _, _, _, after = execute_turn(engine, "Reassess blood pressure and perfusion in 15 minutes.")
     studies = session.state["diagnostics"]
     assert {"pocus", "abg", "basic_labs"} <= studies.keys()
     # A structured update must not erase the source's ventricular findings.
@@ -239,6 +243,11 @@ def test_each_family_keeps_all_encounter_modes_reachable_without_render_errors(s
     # switches. Different lab schemas used to crash the legacy chart renderer.
     widget(shared_app.radio, "Encounter").set_value("Tests").run()
     shared_app.text_area[0].set_value("Order POCUS; order arterial blood gas; order basic labs")
+    widget(shared_app.button, "Submit").click().run()
+    assert not shared_app.exception, (family, shared_app.exception)
+    # The laboratory and the gas come back on their own minutes; the resident is
+    # not held waiting for them (2026-09-23).
+    shared_app.text_area[0].set_value("Reassess blood pressure and perfusion in 15 minutes.")
     widget(shared_app.button, "Submit").click().run()
     assert not shared_app.exception, (family, shared_app.exception)
     assert {"pocus", "abg", "basic_labs"} <= shared_app.session_state.state["diagnostics"].keys()

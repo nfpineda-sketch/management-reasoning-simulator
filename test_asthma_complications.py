@@ -135,11 +135,15 @@ def test_volume_softens_the_late_intubation_penalty(engine):
 
 
 def test_the_beta_agonist_drives_potassium_down_and_lactate_up(engine):
+    # The panel is sent away and comes back on its own minutes, so the course
+    # includes the interval it takes (2026-09-23).
     state, _ = course(engine, ["Start continuous albuterol nebulization. Give methylprednisolone 125 mg IV. "
-                               "Reassess in 60 minutes.", "Order basic labs and lactate. Reassess in 5 minutes."])
+                               "Reassess in 60 minutes.",
+                               "Order basic labs and lactate. Reassess in 12 minutes."])
     baseline = 4.1
     assert state["family_state"]["potassium"] < baseline - .3
-    assert state["diagnostics"]["basic_labs"]["potassium_mmol_l"] == round(state["family_state"]["potassium"], 1)
+    assert state["diagnostics"]["basic_labs"]["potassium_mmol_l"] == pytest.approx(
+        state["family_state"]["potassium"], abs=.35)
     assert state["diagnostics"]["lactate"]["lactate_mmol_l"] > 2.1
 
 

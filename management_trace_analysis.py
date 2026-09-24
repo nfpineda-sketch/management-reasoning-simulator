@@ -45,7 +45,12 @@ _MEDICATION_FIELDS = frozenset(("dose_g", "ordered_dose_mg", "ordered_dose_g", "
 _ECG_FIELDS = frozenset(("recording_id", "acquired_at_minutes", "time_min", "collected_at_min",
                          "heart_rate", "rhythm", "pulse_present", "speed_mm_s", "gain_mm_mv",
                          "duration_seconds"))
-_STATUSES = frozenset(("executed", "terminal_locked", "not_executed", "clarification_required", "deferred"))
+# "information" joined on 2026-09-23: asking the patient, examining them and
+# reading a result are clinical activities that cost time and are recorded as
+# what they are. They are never numbered as decisions, and nothing here calls an
+# interval spent obtaining information an error.
+_STATUSES = frozenset(("executed", "terminal_locked", "not_executed", "clarification_required",
+                       "deferred", "information"))
 _ENCOUNTER_KINDS = frozenset(("presentation", "you", "patient_history", "examination",
                               "diagnostic_result", "diagnostic", "clinical_update", "reasoning_completion"))
 
@@ -134,6 +139,23 @@ def _unstated(gate):
     if not isinstance(values, (list, tuple, set)):
         return []
     return [UNSTATED_LABELS[value] for value in UNSTATED_LABELS if value in set(values)]
+
+
+def _pending(values):
+    """Studies requested and not back yet, with when they will be.
+
+    Never presenting a result as known before it is available is the whole point
+    of recording this (faculty specification 2026-09-23, section 7).
+    """
+    rows = []
+    for item in values or ():
+        if not isinstance(item, dict):
+            continue
+        name, at = item.get("diagnostic"), item.get("available_at_min")
+        if not isinstance(name, str) or not isinstance(at, (int, float)) or isinstance(at, bool):
+            continue
+        rows.append({"diagnostic": name, "available_at_min": _time(at)})
+    return sorted(rows, key=lambda row: (row["available_at_min"], row["diagnostic"]))[:20]
 
 
 def _provenance(reasoning):
@@ -356,6 +378,12 @@ def build_analysis_source(payload):
             "mentioned_findings": _findings(event.get("reasoning")),
             "interpretation_carried_from": _carried_from(event.get("reasoning")),
             **_sealed(event.get("reasoning_gate")),
+            # What this interval was spent on, when it was not a decision, and
+            # what the resident was still waiting for while it passed.
+            **({"activity_kind": str(event.get("activity_kind") or "information"),
+                "information_obtained": _text(event.get("information_obtained", ""))}
+               if status == "information" else {}),
+            "results_pending": _pending(event.get("results_pending")),
             "executed_actions": _actions(event.get("action_summaries"), end) if status == "executed" else [],
             "state_before": before_source, "state_after": after_source,
         })

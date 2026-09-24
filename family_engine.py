@@ -488,6 +488,10 @@ def _validate(state, parsed):
                     return None, "Specify CPAP or BiPAP."
                 if a["mode"].lower() == "bipap" and (not _number(a.get("ipap_cmh2o"), a["epap_cmh2o"], 35)):
                     return None, "Specify an inspiratory pressure at least as high as expiratory pressure."
+        elif kind == "result_review":
+            name = str(a.get("diagnostic") or "")
+            if name not in set(_case(validation_state).get("investigations", {})) | {"ecg"}:
+                return None, "That study is not one this encounter carries."
         elif kind == "hemorrhage_control":
             if str(a.get("measure") or "") not in {"tourniquet", "direct pressure", "packing"}:
                 return None, "Specify a tourniquet, direct pressure or wound packing."
@@ -672,6 +676,9 @@ def _initialize(state):
         "invasive": False, "bag_mask": False, "consultations": [],
         "anticoagulated": False, "aspirin": False, "ppi": False, "p2y12": None,
         "recurrence_risk": bool(engine.get("recurrence_risk", False)),
+        # Studies requested and not back yet (2026-09-23): a result waits for
+        # its own minute instead of holding the resident until it arrives.
+        "pending_diagnostics": [],
     }
     state.setdefault("treatments", {})
     state["treatments"].setdefault("administered_medications", [])
@@ -821,6 +828,7 @@ def _stop_fluid(state):
 
 
 def _order(state, a):
+    reviewed = None
     f = state["family_state"]
     tr = state["treatments"]
     kind = a["type"]
@@ -964,6 +972,23 @@ def _order(state, a):
                                            + (" (assumed; titrate as needed)" if a.get("fio2_assumed") else "")
                                            if f["niv"] else "")
         duration = 3
+    elif kind == "result_review":
+        import clinical_time
+        name = a["diagnostic"]
+        available = state.get("diagnostics", {}).get(name)
+        waiting = [item for item in f.get("pending_diagnostics", [])
+                   if item.get("summary", {}).get("diagnostic_type") == name]
+        label_name = str(name).replace("_", " ")
+        if available:
+            reviewed = deepcopy(available)
+            label = f"{label_name.capitalize()} reviewed; the result already on file is unchanged"
+        elif waiting:
+            due = min(int(item.get("due_min", 0)) for item in waiting)
+            label = (f"{label_name.capitalize()} has been requested and is not back yet; "
+                     f"it is expected at {due} min")
+        else:
+            label = f"{label_name.capitalize()} has not been requested in this encounter"
+        duration = clinical_time.ACTIVE_MINUTES["result_review"]
     elif kind == "hemorrhage_control":
         import trauma_hemorrhage
         measure, site = a["measure"], a.get("site", "wound")
@@ -1334,6 +1359,12 @@ def _order(state, a):
         repeated = False
     pathway_note = pathway_note if kind in {"consult", "reperfusion_referral"} else None
     summary = {"type": kind, "label": label, "duration_min": duration}
+    if kind == "result_review":
+        summary["diagnostic_type"] = a["diagnostic"]
+        if reviewed is not None:
+            # The result as it stands, not a fresh one: reading a study never
+            # repeats it (2026-09-23).
+            summary["reviewed"] = reviewed
     if kind == "examination":
         summary["region"] = a["region"]
         summary["time_min"] = int(state.get("sim_time", 0))
@@ -2133,6 +2164,12 @@ def _diagnostic(state, diagnostic, duration):
         state["diagnostic_history"].append({"diagnostic_type": diagnostic, "result": deepcopy(result)})
         return {"type": "diagnostic", "diagnostic_type": diagnostic, "result": result, "duration_min": duration}
     result = deepcopy(case["investigations"][diagnostic]["result"])
+    # When the sample was taken, stamped here rather than inferred from when it
+    # came back. The two were the same number while a study held the turn for
+    # its whole duration; since 2026-09-23 they are not (the request costs a
+    # minute and the result arrives later), and the record has to say the truth
+    # about the needle rather than about the printer.
+    result["collected_at_min"] = int(state.get("sim_time", 0))
     o = state["observable"]
     if diagnostic == "poc_glucose":
         result = {"glucose_mg_dl": o["glucose_mg_dl"], "report": f"Glucose {o['glucose_mg_dl']} mg/dL"}
@@ -2235,7 +2272,8 @@ def _diagnostic(state, diagnostic, duration):
 def _release_diagnostic(state, summary, available_time):
     summary = deepcopy(summary)
     name, result = summary["diagnostic_type"], summary["result"]
-    result["collected_at_min"] = result.get("acquired_at_minutes", result.get("time_min", available_time))
+    result.setdefault("collected_at_min",
+                      result.get("acquired_at_minutes", result.get("time_min", available_time)))
     result["time_min"] = int(available_time)
     if name == "ecg":
         state["diagnostics"].setdefault("ecg", []).append(deepcopy(result))
@@ -2243,6 +2281,63 @@ def _release_diagnostic(state, summary, available_time):
         state["diagnostics"][name] = deepcopy(result)
     state["diagnostic_history"].append({"diagnostic_type": name, "result": deepcopy(result)})
     return summary
+
+
+def _release_due_diagnostics(state, now):
+    """Publish every pending result whose time has come, oldest first."""
+    pending = state.get("family_state", {}).get("pending_diagnostics") or []
+    if not pending:
+        return []
+    released, still_waiting = [], []
+    for item in sorted(pending, key=lambda row: int(row.get("due_min", 0))):
+        if int(item.get("due_min", 0)) <= int(now):
+            released.append(_release_diagnostic(state, item["summary"], int(item["due_min"])))
+        else:
+            still_waiting.append(item)
+    state["family_state"]["pending_diagnostics"] = still_waiting
+    return released
+
+
+def pending_results(state):
+    """What has been requested and is not back yet, with when it will be.
+
+    Read by the interface and by the Management Trace, so that a resident can
+    see what they are waiting for and a reader of the record can see that a
+    decision was made without it.
+    """
+    return [{"diagnostic": item["summary"].get("diagnostic_type"),
+             "available_at_min": int(item.get("due_min", 0))}
+            for item in sorted(state.get("family_state", {}).get("pending_diagnostics") or [],
+                               key=lambda row: int(row.get("due_min", 0)))]
+
+
+def advance_clinical_time(state, minutes, *, label=""):
+    """Let ``minutes`` of clinical time pass, with everything that entails.
+
+    The same temporal engine as an order: the illness moves, the treatments
+    already given keep acting, results that come due are published and the
+    case's own events fire at the minute they happen. It exists because asking
+    the patient a question is a clinical activity that costs time, and it was
+    being charged nothing (2026-09-23).
+    """
+    if state.get("engine_family") not in FAMILIES:
+        return {"elapsed_min": 0, "action_summaries": []}
+    minutes = max(0, int(minutes or 0))
+    candidate = deepcopy(state)
+    _initialize(candidate)
+    if candidate["family_state"].get("vf_at") is not None or candidate["family_state"].get("arrest_at") is not None:
+        return {"elapsed_min": 0, "action_summaries": []}
+    summaries = _release_due_diagnostics(candidate, int(candidate.get("sim_time", 0)))
+    for _ in range(minutes):
+        _minute(candidate)
+        candidate["sim_time"] = int(candidate.get("sim_time", 0)) + 1
+        _surface(candidate)
+        _discharge_return(candidate)
+        summaries.extend(_release_due_diagnostics(candidate, candidate["sim_time"]))
+    summaries.extend(candidate.get("family_state", {}).pop("procedure_events", []))
+    state.clear()
+    state.update(candidate)
+    return {"elapsed_min": minutes, "action_summaries": summaries, "label": str(label)}
 
 
 def execute_family_bundle(state, parsed):
@@ -2255,6 +2350,7 @@ def execute_family_bundle(state, parsed):
         return execute_generated_bundle(state, parsed)
     if state.get("engine_family") not in FAMILIES:
         return _failure("This encounter does not have a supported clinical trajectory.")
+    import clinical_time
     actions, error = _validate(state, parsed)
     if error:
         return _failure(error)
@@ -2268,32 +2364,66 @@ def execute_family_bundle(state, parsed):
     summaries, diagnostic_orders = [], []
     collection_state = deepcopy(candidate)
     reassess = None
+    started_at = int(candidate.get("sim_time", 0))
+    examined_regions, study_active = [], 0
     for a in actions:
         if a["type"] == "reassessment":
             reassess = a["delay_min"]
         elif a["type"] == "diagnostic":
-            delay = 1 if a["diagnostic"] == "ecg" else int(_case(candidate)["investigations"][a["diagnostic"]].get("duration_min", 0))
-            delay = max(0, min(delay, 120))
+            declared = 1 if a["diagnostic"] == "ecg" else int(
+                _case(candidate)["investigations"][a["diagnostic"]].get("duration_min", 0))
+            declared = max(0, min(declared, 120))
+            # Two different clocks (2026-09-23). The resident's own time is
+            # spent performing the study or writing the request; the result
+            # arrives on its own schedule, and waiting for it does not occupy
+            # them. Before this, sending bloods froze the resident for ten
+            # minutes and they could not treat while the patient bled.
+            study_active = max(study_active,
+                               clinical_time.study_active_minutes(a["diagnostic"], declared))
+            wait = clinical_time.study_result_minutes(a["diagnostic"], declared)
             # A specimen records the patient at collection. Therapy during the
             # processing interval must not retrospectively change its result.
-            diagnostic_orders.append((delay, _diagnostic(collection_state, a["diagnostic"], delay)))
+            diagnostic_orders.append((wait, _diagnostic(collection_state, a["diagnostic"], wait)))
         else:
+            if a["type"] == "examination":
+                examined_regions.append(a.get("region"))
             summaries.append(_order(candidate, a))
-    diagnostic_delay = max((delay for delay, _ in diagnostic_orders), default=0)
     treatment_delay = max((s["duration_min"] for s in summaries), default=0)
-    elapsed = max(diagnostic_delay, reassess if reassess is not None else treatment_delay)
+    examination_delay = clinical_time.examination_minutes(examined_regions) if examined_regions else 0
+    # Parallel, not summed: a nurse gives the drug while the resident examines,
+    # and four studies sent together are processed together, so a turn costs the
+    # longest of the things happening at once.
+    #
+    # A stated reassessment interval still governs the turn exactly as it did
+    # before: it is when the resident chose to look again, and an infusion that
+    # runs for longer keeps running into the next turn rather than holding this
+    # one. Folding the administration time into the maximum delivered a
+    # fifteen-minute bolus in five and broke every timed-delivery test.
+    information_active = max(examination_delay, study_active)
+    elapsed = (max(reassess, information_active) if reassess is not None
+               else max(treatment_delay, information_active))
     due = {}
-    for delay, summary in diagnostic_orders:
-        due.setdefault(delay, []).append(summary)
-    for summary in due.get(0, []):
-        summaries.append(_release_diagnostic(candidate, summary, candidate.get("sim_time", 0)))
+    for wait, summary in diagnostic_orders:
+        due.setdefault(started_at + wait, []).append(summary)
+    # Anything a previous turn left pending and that is already due.
+    summaries.extend(_release_due_diagnostics(candidate, started_at))
+    for summary in due.pop(started_at, []):
+        summaries.append(_release_diagnostic(candidate, summary, started_at))
     for minute in range(1, elapsed + 1):
         _minute(candidate)
         candidate["sim_time"] = int(candidate.get("sim_time", 0)) + 1
         _surface(candidate)
         _discharge_return(candidate)
-        for summary in due.get(minute, []):
+        for summary in due.pop(candidate["sim_time"], []):
             summaries.append(_release_diagnostic(candidate, summary, candidate["sim_time"]))
+        # A result that an earlier turn left pending comes back at its own
+        # minute, inside whatever the resident happens to be doing then.
+        summaries.extend(_release_due_diagnostics(candidate, candidate["sim_time"]))
+    # What is still not back waits for a later turn rather than holding this one.
+    pending = candidate["family_state"].setdefault("pending_diagnostics", [])
+    for due_at, waiting in sorted(due.items()):
+        for summary in waiting:
+            pending.append({"due_min": int(due_at), "summary": deepcopy(summary)})
     # Events the patient's course produced on its own (an endoscopy) are reported
     # at the minute they happened, not as part of the resident's order.
     summaries.extend(candidate.get("family_state", {}).pop("procedure_events", []))

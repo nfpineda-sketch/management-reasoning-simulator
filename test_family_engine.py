@@ -2,7 +2,8 @@
 from copy import deepcopy
 import math
 import pytest
-from family_engine import execute_family_bundle, clinical_update, current_findings, FAMILIES
+from family_engine import (execute_family_bundle, clinical_update, current_findings,
+                           pending_results, FAMILIES)
 
 
 def make_state(family):
@@ -125,6 +126,7 @@ def test_transfusion_delivers_over_time_and_repeat_hemoglobin_is_current():
     run(state, wait(29))
     assert state["treatments"]["packed_red_cells_units"] == 1
     run(state, {"type": "diagnostic", "diagnostic": "hemoglobin"})
+    run(state, wait(10))
     assert state["diagnostics"]["hemoglobin"]["hemoglobin_g_dl"] > 6.8
     assert state["family_state"]["circulation"] > .5
 
@@ -196,15 +198,34 @@ def test_no_bias_or_action_score_enters_patient_trajectory():
 
 
 def test_studies_freeze_at_collection_and_are_only_returned_after_processing():
+    """The specimen is the patient at collection, and the wait is not the resident's.
+
+    Both halves matter and they were one number until 2026-09-23. A laboratory
+    still records the glucose as it was when the blood was taken, however much
+    dextrose ran in afterwards. What changed is that sending it no longer holds
+    the resident for twenty minutes: the request costs a minute and each result
+    is published at its own.
+    """
     state = make_state("hypoglycemia")
-    result = run(state, {"type": "diagnostic", "diagnostic": "poc_glucose"}, {"type": "dextrose", "dose_g": 25, "route": "IV"}, {"type": "diagnostic", "diagnostic": "basic_labs"}, {"type": "diagnostic", "diagnostic": "troponin"})
-    assert result["elapsed_min"] == 20
-    assert state["diagnostics"]["poc_glucose"]["time_min"] == 0
+    result = run(state, {"type": "diagnostic", "diagnostic": "poc_glucose"},
+                 {"type": "dextrose", "dose_g": 25, "route": "IV"},
+                 {"type": "diagnostic", "diagnostic": "basic_labs"},
+                 {"type": "diagnostic", "diagnostic": "troponin"})
+    assert result["elapsed_min"] == 3, "the bedside glucose, not the troponin"
+    # A bedside glucose is a minute of the resident's own time, so it is read
+    # at one rather than at zero (2026-09-23).
+    assert state["diagnostics"]["poc_glucose"]["time_min"] == 1
     assert state["diagnostics"]["poc_glucose"]["glucose_mg_dl"] == 34
+    assert "basic_labs" not in state["diagnostics"], "not back yet"
+    assert [row["diagnostic"] for row in pending_results(state)] == ["basic_labs", "troponin"]
+
+    run(state, wait(20))
     assert state["diagnostics"]["basic_labs"]["time_min"] == 10
+    # Collected before the dextrose: the number is the one from the needle.
     assert state["diagnostics"]["basic_labs"]["glucose_mg_dl"] == 34
     assert state["diagnostics"]["basic_labs"]["collected_at_min"] == 0
     assert state["diagnostics"]["troponin"]["time_min"] == 20
+    assert pending_results(state) == []
 
 
 def test_pressure_support_does_not_erase_perfusion_or_pallor():
@@ -216,15 +237,26 @@ def test_pressure_support_does_not_erase_perfusion_or_pallor():
 
 
 def test_current_gas_after_reversal_does_not_repeat_old_hypercapnia():
+    """The first sample is the patient before the antidote; a later one is not."""
     state = make_state("opioid")
-    run(state, {"type": "naloxone", "dose_mg": .4, "route": "IV"}, {"type": "diagnostic", "diagnostic": "vbg"})
-    assert state["diagnostics"]["vbg"]["pco2_mm_hg"] == 64
-    assert state["diagnostics"]["vbg"]["collected_at_min"] == 0
-    assert state["diagnostics"]["vbg"]["time_min"] == 5
+    run(state, {"type": "naloxone", "dose_mg": .4, "route": "IV"},
+        {"type": "diagnostic", "diagnostic": "vbg"})
+    run(state, wait(10))
+    first = state["diagnostics"]["vbg"]
+    assert first["pco2_mm_hg"] == 64
+    # Taken when it was ordered, back five minutes later: the two are different
+    # moments since 2026-09-23 and the record says both.
+    assert first["collected_at_min"] == 0
+    assert first["time_min"] == 5
+
+    taken_at = int(state["sim_time"])
     run(state, {"type": "diagnostic", "diagnostic": "vbg"})
-    assert state["diagnostics"]["vbg"]["collected_at_min"] == 5
-    assert state["diagnostics"]["vbg"]["pco2_mm_hg"] < 50
-    assert state["diagnostics"]["vbg"]["ph"] > 7.3
+    run(state, wait(10))
+    second = state["diagnostics"]["vbg"]
+    assert second["collected_at_min"] == taken_at
+    assert second["time_min"] == taken_at + 5
+    assert second["pco2_mm_hg"] < 50
+    assert second["ph"] > 7.3
 
 
 def actual_state(variant):
@@ -238,6 +270,7 @@ def test_actual_bank_preserves_untreated_ventilatory_pattern_and_coherent_gas():
             state = actual_state(variant)
             baseline = variant["investigations"]["abg"]["result"]
             run(state, {"type": "diagnostic", "diagnostic": "abg"})
+            run(state, wait(10))   # a gas is sent away and comes back
             gas = state["diagnostics"]["abg"]
             assert abs(gas["paco2_mm_hg"] - baseline["paco2_mm_hg"]) <= 2
             expected = 6.1 + math.log10(gas["bicarbonate_mmol_l"] / (.03 * gas["paco2_mm_hg"]))

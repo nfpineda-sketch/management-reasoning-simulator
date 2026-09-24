@@ -20,7 +20,7 @@ NEW_TREATMENT_ACTIONS = frozenset({
     "anticoagulation", "bag_mask", "intubation", "norepinephrine", "dobutamine", "diuretic",
     "magnesium", "epinephrine", "epinephrine_bolus", "epinephrine_im", "continuous_bronchodilator",
     "ventilator_disconnect", "chest_decompression", "thrombolysis", "stress_test",
-    "hemorrhage_control", "pelvic_binder", "tranexamic_acid",
+    "hemorrhage_control", "pelvic_binder", "tranexamic_acid", "result_review",
     "octreotide", "glucagon", "calcium", "thiamine", "oral_carbohydrate", "dextrose_infusion", "naloxone_infusion",
     "atropine", "transcutaneous_pacing", "opioid_analgesia",
     "neuromuscular_blockade", "sedation_infusion",
@@ -521,9 +521,16 @@ _EXAMINATION_REGIONS = (
 )
 
 
-def _examination_order(body):
-    """The region a written examination asks for, or None."""
-    if not re.search(r"\b(?:" + _EXAMINATION_VERBS + r")\b", body):
+def _examination_order(body, verb=None):
+    """The region a written examination asks for, or None.
+
+    A clause may carry the verb ("examino el abdomen") or inherit it from the
+    one before it ("examino la respiracion, el abdomen y el corazon"). Until
+    2026-09-23 only the first clause was an examination and the rest were quoted
+    back as unreadable orders, so examining a patient properly held the turn.
+    """
+    inherited = str(verb or "") in _EXAMINATION_VERBS.split("|")
+    if not inherited and not re.search(r"\b(?:" + _EXAMINATION_VERBS + r")\b", body):
         return None
     for region, pattern in _EXAMINATION_REGIONS:
         if re.search(r"\b(?:" + pattern + r")\b", body):
@@ -878,6 +885,20 @@ def _parse_piece_core(piece, inherited=None):
     # "Pido nefrostomia percutanea" is a request for urology, not for a study,
     # and the study dispatch owns the verb that introduced it. Asked before it,
     # so the service is reached rather than the refusal (2026-09-23).
+    # Reading a result that is already back is not requesting the study again.
+    # It had no way of being said at all until 2026-09-23: "revisa el lactato"
+    # was refused, so the only way to see a result was to reorder the test.
+    review = re.match(
+        r"\s*(?:(?:me\s+)?(?:revisa|reviso|revisar|mira|miro|mirar|ve|veo|ver|lee|leo|leer|"
+        r"revisemos|veamos|chequea|chequeo)\b|"
+        r"(?:review|look\s+at|read|check)\b(?!\s+(?:the\s+)?(?:pulse|pressure|perfusion))|"
+        r"(?:cu[aá]l\s+(?:es|fue)|qu[eé]\s+(?:muestra|dice|sali[oó]|result[oó]))\b|"
+        r"(?:ya\s+)?(?:est[aá]|lleg[oó]|tengo)\s+(?:el|la|los|las)?\s*resultado)", body)
+    if review:
+        for name, pattern in _DIAGNOSTICS.items():
+            if re.search(r"\b(?:" + pattern + r")\b", body[review.end():]):
+                return [{"type": "result_review", "diagnostic": name}], verb or "review"
+
     # The x of xABCDE. A tourniquet, direct pressure and packing are the three
     # measures this engine performs, and each names where it is applied.
     bleeding = re.search(
@@ -921,7 +942,7 @@ def _parse_piece_core(piece, inherited=None):
                 r"return\s+precautions|safety\s+net(?:ting)?|follow[- ]up)\b", body):
         return [], None
 
-    examined = _examination_order(body)
+    examined = _examination_order(body, verb)
     if examined is not None:
         if examined:
             return [{"type": "examination", "region": examined}], verb or "examine"

@@ -760,6 +760,84 @@ def observable_state_changed(before, after):
     )
     return any(before_observable.get(key) != after_observable.get(key) for key in keys)
 
+def _pending_results_now():
+    """Studies requested and not back yet, for whichever engine is running."""
+    state = st.session_state.get("state") or {}
+    if not state.get("engine_family"):
+        return []
+    try:
+        from family_engine import pending_results
+        return pending_results(state)
+    except Exception:
+        return []
+
+
+def spend_clinical_time(minutes, *, activity, request, response=""):
+    """Let an information activity cost what it costs, and record it.
+
+    Asking the patient a question and examining them are clinical activities.
+    Until 2026-09-23 they cost nothing: the clock did not move, the illness did
+    not move, and a patient who was unstable and untreated stayed exactly as
+    unstable however long the resident spent gathering information.
+
+    The minutes are real and the patient runs through them on the same temporal
+    engine as any order. Nothing here makes a patient worse *because* a question
+    was asked: what happens in the interval is whatever that case's physiology
+    does in an interval of that length.
+    """
+    state = st.session_state.get("state") or {}
+    if not state.get("engine_family") or int(minutes or 0) <= 0:
+        return None
+    from family_engine import advance_clinical_time, pending_results
+
+    before = management_state_snapshot(state)
+    started = int(state.get("sim_time", 0))
+    result = advance_clinical_time(state, minutes, label=activity)
+    after = management_state_snapshot(st.session_state.state)
+    for summary in result.get("action_summaries", []) or []:
+        label = str(summary.get("label") or "")
+        if summary.get("type") == "diagnostic":
+            add_event("diagnostic_result", format_diagnostic_summary(summary))
+        elif label:
+            add_event("clinical_update", label)
+    record_information_activity(activity, request, response, started, result, before, after)
+    return result
+
+
+def record_information_activity(activity, request, response, started, result, before, after):
+    """One information activity in the Management Trace, with its interval.
+
+    Section 7 of the faculty specification of 2026-09-23: the record has to show
+    that a resident spent an interval obtaining history while the patient was
+    still unstable and still untreated -- and has to show it as a fact, not as a
+    judgement. Nothing here calls a delay an error; whether it was the right use
+    of those minutes is read from what was known at the time.
+    """
+    from family_engine import pending_results
+
+    elapsed = int(result.get("elapsed_min", 0) or 0)
+    st.session_state.management_trace.append({
+        "trace_schema": "management_trace_v1",
+        "activity_kind": str(activity),
+        "decision_time_min": started,
+        "response_time_min": started + elapsed,
+        "elapsed_minutes": elapsed,
+        "learner_input": str(request),
+        "information_obtained": str(response),
+        "interpreted_action": [],
+        "reasoning": {},
+        "reasoning_observations": [],
+        "reasoning_gate": {"required": False, "status": "not_required"},
+        "execution_status": "information",
+        "action_summaries": deepcopy(result.get("action_summaries", [])),
+        "results_pending": pending_results(st.session_state.state),
+        "concurrent_treatments": deepcopy(
+            (st.session_state.state.get("treatments") or {}).get("administered_medications", [])),
+        "state_before": deepcopy(before),
+        "state_after": deepcopy(after),
+    })
+
+
 def record_management_trace(learner_input, parsed, result, state_before, state_after):
     """Append one structured decision-response event to the Management Trace."""
     status = "executed" if result.get("executed") else "not_executed"
@@ -780,6 +858,9 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         "reasoning_observations": deepcopy(parsed.get("reasoning_observations", [])),
         "reasoning_recognition": deepcopy(parsed.get("reasoning_recognition")),
         "cue_recognition": deepcopy(parsed.get("cue_recognition")),
+        # What is still out at the moment of this decision, so that no result is
+        # ever read as having been known before it was back.
+        "results_pending": _pending_results_now(),
         "reasoning_gate": deepcopy(parsed.get("reasoning_gate", {"required": False, "status": "not_required"})),
         "recognized_future_actions": deepcopy(parsed.get("recognized_future_actions", [])),
         "interpretation_mode": parsed.get("interpretation_mode", "deterministic"),
@@ -9085,6 +9166,9 @@ with st.container(key="encounter-console"):
                 answer = answer_history(question, facts, scene_setting("OPENAI_API_KEY"), state=st.session_state.state)
                 add_event("you", question)
                 add_event("patient_history", answer)
+                import clinical_time as _clock
+                spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
+                                    activity="history_question", request=question, response=answer)
                 rerun_app()
             with st.expander("History topics"):
                 case_topics = history_topics(st.session_state.state)
@@ -9100,6 +9184,10 @@ with st.container(key="encounter-console"):
                         response = " ".join(f for f in facts if not f.startswith(("I ", "It has burned")))
                     add_event("you", "Ask about " + topic.lower())
                     add_event("patient_history", response)
+                    import clinical_time as _clock
+                    spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
+                                        activity="history_question",
+                                        request="Ask about " + topic.lower(), response=response)
                     rerun_app()
     if encounter_mode == "Examine":
         family_findings = {}
@@ -9125,6 +9213,10 @@ with st.container(key="encounter-console"):
                 finding = "Capillary refill: " + str(observed.get("crt", "—")) + " s. Extremities: " + str(observed.get("extremities", "Not documented"))
             add_event("you", "Examine: " + area)
             add_event("examination", finding)
+            import clinical_time as _clock
+            spend_clinical_time(_clock.examination_minutes([area]),
+                                activity="examination", request="Examine: " + area,
+                                response=finding)
             rerun_app()
 
     carry_forward_plan = st.session_state.get("carry_forward_plan", {}) or {}

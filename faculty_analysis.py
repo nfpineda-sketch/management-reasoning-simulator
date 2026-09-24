@@ -58,7 +58,12 @@ _REASONING = frozenset("problem_representation management_priority rationale exp
 _REFLECTION = ("working_model_update", "priority_trigger", "alternative_action", "expected_response_reassessment")
 _COMPARISON = ("alignment", "adjustment")
 _PLAN = ("cue", "threshold", "next_priority", "alternative_action", "expected_effect", "reassessment_plan")
-_STATUSES = frozenset(("executed", "terminal_locked", "not_executed", "clarification_required", "deferred"))
+# "information" joined on 2026-09-23: asking the patient, examining them and
+# reading a result are clinical activities that cost time and are recorded as
+# what they are. They are never numbered as decisions, and nothing here calls an
+# interval spent obtaining information an error.
+_STATUSES = frozenset(("executed", "terminal_locked", "not_executed", "clarification_required",
+                       "deferred", "information"))
 
 
 def _canonical(value):
