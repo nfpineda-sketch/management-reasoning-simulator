@@ -886,20 +886,29 @@ def screen_domains(record, case_id):
                                 for r in acted) + "."))
             else:
                 suggestion = "no_opportunity"
+                # Support, never the criterion (faculty decision 8, 2026-09-25):
+                # the windows still need reviewing against their cases, and the
+                # opportunity also depends on the information, the patient's state
+                # and what the simulator could execute.
                 facts_list.append(_say(
-                    "No action of this domain was taken before the closure, so the record offers no "
-                    "real opportunity to observe it: not assessable, not a zero.",
-                    "No hubo acciones de este dominio antes del cierre, así que el registro no ofrece "
-                    "una oportunidad real de observarlo: no evaluable, no un cero."))
+                    "No action of this domain was taken before the closure. This supports reading it as "
+                    "not assessable, not a zero; the window is support, not the criterion: confirm the "
+                    "opportunity against the information the learner had, the patient's state and what "
+                    "the simulator could execute.",
+                    "No hubo acciones de este dominio antes del cierre. Esto apoya leerlo como no evaluable, "
+                    "no un cero; la ventana es un apoyo, no el criterio: confirme la oportunidad con la "
+                    "información disponible, el estado del paciente y lo que el simulador podía ejecutar."))
         elif closed is not None and closed - window[0] < 5 and not acted:
             # The boundary is stated rather than decided: whether a few
             # minutes inside a window were a real opportunity is the
             # reviewer's reading, and the reviewer needs the minutes.
             facts_list.append(_say(
                 f"The window opened at {window[0]} min and the encounter closed "
-                f"{_minutes(closed - window[0])} min later, with no action of this domain.",
+                f"{_minutes(closed - window[0])} min later, with no action of this domain (a technical "
+                "notice, not a boundary between zero and not assessable).",
                 f"La ventana abrió a los {window[0]} min y el encuentro cerró "
-                f"{_minutes(closed - window[0])} min después, sin acciones de este dominio."))
+                f"{_minutes(closed - window[0])} min después, sin acciones de este dominio (un aviso "
+                "técnico, no una frontera entre cero y no evaluable)."))
         rows.append({"domain_id": domain, "window_min": list(window), "window_opened": opened,
                      "domain_actions": [{"type": r["type"], "minute": r["minute"], "ref": r["ref"]}
                                         for r in acted],
@@ -1119,8 +1128,10 @@ FLAG_LABELS = {
                            "Se cumplen todas las condiciones que el registro puede verificar, y no se propuso"),
     "event_to_read": ("The record settles part of the trigger and it was not proposed: read the rest",
                       "El registro verifica parte del gatillo y no se propuso: lea el resto"),
-    "domain_without_opportunity": ("Scored, although its declared window never opened",
-                                   "Puntuado, aunque su ventana declarada nunca se abrió"),
+    "domain_without_opportunity": ("Scored, although its declared window never opened (the window is "
+                                   "support: read the opportunity)",
+                                   "Puntuado, aunque su ventana declarada nunca se abrió (la ventana es un "
+                                   "apoyo: revisar la oportunidad)"),
     "domain_quote_not_in_record": ("The words quoted as the learner's are not in the decision cited",
                                    "Las palabras citadas como del residente no están en la decisión citada"),
     "domain_quote_minute_mismatch": ("A quotation is dated at a minute that is not the decision's",

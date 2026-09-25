@@ -111,7 +111,9 @@ def build_rubric_source(record, assistance_context="unknown", context=None):
 SCREENING_RULE = (
     "record_screening is computed by software from the frozen record, before any reading. Its "
     "facts are facts: an order it lists as executed inside a window was executed then, and a "
-    "window it lists as not opened had not opened when the encounter closed. An event whose "
+    "window it lists as not opened had not opened when the encounter closed. A window is support "
+    "for judging an opportunity, not the criterion: an open window does not prove a real "
+    "occasion, and a closed one is read with the information and the patient's state. An event whose "
     "status is 'contradicted' did not occur as defined. An event whose status is 'met' has "
     "every condition the record can settle satisfied; it still needs your verdict, and if you "
     "judge it did not occur you must name the exception that applies. 'reading' means part of "
@@ -168,11 +170,14 @@ SCORING
   was used; "simulator_limitation" when the simulator could not observe or execute it.
 - Any opportunity other than "observed" means the score is "not_assessable", and a score of
   "not_assessable" means the opportunity is not "observed". Give the reason in the rationale.
-- A domain whose declared window had not opened when the encounter closed, and in which the
-  learner took none of the actions the case declares for it, had no real opportunity: it is
-  not_assessable, however the encounter ended. The early closure itself is evidence for the
-  domains whose window was open, not for the ones that never opened. If the window opened
-  only minutes before the closure, say so and explain the reading you chose.
+- The declared windows are support for judging the opportunity, never the criterion by
+  themselves. A window that had not opened when the encounter closed, with none of the actions
+  the case declares for the domain, supports "no_opportunity"; a window that was open does not
+  by itself prove there was a real occasion. Judge the opportunity from the information the
+  learner had available, the patient's state and what the simulator could execute, and say
+  which of these decided it. The early closure itself is evidence for the domains where the
+  occasion was real. A window that opened only minutes before the closure is a notice to read,
+  not a boundary between a zero and not_assessable: explain the reading you chose.
 - "not_assessable" is NOT a zero. A zero is a demonstrated failure where there was need,
   opportunity and means.
 - Monitoring (the fourth domain) is checking, not announcing: stating an interval shows the

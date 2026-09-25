@@ -235,7 +235,9 @@ def test_the_fifth_domain_had_no_window_when_the_encounter_closed_at_thirteen(cl
     # The fourth domain's window had opened: the early closure is evidence there.
     assert rows["D4"]["window_opened"] is True and rows["D4"]["suggestion"] is None
     text = " ".join(fact["es"] for fact in rows["D5"]["facts"])
-    assert "no evaluable, no un cero" in text
+    assert "no evaluable" in text and "no un cero" in text
+    # Support, never the criterion (faculty decision 8, 2026-09-25).
+    assert "la ventana es un apoyo, no el criterio" in text
 
 
 def test_scoring_a_domain_that_never_opened_is_flagged(closed_at_thirteen):
