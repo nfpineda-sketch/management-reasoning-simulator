@@ -685,6 +685,13 @@ def _validate(state, parsed):
         else:
             return None, f"The requested action ({str(kind)[:60]}) is not executable in this encounter. Please clarify the order."
         if a.get("administration_duration_min") is not None:
+            if (kind == "fluid" and a.get("rate_ml_h") and a.get("volume_ml")
+                    and not _number(a["administration_duration_min"], 1/60, 120)):
+                # The rate the resident wrote is read and kept; running it for
+                # hours is what this simulator cannot do, and it says so.
+                return None, (f"{a['volume_ml']:g} mL at {a['rate_ml_h']:g} mL/h would run for "
+                              f"{a['administration_duration_min'] / 60:.1f} h; this simulator runs a fluid order over "
+                              "at most 120 min. Restate it as a bolus or a shorter infusion.")
             if kind not in set(_MEDICINES) | {"fluid", "blood", "anticoagulation"} or not _number(a["administration_duration_min"], 1/60, 120):
                 return None, "Specify a positive supported delivery duration for a fluid, blood or fixed-dose medication."
         normalized.append(a)
@@ -923,6 +930,13 @@ def _order(state, a):
         f["pending_fluid_ml"] += a["volume_ml"]
         duration = math.ceil(a["volume_ml"] / 50)
         label = f"{a['fluid_type']} {a['volume_ml']:g} mL" + (f" {a['route']}" if a.get("route") else "") + " started"
+        if a.get("administration_duration_min") is None:
+            # No rate was written: running it as a bolus is the simulator's rule,
+            # never a rate the resident declared (faculty decision 5, 2026-09-25).
+            label += " as a bolus (no rate written; the simulator's standard rate, about 50 mL/min)"
+            a = {**a, "rate_basis": "simulator_default"}
+        else:
+            a = {**a, "rate_basis": "declared"}
     elif kind == "blood":
         f["pending_blood_units"] += a["units"]
         duration = int(30 * a["units"])
@@ -1444,7 +1458,7 @@ def _order(state, a):
         summary["repeated"] = True
     if kind == "disposition" and repeated:
         summary["repeated"] = True
-    for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "service", "destination", "duration_h", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
+    for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "rate_basis", "rate_ml_h", "service", "destination", "duration_h", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
         if key in a:
             summary[key] = a[key]
     if ((kind in _MEDICINES or kind == "anticoagulation") and a.get("operation") != "continue"

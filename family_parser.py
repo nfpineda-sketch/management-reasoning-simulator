@@ -1493,7 +1493,13 @@ def _parse_piece_core(piece, inherited=None):
             fluid_type = ("normal saline" if re.search(r"\b(?:saline|ns|sf|salino|fisiologico|fisiologica)\b", body)
                           else "lactated Ringer's" if re.search(r"\b(?:ringer|ringers|lr)\b", body) else None)
             return [{"type": "fluid", "operation": "stop", "fluid_type": fluid_type}], verb
-        volume, units = _amount(body, r"ml|cc|lts?|liters?|litres?|litros?|l")
+        # "SF 1000 ml ev a 125 ml/h": the rate is the resident's, read and kept
+        # as declared; it used to hide the volume, and the order was held
+        # asking for one (faculty decision 5, 2026-09-25).
+        per_hour = re.search(r"(\d+(?:[.,]\d+)?)\s*(?:ml|cc)\s*(?:/|\s+(?:por|per|a\s+la|an?)\s+)\s*(?:h|hr|hora|hour)\b",
+                             body)
+        measured = body if not per_hour else body[:per_hour.start()] + " " + body[per_hour.end():]
+        volume, units = _amount(measured, r"ml|cc|lts?|liters?|litres?|litros?|l")
         if volume is not None and units not in {"ml", "cc"}:
             volume *= 1000
         if volume is None:
@@ -1510,6 +1516,10 @@ def _parse_piece_core(piece, inherited=None):
         elif re.search(r"\b(?:crystalloid|cristaloides?)\b", body):
             fluid_type = "crystalloid"
         fluid = {"type": "fluid", "volume_ml": volume, "fluid_type": fluid_type}
+        if per_hour and volume:
+            rate = float(per_hour.group(1).replace(",", "."))
+            if rate > 0:
+                fluid.update(rate_ml_h=rate, administration_duration_min=round(volume / rate * 60, 1))
         # A stated route is kept so the engine can confirm it; none is assumed.
         route = _route(body)
         if route:
