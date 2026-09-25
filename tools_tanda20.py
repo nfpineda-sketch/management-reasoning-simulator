@@ -199,14 +199,20 @@ FALLBACK_ANSWERS = {
     "What do you expect": "Espero que mejore el parámetro que estoy tratando.",
     "What will you check": "Signos vitales y el hallazgo que motivó la orden.",
 }
+FALLBACK_ANSWERS_EN = {
+    "What do you think is going on": "I keep the working hypothesis I already explained.",
+    "What do you expect": "I expect the parameter I am treating to improve.",
+    "What will you check": "Vital signs and the finding that prompted the order.",
+}
 
 
-def _resolve(at, held):
+def _resolve(at, held, language="es"):
     """An unanticipated hold, answered with the four questions or cancelled."""
+    fallback = FALLBACK_ANSWERS_EN if language == "en" else FALLBACK_ANSWERS
     if held == "pending_reasoning":
         areas = [item for item in at.text_area if not item.disabled]
         for item in areas:
-            for prefix, value in FALLBACK_ANSWERS.items():
+            for prefix, value in fallback.items():
                 if item.label.startswith(prefix) and not str(item.value or "").strip():
                     item.set_value(value)
         try:
@@ -283,8 +289,39 @@ def _declare_synthetic(at):
     return True
 
 
-def rehearse(script, workdir):
+@contextmanager
+def _pinned_seed(seed):
+    """The encounter's random seed, fixed for a rehearsal that must be repeatable.
+
+    A launch draws its seed with ``secrets.randbelow``, and a few things depend
+    on it -- whether a patient vomits with morphine (analgesia), the noise of a
+    rhythm strip. Two rehearsals compared decision by decision need the same
+    seed; rehearsing with several seeds shows what a paid run may meet. Only
+    seeds are drawn with ``randbelow``: tokens and passwords are not touched.
+    """
+    if seed is None:
+        yield
+        return
+    import secrets
+    real = secrets.randbelow
+    secrets.randbelow = lambda bound: int(seed) % bound
+    try:
+        yield
+    finally:
+        secrets.randbelow = real
+
+
+def rehearse(script, workdir, seed=None):
     """One script through the real page, offline. A finding is returned, never raised."""
+    with _pinned_seed(seed):
+        result = _rehearse(script, workdir)
+    result["language"] = script.get("language", "es")
+    if seed is not None:
+        result["seed"] = seed
+    return result
+
+
+def _rehearse(script, workdir):
     from streamlit.testing.v1 import AppTest
     import curriculum_runtime
     from account_store import AccountStore, hash_password
@@ -340,7 +377,7 @@ def rehearse(script, workdir):
                     # rehearsal still means something.
                     result.setdefault("unanticipated_holds", []).append(
                         {"step": index, "kind": outcome["held"], "said": outcome["said"][-1:]})
-                    result["steps"].append(_resolve(at, outcome["held"]))
+                    result["steps"].append(_resolve(at, outcome["held"], script.get("language", "es")))
             if _pending(at):
                 result["pending_at_close"] = _pending(at)
             result["sim_time_at_close"] = (at.session_state["state"] or {}).get("sim_time")
@@ -374,7 +411,8 @@ def rehearse(script, workdir):
     return result
 
 
-_ONLY_A_REASSESSMENT = re.compile(r"\s*reeval\w*\s+en\s+\d+\s+min\w*[^.]*\.?\s*", re.I)
+_ONLY_A_REASSESSMENT = re.compile(r"\s*(?:reeval\w*\s+en|reassess\w*\s+in)\s+\d+\s+min\w*[^.]*\.?\s*",
+                                  re.I)
 
 
 def _read_as_nothing(entry):
@@ -398,7 +436,9 @@ def _read_as_nothing(entry):
 
 
 def summary_markdown(results):
-    lines = ["# Ensayo offline de la tanda de 20 · no es evidencia de la tanda", "",
+    english = any(r.get("language") == "en" for r in results)
+    lines = ["# Ensayo offline de la tanda de 20 · no es evidencia de la tanda"
+             + (" · órdenes en inglés" if english else ""), "",
              "Cada guion pasó por la página real (app.py) con Streamlit en proceso, una base "
              "temporal, sin clave y con el caso fijado. Sirve para encontrar lo que detendría "
              "a un residente antes de gastar un encuentro pagado.", "",
@@ -414,7 +454,15 @@ def summary_markdown(results):
     return "\n".join(lines) + "\n"
 
 
-def local_check(number, workdir, port=8599):
+def _scripts(language):
+    if language == "en":
+        import tanda20_en as scripts
+    else:
+        import tanda20 as scripts
+    return scripts.BY_NUMBER, scripts.SCRIPTS
+
+
+def local_check(number, workdir, port=8599, language="es"):
     """The runner itself, in a real browser, against a local offline copy of the app.
 
     A temporary database with a faculty test account and a local copy of the
@@ -427,7 +475,7 @@ def local_check(number, workdir, port=8599):
     import urllib.request
     from account_store import AccountStore, hash_password
     from resident_profile import ProfileStore
-    from tanda20 import BY_NUMBER
+    BY_NUMBER, _ = _scripts(language)
     import tanda20_runner
     workdir = Path(workdir)
     workdir.mkdir(parents=True, exist_ok=True)
@@ -489,16 +537,23 @@ def main(argv=None):
     parser.add_argument("--base-url", help="the development app, for --run")
     parser.add_argument("--no-ai", action="store_true", help="--run without the paid documents")
     parser.add_argument("--out", default="local-data/tanda20/rehearsal")
+    parser.add_argument("--language", choices=("es", "en"), default="es",
+                        help="the Spanish scripts or their English version (tanda20_en), for "
+                             "--rehearse, --local-check and --run")
+    parser.add_argument("--seed", type=int, help="--rehearse with the encounter seed pinned")
     args = parser.parse_args(argv)
     if args.local_check:
-        entry = local_check(args.local_check, ROOT / "local-data" / "tanda20" / "local-check")
+        entry = local_check(args.local_check, ROOT / "local-data" / "tanda20" / "local-check",
+                            language=args.language)
         print(json.dumps({k: v for k, v in entry.items() if k != "steps"}, indent=1, ensure_ascii=False))
         return 0 if not entry["stopped"] else 1
     if args.run:
         if not args.base_url:
             parser.error("--run needs --base-url (the development app).")
         import tanda20_runner
-        from tanda20 import BY_NUMBER
+        BY_NUMBER, _ = _scripts(args.language)
+        # One ledger for both languages: the limit of paid encounters counts every
+        # run, and an English run is not a second budget.
         out = ROOT / "local-data" / "tanda20" / "batch"
         out.mkdir(parents=True, exist_ok=True)
         for number in [int(n) for n in args.run.split(",")]:
@@ -514,14 +569,14 @@ def main(argv=None):
             print(f"{row['number']:>2} {row['case_id']:<30} {row['category']:<13} {row['challenge']} "
                   f"events={','.join(row['declared_events'])}")
         return 0
-    from tanda20 import BY_NUMBER, SCRIPTS
+    BY_NUMBER, SCRIPTS = _scripts(args.language)
     chosen = SCRIPTS if args.rehearse == "all" else [BY_NUMBER[int(n)] for n in args.rehearse.split(",")]
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out = ROOT / args.out / stamp
     out.mkdir(parents=True, exist_ok=True)
     results = []
     for script in chosen:
-        result = rehearse(script, out / "db")
+        result = rehearse(script, out / "db", seed=args.seed)
         results.append(result)
         print(f"{script['number']:>2} {script['case_id']:<30} stopped={result['stopped']} "
               f"holds={len(result.get('unanticipated_holds', []))} status={result.get('attempt_status')} "

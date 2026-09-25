@@ -63,7 +63,7 @@ _AGENTS = {
         "paracetamol": r"paracetamol|acetaminophen|acetaminofen|tylenol|perfalgan",
         "ibuprofen": r"ibuprofen|ibuprofeno|caldolor",
         "ketorolac": r"ketorolac|ketorolaco|toradol",
-        "metamizole": r"metamizol|dipirona|dipyrone|novalgina",
+        "metamizole": r"metamizole?|dipirona|dipyrone|novalgina",
     },
     # Morphine is a treatment in every family, and a decision in some.
     "opioid_analgesia": {"morphine": r"morphine|morfina", "fentanyl": r"fentanyl|fentanilo"},
@@ -192,7 +192,12 @@ _SUPPORT_ORDERS = (
     # (2026-09-24).
     ("vascular_access", r"\bvias?\s+(?:venosas?|perifericas?|gruesas?|ev|iv)\b|\bvia\s+venosa\b|\bvvps?\b|"
                         r"\bacceso\s+(?:venoso|vascular)\b|\bbranula\b|\bcateter\s+venoso\b|"
-                        r"\b(?:peripheral\s+)?(?:iv|intravenous)\s+(?:line|access|cannula)\b|\blarge[- ]bore\b"),
+                        r"\b(?:peripheral\s+)?(?:iv|intravenous)\s+(?:line|access|cannula)\b|\blarge[- ]bore\b|"
+                        # "Place a peripheral IV", "place a PIV", "start an IV": how the
+                        # line is written in English (the twenty scenarios in English,
+                        # 2026-09-25). "An IV bolus" or "an IV push" is a route, not a line.
+                        r"\bpivs?\b|\bperipheral\s+ivs?\b|"
+                        r"\b(?:an?|one|two|2)\s+ivs?\b(?!\s+(?:bolus|push|fluids?|infusion|drip|antibiotics?|dose))"),
     ("urinary_catheter", r"\bsonda\s+(?:foley|vesical|urinaria)\b|\bfoley\b|"
                          r"\burinary\s+catheter\b|\bindwelling\s+catheter\b"),
     ("gastric_tube", r"\bsonda\s+(?:nasogastrica|naso\s*gastrica|orogastrica)\b|\bsng\b|"
@@ -238,6 +243,11 @@ def _support_order(body, verb):
 
 _AIRWAY_CONTEXT = re.compile(r"\b(?:intubacion|intubation|secuencia rapida|rapid sequence|rsi|tubo|"
                              r"vc/ac|pc/ac|ac/vc|psv|ventilacion|ventilator|ventilation|fio2|peep)\b", re.I)
+
+
+def _names_a_drug(body):
+    return any(re.search(r"\b(?:" + pattern + r")\b", body) for agents in _AGENTS.values()
+               for pattern in agents.values())
 
 
 def _names_an_airway_drug(body):
@@ -312,7 +322,7 @@ _PC_MODE = (r"\bpc[/ -]?ac\b|pressure control(?:led)?|presion control|control pr
 _COMMAND = re.compile(
     r"^(?:(?:i\s+(?:will|want to)|i'll|i am going to|voy a|quiero|vamos a)\s+)?"
     r"(?P<verb>monitor|assess|vigilar|monitorizar|repeat|repetir|repito|repite|cardiovert|cardiovertir|cardiovierto|give|want|administer|apply|start|initiate|infuse|bolus|order|request|obtain|check|measure|send|get|perform|do|"
-    r"stop|discontinue|disconnect|decompress|increase|decrease|lower|raise|titrate|continue|change|set|switch|adjust|modify|reduce|wean|transfuse|nebulize|place|insert|"
+    r"stop|discontinue|disconnect|decompress|increase|decrease|lower|raise|titrate|continue|change|set|switch|adjust|modify|reduce|wean|transfuse|nebulize|place|insert|put|"
     r"consult|call|activate|admit|transfer|discharge|intubate|ventilate|induce|sedate|reassess|re-assess|recheck|reevaluate|"
     r"administrar|administro|administre|aplicar|aplico|colocar|coloco|poner|pongo|dar|doy|dale|d[eé]le|iniciar|inicio|inicie|infundir|indicar|indico|"
     r"solicitar|solicito|solicite|pedir|pido|medir|mido|controlar|control|obtener|realizar|hacer|"
@@ -481,13 +491,13 @@ _UNMODELED_ORDER = re.compile(
     r"hidroxicina|hydroxyzine|famotidina|famotidine|ranitidina|ranitidine|"
     r"lorazepam|diazepam|alprazolam|clonazepam|benzodiacepinas?|benzodiazepines?|"
     r"ondansetron|metoclopramida|metoclopramide|"
-    r"autoinyector|autoinjector|epi-?pen)\b"
+    r"auto-?inyector|auto-?injector|epi-?pen)\b"
     r"|\b(?:indic\w*|recet\w*|prescrib\w*)\b.*\b(?:al|para\s+el)\s+alta\b"
     r"|\b(?:prescribe|prescribed)\b.*\b(?:at|on|for)\s+discharge\b")
 
 # The medicine an unmodelled indication names, and whether it is for home.
 _UNMODELLED_CLASSES = (
-    ("adrenaline_autoinjector", r"autoinyector|autoinjector|epi-?pen"),
+    ("adrenaline_autoinjector", r"auto-?inyector|auto-?injector|epi-?pen"),
     ("antihistamine", r"clorfenamina|clorfeniramina|chlorphenamine|chlorpheniramine|difenhidramina|diphenhydramine|"
                       r"antihistaminic[oa]s?|antihistamines?|cetirizina|cetirizine|loratadina|loratadine|"
                       r"desloratadina|hidroxicina|hydroxyzine"),
@@ -822,7 +832,11 @@ _PER_KILO_ANY = re.compile(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mg|mcg|ug|g|gramos?|
 _ED_OBSERVATION = re.compile(
     r"\ben\s+observacion\b|\bunidad\s+de\s+observacion\b|\bobservacion\s+en\s+(?:el\s+servicio\s+de\s+)?urgencias\b"
     r"|\b(?:ed|emergency\s+department)\s+observation\b|\bobservation\s+unit\b"
-    r"|\b(?:under|in)\s+observation\s+for\s+\d")
+    r"|\b(?:under|in)\s+observation\s+for\s+\d"
+    # "Keep him under observation", "observe her in the ED": the English of "lo
+    # dejo en observacion", a destination whose duration was not written.
+    r"|\b(?:keep|leave|hold)\s+(?:him|her|them|the\s+patient)?\s*(?:under|in)\s+observation\b"
+    r"|\bobserve\s+(?:him|her|them|the\s+patient)?\s*in\s+the\s+(?:ed|emergency\s+department)\b")
 _ELSEWHERE = re.compile(r"\b(?:sala|ward|uci|icu|upc|intermedio|intermediate|coronaria|coronary|hospitaliz\w*|admit\w*)\b")
 _OBSERVATION_HOURS = re.compile(r"\b(\d+(?:[.,]\d+)?)\s*(?:h|hrs?|horas?|hours?)\b")
 _MONITOR_WORDS = re.compile(r"\bmonitor(?:izacion|izar|izado|eo)?\b|\boximetr[ií]a\b|\bpulse\s+ox")
@@ -1008,9 +1022,11 @@ _DISPOSITION_VERBS = frozenset({"admit", "transfer", "discharge", "dar de alta",
 def _parse_piece_core(piece, inherited=None):
     # "Preparo intubacion", "preparo la intubacion", "preparo todo para intubar":
     # the first person and the article dropped the order in silence (2026-09-25).
-    if re.fullmatch(r"\s*(?:prepare|set up|get ready|preparar|prepara|preparo|preparamos)"
-                    r"(?:\s+(?:for|para))?(?:\s+(?:la|el|todo\s+para|to|the))?"
-                    r"\s+(?:intubation|intubacion|intubar|intubate|airway|via aerea)\s*[.!]?", piece):
+    if re.fullmatch(r"\s*(?:(?:i|we)\s+(?:will\s+|am\s+going\s+to\s+|are\s+going\s+to\s+)?|i'll\s+|we'll\s+)?"
+                    r"(?:prepare|prep|set up|get ready|preparar|prepara|preparo|preparamos)"
+                    r"(?:\s+(?:for|para))?(?:\s+(?:la|el|todo\s+para|to|the|an?))?"
+                    r"\s+(?:intubation|intubacion|intubar|intubate|airway|via aerea|rsi|"
+                    r"rapid\s+sequence\s+(?:intubation|induction))\s*[.!]?", piece):
         return [{"type": "airway_preparation"}], "prepare"
     text = piece.strip(" :")
     text = re.sub(r"^(?:please|por favor|then|luego|despues)\s+", "", text)
@@ -1050,6 +1066,15 @@ def _parse_piece_core(piece, inherited=None):
                                  "admit", "transfer", "discharge", "hospitalizar", "ingresar", "trasladar"}:
         return [], verb
 
+    # "...with RR 32 and more effort" describes the patient: "more" repeats a
+    # treatment only after an order verb or beside something that can be given
+    # (the twenty scenarios in English, 2026-09-25). "Mas esfuerzo" never
+    # reached here, since "mas" does not start a repeat.
+    if (not verb and re.match(r"(?:another|more)\b", body)
+            and not re.search(r"\b(?:bolus|fluids?|saline|ns|ringers?|lr|crystalloids?|ml|cc|dose|doses|mg|mcg|"
+                              r"units?|oxygen|o2|blood|units?)\b", body)
+            and not _names_a_drug(body)):
+        return [], None
     if verb in {"repeat", "repetir", "repito", "repite"} or re.match(r"(?:another|more|otro|otra|otros|otras)\b", body):
         studies = [name for name, pattern in _DIAGNOSTICS.items() if re.search(r"\b(?:" + pattern + r")\b", body)]
         if studies:
@@ -1205,10 +1230,19 @@ def _parse_piece_core(piece, inherited=None):
                 r"\b(?:prbcs?|packed red (?:blood )?cells|blood|sangre|globulos rojos|hematies)\b", body):
             return [_clarification("Specify whether to transfuse these units now, with the number "
                                    "of units, or to request a crossmatch to have them reserved.")], verb
+        # "Send her home" and "get IV access": English verbs that also ask for a
+        # study, with none after them. They were refused as unknown studies, and
+        # a discharge written that way held the whole order (the twenty scenarios
+        # in English, 2026-09-25).
+        if verb == "send" and re.search(r"\bhome\b", body):
+            return [{"type": "disposition", "destination": "home"}], verb
+        support = _support_order(body, verb)
+        if support is not None:
+            return [support], verb
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
-        shorthand = r"(?:sf|ns|suero\s+fisiologico|solucion\s+fisiologica|ringer(?:\s+lactato)?|lr|cristaloides?|synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|epinephrine|epinefrina|adrenaline|adrenalina|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía)"
+        shorthand = r"(?:sf|ns|suero\s+fisiologico|solucion\s+fisiologica|ringer(?:\s+lactato)?|lr|cristaloides?|synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|epinephrine|epinefrina|adrenaline|adrenalina|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía|continuous monitoring|monitorizacion continua|cardiac monitor|monitor cardiaco)"
         medication_start = any(re.match(r"(?:" + pattern + r")\b", body) for agents in _AGENTS.values() for pattern in agents.values())
         quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
         # A route written first is how the order is spoken in English: "IM
@@ -1318,7 +1352,8 @@ def _parse_piece_core(piece, inherited=None):
         return [{"type": "dextrose_infusion", "rate_ml_h": float(rate[1]) if rate else None,
                  "concentration_percent": 10, "operation": _operation(verb)}], verb or "start"
     if re.search(r"\b(?:oral\s+(?:glucose|carbohydrate|sugar)|glucose\s+gel|juice|zumo|jugo|"
-                 r"carbohidrato\s+oral|glucosa\s+oral|az[uú]car\s+oral|comida|colaci[oó]n)\b", body):
+                 r"carbohidrato\s+oral|glucosa\s+oral|az[uú]car\s+oral|comida|colaci[oó]n|"
+                 r"(?:oral\s+)?snack|something\s+to\s+eat)\b", body):
         return [{"type": "oral_carbohydrate"}], verb or "give"
     if re.search(r"\b(?:stress\s+test|exercise\s+(?:test|stress)|treadmill|test\s+de\s+esfuerzo|"
                  r"ergometr[ií]a|prueba\s+de\s+esfuerzo)\b", body):

@@ -195,7 +195,8 @@ def direct(page, script, resident):
     page.select("Resident", resident)
     page.select("Case", script["case_id"])
     page.fill("Why this case", f"Tanda sintética 2026-09-24 · escenario {script['number']} · "
-                              f"{script['category']}")
+                              f"{script['category']}"
+                              + (" · órdenes en inglés" if script.get("language") == "en" else ""))
     page.click("Save directive")
     if "Saved. The resident's next encounter will use this case." not in page.text():
         raise RunStop("The directive was not saved.")
@@ -388,9 +389,10 @@ def run_scenario(script, *, base_url, out, with_ai=True, headless=True):
     if with_ai and spent(out) >= AUTHORISED_PAID_ENCOUNTERS:
         raise SystemExit(f"{AUTHORISED_PAID_ENCOUNTERS} paid encounters are already on the ledger. "
                          "No new paid encounter is started.")
-    folder = Path(out) / f"{script['number']:02d}-{script['case_id']}"
+    language = script.get("language", "es")
+    folder = Path(out) / (f"{script['number']:02d}-{script['case_id']}" + ("-en" if language == "en" else ""))
     folder.mkdir(parents=True, exist_ok=True)
-    entry = {"number": script["number"], "case_id": script["case_id"],
+    entry = {"number": script["number"], "case_id": script["case_id"], "language": language,
              "category": script["category"], "started_at": datetime.now(timezone.utc).isoformat(),
              "code_version_local": code_version(), "base_url": base_url,
              "paid_encounter": bool(with_ai), "steps": [], "stopped": None, "documents": {}}

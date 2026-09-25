@@ -5969,10 +5969,16 @@ def extract_explicit_reasoning(text):
     # A resident who says what they will watch has named the reassessment, even
     # without the word "reassess": "I will look at the sat and the RR in 10
     # minutes". Tried last, so it never displaces an explicit reassessment.
+    # Counting, measuring, checking and "seeing whether" name it as they do in
+    # Spanish ("voy a contar la FR", "veo si despierta"); an English answer to
+    # "what will you check?" was asked again where the Spanish one was not (the
+    # twenty scenarios in English, 2026-09-25). "I see that..." reports what is
+    # seen and is left out, as "veo que" is.
     if "reassessment_target" not in reasoning:
         watched = re.search(
-            r"\b(?:i|we)\s+(?:will\s+|am\s+going\s+to\s+)?"
-            r"(?:look\s+at|keep\s+an\s+eye\s+on|watch|follow|track)\s+"
+            r"\b(?:i|we)(?:'ll|\s+will|\s+am\s+going\s+to|\s+are\s+going\s+to)?\s+"
+            r"(?:look\s+at|keep\s+an\s+eye\s+on|watch|follow|track|count|measure|monitor|observe|review|"
+            r"check(?:\s+(?:whether|if|that))?|see\s+(?:whether|if))\s+"
             r"(?:the\s+)?(.+?)(?=\s+(?:in|after)\s+\d|[.;]|$)",
             joined, re.I,
         )

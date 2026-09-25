@@ -263,7 +263,7 @@ SCRIPTS = [
     _script(
         7, "renal_colic_34m", "renal_colic", "largo",
         "Cólico renal: primero una imagen; un AINE que no basta y analgesia escalonada (morfina en "
-        "dos dosis, con vómito, y metamizol); orina y temperatura antes del alta; alta con "
+        "dos dosis con antiemético, y metamizol); orina y temperatura antes del alta; alta con "
         "criterios de regreso.",
         [
             ("ask", "¿Cómo empezó el dolor? ¿Tiene fiebre o molestias al orinar?"),
@@ -278,9 +278,12 @@ SCRIPTS = [
                       "dolor."),
             ("order", "Bajo a dolor moderado, todavia no controlado. Repito morfina 4 mg ev. Espero dolor "
                       "leve. Reevaluo en 20 minutos dolor."),
-            ("order", "Dolor leve, pero vomito con la morfina. Mi prioridad es que tolere la via oral antes "
-                      "de irse. Doy ondansetron 4 mg ev. Espero que no vuelva a vomitar. Reevaluo en 30 "
-                      "minutos dolor y tolerancia oral."),
+            # Whether this patient vomits with the morphine depends on the encounter's
+            # seed (analgesia.NAUSEA_SUSCEPTIBLE_IN): two launches in three. The
+            # scripted resident therefore says only what holds either way.
+            ("order", "Dolor leve con la segunda dosis. Mi prioridad es que tolere la via oral antes de "
+                      "irse, y la morfina puede dar nauseas y vomitos. Doy ondansetron 4 mg ev. Espero que "
+                      "tolere liquidos sin vomitar. Reevaluo en 30 minutos dolor y tolerancia oral."),
             ("order", "Volvio a dolor moderado. Mi prioridad es dejarlo con analgesia de base antes del alta. "
                       "Doy metamizol 1 g ev. Espero dolor leve sostenido. Reevaluo en 20 minutos dolor."),
             ("order", "Dolor leve, afebril y la orina no muestra infeccion. Mi prioridad es un alta segura. "
