@@ -6989,7 +6989,10 @@ def reasoning_gate_gaps(parsed):
     timed_reassessment = any(a.get("delay_min") is not None for a in reassessments)
     if not reasoning.get("reassessment_target"):
         gaps.append("reassessment_target")
-    if not timed_reassessment:
+    # A discharge's follow-up says when on its own ("en 48 horas"), and it is
+    # never a reassessment the clinical clock should run to.
+    from discharge_follow_up import dated as follow_up_is_dated
+    if not timed_reassessment and not follow_up_is_dated(parsed):
         gaps.append("reassessment_timing")
     return gaps
 
@@ -7238,6 +7241,10 @@ def reasoning_still_missing(parsed):
     model is asked only about an order that would otherwise be held. With
     ``MRS_AI_CUES=held``, that one request also reads the findings.
     """
+    # After a discharge the reassessment is the follow-up the resident arranged
+    # (faculty decision 1, 2026-09-25): read before anything is asked again.
+    from discharge_follow_up import adopt as adopt_discharge_follow_up
+    adopt_discharge_follow_up(parsed)
     missing = reasoning_gate_missing(parsed)
     if missing:
         missing = apply_carried_reasoning(parsed, missing)
@@ -7753,6 +7760,9 @@ def resolve_pending_reasoning(text):
         list(held.get("recognized_future_actions", []) or [])
         + list(supplemental.get("recognized_future_actions", []) or [])
     ))
+    # "Control en policlinico en 48 horas", as the answer to a held discharge.
+    from discharge_follow_up import adopt as adopt_discharge_follow_up
+    adopt_discharge_follow_up(held)
 
     missing = reasoning_gate_missing(held)
     if missing:
