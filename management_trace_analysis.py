@@ -440,17 +440,29 @@ def _object(properties):
 
 
 def _generation_schema(source):
-    refs = [row["source_ref"] for row in source["timeline"] + source["reflections"] + source["encounter_events"]]
+    encounter = [row["source_ref"] for row in source["timeline"] + source["encounter_events"]]
+    reflections = [row["source_ref"] for row in source["reflections"]]
+    refs = encounter + reflections
     executed = [row["source_ref"] for row in source["timeline"] if row["execution_status"] == "executed"]
-    claim = _object({"text": {"type": "string", "minLength": 1, "maxLength": 900},
-                     "evidence_refs": {"type": "array", "minItems": 1, "maxItems": 12,
-                                       "items": {"type": "string", "enum": refs}}})
+
+    def claim_citing(allowed):
+        return _object({"text": {"type": "string", "minLength": 1, "maxLength": 900},
+                        "evidence_refs": {"type": "array", "minItems": 1, "maxItems": 12,
+                                          "items": {"type": "string", "enum": allowed}}})
+
+    claim = claim_citing(refs)
+    # A decision's own three parts are read from the encounter; its later
+    # reflection only from the reflections. The validator refuses a whole
+    # report for either crossing (faculty decision B3), so the request offers
+    # only what the validator accepts (2026-09-25: scenario 2 of the batch lost
+    # its document A to an adaptation that the schema let cite elsewhere).
     moment = _object({
         "decision_ref": {"type": "string", "enum": executed},
         "title": {"type": "string", "minLength": 1, "maxLength": 140},
-        "interpretation": deepcopy(claim), "expected_vs_observed": deepcopy(claim),
-        "adaptation": deepcopy(claim),
-        "reflection_insight": {"anyOf": [deepcopy(claim), {"type": "null"}]},
+        "interpretation": claim_citing(encounter), "expected_vs_observed": claim_citing(encounter),
+        "adaptation": claim_citing(encounter),
+        "reflection_insight": ({"anyOf": [claim_citing(reflections), {"type": "null"}]} if reflections
+                               else {"type": "null"}),
     })
     return _object({
         "overview": deepcopy(claim),

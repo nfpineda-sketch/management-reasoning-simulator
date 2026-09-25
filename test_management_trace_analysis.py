@@ -421,3 +421,30 @@ def test_invalid_source_timeline_is_rejected_before_ai(kind):
     with pytest.raises(ManagementTraceAnalysisError):
         generate_management_trace_analysis(payload, api_key="", model="test-model", client=client)
     assert client.calls == []
+
+
+def test_the_request_offers_each_part_of_a_decision_only_what_the_validator_accepts():
+    # Scenario 2 of the 2026-09-24 batch lost its document A four times: the
+    # schema let an adaptation cite a later reflection, and the validator then
+    # refuses the whole report (faculty decision B3). The request now narrows
+    # each part to the references its rule allows; the rules are unchanged.
+    client = StubClient()
+    generate_management_trace_analysis(sample_payload(), api_key="", model="test-model", client=client)
+    schema = client.calls[0]["text"]["format"]["schema"]
+    moment = schema["properties"]["pivotal_decisions"]["items"]["properties"]
+
+    def offered(part):
+        return set(part["properties"]["evidence_refs"]["items"]["enum"])
+
+    for key in ("interpretation", "expected_vs_observed", "adaptation"):
+        assert "reflection:decision-1" not in offered(moment[key])
+        assert {"trace:0", "trace:1"} <= offered(moment[key])
+    assert offered(moment["reflection_insight"]["anyOf"][0]) == {"reflection:decision-1"}
+    assert "reflection:decision-1" in offered(schema["properties"]["overview"])
+
+
+def test_an_adaptation_citing_a_later_reflection_is_still_refused():
+    report = sample_report()
+    report["analysis"]["pivotal_decisions"][0]["adaptation"]["evidence_refs"].append("reflection:decision-1")
+    with pytest.raises(ManagementTraceAnalysisError):
+        validate_management_trace_analysis(report, sample_payload())

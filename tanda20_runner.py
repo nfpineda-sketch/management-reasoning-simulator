@@ -206,6 +206,8 @@ class Page:
             target.first.click()
         path = Path(folder) / name
         info.value.save_as(path)
+        # A download button reruns the script: the next widget exists only after it.
+        self.settle()
         return path
 
 
@@ -473,10 +475,43 @@ def play(page, script, log):
 
 
 def resident_document(page, folder, script):
-    """Document A: the analysed Management Trace, generated on first view (paid)."""
-    page.wait_for_text("Download Management Trace PDF")
-    return str(page.download("Download Management Trace PDF", folder,
-                             f"{script['number']:02d}-A-management_trace.pdf"))
+    """Document A: the analysed Management Trace, generated on first view (paid).
+
+    The analysis can outlast the page's usual wait, and a first attempt the
+    provider fails leaves a retry button: it is pressed once, never more.
+    """
+    usual, page.timeout = page.timeout, max(page.timeout, GENERATION_TIMEOUT)
+    try:
+        retried = False
+        deadline = time.monotonic() + GENERATION_TIMEOUT
+        while time.monotonic() < deadline:
+            page.settle()
+            if "Download Management Trace PDF" in page.text():
+                return str(page.download("Download Management Trace PDF", folder,
+                                         f"{script['number']:02d}-A-management_trace.pdf"))
+            if page.has_button("Retry Management Trace analysis"):
+                if retried:
+                    raise RunStop("The Management Trace analysis failed twice (one retry).")
+                page.click("Retry Management Trace analysis")
+                retried = True
+                continue
+            time.sleep(2)
+        raise RunStop("'Download Management Trace PDF' never appeared on the page.")
+    finally:
+        page.timeout = usual
+
+
+def reopen_latest_review(page):
+    """Resident: open the newest completed review from the dashboard."""
+    page.open("Previous completed reviews")
+    dates = re.findall(r"Encounter review · (\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC)", page.text())
+    buttons = page.button("Open review")
+    if not dates or buttons.count() != len(dates):
+        raise RunStop("The dashboard offers no completed review to open.")
+    newest = max(range(len(dates)), key=lambda i: dates[i])
+    buttons.nth(newest).click()
+    page.settle()
+    return dates[newest]
 
 
 def open_latest_encounter(page, resident):
@@ -533,13 +568,18 @@ def _staff_documents(page, folder, script, resident):
         raise RunStop("The faculty view of the encounter shows an application error: "
                       + " | ".join(failure.first.inner_text().splitlines()[:6]))
     saved = {"encounter": chosen}
-    for label, name in (("Download 2-page faculty brief (PDF)", "C-brief_compact.pdf"),
-                        ("Download full faculty analysis (PDF)", "B-brief_full.pdf"),
-                        ("Download rubric assessment (PDF)", "D-rubric.pdf")):
+    # The full analysis sits in a folded section of the brief.
+    for label, name, section in (
+            ("Download 2-page faculty brief (PDF)", "C-brief_compact.pdf", None),
+            ("Download full faculty analysis (PDF)", "B-brief_full.pdf",
+             "Read the analysis and debriefing questions"),
+            ("Download rubric assessment (PDF)", "D-rubric.pdf", None)):
         try:
+            if section:
+                page.open(section)
             saved[name] = str(page.download(label, folder, f"{script['number']:02d}-{name}"))
-        except RunStop as missing:
-            saved[name] = f"missing: {missing}"
+        except Exception as missing:  # one document missing does not hide the others
+            saved[name] = f"missing: {type(missing).__name__}: {str(missing).splitlines()[0][:300]}"
     return saved
 
 
@@ -642,6 +682,42 @@ def finish_staff_documents(script, *, base_url, out, headless=True):
             entry["stopped"] = f"{type(stop).__name__}: {stop}"[:1000]
             try:
                 (folder / "stopped-staff.png").write_bytes(staff.page.screenshot(full_page=True))
+            except Exception:
+                pass
+        finally:
+            browser.close()
+    entry["finished_at"] = datetime.now(timezone.utc).isoformat()
+    record(out, entry)
+    return entry
+
+
+def finish_resident_document(script, *, base_url, out, headless=True):
+    """Document A of a scenario whose encounter is already completed.
+
+    The resident reopens the newest completed review from the dashboard, where
+    the Management Trace analysis is attempted again. No encounter is started,
+    so it is recorded as not paid.
+    """
+    from playwright.sync_api import sync_playwright
+    resident_user, resident_password, _, _ = credentials()
+    language = script.get("language", "es")
+    folder = Path(out) / (f"{script['number']:02d}-{script['case_id']}" + ("-en" if language == "en" else ""))
+    folder.mkdir(parents=True, exist_ok=True)
+    entry = {"number": script["number"], "case_id": script["case_id"], "language": language,
+             "category": script["category"], "started_at": datetime.now(timezone.utc).isoformat(),
+             "code_version_local": code_version(), "base_url": base_url, "paid_encounter": False,
+             "resident_document_only": True, "steps": [], "stopped": None, "documents": {}}
+    with sync_playwright() as playwright:
+        browser = launch(playwright, headless)
+        try:
+            resident = Page(browser.new_context(accept_downloads=True).new_page())
+            sign_in(resident, base_url, resident_user, resident_password)
+            entry["documents"]["reopened_review"] = reopen_latest_review(resident)
+            entry["documents"]["A-management_trace.pdf"] = resident_document(resident, folder, script)
+        except Exception as stop:
+            entry["stopped"] = f"{type(stop).__name__}: {stop}"[:1000]
+            try:
+                (folder / "stopped-resident.png").write_bytes(resident.page.screenshot(full_page=True))
             except Exception:
                 pass
         finally:
