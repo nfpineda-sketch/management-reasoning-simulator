@@ -64,7 +64,7 @@ SCRIPTS = [
     _script(
         1, "asthma_24f", "asthma", "bueno",
         "Crisis asmática grave manejada a tiempo: broncodilatación y oxígeno de entrada, "
-        "corticoide, magnesio ante respuesta parcial, destino con la respuesta observada.",
+        "salbutamol repetido en la primera hora con corticoide, destino con la respuesta observada.",
         [
             ("examine", "Breathing"),
             ("order", "Creo que es una crisis asmatica grave, porque habla en frases cortas, "
@@ -72,23 +72,29 @@ SCRIPTS = [
                       "salbutamol 5 mg nebulizado + ipratropio 0.5 mg nbz; O2 por mascarilla a "
                       "6 L/min. Espero que baje el trabajo respiratorio y la sat suba sobre 94%. "
                       "Reevaluo en 15 min FR y saturacion."),
-            ("order", "Doy hidrocortisona 200 mg ev para acortar la crisis; pido gases venosos. Espero "
-                      "menos riesgo de recaida en las proximas horas. Reevaluo en 30 minutos FR y saturacion."),
+            ("order", "Mejor: FR 23 y menos esfuerzo. Mi prioridad es sostener la broncodilatacion y "
+                      "acortar la crisis. Repito salbutamol 5 mg nbz; doy hidrocortisona 200 mg ev; pido "
+                      "gases venosos. Espero que la FR siga bajando. Reevaluo en 20 minutos FR y saturacion."),
             ("examine", "Breathing"),
-            ("order", "Mejora parcial, persiste el esfuerzo. Mi prioridad es un segundo "
-                      "broncodilatador sin demora. Doy sulfato de magnesio 2 g ev en 20 minutos. "
-                      "Espero que ceda el esfuerzo respiratorio. Reevaluo en 20 minutos FR, saturacion "
-                      "y si habla frases completas."),
-            ("order", "Respondio bien: habla frases completas y satura 95%. Mi prioridad es un "
-                      "destino con vigilancia. La hospitalizo en sala para seguir "
-                      "broncodilatadores y corticoide. Espero que se mantenga estable. Reevaluo "
-                      "en 30 minutos saturacion y trabajo respiratorio."),
+            ("order", "Sigue mejor: FR 20, esfuerzo leve y satura 99%. Mi prioridad es completar la primera "
+                      "hora de broncodilatacion. Repito salbutamol 5 mg nbz. Espero que ceda el esfuerzo. "
+                      "Reevaluo en 20 minutos FR y trabajo respiratorio."),
+            ("examine", "Breathing"),
+            ("order", "Respuesta buena pero incompleta: FR 20, esfuerzo leve y satura 99%. Mi prioridad es "
+                      "un destino con vigilancia. La hospitalizo en sala para seguir salbutamol cada 4 horas "
+                      "y corticoide. Espero que el esfuerzo siga cediendo. Reevaluo en 30 minutos FR y "
+                      "trabajo respiratorio."),
+            ("order", "Al reevaluar recae: FR 27 con esfuerzo moderado al pasar el salbutamol. Mi prioridad "
+                      "es no dejarlo sin broncodilatacion mientras sube a sala. Inicio salbutamol en "
+                      "nebulizacion continua 10 mg/h. Espero que la FR vuelva bajo 22. Reevaluo en 15 minutos "
+                      "FR y trabajo respiratorio."),
         ],
         reflection={
             "working_model_update": "La gravedad estaba en el esfuerzo y el habla, no sólo en la saturación.",
             "priority_trigger": "Un tórax silencioso o somnolencia me habría hecho escalar a soporte ventilatorio.",
-            "alternative_action": "Podría haber iniciado nebulización continua.",
-            "expected_response_reassessment": "Esperaba menos esfuerzo; reevalué FR, saturación y habla.",
+            "alternative_action": "Podría haber iniciado antes la nebulización continua en vez de dosis separadas.",
+            "expected_response_reassessment": "Esperaba menos esfuerzo; reevalué FR y trabajo respiratorio, y "
+                                              "cuando recayó al pasar el salbutamol pasé a nebulización continua.",
         },
         plan={"cue": "Habla entrecortada", "threshold": "Sat < 92% tras la segunda nebulización",
               "next_priority": "Escalar a soporte ventilatorio si no responde",
@@ -189,7 +195,8 @@ SCRIPTS = [
     _script(
         5, "pneumonia_46f", "pneumonia", "largo",
         "Neumonía con hipoperfusión: historia y examen detallados y estudio completo antes "
-        "de tratar; antibiótico correcto pero tardío; se recupera.",
+        "de tratar; antibiótico correcto pero tardío; más oxígeno y volumen al ver la respuesta "
+        "parcial; destino monitorizado por el trabajo respiratorio.",
         [
             ("ask", "¿Desde cuándo tiene tos y fiebre? ¿Expectoración?"),
             ("ask", "¿Alergias a antibióticos? ¿Enfermedades previas?"),
@@ -202,16 +209,21 @@ SCRIPTS = [
                       "Doy ceftriaxona 2 g ev y azitromicina 500 mg ev; O2 por naricera 4 L/min; "
                       "SF 1000 ml ev. Espero que mejore la perfusion y suba la saturacion. "
                       "Reevaluo en 20 minutos perfusion y saturacion."),
-            ("order", "Mejoro la perfusion y satura 94%. Mi prioridad es un destino con "
-                      "vigilancia. La hospitalizo en sala. Espero que siga mejorando. Reevaluo "
-                      "en 30 minutos."),
-            ("answer", "Voy a mirar la saturacion, la FR y el llene capilar."),
+            ("order", "Mejoro algo la perfusion, PA 99/62 y llene 3.4 s, pero satura 92% con FR 32 y mas "
+                      "esfuerzo. Mi prioridad es oxigenar mejor y completar el volumen. Pongo mascarilla "
+                      "con reservorio a 10 L/min; paso SF 500 ml ev. Espero sat sobre 94% y PAS sobre 100. "
+                      "Reevaluo en 20 minutos saturacion, FR y PA."),
+            ("order", "Satura 99% con reservorio, PA 103/64 y llene 3 s, pero sigue con FR 32 y esfuerzo "
+                      "marcado. Mi prioridad es un destino monitorizado por el trabajo respiratorio. La "
+                      "hospitalizo en intermedio. Espero que el esfuerzo ceda con el antibiotico en las "
+                      "proximas horas. Reevaluo en 30 minutos FR, saturacion y PA."),
         ],
         reflection={
             "working_model_update": "La hipoperfusión pedía antibiótico antes de completar el estudio.",
             "priority_trigger": "Llene capilar lento con fiebre debió disparar el antibiótico de inmediato.",
             "alternative_action": "Antibiótico y volumen en la primera entrega.",
-            "expected_response_reassessment": "Reevalué perfusión y saturación después del tratamiento.",
+            "expected_response_reassessment": "Reevalué perfusión y saturación después del tratamiento, y "
+                                              "subí el oxígeno y el volumen cuando la respuesta fue parcial.",
         },
         plan={"cue": "Hipoperfusión con fiebre", "threshold": "Llene > 3 s", "next_priority": "Antibiótico en la primera hora",
               "alternative_action": "Vasoactivo si no responde al volumen", "expected_effect": "Mejor perfusión",
@@ -250,8 +262,9 @@ SCRIPTS = [
     ),
     _script(
         7, "renal_colic_34m", "renal_colic", "largo",
-        "Cólico renal: analgesia correcta, pero primero una imagen y dos preguntas; orina y "
-        "temperatura antes del alta; alta con criterios de regreso.",
+        "Cólico renal: primero una imagen; un AINE que no basta y analgesia escalonada (morfina en "
+        "dos dosis, con vómito, y metamizol); orina y temperatura antes del alta; alta con "
+        "criterios de regreso.",
         [
             ("ask", "¿Cómo empezó el dolor? ¿Tiene fiebre o molestias al orinar?"),
             ("order", "Pido ecografia renal"),
@@ -260,16 +273,27 @@ SCRIPTS = [
                       "Espero que el dolor baje a menos de 4/10. Reevaluo en 20 minutos dolor."),
             ("order", "Pido examen de orina y temperatura"),
             ("order", "Reevaluo en 20 minutos"),
-            ("order", "El dolor cedio, afebril y la orina no muestra infeccion. Mi prioridad es "
-                      "un alta segura. Lo doy de alta con analgesia, control urologico y regresar "
-                      "si tiene fiebre o dolor incontrolable. Espero que expulse el calculo. "
-                      "Reevaluo en 15 minutos."),
+            ("order", "Sigue con dolor intenso pese al ketorolaco. Mi prioridad es la analgesia. Doy "
+                      "morfina 4 mg ev. Espero que el dolor baje a menos de 4/10. Reevaluo en 20 minutos "
+                      "dolor."),
+            ("order", "Bajo a dolor moderado, todavia no controlado. Repito morfina 4 mg ev. Espero dolor "
+                      "leve. Reevaluo en 20 minutos dolor."),
+            ("order", "Dolor leve, pero vomito con la morfina. Mi prioridad es que tolere la via oral antes "
+                      "de irse. Doy ondansetron 4 mg ev. Espero que no vuelva a vomitar. Reevaluo en 30 "
+                      "minutos dolor y tolerancia oral."),
+            ("order", "Volvio a dolor moderado. Mi prioridad es dejarlo con analgesia de base antes del alta. "
+                      "Doy metamizol 1 g ev. Espero dolor leve sostenido. Reevaluo en 20 minutos dolor."),
+            ("order", "Dolor leve, afebril y la orina no muestra infeccion. Mi prioridad es un alta segura. "
+                      "Lo doy de alta con analgesia, control urologico y regresar si tiene fiebre, vomitos "
+                      "o dolor incontrolable. Espero que expulse el calculo. Reevaluo en 15 minutos el dolor "
+                      "antes de que se vaya."),
         ],
         reflection={
             "working_model_update": "El cólico sin fiebre ni infección permitía el alta.",
             "priority_trigger": "Fiebre o infección urinaria me habrían hecho hospitalizar.",
             "alternative_action": "Analgesia antes de la imagen.",
-            "expected_response_reassessment": "Reevalué el dolor y descarté infección antes del alta.",
+            "expected_response_reassessment": "Reevalué el dolor tras cada analgésico, agregué morfina cuando "
+                                              "el AINE no bastó y descarté infección antes del alta.",
         },
         plan={"cue": "Fiebre", "threshold": "T > 38", "next_priority": "Descartar infección obstructiva",
               "alternative_action": "Opioide si falla el AINE", "expected_effect": "Dolor < 4/10",
@@ -285,7 +309,7 @@ SCRIPTS = [
                       "L/min. Espero que suba la saturacion. Reevaluo en 10 minutos."),
             ("complete", {"What will you check": "Saturacion, FR y esfuerzo respiratorio"}),
             ("order", "Pido rx de torax y POCUS"),
-            ("order", "Sigue con sat 84% y mucho esfuerzo. Mi prioridad es soporte ventilatorio "
+            ("order", "Sigue con sat 88%, FR 39 y esfuerzo severo. Mi prioridad es soporte ventilatorio "
                       "y bajar la poscarga. Inicio VMNI CPAP 8 con FiO2 60%; nitroglicerina 50 "
                       "mcg/min ev. Espero que baje la FR y suba la sat. Reevaluo en 10 minutos FR, "
                       "saturacion y PA."),
@@ -293,9 +317,10 @@ SCRIPTS = [
             ("answer", "Espero que aumente la diuresis y baje la congestion. Reevaluo en 20 "
                        "minutos diuresis y saturacion."),
             ("examine", "Breathing"),
-            ("order", "Mejor: sat 93%, FR 24, PA 160/90. Mi prioridad es continuar el soporte en "
-                      "un lugar monitorizado. Lo hospitalizo en la unidad coronaria. Espero que "
-                      "siga bajando la congestion. Reevaluo en 30 minutos saturacion y PA."),
+            ("order", "Mejor: satura 99% con CPAP y FR 21 sin esfuerzo, pero la PA sigue en 177/98. Mi "
+                      "prioridad es seguir bajando la poscarga en un lugar monitorizado. Subo la "
+                      "nitroglicerina a 100 mcg/min y lo hospitalizo en la unidad coronaria. Espero PA bajo "
+                      "160 y que siga bajando la congestion. Reevaluo en 30 minutos saturacion y PA."),
         ],
         reflection={
             "working_model_update": "Era un edema por poscarga; el oxígeno solo no bastaba.",
@@ -350,11 +375,14 @@ SCRIPTS = [
                       "Mi prioridad es corregirla. Instalo vvp; doy glucosa 25 g ev. Espero que "
                       "despierte. Reevaluo en 10 minutos conciencia y glicemia."),
             ("order", "Pido glicemia capilar"),
+            ("order", "Desperto con glicemia 131. Creo que fue una hipoglicemia por comer poco. Mi "
+                      "prioridad es un alta segura. Le doy colacion oral y la doy de alta si la tolera. "
+                      "Espero que no vuelva a bajar. Reevaluo en 30 minutos glicemia capilar."),
             ("ask", "¿Qué medicamentos toma para la diabetes?"),
-            ("order", "Toma glibenclamida: puede volver a caer por horas. Mi prioridad es "
-                      "evitar la recurrencia. Inicio infusion de glucosa al 10% a 100 ml/h y la "
-                      "hospitalizo en sala para observacion con glicemia cada hora. Espero "
-                      "glicemia sobre 100. Reevaluo en 30 minutos glicemia capilar."),
+            ("order", "Toma glimepirida: puede volver a caer por horas, asi que no se puede ir. Mi "
+                      "prioridad es evitar la recurrencia. Inicio infusion de glucosa al 10% a 100 ml/h y "
+                      "la hospitalizo en sala para observacion con glicemia cada hora. Espero glicemia "
+                      "sobre 100. Reevaluo en 30 minutos glicemia capilar."),
         ],
         reflection={
             "working_model_update": "No era sólo mala ingesta: la sulfonilurea explica la recurrencia.",
@@ -368,8 +396,9 @@ SCRIPTS = [
     ),
     _script(
         11, "asthma_49m", "asthma", "recuperacion",
-        "Asma grave con fatiga: broncodilata pero subestima la somnolencia; con los gases "
-        "reconoce la falla ventilatoria y escala a soporte.",
+        "Asma grave con fatiga: broncodilata sin leer el cansancio ni las sibilancias más "
+        "silenciosas; con los gases reconoce la falla ventilatoria inminente y escala a soporte, "
+        "UCI y preparación de la vía aérea.",
         [
             ("order", "Creo que es una crisis asmatica, porque tiene sibilancias. Mi prioridad "
                       "es broncodilatar. Doy salbutamol 5 mg nbz + ipratropio 0,5 mg nbz. Espero "
@@ -377,21 +406,23 @@ SCRIPTS = [
             ("answer", "Voy a mirar la saturacion y las sibilancias."),
             ("order", "Pido gases arteriales"),
             ("order", "Reevaluo en 10 minutos"),
-            ("order", "Los gases muestran retencion de CO2 y sigue somnoliento: es falla "
-                      "ventilatoria. Mi prioridad es soporte ventilatorio. Inicio VMNI BiPAP "
-                      "12/5 con FiO2 40%; doy hidrocortisona 200 mg ev. Espero que baje la PaCO2 "
-                      "y despierte. Reevaluo en 15 minutos conciencia y gases."),
+            ("order", "Los gases muestran PaCO2 45 con FR 23 y esfuerzo marcado, y llego cansado con "
+                      "sibilancias mas silenciosas: una PaCO2 normal en una crisis asi es agotamiento, "
+                      "es falla ventilatoria inminente. Mi prioridad es soporte ventilatorio. Inicio VMNI "
+                      "BiPAP 12/5 con FiO2 40%; doy hidrocortisona 200 mg ev. Espero que baje la PaCO2 y "
+                      "ceda el esfuerzo. Reevaluo en 15 minutos conciencia y gases."),
             ("order", "Consulto a UCI"),
             ("complete", {"What do you expect": "Que lo reciban para soporte ventilatorio "
                                                 "monitorizado",
                           "What will you check": "Conciencia, FR y saturacion", "delay": 15}),
-            ("order", "Lo hospitalizo en UCI"),
-            ("answer", "Espero que siga mejorando con la VMNI. Reevaluo en 15 minutos conciencia "
-                       "y FR."),
+            ("order", "Sigue con FR 28 y esfuerzo severo pese a la VMNI. Mi prioridad es no llegar tarde "
+                      "a la via aerea. Preparo intubacion y lo hospitalizo en UCI. Espero que en UCI lo "
+                      "intuben si sigue agotandose. Reevaluo en 15 minutos conciencia y FR."),
         ],
         reflection={
-            "working_model_update": "La somnolencia y el silencio eran agotamiento, no mejoría.",
-            "priority_trigger": "Somnolencia con asma debió disparar gases y soporte desde el inicio.",
+            "working_model_update": "El cansancio y el silencio eran agotamiento, no mejoría.",
+            "priority_trigger": "Un asmático cansado con sibilancias más silenciosas debió disparar gases y "
+                                "soporte desde el inicio.",
             "alternative_action": "Preparar intubación en paralelo.",
             "expected_response_reassessment": "Gases de control y conciencia.",
         },
@@ -415,7 +446,8 @@ SCRIPTS = [
                       "en 5 minutos PA y estridor."),
             ("order", "Mejora parcial. Doy adrenalina 0.5 mg im. Reevaluo en 5 minutos PA y estridor."),
             ("answer", "Espero que termine de subir la presion y desaparezca el estridor."),
-            ("order", "Estable, sin estridor y PA normal. Mi prioridad es observar la reaccion "
+            ("order", "Reevaluo en 15 minutos PA, FR y estridor"),
+            ("order", "Estable: PA 135/74, FR 21 con esfuerzo leve y sin estridor. Mi prioridad es observar la reaccion "
                       "bifasica. La dejo en observacion 6 horas y le indico autoinyector al alta. "
                       "Espero que no recurra. Reevaluo en 30 minutos PA y via aerea."),
         ],
@@ -522,7 +554,7 @@ SCRIPTS = [
             ("order", "Doy atropina 1 mg ev. Reevaluo en 5 minutos."),
             ("answer", "Espero que suba la FC. Miro FC y PA."),
             ("order", "Pido laboratorio basico y ECG"),
-            ("order", "Sigue con FC 40. Mi prioridad es la presion. Paso SF 500 ml ev. Espero "
+            ("order", "Sigue con FC 35 y PA 71/42. Mi prioridad es la presion. Paso SF 500 ml ev. Espero "
                       "PAS sobre 90. Reevaluo en 10 minutos PA y FC."),
             ("order", "Consulto a cardiologia para marcapaso"),
             ("complete", {"What do you expect": "Que instalen un marcapaso",
@@ -620,7 +652,8 @@ SCRIPTS = [
     _script(
         20, "pulmonary_embolism_33f", "pulmonary_embolism", "alternativa",
         "TEP probable sin shock: anticoagula antes de confirmar por alta sospecha clínica, "
-        "con una recuperación de sesión en medio y resultados pendientes.",
+        "con una recuperación de sesión en medio; espera la troponina y decide un destino "
+        "monitorizado por el riesgo intermedio alto.",
         [
             ("ask", "¿Ha tenido cirugías recientes, viajes o dolor en una pierna?"),
             ("order", "Creo que es un tromboembolismo pulmonar, porque tiene disnea subita, "
@@ -631,9 +664,11 @@ SCRIPTS = [
             ("recover",),
             ("examine", "Peripheral perfusion"),
             ("order", "Pido troponina"),
-            ("order", "Estable, sat 95% con oxigeno. Mi prioridad es un destino monitorizado. La "
-                      "hospitalizo en sala con anticoagulacion porque es un TEP sin shock. Espero "
-                      "que se mantenga estable. Reevaluo en 30 minutos saturacion y PA."),
+            ("order", "Reevaluo en 20 minutos FC y saturacion"),
+            ("order", "Troponina 31 sobre 19 y el VD dilatado en la angiotomografia, con FC 125, FR 30 y "
+                      "sat 93% pero PA 108/69: TEP de riesgo intermedio alto, sin shock. Mi prioridad es un "
+                      "destino monitorizado. La hospitalizo en intermedio con anticoagulacion. Espero que se "
+                      "mantenga estable. Reevaluo en 30 minutos saturacion y PA."),
         ],
         reflection={
             "working_model_update": "Con alta probabilidad clínica anticoagulé antes de la imagen.",

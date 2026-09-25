@@ -18,18 +18,18 @@ dominios y sus eventos críticos (`case_assessment_bank`).
 
 | # | Caso | Trayectoria (intención, no nota) | Challenge | Eventos definidos | Cribado del registro del ensayo | Cierre (min) |
 |---|---|---|---|---|---|---|
-| 1 | asthma_24f | bueno | R3-01 | asthma_no_bronchodilator | contradicho | 99 |
+| 1 | asthma_24f | bueno | R3-01 | asthma_no_bronchodilator | contradicho | 106 |
 | 2 | hypoglycemia_28m | bueno | R1-06 | hypo_no_glucose | contradicho | 44 |
 | 3 | acs_54m_inferior | bueno | R2-02 | acs_no_antiplatelet, acs_provocation_test | ambos contradichos | 38 |
 | 4 | gi_bleed_57m | bueno | R2-05 | gi_no_resuscitation | contradicho | 89 |
-| 5 | pneumonia_46f | largo | R1-05 | pneumonia_no_antibiotic | contradicho (antibiótico a los 24 min, ventana 0-60) | 74 |
+| 5 | pneumonia_46f | largo | R1-05 | pneumonia_no_antibiotic | contradicho (antibiótico a los 24 min, ventana 0-60) | 94 |
 | 6 | opioid_35m | largo | R1-06 | opioid_no_ventilatory_support | contradicho | 50 |
-| 7 | renal_colic_34m | largo | R2-05 | colic_missed_infection | contradicho | 59 |
+| 7 | renal_colic_34m | largo | R2-05 | colic_missed_infection | contradicho | 149 |
 | 8 | pulmonary_edema_58m | largo | R1-05 | edema_no_ventilatory_support, edema_volume_loading | ambos contradichos | 74 |
 | 9 | acs_48m_wellens | recuperación | R2-02 | acs_no_antiplatelet, acs_provocation_test | lectura docente / contradicho | 78 |
-| 10 | hypoglycemia_76f | recuperación | R1-06 | hypo_no_glucose, hypo_unsafe_discharge | ambos contradichos | 44 |
+| 10 | hypoglycemia_76f | recuperación | R1-06 | hypo_no_glucose, hypo_unsafe_discharge | ambos contradichos | 74 |
 | 11 | asthma_49m | recuperación | R3-01 | asthma_no_bronchodilator, asthma_no_ventilatory_support | ambos contradichos | 76 |
-| 12 | anaphylaxis_29f | recuperación | R1-06 | anaphylaxis_no_epinephrine, anaphylaxis_antihistamine_only, anaphylaxis_unsafe_discharge | todos contradichos | 52 |
+| 12 | anaphylaxis_29f | recuperación | R1-06 | anaphylaxis_no_epinephrine, anaphylaxis_antihistamine_only, anaphylaxis_unsafe_discharge | todos contradichos | 67 |
 | 13 | opioid_67f | equivocado | R1-06 | opioid_no_ventilatory_support, opioid_unsafe_discharge | contradicho / **lectura** (alta ocurrió) | 27 |
 | 14 | pulmonary_embolism_61m | equivocado | R2-02 | pe_no_anticoagulation | **cumplido** | 63 |
 | 15 | gi_bleed_72f | equivocado | R2-05 | gi_no_resuscitation | **cumplido** | 53 |
@@ -37,7 +37,7 @@ dominios y sus eventos críticos (`case_assessment_bank`).
 | 17 | pneumonia_83m | deficiente | R1-05 | pneumonia_no_antibiotic, pneumonia_unexamined_altered_state | **ambos cumplidos** | 61 |
 | 18 | acs_66f_nonst | deficiente | R2-02 | acs_no_antiplatelet, acs_provocation_test | lectura / **cumplido** | 41 |
 | 19 | anaphylaxis_63m_betablocked | alternativa | R1-06 | anaphylaxis_no_epinephrine, anaphylaxis_antihistamine_only, anaphylaxis_unexamined_refractory | contradichos / excluido (el tercero) | 37 |
-| 20 | pulmonary_embolism_33f | alternativa | R2-02 | pe_no_anticoagulation, pe_unindicated_thrombolysis | ambos contradichos | 55 |
+| 20 | pulmonary_embolism_33f | alternativa | R2-02 | pe_no_anticoagulation, pe_unindicated_thrombolysis | ambos contradichos | 75 |
 
 «Contradicho»: el registro muestra que el evento no ocurrió. «Cumplido»: el registro reúne
 lo que define el evento. «Lectura»: el registro no decide solo y queda para su lectura
@@ -69,8 +69,30 @@ después de la regla de las cuatro preguntas (atropina, glucagón, trombolisis�
 ejecutaban sin expectativa; «voy a mirar la saturación» no contaba como qué se va a
 controlar y se volvía a preguntar.
 
+**Contrastado con la pantalla (2026-09-25).** Que la página aceptara cada guion no
+bastaba: los guiones son texto fijo y la simulación es determinista, así que cada
+afirmación del «residente» tiene que ser lo que la pantalla le mostró en ese momento.
+Nueve no lo eran: el asma «bien manejada» decía «respondió bien, satura 95 %» con FR 32
+y esfuerzo marcado (y había dado un solo broncodilatador en 99 minutos); el cólico decía
+«el dolor cedió» con dolor intenso; otros citaban cifras que no eran las mostradas, un
+hipoglicemiante que no era el de la historia, somnolencia en un paciente alerta o
+estabilidad con PA 96/53. Se corrigieron los guiones 1, 5, 7, 8, 10, 11, 12, 16 y 20
+respondiendo a lo que la pantalla muestra, sin cambiar la trayectoria que cada uno
+representa (el guion 1 repite el salbutamol y pasa a nebulización continua al recaer; el
+7 escalona la analgesia antes del alta; el 10 incorpora el error inicial que declaraba,
+planear el alta antes de preguntar por los medicamentos; el 20 espera la troponina para
+decidir el destino). Los guiones «equivocado» y «deficiente» conservan sus errores.
+
+Ese contraste encontró además defectos del lector que el ensayo no veía, todos
+corregidos con pruebas: el alta del guion 7 («lo doy de alta con analgesia, control
+urológico y regresar si tiene fiebre…») se perdía entera y en silencio; «Repito
+salbutamol 5 mg nbz» se rechazaba («no matching administered treatment»); en «le doy
+colación oral y la doy de alta si la tolera» la colación quedaba retenida con el alta;
+«Preparo intubación» desaparecía; un alta retenida se leía «admission to home». El ensayo
+ahora nombra toda decisión aceptada que no hizo nada («Decisiones sin acción leída»).
+
 Resultado final: **20/20 con revisión completa**, sin retenciones no previstas por el
-guion, sin entradas sin ejecutar, con la declaración de prueba sintética guardada.
+guion, sin decisiones sin acción leída, con la declaración de prueba sintética guardada.
 
 ## 3. El recorrido real y su ejecutor
 
