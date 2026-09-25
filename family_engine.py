@@ -390,7 +390,8 @@ def _validate(state, parsed):
         if context_error:
             return None, context_error
         kind = a.get("type")
-        if a.get("dose_mg_per_kg") is not None and a.get("dose_mg") is None and kind != "neuromuscular_blockade":
+        if (a.get("dose_mg_per_kg") is not None and a.get("dose_mg") is None and a.get("weight_kg") is None
+                and kind not in {"neuromuscular_blockade", "anticoagulation"}):
             # "Ketamina 2 mg/kg" is a dose; the weight is the case's own.
             a = {**a, "dose_mg": round(a["dose_mg_per_kg"] * float(
                 _case(validation_state).get("patient", {}).get("weight_kg") or 70), 3)}
@@ -883,9 +884,11 @@ def _order(state, a):
     f = state["family_state"]
     tr = state["treatments"]
     kind = a["type"]
-    if a.get("dose_mg_per_kg") is not None and a.get("dose_mg") is None and kind != "neuromuscular_blockade":
+    if (a.get("dose_mg_per_kg") is not None and a.get("dose_mg") is None and a.get("weight_kg") is None
+                and kind not in {"neuromuscular_blockade", "anticoagulation"}):
         # A dose written by weight is the same dose (faculty decision 11).
-        a = {**a, "dose_mg": a["dose_mg_per_kg"] * float(_case(state).get("patient", {}).get("weight_kg") or 70)}
+        from weight_based_doses import weight_of
+        a = {**a, "dose_mg": a["dose_mg_per_kg"] * float(weight_of(state)[0] or 70)}
     # Generated cases schedule timed delivery in generated_delivery; only bank cases queue here.
     timed = a.get("administration_duration_min") is not None and state.get("engine_family") != "generated"
     duration = 1
@@ -1409,7 +1412,14 @@ def _order(state, a):
     else:
         repeated = False
     pathway_note = pathway_note if kind in {"consult", "reperfusion_referral"} else None
+    if a.get("dose_basis") and a["dose_basis"] not in label:
+        # A dose the resident wrote as a solution or per kilogram is shown with how
+        # it was calculated (faculty decision 2, 2026-09-25).
+        label = f"{label} ({a['dose_basis']})"
     summary = {"type": kind, "label": label, "duration_min": duration}
+    for key in ("dose_basis", "weight_kg", "weight_source"):
+        if a.get(key) is not None:
+            summary[key] = a[key]
     if kind == "result_review":
         summary["diagnostic_type"] = a["diagnostic"]
         if reviewed is not None:

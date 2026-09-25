@@ -12,6 +12,10 @@ _FIELDS = {'clarification': ('replacement',), 'diagnostic': ('diagnostic',), 'bl
 
 
 def missing_fields(a):
+    from weight_based_doses import needs_weight
+    if needs_weight(a):
+        # A dose per kilogram waits for the weight, and for nothing else.
+        return ['weight_kg']
     fields = _FIELDS.get(a.get('type'))
     if fields is None and 'dose_mg' in a:
         fields = ('dose_mg', 'route')
@@ -89,6 +93,20 @@ def complete_bundle(pending, text):
     if _is_a_fresh_turn(text):
         return {'superseded': True}
     original = pending['parsed']['actions'][pending['index']]
+    from weight_based_doses import apply as apply_weight, from_reply, needs_weight
+    if needs_weight(original):
+        kg = from_reply(text)
+        if kg is None:
+            return {'clarification': 'Give the patient\'s weight in kg (for example, 60 kg). '
+                                     'The whole order is kept; only the weight is missing.'}
+        parsed = deepcopy(pending['parsed'])
+        for action in parsed['actions']:
+            if needs_weight(action):
+                apply_weight(action, kg, 'resident')
+        parsed.pop('clarification', None)
+        parsed['raw_text'] = str(parsed.get('raw_text', '')) + '\nClarification: ' + str(text)
+        parsed['resolved_from_clarification'] = True
+        return {'parsed': parsed}
     if original.get('type') == 'clarification':
         parsed = deepcopy(pending['parsed'])
         if _CANCEL.fullmatch(body):

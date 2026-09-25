@@ -785,6 +785,49 @@ def _unreadable(piece):
 # Airway drugs are written by weight and run as infusions; the other classes are
 # not (faculty decision 11, 2026-09-21).
 _WEIGHT_BASED = frozenset({"procedural_sedation", "neuromuscular_blockade", "opioid_analgesia"})
+# Faculty decision 2 of 2026-09-25: a dose per kilogram is accepted for the
+# medicines the engine supports, and weight_based_doses turns it into the dose
+# with the patient's weight -- or asks for the weight and keeps the order.
+_PER_KG_KINDS = _WEIGHT_BASED | {"anticoagulation", "steroid", "magnesium", "dextrose"}
+_PER_KILO_ANY = re.compile(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mg|mcg|ug|g|gramos?|grams?|ui|u|units?|unidades)"
+                           r"\s*/\s*kg(?!\s*/)", re.I)
+_WEIGHT_STATEMENT = re.compile(
+    r"^(?:(?:el\s+|la\s+)?paciente\s+)?(?:pesa|peso(?:\s+(?:de|aproximado|estimado))?|weighs|weight(?:\s+(?:is|of))?)"
+    r"\s*(?:(?:de|es|:|unos|aprox\.?|aproximadamente|about|around)\s*)*\d+(?:[.,]\d+)?\s*"
+    r"(?:kg|kgs|kilos?|kilogramos?|kilograms?)?\s*$")
+# A glucose written as the solution it comes in: "glucosa al 30% 50 ml", "D50 50 mL".
+_SOLUTION_PERCENT = re.compile(r"(\d+(?:[.,]\d+)?)\s*%|\bd(5|10|25|30|50)\b", re.I)
+_SOLUTION_VOLUME = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ml|cc|l|lt)\b", re.I)
+
+
+def _per_kilo_order(kind, agent, match, text):
+    """A dose per kilogram, kept as written: the weight turns it into a dose later."""
+    value, unit = float(match[1]), match[2].lower()
+    if unit in {"mcg", "ug"}:
+        value, unit = value / 1000, "mg"
+    if unit in {"ui", "u", "unit", "units", "unidades"}:
+        field = "dose_units_per_kg"
+    elif unit in {"g", "gram", "grams", "gramo", "gramos"}:
+        field, value = ("dose_g_per_kg", value) if kind == "dextrose" else ("dose_mg_per_kg", value * 1000)
+    else:
+        field, value = ("dose_g_per_kg", value / 1000) if kind == "dextrose" else ("dose_mg_per_kg", value)
+    action = {"type": kind, "agent": agent, field: value, "route": _route(text)}
+    if kind == "dextrose":
+        action.pop("agent")
+    return action
+
+
+def _dextrose_from_solution(text):
+    """(grams, basis, percent, ml) for "glucosa al 30% 50 ml", or None: 30% x 50 mL = 15 g."""
+    percent = _SOLUTION_PERCENT.search(text)
+    volume = _SOLUTION_VOLUME.search(text)
+    if not percent or not volume:
+        return None
+    share = float((percent.group(1) or percent.group(2)).replace(",", "."))
+    ml = float(volume.group(1).replace(",", ".")) * (1000 if volume.group(2).lower() in {"l", "lt"} else 1)
+    if not 0 < share <= 50 or not 0 < ml <= 1000:
+        return None
+    return round(share * ml / 100, 2), f"{share:g}% × {ml:g} mL", share, ml
 _INFUSION_RATE = re.compile(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mg|mcg|ug)\s*/\s*(?:(kg)\s*/\s*)?(min|h|hr|hora|hour)\b", re.I)
 _PER_KILO = re.compile(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mg|mcg|ug)\s*/\s*kg(?!\s*/)", re.I)
 
@@ -798,10 +841,10 @@ def _medication(text, kind, agent):
             per_unit = ("mg/kg/" if infusion[3] else "mg/") + ("h" if infusion[4].lower().startswith(("h", "hora")) else "min")
             return {"type": "sedation_infusion", "agent": agent, "rate": rate,
                     "units": per_unit, "route": _route(text) or "IV", "operation": "start"}
-        per_kilo = _PER_KILO.search(text)
+    if kind in _PER_KG_KINDS:
+        per_kilo = _PER_KILO_ANY.search(text)
         if per_kilo:
-            value = float(per_kilo[1]) / (1000 if per_kilo[2].lower() in {"mcg", "ug"} else 1)
-            return {"type": kind, "agent": agent, "dose_mg_per_kg": value, "route": _route(text)}
+            return _per_kilo_order(kind, agent, per_kilo, text)
     # A weight/rate-based order cannot be flattened into a single fixed dose.
     if re.search(r"(?:mg|mcg|ug|g|units?|ui|u)\s*/\s*(?:kg|min|h|hr|hour)", text):
         return _clarification("Specify a supported fixed dose and route; this medication order uses weight or infusion-rate units.")
@@ -819,7 +862,14 @@ def _medication(text, kind, agent):
     elif dose is not None and units in {"mcg", "ug"}:
         mg = dose / 1000
     if kind == "dextrose":
-        return {"type": kind, "dose_g": mg / 1000 if mg is not None else None, "route": route}
+        action = {"type": kind, "dose_g": mg / 1000 if mg is not None else None, "route": route}
+        solution = None if action["dose_g"] is not None else _dextrose_from_solution(text)
+        if solution:
+            # Converted, and said so: the grams are the resident's solution, not a
+            # dose the application chose (faculty decision 2, 2026-09-25).
+            grams, basis, share, ml = solution
+            action.update(dose_g=grams, dose_basis=basis, solution_percent=share, solution_ml=ml)
+        return action
     return {"type": kind, "agent": agent, "dose_mg": mg, "route": route}
 
 
@@ -1713,6 +1763,10 @@ def parse_family_actions(text) -> dict:
         discharged = False
         for piece in grouped:
             if not piece:
+                continue
+            if _WEIGHT_STATEMENT.match(piece):
+                # "pesa 62 kg" is what the resident knows about the patient, and
+                # weight_based_doses reads it; it is not an order.
                 continue
             if discharged and _DISCHARGE_ADVICE.match(piece):
                 future.append(piece.strip())

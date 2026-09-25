@@ -120,7 +120,9 @@ def test_missing_dose_or_route_is_not_invented():
     # dopamine has not.
     "Order brain MRI", "Start dopamine 5 mcg/kg/min",
     "Give ceftriaxone 2 g IV azithromycin 500 mg IV",
-    "Give 25 g dextrose 500 mL saline IV", "Give prednisone 1 mg/kg PO",
+    # A dose per kilogram of a supported medicine is accepted since faculty
+    # decision 2 of 2026-09-25 (test_doses_by_solution_and_by_weight.py).
+    "Give 25 g dextrose 500 mL saline IV",
     "Give naloxone 2 units IV", "Start nitroglycerin 1 mcg/kg/min",
     "Increase norepinephrine by 0.05 mcg/kg/min",
     "Increase norepinephrine from 0.05 mcg/kg/min to 0.1 mcg/kg/min",

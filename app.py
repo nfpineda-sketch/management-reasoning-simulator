@@ -8250,7 +8250,18 @@ def execute_bundle(parsed):
     if state.get("engine_family"):
         from family_engine import execute_family_bundle
         from pending_family_orders import hold_incomplete_bundle
+        import weight_based_doses
+        waiting = weight_based_doses.resolve(parsed, state)
+        if waiting:
+            # Asking the weight is the reader's question, not a clinical minute:
+            # nothing runs and the clock does not move (faculty decision 2).
+            st.session_state.pending_action = {"type": "family_bundle", "parsed": deepcopy(parsed),
+                                               "index": waiting[0]}
+            return {"executed": False, "action_summaries": [], "elapsed_min": 0,
+                    "clarification": _held_order_prompt(parsed, weight_based_doses.WEIGHT_QUESTION)}
         result = execute_family_bundle(state, parsed)
+        if result.get("executed"):
+            weight_based_doses.remember(state, parsed)
         if not result.get("executed") and result.get("clarification"):
             result["clarification"] = _held_order_prompt(parsed, result["clarification"])
             pending = hold_incomplete_bundle(parsed, state)
