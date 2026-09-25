@@ -167,15 +167,16 @@ comprobaron en la página local.
 | Confianza de Chromium en la CA del proxy | El almacén NSS del contenedor estaba vacío (`ERR_CERT_AUTHORITY_INVALID`) | En cada sesión nueva: `apt-get install -y libnss3-tools` y `certutil -d sql:/root/.pki/nssdb -A -t "C,," -n ccr-agent-proxy -i /root/.ccr/agent-proxy-ca.crt` |
 | Clave del proveedor en la app de desarrollo | Los tres documentos de IA se generan en el servidor | Ya debería estar; el ejecutor no la necesita localmente |
 
-**Correr la tanda con red directa.** En un computador (por ejemplo, una sesión local de
-Claude Code en la carpeta del repositorio) o en un Codespace de la rama:
+**Correr la tanda con red directa.** Guía completa, con las reglas: `docs/TANDA_LOCAL.md`.
+En un computador (por ejemplo, una sesión local de Claude Code en la carpeta del
+repositorio) o en un Codespace de la rama:
 
 ```
 git clone https://github.com/nfpineda-sketch/management-reasoning-simulator
 cd management-reasoning-simulator && git checkout clinical-encounter-v0.13
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt && python -m playwright install chromium
-export MRS_BATCH_RESIDENT_PASSWORD=…  MRS_BATCH_STAFF_USER=…  MRS_BATCH_STAFF_PASSWORD=…
+# las contraseñas: en local-data/tanda20/credentials.env (nunca se sube) o como variables
 python tools_tanda20.py --preflight --base-url https://clinical-management-reasoning-dev.streamlit.app
 python tools_tanda20.py --run 1 --base-url https://clinical-management-reasoning-dev.streamlit.app
 ```

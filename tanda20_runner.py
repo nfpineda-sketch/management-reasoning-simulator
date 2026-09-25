@@ -233,15 +233,44 @@ def sign_in(page, base_url, username, password):
         raise RunStop(f"{username} could not sign in.") from None
 
 
+# On a person's own computer the passwords may live in this file instead of the
+# environment: local-data/ is never committed, and nothing here prints them.
+CREDENTIALS_FILE = ROOT / "local-data" / "tanda20" / "credentials.env"
+# The only names read, from the environment or the file. A fixed list, not a
+# resolver of any name: nothing here can read a provider key.
+BATCH_CREDENTIALS = ("MRS_BATCH_RESIDENT_USER", "MRS_BATCH_RESIDENT_PASSWORD",
+                     "MRS_BATCH_STAFF_USER", "MRS_BATCH_STAFF_PASSWORD")
+
+
+def _stored_credentials(path=None):
+    """The batch's NAME=value lines from the local credentials file, if there is one."""
+    path = Path(path or CREDENTIALS_FILE)
+    values = {}
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            if key.strip() in BATCH_CREDENTIALS:
+                values[key.strip()] = value.strip().strip('"').strip("'")
+    return values
+
+
 def credentials():
-    """The two test accounts, from the environment; never printed or stored."""
-    resident_user = os.environ.get("MRS_BATCH_RESIDENT_USER", "residente_prueba_r3")
-    resident_password = os.environ.get("MRS_BATCH_RESIDENT_PASSWORD", "")
-    staff_user = os.environ.get("MRS_BATCH_STAFF_USER", "")
-    staff_password = os.environ.get("MRS_BATCH_STAFF_PASSWORD", "")
+    """The two test accounts: the environment first, then the local file; never printed."""
+    stored = _stored_credentials()
+    found = {key: os.environ.get(key, "") or stored.get(key, "") for key in BATCH_CREDENTIALS}
+    resident_user = found["MRS_BATCH_RESIDENT_USER"] or "residente_prueba_r3"
+    resident_password = found["MRS_BATCH_RESIDENT_PASSWORD"]
+    staff_user = found["MRS_BATCH_STAFF_USER"]
+    staff_password = found["MRS_BATCH_STAFF_PASSWORD"]
     if not (resident_password and staff_user and staff_password):
+        where = (CREDENTIALS_FILE.relative_to(ROOT) if CREDENTIALS_FILE.is_relative_to(ROOT)
+                 else CREDENTIALS_FILE)
         raise SystemExit("MRS_BATCH_RESIDENT_PASSWORD, MRS_BATCH_STAFF_USER and "
-                         "MRS_BATCH_STAFF_PASSWORD are required, as environment variables.")
+                         "MRS_BATCH_STAFF_PASSWORD are required, as environment variables or "
+                         f"as NAME=value lines in {where}.")
     return resident_user, resident_password, staff_user, staff_password
 
 
