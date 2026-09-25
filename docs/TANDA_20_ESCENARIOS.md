@@ -162,6 +162,8 @@ comprobaron en la página local.
 | Autorizar a esa cuenta docente para `residente_prueba_r3` | Desde la decisión 14 un docente sólo elige los casos de los residentes que un administrador le autorizó | En su cuenta de administrador: «Resident activity and recorded evidence» → «Who may choose a resident's cases» → docente de prueba, `residente_prueba_r3`, motivo → **Authorize**. Sin esto el ejecutor se detiene con ese aviso |
 | La app de desarrollo en esta rama | Las correcciones, la dirección de casos y el documento de propuesta viven en `clinical-encounter-v0.13` | Que la app de desarrollo despliegue la rama en su último commit |
 | `MRS_SYNTHETIC_ACCOUNTS=residente_prueba_r3` en los secretos de la app de desarrollo | Para que la cuenta pueda declarar la ejecución sintética | Agregarlo a los secretos de esa app |
+| Acceso de red a `share.streamlit.io` (visto el 2026-09-25) | Streamlit Community Cloud redirige toda visita a la app (303) a `share.streamlit.io/-/auth/app` antes de servirla; sin eso no hay sesión ni WebSocket (`/_stcore/stream` → 401) | Agregar `share.streamlit.io` a los dominios permitidos del entorno (o un nivel de acceso más amplio). Comprobar después que el proxy deja pasar el WebSocket de Streamlit: su documentación dice que no lo admite |
+| Confianza de Chromium en la CA del proxy | El almacén NSS del contenedor estaba vacío (`ERR_CERT_AUTHORITY_INVALID`) | En cada sesión nueva: `apt-get install -y libnss3-tools` y `certutil -d sql:/root/.pki/nssdb -A -t "C,," -n ccr-agent-proxy -i /root/.ccr/agent-proxy-ca.crt` |
 | Clave del proveedor en la app de desarrollo | Los tres documentos de IA se generan en el servidor | Ya debería estar; el ejecutor no la necesita localmente |
 
 **Las dos cuentas tienen que estar en la misma app, con la misma base.** Cada app
@@ -206,6 +208,8 @@ Management Trace, el brief docente y la propuesta de rúbrica.
 ## 6. Índice de intentos
 
 Se completa con el registro del ejecutor. Hoy está vacío: **0 intentos pagados**.
+Intento del 2026-09-25: la verificación previa (gratis) no llegó a la app por la red
+(`share.streamlit.io` bloqueado, §4); no se inició ningún encuentro.
 
 | # | Encuentro | Caso y trayectoria | Código | Duración clínica y estado | Documentos A-D | Revisión rúbrica / challenges | Visible residente / admin | Problemas | Consumo |
 |---|---|---|---|---|---|---|---|---|---|
