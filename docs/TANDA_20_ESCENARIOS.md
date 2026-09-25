@@ -162,9 +162,29 @@ comprobaron en la página local.
 | Autorizar a esa cuenta docente para `residente_prueba_r3` | Desde la decisión 14 un docente sólo elige los casos de los residentes que un administrador le autorizó | En su cuenta de administrador: «Resident activity and recorded evidence» → «Who may choose a resident's cases» → docente de prueba, `residente_prueba_r3`, motivo → **Authorize**. Sin esto el ejecutor se detiene con ese aviso |
 | La app de desarrollo en esta rama | Las correcciones, la dirección de casos y el documento de propuesta viven en `clinical-encounter-v0.13` | Que la app de desarrollo despliegue la rama en su último commit |
 | `MRS_SYNTHETIC_ACCOUNTS=residente_prueba_r3` en los secretos de la app de desarrollo | Para que la cuenta pueda declarar la ejecución sintética | Agregarlo a los secretos de esa app |
+| **Un lugar con red directa** (confirmado el 2026-09-25) | La página de Streamlit necesita un WebSocket (`/_stcore/stream`) y el proxy de las sesiones en la nube de Claude Code no admite WebSocket (su documentación, `/root/.ccr/README.md`: «WebSocket upgrades… not supported»). Ningún dominio permitido lo resuelve | Correr el ejecutor desde un computador o un Codespace de GitHub, que salen a internet sin ese proxy: ver «Correr la tanda con red directa» más abajo |
 | Acceso de red a `share.streamlit.io` (visto el 2026-09-25) | Streamlit Community Cloud redirige toda visita a la app (303) a `share.streamlit.io/-/auth/app` antes de servirla; sin eso no hay sesión ni WebSocket (`/_stcore/stream` → 401) | Agregar `share.streamlit.io` a los dominios permitidos del entorno (o un nivel de acceso más amplio). Comprobar después que el proxy deja pasar el WebSocket de Streamlit: su documentación dice que no lo admite |
 | Confianza de Chromium en la CA del proxy | El almacén NSS del contenedor estaba vacío (`ERR_CERT_AUTHORITY_INVALID`) | En cada sesión nueva: `apt-get install -y libnss3-tools` y `certutil -d sql:/root/.pki/nssdb -A -t "C,," -n ccr-agent-proxy -i /root/.ccr/agent-proxy-ca.crt` |
 | Clave del proveedor en la app de desarrollo | Los tres documentos de IA se generan en el servidor | Ya debería estar; el ejecutor no la necesita localmente |
+
+**Correr la tanda con red directa.** En un computador (por ejemplo, una sesión local de
+Claude Code en la carpeta del repositorio) o en un Codespace de la rama:
+
+```
+git clone https://github.com/nfpineda-sketch/management-reasoning-simulator
+cd management-reasoning-simulator && git checkout clinical-encounter-v0.13
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements-dev.txt && python -m playwright install chromium
+export MRS_BATCH_RESIDENT_PASSWORD=…  MRS_BATCH_STAFF_USER=…  MRS_BATCH_STAFF_PASSWORD=…
+python tools_tanda20.py --preflight --base-url https://clinical-management-reasoning-dev.streamlit.app
+python tools_tanda20.py --run 1 --base-url https://clinical-management-reasoning-dev.streamlit.app
+```
+
+El ejecutor usa el Chromium de Playwright cuando no existe el de la imagen en la nube.
+Streamlit Community Cloud hace pasar cada visita por su propio inicio de sesión en
+`share.streamlit.io`: una app pública lo atraviesa sola; si la app es privada, la
+verificación previa lo dice, y para la tanda hay que dejarla visible para quien tenga
+el enlace (el simulador sigue exigiendo sus propias cuentas).
 
 **Las dos cuentas tienen que estar en la misma app, con la misma base.** Cada app
 (pública, validación, desarrollo) usa su propia base en Neon y no comparten cuentas. Un

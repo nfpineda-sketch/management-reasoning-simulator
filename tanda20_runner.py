@@ -36,6 +36,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 AUTHORISED_PAID_ENCOUNTERS = 40
 BROWSER = os.environ.get("MRS_BATCH_BROWSER", "/opt/pw-browsers/chromium")
+# The batch cannot run from a cloud session whose proxy refuses WebSocket
+# upgrades: a Streamlit page needs one (/_stcore/stream). It runs from a machine
+# with direct access -- a computer or a Codespace -- where Playwright's own
+# Chromium is used when the cloud image's path does not exist.
+
+
+def launch(playwright, headless=True):
+    """Chromium: the configured one, or Playwright's own (``playwright install chromium``)."""
+    if Path(BROWSER).exists():
+        return playwright.chromium.launch(executable_path=BROWSER, headless=headless)
+    return playwright.chromium.launch(headless=headless)
 
 
 class RunStop(Exception):
@@ -203,6 +214,16 @@ class Page:
 def sign_in(page, base_url, username, password):
     page.page.goto(base_url, wait_until="networkidle")
     page.settle()
+    if not page.page.get_by_label("Username", exact=True).count():
+        # Streamlit Community Cloud sends every visit through its own sign-in at
+        # share.streamlit.io first. A public app passes straight through; a
+        # private one asks for a Streamlit account the runner does not have.
+        where = page.page.url
+        if "share.streamlit.io" in where or "streamlit.io/-/auth" in where:
+            raise RunStop("Streamlit asks for its own sign-in before showing the app (" + where.split("?")[0]
+                          + "): the app is private on Streamlit Community Cloud. Make it viewable by anyone "
+                            "with the link for the batch -- the simulator still requires its own accounts.")
+        raise RunStop(f"The simulator's sign-in form is not on the page at {where.split('?')[0]}.")
     page.fill("Username", username)
     page.fill("Password", password)
     page.click("Sign in")
@@ -248,7 +269,7 @@ def preflight(*, base_url, headless=True):
         return bool(ok)
 
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(executable_path=BROWSER, headless=headless)
+        browser = launch(playwright, headless)
         try:
             staff = Page(browser.new_context().new_page())
             try:
@@ -509,7 +530,7 @@ def run_scenario(script, *, base_url, out, with_ai=True, headless=True):
              "code_version_local": code_version(), "base_url": base_url,
              "paid_encounter": bool(with_ai), "steps": [], "stopped": None, "documents": {}}
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(executable_path=BROWSER, headless=headless)
+        browser = launch(playwright, headless)
         try:
             staff = Page(browser.new_context(accept_downloads=True).new_page())
             sign_in(staff, base_url, staff_user, staff_password)
