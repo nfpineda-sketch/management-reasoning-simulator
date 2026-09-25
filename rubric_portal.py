@@ -415,13 +415,23 @@ def render_rubric_profile(context, user_id=None, *, language="en", training_year
     summary = rubric_progress.aggregate(reviews)
     import resident_profile
     badge = resident_profile.badge(context["store"], context["token"], user_id, training_year)
-    st.markdown("**Management reasoning profile** (pilot rubric "
-                + (summary["rubric_versions"][0] if summary["rubric_versions"] else "1.0-pilot")
-                + ")")
+    spanish = language == "es"
+    st.markdown("**Management reasoning profile** (pilot rubric " + summary["rubric_version"] + ")")
+    st.caption(rubric_progress.FRAMING[1 if spanish else 0])
+    waiting = _awaiting_confirmation(context, user_id, reviews)
+    if waiting:
+        st.caption(f"{waiting} completed encounter(s) await a faculty member's confirmation and are "
+                   "not included: a suggestion is not a result.")
     if not summary["encounters"]:
         st.caption("No encounter has a rubric assessment a faculty member has confirmed yet. "
                    "An encounter nobody has assessed is absent from this profile, not a zero.")
+        _render_results(summary)
         return summary
+    st.caption(f"Encounters included: {summary['encounters']} (confirmed, rubric "
+               f"{summary['rubric_version']}).")
+    for version, count in sorted(summary["set_apart"].items()):
+        st.caption(f"{count} encounter(s) confirmed under rubric {version or 'without a version'} are "
+                   "listed below and not averaged in: the two scales are not assumed to be the same.")
     latest = reviews[-1]
     series = [{**rubric_radar.series_from_review(latest, language=language),
                "label": "Latest encounter" if language != "es" else "Último encuentro"}]
@@ -440,8 +450,51 @@ def render_rubric_profile(context, user_id=None, *, language="en", training_year
     if summary["critical_events"]:
         st.caption(f"{summary['critical_events']} confirmed critical event(s) across these "
                    "encounters. A safety event is counted, never averaged into a domain.")
+        for alert in summary["alerts"]:
+            st.caption(f"⚠ {alert['event_id']} · confirmed {_when(alert['confirmed_at'])}")
     if summary["weakest"]:
         st.caption(f"Lowest mean: domain {summary['weakest'][1:]} · "
                    f"{DOMAINS[summary['weakest']]['title']}. This is where the shape is pulled "
                    "in, not a judgement about the resident.")
+    _render_results(summary)
     return summary
+
+
+def _when(value):
+    from datetime import datetime, timezone
+    try:
+        return datetime.fromtimestamp(int(value), tz=timezone.utc).strftime("%Y-%m-%d")
+    except (TypeError, ValueError, OverflowError, OSError):
+        return "date not recorded"
+
+
+def _render_results(summary):
+    """Every confirmed encounter behind the shape, with its date."""
+    rows = summary.get("results") or []
+    if not rows:
+        return
+    with st.expander(f"Individual results ({len(rows)})"):
+        st.dataframe([{
+            "Confirmed": _when(row["confirmed_at"]),
+            "Challenge": row.get("challenge_id") or "",
+            "Case": row.get("case_id") or "",
+            **{f"D{domain[1:]}": ("N/A" if value == NOT_ASSESSABLE else value)
+               for domain, value in row["scores"].items()},
+            "Total": (f"{row['adjusted']}/15" if row["adjusted"] is not None
+                      else f"partial {row['partial_subtotal']} ({row['assessed']}/5)"),
+            "Alerts": ", ".join(row["critical_events"]),
+            "Rubric": row["rubric_version"] + ("" if row["included"] else " (not averaged)"),
+        } for row in rows], hide_index=True)
+
+
+def _awaiting_confirmation(context, user_id, reviews):
+    """Completed encounters of this resident with no confirmed rubric assessment."""
+    try:
+        attempts = context["store"].list_attempts(context["token"])
+    except AccountError:
+        return 0
+    target = user_id or context["user"]["id"]
+    confirmed_ids = {review.get("attempt_id") for review in reviews}
+    return sum(1 for attempt in attempts
+               if attempt.get("user_id") == target and attempt.get("status") == "completed"
+               and not attempt.get("is_sandbox") and attempt.get("id") not in confirmed_ids)

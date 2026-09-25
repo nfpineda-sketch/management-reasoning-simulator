@@ -16,10 +16,28 @@ chart keeps:
     counted, and reported beside the profile, because a safety event is an
     event and not a fraction of one.
 
+Two more since 2026-09-24 (faculty specification, section 12):
+
+  * **One rubric version is averaged at a time.** Reviews confirmed under
+    another version are listed with their dates and set apart, never silently
+    mixed in: nobody has shown that two versions' scales are the same.
+  * **Every result stays reachable.** The profile carries each confirmed
+    encounter with its date, its five decisions and its alerts, so the shape
+    can always be traced back to what it summarises.
+
+It summarises observed performance in confirmed encounters. It is not a
+validated measure of current competence, and the page says so.
+
 Nothing here talks to a model, a database or a screen.
 """
+from collections import Counter
 
-from rubric import DOMAIN_IDS, DOMAINS, MAX_DOMAIN_SCORE, NOT_ASSESSABLE
+from rubric import DOMAIN_IDS, DOMAINS, MAX_DOMAIN_SCORE, NOT_ASSESSABLE, VERSION
+
+FRAMING = ("A summary of the performance observed in encounters a faculty member assessed and "
+           "confirmed. It is not a validated measure of current competence.",
+           "Resumen del desempeño observado en encuentros evaluados y confirmados por un docente. "
+           "No es una medida validada de competencia actual.")
 
 
 def _scores(review):
@@ -36,9 +54,53 @@ def confirmed(reviews):
                                             review.get("sequence") or 0))
 
 
-def aggregate(reviews):
-    """Per-domain mean, count and direction across the confirmed encounters."""
+def _version(review):
+    return str((review or {}).get("rubric_version") or "")
+
+
+def averaged_version(reviews):
+    """The version a profile averages: the current rubric's when any review used
+    it, otherwise the one the most recent confirmed review used."""
     history = confirmed(reviews)
+    if any(_version(review) == VERSION for review in history):
+        return VERSION
+    return _version(history[-1]) if history else VERSION
+
+
+def results(reviews, version=None):
+    """Every confirmed encounter, oldest first, with what it contributes."""
+    version = version if version is not None else averaged_version(reviews)
+    rows = []
+    for review in confirmed(reviews):
+        totals = review.get("totals") or {}
+        scores = (review.get("scores") or {})
+        rows.append({
+            "attempt_id": review.get("attempt_id"),
+            "challenge_id": review.get("challenge_id"),
+            "case_id": review.get("case_id"),
+            "confirmed_at": review.get("created_at"),
+            "rubric_version": _version(review),
+            "included": _version(review) == version,
+            "scores": {domain: scores.get(domain, NOT_ASSESSABLE) for domain in DOMAIN_IDS},
+            "base": totals.get("base"), "adjusted": totals.get("adjusted"),
+            "partial_subtotal": totals.get("partial_subtotal"),
+            "assessed": (totals.get("coverage") or {}).get("assessed"),
+            "critical_events": [str(event.get("event_id")) for event in review.get("critical_events") or []
+                                if isinstance(event, dict) and event.get("status") == "confirmed"],
+        })
+    return rows
+
+
+def aggregate(reviews, version=None):
+    """Per-domain mean, count and direction across the confirmed encounters.
+
+    Only the reviews of one rubric version are averaged (``averaged_version``
+    unless one is named); the others are counted in ``set_apart``.
+    """
+    everything = confirmed(reviews)
+    version = version if version is not None else averaged_version(reviews)
+    history = [review for review in everything if _version(review) == version]
+    set_apart = dict(Counter(_version(review) for review in everything if _version(review) != version))
     per_domain = {}
     for domain in DOMAIN_IDS:
         values = [_scores(review)[domain] for review in history if domain in _scores(review)]
@@ -68,8 +130,16 @@ def aggregate(reviews):
         "mean_adjusted": round(sum(adjusted) / len(adjusted), 1) if adjusted else None,
         "maximum": len(DOMAIN_IDS) * MAX_DOMAIN_SCORE,
         "weakest": _weakest(per_domain),
-        "rubric_versions": sorted({review.get("rubric_version", "") for review in history
-                                   if review.get("rubric_version")}),
+        "rubric_version": version,
+        "rubric_versions": sorted({_version(review) for review in everything if _version(review)}),
+        # Confirmed under another version: listed, never averaged in.
+        "set_apart": set_apart,
+        # Each alert with the encounter and the date it was confirmed in; a
+        # safety event is counted and shown, never averaged into a domain.
+        "alerts": [{"event_id": event, "attempt_id": row["attempt_id"],
+                    "confirmed_at": row["confirmed_at"], "rubric_version": row["rubric_version"]}
+                   for row in results(reviews, version) for event in row["critical_events"]],
+        "results": results(reviews, version),
     }
 
 
