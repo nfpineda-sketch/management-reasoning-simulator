@@ -515,7 +515,23 @@ _ADVICE_CLAUSE = re.compile(
     r"con\s+control(?:\s+\w+)?\s+(?:en|a\s+las)|"
     r"indic[aáo]ndole\s+|indic(?:ar|o|ando)(?:le)?\s+(?=\w)|"
     r"with\s+instructions\s+to|advised\s+to|told\s+to|"
-    r"safety[- ]net(?:ting)?|return\s+precautions?)\b", re.I)
+    r"safety[- ]net(?:ting)?|return\s+precautions?|"
+    # The same advice without its preamble: "lo doy de alta y regresar si tiene
+    # fiebre" lost the whole sentence, discharge included, in silence
+    # (rehearsal of the twenty-scenario batch, 2026-09-25).
+    r"(?:,\s*|(?:y|e|and)\s+)(?:que\s+|debe\s+|debera\s+|puede\s+|"
+    r"le\s+(?:digo|explico|indico|pido)\s+que\s+)?"
+    r"(?:regres(?:ar|e|a)|volver|vuelva|reconsult(?:ar|e|a)|acud(?:ir|a)|return|come\s+back))\b", re.I)
+# The condition itself, so that what it conditions can be recognised.
+_CONDITION_CLAUSE = re.compile(r"\b(?:if|si|unless|salvo\s+que)\b[^,]*(?:,|$)")
+# What a destination sends the patient with. After a discharge or an admission
+# in the same sentence it is the plan that goes with them, not an order here:
+# ", control urologico" held the whole submission as a study nobody could name
+# (2026-09-25).
+_DISCHARGE_ADVICE = re.compile(
+    r"^(?:con\s+)?(?:control(?:es)?|seguimiento|citacion|cita|signos?\s+de\s+alarma|indicaciones|"
+    r"instrucciones|reposo|dieta|receta|educacion|follow[- ]?up|return\s+precautions?|"
+    r"safety[- ]net(?:ting)?)\b")
 _CONDITIONAL = re.compile(
     r"\b(?:if|unless|consider|considering|might|could|would|perhaps|maybe|si|salvo que|considerar|considero|podria|quizas|tal vez)\b"
 )
@@ -1589,7 +1605,7 @@ def parse_family_actions(text) -> dict:
             advice = (None if boundary else
                       _ADVICE_CLAUSE.search(sentence[:conditional.start()]))
             if advice:
-                future.append(sentence[advice.start():])
+                future.append(re.sub(r"^(?:,\s*|(?:y|e|and)\s+)", "", sentence[advice.start():]))
                 # The conjunction that introduced the advice goes with it.
                 sentence = re.sub(r"(?:,\s*)?\b(?:and|y|then|luego)\s*$", "",
                                   sentence[:advice.start()].strip(" ,")).strip(" ,")
@@ -1601,7 +1617,17 @@ def parse_family_actions(text) -> dict:
                 if not sentence:
                     continue
             else:
-                if _COMMAND.search(re.sub(r"^.*?[, :]", "", sentence)) or re.search(r"\b(?:give|dar|administrar|start|iniciar|order|solicitar|reassess|reevaluar)\b", sentence):
+                # A conditional order is a plan and is kept as one, whatever form
+                # the order takes: "lo doy de alta si tolera la via oral" and "si
+                # baja la PA, SF 500 ml ev" vanished without a word (2026-09-25).
+                bare = _CONDITION_CLAUSE.sub(" ", sentence).strip(" ,")
+                if _COMMAND.search(re.sub(r"^.*?[, :]", "", sentence)) or re.search(
+                        r"\b(?:give|dar|doy|administrar|administro|start|iniciar|inicio|order|solicitar|"
+                        r"solicito|pido|reassess|reevaluar|reevaluo|alta|hospitalizar|hospitalizo|"
+                        r"ingresar|ingreso|trasladar|traslado|admit|discharge|transfer)\b", sentence) or (
+                        bare and bare != sentence and any(
+                            action.get("type") not in {"clarification", "reassessment"}
+                            for action in parse_family_actions(bare)["actions"])):
                     future.append(sentence)
                 continue
         inherited = None
@@ -1656,8 +1682,13 @@ def parse_family_actions(text) -> dict:
             grouped.append(piece)
             index += 1
         reasoning_head = False
+        discharged = False
         for piece in grouped:
             if not piece:
+                continue
+            if discharged and _DISCHARGE_ADVICE.match(piece):
+                future.append(piece.strip())
+                inherited = None
                 continue
             if _NEGATION.match(piece):
                 negated = True
@@ -1681,6 +1712,7 @@ def parse_family_actions(text) -> dict:
                 inherited = None
                 continue
             parsed, inherited = _parse_piece(piece, inherited)
+            discharged = discharged or any(action.get("type") == "disposition" for action in parsed)
             if (reasoning_head and len(parsed) == 1 and parsed[0].get("type") == "clarification"
                     and str(parsed[0].get("message", "")).startswith("The requested study")):
                 # The rest of a stated priority is not a request for a study.

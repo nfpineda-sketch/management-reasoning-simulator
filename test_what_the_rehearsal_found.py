@@ -180,3 +180,46 @@ def test_an_admission_is_still_an_admission():
     import app
     understood = app._held_order_summary(parse_family_actions("Lo hospitalizo en UCI"))
     assert understood.startswith("admission to ")
+
+
+# --- a discharge with its advice is still a discharge (2026-09-25) -----------------
+# Reading the rehearsal records against the page: scenario 7 closed with "Lo doy de
+# alta con analgesia, control urologico y regresar si tiene fiebre o dolor
+# incontrolable" and the record held no destination. The condition of the return
+# advice made the whole sentence conditional, and it vanished without a word.
+
+@pytest.mark.parametrize("text, advice", [
+    ("Lo doy de alta con analgesia, control urologico y regresar si tiene fiebre o dolor incontrolable.",
+     ["regresar si tiene fiebre o dolor incontrolable", "control urologico"]),
+    ("Lo doy de alta y regresar si tiene fiebre", ["regresar si tiene fiebre"]),
+    ("Lo doy de alta, regresar si tiene fiebre", ["regresar si tiene fiebre"]),
+    ("La envio a su casa con su esposo y le digo que vuelva si se duerme", ["le digo que vuelva si se duerme"]),
+    ("Lo doy de alta con analgesia y control urologico", ["control urologico"]),
+    ("La envio a su casa con indicacion de volver si se repite", ["con indicacion de volver si se repite"]),
+])
+def test_a_discharge_keeps_its_advice_beside_it(text, advice):
+    parsed = parse_family_actions(text)
+    assert [(a["type"], a.get("destination")) for a in parsed["actions"]] == [("disposition", "home")]
+    assert parsed["recognized_future_actions"] == advice
+
+
+def test_the_plan_that_goes_with_an_admission_is_not_a_study():
+    parsed = parse_family_actions("Lo hospitalizo en sala, control de signos vitales cada 4 horas")
+    assert [a["type"] for a in parsed["actions"]] == ["disposition"]
+    assert parsed["recognized_future_actions"] == ["control de signos vitales cada 4 horas"]
+    # A study ordered with the admission is still ordered.
+    assert kinds("Lo hospitalizo en UCI y pido gases arteriales") == ["disposition", "diagnostic"]
+
+
+@pytest.mark.parametrize("text", ["Lo doy de alta si tolera la via oral", "Si tolera la via oral, lo doy de alta",
+                                  "Si baja la PA, SF 500 ml ev"])
+def test_a_conditional_order_is_kept_as_a_plan_and_never_executed(text):
+    parsed = parse_family_actions(text)
+    assert parsed["actions"] == []
+    assert len(parsed["recognized_future_actions"]) == 1
+
+
+@pytest.mark.parametrize("text", ["No doy SF 1000 ml ev", "Doy salbutamol 5 mg nbz y volver a nebulizar si persiste"])
+def test_what_is_not_ordered_now_still_does_not_run(text):
+    assert "fluid" not in kinds(text)
+    assert kinds(text).count("bronchodilator") <= 1
