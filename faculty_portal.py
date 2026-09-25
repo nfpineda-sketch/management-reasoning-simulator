@@ -245,8 +245,9 @@ def _rubric_pdf_download(context, review, proposal, record):
     import resident_profile
     badge = resident_profile.badge(context["store"], context["token"],
                                    record.get("user_id"), _training_year(context, record))
+    review_key = review or {}
     cache_key = repr(("rubric_pdf_v2", context["user"]["id"], record["id"],
-                      review.get("sequence"), review.get("status"),
+                      review_key.get("sequence"), review_key.get("status"),
                       (proposal or {}).get("proposal_id"), summary["encounters"],
                       bool(badge), (badge or {}).get("initials")))
     if cache_key not in st.session_state:
@@ -262,7 +263,7 @@ def _rubric_pdf_download(context, review, proposal, record):
         file_name="rubric_assessment_" + record["id"][:12] + ".pdf",
         mime="application/pdf", key="download_rubric_" + record["id"])
     st.caption("Faculty document. It is not released to the resident until you have reviewed "
-               "and completed it." if review.get("status") != "confirmed" else
+               "and completed it." if review_key.get("status") != "confirmed" else
                "Confirmed. The resident's profile now includes this encounter.")
 
 
@@ -283,14 +284,17 @@ def render_faculty_analysis(context, record):
         st.warning(str(error))
         saved_review = None
     assessment = None
+    from rubric_store import RubricStore
+    try:
+        proposal = RubricStore(context["store"]).latest_proposal(context["token"], record["id"])
+    except AccountError:
+        proposal = None
     if saved_review is not None:
-        from rubric_store import RubricStore
-        try:
-            proposal = RubricStore(context["store"]).latest_proposal(context["token"], record["id"])
-        except AccountError:
-            proposal = None
         assessment = rubric_presentation.summary(saved_review, proposal, record=record)
         _rubric_pdf_download(context, saved_review, proposal, record)
+    elif proposal is not None:
+        # The proposal can be printed before any decision; nothing is saved.
+        _rubric_pdf_download(context, None, proposal, record)
     try:
         record = _staff_record(context, record)
         brief_store = FacultyBriefStore(context["store"])

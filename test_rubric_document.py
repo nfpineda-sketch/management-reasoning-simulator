@@ -63,8 +63,14 @@ def test_a_draft_is_not_released_to_the_resident():
 
 
 def test_an_encounter_nobody_assessed_produces_no_document_at_all():
+    # Since 2026-09-24 the faculty may print the AI proposal before deciding
+    # (test_the_rubric_document_before_a_decision.py). With neither a review
+    # nor a proposal there is still nothing to print, and a resident never
+    # receives a proposal.
     with pytest.raises(RubricReportError):
-        render_rubric_report_pdf(None, proposal(), RECORD)
+        render_rubric_report_pdf(None, None, RECORD)
+    with pytest.raises(RubricReportError):
+        render_rubric_report_pdf(None, proposal(), RECORD, audience="learner")
 
 
 def test_a_confirmed_assessment_is_released_to_the_resident():

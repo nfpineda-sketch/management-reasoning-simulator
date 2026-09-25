@@ -73,6 +73,15 @@ def _big_styles(styles, language):
 def _headline_block(assessment, styles, language):
     """The number, set large, or the sentence that exists instead of one."""
     totals = assessment["totals"] or {}
+    if assessment["status"].get("state") == "proposed":
+        return [Paragraph(_xml("Sin decisión docente" if language == "es"
+                               else "No faculty decision yet"), styles["partial"]),
+                Paragraph(_xml(
+                    "No se registra ningún puntaje hasta que un docente decida cada dominio. "
+                    "Lo que sigue es la propuesta de la IA, para su revisión."
+                    if language == "es" else
+                    "No score is recorded until a faculty member decides each domain. What "
+                    "follows is the AI proposal, for review."), styles["small"])]
     if not assessment["complete"]:
         label = assessment["coverage_label"] or (
             "Evaluación parcial" if language == "es" else "Partial assessment")
@@ -104,11 +113,17 @@ def _headline_block(assessment, styles, language):
 
 
 def _radar_block(assessment, language, *, average=None, badge=None):
+    proposed_only = assessment["status"].get("state") == "proposed"
     series = [{
         "key": "encounter",
-        "label": "Este encuentro" if language == "es" else "This encounter",
-        "values": {row["domain_id"]: row["score"] for row in assessment["profile"]
-                   if row["decided"]},
+        "label": ((("Propuesta de IA (no es una decisión)" if language == "es"
+                    else "AI proposal (not a decision)")) if proposed_only
+                  else ("Este encuentro" if language == "es" else "This encounter")),
+        # Before any decision the shape is the proposal's, and says so.
+        "values": ({row["domain_id"]: row["proposed"] for row in assessment["profile"]
+                    if row["proposed"] is not None} if proposed_only else
+                   {row["domain_id"]: row["score"] for row in assessment["profile"]
+                    if row["decided"]}),
         "colour": palette.BLUE, "opacity": 0.18,
     }]
     if average:
@@ -152,10 +167,15 @@ def _profile_table(assessment, styles, width, language):
             # What the record settles about this domain's window, computed by
             # software and set apart from the model's words.
             details.append(Paragraph(_xml(f"{record_label}: {fact}"), styles["small"]))
+        score_text = row["score_label"]
+        if not row["decided"] and row["proposed"] is not None:
+            # Undecided, with a proposal: the proposal, named as one.
+            score_text = (presentation.score_label(row["proposed"], language)
+                          + (" · propuesta IA" if language == "es" else " · AI proposal"))
         rows.append([
             [Paragraph(_xml(domain_word + " " + row["domain_id"][1:]), styles["eyebrow"]),
              Paragraph(_xml(row["title"]), styles["small"])],
-            Paragraph(_xml(row["score_label"]),
+            Paragraph(_xml(score_text),
                       styles["domainscore"] if row["decided"] and row["score"] != "not_assessable"
                       else styles["small"]),
             details,
@@ -293,7 +313,12 @@ def build_rubric_document(review, proposal=None, record=None, *, language="en",
     """The flowables of the document, so a test can read it without a PDF."""
     if audience not in {"faculty", "learner"}:
         raise RubricReportError("A rubric report is rendered for faculty or for a learner.")
-    if review is None:
+    # The faculty may print the AI proposal before deciding anything: the batch
+    # of 2026-09-24 has to leave every evaluation pending, and saving a draft
+    # just to print one would start the reviewer at the AI's values instead of
+    # at "not assessable" (faculty decision, 2026-09-23). A resident never sees
+    # a proposal.
+    if review is None and (proposal is None or audience != "faculty"):
         raise RubricReportError("There is no rubric assessment to report on this encounter.")
     if audience == "learner" and review.get("status") != "confirmed":
         # The rule, enforced here rather than at the call site, because a
