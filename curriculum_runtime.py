@@ -160,7 +160,8 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
                 progress=progress, on_case_compiled=scene.on_case_compiled, **generation,
             )
         st.session_state.pop("_case_generation_failure", None)
-        encounter["assignment"] = assignment
+        encounter["assignment"] = {**assignment, "code_version": code_version(),
+                                   "runtime_version": RUNTIME_VERSION}
         attempt_id = store.create_attempt(token, assignment["challenge_id"], encounter, user["role"] != "resident")
         if directive is not None:
             from encounter_directives import DirectiveStore
@@ -172,6 +173,33 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         st.session_state.prior_attempt_record = deepcopy(prior_record)
         save_session(context)
         scene.adopt(st.session_state, st.session_state.state, attempt_id)
+
+
+_CODE_VERSION = None
+
+
+def code_version():
+    """The commit this deployment runs, recorded with every encounter it launches.
+
+    ``MRS_CODE_VERSION`` when the deployment sets it, otherwise the checkout's
+    own HEAD, otherwise "unknown". The synthetic batch of 2026-09-24 has to say
+    which code produced each encounter, and a version number in a page title
+    does not survive into the record.
+    """
+    global _CODE_VERSION
+    if _CODE_VERSION is None:
+        import os
+        import subprocess
+        value = os.environ.get("MRS_CODE_VERSION", "").strip()
+        if not value:
+            try:
+                value = subprocess.run(["git", "rev-parse", "--short=12", "HEAD"],
+                                       capture_output=True, text=True, timeout=5,
+                                       cwd=os.path.dirname(os.path.abspath(__file__))).stdout.strip()
+            except (OSError, subprocess.SubprocessError):
+                value = ""
+        _CODE_VERSION = value or "unknown"
+    return _CODE_VERSION
 
 
 def _waiting_directive(context):

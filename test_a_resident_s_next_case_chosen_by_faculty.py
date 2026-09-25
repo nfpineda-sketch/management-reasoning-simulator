@@ -92,6 +92,8 @@ def test_the_resident_launch_uses_it_once_and_the_encounter_says_so(cohort):
     assert assignment["reason"] == "faculty_directed"
     assert assignment["directed_by"] == "faculty_test"
     assert assignment["directive_reason"] == "Synthetic batch, scenario 15"
+    # Which code produced the encounter travels with it.
+    assert assignment["code_version"] and assignment["runtime_version"]
     [row] = store.history(users["admin_test"]["token"], users["residente_prueba_r3"]["id"])
     assert row["state"] == "used" and row["attempt_id"] == at.session_state["_attempt_id"]
     assert store.waiting(users["residente_prueba_r3"]["token"]) is None
