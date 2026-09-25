@@ -1242,7 +1242,7 @@ def _parse_piece_core(piece, inherited=None):
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
-        shorthand = r"(?:sf|ns|suero\s+fisiologico|solucion\s+fisiologica|ringer(?:\s+lactato)?|lr|cristaloides?|synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|epinephrine|epinefrina|adrenaline|adrenalina|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía|continuous monitoring|monitorizacion continua|cardiac monitor|monitor cardiaco)"
+        shorthand = r"(?:sf|ns|sg|suero\s+glucosado|glucosado|solucion\s+glucosada|suero\s+fisiologico|solucion\s+fisiologica|ringer(?:\s+lactato)?|lr|cristaloides?|synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|epinephrine|epinefrina|adrenaline|adrenalina|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía|continuous monitoring|monitorizacion continua|cardiac monitor|monitor cardiaco)"
         medication_start = any(re.match(r"(?:" + pattern + r")\b", body) for agents in _AGENTS.values() for pattern in agents.values())
         quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
         # A route written first is how the order is spoken in English: "IM
@@ -1347,7 +1347,11 @@ def _parse_piece_core(piece, inherited=None):
         if rate:
             milligrams = float(rate[1]) / 1000 if rate[2] in {"mcg", "ug"} else float(rate[1])
         return [{"type": "naloxone_infusion", "rate_mg_h": milligrams, "operation": _operation(verb)}], verb or "start"
-    if re.search(r"\b(?:d10|d\s*10|dextrose\s*10|glucosa(?:do)?\s*(?:al\s*)?10|suero\s+glucosado)\b", body):
+    # "Dextrosa al 10%" and "SG 10%" are the infusion too (2026-09-25): until
+    # then "inicio infusion de dextrosa al 10% a 100 ml/h" was read as a 10 g
+    # bolus, 10% of 100 mL.
+    if re.search(r"\b(?:d10|d\s*10|dextrose\s*10|dextros[ae]\s*(?:al\s*)?10|glucosa(?:do)?\s*(?:al\s*)?10|"
+                 r"suero\s+glucosado|sg\s*(?:al\s*)?10|solucion\s+glucosada\s*(?:al\s*)?10)\b", body):
         rate = re.search(r"(-?\d+(?:\.\d+)?)\s*(?:ml|cc)\s*(?:/|\s+(?:per|por|cada)\s+)\s*(?:h|hr|hour|hora)\b", body)
         return [{"type": "dextrose_infusion", "rate_ml_h": float(rate[1]) if rate else None,
                  "concentration_percent": 10, "operation": _operation(verb)}], verb or "start"
@@ -1587,8 +1591,11 @@ def _parse_piece_core(piece, inherited=None):
         return [_clarification("Separate each medication with its own dose and route so the order is unambiguous.")], verb
     if medicines:
         _, kind, agent = medicines[0]
-        # A bare drug name is only an order with an explicit command or dose.
-        if verb or re.search(r"\d\s*(?:mcg|ug|mg|g|units?|ui)\b", body):
+        # A bare drug name is only an order with an explicit command or dose. A
+        # glucose written as its solution ("D50 50 mL IV", "dextrosa al 50% 50 mL")
+        # carries its dose; until 2026-09-25 it was dropped without a word.
+        if (verb or re.search(r"\d\s*(?:mcg|ug|mg|g|units?|ui)\b", body)
+                or (kind == "dextrose" and _dextrose_from_solution(body))):
             if _operation(verb) == "continue":
                 # "Manten la heparina" is a decision not to change anything. The
                 # engine answers with what is already recorded instead of holding

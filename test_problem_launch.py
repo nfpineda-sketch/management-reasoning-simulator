@@ -1,10 +1,22 @@
 """Learner launch uses newly authored cases; failed generation starts nothing."""
 from copy import deepcopy
 from pathlib import Path
+import pytest
 from streamlit.testing.v1 import AppTest
 from curriculum import CHALLENGES
 from test_generated_case import AuthorClient, novel_payload, approval
 from conftest import onboarded
+
+
+@pytest.fixture(autouse=True)
+def free_generation_opened(monkeypatch):
+    """The generation flow as a deployment that opens it to learners runs it.
+
+    During the stages of the case catalogue it stays in the administrator's
+    sandbox by default (faculty, 2026-09-25; test_paid_generation_gate); these
+    tests are about the flow itself, so they open it explicitly.
+    """
+    monkeypatch.setenv("MRS_FREE_GENERATION", "all")
 
 
 def install_author(monkeypatch, payload_factory=None, review=None):

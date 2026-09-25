@@ -928,101 +928,40 @@ FAMILIES["gi_bleed"]["variants"].append(_case(
 
 # HYPOGLYCEMIA: mentation and sweating are independent of perfusion. The arrival
 # story does not supply the glucose; the learner can obtain it at the bedside.
-_o = _observable(128, 76, 112, 98, 20, mental="Drowsy", temperature=36.7, glucose=34)
-FAMILIES["hypoglycemia"]["variants"].append(_case(
-    "hypoglycemia_28m", "hypoglycemia", 28, "male", ["type 1 diabetes"],
-    "A 28-year-old man is brought from work after becoming confused and having difficulty answering simple questions.",
-    _history("His coworker reports sudden confusion and difficulty finding words.",
-        ["His coworker noticed shaking and sweating before he became confused.", "There was no witnessed seizure, fall or head injury."],
-        "His coworker reports type 1 diabetes; his emergency information confirms this.",
-        "His medication record lists basal and mealtime insulin.",
-        "He was well at the start of work and became confused over the last 20 minutes.",
-        "His coworker reports that he took his usual mealtime insulin but was called away before eating lunch.",
-        oral_intake="His lunch was left uneaten after he took his mealtime insulin.",
-        exposure="His coworker reports no known alcohol or sedative exposure during the shift.",
-        neurological_symptoms="He became confused and had difficulty speaking; no one saw a persistent one-sided weakness."),
-    {"Cardiac": "Regular tachycardia with palpable peripheral pulses.",
-     "Respiratory": "Normal effort; clear bilateral breath sounds.",
-     "Abdomen": "Soft and non-tender.",
-     "Neurological": "Drowsy and confused, but opens eyes to voice; speech is slow and all limbs move symmetrically. Pupils are equal and reactive."}, _o,
-    _investigations(_o, lactate=1.7, hemoglobin=14.8, wbc=8.2, creatinine=.9,
-        abg=(7.41, 39, 96), vbg=(7.37, 46),
-        pocus=POCUS["hypoglycemia"][0],
-        chest_xray="No acute pulmonary abnormality.", troponin=6),
-    "Severe insulin-associated hypoglycemia with neuroglycopenia",
-    ["Low bedside glucose", "Autonomic symptoms before confusion", "Insulin-meal mismatch"],
-    "Correct the reversible metabolic threat and verify neurological and glucose recovery.",
-    ["Which bedside check could change immediate management?", "Did the neurological findings resolve with correction?"],
-    ["dextrose", "reassessment"],
-    visual=_visual(skin="mild pallor", sweating="marked")))
-
-_o = _observable(134, 78, 96, 97, 18, mental="Obtunded", temperature=36.5, glucose=38)
-FAMILIES["hypoglycemia"]["variants"].append(_case(
-    "hypoglycemia_76f", "hypoglycemia", 76, "female", ["type 2 diabetes", "chronic kidney disease"],
-    "A 76-year-old woman is brought by her son because she has become difficult to wake this morning.",
-    _history("Her son reports that she has become unusually difficult to wake.",
-        ["Her son noticed sweating and reduced interaction.", "There was no witnessed seizure or head injury."],
-        "Her son reports type 2 diabetes and chronic kidney disease; she is normally alert and independent at home.",
-        "Her medication list includes glimepiride; she continued taking it despite eating very little.",
-        "Her intake has been poor for two days; she was markedly less responsive this morning.",
-        "She has continued a sulfonylurea during poor intake and has impaired renal function.",
-        oral_intake="Her son reports that she has eaten little for two days but continued her usual tablets.",
-        exposure="Her son reports no new sedatives or known alcohol ingestion.",
-        neurological_symptoms="Her son describes a generalized reduction in responsiveness rather than a witnessed focal weakness."),
-    {"Cardiac": "Regular pulse with preserved peripheral volume.",
-     "Respiratory": "Normal effort and clear bilateral breath sounds.",
-     "Abdomen": "Soft without focal tenderness.",
-     "Neurological": "Opens eyes only briefly to a firm stimulus and localizes with both arms. Pupils are equal and reactive."}, _o,
-    _investigations(_o, lactate=1.8, hemoglobin=11.8, wbc=8.6, creatinine=2.1, bun=36,
-        abg=(7.39, 40, 91), vbg=(7.35, 47),
-        pocus=POCUS["hypoglycemia"][1],
-        chest_xray="No focal consolidation or edema.", troponin=12),
-    "Sulfonylurea-associated hypoglycemia with recurrence risk",
-    ["Low bedside glucose", "Continued sulfonylurea with reduced intake", "Impaired renal function"],
-    "Correct glucose, reassess consciousness and plan continued monitoring for recurrent hypoglycemia.",
-    ["Did an initial recovery establish that the cause had ended?", "What informed your monitoring and specialist-support plan?"],
-    # Type 2 diabetes on a sulfonylurea: the pancreas still answers to an overshoot.
-    ["dextrose", "reassessment"], recurrence=True, endogenous_insulin=True,
-    visual=_visual(skin="mild pallor", sweating="mild")))
+#
+# Since 2026-09-25 the three cases are configurations of hypoglycemia_catalog,
+# which is the one place their engine flags, cues and evaluation are derived
+# from. The narratives are the ones authored here before, moved unchanged,
+# except hypoglycemia_54m_thiamine's faculty focus and one review question,
+# which contradicted faculty decision 8 (corrections registry).
+def _from_catalog(arguments):
+    """A bank case built from a catalogue configuration's arguments."""
+    narrative = arguments["observable"]
+    observable = _observable(narrative["sbp"], narrative["dbp"], narrative["hr"], narrative["spo2"],
+                             narrative["rr"], **{key: value for key, value in narrative.items()
+                                                 if key not in {"sbp", "dbp", "hr", "spo2", "rr"}})
+    history = arguments["history"]
+    studies = dict(arguments["investigations"])
+    family = arguments.get("family", "hypoglycemia")
+    studies["pocus"] = POCUS[family][studies["pocus"]]
+    patient = arguments["patient"]
+    case = _case(
+        arguments["identifier"], family, patient["age"], patient["sex"], patient["comorbidities"],
+        arguments["presentation"],
+        _history(history["chief"], history["symptoms"], history["medical"], history["medications"],
+                 history["onset"], history["risks"], **history["focused"]),
+        arguments["examination"], observable, _investigations(observable, **studies),
+        arguments["diagnosis"], arguments["findings"], arguments["focus"], arguments["questions"],
+        arguments["actions"], visual=_visual(**arguments["visual"]), **arguments["flags"])
+    case["history_source"] = arguments["history_source"]
+    return case
 
 
-# The brain that is short of glucose and of thiamine at the same time: giving one
-# without the other is the error the case exists to teach (faculty, 2026-09-20).
-_o = _observable(118, 70, 104, 97, 18, mental="Drowsy", temperature=36.2, glucose=32,
-                 crt=3, extremities="Cool")
-FAMILIES["hypoglycemia"]["variants"].append(_case(
-    "hypoglycemia_54m_thiamine", "hypoglycemia", 54, "male", ["alcohol use disorder", "poor oral intake"],
-    "A 54-year-old man is brought from a shelter after being found drowsy and unsteady. He has eaten almost nothing for days.",
-    _history("His speech is muddled and he says he feels shaky.",
-        ["He has been unsteady on his feet.", "He has had no fever, cough or vomiting."],
-        "He drinks heavily every day and has eaten very little for a week; he is not diabetic.",
-        "He takes no regular medicines and has received no vitamins.",
-        "The confusion and unsteadiness came on through this morning.",
-        "He drinks heavily and has eaten almost nothing for days.",
-        oral_intake="He has had almost nothing to eat for about a week, and alcohol most days.",
-        neurological_symptoms="His walking has been unsteady and he says his vision feels unfocused.",
-        chest_pain="He reports no chest pain."),
-    {"Cardiac": "Regular mildly rapid pulse; no murmur.",
-     "Respiratory": "Normal effort; clear breath sounds.",
-     "Abdomen": "Soft, without tenderness or organomegaly.",
-     "Neurological": "Drowsy but rousable; gaze is unsteady with a few beats of nystagmus, and gait could not be tested safely. Pupils are equal and reactive."}, _o,
-    _investigations(_o, lactate=2.4, hemoglobin=12.9, wbc=6.2, creatinine=.8,
-        abg=(7.44, 36, 92), vbg=(7.40, 42),
-        pocus=POCUS["hypoglycemia"][0],
-        chest_xray="No focal consolidation.", troponin=9, potassium=3.4),
-    "Hypoglycemia in a thiamine-depleted patient, at risk of Wernicke encephalopathy",
-    ["Neuroglycopenia with a capillary glucose of 32 mg/dL",
-     "Weeks of alcohol use with almost no food: depleted thiamine",
-     "Unsteady gaze and nystagmus, which glucose alone will not correct"],
-    "Correct the glucose without precipitating an encephalopathy, and treat the deficiency that made it possible.",
-    ["What did the gaze findings add to the glucose result?", "Which treatment did the glucose itself make urgent?"],
-    # Faculty decision 8 of 2026-09-21: the case is about recognising the
-    # hypoglycaemia and getting the treatment into the patient. The line he
-    # arrives with is not in the vein, which is a state of the case and is
-    # visible at the bedside. Thiamine stays as the second objective.
-    ["dextrose", "thiamine", "reassessment"], thiamine_deficient=True, endogenous_insulin=True,
-    iv_access_failed=True, glycogen_depleted=True,
-    visual=_visual(skin="mild pallor", sweating="mild")))
+import hypoglycemia_catalog as _hypoglycemia_catalog
+
+for _configuration in _hypoglycemia_catalog.bank_configurations():
+    FAMILIES["hypoglycemia"]["variants"].append(
+        _from_catalog(_hypoglycemia_catalog.case_arguments(_configuration)))
 
 
 # OPIOID: intentionally different contexts without stereotyped appearance.
@@ -1516,9 +1455,6 @@ FAMILIES["trauma"]["variants"].append(_case(
 _COLLATERAL_SOURCES = {
     "pneumonia_83m": "Daughter",
     "asthma_49m": "Partner",
-    "hypoglycemia_28m": "Coworker and emergency medication information",
-    "hypoglycemia_76f": "Son and medication list",
-    "hypoglycemia_54m_thiamine": "Shelter staff and the paramedic record",
     "opioid_35m": "Accompanying friend",
     "opioid_67f": "Spouse and medication list",
     "anaphylaxis_63m_betablocked": "Wife",
@@ -1534,20 +1470,51 @@ _HANDOVER_CONTEXT = {
     "anaphylaxis_63m_betablocked": "Handover notes a sting and a rash; the medication list came with the family, not with the patient.",
     "bradycardia_ccb_68m": "Handover notes a collapse and a slow rate; the boxes came in with the daughter.",
 }
+# A catalogued case carries its own source (hypoglycemia_catalog).
+_CATALOGUED = {_c["id"] for _c in _hypoglycemia_catalog.bank_configurations()}
 for _family in FAMILIES.values():
     for _variant in _family["variants"]:
-        _variant["history_source"] = _COLLATERAL_SOURCES.get(_variant["id"], "Patient")
+        if _variant["id"] not in _CATALOGUED:
+            _variant["history_source"] = _COLLATERAL_SOURCES.get(_variant["id"], "Patient")
         if _variant["id"] in _HANDOVER_CONTEXT:
             _variant["presentation"] += " " + _HANDOVER_CONTEXT[_variant["id"]]
 
 
 def variant_by_id(identifier):
-    """Return an isolated case; caller changes must never mutate the bank."""
+    """Return an isolated case; caller changes must never mutate the bank.
+
+    A catalogue composition awaiting faculty review resolves too, so that an
+    encounter a faculty member opened on one can be read back. Resolving is
+    not offering: the resident's selection and a faculty member's case
+    direction read ``FAMILIES``, where no candidate is.
+    """
     for family in FAMILIES.values():
         for variant in family["variants"]:
             if variant["id"] == identifier:
                 return deepcopy(variant)
+    candidate = review_candidate(identifier)
+    if candidate is not None:
+        return candidate
     raise KeyError(f"Unknown clinical case variant: {identifier}")
 
 
-del _o, _family, _variant
+_REVIEW_CANDIDATES = None
+
+
+def review_candidates(family=None):
+    """Catalogue compositions awaiting faculty review, built on demand and never in FAMILIES."""
+    global _REVIEW_CANDIDATES
+    if _REVIEW_CANDIDATES is None:
+        import hypoglycemia_catalog
+        _REVIEW_CANDIDATES = [_from_catalog(hypoglycemia_catalog.case_arguments(configuration))
+                              for configuration in hypoglycemia_catalog.review_candidates()]
+    return [deepcopy(case) for case in _REVIEW_CANDIDATES
+            if family is None or case["engine"]["family"] == family]
+
+
+def review_candidate(identifier):
+    """One review candidate by its identifier, isolated, or None."""
+    return next((case for case in review_candidates() if case["id"] == identifier), None)
+
+
+del _o, _family, _variant, _configuration

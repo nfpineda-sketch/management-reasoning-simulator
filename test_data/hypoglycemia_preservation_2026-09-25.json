@@ -1,0 +1,4369 @@
+{
+ "captured_from": "d184845",
+ "captured_on": "2026-09-25",
+ "variants": {
+  "hypoglycemia_28m": {
+   "declaration": {
+    "closure": "A disposition is decided, or the encounter reaches its horizon.",
+    "critical_events": [
+     {
+      "action": "Neuroglycopenia is left uncorrected.",
+      "alternatives": [
+       "Intravenous dextrose",
+       "glucagon when there is no vascular access",
+       "oral carbohydrate once the patient is alert enough to swallow"
+      ],
+      "domains": [
+       "D3"
+      ],
+      "event_id": "hypo_no_glucose",
+      "evidence_required": "The absence of any executed glucose-raising action in the window.",
+      "exclusions": [
+       "Vascular access failed in the engine and the resident addressed it",
+       "the encounter closed before the glucose was reported"
+      ],
+      "information_on_asking": [],
+      "information_required": [
+       "The bedside glucose result",
+       "the recorded mental status"
+      ],
+      "kind": "critical_omission",
+      "trigger": "The bedside glucose is low and the patient is not alert, and no dextrose, glucagon or oral carbohydrate is executed in the window.",
+      "window_min": [
+       0,
+       30
+      ]
+     }
+    ],
+    "domains": {
+     "D1": {
+      "alternatives": [
+       "Naming the altered state and the glucose together"
+      ],
+      "expected": [
+       "Names the hypoglycaemia or the neuroglycopenia",
+       "treats it first"
+      ],
+      "opportunity": "The glucose is low enough to explain the altered state and the correction is time-critical.",
+      "requires": {
+       "studies": [
+        "poc_glucose"
+       ]
+      },
+      "window_min": [
+       0,
+       15
+      ]
+     },
+     "D2": {
+      "alternatives": [
+       "Treating on the history and confirming with the glucose in the same turn"
+      ],
+      "expected": [
+       "Requests or reads the bedside glucose",
+       "relates the mental state to the glucose"
+      ],
+      "opportunity": "A bedside glucose, the history of the exposure and the neurological examination are all available.",
+      "requires": {
+       "examination": [
+        "Neurological"
+       ],
+       "studies": [
+        "poc_glucose",
+        "basic_labs"
+       ]
+      },
+      "window_min": [
+       0,
+       20
+      ]
+     },
+     "D3": {
+      "alternatives": [
+       "Glucagon when access is not available",
+       "oral carbohydrate once the patient is alert"
+      ],
+      "expected": [
+       "Gives dextrose",
+       "secures the route it needs"
+      ],
+      "opportunity": "Intravenous dextrose is executable, and vascular access may have to be established first.",
+      "requires": {
+       "actions": [
+        "dextrose",
+        "vascular_access",
+        "glucagon",
+        "oral_carbohydrate"
+       ]
+      },
+      "window_min": [
+       0,
+       30
+      ]
+     },
+     "D4": {
+      "alternatives": [
+       "Rechecking the mental state rather than the number"
+      ],
+      "expected": [
+       "States a reassessment interval",
+       "rechecks the glucose or the mental state"
+      ],
+      "opportunity": "The engine raises the glucose and the mental state in response, and lets them fall again where the case carries that risk.",
+      "requires": {
+       "actions": [
+        "reassessment"
+       ],
+       "studies": [
+        "poc_glucose"
+       ]
+      },
+      "window_min": [
+       5,
+       60
+      ]
+     },
+     "D5": {
+      "alternatives": [
+       "Keeping the patient for a stated period before deciding"
+      ],
+      "expected": [
+       "Decides the destination on the recovery observed",
+       "states what is still pending"
+      ],
+      "opportunity": "Once the glucose and the consciousness recover, the decision is whether this patient can safely leave and what would bring them back.",
+      "requires": {
+       "actions": [
+        "disposition",
+        "consult"
+       ]
+      },
+      "window_min": [
+       15,
+       180
+      ]
+     }
+    },
+    "engine_limits": [
+     "The engine does not model a continuous glucose monitor.",
+     "An oral route is refused while the patient is not fully alert, by design."
+    ],
+    "information": [
+     "Arrival observables and the monitor",
+     "the patient's or the witness's history",
+     "bedside glucose, laboratory, neurological examination"
+    ]
+   },
+   "launch": {
+    "moving": "3a989c8725b1eda6",
+    "observable": {
+     "crt": 2,
+     "dbp": 76,
+     "extremities": "Warm",
+     "glucose_mg_dl": 34,
+     "hr": 112,
+     "mental_status": "Drowsy",
+     "peripheral_perfusion": "preserved",
+     "pulse_present": true,
+     "respiratory_rate": 20,
+     "rhythm": "Sinus tachycardia",
+     "sbp": 128,
+     "spo2": 98,
+     "temperature_c": 36.7,
+     "work_of_breathing": "Normal"
+    }
+   },
+   "scripts": {
+    "admission": [
+     {
+      "fingerprint": "4cb86b4ac30a4a9c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 142.8,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV",
+        "Dextrose 10% at 100 mL/h started"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "990ae8374a663b3d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 143.39,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "0772c9775d1e864e",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 178.59,
+       "labels": [
+        "Transfer/admission requested: ward"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 76
+      }
+     }
+    ],
+    "double_ampoule": [
+     {
+      "fingerprint": "ad8da8091071cbab",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 233.2,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 50 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "6af364e77c7eba8d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 233.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "e9c64d6a43174e4a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 229.92,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 51
+      }
+     },
+     {
+      "fingerprint": "52de647372856046",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 229.84,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 52
+      }
+     },
+     {
+      "fingerprint": "9aef234b7bdec1ed",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 227.44,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 82
+      }
+     },
+     {
+      "fingerprint": "87c2946ee44b58c9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 227.36,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 83
+      }
+     }
+    ],
+    "early_discharge": [
+     {
+      "fingerprint": "7d83dfd915160be0",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.8,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "32f96932ca3221bb",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.72,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "22672f711e33e8bf",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 127.92,
+       "labels": [
+        "Discharge home requested"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 76
+      }
+     },
+     {
+      "fingerprint": "282cbcf5834cbc2c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 123.12,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 136
+      }
+     },
+     {
+      "fingerprint": "e7737a104c06a3ab",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 118.32,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 196
+      }
+     }
+    ],
+    "ed_observation": [
+     {
+      "fingerprint": "7d83dfd915160be0",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.8,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "32f96932ca3221bb",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.72,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "970dd4fda0f28ea5",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 123.12,
+       "labels": [
+        "ED observation for 6 h ordered; the period has not been completed"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 136
+      }
+     },
+     {
+      "fingerprint": "b081e679260629b7",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 113.52,
+       "labels": [
+        "The patient passes urine. Nobody is collecting it, so the volume is not quantified."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 256
+      }
+     }
+    ],
+    "examinations": [
+     {
+      "fingerprint": "360b6c916dae2611",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 33.76,
+       "labels": [
+        "Current mental status: Drowsy. Engagement is reduced; interpret alongside respiratory and circulatory findings. Pupils are equal and reactive.",
+        "Capillary refill 2 s; extremities warm."
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 3
+      }
+     },
+     {
+      "fingerprint": "e57589bd923f655a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 33.36,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 8
+      }
+     }
+    ],
+    "existing_line_dextrose": [
+     {
+      "fingerprint": "a1e4321e50261075",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 33.92,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 1
+      }
+     },
+     {
+      "fingerprint": "c89495bf486442dd",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.12,
+       "labels": [
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "b88d614804529c19",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.04,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 12
+      }
+     },
+     {
+      "fingerprint": "8bb4ad37984d082c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.64,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 42
+      }
+     },
+     {
+      "fingerprint": "d1cc70ca9ae25947",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.56,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 43
+      }
+     },
+     {
+      "fingerprint": "eef8237a8a59027b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 125.76,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 103
+      }
+     },
+     {
+      "fingerprint": "85e9bad0591c807f",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 125.68,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 104
+      }
+     }
+    ],
+    "failed_line_then_new_line": [
+     {
+      "fingerprint": "2e82c10fc9a4da77",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.2,
+       "labels": [
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "b9ed96971775944b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "93bdfe11667e988c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 232.32,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 21
+      }
+     },
+     {
+      "fingerprint": "f1b61a283d473a45",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 232.24,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 22
+      }
+     }
+    ],
+    "glucagon_im": [
+     {
+      "fingerprint": "bf63d83937236128",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 42.4,
+       "labels": [
+        "glucagon 1 mg IM administered"
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "c3cf3b5f3ea7df62",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 43.92,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "a93b0c390d49a8d6",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 51.12,
+       "labels": [
+        "glucagon 1 mg IM administered"
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 36
+      }
+     },
+     {
+      "fingerprint": "d4280e4180c430a4",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 51.84,
+       "labels": [
+        null
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 37
+      }
+     },
+     {
+      "fingerprint": "b400ad3137d96cd6",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 60.64,
+       "labels": [],
+       "mental_status": "Drowsy",
+       "sim_time": 67
+      }
+     }
+    ],
+    "glucagon_iv_existing_line": [
+     {
+      "fingerprint": "c1be6c88dd3108a7",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 42.4,
+       "labels": [
+        "glucagon 1 mg IV administered"
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "f82af5c1b207051a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 43.92,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "62f223234b9bc819",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 66.72,
+       "labels": [],
+       "mental_status": "Drowsy",
+       "sim_time": 31
+      }
+     }
+    ],
+    "infusion_after_ampoule": [
+     {
+      "fingerprint": "4cb86b4ac30a4a9c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 142.8,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV",
+        "Dextrose 10% at 100 mL/h started"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "990ae8374a663b3d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 143.39,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "172d843fa03802e9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 178.59,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 76
+      }
+     },
+     {
+      "fingerprint": "4793bf8bcd20e2ff",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 179.17,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 77
+      }
+     },
+     {
+      "fingerprint": "bd11a47f7154da84",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 214.37,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 137
+      }
+     },
+     {
+      "fingerprint": "082e7ff53501a79b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 214.96,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 138
+      }
+     }
+    ],
+    "infusion_existing_line": [
+     {
+      "fingerprint": "d8e28871d8a280c1",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 51.6,
+       "labels": [
+        "Dextrose 10% at 100 mL/h started"
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 30
+      }
+     },
+     {
+      "fingerprint": "dacbc4ad201667f2",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 52.19,
+       "labels": [
+        null
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 31
+      }
+     },
+     {
+      "fingerprint": "7542ab34f9961368",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 69.79,
+       "labels": [],
+       "mental_status": "Drowsy",
+       "sim_time": 61
+      }
+     },
+     {
+      "fingerprint": "5d8814ace0e7fc54",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 70.37,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 62
+      }
+     }
+    ],
+    "intraosseous_dextrose": [
+     {
+      "fingerprint": "f90d59a024fd3e1b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.2,
+       "labels": [
+        "Glucose 25 g IO"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "822497db2a5f45ec",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     }
+    ],
+    "new_line_then_dextrose": [
+     {
+      "fingerprint": "b57a4b72a392f302",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.2,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "158d0942caa9f9fd",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "8acf140625600f19",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.72,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 41
+      }
+     },
+     {
+      "fingerprint": "3ffdac58493a7676",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.64,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 42
+      }
+     }
+    ],
+    "octreotide_iv_existing_line": [
+     {
+      "fingerprint": "2014568f614914fd",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.4,
+       "labels": [
+        "Glucose 25 g IV",
+        "octreotide 50 mcg IV administered"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 20
+      }
+     },
+     {
+      "fingerprint": "93f4cf10f1c3fea9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.32,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 21
+      }
+     },
+     {
+      "fingerprint": "442c86be806bb6d3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 127.52,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 81
+      }
+     },
+     {
+      "fingerprint": "41be21506f77f64b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 127.44,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 82
+      }
+     }
+    ],
+    "octreotide_sc": [
+     {
+      "fingerprint": "fdcc0f2d37eab788",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.4,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV",
+        "octreotide 50 mcg SC administered"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 20
+      }
+     },
+     {
+      "fingerprint": "f42ba0e82ad86b93",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.32,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 21
+      }
+     },
+     {
+      "fingerprint": "fb0ce0c846a2cb5c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 127.52,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 81
+      }
+     },
+     {
+      "fingerprint": "a0b3f3a1f172cf9c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 127.44,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 82
+      }
+     },
+     {
+      "fingerprint": "ed280333dd52ead9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 117.84,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 202
+      }
+     },
+     {
+      "fingerprint": "13a6b7751aaf964a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 117.76,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 203
+      }
+     }
+    ],
+    "oral_after_recovery": [
+     {
+      "fingerprint": "b57a4b72a392f302",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.2,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "158d0942caa9f9fd",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "332ee721c0c502ee",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 161.92,
+       "labels": [
+        "Oral carbohydrate given"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 41
+      }
+     },
+     {
+      "fingerprint": "ddcb0695e64d7354",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 161.84,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 42
+      }
+     }
+    ],
+    "oral_dextrose_while_not_alert": [
+     {
+      "fingerprint": "748352eabfb8eace",
+      "readable": {
+       "clarification": "The patient is not fully alert. Please clarify the intended route and airway protection before oral glucose.",
+       "executed": false,
+       "glucose_engine": null,
+       "labels": [],
+       "mental_status": "Drowsy",
+       "sim_time": 0
+      }
+     }
+    ],
+    "oral_while_not_alert": [
+     {
+      "fingerprint": "1248ce4f798778f5",
+      "readable": {
+       "clarification": "The patient is drowsy and cannot safely swallow. Use an intravenous or intramuscular route until the airway is protected.",
+       "executed": false,
+       "glucose_engine": null,
+       "labels": [],
+       "mental_status": "Drowsy",
+       "sim_time": 0
+      }
+     }
+    ],
+    "thiamine_then_dextrose": [
+     {
+      "fingerprint": "ac2104a4f77c52d1",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.2,
+       "labels": [
+        "thiamine 100 mg IV administered",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "ad0f89e8db4c8bb5",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 133.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "861d04d413e7522d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.96,
+       "labels": [
+        "Current mental status: Alert. The patient engages in conversation and follows commands. Pupils are equal and reactive."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 13
+      }
+     },
+     {
+      "fingerprint": "fbe4cf35b22deea8",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.56,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 43
+      }
+     }
+    ],
+    "untreated": [
+     {
+      "fingerprint": "a1e4321e50261075",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 33.92,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 1
+      }
+     },
+     {
+      "fingerprint": "d5b17b303b87bb83",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 31.52,
+       "labels": [
+        "Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant."
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 31
+      }
+     },
+     {
+      "fingerprint": "d9c992de1d281cab",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 29.12,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 61
+      }
+     },
+     {
+      "fingerprint": "e0d89207c18e7a69",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 26.72,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 91
+      }
+     }
+    ]
+   },
+   "variant": {
+    "ecg_profile": "baseline",
+    "engine": {
+     "baseline_glucose": 34,
+     "baseline_hemoglobin": 14.8,
+     "baseline_lactate": 1.7,
+     "definitive_actions": [
+      "dextrose",
+      "reassessment"
+     ],
+     "family": "hypoglycemia",
+     "recurrence_risk": false
+    },
+    "examination": {
+     "Abdomen": "Soft and non-tender.",
+     "Cardiac": "Regular tachycardia with palpable peripheral pulses.",
+     "Neurological": "Drowsy and confused, but opens eyes to voice; speech is slow and all limbs move symmetrically. Pupils are equal and reactive.",
+     "Respiratory": "Normal effort; clear bilateral breath sounds."
+    },
+    "faculty": {
+     "diagnosis": "Severe insulin-associated hypoglycemia with neuroglycopenia",
+     "discriminating_findings": [
+      "Low bedside glucose",
+      "Autonomic symptoms before confusion",
+      "Insulin-meal mismatch"
+     ],
+     "management_focus": "Correct the reversible metabolic threat and verify neurological and glucose recovery.",
+     "review_questions": [
+      "Which bedside check could change immediate management?",
+      "Did the neurological findings resolve with correction?"
+     ],
+     "sources": [
+      "https://abcd.care/sites/default/files/site_uploads/JBDS_Guidelines_Current/JBDS_01_Hypo_Guideline_with_QR_code_January_2023.pdf"
+     ]
+    },
+    "history": {
+     "allergies": [
+      "No known medication allergies are reported."
+     ],
+     "associated_symptoms": [
+      "His coworker noticed shaking and sweating before he became confused.",
+      "There was no witnessed seizure, fall or head injury."
+     ],
+     "chief_complaint": [
+      "His coworker reports sudden confusion and difficulty finding words."
+     ],
+     "exposure": [
+      "His coworker reports no known alcohol or sedative exposure during the shift."
+     ],
+     "medical_history": [
+      "His coworker reports type 1 diabetes; his emergency information confirms this."
+     ],
+     "medications": [
+      "His medication record lists basal and mealtime insulin."
+     ],
+     "neurological_symptoms": [
+      "He became confused and had difficulty speaking; no one saw a persistent one-sided weakness."
+     ],
+     "onset": [
+      "He was well at the start of work and became confused over the last 20 minutes."
+     ],
+     "oral_intake": [
+      "His lunch was left uneaten after he took his mealtime insulin."
+     ],
+     "risk_factors": [
+      "His coworker reports that he took his usual mealtime insulin but was called away before eating lunch."
+     ]
+    },
+    "history_source": "Coworker and emergency medication information",
+    "id": "hypoglycemia_28m",
+    "investigations": {
+     "abg": {
+      "duration_min": 5,
+      "result": {
+       "bicarbonate_mmol_l": 23.9,
+       "fio2_percent": 21,
+       "paco2_mm_hg": 39,
+       "pao2_mm_hg": 96,
+       "ph": 7.41
+      }
+     },
+     "basic_labs": {
+      "duration_min": 10,
+      "result": {
+       "bun_mg_dl": 18,
+       "creatinine_mg_dl": 0.9,
+       "glucose_mg_dl": 34,
+       "hemoglobin_g_dl": 14.8,
+       "potassium_mmol_l": 4.1,
+       "sodium_mmol_l": 138,
+       "wbc_k_ul": 8.2
+      }
+     },
+     "blood_cultures": {
+      "duration_min": 2,
+      "result": {
+       "report": "Samples collected; culture identification and susceptibility results are pending."
+      }
+     },
+     "chest_xray": {
+      "duration_min": 8,
+      "result": {
+       "report": "No acute pulmonary abnormality."
+      }
+     },
+     "hemoglobin": {
+      "duration_min": 5,
+      "result": {
+       "hemoglobin_g_dl": 14.8
+      }
+     },
+     "lactate": {
+      "duration_min": 5,
+      "result": {
+       "lactate_mmol_l": 1.7
+      }
+     },
+     "poc_glucose": {
+      "duration_min": 1,
+      "result": {
+       "glucose_mg_dl": 34
+      }
+     },
+     "pocus": {
+      "duration_min": 2,
+      "result": {
+       "aorta_abdominal": "Normal calibre from the diaphragm to the iliac bifurcation",
+       "aorta_descending": "Not dilated in the visible segment",
+       "aorta_root": "Not dilated",
+       "dvt_femoral": "Compressible bilaterally",
+       "dvt_popliteal": "Compressible bilaterally",
+       "ivc": "1.1 cm; >50% inspiratory collapse",
+       "lung_consolidation": "No consolidation or pleural effusion",
+       "lung_sliding": "Present bilaterally; no pneumothorax",
+       "lungs": "No B-lines; A-line pattern bilaterally",
+       "lv": "Preserved, mildly hyperdynamic contraction",
+       "pericardium": "No pericardial effusion",
+       "rv": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign"
+      }
+     },
+     "temperature": {
+      "duration_min": 1,
+      "result": {
+       "temperature_c": 36.7
+      }
+     },
+     "troponin": {
+      "duration_min": 10,
+      "result": {
+       "report": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+       "upper_reference_ng_l": 19,
+       "value_ng_l": 6
+      }
+     },
+     "urinalysis": {
+      "duration_min": 8,
+      "result": {
+       "report": "No leukocyte esterase, nitrite or blood detected."
+      }
+     },
+     "vbg": {
+      "duration_min": 5,
+      "result": {
+       "bicarbonate_mmol_l": 25.7,
+       "pco2_mm_hg": 46,
+       "ph": 7.37
+      }
+     }
+    },
+    "observable": {
+     "crt": 2,
+     "dbp": 76,
+     "extremities": "Warm",
+     "glucose_mg_dl": 34,
+     "hr": 112,
+     "mental_status": "Drowsy",
+     "peripheral_perfusion": "preserved",
+     "pulse_present": true,
+     "respiratory_rate": 20,
+     "rhythm": "Sinus tachycardia",
+     "sbp": 128,
+     "spo2": 98,
+     "temperature_c": 36.7,
+     "work_of_breathing": "Normal"
+    },
+    "patient": {
+     "age_years": 28,
+     "comorbidities": [
+      "type 1 diabetes"
+     ],
+     "pronouns": "he/him",
+     "sex": "male"
+    },
+    "presentation": "A 28-year-old man is brought from work after becoming confused and having difficulty answering simple questions.",
+    "visual_profile": {
+     "baseline": {
+      "diaphoresis": "marked",
+      "expression": "uncomfortable",
+      "mottling": false,
+      "skin_color": "mild pallor"
+     },
+     "id": "authored_case_appearance_v1",
+     "perfusion_appearance": {}
+    }
+   }
+  },
+  "hypoglycemia_54m_thiamine": {
+   "declaration": {
+    "closure": "A disposition is decided, or the encounter reaches its horizon.",
+    "critical_events": [
+     {
+      "action": "Neuroglycopenia is left uncorrected.",
+      "alternatives": [
+       "Intravenous dextrose",
+       "glucagon when there is no vascular access",
+       "oral carbohydrate once the patient is alert enough to swallow"
+      ],
+      "domains": [
+       "D3"
+      ],
+      "event_id": "hypo_no_glucose",
+      "evidence_required": "The absence of any executed glucose-raising action in the window.",
+      "exclusions": [
+       "Vascular access failed in the engine and the resident addressed it",
+       "the encounter closed before the glucose was reported"
+      ],
+      "information_on_asking": [],
+      "information_required": [
+       "The bedside glucose result",
+       "the recorded mental status"
+      ],
+      "kind": "critical_omission",
+      "trigger": "The bedside glucose is low and the patient is not alert, and no dextrose, glucagon or oral carbohydrate is executed in the window.",
+      "window_min": [
+       0,
+       30
+      ]
+     },
+     {
+      "action": "Glucose is given to a thiamine-depleted patient and no thiamine is given.",
+      "alternatives": [
+       "Thiamine before the dextrose",
+       "thiamine in the same submission"
+      ],
+      "domains": [
+       "D3"
+      ],
+      "event_id": "hypo_no_thiamine",
+      "evidence_required": "An executed dextrose action with no executed thiamine action in the window.",
+      "exclusions": [
+       "The encounter closed before a second order could be executed"
+      ],
+      "information_on_asking": [
+       [
+        "medical_history",
+        "the daily drinking"
+       ],
+       [
+        "oral_intake",
+        "the week with almost nothing to eat"
+       ]
+      ],
+      "information_required": [
+       "An executed dextrose action"
+      ],
+      "kind": "critical_omission",
+      "trigger": "Dextrose is executed in a patient the case declares thiamine-depleted and no thiamine is executed within the window.",
+      "window_min": [
+       0,
+       60
+      ]
+     }
+    ],
+    "domains": {
+     "D1": {
+      "alternatives": [
+       "Naming the altered state and the glucose together"
+      ],
+      "expected": [
+       "Names the hypoglycaemia or the neuroglycopenia",
+       "treats it first"
+      ],
+      "opportunity": "The glucose is low and this patient is thiamine-depleted: correcting one threat without the other creates a second.",
+      "requires": {
+       "studies": [
+        "poc_glucose"
+       ]
+      },
+      "window_min": [
+       0,
+       15
+      ]
+     },
+     "D2": {
+      "alternatives": [
+       "Treating on the history and confirming with the glucose in the same turn"
+      ],
+      "expected": [
+       "Requests or reads the bedside glucose",
+       "relates the mental state to the glucose"
+      ],
+      "opportunity": "A bedside glucose, the history of the exposure and the neurological examination are all available.",
+      "requires": {
+       "examination": [
+        "Neurological"
+       ],
+       "studies": [
+        "poc_glucose",
+        "basic_labs"
+       ]
+      },
+      "window_min": [
+       0,
+       20
+      ]
+     },
+     "D3": {
+      "alternatives": [
+       "Thiamine first",
+       "both in the same submission"
+      ],
+      "expected": [
+       "Gives dextrose",
+       "gives thiamine"
+      ],
+      "opportunity": "Dextrose and thiamine are both executable, and the order in which they are given is the point of the case.",
+      "requires": {
+       "actions": [
+        "dextrose",
+        "thiamine",
+        "vascular_access"
+       ]
+      },
+      "window_min": [
+       0,
+       30
+      ]
+     },
+     "D4": {
+      "alternatives": [
+       "Rechecking the mental state rather than the number"
+      ],
+      "expected": [
+       "States a reassessment interval",
+       "rechecks the glucose or the mental state"
+      ],
+      "opportunity": "The engine raises the glucose and the mental state in response, and lets them fall again where the case carries that risk.",
+      "requires": {
+       "actions": [
+        "reassessment"
+       ],
+       "studies": [
+        "poc_glucose"
+       ]
+      },
+      "window_min": [
+       5,
+       60
+      ]
+     },
+     "D5": {
+      "alternatives": [
+       "Admission stated as the continuation"
+      ],
+      "expected": [
+       "Decides the destination with the deficiency in it",
+       "states what continues"
+      ],
+      "opportunity": "The decision is continued treatment of the deficiency and where that happens, not only the glucose.",
+      "requires": {
+       "actions": [
+        "disposition",
+        "consult"
+       ]
+      },
+      "window_min": [
+       15,
+       180
+      ]
+     }
+    },
+    "engine_limits": [
+     "The engine does not model a continuous glucose monitor.",
+     "An oral route is refused while the patient is not fully alert, by design."
+    ],
+    "information": [
+     "Arrival observables and the monitor",
+     "the patient's or the witness's history",
+     "bedside glucose, laboratory, neurological examination"
+    ]
+   },
+   "launch": {
+    "moving": "ea8f9d7b2700e39f",
+    "observable": {
+     "crt": 3,
+     "dbp": 70,
+     "extremities": "Cool",
+     "glucose_mg_dl": 32,
+     "hr": 104,
+     "mental_status": "Drowsy",
+     "peripheral_perfusion": "preserved",
+     "pulse_present": true,
+     "respiratory_rate": 18,
+     "rhythm": "Sinus tachycardia",
+     "sbp": 118,
+     "spo2": 97,
+     "temperature_c": 36.2,
+     "work_of_breathing": "Normal"
+    }
+   },
+   "scripts": {
+    "admission": [
+     {
+      "fingerprint": "b2227a11e92c961d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 140.8,
+       "labels": [
+        "peripheral intravenous access replaced",
+        "Glucose 25 g IV",
+        "Dextrose 10% at 100 mL/h started",
+        "The new line runs freely. What is given now reaches the circulation."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "05735c3dbcc29c3a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 141.39,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "947300c0b86222f6",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 176.59,
+       "labels": [
+        "Transfer/admission requested: ward"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 76
+      }
+     }
+    ],
+    "double_ampoule": [
+     {
+      "fingerprint": "a19728aaacabf0c3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 231.2,
+       "labels": [
+        "peripheral intravenous access replaced",
+        "Glucose 50 g IV",
+        "The new line runs freely. What is given now reaches the circulation.",
+        "The correction overshot: a glucose above 200 mg/dL in a patient with a working pancreas provoked an insulin response, and the glucose is now falling faster than it fell before. Overcorrection buys the next hypoglycaemia, not safety."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "de1db859d5d3ecd3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 231.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "7ca534f4ece94b79",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 214.32,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 51
+      }
+     },
+     {
+      "fingerprint": "6787bde497d80c58",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 213.44,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 52
+      }
+     },
+     {
+      "fingerprint": "b1570c7e42c6d5e3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 187.04,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 82
+      }
+     },
+     {
+      "fingerprint": "09f7be95a8ccb39a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 186.16,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 83
+      }
+     }
+    ],
+    "early_discharge": [
+     {
+      "fingerprint": "bddad4d24c5b91c3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.8,
+       "labels": [
+        "peripheral intravenous access replaced",
+        "Glucose 25 g IV",
+        "The new line runs freely. What is given now reaches the circulation."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "0a0a8627c7115959",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.72,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "bf04bcef4bfd34a6",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 125.92,
+       "labels": [
+        "Discharge home requested"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 76
+      }
+     },
+     {
+      "fingerprint": "222949e2c07d2216",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 121.12,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 136
+      }
+     },
+     {
+      "fingerprint": "b00a89b0edf96838",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 116.32,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 196
+      }
+     }
+    ],
+    "ed_observation": [
+     {
+      "fingerprint": "bddad4d24c5b91c3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.8,
+       "labels": [
+        "peripheral intravenous access replaced",
+        "Glucose 25 g IV",
+        "The new line runs freely. What is given now reaches the circulation."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "0a0a8627c7115959",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.72,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "c3c46a8448abd1f3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 121.12,
+       "labels": [
+        "ED observation for 6 h ordered; the period has not been completed"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 136
+      }
+     },
+     {
+      "fingerprint": "eb380fe49a59e783",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 111.52,
+       "labels": [
+        "The patient passes urine. Nobody is collecting it, so the volume is not quantified."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 256
+      }
+     }
+    ],
+    "examinations": [
+     {
+      "fingerprint": "6d4882027c7fa8d3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 31.76,
+       "labels": [
+        "Current mental status: Drowsy. Engagement is reduced; interpret alongside respiratory and circulatory findings. Pupils are equal and reactive.",
+        "Capillary refill 3 s; extremities cool."
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 3
+      }
+     },
+     {
+      "fingerprint": "4c89ff40a7d34e55",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 31.36,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 8
+      }
+     }
+    ],
+    "existing_line_dextrose": [
+     {
+      "fingerprint": "c45952ffe2cd4f6f",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 31.92,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 1
+      }
+     },
+     {
+      "fingerprint": "c2a55b450025c311",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 46.12,
+       "labels": [
+        "Glucose 25 g IV",
+        "The dextrose does not run: the forearm swells around the cannula and the infusion slows to a stop. What was ordered is not what reached the patient."
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "97b8e9bb3ad078f2",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 46.04,
+       "labels": [
+        null
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 12
+      }
+     },
+     {
+      "fingerprint": "e77af0b31cfea37d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 43.64,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 42
+      }
+     },
+     {
+      "fingerprint": "c833bd092440128d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 43.56,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 43
+      }
+     },
+     {
+      "fingerprint": "4bf86cb55582a7f6",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 38.76,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 103
+      }
+     },
+     {
+      "fingerprint": "3ffbf2ff517cda4b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 38.68,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 104
+      }
+     }
+    ],
+    "failed_line_then_new_line": [
+     {
+      "fingerprint": "e3e3a2d8c48f39b9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 46.2,
+       "labels": [
+        "Glucose 25 g IV",
+        "The dextrose does not run: the forearm swells around the cannula and the infusion slows to a stop. What was ordered is not what reached the patient."
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "c3b22ae7d84d75e7",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 46.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "316a013e50ddbe30",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 145.32,
+       "labels": [
+        "peripheral intravenous access replaced",
+        "Glucose 25 g IV",
+        "The new line runs freely. What is given now reaches the circulation."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 21
+      }
+     },
+     {
+      "fingerprint": "6bd10781d72a001d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 145.24,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 22
+      }
+     }
+    ],
+    "glucagon_im": [
+     {
+      "fingerprint": "2d0c5754e27c7d5f",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 33.68,
+       "labels": [
+        "glucagon 1 mg IM administered"
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "825e4b0ec8309713",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 34.08,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "c743db95a5feea40",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 35.12,
+       "labels": [
+        "glucagon 1 mg IM administered",
+        "Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant."
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 36
+      }
+     },
+     {
+      "fingerprint": "1797ab0c9d3134b0",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 35.28,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 37
+      }
+     },
+     {
+      "fingerprint": "cb2bd52ee7d1c282",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 36.24,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 67
+      }
+     }
+    ],
+    "glucagon_iv_existing_line": [
+     {
+      "fingerprint": "1461f1c109ac8f97",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 33.68,
+       "labels": [
+        "glucagon 1 mg IV administered"
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "3a889b7261b6d7d1",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 34.08,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "cc19dd9e56e602f4",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 40.08,
+       "labels": [
+        "Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant."
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 31
+      }
+     }
+    ],
+    "infusion_after_ampoule": [
+     {
+      "fingerprint": "b2227a11e92c961d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 140.8,
+       "labels": [
+        "peripheral intravenous access replaced",
+        "Glucose 25 g IV",
+        "Dextrose 10% at 100 mL/h started",
+        "The new line runs freely. What is given now reaches the circulation."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "05735c3dbcc29c3a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 141.39,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "cabb72ae8ce05f90",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 176.59,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 76
+      }
+     },
+     {
+      "fingerprint": "4711ccce4a095177",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 177.17,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 77
+      }
+     },
+     {
+      "fingerprint": "dfd31b247908165c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 212.37,
+       "labels": [
+        "The correction overshot: a glucose above 200 mg/dL in a patient with a working pancreas provoked an insulin response, and the glucose is now falling faster than it fell before. Overcorrection buys the next hypoglycaemia, not safety."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 137
+      }
+     },
+     {
+      "fingerprint": "5c53dbdd1c8011a0",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 212.96,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 138
+      }
+     }
+    ],
+    "infusion_existing_line": [
+     {
+      "fingerprint": "41d60d5ccff7432d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 49.6,
+       "labels": [
+        "Dextrose 10% at 100 mL/h started"
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 30
+      }
+     },
+     {
+      "fingerprint": "f1824bc01a90723a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 50.19,
+       "labels": [
+        null
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 31
+      }
+     },
+     {
+      "fingerprint": "bb8067a554a11f1f",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 67.79,
+       "labels": [],
+       "mental_status": "Drowsy",
+       "sim_time": 61
+      }
+     },
+     {
+      "fingerprint": "5e6680be57ccd06b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 68.37,
+       "labels": [
+        null
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 62
+      }
+     }
+    ],
+    "intraosseous_dextrose": [
+     {
+      "fingerprint": "3f7de70e3ccedb46",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 46.2,
+       "labels": [
+        "Glucose 25 g IO",
+        "The dextrose does not run: the forearm swells around the cannula and the infusion slows to a stop. What was ordered is not what reached the patient."
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "3020162087085a36",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 46.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 11
+      }
+     }
+    ],
+    "new_line_then_dextrose": [
+     {
+      "fingerprint": "05b166e78ea118be",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.2,
+       "labels": [
+        "peripheral intravenous access replaced",
+        "Glucose 25 g IV",
+        "The new line runs freely. What is given now reaches the circulation."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "76558c771e6a22b1",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "0a8f085f8930e855",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 128.72,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 41
+      }
+     },
+     {
+      "fingerprint": "b5eae6d6a6afe740",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 128.64,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 42
+      }
+     }
+    ],
+    "octreotide_iv_existing_line": [
+     {
+      "fingerprint": "2136a8298791ab54",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 45.4,
+       "labels": [
+        "Glucose 25 g IV",
+        "octreotide 50 mcg IV administered",
+        "The dextrose does not run: the forearm swells around the cannula and the infusion slows to a stop. What was ordered is not what reached the patient."
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 20
+      }
+     },
+     {
+      "fingerprint": "da2e368212d42666",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 45.32,
+       "labels": [
+        null
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 21
+      }
+     },
+     {
+      "fingerprint": "63b0ba31cd2d3322",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 40.52,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 81
+      }
+     },
+     {
+      "fingerprint": "d0420c39a449c7d2",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 40.44,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 82
+      }
+     }
+    ],
+    "octreotide_sc": [
+     {
+      "fingerprint": "624ddcc00e67f240",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.4,
+       "labels": [
+        "peripheral intravenous access replaced",
+        "Glucose 25 g IV",
+        "octreotide 50 mcg SC administered",
+        "The new line runs freely. What is given now reaches the circulation."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 20
+      }
+     },
+     {
+      "fingerprint": "b6d81883b5ba8920",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.32,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 21
+      }
+     },
+     {
+      "fingerprint": "dcc938468b43e7da",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 125.52,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 81
+      }
+     },
+     {
+      "fingerprint": "122943d93211cf3f",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 125.44,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 82
+      }
+     },
+     {
+      "fingerprint": "2d736b7c01571ae9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 115.84,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 202
+      }
+     },
+     {
+      "fingerprint": "c3330a5f2a2e7e14",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 115.76,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 203
+      }
+     }
+    ],
+    "oral_after_recovery": [
+     {
+      "fingerprint": "05b166e78ea118be",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.2,
+       "labels": [
+        "peripheral intravenous access replaced",
+        "Glucose 25 g IV",
+        "The new line runs freely. What is given now reaches the circulation."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "76558c771e6a22b1",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "61ae17746c326cae",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 159.92,
+       "labels": [
+        "Oral carbohydrate given"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 41
+      }
+     },
+     {
+      "fingerprint": "39c431a03e99412a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 159.84,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 42
+      }
+     }
+    ],
+    "oral_dextrose_while_not_alert": [
+     {
+      "fingerprint": "50999bef7f5eba6f",
+      "readable": {
+       "clarification": "The patient is not fully alert. Please clarify the intended route and airway protection before oral glucose.",
+       "executed": false,
+       "glucose_engine": null,
+       "labels": [],
+       "mental_status": "Drowsy",
+       "sim_time": 0
+      }
+     }
+    ],
+    "oral_while_not_alert": [
+     {
+      "fingerprint": "e4bec3e7c6db53fe",
+      "readable": {
+       "clarification": "The patient is drowsy and cannot safely swallow. Use an intravenous or intramuscular route until the airway is protected.",
+       "executed": false,
+       "glucose_engine": null,
+       "labels": [],
+       "mental_status": "Drowsy",
+       "sim_time": 0
+      }
+     }
+    ],
+    "thiamine_then_dextrose": [
+     {
+      "fingerprint": "c47743b6e343bb90",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 46.2,
+       "labels": [
+        "thiamine 100 mg IV administered",
+        "Glucose 25 g IV",
+        "The dextrose does not run: the forearm swells around the cannula and the infusion slows to a stop. What was ordered is not what reached the patient."
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "2571cd1583e6535c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 46.12,
+       "labels": [
+        null
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "4d7009a884e78e8e",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 45.96,
+       "labels": [
+        "Current mental status: Drowsy. Engagement is reduced; interpret alongside respiratory and circulatory findings. Pupils are equal and reactive."
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 13
+      }
+     },
+     {
+      "fingerprint": "7e1f660dfc4f03f3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 43.56,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 43
+      }
+     }
+    ],
+    "untreated": [
+     {
+      "fingerprint": "c45952ffe2cd4f6f",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 31.92,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 1
+      }
+     },
+     {
+      "fingerprint": "df1013b36e4a023a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 29.52,
+       "labels": [
+        "Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant."
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 31
+      }
+     },
+     {
+      "fingerprint": "dca5e5f174da5760",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 27.12,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 61
+      }
+     },
+     {
+      "fingerprint": "5be22bfd6df847a8",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 24.72,
+       "labels": [],
+       "mental_status": "Unresponsive",
+       "sim_time": 91
+      }
+     }
+    ]
+   },
+   "variant": {
+    "ecg_profile": "baseline",
+    "engine": {
+     "baseline_glucose": 32,
+     "baseline_hemoglobin": 12.9,
+     "baseline_lactate": 2.4,
+     "definitive_actions": [
+      "dextrose",
+      "thiamine",
+      "reassessment"
+     ],
+     "endogenous_insulin": true,
+     "family": "hypoglycemia",
+     "glycogen_depleted": true,
+     "iv_access_failed": true,
+     "recurrence_risk": false,
+     "thiamine_deficient": true
+    },
+    "examination": {
+     "Abdomen": "Soft, without tenderness or organomegaly.",
+     "Cardiac": "Regular mildly rapid pulse; no murmur.",
+     "Neurological": "Drowsy but rousable; gaze is unsteady with a few beats of nystagmus, and gait could not be tested safely. Pupils are equal and reactive.",
+     "Respiratory": "Normal effort; clear breath sounds."
+    },
+    "faculty": {
+     "diagnosis": "Hypoglycemia in a thiamine-depleted patient, at risk of Wernicke encephalopathy",
+     "discriminating_findings": [
+      "Neuroglycopenia with a capillary glucose of 32 mg/dL",
+      "Weeks of alcohol use with almost no food: depleted thiamine",
+      "Unsteady gaze and nystagmus, which glucose alone will not correct"
+     ],
+     "management_focus": "Correct the glucose without precipitating an encephalopathy, and treat the deficiency that made it possible.",
+     "review_questions": [
+      "What did the gaze findings add to the glucose result?",
+      "Which treatment did the glucose itself make urgent?"
+     ],
+     "sources": [
+      "https://abcd.care/sites/default/files/site_uploads/JBDS_Guidelines_Current/JBDS_01_Hypo_Guideline_with_QR_code_January_2023.pdf"
+     ]
+    },
+    "history": {
+     "allergies": [
+      "No known medication allergies are reported."
+     ],
+     "associated_symptoms": [
+      "He has been unsteady on his feet.",
+      "He has had no fever, cough or vomiting."
+     ],
+     "chest_pain": [
+      "He reports no chest pain."
+     ],
+     "chief_complaint": [
+      "His speech is muddled and he says he feels shaky."
+     ],
+     "medical_history": [
+      "He drinks heavily every day and has eaten very little for a week; he is not diabetic."
+     ],
+     "medications": [
+      "He takes no regular medicines and has received no vitamins."
+     ],
+     "neurological_symptoms": [
+      "His walking has been unsteady and he says his vision feels unfocused."
+     ],
+     "onset": [
+      "The confusion and unsteadiness came on through this morning."
+     ],
+     "oral_intake": [
+      "He has had almost nothing to eat for about a week, and alcohol most days."
+     ],
+     "risk_factors": [
+      "He drinks heavily and has eaten almost nothing for days."
+     ]
+    },
+    "history_source": "Shelter staff and the paramedic record",
+    "id": "hypoglycemia_54m_thiamine",
+    "investigations": {
+     "abg": {
+      "duration_min": 5,
+      "result": {
+       "bicarbonate_mmol_l": 23.6,
+       "fio2_percent": 21,
+       "paco2_mm_hg": 36,
+       "pao2_mm_hg": 92,
+       "ph": 7.44
+      }
+     },
+     "basic_labs": {
+      "duration_min": 10,
+      "result": {
+       "bun_mg_dl": 18,
+       "creatinine_mg_dl": 0.8,
+       "glucose_mg_dl": 32,
+       "hemoglobin_g_dl": 12.9,
+       "potassium_mmol_l": 3.4,
+       "sodium_mmol_l": 138,
+       "wbc_k_ul": 6.2
+      }
+     },
+     "blood_cultures": {
+      "duration_min": 2,
+      "result": {
+       "report": "Samples collected; culture identification and susceptibility results are pending."
+      }
+     },
+     "chest_xray": {
+      "duration_min": 8,
+      "result": {
+       "report": "No focal consolidation."
+      }
+     },
+     "hemoglobin": {
+      "duration_min": 5,
+      "result": {
+       "hemoglobin_g_dl": 12.9
+      }
+     },
+     "lactate": {
+      "duration_min": 5,
+      "result": {
+       "lactate_mmol_l": 2.4
+      }
+     },
+     "poc_glucose": {
+      "duration_min": 1,
+      "result": {
+       "glucose_mg_dl": 32
+      }
+     },
+     "pocus": {
+      "duration_min": 2,
+      "result": {
+       "aorta_abdominal": "Normal calibre from the diaphragm to the iliac bifurcation",
+       "aorta_descending": "Not dilated in the visible segment",
+       "aorta_root": "Not dilated",
+       "dvt_femoral": "Compressible bilaterally",
+       "dvt_popliteal": "Compressible bilaterally",
+       "ivc": "1.1 cm; >50% inspiratory collapse",
+       "lung_consolidation": "No consolidation or pleural effusion",
+       "lung_sliding": "Present bilaterally; no pneumothorax",
+       "lungs": "No B-lines; A-line pattern bilaterally",
+       "lv": "Preserved, mildly hyperdynamic contraction",
+       "pericardium": "No pericardial effusion",
+       "rv": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign"
+      }
+     },
+     "temperature": {
+      "duration_min": 1,
+      "result": {
+       "temperature_c": 36.2
+      }
+     },
+     "troponin": {
+      "duration_min": 10,
+      "result": {
+       "report": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+       "upper_reference_ng_l": 19,
+       "value_ng_l": 9
+      }
+     },
+     "urinalysis": {
+      "duration_min": 8,
+      "result": {
+       "report": "No leukocyte esterase, nitrite or blood detected."
+      }
+     },
+     "vbg": {
+      "duration_min": 5,
+      "result": {
+       "bicarbonate_mmol_l": 25.1,
+       "pco2_mm_hg": 42,
+       "ph": 7.4
+      }
+     }
+    },
+    "observable": {
+     "crt": 3,
+     "dbp": 70,
+     "extremities": "Cool",
+     "glucose_mg_dl": 32,
+     "hr": 104,
+     "mental_status": "Drowsy",
+     "peripheral_perfusion": "preserved",
+     "pulse_present": true,
+     "respiratory_rate": 18,
+     "rhythm": "Sinus tachycardia",
+     "sbp": 118,
+     "spo2": 97,
+     "temperature_c": 36.2,
+     "work_of_breathing": "Normal"
+    },
+    "patient": {
+     "age_years": 54,
+     "comorbidities": [
+      "alcohol use disorder",
+      "poor oral intake"
+     ],
+     "pronouns": "he/him",
+     "sex": "male"
+    },
+    "presentation": "A 54-year-old man is brought from a shelter after being found drowsy and unsteady. He has eaten almost nothing for days.",
+    "visual_profile": {
+     "baseline": {
+      "diaphoresis": "mild",
+      "expression": "uncomfortable",
+      "mottling": false,
+      "skin_color": "mild pallor"
+     },
+     "id": "authored_case_appearance_v1",
+     "perfusion_appearance": {}
+    }
+   }
+  },
+  "hypoglycemia_76f": {
+   "declaration": {
+    "closure": "A disposition is decided, or the encounter reaches its horizon.",
+    "critical_events": [
+     {
+      "action": "Neuroglycopenia is left uncorrected.",
+      "alternatives": [
+       "Intravenous dextrose",
+       "glucagon when there is no vascular access",
+       "oral carbohydrate once the patient is alert enough to swallow"
+      ],
+      "domains": [
+       "D3"
+      ],
+      "event_id": "hypo_no_glucose",
+      "evidence_required": "The absence of any executed glucose-raising action in the window.",
+      "exclusions": [
+       "Vascular access failed in the engine and the resident addressed it",
+       "the encounter closed before the glucose was reported"
+      ],
+      "information_on_asking": [],
+      "information_required": [
+       "The bedside glucose result",
+       "the recorded mental status"
+      ],
+      "kind": "critical_omission",
+      "trigger": "The bedside glucose is low and the patient is not alert, and no dextrose, glucagon or oral carbohydrate is executed in the window.",
+      "window_min": [
+       0,
+       30
+      ]
+     },
+     {
+      "action": "A patient whose hypoglycaemia was caused by a long-acting agent is discharged without observation.",
+      "alternatives": [
+       "Admission",
+       "observation with a stated duration",
+       "discharge with an explicitly arranged early review"
+      ],
+      "domains": [
+       "D5"
+      ],
+      "event_id": "hypo_unsafe_discharge",
+      "evidence_required": "An executed discharge disposition with no observation stated in the same encounter.",
+      "exclusions": [
+       "The encounter reached its horizon before any disposition was decided"
+      ],
+      "information_on_asking": [
+       [
+        "medications",
+        "the glimepiride she kept taking while eating almost nothing"
+       ],
+       [
+        "onset",
+        "the two days of poor intake that made it recur"
+       ]
+      ],
+      "information_required": [
+       "An executed discharge disposition"
+      ],
+      "kind": "critical_omission",
+      "trigger": "A discharge disposition is executed after a hypoglycaemia this case attributes to a sulfonylurea, without any recorded plan for continued observation. It applies whether or not the learner asked what caused it: the agent is available on asking, and never asking is part of the omission rather than an excuse for it.",
+      "window_min": [
+       0,
+       180
+      ]
+     }
+    ],
+    "domains": {
+     "D1": {
+      "alternatives": [
+       "Naming the altered state and the glucose together"
+      ],
+      "expected": [
+       "Names the hypoglycaemia or the neuroglycopenia",
+       "treats it first"
+      ],
+      "opportunity": "The glucose is low and the agent that caused it is long-acting: correction is urgent and the recurrence is the reason the encounter continues.",
+      "requires": {
+       "studies": [
+        "poc_glucose"
+       ]
+      },
+      "window_min": [
+       0,
+       15
+      ]
+     },
+     "D2": {
+      "alternatives": [
+       "Treating on the history and confirming with the glucose in the same turn"
+      ],
+      "expected": [
+       "Requests or reads the bedside glucose",
+       "relates the mental state to the glucose"
+      ],
+      "opportunity": "A bedside glucose, the history of the exposure and the neurological examination are all available.",
+      "requires": {
+       "examination": [
+        "Neurological"
+       ],
+       "studies": [
+        "poc_glucose",
+        "basic_labs"
+       ]
+      },
+      "window_min": [
+       0,
+       20
+      ]
+     },
+     "D3": {
+      "alternatives": [
+       "A dextrose infusion rather than repeated boluses",
+       "octreotide stated for a sulfonylurea"
+      ],
+      "expected": [
+       "Gives dextrose",
+       "plans for the recurrence the agent carries"
+      ],
+      "opportunity": "Dextrose corrects it; the recurrence risk is what the rest of the management addresses.",
+      "requires": {
+       "actions": [
+        "dextrose",
+        "dextrose_infusion",
+        "vascular_access",
+        "octreotide",
+        "oral_carbohydrate"
+       ]
+      },
+      "window_min": [
+       0,
+       30
+      ]
+     },
+     "D4": {
+      "alternatives": [
+       "Rechecking the mental state rather than the number"
+      ],
+      "expected": [
+       "States a reassessment interval",
+       "rechecks the glucose or the mental state"
+      ],
+      "opportunity": "The engine raises the glucose and the mental state in response, and lets them fall again where the case carries that risk.",
+      "requires": {
+       "actions": [
+        "reassessment"
+       ],
+       "studies": [
+        "poc_glucose"
+       ]
+      },
+      "window_min": [
+       5,
+       60
+      ]
+     },
+     "D5": {
+      "alternatives": [
+       "Admission stated as the observation"
+      ],
+      "expected": [
+       "Arranges continued observation rather than discharge",
+       "states what is watched and for how long"
+      ],
+      "opportunity": "A sulfonylurea patient who recovers is not a patient who can leave: the decision is observation and its length.",
+      "requires": {
+       "actions": [
+        "disposition",
+        "consult"
+       ]
+      },
+      "window_min": [
+       15,
+       180
+      ]
+     }
+    },
+    "engine_limits": [
+     "The engine does not model a continuous glucose monitor.",
+     "An oral route is refused while the patient is not fully alert, by design."
+    ],
+    "information": [
+     "Arrival observables and the monitor",
+     "the patient's or the witness's history",
+     "bedside glucose, laboratory, neurological examination"
+    ]
+   },
+   "launch": {
+    "moving": "1de0a69fc94899db",
+    "observable": {
+     "crt": 2,
+     "dbp": 78,
+     "extremities": "Warm",
+     "glucose_mg_dl": 38,
+     "hr": 96,
+     "mental_status": "Obtunded",
+     "peripheral_perfusion": "preserved",
+     "pulse_present": true,
+     "respiratory_rate": 18,
+     "rhythm": "Sinus rhythm",
+     "sbp": 134,
+     "spo2": 97,
+     "temperature_c": 36.5,
+     "work_of_breathing": "Normal"
+    }
+   },
+   "scripts": {
+    "admission": [
+     {
+      "fingerprint": "2005b88112bf944c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 139.0,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV",
+        "Dextrose 10% at 100 mL/h started"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "9e31a59ef3361e1e",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 139.07,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "86efd84d446b74fc",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 143.07,
+       "labels": [
+        "Transfer/admission requested: ward"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 76
+      }
+     }
+    ],
+    "double_ampoule": [
+     {
+      "fingerprint": "547bfde566e89df5",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 232.0,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 50 g IV",
+        "The correction overshot: a glucose above 200 mg/dL in a patient with a working pancreas provoked an insulin response, and the glucose is now falling faster than it fell before. Overcorrection buys the next hypoglycaemia, not safety."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "78be3978c5063403",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 231.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "ad5591e1266e38d3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 193.8,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 51
+      }
+     },
+     {
+      "fingerprint": "ca599cf2b5318970",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 192.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 52
+      }
+     },
+     {
+      "fingerprint": "d205da81ca47c872",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 150.4,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 82
+      }
+     },
+     {
+      "fingerprint": "0628ec92252e29cc",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 149.0,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 83
+      }
+     }
+    ],
+    "early_discharge": [
+     {
+      "fingerprint": "79c3cb4160d181d9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 129.0,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "87504f3d10a3dd42",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 128.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "b594916814422b86",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 92.4,
+       "labels": [
+        "Discharge home requested"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 76
+      }
+     },
+     {
+      "fingerprint": "a7e5d8dbbca32eab",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 56.4,
+       "labels": [
+        "The patient was brought back to the emergency department after being sent home: found drowsy at home. The problem that sent them home had not finished."
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 136
+      }
+     },
+     {
+      "fingerprint": "f4fb007923dcebe3",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 20.4,
+       "labels": [
+        "Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant."
+       ],
+       "mental_status": "Unresponsive",
+       "sim_time": 196
+      }
+     }
+    ],
+    "ed_observation": [
+     {
+      "fingerprint": "79c3cb4160d181d9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 129.0,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "87504f3d10a3dd42",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 128.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "31d645311829f46b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 56.4,
+       "labels": [
+        "ED observation for 6 h ordered; the period has not been completed"
+       ],
+       "mental_status": "Drowsy",
+       "sim_time": 136
+      }
+     },
+     {
+      "fingerprint": "3d12344351b96dd0",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 15.0,
+       "labels": [
+        "Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant.",
+        "The patient passes urine. Nobody is collecting it, so the volume is not quantified."
+       ],
+       "mental_status": "Unresponsive",
+       "sim_time": 256
+      }
+     }
+    ],
+    "examinations": [
+     {
+      "fingerprint": "8dceadc57e57492e",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 36.2,
+       "labels": [
+        "Current mental status: Obtunded. Engagement is reduced; interpret alongside respiratory and circulatory findings. Pupils are equal and reactive.",
+        "Capillary refill 2 s; extremities warm."
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 3
+      }
+     },
+     {
+      "fingerprint": "e1a4334d5b6439ce",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 33.2,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 8
+      }
+     }
+    ],
+    "existing_line_dextrose": [
+     {
+      "fingerprint": "2cace0d217b58243",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 37.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 1
+      }
+     },
+     {
+      "fingerprint": "0e4c3481c4140192",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.4,
+       "labels": [
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "e8f0c5929836d5ef",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.8,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 12
+      }
+     },
+     {
+      "fingerprint": "92aebc9103e8709f",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 112.8,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 42
+      }
+     },
+     {
+      "fingerprint": "cfc3611740ef2ca0",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 112.2,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 43
+      }
+     },
+     {
+      "fingerprint": "4993af6164c0c4c8",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 76.2,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 103
+      }
+     },
+     {
+      "fingerprint": "9dbaf9438b377dc8",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 75.6,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 104
+      }
+     }
+    ],
+    "failed_line_then_new_line": [
+     {
+      "fingerprint": "9120fc331454a6e9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.0,
+       "labels": [
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "3affbc833a97b52c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "61e6b747b7c0cd1e",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 225.4,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV",
+        "The correction overshot: a glucose above 200 mg/dL in a patient with a working pancreas provoked an insulin response, and the glucose is now falling faster than it fell before. Overcorrection buys the next hypoglycaemia, not safety."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 21
+      }
+     },
+     {
+      "fingerprint": "e822a30969d0f9ec",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 224.8,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 22
+      }
+     }
+    ],
+    "glucagon_im": [
+     {
+      "fingerprint": "8d37c2289643be1c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 38.6,
+       "labels": [
+        "glucagon 1 mg IM administered"
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "8ea0bd21dd2784ae",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 39.6,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "aa3a47bda0b7682d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 36.4,
+       "labels": [
+        "glucagon 1 mg IM administered",
+        "Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant."
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 36
+      }
+     },
+     {
+      "fingerprint": "cf7c87252d0d0be1",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 36.6,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 37
+      }
+     },
+     {
+      "fingerprint": "50349c0c6a46a20d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 29.8,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 67
+      }
+     }
+    ],
+    "glucagon_iv_existing_line": [
+     {
+      "fingerprint": "10e3dbc8066543be",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 38.6,
+       "labels": [
+        "glucagon 1 mg IV administered"
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "788a294ba966ebd4",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 39.6,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "e9a09377dbc5ee2d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 54.6,
+       "labels": [],
+       "mental_status": "Drowsy",
+       "sim_time": 31
+      }
+     }
+    ],
+    "infusion_after_ampoule": [
+     {
+      "fingerprint": "2005b88112bf944c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 139.0,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV",
+        "Dextrose 10% at 100 mL/h started"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 15
+      }
+     },
+     {
+      "fingerprint": "9e31a59ef3361e1e",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 139.07,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 16
+      }
+     },
+     {
+      "fingerprint": "de4838fa4cf31801",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 143.07,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 76
+      }
+     },
+     {
+      "fingerprint": "4ec9a0c7729b202a",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 143.13,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 77
+      }
+     },
+     {
+      "fingerprint": "f90ad5e4d881d974",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 147.13,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 137
+      }
+     },
+     {
+      "fingerprint": "dda1e15b7a699902",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 147.2,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 138
+      }
+     }
+    ],
+    "infusion_existing_line": [
+     {
+      "fingerprint": "edb129677680c4f2",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 40.0,
+       "labels": [
+        "Dextrose 10% at 100 mL/h started",
+        "Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant."
+       ],
+       "mental_status": "Unresponsive",
+       "sim_time": 30
+      }
+     },
+     {
+      "fingerprint": "2fbe90cd87359348",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 40.07,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 31
+      }
+     },
+     {
+      "fingerprint": "f5fec11926df90e4",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 42.07,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 61
+      }
+     },
+     {
+      "fingerprint": "58c21c58c312d457",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 42.13,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 62
+      }
+     }
+    ],
+    "intraosseous_dextrose": [
+     {
+      "fingerprint": "9b8c240622d43d29",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.0,
+       "labels": [
+        "Glucose 25 g IO"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "25b26c0b372775d4",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     }
+    ],
+    "new_line_then_dextrose": [
+     {
+      "fingerprint": "65071d738cdb6734",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.0,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "f10cfc41033d442c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "4dcd8fc3b2cc645d",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 113.4,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 41
+      }
+     },
+     {
+      "fingerprint": "7175a70098e9bbcc",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 112.8,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 42
+      }
+     }
+    ],
+    "octreotide_iv_existing_line": [
+     {
+      "fingerprint": "1b85f04218361676",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 129.12,
+       "labels": [
+        "Glucose 25 g IV",
+        "octreotide 50 mcg IV administered"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 20
+      }
+     },
+     {
+      "fingerprint": "090a67738206797b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 129.04,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 21
+      }
+     },
+     {
+      "fingerprint": "242b0719e1989333",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 124.24,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 81
+      }
+     },
+     {
+      "fingerprint": "704b1dd168747653",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 124.16,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 82
+      }
+     }
+    ],
+    "octreotide_sc": [
+     {
+      "fingerprint": "6b9e728f858c9b20",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 129.12,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV",
+        "octreotide 50 mcg SC administered"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 20
+      }
+     },
+     {
+      "fingerprint": "9037c4b5c1338d81",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 129.04,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 21
+      }
+     },
+     {
+      "fingerprint": "761b433aa413cf4b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 124.24,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 81
+      }
+     },
+     {
+      "fingerprint": "6df5a82a69f5c1ac",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 124.16,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 82
+      }
+     },
+     {
+      "fingerprint": "1e6e2de6082996ff",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 114.56,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 202
+      }
+     },
+     {
+      "fingerprint": "4428faa1a98fc442",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 114.48,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 203
+      }
+     }
+    ],
+    "oral_after_recovery": [
+     {
+      "fingerprint": "65071d738cdb6734",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.0,
+       "labels": [
+        "peripheral intravenous access already in place; not repeated",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "f10cfc41033d442c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "01f358c2cb160d1c",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 144.6,
+       "labels": [
+        "Oral carbohydrate given"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 41
+      }
+     },
+     {
+      "fingerprint": "edca605088fdb3ca",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 144.0,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 42
+      }
+     }
+    ],
+    "oral_dextrose_while_not_alert": [
+     {
+      "fingerprint": "cfae2441fc3bc80e",
+      "readable": {
+       "clarification": "The patient is not fully alert. Please clarify the intended route and airway protection before oral glucose.",
+       "executed": false,
+       "glucose_engine": null,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 0
+      }
+     }
+    ],
+    "oral_while_not_alert": [
+     {
+      "fingerprint": "449d81132c33a2d5",
+      "readable": {
+       "clarification": "The patient is obtunded and cannot safely swallow. Use an intravenous or intramuscular route until the airway is protected.",
+       "executed": false,
+       "glucose_engine": null,
+       "labels": [],
+       "mental_status": "Obtunded",
+       "sim_time": 0
+      }
+     }
+    ],
+    "thiamine_then_dextrose": [
+     {
+      "fingerprint": "75b972f377af880b",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 132.0,
+       "labels": [
+        "thiamine 100 mg IV administered",
+        "Glucose 25 g IV"
+       ],
+       "mental_status": "Alert",
+       "sim_time": 10
+      }
+     },
+     {
+      "fingerprint": "4c9e15240f406ca0",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 131.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Alert",
+       "sim_time": 11
+      }
+     },
+     {
+      "fingerprint": "cff40c5c4d7933d9",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 130.2,
+       "labels": [
+        "Current mental status: Alert. The patient engages in conversation and follows commands. Pupils are equal and reactive."
+       ],
+       "mental_status": "Alert",
+       "sim_time": 13
+      }
+     },
+     {
+      "fingerprint": "2770a768968b9be5",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 112.2,
+       "labels": [],
+       "mental_status": "Alert",
+       "sim_time": 43
+      }
+     }
+    ],
+    "untreated": [
+     {
+      "fingerprint": "2cace0d217b58243",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 37.4,
+       "labels": [
+        null
+       ],
+       "mental_status": "Obtunded",
+       "sim_time": 1
+      }
+     },
+     {
+      "fingerprint": "10e5fecaa4255453",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 19.4,
+       "labels": [
+        "Generalized tonic-clonic seizure after twenty minutes below 40 mg/dL. It stops on its own and leaves the patient post-ictal; the treatment is the glucose, not an anticonvulsant."
+       ],
+       "mental_status": "Unresponsive",
+       "sim_time": 31
+      }
+     },
+     {
+      "fingerprint": "adac4541cce71493",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 15.0,
+       "labels": [],
+       "mental_status": "Unresponsive",
+       "sim_time": 61
+      }
+     },
+     {
+      "fingerprint": "eeee28946b30e4e1",
+      "readable": {
+       "clarification": null,
+       "executed": true,
+       "glucose_engine": 15.0,
+       "labels": [],
+       "mental_status": "Unresponsive",
+       "sim_time": 91
+      }
+     }
+    ]
+   },
+   "variant": {
+    "ecg_profile": "baseline",
+    "engine": {
+     "baseline_glucose": 38,
+     "baseline_hemoglobin": 11.8,
+     "baseline_lactate": 1.8,
+     "definitive_actions": [
+      "dextrose",
+      "reassessment"
+     ],
+     "endogenous_insulin": true,
+     "family": "hypoglycemia",
+     "recurrence_risk": true
+    },
+    "examination": {
+     "Abdomen": "Soft without focal tenderness.",
+     "Cardiac": "Regular pulse with preserved peripheral volume.",
+     "Neurological": "Opens eyes only briefly to a firm stimulus and localizes with both arms. Pupils are equal and reactive.",
+     "Respiratory": "Normal effort and clear bilateral breath sounds."
+    },
+    "faculty": {
+     "diagnosis": "Sulfonylurea-associated hypoglycemia with recurrence risk",
+     "discriminating_findings": [
+      "Low bedside glucose",
+      "Continued sulfonylurea with reduced intake",
+      "Impaired renal function"
+     ],
+     "management_focus": "Correct glucose, reassess consciousness and plan continued monitoring for recurrent hypoglycemia.",
+     "review_questions": [
+      "Did an initial recovery establish that the cause had ended?",
+      "What informed your monitoring and specialist-support plan?"
+     ],
+     "sources": [
+      "https://abcd.care/sites/default/files/site_uploads/JBDS_Guidelines_Current/JBDS_01_Hypo_Guideline_with_QR_code_January_2023.pdf"
+     ]
+    },
+    "history": {
+     "allergies": [
+      "No known medication allergies are reported."
+     ],
+     "associated_symptoms": [
+      "Her son noticed sweating and reduced interaction.",
+      "There was no witnessed seizure or head injury."
+     ],
+     "chief_complaint": [
+      "Her son reports that she has become unusually difficult to wake."
+     ],
+     "exposure": [
+      "Her son reports no new sedatives or known alcohol ingestion."
+     ],
+     "medical_history": [
+      "Her son reports type 2 diabetes and chronic kidney disease; she is normally alert and independent at home."
+     ],
+     "medications": [
+      "Her medication list includes glimepiride; she continued taking it despite eating very little."
+     ],
+     "neurological_symptoms": [
+      "Her son describes a generalized reduction in responsiveness rather than a witnessed focal weakness."
+     ],
+     "onset": [
+      "Her intake has been poor for two days; she was markedly less responsive this morning."
+     ],
+     "oral_intake": [
+      "Her son reports that she has eaten little for two days but continued her usual tablets."
+     ],
+     "risk_factors": [
+      "She has continued a sulfonylurea during poor intake and has impaired renal function."
+     ]
+    },
+    "history_source": "Son and medication list",
+    "id": "hypoglycemia_76f",
+    "investigations": {
+     "abg": {
+      "duration_min": 5,
+      "result": {
+       "bicarbonate_mmol_l": 23.4,
+       "fio2_percent": 21,
+       "paco2_mm_hg": 40,
+       "pao2_mm_hg": 91,
+       "ph": 7.39
+      }
+     },
+     "basic_labs": {
+      "duration_min": 10,
+      "result": {
+       "bun_mg_dl": 36,
+       "creatinine_mg_dl": 2.1,
+       "glucose_mg_dl": 38,
+       "hemoglobin_g_dl": 11.8,
+       "potassium_mmol_l": 4.1,
+       "sodium_mmol_l": 138,
+       "wbc_k_ul": 8.6
+      }
+     },
+     "blood_cultures": {
+      "duration_min": 2,
+      "result": {
+       "report": "Samples collected; culture identification and susceptibility results are pending."
+      }
+     },
+     "chest_xray": {
+      "duration_min": 8,
+      "result": {
+       "report": "No focal consolidation or edema."
+      }
+     },
+     "hemoglobin": {
+      "duration_min": 5,
+      "result": {
+       "hemoglobin_g_dl": 11.8
+      }
+     },
+     "lactate": {
+      "duration_min": 5,
+      "result": {
+       "lactate_mmol_l": 1.8
+      }
+     },
+     "poc_glucose": {
+      "duration_min": 1,
+      "result": {
+       "glucose_mg_dl": 38
+      }
+     },
+     "pocus": {
+      "duration_min": 2,
+      "result": {
+       "aorta_abdominal": "Normal calibre from the diaphragm to the iliac bifurcation",
+       "aorta_descending": "Not dilated in the visible segment",
+       "aorta_root": "Not dilated",
+       "dvt_femoral": "Compressible bilaterally",
+       "dvt_popliteal": "Compressible bilaterally",
+       "ivc": "1.7 cm; about 50% inspiratory collapse",
+       "lung_consolidation": "No consolidation or pleural effusion",
+       "lung_sliding": "Present bilaterally; no pneumothorax",
+       "lungs": "No B-lines; A-line pattern bilaterally",
+       "lv": "Preserved contraction",
+       "pericardium": "No pericardial effusion",
+       "rv": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign"
+      }
+     },
+     "temperature": {
+      "duration_min": 1,
+      "result": {
+       "temperature_c": 36.5
+      }
+     },
+     "troponin": {
+      "duration_min": 10,
+      "result": {
+       "report": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+       "upper_reference_ng_l": 19,
+       "value_ng_l": 12
+      }
+     },
+     "urinalysis": {
+      "duration_min": 8,
+      "result": {
+       "report": "No leukocyte esterase, nitrite or blood detected."
+      }
+     },
+     "vbg": {
+      "duration_min": 5,
+      "result": {
+       "bicarbonate_mmol_l": 25.1,
+       "pco2_mm_hg": 47,
+       "ph": 7.35
+      }
+     }
+    },
+    "observable": {
+     "crt": 2,
+     "dbp": 78,
+     "extremities": "Warm",
+     "glucose_mg_dl": 38,
+     "hr": 96,
+     "mental_status": "Obtunded",
+     "peripheral_perfusion": "preserved",
+     "pulse_present": true,
+     "respiratory_rate": 18,
+     "rhythm": "Sinus rhythm",
+     "sbp": 134,
+     "spo2": 97,
+     "temperature_c": 36.5,
+     "work_of_breathing": "Normal"
+    },
+    "patient": {
+     "age_years": 76,
+     "comorbidities": [
+      "type 2 diabetes",
+      "chronic kidney disease"
+     ],
+     "pronouns": "she/her",
+     "sex": "female"
+    },
+    "presentation": "A 76-year-old woman is brought by her son because she has become difficult to wake this morning.",
+    "visual_profile": {
+     "baseline": {
+      "diaphoresis": "mild",
+      "expression": "uncomfortable",
+      "mottling": false,
+      "skin_color": "mild pallor"
+     },
+     "id": "authored_case_appearance_v1",
+     "perfusion_appearance": {}
+    }
+   }
+  }
+ }
+}

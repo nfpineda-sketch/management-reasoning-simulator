@@ -242,6 +242,7 @@ def generate_encounter(
     progress: Any = None,
     on_case_compiled: Any = None,
     replay: dict | None = None,
+    allow_review_candidates: bool = False,
 ) -> dict:
     """Author and review a novel frozen case; failure requires explicit retry.
 
@@ -266,7 +267,8 @@ def generate_encounter(
             raise ValueError("Use a clinical family and patient variant for this challenge.")
         from cognitive_generator import generate_cognitive_encounter
         return generate_cognitive_encounter(challenge_id, base_state, api_key, model, seed,
-                                             family_id, variant_id, client, generation_mode="authored")
+                                             family_id, variant_id, client, generation_mode="authored",
+                                             allow_review_candidates=allow_review_candidates)
     if family_id is not None or variant_id is not None:
         raise ValueError("Clinical-family selection applies to cognitive challenges.")
     if challenge_id not in SUPPORTED_CHALLENGES:

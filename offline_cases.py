@@ -62,6 +62,27 @@ def paid_generation_allowed(role=None):
     return True
 
 
+FREE_GENERATION = "MRS_FREE_GENERATION"
+
+
+def free_generation_allowed(role=None):
+    """Who may start a case the AI writes freely, rather than one from the bank.
+
+    Faculty instruction of 2026-09-25: during the stages of the case catalogue
+    free generation stays in the administrator's sandbox. Everyone else starts
+    a bank case (or the saved one B1 names), and keeps whatever else
+    ``MRS_PAID_GENERATION`` allows -- the patient's picture among it. Setting
+    ``MRS_FREE_GENERATION=all`` reopens it to every account that may pay; it
+    never opens what that rule or offline mode close.
+    """
+    if not paid_generation_allowed(role):
+        return False
+    setting = str(os.environ.get(FREE_GENERATION, "")).strip().lower()
+    if setting in {"all", "everyone", "any"}:
+        return True
+    return str(role or "").strip().lower() == "admin"
+
+
 DEFAULT_VARIANT = "MRS_DEFAULT_VARIANT"
 
 
@@ -102,6 +123,13 @@ def launch_options(api_key, role=None):
         if record is not None:
             return {"generation_mode": "replay", "replay": record, "api_key": ""}, ""
         return _authored()
+    if not free_generation_allowed(role):
+        # The same case a non-paying launch gets, with the picture this
+        # person may still have: only the free generation is withheld.
+        record = replay_record(require_offline=False)
+        if record is not None:
+            return {"generation_mode": "replay", "replay": record, "api_key": ""}, api_key
+        return _authored()[0], api_key
     return {"api_key": api_key}, api_key
 
 

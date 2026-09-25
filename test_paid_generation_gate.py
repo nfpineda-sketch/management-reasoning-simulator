@@ -11,13 +11,48 @@ import offline_cases
 
 @pytest.fixture(autouse=True)
 def clean(monkeypatch):
-    for name in ("MRS_OFFLINE_CASES", "MRS_PAID_GENERATION", "MRS_REPLAY_CASE"):
+    for name in ("MRS_OFFLINE_CASES", "MRS_PAID_GENERATION", "MRS_REPLAY_CASE", "MRS_FREE_GENERATION"):
         monkeypatch.delenv(name, raising=False)
 
 
 def test_without_the_switch_nothing_changes(monkeypatch):
     assert offline_cases.paid_generation_allowed("resident") is True
+    assert offline_cases.launch_options("a-key", "admin") == ({"api_key": "a-key"}, "a-key")
+
+
+def test_free_generation_stays_in_the_administrator_s_sandbox(monkeypatch):
+    """Faculty instruction of 2026-09-25, for the stages of the case catalogue:
+    everyone else starts a bank case, and keeps the patient's picture."""
+    assert offline_cases.free_generation_allowed("admin") is True
+    for role in ("resident", "faculty", None, ""):
+        assert offline_cases.free_generation_allowed(role) is False
+        assert offline_cases.launch_options("a-key", role) == ({"generation_mode": "authored", "api_key": ""},
+                                                               "a-key")
+
+
+def test_a_saved_case_is_what_a_non_administrator_gets_when_one_is_configured(monkeypatch, tmp_path):
+    record = tmp_path / "saved.json"
+    record.write_text('{"state": {"encounter_spec": {"clinical_case": {}}}}')
+    monkeypatch.setenv("MRS_REPLAY_CASE", str(record))
+    options, scene_key = offline_cases.launch_options("a-key", "resident")
+    assert options["generation_mode"] == "replay" and options["api_key"] == ""
+    assert scene_key == "a-key"
+
+
+@pytest.mark.parametrize("value", ["all", "everyone", "ALL"])
+def test_reopening_free_generation_takes_an_explicit_value(monkeypatch, value):
+    monkeypatch.setenv("MRS_FREE_GENERATION", value)
+    assert offline_cases.free_generation_allowed("resident") is True
     assert offline_cases.launch_options("a-key", "resident") == ({"api_key": "a-key"}, "a-key")
+
+
+def test_free_generation_never_opens_what_the_paid_rule_closes(monkeypatch):
+    monkeypatch.setenv("MRS_FREE_GENERATION", "all")
+    monkeypatch.setenv("MRS_PAID_GENERATION", "admin")
+    assert offline_cases.free_generation_allowed("resident") is False
+    assert offline_cases.launch_options("a-key", "resident") == ({"generation_mode": "authored", "api_key": ""}, "")
+    monkeypatch.setenv("MRS_OFFLINE_CASES", "1")
+    assert offline_cases.free_generation_allowed("admin") is False
 
 
 @pytest.mark.parametrize("role, allowed", [("admin", True), ("faculty", False),

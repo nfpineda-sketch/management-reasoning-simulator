@@ -201,6 +201,10 @@ def runtime_functions(fake_st):
                  "_render_setup": lambda context: False,
                  "_awaiting_review": lambda context: {},
                  "_render_directives": lambda context: None,
+                 # The catalogue's review cases and panel have their own tests
+                 # (test_catalog_review_in_the_sandbox); none is offered here.
+                 "review_options": lambda challenge_id: {},
+                 "_render_catalog_review": lambda context: None,
                  "render_attempt_assessment": lambda context, record: None}
     exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), namespace)
     return namespace

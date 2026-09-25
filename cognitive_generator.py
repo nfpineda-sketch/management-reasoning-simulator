@@ -19,7 +19,7 @@ SPEC_VERSION = "mrs.cognitive.encounter.v1"
 
 def generate_cognitive_encounter(challenge_id, base_state, api_key="", model="",
                                  seed=None, family_id=None, variant_id=None, client=None,
-                                 generation_mode="novel", review_model=None):
+                                 generation_mode="novel", review_model=None, allow_review_candidates=False):
     if generation_mode not in {"novel", "authored"}:
         raise ValueError("Unknown generation mode.")
     if generation_mode == "novel" and family_id is None and variant_id is None:
@@ -43,6 +43,15 @@ def generate_cognitive_encounter(challenge_id, base_state, api_key="", model="",
     candidates = [(family, variant) for family in allowed for variant in FAMILIES[family]["variants"]
                   if (family_id is None or family == family_id)
                   and (variant_id is None or variant["id"] == variant_id)]
+    if not candidates and allow_review_candidates and variant_id is not None:
+        # A catalogue composition awaiting faculty review, named explicitly.
+        # Only the faculty sandbox passes this flag (curriculum_runtime); the
+        # resident's selection and case direction never do.
+        from clinical_cases import review_candidate
+        candidate = review_candidate(variant_id)
+        if candidate is not None and candidate["engine"]["family"] in allowed and (
+                family_id is None or candidate["engine"]["family"] == family_id):
+            candidates = [(candidate["engine"]["family"], candidate)]
     if not candidates:
         raise ValueError("This patient variant is not available for the selected challenge.")
     rng = random.Random(seed)
@@ -135,6 +144,11 @@ def generate_cognitive_encounter(challenge_id, base_state, api_key="", model="",
                        "fallback_reason": fallback, "usage": usage,
                        "clinical_validation": "authored_educational_model_requires_faculty_review"},
     }
+    import hypoglycemia_catalog
+    catalogued = hypoglycemia_catalog.reference(case["id"])
+    if catalogued is not None:
+        # Which catalogue configuration, at which version, built this patient.
+        spec["catalog"] = catalogued
     spec["content_sha256"] = hashlib.sha256(json.dumps(spec, sort_keys=True, separators=(",", ":"),
                                                        allow_nan=False).encode()).hexdigest()
     state["encounter_spec"] = deepcopy(spec)

@@ -17,7 +17,12 @@ from clinical_cases import FAMILIES, variant_by_id
 from rubric import DOMAIN_IDS, CRITICAL_EVENT_KINDS, RubricError
 
 
-COVERAGE_VERSION = "1.0"
+# 1.1 (2026-09-25): hypoglycaemia declarations derive from hypoglycemia_catalog,
+# and hypoglycemia_54m_thiamine's new version puts the glucose first, checks the
+# delivery through the failed line in D4, and makes thiamine a second objective
+# rather than the critical event hypo_no_thiamine. Encounters judged under 1.0
+# keep 1.0 (evaluation_basis).
+COVERAGE_VERSION = "1.1"
 
 
 class CoverageError(ValueError):
@@ -46,15 +51,20 @@ def _case(case_or_id):
 
 
 def declared(case_or_id):
-    """The declaration for this case, or None when it has none yet."""
+    """The declaration for this case, or None when it has none yet.
+
+    A catalogue composition awaiting faculty review has one too; it is kept
+    apart from the bank's (``CANDIDATES``) so the coverage matrix and the
+    curriculum, which read ``CASES``, see only the bank.
+    """
     case = _case(case_or_id)
-    return CASES.get(case["id"])
+    return CASES.get(case["id"]) or CANDIDATES.get(case["id"])
 
 
 def verify(case_or_id):
     """Every way this case's declaration fails to match the case. Empty is good."""
     case = _case(case_or_id)
-    entry = CASES.get(case["id"])
+    entry = CASES.get(case["id"]) or CANDIDATES.get(case["id"])
     if entry is None:
         return [f"{case['id']}: no rubric coverage is declared."]
     problems = []
@@ -188,5 +198,5 @@ def matrix():
 
 
 CASES = {}
-from case_assessment_bank import CASES as _BANK          # noqa: E402
+from case_assessment_bank import CASES as _BANK, CANDIDATES          # noqa: E402
 CASES.update(_BANK)

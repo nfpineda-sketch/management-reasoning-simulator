@@ -352,7 +352,9 @@ CASES.update(_bleed(
 
 
 def _hypo(case_id, d1_text, d3_text, d3_expected, d3_alternatives, d3_actions, d5_text,
-          d5_expected, d5_alternatives, extra_events=()):
+          d5_expected, d5_alternatives, extra_events=(), d4=None):
+    """One hypoglycaemia declaration. ``d4`` replaces the family's own when a case asks
+    for a different check of delivery and response (a line that is not in the vein)."""
     return {case_id: _family(
         _d(d1_text, ["Names the hypoglycaemia or the neuroglycopenia", "treats it first"],
            ["Naming the altered state and the glucose together"], (0, 15),
@@ -367,7 +369,9 @@ def _hypo(case_id, d1_text, d3_text, d3_expected, d3_alternatives, d3_actions, d
            "again where the case carries that risk.",
            ["States a reassessment interval", "rechecks the glucose or the mental state"],
            ["Rechecking the mental state rather than the number"], (5, 60),
-           actions=_REASSESS, studies=("poc_glucose",)),
+           actions=_REASSESS, studies=("poc_glucose",)) if d4 is None else
+        _d(d4["opportunity"], d4["expected"], d4["alternatives"], tuple(d4["window"]),
+           actions=tuple(d4["actions"]), studies=tuple(d4["studies"])),
         _d(d5_text, d5_expected, d5_alternatives, (15, 180), actions=("disposition", "consult")),
         ["Arrival observables and the monitor", "the patient's or the witness's history",
          "bedside glucose, laboratory, neurological examination"],
@@ -386,71 +390,50 @@ def _hypo(case_id, d1_text, d3_text, d3_expected, d3_alternatives, d3_actions, d
                  "the encounter closed before the glucose was reported"], ["D3"]), *extra_events])}
 
 
-CASES.update(_hypo(
-    "hypoglycemia_28m",
-    "The glucose is low enough to explain the altered state and the correction is time-critical.",
-    "Intravenous dextrose is executable, and vascular access may have to be established first.",
-    ["Gives dextrose", "secures the route it needs"],
-    ["Glucagon when access is not available", "oral carbohydrate once the patient is alert"],
-    ("dextrose", "vascular_access", "glucagon", "oral_carbohydrate"),
-    "Once the glucose and the consciousness recover, the decision is whether this patient can "
-    "safely leave and what would bring them back.",
-    ["Decides the destination on the recovery observed", "states what is still pending"],
-    ["Keeping the patient for a stated period before deciding"]))
+def _hypo_unsafe_discharge():
+    return _event("hypo_unsafe_discharge", "critical_omission",
+                  "A patient whose hypoglycaemia was caused by a long-acting agent is discharged "
+                  "without observation.",
+                  "A discharge disposition is executed after a hypoglycaemia this case attributes to "
+                  "a sulfonylurea, without any recorded plan for continued observation. It applies "
+                  "whether or not the learner asked what caused it: the agent is available on "
+                  "asking, and never asking is part of the omission rather than an excuse for it.",
+                  ["An executed discharge disposition"], (0, 180),
+                  ["Admission", "observation with a stated duration",
+                   "discharge with an explicitly arranged early review"],
+                  "An executed discharge disposition with no observation stated in the same encounter.",
+                  ["The encounter reached its horizon before any disposition was decided"],
+                  ["D5"],
+                  [("medications", "the glimepiride she kept taking while eating almost nothing"),
+                   ("onset", "the two days of poor intake that made it recur")])
 
-CASES.update(_hypo(
-    "hypoglycemia_76f",
-    "The glucose is low and the agent that caused it is long-acting: correction is urgent and "
-    "the recurrence is the reason the encounter continues.",
-    "Dextrose corrects it; the recurrence risk is what the rest of the management addresses.",
-    ["Gives dextrose", "plans for the recurrence the agent carries"],
-    ["A dextrose infusion rather than repeated boluses", "octreotide stated for a sulfonylurea"],
-    ("dextrose", "dextrose_infusion", "vascular_access", "octreotide", "oral_carbohydrate"),
-    "A sulfonylurea patient who recovers is not a patient who can leave: the decision is "
-    "observation and its length.",
-    ["Arranges continued observation rather than discharge",
-     "states what is watched and for how long"],
-    ["Admission stated as the observation"],
-    [_event("hypo_unsafe_discharge", "critical_omission",
-            "A patient whose hypoglycaemia was caused by a long-acting agent is discharged "
-            "without observation.",
-            "A discharge disposition is executed after a hypoglycaemia this case attributes to "
-            "a sulfonylurea, without any recorded plan for continued observation. It applies "
-            "whether or not the learner asked what caused it: the agent is available on "
-            "asking, and never asking is part of the omission rather than an excuse for it.",
-            ["An executed discharge disposition"], (0, 180),
-            ["Admission", "observation with a stated duration",
-             "discharge with an explicitly arranged early review"],
-            "An executed discharge disposition with no observation stated in the same encounter.",
-            ["The encounter reached its horizon before any disposition was decided"],
-            ["D5"],
-            [("medications", "the glimepiride she kept taking while eating almost nothing"),
-             ("onset", "the two days of poor intake that made it recur")])]))
 
-CASES.update(_hypo(
-    "hypoglycemia_54m_thiamine",
-    "The glucose is low and this patient is thiamine-depleted: correcting one threat without "
-    "the other creates a second.",
-    "Dextrose and thiamine are both executable, and the order in which they are given is the "
-    "point of the case.",
-    ["Gives dextrose", "gives thiamine"],
-    ["Thiamine first", "both in the same submission"],
-    ("dextrose", "thiamine", "vascular_access"),
-    "The decision is continued treatment of the deficiency and where that happens, not only "
-    "the glucose.",
-    ["Decides the destination with the deficiency in it", "states what continues"],
-    ["Admission stated as the continuation"],
-    [_event("hypo_no_thiamine", "critical_omission",
-            "Glucose is given to a thiamine-depleted patient and no thiamine is given.",
-            "Dextrose is executed in a patient the case declares thiamine-depleted and no "
-            "thiamine is executed within the window.",
-            ["An executed dextrose action"], (0, 60),
-            ["Thiamine before the dextrose", "thiamine in the same submission"],
-            "An executed dextrose action with no executed thiamine action in the window.",
-            ["The encounter closed before a second order could be executed"],
-            ["D3"],
-            [("medical_history", "the daily drinking"),
-             ("oral_intake", "the week with almost nothing to eat")])]))
+# The events a hypoglycaemia configuration can carry, by identifier. Since
+# 2026-09-25 hypo_no_thiamine is not one of them: forgetting thiamine is the
+# omission of a second objective, weighed inside D3, not a critical event
+# (faculty). Encounters judged before that keep it through their frozen or
+# legacy evaluation basis (evaluation_basis).
+_HYPO_EVENTS = {"hypo_unsafe_discharge": _hypo_unsafe_discharge}
+
+
+def declaration_for(configuration):
+    """The evaluation declaration of one hypoglycaemia configuration, from the catalogue."""
+    import hypoglycemia_catalog
+    inputs = hypoglycemia_catalog.declaration_inputs(configuration)
+    events = tuple(_HYPO_EVENTS[event_id]() for event_id in inputs.pop("events"))
+    case_id = inputs.pop("case_id")
+    return _hypo(case_id, extra_events=events, **inputs)[case_id]
+
+
+# The three bank cases and the compositions awaiting faculty review, all
+# derived from hypoglycemia_catalog. Candidates are kept apart from CASES: the
+# coverage matrix and the curriculum read CASES, which is the bank.
+import hypoglycemia_catalog as _hypoglycemia_catalog
+
+CASES.update({configuration["id"]: declaration_for(configuration)
+              for configuration in _hypoglycemia_catalog.bank_configurations()})
+CANDIDATES = {configuration["id"]: declaration_for(configuration)
+              for configuration in _hypoglycemia_catalog.review_candidates()}
 
 
 def _opioid(case_id, d1_text, d5_text, d5_expected, d5_alternatives, extra_events=()):

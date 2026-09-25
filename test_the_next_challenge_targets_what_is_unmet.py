@@ -55,10 +55,12 @@ def test_an_encounter_that_never_counted_marks_nothing(item):
 def test_what_is_unmet_shrinks_as_situations_are_met():
     before = challenge_targeting.unmet([], CHALLENGES)
     after = challenge_targeting.unmet([attempt("R1-06")], CHALLENGES)
-    # Nine since the anaphylaxis family joined this challenge on 2026-09-23.
-    # The number is here so a family leaving a challenge is noticed; the
-    # property is that completing it takes every one of them to met.
-    assert before["R1-06"] == 9 and after["R1-06"] == 0
+    # Nine since the anaphylaxis family joined this challenge on 2026-09-23;
+    # eight since hypo_no_thiamine stopped being a critical event on
+    # 2026-09-25 (coverage 1.1). The number is here so a family leaving a
+    # challenge is noticed; the property is that completing it takes every one
+    # of them to met.
+    assert before["R1-06"] == 8 and after["R1-06"] == 0
     # R1-07 shares hypoglycaemia with R1-06, so it loses what they share.
     assert after["R1-07"] < before["R1-07"]
     # A challenge with nothing in common is untouched.

@@ -121,7 +121,8 @@ def restore_attempt(context, record, reset_session):
         st.session_state.pop("_saved_digest", None)
 
 
-def start_encounter(context, initial_state, reset_session, faculty_choice=None, adaptation_plan=None, prior_record=None):
+def start_encounter(context, initial_state, reset_session, faculty_choice=None, adaptation_plan=None, prior_record=None,
+                    review_case=None):
     store, token, user = context["store"], context["token"], context["user"]
     attempts = store.list_attempts(token)
     own = [a for a in attempts if a["user_id"] == user["id"]]
@@ -135,6 +136,13 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         if faculty_choice not in CHALLENGES:
             raise AccountError("Choose an implemented faculty challenge.")
         assignment = {"challenge_id": faculty_choice, "reason": "faculty_sandbox", "assignment_seed": seed}
+        if review_case:
+            # A catalogue configuration opened for clinical review (2026-09-25).
+            # Only staff reach this branch; a resident's launch never does.
+            review = review_options(faculty_choice)
+            if review_case not in review:
+                raise AccountError("That case cannot be opened for review under this challenge.")
+            assignment["review_case"] = review_case
     elif (directive := _waiting_directive(context)) is not None:
         # A faculty member chose this resident's next case, and said why
         # (encounter_directives). The curriculum's rule is not consulted. The
@@ -154,12 +162,20 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
                                       challenge_targeting.unmet(own, CHALLENGES))
     from offline_cases import launch_options
     # Who is starting it decides whether it may pay a provider (MRS_PAID_GENERATION,
-    # faculty decision B1). Without the role an administrator was refused too.
+    # faculty decision B1) and whether the AI may write the case freely, which
+    # stays in the administrator's sandbox for now (MRS_FREE_GENERATION,
+    # 2026-09-25). Without the role an administrator was refused too.
     generation, scene_key = launch_options(_secret("OPENAI_API_KEY"), user.get("role"))
     if directive is not None:
         # The chosen authored case, as the bank has it: no generation and no
         # selection request. The patient's picture is prepared as for any case.
         generation = {"generation_mode": "authored", "variant_id": directive["variant_id"], "api_key": ""}
+    elif assignment.get("review_case"):
+        # Opened for review: the configuration as the catalogue builds it, with
+        # no generation and no paid picture.
+        generation = {"generation_mode": "authored", "variant_id": assignment["review_case"], "api_key": "",
+                      "allow_review_candidates": True}
+        scene_key = ""
     with ScenePreparation(scene_key,
                           _secret("MRS_IMAGE_MODEL", "gpt-image-1.5"),
                           _secret("MRS_IMAGE_REVIEW_MODEL", "gpt-5-mini")) as scene:
@@ -173,6 +189,18 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         st.session_state.pop("_case_generation_failure", None)
         encounter["assignment"] = {**assignment, "code_version": code_version(),
                                    "runtime_version": RUNTIME_VERSION}
+        # What this encounter will be judged against, frozen now with the
+        # versions that produced it (faculty, 2026-09-25). Written once with
+        # the encounter; nothing updates it afterwards (evaluation_basis).
+        import evaluation_basis
+        spec = encounter.get("spec") or (encounter.get("state") or {}).get("encounter_spec") or {}
+        encounter["evaluation_basis"] = evaluation_basis.freeze(
+            (spec.get("clinical_case") or {}).get("id") or "", spec=spec, code_version=code_version())
+        # Prepared for the later stages (repetition and comparison), not used
+        # to choose anything yet: why this encounter exists and what this
+        # person had already met (faculty instruction of 2026-09-25, point 10).
+        encounter["assignment"]["purpose"] = "practice"
+        encounter["assignment"]["exposure"] = prior_exposure(own, encounter["evaluation_basis"])
         attempt_id = store.create_attempt(token, assignment["challenge_id"], encounter, user["role"] != "resident")
         if directive is not None:
             from encounter_directives import DirectiveStore
@@ -211,6 +239,97 @@ def code_version():
                 value = ""
         _CODE_VERSION = value or "unknown"
     return _CODE_VERSION
+
+
+def prior_exposure(attempts, basis):
+    """What this account had already been placed in, when this encounter starts.
+
+    Completed encounters of the same case, and of the same clinical situation
+    (the catalogue signature: the decision-relevant conditions, not the
+    surface), whether or not they were sandbox runs, each counted apart. A
+    record saved before signatures existed counts only by its case. A count,
+    never a judgement: whether a repeat was deliberate, and whether two
+    encounters can be compared, are later decisions that also weigh the help
+    declared and how the encounter was run.
+    """
+    case_id = basis.get("case_id")
+    signature = ((basis.get("versions") or {}).get("catalog") or {}).get("signature")
+    same_case, same_signature = [], []
+    for attempt in attempts or ():
+        if attempt.get("status") != "completed":
+            continue
+        encounter = attempt.get("encounter") or {}
+        earlier = encounter.get("evaluation_basis") or {}
+        earlier_case = earlier.get("case_id") or (((encounter.get("state") or {}).get("encounter_spec") or {})
+                                                  .get("clinical_case") or {}).get("id")
+        earlier_signature = ((earlier.get("versions") or {}).get("catalog") or {}).get("signature")
+        row = {"attempt_id": attempt.get("id"), "sandbox": bool(attempt.get("is_sandbox"))}
+        if case_id and earlier_case == case_id:
+            same_case.append(row)
+        if signature and earlier_signature == signature:
+            same_signature.append(row)
+    return {"same_case": same_case, "same_signature": same_signature, "signature": signature}
+
+
+def review_options(challenge_id):
+    """The catalogue configurations a faculty member can open for review under a challenge.
+
+    {configuration_id: label}. The bank cases the catalogue expresses and the
+    compositions awaiting review, for the challenges whose families the
+    catalogue covers. Never shown to a resident, never in a resident's selection.
+    """
+    import hypoglycemia_catalog
+    challenge = CHALLENGES.get(challenge_id) or {}
+    if hypoglycemia_catalog.FAMILY not in (challenge.get("families") or ()):
+        return {}
+    options = {}
+    for configuration in hypoglycemia_catalog.configurations():
+        axes = configuration["axes"]
+        label = " · ".join(hypoglycemia_catalog.AXES[axis]["values"][axes[axis]]["es"]
+                           for axis in ("mechanism", "iv_access", "severity"))
+        origin = "banco" if configuration["origin"] == "bank" else "en revisión"
+        options[configuration["id"]] = f"{label} ({origin})"
+    return options
+
+
+_REVIEW_STATES = {"not_reviewed": "Not reviewed", "reviewed": "Reviewed (approved)",
+                  "review_outdated": "Review outdated", "reviewed_changes_requested": "Changes requested",
+                  "reviewed_rejected": "Rejected"}
+
+
+def _render_catalog_review(context):
+    """Faculty only: where each configuration stands, and the one action that reviews it."""
+    from catalog_reviews import CatalogReviewStore
+    store, token = context["store"], context["token"]
+    with st.expander("Clinical review of the hypoglycemia catalogue (faculty)"):
+        st.caption("Compatible and tested are computed by the code (docs/CATALOGO_HIPOGLICEMIA.md). "
+                   "A clinical review is yours alone: it is recorded with your account and refers to this "
+                   "version of the configuration; a clinically relevant change later asks for a new one.")
+        try:
+            reviews = CatalogReviewStore(store)
+            rows = reviews.statuses(token)
+        except AccountError as error:
+            st.caption(str(error))
+            return
+        st.dataframe([{
+            "Configuration": row["configuration_id"], "Origin": row["origin"],
+            "Mechanism · access · severity": " · ".join(row["axes"][axis] for axis in
+                                                         ("mechanism", "iv_access", "severity")),
+            "Compatible": "yes" if row["compatible"] else "no",
+            "Clinical review": _REVIEW_STATES.get(row["state"], row["state"])
+                               + (f" ({', '.join(row['changed'])} changed)" if row["changed"] else ""),
+            "Last reviewer": ((row.get("review") or {}).get("reviewer") or {}).get("username", ""),
+        } for row in rows], hide_index=True)
+        with st.form("_catalog_review_form", clear_on_submit=True):
+            chosen = st.selectbox("Configuration", [row["configuration_id"] for row in rows])
+            decision = st.radio("Decision", ["approved", "changes_requested", "rejected"], horizontal=True)
+            note = st.text_area("What you reviewed and why", max_chars=1200)
+            if st.form_submit_button("Record clinical review"):
+                try:
+                    reviews.record(token, chosen, decision, note)
+                    st.success("Review recorded.")
+                except AccountError as error:
+                    st.error(str(error))
 
 
 def _waiting_directive(context):
@@ -340,7 +459,7 @@ def render_dashboard(context, initial_state, reset_session):
     attempts = store.list_attempts(token)
     own = [a for a in attempts if a["user_id"] == user["id"]]
     completed = [a for a in own if a["status"] == "completed" and not a["is_sandbox"]]
-    faculty_choice = None
+    faculty_choice = review_choice = None
     if user["role"] == "resident":
         st.subheader("Your next clinical encounter")
         st.caption(f"Training year {user['training_year']} · {len(completed)} completed encounter reviews")
@@ -349,6 +468,18 @@ def render_dashboard(context, initial_state, reset_session):
         st.subheader("Faculty sandbox")
         st.caption(f"These encounters are excluded from resident progress. {len(CHALLENGES)} challenges are available.")
         faculty_choice = st.selectbox("Management challenge", list(CHALLENGES), format_func=lambda key: key + " · " + CHALLENGES[key]["title"])
+        review = review_options(faculty_choice)
+        if review:
+            # Faculty only: the catalogue's configurations, the nine awaiting
+            # clinical review among them (docs/CATALOGO_HIPOGLICEMIA.md).
+            review_choice = st.selectbox(
+                "Case to open (faculty review)", [""] + list(review),
+                format_func=lambda key: "As usual: the application chooses" if not key else review[key],
+                key="_faculty_review_case")
+            if review_choice:
+                st.caption("Opened for clinical review in the sandbox: no generation, no picture, and "
+                           "never offered to residents.")
+            _render_catalog_review(context)
         with st.expander("Clinical and cognitive catalog"):
             st.dataframe([
                 {"Code": key, "Learning focus": challenge["title"],
@@ -393,7 +524,8 @@ def render_dashboard(context, initial_state, reset_session):
             if active:
                 restore_attempt(context, active, reset_session)
             else:
-                start_encounter(context, initial_state, reset_session, faculty_choice)
+                start_encounter(context, initial_state, reset_session, faculty_choice,
+                                review_case=review_choice or None)
         except (AccountError, GeneratedCaseError) as exc:
             diagnostic = getattr(exc, 'diagnostic', None)
             if diagnostic is not None:

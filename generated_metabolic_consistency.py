@@ -7,36 +7,22 @@ on the monitor, and the breathing of an opioid.
 """
 import re
 
+import case_cues
 import glucose_rescue
 import opioid_reversal
 
-HYPOGLYCAEMIA_MG_DL = 70
-SULFONYLUREAS = r"\b(?:sulfonylurea|sulfonilurea|glibenclamide|glyburide|glipizide|gliclazide|glimepiride)\b"
-ALCOHOL_OR_STARVATION = (r"\balcohol\w*\b", r"\bdrink\w+ (?:heavily|daily)\b", r"\bmalnourish\w*\b",
-                         r"\b(?:eaten|eating) (?:almost )?nothing\b", r"\bpoor (?:oral )?intake\b",
-                         r"\bdesnutri\w*\b")
+# The glucose mechanism's own definitions, shared with the hypoglycaemia
+# catalogue of the bank (2026-09-25): one source, not two copies.
+HYPOGLYCAEMIA_MG_DL = glucose_rescue.HYPOGLYCAEMIA_MG_DL
+SULFONYLUREAS = glucose_rescue.SULFONYLUREA_NAMES
+ALCOHOL_OR_STARVATION = glucose_rescue.ALCOHOL_OR_STARVATION
 OPIOID_CUES = (r"\bopioid\w*\b", r"\bopiate\w*\b", r"\bfentanyl\b", r"\bheroin\w*\b", r"\bmorphine\b",
                r"\boxycodone\b", r"\bmethadone\b", r"\bbuprenorphine\b", r"\bnaloxone\b",
                r"\bpinpoint pupils?\b", r"\bpupils? are pinpoint\b")
 OPIOID_RR = 12
-NEGATION = re.compile(r"\b(?:no|not|without|absent|denies|never)\b")
-
-
-def _history_text(case):
-    parts = []
-    for values in case.get("history", {}).values():
-        parts += values if isinstance(values, list) else [values]
-    parts += list(case.get("examination", {}).values())
-    return " ".join(str(part) for part in parts if part)
-
-
-def _affirmed(text, cues):
-    for sentence in re.split(r"(?<=[.;!?])\s+|;\s*", str(text or "")):
-        if NEGATION.search(sentence.lower()):
-            continue
-        if any(re.search(cue, sentence, re.I) for cue in cues):
-            return True
-    return False
+NEGATION = case_cues.NEGATION
+_history_text = case_cues.history_text
+_affirmed = case_cues.affirmed
 
 
 def glucose_issues(case):

@@ -2050,7 +2050,7 @@ def _surface(state):
             mental = "Drowsy"
 
     elif family == "hypoglycemia":
-        mental = "Alert" if f["glucose"] >= 70 else "Drowsy" if f["glucose"] >= 45 else "Obtunded" if f["glucose"] >= 25 else "Unresponsive"
+        mental = glucose_rescue.consciousness(f["glucose"])
         if f["glucose"] >= 70:
             hr = max(72, float(base.get("hr", 100)) - 18)
         if glucose_rescue.post_ictal(f):

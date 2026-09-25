@@ -151,12 +151,12 @@ def unasked_for_events(record, case_id):
     Bounded and clinically meaningful: not every topic a case carries matters
     equally, and these are the ones the case declared an event turns on.
     """
-    from case_assessment import events as defined_events
+    import evaluation_basis
     summary = review(record, case_id)
     named = set(summary["named"])
     labels = {row["topic"]: row["label"] for row in summary["offered"]}
     rows = []
-    for event in defined_events(case_id) if case_id else ():
+    for event in evaluation_basis.resolve(record, case_id or None)["events"] if case_id else ():
         for topic, tells in event.get("information_on_asking", ()):
             if topic in named:
                 continue

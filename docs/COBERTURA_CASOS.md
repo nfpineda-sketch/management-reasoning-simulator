@@ -1,7 +1,7 @@
 # Matriz de cobertura de los casos
 
 > Generado por `tools_coverage_matrix.py` desde `case_assessment_bank.py`.
-> Rúbrica 1.0-pilot · declaraciones versión 1.0.
+> Rúbrica 1.0-pilot · declaraciones versión 1.1.
 
 La cobertura completa es **requisito para comparar puntajes totales**. No demuestra dificultad equivalente entre casos ni validación psicométrica.
 
@@ -11,7 +11,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 | Casos | Cobertura completa | Evaluación parcial | Discrepancias | Eventos críticos |
 |---|---|---|---|---|
-| 31 | 31 | 0 | 0 | 33 definiciones distintas |
+| 31 | 31 | 0 | 0 | 32 definiciones distintas |
 
 ## Por caso
 
@@ -35,7 +35,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 | `gi_bleed_72f` | gi_bleed | ✅ | ✅ | ✅ | ✅ | ✅ | `gi_no_resuscitation` |
 | `hypoglycemia_28m` | hypoglycemia | ✅ | ✅ | ✅ | ✅ | ✅ | `hypo_no_glucose` |
 | `hypoglycemia_76f` | hypoglycemia | ✅ | ✅ | ✅ | ✅ | ✅ | `hypo_no_glucose`, `hypo_unsafe_discharge` |
-| `hypoglycemia_54m_thiamine` | hypoglycemia | ✅ | ✅ | ✅ | ✅ | ✅ | `hypo_no_glucose`, `hypo_no_thiamine` |
+| `hypoglycemia_54m_thiamine` | hypoglycemia | ✅ | ✅ | ✅ | ✅ | ✅ | `hypo_no_glucose` |
 | `opioid_35m` | opioid | ✅ | ✅ | ✅ | ✅ | ✅ | `opioid_no_ventilatory_support` |
 | `opioid_67f` | opioid | ✅ | ✅ | ✅ | ✅ | ✅ | `opioid_no_ventilatory_support`, `opioid_unsafe_discharge` |
 | `pneumonia_46f` | pneumonia | ✅ | ✅ | ✅ | ✅ | ✅ | `pneumonia_no_antibiotic` |
@@ -891,20 +891,20 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 
 ### `hypoglycemia_54m_thiamine`
 
-- **D1** · ventana 0–15 min. The glucose is low and this patient is thiamine-depleted: correcting one threat without the other creates a second.
+- **D1** · ventana 0–15 min. The glucose is low enough to explain the altered state and its correction comes first. The drinking and the week without food make a thiamine deficiency likely: a second priority, not the first.
   - Esperado: Names the hypoglycaemia or the neuroglycopenia; treats it first.
   - Alternativas aceptables: Naming the altered state and the glucose together.
 - **D2** · ventana 0–20 min. A bedside glucose, the history of the exposure and the neurological examination are all available.
   - Esperado: Requests or reads the bedside glucose; relates the mental state to the glucose.
   - Alternativas aceptables: Treating on the history and confirming with the glucose in the same turn.
-- **D3** · ventana 0–30 min. Dextrose and thiamine are both executable, and the order in which they are given is the point of the case.
-  - Esperado: Gives dextrose; gives thiamine.
-  - Alternativas aceptables: Thiamine first; both in the same submission.
-- **D4** · ventana 5–60 min. The engine raises the glucose and the mental state in response, and lets them fall again where the case carries that risk.
-  - Esperado: States a reassessment interval; rechecks the glucose or the mental state.
-  - Alternativas aceptables: Rechecking the mental state rather than the number.
-- **D5** · ventana 15–180 min. The decision is continued treatment of the deficiency and where that happens, not only the glucose.
-  - Esperado: Decides the destination with the deficiency in it; states what continues.
+- **D3** · ventana 0–30 min. Dextrose is executable; glucagon mobilises little in a patient whose glycogen is spent. The line the patient arrives with is not in the vein: a dextrose bolus given through it does not reach the patient until a new line is placed. Thiamine is executable and belongs to the plan as a second objective: its omission alone does not make the correction of the glucose inadequate, and it is never a reason to delay it.
+  - Esperado: Gives dextrose; gets it into the patient by a route that works; adds thiamine, as a second objective.
+  - Alternativas aceptables: Glucagon by another route, knowing that little glycogen is left; thiamine before, with or after the dextrose.
+- **D4** · ventana 5–60 min. The glucose does not rise as expected after an intravenous dextrose bolus: the line is not in the vein, and the engine reports it when a bolus is given through it. What this case asks is to check the delivery, not only the number.
+  - Esperado: Rechecks the glucose after the dose; recognises that the dose did not reach the patient and restores a route that does.
+  - Alternativas aceptables: Placing a new line before the first dose, which avoids the failure; rechecking the mental state rather than the number.
+- **D5** · ventana 15–180 min. The decision is where the correction continues, with the reason he became hypoglycemic addressed and thiamine in the plan, not only the number.
+  - Esperado: Decides the destination with the cause in it; states what continues.
   - Alternativas aceptables: Admission stated as the continuation.
 
 **Información accesible:** Arrival observables and the monitor; the patient's or the witness's history; bedside glucose, laboratory, neurological examination.
@@ -924,15 +924,6 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Alternativas aceptables: Intravenous dextrose; glucagon when there is no vascular access; oral carbohydrate once the patient is alert enough to swallow.
   - Evidencia necesaria: The absence of any executed glucose-raising action in the window.
   - Exclusiones: Vascular access failed in the engine and the resident addressed it; the encounter closed before the glucose was reported.
-  - Dominios sobre los que pesa: D3.
-- `hypo_no_thiamine` — **Omisión crítica.** Glucose is given to a thiamine-depleted patient and no thiamine is given.
-  - Se activa cuando: Dextrose is executed in a patient the case declares thiamine-depleted and no thiamine is executed within the window.
-  - Información que debía estar en el registro: An executed dextrose action.
-  - Ventana y oportunidad: 0–60 min.
-  - Disponible preguntando, se haya preguntado o no: **Previous health** (the daily drinking); **Eating and drinking** (the week with almost nothing to eat).
-  - Alternativas aceptables: Thiamine before the dextrose; thiamine in the same submission.
-  - Evidencia necesaria: An executed dextrose action with no executed thiamine action in the window.
-  - Exclusiones: The encounter closed before a second order could be executed.
   - Dominios sobre los que pesa: D3.
 
 ### `opioid_35m`

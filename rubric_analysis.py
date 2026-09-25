@@ -13,8 +13,8 @@ the defined identifiers, and the arithmetic belongs to ``rubric``.
 from datetime import datetime, timezone
 import json
 
-from case_assessment import (ASKING_RULE, COVERAGE_VERSION, declared,
-                             events as defined_events)
+from case_assessment import ASKING_RULE, COVERAGE_VERSION
+import evaluation_basis
 from faculty_analysis import (FacultyAnalysisError, _canonical, _check_schema as _check_shared,
                               _eligible, _string, _array, _object, _text, build_analysis_source,
                               case_id_of, source_fingerprint)
@@ -52,7 +52,7 @@ def _check_schema(value, schema):
             str(error).replace("The AI brief", "The rubric proposal")) from None
 
 
-def build_rubric_source(record, assistance_context="unknown", context=None):
+def build_rubric_source(record, assistance_context="unknown", context=None, basis=None):
     """The frozen encounter, the rubric, and what this case declared beforehand.
 
     The declaration travels with the request so the model scores against the
@@ -62,11 +62,15 @@ def build_rubric_source(record, assistance_context="unknown", context=None):
     """
     source = build_analysis_source(record, assistance_context, context)
     case_id = case_id_of(record)
-    entry = declared(case_id) if case_id else None
+    # What this encounter is judged against: its frozen copy, or the
+    # declarations of 2026-09-25 for an older record, never silently today's
+    # (evaluation_basis). A generated case has none and none are invented.
+    basis = basis if basis is not None else evaluation_basis.resolve(record)
+    entry = basis["declaration"] if basis["status"] in evaluation_basis.READABLE else None
     source.pop("objective_rubric", None)
     source["schema_version"] = "rubric_analysis_source_v1"
     source["rubric_version"] = VERSION
-    source["coverage_version"] = COVERAGE_VERSION
+    source["coverage_version"] = (basis.get("versions") or {}).get("coverage") or COVERAGE_VERSION
     source["case_id"] = case_id
     source["rubric"] = [{
         "domain_id": domain,
@@ -97,7 +101,7 @@ def build_rubric_source(record, assistance_context="unknown", context=None):
         "information_available_on_asking": [
             {"history_topic": topic, "tells_them": tells}
             for topic, tells in event["information_on_asking"]],
-    } for event in defined_events(case_id)] if case_id else []
+    } for event in (entry or {}).get("critical_events", ())] if case_id else []
     source["information_on_asking_rule"] = ASKING_RULE
     # What the record itself settles, computed by software before the model
     # reads anything (faculty review of 2026-09-24).
@@ -438,7 +442,7 @@ def generate_rubric_proposal(record, *, api_key, model, assistance_context="unkn
         raise RubricAnalysisError("The rubric proposal could not be generated. Nothing was recorded.") from exc
     return validate_rubric_proposal({
         "schema_version": SCHEMA_VERSION, "prompt_version": PROMPT_VERSION,
-        "rubric_version": VERSION, "coverage_version": COVERAGE_VERSION,
+        "rubric_version": VERSION, "coverage_version": source["coverage_version"],
         "source_hash": source_fingerprint(record), "attempt_id": record["id"],
         "attempt_revision": record["revision"],
         "generated_at": datetime.now(timezone.utc).isoformat(), "model": model.strip(),

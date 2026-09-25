@@ -16,7 +16,7 @@ import streamlit as st
 import report_palette as palette
 
 from account_store import AccountError
-from case_assessment import declared, events as defined_events
+import evaluation_basis
 from rubric import DOMAIN_IDS, DOMAINS, NOT_ASSESSABLE, headline, score as compute_score
 from rubric_analysis import (RubricAnalysisError, case_id_of, generate_rubric_proposal,
                              proposed_event_rows)
@@ -77,16 +77,21 @@ def render_rubric_assessment(context, record, *, training_year=None):
         return None
 
     case_id = case_id_of(record)
+    # What this encounter is judged against. A generated case, an older record,
+    # an invalid identifier and a damaged record each say what they are; none
+    # of them closes the panel or the encounter's documents (2026-09-25).
+    basis = evaluation_basis.resolve(record)
     with st.expander("Management reasoning rubric - pilot 1.0", expanded=False):
         st.caption("A pilot instrument. Its scores are not ACGME Milestone levels, Canadian "
                    "stages or EPA supervision levels, and they do not assess a specialist's "
                    "competence. You confirm or change every value; the totals are computed "
                    "from what you record.")
-        if not case_id:
-            st.info("This encounter does not name an authored case, so its declared "
-                    "opportunities and critical events are unavailable. You can still score "
-                    "the five domains from the record.")
-        elif declared(case_id) is None:
+        limitation = (basis.get("limitation") or {}).get("en")
+        if basis["status"] in ("unknown_case", "corrupt"):
+            st.error(limitation)
+        elif limitation:
+            st.info(limitation)
+        elif basis["declaration"] is None:
             st.info(f"No rubric coverage is declared for {case_id}. Scores remain available; "
                     "no critical event is defined for this case.")
 
@@ -268,7 +273,7 @@ def _live_shape(store, token, record, pending, proposal, training_year=None):
 
 
 def _event_controls(record, case_id, proposed_events, saved_events, check=None):
-    defined = defined_events(case_id) if case_id else ()
+    defined = evaluation_basis.resolve(record)["events"] if case_id else ()
     if not defined:
         return []
     # Whether the resident asked is the fact a reviewer needs in front of them

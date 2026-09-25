@@ -38,7 +38,7 @@ def test_offline_mode_replays_the_saved_case_without_a_key(monkeypatch, saved_ru
 def test_replay_is_ignored_outside_offline_mode(monkeypatch, saved_run):
     monkeypatch.delenv("MRS_OFFLINE_CASES", raising=False)
     monkeypatch.setenv("MRS_REPLAY_CASE", str(saved_run[0]))
-    assert launch_options("key") == ({"api_key": "key"}, "key")
+    assert launch_options("key", "admin") == ({"api_key": "key"}, "key")
 
 
 def test_a_different_challenge_is_refused_with_a_clear_message(monkeypatch, saved_run):

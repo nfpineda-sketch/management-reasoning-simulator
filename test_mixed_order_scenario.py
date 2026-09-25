@@ -30,6 +30,10 @@ ORDER = ("patient in shock. Give 1000 NS, start oxygen 4l/m nasal cannula. "
 def encounter(tmp_path, monkeypatch):
     from account_store import AccountStore, hash_password
     install_author(monkeypatch)
+    # The generated case this order was reported on. Free generation stays in
+    # the administrator's sandbox by default (faculty, 2026-09-25); a
+    # deployment opens it to residents explicitly, as here.
+    monkeypatch.setenv("MRS_FREE_GENERATION", "all")
     url = "sqlite:///" + str(tmp_path / "mixed-order.sqlite3")
     monkeypatch.setenv("MRS_AUTH_MODE", "accounts")
     monkeypatch.setenv("MRS_DATABASE_URL", url)

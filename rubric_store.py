@@ -20,7 +20,6 @@ import time
 import uuid
 
 from account_store import AccountError
-from case_assessment import event_by_id, events as defined_events
 from faculty_analysis import FacultyAnalysisError, source_fingerprint
 from rubric import (DOMAIN_IDS, NOT_ASSESSABLE, RubricError, VERSION as RUBRIC_VERSION,
                     headline, score as compute_score, valid_score)
@@ -45,7 +44,7 @@ def _text(value, *, required=False, field="justification"):
 
 
 def build_review(*, case_id, scores, reasons, events, justifications, status, proposal=None,
-                 screening=None):
+                 screening=None, basis=None):
     """Validate a faculty decision and compute its totals. No database, no model.
 
     ``justifications`` explains each domain the faculty changed from the
@@ -94,7 +93,18 @@ def build_review(*, case_id, scores, reasons, events, justifications, status, pr
     proposed_events = {row["event_id"] for row in proposed_event_rows(proposal)}
     against_record = {row["event_id"] for row in (screening or {}).get("events", [])
                       if row.get("status") in ("contradicted", "excluded")}
-    known = {event["event_id"] for event in defined_events(case_id)} if case_id else set()
+    # The events this encounter is judged against (evaluation_basis): its frozen
+    # copy when the caller has the record, else the declarations of 2026-09-25.
+    import evaluation_basis
+    if basis is None and case_id:
+        basis = evaluation_basis.resolve({}, case_id)
+    defined = {event["event_id"]: event for event in (basis or {}).get("events", ())}
+    known = set(defined)
+    if events and basis is not None and basis.get("status") not in evaluation_basis.READABLE:
+        # A generated case, or one no declaration knows: there is no defined
+        # critical event to decide, and none is made up here.
+        raise AccountError("No critical event is defined for this encounter: "
+                           + ((basis.get("limitation") or {}).get("en") or basis.get("status", "")))
     decided_events, seen = [], set()
     for entry in events or []:
         event_id = str(entry.get("event_id") or "")
@@ -106,7 +116,7 @@ def build_review(*, case_id, scores, reasons, events, justifications, status, pr
         state = entry.get("status")
         if state not in EVENT_STATUSES:
             raise AccountError("A critical event is proposed, confirmed or dismissed.")
-        definition = event_by_id(case_id, event_id) if case_id else None
+        definition = defined.get(event_id)
         if state == "confirmed" and event_id in against_record:
             justification = _text(entry.get("justification"), required=True,
                                   field="reason for confirming an event the record contradicts")
@@ -306,13 +316,15 @@ class RubricStore:
                 if row is None:
                     raise AccountError("That rubric proposal does not belong to this encounter revision.")
                 proposal = json.loads(row["report_json"])
+            import evaluation_basis
             import rubric_screening
             case_id = case_id_of(record)
             review = build_review(
                 case_id=case_id, scores=dict(scores or {}),
                 reasons=dict(reasons or {}), events=list(events or ()),
                 justifications=dict(justifications or {}), status=status, proposal=proposal,
-                screening=rubric_screening.screening(record, case_id) if case_id else None)
+                screening=rubric_screening.screening(record, case_id) if case_id else None,
+                basis=evaluation_basis.resolve(record))
             body = json.dumps(review, ensure_ascii=False, sort_keys=True)
             if len(body.encode("utf-8")) > MAX_REPORT_BYTES:
                 raise AccountError("The rubric review is too large to store.")

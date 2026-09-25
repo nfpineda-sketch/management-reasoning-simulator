@@ -29,7 +29,7 @@ def test_the_switch_is_off_unless_it_is_set(monkeypatch):
     monkeypatch.delenv("MRS_OFFLINE_CASES", raising=False)
     assert offline_cases.offline_cases_enabled() is False
     assert offline_cases.withhold("OPENAI_API_KEY", "sk-real") == "sk-real"
-    assert offline_cases.launch_options("sk-real") == ({"api_key": "sk-real"}, "sk-real")
+    assert offline_cases.launch_options("sk-real", "admin") == ({"api_key": "sk-real"}, "sk-real")
 
 
 @pytest.mark.parametrize("value", ["1", "true", "TRUE", "yes", "on"])

@@ -828,9 +828,14 @@ def _screen_event(event, f):
 
 
 def screen_events(record, case_id):
-    """One row per event the case defines, in the case's order."""
-    from case_assessment import events as defined_events
-    defined = defined_events(case_id) if case_id else ()
+    """One row per event the case defines, in the case's order.
+
+    The events are the ones this encounter is judged against: its frozen copy,
+    or for an older record the declarations as they stood until 2026-09-25
+    (evaluation_basis). A generated case defines none, and none are invented.
+    """
+    import evaluation_basis
+    defined = evaluation_basis.resolve(record, case_id or None)["events"] if case_id else ()
     if not defined:
         return []
     f = facts(record, case_id)
@@ -852,9 +857,9 @@ def screen_domains(record, case_id):
     that is "not assessable", never a zero. The early closure itself is a fact
     about the encounter and belongs to the domains whose window *was* open.
     """
-    from case_assessment import declared
+    import evaluation_basis
     from rubric import DOMAIN_IDS
-    entry = declared(case_id) if case_id else None
+    entry = evaluation_basis.resolve(record, case_id or None)["declaration"] if case_id else None
     f = facts(record, case_id)
     closed = f["closed_at"]
     rows = []

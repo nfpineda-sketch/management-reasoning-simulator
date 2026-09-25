@@ -13,6 +13,13 @@ family uses them.
 """
 import math
 
+# The mechanism's version, recorded with every frozen evaluation basis of a
+# catalogued case; a change of behaviour raises it. 1.0 is the mechanism as
+# faculty decision 8 (2026-09-21) left it: a line that is not in the vein holds
+# back a dextrose bolus given through it, and nothing else (the scope that decision
+# set; whether to widen it is pending, docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md).
+VERSION = "1.0"
+
 # Sulfonylurea: the recurrence the ampoule cannot fix.
 OCTREOTIDE_ONSET_MIN = 15
 OCTREOTIDE_DURATION_MIN = 360
@@ -54,6 +61,32 @@ REBOUND_TEXT = ("The correction overshot: a glucose above 200 mg/dL in a patient
 SEIZURE_GLUCOSE = 40
 SEIZURE_AFTER_MIN = 20
 POST_ICTAL_MIN = 10
+
+# Consciousness read from the glucose, highest threshold first: at or above
+# each value the patient is in that state, and below the last one they are
+# unresponsive. The bank engine surfaces it every minute and the hypoglycaemia
+# catalogue derives its severity bands from it, so the two cannot drift apart.
+# Teaching magnitudes the faculty reviewed on 2026-09-20
+# (docs/HYPOGLYCEMIA_MAGNITUDES.md): parameters of the simulator, never
+# criteria a resident is assessed against.
+CONSCIOUSNESS_BY_GLUCOSE = ((70, "Alert"), (45, "Drowsy"), (25, "Obtunded"))
+BELOW_CONSCIOUSNESS_THRESHOLDS = "Unresponsive"
+
+# What makes the mechanism discoverable, for every engine that runs it: the gate
+# of generated cases and the hypoglycaemia catalogue read these same patterns.
+HYPOGLYCAEMIA_MG_DL = 70
+SULFONYLUREA_NAMES = r"\b(?:sulfonylurea|sulfonilurea|glibenclamide|glyburide|glipizide|gliclazide|glimepiride)\b"
+ALCOHOL_OR_STARVATION = (r"\balcohol\w*\b", r"\bdrink\w+ (?:heavily|daily)\b", r"\bmalnourish\w*\b",
+                         r"\b(?:eaten|eating) (?:almost )?nothing\b", r"\bpoor (?:oral )?intake\b",
+                         r"\bdesnutri\w*\b")
+
+
+def consciousness(glucose):
+    """The mental state the engine shows for a glucose, before any seizure."""
+    for threshold, state in CONSCIOUSNESS_BY_GLUCOSE:
+        if glucose >= threshold:
+            return state
+    return BELOW_CONSCIOUSNESS_THRESHOLDS
 
 # Thiamine. Faculty decision 8 of 2026-09-21 retired the established
 # encephalopathy this case used to produce: glucose that reaches the patient
