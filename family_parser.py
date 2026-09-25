@@ -920,7 +920,11 @@ _DISPOSITION_VERBS = frozenset({"admit", "transfer", "discharge", "dar de alta",
 
 
 def _parse_piece_core(piece, inherited=None):
-    if re.fullmatch(r"\s*(?:prepare|set up|get ready|preparar|prepara)(?:\s+(?:for|para))?\s+(?:intubation|intubacion|airway|via aerea)\s*[.!]?", piece):
+    # "Preparo intubacion", "preparo la intubacion", "preparo todo para intubar":
+    # the first person and the article dropped the order in silence (2026-09-25).
+    if re.fullmatch(r"\s*(?:prepare|set up|get ready|preparar|prepara|preparo|preparamos)"
+                    r"(?:\s+(?:for|para))?(?:\s+(?:la|el|todo\s+para|to|the))?"
+                    r"\s+(?:intubation|intubacion|intubar|intubate|airway|via aerea)\s*[.!]?", piece):
         return [{"type": "airway_preparation"}], "prepare"
     text = piece.strip(" :")
     text = re.sub(r"^(?:please|por favor|then|luego|despues)\s+", "", text)
@@ -1621,19 +1625,39 @@ def parse_family_actions(text) -> dict:
                 if not sentence:
                     continue
             else:
-                # A conditional order is a plan and is kept as one, whatever form
-                # the order takes: "lo doy de alta si tolera la via oral" and "si
-                # baja la PA, SF 500 ml ev" vanished without a word (2026-09-25).
-                bare = _CONDITION_CLAUSE.sub(" ", sentence).strip(" ,")
-                if _COMMAND.search(re.sub(r"^.*?[, :]", "", sentence)) or re.search(
-                        r"\b(?:give|dar|doy|administrar|administro|start|iniciar|inicio|order|solicitar|"
-                        r"solicito|pido|reassess|reevaluar|reevaluo|alta|hospitalizar|hospitalizo|"
-                        r"ingresar|ingreso|trasladar|traslado|admit|discharge|transfer)\b", sentence) or (
-                        bare and bare != sentence and any(
-                            action.get("type") not in {"clarification", "reassessment"}
-                            for action in parse_family_actions(bare)["actions"])):
-                    future.append(sentence)
-                continue
+                # "A y B si C": the condition belongs to B. "Le doy colacion oral y
+                # la doy de alta si la tolera" kept the snack back with the
+                # discharge (2026-09-25). A head that is itself an order runs; the
+                # rest is the plan.
+                split = None
+                for match in re.finditer(r",\s*|\s+(?:y|e|and)\s+", sentence[:conditional.start()]):
+                    split = match
+                if split and not sentence[split.end():conditional.start()].strip():
+                    # "Start oxygen NC 3 L/min, if saturation falls": nothing stands
+                    # between the comma and the condition, so it qualifies the order.
+                    split = None
+                head = (re.sub(r"\s+(?:y|e|and)$", "", sentence[:split.start()].strip(" ,"))
+                        if split else "")
+                if head and _COMMAND.match(head) and any(
+                        action.get("type") not in {"clarification", "reassessment"}
+                        for action in parse_family_actions(head)["actions"]):
+                    future.append(sentence[split.end():].strip(" ,"))
+                    sentence = head
+                else:
+                    # A conditional order is a plan and is kept as one, whatever
+                    # form the order takes: "lo doy de alta si tolera la via oral"
+                    # and "si baja la PA, SF 500 ml ev" vanished without a word
+                    # (2026-09-25).
+                    bare = _CONDITION_CLAUSE.sub(" ", sentence).strip(" ,")
+                    if _COMMAND.search(re.sub(r"^.*?[, :]", "", sentence)) or re.search(
+                            r"\b(?:give|dar|doy|administrar|administro|start|iniciar|inicio|order|solicitar|"
+                            r"solicito|pido|reassess|reevaluar|reevaluo|alta|hospitalizar|hospitalizo|"
+                            r"ingresar|ingreso|trasladar|traslado|admit|discharge|transfer)\b", sentence) or (
+                            bare and bare != sentence and any(
+                                action.get("type") not in {"clarification", "reassessment"}
+                                for action in parse_family_actions(bare)["actions"])):
+                        future.append(sentence)
+                    continue
         inherited = None
         negated = False
         # Do not split the clinical device name "bag and mask", nor the blood

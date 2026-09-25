@@ -256,3 +256,28 @@ def test_only_what_was_given_can_be_repeated():
     # An intramuscular dose is not an intravenous bolus that was never given.
     resolved, error = _repeat("Doy adrenalina 0.5 mg im", "Repito adrenalina 1 mg ev")
     assert error == "No matching administered treatment is recorded. Specify the treatment, dose and route."
+
+
+# --- a condition belongs to what it follows; the airway prepared in the first person --
+
+@pytest.mark.parametrize("text, runs, plan", [
+    ("Le doy colacion oral y la doy de alta si la tolera", ["oral_carbohydrate"], ["doy de alta si la tolera"]),
+    ("Doy adrenalina 0.5 mg im y SF 1000 ml ev si sigue hipotensa", ["epinephrine_im"],
+     ["sf 1000 ml ev si sigue hipotensa"]),
+    # Nothing between the comma and the condition: it qualifies the order itself.
+    ("Start oxygen NC 3 L/min, if saturation falls", [], ["start oxygen nc 3 l/min, if saturation falls"]),
+])
+def test_a_condition_belongs_to_the_order_it_follows(text, runs, plan):
+    parsed = parse_family_actions(text)
+    assert [a["type"] for a in parsed["actions"]] == runs
+    assert parsed["recognized_future_actions"] == plan
+
+
+@pytest.mark.parametrize("text", ["Preparo intubacion", "Preparo la intubacion", "Preparo todo para intubar",
+                                  "Preparar intubacion", "Prepare for intubation"])
+def test_preparing_the_airway_in_the_first_person(text):
+    assert kinds(text) == ["airway_preparation"]
+
+
+def test_preparing_the_airway_beside_an_admission():
+    assert kinds("Preparo intubacion y lo hospitalizo en UCI") == ["airway_preparation", "disposition"]
