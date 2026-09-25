@@ -48,13 +48,28 @@ the head». Ningún caso del banco la trae; sólo los casos generados pueden tra
 
 | Escenario | Por qué lo necesita | ¿Su ausencia impide una trayectoria razonable? |
 |---|---|---|
-| `hypoglycemia_54m_thiamine` | La confusión persiste con glicemia normal; excluir una causa estructural es razonable | **No.** La tiamina se puede dar igual. Pedirla queda registrado. |
+| `hypoglycemia_54m_thiamine` | Sólo si la conciencia no se recuperara tras corregir la glucosa. En este caso la glucosa que llega al paciente corrige la hipoglicemia y la conciencia, con o sin tiamina (decisión docente 8 del 2026-09-21); la TC no tiene indicación dentro del caso | **No.** Pedirla queda registrado. No se reintroduce una encefalopatía de Wernicke establecida para darle un motivo: el objetivo acordado es reconocer y corregir la hipoglicemia, con la tiamina como segundo objetivo. |
 | `hypoglycemia_28m`, `hypoglycemia_76f` | Si la conciencia no se recupera, o tras una convulsión o una caída | No en las trayectorias actuales (la glucosa corrige el cuadro). |
 | `pneumonia_83m` | El evento `pneumonia_unexamined_altered_state` cuenta «imagen de cerebro» como una forma de estudiar el compromiso de conciencia | **No.** Desde hoy pedirla cuenta como haber estudiado el compromiso (la verificación del registro lo trata así), y la imposibilidad de obtener el resultado no penaliza. |
 | Trauma con TEC | No existe todavía un caso con trauma encefálico | — |
 
-## Qué decidiría usted
+## Decisión docente 13 (2026-09-25): mantener la opción A por ahora
 
-Ver `docs/DECISIONES_CLINICAS_PENDIENTES.md`: si alguno de estos casos debería traer un
-resultado autorizado (por ejemplo, una TC de cerebro normal en la hipoglicemia con
-confusión persistente), o si prefiere un escenario con la restricción declarada.
+- **Se mantiene lo de hoy**: la solicitud se registra con su hora y su limitación
+  («estudio solicitado; no modelado en esta versión del simulador») y el resto de la
+  entrega se ejecuta. No se inventa un resultado ni se informa como normal.
+- **No se agrega una TC normal por defecto** para cerrar este pendiente.
+- **Incorporar un estudio exige**, caso por caso: su indicación dentro del caso, un
+  resultado coherente con el caso, el tiempo en que está disponible y sus
+  consecuencias en la evolución y en la evaluación.
+- **Una restricción real de recursos** («no hay tomógrafo», «no hay banco de sangre»)
+  sólo existe si el escenario la declara explícitamente (`resources_unavailable`);
+  nunca se deduce de que el simulador no modele el estudio.
+- **La hipoglicemia con déficit de tiamina** (`hypoglycemia_54m_thiamine`) no recupera
+  una encefalopatía de Wernicke establecida para dar indicación a una TC: su objetivo
+  acordado sigue siendo reconocer y corregir la hipoglicemia (decisión 8 del
+  2026-09-21).
+
+Pendiente, sin fecha: definir, para los casos que lo necesiten, indicación, resultado,
+disponibilidad y consecuencias de la TC de cerebro y de las pruebas cruzadas antes de
+incorporarlas.
