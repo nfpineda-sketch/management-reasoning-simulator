@@ -128,6 +128,9 @@ def test_resident_assignment_oxygen_persistence_and_private_ui(cohort):
     assigned_state = deepcopy(at.session_state.state)
     challenge_id = assigned_state["encounter_spec"]["challenge_id"]
     assert challenge_id in BIAS_CHALLENGES
+    # The encounter's own challenge, not the picker's default, names it in the
+    # record, the Management Trace and the faculty brief's source.
+    assert at.session_state.selected_case == challenge_id
     assert BIAS_CHALLENGES[challenge_id]["year"] == 1
     assert assigned_state["case_id"].startswith("CE-")
     learner_text = " ".join(str(item.value) for item in at.markdown)

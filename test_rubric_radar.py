@@ -147,3 +147,25 @@ def test_the_document_and_the_screen_draw_the_same_values():
     # The shapes are the same shape: same runs, same gaps, same closure.
     assert screen["gaps"] == ["D5"] and screen["closed"] is False
     assert sum(len(run) for run in screen["runs"]) == 4
+
+
+def _photo(mode, fmt):
+    import base64
+    import io
+    from PIL import Image
+    buffer = io.BytesIO()
+    Image.new(mode, (12, 12)).save(buffer, fmt)
+    return f"data:image/{fmt.lower()};base64," + base64.b64encode(buffer.getvalue()).decode()
+
+
+@pytest.mark.parametrize("photo", [_photo("RGB", "PNG"), _photo("RGBA", "PNG"), _photo("P", "PNG"),
+                                   _photo("RGB", "JPEG"), "data:image/png;base64,AAAA"])
+def test_a_resident_s_photograph_prints_on_the_document(photo):
+    # The rubric document of a resident with a photograph failed to build on the
+    # development app (2026-09-25): an ImageReader reached os.path.exists in
+    # renderPDF, and the error took down the whole faculty view of the encounter.
+    import faculty_report
+    from reportlab.graphics import renderPDF
+    faculty_report._fonts()
+    page = radar.drawing([{"values": {"D1": 2}}], badge={"image": photo, "initials": "RP", "year": 3})
+    assert renderPDF.drawToString(page).startswith(b"%PDF")

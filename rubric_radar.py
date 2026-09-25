@@ -306,15 +306,20 @@ def _badge_drawing(art, badge, centre, radius):
     import io
     from reportlab.graphics.shapes import Circle, Image, String
     from reportlab.lib import colors
-    from reportlab.lib.utils import ImageReader
+    from PIL import Image as PILImage
     x, y = centre
     drew_image = False
     uri = str(badge.get("image") or "")
     if uri.startswith("data:image/"):
         try:
             raw = base64.b64decode(uri.split(",", 1)[1])
-            art.add(Image(x - radius, y - radius, radius * 2, radius * 2,
-                          ImageReader(io.BytesIO(raw))))
+            # renderPDF draws a shapes.Image from a file name or a PIL image
+            # (it tests for ``.mode``); an ImageReader reaches os.path.exists
+            # and fails the whole page. Decoded here into pixels detached from
+            # the source file (a JPEG would otherwise be re-read from it), so
+            # a bad photograph falls back to the initials below.
+            face = PILImage.open(io.BytesIO(raw)).convert("RGB")
+            art.add(Image(x - radius, y - radius, radius * 2, radius * 2, face))
             drew_image = True
         except Exception:
             # A stored photograph that cannot be decoded is not a reason to

@@ -106,6 +106,10 @@ def restore_attempt(context, record, reset_session):
         st.session_state.started = True
         st.session_state.events = [{"kind": "presentation", "text": encounter["presentation"], "time": 0}]
         st.session_state.encounter_assignment = encounter.get("assignment", {})
+        # reset_session() leaves the picker's default challenge here; the
+        # encounter's own challenge is what its record, its Management Trace
+        # and the faculty brief's source must name.
+        st.session_state.selected_case = record.get("challenge_id") or st.session_state.get("selected_case")
     st.session_state["_attempt_id"] = record["id"]
     st.session_state["_attempt_revision"] = record["revision"]
     st.session_state["_attempt_status"] = record["status"]

@@ -487,6 +487,12 @@ def open_latest_encounter(page, resident):
         raise RunStop("The staff listing offers no encounter record.")
     combo = box.first.locator('input[role="combobox"]')
     combo.click()
+    # A click focuses the field; the arrow opens the list (as in ``offers``).
+    combo.press("ArrowDown")
+    try:
+        page.page.get_by_role("option").first.wait_for(timeout=5_000)
+    except Exception:
+        pass  # no list: reported below as no completed encounter
     options = [text for text in page.page.get_by_role("option").all_inner_texts()
                if text.startswith(resident + " · ") and " · completed · " in text]
     if not options:
@@ -497,15 +503,35 @@ def open_latest_encounter(page, resident):
     return latest
 
 
+GENERATION_TIMEOUT = 600  # seconds: a brief or a rubric proposal outlasts the page's usual wait
+
+
 def staff_documents(page, folder, script, resident):
     """Staff: the AI brief and the AI rubric proposal (paid, once), and documents B-D."""
+    usual, page.timeout = page.timeout, max(page.timeout, GENERATION_TIMEOUT)
+    try:
+        return _staff_documents(page, folder, script, resident)
+    finally:
+        page.timeout = usual
+
+
+def _staff_documents(page, folder, script, resident):
     chosen = open_latest_encounter(page, resident)
+    if f" · {script['challenge']} · " not in chosen:
+        raise RunStop(f"The newest completed encounter ({chosen}) is not under this scenario's "
+                      f"challenge {script['challenge']}: nothing is generated for it.")
     # Generated once. A "new" button means it already exists: not paid for twice.
     if page.has_button("Generate AI faculty brief"):
         page.click("Generate AI faculty brief")
     page.open("Management reasoning rubric - pilot 1.0")
     if page.has_button("Generate an AI proposal"):
         page.click("Generate an AI proposal")
+    failure = page.page.locator('[data-testid="stException"]')
+    if failure.count():
+        # The app's own error hides every download below it: a finding, not
+        # three "missing" documents on an otherwise clean line.
+        raise RunStop("The faculty view of the encounter shows an application error: "
+                      + " | ".join(failure.first.inner_text().splitlines()[:6]))
     saved = {"encounter": chosen}
     for label, name in (("Download 2-page faculty brief (PDF)", "C-brief_compact.pdf"),
                         ("Download full faculty analysis (PDF)", "B-brief_full.pdf"),
@@ -571,14 +597,51 @@ def run_scenario(script, *, base_url, out, with_ai=True, headless=True):
             entry["review_completed"] = "Your Management Trace" in resident.text()
             if with_ai:
                 entry["documents"]["A-management_trace.pdf"] = resident_document(resident, folder, script)
-                staff.page.reload()
-                staff.settle()
+                # A reload opens a new Streamlit session, signed out: sign in again.
+                failing = staff
+                sign_in(staff, base_url, staff_user, staff_password)
                 entry["documents"].update(staff_documents(staff, folder, script, resident_user))
         except Exception as stop:  # a finding about the page, or the tool's own failure
             entry["stopped"] = f"{type(stop).__name__}: {stop}"[:1000]
             try:
-                (folder / "stopped.png").write_bytes(
-                    (resident if "resident" in locals() else staff).page.screenshot(full_page=True))
+                shown = locals().get("failing") or (resident if "resident" in locals() else staff)
+                (folder / "stopped.png").write_bytes(shown.page.screenshot(full_page=True))
+            except Exception:
+                pass
+        finally:
+            browser.close()
+    entry["finished_at"] = datetime.now(timezone.utc).isoformat()
+    record(out, entry)
+    return entry
+
+
+def finish_staff_documents(script, *, base_url, out, headless=True):
+    """The staff half of a scenario whose encounter is already completed.
+
+    For a run that stopped after the resident's encounter was saved: the
+    encounter is not played again and no new encounter is started, so it is
+    recorded as not paid. The brief and the rubric proposal are generated only
+    if the encounter does not have them yet.
+    """
+    from playwright.sync_api import sync_playwright
+    resident_user, _, staff_user, staff_password = credentials()
+    language = script.get("language", "es")
+    folder = Path(out) / (f"{script['number']:02d}-{script['case_id']}" + ("-en" if language == "en" else ""))
+    folder.mkdir(parents=True, exist_ok=True)
+    entry = {"number": script["number"], "case_id": script["case_id"], "language": language,
+             "category": script["category"], "started_at": datetime.now(timezone.utc).isoformat(),
+             "code_version_local": code_version(), "base_url": base_url, "paid_encounter": False,
+             "staff_documents_only": True, "steps": [], "stopped": None, "documents": {}}
+    with sync_playwright() as playwright:
+        browser = launch(playwright, headless)
+        try:
+            staff = Page(browser.new_context(accept_downloads=True).new_page())
+            sign_in(staff, base_url, staff_user, staff_password)
+            entry["documents"].update(staff_documents(staff, folder, script, resident_user))
+        except Exception as stop:
+            entry["stopped"] = f"{type(stop).__name__}: {stop}"[:1000]
+            try:
+                (folder / "stopped-staff.png").write_bytes(staff.page.screenshot(full_page=True))
             except Exception:
                 pass
         finally:

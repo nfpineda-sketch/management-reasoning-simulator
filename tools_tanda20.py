@@ -545,6 +545,9 @@ def main(argv=None):
                         help="free: sign in with both test accounts on the app and check what a paid run needs")
     parser.add_argument("--run", metavar="N[,M...]", help="PAID: scenarios through the development app")
     parser.add_argument("--base-url", help="the development app, for --run")
+    parser.add_argument("--staff-documents", type=int, metavar="N",
+                        help="the staff half only (brief, rubric proposal, documents B-D) of scenario N, "
+                             "whose encounter is already completed; no encounter is started")
     parser.add_argument("--no-ai", action="store_true", help="--run without the paid documents")
     parser.add_argument("--out", default="local-data/tanda20/rehearsal")
     parser.add_argument("--language", choices=("es", "en"), default="es",
@@ -565,6 +568,18 @@ def main(argv=None):
         for row in checks:
             print(("ok     " if row["ok"] else "MISSING") + f" {row['check']}" + (f": {row['detail']}" if row["detail"] else ""))
         return 0 if checks and all(row["ok"] for row in checks) else 1
+    if args.staff_documents:
+        if not args.base_url:
+            parser.error("--staff-documents needs --base-url (the development app).")
+        import tanda20_runner
+        BY_NUMBER, _ = _scripts(args.language)
+        out = ROOT / "local-data" / "tanda20" / "batch"
+        out.mkdir(parents=True, exist_ok=True)
+        entry = tanda20_runner.finish_staff_documents(BY_NUMBER[args.staff_documents],
+                                                      base_url=args.base_url, out=out)
+        print(f"{args.staff_documents:>2} {entry['case_id']:<30} stopped={entry['stopped']} "
+              f"documents={sorted(entry['documents'])}", flush=True)
+        return 1 if entry["stopped"] else 0
     if args.run:
         if not args.base_url:
             parser.error("--run needs --base-url (the development app).")
