@@ -229,10 +229,43 @@ def traceability(review, proposal=None, language="en"):
         if review.get("sequence"):
             rows.append(("Review revision", str(review["sequence"])))
     if proposal:
+        if proposal.get("proposal_id"):
+            rows.append(("AI proposal", f"#{proposal.get('sequence', '')} "
+                                        f"({str(proposal['proposal_id'])[:12]})"))
         rows.append(("Proposal model", proposal.get("model", "")))
         rows.append(("Proposal prompt version", proposal.get("prompt_version", "")))
         rows.append(("Proposal generated", proposal.get("generated_at", "")))
+        rows.append(("Record read by the proposal", str(proposal.get("source_hash", ""))[:16]))
         rows.append(("Case coverage version", proposal.get("coverage_version", "")))
         if proposal.get("case_id"):
             rows.append(("Authored case", proposal["case_id"]))
+        if review:
+            rows.append(("From the proposal", from_the_proposal(review, proposal)))
+    elif review:
+        rows.append(("AI proposal", "none used for this decision"))
     return [(label, str(value)) for label, value in rows if str(value).strip()]
+
+
+def from_the_proposal(review, proposal):
+    """What the faculty kept, changed and added, measured against the proposal it started from.
+
+    Faculty decision 15 of 2026-09-25: the final faculty version keeps the
+    traceability of the original AI proposal. The proposal itself stays stored
+    unchanged beside the decision; this line says, in numbers, how far the
+    decision moved from it.
+    """
+    from rubric_analysis import proposed_event_rows
+    proposed = {row["domain_id"]: row["score"] for row in proposal.get("proposal", {}).get("domains", [])}
+    scores = review.get("scores", {})
+    changes = review.get("changes", {})
+    kept = sum(1 for domain in DOMAIN_IDS if domain in scores and domain in proposed
+               and domain not in changes and scores[domain] == proposed[domain])
+    changed = sum(1 for domain in DOMAIN_IDS if domain in changes)
+    events = review.get("critical_events", [])
+    proposed_events = {row["event_id"] for row in proposed_event_rows(proposal)}
+    confirmed = sum(1 for row in events if row["event_id"] in proposed_events and row["status"] == "confirmed")
+    dismissed = sum(1 for row in events if row["event_id"] in proposed_events and row["status"] == "dismissed")
+    added = sum(1 for row in events if row["event_id"] not in proposed_events and row["status"] == "confirmed")
+    return (f"{kept} of {len(DOMAIN_IDS)} domain values kept, {changed} changed with a written "
+            f"justification; {confirmed} proposed event(s) confirmed, {dismissed} dismissed, "
+            f"{added} added by the faculty")

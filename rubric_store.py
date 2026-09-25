@@ -271,6 +271,26 @@ class RubricStore:
                 raise AccountError("The saved rubric proposal could not be read.") from None
             return {**report, "proposal_id": row["id"], "sequence": row["sequence"]}
 
+    def proposal(self, token, attempt_id, proposal_id):
+        """One saved proposal of this encounter, by its identifier.
+
+        A faculty decision names the proposal it started from; its final
+        document compares the decision with that proposal, never with one
+        generated afterwards (faculty decision 15 of 2026-09-25).
+        """
+        with self.accounts._transaction() as connection:
+            actor = self.accounts._actor(connection, token, STAFF)
+            self._record(connection, actor, attempt_id)
+            row = self._execute(connection, """SELECT * FROM mrs_rubric_proposals
+                WHERE id = ? AND attempt_id = ?""", (proposal_id, attempt_id)).fetchone()
+            if row is None:
+                return None
+            try:
+                report = json.loads(row["report_json"])
+            except (TypeError, ValueError):
+                raise AccountError("The saved rubric proposal could not be read.") from None
+            return {**report, "proposal_id": row["id"], "sequence": row["sequence"]}
+
     # --- the faculty's own decision ----------------------------------------
     def save_review(self, token, attempt_id, *, scores, reasons=None, events=(),
                     justifications=None, status="draft", proposal_id=None):
@@ -352,11 +372,12 @@ class RubricStore:
                       "reviewer": review_row["reviewer"], "created_at": review_row["created_at"],
                       "sequence": review_row["sequence"], "totals": totals_of(review)}
             proposal = None
-            proposal_row = self._execute(connection, """SELECT report_json FROM mrs_rubric_proposals
+            proposal_row = self._execute(connection, """SELECT id, sequence, report_json FROM mrs_rubric_proposals
                 WHERE id = ?""", (review_row["proposal_id"],)).fetchone() if review_row["proposal_id"] else None
             if proposal_row is not None:
                 try:
-                    proposal = json.loads(proposal_row["report_json"])
+                    proposal = {**json.loads(proposal_row["report_json"]),
+                                "proposal_id": proposal_row["id"], "sequence": proposal_row["sequence"]}
                 except (TypeError, ValueError):
                     proposal = None
             return review, proposal

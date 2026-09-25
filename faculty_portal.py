@@ -267,6 +267,21 @@ def _rubric_pdf_download(context, review, proposal, record):
                "Confirmed. The resident's profile now includes this encounter.")
 
 
+def proposal_for_document(store, token, record, saved_review):
+    """The proposal a rubric document shows beside the faculty's decision.
+
+    A decision is compared with the proposal it started from, never with one
+    generated after it; a confirmed decision made without any proposal shows
+    none; before a decision, the latest proposal is what is being reviewed
+    (faculty decision 15, 2026-09-25).
+    """
+    if saved_review is not None and saved_review.get("proposal_id"):
+        return store.proposal(token, record["id"], saved_review["proposal_id"])
+    if saved_review is not None and saved_review.get("status") == "confirmed":
+        return None
+    return store.latest_proposal(token, record["id"])
+
+
 def render_faculty_analysis(context, record):
     if not context or context["user"]["role"] not in {"faculty", "admin"}:
         return
@@ -286,7 +301,8 @@ def render_faculty_analysis(context, record):
     assessment = None
     from rubric_store import RubricStore
     try:
-        proposal = RubricStore(context["store"]).latest_proposal(context["token"], record["id"])
+        proposal = proposal_for_document(RubricStore(context["store"]), context["token"], record,
+                                         saved_review)
     except AccountError:
         proposal = None
     if saved_review is not None:
