@@ -136,8 +136,6 @@ NOT_A_DECISION_THAT_NEEDS_THE_FOUR = {
     "stress_test", "result_review",
     # Disconnecting the ventilator is a step inside an airway decision.
     "ventilator_disconnect",
-    # Trauma bedside procedures: pending the faculty's decision.
-    "chest_decompression", "hemorrhage_control", "pelvic_binder",
 }
 
 

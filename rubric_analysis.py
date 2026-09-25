@@ -119,7 +119,9 @@ SCREENING_RULE = (
     "what the learner meant and it is never a score. indicated_not_modelled lists medicines the "
     "learner indicated that the simulator does not model, and prescriptions for home: each is a "
     "decision you may assess (what was chosen, what it replaced, what was omitted), but nothing "
-    "was administered and no effect occurred; never count one as an executed treatment."
+    "was administered and no effect occurred; never count one as an executed treatment. An urgent "
+    "intervention runs without being held: a category stated only afterwards is marked "
+    "'retrospective' and is later insight, never reasoning shown when the decision was taken."
 )
 
 

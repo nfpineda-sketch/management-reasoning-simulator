@@ -277,11 +277,17 @@ def _prompted(event):
     """
     gate = event.get("reasoning_gate") if isinstance(event.get("reasoning_gate"), dict) else {}
     asked = gate.get("asked_for") if isinstance(gate.get("asked_for"), list) else []
+    retrospective = event.get("retrospective") if isinstance(event.get("retrospective"), dict) else {}
     return {
         "held_for_reasoning": bool(gate.get("sealed_at_min") is not None or asked
                                    or gate.get("status") == "overridden"),
         "categories_asked_for": [str(item) for item in asked if isinstance(item, str)][:8],
         "answered_via": str(gate.get("answered_via") or ""),
+        # An urgent intervention ran without being held (decision 12): what was
+        # stated with it, and what was explained afterwards and when.
+        "urgent_unheld": gate.get("status") == "urgent_unheld",
+        "retrospective_fields": [str(f) for f in retrospective.get("fields") or [] if isinstance(f, str)][:6],
+        "retrospective_written_at_min": retrospective.get("written_at_min"),
     }
 
 
@@ -493,7 +499,10 @@ never simply the assistance context.
   after an order was held, and reasoning_provenance which answers were stated,
   carried from an earlier decision, shared with the plan of an earlier decision (an
   adjunct or a repeat inside a plan the learner already explained, not restated),
-  completed on request, or composed by the
+  explained afterwards as a retrospective (an urgent intervention runs without being
+  held; a retrospective explanation is later insight, never reasoning demonstrated when
+  the decision was taken, and an unstated category of an urgent intervention is not
+  a failure to reason), completed on request, or composed by the
   application. A neutral request to complete a category, a format clarification
   or a correction of the application's recognition is not clinical help and is
   not by itself a loss of autonomy; say what was spontaneous and what was prompted.

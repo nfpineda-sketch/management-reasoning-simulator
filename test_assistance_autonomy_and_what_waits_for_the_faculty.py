@@ -238,7 +238,11 @@ def test_the_source_says_who_declared_and_what_was_asked_for_never_an_account(co
     # Situation 4: the neutral follow-up is recorded, so what was prompted is visible.
     assert first["reasoning_prompted"] == {"held_for_reasoning": True,
                                            "categories_asked_for": ["working_model"],
-                                           "answered_via": "form"}
+                                           "answered_via": "form",
+                                           # Brief 1.5: an urgent intervention runs unheld
+                                           # and may be explained afterwards (decision 12).
+                                           "urgent_unheld": False, "retrospective_fields": [],
+                                           "retrospective_written_at_min": None}
     assert first["reasoning_provenance"] == {"problem_representation": "completed"}
 
 

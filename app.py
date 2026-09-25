@@ -6933,6 +6933,9 @@ REASONING_GATE_ACTION_TYPES = {
     "atropine", "transcutaneous_pacing", "glucagon", "calcium", "thiamine", "octreotide",
     "thrombolysis", "tranexamic_acid", "opioid_analgesia", "antipyretic", "oral_carbohydrate",
     "dextrose_infusion", "naloxone_infusion", "neuromuscular_blockade", "sedation_infusion",
+    # Urgent interventions record what was stated and what was not, and run
+    # without being held (urgent_interventions, faculty decision 12, 2026-09-25).
+    "chest_decompression", "hemorrhage_control", "pelvic_binder",
 }
 
 REASONING_GATE_FIELD_LABELS = {
@@ -7003,7 +7006,14 @@ def reasoning_gate_gaps(parsed):
 
 
 def reasoning_gate_missing(parsed):
-    """Return the prospective fields whose absence holds the order."""
+    """Return the prospective fields whose absence holds the order.
+
+    An urgent intervention is never held (faculty decision 12, 2026-09-25): its
+    gaps are recorded as noted and may be explained afterwards, as retrospective.
+    """
+    from urgent_interventions import is_urgent
+    if is_urgent(parsed):
+        return []
     return [field for field in reasoning_gate_gaps(parsed)
             if field in REASONING_GATE_BLOCKING]
 
@@ -7015,6 +7025,9 @@ def reasoning_gate_noted(parsed):
     reads "no stated priority" where it happened instead of the encounter
     refusing to move until the resident supplies the word.
     """
+    from urgent_interventions import is_urgent
+    if is_urgent(parsed):
+        return reasoning_gate_gaps(parsed)
     return [field for field in reasoning_gate_gaps(parsed)
             if field in REASONING_GATE_NOTED]
 
@@ -9921,6 +9934,28 @@ with st.container(key="encounter-console"):
                     "you do not need to repeat the held order."
                 )
 
+            from urgent_interventions import awaiting_explanation, record_retrospective
+            urgent_index = awaiting_explanation(st.session_state.get("management_trace") or [])
+            if urgent_index is not None and not st.session_state.get("pending_reasoning"):
+                urgent_entry = st.session_state.management_trace[urgent_index]
+                unstated = [field for field in (urgent_entry.get("reasoning_gate") or {}).get("noted") or []
+                            if field in REASONING_GATE_BLOCKING]
+                with st.expander("Explain an urgent decision afterwards (optional, recorded as retrospective)"):
+                    st.caption("The intervention already ran. What you write here is recorded as written now, "
+                               "after the decision, and never as reasoning shown when it was taken.")
+                    with st.form(f"retrospective_{urgent_index}"):
+                        retrospective_answers = {
+                            {"working_model": "problem_representation"}.get(field, field): st.text_area(
+                                REASONING_GATE_FIELD_LABELS[field], key=f"retrospective_{urgent_index}_{field}",
+                                height=68)
+                            for field in unstated}
+                        if st.form_submit_button("Save retrospective explanation"):
+                            if record_retrospective(urgent_entry, retrospective_answers,
+                                                    st.session_state.state.get("sim_time")):
+                                if ACCOUNT_CONTEXT:
+                                    save_session(ACCOUNT_CONTEXT)
+                                rerun_app()
+
             if not submitted:
                 with st.form("learner_form", clear_on_submit=True):
                     natural_text = st.text_area(
@@ -10025,9 +10060,21 @@ with st.container(key="encounter-console"):
             action.get("type") in REASONING_GATE_ACTION_TYPES
             for action in parsed.get("actions", [])
         ):
-            parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
-                                        "noted": reasoning_gate_noted(parsed)}
-            gate_status = "complete"
+            from urgent_interventions import is_urgent, present_categories
+            if is_urgent(parsed):
+                noted = reasoning_gate_noted(parsed)
+                parsed["reasoning_gate"] = {"required": True, "status": "urgent_unheld", "missing": [],
+                                            "noted": noted, "present": present_categories(parsed)}
+                gate_status = "urgent_unheld"
+                if [field for field in noted if field in REASONING_GATE_BLOCKING]:
+                    add_event("prototype", "Urgent intervention executed without waiting for the reasoning. "
+                              "Not stated: " + ", ".join(REASONING_GATE_FIELD_LABELS[field].rstrip("?").lower()
+                                                         for field in noted if field in REASONING_GATE_BLOCKING)
+                              + ". You can explain it afterwards; it is recorded as a retrospective explanation.")
+            else:
+                parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
+                                            "noted": reasoning_gate_noted(parsed)}
+                gate_status = "complete"
 
         recognize_cues_for(parsed)
 

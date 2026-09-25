@@ -26,8 +26,12 @@ COMPOSED = "composed"      # the application's phrasing, not the resident's
 # explained shares that plan's expectation and reassessment, which were stated
 # for the plan and are not restated for this order.
 SHARED = "shared"          # the expectation and reassessment of the plan it belongs to
+# Faculty decision 12 of 2026-09-25: an urgent intervention runs unheld, and its
+# explanation may be written afterwards. It is later insight, never reasoning
+# shown when the decision was taken.
+RETROSPECTIVE = "retrospective"  # written after an urgent decision had already run
 
-ORDER = (STATED, CARRIED, COMPLETED, COMPOSED, SHARED)
+ORDER = (STATED, CARRIED, COMPLETED, COMPOSED, SHARED, RETROSPECTIVE)
 
 #: The slots a provenance is kept for.
 SLOTS = ("problem_representation", "rationale", "management_priority",
@@ -45,6 +49,7 @@ LABELS = {
     COMPLETED: "completed in the follow-up",
     COMPOSED: "composed by the application from your other words",
     SHARED: "shared with the plan of an earlier decision",
+    RETROSPECTIVE: "explained afterwards, as a retrospective",
 }
 
 LABELS_ES = {
@@ -53,6 +58,7 @@ LABELS_ES = {
     COMPLETED: "completado en el formulario",
     COMPOSED: "compuesto por la aplicación a partir de sus otras palabras",
     SHARED: "compartido con el plan de una decisión anterior",
+    RETROSPECTIVE: "explicado después, como retrospectiva",
 }
 
 #: What a plan shares with an order inside it (decision 6, 2026-09-25).
