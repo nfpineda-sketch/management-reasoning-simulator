@@ -1,5 +1,36 @@
 # Decisiones clínicas pendientes
 
+## Sus decisiones del 2026-09-25 y cómo quedaron aplicadas
+
+Las quince decisiones están aplicadas en `clinical-encounter-v0.13`. Cada una tiene sus
+pruebas; ninguna regla se cambió para que una prueba terminara. Lo que sigue a su
+criterio está en la última columna.
+
+| # | Su decisión | Cómo quedó | Commit | Queda a su criterio |
+|---|---|---|---|---|
+| 1 | Alta: B | El seguimiento ambulatorio con plazo, las instrucciones de retorno y «control en 48 horas» son la reevaluación de un alta a domicilio (sólo a domicilio); la categoría queda como declarada por el residente. Pasar el formulario no califica el alta: los eventos de alta insegura se juzgan como antes | `e97a4b9` | — |
+| 2 | Concentración y peso: B con datos, C transitoria | Glucosa 30 % × 50 mL = 15 g, con la cuenta visible («30% × 50 mL»). Dosis por kilo de fármacos soportados con el peso del caso o el que el residente declara; se muestra «1 mg/kg × 60 kg». Sin peso, se pide sólo el peso y la orden se conserva; esa aclaración no consume minutos clínicos | `da712c8` | Qué casos deben declarar un peso verificado |
+| 3 | Sin efecto modelado: A mejorada | «Indicado por el residente; administración y efecto no modelados», nunca «administrado». Receta al alta como receta. El cribado y los tres análisis leen la indicación como decisión (p. ej., sólo antihistamínico sin adrenalina) | `3dfa743` | — |
+| 4 | Observación: C | «Mantener monitorizado» sigue siendo monitorización. «Observación en urgencias N horas» es un destino con su duración y su estado («ordenada; no completada»); sólo el tiempo que corre la completa, con la evolución y las reevaluaciones | `bcb3d37` | — |
+| 5 | Líquido sin verbo: A | «SF 1000 mL EV» se ejecuta; si no hay velocidad escrita, el registro dice «como bolo (sin velocidad escrita; la velocidad estándar del simulador, ~50 mL/min)». Una velocidad escrita se respeta y se registra como declarada | `1b2bfcf` | — |
+| 6 | Cuatro categorías por plan | Varias órdenes comparten interpretación, expectativa y reevaluación del plan ya explicado (antipirético, colación, repetición): quedan como «compartidas con el plan», no como dichas de nuevo. Una decisión nueva relevante se pregunta con lo ya dicho ofrecido en el formulario | `fabe7d9` | — |
+| 7 | Trombólisis y anticoagulación: variante de C | Sin plazo universal. El cribado distingue plan de anticoagulación documentado, diferimiento justificado, ejecución pendiente al cierre y omisión demostrada; la ambigüedad queda en lectura docente | `b273237` | — |
+| 8 | Ventanas: apoyo, no criterio | Una ventana abierta o cerrada se informa como apoyo; nunca decide sola «no evaluable» ni cero. Los 5 minutos son un aviso técnico provisional | `3b2119b` | Revisar la correspondencia de cada ventana con su caso (`docs/COBERTURA_CASOS.md`) |
+| 9 | Cierre temprano: B | Aviso breve y no bloqueante al cerrar sin destino; se registra cierre clínico, interrupción o finalización anticipada. No se inventa un destino ni se borran omisiones | `576b7ff` | — |
+| 10 | Autonomía no determinada: C | Una observación validada suma y se muestra cuántas tienen autonomía no determinada. Si un objetivo exige un nivel de autonomía (`required_autonomy`), una autonomía no determinada no lo cumple. La ejecución sintética se identifica en el progreso | `fea91ad` | Si algún objetivo debe exigir un nivel de autonomía (hoy ninguno) |
+| 11 | Reproducibilidad: medir primero | Identidad primero (registro, rúbrica, prompt, modelo); lecturas repetidas de registros idénticos con desempeños distintos; comparación por dominio, total, eventos críticos y no evaluable; una diferencia se descompone y debe explicarse antes de comparar residentes; 5-10 solicitudes = exploración; registro de gasto aparte | `43de0b7` | El umbral de dispersión, **después** de medir. Bloqueado aquí: sin clave y sin las dos corridas originales |
+| 12 | Urgentes: B | Ventilación con bolsa-mascarilla, descompresión torácica, control de hemorragia y faja pélvica se ejecutan sin retener; se guardan las categorías presentes y ausentes; la explicación posterior queda como «retrospectiva», con su minuto. Nada reconstruye un razonamiento no expresado | `db2004c` | La lista de intervenciones urgentes (hoy esas cuatro; una cardioversión o una intubación, que se preparan, conservan las cuatro categorías) |
+| 13 | TC y pruebas cruzadas: A | Se registra la solicitud y la limitación; no hay TC normal por defecto; un estudio nuevo exige indicación, resultado coherente, disponibilidad y consecuencias; la restricción de recursos sólo si el escenario la declara; sin Wernicke establecido en la hipoglicemia | `fe6781b` | Qué casos incorporan cada estudio y con qué resultado |
+| 14 | Dirección docente: A acotada | Administradores: cualquier residente. Docentes: sólo los residentes que un administrador les autorizó (con motivo, revocable, todo queda en el historial). El motivo de la directiva no entra al registro del residente; nada en su página dice que el caso fue elegido, cuál es ni por qué. Sin directiva, el currículo elige como antes | `38c45c6` | Autorizar a la cuenta docente de prueba para `residente_prueba_r3` antes de la tanda |
+| 15 | Rúbrica provisional: A | Imprimible para docentes, marcada como propuesta de IA, fuera del acumulado. La versión docente final se compara con la propuesta de la que partió (no con una posterior) y su trazabilidad nombra esa propuesta y cuánto se movió la decisión | `d3631f5` | — |
+
+Qué encuentros necesitan sólo documentos, un nuevo análisis o una nueva ejecución por
+estas decisiones: `docs/TANDA_20_ESCENARIOS.md` §8 y `tools_reclassify.py`.
+
+---
+
+## Lo que se planteó (2026-09-24 y 2026-09-25)
+
 Reúne en un solo lugar lo que requiere su criterio, clínico o educativo, surgido del
 trabajo del 2026-09-24 y 2026-09-25 (hallazgos de la tanda de diez, ensayo de la tanda de
 veinte y sondeos por la página real). Ninguna regla clínica ni criterio educativo se
