@@ -696,9 +696,14 @@ def _embolism(case_id, d1_text, d1_expected, d3_text, d3_expected, d3_alternativ
                 "Objective or clinical evidence of embolism is recorded and no anticoagulation "
                 "is executed in the window, with no contraindication stated.",
                 ["The POCUS, angiogram or D-dimer where requested"], (0, 60),
+                # Faculty decision 7 of 2026-09-25: a thrombolysis does not remove
+                # the anticoagulation decision; they are different parts of the
+                # treatment. What stands is a plan to anticoagulate or an explicit
+                # reason to defer it, with no universal minute.
                 ["Anticoagulation of any modelled agent and route",
                  "withholding it with a stated bleeding contraindication",
-                 "proceeding directly to reperfusion with a stated reason"],
+                 "after a thrombolysis, a documented anticoagulation plan or an explicit reason to "
+                 "defer it (protocol, contraindication)"],
                 "The absence of an executed anticoagulation action in the window.",
                 ["The encounter closed before the confirming study was reported"], ["D3"],
                 [("risk_factors", "the immobility and the active cancer"),

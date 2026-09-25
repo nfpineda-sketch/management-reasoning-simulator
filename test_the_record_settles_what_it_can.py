@@ -190,9 +190,9 @@ def test_the_model_can_no_longer_skip_it_and_a_skip_is_flagged(recognised_never_
 
 
 def test_a_thrombolysed_embolism_is_left_to_the_reading_the_definition_needs():
-    """Encounter 8's shape. The definition accepts going straight to reperfusion with a
-    stated reason, so whether the omission occurred turns on words, not orders -- the
-    screening says so instead of deciding it, and the question is recorded for the faculty."""
+    """Encounter 8's shape. Faculty decision 7 of 2026-09-25: a thrombolysis does not
+    remove the anticoagulation decision. Here the thrombolysis was the last decision
+    before the close, so no later decision could show a plan: the faculty reads it."""
     record, transcript = play_orders(_script("pulmonary_embolism_61m", "pulmonary_embolism", [
         "Creo que es un tromboembolismo pulmonar de alto riesgo con shock obstructivo, porque "
         "esta hipotenso, taquicardico e hipoxemico. Mi prioridad es reperfundir. Doy "
@@ -205,7 +205,7 @@ def test_a_thrombolysed_embolism_is_left_to_the_reading_the_definition_needs():
     assert row["status"] == "reading", transcript
     text = " ".join(fact["en"] for fact in row["facts"])
     assert "thrombolysis" in text and "anticoagulation" in text
-    assert "proceeding directly to reperfusion with a stated reason" in text
+    assert "no later decision in which an anticoagulation plan could be observed" in text
     report = proposal_1_1(record)
     kinds = {flag["kind"] for flag in rubric_screening.proposal_flags(
         report, rubric_screening.screening(record, "pulmonary_embolism_61m"))
@@ -305,3 +305,41 @@ def test_every_pilot_script_screens_as_its_intent_says():
         screen = {row["event_id"]: row["status"] for row in
                   rubric_screening.screen_events(record, case_id)}
         assert screen[event_id] == status, (case_id, screen)
+
+
+# --- faculty decision 7 of 2026-09-25: a thrombolysis does not remove the anticoagulation decision
+
+def _lysis_trace(*entries):
+    from family_parser import parse_family_actions
+    trace = []
+    for text, minute, executed in entries:
+        parsed = parse_family_actions(text)
+        trace.append({"execution_status": "executed", "decision_time_min": minute, "response_time_min": minute + 5,
+                      "learner_input": text, "interpreted_action": parsed["actions"],
+                      "action_summaries": [{"type": kind, "label": kind} for kind in executed],
+                      "recognized_future_actions": parsed["recognized_future_actions"],
+                      "future_details": parsed["future_details"]})
+    return {"payload": {"session": {"management_trace": trace}}}
+
+
+@pytest.mark.parametrize("entries, status, said", [
+    ([("Doy tenecteplase 50 mg ev. Al terminar inicio heparina.", 10, ("thrombolysis",)),
+      ("Reevaluo en 10 minutos", 20, ())], "reading", "a documented plan, execution pending"),
+    ([("Doy tenecteplase 50 mg ev. Difiero la anticoagulacion por sangrado activo.", 10, ("thrombolysis",))],
+     "reading", "An explicit reason to defer anticoagulation was stated"),
+    ([("Doy tenecteplase 50 mg ev.", 10, ("thrombolysis",)), ("Reevaluo en 20 minutos", 25, ()),
+      ("Lo hospitalizo en UCI", 45, ("disposition",))], "met", "an omission the record demonstrates"),
+])
+def test_a_plan_a_deferral_and_an_omission_are_told_apart(entries, status, said):
+    row = {r["event_id"]: r for r in rubric_screening.screen_events(
+        _lysis_trace(*entries), "pulmonary_embolism_61m")}["pe_no_anticoagulation"]
+    assert row["status"] == status
+    assert said in " ".join(fact["en"] for fact in row["facts"])
+
+
+def test_no_universal_minute_decides_it():
+    """The omission rests on later decisions without a plan, never on minutes elapsed."""
+    early = _lysis_trace(("Doy tenecteplase 50 mg ev.", 10, ("thrombolysis",)), ("Reevaluo en 5 minutos", 12, ()))
+    row = {r["event_id"]: r for r in rubric_screening.screen_events(early, "pulmonary_embolism_61m")}[
+        "pe_no_anticoagulation"]
+    assert row["status"] == "met"

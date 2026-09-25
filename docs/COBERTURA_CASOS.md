@@ -1225,7 +1225,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Información que debía estar en el registro: The POCUS, angiogram or D-dimer where requested.
   - Ventana y oportunidad: 0–60 min.
   - Disponible preguntando, se haya preguntado o no: **Relevant exposures and risk factors** (the immobility and the active cancer); **Medications** (whether an anticoagulant is already running).
-  - Alternativas aceptables: Anticoagulation of any modelled agent and route; withholding it with a stated bleeding contraindication; proceeding directly to reperfusion with a stated reason.
+  - Alternativas aceptables: Anticoagulation of any modelled agent and route; withholding it with a stated bleeding contraindication; after a thrombolysis, a documented anticoagulation plan or an explicit reason to defer it (protocol, contraindication).
   - Evidencia necesaria: The absence of an executed anticoagulation action in the window.
   - Exclusiones: The encounter closed before the confirming study was reported.
   - Dominios sobre los que pesa: D3.
@@ -1272,7 +1272,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Información que debía estar en el registro: The POCUS, angiogram or D-dimer where requested.
   - Ventana y oportunidad: 0–60 min.
   - Disponible preguntando, se haya preguntado o no: **Relevant exposures and risk factors** (the immobility and the active cancer); **Medications** (whether an anticoagulant is already running).
-  - Alternativas aceptables: Anticoagulation of any modelled agent and route; withholding it with a stated bleeding contraindication; proceeding directly to reperfusion with a stated reason.
+  - Alternativas aceptables: Anticoagulation of any modelled agent and route; withholding it with a stated bleeding contraindication; after a thrombolysis, a documented anticoagulation plan or an explicit reason to defer it (protocol, contraindication).
   - Evidencia necesaria: The absence of an executed anticoagulation action in the window.
   - Exclusiones: The encounter closed before the confirming study was reported.
   - Dominios sobre los que pesa: D3.

@@ -216,6 +216,38 @@ def facts(record, case_id=""):
             "indicated": indicated}
 
 
+_ANTICOAGULANT = re.compile(r"\b(?:heparin\w*|enoxaparin\w*|anticoag\w*|hbpm|fondaparinux|rivaroxab\w*|"
+                            r"apixab\w*|dabigatran\w*)\b", re.I)
+_DEFERRAL = re.compile(r"\b(?:difier\w*|difiero|diferir|posterg\w*|no\s+anticoag\w*|sin\s+anticoag\w*|"
+                       r"contraindic\w*|defer\w*|withhold\w*|hold\s+(?:the\s+)?(?:heparin|anticoag)\w*)\b", re.I)
+_LATER = re.compile(r"\b(?:despu[eé]s|luego|al\s+terminar|al\s+finalizar|tras|posterior\w*|en\s+\d+\s*(?:h|horas?|min\w*)|"
+                    r"after|then|once|following|when)\b", re.I)
+
+
+def _anticoagulation_statements(trace):
+    """Sentences the resident wrote about anticoagulating later, or about deferring it.
+
+    Read from the resident's own words and from what was kept as a plan. A plan
+    names an anticoagulant and a later moment; a deferral names one with a reason
+    not to give it now. Found statements are shown to the faculty, never decided.
+    """
+    plans, deferrals = [], []
+    for position, event in enumerate(trace or []):
+        minute = _number(event.get("decision_time_min"))
+        texts = [str(d.get("text") or "") for d in event.get("future_details") or [] if isinstance(d, dict)]
+        texts += re.split(r"(?<=[.;])\s+", str(event.get("learner_input") or ""))
+        for text in texts:
+            text = text.strip()
+            if not text or not _ANTICOAGULANT.search(text):
+                continue
+            row = {"text": text[:200], "minute": minute, "ref": f"trace:{position}"}
+            if _DEFERRAL.search(text):
+                deferrals.append(row)
+            elif _LATER.search(text) or text in texts[:len(event.get("future_details") or [])]:
+                plans.append(row)
+    return plans, deferrals
+
+
 def _indicated_items(event):
     """What an event indicated without modelling it, from its kinds or, in an older
     record, from the texts the parser would classify the same way."""
@@ -537,25 +569,51 @@ def _screen_event(event, f):
         if result["status"] != "met":
             return result
         lysis = _of(f["executed"], ("thrombolysis",), window)
-        if lysis:
-            # The definition accepts "proceeding directly to reperfusion with a
-            # stated reason". Whether a reason was stated is the resident's
-            # words, not an order, so it stays a reading -- and the question
-            # of whether that alternative should stand is recorded for the
-            # faculty in docs/DECISIONES_CLINICAS_PENDIENTES.md.
-            result["status"] = "reading"
-            result["facts"].append(_executed_fact(lysis, window))
-            result["facts"].append(_reading(
-                "the definition accepts proceeding directly to reperfusion with a stated reason; "
-                "read whether a reason was stated, and whether a bleeding contraindication was.",
-                "la definición acepta pasar directamente a reperfusión con una razón declarada; "
-                "leer si se declaró esa razón y si se declaró una contraindicación hemorrágica."))
-            result["refs"] = sorted(set(result["refs"]) | {r["ref"] for r in lysis})
-        else:
+        if not lysis:
             result["facts"].append(_reading(
                 "whether a bleeding contraindication was stated.",
                 "si se declaró una contraindicación hemorrágica."))
-        return result
+            return result
+        # Faculty decision 7 of 2026-09-25. A thrombolysis does not remove the
+        # anticoagulation decision. The record tells a documented plan (execution
+        # pending), an explicit reason to defer, and a demonstrated omission apart,
+        # without a universal minute; the faculty reads what stays ambiguous.
+        first = min(row["minute"] for row in lysis if row["minute"] is not None)
+        plans, deferrals = _anticoagulation_statements(f["trace"])
+        later = [e for e in f["trace"] if e.get("execution_status") == "executed"
+                 and _number(e.get("decision_time_min")) is not None and _number(e.get("decision_time_min")) > first]
+        facts = [_executed_fact(lysis, window), _absent_fact(("anticoagulation",), window)]
+        refs = sorted(set(result["refs"]) | {r["ref"] for r in lysis})
+        if plans:
+            row = plans[0]
+            return _result("reading", facts + [_say(
+                f"An anticoagulation plan was documented at {_minutes(row['minute'])} min (\u201c{row['text']}\u201d); "
+                "its start was not observed before the encounter closed: a documented plan, execution pending.",
+                f"Se documentó un plan de anticoagulación a los {_minutes(row['minute'])} min (\u201c{row['text']}\u201d); "
+                "su inicio no se observó antes del cierre: plan documentado, ejecución pendiente.")],
+                refs + [row["ref"]], _reading(
+                    "whether the plan fits the protocol and the window observed.",
+                    "si el plan se ajusta al protocolo y a la ventana observada."))
+        if deferrals:
+            row = deferrals[0]
+            return _result("reading", facts + [_say(
+                f"An explicit reason to defer anticoagulation was stated at {_minutes(row['minute'])} min: "
+                f"\u201c{row['text']}\u201d.",
+                f"Se declaró una razón explícita para diferir la anticoagulación a los {_minutes(row['minute'])} min: "
+                f"\u201c{row['text']}\u201d.")], refs + [row["ref"]], _reading(
+                    "whether the reason stated justifies deferring it.",
+                    "si la razón declarada justifica diferirla."))
+        if not later:
+            return _result("reading", facts + [_say(
+                "The thrombolysis was the last decision before the encounter closed: no later decision "
+                "in which an anticoagulation plan could be observed.",
+                "La trombólisis fue la última decisión antes del cierre: no hubo una decisión posterior en "
+                "la que observar un plan de anticoagulación.")], refs)
+        return _result("met", facts + [_say(
+            f"No anticoagulation plan and no reason to defer it were stated in the {len(later)} decision(s) "
+            "after the thrombolysis: an omission the record demonstrates.",
+            f"No se declaró un plan de anticoagulación ni una razón para diferirla en las {len(later)} "
+            "decisiones posteriores a la trombólisis: una omisión que el registro demuestra.")], refs)
     if identifier == "pe_unindicated_thrombolysis":
         lysis = _of(f["executed"], ("thrombolysis",), window)
         if not lysis:
