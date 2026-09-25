@@ -124,10 +124,18 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         restore_attempt(context, active, reset_session)
         return
     seed = secrets.randbelow(2**31)
+    directive = None
     if user["role"] in {"faculty", "admin"}:
         if faculty_choice not in CHALLENGES:
             raise AccountError("Choose an implemented faculty challenge.")
         assignment = {"challenge_id": faculty_choice, "reason": "faculty_sandbox", "assignment_seed": seed}
+    elif (directive := _waiting_directive(context)) is not None:
+        # A faculty member chose this resident's next case, and said why
+        # (encounter_directives). The curriculum's rule is not consulted.
+        assignment = {"challenge_id": directive["challenge_id"], "reason": "faculty_directed",
+                      "variant_id": directive["variant_id"], "directed_by": directive["directed_by"],
+                      "directive_id": directive["id"], "directive_reason": directive["reason"],
+                      "assignment_seed": seed, "competence_decision": "Not assessed automatically"}
     else:
         # What this resident has never been placed in, computed here and passed
         # in, so that curriculum.py keeps knowing nothing about the rubric. It
@@ -137,6 +145,10 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
                                       challenge_targeting.unmet(own, CHALLENGES))
     from offline_cases import launch_options
     generation, scene_key = launch_options(_secret("OPENAI_API_KEY"))
+    if directive is not None:
+        # The chosen authored case, as the bank has it: no generation and no
+        # selection request. The patient's picture is prepared as for any case.
+        generation = {"generation_mode": "authored", "variant_id": directive["variant_id"], "api_key": ""}
     with ScenePreparation(scene_key,
                           _secret("MRS_IMAGE_MODEL", "gpt-image-1.5"),
                           _secret("MRS_IMAGE_REVIEW_MODEL", "gpt-5-mini")) as scene:
@@ -150,6 +162,9 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         st.session_state.pop("_case_generation_failure", None)
         encounter["assignment"] = assignment
         attempt_id = store.create_attempt(token, assignment["challenge_id"], encounter, user["role"] != "resident")
+        if directive is not None:
+            from encounter_directives import DirectiveStore
+            DirectiveStore(store).use(token, directive["id"], attempt_id)
         record = store.get_attempt(token, attempt_id)
         restore_attempt(context, record, reset_session)
         st.session_state.attempt_number = 1 + sum(a["status"] == "completed" for a in own)
@@ -159,8 +174,59 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         scene.adopt(st.session_state, st.session_state.state, attempt_id)
 
 
+def _waiting_directive(context):
+    from encounter_directives import DirectiveStore
+    try:
+        return DirectiveStore(context["store"]).waiting(context["token"])
+    except AccountError:
+        return None
+
+
 def _date(value):
     return datetime.fromtimestamp(float(value), tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+
+def _render_directives(context):
+    """Choose a resident's next case, with a reason; see what is waiting."""
+    from encounter_directives import DirectiveStore, case_options
+    from progress_store import ProgressStore
+    store = DirectiveStore(context["store"])
+    with st.expander("Direct a resident's next encounter"):
+        st.caption("The resident's next launch uses this case instead of the curriculum's choice, "
+                   "once, and the encounter records who chose it and why. Without a directive the "
+                   "curriculum decides, exactly as before.")
+        try:
+            residents = ProgressStore(context["store"]).list_residents(context["token"])
+            waiting = store.waiting(context["token"])
+        except AccountError as error:
+            st.caption(str(error))
+            return
+        for item in waiting:
+            columns = st.columns([4, 1])
+            columns[0].caption(f"Waiting: {item['resident']} · {item['challenge_id']} · "
+                               f"{item['variant_id']} · by {item['directed_by']} · {item['reason']}")
+            if columns[1].button("Cancel", key="cancel_directive_" + item["id"]):
+                store.cancel(context["token"], item["id"])
+                st.rerun()
+        if not residents:
+            st.caption("No resident account exists yet.")
+            return
+        # Outside the form, so the cases offered follow the challenge chosen.
+        challenge = st.selectbox("Challenge", list(CHALLENGES), key="directive_challenge",
+                                 format_func=lambda key: key + " · " + CHALLENGES[key]["title"])
+        with st.form("encounter_directive"):
+            resident = st.selectbox("Resident", residents, format_func=lambda row: row["username"])
+            options = case_options(challenge)
+            variant = st.selectbox("Case", [option[0] for option in options] or ["—"])
+            reason = st.text_input("Why this case", max_chars=500)
+            submitted = st.form_submit_button("Save directive")
+        if submitted:
+            try:
+                store.direct(context["token"], resident["id"], challenge, variant, reason)
+            except AccountError as error:
+                st.error(str(error))
+            else:
+                st.success("Saved. The resident's next encounter will use this case.")
 
 
 def render_dashboard(context, initial_state, reset_session):
@@ -266,6 +332,7 @@ def render_dashboard(context, initial_state, reset_session):
         with st.expander("Resident activity and recorded evidence", expanded=bool(requested)):
             resident_attempts = [a for a in attempts if not a["is_sandbox"]]
             st.caption("Single-program pilot. These are activity records and evidence prompts for faculty review, not competency scores.")
+            _render_directives(context)
             waiting = _awaiting_review(context)
             st.dataframe([{"Resident": a["username"], "Challenge": a["challenge_id"], "Status": a["status"],
                            "Updated": _date(a["updated_at"]),
