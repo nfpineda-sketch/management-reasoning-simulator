@@ -83,10 +83,57 @@ Nada de esto fija un puntaje ni lo empuja hacia 13 ni hacia 9: el objetivo es qu
 número quede sustentado en evidencia verificable de la traza y que un desacuerdo entre
 el número y su propia justificación quede a la vista.
 
-## 4. Pendiente real
+## 4. Decisión docente 11 (2026-09-25): medir primero, sin adaptar el criterio
 
-- Ejecutar la medición de §2 (5-10 solicitudes) cuando haya clave y presupuesto
-  autorizado disponible, y comparar las dos corridas originales con `--compare`.
-- Decisión docente: qué dispersión entre lecturas se considera aceptable para un
-  dominio (por ejemplo, ±1 en a lo sumo un dominio). Hasta que se mida, **no se declara
-  estabilidad**.
+«Medir primero, pero no adaptar después el criterio para que “pase”». La herramienta
+sigue ese orden y no fija ningún umbral:
+
+1. **Primero, qué leyeron las dos corridas.** `--compare corrida_a.json corrida_b.json`
+   abre con una tabla de identidad —registro (`source_hash`), versión de rúbrica, versión
+   del prompt, modelo y versión de cobertura— y una conclusión: mismo registro y mismas
+   versiones («toda diferencia es la lectura del evaluador»), mismo registro con otra
+   versión («no se puede atribuir sólo al evaluador») u otro registro («los encuentros
+   mismos difieren»; nombra la primera decisión donde se separan si están los dos
+   registros). `--json` da lo mismo como JSON.
+2. **Después, registros idénticos leídos de nuevo, con desempeños distintos.** `--case`
+   se puede repetir: por ejemplo `--case opioid_35m --case opioid_67f --times 5` (un
+   manejo competente y un alta insegura del mismo tipo de caso) o
+   `--case asthma_24f --case asthma_49m`. Cada registro se congela y se lee N veces.
+3. **Comparación por dominio, total, eventos críticos y no evaluable.** Cada resumen da,
+   por lectura, los puntajes de cada dominio con su oportunidad, los veredictos de cada
+   evento, el total si se aceptara todo, los eventos críticos propuestos y cuántos
+   dominios quedaron «no evaluable».
+4. **Una diferencia en el total se explica antes de comparar residentes.** Si el total
+   difiere entre lecturas del mismo registro —o si una lectura puntuó un dominio que la
+   otra dejó «no evaluable», de modo que los totales no son totales de lo mismo— el
+   resumen dice: «Until this difference is explained, the score is not used to compare
+   residents», y la descompone: qué dominios se leyeron distinto (con los puntos de cada
+   uno), qué eventos cambiaron de veredicto y cuánto movió la penalización. La
+   herramienta explica **de qué está hecha** la diferencia, nunca cuál debió ser el
+   puntaje. Una diferencia de cuatro puntos, como 13/15 frente a 9/15, queda así
+   descompuesta para el docente.
+5. **Cinco a diez solicitudes son exploración, no validación.** Una invocación envía
+   como máximo 10 solicitudes en total, sumando todos los registros (5 × 2, o 10 × 1), y
+   cada resumen termina con «Exploration, not validation: N reading(s) of M record(s)».
+6. **El gasto de estas llamadas se registra aparte de los encuentros.** Cada lectura se
+   escribe al empezar y al terminar, con las solicitudes que realmente envió al
+   proveedor, en `local-data/paid_runs/reproducibility/ledger.jsonl`, con
+   `"kind": "evaluator_reading"` y `"paid_encounter": false`. No es el registro de la
+   tanda (que cuenta sólo encuentros pagados, hasta 40) ni descuenta de él.
+   `--spent` suma lo gastado; una lectura que empezó y no terminó cuenta como gastada.
+
+Pruebas: `test_tools_rubric_reproducibility.py` (identidad primero, descomposición,
+«no evaluable» frente a puntuado, lecturas que coinciden, nota de exploración, registro
+aparte, límite de 10).
+
+## 5. Pendiente real
+
+- **Bloqueado por acceso**: comparar las dos corridas originales (13/15 y 9/15) con
+  `--compare`. Viven en la base de la app o en `local-data/` de otra máquina; este
+  entorno no tiene ni la base ni esos archivos.
+- **Bloqueado por clave**: la exploración de §2/§4 (5-10 solicitudes). Este entorno no
+  tiene clave del proveedor ni acceso a `api.openai.com`; no se envió ninguna solicitud
+  y el registro de gasto de esta herramienta está vacío.
+- Decisión docente, **después** de medir: qué dispersión entre lecturas se considera
+  aceptable. Hasta que se mida y se explique, **no se declara estabilidad** y el puntaje
+  no se usa para comparar residentes.

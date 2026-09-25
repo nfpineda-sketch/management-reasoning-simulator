@@ -151,3 +151,88 @@ def test_two_saved_runs_are_compared_record_first(record, tmp_path):
         (tmp_path / f"{name}.json").write_text(json.dumps({"usage": {}, "report": report}))
         (tmp_path / f"{name}.record.json").write_text(json.dumps(record))
     assert harness.main(["--compare", str(tmp_path / "a.json"), str(tmp_path / "b.json")]) == 0
+
+
+# --- faculty decision 11 of 2026-09-25: measure first, never adapt the criterion ----
+
+def _two_readings(record, first, second):
+    evaluator = Evaluator(first, second)
+    return [item["report"] for item in harness.evaluate(
+        record, 2, model="scripted", client=evaluator, api_key="")["reports"]]
+
+
+def test_the_comparison_says_first_whether_the_readings_read_the_same_thing(record):
+    a, b = _two_readings(record, ({"D2": 3}, ()), ({"D2": 2}, ()))
+    same = harness.identity(a, b)
+    assert same["differing"] == [] and "every difference below is the evaluator's" in same["conclusion"]
+    other_prompt = dict(b, prompt_version="1.0")
+    changed = harness.identity(a, other_prompt)
+    assert changed["differing"] == ["prompt"]
+    assert "cannot be attributed to the evaluator's reading alone" in changed["conclusion"]
+    other_record = dict(b, source_hash="0" * 64)
+    assert "Not the same record" in harness.identity(a, other_record)["conclusion"]
+
+
+def test_a_difference_in_the_total_is_decomposed_and_must_be_explained(record):
+    event_id = "opioid_no_ventilatory_support"
+    a, b = _two_readings(record, ({"D2": 3, "D3": 3}, ()), ({"D2": 2, "D3": 2}, (event_id,)))
+    difference = harness.explain_difference(a, b)
+    assert difference["points"] == 5 and difference["needs_explanation"]
+    assert [(row["domain"], row["points"]) for row in difference["domains"]] == [("D2", -1), ("D3", -1)]
+    assert difference["events"] == [{"event_id": event_id, "a": "did_not_occur", "b": "occurred"}]
+    assert difference["penalty"] == [0, 3] and difference["critical_events"] == [0, 1]
+    text = harness.compare_markdown(harness.compare(a, b, record, record))
+    assert "| Record |" in text and "every difference below is the evaluator's reading" in text
+    assert harness.UNEXPLAINED.format(points=5) in text
+    assert "- D2: 3 and 2 (-1)" in text and f"- {event_id}: did_not_occur and occurred" in text
+
+
+def test_a_domain_scored_once_and_not_assessable_once_is_not_the_same_total(record):
+    a, b = _two_readings(record, ({"D5": 2}, ()), ({"D5": rubric.NOT_ASSESSABLE}, ()))
+    difference = harness.explain_difference(a, b)
+    assert not difference["comparable"] and difference["needs_explanation"]
+    assert difference["not_assessable"] == [0, 1]
+    assert any("not totals of the same thing" in line for line in harness.explanation_lines(difference))
+
+
+def test_agreeing_readings_need_no_explanation(record):
+    a, b = _two_readings(record, ({"D1": 3}, ()), ({"D1": 3}, ()))
+    assert harness.explain_difference(a, b)["needs_explanation"] is False
+
+
+def test_the_summary_compares_totals_critical_events_and_not_assessable_and_calls_itself_exploration(record):
+    evaluator = Evaluator(({"D2": 3}, ()), ({"D2": 2}, ()), ({"D2": 3}, ()))
+    summary = harness.summarize(record, harness.evaluate(record, 3, model="scripted",
+                                                         client=evaluator, api_key=""))
+    assert summary["not_assessable"] == [0, 0, 0] and summary["critical_events"] == [0, 0, 0]
+    assert summary["difference"]["points"] == 1
+    markdown = harness.as_markdown(summary)
+    assert harness.UNEXPLAINED.format(points=1) in markdown
+    assert "Exploration, not validation: 3 reading(s) of 1 record(s)" in markdown
+
+
+def test_every_reading_is_on_a_ledger_of_its_own(record, tmp_path):
+    ledger = harness.ledger_path(tmp_path / "reproducibility")
+    evaluator = Evaluator(({}, ()), fail_on={2})
+    harness.evaluate(record, 3, model="scripted", client=evaluator, api_key="", ledger=ledger, batch="b1")
+    entries = [json.loads(line) for line in ledger.read_text().splitlines()]
+    assert [entry["event"] for entry in entries] == ["started", "finished"] * 3
+    assert {entry["kind"] for entry in entries} == {"evaluator_reading"}
+    assert not any(entry["paid_encounter"] for entry in entries)
+    assert [entry.get("outcome") for entry in entries if entry["event"] == "finished"] == ["ok", "failed", "ok"]
+    # A scripted evaluator sends nothing to the provider: nothing is spent.
+    assert harness.spent(ledger) == {"readings": 3, "requests": 0, "unfinished": 0}
+    # A reading that started and never finished is counted as spent.
+    with ledger.open("a") as handle:
+        handle.write(json.dumps({"event": "started", "batch": "b2", "record_fingerprint": "x", "run": 1}) + "\n")
+    assert harness.spent(ledger) == {"readings": 4, "requests": 1, "unfinished": 1}
+
+
+def test_one_exploration_sends_at_most_ten_requests_across_records(capsys, tmp_path):
+    assert harness.main(["--case", "opioid_35m", "--case", CASE, "--times", "6", "--dry-run"]) == 2
+    assert harness.main(["--case", "opioid_35m", "--case", CASE, "--times", "5", "--dry-run",
+                         "--out", str(tmp_path)]) == 0
+    out = capsys.readouterr().out
+    assert "10 paid request(s) in all" in out and "apart from any encounter" in out
+    assert harness.main(["--spent", "--out", str(tmp_path)]) == 0
+    assert '"requests": 0' in capsys.readouterr().out
