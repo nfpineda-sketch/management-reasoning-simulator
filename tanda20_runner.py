@@ -188,6 +188,9 @@ def direct(page, script, resident):
     """Staff: the resident's next case is this scenario's, and why."""
     page.open("Resident activity and recorded evidence")
     page.open("Direct a resident's next encounter")
+    if "No resident has been assigned to you for choosing cases" in page.text():
+        raise RunStop(f"The staff account is not authorized to choose {resident}'s cases. An "
+                      "administrator authorizes it under «Who may choose a resident's cases».")
     page.select("Challenge", script["challenge"] + " · ")
     page.select("Resident", resident)
     page.select("Case", script["case_id"])

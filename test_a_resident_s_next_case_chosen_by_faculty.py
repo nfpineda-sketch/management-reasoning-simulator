@@ -39,6 +39,12 @@ def cohort(tmp_path, monkeypatch):
     return accounts, users
 
 
+def authorize(accounts, users, faculty="faculty_test", resident="residente_prueba_r3"):
+    """What an administrator does before a faculty member may choose a resident's cases."""
+    return DirectiveStore(accounts).grant(users["admin_test"]["token"], users[faculty]["id"],
+                                          users[resident]["id"], "Supervises this resident")
+
+
 def test_a_challenge_offers_only_its_own_cases():
     cases = {variant for variant, _, _ in case_options("R2-05")}
     assert "gi_bleed_72f" in cases and "renal_colic_34m" in cases
@@ -48,6 +54,7 @@ def test_a_challenge_offers_only_its_own_cases():
 
 def test_only_staff_direct_and_always_with_a_reason(cohort):
     accounts, users = cohort
+    authorize(accounts, users)
     store = DirectiveStore(accounts)
     resident = users["residente_prueba_r3"]["id"]
     with pytest.raises(AccountError):
@@ -63,6 +70,7 @@ def test_only_staff_direct_and_always_with_a_reason(cohort):
 
 def test_a_new_directive_replaces_the_waiting_one_and_both_are_kept(cohort):
     accounts, users = cohort
+    authorize(accounts, users)
     store = DirectiveStore(accounts)
     resident = users["residente_prueba_r3"]["id"]
     first = store.direct(users["faculty_test"]["token"], resident, "R2-05", "gi_bleed_72f", "Batch 15")
@@ -74,16 +82,30 @@ def test_a_new_directive_replaces_the_waiting_one_and_both_are_kept(cohort):
     assert store.waiting(users["other_test"]["token"]) is None
 
 
+REVEALING_REASON = "Quiet upper GI bleed: does she resuscitate before the endoscopy"
+
+
+def _page_text(at):
+    texts = []
+    for kind in ("markdown", "caption", "info", "success", "warning", "error", "text", "title",
+                 "header", "subheader"):
+        texts += [str(getattr(element, "value", "")) for element in getattr(at, kind)]
+    texts += [str(expander.label) for expander in at.expander]
+    return " ".join(texts)
+
+
 def test_the_resident_launch_uses_it_once_and_the_encounter_says_so(cohort):
     accounts, users = cohort
+    authorize(accounts, users)
     from resident_profile import ProfileStore
     ProfileStore(accounts).decline(users["residente_prueba_r3"]["token"])
     store = DirectiveStore(accounts)
     store.direct(users["faculty_test"]["token"], users["residente_prueba_r3"]["id"],
-                 "R2-05", "gi_bleed_72f", "Synthetic batch, scenario 15")
+                 "R2-05", "gi_bleed_72f", REVEALING_REASON)
     at = AppTest.from_file(APP, default_timeout=120)
     at.session_state["_account_token"] = users["residente_prueba_r3"]["token"]
     at.run()
+    before = _page_text(at)
     next(button for button in at.button if button.label == "Begin Encounter").click().run()
     assert not at.exception
     spec = at.session_state["state"]["encounter_spec"]
@@ -91,12 +113,67 @@ def test_the_resident_launch_uses_it_once_and_the_encounter_says_so(cohort):
     assignment = at.session_state["encounter_assignment"]
     assert assignment["reason"] == "faculty_directed"
     assert assignment["directed_by"] == "faculty_test"
-    assert assignment["directive_reason"] == "Synthetic batch, scenario 15"
     # Which code produced the encounter travels with it.
     assert assignment["code_version"] and assignment["runtime_version"]
     [row] = store.history(users["admin_test"]["token"], users["residente_prueba_r3"]["id"])
     assert row["state"] == "used" and row["attempt_id"] == at.session_state["_attempt_id"]
+    assert row["reason"] == REVEALING_REASON and assignment["directive_id"] == row["id"]
     assert store.waiting(users["residente_prueba_r3"]["token"]) is None
+    # Nothing tells the resident that the case was chosen, which one, or why:
+    # the reason is not in their record, and the page says none of it.
+    record = accounts.get_attempt(users["residente_prueba_r3"]["token"], at.session_state["_attempt_id"])
+    assert REVEALING_REASON not in str(record) and "directive_reason" not in str(record)
+    during = _page_text(at)
+    for revealing in (REVEALING_REASON, "gi_bleed_72f", "directive", "chose", "chosen", "directed"):
+        assert revealing not in before and revealing not in during, revealing
+
+
+# --- decision 14 of 2026-09-25: scoped permission --------------------------------
+
+def test_a_faculty_member_directs_only_the_residents_an_administrator_authorized(cohort):
+    accounts, users = cohort
+    store = DirectiveStore(accounts)
+    faculty, resident = users["faculty_test"]["token"], users["residente_prueba_r3"]["id"]
+    with pytest.raises(AccountError, match="not authorized"):
+        store.direct(faculty, resident, "R2-05", "gi_bleed_72f", "Batch")
+    assert store.residents_in_scope(faculty) == []
+    grant = authorize(accounts, users)
+    assert [row["username"] for row in store.residents_in_scope(faculty)] == ["residente_prueba_r3"]
+    directive = store.direct(faculty, resident, "R2-05", "gi_bleed_72f", "Batch")
+    # Another resident stays out of reach, and out of sight.
+    with pytest.raises(AccountError, match="not authorized"):
+        store.direct(faculty, users["other_test"]["id"], "R2-05", "gi_bleed_72f", "Batch")
+    admin_directive = store.direct(users["admin_test"]["token"], users["other_test"]["id"], "R2-05",
+                                   "gi_bleed_72f", "Program choice")
+    assert [row["id"] for row in store.waiting(faculty)] == [directive["id"]]
+    with pytest.raises(AccountError, match="not authorized"):
+        store.history(faculty, users["other_test"]["id"])
+    with pytest.raises(AccountError, match="not authorized"):
+        store.cancel(faculty, admin_directive["id"])
+    # Revoked, the permission ends; the directive and the authorization stay on record.
+    store.revoke(users["admin_test"]["token"], grant["id"], "Rotation ended")
+    with pytest.raises(AccountError, match="not authorized"):
+        store.direct(faculty, resident, "R2-05", "gi_bleed_72f", "Batch")
+    [row] = store.grants(users["admin_test"]["token"])
+    assert row["active"] is False and row["revoke_reason"] == "Rotation ended"
+    assert store.history(users["admin_test"]["token"], resident)[0]["id"] == directive["id"]
+
+
+def test_only_an_administrator_authorizes_and_always_with_a_reason(cohort):
+    accounts, users = cohort
+    store = DirectiveStore(accounts)
+    faculty, resident = users["faculty_test"]["id"], users["residente_prueba_r3"]["id"]
+    with pytest.raises(AccountError):
+        store.grant(users["faculty_test"]["token"], faculty, resident, "Myself")
+    with pytest.raises(AccountError, match="why"):
+        store.grant(users["admin_test"]["token"], faculty, resident, " ")
+    with pytest.raises(AccountError, match="faculty member"):
+        store.grant(users["admin_test"]["token"], users["other_test"]["id"], resident, "Peer")
+    with pytest.raises(AccountError, match="resident"):
+        store.grant(users["admin_test"]["token"], faculty, users["admin_test"]["id"], "Admin")
+    first = store.grant(users["admin_test"]["token"], faculty, resident, "Supervisor")
+    assert first["changed"] and not store.grant(users["admin_test"]["token"], faculty, resident,
+                                                "Again")["changed"]
 
 
 def test_without_a_directive_the_curriculum_chooses_as_before(cohort, monkeypatch):

@@ -10,14 +10,24 @@ wants a resident to meet a particular patient.
 
 A directive is one-shot, explicit and on the record:
 
-* a faculty member or an administrator names the resident, the challenge and
-  one authored case that challenge offers, with a written reason;
+* an administrator, or a faculty member an administrator authorized for that
+  resident, names the resident, the challenge and one authored case that
+  challenge offers, with a written reason;
 * the resident's next launch uses it and consumes it; the assignment records
-  that it was directed, by whom and why;
+  that it was directed and by whom, and points to the directive;
 * a new directive for the same resident replaces the one waiting, and the
   replaced one stays in the history as cancelled. Nothing is deleted.
 
 Without a directive, the curriculum's rule is exactly what it was.
+
+Faculty decision 14 of 2026-09-25 ("aprobar A con permisos acotados"). The
+permission is scoped: an administrator may direct any resident's next case; a
+faculty member only the residents an administrator authorized them for, each
+authorization with its reason and kept, like the directives, when revoked. The
+choice reveals nothing to the resident: the faculty's reason -- which may name
+the diagnosis or what the case is meant to teach -- stays in this staff-only
+history and never enters the resident's encounter record, and nothing on the
+resident's page says that the case was chosen, or which one it is.
 """
 from __future__ import annotations
 
@@ -28,6 +38,8 @@ from account_store import AccountError
 
 STAFF = frozenset({"faculty", "admin"})
 MAX_REASON = 500
+NOT_AUTHORIZED = ("Your account is not authorized to choose this resident's cases. An administrator "
+                  "can authorize it.")
 
 
 def case_options(challenge_id):
@@ -63,6 +75,114 @@ class DirectiveStore:
             )""")
             self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_encounter_directives_user
                 ON mrs_encounter_directives(user_id, state, created_at)""")
+            # Which faculty member may direct which resident's next case. An
+            # administrator grants and revokes; nothing is deleted.
+            self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_direction_grants (
+                id TEXT PRIMARY KEY,
+                faculty_id TEXT NOT NULL REFERENCES mrs_users(id),
+                user_id TEXT NOT NULL REFERENCES mrs_users(id),
+                reason TEXT NOT NULL,
+                granted_by TEXT NOT NULL REFERENCES mrs_users(id),
+                granted_at BIGINT NOT NULL,
+                revoked_by TEXT REFERENCES mrs_users(id),
+                revoked_at BIGINT,
+                revoke_reason TEXT
+            )""")
+            self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_direction_grants_faculty
+                ON mrs_direction_grants(faculty_id, user_id, revoked_at)""")
+
+    # --- who may direct whom -------------------------------------------------------
+
+    def _authorized(self, connection, actor, user_id):
+        if actor["role"] == "admin":
+            return True
+        if actor["role"] != "faculty":
+            return False
+        return self._execute(connection, """SELECT id FROM mrs_direction_grants
+            WHERE faculty_id = ? AND user_id = ? AND revoked_at IS NULL""",
+            (actor["id"], user_id)).fetchone() is not None
+
+    def _scope(self, connection, actor):
+        """The residents this staff member may direct: None means every resident."""
+        if actor["role"] == "admin":
+            return None
+        return {row["user_id"] for row in self._execute(connection, """SELECT user_id
+            FROM mrs_direction_grants WHERE faculty_id = ? AND revoked_at IS NULL""",
+            (actor["id"],)).fetchall()}
+
+    def residents_in_scope(self, token):
+        """The residents whose next case this account may choose."""
+        with self.accounts._transaction() as connection:
+            actor = self.accounts._actor(connection, token, STAFF)
+            scope = self._scope(connection, actor)
+            rows = self._execute(connection, "SELECT * FROM mrs_users WHERE role = 'resident' "
+                                 "ORDER BY username").fetchall()
+            return [self.accounts._public_user(row) for row in rows
+                    if scope is None or row["id"] in scope]
+
+    def faculty_members(self, token):
+        with self.accounts._transaction() as connection:
+            self.accounts._actor(connection, token, {"admin"})
+            return [self.accounts._public_user(row) for row in self._execute(
+                connection, "SELECT * FROM mrs_users WHERE role = 'faculty' ORDER BY username").fetchall()]
+
+    def grant(self, token, faculty_id, user_id, reason):
+        """An administrator authorizes one faculty member to direct one resident's cases."""
+        reason = str(reason or "").strip()
+        if not reason:
+            raise AccountError("Say why this faculty member may choose this resident's cases.")
+        if len(reason) > MAX_REASON:
+            raise AccountError("The reason is too long.")
+        with self.accounts._transaction(write=True) as connection:
+            actor = self.accounts._actor(connection, token, {"admin"})
+            faculty = self._execute(connection, "SELECT id, role FROM mrs_users WHERE id = ?",
+                                    (faculty_id,)).fetchone()
+            resident = self._execute(connection, "SELECT id, role FROM mrs_users WHERE id = ?",
+                                     (user_id,)).fetchone()
+            if faculty is None or faculty["role"] != "faculty":
+                raise AccountError("Choose a faculty member.")
+            if resident is None or resident["role"] != "resident":
+                raise AccountError("Choose a resident.")
+            existing = self._execute(connection, """SELECT id FROM mrs_direction_grants
+                WHERE faculty_id = ? AND user_id = ? AND revoked_at IS NULL""",
+                (faculty_id, user_id)).fetchone()
+            if existing is not None:
+                return {"id": existing["id"], "changed": False}
+            identifier = uuid.uuid4().hex
+            self._execute(connection, """INSERT INTO mrs_direction_grants
+                (id, faculty_id, user_id, reason, granted_by, granted_at)
+                VALUES (?, ?, ?, ?, ?, ?)""",
+                (identifier, faculty_id, user_id, reason, actor["id"], int(time.time())))
+            return {"id": identifier, "changed": True}
+
+    def revoke(self, token, grant_id, reason):
+        reason = str(reason or "").strip()
+        if not reason:
+            raise AccountError("Say why the authorization is revoked.")
+        with self.accounts._transaction(write=True) as connection:
+            actor = self.accounts._actor(connection, token, {"admin"})
+            updated = self._execute(connection, """UPDATE mrs_direction_grants
+                SET revoked_by = ?, revoked_at = ?, revoke_reason = ?
+                WHERE id = ? AND revoked_at IS NULL""",
+                (actor["id"], int(time.time()), reason[:MAX_REASON], grant_id))
+            if getattr(updated, "rowcount", 1) == 0:
+                raise AccountError("That authorization is no longer active.")
+
+    def grants(self, token):
+        """Every authorization, active and revoked, for the administrator."""
+        with self.accounts._transaction() as connection:
+            self.accounts._actor(connection, token, {"admin"})
+            rows = self._execute(connection, """SELECT g.*, f.username AS faculty, r.username AS resident,
+                a.username AS granted_by_name FROM mrs_direction_grants g
+                JOIN mrs_users f ON f.id = g.faculty_id JOIN mrs_users r ON r.id = g.user_id
+                JOIN mrs_users a ON a.id = g.granted_by ORDER BY g.granted_at""").fetchall()
+            return [{"id": row["id"], "faculty": row["faculty"], "resident": row["resident"],
+                     "reason": row["reason"], "granted_by": row["granted_by_name"],
+                     "granted_at": row["granted_at"], "active": row["revoked_at"] is None,
+                     "revoked_at": row["revoked_at"], "revoke_reason": row["revoke_reason"]}
+                    for row in rows or []]
+
+    # --- directives -----------------------------------------------------------------
 
     def direct(self, token, user_id, challenge_id, variant_id, reason):
         """Record the next case for one resident. Returns the directive."""
@@ -79,6 +199,8 @@ class DirectiveStore:
                                 (user_id,)).fetchone()
             if row is None or row["role"] != "resident":
                 raise AccountError("Choose a resident.")
+            if not self._authorized(connection, actor, user_id):
+                raise AccountError(NOT_AUTHORIZED)
             now = int(time.time())
             self._execute(connection, """UPDATE mrs_encounter_directives SET state = 'cancelled',
                 closed_at = ? WHERE user_id = ? AND state = 'waiting'""", (now, user_id))
@@ -93,7 +215,11 @@ class DirectiveStore:
 
     def cancel(self, token, directive_id):
         with self.accounts._transaction(write=True) as connection:
-            self.accounts._actor(connection, token, STAFF)
+            actor = self.accounts._actor(connection, token, STAFF)
+            row = self._execute(connection, "SELECT user_id FROM mrs_encounter_directives WHERE id = ?",
+                                (directive_id,)).fetchone()
+            if row is not None and not self._authorized(connection, actor, row["user_id"]):
+                raise AccountError(NOT_AUTHORIZED)
             updated = self._execute(connection, """UPDATE mrs_encounter_directives
                 SET state = 'cancelled', closed_at = ? WHERE id = ? AND state = 'waiting'""",
                 (int(time.time()), directive_id))
@@ -107,11 +233,14 @@ class DirectiveStore:
             if actor["role"] not in STAFF:
                 user_id = actor["id"]
             elif user_id is None:
+                scope = self._scope(connection, actor)
                 rows = self._execute(connection, """SELECT d.*, u.username AS directed_by,
                     r.username AS resident FROM mrs_encounter_directives d
                     JOIN mrs_users u ON u.id = d.created_by JOIN mrs_users r ON r.id = d.user_id
                     WHERE d.state = 'waiting' ORDER BY d.created_at""").fetchall()
-                return [_row(row) for row in rows or []]
+                return [_row(row) for row in rows or [] if scope is None or row["user_id"] in scope]
+            elif not self._authorized(connection, actor, user_id):
+                raise AccountError(NOT_AUTHORIZED)
             row = self._execute(connection, """SELECT d.*, u.username AS directed_by,
                 r.username AS resident FROM mrs_encounter_directives d
                 JOIN mrs_users u ON u.id = d.created_by JOIN mrs_users r ON r.id = d.user_id
@@ -132,7 +261,9 @@ class DirectiveStore:
 
     def history(self, token, user_id):
         with self.accounts._transaction() as connection:
-            self.accounts._actor(connection, token, STAFF)
+            actor = self.accounts._actor(connection, token, STAFF)
+            if not self._authorized(connection, actor, user_id):
+                raise AccountError(NOT_AUTHORIZED)
             rows = self._execute(connection, """SELECT d.*, u.username AS directed_by,
                 r.username AS resident FROM mrs_encounter_directives d
                 JOIN mrs_users u ON u.id = d.created_by JOIN mrs_users r ON r.id = d.user_id

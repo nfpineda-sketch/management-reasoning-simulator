@@ -133,10 +133,13 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         assignment = {"challenge_id": faculty_choice, "reason": "faculty_sandbox", "assignment_seed": seed}
     elif (directive := _waiting_directive(context)) is not None:
         # A faculty member chose this resident's next case, and said why
-        # (encounter_directives). The curriculum's rule is not consulted.
+        # (encounter_directives). The curriculum's rule is not consulted. The
+        # reason stays in the staff-only directive history, which this
+        # assignment points to: it may name the diagnosis or what the case
+        # teaches, and this record is the resident's (decision 14, 2026-09-25).
         assignment = {"challenge_id": directive["challenge_id"], "reason": "faculty_directed",
                       "variant_id": directive["variant_id"], "directed_by": directive["directed_by"],
-                      "directive_id": directive["id"], "directive_reason": directive["reason"],
+                      "directive_id": directive["id"],
                       "assignment_seed": seed, "competence_decision": "Not assessed automatically"}
     else:
         # What this resident has never been placed in, computed here and passed
@@ -218,17 +221,63 @@ def _date(value):
     return datetime.fromtimestamp(float(value), tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
 
+NO_RESIDENT_IN_SCOPE = ("No resident has been assigned to you for choosing cases. An administrator can "
+                        "authorize it.")
+
+
+def _render_direction_grants(context, store):
+    """An administrator authorizes a faculty member to choose one resident's cases."""
+    from progress_store import ProgressStore
+    with st.expander("Who may choose a resident's cases"):
+        st.caption("Administrators may choose any resident's next case. A faculty member may choose "
+                   "only the cases of the residents authorized here. Each authorization keeps its "
+                   "reason, and a revoked one stays in the history.")
+        try:
+            faculty = store.faculty_members(context["token"])
+            residents = ProgressStore(context["store"]).list_residents(context["token"])
+            grants = store.grants(context["token"])
+        except AccountError as error:
+            st.caption(str(error))
+            return
+        for item in grants:
+            columns = st.columns([4, 1])
+            columns[0].caption(f"{'Active' if item['active'] else 'Revoked'}: {item['faculty']} → "
+                               f"{item['resident']} · by {item['granted_by']} · {item['reason']}"
+                               + (f" · revoked: {item['revoke_reason']}" if not item["active"] else ""))
+            if item["active"] and columns[1].button("Revoke", key="revoke_grant_" + item["id"]):
+                store.revoke(context["token"], item["id"], "Revoked by an administrator from the dashboard.")
+                st.rerun()
+        if not faculty or not residents:
+            st.caption("Authorizing needs at least one faculty account and one resident account.")
+            return
+        with st.form("direction_grant"):
+            member = st.selectbox("Faculty member", faculty, format_func=lambda row: row["username"])
+            resident = st.selectbox("Resident to authorize for", residents,
+                                    format_func=lambda row: row["username"])
+            reason = st.text_input("Why this faculty member", max_chars=500)
+            submitted = st.form_submit_button("Authorize")
+        if submitted:
+            try:
+                store.grant(context["token"], member["id"], resident["id"], reason)
+            except AccountError as error:
+                st.error(str(error))
+            else:
+                st.success("Authorized.")
+
+
 def _render_directives(context):
     """Choose a resident's next case, with a reason; see what is waiting."""
     from encounter_directives import DirectiveStore, case_options
-    from progress_store import ProgressStore
     store = DirectiveStore(context["store"])
+    if context["user"]["role"] == "admin":
+        _render_direction_grants(context, store)
     with st.expander("Direct a resident's next encounter"):
         st.caption("The resident's next launch uses this case instead of the curriculum's choice, "
-                   "once, and the encounter records who chose it and why. Without a directive the "
-                   "curriculum decides, exactly as before.")
+                   "once. Who chose it and why stay in this history, for faculty; the resident is "
+                   "not told that the case was chosen, which one it is, or why. Without a directive "
+                   "the curriculum decides, exactly as before.")
         try:
-            residents = ProgressStore(context["store"]).list_residents(context["token"])
+            residents = store.residents_in_scope(context["token"])
             waiting = store.waiting(context["token"])
         except AccountError as error:
             st.caption(str(error))
@@ -241,8 +290,15 @@ def _render_directives(context):
                 store.cancel(context["token"], item["id"])
                 st.rerun()
         if not residents:
-            st.caption("No resident account exists yet.")
+            st.caption(NO_RESIDENT_IN_SCOPE if context["user"]["role"] == "faculty"
+                       else "No resident account exists yet.")
             return
+        if st.checkbox("Show the history of directives", key="directive_history"):
+            history = [row for person in residents for row in store.history(context["token"], person["id"])]
+            st.dataframe([{"Saved": _date(row["created_at"]), "Resident": row["resident"],
+                           "Case": row["variant_id"], "State": row["state"], "By": row["directed_by"],
+                           "Why": row["reason"], "Encounter": row["attempt_id"] or "—"}
+                          for row in history], hide_index=True)
         # Outside the form, so the cases offered follow the challenge chosen.
         challenge = st.selectbox("Challenge", list(CHALLENGES), key="directive_challenge",
                                  format_func=lambda key: key + " · " + CHALLENGES[key]["title"])
