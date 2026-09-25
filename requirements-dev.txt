@@ -1,3 +1,5 @@
 -r requirements.txt
 pytest>=8,<10
 markdown-it-py>=3,<5
+# The synthetic batch runner (tanda20_runner.py) drives the app in a browser.
+playwright>=1.40,<2
