@@ -229,13 +229,16 @@ def _render_admin_controls(context: dict[str, Any]) -> None:
     store, token = context["store"], context["token"]
     with st.sidebar.expander("Account administration"):
         st.caption("Invitations define access privileges. Send each invitation privately to its intended user.")
+        # The role is chosen outside the form, so that the training year is
+        # asked for only when it means something: a resident's (2026-09-25).
+        role = st.selectbox("Invite role", _ROLES, key="_invite_role")
         with st.form("account_invite", clear_on_submit=True):
-            role = st.selectbox("Invite role", _ROLES)
-            year = st.selectbox("Training year", (1, 2, 3), key="_invite_year")
+            year = (st.selectbox("Training year", (1, 2, 3), key="_invite_year")
+                    if role == "resident" else None)
             create_invite = st.form_submit_button("Create invitation")
         if create_invite:
             try:
-                invitation = store.create_invite(token, role, int(year))
+                invitation = store.create_invite(token, role, int(year) if year is not None else None)
             except AccountError:
                 st.error("Unable to create an invitation. Check your administrator access.")
             except Exception:
@@ -268,15 +271,20 @@ def _render_admin_controls(context: dict[str, Any]) -> None:
         selected = users_by_id[selected_id]
         # The user-specific form key prevents another account's values from
         # lingering in role/year widgets when the selection changes.
+        selected_role = st.selectbox("Role", _ROLES, index=_ROLES.index(selected["role"]),
+                                     key=f"_account_role_{selected_id}")
         with st.form(f"account_edit_{selected_id}"):
-            selected_role = st.selectbox("Role", _ROLES, index=_ROLES.index(selected["role"]))
-            selected_year = st.selectbox("Resident year", (1, 2, 3), index=max(0, min(2, int(selected.get("training_year") or 1) - 1)))
+            selected_year = (st.selectbox("Resident year", (1, 2, 3),
+                                          index=max(0, min(2, int(selected.get("training_year") or 1) - 1)))
+                             if selected_role == "resident" else None)
             selected_active = st.checkbox("Account active", value=bool(selected.get("active")))
             st.caption("Changing access invalidates this user's existing sessions.")
             save = st.form_submit_button("Save account")
         if save:
             try:
-                store.update_user(token, selected_id, role=selected_role, training_year=int(selected_year), active=selected_active)
+                store.update_user(token, selected_id, role=selected_role,
+                                  training_year=int(selected_year) if selected_year is not None else None,
+                                  active=selected_active)
             except AccountError:
                 st.error("Unable to update this account. At least one active administrator must remain.")
             except Exception:

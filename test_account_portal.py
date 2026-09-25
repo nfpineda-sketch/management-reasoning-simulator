@@ -143,3 +143,28 @@ def test_bad_credentials_do_not_start_a_session(configuration):
     assert app.error
     assert "_account_token" not in app.session_state
     assert not app.success
+
+
+def test_only_a_resident_is_asked_for_a_training_year(configuration):
+    """A faculty or administrator invitation has no training year (2026-09-25)."""
+    admin = portal(configuration)
+    sign_in(admin, "admin", ADMIN_PASSWORD)
+    assert any(item.label == "Training year" for item in admin.selectbox)
+    widget(admin, "selectbox", "Invite role").set_value("faculty").run()
+    assert not any(item.label == "Training year" for item in admin.selectbox)
+    widget(admin, "button", "Create invitation").click().run()
+    assert not admin.exception
+    invitation = admin.code[0].value
+
+    member = portal(configuration)
+    register(member, "faculty.one", invitation)
+    store = AccountStore(configuration["MRS_DATABASE_URL"], allow_sqlite=True)
+    user = store.get_user(member.session_state["_account_token"])
+    assert (user["role"], user["training_year"]) == ("faculty", None)
+
+    # Managing that account asks for no resident year either, until it is made a resident.
+    admin.run()
+    widget(admin, "selectbox", "Manage an account").set_value(user["id"]).run()
+    assert not any(item.label == "Resident year" for item in admin.selectbox)
+    widget(admin, "selectbox", "Role").set_value("resident").run()
+    assert any(item.label == "Resident year" for item in admin.selectbox)
