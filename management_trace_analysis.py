@@ -518,6 +518,7 @@ def _validate_claim(claim, numerals=True):
 
 NUMERAL_IN_PROSE = re.compile(r"(?<![A-Za-z])\d")
 NUMERAL_REASON = "a numeral in prose, which this report reserves for the recorded evidence"
+CITATION_REASON = "a citation outside what this decision may cite ({fault})"
 
 
 def _numeral(text):
@@ -527,34 +528,48 @@ def _numeral(text):
 def usable_analysis(report, payload):
     """The part of an analysis that validates on its own, and what was withheld.
 
-    Faculty decision B3: a format rule broken in one passage must not discard a
-    whole report, and an invalid passage must not be shown with a warning
-    either. Exactly one class of fault is withheld here — a numeral in prose,
-    which is a format rule and cannot change what a passage means — and only
-    from places that stand alone: the synthesis, the trajectory, a strength, a
-    question, a later-reflection summary. A required part of a decision takes
-    that whole decision with it, because half a decision is not a decision.
+    Faculty decision B3 (2026-09-23), controlled degradation: validate by
+    section, show only what validates on its own, withhold the rest with its
+    reason, and never present the report as usable when its overall reading is
+    compromised. An invalid passage is absent, never shown with a warning.
 
-    Everything else still refuses the report: provenance, citation membership,
-    chronology and the decision-time boundaries are what make this a record
-    rather than prose, and none of them is a formatting slip.
+    Two classes of fault are withheld here, never repaired:
+
+    - A numeral in prose, a format rule, only from places that stand alone:
+      the synthesis, the trajectory, a strength, a question, a later-reflection
+      summary, a heading. A numeral in a required part of a decision takes that
+      whole decision with it, because half a decision is not a decision.
+    - A pivotal decision that cites outside its own rules (later evidence as
+      decision-time evidence, a part that does not cite its own decision, an
+      adaptation citing the later reflection, an unlinked retrospective insight,
+      a duplicated reference) is withheld whole (the administrator's reading of
+      B3 on 2026-09-25, after two of the first four encounters of the synthetic
+      batch lost their document A to one decision each). No sentence citing
+      outside the rules reaches the resident.
+
+    Everything else still refuses the report: provenance, structure, the
+    chronology of the decisions, and a report with no pivotal decision left.
 
     Returns ``(report, withheld)``; ``withheld`` carries the section, the reason
     and the original text, for the technical record. Raises when the fault is
-    not of the withheld class, or when too little would be left to present.
+    not of a withheld class, or when too little would be left to present.
     """
     try:
         return validate_management_trace_analysis(report, payload), []
     except ManagementTraceAnalysisError:
         pass
-    # Everything except the format rule has to hold, or the report is refused.
-    validate_management_trace_analysis(report, payload, numerals=False)
+    # Provenance, structure and chronology have to hold, or the report is refused.
+    validate_management_trace_analysis(report, payload, numerals=False, decisions=False)
+    source = build_analysis_source(payload)
+    indices = {row["source_ref"]: index for index, row in enumerate(source["timeline"])}
+    encounter_refs = {row["source_ref"] for row in source["encounter_events"]}
+    reflection_map = {row["source_ref"]: row["decision_refs"] for row in source["reflections"]}
     candidate = deepcopy(report)
     analysis = candidate["analysis"]
     withheld = []
 
-    def drop(section, text):
-        withheld.append({"section": section, "reason": NUMERAL_REASON, "text": str(text or "")})
+    def drop(section, text, reason=NUMERAL_REASON):
+        withheld.append({"section": section, "reason": reason, "text": str(text or "")})
 
     for key in ("overview", "trajectory"):
         if _numeral(analysis[key]["text"]):
@@ -570,6 +585,12 @@ def usable_analysis(report, payload):
         analysis[key] = kept
     moments = []
     for position, moment in enumerate(analysis["pivotal_decisions"]):
+        fault = _decision_fault(moment, source, indices, encounter_refs, reflection_map)
+        if fault:
+            drop(f"pivotal_decisions[{position}]",
+                 " ".join(claim["text"] for claim in _decision_claims(moment)),
+                 CITATION_REASON.format(fault=fault.rstrip(".")))
+            continue
         required = [key for key in ("interpretation", "expected_vs_observed", "adaptation")
                     if _numeral(moment[key]["text"])]
         if required:
@@ -585,15 +606,19 @@ def usable_analysis(report, payload):
             moment = {**moment, "reflection_insight": None}
         moments.append(moment)
     analysis["pivotal_decisions"] = moments
-    if not moments and analysis["overview"] is None and analysis["trajectory"] is None:
+    if not moments:
         raise ManagementTraceAnalysisError(
             "Too little of this AI analysis validates to present it. The complete encounter record "
             "remains available.")
     return candidate, withheld
 
 
-def validate_management_trace_analysis(report, payload, numerals=True):
-    """Check cache provenance, citation membership and decision-time boundaries."""
+def validate_management_trace_analysis(report, payload, numerals=True, decisions=True):
+    """Check cache provenance, citation membership and decision-time boundaries.
+
+    ``decisions=False`` leaves out each pivotal decision's own citation rules,
+    which ``usable_analysis`` applies one decision at a time (faculty decision B3).
+    """
     source = build_analysis_source(payload)
     if (not isinstance(report, dict) or set(report) != {
             "schema_version", "prompt_version", "source_hash", "generated_at", "model", "analysis"}
@@ -615,35 +640,63 @@ def validate_management_trace_analysis(report, payload, numerals=True):
     previous_index = -1
     all_claims = [analysis["overview"], analysis["trajectory"], *analysis["strengths"], *analysis["questions"]]
     for moment in analysis["pivotal_decisions"]:
-        ref = moment["decision_ref"]
-        index = indices[ref]
+        index = indices[moment["decision_ref"]]
         if index <= previous_index:
             raise ManagementTraceAnalysisError("Pivotal decisions must be unique and chronological.")
         previous_index = index
-        event = source["timeline"][index]
-        before_refs = ({key for key, value in indices.items() if value <= index}
-                       | set(event["state_before"]["encounter_evidence_refs"]))
-        if (ref not in moment["interpretation"]["evidence_refs"]
-                or not set(moment["interpretation"]["evidence_refs"]) <= before_refs):
-            raise ManagementTraceAnalysisError("A decision-time interpretation cites later or unrelated evidence.")
-        response_refs = {ref} | set(event["state_after"]["encounter_evidence_refs"])
-        if (ref not in moment["expected_vs_observed"]["evidence_refs"]
-                or not set(moment["expected_vs_observed"]["evidence_refs"]) <= response_refs):
-            raise ManagementTraceAnalysisError("An expected-versus-observed response must cite its own decision.")
-        if (ref not in moment["adaptation"]["evidence_refs"]
-                or not set(moment["adaptation"]["evidence_refs"]) <= (set(indices) | encounter_refs)):
-            raise ManagementTraceAnalysisError("An adaptation must cite encounter evidence separately from later reflection.")
-        insight = moment["reflection_insight"]
-        if insight is not None:
-            if not all(ref in reflection_map.get(item, []) for item in insight["evidence_refs"]):
-                raise ManagementTraceAnalysisError("A retrospective insight must cite a reflection linked to that decision.")
-            all_claims.append(insight)
+        if decisions:
+            fault = _decision_fault(moment, source, indices, encounter_refs, reflection_map)
+            if fault:
+                raise ManagementTraceAnalysisError(fault)
         if numerals and re.search(r"(?<![A-Za-z])\d", moment["title"]):
             raise ManagementTraceAnalysisError("Pivotal headings must leave numerical values to the recorded evidence.")
-        all_claims.extend(moment[field] for field in ("interpretation", "expected_vs_observed", "adaptation"))
     for claim in all_claims:
         _validate_claim(claim, numerals)
+    if decisions:
+        for moment in analysis["pivotal_decisions"]:
+            for claim in _decision_claims(moment):
+                _validate_claim(claim, numerals)
     return deepcopy(report)
+
+
+def _decision_claims(moment):
+    claims = [moment[field] for field in ("interpretation", "expected_vs_observed", "adaptation")]
+    if moment["reflection_insight"] is not None:
+        claims.append(moment["reflection_insight"])
+    return claims
+
+
+def _decision_fault(moment, source, indices, encounter_refs, reflection_map):
+    """What one pivotal decision cites outside its own rules, or None.
+
+    The citation rules of a decision: its interpretation cites only what was
+    available before it, its expected-versus-observed only its own response,
+    its adaptation the encounter (never the later reflection), each of the
+    three its own decision, and a retrospective insight only reflections linked
+    to it. Duplicated references inside the decision are a fault of it too.
+    """
+    ref = moment["decision_ref"]
+    index = indices[ref]
+    event = source["timeline"][index]
+    before_refs = ({key for key, value in indices.items() if value <= index}
+                   | set(event["state_before"]["encounter_evidence_refs"]))
+    if (ref not in moment["interpretation"]["evidence_refs"]
+            or not set(moment["interpretation"]["evidence_refs"]) <= before_refs):
+        return "A decision-time interpretation cites later or unrelated evidence."
+    response_refs = {ref} | set(event["state_after"]["encounter_evidence_refs"])
+    if (ref not in moment["expected_vs_observed"]["evidence_refs"]
+            or not set(moment["expected_vs_observed"]["evidence_refs"]) <= response_refs):
+        return "An expected-versus-observed response must cite its own decision."
+    if (ref not in moment["adaptation"]["evidence_refs"]
+            or not set(moment["adaptation"]["evidence_refs"]) <= (set(indices) | encounter_refs)):
+        return "An adaptation must cite encounter evidence separately from later reflection."
+    insight = moment["reflection_insight"]
+    if insight is not None and not all(ref in reflection_map.get(item, []) for item in insight["evidence_refs"]):
+        return "A retrospective insight must cite a reflection linked to that decision."
+    for claim in _decision_claims(moment):
+        if len(claim["evidence_refs"]) != len(set(claim["evidence_refs"])):
+            return "The AI analysis contains duplicated evidence references."
+    return None
 
 
 _INSTRUCTIONS = """Analyze a resident's frozen simulated encounter for the resident's learning.

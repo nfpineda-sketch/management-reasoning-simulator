@@ -1,9 +1,10 @@
 # Tanda sintética de 20 escenarios · preparación y estado
 
-Especificación docente del 2026-09-24. **Estado: preparada y ensayada; no ejecutada.**
-Ningún encuentro pagado se ha consumido en esta tanda (0 de 40). Lo que falta para
-ejecutarla son accesos que este entorno no tiene; están en «Bloqueos» con los pasos
-exactos para destrabarlos.
+Especificación docente del 2026-09-24. **Estado (2026-09-25, noche): ejecutada en parte y
+detenida por el administrador tras el escenario 4.** 4 de 40 encuentros pagados usados;
+escenarios 1-4 completados en la app de desarrollo, 1, 2 y 4 con sus cuatro documentos y
+el 3 sin documento A (análisis rechazado por el validador). Detalle en §6 y en
+`docs/AVANCE_2026-09-24.md`.
 
 Esta tanda es una **prueba sintética ejecutada por un agente en una cuenta de prueba**.
 Cada encuentro queda declarado como tal en el registro («Prueba sintética: ejecución
@@ -228,12 +229,25 @@ Management Trace, el brief docente y la propuesta de rúbrica.
 
 ## 6. Índice de intentos
 
-Se completa con el registro del ejecutor. Hoy está vacío: **0 intentos pagados**.
-Intento del 2026-09-25: la verificación previa (gratis) no llegó a la app por la red
-(`share.streamlit.io` bloqueado, §4); no se inició ningún encuentro.
+Se completa con el registro del ejecutor (`local-data/tanda20/batch/ledger.jsonl`, no se
+sube). Intento en la nube del 2026-09-25: la verificación previa no llegó a la app
+(`share.streamlit.io` bloqueado, §4). Ejecución desde el computador del administrador el
+2026-09-25 (19:21-22:58 UTC): verificación previa 7/7 `ok` con la dirección interna de la
+app (`https://clinical-management-reasoning-dev.streamlit.app/~/+/`), escenarios 1-4 en
+español, **detenida por el administrador tras el 4**. Todo es prueba sintética de un
+agente en `residente_prueba_r3`, dirigida por la cuenta docente de prueba `npinedafaculty`;
+nada está confirmado.
 
 | # | Encuentro | Caso y trayectoria | Código | Duración clínica y estado | Documentos A-D | Revisión rúbrica / challenges | Visible residente / admin | Problemas | Consumo |
 |---|---|---|---|---|---|---|---|---|---|
+| 1 | CE-654d7e1e01 (`f9c73f38…`) | asthma_24f · bueno · R3-01 | `791e1e5` al lanzar | cierre 106 min · completado, revisión completa, declaración sintética | A, B, C, D | rúbrica y 7 objetivos pendientes; propuesta 2-1-2-3-2; `asthma_no_bronchodilator` contradicho | residente: revisión reabrible; «My progress» no reconstruye el A (defecto del portal) · admin: sí | parte docente detenida (recarga cerró la sesión, lista sin abrir, espera de 120 s, PDF D caído por la foto); etiqueta `R1-05` en el registro y en el A | 1 encuentro; brief y propuesta una vez |
+| 2 | CE-d7919694c8 (`ebc8dffd…`) | hypoglycemia_28m · bueno · R1-06 | `d184845` | cierre 44 min · completado | A, B, C, D | rúbrica y objetivos pendientes; propuesta 2-2-3-3-2; `hypo_no_glucose` contradicho | admin: sí | análisis del A rechazado 3 veces («An adaptation must cite…»); obtenido al cuarto intento, tras `f9e1318` | 1 encuentro; 4 llamadas de análisis |
+| 3 | CE-8093dc0913 (`389049a2…`) | acs_54m_inferior · bueno · R2-02 | `f9e1318` | cierre 38 min · completado sin destino (declarado cierre clínico) | B, C, D; **sin A** | rúbrica y objetivos pendientes; propuesta 2-2-3-2-2; `acs_no_antiplatelet` y `acs_provocation_test` contradichos; objetivo TD1 retenido (extremidades sin cambio en el registro) | admin: sí | análisis del A rechazado 4 veces: interpretación con evidencia posterior y adaptación sin su decisión | 1 encuentro; 4 llamadas de análisis |
+| 4 | CE-bebe2ae21c (`30a91645…`) | gi_bleed_57m · bueno · R2-05 | `f9e1318` | cierre 89 min · completado | A, B, C, D | rúbrica y objetivos pendientes; propuesta 2-2-2-3-2; `gi_no_resuscitation` contradicho; marca «la propuesta y el registro no coinciden» en el dominio 4 | admin: sí | ninguno en la ejecución | 1 encuentro |
+
+Minutos de cierre y cribado de los cuatro: idénticos a la tabla de §1. Los encuentros 1
+y 2 llevan en `encounter.case_label` la etiqueta `R1-05` del selector (1) o la correcta
+(2 en adelante, tras `d184845`); el challenge del encuentro siempre fue el correcto.
 
 ## 7. Qué necesita cada encuentro después de sus decisiones del 2026-09-25
 

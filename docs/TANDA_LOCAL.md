@@ -38,7 +38,7 @@ contraseñas.
 ## 3. Verificación previa (gratis)
 
 ```
-python tools_tanda20.py --preflight --base-url https://clinical-management-reasoning-dev.streamlit.app
+python tools_tanda20.py --preflight --base-url https://clinical-management-reasoning-dev.streamlit.app/~/+/
 ```
 
 Inicia sesión con las dos cuentas y sólo lee la página. Todo tiene que salir `ok`.
@@ -51,7 +51,7 @@ la verificación previa no puede comprobarlo.
 ## 4. La tanda (pagada)
 
 ```
-python tools_tanda20.py --run 1 --base-url https://clinical-management-reasoning-dev.streamlit.app
+python tools_tanda20.py --run 1 --base-url https://clinical-management-reasoning-dev.streamlit.app/~/+/
 ```
 
 y así con 2, 3… 20, en español, uno por uno, revisando cada resultado antes del
@@ -80,6 +80,15 @@ Reglas (especificación del 2026-09-24):
   `clinical-encounter-v0.13` al terminar.
 - No fusionar a `main`, no tocar la app pública, no enviar nada a terceros (los ejemplos
   para Nate quedan preparados, no enviados).
+
+**Visto al ejecutarla (2026-09-25).** La dirección lleva `/~/+/`: Streamlit Community
+Cloud sirve la app dentro de un marco, y sin ese sufijo el ejecutor espera hasta agotar
+el tiempo. Si hay que subir una corrección entre escenarios (con autorización, sin ningún
+encuentro en curso), la app descarga el commit pero sigue ejecutando los módulos ya
+importados hasta que el administrador pulsa «Reboot app» en share.streamlit.io. Un
+escenario que se detuvo con su encuentro ya completado no se repite:
+`--staff-documents N` completa el brief, la propuesta y B-D, y `--resident-document N`
+el documento A; ninguno inicia un encuentro.
 
 ## 5. Al terminar
 

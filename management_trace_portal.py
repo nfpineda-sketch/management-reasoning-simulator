@@ -127,7 +127,8 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
     analysis = report["analysis"]
     if withheld:
         st.warning(f"Partial analysis: {len(withheld)} passage(s) were withheld because they broke a "
-                   "formatting rule of this report. They are listed in the PDF's technical record. "
+                   "rule of this report (a number in the prose, or a citation outside what that "
+                   "decision may cite). They are listed in the PDF's technical record. "
                    "Your complete encounter record is unaffected.")
     import report_corrections
     import report_presentation

@@ -474,6 +474,19 @@ def play(page, script, log):
         raise RunStop("The synthetic-run declaration was not saved.")
 
 
+# The alert boxes after the "Your Management Trace" heading: what the page said
+# about the analysis, and nothing from the rest of the review.
+TRACE_ALERTS = """() => {
+  const heading = [...document.querySelectorAll('h1,h2,h3')]
+    .find(h => h.textContent.trim() === 'Your Management Trace');
+  if (!heading) return [];
+  return [...document.querySelectorAll('[data-testid="stAlert"]')]
+    .filter(a => heading.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_FOLLOWING)
+    .map(a => a.innerText.trim())
+    .filter(t => t && !t.startsWith('Your analysis was not available'));
+}"""
+
+
 def resident_document(page, folder, script):
     """Document A: the analysed Management Trace, generated on first view (paid).
 
@@ -482,18 +495,29 @@ def resident_document(page, folder, script):
     """
     usual, page.timeout = page.timeout, max(page.timeout, GENERATION_TIMEOUT)
     try:
-        retried = False
+        attempts_failed = 0
+        reasons = []  # what the page said about each failed attempt
         deadline = time.monotonic() + GENERATION_TIMEOUT
         while time.monotonic() < deadline:
             page.settle()
             if "Download Management Trace PDF" in page.text():
                 return str(page.download("Download Management Trace PDF", folder,
                                          f"{script['number']:02d}-A-management_trace.pdf"))
-            if page.has_button("Retry Management Trace analysis"):
-                if retried:
-                    raise RunStop("The Management Trace analysis failed twice (one retry).")
+            # A failed attempt says why in an error box in the run that made it;
+            # the retry button only appears on the next run.
+            errors = page.page.evaluate(TRACE_ALERTS)
+            fresh = [text for text in errors if text and text not in reasons]
+            reasons.extend(fresh)
+            if page.has_button("Retry Management Trace analysis") or fresh:
+                attempts_failed += 1
+                if attempts_failed >= 2:
+                    raise RunStop("The Management Trace analysis failed twice (one retry): "
+                                  + (" | ".join(reasons) or "the page gave no reason"))
+                if not page.has_button("Retry Management Trace analysis"):
+                    # Streamlit's own rerun shortcut: same session, and the button appears.
+                    page.page.locator("body").press("r")
+                    page.settle()
                 page.click("Retry Management Trace analysis")
-                retried = True
                 continue
             time.sleep(2)
         raise RunStop("'Download Management Trace PDF' never appeared on the page.")
@@ -636,7 +660,12 @@ def run_scenario(script, *, base_url, out, with_ai=True, headless=True):
             # The completed view replaces the review once every field is in.
             entry["review_completed"] = "Your Management Trace" in resident.text()
             if with_ai:
-                entry["documents"]["A-management_trace.pdf"] = resident_document(resident, folder, script)
+                try:
+                    entry["documents"]["A-management_trace.pdf"] = resident_document(resident, folder, script)
+                except RunStop as refused:
+                    # The encounter is saved; the staff half does not depend on
+                    # document A, which --resident-document can obtain later.
+                    entry["documents"]["A-management_trace.pdf"] = f"missing: {refused}"
                 # A reload opens a new Streamlit session, signed out: sign in again.
                 failing = staff
                 sign_in(staff, base_url, staff_user, staff_password)
