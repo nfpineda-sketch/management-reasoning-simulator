@@ -119,3 +119,27 @@ def test_without_a_directive_the_curriculum_chooses_as_before(cohort, monkeypatc
     next(button for button in at.button if button.label == "Begin Encounter").click().run()
     assert not at.exception
     assert chosen and at.session_state["encounter_assignment"]["reason"] != "faculty_directed"
+
+
+def test_the_launch_tells_the_paid_generation_rule_who_is_starting_it(cohort, monkeypatch):
+    """With MRS_PAID_GENERATION=admin only an administrator starts a generated case
+    (faculty decision B1). The curriculum's launch never said who was starting it,
+    so the rule read nobody -- and refused the administrator too."""
+    accounts, users = cohort
+    import offline_cases
+    roles = []
+    real = offline_cases.launch_options
+
+    def spy(api_key, role=None):
+        roles.append(role)
+        return real(api_key, role)
+
+    monkeypatch.setattr(offline_cases, "launch_options", spy)
+    from resident_profile import ProfileStore
+    ProfileStore(accounts).decline(users["other_test"]["token"])
+    at = AppTest.from_file(APP, default_timeout=120)
+    at.session_state["_account_token"] = users["other_test"]["token"]
+    at.run()
+    next(button for button in at.button if button.label == "Begin Encounter").click().run()
+    assert not at.exception
+    assert roles == ["resident"]

@@ -144,7 +144,9 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         assignment = assign_challenge(user["training_year"], own, seed,
                                       challenge_targeting.unmet(own, CHALLENGES))
     from offline_cases import launch_options
-    generation, scene_key = launch_options(_secret("OPENAI_API_KEY"))
+    # Who is starting it decides whether it may pay a provider (MRS_PAID_GENERATION,
+    # faculty decision B1). Without the role an administrator was refused too.
+    generation, scene_key = launch_options(_secret("OPENAI_API_KEY"), user.get("role"))
     if directive is not None:
         # The chosen authored case, as the bank has it: no generation and no
         # selection request. The patient's picture is prepared as for any case.

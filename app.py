@@ -7409,7 +7409,10 @@ def _reasoning_gate_action_summary(parsed):
         elif atype == "antibiotics":
             labels.append(str(action.get("agent") or "antibiotics"))
         elif atype == "disposition":
-            labels.append(f"admission to {action.get('destination') or 'ICU'}")
+            # Going home is a discharge: a held "Lo envio a su casa" read back
+            # as "admission to home" (rehearsal of the twenty-scenario batch).
+            labels.append("discharge home" if action.get("destination") == "home"
+                          else f"admission to {action.get('destination') or 'ICU'}")
         else:
             labels.append(atype.replace("_", " "))
     return " + ".join(labels) if labels else "management intervention"
@@ -10038,7 +10041,8 @@ with st.container(key="encounter-console"):
                             f'at FiO2 {s.get("fio2_percent", 100):g}% and PEEP {s.get("peep_cmh2o", 8):g} cm H2O'
                         )
                     elif s.get("support_type") == "disposition":
-                        labels.append(f'admission to {s.get("destination", "ICU")}')
+                        labels.append("discharge home" if s.get("destination") == "home"
+                                      else f'admission to {s.get("destination", "ICU")}')
                     elif s.get("support_type") == "antibiotics":
                         antibiotic = str(s.get("agent_name") or "broad-spectrum antibiotics")
                         if antibiotic.lower() == "ceftriaxone + azithromycin":

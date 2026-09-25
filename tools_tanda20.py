@@ -300,8 +300,9 @@ def rehearse(script, workdir):
         # The one-time photograph agreement, declined, as a first sign-in would.
         ProfileStore(store).decline(token)
         real = curriculum_runtime.assign_challenge
-        # The one thing a rehearsal pins that the batch cannot: which case is
-        # drawn. See docs/TANDA_20_ESCENARIOS.md, "Elegir el caso".
+        # A rehearsal pins the case here; the batch chooses it the way a
+        # faculty member does, with a directive (encounter_directives,
+        # docs/TANDA_20_ESCENARIOS.md section 3).
         curriculum_runtime.assign_challenge = lambda *args, **kwargs: {
             "challenge_id": script["challenge"], "reason": "rehearsal_pinned",
             "assignment_seed": 17, "competence_decision": "Not assessed automatically"}

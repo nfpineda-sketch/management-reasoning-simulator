@@ -160,3 +160,23 @@ def test_an_unmodelled_drug_does_not_stop_the_adrenaline():
     given = [s.get("type") for s in event["action_summaries"]]
     assert "epinephrine_im" in given and "fluid" in given, given
     assert event["recognized_future_actions"] == ["clorfenamina 10 mg ev"]
+
+
+# --- a held discharge is read back as a discharge ---------------------------------
+
+@pytest.mark.parametrize("text", ["Lo envio a su casa", "La doy de alta a su domicilio", "Discharge home"])
+def test_a_held_discharge_is_called_a_discharge(text):
+    """Probing the four questions on a discharge (2026-09-25): the held order said
+    "I understood: admission to home". The executed label already said "discharging
+    the patient home"; the held one and the support summary now say the same."""
+    import app
+    parsed = parse_family_actions(text)
+    assert [a.get("destination") for a in parsed["actions"]] == ["home"], parsed
+    understood = app._held_order_summary(parsed)
+    assert "discharge home" in understood and "admission to home" not in understood
+
+
+def test_an_admission_is_still_an_admission():
+    import app
+    understood = app._held_order_summary(parse_family_actions("Lo hospitalizo en UCI"))
+    assert understood.startswith("admission to ")
