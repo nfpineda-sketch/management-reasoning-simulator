@@ -70,8 +70,10 @@ ejecutaban sin expectativa; «voy a mirar la saturación» no contaba como qué 
 controlar y se volvía a preguntar.
 
 **Contrastado con la pantalla (2026-09-25).** Que la página aceptara cada guion no
-bastaba: los guiones son texto fijo y la simulación es determinista, así que cada
-afirmación del «residente» tiene que ser lo que la pantalla le mostró en ese momento.
+bastaba: los guiones son texto fijo y la simulación es determinista —salvo lo que
+depende de la semilla que sortea cada lanzamiento (ver «Semilla» más abajo)—, así que
+cada afirmación del «residente» tiene que ser lo que la pantalla le mostró en ese
+momento.
 Nueve no lo eran: el asma «bien manejada» decía «respondió bien, satura 95 %» con FR 32
 y esfuerzo marcado (y había dado un solo broncodilatador en 99 minutos); el cólico decía
 «el dolor cedió» con dolor intenso; otros citaban cifras que no eran las mostradas, un
@@ -93,6 +95,36 @@ ahora nombra toda decisión aceptada que no hizo nada («Decisiones sin acción 
 
 Resultado final: **20/20 con revisión completa**, sin retenciones no previstas por el
 guion, sin decisiones sin acción leída, con la declaración de prueba sintética guardada.
+
+**Semilla.** Cada lanzamiento sortea una semilla, y dos cosas dependen de ella: si el
+paciente vomita con la morfina (dos de cada tres lanzamientos; `analgesia.py`) y el ruido
+del trazado del ECG. Todo lo demás —acciones, tiempos, signos vitales, cribado— es igual
+con cualquier semilla (comprobado con tres). El guion 7 afirmaba un vómito que un
+encuentro pagado podía no mostrar; ahora dice sólo lo que vale en ambos casos. El ensayo
+fija la semilla con `--seed N`, para comparar dos ensayos decisión por decisión.
+
+**Después de sus decisiones del 2026-09-25** (`--seed 3000`, `3001` y `3002`): 20/20 con
+revisión completa en las tres, sin retenciones no previstas y sin decisiones sin acción
+leída. El cribado de cada evento definido y el minuto de cierre son los de la tabla de
+§1, en los 20. Cinco guiones (6, 12, 16, 17 y 19) responden una pregunta menos: repetir
+una dosis dentro de un plan ya explicado comparte ese plan (decisión 6); en el 18 el
+control en policlínico cuenta como lo que se controla tras el alta (decisión 1); y los
+guiones 2 y 12 cierran con la observación en urgencias como destino (decisión 4).
+
+**Con las órdenes en inglés** (`tanda20_en.py`, `--language en`): los mismos 20 guiones,
+paso por paso, con lo que escribe el residente en inglés («Give albuterol 5 mg neb», «NS
+1000 mL IV bolus», «Admit her to intermediate care»…). Con la misma semilla, las 20
+trayectorias son idénticas a las del español: mismas acciones, mismos minutos, mismos
+signos vitales, mismo cierre. Llegar ahí encontró lo que el lector inglés no leía y el
+español sí —una vía venosa («place a PIV», «start an IV»), una colación («oral snack»),
+«put her on» una mascarilla, metamizol, «I prepare for intubation», un autoinyector con
+guion, «send her home», la observación sin duración escrita («keep him under
+observation»), la monitorización sin verbo— y un error de lectura: en «...RR 32 and more
+effort» la descripción se tomaba como una orden de repetir algo y habría retenido la
+entrega. También la respuesta «I will count the respiratory rate and look at the
+saturation» no contaba como qué se va a controlar (en español sí). Todo corregido; una
+prueba exige que cada orden y cada respuesta se lean igual en los dos idiomas
+(`test_the_twenty_in_english.py`).
 
 ## 3. El recorrido real y su ejecutor
 
@@ -127,6 +159,7 @@ comprobaron en la página local.
 | Acceso de red a la app de desarrollo | El ejecutor usa la app real por el navegador | Agregar el host de la app de desarrollo a la política de red del entorno de la próxima sesión (hoy el proxy responde 403) |
 | Contraseña de `residente_prueba_r3` | Iniciar sesión como la cuenta de prueba | Variable de entorno `MRS_BATCH_RESIDENT_PASSWORD` en el entorno de la sesión (nunca en el chat) |
 | Una cuenta **docente de prueba** | Dirigir los casos y generar los borradores de IA sin atribuirlos a un docente real | Crearla desde su cuenta de administrador (invitación de rol faculty) y pasarla como `MRS_BATCH_STAFF_USER` / `MRS_BATCH_STAFF_PASSWORD` |
+| Autorizar a esa cuenta docente para `residente_prueba_r3` | Desde la decisión 14 un docente sólo elige los casos de los residentes que un administrador le autorizó | En su cuenta de administrador: «Resident activity and recorded evidence» → «Who may choose a resident's cases» → docente de prueba, `residente_prueba_r3`, motivo → **Authorize**. Sin esto el ejecutor se detiene con ese aviso |
 | La app de desarrollo en esta rama | Las correcciones, la dirección de casos y el documento de propuesta viven en `clinical-encounter-v0.13` | Que la app de desarrollo despliegue la rama en su último commit |
 | `MRS_SYNTHETIC_ACCOUNTS=residente_prueba_r3` en los secretos de la app de desarrollo | Para que la cuenta pueda declarar la ejecución sintética | Agregarlo a los secretos de esa app |
 | Clave del proveedor en la app de desarrollo | Los tres documentos de IA se generan en el servidor | Ya debería estar; el ejecutor no la necesita localmente |
@@ -160,7 +193,46 @@ Se completa con el registro del ejecutor. Hoy está vacío: **0 intentos pagados
 | # | Encuentro | Caso y trayectoria | Código | Duración clínica y estado | Documentos A-D | Revisión rúbrica / challenges | Visible residente / admin | Problemas | Consumo |
 |---|---|---|---|---|---|---|---|---|---|
 
-## 7. Tres ejemplos para Nate (preparados, no enviados)
+## 7. Qué necesita cada encuentro después de sus decisiones del 2026-09-25
+
+Usted pidió no repetir la tanda automáticamente y distinguir tres casos. Se decide desde
+los registros con `tools_reclassify.py`, no a mano:
+
+- **Volver a ejecutar**: las mismas entradas, jugadas otra vez con el código actual,
+  ejecutan otra cosa, en otro minuto, dejan al paciente en otro estado o cierran distinto.
+- **Nuevo análisis**: la trayectoria es la misma, pero lo que el brief docente, la
+  propuesta de rúbrica o el análisis del Management Trace leen **del registro guardado**
+  cambió entre el código que lo produjo y el actual.
+- **Sólo documentos**: lo demás. Se regeneran desde los datos guardados, sin costo.
+
+Un cambio en las instrucciones comunes a todos (una versión nueva del prompt) se informa
+aparte: hace más antiguo un análisis guardado, no lo hace erróneo sobre su registro.
+
+**Los 20 guiones** (ensayo antes de las decisiones, código `2af52b0`, contra ensayo
+después, misma semilla 3001): si la tanda se hubiera ejecutado antes de sus decisiones,
+
+| Clase | Guiones | Por qué |
+|---|---|---|
+| Volver a ejecutar | 2 `hypoglycemia_28m`, 12 `anaphylaxis_29f` | «Lo dejo en observación N horas» pasó de monitorización a destino (decisión 4): cambia la acción ejecutada y el destino al cierre |
+| Nuevo análisis | 7 `renal_colic_34m`, 18 `acs_66f_nonst` | El ondansetrón y el lorazepam ahora se leen como indicados por el residente, sin administración ni efecto modelados (decisión 3) |
+| Nuevo análisis | 14 `pulmonary_embolism_61m`, 20 `pulmonary_embolism_33f` | La definición de `pe_no_anticoagulation` cambió: tras una trombólisis, un plan documentado o una razón explícita para diferir (decisión 7) |
+| Sólo documentos | los otros 14 | Nada de lo que los análisis leen de su registro cambió; sus documentos se regeneran con los rótulos nuevos |
+
+Instrucciones comunes que cambiaron para todos: la regla del cribado que recibe la
+propuesta de rúbrica (prompt 1.1 → 1.2: indicaciones, explicación retrospectiva, cómo
+terminó el encuentro, ventanas como apoyo). En seis guiones la página hace una pregunta
+menos al residente (decisiones 1 y 6) y en el 13 la ventilación con bolsa-mascarilla se
+registra como intervención urgente no retenida (decisión 12): no cambia la trayectoria y
+no decide nada.
+
+Como la tanda no se ejecutó (0 de 40), nada de esto obliga a gastar: la tanda se
+ejecutará con el código actual. **Los nueve encuentros de la tanda de diez** viven en la
+base de la app de desarrollo; donde esté esa base:
+`python tools_reclassify.py --database "$MRS_DATABASE_URL" --account <cuenta> --since <revisión>`
+los clasifica sin escribir nada (con `--reread`, nombra además las decisiones que el
+lector actual ejecutaría distinto; es una relectura, no una repetición, y lo dice).
+
+## 8. Tres ejemplos para Nate (preparados, no enviados)
 
 Propuestos, para cuando existan los registros reales: **1 · asthma_24f** (buen manejo),
 **9 · acs_48m_wellens** (error inicial con recuperación) y **17 · pneumonia_83m**

@@ -25,7 +25,7 @@ criterio está en la última columna.
 | 15 | Rúbrica provisional: A | Imprimible para docentes, marcada como propuesta de IA, fuera del acumulado. La versión docente final se compara con la propuesta de la que partió (no con una posterior) y su trazabilidad nombra esa propuesta y cuánto se movió la decisión | `d3631f5` | — |
 
 Qué encuentros necesitan sólo documentos, un nuevo análisis o una nueva ejecución por
-estas decisiones: `docs/TANDA_20_ESCENARIOS.md` §8 y `tools_reclassify.py`.
+estas decisiones: `docs/TANDA_20_ESCENARIOS.md` §7 y `tools_reclassify.py`.
 
 ---
 
