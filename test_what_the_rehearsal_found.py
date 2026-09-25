@@ -89,22 +89,28 @@ def test_transferring_to_the_cath_lab_activates_it():
     assert actions("Lo hospitalizo en sala") == [{"type": "disposition", "destination": "ward"}]
 
 
-@pytest.mark.parametrize("text", ["lo dejo en observacion 2 horas",
-                                  "Dejo en observacion con monitorizacion"])
-def test_keeping_the_patient_under_observation_is_monitoring(text):
-    assert kinds(text) == ["monitoring"]
+# Faculty decision 4 of 2026-09-25: leaving the patient in observation in the
+# emergency department for N hours is a destination with its duration; keeping
+# the patient monitored is monitoring (test_ed_observation_is_a_destination.py).
+@pytest.mark.parametrize("text, expected", [
+    ("lo dejo en observacion 2 horas", ["disposition"]),
+    ("Dejo en observacion con monitorizacion", ["disposition", "monitoring"]),
+    ("Lo mantengo monitorizado", ["monitoring"]),
+])
+def test_observation_is_a_destination_and_monitoring_is_monitoring(text, expected):
+    assert kinds(text) == expected
 
 
 def test_observation_no_longer_holds_what_was_ordered_with_it():
     parsed = parse_family_actions("Le doy colacion oral y lo dejo en observacion 2 horas con "
                                   "glicemia capilar seriada. Reevaluo en 30 minutos glicemia.")
-    assert [a["type"] for a in parsed["actions"]] == ["oral_carbohydrate", "monitoring", "reassessment"]
+    assert [a["type"] for a in parsed["actions"]] == ["oral_carbohydrate", "disposition", "reassessment"]
 
 
 @pytest.mark.parametrize("text, kept", [
     ("Doy clorfenamina 10 mg ev y hidrocortisona 200 mg ev", ["steroid"]),
     ("Doy lorazepam 1 mg vo. Reevaluo en 30 minutos FC.", ["reassessment"]),
-    ("La dejo en observacion 6 horas y le indico autoinyector al alta", ["monitoring"]),
+    ("La dejo en observacion 6 horas y le indico autoinyector al alta", ["disposition"]),
     ("receto amoxicilina para el alta", []),
 ])
 def test_what_is_recognised_and_not_executed_is_said_back_and_the_rest_runs(text, kept):

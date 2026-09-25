@@ -1405,6 +1405,15 @@ def _order(state, a):
             # A patient who is already alarming when the discharge is written
             # comes back without waiting for the resident to let time run.
             _discharge_return(state)
+        elif a["destination"] == "ED observation":
+            # The patient stays here, under the resident's care. Ordering hours of
+            # observation is not having completed them, and not a safe discharge
+            # by itself (faculty decision 4, 2026-09-25).
+            hours = a.get("duration_h")
+            f["ed_observation"] = {"ordered_at": f["elapsed"], "hours": hours, "completed_at": None}
+            label = ((f"ED observation for {hours:g} h ordered; the period has not been completed" if hours
+                      else "ED observation ordered, with no duration stated")
+                     + ("" if not repeated else " (ordered again)"))
         else:
             label = (f"Admission to {a['destination']} already requested; not repeated" if repeated
                      else f"Transfer/admission requested: {a['destination']}")
@@ -1435,7 +1444,7 @@ def _order(state, a):
         summary["repeated"] = True
     if kind == "disposition" and repeated:
         summary["repeated"] = True
-    for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "service", "destination", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
+    for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "service", "destination", "duration_h", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
         if key in a:
             summary[key] = a[key]
     if ((kind in _MEDICINES or kind == "anticoagulation") and a.get("operation") != "continue"
@@ -1570,6 +1579,16 @@ def _discharge_return(state):
 def _minute(state):
     f, family = state["family_state"], state["engine_family"]
     f["elapsed"] += 1
+    observation = f.get("ed_observation")
+    if (observation and observation.get("hours") and observation.get("completed_at") is None
+            and f["elapsed"] - observation["ordered_at"] >= observation["hours"] * 60):
+        # Only time that actually ran completes an observation period.
+        observation["completed_at"] = f["elapsed"]
+        f.setdefault("procedure_events", []).append({
+            "type": "procedure", "duration_min": 0, "time_min": int(state.get("sim_time", 0)) + 1,
+            "label": (f"The {observation['hours']:g} h of emergency department observation ordered at "
+                      f"{observation['ordered_at']} min are complete. What happened in them is in the "
+                      "record; a discharge is still a decision of its own.")})
     # A minute of recovered perfusion counts, a minute without it discounts: a
     # one-mmHg wobble around the threshold must not restart the half hour. Once
     # the half hour is complete the patient is awake, and only a real

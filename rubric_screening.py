@@ -407,6 +407,45 @@ def _is_discharge(row):
     return str((row.get("action") or {}).get("destination") or "").lower() in ("home", "discharge")
 
 
+def _observation_before(f, result):
+    """What an observation ordered before a discharge had, and had not, completed.
+
+    Ordering hours of observation is not having completed them, and not a safe
+    discharge by itself (faculty decision 4, 2026-09-25): the facts say which.
+    """
+    discharges = [r for r in f["executed"] if r["type"] == "disposition" and _is_discharge(r)
+                  and r["minute"] is not None]
+    if result["status"] == "contradicted" or not discharges:
+        return result
+    home = min(r["minute"] for r in discharges)
+    observed = [r for r in f["executed"] if r["type"] == "disposition" and r["minute"] is not None
+                and r["minute"] <= home
+                and str((r.get("action") or {}).get("destination") or "") == "ED observation"]
+    if not observed:
+        return result
+    row = observed[-1]
+    hours = (row.get("action") or {}).get("duration_h")
+    later = (home - row["minute"]) / 60
+    if hours:
+        done = later >= float(hours)
+        fact = _say(
+            f"Emergency department observation for {float(hours):g} h was ordered at {_minutes(row['minute'])} "
+            f"min{_where(row)}; the discharge came {later:.1f} h later, so the period was "
+            f"{'completed' if done else 'not completed'}.",
+            f"Se ordenó observación en urgencias por {float(hours):g} h a los {_minutes(row['minute'])} "
+            f"min{_where(row)}; el alta llegó {later:.1f} h después, así que el período "
+            f"{'se cumplió' if done else 'no se cumplió'}.")
+    else:
+        fact = _say(
+            f"Emergency department observation was ordered at {_minutes(row['minute'])} min{_where(row)} with "
+            f"no duration stated; the discharge came {later:.1f} h later.",
+            f"Se ordenó observación en urgencias a los {_minutes(row['minute'])} min{_where(row)} sin "
+            f"duración declarada; el alta llegó {later:.1f} h después.")
+    result["facts"].append(fact)
+    result["refs"] = sorted(set(result["refs"]) | {row["ref"]})
+    return result
+
+
 def _reading(en, es):
     return _say("Needs reading: " + en, "Requiere lectura: " + es)
 
@@ -444,11 +483,12 @@ def _screen_event(event, f):
         return _result("met", [_executed_fact(given, window), _absent_fact(("thiamine",), window)],
                        [r["ref"] for r in given])
     if identifier in ("hypo_unsafe_discharge", "anaphylaxis_unsafe_discharge"):
-        return _action(f, event, ("disposition",), decisive=False, predicate=_is_discharge,
-                       reading=_reading("whether an observation period, an early review or the return "
-                                        "criteria were stated with the discharge.",
-                                        "si con el alta se declaró un período de observación, un control "
-                                        "precoz o los criterios para volver."))
+        return _observation_before(f, _action(
+            f, event, ("disposition",), decisive=False, predicate=_is_discharge,
+            reading=_reading("whether an observation period, an early review or the return "
+                             "criteria were stated with the discharge.",
+                             "si con el alta se declaró un período de observación, un control "
+                             "precoz o los criterios para volver.")))
     if identifier == "opioid_no_ventilatory_support":
         return _omission(f, event, ("oxygen", "bag_mask", "naloxone", "naloxone_infusion", "intubation"))
     if identifier == "opioid_unsafe_discharge":
@@ -463,7 +503,7 @@ def _screen_event(event, f):
         if result["status"] != "contradicted":
             result["facts"].insert(0, _executed_fact(antagonist, window))
             result["refs"] = sorted(set(result["refs"]) | {r["ref"] for r in antagonist})
-        return result
+        return _observation_before(f, result)
     if identifier == "pneumonia_no_antibiotic":
         return _omission(f, event, ("antibiotics",))
     if identifier == "pneumonia_unexamined_altered_state":

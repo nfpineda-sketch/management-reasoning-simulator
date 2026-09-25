@@ -202,7 +202,7 @@ _SUPPORT_ORDERS = (
     # 2026-09-24 it was dropped in silence, or held the whole order when a
     # glucose check followed it (rehearsal of the twenty-scenario batch).
     ("monitoring", r"\bmonitor(?:izacion|izar|izado|eo)?\b|\boximetr[ií]a\b|\bpulse\s+ox(?:imetry)?\b|"
-                   r"\ben\s+observacion\b|\bunder\s+observation\b|"
+                   r"\bunder\s+observation\b|"
                    r"\bcontinuous\s+monitoring\b|\bcardiac\s+monitor\b"),
 )
 
@@ -817,6 +817,16 @@ _WEIGHT_BASED = frozenset({"procedural_sedation", "neuromuscular_blockade", "opi
 _PER_KG_KINDS = _WEIGHT_BASED | {"anticoagulation", "steroid", "magnesium", "dextrose"}
 _PER_KILO_ANY = re.compile(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mg|mcg|ug|g|gramos?|grams?|ui|u|units?|unidades)"
                            r"\s*/\s*kg(?!\s*/)", re.I)
+# Faculty decision 4 of 2026-09-25: "dejar en observacion en urgencias N horas"
+# is a destination, with its duration; keeping the patient monitored is not.
+_ED_OBSERVATION = re.compile(
+    r"\ben\s+observacion\b|\bunidad\s+de\s+observacion\b|\bobservacion\s+en\s+(?:el\s+servicio\s+de\s+)?urgencias\b"
+    r"|\b(?:ed|emergency\s+department)\s+observation\b|\bobservation\s+unit\b"
+    r"|\b(?:under|in)\s+observation\s+for\s+\d")
+_ELSEWHERE = re.compile(r"\b(?:sala|ward|uci|icu|upc|intermedio|intermediate|coronaria|coronary|hospitaliz\w*|admit\w*)\b")
+_OBSERVATION_HOURS = re.compile(r"\b(\d+(?:[.,]\d+)?)\s*(?:h|hrs?|horas?|hours?)\b")
+_MONITOR_WORDS = re.compile(r"\bmonitor(?:izacion|izar|izado|eo)?\b|\boximetr[ií]a\b|\bpulse\s+ox")
+
 _WEIGHT_STATEMENT = re.compile(
     r"^(?:(?:el\s+|la\s+)?paciente\s+)?(?:pesa|peso(?:\s+(?:de|aproximado|estimado))?|weighs|weight(?:\s+(?:is|of))?)"
     r"\s*(?:(?:de|es|:|unos|aprox\.?|aproximadamente|about|around)\s*)*\d+(?:[.,]\d+)?\s*"
@@ -1802,6 +1812,17 @@ def parse_family_actions(text) -> dict:
             if _WEIGHT_STATEMENT.match(piece):
                 # "pesa 62 kg" is what the resident knows about the patient, and
                 # weight_based_doses reads it; it is not an order.
+                continue
+            if _ED_OBSERVATION.search(piece) and not _ELSEWHERE.search(piece):
+                # Observation in the emergency department is a destination with a
+                # duration. Ordering it is not completing it (decision 4).
+                hours = _OBSERVATION_HOURS.search(piece)
+                actions.append({"type": "disposition", "destination": "ED observation",
+                                "duration_h": float(hours.group(1).replace(",", ".")) if hours else None})
+                if _MONITOR_WORDS.search(piece):
+                    actions.append({"type": "monitoring"})
+                discharged = True
+                inherited = None
                 continue
             if discharged and _DISCHARGE_ADVICE.match(piece):
                 keep(piece.strip(), "advice")
