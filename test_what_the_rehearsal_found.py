@@ -223,3 +223,36 @@ def test_a_conditional_order_is_kept_as_a_plan_and_never_executed(text):
 def test_what_is_not_ordered_now_still_does_not_run(text):
     assert "fluid" not in kinds(text)
     assert kinds(text).count("bronchodilator") <= 1
+
+
+# --- the commonest repeat in an asthma (2026-09-25) --------------------------------
+# "Repito salbutamol 5 mg nbz", fifteen minutes after the first dose, was refused
+# with "No matching administered treatment is recorded": the list of what a repeat
+# may name predated the bronchodilators. Adrenaline, read by its route and not by a
+# name, could not be repeated at all.
+
+def _repeat(first, text):
+    from active_order_context import complete_active_order
+    given = parse_family_actions(first)["actions"][0]
+    return complete_active_order({"treatments": {"order_history": [dict(given)]}},
+                                 parse_family_actions(text)["actions"][0])
+
+
+@pytest.mark.parametrize("first, text, kind", [
+    ("Doy salbutamol 5 mg nbz", "Repito salbutamol 5 mg nbz", "bronchodilator"),
+    ("Doy salbutamol 5 mg nbz", "Repito el salbutamol", "bronchodilator"),
+    ("Give albuterol 5 mg nebulized", "Repeat albuterol 5 mg nebulized", "bronchodilator"),
+    ("Doy adrenalina 0.5 mg im", "Repito la adrenalina 0.5 mg im", "epinephrine_im"),
+    ("Doy atropina 1 mg ev", "Repito atropina 1 mg ev", "atropine"),
+    ("Doy morfina 4 mg ev", "Repito morfina 2 mg ev", "opioid_analgesia"),
+])
+def test_a_dose_given_can_be_given_again(first, text, kind):
+    resolved, error = _repeat(first, text)
+    assert error is None, error
+    assert resolved["type"] == kind
+
+
+def test_only_what_was_given_can_be_repeated():
+    # An intramuscular dose is not an intravenous bolus that was never given.
+    resolved, error = _repeat("Doy adrenalina 0.5 mg im", "Repito adrenalina 1 mg ev")
+    assert error == "No matching administered treatment is recorded. Specify the treatment, dose and route."

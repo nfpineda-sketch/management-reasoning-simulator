@@ -31,6 +31,7 @@ if __name__ == "__main__" and "--run" not in sys.argv:
 
 import argparse
 import json
+import re
 import time
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -358,6 +359,7 @@ def rehearse(script, workdir):
                 "decisions_executed": sum(1 for e in trace if e.get("execution_status") == "executed"),
                 "not_executed": [e.get("learner_input", "")[:120] for e in trace
                                  if e.get("execution_status") in ("not_executed", "clarification_required")],
+                "read_as_nothing": [e.get("learner_input", "")[:120] for e in trace if _read_as_nothing(e)],
             })
             import encounter_context
             context = encounter_context.EncounterContextStore(store).current(admin, attempts[0]["id"])
@@ -366,16 +368,41 @@ def rehearse(script, workdir):
     return result
 
 
+_ONLY_A_REASSESSMENT = re.compile(r"\s*reeval\w*\s+en\s+\d+\s+min\w*[^.]*\.?\s*", re.I)
+
+
+def _read_as_nothing(entry):
+    """A decision the page accepted and that did nothing: the order was not read.
+
+    Scenario 7's discharge, "Lo doy de alta con analgesia, control urologico y
+    regresar si tiene fiebre", ran as an executed decision with no action at all:
+    the page said nothing, and neither "held" nor "not executed" noticed it
+    (2026-09-25). A decision whose own words read as no order, and nothing kept as
+    a plan, is named here so that a person reads it.
+    """
+    from family_parser import parse_family_actions
+    if entry.get("execution_status") != "executed":
+        return False
+    text = str(entry.get("learner_input") or "").split("\n\nReasoning clarification:")[0]
+    if _ONLY_A_REASSESSMENT.fullmatch(text):
+        return False
+    parsed = parse_family_actions(text)
+    return not parsed["recognized_future_actions"] and not [
+        action for action in parsed["actions"] if action.get("type") != "reassessment"]
+
+
 def summary_markdown(results):
     lines = ["# Ensayo offline de la tanda de 20 · no es evidencia de la tanda", "",
              "Cada guion pasó por la página real (app.py) con Streamlit en proceso, una base "
              "temporal, sin clave y con el caso fijado. Sirve para encontrar lo que detendría "
              "a un residente antes de gastar un encuentro pagado.", "",
-             "| # | Caso | Trayectoria | Pasos | Retenidas no previstas | Min. al cierre | Revisión | Estado | Detención |",
-             "|---|---|---|---|---|---|---|---|---|"]
+             "| # | Caso | Trayectoria | Pasos | Retenidas no previstas | Decisiones sin acción leída "
+             "| Min. al cierre | Revisión | Estado | Detención |",
+             "|---|---|---|---|---|---|---|---|---|---|"]
     for r in results:
         lines.append(f"| {r['number']} | {r['case_id']} | {r['category']} | {len(r['steps'])} | "
-                     f"{len(r.get('unanticipated_holds', []))} | {r.get('sim_time_at_close', '')} | "
+                     f"{len(r.get('unanticipated_holds', []))} | {len(r.get('read_as_nothing', []))} | "
+                     f"{r.get('sim_time_at_close', '')} | "
                      f"{'completa' if r.get('review_completed') else '-'} | "
                      f"{r.get('attempt_status', '')} | {r['stopped'] or ''} |")
     return "\n".join(lines) + "\n"

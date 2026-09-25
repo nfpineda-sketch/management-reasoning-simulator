@@ -969,6 +969,10 @@ def _parse_piece_core(piece, inherited=None):
             return [_clarification("Specify one quantity for the treatment to repeat.")], verb
         target = "fluid" if re.search(r"\b(?:bolus|fluid|saline|ns|sf|ringer|ringers|lr|crystalloid|cristaloides?|bolo|suero|ml|cc)\b", body) else None
         agent = next((name for agents in _AGENTS.values() for name, pattern in agents.items() if re.search(r"\b(?:" + pattern + r")\b", body)), None)
+        if target is None and agent is None and re.search(r"\b(?:adrenalina|epinefrina|epinephrine|adrenaline)\b", body):
+            # Adrenaline is read by its route, not by a name: "repito la adrenalina
+            # 0.5 mg im" repeats the intramuscular dose, a bolus repeats a bolus.
+            target = "epinephrine_bolus" if _route(body) == "IV" else "epinephrine_im"
         value, unit = _amount(body, r"ml|cc|l|lt|mg|g|mcg|ug")
         if value is None and re.search(r"\d", quantity_text):
             return [_clarification("Specify explicit units for the quantity to repeat.")], verb

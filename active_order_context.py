@@ -5,6 +5,20 @@ only the execution engine may commit the completed order.
 """
 from copy import deepcopy
 
+# What "repeat" may name: a dose given once, which can be given again as it was.
+# The list predated the bronchodilators and the drugs after them, so "Repito
+# salbutamol 5 mg nbz" -- the commonest repeat in an asthma -- was refused with
+# "no matching administered treatment" fifteen minutes after the first dose
+# (rehearsal of the twenty-scenario batch, 2026-09-25). Infusions and devices are
+# adjusted, not repeated, and stay out.
+REPEATABLE = frozenset({
+    'fluid', 'blood', 'beta_blocker', 'diltiazem', 'amiodarone', 'diuretic', 'antibiotics',
+    'procedural_sedation', 'steroid', 'dextrose', 'naloxone', 'aspirin', 'ppi', 'anticoagulation',
+    'bronchodilator', 'magnesium', 'epinephrine_im', 'epinephrine_bolus', 'nitroglycerin_bolus',
+    'atropine', 'glucagon', 'calcium', 'thiamine', 'antipyretic', 'opioid_analgesia',
+    'oral_carbohydrate', 'tranexamic_acid', 'octreotide',
+})
+
 
 def complete_active_order(state, raw):
     a = deepcopy(raw)
@@ -12,7 +26,7 @@ def complete_active_order(state, raw):
     tr = state.get('treatments', {})
     if kind == 'repeat_order':
         history = tr.get('order_history', [])
-        eligible = [item for item in history if item.get('type') in {'fluid', 'blood', 'beta_blocker', 'diltiazem', 'amiodarone', 'diuretic', 'antibiotics', 'procedural_sedation', 'steroid', 'dextrose', 'naloxone', 'aspirin', 'ppi', 'anticoagulation'}]
+        eligible = [item for item in history if item.get('type') in REPEATABLE]
         if a.get('target'):
             eligible = [item for item in eligible if item['type'] == a['target']]
         if a.get('fluid_type'):
