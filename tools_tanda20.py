@@ -380,12 +380,101 @@ def summary_markdown(results):
     return "\n".join(lines) + "\n"
 
 
+def local_check(number, workdir, port=8599):
+    """The runner itself, in a real browser, against a local offline copy of the app.
+
+    A temporary database with a faculty test account and a local copy of the
+    resident account, a Streamlit server with no key, and one scenario played
+    end to end without the paid steps. It proves the runner still fits the
+    page before anything is spent; it is not evidence for the batch.
+    """
+    import subprocess
+    import time as _time
+    import urllib.request
+    from account_store import AccountStore, hash_password
+    from resident_profile import ProfileStore
+    from tanda20 import BY_NUMBER
+    import tanda20_runner
+    workdir = Path(workdir)
+    workdir.mkdir(parents=True, exist_ok=True)
+    database = workdir / "accounts.sqlite3"
+    if database.exists():
+        database.unlink()
+    url = f"sqlite:///{database}"
+    store = AccountStore(url, allow_sqlite=True)
+    store.bootstrap_admin("admin_local", hash_password("local-admin-password"))
+    admin = store.authenticate("admin_local", "local-admin-password")
+    store.register("faculty_agente_local", "local-faculty-password",
+                   store.create_invite(admin, "faculty", None))
+    resident = store.register(TEST_ACCOUNT, "local-resident-password",
+                              store.create_invite(admin, "resident", 3))
+    ProfileStore(store).decline(resident)
+    env = {**os.environ, "MRS_AUTH_MODE": "accounts", "MRS_DATABASE_URL": url,
+           "MRS_ALLOW_LOCAL_SQLITE": "true", "MRS_OFFLINE_CASES": "1",
+           "MRS_SYNTHETIC_ACCOUNTS": TEST_ACCOUNT, "NO_PROXY": "localhost,127.0.0.1",
+           "no_proxy": "localhost,127.0.0.1"}
+    env.pop("OPENAI_API_KEY", None)
+    server = subprocess.Popen(
+        [sys.executable, "-m", "streamlit", "run", APP, "--server.port", str(port),
+         "--server.headless", "true", "--browser.gatherUsageStats", "false"],
+        env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        for _ in range(60):
+            try:
+                if opener.open(f"http://localhost:{port}/", timeout=2).status == 200:
+                    break
+            except OSError:
+                _time.sleep(1)
+        os.environ.update({"MRS_BATCH_RESIDENT_PASSWORD": "local-resident-password",
+                           "MRS_BATCH_STAFF_USER": "faculty_agente_local",
+                           "MRS_BATCH_STAFF_PASSWORD": "local-faculty-password",
+                           "NO_PROXY": "localhost,127.0.0.1", "no_proxy": "localhost,127.0.0.1"})
+        entry = tanda20_runner.run_scenario(BY_NUMBER[number], base_url=f"http://localhost:{port}",
+                                            out=workdir / "run", with_ai=False)
+        attempts = [a for a in store.list_attempts(admin) if a["username"] == TEST_ACCOUNT]
+        if attempts:
+            record = store.get_attempt(admin, attempts[0]["id"])
+            session = (record.get("payload") or {}).get("session") or {}
+            entry["stored"] = {"status": record["status"],
+                               "case": ((session.get("state") or {}).get("encounter_spec") or {}).get("variant_id"),
+                               "assignment": session.get("encounter_assignment", {}).get("reason")}
+        return entry
+    finally:
+        server.terminate()
+        server.wait(timeout=30)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--plan", action="store_true")
     parser.add_argument("--rehearse", nargs="?", const="all", metavar="N|all")
+    parser.add_argument("--local-check", type=int, metavar="N",
+                        help="free: the browser runner against a local offline copy of the app")
+    parser.add_argument("--run", metavar="N[,M...]", help="PAID: scenarios through the development app")
+    parser.add_argument("--base-url", help="the development app, for --run")
+    parser.add_argument("--no-ai", action="store_true", help="--run without the paid documents")
     parser.add_argument("--out", default="local-data/tanda20/rehearsal")
     args = parser.parse_args(argv)
+    if args.local_check:
+        entry = local_check(args.local_check, ROOT / "local-data" / "tanda20" / "local-check")
+        print(json.dumps({k: v for k, v in entry.items() if k != "steps"}, indent=1, ensure_ascii=False))
+        return 0 if not entry["stopped"] else 1
+    if args.run:
+        if not args.base_url:
+            parser.error("--run needs --base-url (the development app).")
+        import tanda20_runner
+        from tanda20 import BY_NUMBER
+        out = ROOT / "local-data" / "tanda20" / "batch"
+        out.mkdir(parents=True, exist_ok=True)
+        for number in [int(n) for n in args.run.split(",")]:
+            entry = tanda20_runner.run_scenario(BY_NUMBER[number], base_url=args.base_url, out=out,
+                                                with_ai=not args.no_ai)
+            print(f"{number:>2} {entry['case_id']:<30} stopped={entry['stopped']} "
+                  f"documents={sorted(entry['documents'])}", flush=True)
+            if entry["stopped"]:
+                return 1
+        return 0
     if args.plan or not args.rehearse:
         for row in plan():
             print(f"{row['number']:>2} {row['case_id']:<30} {row['category']:<13} {row['challenge']} "
