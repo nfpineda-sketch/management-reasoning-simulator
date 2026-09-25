@@ -6918,7 +6918,7 @@ REASONING_GATE_ACTION_TYPES = {
     "ventilator_adjustment", "ventilator_continuation", "dobutamine",
     "norepinephrine", "oxygen", "procedural_sedation", "cardioversion",
     "antibiotics", "disposition",
-    "repeat_order", "ventilator_adjustment", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "p2y12", "diuretic", "dextrose",
+    "repeat_order", "respiratory_adjustment", "bronchodilator", "steroid", "ppi", "aspirin", "p2y12", "diuretic", "dextrose",
     "naloxone", "blood", "anticoagulation", "bag_mask", "consult", "nitroglycerin_bolus", "magnesium",
     "epinephrine", "epinephrine_bolus", "epinephrine_im", "continuous_bronchodilator",
     # Named by its role; the engine resolves which infusion before it runs.
@@ -7082,6 +7082,82 @@ def apply_carried_reasoning(parsed, missing):
                                  "trace_index": carried["trace_index"],
                                  "minute": carried["minute"]}
     return reasoning_gate_missing(parsed)
+
+
+#: Adjuncts that ride on a plan the resident already explained: an antipyretic or
+#: a snack inside it does not open another form (faculty decision 6, 2026-09-25).
+PLAN_ADJUNCTS = frozenset({"antipyretic", "oral_carbohydrate", "ppi", "thiamine"})
+
+
+def plan_reasoning(trace=None):
+    """The last plan the resident explained: its expectation, its reassessment, what it ordered.
+
+    A decision is a plan when its expectation and its reassessment were written
+    by the resident for it, in the entry or in the follow-up. A decision that only
+    shared them is not a new plan, so the search goes back to the one that said them.
+    """
+    import reasoning_provenance
+
+    events = list(trace if trace is not None
+                  else st.session_state.get("management_trace", []) or [])
+    firsthand = {reasoning_provenance.STATED, reasoning_provenance.COMPLETED}
+    for index in range(len(events) - 1, -1, -1):
+        event = events[index]
+        if event.get("execution_status") != "executed":
+            continue
+        reasoning = event.get("reasoning") or {}
+        provenance = reasoning.get("slot_provenance") or {}
+        if not all(reasoning.get(field) and provenance.get(field) in firsthand
+                   for field in reasoning_provenance.SHAREABLE):
+            continue
+        kinds = {str(a.get("type")) for a in event.get("interpreted_action") or [] if isinstance(a, dict)}
+        decision = sum(1 for e in events[:index + 1] if e.get("execution_status") in ("executed", "terminal_locked"))
+        return {"reasoning": {field: reasoning[field] for field in reasoning_provenance.SHAREABLE},
+                "kinds": kinds, "decision": decision, "trace_index": index,
+                "minute": event.get("decision_time_min")}
+    return None
+
+
+def _kind_of(action):
+    """What a repeat repeats, so that it can be recognised as part of its plan."""
+    if action.get("type") != "repeat_order":
+        return action.get("type")
+    if action.get("target"):
+        return action["target"]
+    from family_parser import _AGENTS
+    return next((kind for kind, agents in _AGENTS.items() if action.get("agent") in agents), "repeat_order")
+
+
+def apply_plan(parsed, missing):
+    """Share the plan's expectation and reassessment with an order inside it.
+
+    Inside it: every order that needs the four is an adjunct, or a repeat of what
+    the plan already ordered. Anything else is a relevant new decision, and it is
+    still asked about -- with the plan's own answers offered in the form.
+    """
+    import reasoning_provenance
+
+    missing = list(missing or [])
+    wanted = [field for field in reasoning_provenance.SHAREABLE if field in missing]
+    if not wanted:
+        return missing
+    plan = plan_reasoning()
+    if not plan:
+        return missing
+    gated = {_kind_of(a) for a in parsed.get("actions", []) or []
+             if a.get("type") in REASONING_GATE_ACTION_TYPES}
+    if gated and gated <= (PLAN_ADJUNCTS | plan["kinds"]):
+        reasoning = parsed.setdefault("reasoning", {})
+        provenance = dict(reasoning.get("slot_provenance") or {})
+        for field in wanted:
+            reasoning[field] = plan["reasoning"][field]
+            provenance[field] = reasoning_provenance.SHARED
+        reasoning["slot_provenance"] = provenance
+        reasoning["shared_from"] = {"decision": plan["decision"], "trace_index": plan["trace_index"],
+                                    "minute": plan["minute"]}
+        return reasoning_gate_missing(parsed)
+    parsed["plan_suggestion"] = {field: plan["reasoning"][field] for field in wanted}
+    return missing
 
 
 def ai_call_budget():
@@ -7253,6 +7329,8 @@ def reasoning_still_missing(parsed):
     missing = reasoning_gate_missing(parsed)
     if missing:
         missing = apply_carried_reasoning(parsed, missing)
+    if missing:
+        missing = apply_plan(parsed, missing)
     if missing:
         missing = recognize_held_reasoning(parsed, missing)
     return missing
@@ -9766,7 +9844,8 @@ with st.container(key="encounter-console"):
                         )
                         guided_expected_effect = st.text_area(
                             _lang.say(_questions.QUESTION["expected_effect"]),
-                            value=str(held_reasoning.get("expected_effect") or ""),
+                            value=str(held_reasoning.get("expected_effect")
+                                      or (held_parsed.get("plan_suggestion") or {}).get("expected_effect") or ""),
                             height=78,
                             help=_lang.say(_questions.HELP["expected_effect"]),
                             key=f"reasoning_effect_{gate_id}",
@@ -9789,7 +9868,8 @@ with st.container(key="encounter-console"):
                         )
                         guided_reassessment_target = st.text_area(
                             _lang.say(_questions.QUESTION["reassessment_target"]),
-                            value=str(held_reasoning.get("reassessment_target") or ""),
+                            value=str(held_reasoning.get("reassessment_target")
+                                      or (held_parsed.get("plan_suggestion") or {}).get("reassessment_target") or ""),
                             height=78,
                             help=_lang.say(_questions.HELP["reassessment_target"]),
                             key=f"reasoning_reassessment_{gate_id}",

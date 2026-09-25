@@ -82,6 +82,8 @@ ES = {
         'enunciado antes, en la decisión {n} al minuto {minute:g}',
     'stated in this entry':
         'enunciado en esta entrada',
+    'shared with the plan of an earlier decision': 'compartido con el plan de una decisión anterior',
+    'shared with the plan of decision {n} at {minute:g} min': 'compartido con el plan de la decisión {n}, a los {minute:g} min',
     'stated earlier in this encounter':
         'enunciado antes en este encuentro',
     'completed in the follow-up':

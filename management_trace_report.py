@@ -787,6 +787,8 @@ def render_management_trace_pdf(
         raw_event = _raw_event(payload, event.get("source_ref"))
         raw_carried = ((raw_event.get("reasoning") or {}).get("carried_from")
                        if isinstance(raw_event.get("reasoning"), dict) else None) or carried_from
+        shared_from = ((raw_event.get("reasoning") or {}).get("shared_from")
+                       if isinstance(raw_event.get("reasoning"), dict) else None) or {}
 
         def _origin(key):
             source = provenance.get(key) or (reasoning_provenance.COMPOSED if key in composed else "")
@@ -796,6 +798,9 @@ def render_management_trace_pdf(
             if source == reasoning_provenance.CARRIED and stated_in:
                 note = _t("stated earlier, in decision {n} at {minute:g} min").format(
                     n=stated_in, minute=carried_from.get("minute") or 0)
+            elif source == reasoning_provenance.SHARED and shared_from.get("decision"):
+                note = _t("shared with the plan of decision {n} at {minute:g} min").format(
+                    n=shared_from["decision"], minute=shared_from.get("minute") or 0)
             else:
                 note = _t(reasoning_provenance.LABELS[source])
             return f' <font size="8" color="#607482">({_xml(note)})</font>'

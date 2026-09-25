@@ -21,8 +21,13 @@ STATED = "stated"          # written in this submission
 CARRIED = "carried"        # stated earlier in this encounter, kept as context
 COMPLETED = "completed"    # typed into the follow-up form
 COMPOSED = "composed"      # the application's phrasing, not the resident's
+# Faculty decision 6 of 2026-09-25: the four categories belong to the
+# management plan. An adjunct or a repeat inside a plan the resident already
+# explained shares that plan's expectation and reassessment, which were stated
+# for the plan and are not restated for this order.
+SHARED = "shared"          # the expectation and reassessment of the plan it belongs to
 
-ORDER = (STATED, CARRIED, COMPLETED, COMPOSED)
+ORDER = (STATED, CARRIED, COMPLETED, COMPOSED, SHARED)
 
 #: The slots a provenance is kept for.
 SLOTS = ("problem_representation", "rationale", "management_priority",
@@ -39,6 +44,7 @@ LABELS = {
     CARRIED: "stated earlier in this encounter",
     COMPLETED: "completed in the follow-up",
     COMPOSED: "composed by the application from your other words",
+    SHARED: "shared with the plan of an earlier decision",
 }
 
 LABELS_ES = {
@@ -46,7 +52,11 @@ LABELS_ES = {
     CARRIED: "enunciado antes en este encuentro",
     COMPLETED: "completado en el formulario",
     COMPOSED: "compuesto por la aplicación a partir de sus otras palabras",
+    SHARED: "compartido con el plan de una decisión anterior",
 }
+
+#: What a plan shares with an order inside it (decision 6, 2026-09-25).
+SHAREABLE = ("expected_effect", "reassessment_target")
 
 UNSTATED_LABEL = "not stated"
 UNSTATED_LABEL_ES = "no explicitado"

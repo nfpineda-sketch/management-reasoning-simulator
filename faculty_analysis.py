@@ -491,7 +491,9 @@ never simply the assistance context.
   prescription for home is a prescription, not a dose given in the encounter.
 - reasoning_prompted shows the reasoning categories the application asked for
   after an order was held, and reasoning_provenance which answers were stated,
-  carried from an earlier decision, completed on request, or composed by the
+  carried from an earlier decision, shared with the plan of an earlier decision (an
+  adjunct or a repeat inside a plan the learner already explained, not restated),
+  completed on request, or composed by the
   application. A neutral request to complete a category, a format clarification
   or a correction of the application's recognition is not clinical help and is
   not by itself a loss of autonomy; say what was spontaneous and what was prompted.
