@@ -23,7 +23,7 @@ Each step is what a resident does on the page:
     ("recover",)         save and return to the dashboard, then resume
 
 Orders are written the way the application says it reads them, including
-abbreviations, small spelling slips and grouped orders. Nothing here is
+abbreviations, missing accents and grouped orders. Nothing here is
 optimised for a score, and the consequences of a mistake are left in place.
 The scripts are rehearsed offline (``tools_tanda20.py --rehearse``) through the
 real page before any paid encounter; the batch itself must run on the

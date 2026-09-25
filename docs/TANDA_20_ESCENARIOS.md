@@ -49,7 +49,7 @@ Distribución pedida: 4 bueno · 4 largo · 4 recuperación · 4 equivocado · 2
 las cinco ventanas de dominio: los cinco dominios tuvieron oportunidad real.
 
 Los guiones (`tanda20.py`) están escritos como escribe un residente: abreviaturas
-(«nbz», «vvp», «SF»), pequeños errores, órdenes agrupadas, respuestas a la pregunta de
+(«nbz», «vvp», «SF»), sin tildes, órdenes agrupadas, respuestas a la pregunta de
 seguimiento en texto libre y en el formulario de cuatro preguntas, un resultado
 pendiente y una sesión guardada y retomada (escenario 20). Una prueba de esfuerzo en
 el Wellens fibrila al paciente por decisión docente, así que el error recuperable de
