@@ -140,7 +140,7 @@ def facts(record, case_id=""):
     from never writing them.
     """
     trace = _trace(record)
-    executed, withheld, requested, reported = [], [], [], []
+    executed, withheld, requested, reported, indicated = [], [], [], [], []
     ordinal = 0
     closed = None
     any_executed = False
@@ -190,6 +190,13 @@ def facts(record, case_id=""):
                 if kind and kind != "clarification":
                     withheld.append({"type": kind, "minute": minute, "ref": ref,
                                      "status": status, "action": action})
+        if status == _EXECUTED:
+            # A medicine indicated and not modelled is the resident's decision,
+            # never an administration (faculty decision 3, 2026-09-25).
+            for item in _indicated_items(event):
+                indicated.append({"category": item.get("category") or "other", "text": item.get("text", ""),
+                                  "prescription": item.get("kind") == "prescription",
+                                  "minute": minute, "ref": ref, "decision": decision})
     narratives = []
     for position, event in enumerate(trace):
         for action in event.get("action_summaries") or []:
@@ -205,7 +212,50 @@ def facts(record, case_id=""):
             asked = set()
     return {"executed": executed, "withheld": withheld, "requested": requested,
             "reported": reported, "narratives": narratives, "closed_at": closed,
-            "any_executed": any_executed, "asked_topics": asked, "trace": trace}
+            "any_executed": any_executed, "asked_topics": asked, "trace": trace,
+            "indicated": indicated}
+
+
+def _indicated_items(event):
+    """What an event indicated without modelling it, from its kinds or, in an older
+    record, from the texts the parser would classify the same way."""
+    import unexecuted_items
+    items = unexecuted_items.indicated(event)
+    if items or event.get("future_details"):
+        return items
+    from family_parser import _UNMODELED_ORDER, unmodelled_detail
+    found = []
+    for text in event.get("recognized_future_actions") or []:
+        if isinstance(text, str) and _UNMODELED_ORDER.search(text):
+            detail = unmodelled_detail(text)
+            found.append({"text": text, "kind": "prescription" if detail["prescription"] else "not_modelled",
+                          **detail})
+    return found
+
+
+_CATEGORY_NAMES = {
+    "antihistamine": ("an antihistamine", "un antihistamínico"),
+    "benzodiazepine": ("a benzodiazepine", "una benzodiacepina"),
+    "antiemetic": ("an antiemetic", "un antiemético"),
+    "h2_blocker": ("an H2 blocker", "un bloqueador H2"),
+    "adrenaline_autoinjector": ("an adrenaline auto-injector", "un autoinyector de adrenalina"),
+    "other": ("a medicine", "un medicamento"),
+}
+
+
+def _indicated_fact(rows):
+    def line(language):
+        index = 0 if language == "en" else 1
+        parts = []
+        for r in rows:
+            name = _CATEGORY_NAMES.get(r["category"], _CATEGORY_NAMES["other"])[index]
+            when = (f"at {_minutes(r['minute'])} min" if language == "en" else f"a los {_minutes(r['minute'])} min")
+            what = ((" as a prescription for home" if language == "en" else " como receta para la casa")
+                    if r["prescription"] else "")
+            parts.append(f"{name} (\u201c{r['text']}\u201d){what} {when}{_where(r)}")
+        return "; ".join(parts)
+    return _say("Indicated by the resident, with no administration or effect modelled: " + line("en") + ".",
+                "Indicado por el residente, sin administración ni efecto modelados: " + line("es") + ".")
 
 
 def _within(row, window):
@@ -487,20 +537,34 @@ def _screen_event(event, f):
         return _omission(f, event, ("epinephrine", "epinephrine_bolus", "epinephrine_im"))
     if identifier == "anaphylaxis_antihistamine_only":
         adjuncts = _of(f["executed"], ("steroid", "bronchodilator", "continuous_bronchodilator"), window)
-        if not adjuncts:
+        # An antihistamine indicated and not modelled is an adjunct the resident
+        # chose; it counts as a decision, never as a dose given (decision 3).
+        antihistamines = [r for r in f["indicated"] if r["category"] == "antihistamine"
+                          and not r["prescription"] and _within(r, window)]
+        if not adjuncts and not antihistamines:
             return _action(f, event, ("steroid", "bronchodilator"))
-        first = min(row["minute"] for row in adjuncts)
+        first = min(row["minute"] for row in adjuncts + antihistamines)
         adrenaline = [r for r in _of(f["executed"], ("epinephrine", "epinephrine_bolus", "epinephrine_im"))
                       if r["minute"] is not None and (r["minute"] <= first or _within(r, window))]
+        shown = (([_executed_fact(adjuncts, window)] if adjuncts else [])
+                 + ([_indicated_fact(antihistamines)] if antihistamines else []))
+        refs = [r["ref"] for r in adjuncts + antihistamines]
         if adrenaline:
-            return _result("contradicted", [_executed_fact(adjuncts, window), _say(
+            return _result("contradicted", shown + [_say(
                 "Adrenaline was executed first, in the same turn or inside the window: " +
                 "; ".join(f"{_minutes(r['minute'])} min{_where(r)}" for r in adrenaline) + ".",
                 "Se ejecutó adrenalina antes, en el mismo turno o dentro de la ventana: " +
                 "; ".join(f"{_minutes(r['minute'])} min{_where(r)}" for r in adrenaline) + ".")],
-                [r["ref"] for r in adjuncts + adrenaline])
-        return _result("met", [_executed_fact(adjuncts, window),
-                               _absent_fact(("epinephrine",), window)], [r["ref"] for r in adjuncts])
+                refs + [r["ref"] for r in adrenaline])
+        if adjuncts:
+            return _result("met", shown + [_absent_fact(("epinephrine",), window)], refs)
+        # Only an indicated antihistamine: the definition is written for executed
+        # steroids and bronchodilators, so this is the faculty's reading.
+        return _result("reading", shown + [_absent_fact(("epinephrine",), window), _reading(
+            "the definition names an executed steroid or bronchodilator; here the adjunct was an antihistamine "
+            "indicated and not modelled, with no adrenaline in the window.",
+            "la definición nombra un corticoide o un broncodilatador ejecutado; aquí el coadyuvante fue un "
+            "antihistamínico indicado y no modelado, sin adrenalina en la ventana.")], refs)
     if identifier == "anaphylaxis_unexamined_refractory":
         doses = _of(f["executed"], ("epinephrine", "epinephrine_bolus", "epinephrine_im"), window)
         if len(doses) < 2:
@@ -749,7 +813,8 @@ def screening(record, case_id):
     """Both readings together, as they travel to the model and to the reviewer."""
     f = facts(record, case_id)
     return {"closed_at_min": f["closed_at"], "events": screen_events(record, case_id),
-            "domains": screen_domains(record, case_id)}
+            "domains": screen_domains(record, case_id),
+            "indicated_not_modelled": [{**row, "facts": [_indicated_fact([row])]} for row in f["indicated"]]}
 
 
 def for_model(result):
@@ -764,6 +829,10 @@ def for_model(result):
                      "no_opportunity": row["suggestion"] == "no_opportunity",
                      "facts": [fact["en"] for fact in row["facts"]]}
                     for row in result["domains"]],
+        # Decisions with no administration or effect modelled: assessable as
+        # decisions, never as doses given (faculty decision 3, 2026-09-25).
+        "indicated_not_modelled": [{"evidence_ref": row["ref"], "fact": row["facts"][0]["en"]}
+                                   for row in result.get("indicated_not_modelled") or []],
     }
 
 

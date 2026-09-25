@@ -28,19 +28,22 @@ SCHEMA_VERSION = "faculty_brief_v1"
 # shown as "not determined: requires faculty confirmation"; the brief is always
 # generated. Also: identifiers stay out of the prose, and a study the simulator
 # does not model is judged for its pertinence, never for its missing result.
-PROMPT_VERSION = "1.4"
-SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", "1.2", "1.3", PROMPT_VERSION)
+# 1.5 (2026-09-25, faculty decisions of that day): each decision carries the
+# medicines the learner indicated that the simulator does not model, and the
+# prescriptions for home, as decisions with no administration or effect.
+PROMPT_VERSION = "1.5"
+SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", PROMPT_VERSION)
 # Briefs from 1.0 to 1.3 carry the faculty-reported context they were written
 # under, one of these, and keep validating against it. From 1.4 the stored
 # value is always "unknown": nobody pre-declares an autonomy level any more.
 ASSISTANCE_CONTEXTS = ("unknown", *AUTONOMY_LEVELS)
-DECLARED_CONTEXT_PROMPTS = ("1.4",)
+DECLARED_CONTEXT_PROMPTS = ("1.4", "1.5")
 # Preserve the six-objective legacy envelope for already saved faculty drafts.
 SUPPORTED_OBJECTIVES = ("TD1", "F1", "C1", "C3", "C4", "C14")
 # Prompt versions that ask for the record's own objective list rather than the
 # fixed six. A stored brief must be read with the list it was written against,
 # so a later prompt revision cannot make an earlier brief unreadable.
-DYNAMIC_OBJECTIVE_PROMPTS = ("1.2", "1.3", "1.4")
+DYNAMIC_OBJECTIVE_PROMPTS = ("1.2", "1.3", "1.4", "1.5")
 MAX_INPUT_BYTES = 260_000
 MAX_TRACE_EVENTS = 120
 MAX_OUTPUT_TOKENS = 10_000
@@ -339,6 +342,7 @@ def build_analysis_source(record, assistance_context="unknown", context=None):
             "recorded_reasoning": reasoning,
             "interpreted_actions": _actions(event.get("interpreted_action"), decision_time),
             "executed_action_summaries": _actions(event.get("action_summaries"), response_time) if status == "executed" else [],
+            "indicated_not_modelled": _indicated(event),
             "state_before": _state(before, decision_time),
             "state_after": _state(after, response_time),
             "reasoning_prompted": _prompted(event),
@@ -480,6 +484,11 @@ never simply the assistance context.
   affected decisions are not stated. Name the help once, in limits.
 - "No external help" does not make the performance competent or the autonomy
   independent. Propose a level only when the record supports it; otherwise null.
+- indicated_not_modelled lists medicines the learner indicated that the simulator does not
+  model, and prescriptions for home. Each is the learner's decision and may be discussed as a
+  decision (what was chosen, what it replaced, what was omitted), but nothing was administered
+  and no effect or response occurred: never describe one as given or as having worked. A
+  prescription for home is a prescription, not a dose given in the encounter.
 - reasoning_prompted shows the reasoning categories the application asked for
   after an order was held, and reasoning_provenance which answers were stated,
   carried from an earlier decision, completed on request, or composed by the
@@ -708,6 +717,16 @@ def autonomy_allowed(row, snapshot):
         if not affected or affected & set(row.get("evidence_refs") or []):
             return "external help was declared for the decisions it rests on"
     return None
+
+
+def _indicated(event):
+    """The medicines a decision indicated with no administration or effect modelled."""
+    import unexecuted_items
+    from rubric_screening import _indicated_items
+    return [{"text": _text(item.get("text"), 240, empty=False),
+             "category": str(item.get("category") or "other"),
+             "prescription_for_home": item.get("kind") == "prescription"}
+            for item in _indicated_items(event) if str(item.get("text") or "").strip()][:12]
 
 
 def validate_brief(report, record, assistance_context=None):

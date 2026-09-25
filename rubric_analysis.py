@@ -27,9 +27,13 @@ SCHEMA_VERSION = "rubric_assessment_v1"
 # record's own screening travels with the request. The findings behind it are
 # in rubric_screening. A proposal saved under 1.0 keeps validating and
 # rendering exactly as it was written.
-PROMPT_VERSION = "1.1"
+# 1.2 (2026-09-25, faculty decisions of that day): the screening carries the
+# medicines indicated and not modelled, as decisions with no administration.
+# The shape of a proposal is the one 1.1 introduced.
+PROMPT_VERSION = "1.2"
 LEGACY_PROMPT_VERSION = "1.0"
-SUPPORTED_PROMPT_VERSIONS = (LEGACY_PROMPT_VERSION, PROMPT_VERSION)
+VERDICT_PROMPT_VERSIONS = ("1.1", PROMPT_VERSION)
+SUPPORTED_PROMPT_VERSIONS = (LEGACY_PROMPT_VERSION, *VERDICT_PROMPT_VERSIONS)
 MAX_OUTPUT_TOKENS = 14_000
 OPPORTUNITIES = ("observed", "no_opportunity", "insufficient_record", "simulator_limitation")
 VERDICTS = ("occurred", "did_not_occur", "cannot_determine")
@@ -112,7 +116,10 @@ SCREENING_RULE = (
     "every condition the record can settle satisfied; it still needs your verdict, and if you "
     "judge it did not occur you must name the exception that applies. 'reading' means part of "
     "the trigger turns on what the learner stated, which you read. The screening never reads "
-    "what the learner meant and it is never a score."
+    "what the learner meant and it is never a score. indicated_not_modelled lists medicines the "
+    "learner indicated that the simulator does not model, and prescriptions for home: each is a "
+    "decision you may assess (what was chosen, what it replaced, what was omitted), but nothing "
+    "was administered and no effect occurred; never count one as an executed treatment."
 )
 
 
@@ -240,7 +247,7 @@ def proposed_event_rows(report):
     "occurred". Every reader goes through here so the two shapes cannot drift.
     """
     body = (report or {}).get("proposal") or {}
-    if "event_verdicts" in body or (report or {}).get("prompt_version") == PROMPT_VERSION:
+    if "event_verdicts" in body or (report or {}).get("prompt_version") in VERDICT_PROMPT_VERSIONS:
         return [{"event_id": event_id, "evidence_refs": list(row.get("evidence_refs") or []),
                  "trigger_evidence": row.get("trigger_evidence", ""),
                  "exclusions_checked": row.get("exclusions_checked", "")}

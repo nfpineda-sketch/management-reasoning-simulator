@@ -485,6 +485,32 @@ _UNMODELED_ORDER = re.compile(
     r"|\b(?:indic\w*|recet\w*|prescrib\w*)\b.*\b(?:al|para\s+el)\s+alta\b"
     r"|\b(?:prescribe|prescribed)\b.*\b(?:at|on|for)\s+discharge\b")
 
+# The medicine an unmodelled indication names, and whether it is for home.
+_UNMODELLED_CLASSES = (
+    ("adrenaline_autoinjector", r"autoinyector|autoinjector|epi-?pen"),
+    ("antihistamine", r"clorfenamina|clorfeniramina|chlorphenamine|chlorpheniramine|difenhidramina|diphenhydramine|"
+                      r"antihistaminic[oa]s?|antihistamines?|cetirizina|cetirizine|loratadina|loratadine|"
+                      r"desloratadina|hidroxicina|hydroxyzine"),
+    ("h2_blocker", r"famotidina|famotidine|ranitidina|ranitidine"),
+    ("benzodiazepine", r"lorazepam|diazepam|alprazolam|clonazepam|benzodiacepinas?|benzodiazepines?"),
+    ("antiemetic", r"ondansetron|metoclopramida|metoclopramide"),
+)
+_FOR_HOME = re.compile(r"\b(?:al|para\s+el)\s+alta\b|\b(?:at|on|for)\s+discharge\b|\bpara\s+la\s+casa\b")
+
+
+def unmodelled_detail(text):
+    """{category, agent, prescription} for a medicine the simulator does not model."""
+    lowered = _normalize(str(text or ""))
+    category, agent = "other", ""
+    for name, pattern in _UNMODELLED_CLASSES:
+        match = re.search(r"\b(?:" + pattern + r")\b", lowered)
+        if match:
+            category, agent = name, match.group(0)
+            break
+    prescription = bool(_FOR_HOME.search(lowered)) or category == "adrenaline_autoinjector"
+    return {"category": category, "agent": agent, "prescription": prescription}
+
+
 # What a patient takes, named by drug or by class, after "toma" or "usa".
 _TAKES_MEDICATION = re.compile(
     r"\b(?:glibenclamida|glipizida|gliclazida|glimepirida|sulfonilureas?|metformina|insulinas?|"
@@ -1627,7 +1653,16 @@ def parse_family_actions(text) -> dict:
     # specification 2026-09-23, section 5). The two halves are parsed
     # separately and the second half is marked as waiting on the first.
     held_until, normalized = _sequenced(normalized)
-    actions, future = [], []
+    actions, future, details = [], [], []
+
+    def keep(text, kind):
+        # What is recognised and not executed now, and why: a medicine the
+        # simulator does not model, a prescription for home, a conditional plan
+        # or advice to the patient (faculty decision 3, 2026-09-25).
+        future.append(text)
+        details.append({"text": text, "kind": kind, **(unmodelled_detail(text) if kind == "not_modelled" else {})})
+        if kind == "not_modelled" and details[-1].get("prescription"):
+            details[-1]["kind"] = "prescription"
     queue = re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
     while queue:
         sentence = queue.pop(0).strip()
@@ -1663,14 +1698,14 @@ def parse_family_actions(text) -> dict:
             advice = (None if boundary else
                       _ADVICE_CLAUSE.search(sentence[:conditional.start()]))
             if advice:
-                future.append(re.sub(r"^(?:,\s*|(?:y|e|and)\s+)", "", sentence[advice.start():]))
+                keep(re.sub(r"^(?:,\s*|(?:y|e|and)\s+)", "", sentence[advice.start():]), "advice")
                 # The conjunction that introduced the advice goes with it.
                 sentence = re.sub(r"(?:,\s*)?\b(?:and|y|then|luego)\s*$", "",
                                   sentence[:advice.start()].strip(" ,")).strip(" ,")
                 if not sentence:
                     continue
             elif boundary:
-                future.append(sentence[conditional.start():])
+                keep(sentence[conditional.start():], "conditional")
                 sentence = sentence[:boundary.start()].strip(" ,")
                 if not sentence:
                     continue
@@ -1691,7 +1726,7 @@ def parse_family_actions(text) -> dict:
                 if head and _COMMAND.match(head) and any(
                         action.get("type") not in {"clarification", "reassessment"}
                         for action in parse_family_actions(head)["actions"]):
-                    future.append(sentence[split.end():].strip(" ,"))
+                    keep(sentence[split.end():].strip(" ,"), "conditional")
                     sentence = head
                 else:
                     # A conditional order is a plan and is kept as one, whatever
@@ -1706,7 +1741,7 @@ def parse_family_actions(text) -> dict:
                             bare and bare != sentence and any(
                                 action.get("type") not in {"clarification", "reassessment"}
                                 for action in parse_family_actions(bare)["actions"])):
-                        future.append(sentence)
+                        keep(sentence, "conditional")
                     continue
         inherited = None
         negated = False
@@ -1769,7 +1804,7 @@ def parse_family_actions(text) -> dict:
                 # weight_based_doses reads it; it is not an order.
                 continue
             if discharged and _DISCHARGE_ADVICE.match(piece):
-                future.append(piece.strip())
+                keep(piece.strip(), "advice")
                 inherited = None
                 continue
             if _NEGATION.match(piece):
@@ -1786,11 +1821,12 @@ def parse_family_actions(text) -> dict:
                 inherited = None
                 continue
             if _UNMODELED_ORDER.search(piece):
-                # Recognised and not something this version executes: said back
-                # as "recognised but not executed in this build", recorded with
-                # the decision, and the other orders run (2026-09-24, the same
-                # rule the faculty set for a study the simulator does not model).
-                future.append(piece.strip())
+                # Recognised and not something this version executes: recorded as
+                # the resident's indication, with its administration and effect
+                # not modelled, and the other orders run (2026-09-24; faculty
+                # decision 3, 2026-09-25). A prescription for home is a
+                # prescription, never a dose given here.
+                keep(piece.strip(), "not_modelled")
                 inherited = None
                 continue
             parsed, inherited = _parse_piece(piece, inherited)
@@ -1813,7 +1849,9 @@ def parse_family_actions(text) -> dict:
             action["after_result"] = study or "any_pending"
             actions.append(action)
         future.extend(deferred.get("recognized_future_actions", []))
-    return {"raw_text": raw, "actions": actions, "recognized_future_actions": future}
+        details.extend(deferred.get("future_details", []))
+    return {"raw_text": raw, "actions": actions, "recognized_future_actions": future,
+            "future_details": details}
 
 
 _LEAD_STUDIES = ("ecg_right", "ecg_posterior")

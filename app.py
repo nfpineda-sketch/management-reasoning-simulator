@@ -863,6 +863,9 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         "results_pending": _pending_results_now(),
         "reasoning_gate": deepcopy(parsed.get("reasoning_gate", {"required": False, "status": "not_required"})),
         "recognized_future_actions": deepcopy(parsed.get("recognized_future_actions", [])),
+        # What each of them is: an unmodelled medicine, a prescription for home, a
+        # conditional plan or advice (faculty decision 3, 2026-09-25).
+        "future_details": deepcopy(parsed.get("future_details", [])),
         "interpretation_mode": parsed.get("interpretation_mode", "deterministic"),
         "ai_interpretation": deepcopy(parsed.get("ai_interpretation")),
         "ai_fallback_reason": parsed.get("ai_fallback_reason"),
@@ -1231,12 +1234,13 @@ def _trace_action_text(event):
     # Preserve learner-requested actions that the prototype recognized but could
     # not yet execute. They are still part of the decision pathway and should not
     # be mislabeled as a pure reassessment in the learner-facing trace.
-    future = [str(x) for x in (event.get("recognized_future_actions") or []) if x]
-    for item in future:
-        display = item
-        if item == "basic laboratory tests":
-            display = "basic laboratory tests"
-        labels.append(f"{display} (recognized; not yet executable)")
+    import unexecuted_items
+    for item, kind_label in (unexecuted_items.trace_labels(event)
+                             if event.get("recognized_future_actions") else []):
+        if not item:
+            continue
+        # An older record, or an item with no kind, keeps the original wording.
+        labels.append(f"{item} ({kind_label})" if kind_label else f"{item} (recognized; not yet executable)")
 
     if not labels:
         # Fall back to interpreted executable actions, excluding reassessment.
@@ -5150,6 +5154,7 @@ def try_resolve_pending_action(text):
                     "reasoning": deepcopy(bundle.get("reasoning", {})),
                     "actions": preserved,
                     "recognized_future_actions": deepcopy(bundle.get("recognized_future_actions", [])),
+                    "future_details": deepcopy(bundle.get("future_details", [])),
                     "resolved_from_clarification": True,
                 }}
         resolved = dict(pending)
@@ -7760,6 +7765,9 @@ def resolve_pending_reasoning(text):
         list(held.get("recognized_future_actions", []) or [])
         + list(supplemental.get("recognized_future_actions", []) or [])
     ))
+    known = {d.get("text") for d in held.get("future_details") or []}
+    held["future_details"] = list(held.get("future_details") or []) + [
+        d for d in supplemental.get("future_details") or [] if d.get("text") not in known]
     # "Control en policlinico en 48 horas", as the answer to a held discharge.
     from discharge_follow_up import adopt as adopt_discharge_follow_up
     adopt_discharge_follow_up(held)
@@ -8167,6 +8175,7 @@ def hold_pending_bundle(parsed, idx):
         "after": deepcopy(parsed.get("actions", [])[idx+1:]),
         "reasoning": deepcopy(parsed.get("reasoning", {})),
         "recognized_future_actions": deepcopy(parsed.get("recognized_future_actions", [])),
+        "future_details": deepcopy(parsed.get("future_details", [])),
     }
 
 def merge_pending_bundle(parsed):
@@ -8178,6 +8187,7 @@ def merge_pending_bundle(parsed):
         "reasoning": deepcopy(bundle.get("reasoning", {})),
         "actions": deepcopy(bundle.get("before", [])) + deepcopy(parsed.get("actions", [])) + deepcopy(bundle.get("after", [])),
         "recognized_future_actions": deepcopy(bundle.get("recognized_future_actions", [])),
+        "future_details": deepcopy(bundle.get("future_details", [])),
         "resolved_from_clarification": True,
     }
     st.session_state.pending_bundle = None
@@ -9961,12 +9971,17 @@ with st.container(key="encounter-console"):
             )
 
         if parsed["recognized_future_actions"] and not result.get("terminal_locked"):
-            add_event(
-                "prototype",
-                "Recognized but not executed in this build: "
-                + ", ".join(parsed["recognized_future_actions"])
-                + ". Any supported actions in the same order continue separately."
-            )
+            import unexecuted_items
+            said, unclassified = unexecuted_items.messages(parsed)
+            for line in said:
+                add_event("prototype", line)
+            if unclassified:
+                add_event(
+                    "prototype",
+                    "Recognized but not executed in this build: "
+                    + ", ".join(unclassified)
+                    + ". Any supported actions in the same order continue separately."
+                )
 
         if result.get("clarification"):
             add_event("clarification", result["clarification"])
