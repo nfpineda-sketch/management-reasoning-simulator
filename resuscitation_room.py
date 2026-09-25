@@ -93,7 +93,9 @@ def render_bedside_tools(state, events, render_event):
         st.caption('Synthetic educational tracing · Clinical pattern validation pending.')
         st.download_button('Download ECG', svg, file_name='ecg_12_leads.svg', mime='image/svg+xml')
 
-    if st.button('ECG', help='Acquire a 12-lead ECG at the current simulation time.'):
+    # A closed encounter acquires nothing new; its recordings stay viewable.
+    if not st.session_state.get('encounter_ended') and st.button(
+            'ECG', help='Acquire a 12-lead ECG at the current simulation time.'):
         try:
             snapshot = acquire_ecg(state)
             if snapshot.get('status') != 'available':

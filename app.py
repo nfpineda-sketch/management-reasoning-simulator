@@ -9303,7 +9303,10 @@ with st.container(key="encounter-console"):
                                         activity="history_question",
                                         request="Ask about " + topic.lower(), response=response)
                     rerun_app()
-    if encounter_mode == "Examine":
+    # Like talking and treating, examining ends with the encounter: after the
+    # close it added a decision to the saved record and moved the clinical
+    # clock, and with it the closing minute the rubric's screening reads.
+    if encounter_mode == "Examine" and not st.session_state.encounter_ended:
         family_findings = {}
         if st.session_state.state.get("engine_family"):
             from family_engine import current_findings
