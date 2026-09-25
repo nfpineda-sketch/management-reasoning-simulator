@@ -30,6 +30,8 @@ SESSION_FIELDS = (
     # The encounter's AI budget travels with it: resuming an encounter is not a
     # new encounter, and until 2026-09-24 it quietly granted a fresh budget.
     "ai_calls_spent", "ai_call_ledger",
+    # How the encounter ended, as the resident said it ended (decision 9).
+    "encounter_close", "close_pending",
 )
 
 

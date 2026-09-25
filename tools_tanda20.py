@@ -227,6 +227,12 @@ def _review(at, script):
     REVIEW_RESPONSE_FIELDS = _app_constant("REVIEW_RESPONSE_FIELDS")
     ADAPTATION_PLAN_FIELDS = _app_constant("ADAPTATION_PLAN_FIELDS")
     _click(at, "Complete Encounter & Begin Review")
+    if _button(at, "Finish now"):
+        # No destination stands: the warning never blocks; the script says how
+        # the encounter ends (faculty decision 9, 2026-09-25).
+        kind = script.get("close", "clinical_close")
+        next(item for item in at.radio if item.label == "How is this encounter ending?").set_value(kind).run()
+        _click(at, "Finish now")
     for _ in range(40):
         areas = {item.label: item for item in at.text_area}
         for field, label in REVIEW_RESPONSE_FIELDS:

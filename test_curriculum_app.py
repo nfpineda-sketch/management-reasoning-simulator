@@ -205,6 +205,9 @@ def test_completed_review_readonly_and_revision_conflict_recovery(cohort):
     assert any(b.label == "Resume encounter" for b in other.button)
     click(other, "Resume encounter")
     click(other, "Complete Encounter & Begin Review")
+    # Closing without a destination warns without blocking (faculty decision 9).
+    if any(item.label == "Finish now" for item in other.button):
+        click(other, "Finish now")
     record = store.list_attempts(token)[0]
     payload = deepcopy(record["payload"])
     ss = payload["session"]
@@ -428,6 +431,9 @@ def test_full_app_multiobjective_faculty_assessment_and_resident_progress(cohort
     assert store.get_attempt(resident, active_id) == active_record
 
     click(learner, "Complete Encounter & Begin Review")
+    # Closing without a destination warns without blocking (faculty decision 9).
+    if any(item.label == "Finish now" for item in learner.button):
+        click(learner, "Finish now")
     assert learner.session_state.encounter_ended
     assert any(item.label == "Learning focus for this encounter" for item in learner.expander)
     assert not any(widget.label == "Navigation" for widget in learner.sidebar.radio)

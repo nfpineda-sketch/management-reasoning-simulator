@@ -56,6 +56,9 @@ def closed(tmp_path, monkeypatch):
     widget(at.button, "Examine patient").click().run()
     assert not at.exception
     widget(at.button, "Complete Encounter & Begin Review").click().run()
+    # Closing without a destination warns without blocking (faculty decision 9).
+    if any(button.label == "Finish now" for button in at.button):
+        widget(at.button, "Finish now").click().run()
     assert not at.exception and at.session_state["encounter_ended"]
     return accounts, at
 

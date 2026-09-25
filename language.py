@@ -51,6 +51,20 @@ def current():
 
 # Whole messages, where a sentence has to be said rather than substituted.
 MESSAGES = {
+ 'You have not recorded a destination. Do you want to continue or finish?':
+ 'No has registrado un destino. ¿Quieres continuar o finalizar?',
+ 'How is this encounter ending?':
+ '¿Cómo termina este encuentro?',
+ 'Clinical close: my management is complete':
+ 'Cierre clínico: mi manejo está completo',
+ 'Interruption: I have to stop here':
+ 'Interrupción: tengo que detenerme aquí',
+ 'Early finish: I am ending before its natural end':
+ 'Finalización anticipada: termino antes de su final natural',
+ 'Continue the encounter':
+ 'Continuar el encuentro',
+ 'Finish now':
+ 'Finalizar ahora',
  'What do you think is going on?':
  '¿Qué crees que está pasando?',
  'What are you going to do?':

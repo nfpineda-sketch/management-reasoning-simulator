@@ -408,6 +408,8 @@ def build_analysis_source(record, assistance_context="unknown", context=None):
         "recorded_reflections": reflections,
         "later_expert_comparison_responses": comparisons,
         "later_adaptation_plan": _answers(session.get("adaptation_plan"), _PLAN),
+        # How the learner said the encounter ended (faculty decision 9, 2026-09-25).
+        "encounter_close": _close(session.get("encounter_close")),
         "history_obtained": [{
             "minute": item["minute"],
             "asked": _text(item["asked"], 2_000),
@@ -490,6 +492,9 @@ never simply the assistance context.
   affected decisions are not stated. Name the help once, in limits.
 - "No external help" does not make the performance competent or the autonomy
   independent. Propose a level only when the record supports it; otherwise null.
+- encounter_close says how the learner said the encounter ended: a clinical close, an
+  interruption or an early finish, and whether a destination stood. No destination is
+  invented for it, and an omission the record showed before the close still stands.
 - indicated_not_modelled lists medicines the learner indicated that the simulator does not
   model, and prescriptions for home. Each is the learner's decision and may be discussed as a
   decision (what was chosen, what it replaced, what was omitted), but nothing was administered
@@ -728,6 +733,13 @@ def autonomy_allowed(row, snapshot):
         if not affected or affected & set(row.get("evidence_refs") or []):
             return "external help was declared for the decisions it rests on"
     return None
+
+
+def _close(close):
+    if not isinstance(close, dict) or close.get("kind") not in ("clinical_close", "interruption", "early_finish"):
+        return None
+    return {"kind": close["kind"], "destination_recorded": bool(close.get("destination_recorded")),
+            "warned_without_destination": bool(close.get("warned"))}
 
 
 def _indicated(event):

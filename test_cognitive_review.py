@@ -88,6 +88,9 @@ def test_shared_app_displays_focus_after_its_actual_snapshot_is_frozen(monkeypat
     next(item for item in app.button if item.label == "Submit").click().run()
     assert not app.exception
     next(item for item in app.button if item.label == "Complete Encounter & Begin Review").click().run()
+    # Closing without a destination warns without blocking (faculty decision 9).
+    if any(item.label == "Finish now" for item in app.button):
+        next(item for item in app.button if item.label == "Finish now").click().run()
     assert not app.exception
     assert app.session_state["encounter_ended"] is True
     assert "encounter_spec" not in app.session_state["encounter_closed_state"]

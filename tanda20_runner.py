@@ -257,6 +257,14 @@ def play(page, script, log):
             raise RunStop(f"Step {index} was held and the script has no answer for it.")
         log.append({"step": index, "kind": action[0], "ok": True})
     page.click("Complete Encounter & Begin Review")
+    if page.has_button("Finish now"):
+        # No destination stands: the page warns without blocking and asks how the
+        # encounter ends (faculty decision 9). The script says; nothing is invented.
+        import encounter_close
+        kind = script.get("close", "clinical_close")
+        page.radio("How is this encounter ending?", encounter_close.LABELS[kind])
+        page.click("Finish now")
+        log.append({"note": f"closed without a destination, declared as {kind}"})
     from tools_tanda20 import _app_constant
     for _ in range(40):
         for field, label in _app_constant("REVIEW_RESPONSE_FIELDS"):

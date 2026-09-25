@@ -921,13 +921,18 @@ def screening(record, case_id):
     f = facts(record, case_id)
     return {"closed_at_min": f["closed_at"], "events": screen_events(record, case_id),
             "domains": screen_domains(record, case_id),
+            # How the encounter ended, as the resident said it ended (decision 9).
+            "close": _session(record).get("encounter_close") or None,
             "indicated_not_modelled": [{**row, "facts": [_indicated_fact([row])]} for row in f["indicated"]]}
 
 
 def for_model(result):
     """The screening in the plain English the proposal request carries."""
+    close = result.get("close") or {}
     return {
         "closed_at_min": result["closed_at_min"],
+        "close_kind": close.get("kind"),
+        "destination_recorded_at_close": close.get("destination_recorded"),
         "events": [{"event_id": row["event_id"], "status": row["status"],
                     "facts": [fact["en"] for fact in row["facts"]], "evidence_refs": row["refs"]}
                    for row in result["events"]],

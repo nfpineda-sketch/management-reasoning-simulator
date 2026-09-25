@@ -10311,12 +10311,38 @@ with st.container(key="encounter-console"):
     st.divider()
 
     if not st.session_state.encounter_ended:
-        if st.button(
+        import encounter_close
+        import language as _close_lang
+        if st.session_state.get("close_pending"):
+            # A brief warning that never blocks (faculty decision 9, 2026-09-25):
+            # no destination is invented and nothing already recorded is erased.
+            st.warning(_close_lang.say(encounter_close.WARNING))
+            close_kind = st.radio(_close_lang.say("How is this encounter ending?"), encounter_close.KINDS,
+                                  format_func=lambda kind: _close_lang.say(encounter_close.LABELS[kind]),
+                                  key="close_kind")
+            keep_going, finish_now = st.columns(2)
+            if keep_going.button(_close_lang.say("Continue the encounter")):
+                st.session_state.close_pending = False
+                rerun_app()
+            if finish_now.button(_close_lang.say("Finish now"), type="primary"):
+                st.session_state.close_pending = False
+                st.session_state.encounter_close = encounter_close.record(
+                    close_kind, destination_recorded=False, warned=True,
+                    minute=st.session_state.state.get("sim_time"))
+                begin_decision_review(st.session_state.management_trace, st.session_state.state)
+                rerun_app()
+        elif st.button(
             "Complete Encounter & Begin Review",
             type="primary",
             disabled=not bool(st.session_state.management_trace),
         ):
-            begin_decision_review(st.session_state.management_trace, st.session_state.state)
+            if encounter_close.has_destination(st.session_state.management_trace, st.session_state.state):
+                st.session_state.encounter_close = encounter_close.record(
+                    "clinical_close", destination_recorded=True, warned=False,
+                    minute=st.session_state.state.get("sim_time"))
+                begin_decision_review(st.session_state.management_trace, st.session_state.state)
+            else:
+                st.session_state.close_pending = True
             rerun_app()
     else:
         frozen_trace = st.session_state.get("encounter_closed_trace")

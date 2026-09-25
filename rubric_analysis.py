@@ -123,7 +123,10 @@ SCREENING_RULE = (
     "decision you may assess (what was chosen, what it replaced, what was omitted), but nothing "
     "was administered and no effect occurred; never count one as an executed treatment. An urgent "
     "intervention runs without being held: a category stated only afterwards is marked "
-    "'retrospective' and is later insight, never reasoning shown when the decision was taken."
+    "'retrospective' and is later insight, never reasoning shown when the decision was taken. "
+    "close_kind is how the learner said the encounter ended: a clinical close, an interruption "
+    "or an early finish. No destination is invented for it, and an omission the record showed "
+    "before the close still stands."
 )
 
 
