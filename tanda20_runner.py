@@ -143,6 +143,34 @@ class Page:
         choice.first.click()
         self.settle()
 
+    def offers(self, label, option):
+        """Whether a selector offers ``option``, asked without choosing anything.
+
+        The same filtering ``select`` uses -- type, and see what the list shows
+        -- then the list is closed with the choice untouched.
+        """
+        box = self._labelled("stSelectbox", label)
+        if not box.count():
+            raise RunStop(f"There is no selector {label!r} on the page.")
+        combo = box.first.locator('input[role="combobox"]')
+        combo.click()
+        # A click focuses the field; the arrow opens the list. Typing the value
+        # already chosen would not open it at all.
+        combo.press("ArrowDown")
+        options = self.page.get_by_role("option")
+        try:
+            options.first.wait_for(timeout=5_000)
+        except Exception:
+            pass  # an empty selector opens no list
+        offered = any(text.strip() == option for text in options.all_inner_texts())
+        if not offered and options.count():
+            # A long list is filtered, as ``select`` does.
+            combo.fill(option)
+            offered = any(text.strip() == option for text in options.all_inner_texts())
+        combo.press("Escape")
+        self.settle()
+        return offered
+
     def check(self, label):
         self.page.get_by_text(label, exact=True).first.click()
 
@@ -182,6 +210,96 @@ def sign_in(page, base_url, username, password):
         page.wait_for_text("Sign out")
     except RunStop:
         raise RunStop(f"{username} could not sign in.") from None
+
+
+def credentials():
+    """The two test accounts, from the environment; never printed or stored."""
+    resident_user = os.environ.get("MRS_BATCH_RESIDENT_USER", "residente_prueba_r3")
+    resident_password = os.environ.get("MRS_BATCH_RESIDENT_PASSWORD", "")
+    staff_user = os.environ.get("MRS_BATCH_STAFF_USER", "")
+    staff_password = os.environ.get("MRS_BATCH_STAFF_PASSWORD", "")
+    if not (resident_password and staff_user and staff_password):
+        raise SystemExit("MRS_BATCH_RESIDENT_PASSWORD, MRS_BATCH_STAFF_USER and "
+                         "MRS_BATCH_STAFF_PASSWORD are required, as environment variables.")
+    return resident_user, resident_password, staff_user, staff_password
+
+
+NOT_IN_SCOPE = "No resident has been assigned to you for choosing cases"
+# The caption of case direction since faculty decision 14 (commit 38c45c6).
+SCOPED_CAPTION = "the resident is not told that the case was chosen"
+
+
+def preflight(*, base_url, headless=True):
+    """Free: what a paid run needs, checked on the real app before anything is spent.
+
+    Signs in as the faculty test account and as the resident, and only reads:
+    no encounter is started, no directive is saved and nothing is generated
+    (signing in opens a session, as any sign-in does). Each check says what is
+    missing and who can fix it. Whether the app lets the resident declare a
+    synthetic run (MRS_SYNTHETIC_ACCOUNTS) can only be seen at the end of an
+    encounter, so it is not checked here.
+    """
+    from playwright.sync_api import sync_playwright
+    resident_user, resident_password, staff_user, staff_password = credentials()
+    checks = []
+
+    def check(name, ok, detail=""):
+        checks.append({"check": name, "ok": bool(ok), "detail": "" if ok else detail})
+        return bool(ok)
+
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(executable_path=BROWSER, headless=headless)
+        try:
+            staff = Page(browser.new_context().new_page())
+            try:
+                sign_in(staff, base_url, staff_user, staff_password)
+            except RunStop as stop:
+                check("staff_sign_in", False, f"{stop} The faculty test account must exist in this app, "
+                                              "with the password in MRS_BATCH_STAFF_PASSWORD.")
+                return checks
+            check("staff_sign_in", True)
+            sidebar = staff.page.locator('[data-testid="stSidebar"]').inner_text()
+            check("staff_is_faculty", re.search(r"^\s*Faculty\s*$", sidebar, re.M),
+                  "The batch directs cases and generates the AI drafts with a faculty test account, "
+                  "never with an administrator's or a real faculty member's.")
+            try:
+                staff.open("Resident activity and recorded evidence")
+                staff.open("Direct a resident's next encounter")
+            except RunStop:
+                check("case_direction", False, "This app does not offer case direction: it does not run "
+                                               "the branch clinical-encounter-v0.13.")
+                return checks
+            check("case_direction", True)
+            text = staff.text()
+            check("scoped_direction", SCOPED_CAPTION in text,
+                  "This app runs a version older than faculty decision 14 (commit 38c45c6): deploy the "
+                  "branch's latest commit to it.")
+            if NOT_IN_SCOPE in text:
+                check("staff_authorized_for_resident", False,
+                      f"An administrator of this app must authorize {staff_user} for {resident_user}: "
+                      "Resident activity and recorded evidence -> Who may choose a resident's cases.")
+            else:
+                check("staff_authorized_for_resident", staff.offers("Resident", resident_user),
+                      f"{resident_user} is not among the residents this account may direct: the account "
+                      "is not in this app's database, or it is not authorized for it.")
+            resident = Page(browser.new_context().new_page())
+            try:
+                sign_in(resident, base_url, resident_user, resident_password)
+            except RunStop as stop:
+                check("resident_sign_in", False, f"{stop} The resident test account must exist in this app, "
+                                                 "with the password in MRS_BATCH_RESIDENT_PASSWORD.")
+                return checks
+            check("resident_sign_in", True)
+            if resident.has_button("Resume encounter"):
+                check("resident_ready", False, "The account has an active encounter: finish or abandon it in "
+                                               "the app before the batch starts.")
+            else:
+                check("resident_ready", resident.has_button("Begin Encounter"),
+                      "The page offers neither Begin nor Resume: the one-time account setup is probably "
+                      "pending. Sign in once as the resident and complete it.")
+        finally:
+            browser.close()
+    return checks
 
 
 def direct(page, script, resident):
@@ -379,13 +497,7 @@ def code_version():
 def run_scenario(script, *, base_url, out, with_ai=True, headless=True):
     """One scenario end to end. Returns the ledger entry; never raises for a finding."""
     from playwright.sync_api import sync_playwright
-    resident_user = os.environ.get("MRS_BATCH_RESIDENT_USER", "residente_prueba_r3")
-    resident_password = os.environ.get("MRS_BATCH_RESIDENT_PASSWORD", "")
-    staff_user = os.environ.get("MRS_BATCH_STAFF_USER", "")
-    staff_password = os.environ.get("MRS_BATCH_STAFF_PASSWORD", "")
-    if not (resident_password and staff_user and staff_password):
-        raise SystemExit("MRS_BATCH_RESIDENT_PASSWORD, MRS_BATCH_STAFF_USER and "
-                         "MRS_BATCH_STAFF_PASSWORD are required, as environment variables.")
+    resident_user, resident_password, staff_user, staff_password = credentials()
     if with_ai and spent(out) >= AUTHORISED_PAID_ENCOUNTERS:
         raise SystemExit(f"{AUTHORISED_PAID_ENCOUNTERS} paid encounters are already on the ledger. "
                          "No new paid encounter is started.")

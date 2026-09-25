@@ -486,11 +486,17 @@ def local_check(number, workdir, port=8599, language="es"):
     store = AccountStore(url, allow_sqlite=True)
     store.bootstrap_admin("admin_local", hash_password("local-admin-password"))
     admin = store.authenticate("admin_local", "local-admin-password")
-    store.register("faculty_agente_local", "local-faculty-password",
-                   store.create_invite(admin, "faculty", None))
+    faculty = store.register("faculty_agente_local", "local-faculty-password",
+                             store.create_invite(admin, "faculty", None))
     resident = store.register(TEST_ACCOUNT, "local-resident-password",
                               store.create_invite(admin, "resident", 3))
     ProfileStore(store).decline(resident)
+    # Since faculty decision 14 a faculty member directs only the residents an
+    # administrator authorized them for: the local copy is set up as the real
+    # app has to be.
+    from encounter_directives import DirectiveStore
+    DirectiveStore(store).grant(admin, store.get_user(faculty)["id"], store.get_user(resident)["id"],
+                                "Local check of the batch runner")
     env = {**os.environ, "MRS_AUTH_MODE": "accounts", "MRS_DATABASE_URL": url,
            "MRS_ALLOW_LOCAL_SQLITE": "true", "MRS_OFFLINE_CASES": "1",
            "MRS_SYNTHETIC_ACCOUNTS": TEST_ACCOUNT, "NO_PROXY": "localhost,127.0.0.1",
@@ -512,8 +518,10 @@ def local_check(number, workdir, port=8599, language="es"):
                            "MRS_BATCH_STAFF_USER": "faculty_agente_local",
                            "MRS_BATCH_STAFF_PASSWORD": "local-faculty-password",
                            "NO_PROXY": "localhost,127.0.0.1", "no_proxy": "localhost,127.0.0.1"})
+        checks = tanda20_runner.preflight(base_url=f"http://localhost:{port}")
         entry = tanda20_runner.run_scenario(BY_NUMBER[number], base_url=f"http://localhost:{port}",
                                             out=workdir / "run", with_ai=False)
+        entry["preflight"] = checks
         attempts = [a for a in store.list_attempts(admin) if a["username"] == TEST_ACCOUNT]
         if attempts:
             record = store.get_attempt(admin, attempts[0]["id"])
@@ -533,6 +541,8 @@ def main(argv=None):
     parser.add_argument("--rehearse", nargs="?", const="all", metavar="N|all")
     parser.add_argument("--local-check", type=int, metavar="N",
                         help="free: the browser runner against a local offline copy of the app")
+    parser.add_argument("--preflight", action="store_true",
+                        help="free: sign in with both test accounts on the app and check what a paid run needs")
     parser.add_argument("--run", metavar="N[,M...]", help="PAID: scenarios through the development app")
     parser.add_argument("--base-url", help="the development app, for --run")
     parser.add_argument("--no-ai", action="store_true", help="--run without the paid documents")
@@ -547,6 +557,14 @@ def main(argv=None):
                             language=args.language)
         print(json.dumps({k: v for k, v in entry.items() if k != "steps"}, indent=1, ensure_ascii=False))
         return 0 if not entry["stopped"] else 1
+    if args.preflight:
+        if not args.base_url:
+            parser.error("--preflight needs --base-url (the development app).")
+        import tanda20_runner
+        checks = tanda20_runner.preflight(base_url=args.base_url)
+        for row in checks:
+            print(("ok     " if row["ok"] else "MISSING") + f" {row['check']}" + (f": {row['detail']}" if row["detail"] else ""))
+        return 0 if checks and all(row["ok"] for row in checks) else 1
     if args.run:
         if not args.base_url:
             parser.error("--run needs --base-url (the development app).")

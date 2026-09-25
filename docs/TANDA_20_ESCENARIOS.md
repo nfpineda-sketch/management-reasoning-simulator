@@ -164,8 +164,25 @@ comprobaron en la página local.
 | `MRS_SYNTHETIC_ACCOUNTS=residente_prueba_r3` en los secretos de la app de desarrollo | Para que la cuenta pueda declarar la ejecución sintética | Agregarlo a los secretos de esa app |
 | Clave del proveedor en la app de desarrollo | Los tres documentos de IA se generan en el servidor | Ya debería estar; el ejecutor no la necesita localmente |
 
-Con eso, la próxima sesión corre `python tools_tanda20.py --local-check 1` (gratis),
-luego `--run 1` y, si sale bien, `--run 2,3,...`. El registro permite retomar.
+**Las dos cuentas tienen que estar en la misma app, con la misma base.** Cada app
+(pública, validación, desarrollo) usa su propia base en Neon y no comparten cuentas. Un
+administrador ve todas las cuentas de su base en la barra lateral → «Account
+administration» → «Manage an account». Si `residente_prueba_r3` no aparece ahí, esa
+cuenta se creó en otra app: hay que crearla por invitación en la app donde está el
+administrador (o usar la app donde ya existe, con un administrador de esa base). La
+tabla «Resident activity and recorded evidence» lista encuentros, no cuentas: una cuenta
+sin encuentros no aparece en ella.
+
+**Verificación previa, gratis** (`python tools_tanda20.py --preflight --base-url <app>`):
+inicia sesión con la cuenta docente de prueba y con `residente_prueba_r3` y sólo lee la
+página —no inicia encuentros, no guarda directivas, no genera nada— para comprobar que
+la cuenta docente es docente, que la app ejecuta esta rama (dirección de casos con
+permiso acotado), que esa cuenta puede elegir los casos de `residente_prueba_r3` (misma
+base y autorizada) y que el residente puede empezar un encuentro. Cada punto que falte
+dice qué hacer. Probada contra una copia local de la app, con y sin autorización.
+
+Con eso, la próxima sesión corre `--preflight`, luego `--run 1` y, si sale bien,
+`--run 2,3,...`. El registro permite retomar.
 
 **Consumo previsto**: 20 encuentros si todo sale a la primera; el resto del límite de 40
 queda para reintentos y reemplazos. Cada encuentro dirigido usa un caso del banco (sin
