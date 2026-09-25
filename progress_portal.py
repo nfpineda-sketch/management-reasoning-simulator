@@ -53,7 +53,11 @@ def _present_evidence(items):
         st.json(item["details"], expanded=False)
 
 
+SYNTHETIC_RUN = "Synthetic test run"
+
+
 def _history_rows(observations):
+    synthetic = any(row.get("synthetic_execution") for row in observations)
     return [{
         "Observed": _date(row.get("created_at")),
         "Satisfactory": "Yes" if row.get("satisfactory") else "No",
@@ -62,7 +66,17 @@ def _history_rows(observations):
         "Context": row.get("context", ""),
         "Assessor": row.get("assessor", ""),
         "Status": "Voided" if row.get("voided") else "Recorded",
+        **({"Execution": SYNTHETIC_RUN if row.get("synthetic_execution") else "—"} if synthetic else {}),
     } for row in observations]
+
+
+def _satisfactory_cell(goal):
+    """The counter, and what it counts when the objective requires an autonomy."""
+    cell = str(goal["count"]) + "/" + str(goal["target"])
+    if goal.get("required_autonomy"):
+        cell += (" at " + _autonomy_label(goal["required_autonomy"]).lower() + " or above ("
+                 + str(goal.get("satisfactory_count", goal["count"])) + " satisfactory)")
+    return cell
 
 
 def _render_history(goal):
@@ -90,9 +104,12 @@ def _render_history(goal):
 
 
 def _progress_table(goals):
+    synthetic = sum(goal.get("synthetic_count", 0) for goal in goals)
     st.dataframe([{
         "Objective": _objective_label(goal["objective_id"]),
-        "Satisfactory observations": str(goal["count"]) + "/" + str(goal["target"]),
+        "Satisfactory observations": _satisfactory_cell(goal),
+        "Autonomy not determined": goal.get("autonomy_not_determined_count", 0),
+        **({"From synthetic test runs": goal.get("synthetic_count", 0)} if synthetic else {}),
         "Assessed encounters": goal.get("assessed_count", 0),
         "Needs improvement": goal.get("needs_improvement_count", 0),
         "Status": goal["status"].replace("_", " ").capitalize(),
@@ -102,6 +119,13 @@ def _progress_table(goals):
     } for goal in goals], hide_index=True)
     st.caption("These are configurable program targets. One completed encounter may contribute to several objectives. Each objective can receive at most one active observation per encounter. Only faculty-reviewed satisfactory observations increase the counter; depth and autonomy describe that observation without multiplying it.")
     st.caption("Observation continues after the target and after faculty confirmation. New strengths and concerns remain in the record; they never automatically award or revoke achievement. Faculty confirmation concerns the simulated component and does not certify a workplace EPA.")
+    st.caption("A satisfactory observation whose autonomy could not be determined is counted and shown apart. "
+               "Where an objective requires a level of autonomy, it does not meet that level: only "
+               "observations at the required level count toward that objective's target.")
+    if synthetic:
+        st.warning(str(synthetic) + " satisfactory observation(s) come from synthetic test runs: an automated "
+                   "agent on a test account. They exercise the simulator and show nothing about a "
+                   "person's performance.")
     for goal in goals:
         _render_history(goal)
 
@@ -251,7 +275,12 @@ def _render_faculty_decisions(context, progress, user_id, goals):
         selected = st.selectbox("Objective for faculty decision", [goal["objective_id"] for goal in supported],
                                 format_func=_objective_label, key="faculty_decision_objective_" + user_id)
         goal = next(goal for goal in supported if goal["objective_id"] == selected)
-        st.write(f"Satisfactory observations: {goal['count']}/{goal['target']}")
+        st.write("Satisfactory observations: " + _satisfactory_cell(goal))
+        if goal.get("autonomy_not_determined_count"):
+            st.caption(str(goal["autonomy_not_determined_count"]) + " of them with an autonomy that could not be "
+                       "determined." + (" They do not meet the required level." if goal.get("required_autonomy") else ""))
+        if goal.get("synthetic_count"):
+            st.caption(str(goal["synthetic_count"]) + " of them from synthetic test runs, not a person's performance.")
         st.caption(goal["limitation"])
         if goal.get("confirmed"):
             st.info("Faculty confirmation is recorded. Continued observations remain available. Review new evidence to maintain confirmation or reopen the objective; both decisions retain its history.")

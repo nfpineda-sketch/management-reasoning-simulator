@@ -25,6 +25,24 @@ AUTONOMY_NOT_DETERMINED = "not_determined"
 DRAFT_FIELDS = ("satisfactory", "depth", "autonomy", "context", "evidence_refs", "notes", "ai_brief_id")
 
 
+def meets_autonomy(autonomy, required):
+    """Whether an observation's autonomy meets an objective's required level.
+
+    Faculty decision 10 of 2026-09-25 ("Autonomía no determinada: opción C,
+    distinguiendo observaciones de logro"). A validated observation whose
+    autonomy could not be determined accumulates like any other, and how many
+    have that condition is shown. When completing an objective requires a
+    level of autonomy, such an observation does not meet it: nothing assumes
+    the level that nobody could determine. With no required level, every
+    satisfactory observation counts toward the target, as before.
+    """
+    if not required:
+        return True
+    if autonomy not in AUTONOMY_LEVELS or required not in AUTONOMY_LEVELS:
+        return False
+    return AUTONOMY_LEVELS.index(autonomy) >= AUTONOMY_LEVELS.index(required)
+
+
 def _text(value, label, maximum=4000):
     if not isinstance(value, str) or not value.strip() or len(value) > maximum:
         raise AccountError(f"Provide {label} (1–{maximum} characters).")
@@ -154,9 +172,38 @@ class ProgressStore:
                        observation_id, _json(details or {}), int(time.time())))
 
     def _count(self, connection, user_id, objective_id):
-        return self._execute(connection, """SELECT COUNT(*) AS n FROM mrs_progress_observations
+        """Satisfactory observations that count toward the objective's target."""
+        required = OBJECTIVES[objective_id].get("required_autonomy")
+        rows = self._execute(connection, """SELECT autonomy FROM mrs_progress_observations
             WHERE user_id = ? AND objective_id = ? AND satisfactory = 1 AND voided_at IS NULL""",
-            (user_id, objective_id)).fetchone()["n"]
+            (user_id, objective_id)).fetchall()
+        return sum(meets_autonomy(row["autonomy"], required) for row in rows)
+
+    def _has_table(self, connection, name):
+        if self.accounts._sqlite:
+            return self._execute(connection, "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+                                 (name,)).fetchone() is not None
+        return self._execute(connection, "SELECT table_name FROM information_schema.tables "
+                             "WHERE table_schema = current_schema() AND table_name = ?",
+                             (name,)).fetchone() is not None
+
+    def _synthetic_attempts(self, connection, user_id):
+        """The resident's encounters whose latest execution declaration is a synthetic run.
+
+        The declaration lives in the encounter context (encounter_context.py),
+        made by a configured test account or corrected by an administrator.
+        An observation of such an encounter keeps saying so wherever the
+        progress is shown: it is the run of a test, not a person's performance.
+        """
+        if not self._has_table(connection, "mrs_encounter_context"):
+            return set()
+        latest = {}
+        for row in self._execute(connection, """SELECT c.attempt_id, c.value FROM mrs_encounter_context c
+                JOIN mrs_attempts a ON a.id = c.attempt_id
+                WHERE a.user_id = ? AND c.field = 'execution' ORDER BY c.attempt_id, c.sequence""",
+                (user_id,)).fetchall():
+            latest[row["attempt_id"]] = row["value"]
+        return {attempt_id for attempt_id, value in latest.items() if value == "synthetic_agent"}
 
     def _target(self, connection, objective_id):
         return self._execute(connection, "SELECT * FROM mrs_progress_targets WHERE objective_id = ?",
@@ -228,6 +275,7 @@ class ProgressStore:
                 self._execute(connection, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
             actor = self.accounts._actor(connection, token)
             user = self._resident(connection, actor, user_id)
+            synthetic = self._synthetic_attempts(connection, user["id"])
             objectives = []
             for objective_id, definition in OBJECTIVES.items():
                 target = self._target(connection, objective_id)
@@ -236,7 +284,14 @@ class ProgressStore:
                     WHERE o.user_id = ? AND o.objective_id = ? ORDER BY o.created_at, o.id""",
                     (user["id"], objective_id)).fetchall()
                 observations = [self._observation(row) for row in rows]
-                count = sum(item["satisfactory"] and not item["voided"] for item in observations)
+                for item in observations:
+                    item["synthetic_execution"] = item["attempt_id"] in synthetic
+                satisfactory = [item for item in observations if item["satisfactory"] and not item["voided"]]
+                required = definition.get("required_autonomy")
+                # What accumulates, and what completes the objective, are told
+                # apart (decision 10): every satisfactory observation is shown;
+                # only those meeting a required autonomy count toward the target.
+                count = sum(meets_autonomy(item["autonomy"], required) for item in satisfactory)
                 confirmation = self._confirmation(connection, user["id"], objective_id)
                 confirmed = bool(confirmation and confirmation["confirmed"])
                 reviewed_ids = set(json.loads(confirmation["observation_ids_json"] or "[]")) if confirmation else set()
@@ -245,6 +300,12 @@ class ProgressStore:
                 objectives.append({
                     **definition, "objective_id": objective_id, "target": target["target"],
                     "target_revision": target["revision"], "count": count,
+                    "satisfactory_count": len(satisfactory),
+                    "required_autonomy": required,
+                    "autonomy_not_determined_count": sum(
+                        item["autonomy"] == AUTONOMY_NOT_DETERMINED for item in satisfactory),
+                    "below_required_autonomy_count": len(satisfactory) - count,
+                    "synthetic_count": sum(item["synthetic_execution"] for item in satisfactory),
                     "status": "not_available" if not definition["supported"] else (
                         "confirmed" if confirmed else (
                             "target_reached" if count >= target["target"] else (
@@ -495,7 +556,10 @@ class ProgressStore:
             count = self._count(connection, user["id"], objective_id)
             target = self._target(connection, objective_id)["target"]
             if count < target:
-                raise AccountError("The numeric target must be reached before faculty confirmation.")
+                raise AccountError("The numeric target must be reached before faculty confirmation."
+                                   + (" Only observations at the required level of autonomy count toward "
+                                      "it; an autonomy that could not be determined does not meet it."
+                                      if definition.get("required_autonomy") else ""))
             existing = self._confirmation(connection, user["id"], objective_id)
             current_ids = self._observation_ids(connection, user["id"], objective_id)
             already_confirmed = bool(existing and existing["confirmed"])

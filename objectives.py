@@ -38,6 +38,12 @@ AUTONOMY_DESCRIPTIONS = {
 }
 
 
+# An objective may set "required_autonomy" (one of AUTONOMY_LEVELS): then only
+# satisfactory observations at that level or above count toward its target,
+# and an observation whose autonomy could not be determined never meets it
+# (faculty decision 10 of 2026-09-25). No objective requires a level today;
+# every satisfactory observation counts, and those without a determined
+# autonomy are shown apart.
 OBJECTIVES = {
     "TD1": {
         "title": "Recognize instability and initiate support",
