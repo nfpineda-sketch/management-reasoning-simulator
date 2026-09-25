@@ -20,7 +20,12 @@ the counter refuses the request after the cap. Nothing runs without ``--yes``.
 import os
 import sys
 
-os.environ.setdefault("MRS_OFFLINE_CASES", "1")
+# Run as a script, the key is withheld from every other resolver. Imported by a
+# test, the importer decides: set on import, it withheld the key from every
+# later test in the same process (the same leak tools_rubric_runs had; found
+# again 2026-09-24 when the AI-interpretation tests ran after this one).
+if __name__ == "__main__":
+    os.environ.setdefault("MRS_OFFLINE_CASES", "1")
 
 import argparse
 import json

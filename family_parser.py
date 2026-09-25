@@ -187,7 +187,10 @@ _DIAGNOSTICS = {
 # An airway/ventilation order and the settings fragments that may follow it.
 # The infusions the engine runs. A resident who names one is not naming a role.
 _SUPPORT_ORDERS = (
-    ("vascular_access", r"\bvias?\s+(?:venosas?|perifericas?|gruesas?|ev|iv)\b|\bvia\s+venosa\b|"
+    # "VVP" is how a peripheral venous line is written on a Chilean chart; the
+    # rehearsal of the twenty-scenario batch held two resuscitations for it
+    # (2026-09-24).
+    ("vascular_access", r"\bvias?\s+(?:venosas?|perifericas?|gruesas?|ev|iv)\b|\bvia\s+venosa\b|\bvvps?\b|"
                         r"\bacceso\s+(?:venoso|vascular)\b|\bbranula\b|\bcateter\s+venoso\b|"
                         r"\b(?:peripheral\s+)?(?:iv|intravenous)\s+(?:line|access|cannula)\b|\blarge[- ]bore\b"),
     ("urinary_catheter", r"\bsonda\s+(?:foley|vesical|urinaria)\b|\bfoley\b|"
@@ -195,7 +198,11 @@ _SUPPORT_ORDERS = (
     ("gastric_tube", r"\bsonda\s+(?:nasogastrica|naso\s*gastrica|orogastrica)\b|\bsng\b|"
                      r"\bnasogastric\s+tube\b|\bng\s+tube\b"),
     ("npo", r"\bregimen\s+(?:cero|0)\b|\bnada\s+por\s+boca\b|\bayuno\b|\bnpo\b|\bnil\s+by\s+mouth\b"),
+    # "Lo dejo en observacion 2 horas" keeps the patient under watch: until
+    # 2026-09-24 it was dropped in silence, or held the whole order when a
+    # glucose check followed it (rehearsal of the twenty-scenario batch).
     ("monitoring", r"\bmonitor(?:izacion|izar|izado|eo)?\b|\boximetr[ií]a\b|\bpulse\s+ox(?:imetry)?\b|"
+                   r"\ben\s+observacion\b|\bunder\s+observation\b|"
                    r"\bcontinuous\s+monitoring\b|\bcardiac\s+monitor\b"),
 )
 
@@ -331,7 +338,7 @@ _ES_IMPERATIVES = {
     # whole clause had no verb and was dropped in silence, so a transcutaneous
     # pacemaker and a written NIV order vanished from the record (2026-09-21).
     "colocar": "coloca coloque instala instale instalar coloco instalo",
-    "aplicar": "aplica aplique aplico", "infundir": "infunde infunda infundo", "indicar": "indica deja deje dejar",
+    "aplicar": "aplica aplique aplico", "infundir": "infunde infunda infundo", "indicar": "indica deja deje dejar dejo",
     "pedir": "pide pida", "solicitar": "solicita", "medir": "mide mida",
     "controlar": "controla controle", "obtener": "obten obtenga toma tome tomar obtengo", "realizar": "realiza realice realizo",
     "hacer": "haz haga hago", "suspender": "suspende suspenda suspendo", "detener": "deten detenga detengo",
@@ -463,6 +470,33 @@ def _spanish_imperatives(text):
     return _ES_IMPERATIVE.sub(replace, text)
 
 
+# Orders the engine recognises and does not execute: medicines with no modelled
+# effect here, and what is prescribed for after discharge. A resident who wrote
+# one had the whole submission held until they replaced it (rehearsal of the
+# twenty-scenario batch, 2026-09-24). Whether any of them should act on the
+# physiology is a clinical decision (docs/DECISIONES_CLINICAS_PENDIENTES.md).
+_UNMODELED_ORDER = re.compile(
+    r"\b(?:clorfenamina|clorfeniramina|chlorphenamine|chlorpheniramine|difenhidramina|diphenhydramine|"
+    r"antihistaminic[oa]s?|antihistamines?|cetirizina|cetirizine|loratadina|loratadine|desloratadina|"
+    r"hidroxicina|hydroxyzine|famotidina|famotidine|ranitidina|ranitidine|"
+    r"lorazepam|diazepam|alprazolam|clonazepam|benzodiacepinas?|benzodiazepines?|"
+    r"ondansetron|metoclopramida|metoclopramide|"
+    r"autoinyector|autoinjector|epi-?pen)\b"
+    r"|\b(?:indic\w*|recet\w*|prescrib\w*)\b.*\b(?:al|para\s+el)\s+alta\b"
+    r"|\b(?:prescribe|prescribed)\b.*\b(?:at|on|for)\s+discharge\b")
+
+# What a patient takes, named by drug or by class, after "toma" or "usa".
+_TAKES_MEDICATION = re.compile(
+    r"\b(?:glibenclamida|glipizida|gliclazida|glimepirida|sulfonilureas?|metformina|insulinas?|"
+    r"hipoglicemiantes?|betabloqueador(?:es)?|beta\s*bloqueador(?:es)?|propranolol|atenolol|"
+    r"metoprolol|bisoprolol|carvedilol|bloqueador(?:es)?\s+de(?:l)?\s+calcio|calcioantagonistas?|"
+    r"verapamilo|diltiazem|amlodipino|nifedipino|anticoagulantes?|acenocumarol|warfarina|"
+    r"rivaroxaban|apixaban|dabigatran|antiagregantes?|aspirina|clopidogrel|opioides?|tramadol|"
+    r"morfina|metadona|oxicodona|fentanilo|benzodiacepinas?|clonazepam|alprazolam|diazepam|"
+    r"antihipertensivos?|enalapril|losartan|diureticos?|furosemida|digoxina|litio|"
+    r"(?:sus|mis|los|unos|algunos)\s+(?:remedios|medicamentos|pastillas|farmacos)|"
+    r"remedios|medicamentos|pastillas)\b")
+
 _DIAG_VERBS = {
     "want", "order", "request", "obtain", "check", "measure", "send", "get", "perform", "do",
     "solicitar", "solicito", "solicite", "pedir", "pido", "medir", "mido", "controlar",
@@ -492,7 +526,12 @@ _OXYGEN_DEVICES = (
     # are the same device (2026-09-21), and it used to execute as a simple mask.
     ("non-rebreather mask", r"non[- ]rebreather(?: mask)?|non[- ]rebreathing mask|nrb|"
                             r"mascarilla(?:\s+(?:con|de))?\s+reservorio|mascara(?:\s+(?:con|de))?\s+reservorio|"
-                            r"mascarilla\s+(?:de|con)\s+recirculacion|mascara\s+(?:de|con)\s+recirculacion"),
+                            r"mascarilla\s+(?:de|con)\s+recirculacion|mascara\s+(?:de|con)\s+recirculacion|"
+                            # Its commonest Spanish name says what it does not do:
+                            # "de no recirculacion", "no recirculante", "de no
+                            # reinhalacion". Read as a simple mask until 2026-09-24.
+                            r"(?:mascarilla|mascara)\s+(?:de\s+)?no\s+(?:recirculacion|recirculante|reinhalacion)|"
+                            r"\bno\s+(?:recirculante|reinhalacion)\b"),
     # A bare "mask" or "mascarilla" is the simple face mask: it is how oxygen is
     # ordered at the bedside, in both languages. The specific devices above also
     # contain the word, so ``devices`` keeps the longer match and drops this one.
@@ -1026,7 +1065,11 @@ def _parse_piece_core(piece, inherited=None):
             diagnostics.append((match.start(), {"type": "diagnostic", "diagnostic": diagnostic}))
     if diagnostics:
         return [action for _, action in sorted(diagnostics, key=lambda x: x[0])], verb or "order"
-    if re.search(r"\b(?:gases|gasometria|blood gases?)\b", body):
+    # Asking which gases is right when the resident asked for gases. "Los gases
+    # muestran retencion de CO2" is a result they are reading, not an order, and
+    # it held a whole escalation to non-invasive ventilation (2026-09-24).
+    if re.search(r"\b(?:gases|gasometria|blood gases?)\b", body) and (
+            verb in _DIAG_VERBS or re.fullmatch(r"\s*(?:(?:los|unos|the)\s+)?(?:gases|gasometria|blood gases?)\s*\??", body)):
         return [{'type': 'clarification', 'message': 'Specify arterial (ABG) or venous (VBG) blood gases.',
                  'pending_action': {'type': 'diagnostic', 'diagnostic': None}}], verb
     if re.search(r"\b(?:stress\s+test|exercise\s+(?:test|stress)|treadmill|test\s+de\s+esfuerzo|"
@@ -1039,6 +1082,12 @@ def _parse_piece_core(piece, inherited=None):
         # already stated (measured 2026-09-23).
         if _is_reasoning(text):
             return [], None
+        # "Toma glibenclamida" and "toma betabloqueador" say what the patient
+        # takes, which is history. "Tomar" is also how a sample is taken, so it
+        # is read as a study only when what follows is not a medicine (2026-09-24,
+        # two escalations held by the rehearsal of the twenty-scenario batch).
+        if verb == "obtener" and _TAKES_MEDICATION.search(body):
+            return [], None
         # "Pido 2 unidades de globulos rojos" asks the blood bank for units, and
         # whether to give them now or to have them reserved is the resident's to
         # say: "the study was not recognized" named neither (2026-09-24).
@@ -1049,7 +1098,7 @@ def _parse_piece_core(piece, inherited=None):
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
-        shorthand = r"(?:synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|epinephrine|epinefrina|adrenaline|adrenalina|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía)"
+        shorthand = r"(?:sf|ns|suero\s+fisiologico|solucion\s+fisiologica|ringer(?:\s+lactato)?|lr|cristaloides?|synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|epinephrine|epinefrina|adrenaline|adrenalina|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía)"
         medication_start = any(re.match(r"(?:" + pattern + r")\b", body) for agents in _AGENTS.values() for pattern in agents.values())
         quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
         # A route written first is how the order is spoken in English: "IM
@@ -1099,6 +1148,11 @@ def _parse_piece_core(piece, inherited=None):
     # the problem was addressed.
     if re.search(_DISCHARGE, body) or verb in {"discharge", "dar de alta"}:
         return [{"type": "disposition", "destination": "home"}], verb
+    if verb in {"admit", "transfer", "hospitalizar", "ingresar", "trasladar"} and re.search(
+            r"\bcath(?:eterization)?\s+lab\b|\bhemodinamia\b|\bhemodinamica\b|\bpabellon\s+de\s+hemodinamia\b", body):
+        # "Lo traslado a hemodinamia" sends the patient to the cath lab, which is
+        # what activating it does; it was held asking for a bed (2026-09-24).
+        return [{"type": "consult", "service": "cath lab"}], verb
     if verb in {"admit", "transfer", "hospitalizar", "ingresar", "trasladar"}:
         # The coronary unit is a cardiovascular critical-care bed under all its
         # names, and "UCO" is how it is asked for here (faculty, 2026-09-21).
@@ -1616,6 +1670,14 @@ def parse_family_actions(text) -> dict:
                 negated = False
             if _NON_ORDER.match(piece):
                 reasoning_head = True
+                inherited = None
+                continue
+            if _UNMODELED_ORDER.search(piece):
+                # Recognised and not something this version executes: said back
+                # as "recognised but not executed in this build", recorded with
+                # the decision, and the other orders run (2026-09-24, the same
+                # rule the faculty set for a study the simulator does not model).
+                future.append(piece.strip())
                 inherited = None
                 continue
             parsed, inherited = _parse_piece(piece, inherited)

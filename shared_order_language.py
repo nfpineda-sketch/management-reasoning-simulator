@@ -45,7 +45,11 @@ def _route(text):
         ("IM", r"\b(?:im|intramuscular)\b"),
         ("PO", r"\b(?:po|vo|oral|orally|por boca|por via oral)\b"),
         ("IN", r"\bintranasal\b|\bin\s*(?:now|ahora)?\s*$"),
-        ("nebulized", r"\b(?:nebulized|nebulised|nebulization|nebulizado|nebulizada|nebulizar|nebulize|neb)\b"),
+        # "nbz" is how a nebulization is written on a Chilean chart; found by the
+        # rehearsal of the twenty-scenario batch (2026-09-24), where the whole
+        # first bronchodilator order was held for a route already written.
+        ("nebulized", r"\b(?:nebulized|nebulised|nebulization|nebulizaci[oó]n|nebulizado|nebulizada|"
+                      r"nebulizar|nebulize|neb|nbz|nebu)\b"),
         ("inhaled", r"\b(?:inhaled|inhalado|inhalada)\b"),
         ("SC", r"\b(?:sc|sq|subcutaneous|subcutane[ao])\b"),
     ):

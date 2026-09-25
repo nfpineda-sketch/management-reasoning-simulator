@@ -89,9 +89,23 @@ def test_the_ways_the_output_is_named(finding):
 
 def test_a_volume_that_really_is_an_order_is_still_caught():
     # The safety net that quotes an unread treatment back must keep working: a
-    # litre of saline with no verb is still held, not silently dropped.
-    action = only("Suero fisiologico 1000 mL.")
-    assert action["type"] == "clarification" and "1000 ml" in action["unrecognized_text"]
+    # volume of something the engine cannot give, with no verb, is still held,
+    # not silently dropped.
+    action = only("Manitol 250 mL.")
+    assert action["type"] == "clarification" and "250 ml" in action["unrecognized_text"]
+
+
+def test_a_fluid_written_the_way_a_chart_writes_it_is_given():
+    # Until 2026-09-24 a litre of saline written without a verb was the example
+    # above: held, while a drug, oxygen or NIV written the same way ran. "SF
+    # 1000 ml ev" is how it is written at the bedside, and the rehearsal of the
+    # twenty-scenario batch lost two resuscitations to it.
+    for text in ("Suero fisiologico 1000 mL.", "SF 1000 ml ev", "sf 1000 ml ev en bolo"):
+        action = only(text)
+        assert action["type"] == "fluid" and action["volume_ml"] == 1000.0, text
+        assert action["fluid_type"] == "normal saline"
+    # What the patient already received is history, not an order.
+    assert parse_family_actions("Recibio SF 1000 ml en el SAPU")["actions"] == []
 
 
 def test_the_fluid_order_itself_is_unchanged():

@@ -6097,13 +6097,20 @@ def extract_explicit_reasoning(text):
                     negated = "neg" in m.groupdict() and m.group("neg")
                     reasoning["expected_effect"] = ("no espero que " + effect) if negated else effect
 
+        def _stated_priority(match):
+            # "Mi prioridad es controlar la alergia" says what the resident is
+            # trying to bring under control, not what they will check: read as
+            # a reassessment target, it answered the question for them
+            # (rehearsal of the twenty-scenario batch, 2026-09-24).
+            return bool(re.search(r"\b(?:prioridad|objetivo|meta)\s+(?:ahora\s+)?es\s+(?:\w+\s+){0,2}$",
+                                  joined[:match.start()], re.I))
+
         if "reassessment_target" not in reasoning:
             # "reevaluar SpO2 y FR en 15 minutos" and "reevaluar en 15 minutos SpO2 y FR".
-            m = re.search(
+            m = next((found for found in re.finditer(
                 r"\b(?:" + _ES_REASSESS + r")\s+"
                 r"(?!" + _ES_TIME + r")(?:(?:el|la|los|las)\s+)?(.+?)(?=\s+" + _ES_TIME + r"|[.;]|$)",
-                joined, re.I,
-            )
+                joined, re.I) if not _stated_priority(found)), None)
             target = _clean_reasoning_phrase(m.group(1)) if m else None
             if not target:
                 m = re.search(
@@ -6117,6 +6124,23 @@ def extract_explicit_reasoning(text):
                     r"\bcontrol(?:es)?\s+de\s+(?:(?:el|la|los|las)\s+)?(.+?)\s+" + _ES_TIME,
                     joined, re.I,
                 )
+                target = _clean_reasoning_phrase(m.group(1)) if m else None
+            if not target:
+                # What the resident says they will watch is the reassessment,
+                # without the word "reevaluo": "voy a mirar la saturacion",
+                # "miro FC y PA", "veo si despierta". Asked "what will you
+                # check?", residents answered like this and were asked again
+                # (rehearsal of the twenty-scenario batch, 2026-09-24). "Veo que
+                # ..." reports what is seen and is left out.
+                m = re.search(
+                    r"\b(?:(?:voy|vamos)\s+a\s+)?(?:mirar|miro|ver(?!\s+que)|veo(?!\s+que)|revisar|reviso|"
+                    r"controlar|controlo|contar|cuento|medir|mido|vigilar|vigilo|chequear|chequeo)\s+"
+                    r"(?:si\s+|que\s+)?(?:(?:el|la|los|las)\s+)?(.+?)(?=\s+" + _ES_TIME + r"|[.;]|$)",
+                    joined, re.I,
+                )
+                # "Mi prioridad es mirar la via aerea" states the priority.
+                if m and _stated_priority(m):
+                    m = None
                 target = _clean_reasoning_phrase(m.group(1)) if m else None
             if target and target.lower() not in {"al paciente", "paciente", "de nuevo", "nuevamente", "otra vez"}:
                 reasoning["reassessment_target"] = target
@@ -6894,6 +6918,16 @@ REASONING_GATE_ACTION_TYPES = {
     "epinephrine", "epinephrine_bolus", "epinephrine_im", "continuous_bronchodilator",
     # Named by its role; the engine resolves which infusion before it runs.
     "infusion_adjustment",
+    # Treatments the parser learned after this list was written, each with a
+    # gated counterpart above (a drug, a reversal, cardioversion, blood). They
+    # ran with no stated expectation: "Doy atropina 1 mg ev" executed where
+    # "Doy naloxona 0.1 mg ev" was asked what it was for (rehearsal of the
+    # twenty-scenario batch, 2026-09-24). Support orders stay out by design,
+    # and whether the trauma bedside procedures belong here is the faculty's
+    # (docs/DECISIONES_CLINICAS_PENDIENTES.md).
+    "atropine", "transcutaneous_pacing", "glucagon", "calcium", "thiamine", "octreotide",
+    "thrombolysis", "tranexamic_acid", "opioid_analgesia", "antipyretic", "oral_carbohydrate",
+    "dextrose_infusion", "naloxone_infusion", "neuromuscular_blockade", "sedation_infusion",
 }
 
 REASONING_GATE_FIELD_LABELS = {
