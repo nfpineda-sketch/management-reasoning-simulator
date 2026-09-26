@@ -260,6 +260,12 @@ este registro. La app lo importa a su base al arrancar, una vez, sin sobrescribi
 - **Defecto encontrado y corregido (C-2026-09-26-07):** la línea del presupuesto se veía como una
   fórmula («US2.50ofUS10.00…» en cursiva), porque Streamlit lee el texto entre dos signos de dólar como
   matemática. Ahora cada signo va escapado; la prueba nueva falla con el código anterior.
+- **La barra lateral tapaba parte de la sala (C-2026-09-26-08, a pedido tuyo):** las capas de la sala
+  estaban fijas a la ventana, y la barra abierta (300 px en un computador) cubría el minuto y el comienzo
+  de la nota sobre lo que la foto no permite ver. Ahora la sala empieza donde termina la barra, sea cual
+  sea su ancho. Revisado en un navegador real sobre la copia local, con la barra abierta y cerrada, a 1400,
+  1280 y 1024 px, y en un teléfono, donde la barra se abre encima y la sala no cambia. Con la barra
+  abierta, el monitor y la consola quedan proporcionalmente más angostos.
 - **Consumo de esta revisión: 0 solicitudes, US$0.** El saldo sigue en US$7,5041 y 4 solicitudes, salvo
   lo que hayan usado los encuentros de la app de desarrollo después del reinicio: eso sólo se ve en su
   panel.

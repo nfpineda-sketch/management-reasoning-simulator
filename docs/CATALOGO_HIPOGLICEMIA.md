@@ -139,6 +139,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-26-05 | La sala pagaba la imagen del paciente aunque la regla B1 negara el gasto a ese rol | general | technical_defect | none | — |
 | C-2026-09-26-06 | Banco persistente de imágenes del paciente: misma persona, estado actual, gasto con tope | general | technical_defect | none | — |
 | C-2026-09-26-07 | La línea del presupuesto de imágenes se leía como una fórmula en el panel docente | general | technical_defect | none | — |
+| C-2026-09-26-08 | Con la barra lateral abierta, la sala del encuentro quedaba en parte debajo de ella | general | technical_defect | none | — |
 
 ## La batería, configuración por configuración
 

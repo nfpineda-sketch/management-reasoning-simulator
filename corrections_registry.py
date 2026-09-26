@@ -353,6 +353,25 @@ CORRECTIONS = (
         "tests": ["test_image_bank_portal.py::test_the_budget_line_shows_dollars_not_a_formula"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-26-08",
+        "date": "2026-09-26",
+        "title": "Con la barra lateral abierta, la sala del encuentro quedaba en parte debajo de ella",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Las capas de la sala (fotografía, monitor, notas y consola) están fijas a la ventana desde el "
+                   "2026-09-21, y la barra lateral de Streamlit, abierta por defecto en un computador (300 px), "
+                   "tapaba su borde izquierdo: el minuto y el comienzo de la nota sobre lo que la fotografía no "
+                   "permite ver. Ahora se fijan al área principal, que empieza donde termina la barra, sea cual sea "
+                   "su ancho; con la barra cerrada y en un teléfono, donde la barra se abre encima, la sala queda "
+                   "igual. Visto en un navegador real sobre una copia local (1400, 1280 y 1024 px de ancho y un "
+                   "teléfono). No cambia qué se muestra, sólo dónde."),
+        "authorised_by": "Instrucción docente del 2026-09-26 («sí, corrige lo de la barra lateral»)",
+        "affects": {"modules": ["clinical_scene"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_clinical_scene.py::test_an_open_sidebar_covers_none_of_the_room"],
+        "preservation": None,
+    },
 )
 
 

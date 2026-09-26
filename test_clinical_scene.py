@@ -80,3 +80,14 @@ def test_indented_ecg_is_html_not_markdown_code():
     assert 'M 22 106 L 23 104' in rendered
     assert '<pre>' not in rendered and '<code>' not in rendered
     assert '&lt;svg' not in rendered
+
+
+def test_an_open_sidebar_covers_none_of_the_room():
+    # The room's layers are position:fixed. Against the window, Streamlit's open
+    # sidebar (300 px on a desktop) covered the minute and the start of the note
+    # on what the photograph cannot show (seen in a browser, 2026-09-26). With the
+    # main area transformed, it is their containing block: the room starts at the
+    # sidebar's edge, whatever its width.
+    from clinical_scene import BEDSPACE_CSS, scene_html
+    assert BEDSPACE_CSS.lstrip().startswith('[data-testid="stMain"]{transform:translate(0)}')
+    assert BEDSPACE_CSS in scene_html(None, '<div>174</div>')

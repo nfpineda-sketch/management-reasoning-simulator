@@ -279,7 +279,13 @@ UNAVAILABLE = {
 }
 
 
+# The room's layers are fixed to the main area, not to the window: a transformed
+# element is the containing block of its fixed descendants. Against the window,
+# Streamlit's open sidebar covered the room's left edge -- the minute and the
+# start of the note on what the photograph cannot show (2026-09-26). On a phone
+# the sidebar opens over the page and the room is unchanged.
 BEDSPACE_CSS = """
+[data-testid="stMain"]{transform:translate(0)}
 .clinical-scene{position:fixed;inset:3.4rem 1rem 1rem;background:#18252e;
  background-size:cover;background-position:38% center;border-radius:14px;overflow:hidden;z-index:1}
 .scene-photo{position:fixed;inset:3.4rem 1rem 1rem;background-size:cover;background-position:38% center;
