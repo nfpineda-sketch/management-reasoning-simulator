@@ -170,68 +170,76 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
     proposed_events = {row["event_id"] for row in proposed_event_rows(proposal)}
 
     scores, reasons, justifications = {}, {}, {}
+    # Every block below keeps one fixed place on the page. A domain left "not
+    # assessable" adds a field, and without a container of its own everything
+    # after it -- the shape, the buttons -- moved down a place: while the page
+    # reran, the previous run's buttons stayed on screen, faded, where they had
+    # been (development app, 2026-09-26).
     for domain in DOMAIN_IDS:
-        suggestion = _proposed_for(proposal, domain)
-        proposed = suggestion.get("score")
-        # Decisions on screen are D1, D2, D3. A rubric domain is spelled out
-        # so the two cannot be read as the same thing.
-        st.markdown(f"**Domain {domain[1:]} · {DOMAINS[domain]['title']}**")
-        st.caption(DOMAINS[domain]["asks"])
-        with st.popover(f"Descriptors for domain {domain[1:]}"):
-            for level, text in sorted(DOMAINS[domain]["levels"].items()):
-                st.markdown(f"**{level}** — {text}")
-        domain_check = (check.get("domains") or {}).get(domain) or {}
-        for fact in domain_check.get("facts", []):
-            st.caption(f"Record: {fact}")
-        if suggestion:
-            st.caption(f"AI proposes **{_label(proposed)}**. {prose(suggestion.get('rationale', ''))}")
-            if suggestion.get("contrary_evidence"):
-                st.caption(f"Against it: {prose(suggestion['contrary_evidence'])}")
-            if suggestion.get("next_level_gap"):
-                st.caption(f"For the next level: {prose(suggestion['next_level_gap'])}")
-            for item in suggestion.get("learner_evidence", []):
-                st.caption(f"At minute {item.get('minute')}: “{item.get('quote', '')}”")
-        # Faculty decision of 2026-09-23: an untouched domain starts at "not
-        # assessable", not at what the AI proposed. Across thirteen real
-        # proposals the model chose "not assessable" exactly never -- including
-        # two encounters where it wrote in its own limits that the encounter
-        # closed before the opportunity -- so starting at its score pushed a
-        # reviewer towards scoring. Starting here pushes towards deciding: a
-        # domain left alone cannot be confirmed without a written reason.
-        default = saved_scores.get(domain, NOT_ASSESSABLE)
-        value = st.selectbox("Your score", _CHOICES, index=_CHOICES.index(default),
-                             format_func=_label, key=_key(record, "score", domain))
-        scores[domain] = value
-        if value == NOT_ASSESSABLE:
-            # When the record itself says the window never opened, the reason
-            # is offered already written, in the record's words: the reviewer
-            # can keep it, change it, or score the domain instead.
-            offered = (" ".join(domain_check.get("facts", []))
-                       if domain_check.get("suggestion") == "no_opportunity" else "")
-            reasons[domain] = st.text_input(
-                "Why is it not assessable? (a zero is a demonstrated failure; this is not one)",
-                value=saved_reasons.get(domain, offered), key=_key(record, "reason", domain))
-        if suggestion and proposed in _CHOICES and value != proposed:
-            justifications[domain] = st.text_input(
-                f"Why you changed it from the proposed {_label(proposed)}",
-                value=saved_changes.get(domain, {}).get("justification", ""),
-                key=_key(record, "why", domain))
-        st.divider()
+        with st.container():
+            suggestion = _proposed_for(proposal, domain)
+            proposed = suggestion.get("score")
+            # Decisions on screen are D1, D2, D3. A rubric domain is spelled out
+            # so the two cannot be read as the same thing.
+            st.markdown(f"**Domain {domain[1:]} · {DOMAINS[domain]['title']}**")
+            st.caption(DOMAINS[domain]["asks"])
+            with st.popover(f"Descriptors for domain {domain[1:]}"):
+                for level, text in sorted(DOMAINS[domain]["levels"].items()):
+                    st.markdown(f"**{level}** — {text}")
+            domain_check = (check.get("domains") or {}).get(domain) or {}
+            for fact in domain_check.get("facts", []):
+                st.caption(f"Record: {fact}")
+            if suggestion:
+                st.caption(f"AI proposes **{_label(proposed)}**. {prose(suggestion.get('rationale', ''))}")
+                if suggestion.get("contrary_evidence"):
+                    st.caption(f"Against it: {prose(suggestion['contrary_evidence'])}")
+                if suggestion.get("next_level_gap"):
+                    st.caption(f"For the next level: {prose(suggestion['next_level_gap'])}")
+                for item in suggestion.get("learner_evidence", []):
+                    st.caption(f"At minute {item.get('minute')}: “{item.get('quote', '')}”")
+            # Faculty decision of 2026-09-23: an untouched domain starts at "not
+            # assessable", not at what the AI proposed. Across thirteen real
+            # proposals the model chose "not assessable" exactly never -- including
+            # two encounters where it wrote in its own limits that the encounter
+            # closed before the opportunity -- so starting at its score pushed a
+            # reviewer towards scoring. Starting here pushes towards deciding: a
+            # domain left alone cannot be confirmed without a written reason.
+            default = saved_scores.get(domain, NOT_ASSESSABLE)
+            value = st.selectbox("Your score", _CHOICES, index=_CHOICES.index(default),
+                                 format_func=_label, key=_key(record, "score", domain))
+            scores[domain] = value
+            if value == NOT_ASSESSABLE:
+                # When the record itself says the window never opened, the reason
+                # is offered already written, in the record's words: the reviewer
+                # can keep it, change it, or score the domain instead.
+                offered = (" ".join(domain_check.get("facts", []))
+                           if domain_check.get("suggestion") == "no_opportunity" else "")
+                reasons[domain] = st.text_input(
+                    "Why is it not assessable? (a zero is a demonstrated failure; this is not one)",
+                    value=saved_reasons.get(domain, offered), key=_key(record, "reason", domain))
+            if suggestion and proposed in _CHOICES and value != proposed:
+                justifications[domain] = st.text_input(
+                    f"Why you changed it from the proposed {_label(proposed)}",
+                    value=saved_changes.get(domain, {}).get("justification", ""),
+                    key=_key(record, "why", domain))
+            st.divider()
 
-    events = _event_controls(record, case_id, proposed_events, saved_events, check)
+    with st.container():
+        events = _event_controls(record, case_id, proposed_events, saved_events, check)
     try:
         preview = compute_score(scores, events)
     except Exception:
         preview = None
-    if preview:
-        st.markdown(f"**{headline(preview)}**")
-        if not preview["coverage"]["complete"]:
-            st.caption("A partial assessment keeps its events and their penalty but has no "
-                       "total comparable with a complete episode.")
-        # The shape of what is on screen, redrawn as the selectboxes move, so a
-        # reviewer sees the profile they are about to save rather than the one
-        # they saved last time.
-        _live_shape(store, token, record, {"scores": scores}, proposal, training_year)
+    with st.container():
+        if preview:
+            st.markdown(f"**{headline(preview)}**")
+            if not preview["coverage"]["complete"]:
+                st.caption("A partial assessment keeps its events and their penalty but has no "
+                           "total comparable with a complete episode.")
+            # The shape of what is on screen, redrawn as the selectboxes move, so a
+            # reviewer sees the profile they are about to save rather than the one
+            # they saved last time.
+            _live_shape(store, token, record, {"scores": scores}, proposal, training_year)
     columns = st.columns(2)
     action = None
     if columns[0].button("Save draft", key=_key(record, "draft")):

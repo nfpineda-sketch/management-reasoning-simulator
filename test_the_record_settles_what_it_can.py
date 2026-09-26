@@ -140,7 +140,8 @@ def test_confirming_an_event_the_record_contradicts_needs_a_written_reason(venti
     decision = {"case_id": "opioid_67f", "scores": {d: 2 for d in rubric.DOMAIN_IDS},
                 "reasons": {}, "justifications": {}, "status": "confirmed",
                 "proposal": report, "screening": screening}
-    with pytest.raises(AccountError, match="record contradicts"):
+    # The message names the event: the form lists them all.
+    with pytest.raises(AccountError, match="confirming opioid_no_ventilatory_support, which the record contradicts"):
         build_review(events=[{"event_id": "opioid_no_ventilatory_support", "status": "confirmed",
                               "justification": ""},
                              {"event_id": "opioid_unsafe_discharge", "status": "dismissed",

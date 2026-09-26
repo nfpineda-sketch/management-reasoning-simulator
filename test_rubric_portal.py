@@ -200,3 +200,30 @@ def test_a_saved_score_is_what_comes_back_not_the_default(cohort):
                                       status="confirmed")
     app = page(cohort, attempt_id)
     assert [s.value for s in app.selectbox if s.label == "Your score"] == [3] * len(rubric.DOMAIN_IDS)
+
+
+def _place(node, label, path=()):
+    """Where a button sits on the page: the indexes from the root to it."""
+    for index, child in getattr(node, "children", {}).items():
+        if type(child).__name__ == "Button" and child.label == label:
+            return path + (index,)
+        found = _place(child, label, path + (index,))
+        if found:
+            return found
+    return None
+
+
+def test_the_buttons_keep_their_place_while_domains_change(cohort):
+    """While the page reruns, Streamlit keeps the previous run's elements where they were.
+    A domain left "not assessable" adds a field, and the button row used to move with it, so
+    a faded copy of the buttons stayed below the new ones (development app, 2026-09-26)."""
+    accounts, _, users = cohort
+    attempt_id = attempt_on_case(accounts, users["resident"]["token"])
+    app = page(cohort, attempt_id)
+    untouched = _place(app._tree, "Confirm assessment")
+    assert untouched is not None
+    score_every_domain(app)
+    assert _place(app._tree, "Confirm assessment") == untouched
+    radios = [r for r in app.radio if r.label == "Your decision"]
+    radios[0].set_value("confirmed").run()
+    assert _place(app._tree, "Confirm assessment") == untouched

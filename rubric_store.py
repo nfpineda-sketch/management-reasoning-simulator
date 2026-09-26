@@ -117,13 +117,15 @@ def build_review(*, case_id, scores, reasons, events, justifications, status, pr
         if state not in EVENT_STATUSES:
             raise AccountError("A critical event is proposed, confirmed or dismissed.")
         definition = defined.get(event_id)
+        # The event is named: the form lists every defined event, and a reviewer
+        # told only "an event" had to find which one to write under.
         if state == "confirmed" and event_id in against_record:
             justification = _text(entry.get("justification"), required=True,
-                                  field="reason for confirming an event the record contradicts")
+                                  field=f"reason for confirming {event_id}, which the record contradicts")
         else:
             justification = _text(entry.get("justification"),
                                   required=state != "proposed" and event_id not in proposed_events,
-                                  field="justification for a critical event the AI did not propose")
+                                  field=f"justification for {event_id}, which the AI did not propose")
         decided_events.append({
             "event_id": event_id, "status": state,
             "kind": (definition or {}).get("kind", ""),

@@ -169,3 +169,17 @@ def test_a_resident_s_photograph_prints_on_the_document(photo):
     faculty_report._fonts()
     page = radar.drawing([{"values": {"D1": 2}}], badge={"image": photo, "initials": "RP", "year": 3})
     assert renderPDF.drawToString(page).startswith(b"%PDF")
+
+
+def test_the_label_at_the_top_is_inside_the_drawing():
+    """It was centred on the top edge and the page clips an SVG to its box: half of
+    "Severity" was cut off (development app, 2026-09-26)."""
+    import re
+    series = [{"values": {"D1": 2, "D2": 2, "D3": 3, "D4": 2, "D5": 2}, "label": "This encounter"}]
+    drawn = radar.svg(series, size=240)
+    left, top, width, height = map(float, re.search(r'viewBox="([^"]+)"', drawn).group(1).split())
+    labels = [float(match.group(2)) for match in
+              re.finditer(r'<text x="([\d.-]+)" y="([\d.-]+)"[^>]*font-size="10.5"', drawn)]
+    assert len(labels) == len(DOMAIN_IDS)
+    for y in labels:
+        assert top <= y - 10.5 / 2 and y + 10.5 / 2 <= top + height, y

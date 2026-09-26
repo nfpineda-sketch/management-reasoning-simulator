@@ -194,6 +194,10 @@ def _path(run, closed):
     return body + (" Z" if closed else "")
 
 
+# Room above the chart for the label of the axis at the top, in SVG units.
+TOP_LABEL_ROOM = 10
+
+
 def svg(series, *, size=260, language="en", title=None, badge=None):
     """The same chart as an inline SVG, for the application.
 
@@ -205,7 +209,12 @@ def svg(series, *, size=260, language="en", title=None, badge=None):
     plan = geometry(series, size=size, language=language)
     centre_x, centre_y = plan["centre"]
     label = title or ("Perfil por dominio" if language == "es" else "Profile by domain")
-    parts = [f'<svg viewBox="0 0 {plan["width"]:.0f} {plan["height"]:.0f}" role="img" '
+    # The top axis's label is centred on the box's top edge, and the page clips
+    # an SVG to its box: half of "Severity" was cut off (development app,
+    # 2026-09-26). The box grows upwards by the label's height instead. The
+    # documents' drawing is not clipped and keeps its approved layout.
+    top = TOP_LABEL_ROOM
+    parts = [f'<svg viewBox="0 {-top:.0f} {plan["width"]:.0f} {plan["height"] + top:.0f}" role="img" '
              f'aria-label="{escape(label)}" xmlns="http://www.w3.org/2000/svg" '
              f'preserveAspectRatio="xMidYMid meet">']
     for ring in plan["rings"]:
