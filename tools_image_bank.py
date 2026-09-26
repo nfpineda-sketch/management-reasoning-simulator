@@ -39,7 +39,8 @@ def _bank(url):
 
 def _budget():
     from image_pricing import configured_budget
-    return configured_budget(lambda name: os.environ.get(name, ""))
+    from offline_cases import withhold
+    return configured_budget(lambda name: withhold(name, os.environ.get(name, "")))
 
 
 def _usd(micro):
@@ -82,7 +83,12 @@ def run(args):
     from image_identities import identity
     bank = _bank(args.database_url)
     budget = _budget()
-    api_key = "injected-by-environment-proxy" if args.proxy_credentials else os.environ.get("OPENAI_API_KEY", "")
+    from offline_cases import offline_cases_enabled, withhold
+    if offline_cases_enabled():
+        # Offline mode never pays, whichever way the credential would arrive.
+        sys.exit("Offline mode is on (MRS_OFFLINE_CASES): no paid image request is made.")
+    api_key = ("injected-by-environment-proxy" if args.proxy_credentials
+               else withhold("OPENAI_API_KEY", os.environ.get("OPENAI_API_KEY", "")))
     if not api_key:
         sys.exit("No credential: pass --proxy-credentials or set OPENAI_API_KEY.")
     print("budget before:", json.dumps(_summary(bank.budget_summary(budget))))

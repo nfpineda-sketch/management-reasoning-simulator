@@ -41,3 +41,12 @@ def test_without_force_a_failed_state_is_not_asked_for_again(monkeypatch, url):
     before = len(provider.calls)
     run_with(monkeypatch, provider, url)
     assert len(provider.calls) == before
+
+
+def test_offline_mode_never_pays_even_with_the_proxy_credential(monkeypatch, url):
+    provider = Provider()
+    monkeypatch.setenv("MRS_OFFLINE_CASES", "1")
+    monkeypatch.setattr(image_broker, "_client", lambda api_key, client_factory: provider)
+    with pytest.raises(SystemExit):
+        tools_image_bank.main(["run", "--database-url", url, "--batch", "1", "--proxy-credentials"])
+    assert provider.calls == []
