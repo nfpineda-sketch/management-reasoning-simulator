@@ -28,20 +28,22 @@ class CatalogReviewStore:
     def __init__(self, account_store):
         self.accounts = account_store
         self._execute = account_store._execute
-        with self.accounts._transaction(write=True) as connection:
-            self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_catalog_reviews (
-                id TEXT PRIMARY KEY,
-                configuration_id TEXT NOT NULL,
-                catalog_version TEXT NOT NULL,
-                fingerprint_json TEXT NOT NULL,
-                decision TEXT NOT NULL CHECK (decision IN ('approved', 'changes_requested', 'rejected')),
-                note TEXT NOT NULL,
-                reviewer_user_id TEXT NOT NULL REFERENCES mrs_users(id),
-                reviewer_role TEXT NOT NULL,
-                created_at BIGINT NOT NULL
-            )""")
-            self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_catalog_reviews_configuration
-                ON mrs_catalog_reviews(configuration_id, created_at)""")
+        if not self.accounts.schema_ready("catalog_reviews"):
+            with self.accounts._transaction(write=True) as connection:
+                self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_catalog_reviews (
+                    id TEXT PRIMARY KEY,
+                    configuration_id TEXT NOT NULL,
+                    catalog_version TEXT NOT NULL,
+                    fingerprint_json TEXT NOT NULL,
+                    decision TEXT NOT NULL CHECK (decision IN ('approved', 'changes_requested', 'rejected')),
+                    note TEXT NOT NULL,
+                    reviewer_user_id TEXT NOT NULL REFERENCES mrs_users(id),
+                    reviewer_role TEXT NOT NULL,
+                    created_at BIGINT NOT NULL
+                )""")
+                self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_catalog_reviews_configuration
+                    ON mrs_catalog_reviews(configuration_id, created_at)""")
+            self.accounts.mark_schema_ready("catalog_reviews")
 
     def record(self, token, configuration_id, decision, note):
         """One review, by the signed-in faculty member, of the configuration as it is now."""

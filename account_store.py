@@ -178,6 +178,11 @@ class AccountStore:
                 raise AccountError("The local database needs an absolute filesystem path.")
             try:
                 self._path.parent.mkdir(parents=True, exist_ok=True)
+                # A new or emptied file at a path this process used before (a
+                # local check that starts from a clean database) has none of the
+                # tables the stores remember creating there.
+                if not self._path.exists() or self._path.stat().st_size == 0:
+                    AccountStore._SCHEMA_READY = {key for key in AccountStore._SCHEMA_READY if key[0] != url}
                 # Create privately before SQLite opens it. Existing files are
                 # not truncated, and credentials never appear in this file name.
                 self._path.touch(mode=0o600, exist_ok=True)
@@ -204,6 +209,28 @@ class AccountStore:
 
     def _execute(self, connection, sql: str, parameters: tuple = ()):
         return connection.execute(sql if self._sqlite else sql.replace("?", "%s"), parameters)
+
+    # The stores whose tables this process has already created or migrated, per
+    # database. A Streamlit rerun builds each store again, and a "CREATE TABLE IF
+    # NOT EXISTS" is still a round trip to a remote database: six of the twenty-one
+    # transactions of one change in the faculty page were these (2026-09-26).
+    _SCHEMA_READY = set()
+
+    def schema_ready(self, name: str) -> bool:
+        """Whether ``name``'s tables were created or migrated by this process for this database."""
+        return (self._url, name) in AccountStore._SCHEMA_READY
+
+    def mark_schema_ready(self, name: str) -> None:
+        AccountStore._SCHEMA_READY.add((self._url, name))
+
+    @classmethod
+    def forget_schemas(cls) -> None:
+        """What a new process does: every store checks and migrates its tables again.
+
+        For a test that rewrites a schema under a running process, as an older
+        version of the application would have left it.
+        """
+        cls._SCHEMA_READY.clear()
 
     @contextmanager
     def _transaction(self, write: bool = False):

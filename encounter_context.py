@@ -81,22 +81,24 @@ class EncounterContextStore:
     def __init__(self, account_store):
         self.accounts = account_store
         self._execute = account_store._execute
-        with self.accounts._transaction(write=True) as connection:
-            self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_encounter_context (
-                id TEXT PRIMARY KEY,
-                attempt_id TEXT NOT NULL REFERENCES mrs_attempts(id),
-                field TEXT NOT NULL CHECK (field IN ('assistance', 'execution')),
-                sequence INTEGER NOT NULL CHECK (sequence >= 1),
-                value TEXT NOT NULL,
-                description TEXT NOT NULL,
-                affected_json TEXT NOT NULL,
-                note TEXT NOT NULL,
-                actor_id TEXT NOT NULL REFERENCES mrs_users(id),
-                actor_role TEXT NOT NULL,
-                created_at BIGINT NOT NULL
-            )""")
-            self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_encounter_context_attempt
-                ON mrs_encounter_context(attempt_id, field, sequence)""")
+        if not self.accounts.schema_ready("encounter_context"):
+            with self.accounts._transaction(write=True) as connection:
+                self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_encounter_context (
+                    id TEXT PRIMARY KEY,
+                    attempt_id TEXT NOT NULL REFERENCES mrs_attempts(id),
+                    field TEXT NOT NULL CHECK (field IN ('assistance', 'execution')),
+                    sequence INTEGER NOT NULL CHECK (sequence >= 1),
+                    value TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    affected_json TEXT NOT NULL,
+                    note TEXT NOT NULL,
+                    actor_id TEXT NOT NULL REFERENCES mrs_users(id),
+                    actor_role TEXT NOT NULL,
+                    created_at BIGINT NOT NULL
+                )""")
+                self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_encounter_context_attempt
+                    ON mrs_encounter_context(attempt_id, field, sequence)""")
+            self.accounts.mark_schema_ready("encounter_context")
 
     def _attempt(self, connection, actor, attempt_id, *, write):
         if not isinstance(attempt_id, str) or not attempt_id or len(attempt_id) > 200:
@@ -183,10 +185,15 @@ class EncounterContextStore:
 
     def current(self, token, attempt_id):
         """The latest declaration of each kind, or None where nobody declared one."""
-        latest = {"assistance": None, "execution": None}
-        for row in self.history(token, attempt_id):
-            latest[row["field"]] = row
-        return latest
+        return current_of(self.history(token, attempt_id))
+
+
+def current_of(history):
+    """The latest declaration of each kind in a history already read, or None."""
+    latest = {"assistance": None, "execution": None}
+    for row in history:
+        latest[row["field"]] = row
+    return latest
 
 
 def _row(row):

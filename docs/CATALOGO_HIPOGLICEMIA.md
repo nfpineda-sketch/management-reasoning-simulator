@@ -135,6 +135,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-26-01 | El panel de la rúbrica conserva sus botones, la telaraña su etiqueta superior y el rechazo nombra el evento | general | technical_defect | none | — |
 | C-2026-09-26-02 | «My progress» reconstruye el Management Trace del residente desde el análisis guardado | general | technical_defect | none | — |
 | C-2026-09-26-03 | El lector: órdenes de glucosa, vías e interconsultas escritas como en una ficha | general | technical_defect | clinical | — |
+| C-2026-09-26-04 | La página docente pregunta menos a la base: de 20 a 12 transacciones por cambio en la rúbrica | general | refactor | none | — |
 
 ## La batería, configuración por configuración
 

@@ -92,13 +92,15 @@ def render_assistance_context(context, record):
     """
     import encounter_context
     store = encounter_context.EncounterContextStore(context["store"])
-    current = store.current(context["token"], record["id"])
+    # Read once: the current declaration of each kind is the latest in the history
+    # shown below (one database round trip fewer per rerun).
+    history = store.history(context["token"], record["id"])
+    current = encounter_context.current_of(history)
     st.markdown("**Assistance context**")
     st.caption(_declared(current["assistance"]))
     if current["execution"] is not None:
         st.caption(_declared(current["execution"], "execution"))
     st.caption(encounter_context.NO_CLINICAL_HELP_FEATURE[0])
-    history = store.history(context["token"], record["id"])
     if len(history) > 1:
         with st.expander(f"Declaration history ({len(history)})"):
             for row in history:

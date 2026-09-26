@@ -73,6 +73,8 @@ class ProgressStore:
         self._initialize()
 
     def _initialize(self):
+        if self.accounts.schema_ready("progress_store"):
+            return
         statements = [
             """CREATE TABLE IF NOT EXISTS mrs_progress_targets (
                 objective_id TEXT PRIMARY KEY, target INTEGER NOT NULL,
@@ -154,6 +156,7 @@ class ProgressStore:
                     (objective_id, target, revision, updated_by, updated_at)
                     VALUES (?, ?, 0, NULL, ?) ON CONFLICT(objective_id) DO NOTHING""",
                     (objective_id, definition["target"], int(time.time())))
+        self.accounts.mark_schema_ready("progress_store")
 
     def _resident(self, connection, actor, user_id=None):
         user_id = actor["id"] if user_id is None else user_id

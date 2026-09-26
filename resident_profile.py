@@ -130,6 +130,8 @@ class ProfileStore:
         self._initialize()
 
     def _initialize(self):
+        if self.accounts.schema_ready("resident_profile"):
+            return
         statements = [
             """CREATE TABLE IF NOT EXISTS mrs_resident_agreements (
                 id TEXT PRIMARY KEY,
@@ -159,6 +161,7 @@ class ProfileStore:
         with self.accounts._transaction(write=True) as connection:
             for statement in statements:
                 self._execute(connection, statement)
+        self.accounts.mark_schema_ready("resident_profile")
 
     def _target(self, connection, token, user_id):
         """Whose profile this is about, and whether the reader may have it."""

@@ -52,6 +52,8 @@ class FacultyBriefStore:
         self._initialize()
 
     def _initialize(self):
+        if self.accounts.schema_ready("faculty_analysis_store"):
+            return
         statements = [
             """CREATE TABLE IF NOT EXISTS mrs_faculty_briefs (
                 id TEXT PRIMARY KEY,
@@ -73,6 +75,7 @@ class FacultyBriefStore:
         with self.accounts._transaction(write=True) as connection:
             for statement in statements:
                 self._execute(connection, statement)
+        self.accounts.mark_schema_ready("faculty_analysis_store")
 
     def _record(self, connection, actor, attempt_id):
         if not isinstance(attempt_id, str) or not attempt_id or len(attempt_id) > 200:

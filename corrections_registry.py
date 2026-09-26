@@ -265,6 +265,31 @@ CORRECTIONS = (
                   "test_presentation_language.py::test_a_consult_reads_in_spanish_whatever_the_service"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-26-04",
+        "date": "2026-09-26",
+        "title": "La página docente pregunta menos a la base: de 20 a 12 transacciones por cambio en la rúbrica",
+        "scope": {"level": "general"},
+        "kind": "refactor",
+        "reason": ("Cada recarga de Streamlit construye de nuevo cada almacén, y cada uno volvía a ejecutar sus "
+                   "CREATE TABLE IF NOT EXISTS; el panel de rúbrica y el contexto de asistencia leían dos veces el "
+                   "mismo historial. Con la base remota de la app de desarrollo eso era la mayor parte de la "
+                   "espera entre un cambio y la página asentada. Ahora cada almacén crea o migra sus tablas una vez "
+                   "por proceso y por base (una base SQLite nueva o vacía se vuelve a revisar), y cada historial se "
+                   "lee una vez. Mismo comportamiento: medido en local con un registro del ensayo, 20 → 12."),
+        "authorised_by": "Instrucción docente del 2026-09-26 (reducir las transacciones de la página docente)",
+        "affects": {"modules": ["account_store", "rubric_store", "progress_store", "resident_profile",
+                                "faculty_analysis_store", "encounter_context", "management_trace_store",
+                                "catalog_reviews", "encounter_directives", "rubric_portal", "faculty_portal"],
+                    "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_the_faculty_page_asks_the_database_less.py::test_a_store_creates_its_tables_once_per_database",
+                  "test_the_faculty_page_asks_the_database_less.py::test_another_database_still_gets_its_tables",
+                  "test_the_faculty_page_asks_the_database_less.py::test_a_database_made_again_at_the_same_path_gets_its_tables_again",
+                  "test_the_faculty_page_asks_the_database_less.py::test_the_rubric_panel_reads_its_revisions_once_per_rerun",
+                  "test_progress_store.py::test_existing_confirmation_migrates_before_same_second_continued_evidence"],
+        "preservation": None,
+    },
 )
 
 

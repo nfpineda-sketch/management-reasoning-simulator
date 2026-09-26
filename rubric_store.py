@@ -174,6 +174,8 @@ class RubricStore:
         self._initialize()
 
     def _initialize(self):
+        if self.accounts.schema_ready("rubric_store"):
+            return
         statements = [
             """CREATE TABLE IF NOT EXISTS mrs_rubric_proposals (
                 id TEXT PRIMARY KEY,
@@ -219,6 +221,7 @@ class RubricStore:
         with self.accounts._transaction(write=True) as connection:
             for statement in statements:
                 self._execute(connection, statement)
+        self.accounts.mark_schema_ready("rubric_store")
 
     def _next(self, connection, table, attempt_id):
         """The next revision number for this encounter, inside the write lock."""

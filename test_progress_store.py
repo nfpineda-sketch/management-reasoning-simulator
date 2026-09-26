@@ -394,6 +394,9 @@ def test_existing_confirmation_migrates_before_same_second_continued_evidence(co
     fixed_time = objective(progress, resident)["confirmation"]["updated_at"]
     with accounts._transaction(write=True) as connection:
         accounts._execute(connection, "ALTER TABLE mrs_progress_confirmations DROP COLUMN observation_ids_json")
+    # A database an older version wrote, opened by a new process: the tables are
+    # checked and migrated again (within one process they are checked once).
+    AccountStore.forget_schemas()
     progress = ProgressStore(accounts)
     monkeypatch.setattr("progress_store.time.time", lambda: fixed_time)
     later, _ = completed_attempt(accounts, resident)

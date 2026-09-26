@@ -60,36 +60,38 @@ class DirectiveStore:
     def __init__(self, account_store):
         self.accounts = account_store
         self._execute = account_store._execute
-        with self.accounts._transaction(write=True) as connection:
-            self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_encounter_directives (
-                id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL REFERENCES mrs_users(id),
-                challenge_id TEXT NOT NULL,
-                variant_id TEXT NOT NULL,
-                reason TEXT NOT NULL,
-                created_by TEXT NOT NULL REFERENCES mrs_users(id),
-                created_at BIGINT NOT NULL,
-                state TEXT NOT NULL CHECK (state IN ('waiting', 'used', 'cancelled')),
-                attempt_id TEXT,
-                closed_at BIGINT
-            )""")
-            self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_encounter_directives_user
-                ON mrs_encounter_directives(user_id, state, created_at)""")
-            # Which faculty member may direct which resident's next case. An
-            # administrator grants and revokes; nothing is deleted.
-            self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_direction_grants (
-                id TEXT PRIMARY KEY,
-                faculty_id TEXT NOT NULL REFERENCES mrs_users(id),
-                user_id TEXT NOT NULL REFERENCES mrs_users(id),
-                reason TEXT NOT NULL,
-                granted_by TEXT NOT NULL REFERENCES mrs_users(id),
-                granted_at BIGINT NOT NULL,
-                revoked_by TEXT REFERENCES mrs_users(id),
-                revoked_at BIGINT,
-                revoke_reason TEXT
-            )""")
-            self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_direction_grants_faculty
-                ON mrs_direction_grants(faculty_id, user_id, revoked_at)""")
+        if not self.accounts.schema_ready("encounter_directives"):
+            with self.accounts._transaction(write=True) as connection:
+                self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_encounter_directives (
+                    id TEXT PRIMARY KEY,
+                    user_id TEXT NOT NULL REFERENCES mrs_users(id),
+                    challenge_id TEXT NOT NULL,
+                    variant_id TEXT NOT NULL,
+                    reason TEXT NOT NULL,
+                    created_by TEXT NOT NULL REFERENCES mrs_users(id),
+                    created_at BIGINT NOT NULL,
+                    state TEXT NOT NULL CHECK (state IN ('waiting', 'used', 'cancelled')),
+                    attempt_id TEXT,
+                    closed_at BIGINT
+                )""")
+                self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_encounter_directives_user
+                    ON mrs_encounter_directives(user_id, state, created_at)""")
+                # Which faculty member may direct which resident's next case. An
+                # administrator grants and revokes; nothing is deleted.
+                self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_direction_grants (
+                    id TEXT PRIMARY KEY,
+                    faculty_id TEXT NOT NULL REFERENCES mrs_users(id),
+                    user_id TEXT NOT NULL REFERENCES mrs_users(id),
+                    reason TEXT NOT NULL,
+                    granted_by TEXT NOT NULL REFERENCES mrs_users(id),
+                    granted_at BIGINT NOT NULL,
+                    revoked_by TEXT REFERENCES mrs_users(id),
+                    revoked_at BIGINT,
+                    revoke_reason TEXT
+                )""")
+                self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_direction_grants_faculty
+                    ON mrs_direction_grants(faculty_id, user_id, revoked_at)""")
+            self.accounts.mark_schema_ready("encounter_directives")
 
     # --- who may direct whom -------------------------------------------------------
 

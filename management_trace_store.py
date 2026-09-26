@@ -34,17 +34,19 @@ class ManagementTraceStore:
     def __init__(self, accounts):
         self.accounts = accounts
         self._execute = accounts._execute
-        with accounts._transaction(write=True) as connection:
-            self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_learner_trace_analyses (
-                id TEXT PRIMARY KEY,
-                attempt_id TEXT NOT NULL REFERENCES mrs_attempts(id),
-                source_hash TEXT NOT NULL,
-                creator_user_id TEXT NOT NULL REFERENCES mrs_users(id),
-                created_at BIGINT NOT NULL,
-                report_json TEXT NOT NULL
-            )""")
-            self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_learner_trace_source
-                ON mrs_learner_trace_analyses(attempt_id, source_hash, created_at, id)""")
+        if not accounts.schema_ready("management_trace_store"):
+            with accounts._transaction(write=True) as connection:
+                self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_learner_trace_analyses (
+                    id TEXT PRIMARY KEY,
+                    attempt_id TEXT NOT NULL REFERENCES mrs_attempts(id),
+                    source_hash TEXT NOT NULL,
+                    creator_user_id TEXT NOT NULL REFERENCES mrs_users(id),
+                    created_at BIGINT NOT NULL,
+                    report_json TEXT NOT NULL
+                )""")
+                self._execute(connection, """CREATE INDEX IF NOT EXISTS mrs_learner_trace_source
+                    ON mrs_learner_trace_analyses(attempt_id, source_hash, created_at, id)""")
+            accounts.mark_schema_ready("management_trace_store")
 
     def _source(self, connection, actor, attempt_id):
         if not isinstance(attempt_id, str) or not attempt_id or len(attempt_id) > 200:

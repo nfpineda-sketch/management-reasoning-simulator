@@ -71,7 +71,10 @@ def render_rubric_assessment(context, record, *, training_year=None):
     token = context["token"]
     try:
         proposal = store.latest_proposal(token, record["id"])
-        review = store.latest_review(token, record["id"])
+        # Read once: the current review is the newest revision, and the list is
+        # shown under the form (one database round trip fewer per rerun).
+        history = store.history(token, record["id"])
+        review = history[0] if history else None
     except AccountError as error:
         st.warning(str(error))
         return None
@@ -96,7 +99,7 @@ def render_rubric_assessment(context, record, *, training_year=None):
                     "no critical event is defined for this case.")
 
         _proposal_controls(store, token, record, proposal)
-        return _review_form(store, token, record, case_id, proposal, review, training_year)
+        return _review_form(store, token, record, case_id, proposal, review, training_year, history)
 
 
 def _declared_context(store, token, record):
@@ -158,7 +161,7 @@ def _render_flags(check):
                + "\n\nThese marks change nothing by themselves; the decision stays yours.")
 
 
-def _review_form(store, token, record, case_id, proposal, review, training_year=None):
+def _review_form(store, token, record, case_id, proposal, review, training_year=None, history=None):
     import rubric_presentation
     check = rubric_presentation.record_check(proposal, record)
     prose = rubric_presentation.model_prose(record)
@@ -256,7 +259,7 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
             return review
         st.success(f"Saved as revision {saved['sequence']} · {headline(saved['totals'])}")
         return saved
-    _history(store, token, record)
+    _history(store, token, record, history)
     return review
 
 
@@ -351,11 +354,12 @@ def _event_controls(record, case_id, proposed_events, saved_events, check=None):
     return decided
 
 
-def _history(store, token, record):
-    try:
-        history = store.history(token, record["id"])
-    except AccountError:
-        return
+def _history(store, token, record, history=None):
+    if history is None:
+        try:
+            history = store.history(token, record["id"])
+        except AccountError:
+            return
     if len(history) <= 1:
         return
     with st.expander(f"Revision history ({len(history)})"):
