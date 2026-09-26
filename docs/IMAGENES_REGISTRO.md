@@ -218,7 +218,7 @@ meta.
 
 | | |
 |---|---|
-| Solicitudes de imagen | **26 de 30**: 5 creaciones, 11 ediciones, 10 correcciones. 8 de ellas fueron el error de la herramienta. |
+| Solicitudes de imagen | **26 de 30**: 5 creaciones, 13 ediciones, 8 correcciones (corregido el 2026-09-26 con el registro del paquete; decía 11 y 10). 8 de ellas fueron el error de la herramienta. |
 | Revisiones automáticas | 26 (no cuentan entre las 30; su costo sí cuenta) |
 | Reintentos por falla del proveedor | 0 |
 | Fallas o *timeouts* del proveedor | 0 |
@@ -241,3 +241,26 @@ Rechazadas o retiradas, con su motivo, fuera de la selección y visibles para tu
 
 Todo viaja en `assets/patient_images/`: las imágenes, su procedencia, los 17 trabajos y las 72 filas de
 este registro. La app lo importa a su base al arrancar, una vez, sin sobrescribir nada.
+
+## Revisión tras el reinicio de la app de desarrollo (2026-09-26, tarde)
+
+- **La app de desarrollo no se puede abrir desde este contenedor.** La página carga, pero el proxy del
+  entorno no deja pasar el WebSocket que Streamlit necesita (`/_stcore/stream`: «Error during WebSocket
+  handshake»). Sí responden `/_stcore/health` y `/_stcore/script-health-check` (`ok`): la app arrancó y
+  su script corre sin error para una visita sin sesión. No es evidencia del panel ni de la sala.
+- **Copia local, no la app de desarrollo:** el mismo commit y el mismo paquete, una base Postgres local
+  nueva, una cuenta docente local de prueba, modo sin conexión y el servidor sin salida a la red. Nada
+  podía pagar.
+  - El paquete se importó una vez: 26 imágenes (V22 17, V18 5, V11 4), 72 filas del registro, el mismo
+    presupuesto (US$2,4959; 26 de 30).
+  - El panel docente muestra 7 imágenes utilizables y, con «Show rejected and excluded images too», las
+    26, cada una con su motivo.
+  - Un encuentro local del caso de 54 años mostró a V22 somnoliento (`fdde9713bb`) en el minuto 0, y la
+    sala lo registró.
+- **Defecto encontrado y corregido (C-2026-09-26-07):** la línea del presupuesto se veía como una
+  fórmula («US2.50ofUS10.00…» en cursiva), porque Streamlit lee el texto entre dos signos de dólar como
+  matemática. Ahora cada signo va escapado; la prueba nueva falla con el código anterior.
+- **Consumo de esta revisión: 0 solicitudes, US$0.** El saldo sigue en US$7,5041 y 4 solicitudes, salvo
+  lo que hayan usado los encuentros de la app de desarrollo después del reinicio: eso sólo se ve en su
+  panel.
+

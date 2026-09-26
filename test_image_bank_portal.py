@@ -23,6 +23,18 @@ def test_faculty_see_the_bank_and_residents_do_not(cohort):
     assert "Budget `imagenes-2026-09-26`" in text
 
 
+def test_the_budget_line_shows_dollars_not_a_formula(cohort):
+    # Streamlit's markdown reads the text between two dollar signs as a formula:
+    # in a browser the line came out as "US2.50ofUS10.00(US2.50fromtheprovider..."
+    # (2026-09-26). Every dollar sign it shows is escaped.
+    import re
+    _, admin, _ = cohort
+    line = next(str(item.value) for item in _panel(open_app(admin)).markdown
+                if str(item.value).startswith("**Budget"))
+    assert "US\\$" in line
+    assert not re.search(r"(?<!\\)\$", line)
+
+
 @pytest.mark.skipif(not HAS_PACK, reason="No pack in this checkout.")
 def test_the_pilots_photographs_are_there_with_every_review_pending(cohort):
     store, admin, _ = cohort

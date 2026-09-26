@@ -18,6 +18,13 @@ _LIMITS = {"mild_skin_moisture": "mild sweat not discernible", "mild_skin_color"
            "breathing_effort": "breathing effort not discernible"}
 
 
+def _dollars(micro):
+    # Escaped: Streamlit's markdown reads the text between two dollar signs as a
+    # formula, and the budget line came out as one in a browser (2026-09-26).
+    from image_pricing import usd
+    return f"US\\${usd(micro):.2f}"
+
+
 def _state_line(contract):
     parts = [contract.get("mental_status", ""), contract.get("expression", ""),
              f"sweat {contract.get('diaphoresis', '')}", contract.get("skin_color", ""),
@@ -41,7 +48,7 @@ def render_image_bank(context):
 def _render_image_bank(context):
     from image_bank import ImageBank
     from image_identities import BY_ID, describe
-    from image_pricing import configured_budget, usd
+    from image_pricing import configured_budget
     from image_selection import usable
     import image_pack
     from clinical_scene import setting
@@ -59,9 +66,9 @@ def _render_image_bank(context):
             st.caption(str(error))
             return
         st.markdown(
-            f"**Budget `{summary['budget_id']}`** · committed US${usd(summary['committed']):.2f} of "
-            f"US${usd(summary['limit_micro']):.2f} (US${usd(summary['from_usage']):.2f} from the provider's "
-            f"reported usage, US${usd(summary['estimated']):.2f} estimated, US${usd(summary['in_flight']):.2f} "
+            f"**Budget `{summary['budget_id']}`** · committed {_dollars(summary['committed'])} of "
+            f"{_dollars(summary['limit_micro'])} ({_dollars(summary['from_usage'])} from the provider's "
+            f"reported usage, {_dollars(summary['estimated'])} estimated, {_dollars(summary['in_flight'])} "
             f"reserved in flight) · image requests {summary['requests']} of {summary['limit_requests']} · "
             f"retries {summary['retries']}")
         show_all = st.toggle("Show rejected and excluded images too", value=False, key="_image_bank_all")

@@ -336,6 +336,23 @@ CORRECTIONS = (
                   "test_the_room_shows_the_bank.py::test_the_overlay_carries_no_image_bytes_and_the_photograph_element_depends_only_on_the_photograph"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-26-07",
+        "date": "2026-09-26",
+        "title": "La línea del presupuesto de imágenes se leía como una fórmula en el panel docente",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Streamlit lee como fórmula el texto entre dos signos de dólar, y la línea «committed US$2.50 "
+                   "of US$10.00 (…)» del banco de imágenes aparecía en el navegador como «US2.50ofUS10.00…» en "
+                   "cursiva matemática (visto en una copia local de la app con el mismo código y el mismo "
+                   "paquete). Ahora cada signo de dólar va escapado. Sólo cambia cómo se ve la línea; las cifras "
+                   "y el registro de gasto son los mismos."),
+        "authorised_by": "Instrucción docente del 2026-09-26 (sistema de imágenes estáticas; revisar la app tras reiniciarla)",
+        "affects": {"modules": ["image_bank_portal"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_image_bank_portal.py::test_the_budget_line_shows_dollars_not_a_formula"],
+        "preservation": None,
+    },
 )
 
 
