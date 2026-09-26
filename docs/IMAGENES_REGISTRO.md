@@ -76,6 +76,45 @@ intentos equivalentes.
 
 ## Lotes
 
-### Lote 1
+### Lote 1 (06:26–06:27 UTC)
 
 - **Antes:** reserva máxima US$1,10 y 4 solicitudes de imagen. Gastado hasta aquí: US$0,00; 0 solicitudes.
+- **Después:** 55 s. 6 llamadas enviadas, 0 reintentos, 0 fallas. **3 solicitudes de imagen** (crear el
+  ancla, corregirla una vez, editar el estado) y 3 revisiones. **US$0,2142**, calculado con el uso que
+  informó el proveedor (ninguna llamada quedó a estimación). Lo no usado de la reserva se devolvió.
+
+  | # | Llamada | Reserva | Costo calculado |
+  |---|---|---|---|
+  | 1 | crear ancla | 0,0500 | 0,0224 |
+  | 2 | revisar | 0,1000 | 0,0154 |
+  | 3 | corregir ancla | 0,2500 | 0,0723 |
+  | 4 | revisar | 0,1000 | 0,0130 |
+  | 5 | editar: somnoliento con sudor leve | 0,1500 | 0,0723 |
+  | 6 | revisar | 0,1000 | 0,0188 |
+
+  El costo de las revisiones está calculado a la **cota**, no a la tarifa real de `gpt-5-mini`: el real
+  es menor.
+
+- **Revisión de las imágenes** (la hice mirando cada una, antes de ampliar):
+  - **Identidad:** excelente. Mismo rostro, pelo, bata, sala, encuadre y monitores en el ancla y en el
+    estado.
+  - **Dispositivos:** en los dos candidatos de ancla hay bolsas de suero y líneas colgando junto a la
+    cama. El revisor automático rechazó el primero («tratamiento activo no pedido») y aceptó el
+    corregido porque no están conectadas, pero un residente podría leerlas como una infusión que nadie
+    indicó.
+  - **Estado:** el somnoliento es compatible pero débil. Los párpados están algo más pesados, pero la
+    mirada sigue fija en la cámara. La palidez y el sudor leves no se ven: el revisor los marcó como
+    limitaciones y la sala lo dice en texto.
+- **Defecto repetido, método corregido antes de seguir** (`image_broker.PROMPT_VERSION = bank-1.1`):
+  - la sala del banco se pide sin bolsas, atriles, líneas ni bombas;
+  - cada estado de conciencia se pide reconocible a tamaño normal, en proporción, sin conservar la mirada
+    abierta del ancla;
+  - un estado sólo se usa si se editó desde el ancla vigente de esa persona.
+  - El ancla anterior de V22 y su estado quedan **retirados, no borrados**, con el motivo.
+- **Defecto de concurrencia encontrado en las pruebas y corregido:** dos estados de una persona sin ancla,
+  pedidos a la vez, dibujaban dos anclas distintas. Ahora el ancla es un trabajo propio y único.
+
+### Lote 1b (V22 de nuevo, con el método corregido)
+
+- **Antes:** reserva máxima US$1,10 (ancla y estado, cada uno con su corrección) y 4 solicitudes. Gastado
+  hasta aquí: US$0,2142; 3 solicitudes.
