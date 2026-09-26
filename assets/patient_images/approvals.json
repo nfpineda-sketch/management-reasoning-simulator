@@ -1208,5 +1208,71 @@
   "username": "npinedafaculty",
   "note": "Aprobación del docente dada en el chat del 2026-09-27, sobre la referencia recomendada en docs/PESOS_CASOS_PROPUESTA.md («obesidad bien lograda», rechazada solo por el falso positivo de «tratamiento activo» del filtro); registrada por el agente a su pedido.",
   "created_at": 1790457604
+ },
+ {
+  "id": "604c9e32584b48339c15f71a7591d23a",
+  "asset_id": "b602503737f241fbb3d9ec9eaf7caea7",
+  "identity_id": "V34",
+  "role": "anchor",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («soluciona esos dos, aprueba»: la V34 de pulmonary_edema_75f pendiente de revisión), registrada por el agente a su pedido.",
+  "created_at": 1790459665
+ },
+ {
+  "id": "f721c4ef3f404052ad06c6fe5abe1a07",
+  "asset_id": "b602503737f241fbb3d9ec9eaf7caea7",
+  "identity_id": "V34",
+  "role": "anchor",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («soluciona esos dos, aprueba»: la V34 de pulmonary_edema_75f pendiente de revisión), registrada por el agente a su pedido.",
+  "created_at": 1790459665
+ },
+ {
+  "id": "27fdd72b5b1f4504b9dacb8f50d50744",
+  "asset_id": "906790d456124104932a98e703780238",
+  "identity_id": "V34",
+  "role": "state",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («soluciona esos dos, aprueba»: la V34 de pulmonary_edema_75f pendiente de revisión), registrada por el agente a su pedido.",
+  "created_at": 1790459665
+ },
+ {
+  "id": "6ce0488cd5d04eb2a9cb57268a31283a",
+  "asset_id": "906790d456124104932a98e703780238",
+  "identity_id": "V34",
+  "role": "state",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («soluciona esos dos, aprueba»: la V34 de pulmonary_edema_75f pendiente de revisión), registrada por el agente a su pedido.",
+  "created_at": 1790459665
+ },
+ {
+  "id": "6258c7027cc74c55a31f408b6c09e297",
+  "asset_id": "61898a34763e46dfab7bc9e028a24062",
+  "identity_id": "V01",
+  "role": "state",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («soluciona esos dos, aprueba»: la V01 61898a34 que esperaba su decisión), por sobre el rechazo del revisor automático conforme a la decisión 5: compatible y parcial, el esfuerzo respiratorio se evalúa al examinar; registrada por el agente a su pedido.",
+  "created_at": 1790459665
+ },
+ {
+  "id": "8d30897331384afbb1944592a685874e",
+  "asset_id": "61898a34763e46dfab7bc9e028a24062",
+  "identity_id": "V01",
+  "role": "state",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («soluciona esos dos, aprueba»: la V01 61898a34 que esperaba su decisión), por sobre el rechazo del revisor automático conforme a la decisión 5: compatible y parcial, el esfuerzo respiratorio se evalúa al examinar; registrada por el agente a su pedido.",
+  "created_at": 1790459665
  }
 ]

@@ -464,3 +464,22 @@ El paquete del repositorio lleva las 88 imágenes, los 68 trabajos y los registr
   prueba en una base limpia reproduce los 105 activos.
 - **Ajuste de prueba:** `test_the_room_shows_the_bank.py` esperaba 77 solicitudes de la segunda
   autorización; ahora son 80.
+
+## Aprobación de V34 y de la V01 61898a34, a pedido del docente (2026-09-26)
+
+- **Pedido:** en el chat del 2026-09-26 el docente indicó, sobre los dos pendientes reportados (la V34 de
+  `pulmonary_edema_75f` y la V01 `61898a34` de `asthma_24f`): «soluciona esos dos, aprueba».
+- **Registrado, bajo `npinedafaculty` y con su cita, por el agente a su pedido** (6 filas nuevas en
+  `assets/patient_images/approvals.json`, 116 en total):
+  - V34 referencia `b602503737f2…`: visual y clínica aprobadas.
+  - V34 llegada `906790d45612…`: visual y clínica aprobadas.
+  - V01 llegada `61898a34763e…`: visual y clínica aprobadas, **por sobre el rechazo del revisor
+    automático**, conforme a la decisión 5 (compatible y parcial: el esfuerzo respiratorio no se ve bien
+    en la foto y se evalúa al examinar; la nota neutral de la sala aplica como a toda foto).
+- **Efecto verificado** en una importación limpia con la cuenta docente: las 116 filas se registran
+  («added»), `usable()` acepta las tres fotos (la 61898a34 por la vía de la decisión 5), la sala de
+  `pulmonary_edema_75f` puede mostrar la llegada de V34 (`906790d4…`) y la de `asthma_24f` la de V01
+  (`61898a34…`, que por cercanía de contextura va antes que la de V03).
+- **Sin gasto:** ninguna imagen nueva; solo revisiones.
+- La referencia rechazada de V34 (`1fe36b2a…`) y la segunda llegada de V01 (`452a7e36…`, equipo en la
+  pared) siguen excluidas y sin aprobar.

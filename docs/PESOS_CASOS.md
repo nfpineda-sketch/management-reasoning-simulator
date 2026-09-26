@@ -315,12 +315,13 @@ propofol, midazolam, dexmedetomidina, fentanilo y ketamina en infusión.
 - **V38 es ahora la llegada de tres diagnósticos distintos**: no queda asociada a uno solo.
 - **`pulmonary_edema_75f`** (120 kg) nunca tuvo foto. Sus dos candidatas (V11 y V12, contextura promedio)
   siguen fuera incluso con los rangos como orientación (IMC 43,5, contradicción clara). El 2026-09-26
-  autorizaste que una imagen nueva no quede excluida del trabajo autorizado, y la **tanda 7 ya corrió**: V34
+  autorizaste que una imagen nueva no quede excluida del trabajo autorizado y la **tanda 7 corrió**: V34
   (identidad nueva, obesa, edad compatible), referencia y llegada generadas con el saldo de la segunda
-  autorización, aceptadas por el revisor automático y **pendientes de tu revisión visual y clínica**
-  (`docs/IMAGENES_REGISTRO.md`). Mientras no las revises, la sala muestra la vista neutral. V12 mantiene su
-  aprobación anterior para los casos donde su contextura sí calza; `compatible()` la excluye de éste sin
-  tocar esa aprobación.
+  autorización y aceptadas por el revisor automático. **Aprobadas en las dos revisiones a tu pedido en el
+  chat del 2026-09-26** («soluciona esos dos, aprueba»; `docs/IMAGENES_REGISTRO.md`): el caso ya muestra a
+  V34. En el mismo pedido quedó aprobada la V01 `61898a34` de `asthma_24f`, por sobre el revisor automático
+  conforme a la decisión 5. V12 mantiene su aprobación anterior para los casos donde su contextura sí
+  calza; `compatible()` la excluye de éste sin tocar esa aprobación.
 
 **Revisión por clases**, siguiendo tu criterio. Nada se rechazó por una cara tranquila o la boca cerrada, y ninguna
 foto se leyó como prueba de una frecuencia respiratoria.
@@ -356,13 +357,14 @@ foto se leyó como prueba de una frecuencia respiratoria.
   - las diez con mascarilla de reservorio mal dibujada;
   - las cuatro de sudor marcado en piel oscura (decisión 6).
 
-**Requieren tu revisión:**
-- **46 fotos en «Patient image bank (faculty)»:** 18 de referencia y 28 de estado, incluidas las 5 nuevas.
-- **La llegada de `asthma_24f`: V01 `61898a34`.** Muestra angustia; el revisor la rechazó por no ver tensión en
-  cuello y hombros. Es compatible pero parcial (el esfuerzo se evalúa al examinar). Si la apruebas en ambas
-  revisiones, la sala la usa (decisión 5).
-  - La otra, `452a7e36`, además tiene equipo en la pared.
-  - No pagué más intentos: el generador no dibuja bien el esfuerzo respiratorio marcado.
+**Revisión (estado al 2026-09-26):**
+- Las 46 fotos pendientes quedaron aprobadas en el lote que pediste el 2026-09-26 (`a2928f6`), y V34 y la
+  V01 `61898a34` a tu pedido del mismo día en el chat («soluciona esos dos, aprueba»).
+- **La llegada de `asthma_24f`: V01 `61898a34`.** El revisor automático la había rechazado por no ver tensión en
+  cuello y hombros; es compatible pero parcial (el esfuerzo se evalúa al examinar). Aprobada en ambas revisiones
+  a tu pedido, la sala la usa (decisión 5).
+  - La otra, `452a7e36`, tiene equipo en la pared: sigue excluida y sin aprobar.
+  - No se pagaron más intentos: el generador no dibuja bien el esfuerzo respiratorio marcado.
 - **Las lecturas de contextura aparente** de la tabla de arriba: si alguna te parece mal, cambia qué casos puede
   mostrar esa persona.
 
