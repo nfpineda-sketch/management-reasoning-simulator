@@ -22,7 +22,8 @@ cada una (C-2026-09-26-09):
 
 ## Lo que queda para tu revisión
 
-- **Las 37 fotos nuevas** de la segunda autorización, en «Patient image bank (faculty)». Débiles a mi
+- **Las 37 fotos nuevas** de la segunda autorización, en «Patient image bank (faculty)». Recomendación
+  foto por foto en `docs/PESOS_CASOS_PROPUESTA.md`. Débiles a mi
   juicio: V03 · asma y V17 · cólico renal (cara tranquila), V02 y V26 · anafilaxia (sin enrojecimiento
   visible).
 - **pulmonary_edema_75f** no tiene foto de llegada: V11 (rechazada por el revisor, cuello «relajado») y V12
@@ -80,7 +81,10 @@ es un dato clínico que cambia dosis y fisiología, así que es tu decisión. Te
   11 con sobrepeso, 10 obesos y 2 con obesidad severa), **independientes del diagnóstico** para que la
   foto no se vuelva pista.
 - Mostrar el peso en la ficha del paciente, como en un servicio de urgencia real.
-- Te preparo la tabla caso por caso para que la revises antes de aplicarla.
+- **Tabla lista para tu revisión: `docs/PESOS_CASOS_PROPUESTA.md`** (2026-09-26, noche). Trae peso, talla
+  y peso predicho por caso, cuatro decisiones del motor (volumen corriente y diuresis sobre peso predicho,
+  bloqueantes sobre peso ideal, peso visible en la ficha), qué fotos se conservan con esos pesos y una
+  recomendación por foto pendiente. No se aplicó nada.
 
 La otra opción es dejar los casos sin peso: el banco se ve más real que antes (sobrepeso incluido), pero la
 obesidad sólo aparece en casos generados.

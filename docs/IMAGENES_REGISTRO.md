@@ -363,3 +363,16 @@ El paquete del repositorio lleva las 88 imágenes, los 68 trabajos y los registr
   vista está bien: queda para tu revisión. Las cinco se ven realistas y con dignidad, sin caricatura, en
   tonos claro, medio y oscuro. Acumulado de la segunda autorización: **US$5,722, 70 solicitudes; saldo
   US$4,278.**
+
+## Pesos por caso y revisión de fotos (2026-09-26, noche)
+
+- **Pedido:** «prepara la tabla de pesos por caso y revisa las fotos».
+- **Hecho:** propuesta en `docs/PESOS_CASOS_PROPUESTA.md`: 31 casos con peso, talla y peso predicho
+  (8 normales, 11 con sobrepeso, 10 obesos, 2 con obesidad severa), elegidos sin mirar las fotos. Con esos
+  pesos, 11 de los 23 casos con foto de llegada la conservan.
+- **Revisión de fotos:** contextura aparente de las 20 personas fotografiadas. Las 16 del primer banco se
+  ven delgadas o en forma, y V19 se ve entre sobrepeso y obesidad leve. Recomendación por cada foto
+  pendiente: aprobar las 17 referencias; no aprobar 4 estados (V02 sin enrojecimiento, V03 y V17 sin el
+  malestar marcado pedido, V21 igual a su referencia); aprobar con reserva otros 4; y dos candidatas fuera
+  de la selección para la llegada de `pulmonary_edema_75f` (V12 `96970e9c`, V11 `532d7202`).
+- **No hecho, a propósito:** ningún peso aplicado, ninguna aprobación registrada, ningún gasto.
