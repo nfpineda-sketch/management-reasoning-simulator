@@ -290,6 +290,52 @@ CORRECTIONS = (
                   "test_progress_store.py::test_existing_confirmation_migrates_before_same_second_continued_evidence"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-26-05",
+        "date": "2026-09-26",
+        "title": "La sala pagaba la imagen del paciente aunque la regla B1 negara el gasto a ese rol",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("El lanzamiento retiene la clave de la imagen a un rol que la regla de gasto (B1) no autoriza "
+                   "y a un caso abierto para revisión clínica, pero la sala leía la clave por su cuenta y generaba "
+                   "igual. Ahora la sala sigue la misma regla que el lanzamiento, en los dos caminos (banco de "
+                   "imágenes y fotografías de sesión); lo ya guardado en el banco se sigue mostrando."),
+        "authorised_by": "Instrucción docente del 2026-09-26 (sistema de imágenes estáticas)",
+        "affects": {"modules": ["clinical_scene", "image_scene"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_the_room_shows_the_bank.py::test_11_a_role_the_paid_gate_refuses_is_never_charged_but_sees_what_is_saved",
+                  "test_the_room_shows_the_bank.py::test_the_session_only_room_follows_the_paid_gate_too"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-06",
+        "date": "2026-09-26",
+        "title": "Banco persistente de imágenes del paciente: misma persona, estado actual, gasto con tope",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("La fotografía vivía sólo en la memoria de una sesión del navegador: una recarga, una "
+                   "reanudación o un reinicio pagaban una imagen nueva de otra persona, y la foto PNG de ~2 MB "
+                   "viajaba dentro del HTML del monitor, 2,6 MB por cada orden (medido en un navegador real). "
+                   "Ahora, con la base de cuentas: identidades sintéticas elegidas por compatibilidad y novedad, "
+                   "cada estado editado desde el ancla de esa persona, una sola solicitud por persona y estado, "
+                   "presupuesto reservado antes de cada llamada, fallas y respuestas tardías guardadas sin "
+                   "mostrarse fuera de su estado, y lo que la sala mostró queda con el encuentro. La foto viaja "
+                   "como WebP en un elemento propio: 20 KB por orden. No cambia la fisiología, la evaluación, "
+                   "las cuatro categorías ni los PDF."),
+        "authorised_by": "Instrucción docente del 2026-09-26 (sistema de imágenes estáticas)",
+        "affects": {"modules": ["image_bank", "image_broker", "image_scene", "image_selection", "image_identities",
+                                "image_pricing", "image_pack", "image_bank_portal", "clinical_scene",
+                                "resuscitation_room", "patient_appearance", "scene_repair", "curriculum_runtime",
+                                "faculty_portal"],
+                    "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_the_image_bank.py::test_a_saved_image_is_shown_again_without_any_call_even_after_a_restart",
+                  "test_the_image_bank.py::test_two_states_asked_for_at_once_share_one_first_photograph",
+                  "test_the_room_shows_the_bank.py::test_6_a_reload_shows_the_same_person_from_the_database_without_a_call",
+                  "test_the_room_shows_the_bank.py::test_4_a_state_change_during_a_request_never_shows_the_earlier_state",
+                  "test_the_room_shows_the_bank.py::test_the_overlay_carries_no_image_bytes_and_the_photograph_element_depends_only_on_the_photograph"],
+        "preservation": None,
+    },
 )
 
 

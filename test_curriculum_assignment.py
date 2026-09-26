@@ -205,6 +205,8 @@ def runtime_functions(fake_st):
                  # (test_catalog_review_in_the_sandbox); none is offered here.
                  "review_options": lambda challenge_id: {},
                  "_render_catalog_review": lambda context: None,
+                 # The image bank's panel too (test_the_room_shows_the_bank).
+                 "render_image_bank": lambda context: None,
                  "render_attempt_assessment": lambda context, record: None}
     exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), namespace)
     return namespace

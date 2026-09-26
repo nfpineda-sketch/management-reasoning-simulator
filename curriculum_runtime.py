@@ -12,6 +12,7 @@ from curriculum import CHALLENGES, assign_challenge, evidence_summary
 from encounter_generator import generate_encounter
 from generation_progress import encounter_preparation
 from scene_preparation import ScenePreparation
+from image_bank_portal import render_image_bank
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
 
@@ -175,6 +176,11 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         # no generation and no paid picture.
         generation = {"generation_mode": "authored", "variant_id": assignment["review_case"], "api_key": "",
                       "allow_review_candidates": True}
+        scene_key = ""
+    import image_scene
+    if image_scene.enabled(context):
+        # The room asks the image bank for the arrival photograph itself; a session-only
+        # picture prepared here would be paid for and then thrown away (2026-09-26).
         scene_key = ""
     with ScenePreparation(scene_key,
                           _secret("MRS_IMAGE_MODEL", "gpt-image-1.5"),
@@ -480,6 +486,7 @@ def render_dashboard(context, initial_state, reset_session):
                 st.caption("Opened for clinical review in the sandbox: no generation, no picture, and "
                            "never offered to residents.")
             _render_catalog_review(context)
+        render_image_bank(context)
         with st.expander("Clinical and cognitive catalog"):
             st.dataframe([
                 {"Code": key, "Learning focus": challenge["title"],

@@ -70,8 +70,13 @@ def setting(name, default=''):
 
 def scene_prompt(state):
     person = _patient_description(state)
-    from patient_appearance import appearance_state, appearance_brief
-    visible = appearance_state(state)
+    from patient_appearance import appearance_state
+    return scene_prompt_for(person, appearance_state(state))
+
+
+def scene_prompt_for(person, visible):
+    """The first photograph of a person in a visible state (the image bank passes an identity)."""
+    from patient_appearance import contract_brief
     return ('Photorealistic emergency department encounter, clinician viewpoint from the foot of a bed. '
             'Wide landscape photograph with a lifelike fictional '+person+' in a hospital gown, '
             'head and hands clearly visible, body covered by a white blanket. Patient centered at 40% '
@@ -82,7 +87,7 @@ def scene_prompt(state):
             'oximeter. Add only the active support equipment explicitly listed in the observations. '
             'Do not invent wounds, cyanosis, bleeding or other clinical signs. Mottling is permitted only when explicitly true below. '
             'Depict only these established visible '
-            'observations conservatively: '+json.dumps(visible)+'. '+appearance_brief(state)+' '
+            'observations conservatively: '+json.dumps(visible)+'. '+contract_brief(visible)+' '
             'Clinical findings must remain visible and proportionate, not a posed wellness portrait. Documentary medical photography, '
             'not a cartoon, icon, diagram, doll or 3D game render.')
 
@@ -111,7 +116,15 @@ def generate_scene(state, api_key, model='gpt-image-1.5', client=None):
     return base64.b64encode(raw).decode('ascii')
 
 
-def scene_image(state, events):
+def scene_image(state, events, context=None):
+    """The current-state photograph: from the image bank with an account database, else per session."""
+    import image_scene
+    if image_scene.enabled(context):
+        return image_scene.scene_image(state, events, context)
+    return _session_scene_image(state, events, context)
+
+
+def _session_scene_image(state, events, context=None):
     from functools import partial
     from patient_appearance import appearance_signature, APPEARANCE_VERSION
     from scene_pipeline import screened_scene, screened_appearance, screened_existing_scene, SCENE_PIPELINE_VERSION
@@ -154,6 +167,19 @@ def scene_image(state, events):
     jobs = st.session_state['_scene_jobs']
     signature = appearance_signature(state)
     review_model = setting('MRS_IMAGE_REVIEW_MODEL', 'gpt-5-mini').strip() or 'gpt-5-mini'
+    # The launch withholds the picture's key from a role the paid gate refuses and
+    # from a case opened for review (faculty B1); the room used to read the key
+    # itself and pay anyway (found 2026-09-26).
+    from image_scene import generation_allowed
+    role = ((context or {}).get('user') or {}).get('role')
+    review_case = bool((st.session_state.get('encounter_assignment') or {}).get('review_case'))
+    if not generation_allowed(role, review_case):
+        current = jobs.current(signature)
+        st.session_state['_scene_current'] = current is not None
+        st.session_state['_scene_failed'] = False
+        st.session_state['_scene_pending'] = False
+        st.session_state['_scene_status'] = {'state': 'unavailable', 'code': 'NOT_ALLOWED'}
+        return current
     jobs.request(signature, state, setting('OPENAI_API_KEY'),
                  setting('MRS_IMAGE_MODEL', 'gpt-image-1.5'),
                  partial(screened_scene, review_model=review_model),
@@ -170,12 +196,17 @@ def scene_image(state, events):
     return current
 
 
-def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, observations='', image_status=None):
+def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, observations='', image_status=None,
+               photo_apart=False):
+    """The bed space. With ``photo_apart`` the photograph is its own element (``image_scene``) and
+    this overlay carries no image bytes, so a monitor change does not send the photograph again."""
     if not current:
         image_b64 = None
     current = bool(current and image_b64)
     ecg = ''.join(line.strip() for line in ecg.splitlines())
-    bg = f'background-image:url(data:image/png;base64,{image_b64});' if image_b64 else ''
+    mime = getattr(image_b64, 'mime', 'image/png')
+    bg = (f'background-image:url(data:{mime};base64,{image_b64});' if image_b64 and not photo_apart else
+          ('background:transparent;' if image_b64 else ''))
     status = 'Patient illustration · current state' if current else (
         'Updating patient appearance' if pending else 'Current patient image unavailable')
     detail = scene_status_text(image_status) if not current else ''
@@ -216,6 +247,8 @@ def scene_status_text(status):
         if status.get('correction_attempted') is True:
             detail += ' One image correction was attempted.'
         return detail
+    if status.get('state') == 'unavailable' and status.get('code') in UNAVAILABLE:
+        return UNAVAILABLE[status['code']]
     if status.get('state') == 'pending':
         labels = {'QUEUED': 'Waiting to prepare patient image', 'CREATE': 'Creating patient image',
                   'EDIT': 'Updating patient appearance', 'REPAIR': 'Correcting patient image',
@@ -227,9 +260,31 @@ def scene_status_text(status):
     return ''
 
 
+# Why there is no photograph of the current state (image bank, 2026-09-26). Fixed
+# sentences: the monitor and the examination are current either way.
+UNAVAILABLE = {
+    'NOT_ALLOWED': 'No photograph is prepared for this encounter. The monitor and the examination are current.',
+    'CONFIG': 'Patient image generation is not configured. The monitor and the examination are current.',
+    'UNSUPPORTED': ('No synthetic patient in the image bank fits this case. The monitor and the examination '
+                    'are current.'),
+    'CONTRACT': ('This appearance has no supported photograph. The monitor and the examination are current.'),
+    'PRICE': ('The configured image model has no verified price, so no photograph is requested. The monitor '
+              'and the examination are current.'),
+    'BUDGET_DOLLARS': ('The image budget of this environment is used up; saved photographs are still shown. '
+                       'The monitor and the examination are current.'),
+    'BUDGET_REQUESTS': ('The image budget of this environment is used up; saved photographs are still shown. '
+                        'The monitor and the examination are current.'),
+    'BUDGET_CONFIG': 'The image budget is not configured correctly. The monitor and the examination are current.',
+    'INTERNAL': 'The saved photograph could not be read. The monitor and the examination are current.',
+}
+
+
 BEDSPACE_CSS = """
 .clinical-scene{position:fixed;inset:3.4rem 1rem 1rem;background:#18252e;
  background-size:cover;background-position:38% center;border-radius:14px;overflow:hidden;z-index:1}
+.scene-photo{position:fixed;inset:3.4rem 1rem 1rem;background-size:cover;background-position:38% center;
+ border-radius:14px;overflow:hidden;z-index:0}
+.scene-photo-empty{display:none}
 .scene-monitor{position:absolute;right:1.2%;top:1.5%;width:36%;background:#07141d;
  border:5px solid #263a48;border-radius:14px;box-shadow:0 8px 24px #0008;max-height:37vh;overflow:hidden}
 .scene-monitor svg{width:100%;height:auto;display:block;max-height:12vh}
@@ -250,6 +305,7 @@ BEDSPACE_CSS = """
 .st-key-encounter-console [data-testid="stMarkdownContainer"]{overflow-wrap:anywhere}
 @media(max-width:760px){
  .clinical-scene{inset:3.2rem .4rem auto;height:39vh;background-position:25% center}
+ .scene-photo{inset:3.2rem .4rem auto;height:39vh;background-position:25% center}
  .scene-monitor{width:43%;max-height:35vh;right:1%;top:5%}
  .scene-monitor .monitor-values{grid-template-columns:repeat(2,1fr)!important}
  .scene-monitor .monitor-values>div{padding:2px!important}

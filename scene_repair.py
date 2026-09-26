@@ -9,7 +9,7 @@ from contextlib import ExitStack
 from io import BytesIO
 import json
 
-from patient_appearance import appearance_brief, appearance_state, _validated_image
+from patient_appearance import appearance_state, contract_brief, _validated_image
 from scene_errors import CHECK_IDS, SceneImageError, provider_image_error
 from visual_observations import VISUAL_CHOICES
 
@@ -41,8 +41,11 @@ def _failed_domains(failed_checks):
 
 
 def _expected_appearance(state):
-    expected = appearance_state(state)
-    if set(expected) != {*VISUAL_CHOICES, "mottling", "respiratory_support"}:
+    return _validated_contract(appearance_state(state))
+
+
+def _validated_contract(expected):
+    if not isinstance(expected, dict) or set(expected) != {*VISUAL_CHOICES, "mottling", "respiratory_support"}:
         raise ValueError("Unsupported visible appearance contract.")
     for name, choices in VISUAL_CHOICES.items():
         if type(expected[name]) is not str or expected[name] not in choices:
@@ -57,10 +60,16 @@ def repair_prompt(state, failed_checks, *, has_reference=False):
     # Local import avoids adding a clinical_scene/scene_pipeline import cycle.
     from clinical_scene import _patient_description
 
+    _failed_domains(failed_checks)  # checked first, as it always was
+    return repair_prompt_for(_patient_description(state), _expected_appearance(state), failed_checks,
+                             has_reference=has_reference)
+
+
+def repair_prompt_for(person, expected, failed_checks, *, has_reference=False):
+    """The correction brief for a person and a visible contract (the image bank passes an identity)."""
     domains = _failed_domains(failed_checks)
-    person = _patient_description(state)
-    expected = _expected_appearance(state)
-    brief = appearance_brief(state)
+    expected = _validated_contract(expected)
+    brief = contract_brief(expected)
     if has_reference:
         identity = (
             "Image 1 is the rejected candidate that needs correction. Image 2 is the APPROVED "

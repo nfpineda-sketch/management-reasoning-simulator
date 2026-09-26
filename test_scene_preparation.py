@@ -99,6 +99,9 @@ def test_store_failure_after_review_keeps_image_out_of_session(pool):
 def test_account_launch_storage_failure_cancels_preparation(pool, monkeypatch):
     from types import SimpleNamespace
     import curriculum_runtime
+    # The session-only preparation, which an account deployment still uses with the
+    # image bank switched off; with the bank on, the room asks the bank instead.
+    monkeypatch.setenv("MRS_IMAGE_BANK", "off")
     from account_store import AccountError
     from encounter_generator import generate_encounter as real_generate
     from test_generation_progress import RecordingStatus

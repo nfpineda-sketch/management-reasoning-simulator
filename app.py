@@ -3629,6 +3629,9 @@ def generate_problem_config(challenge_id):
     account = globals().get("ACCOUNT_CONTEXT") or {}
     generation, scene_key = launch_options(
         _runtime_secret("OPENAI_API_KEY"), (account.get("user") or {}).get("role"))
+    import image_scene
+    if image_scene.enabled(account):
+        scene_key = ""  # the room asks the image bank itself (2026-09-26)
     try:
         with ScenePreparation(scene_key,
                               _runtime_secret("MRS_IMAGE_MODEL") or "gpt-image-1.5",
@@ -9379,7 +9382,7 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
     st.stop()
 
 if not st.session_state.encounter_ended:
-    render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, sim_time_label(st.session_state.state["sim_time"]))
+    render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, sim_time_label(st.session_state.state["sim_time"]), ACCOUNT_CONTEXT)
 with st.container(key="encounter-console"):
     if render_bedside_tools(st.session_state.state, st.session_state.events, render_event) and ACCOUNT_CONTEXT:
         save_session(ACCOUNT_CONTEXT)

@@ -315,6 +315,11 @@ def render_faculty_analysis(context, record):
         _rubric_pdf_download(context, None, proposal, record)
     try:
         record = _staff_record(context, record)
+        # What the room showed of the patient, read only when asked for: one query
+        # more on every rerun of this page would undo part of its diet (2026-09-26).
+        if st.toggle("Show the patient image record", key="_image_record_" + record["id"]):
+            from image_bank_portal import render_image_record
+            render_image_record(context, record)
         brief_store = FacultyBriefStore(context["store"])
         report = brief_store.get_latest(context["token"], record["id"])
         with st.expander("AI faculty assessment brief", expanded=True):

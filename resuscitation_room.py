@@ -64,10 +64,18 @@ def monitor_html(o, time_label, profile='baseline', seed=0):
 
 
 @st.fragment(run_every=2)
-def render_room(state, events, ecg_svg, render_event, time_label):
+def render_room(state, events, ecg_svg, render_event, time_label, context=None):
     from clinical_scene import scene_image, scene_html
     from patient_appearance import appearance_signature, appearance_summary
-    image = scene_image(state, events)
+    image = scene_image(state, events, context)
+    # A bank photograph is its own element, always present (empty when there is
+    # none), so the element tree keeps its shape and the monitor can change
+    # without sending the photograph again (image bank, 2026-09-26).
+    from image_scene import View, scene_photo_html
+    photo_apart = isinstance(st.session_state.get('_scene_jobs'), View)
+    if photo_apart:
+        st.markdown(scene_photo_html(image if st.session_state.get('_scene_current', False) else None),
+                    unsafe_allow_html=True)
     # A background image failure must never restart the whole app: a full rerun
     # here consumes form-submit events before the learner's order is processed.
     o = state['observable']
@@ -77,7 +85,8 @@ def render_room(state, events, ecg_svg, render_event, time_label):
                           current=st.session_state.get('_scene_current', False),
                           pending=st.session_state.get('_scene_pending', False),
                           observations=description,
-                          image_status=st.session_state.get('_scene_status')), unsafe_allow_html=True)
+                          image_status=st.session_state.get('_scene_status'),
+                          photo_apart=photo_apart), unsafe_allow_html=True)
 
 
 def render_bedside_tools(state, events, render_event):

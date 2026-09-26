@@ -102,7 +102,11 @@ def appearance_signature(state):
 
 def appearance_brief(state):
     """One bounded visible brief shared by first-generation and subsequent edits."""
-    visible = appearance_state(state)
+    return contract_brief(appearance_state(state))
+
+
+def contract_brief(visible):
+    """The brief for a visible contract already derived from a state (image bank, 2026-09-26)."""
     support = visible["respiratory_support"]
     if support not in _SUPPORT:
         raise ValueError("The active oxygen interface has no supported visual representation.")
@@ -132,9 +136,14 @@ def appearance_summary(state):
 
 def edit_prompt(state):
     """A source-bounded edit brief; arbitrary state strings never reach the model."""
+    return edit_prompt_for(appearance_state(state))
+
+
+def edit_prompt_for(visible):
+    """The edit brief for a visible contract already derived from a state."""
     personnel = (
         "Only the necessary gloved clinician hands maintaining the mask seal and compressing the manual ventilation bag may enter the scene; no extra personnel or bodies. "
-        if appearance_state(state)['respiratory_support'] == 'bag-mask ventilation' else
+        if visible['respiratory_support'] == 'bag-mask ventilation' else
         "No extra personnel or clinician hands. "
     )
     return (
@@ -143,7 +152,7 @@ def edit_prompt(state):
         "sex, face structure, hair, baseline skin pigmentation, gown, blanket, room, lighting, camera position, "
         "framing, head location and the empty rightmost wall used by the software monitor. "
         "Change only the following documented observations and active respiratory interface: "
-        + appearance_brief(state) + " "
+        + contract_brief(visible) + " "
         "When the requested appearance differs from the reference, adjust eyelids, gaze, facial "
         "engagement and breathing-related posture conservatively, without changing facial identity. "
         "Use ONLY the respiratory interface listed above; remove other respiratory interfaces if present. "
