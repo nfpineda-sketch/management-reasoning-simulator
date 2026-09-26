@@ -236,6 +236,9 @@ app (`https://clinical-management-reasoning-dev.streamlit.app/~/+/`), escenarios
 español, **detenida por el administrador tras el 4**. Todo es prueba sintética de un
 agente en `residente_prueba_r3`, dirigida por la cuenta docente de prueba `npinedafaculty`;
 nada está confirmado.
+Intento en la nube del 2026-09-26: la página carga, pero el proxy de la sesión no admite
+el WebSocket de Streamlit (`/_stcore/stream`); verificación previa detenida en
+`staff_sign_in`, 0 encuentros pagados (detalle en `docs/AVANCE_2026-09-24.md`).
 
 | # | Encuentro | Caso y trayectoria | Código | Duración clínica y estado | Documentos A-D | Revisión rúbrica / challenges | Visible residente / admin | Problemas | Consumo |
 |---|---|---|---|---|---|---|---|---|---|
