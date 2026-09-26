@@ -525,17 +525,22 @@ def resident_document(page, folder, script):
         page.timeout = usual
 
 
-def reopen_latest_review(page):
-    """Resident: open the newest completed review from the dashboard."""
+def reopen_latest_review(page, date=None):
+    """Resident: open a completed review from the dashboard, the newest unless ``date`` names one."""
     page.open("Previous completed reviews")
     dates = re.findall(r"Encounter review · (\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC)", page.text())
     buttons = page.button("Open review")
     if not dates or buttons.count() != len(dates):
         raise RunStop("The dashboard offers no completed review to open.")
-    newest = max(range(len(dates)), key=lambda i: dates[i])
-    buttons.nth(newest).click()
+    if date is None:
+        chosen = max(range(len(dates)), key=lambda i: dates[i])
+    elif dates.count(date) == 1:
+        chosen = dates.index(date)
+    else:
+        raise RunStop(f"No single completed review is dated {date}: {dates}.")
+    buttons.nth(chosen).click()
     page.settle()
-    return dates[newest]
+    return dates[chosen]
 
 
 def open_latest_encounter(page, resident):
@@ -720,7 +725,7 @@ def finish_staff_documents(script, *, base_url, out, headless=True):
     return entry
 
 
-def finish_resident_document(script, *, base_url, out, headless=True):
+def finish_resident_document(script, *, base_url, out, headless=True, review_date=None):
     """Document A of a scenario whose encounter is already completed.
 
     The resident reopens the newest completed review from the dashboard, where
@@ -741,7 +746,7 @@ def finish_resident_document(script, *, base_url, out, headless=True):
         try:
             resident = Page(browser.new_context(accept_downloads=True).new_page())
             sign_in(resident, base_url, resident_user, resident_password)
-            entry["documents"]["reopened_review"] = reopen_latest_review(resident)
+            entry["documents"]["reopened_review"] = reopen_latest_review(resident, review_date)
             entry["documents"]["A-management_trace.pdf"] = resident_document(resident, folder, script)
         except Exception as stop:
             entry["stopped"] = f"{type(stop).__name__}: {stop}"[:1000]

@@ -13,8 +13,7 @@ from copy import deepcopy
 
 from account_store import AccountError
 from management_trace_analysis import (
-    ManagementTraceAnalysisError, source_fingerprint,
-    validate_management_trace_analysis,
+    ManagementTraceAnalysisError, accept_management_trace_analysis, source_fingerprint,
 )
 
 
@@ -74,7 +73,7 @@ class ManagementTraceStore:
             if row is None:
                 return None
             try:
-                return validate_management_trace_analysis(json.loads(row["report_json"]), source)
+                return accept_management_trace_analysis(json.loads(row["report_json"]), source)
             except (ValueError, TypeError, ManagementTraceAnalysisError):
                 raise AccountError("The saved analysis needs to be generated again.") from None
 
@@ -83,7 +82,7 @@ class ManagementTraceStore:
             actor = self.accounts._actor(connection, token, {"resident", "faculty", "admin"})
             source, fingerprint = self._source(connection, actor, attempt_id)
             try:
-                clean = validate_management_trace_analysis(report, source)
+                clean = accept_management_trace_analysis(report, source)
                 encoded = json.dumps(clean, ensure_ascii=False, allow_nan=False, sort_keys=True)
             except (ValueError, TypeError, ManagementTraceAnalysisError):
                 raise AccountError("The analysis no longer matches this encounter. Generate it again.") from None

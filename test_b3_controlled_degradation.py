@@ -95,3 +95,64 @@ def test_a_valid_report_is_returned_as_it_is():
     report = two_decisions()
     shown, withheld = usable_analysis(deepcopy(report), sample_payload())
     assert withheld == [] and shown == report
+
+
+# --- the live path: generation, the store and the screen accept what B3 presents ---
+
+def test_generation_keeps_a_report_with_one_decision_to_withhold():
+    import json
+    from types import SimpleNamespace
+    from management_trace_analysis import generate_management_trace_analysis
+    report = two_decisions()
+    report["analysis"]["pivotal_decisions"][0]["adaptation"]["evidence_refs"].remove("trace:0")
+
+    class Client:
+        responses = None
+
+        def __init__(self):
+            self.responses = self
+
+        def create(self, **kwargs):
+            return SimpleNamespace(status="completed", output_text=json.dumps(report["analysis"]))
+
+    kept = generate_management_trace_analysis(sample_payload(), api_key="", model="test-model",
+                                              client=Client())
+    # Kept as the model wrote it; the decision is withheld when it is shown.
+    assert kept["analysis"] == report["analysis"]
+    shown, withheld = usable_analysis(kept, sample_payload())
+    assert len(shown["analysis"]["pivotal_decisions"]) == 1 and len(withheld) == 1
+
+
+def test_generation_still_refuses_a_report_with_no_decision_left():
+    import json
+    from types import SimpleNamespace
+    from management_trace_analysis import generate_management_trace_analysis
+    report = sample_report()
+    report["analysis"]["pivotal_decisions"][0]["adaptation"]["evidence_refs"].remove("trace:0")
+    client = SimpleNamespace(create=lambda **kwargs: SimpleNamespace(
+        status="completed", output_text=json.dumps(report["analysis"])))
+    client.responses = client
+    with pytest.raises(ManagementTraceAnalysisError, match="Too little"):
+        generate_management_trace_analysis(sample_payload(), api_key="", model="test-model", client=client)
+
+
+def test_the_store_saves_and_returns_a_report_with_one_decision_to_withhold(tmp_path):
+    import time
+    import uuid
+    from account_store import AccountStore
+    from management_trace_store import ManagementTraceStore
+    from test_management_trace_store import session_payload
+    accounts = AccountStore(f"sqlite:///{tmp_path / 'accounts.sqlite3'}", allow_sqlite=True)
+    with accounts._transaction(write=True) as connection:
+        user_id = uuid.uuid4().hex
+        accounts._execute(connection, "INSERT INTO mrs_users VALUES (?, ?, ?, ?, ?, 1, ?)",
+                          (user_id, "resident", "unused-fixture-password-hash", "resident", 1,
+                           int(time.time())))
+        token = accounts._new_session(connection, user_id)
+    attempt_id = accounts.create_attempt(token, "R1-05", {"presentation": "Synthetic test encounter"})
+    accounts.save_attempt(token, attempt_id, session_payload(), status="completed")
+    store = ManagementTraceStore(accounts)
+    report = two_decisions()
+    report["analysis"]["pivotal_decisions"][0]["adaptation"]["evidence_refs"].remove("trace:0")
+    assert store.save(token, attempt_id, report)["analysis"] == report["analysis"]
+    assert store.get_latest(token, attempt_id)["analysis"] == report["analysis"]

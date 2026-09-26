@@ -613,6 +613,20 @@ def usable_analysis(report, payload):
     return candidate, withheld
 
 
+def accept_management_trace_analysis(report, payload):
+    """An analysis that may be kept and shown: presentable under faculty decision B3.
+
+    Generation, the store and the screen accept what ``usable_analysis`` can
+    present -- provenance, structure and chronology intact and at least one
+    pivotal decision valid -- and keep the model's report as it was written.
+    What a section breaks is withheld when it is shown (screen and PDF), never
+    repaired in the stored report. Until 2026-09-25 these paths validated
+    strictly, so B3 applied only to reports that had nothing to withhold.
+    """
+    usable_analysis(report, payload)
+    return deepcopy(report)
+
+
 def validate_management_trace_analysis(report, payload, numerals=True, decisions=True):
     """Check cache provenance, citation membership and decision-time boundaries.
 
@@ -815,4 +829,4 @@ def generate_management_trace_analysis(payload, *, api_key, model, client=None):
               "source_hash": source_fingerprint(payload),
               "generated_at": datetime.now(timezone.utc).isoformat(), "model": model.strip(),
               "analysis": analysis}
-    return validate_management_trace_analysis(report, payload)
+    return accept_management_trace_analysis(report, payload)

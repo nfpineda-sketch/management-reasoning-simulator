@@ -551,6 +551,9 @@ def main(argv=None):
     parser.add_argument("--resident-document", type=int, metavar="N",
                         help="document A only of scenario N, whose encounter is already completed: the "
                              "resident reopens the newest completed review; no encounter is started")
+    parser.add_argument("--review-date", metavar="'YYYY-MM-DD HH:MM UTC'",
+                        help="--resident-document: the completed review to reopen, as the dashboard "
+                             "dates it (default: the newest)")
     parser.add_argument("--no-ai", action="store_true", help="--run without the paid documents")
     parser.add_argument("--out", default="local-data/tanda20/rehearsal")
     parser.add_argument("--language", choices=("es", "en"), default="es",
@@ -579,7 +582,8 @@ def main(argv=None):
         out = ROOT / "local-data" / "tanda20" / "batch"
         out.mkdir(parents=True, exist_ok=True)
         entry = tanda20_runner.finish_resident_document(BY_NUMBER[args.resident_document],
-                                                        base_url=args.base_url, out=out)
+                                                        base_url=args.base_url, out=out,
+                                                        review_date=args.review_date)
         print(f"{args.resident_document:>2} {entry['case_id']:<30} stopped={entry['stopped']} "
               f"documents={sorted(entry['documents'])}", flush=True)
         return 1 if entry["stopped"] else 0

@@ -10,7 +10,7 @@ from account_store import AccountError
 from management_trace_analysis import (
     ManagementTraceAnalysisError, build_analysis_source,
     generate_management_trace_analysis, source_fingerprint,
-    usable_analysis, validate_management_trace_analysis,
+    accept_management_trace_analysis, usable_analysis, validate_management_trace_analysis,
 )
 from management_trace_store import ManagementTraceStore
 
@@ -94,9 +94,9 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
             # Always recheck the current account and record, including cache hits.
             report = store.get_latest(context["token"], st.session_state["_attempt_id"])
             if report is not None:
-                report = validate_management_trace_analysis(report, payload)
+                report = accept_management_trace_analysis(report, payload)
         if report is None and store is None and cache_key in st.session_state:
-            report = validate_management_trace_analysis(st.session_state[cache_key], payload)
+            report = accept_management_trace_analysis(st.session_state[cache_key], payload)
     except (AccountError, ManagementTraceAnalysisError) as exc:
         st.error(str(exc))
         return None
