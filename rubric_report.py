@@ -394,14 +394,16 @@ def build_rubric_document(review, proposal=None, record=None, *, language="en",
 def render_rubric_report_pdf(review, proposal=None, record=None, *, language="en",
                              audience="faculty", average=None, badge=None):
     """One page where it fits, and as many as the evidence needs where it does not."""
-    flow, assessment = build_rubric_document(review, proposal, record, language=language,
-                                             audience=audience, average=average, badge=badge)
-    buffer = BytesIO()
-    document = SimpleDocTemplate(
-        buffer, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN,
-        topMargin=MARGIN, bottomMargin=MARGIN,
-        title="Rubric assessment", author="Management Reasoning Simulator",
-        subject=assessment["rubric_version"],
-    )
-    document.build(flow)
+    import language as languages
+    with languages.presenting(language):
+        flow, assessment = build_rubric_document(review, proposal, record, language=language,
+                                                 audience=audience, average=average, badge=badge)
+        buffer = BytesIO()
+        document = SimpleDocTemplate(
+            buffer, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN,
+            topMargin=MARGIN, bottomMargin=MARGIN,
+            title="Rubric assessment", author="Management Reasoning Simulator",
+            subject=assessment["rubric_version"],
+        )
+        document.build(flow)
     return buffer.getvalue()

@@ -545,6 +545,8 @@ def reset_session():
     # remains unchanged while each decision can later support review/comparison.
     st.session_state.management_trace = []
     st.session_state.encounter_ended = False
+    # A new encounter records its own language when it closes (document_language).
+    st.session_state.pop("encounter_language", None)
     st.session_state.encounter_closed_trace = None
     st.session_state.encounter_closed_events = None
     st.session_state.encounter_closed_state = None
@@ -3591,6 +3593,7 @@ def _render_analyzed_management_trace():
         context=context, case_label=str(st.session_state.get("selected_case") or "Clinical encounter"),
         review_completed=bool(st.session_state.get("review_completed")),
         adaptation_plan=st.session_state.get("adaptation_plan") or {},
+        encounter_language=st.session_state.get("encounter_language"),
     )
 
 
@@ -3599,6 +3602,10 @@ def begin_decision_review(trace, state):
     frozen_trace = deepcopy(trace or [])
     frozen_state = management_state_snapshot(state)
     st.session_state.encounter_ended = True
+    # The language the encounter was played in: its documents follow it unless
+    # their reader chooses the other (faculty, 2026-09-26; document_language).
+    import language
+    st.session_state.encounter_language = language.current()
     st.session_state.encounter_closed_trace = frozen_trace
     st.session_state.encounter_closed_events = deepcopy(st.session_state.get("events") or [])
     st.session_state.encounter_closed_state = frozen_state
@@ -3697,6 +3704,8 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     st.session_state.history = []
     st.session_state.management_trace = []
     st.session_state.encounter_ended = False
+    # A new encounter records its own language when it closes (document_language).
+    st.session_state.pop("encounter_language", None)
     st.session_state.encounter_closed_trace = None
     st.session_state.encounter_closed_events = None
     st.session_state.encounter_closed_state = None
@@ -9304,6 +9313,8 @@ if not st.session_state.started:
         st.session_state.history = []
         st.session_state.management_trace = []
         st.session_state.encounter_ended = False
+        # A new encounter records its own language when it closes (document_language).
+        st.session_state.pop("encounter_language", None)
         st.session_state.encounter_closed_trace = None
         st.session_state.encounter_closed_events = None
         st.session_state.encounter_closed_state = None

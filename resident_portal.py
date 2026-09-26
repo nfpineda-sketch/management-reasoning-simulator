@@ -54,7 +54,7 @@ def _case_label(record):
     return "Clinical encounter"
 
 
-def _trace_pdf(context, record):
+def _trace_pdf(context, record, language=None):
     """The learner's own document, re-rendered from the analysis already saved.
 
     Rendered against the frozen evidence the analysis was written from and saved
@@ -73,10 +73,10 @@ def _trace_pdf(context, record):
         report, analysis_payload_from_session(session), case_label=_case_label(record),
         learner_label=str(context["user"]["username"]),
         review_completed=bool(session.get("review_completed")),
-        adaptation_plan=session.get("adaptation_plan"))
+        adaptation_plan=session.get("adaptation_plan"), language=language)
 
 
-def _rubric_pdf(context, record):
+def _rubric_pdf(context, record, language="en"):
     """The confirmed assessment, as the document, or None while it is a draft."""
     from rubric_report import RubricReportError, render_rubric_report_pdf
     from rubric_store import RubricStore
@@ -89,7 +89,7 @@ def _rubric_pdf(context, record):
                                    context["user"].get("training_year"))
     try:
         return render_rubric_report_pdf(review, proposal, record, audience="learner",
-                                        badge=badge), review
+                                        badge=badge, language=language), review
     except (RubricReportError, ValueError):
         return None, review
 
@@ -111,8 +111,12 @@ def render_my_encounters(context):
     for record in encounters:
         with st.expander(f"{_date(record['updated_at'])} · {record['challenge_id']} · "
                          f"{_case_label(record)}"):
+            # In the language the encounter was played in, unless chosen otherwise.
+            import document_language
+            written_in = document_language.choose(
+                f"documents_language_{record['id']}", (record.get("payload") or {}).get("session"))
             try:
-                pdf = _trace_pdf(context, record)
+                pdf = _trace_pdf(context, record, written_in)
             except (AccountError, ValueError):
                 pdf = None
             if pdf:
@@ -123,7 +127,7 @@ def render_my_encounters(context):
                 st.caption("No AI reading of this encounter was saved, so the Management "
                            "Trace cannot be rebuilt. The encounter record itself is intact.")
             try:
-                assessment, review = _rubric_pdf(context, record)
+                assessment, review = _rubric_pdf(context, record, written_in)
             except (AccountError, ValueError):
                 assessment, review = None, None
             if assessment and review:

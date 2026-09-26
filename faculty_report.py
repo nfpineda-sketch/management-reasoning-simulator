@@ -1074,22 +1074,27 @@ def _render_compact(report, record, inputs, app_url, correct=None, assessment=No
 
 
 def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corrections=None,
-                             assessment=None):
+                             assessment=None, language=None):
     """Render an unchanged stored brief as a concise review or the full report.
 
     The default is a two-page reading aid. ``compact=False`` retains complete
     model text and lets it flow across pages. The optional public ``app_url``
     adds an encounter selector link; authentication remains enforced by the app.
+    ``language`` writes the document in that language -- the one its encounter
+    was played in, or its reader's choice (``document_language``); without it
+    the session's language stands, as before.
     """
     inputs = _validated_inputs(report, record)
     # Recorded factual corrections are applied to the model's text at render
     # time; the stored brief keeps the original wording (2026-09-23).
     import report_corrections
+    import language as languages
     session = ((record or {}).get("payload") or {}).get("session") or {}
     correct = presentation.CorrectionLog(
         corrections if corrections is not None else report_corrections.for_record(record),
         references=presentation.reference_labels(session.get("management_trace") or []),
         language="en")
-    if compact:
-        return _render_compact(report, record, inputs, app_url, correct, assessment)
-    return _render_full(report, record, inputs, correct, assessment)
+    with languages.presenting(language):
+        if compact:
+            return _render_compact(report, record, inputs, app_url, correct, assessment)
+        return _render_full(report, record, inputs, correct, assessment)

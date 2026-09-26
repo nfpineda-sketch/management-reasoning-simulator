@@ -33,6 +33,9 @@ SESSION_FIELDS = (
     "ai_calls_spent", "ai_call_ledger",
     # How the encounter ended, as the resident said it ended (decision 9).
     "encounter_close", "close_pending",
+    # The language it was played in, recorded when it closes: its documents are
+    # written in it unless their reader chooses the other (document_language).
+    "encounter_language",
 )
 
 

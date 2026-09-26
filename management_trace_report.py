@@ -494,14 +494,26 @@ def _raw_event(payload, ref):
 
 def render_management_trace_pdf(
     report, payload, *, case_label="", learner_label="", review_completed=False,
-    adaptation_plan=None, corrections=None,
+    adaptation_plan=None, corrections=None, language=None,
 ):
     """Render a learner report; the report must match frozen source + reflection.
 
     ``adaptation_plan`` is later learner-authored content, not part of the AI
     input or fingerprint. Review status labels distinguish completed learning
     cycles from exports made before the comparison/adaptation is finished.
+    ``language`` writes the document in that language -- the one its encounter
+    was played in, or its reader's choice (``document_language``); without it
+    the session's language stands, as before.
     """
+    import language as languages
+    with languages.presenting(language):
+        return _render_management_trace_pdf(
+            report, payload, case_label=case_label, learner_label=learner_label,
+            review_completed=review_completed, adaptation_plan=adaptation_plan, corrections=corrections)
+
+
+def _render_management_trace_pdf(report, payload, *, case_label, learner_label, review_completed,
+                                 adaptation_plan, corrections):
     from management_trace_analysis import build_analysis_source, usable_analysis
 
     # A format fault in one passage withholds that passage, not the report

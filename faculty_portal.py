@@ -174,7 +174,7 @@ def _public_app_url():
     return value
 
 
-def _pdf_download(context, report, record, *, compact, assessment=None):
+def _pdf_download(context, report, record, *, compact, assessment=None, language=None):
     # Reauthorize even when PDF bytes already exist in this Streamlit session.
     # Always render from the separately stored faculty source, never a caller's
     # learner-owned payload or a stale UI role.
@@ -187,12 +187,13 @@ def _pdf_download(context, report, record, *, compact, assessment=None):
     # served from a cached document that predates it.
     stamp = (assessment or {}).get("traceability")
     pdf_key = ("faculty_pdf_v4", context["user"]["id"], report["brief_id"], mode, app_url,
-               repr(stamp) if stamp else "")
+               repr(stamp) if stamp else "", language or "")
     cache_key = repr(pdf_key)
     if cache_key not in st.session_state:
         try:
             st.session_state[cache_key] = render_faculty_brief_pdf(
-                report, record, compact=compact, app_url=app_url, assessment=assessment)
+                report, record, compact=compact, app_url=app_url, assessment=assessment,
+                language=language)
         except (ValueError, LayoutError):
             if compact:
                 st.warning("This report could not be fitted into the concise PDF. Open the full analysis below; you can still review and record assessments.")
@@ -221,7 +222,7 @@ def _training_year(context, record):
     return None
 
 
-def _rubric_pdf_download(context, review, proposal, record):
+def _rubric_pdf_download(context, review, proposal, record, language="en"):
     """The rubric assessment as its own document, for the faculty only.
 
     It does not depend on an AI faculty brief existing: the rubric is a
@@ -251,11 +252,11 @@ def _rubric_pdf_download(context, review, proposal, record):
     cache_key = repr(("rubric_pdf_v2", context["user"]["id"], record["id"],
                       review_key.get("sequence"), review_key.get("status"),
                       (proposal or {}).get("proposal_id"), summary["encounters"],
-                      bool(badge), (badge or {}).get("initials")))
+                      bool(badge), (badge or {}).get("initials"), language))
     if cache_key not in st.session_state:
         try:
             st.session_state[cache_key] = render_rubric_report_pdf(
-                review, proposal, record, average=average, badge=badge)
+                review, proposal, record, average=average, badge=badge, language=language)
         except (RubricReportError, ValueError, LayoutError):
             st.caption("The rubric document could not be prepared. The assessment above is "
                        "unchanged and remains available.")
@@ -307,12 +308,16 @@ def render_faculty_analysis(context, record):
                                          saved_review)
     except AccountError:
         proposal = None
+    # This encounter's documents are written in the language it was played in,
+    # unless the reader chooses the other (faculty, 2026-09-26).
+    import document_language
+    written_in = document_language.choose("_documents_language_" + record["id"], session)
     if saved_review is not None:
         assessment = rubric_presentation.summary(saved_review, proposal, record=record)
-        _rubric_pdf_download(context, saved_review, proposal, record)
+        _rubric_pdf_download(context, saved_review, proposal, record, written_in)
     elif proposal is not None:
         # The proposal can be printed before any decision; nothing is saved.
-        _rubric_pdf_download(context, None, proposal, record)
+        _rubric_pdf_download(context, None, proposal, record, written_in)
     try:
         record = _staff_record(context, record)
         # What the room showed of the patient, read only when asked for: one query
@@ -360,7 +365,8 @@ def render_faculty_analysis(context, record):
                 st.caption("Autonomy the declared context did not allow the AI to propose was left "
                            "for your confirmation: " + ", ".join(report["autonomy_withheld"]) + ".")
             analysis = report["analysis"]
-            _pdf_download(context, report, record, compact=True, assessment=assessment)
+            _pdf_download(context, report, record, compact=True, assessment=assessment,
+                          language=written_in)
             st.caption("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification.")
             labels = _labels(record)
             correct = _prose(record)
@@ -378,7 +384,8 @@ def render_faculty_analysis(context, record):
                 for key in analysis["objectives"]
             ], hide_index=True, use_container_width=True)
             with st.expander("Read the analysis and debriefing questions"):
-                _pdf_download(context, report, record, compact=False, assessment=assessment)
+                _pdf_download(context, report, record, compact=False, assessment=assessment,
+                              language=written_in)
                 st.markdown("**Performance synthesis**")
                 st.write(correct(analysis["summary"]))
                 for title, values in (("Strengths", analysis["strengths"]),

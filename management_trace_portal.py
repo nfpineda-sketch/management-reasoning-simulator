@@ -68,7 +68,8 @@ def _trends(source):
 
 
 def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini", context=None,
-                                     case_label="", review_completed=False, adaptation_plan=None):
+                                     case_label="", review_completed=False, adaptation_plan=None,
+                                     encounter_language=None):
     """Reuse a source-bound analysis; automatic first attempt, explicit retries.
 
     Caller persists the locked reflection before entering this function. The
@@ -205,13 +206,19 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
         for claim in analysis["questions"]:
             _claim(claim, labels, correct)
     from management_trace_report import RENDERER_VERSION, render_management_trace_pdf
+    # Written in the language the encounter was played in, unless its reader
+    # chooses the other (faculty, 2026-09-26).
+    import document_language
+    written_in = document_language.choose(
+        cache_key + "_language", {document_language.FIELD: encounter_language})
     pdf_key = cache_key + "_pdf_" + hashlib.sha256(json.dumps(
-        [report, adaptation_plan, bool(review_completed), case_label, RENDERER_VERSION],
+        [report, adaptation_plan, bool(review_completed), case_label, RENDERER_VERSION, written_in],
         sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     if pdf_key not in st.session_state:
         st.session_state[pdf_key] = render_management_trace_pdf(
             report, payload, case_label=case_label,
             review_completed=review_completed, adaptation_plan=adaptation_plan,
+            language=written_in,
         )
     st.download_button("Download Management Trace PDF", st.session_state[pdf_key],
                        file_name="management_trace_v0.17.0.pdf", mime="application/pdf",

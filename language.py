@@ -24,11 +24,19 @@ This is the first stage the decision asked for: the fixed text — labels, state
 and system messages. The authored narrative of each case (presentation, history
 answers, examination prose) is still English and is the next stage.
 """
+from contextlib import contextmanager
+from contextvars import ContextVar
 import os
 import re
 
 LANGUAGES = {"en": "English", "es": "Español"}
 DEFAULT = "en"          # the UH environment keeps English as its default
+
+#: The language of the document being written right now, when it is not the
+#: session's: a document follows the language its encounter was played in, or
+#: the one its reader chose, while the app around it keeps the reader's own
+#: (faculty, 2026-09-26). Set only inside ``presenting``.
+_DOCUMENT = ContextVar("document_language", default=None)
 
 
 def configured():
@@ -37,8 +45,24 @@ def configured():
     return choice if choice in LANGUAGES else DEFAULT
 
 
+@contextmanager
+def presenting(code):
+    """Write what happens inside this block in ``code``, whatever the session shows.
+
+    An unknown or empty code changes nothing: the session's language stands.
+    """
+    token = _DOCUMENT.set(code if code in LANGUAGES else None)
+    try:
+        yield
+    finally:
+        _DOCUMENT.reset(token)
+
+
 def current():
-    """The language this session is presenting in."""
+    """The language this session is presenting in, or the document being written."""
+    document = _DOCUMENT.get()
+    if document in LANGUAGES:
+        return document
     try:
         import streamlit as st
         value = st.session_state.get("presentation_language")

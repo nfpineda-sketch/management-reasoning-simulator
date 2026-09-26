@@ -33,6 +33,9 @@ INSTRUCTION_2026_09_27 = ("Instrucción docente del 2026-09-27 (peso y talla; de
                           "compatibilidad visual amplia)")
 INSTRUCTION_2026_09_26B = ("Instrucción docente del 2026-09-26 (cierre de jugabilidad, unificación de "
                            "recorridos, fidelidad del registro y alcance de la evaluación)")
+INSTRUCTION_2026_09_26C = ("Instrucción docente del 2026-09-26 (idioma: un encuentro jugado en español da sus "
+                           "documentos en español, uno en inglés en inglés, y lo almacenado se puede ver en "
+                           "cualquiera de los dos)")
 
 CORRECTIONS = (
     {
@@ -641,6 +644,33 @@ CORRECTIONS = (
         "tests": ["test_doses_by_solution_and_by_weight.py::test_a_dose_per_kilogram_keeps_the_resident_s_amount_in_the_record_s_units",
                   "test_doses_by_solution_and_by_weight.py::test_a_dose_per_kilogram_uses_the_weight_in_the_chart",
                   "test_weight_and_height.py::test_fentanyl_doses_are_read_written_and_bounded_in_micrograms"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-22",
+        "date": "2026-09-26",
+        "title": "Los documentos se escriben en el idioma en que se jugó el encuentro; quien los abre puede elegir el otro",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Un encuentro guarda el idioma de pantalla con que se cerró (encounter_language, fuera de toda "
+                   "huella de análisis). El Management Trace, el Faculty Brief y el documento de rúbrica se escriben "
+                   "en ese idioma, con un selector Español/English junto a cada descarga; el documento de rúbrica "
+                   "dejó de salir siempre en inglés. Un encuentro cerrado antes no registró idioma y no se adivina: "
+                   "sus documentos siguen la elección de quien los abre, como antes. Nada se regenera."),
+        "authorised_by": INSTRUCTION_2026_09_26C,
+        "affects": {"modules": ["language", "document_language", "curriculum_runtime", "app",
+                                "management_trace_report", "faculty_report", "rubric_report",
+                                "management_trace_portal", "resident_portal", "faculty_portal"],
+                    "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_document_language.py::test_an_encounter_records_the_language_it_closes_in",
+                  "test_document_language.py::test_the_encounter_page_records_the_language_it_was_played_in_and_saves_it",
+                  "test_document_language.py::test_the_language_is_read_from_the_record_and_never_guessed",
+                  "test_document_language.py::test_the_management_trace_is_written_in_the_language_it_is_given",
+                  "test_document_language.py::test_the_faculty_brief_is_written_in_the_language_it_is_given",
+                  "test_document_language.py::test_the_rubric_document_is_written_in_the_language_it_is_given",
+                  "test_document_language.py::test_the_faculty_page_offers_the_encounter_s_language_first",
+                  "test_document_language.py::test_the_faculty_brief_downloaded_is_in_the_chosen_language"],
         "preservation": None,
     },
     {
