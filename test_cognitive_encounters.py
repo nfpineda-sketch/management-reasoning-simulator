@@ -6,6 +6,8 @@ validation of the numerical trajectories. No paid AI or image call is made.
 from copy import deepcopy
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 from streamlit.testing.v1 import AppTest
@@ -191,14 +193,28 @@ def widget(elements, label):
     return next(item for item in elements if item.label == label)
 
 
-@pytest.fixture
-def shared_app(monkeypatch):
-    # Historical authored-family integration is an explicit replay fixture.
+def authored_replay_fixture(monkeypatch):
+    """Historical authored-family integration is an explicit replay fixture.
+
+    Both aliases of the generator are loaded before either is patched, as in
+    ``test_curriculum_app``. ``curriculum_runtime`` binds ``generate_encounter``
+    when it is imported; imported for the first time inside the patched window
+    (the app's first run imports it), it kept the replay after teardown, and a
+    later test in the same process launched a bank case where it expected a
+    newly authored one (test_problem_launch, 2026-09-26).
+    """
+    import curriculum_runtime
     from encounter_generator import generate_encounter as real_generate
     def authored_replay(*args, **kwargs):
         kwargs["generation_mode"] = "authored"
         return real_generate(*args, **kwargs)
     monkeypatch.setattr("encounter_generator.generate_encounter", authored_replay)
+    monkeypatch.setattr(curriculum_runtime, "generate_encounter", authored_replay)
+
+
+@pytest.fixture
+def shared_app(monkeypatch):
+    authored_replay_fixture(monkeypatch)
     monkeypatch.setenv("MRS_AUTH_MODE", "shared")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     app = AppTest.from_file(str(Path(__file__).with_name("app.py")), default_timeout=30)
@@ -207,6 +223,30 @@ def shared_app(monkeypatch):
     app.run()
     assert not app.exception
     return app
+
+
+def test_the_replay_fixture_leaves_no_generator_behind():
+    # The order-dependent failure of 2026-09-26 (C-2026-09-26-20): the replay
+    # ends with the fixture even when curriculum_runtime is first imported
+    # inside it, as the app's first run imports it. A fresh interpreter, because
+    # this process has long since imported both modules.
+    source = """
+import sys
+import pytest
+from test_cognitive_encounters import authored_replay_fixture
+assert "curriculum_runtime" not in sys.modules
+with pytest.MonkeyPatch.context() as patch:
+    authored_replay_fixture(patch)
+    import curriculum_runtime
+    import encounter_generator
+    assert curriculum_runtime.generate_encounter.__name__ == "authored_replay"
+    assert encounter_generator.generate_encounter.__name__ == "authored_replay"
+assert curriculum_runtime.generate_encounter is encounter_generator.generate_encounter
+assert encounter_generator.generate_encounter.__name__ == "generate_encounter"
+"""
+    result = subprocess.run([sys.executable, "-c", source], cwd=Path(__file__).resolve().parent,
+                            capture_output=True, text=True, timeout=120)
+    assert result.returncode == 0, result.stderr[-2000:]
 
 
 def test_shared_selector_prioritizes_new_challenges_without_legacy_case_identifiers(shared_app):

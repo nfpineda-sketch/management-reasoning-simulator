@@ -55,9 +55,15 @@ def test_unknown_observed_device_is_not_silently_ignored():
     assert e.value.reason_code=='invalid_response'
 
 def test_photographic_limitation_reaches_visible_scene():
+    # It reaches the room as the one neutral sentence, without naming the sign
+    # (faculty instruction of 2026-09-26, point 6; C-2026-09-26-19); the image
+    # keeps which sign it could not show.
     from scene_pipeline import ScreenedImage
-    from clinical_scene import scene_html
-    assert 'Mild pallor: not discernible' in scene_html(ScreenedImage('abc',['mild_skin_color']),'monitor')
+    from clinical_scene import STILL_VIEW_NOTE, scene_html
+    image = ScreenedImage('abc',['mild_skin_color'])
+    html = scene_html(image,'monitor')
+    assert STILL_VIEW_NOTE in html and 'Mild pallor' not in html
+    assert image.limitations == ('mild_skin_color',)
 
 
 def test_rechecking_candidate_does_not_generate_another_image(monkeypatch):

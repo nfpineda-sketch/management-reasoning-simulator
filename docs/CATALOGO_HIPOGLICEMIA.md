@@ -151,6 +151,8 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-26-17 | El peso seco inferido (117 kg) se retira: no está registrado hasta que la facultad lo defina | variante bradycardia_hyperk_63m | clinical_decision_applied | clinical | — |
 | C-2026-09-26-18 | La evaluación conoce sus convenciones: alcance por observación en el Brief y junto a la rúbrica | general | policy | clinical | — |
 | C-2026-09-26-19 | Imágenes: los rangos de IMC orientan sin excluir por poco, y la nota de la foto es neutral | general | clinical_decision_applied | clinical | — |
+| C-2026-09-26-20 | La prueba que dependía del orden: el reemplazo del generador de una prueba no sobrevive a su fin | general | technical_defect | none | — |
+| C-2026-09-26-21 | Una dosis por kilo conserva la cantidad del residente con la unidad escrita como en el registro | general | technical_defect | cosmetic | — |
 | C-2026-09-27-01 | Peso y talla en los 31 casos del banco y en la ficha, sólo para encuentros nuevos | general | clinical_decision_applied | clinical | — |
 | C-2026-09-27-02 | Volumen corriente por kilo sobre el peso corporal predicho; el volumen absoluto se respeta | general | clinical_decision_applied | clinical | — |
 | C-2026-09-27-03 | Dosis por kilo: el tipo de peso explícito se respeta, se registra el peso usado y un mismo efecto por dosis | general | clinical_decision_applied | clinical | — |

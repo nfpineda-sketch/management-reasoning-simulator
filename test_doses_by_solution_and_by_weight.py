@@ -199,6 +199,21 @@ def test_the_supported_doses_per_kilogram(text, kind, field, value):
     assert action["type"] == kind and action[field] == value
 
 
+@pytest.mark.parametrize("text, written", [
+    ("Doy heparina 80 UI/kg ev", "80 units/kg"),
+    ("Doy heparina 80 unidades/kg ev", "80 units/kg"),
+    ("Give heparin 80 U/kg IV", "80 units/kg"),
+    ("Doy fentanilo 1 ug/kg ev", "1 mcg/kg"),
+    ("Doy glucosa 0.5 gramos/kg ev", "0.5 g/kg"),
+    ("Doy enoxaparina 1 mg/kg sc", "1 mg/kg"),
+])
+def test_a_dose_per_kilogram_keeps_the_resident_s_amount_in_the_record_s_units(text, written):
+    # C-2026-09-26-21: the amount and unit the resident wrote, spelled as the
+    # record spells units ("80 UI/kg" beside "3760 units" had become "80 ui/kg").
+    [action] = parse_family_actions(text)["actions"]
+    assert action["per_kg_written"] == written
+
+
 @pytest.mark.parametrize("text, grams, basis", [
     ("Doy glucosa al 30% 50 ml ev", 15.0, "30% × 50 mL"),
     ("Doy 50 ml de glucosa al 50% ev", 25.0, "50% × 50 mL"),

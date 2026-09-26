@@ -425,6 +425,9 @@ Las comprobaciones que pediste en el punto 6. Reutilicé encuentros y pruebas gu
    el caso declara «minimal» y produce ~7 mL/h, no 70.
 5. **Adrenalina IM y ácido tranexámico en mg/kg — corregido** (C-2026-09-26-15). Se entienden por kilo, se
    convierten con el peso de la ficha y el rango juzga la dosis resultante abiertamente.
-6. **Pruebas que dependen del orden.** Pendiente de reproducir en esta sesión (requiere pytest, bloqueado por la
-   red del entorno al escribir esto); ver el informe de cierre.
+6. **Prueba que dependía del orden — corregida** (C-2026-09-26-20). Reproducida con pytest: el fixture de
+   reproducción de `test_cognitive_encounters` reemplazaba sólo `encounter_generator.generate_encounter`, y
+   `curriculum_runtime`, importado por primera vez dentro de ese intervalo, guardaba el reemplazo después de la
+   restauración. El estado compartido estaba en la prueba, no en la aplicación; el fixture ahora carga y restaura
+   los dos alias, como ya hacía `test_curriculum_app`. Detalle en el informe de cierre.
 

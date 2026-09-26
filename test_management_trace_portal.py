@@ -210,7 +210,9 @@ def _runtime_secret(key):
     app.run()
     assert not app.exception and len(calls) == 1
     payload, kwargs = calls[0]
-    assert payload == {**source_payload, "encounter_events": []}
+    # The payload names its case beside the frozen evidence (C-2026-09-26-13);
+    # a session without an authored case says so with an empty name, never a guess.
+    assert payload == {**source_payload, "encounter_events": [], "authored_case_id": ""}
     assert kwargs["model"] == "configured-trace-model"
     assert kwargs["api_key"] == "TEST_KEY"
 

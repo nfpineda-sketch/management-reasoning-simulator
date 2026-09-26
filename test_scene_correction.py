@@ -116,9 +116,13 @@ def test_reported_mild_sweat_uncertainty_renders_current_image_without_extra_gen
     assert jobs.status(signature)['state'] == 'ready'
     html = clinical_scene.scene_html(current, '<div>HR 118</div>')
     assert 'background-image:url(data:image/png;base64,' + encoded in html
-    assert 'not discernible in this still view' in html and 'HR 118' in html
+    # The room's note is the one neutral sentence beside every photograph; the
+    # sign the photograph could not show stays in its limitations, not on screen
+    # (faculty instruction of 2026-09-26, point 6; C-2026-09-26-19).
+    assert clinical_scene.STILL_VIEW_NOTE in html and 'HR 118' in html
+    assert 'Skin moisture' not in html and 'Breathing effort' not in html
     assert 'unavailable' not in html and 'IMAGE-SCREEN-UNCERTAIN' not in html
-    assert 'not discernible' not in clinical_scene.scene_html(current, '', current=False)
+    assert clinical_scene.STILL_VIEW_NOTE not in clinical_scene.scene_html(current, '', current=False)
     assert encoded not in clinical_scene.scene_html(current, '', current=False)
     for _ in range(4):
         request(jobs, state)

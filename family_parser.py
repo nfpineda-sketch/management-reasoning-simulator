@@ -867,6 +867,11 @@ _PER_KILO_ANY = re.compile(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mg|mcg|ug|g|gramos?|
                            r"\s*/\s*kg(?!\s*/)", re.I)
 #: Kinds whose dose field is in grams, so a dose per kilogram lands in grams too.
 _GRAM_DOSE_KINDS = frozenset({"dextrose", "tranexamic_acid"})
+#: How the record spells the unit of a dose per kilogram: the resident's amount
+#: and unit, in the record's words ("80 UI/kg" is "80 units/kg", as the dose it
+#: becomes is "3760 units"; units read the same in both languages, language.py).
+_WRITTEN_UNIT = {"ug": "mcg", "ui": "units", "u": "units", "unit": "units", "unidades": "units",
+                 "gram": "g", "grams": "g", "gramo": "g", "gramos": "g"}
 # Faculty decision 4 of 2026-09-25: "dejar en observacion en urgencias N horas"
 # is a destination, with its duration; keeping the patient monitored is not.
 _ED_OBSERVATION = re.compile(
@@ -893,7 +898,7 @@ _SOLUTION_VOLUME = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ml|cc|l|lt)\b", re.I)
 def _per_kilo_order(kind, agent, match, text):
     """A dose per kilogram, kept as written: the weight turns it into a dose later."""
     value, unit = float(match[1]), match[2].lower()
-    written = f"{value:g} {'mcg' if unit in {'mcg', 'ug'} else unit}/kg"
+    written = f"{value:g} {_WRITTEN_UNIT.get(unit, unit)}/kg"
     if unit in {"mcg", "ug"}:
         value, unit = value / 1000, "mg"
     if unit in {"ui", "u", "unit", "units", "unidades"}:

@@ -604,6 +604,46 @@ CORRECTIONS = (
         "preservation": None,
     },
     {
+        "id": "C-2026-09-26-20",
+        "date": "2026-09-26",
+        "title": "La prueba que dependía del orden: el reemplazo del generador de una prueba no sobrevive a su fin",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Punto 3: test_problem_launch::test_new_ai_case_is_persisted_and_resumed_without_reauthoring fallaba "
+                   "sólo después de test_cognitive_encounters en el mismo proceso. Reproducida: el fixture shared_app "
+                   "reemplazaba sólo encounter_generator.generate_encounter, y curriculum_runtime, importado por primera "
+                   "vez dentro de ese intervalo por la primera ejecución de la app, guardaba el reemplazo después de la "
+                   "restauración; la prueba siguiente lanzaba un caso del banco en vez de uno generado. El estado "
+                   "compartido estaba en la prueba, no en la aplicación, donde nada reemplaza el generador. El fixture "
+                   "carga los dos alias antes de reemplazarlos y restaura ambos, como ya hacía test_curriculum_app; el "
+                   "código de la aplicación no cambia."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["test_cognitive_encounters"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_cognitive_encounters.py::test_the_replay_fixture_leaves_no_generator_behind",
+                  "test_problem_launch.py::test_new_ai_case_is_persisted_and_resumed_without_reauthoring"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-21",
+        "date": "2026-09-26",
+        "title": "Una dosis por kilo conserva la cantidad del residente con la unidad escrita como en el registro",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Al mostrar la dosis por kilo como se escribió (C-2026-09-26-15), la unidad quedaba tal cual en "
+                   "minúsculas: «80 UI/kg» se registraba «80 ui/kg» junto a «3760 units». Se conservan la cantidad y la "
+                   "unidad del residente (1 mcg/kg sigue en microgramos, no 0,001 mg/kg) con la grafía del registro: "
+                   "UI, U y unidades son units; gramos es g. La dosis ejecutada no cambia y la etiqueta vuelve a la "
+                   "que citan las pruebas de C-2026-09-27-03."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["family_parser"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_doses_by_solution_and_by_weight.py::test_a_dose_per_kilogram_keeps_the_resident_s_amount_in_the_record_s_units",
+                  "test_doses_by_solution_and_by_weight.py::test_a_dose_per_kilogram_uses_the_weight_in_the_chart",
+                  "test_weight_and_height.py::test_fentanyl_doses_are_read_written_and_bounded_in_micrograms"],
+        "preservation": None,
+    },
+    {
         "id": "C-2026-09-27-01",
         "date": "2026-09-27",
         "title": "Peso y talla en los 31 casos del banco y en la ficha, sólo para encuentros nuevos",
