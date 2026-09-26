@@ -52,13 +52,37 @@ SEDATION_DURATION_MIN = 45
 
 
 def settings(state):
-    """Current ventilator settings, with the defaults a ventilator would apply."""
+    """Current ventilator settings, with the defaults a ventilator would apply.
+
+    ``weight_kg`` is the weight the model's own physiology is calibrated on -- the
+    required minute ventilation and the default tidal volume. Their weight basis is
+    a pending faculty decision (2026-09-27), so it stays the case's recorded weight
+    or 70 kg (``patient_body.engine_reference_weight``).
+
+    A tidal volume written per kilogram is on the predicted body weight in an
+    encounter launched under the 2026-09-27 rules (faculty decision B): from sex
+    and height, with the formula in ``tidal_basis``. A weight type the resident
+    named is kept. An absolute volume is always the volume written.
+    """
+    import patient_body
     tr = state.get("treatments", {})
-    weight = float(state.get("encounter_spec", {}).get("clinical_case", {})
-                   .get("patient", {}).get("weight_kg") or DEFAULT_WEIGHT_KG)
+    patient = state.get("encounter_spec", {}).get("clinical_case", {}).get("patient", {})
+    weight = patient_body.engine_reference_weight(patient) if patient else DEFAULT_WEIGHT_KG
     tidal = tr.get("ventilator_tidal_volume_ml")
+    tidal_basis = None
     if tidal is None and tr.get("ventilator_tidal_ml_per_kg") is not None:
-        tidal = float(tr["ventilator_tidal_ml_per_kg"]) * weight
+        per_kg = float(tr["ventilator_tidal_ml_per_kg"])
+        if patient_body.rules_apply(state):
+            basis = tr.get("ventilator_tidal_basis") or patient_body.agreed_basis("ventilator", "tidal_volume")
+            kg, description = patient_body.dosing_weight(patient, basis)
+            if kg is None:
+                kg = float((patient_body.body(patient) or {}).get("weight_kg") or weight)
+                description = f"{description}: the recorded weight was used"
+                basis = "actual"
+            tidal = round(per_kg * kg)
+            tidal_basis = {"ml_per_kg": per_kg, "basis": basis, "weight_kg": kg, "description": description}
+        else:
+            tidal = per_kg * weight
     return {
         "mode": tr.get("ventilator_mode") or "VC/AC",
         "fio2_percent": float(tr.get("ventilator_fio2_percent") or 100),
@@ -67,7 +91,16 @@ def settings(state):
         "rate_per_min": float(tr.get("ventilator_rate_per_min") or DEFAULT_RATE_PER_MIN),
         "flow_l_per_min": float(tr.get("ventilator_flow_l_per_min") or DEFAULT_FLOW_L_PER_MIN),
         "weight_kg": weight,
+        "tidal_basis": tidal_basis,
     }
+
+
+def tidal_text(tidal_basis, tidal_ml):
+    """How a tidal volume per kilogram became millilitres: "8 mL/kg × 61.5 kg (...) = 492 mL"."""
+    if not tidal_basis:
+        return None
+    return (f"{tidal_basis['ml_per_kg']:g} mL/kg × {tidal_basis['weight_kg']:g} kg = {tidal_ml:g} mL, on the "
+            f"{tidal_basis['description']}")
 
 
 def mechanics(state, airflow, sedated=True):
@@ -129,9 +162,10 @@ def hypercapnia_note(ph, paco2):
 
 
 def pressure_report(mech, auto_peep):
+    how = tidal_text(mech.get("tidal_basis"), mech["tidal_volume_ml"])
     text = (f"Airway pressures: peak {mech['peak_cmh2o']:g}, plateau {mech['plateau_cmh2o']:g}, "
             f"auto-PEEP {auto_peep:.1f} cmH2O (set PEEP {mech['peep_cmh2o']:g}); "
-            f"Vt {mech['tidal_volume_ml']:g} mL, rate {mech['rate_per_min']:g}/min, "
+            f"Vt {mech['tidal_volume_ml']:g} mL{f' ({how})' if how else ''}, rate {mech['rate_per_min']:g}/min, "
             f"expiratory time {mech['expiratory_time_s']:g} s.")
     if mech["high_pressure_alarm"]:
         text += (" The high airway pressure alarm is sounding; peak pressure reflects the resistance of the "

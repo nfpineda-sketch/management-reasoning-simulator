@@ -88,21 +88,21 @@ def _is_a_new_submission(reply):
     return any(a.get('type') not in {'reassessment'} for a in reply)
 
 
-def complete_bundle(pending, text):
+def complete_bundle(pending, text, state=None):
     body = _normalize(text).strip()
     if _is_a_fresh_turn(text):
         return {'superseded': True}
     original = pending['parsed']['actions'][pending['index']]
-    from weight_based_doses import apply as apply_weight, from_reply, needs_weight
+    from weight_based_doses import answer as answer_weight, needs_weight
     if needs_weight(original):
-        kg = from_reply(text)
-        if kg is None:
-            return {'clarification': 'Give the patient\'s weight in kg (for example, 60 kg). '
-                                     'The whole order is kept; only the weight is missing.'}
+        # The weight (or, since 2026-09-27, the weight type) the reader asked for;
+        # one answer completes every order in the submission that waits for it.
         parsed = deepcopy(pending['parsed'])
         for action in parsed['actions']:
             if needs_weight(action):
-                apply_weight(action, kg, 'resident')
+                retry = answer_weight(action, text, state)
+                if retry:
+                    return {'clarification': retry}
         parsed.pop('clarification', None)
         parsed['raw_text'] = str(parsed.get('raw_text', '')) + '\nClarification: ' + str(text)
         parsed['resolved_from_clarification'] = True

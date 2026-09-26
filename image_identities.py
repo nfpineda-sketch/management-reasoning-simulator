@@ -29,11 +29,16 @@ Santiago and of Hispanic Cleveland, and gives the fourteen people not yet drawn
 the habitus the target needs. Habitus is independent of tone and of the
 diagnosis: a photograph must not become a cue for either.
 
-A habitus must also agree with the weight the engine uses. A case that states
-no weight is computed at 70 kg, and a visibly obese person would lead a
-resident to estimate, dose and judge urine output for a weight the engine does
-not use. So the case's weight decides which habitus it can show
-(``compatible``): obesity only where the case weighs enough for it.
+A body must not contradict the chart (faculty, 2026-09-27). The room frames
+the patient from the chest up, in bed, under a blanket, so a photograph shows
+face, neck, shoulders, arms and hands; height cannot be judged lying down, and
+no weight is read from a picture. A person fits a case unless the body the
+photograph shows clearly contradicts the weight and height in the chart
+(``compatible``): the ranges are wide on purpose. The 15 kg rule of 2026-09-26 is
+retired. Between two people who both fit, the one whose build is nearer the
+chart comes first (``image_selection``). A case whose chart has no weight (an
+encounter launched before 2026-09-27, which the engine computes at 70 kg) is not
+shown a visibly obese person.
 """
 from __future__ import annotations
 
@@ -76,14 +81,35 @@ HABITUS = {
                                  "arms and a full face and neck, filling most of the bed's width, drawn "
                                  "realistically and with dignity, never exaggerated")},
 }
-# A case that states no weight is computed at this weight (family_engine and the
-# rest of the engine), so its patient must look like someone who could weigh it.
-ENGINE_DEFAULT_WEIGHT_KG = 70.0
-# A habitus fits a case when what it weighs at an ordinary adult height (the
-# mean of Chilean and US adults) is within this of the case's weight: a resident
-# estimating the weight from the photograph is then not misled by much.
+# A chart with a weight and no height (a generated case) is read at an ordinary
+# adult height, the mean of Chilean and US adults.
 TYPICAL_HEIGHT_M = {"female": 1.61, "male": 1.74}
-WEIGHT_TOLERANCE_KG = 15.0
+
+# How a body looks in the room's photograph, from slim to severely obese.
+APPARENT_BUILDS = ("slim", "average", "heavier", "obese", "severely obese")
+# The body-mass indices each apparent build can stand for in that framing. Wide on
+# purpose: a range closes only where the contradiction would be plain -- a slim
+# person for an overweight-to-obese chart, an average one for obesity class II,
+# an obese one for a normal weight.
+BUILD_BMI = {"slim": (0.0, 28.0), "average": (17.0, 35.0), "heavier": (22.0, 40.0),
+             "obese": (27.0, 99.0), "severely obese": (33.0, 99.0)}
+# Where each build looks most at home; between two people who both fit, the one
+# in their core comes first.
+BUILD_CORE = {"slim": (0.0, 25.0), "average": (18.5, 30.0), "heavier": (25.0, 35.0),
+              "obese": (30.0, 40.0), "severely obese": (35.0, 99.0)}
+# How the people already photographed look in their reference photograph, read
+# by eye (agent, 2026-09-27) and listed for the faculty's review in
+# docs/PESOS_CASOS.md: a reading of a picture, not a weight. The first sixteen
+# were drawn slim or fit whatever their build word said. A person not yet
+# photographed is taken to look as the prompt asks, until a photograph shows it.
+APPARENT_BUILD = {
+    "V01": "heavier", "V02": "slim", "V03": "slim", "V05": "slim", "V08": "heavier", "V09": "slim", "V11": "average",
+    "V12": "average", "V14": "slim", "V17": "slim", "V18": "average", "V19": "heavier", "V21": "slim",
+    "V22": "average", "V23": "average", "V24": "average", "V26": "average", "V27": "average", "V29": "slim",
+    "V33": "obese", "V35": "obese", "V38": "severely obese",
+}
+_REQUESTED_BUILD = {"normal": "average", "overweight": "heavier", "obese": "obese",
+                    "severely obese": "severely obese"}
 
 
 def _identity(number, sex, band, tone, hair, build, face="", habitus="normal"):
@@ -161,26 +187,25 @@ def identity(identity_id):
         raise KeyError(f"Unknown visual identity {identity_id!r}.") from None
 
 
-def habitus_weight(habitus, sex):
-    """What a body of this habitus weighs at an ordinary adult height, in kg."""
-    return HABITUS[habitus]["bmi"] * TYPICAL_HEIGHT_M[sex] ** 2
+def apparent_build(identity_record):
+    """How this person's body looks in the room's photograph (or will, as asked)."""
+    return APPARENT_BUILD.get(identity_record["id"]) or _REQUESTED_BUILD[identity_record.get("habitus", "normal")]
 
 
-def habitus_fits(habitus, sex, weight_kg=None):
-    """Whether a body of this habitus looks like the case's weight (or the engine's default).
-
-    Beyond both ends of the scale -- lighter than a normal body, heavier than a
-    severely obese one -- the nearest end fits, so no case is left without one.
-    """
-    weight = float(weight_kg or ENGINE_DEFAULT_WEIGHT_KG)
-    if abs(habitus_weight(habitus, sex) - weight) <= WEIGHT_TOLERANCE_KG:
-        return True
-    lightest, heaviest = habitus_weight("normal", sex), habitus_weight("severely obese", sex)
-    return (habitus == "normal" and weight < lightest) or (habitus == "severely obese" and weight > heaviest)
+def case_bmi(patient):
+    """The body-mass index of the chart, or None when the chart has no weight."""
+    import patient_body
+    value = patient_body.bmi(patient)
+    if value is not None:
+        return value
+    recorded = patient_body.body(patient)
+    if recorded and recorded.get("weight_kg") and patient.get("sex") in TYPICAL_HEIGHT_M:
+        return round(recorded["weight_kg"] / TYPICAL_HEIGHT_M[patient["sex"]] ** 2, 1)
+    return None
 
 
 def compatible(identity_record, patient):
-    """Whether this person can be the case's patient. The case decides: age, sex and weight."""
+    """Whether this person can be the case's patient. The case decides: age, sex, and a body the chart allows."""
     if not isinstance(patient, dict):
         return False
     age, sex = patient.get("age_years"), patient.get("sex")
@@ -190,9 +215,24 @@ def compatible(identity_record, patient):
     if identity_record["sex"] != sex or not low <= age <= high:
         return False
     weight = patient.get("weight_kg")
-    if weight is not None and not isinstance(weight, (int, float)):
+    if weight is not None and (isinstance(weight, bool) or not isinstance(weight, (int, float))):
         return False
-    return habitus_fits(identity_record.get("habitus", "normal"), sex, weight)
+    build = apparent_build(identity_record)
+    bmi = case_bmi(patient)
+    if bmi is None:
+        # No weight in the chart: the engine computes at 70 kg.
+        return build not in ("obese", "severely obese")
+    lowest, highest = BUILD_BMI[build]
+    return lowest <= bmi < highest
+
+
+def near(identity_record, patient):
+    """Whether the chart sits in the core of this person's build: 0 if so, 1 if only at its edge."""
+    bmi = case_bmi(patient)
+    if bmi is None:
+        return 0
+    lowest, highest = BUILD_CORE[apparent_build(identity_record)]
+    return 0 if lowest <= bmi < highest else 1
 
 
 def compatible_identities(patient):

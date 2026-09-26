@@ -67,14 +67,27 @@ def infusion_sedating(f):
     return infusion.get("agent") not in ANALGESIC_INFUSIONS
 
 
-def infusion_pressure_cost(f, weight_kg):
-    """Systolic mmHg the running sedation is costing, scaled by its rate."""
+def infusion_pressure_cost(f, weight_kg, weight_rules=False):
+    """Systolic mmHg the running sedation is costing, scaled by its rate.
+
+    Under the weight rules of 2026-09-27 the rate is first made the amount
+    running per hour -- a rate per kilogram on the weight it was written on --
+    and then measured against ``weight_kg``, the patient's one effect weight.
+    That also mends "mg/kg/min", which was read as mg/min and divided by the
+    weight a second time. An encounter launched before keeps the old reading.
+    """
     infusion = f.get("sedation_infusion") or {}
     agent, rate = infusion.get("agent"), float(infusion.get("rate") or 0)
     if not rate or agent not in INFUSION_SBP_PER_REFERENCE:
         return 0.0
     units = str(infusion.get("units") or "mg/kg/h")
-    per_kg_h = rate if units.startswith("mg/kg/h") else rate * 60 / max(1.0, weight_kg) if units.endswith("/min") else rate / max(1.0, weight_kg)
+    if weight_rules:
+        dosing = float(infusion.get("weight_kg") or weight_kg)
+        per_hour = {"mg/kg/h": rate * dosing, "mg/kg/min": rate * 60 * dosing, "mg/h": rate,
+                    "mg/min": rate * 60}.get(units, rate * dosing)
+        per_kg_h = per_hour / max(1.0, weight_kg)
+    else:
+        per_kg_h = rate if units.startswith("mg/kg/h") else rate * 60 / max(1.0, weight_kg) if units.endswith("/min") else rate / max(1.0, weight_kg)
     reference = REFERENCE_RATE_MG_KG_H.get(agent) or 1.0
     return INFUSION_SBP_PER_REFERENCE[agent] * min(2.0, per_kg_h / reference)
 

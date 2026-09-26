@@ -68,6 +68,10 @@ una aproximación gruesa de todo eso; el banco no usa categorías raciales.
 
 ## 11. Peso de los casos (nueva, tuya)
 
+> **Respondida el 2026-09-27.** Peso y talla aplicados (A), volumen corriente sobre peso predicho (B) y reglas
+> de peso coherentes (F), sólo para encuentros nuevos; el resto queda pendiente con fuentes. Todo en
+> `docs/PESOS_CASOS.md`.
+
 Ningún caso del banco declara peso. El lector le pide el peso al residente para las dosis por kilo, pero
 el motor calcula a **70 kg** las infusiones por kilo, la diuresis por kilo y el volumen corriente. Una foto
 de un paciente obeso en un caso que el motor trata como de 70 kg llevaría al residente a estimar, dosificar

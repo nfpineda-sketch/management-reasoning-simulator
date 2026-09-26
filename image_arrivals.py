@@ -57,6 +57,16 @@ PLAN = (
     {"batch": 5, "identity": "V33", "case": "bradycardia_bb_54f"},
     {"batch": 5, "identity": "V35", "case": "pneumonia_46f"},
     {"batch": 5, "identity": "V38", "case": "gi_bleed_57m"},
+    # Batch 6 (2026-09-27): only the substitutions the weights in the chart make
+    # necessary -- cases whose every arrival photograph the chart now clearly
+    # contradicts (docs/PESOS_CASOS.md). People already photographed wherever one
+    # fits; V01 is new because no photographed young woman fits asthma_24f.
+    {"batch": 6, "identity": "V38", "case": "gi_bleed_57m"},
+    {"batch": 6, "identity": "V38", "case": "bradycardia_hyperk_63m"},
+    {"batch": 6, "identity": "V38", "case": "anaphylaxis_63m_betablocked"},
+    {"batch": 6, "identity": "V19", "case": "renal_colic_34m"},
+    {"batch": 6, "identity": "V08", "case": "bradycardia_bb_54f"},
+    {"batch": 6, "identity": "V01", "case": "asthma_24f"},
 )
 
 

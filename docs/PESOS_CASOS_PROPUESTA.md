@@ -1,5 +1,9 @@
 # Peso de los casos: propuesta para tu revisión (2026-09-26)
 
+> **Reemplazada el 2026-09-27 por `PESOS_CASOS.md`.** Respondiste que no aprobabas las reglas en bloque:
+> la tabla se sorteó de nuevo con tus restricciones, se retiró la regla de 15 kg y sólo se aplicaron A, B y F.
+> Este documento queda como antecedente.
+
 **Estado: propuesta.** Hoy no se ha aplicado nada: los 31 casos siguen sin peso y el motor los calcula a
 70 kg. Tampoco cambian la fisiología ni los criterios, no se registró ninguna aprobación y no se gastó
 dinero. Este documento responde la decisión 11 de `IMAGENES_DECISIONES_CLINICAS.md`: la tabla caso por

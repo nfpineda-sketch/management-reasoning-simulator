@@ -902,7 +902,17 @@ def _per_kilo_order(kind, agent, match, text):
     action = {"type": kind, "agent": agent, field: value, "route": _route(text)}
     if kind == "dextrose":
         action.pop("agent")
+    # "1.2 mg/kg de peso ideal": the weight type the resident named is kept with
+    # the dose, and weight_based_doses uses it (faculty, 2026-09-27).
+    basis = _weight_basis(text)
+    if basis:
+        action["weight_basis"] = basis
     return action
+
+
+def _weight_basis(text):
+    import patient_body
+    return patient_body.basis_in(text)
 
 
 _AMPOULE_COUNT = re.compile(r"\b(\d+|una|dos|tres|cuatro|one|two|three|four)\s+(?:ampollas?|amps?|ampoules?)\b")
@@ -940,8 +950,11 @@ def _medication(text, kind, agent):
         if infusion:
             rate = float(infusion[1]) / (1000 if infusion[2].lower() in {"mcg", "ug"} else 1)
             per_unit = ("mg/kg/" if infusion[3] else "mg/") + ("h" if infusion[4].lower().startswith(("h", "hora")) else "min")
-            return {"type": "sedation_infusion", "agent": agent, "rate": rate,
-                    "units": per_unit, "route": _route(text) or "IV", "operation": "start"}
+            infusion_order = {"type": "sedation_infusion", "agent": agent, "rate": rate,
+                              "units": per_unit, "route": _route(text) or "IV", "operation": "start"}
+            if infusion[3] and _weight_basis(text):
+                infusion_order["weight_basis"] = _weight_basis(text)
+            return infusion_order
     if kind in _PER_KG_KINDS:
         per_kilo = _PER_KILO_ANY.search(text)
         if per_kilo:
@@ -1019,6 +1032,10 @@ def _ventilator_extras(body):
                       r"(\d+(?:\.\d+)?)\s*(?:ml|cc)?\b", body)
     if per_kg:
         extras["tidal_ml_per_kg"] = float(per_kg[1])
+        # "6 ml/kg de peso real": the weight type named is kept (2026-09-27);
+        # otherwise a volume per kilogram is on the predicted body weight.
+        if _weight_basis(body):
+            extras["tidal_weight_basis"] = _weight_basis(body)
     elif fixed:
         extras["tidal_volume_ml"] = float(fixed[1])
     rate = re.search(r"\b(?:rr|respiratory\s+rate|set\s+rate|rate|"
@@ -1604,7 +1621,10 @@ def _parse_piece_core(piece, inherited=None):
             if units == "mcg/kg/min":
                 return [_clarification("Specify nitroglycerin as an absolute infusion rate in mcg/min.")], verb
             return [{"type": kind, "rate_mcg_min": rate, "operation": _operation(verb)}], verb
-        return [{"type": kind, "rate": rate, "units": units, "operation": _operation(verb)}], verb
+        infusion_order = {"type": kind, "rate": rate, "units": units, "operation": _operation(verb)}
+        if units == "mcg/kg/min" and _weight_basis(body):
+            infusion_order["weight_basis"] = _weight_basis(body)
+        return [infusion_order], verb
     if re.search(_OXYGEN_MENTION, body):
         return [_oxygen_order(body, verb)], verb
     if re.search(r"\b(?:prbcs?|packed red (?:blood )?cells|blood|sangre|globulos rojos|concentrad[oa]s? de hematies|hematies)\b", body):
@@ -1621,6 +1641,22 @@ def _parse_piece_core(piece, inherited=None):
         # asking for one (faculty decision 5, 2026-09-25).
         per_hour = re.search(r"(\d+(?:[.,]\d+)?)\s*(?:ml|cc)\s*(?:/|\s+(?:por|per|a\s+la|an?)\s+)\s*(?:h|hr|hora|hour)\b",
                              body)
+        # "SF 30 ml/kg": a volume per kilogram, turned into mL on the patient's
+        # weight by weight_based_doses. It used to be read as 30 mL (2026-09-27).
+        per_kilo = re.search(r"(\d+(?:[.,]\d+)?)\s*(?:ml|cc)\s*(?:/|\s+(?:por|per)\s+)\s*(?:kg|kilo|kilogramo|kilogram)s?\b"
+                             r"(?!\s*/)", body)
+        if per_kilo and not per_hour:
+            fluid_type = ("normal saline" if re.search(r"\b(?:saline|ns|sf|salino|(?:suero\s+)?fisiologic[oa]|solucion fisiologica)\b", body)
+                          else "lactated Ringer's" if re.search(r"\b(?:ringer|ringers|lr)\b", body)
+                          else "crystalloid" if re.search(r"\b(?:crystalloid|cristaloides?)\b", body) else None)
+            fluid = {"type": "fluid", "volume_ml_per_kg": float(per_kilo.group(1).replace(",", ".")),
+                     "volume_ml": None, "fluid_type": fluid_type}
+            if _weight_basis(body):
+                fluid["weight_basis"] = _weight_basis(body)
+            route = _route(body)
+            if route:
+                fluid["route"] = route
+            return [fluid], verb
         measured = body if not per_hour else body[:per_hour.start()] + " " + body[per_hour.end():]
         volume, units = _amount(measured, r"ml|cc|lts?|liters?|litres?|litros?|l")
         if volume is not None and units not in {"ml", "cc"}:

@@ -341,6 +341,55 @@ _RULES = (
  (r"\bCONTEXT CHECK — DOES NOT BLOCK EXECUTION\b", "REVISIÓN DE CONTEXTO — NO BLOQUEA LA EJECUCIÓN"),
  (r"^YOU$", "TÚ"), (r"^PROTOTYPE$", "PROTOTIPO"),
  # --- the bedside panel and the page's own chrome ---------------------------
+ # --- weight and height in the chart (2026-09-27) ---------------------------
+ (r"^Weight and height$", "Peso y talla"),
+ (r"^Weight not recorded$", "Peso no registrado"), (r"^Height not recorded$", "Talla no registrada"),
+ (r"^Weight ([\d.]+) kg \(", r"Peso \1 kg ("), (r"^Height ([\d.]+) m \(", r"Talla \1 m ("),
+ (r"^Previous dry weight ([\d.]+) kg \(", r"Peso seco previo \1 kg ("),
+ (r"; not today's weight\)$", "; no es el peso de hoy)"),
+ (r"\bmeasured at triage\b", "medido en el triage"), (r"\bmeasured on the bed scale\b", "medido en la balanza de la camilla"),
+ (r"\breported by the patient\b", "referido por el paciente"),
+ (r"\breported by his daughter\b", "referido por su hija"), (r"\breported by her son\b", "referido por su hijo"),
+ (r"\breported by his partner\b", "referido por su pareja"), (r"\breported by her partner\b", "referido por su pareja"),
+ (r"\breported by his wife\b", "referido por su esposa"), (r"\breported by her spouse\b", "referido por su cónyuge"),
+ (r"\bestimated by the team; the patient could not be weighed\b", "estimado por el equipo; no se pudo pesar al paciente"),
+ (r"\bestimated by the team\b", "estimado por el equipo"), (r"\brecorded in the case\b", "registrado en el caso"),
+ (r"his dialysis unit's record, before the two missed sessions",
+  "registro de su unidad de diálisis, antes de las dos sesiones perdidas"),
+ (r"^(Talla [\d.]+ m \()(medid|referid|estimad)o\b", r"\1\2a"),
+ # --- the reader's weight questions and the weight each dose used (2026-09-27) ---
+ (r"This order is written per kilogram and the patient's weight is not recorded\. What does the patient weigh, "
+  r"in kg\? The whole order is kept; only the weight is missing\.",
+  "Esta orden está escrita por kilo y el peso del paciente no está registrado. ¿Cuánto pesa el paciente, en kg? "
+  "La orden completa queda en espera; sólo falta el peso."),
+ (r"Give the patient's weight in kg \(for example, 60 kg\)\. The whole order is kept; only the weight is missing\.",
+  "Indica el peso del paciente en kg (por ejemplo, 60 kg). La orden completa queda en espera; sólo falta el peso."),
+ (r" (?:is|are) written per kilogram and no weight type was named\. This patient's actual weight is well above "
+  r"the ideal weight, so the dose depends on which is meant: ",
+  ": la dosis está escrita por kilo y no se indicó qué peso usar. El peso real de este paciente supera bastante "
+  "al ideal, así que la dosis depende de cuál se quiso decir: "),
+ (r"\. Which weight should (?:it|they) use\? The whole order is kept; nothing has run\.",
+  ". ¿Qué peso uso? La orden completa queda en espera; nada se ha ejecutado."),
+ (r"Say which weight this dose should use: actual, ideal or adjusted \(or give the weight in kg\)\. The whole "
+  r"order is kept; nothing has run\.",
+  "Indica qué peso usar para esta dosis: real, ideal o ajustado (o el peso en kg). La orden completa queda en "
+  "espera; nada se ha ejecutado."),
+ (r" names the (actual|ideal|predicted|adjusted|lean) body weight, but the height is not recorded, so it cannot be "
+  r"calculated\. What weight should this dose use, in kg\? The whole order is kept; nothing has run\.",
+  r" nombra el peso \1, pero la talla no está registrada y no se puede calcular. ¿Qué peso uso para esta dosis, "
+  r"en kg? La orden completa queda en espera; nada se ha ejecutado."),
+ (r"(\d(?:\.\d+)? (?:mg|mcg|mL|units|g)/kg(?:/\w+)?),? and (?=\w+ [\d.]+ )", r"\1 y "),
+ (r"\bactual ([\d.]+) kg\b", r"real \1 kg"), (r"\badjusted ([\d.]+) kg\b", r"ajustado \1 kg"),
+ (r"\bactual body weight\b", "peso real"), (r"\bideal body weight\b", "peso ideal"),
+ (r"\bpredicted body weight\b", "peso predicho"), (r"\badjusted body weight\b", "peso ajustado"),
+ (r"\blean body weight\b", "peso magro"), (r"\bprevious dry weight\b", "peso seco previo"),
+ (r" \(duration on the actual weight, ([\d.]+) kg\)", r" (duración medida sobre el peso real, \1 kg)"),
+ (r"; chosen earlier for this drug\b", "; elegido antes para este fármaco"),
+ (r"\bthe weight the resident gave for this drug\b", "el peso que indicaste para este fármaco"),
+ (r"\bthe weight the resident gave\b", "el peso que indicaste"),
+ (r"\bthe weight written with the order\b", "el peso escrito en la orden"),
+ (r"\bthe chart records ([\d.]+) kg\b", r"la ficha registra \1 kg"),
+ (r"\bon the (peso \w+)", r"sobre el \1"),
  (r"^BP: no measurable blood pressure$", "PA: sin presión medible"),
  (r"^BP: (\d+)/(\d+) mmHg$", r"PA: \1/\2 mmHg"),
  (r"^HR: (\d+)/min$", r"FC: \1/min"),
@@ -442,8 +491,8 @@ _RULES = (
  (r"\burinary catheter placed\b", "sonda vesical instalada"),
  (r"\bnasogastric tube placed\b", "sonda nasogástrica instalada"),
  (r"transcutaneous pacing stopped", "marcapasos transcutáneo suspendido"),
- (r"movement is abolished for about (\d+) minutes\. It does not sedate and it does not relieve pain\.",
-  r"el movimiento queda abolido por unos \1 minutos. No seda y no quita el dolor."),
+ (r"movement is abolished for about (\d+) minutes( \([^)]*\))?\. It does not sedate and it does not relieve pain\.",
+  r"el movimiento queda abolido por unos \1 minutos\2. No seda y no quita el dolor."),
  (r"atropine withheld: ([\d.]+) mg has already been given and ([\d.]+) mg is the maximum; this block needs pacing, not more atropine",
   r"atropina no administrada: ya se dieron \1 mg y el máximo es \2 mg; este bloqueo necesita marcapasos, no más atropina"),
  (r"peripheral intravenous access already in place; not repeated", "acceso venoso periférico ya instalado; no se repite"),

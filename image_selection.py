@@ -15,6 +15,9 @@ The order of priorities is the faculty's:
 3. **Then what is already saved.** Between equally new identities, one whose
    image for the arrival state already exists is shown at once and costs
    nothing.
+3b. **Then the nearer body** (2026-09-27). Every compatible person fits the
+   chart; between two, one whose build sits in the core of the chart's weight
+   comes before one who only fits at its edge (``image_identities.near``).
 4. **Then balance.** An identity drawn less often in this family, and less
    often overall, comes first, so that no face becomes the face of one
    family, one outcome or one severity.
@@ -68,7 +71,8 @@ def _tie(seed, identity_id):
     return hashlib.sha256(f"{seed}:{identity_id}".encode("utf-8")).hexdigest()
 
 
-def choose_identity(candidates, *, exposures=None, usage=None, ready=frozenset(), family="", seed=""):
+def choose_identity(candidates, *, exposures=None, usage=None, ready=frozenset(), family="", seed="",
+                    nearness=None):
     """Choose among compatible identities; returns (identity, record of why).
 
     ``exposures``: {identity_id: {"last_shown": epoch, "encounters": n}} for
@@ -79,6 +83,7 @@ def choose_identity(candidates, *, exposures=None, usage=None, ready=frozenset()
     """
     exposures = exposures or {}
     usage = usage or {}
+    nearness = nearness or {}
     if not candidates:
         return None, {"reason": "no_compatible_identity", "candidates": [], "repeat_kind": "none"}
 
@@ -88,6 +93,7 @@ def choose_identity(candidates, *, exposures=None, usage=None, ready=frozenset()
         return (1 if seen else 0,
                 int(seen["last_shown"]) if seen else 0,
                 0 if identity["id"] in ready else 1,
+                int(nearness.get(identity["id"], 0)),
                 int((drawn.get("families") or {}).get(family, 0)),
                 int(drawn.get("total", 0)),
                 _tie(seed, identity["id"]))

@@ -639,6 +639,8 @@ SCRIPTS = [
             ("order", "Toma betabloqueador, por eso no responde. Mi prioridad es sortear el "
                       "bloqueo. Doy glucagon 1 mg ev; inicio adrenalina en infusion a 0.1 "
                       "mcg/kg/min. Espero que suba la PA. Reevaluo en 10 minutos PA y FC."),
+            # 115 kg at 1.72 m (2026-09-27): the reader asks which weight the rate is on.
+            ("answer", "Peso real."),
             ("order", "Lo hospitalizo en UCI"),
             ("answer", "Espero que siga estable con la infusion. Reevaluo en 15 minutos PA."),
         ],

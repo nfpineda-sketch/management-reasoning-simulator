@@ -563,7 +563,9 @@ def generate_ai_encounter(challenge_id, base_state, api_key="", model="", seed=N
     state["hidden"].update(effective_map=(o["sbp"] + 2 * o["dbp"]) / 3,
                            tissue_perfusion=max(0, min(1, 1 - (o["crt"] - 1) / 8)),
                            peripheral_flow=max(0, min(1, 1 - (o["crt"] - 1) / 8)))
+    import patient_body
     spec = {"schema_version": SPEC_VERSION, "generator_version": GENERATOR_VERSION,
+            "weight_rules": patient_body.RULES,
             "catalog_version": CATALOG_VERSION, "challenge_id": challenge_id, "case_family": "generated",
             "seed": seed, "patient_facts": deepcopy(case["patient"]), "clinical_case": case,
             "visual_profile": deepcopy(case["visual_profile"]), "ecg_profile": case["ecg_profile"],

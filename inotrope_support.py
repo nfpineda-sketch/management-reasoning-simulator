@@ -32,10 +32,14 @@ CONTRACTILE_SHARE = {
 
 
 def rate_per_kg(state):
-    """The running dobutamine rate in mcg/kg/min, from the stored mcg/min."""
-    weight = float((state.get("encounter_spec", {}).get("clinical_case", {})
-                    .get("patient", {}).get("weight_kg") or 70) or 70)
-    return max(0.0, float(state["family_state"].get("dobutamine") or 0)) / max(1.0, weight)
+    """The running dobutamine rate in mcg/kg/min, from the stored mcg/min.
+
+    Measured against the patient's one effect weight (weight_based_doses): the
+    chart's weight since 2026-09-27, so a rate written per kilogram has the effect
+    it names; the case's or 70 kg in an encounter launched before.
+    """
+    from weight_based_doses import effect_weight
+    return max(0.0, float(state["family_state"].get("dobutamine") or 0)) / max(1.0, effect_weight(state))
 
 
 def _saturating(rate):

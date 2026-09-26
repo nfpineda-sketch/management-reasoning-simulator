@@ -218,10 +218,16 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
     limited_details = []
     if 'mild_skin_color' in limitations:
         limited_details.append('Mild pallor')
-    if 'mild_skin_moisture' in limitations:
+    if 'skin_color' in limitations:
+        limited_details.append('Skin colour')
+    if 'mild_skin_moisture' in limitations or 'sweating' in limitations:
         limited_details.append('Skin moisture')
     if 'breathing_effort' in limitations:
         limited_details.append('Breathing effort')
+    if 'distress' in limitations:
+        limited_details.append('Degree of distress')
+    if 'consciousness' in limitations:
+        limited_details.append('Level of consciousness')
     limitation = (', '.join(limited_details) + ': not discernible in this still view; assess during examination.'
                   if limited_details else '')
     return ("<style>" + BEDSPACE_CSS + "</style>" +

@@ -128,6 +128,27 @@ def import_pack(bank, directory=PACK_DIR):
     return {"assets": added, "ledger": ledger, "jobs": jobs, "approvals": approvals}
 
 
+OBSERVATIONS = "observations.json"
+#: What a photograph may fail to show of its state, as the room's limitation codes.
+NOT_SHOWN_CODES = ("distress", "skin_color", "sweating", "breathing_effort", "consciousness")
+
+
+def read_observations(directory=PACK_DIR):
+    """{asset id: codes} of the findings each photograph does not show of its state.
+
+    Read by eye (faculty, 2026-09-27: "imagen compatible que representa algunos
+    hallazgos y necesita complementarse con monitor o exploración"). An
+    observation, never a review: it only adds, beside the photograph, what to
+    assess at the examination, and the display record keeps it.
+    """
+    path = Path(directory) / OBSERVATIONS
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {asset: tuple(code for code in entry.get("not_shown", ()) if code in NOT_SHOWN_CODES)
+            for asset, entry in (data.get("observations") or {}).items()}
+
+
 def read_approvals(directory=PACK_DIR):
     path = Path(directory) / APPROVALS
     if not path.exists():

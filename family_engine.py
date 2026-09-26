@@ -218,6 +218,12 @@ def _case(state):
     return state.get("encounter_spec", {}).get("clinical_case", {})
 
 
+def weight_rules_apply(state):
+    """Whether this encounter was launched under the weight rules of 2026-09-27 (patient_body)."""
+    import patient_body
+    return patient_body.rules_apply(state)
+
+
 NIV_ASSUMED_FIO2 = 100    # an NIV order without a stated FiO₂ runs at 100%
 
 # A mental status the case authored as abnormal is a sign of the illness, so it
@@ -393,8 +399,12 @@ def _validate(state, parsed):
         if (a.get("dose_mg_per_kg") is not None and a.get("dose_mg") is None and a.get("weight_kg") is None
                 and kind not in {"neuromuscular_blockade", "anticoagulation"}):
             # "Ketamina 2 mg/kg" is a dose; the weight is the case's own.
-            a = {**a, "dose_mg": round(a["dose_mg_per_kg"] * float(
-                _case(validation_state).get("patient", {}).get("weight_kg") or 70), 3)}
+            from weight_based_doses import fallback_weight
+            a = {**a, "dose_mg": round(a["dose_mg_per_kg"] * fallback_weight(validation_state, a), 3)}
+        if a.get("volume_ml_per_kg") is not None and a.get("volume_ml") is None and a.get("weight_kg") is None:
+            # "SF 30 ml/kg" is a volume on the patient's weight, never 30 mL.
+            from weight_based_doses import fallback_weight
+            a = {**a, "volume_ml": round(a["volume_ml_per_kg"] * fallback_weight(validation_state, a))}
         if validation_state.get("family_state", {}).get("invasive") and kind in {"oxygen", "niv", "bag_mask"}:
             return None, "The patient is receiving invasive ventilation. Please specify ventilator settings or clarify the intended airway change."
         # Ventilator settings are the treatment in a ventilated asthmatic.
@@ -794,16 +804,28 @@ def _store_ventilator_settings(tr, a):
             tr[key] = a[field]
             if field == "tidal_volume_ml":
                 tr.pop("ventilator_tidal_ml_per_kg", None)
+                tr.pop("ventilator_tidal_basis", None)
             elif field == "tidal_ml_per_kg":
                 tr.pop("ventilator_tidal_volume_ml", None)
+                # The weight type the resident named for it, if any (2026-09-27).
+                if a.get("tidal_weight_basis"):
+                    tr["ventilator_tidal_basis"] = a["tidal_weight_basis"]
+                else:
+                    tr.pop("ventilator_tidal_basis", None)
 
 
-def _settings_tail(tr):
+def _settings_tail(tr, state=None):
     parts = []
     if tr.get("ventilator_tidal_volume_ml") is not None:
         parts.append(f"Vt {tr['ventilator_tidal_volume_ml']:g} mL")
     elif tr.get("ventilator_tidal_ml_per_kg") is not None:
-        parts.append(f"Vt {tr['ventilator_tidal_ml_per_kg']:g} mL/kg")
+        how = None
+        if state is not None and weight_rules_apply(state):
+            # The volume the ventilator delivers, and the weight it was worked out on.
+            import asthma_ventilation
+            current = asthma_ventilation.settings(state)
+            how = asthma_ventilation.tidal_text(current.get("tidal_basis"), current["tidal_volume_ml"])
+        parts.append(f"Vt {tr['ventilator_tidal_ml_per_kg']:g} mL/kg" + (f" ({how})" if how else ""))
     if tr.get("ventilator_rate_per_min") is not None:
         parts.append(f"rate {tr['ventilator_rate_per_min']:g}/min")
     if tr.get("ventilator_flow_l_per_min") is not None:
@@ -894,8 +916,11 @@ def _order(state, a):
     if (a.get("dose_mg_per_kg") is not None and a.get("dose_mg") is None and a.get("weight_kg") is None
                 and kind not in {"neuromuscular_blockade", "anticoagulation"}):
         # A dose written by weight is the same dose (faculty decision 11).
-        from weight_based_doses import weight_of
-        a = {**a, "dose_mg": a["dose_mg_per_kg"] * float(weight_of(state)[0] or 70)}
+        from weight_based_doses import fallback_weight
+        a = {**a, "dose_mg": a["dose_mg_per_kg"] * fallback_weight(state, a)}
+    if a.get("volume_ml_per_kg") is not None and a.get("volume_ml") is None and a.get("weight_kg") is None:
+        from weight_based_doses import fallback_weight
+        a = {**a, "volume_ml": round(a["volume_ml_per_kg"] * fallback_weight(state, a))}
     # Generated cases schedule timed delivery in generated_delivery; only bank cases queue here.
     timed = a.get("administration_duration_min") is not None and state.get("engine_family") != "generated"
     duration = 1
@@ -1129,7 +1154,14 @@ def _order(state, a):
     elif kind in {"nitroglycerin", "norepinephrine", "dobutamine", "epinephrine"}:
         rate = 0 if a["operation"] == "stop" else a.get("rate_mcg_min", a.get("rate", 0))
         if kind in {"norepinephrine", "dobutamine", "epinephrine"} and a.get("units") == "mcg/kg/min":
-            rate *= _case(state).get("patient", {}).get("weight_kg", 70)
+            # The weight the order was written on (weight_based_doses); the running
+            # rate is then the amount in mcg/min, whatever it was written per.
+            from weight_based_doses import infusion_weight
+            infusion_kg, infusion_basis = infusion_weight(state, a)
+            rate *= infusion_kg
+            if rate and a.get("weight_kg") is None and weight_rules_apply(state):
+                a = {**a, "weight_kg": infusion_kg, "weight_basis": infusion_basis, "weight_source": "chart",
+                     "dose_basis": f"{a.get('rate'):g} mcg/kg/min × {infusion_kg:g} kg = {rate:g} mcg/min"}
         f[kind] = rate
         tr[kind] = bool(rate)
         reported_rate = a.get("rate_mcg_min", a.get("rate", 0))
@@ -1174,18 +1206,27 @@ def _order(state, a):
         tr.setdefault("support_orders", {})[kind] = bool(f.get(field))
         duration = 0 if already else minutes
     elif kind == "neuromuscular_blockade":
-        weight = float(_case(state).get("patient", {}).get("weight_kg") or 70)
-        onset, duration = airway_pharmacology.blocker_duration(
-            a.get("agent"), a.get("dose_mg"), a.get("dose_mg_per_kg"), weight)
+        from weight_based_doses import effect_weight
+        weight = effect_weight(state)
+        if weight_rules_apply(state) and a.get("dose_mg") is not None:
+            # The duration follows the amount given, measured on the patient's one
+            # effect weight, however the dose was written (2026-09-27).
+            onset, duration = airway_pharmacology.blocker_duration(a.get("agent"), a.get("dose_mg"), None, weight)
+            dose = f"{a['dose_mg']:g} mg"
+        else:
+            onset, duration = airway_pharmacology.blocker_duration(
+                a.get("agent"), a.get("dose_mg"), a.get("dose_mg_per_kg"), weight)
+            dose = (f"{a['dose_mg_per_kg']:g} mg/kg" if a.get("dose_mg_per_kg") is not None
+                    else f"{a.get('dose_mg', 0):g} mg")
         f["paralysis_until"] = f["elapsed"] + onset + duration
         f["paralysis_unsedated_reported"] = False
-        dose = (f"{a['dose_mg_per_kg']:g} mg/kg" if a.get("dose_mg_per_kg") is not None
-                else f"{a.get('dose_mg', 0):g} mg")
         tr.setdefault("administered_medications", []).append(
             {"agent": a.get("agent"), "dose_mg": a.get("dose_mg"), "dose_mg_per_kg": a.get("dose_mg_per_kg"),
              "route": a.get("route"), "time_min": int(state.get("sim_time", 0))})
+        measured = (f" (duration on the actual weight, {weight:g} kg)"
+                    if weight_rules_apply(state) and a.get("dose_mg") is not None else "")
         label = (f"{a.get('agent')} {dose} {a.get('route')} administered: movement is abolished for about "
-                 f"{duration:.0f} minutes. It does not sedate and it does not relieve pain.")
+                 f"{duration:.0f} minutes{measured}. It does not sedate and it does not relieve pain.")
         duration = 2
     elif kind == "sedation_infusion":
         if a.get("operation") == "stop":
@@ -1193,6 +1234,8 @@ def _order(state, a):
             label = f"{a.get('agent')} infusion stopped"
         else:
             f["sedation_infusion"] = {"agent": a.get("agent"), "rate": a.get("rate"), "units": a.get("units")}
+            if a.get("weight_kg") is not None:
+                f["sedation_infusion"]["weight_kg"] = a["weight_kg"]
             verb = "adjusted to" if a.get("operation") == "adjust" else "started at"
             label = f"{a.get('agent')} infusion {verb} {a.get('rate'):g} {a.get('units')}"
             if a.get("agent") in airway_pharmacology.ANALGESIC_INFUSIONS:
@@ -1351,7 +1394,7 @@ def _order(state, a):
         f["oxygen_fio2"] = a["fio2_percent"] / 100
         tr.update(ventilator_mode=a["ventilator_mode"], ventilator_fio2_percent=a["fio2_percent"], ventilator_peep_cmh2o=a["peep_cmh2o"])
         _store_ventilator_settings(tr, a)
-        label = f"Ventilator settings: {a['ventilator_mode']}, FiO2 {a['fio2_percent']:g}%, PEEP {a['peep_cmh2o']:g}" + _settings_tail(tr)
+        label = f"Ventilator settings: {a['ventilator_mode']}, FiO2 {a['fio2_percent']:g}%, PEEP {a['peep_cmh2o']:g}" + _settings_tail(tr, state)
         duration = 0
     elif kind in {"bag_mask", "intubation"}:
         f["bag_mask"] = kind == "bag_mask"
@@ -1375,7 +1418,7 @@ def _order(state, a):
             tr.update(invasive_ventilation=True, niv=False, ventilator_mode=a["ventilator_mode"], ventilator_fio2_percent=a["fio2_percent"], ventilator_peep_cmh2o=a["peep_cmh2o"])
             _store_ventilator_settings(tr, a)
             duration = 5
-            label = "Intubation completed; invasive ventilation started" + _settings_tail(tr)
+            label = "Intubation completed; invasive ventilation started" + _settings_tail(tr, state)
         else:
             label = "Bag-mask assisted ventilation started"
             tr["bag_mask"] = True
@@ -1440,7 +1483,7 @@ def _order(state, a):
         # it was calculated (faculty decision 2, 2026-09-25).
         label = f"{label} ({a['dose_basis']})"
     summary = {"type": kind, "label": label, "duration_min": duration}
-    for key in ("dose_basis", "weight_kg", "weight_source"):
+    for key in ("dose_basis", "weight_kg", "weight_source", "weight_basis"):
         if a.get(key) is not None:
             summary[key] = a[key]
     if kind == "result_review":
@@ -2138,8 +2181,8 @@ def _surface(state):
     if family != "pulmonary_edema":
         sbp -= min(45, _nitro_equivalent(f) * .3)
         dbp -= min(25, _nitro_equivalent(f) * .15)
-    sedation_drop = airway_pharmacology.infusion_pressure_cost(
-        f, float(_case(state).get("patient", {}).get("weight_kg") or 70))
+    from weight_based_doses import effect_weight
+    sedation_drop = airway_pharmacology.infusion_pressure_cost(f, effect_weight(state), weight_rules_apply(state))
     sbp -= sedation_drop
     dbp -= sedation_drop * .6
     import analgesia

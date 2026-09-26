@@ -376,3 +376,28 @@ El paquete del repositorio lleva las 88 imágenes, los 68 trabajos y los registr
   malestar marcado pedido, V21 igual a su referencia); aprobar con reserva otros 4; y dos candidatas fuera
   de la selección para la llegada de `pulmonary_edema_75f` (V12 `96970e9c`, V11 `532d7202`).
 - **No hecho, a propósito:** ningún peso aplicado, ninguna aprobación registrada, ningún gasto.
+
+## Peso y talla aplicados; sustituciones necesarias (2026-09-27)
+
+- **Pedido:**
+  - incorporar peso y talla sólo para encuentros nuevos;
+  - diversidad corporal sin asociaciones rígidas;
+  - retirar la diferencia de 15 kg por una compatibilidad visual amplia;
+  - reevaluar primero las fotos disponibles y generar sólo las sustituciones necesarias;
+  - «aumenta en US$10 el presupuesto autorizado».
+- **Presupuesto:** a tu pregunta respondiste «Sumar US$10, nueva tanda».
+  - Quedó registrada la tercera autorización `imagenes-2026-09-27` (US$10, tope de 100 solicitudes). Se usa sólo
+    si el saldo de la segunda no alcanza; no se gastó.
+- **Reevaluación:** 6 casos quedaban con fotos de llegada que la ficha contradice claramente
+  (`docs/PESOS_CASOS.md`, sección 5).
+- **Tanda 6**, sobre el saldo de la segunda autorización: 7 solicitudes, **US$0,64**.
+  - Aceptadas: V38 para `gi_bleed_57m` (misma foto para `bradycardia_hyperk_63m`, sin costo),
+    V38 para `anaphylaxis_63m_betablocked`, V19 para `renal_colic_34m`, V08 para `bradycardia_bb_54f`, y la
+    referencia de V01.
+  - Rechazadas por el revisor: las dos llegadas de V01 para `asthma_24f` (esfuerzo marcado no visible); quedan
+    para tu revisión, sin reintentos.
+  - Saldo de la segunda: **US$3,64 y 23 solicitudes.**
+- **Lecturas de fotos** (`assets/patient_images/observations.json`): qué hallazgos no muestra cada foto parcial.
+  La sala lo dice junto a la foto y el registro del encuentro lo guarda. Son observaciones del agente, no
+  revisiones.
+- **Paquete:** 102 imágenes y los registros de las tres autorizaciones.

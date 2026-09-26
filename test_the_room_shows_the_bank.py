@@ -384,7 +384,34 @@ def test_the_repository_pack_gives_a_new_database_the_pilots_photographs_without
     pilot = world.bank.budget_summary(ledgers["imagenes-2026-09-26"])
     assert pilot["requests"] == 26 and pilot["calls_sent"] == 52
     second = world.bank.budget_summary(ledgers["imagenes-2026-09-26-b"])
-    assert second["requests"] == 70 and second["committed"] <= second["limit_micro"]
+    assert second["requests"] == 77 and second["committed"] <= second["limit_micro"]
+    # The third authorization (2026-09-27) travels with the pack, recorded and unspent.
+    third = world.bank.budget_summary(ledgers["imagenes-2026-09-27"])
+    assert third["requests"] == 0 and third["limit_requests"] == 100 and third["limit_micro"] == 10_000_000
+
+
+def test_a_photograph_that_does_not_show_a_finding_says_so_and_the_record_keeps_it(world, tmp_path):
+    # Faculty, 2026-09-27: an image that shows some findings is completed by the monitor
+    # and the examination, and the resident is not held to a sign it did not show.
+    world.monkeypatch.setattr(image_pack, "PACK_DIR", image_pack.Path(__file__).resolve().parent / "assets" / "patient_images")
+    if image_pack.read_manifest() is None:
+        pytest.skip("No pack in this checkout.")
+    observed = image_pack.read_observations()
+    assert observed and all(set(codes) <= set(image_pack.NOT_SHOWN_CODES) for codes in observed.values())
+    image_pack.ensure_imported(world.bank)
+    asset = next(a for a in world.bank.assets() if a["id"] in observed and "skin_color" in observed[a["id"]])
+    import image_scene
+    shown = image_scene._display(world.bank, asset)
+    assert "skin_color" in shown.limitations
+    html = clinical_scene.scene_html(shown, "", current=True)
+    assert "Skin colour" in html and "not discernible in this still view; assess during examination" in html
+    # What the room showed, and what it said the photograph did not show, is what the record keeps.
+    resident = world.residents["resident_a"]
+    attempt = world.accounts.create_attempt(resident["token"], "R1-03", {"presentation": "Synthetic"})
+    world.bank.log_display(resident["token"], attempt, identity_id=asset["identity_id"], contract=asset["contract"],
+                           outcome="image", asset_id=asset["id"], limitations=shown.limitations, sim_time=0)
+    [row] = world.bank.displays(world.admin, attempt)
+    assert "skin_color" in row["limitations"]
 
 
 def test_the_image_issue_is_offered_only_for_a_state_that_failed(world):

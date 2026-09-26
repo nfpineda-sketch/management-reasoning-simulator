@@ -45,8 +45,9 @@ class DisplayImage(str):
     def __new__(cls, encoded, *, mime, limitations=(), asset_id=None, identity_id=None):
         value = super().__new__(cls, encoded)
         value.mime = mime
-        value.limitations = tuple(x for x in limitations
-                                  if x in ("mild_skin_moisture", "breathing_effort", "mild_skin_color"))
+        value.limitations = tuple(dict.fromkeys(
+            x for x in limitations if x in ("mild_skin_moisture", "breathing_effort", "mild_skin_color", "distress",
+                                            "skin_color", "sweating", "consciousness")))
         value.asset_id = asset_id
         value.identity_id = identity_id
         return value
@@ -180,7 +181,7 @@ def _view_key(state, attempt_id):
 
 def _choose_identity(bank, context, state, attempt_id):
     """The encounter's identity: stored, prepared, or chosen now and stored."""
-    from image_identities import compatible_identities, identity
+    from image_identities import compatible_identities, identity, near
     from image_selection import choose_identity
     from image_bank import contract_key
     from patient_appearance import appearance_state
@@ -196,7 +197,8 @@ def _choose_identity(bank, context, state, attempt_id):
     spec = state.get("encounter_spec") or {}
     family = (spec.get("clinical_case") or {}).get("engine", {}).get("family") or state.get("case_id") or ""
     chosen, why = choose_identity(candidates, exposures=bank.exposures(user["id"]), usage=bank.usage(),
-                                  ready=ready, family=family, seed=attempt_id or state.get("case_id") or "")
+                                  ready=ready, family=family, seed=attempt_id or state.get("case_id") or "",
+                                  nearness={candidate["id"]: near(candidate, patient) for candidate in candidates})
     if chosen is None:
         return None, why
     if attempt_id:
@@ -227,8 +229,12 @@ def _display(bank, asset):
     if raw is None:
         return None
     facts = bank.blob_facts(asset["display_sha256"]) or {}
+    # What the screen found not discernible, and what a reading of the photograph
+    # found it does not show (image_pack.read_observations): both said beside it.
+    import image_pack
+    observed = image_pack.read_observations().get(asset["id"], ())
     return DisplayImage(base64.b64encode(raw).decode("ascii"), mime=facts.get("content_type", "image/webp"),
-                        limitations=(asset.get("screen_details") or {}).get("limitations", ()),
+                        limitations=(*(asset.get("screen_details") or {}).get("limitations", ()), *observed),
                         asset_id=asset["id"], identity_id=asset["identity_id"])
 
 

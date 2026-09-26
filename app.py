@@ -4913,7 +4913,7 @@ def try_resolve_pending_action(text):
 
     if pending.get("type") == "family_bundle":
         from pending_family_orders import complete_bundle
-        resolution = complete_bundle(pending, text)
+        resolution = complete_bundle(pending, text, st.session_state.get("state"))
         if resolution and resolution.get("superseded"):
             # The resident wrote a new order instead of answering. It runs, and
             # what it costs is stated rather than dropped in silence.
@@ -8370,7 +8370,8 @@ def execute_bundle(parsed):
             st.session_state.pending_action = {"type": "family_bundle", "parsed": deepcopy(parsed),
                                                "index": waiting[0]}
             return {"executed": False, "action_summaries": [], "elapsed_min": 0,
-                    "clarification": _held_order_prompt(parsed, weight_based_doses.WEIGHT_QUESTION)}
+                    "clarification": _held_order_prompt(
+                        parsed, weight_based_doses.question_for(parsed, waiting, state))}
         result = execute_family_bundle(state, parsed)
         if result.get("executed"):
             weight_based_doses.remember(state, parsed)
@@ -9544,6 +9545,15 @@ with st.container(key="encounter-console"):
             st.subheader("At the bedside")
             o = st.session_state.state["observable"]
             h = st.session_state.state["hidden"]
+            # Weight and height as the chart records them, with how each was
+            # obtained: an estimate or a previous dry weight says so (faculty,
+            # 2026-09-27). The engine uses these same numbers.
+            import language as _lang
+            import patient_body as _patient_body
+            with st.expander("Weight and height", expanded=True):
+                for _line in _patient_body.chart_lines(
+                        st.session_state.state.get("encounter_spec", {}).get("clinical_case", {}).get("patient")):
+                    st.write(_lang.say(_line))
             with st.expander("Vitals", expanded=True):
                 # Naming the rhythm here does the resident's interpretation for
                 # them. The bedside waveform and the 12-lead are where it is read.

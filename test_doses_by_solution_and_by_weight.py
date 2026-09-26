@@ -79,8 +79,61 @@ def test_a_glucose_solution_is_given_as_its_grams(tmp_path, monkeypatch):
     assert "Glucose 15 g IV (30% × 50 mL)" in labels(at)
 
 
-def test_a_dose_per_kilogram_asks_only_for_the_weight_and_keeps_the_order(tmp_path, monkeypatch):
+def _as_before_the_weight_rules(at):
+    """An encounter launched before 2026-09-27: its case had no weight and its spec no weight rules."""
+    state = at.session_state["state"]
+    state["encounter_spec"].pop("weight_rules", None)
+    state["encounter_spec"]["clinical_case"]["patient"].pop("body", None)
+
+
+def _last_question(at):
+    return next(event.get("text") or event.get("content") or "" for event in reversed(at.session_state["events"])
+                if "per kilogram" in str(event.get("text") or event.get("content") or ""))
+
+
+def test_a_dose_per_kilogram_uses_the_weight_in_the_chart(tmp_path, monkeypatch):
+    # Faculty, 2026-09-27: the weight is in the chart, so it is not asked again, and
+    # the record says which weight the dose used and where it came from.
     at = start(tmp_path, monkeypatch, "pulmonary_embolism_33f", "R2-02")
+    submit(at, ANTICOAGULATE)
+    assert not at.session_state["pending_action"]
+    given = [s for s in labels(at) if s and "noxaparin" in s]
+    assert given and "47 mg" in given[0], given
+    assert "1 mg/kg × 47 kg, actual body weight, measured at triage" in given[0], given
+    submit(at, "Mi prioridad es completar la anticoagulacion. Doy heparina 80 UI/kg ev. Espero que no "
+               "progrese. Reevaluo en 20 minutos saturacion y FC.")
+    assert not at.session_state["pending_action"]
+    assert any("80 units/kg × 47 kg" in (s or "") for s in labels(at))
+
+
+ACS_ENOXAPARIN = ("Creo que es un infarto posterior, porque tiene dolor tipico y el ECG lo sugiere. Mi prioridad es "
+                  "anticoagular. Doy enoxaparina 1 mg/kg sc. Espero que no progrese. Reevaluo en 20 minutos dolor "
+                  "y ECG.")
+
+
+def test_the_weight_type_is_asked_once_when_it_changes_the_dose(tmp_path, monkeypatch):
+    # 99 kg at 1.72 m: the ideal weight is 67.8 kg, so "1 mg/kg" is 99 mg or 68 mg
+    # depending on the weight meant. No rule is agreed for the drug: the reader asks
+    # once, the clock does not move, and the answer is kept for that drug.
+    at = start(tmp_path, monkeypatch, "acs_61m_posterior", "R2-04")
+    minute = at.session_state["state"]["sim_time"]
+    submit(at, ACS_ENOXAPARIN)
+    pending = at.session_state["pending_action"]
+    assert pending and pending["type"] == "family_bundle"
+    assert at.session_state["state"]["sim_time"] == minute
+    assert not [s for s in labels(at) if s and "noxaparin" in s]
+    question = _last_question(at)
+    assert "actual 99 kg" in question and "ideal 67.8 kg" in question, question
+    submit(at, "peso real")
+    assert not at.session_state["pending_action"]
+    given = [s for s in labels(at) if s and "noxaparin" in s]
+    assert given and "99 mg" in given[0] and "1 mg/kg × 99 kg, actual body weight" in given[0], given
+    assert at.session_state["state"]["weight_choices"]["anticoagulation:enoxaparin"]["basis"] == "actual"
+
+
+def test_an_encounter_launched_before_the_weight_rules_still_asks_the_weight(tmp_path, monkeypatch):
+    at = start(tmp_path, monkeypatch, "pulmonary_embolism_33f", "R2-02")
+    _as_before_the_weight_rules(at)
     minute = at.session_state["state"]["sim_time"]
     submit(at, ANTICOAGULATE)
     pending = at.session_state["pending_action"]
@@ -102,6 +155,16 @@ def test_a_dose_per_kilogram_asks_only_for_the_weight_and_keeps_the_order(tmp_pa
 
 def test_a_weight_written_with_the_order_is_used(tmp_path, monkeypatch):
     at = start(tmp_path, monkeypatch, "pulmonary_embolism_33f", "R2-02")
+    submit(at, ANTICOAGULATE.replace("sc.", "sc, pesa 62 kg."))
+    assert not at.session_state["pending_action"]
+    # The resident dosed on 62 kg; the chart keeps its 47 kg, and the record shows both.
+    assert any("1 mg/kg × 62 kg, the weight written with the order; the chart records 47 kg" in (s or "")
+               for s in labels(at)), labels(at)
+
+
+def test_before_the_weight_rules_a_weight_written_with_the_order_is_used(tmp_path, monkeypatch):
+    at = start(tmp_path, monkeypatch, "pulmonary_embolism_33f", "R2-02")
+    _as_before_the_weight_rules(at)
     submit(at, ANTICOAGULATE.replace("sc.", "sc, pesa 62 kg."))
     assert not at.session_state["pending_action"]
     assert any("(1 mg/kg × 62 kg)" in (s or "") for s in labels(at))

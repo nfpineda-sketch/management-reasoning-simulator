@@ -11,6 +11,7 @@ import json
 import random
 import secrets
 
+import patient_body
 from cognitive_catalog import BIAS_CHALLENGES, BIAS_CONTEXTS, CATALOG_VERSION
 
 GENERATOR_VERSION = "0.17.0"
@@ -143,6 +144,9 @@ def generate_cognitive_encounter(challenge_id, base_state, api_key="", model="",
         "provenance": {"source": source, "model": used_model if source == "ai" else None,
                        "fallback_reason": fallback, "usage": usage,
                        "clinical_validation": "authored_educational_model_requires_faculty_review"},
+        # The weight rules this encounter follows for its whole length (faculty,
+        # 2026-09-27). An encounter launched before has none and keeps its own.
+        "weight_rules": patient_body.RULES,
     }
     import hypoglycemia_catalog
     catalogued = hypoglycemia_catalog.reference(case["id"])

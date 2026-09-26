@@ -15,7 +15,9 @@ _SCREEN = {"accepted": "Accepted", "accepted_with_limitations": "Accepted, with 
            "rejected": "Rejected", "not_screened": "Not screened yet"}
 _REVIEW = {"pending": "Pending", "approved": "Approved", "rejected": "Rejected"}
 _LIMITS = {"mild_skin_moisture": "mild sweat not discernible", "mild_skin_color": "mild pallor not discernible",
-           "breathing_effort": "breathing effort not discernible"}
+           "breathing_effort": "breathing effort not discernible", "skin_color": "skin colour not shown",
+           "sweating": "sweating not shown", "distress": "degree of distress not shown",
+           "consciousness": "level of consciousness not shown"}
 
 
 def _dollars(micro):
@@ -84,6 +86,7 @@ def _render_image_bank(context):
                 f"{_dollars(spent['estimated'])} estimated) · image requests {spent['requests']} of "
                 f"{spent['limit_requests']} · retries {spent['retries']}")
         show_all = st.toggle("Show rejected and excluded images too", value=False, key="_image_bank_all")
+        observed = image_pack.read_observations()
         by_person = {}
         for asset in assets:
             by_person.setdefault(asset["identity_id"], []).append(asset)
@@ -118,6 +121,9 @@ def _render_image_bank(context):
                            f"  \nExcluded: {asset['exclusion_reason']}" if asset["excluded"] else "")
                         + "".join(f"  \nScreen found: {item.get('finding', '')}"
                                   for item in (asset.get("screen_details") or {}).get("evidence", []))
+                        + (f"  \nNot shown, on a reading of the photograph (not a review): "
+                           f"{', '.join(_LIMITS[code] for code in observed.get(asset['id'], ()))}"
+                           if observed.get(asset["id"]) else "")
                         + f"  \n`{asset['id'][:10]}` · {asset['generation'].get('model', '')} · "
                           f"{(asset['generation'].get('versions') or {}).get('prompt', '')}")
                     choices.append(asset)

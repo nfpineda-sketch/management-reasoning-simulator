@@ -13,6 +13,7 @@ from copy import deepcopy
 
 from efast_report import study as _efast
 from visual_observations import distributive_visual_profile, hypoperfusion_visual_profile
+import patient_body as _patient_body
 
 
 CASE_BANK_VERSION = "1.0.0"
@@ -1478,6 +1479,10 @@ for _family in FAMILIES.values():
             _variant["history_source"] = _COLLATERAL_SOURCES.get(_variant["id"], "Patient")
         if _variant["id"] in _HANDOVER_CONTEXT:
             _variant["presentation"] += " " + _HANDOVER_CONTEXT[_variant["id"]]
+        # Weight and height (faculty, 2026-09-27): one table for the 31 cases, in
+        # patient_body, shown in the chart and used by new encounters only.
+        if _patient_body.body_for(_variant["id"]) is not None:
+            _variant["patient"]["body"] = _patient_body.body_for(_variant["id"])
 
 
 def variant_by_id(identifier):
@@ -1506,8 +1511,13 @@ def review_candidates(family=None):
     global _REVIEW_CANDIDATES
     if _REVIEW_CANDIDATES is None:
         import hypoglycemia_catalog
-        _REVIEW_CANDIDATES = [_from_catalog(hypoglycemia_catalog.case_arguments(configuration))
-                              for configuration in hypoglycemia_catalog.review_candidates()]
+        _REVIEW_CANDIDATES = []
+        for configuration in hypoglycemia_catalog.review_candidates():
+            case = _from_catalog(hypoglycemia_catalog.case_arguments(configuration))
+            # A composition is the patient of the bank case it derives from: same body.
+            if _patient_body.body_for(configuration["derived_from"]) is not None:
+                case["patient"]["body"] = _patient_body.body_for(configuration["derived_from"])
+            _REVIEW_CANDIDATES.append(case)
     return [deepcopy(case) for case in _REVIEW_CANDIDATES
             if family is None or case["engine"]["family"] == family]
 

@@ -63,12 +63,20 @@ def complete_active_order(state, raw):
             return a, 'The patient is not receiving invasive ventilation.'
         if a.get('operation') == 'stop':
             return a, 'Specify an airway transition; stopping a ventilator is not an extubation order.'
+        # A tidal volume the resident states replaces the one running, in either
+        # form. Carrying the other form forward as well silently overwrote an
+        # absolute volume with the old per-kilogram one (found 2026-09-27).
+        stated_tidal = a.get('tidal_volume_ml') is not None or a.get('tidal_ml_per_kg') is not None
         for field, key in [('ventilator_mode', 'ventilator_mode'), ('fio2_percent', 'ventilator_fio2_percent'),
                            ('peep_cmh2o', 'ventilator_peep_cmh2o'), ('tidal_volume_ml', 'ventilator_tidal_volume_ml'),
                            ('tidal_ml_per_kg', 'ventilator_tidal_ml_per_kg'), ('rate_per_min', 'ventilator_rate_per_min'),
                            ('flow_l_per_min', 'ventilator_flow_l_per_min')]:
+            if stated_tidal and field in ('tidal_volume_ml', 'tidal_ml_per_kg'):
+                continue
             if a.get(field) is None:
                 a[field] = tr.get(key)
+        if not stated_tidal and a.get('tidal_ml_per_kg') is not None and tr.get('ventilator_tidal_basis'):
+            a.setdefault('tidal_weight_basis', tr['ventilator_tidal_basis'])
         return a, None
     if kind == 'infusion_adjustment':
         # The resident named the treatment by its role. Resolve it the way a

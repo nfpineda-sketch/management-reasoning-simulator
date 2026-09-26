@@ -29,6 +29,8 @@ SCOPES = ("general", "family", "variant")
 KINDS = ("technical_defect", "clinical_decision_applied", "text", "refactor", "policy")
 RELEVANCE = ("clinical", "cosmetic", "none")
 INSTRUCTION_2026_09_25 = "Instrucción docente del 2026-09-25 (etapas 0-2 del catálogo de hipoglicemia)"
+INSTRUCTION_2026_09_27 = ("Instrucción docente del 2026-09-27 (peso y talla; decisiones A, B y F; "
+                          "compatibilidad visual amplia)")
 
 CORRECTIONS = (
     {
@@ -420,6 +422,100 @@ CORRECTIONS = (
                   "test_image_identities.py::test_the_bank_is_no_longer_all_slim_and_heavier_bodies_span_every_tone"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-27-01",
+        "date": "2026-09-27",
+        "title": "Peso y talla en los 31 casos del banco y en la ficha, sólo para encuentros nuevos",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Cada caso del banco registra peso y talla y cómo se obtuvieron (medido, referido o estimado); el "
+                   "paciente en diálisis registra además su peso seco previo, rotulado como tal. La tabla sale de un "
+                   "sorteo reproducible (tools_case_bodies.py) con las condiciones docentes: contextura independiente "
+                   "de edad, diagnóstico y gravedad; sin peso normal por quimioterapia, alcohol o baja ingesta; tallas "
+                   "variadas; sin mirar las fotos ni cambiar antecedentes. La ficha los muestra. Un encuentro nuevo "
+                   "lleva weight_rules en su spec; uno lanzado antes no, y conserva sus datos y reglas."),
+        "authorised_by": INSTRUCTION_2026_09_27,
+        "affects": {"modules": ["patient_body", "clinical_cases", "cognitive_generator", "generated_case", "app",
+                                "language", "tools_case_bodies"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_weight_and_height.py::test_every_bank_case_records_its_weight_and_height_and_how_each_was_obtained",
+                  "test_weight_and_height.py::test_the_table_is_the_seeded_draw_and_meets_the_faculty_s_conditions",
+                  "test_weight_and_height.py::test_a_previous_dry_weight_is_never_today_s_weight",
+                  "test_weight_and_height.py::test_the_chart_says_when_a_weight_is_an_estimate",
+                  "test_weight_and_height.py::test_new_encounters_carry_the_rules_and_old_ones_keep_theirs",
+                  "test_hypoglycemia_preservation.py::test_bank_cases_match_the_record_except_declared_corrections"],
+        "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_76f", "hypoglycemia_54m_thiamine"],
+                         "variant_fields": ["/patient/body"]},
+    },
+    {
+        "id": "C-2026-09-27-02",
+        "date": "2026-09-27",
+        "title": "Volumen corriente por kilo sobre el peso corporal predicho; el volumen absoluto se respeta",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión B: un volumen corriente escrito en mL/kg se calcula sobre el peso predicho (Devine/ARDSNet, "
+                   "por sexo y talla) y el registro muestra la fórmula; un tipo de peso nombrado por el residente se "
+                   "respeta. Un volumen absoluto queda como se escribió: al pasar de mL/kg a mL en un ajuste, el valor "
+                   "por kilo arrastrado sobrescribía el absoluto (defecto corregido). La ventilación minuto requerida y "
+                   "el volumen por defecto no cambian: son decisiones pendientes."),
+        "authorised_by": INSTRUCTION_2026_09_27,
+        "affects": {"modules": ["asthma_ventilation", "family_engine", "active_order_context", "family_parser"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_weight_and_height.py::test_a_tidal_volume_per_kilogram_is_on_the_predicted_body_weight_with_its_formula",
+                  "test_weight_and_height.py::test_an_absolute_tidal_volume_is_kept_as_written_even_after_one_per_kilogram",
+                  "test_weight_and_height.py::test_a_weight_type_the_resident_names_for_the_tidal_volume_is_kept",
+                  "test_weight_and_height.py::test_before_the_weight_rules_a_tidal_volume_per_kilogram_stays_on_70_kg",
+                  "test_weight_and_height.py::test_the_undecided_physiology_keeps_the_weight_it_was_calibrated_on"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-27-03",
+        "date": "2026-09-27",
+        "title": "Dosis por kilo: el tipo de peso explícito se respeta, se registra el peso usado y un mismo efecto por dosis",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión F: el lector ya no pregunta el peso que está en la ficha; usa el tipo de peso que escribe "
+                   "el residente, el que eligió antes para el mismo fármaco, una regla acordada o el peso real de la "
+                   "ficha, y pregunta una vez por fármaco sólo si el peso real supera en 30% al ideal y no hay regla "
+                   "acordada. Cada orden registra el peso usado, su tipo y su origen. El efecto se mide sobre un único "
+                   "peso por paciente, así que la misma cantidad tiene el mismo efecto. Se corrigen: los mL/kg de "
+                   "cristaloide, que se leían como mL, y los mg/kg/min de sedación, que se dividían dos veces."),
+        "authorised_by": INSTRUCTION_2026_09_27,
+        "affects": {"modules": ["weight_based_doses", "patient_body", "family_engine", "family_parser",
+                                "pending_family_orders", "inotrope_support", "airway_pharmacology", "app"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_weight_and_height.py::test_the_weight_type_is_asked_only_when_it_changes_the_dose_and_only_once_per_drug",
+                  "test_weight_and_height.py::test_the_same_amount_of_blocker_has_the_same_effect_however_it_was_written",
+                  "test_weight_and_height.py::test_a_rate_per_kilogram_is_converted_on_the_chart_weight_and_recorded",
+                  "test_weight_and_height.py::test_a_fluid_per_kilogram_is_a_volume_on_the_weight_not_that_many_millilitres",
+                  "test_weight_and_height.py::test_a_sedation_rate_per_kilogram_per_minute_is_read_as_such",
+                  "test_doses_by_solution_and_by_weight.py::test_a_dose_per_kilogram_uses_the_weight_in_the_chart",
+                  "test_doses_by_solution_and_by_weight.py::test_the_weight_type_is_asked_once_when_it_changes_the_dose",
+                  "test_doses_by_solution_and_by_weight.py::test_an_encounter_launched_before_the_weight_rules_still_asks_the_weight"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-27-04",
+        "date": "2026-09-27",
+        "title": "Imágenes: compatibilidad visual amplia; se retira la diferencia rígida de 15 kg",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("La foto no se usa para atribuir un peso. Una persona sirve a un caso salvo que el cuerpo que muestra "
+                   "la foto (encuadre de pecho hacia arriba, en cama, bajo la frazada) contradiga claramente el peso y "
+                   "la talla de la ficha; los rangos son amplios. Las personas ya fotografiadas se leen por cómo se ven "
+                   "(lectura del agente, para revisión docente); entre dos que sirven, primero la de cuerpo más cercano, "
+                   "después de lo ya guardado. La identidad se mantiene durante el encuentro."),
+        "authorised_by": INSTRUCTION_2026_09_27,
+        "affects": {"modules": ["image_identities", "image_selection", "image_scene"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_image_identities.py::test_the_rigid_15_kg_rule_is_retired",
+                  "test_image_identities.py::test_photographed_people_are_matched_by_how_their_photograph_looks",
+                  "test_image_identities.py::test_every_bank_case_has_a_compatible_person",
+                  "test_image_identities.py::test_between_two_who_fit_the_nearer_body_comes_first"],
+        "preservation": None,
+    },
 )
 
 
@@ -434,11 +530,11 @@ def preserved_differences():
         declared = entry.get("preservation")
         if not declared:
             continue
-        variant = declared["variant"]
-        allowed["variant_fields"].setdefault(variant, set()).update(declared.get("variant_fields", ()))
-        allowed["scripts"].setdefault(variant, set()).update(declared.get("scripts", ()))
-        if declared.get("declaration") == "new_version":
-            allowed["declarations"].add(variant)
+        for variant in declared.get("variants") or [declared["variant"]]:
+            allowed["variant_fields"].setdefault(variant, set()).update(declared.get("variant_fields", ()))
+            allowed["scripts"].setdefault(variant, set()).update(declared.get("scripts", ()))
+            if declared.get("declaration") == "new_version":
+                allowed["declarations"].add(variant)
     return allowed
 
 

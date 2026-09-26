@@ -113,9 +113,9 @@ Comparación con el registro del 2026-09-25 (commit d184845), antes de que exist
 
 | Variante | Caso | Declaración | Lanzamiento | Guiones distintos |
 |---|---|---|---|---|
-| `hypoglycemia_28m` | idéntico | idéntica | idéntico | ninguno de 20 |
-| `hypoglycemia_76f` | idéntico | idéntica | idéntico | ninguno de 20 |
-| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions` | nueva versión (cobertura 1.1) | idéntico | ninguno de 20 |
+| `hypoglycemia_28m` | `/patient/body` | idéntica | idéntico | ninguno de 20 |
+| `hypoglycemia_76f` | `/patient/body` | idéntica | idéntico | ninguno de 20 |
+| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (cobertura 1.1) | idéntico | ninguno de 20 |
 
 Cada diferencia está declarada en el registro de correcciones; la prueba `test_hypoglycemia_preservation` acepta esas y ninguna otra.
 
@@ -142,6 +142,10 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-26-08 | Con la barra lateral abierta, la sala del encuentro quedaba en parte debajo de ella | general | technical_defect | none | — |
 | C-2026-09-26-09 | Imágenes del paciente: las decisiones aprobadas por el docente, y sin gasto en lo que ya falló | general | technical_defect | none | — |
 | C-2026-09-26-10 | Imágenes del paciente: contextura corporal realista, que sigue el peso del caso | general | technical_defect | none | — |
+| C-2026-09-27-01 | Peso y talla en los 31 casos del banco y en la ficha, sólo para encuentros nuevos | general | clinical_decision_applied | clinical | — |
+| C-2026-09-27-02 | Volumen corriente por kilo sobre el peso corporal predicho; el volumen absoluto se respeta | general | clinical_decision_applied | clinical | — |
+| C-2026-09-27-03 | Dosis por kilo: el tipo de peso explícito se respeta, se registra el peso usado y un mismo efecto por dosis | general | clinical_decision_applied | clinical | — |
+| C-2026-09-27-04 | Imágenes: compatibilidad visual amplia; se retira la diferencia rígida de 15 kg | general | clinical_decision_applied | clinical | — |
 
 ## La batería, configuración por configuración
 

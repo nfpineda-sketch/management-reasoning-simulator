@@ -1,0 +1,117 @@
+{
+ "version": 1,
+ "note": "Findings of its state each photograph does not show, on a reading of the photograph by the agent (2026-09-27). An observation, not a review and not an approval: the room says these findings are to be assessed at the examination, and the display record keeps what was shown. A still photograph is not read for a respiratory rate.",
+ "observations": {
+  "b5db3e20f4fa4b509cac65340fd33cb0": {
+   "not_shown": [
+    "skin_color",
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V02, anaphylaxis arrival: no flushing and no visible effort; the face is calm."
+  },
+  "f7b26ce2ca1648c79d06dbf6a808d696": {
+   "not_shown": [
+    "distress",
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V03, asthma arrival: an anxious look, but not the marked distress or effort of the state."
+  },
+  "5b68b30e8728446b8ac0481d5cacb87c": {
+   "not_shown": [
+    "distress",
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V05: close to neutral; effort not visible."
+  },
+  "88ab1e0e8884414cbfe644fd204bfcb2": {
+   "not_shown": [
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V09: discomfort shown; effort not visible."
+  },
+  "6138b1dce22a4f8abfcd007f0e946574": {
+   "not_shown": [
+    "distress"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V17, renal colic arrival: calm face for marked discomfort."
+  },
+  "9cf84f1612f24e00aa3e5a374f5807c0": {
+   "not_shown": [
+    "distress",
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V21: almost the same as the neutral reference."
+  },
+  "ca87e8eee6014a28a57799cfd498fd88": {
+   "not_shown": [
+    "distress"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V21: very mild discomfort."
+  },
+  "f907697660d541c2ad90b1b33343d8c4": {
+   "not_shown": [
+    "skin_color",
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V26: drowsiness shown; flushing and effort not visible."
+  },
+  "e0fe0c84327f42e5bd91a7f2d3057e16": {
+   "not_shown": [
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V29: drowsiness shown; effort not visible."
+  },
+  "5653104a1925466781766d7cd7ed7310": {
+   "not_shown": [
+    "distress"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V19, renal colic arrival: a neutral, serious face for marked discomfort."
+  },
+  "d230e5a6eadf4722b4ad2856f2a0e2ce": {
+   "not_shown": [
+    "skin_color",
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V38, anaphylaxis arrival: drowsiness shown; flushing and effort not visible."
+  },
+  "9f73fef3f26b446ea6db35af6c977898": {
+   "not_shown": [
+    "distress"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V38: close to neutral for mild discomfort."
+  },
+  "61898a34763e46dfab7bc9e028a24062": {
+   "not_shown": [
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V01, asthma arrival (rejected by the screen): visible anxiety; no accessory-muscle effort."
+  },
+  "452a7e364c624b2bb0740e44ef422841": {
+   "not_shown": [
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V01, asthma arrival (rejected by the screen): tense; no accessory-muscle effort."
+  },
+  "532d7202bfc941e1b14ba0cfee0c90dd": {
+   "not_shown": [
+    "breathing_effort"
+   ],
+   "by": "agent, 2026-09-27",
+   "note": "V11, pulmonary oedema arrival (rejected by the screen): distress shown; neck relaxed."
+  }
+ }
+}
