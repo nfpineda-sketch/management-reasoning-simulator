@@ -196,3 +196,13 @@ intentos equivalentes.
 - V18 somnoliento con sudor marcado: un intento, forzado una sola vez. Peor caso US$0,60, 2 solicitudes.
 - Después, si quedan al menos 4 solicitudes: V11 ancla y somnolienta. Peor caso US$1,10, 4 solicitudes.
 - Gastado hasta aquí: US$2,1275; 22 solicitudes. Después de esto no se hacen más solicitudes esta noche.
+- **V18 (06:50 UTC):** un solo trabajo, como corresponde: la edición, su corrección y dos revisiones.
+  **2 solicitudes.** Acumulado: **US$2,3661; 24 de 30.** **Rechazado otra vez**, las dos imágenes por la
+  misma razón: «sin gotas de sudor visibles; la piel se ve seca». A mi revisión también: la somnolencia
+  se ve, la identidad se conserva, el sudor no aparece.
+  - Son **4 candidatos en 2 trabajos**, con dos métodos distintos. Con este generador y esta configuración,
+    el sudor marcado sobre piel café oscura no se logra.
+  - No lo intento más. Queda como **limitación de representación**: en ese estado la sala muestra la
+    vista neutral identificada, y el sudor sigue en el examen escrito.
+  - No se sustituye por otra identidad de piel más clara: eso sería justamente asociar el hallazgo a un
+    tono de piel.
