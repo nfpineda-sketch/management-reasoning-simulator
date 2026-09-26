@@ -142,6 +142,33 @@ intentos equivalentes.
 - **Método corregido antes de reintentar** (`bank-1.2`): para cánula, mascarilla simple y de reservorio
   se pide el tubo visible hasta el flujómetro de la pared.
 
-### Reintento del estado con mascarilla (forzado, contado)
+### Reintento del estado con mascarilla (forzado, contado; 06:39–06:42 UTC)
 
 - **Antes:** reserva máxima US$0,60 y 2 solicitudes. Gastado hasta aquí: US$0,7641; 9 solicitudes.
+- **Después: un error de mi herramienta.** El reintento hizo **4 intentos equivalentes, no 1**: **8
+  solicitudes y US$0,9601**, 16 llamadas. El bucle que espera el ancla de una persona nueva forzaba de
+  nuevo en cada vuelta, y un estado rechazado se volvía a pedir. Los límites se respetaron: cada trabajo
+  reservó su peor caso antes de empezar. Pero es gasto que no debió ocurrir.
+  - Corregido: `--force` vale sólo para la primera solicitud, y un rechazo corta el bucle.
+  - Prueba nueva: `test_tools_image_bank.py`. Falla con el bucle anterior y pasa con el corregido.
+- **Acumulado: US$1,7242 con uso informado; 17 de 30 solicitudes.**
+- **Resultado:** los 4 intentos fueron rechazados igual que los del lote 2. A mi revisión, las imágenes
+  nuevas se ven correctas: mascarilla con reservorio sobre nariz y boca, ojos cerrados, misma persona, y
+  en varias se ve el tubo hacia la pared. Aun así el revisor automático (`gpt-5-mini`, razonamiento mínimo)
+  clasifica el dispositivo como «otro tratamiento activo» o «mascarilla simple», nunca como mascarilla
+  de reservorio: **10 candidatos, 5 trabajos, la misma clasificación**.
+- **Decisión:**
+  - No gasto más en ese estado.
+  - No relajo la revisión para que pase.
+  - Los candidatos quedan excluidos, con su motivo, visibles para tu revisión en el banco.
+  - En un encuentro, ese estado muestra la vista neutral identificada, nunca una imagen equivocada.
+  - Si una revisión humana debe poder aceptar una imagen que el revisor automático rechazó, es una
+    decisión tuya: queda en `docs/IMAGENES_DECISIONES_CLINICAS.md`.
+
+### Lote 3 (reducido: dos personas, llegada; verificar diversidad, no llenar inventario)
+
+- V18 (hombre de unos 28, piel café oscura): ancla y somnoliento con sudor **marcado**. Es el caso donde
+  el sudor y la palidez no deben apoyarse sólo en el color de la piel.
+- V11 (mujer de unos 68, piel oliva clara): ancla y somnolienta con sudor leve.
+- **Antes:** cuatro trabajos, uno tras otro. Peor caso de cada uno: US$0,50 el ancla y US$0,60 el estado,
+  2 solicitudes cada uno. Gastado hasta aquí: US$1,7242; 17 solicitudes. Quedan 13.
