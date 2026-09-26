@@ -1186,5 +1186,27 @@
   "username": "npinedafaculty",
   "note": "Aprobación del docente dada en el chat del 2026-09-27 («puedes aprobarlas todas? ya las revise y me parecen bien»), tras su revisión en la app; registrada por el agente a su pedido.",
   "created_at": 1790454465
+ },
+ {
+  "id": "fa925bd6cf0843c9a43f24ae305a1e4d",
+  "asset_id": "ebe16847ed9c404582e854547f73a997",
+  "identity_id": "V35",
+  "role": "anchor",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-27, sobre la referencia recomendada en docs/PESOS_CASOS_PROPUESTA.md («obesidad bien lograda», rechazada solo por el falso positivo de «tratamiento activo» del filtro); registrada por el agente a su pedido.",
+  "created_at": 1790457604
+ },
+ {
+  "id": "6f6b88133ebe4f53b6dd435e857c214f",
+  "asset_id": "ebe16847ed9c404582e854547f73a997",
+  "identity_id": "V35",
+  "role": "anchor",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-27, sobre la referencia recomendada en docs/PESOS_CASOS_PROPUESTA.md («obesidad bien lograda», rechazada solo por el falso positivo de «tratamiento activo» del filtro); registrada por el agente a su pedido.",
+  "created_at": 1790457604
  }
 ]

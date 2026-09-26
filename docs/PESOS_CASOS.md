@@ -302,8 +302,12 @@ propofol, midazolam, dexmedetomidina, fentanilo y ketamina en infusión.
 - **Costo:** US$0,64 y 7 solicitudes del saldo de la segunda autorización, que queda en US$3,64 y 23
   solicitudes. La tercera autorización (US$10, tope de 100 solicitudes) quedó registrada y sin gasto.
 - **V38 es ahora la llegada de tres diagnósticos distintos**: no queda asociada a uno solo.
-- **`pulmonary_edema_75f`** (120 kg) nunca tuvo foto. Sus dos candidatas (V11 y V12) ahora contradicen su ficha.
-  Como no es una sustitución, no se generó nada: sigue con la vista neutral y el examen escrito.
+- **`pulmonary_edema_75f`** (120 kg) nunca tuvo foto. Sus dos candidatas (V11 y V12) contradecían su ficha:
+  contextura promedio para un IMC de 43,5. **Resuelto el 2026-09-27** con V34, identidad nueva y compatible
+  (obesa, edad compatible): referencia y llegada generadas, pendientes de su revisión
+  (`docs/IMAGENES_REGISTRO.md`). Mientras no las revise, la vista neutral sigue mostrándose. V12 mantiene
+  su aprobación anterior para los casos donde su contextura sí calza; `compatible()` la excluye de éste
+  sin que haga falta tocar esa aprobación.
 
 **Revisión por clases**, siguiendo tu criterio. Nada se rechazó por una cara tranquila o la boca cerrada, y ninguna
 foto se leyó como prueba de una frecuencia respiratoria.

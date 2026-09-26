@@ -422,3 +422,45 @@ El paquete del repositorio lleva las 88 imágenes, los 68 trabajos y los registr
 - **Verificado:** una importación del paquete en una base temporal con la cuenta `npinedafaculty` registra
   las 108 filas y deja las 54 fotos visibles aprobadas en las dos revisiones. No se generó ninguna imagen
   ni hubo gasto.
+
+## V35 aprobada; V34 nueva para pulmonary_edema_75f (2026-09-27)
+
+- **Pedido:** aprobar la referencia rechazada de V35 y resolver la llegada de `pulmonary_edema_75f` sin
+  usar una candidata que contradiga su ficha (120 kg, IMC 43,5).
+- **V35** (`ebe16847ed9c404582e854547f73a997`): aprobada en las dos revisiones, sobre la recomendación ya
+  hecha en `docs/PESOS_CASOS_PROPUESTA.md` (obesidad bien lograda, rechazada solo por el mismo falso
+  positivo de «tratamiento activo», tubos en la pared sin conectar). La otra referencia de V35
+  (`54cc80275dd946f5815bd88f7bcf7b2e`) sigue sin revisar.
+- **`pulmonary_edema_75f`:** sus dos candidatas (V11, V12) tienen contextura promedio (IMC 17–35) y
+  contradicen la ficha (IMC 43,5, obesidad III). En el lote de aprobaciones del 2026-09-26 quedó aprobada
+  sin querer la de V12 (`96970e9cdc…`), porque el guion sólo excluía fotos marcadas `excluded=True` y ésa
+  no lo estaba.
+- **La aprobación de una foto y su uso en un caso son dos cosas distintas.** `image_identities.compatible()`
+  decide, en cada encuentro y de forma automática, si la contextura de la persona cabe en el rango de IMC
+  de la ficha (`average`: 17–35; el caso pide 43,5). V12 sigue aprobada —es una foto válida, técnica y
+  clínicamente— y puede usarse en cualquier otro caso donde su contextura promedio sí calce; lo único que
+  no puede es aparecer en `pulmonary_edema_75f`, y eso ya lo impide `compatible()` sin que haga falta
+  tocar su revisión. Comprobado: `compatible(V12, paciente de pulmonary_edema_75f)` → `False`.
+  No se revirtió ninguna aprobación.
+- **V34, identidad nueva** (mujer entre 60 y 77, obesa; ninguna mujer fotografiada antes calza en edad y
+  contextura para 120 kg): referencia y llegada generadas y aceptadas por el filtro automático (la llegada
+  necesitó un reintento forzado tras un veredicto «uncertain» del revisor, sin costo adicional real: mismo
+  método que otros reintentos). `compatible(V34, paciente de pulmonary_edema_75f)` → `True`. Miradas por
+  mí antes y después de pagar el estado: contextura realista y digna, sin el vendaje ni el equipo de fondo
+  que antes disparaba el falso positivo; el estado muestra boca abierta y esfuerzo visible, coherente con
+  «markedly uncomfortable, breathing markedly increased». **Quedan pendientes de su revisión visual y
+  clínica** — no las aprobé por mi cuenta.
+- **Mientras no las revise:** la sala sigue mostrando la vista neutral para este caso, como antes; nada se
+  fuerza a mostrarse sin su aprobación.
+- **Costo:** 3 solicitudes pagadas (referencia + 1 reintento del estado) sobre el saldo de la segunda
+  autorización (`imagenes-2026-09-26-b`), que queda en **US$3,40 y 20 solicitudes**. No se usó la tercera
+  autorización.
+- **Dónde:** `image_arrivals.py`, lote 7 (`V34 · pulmonary_edema_75f`). Paquete actualizado por empalme
+  quirúrgico sobre el manifiesto existente, no por una reexportación completa: la reexportación directa
+  recodificaba de nuevo las 27 referencias ya existentes con una versión de Pillow distinta en este
+  contenedor, dándoles un hash distinto sin cambiar la imagen y duplicando archivos sin necesidad. Se
+  comprobó, estructura por estructura, que ningún activo, trabajo ni fila del libro mayor ya existente
+  cambió; sólo se agregaron los 3 activos, sus filas de costo y los 4 archivos nuevos. Una importación de
+  prueba en una base limpia reproduce los 105 activos.
+- **Ajuste de prueba:** `test_the_room_shows_the_bank.py` esperaba 77 solicitudes de la segunda
+  autorización; ahora son 80.

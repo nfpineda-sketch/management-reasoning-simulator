@@ -67,6 +67,11 @@ PLAN = (
     {"batch": 6, "identity": "V19", "case": "renal_colic_34m"},
     {"batch": 6, "identity": "V08", "case": "bradycardia_bb_54f"},
     {"batch": 6, "identity": "V01", "case": "asthma_24f"},
+    # Batch 7 (2026-09-27): pulmonary_edema_75f (120 kg, BMI 43.5) never had a
+    # compatible candidate -- its two earlier ones (V11, V12) are an average
+    # build and contradict the chart (docs/PESOS_CASOS.md). V34 is new: no
+    # photographed woman fits an obese build at her age.
+    {"batch": 7, "identity": "V34", "case": "pulmonary_edema_75f"},
 )
 
 

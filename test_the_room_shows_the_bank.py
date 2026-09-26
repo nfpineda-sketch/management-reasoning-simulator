@@ -384,7 +384,7 @@ def test_the_repository_pack_gives_a_new_database_the_pilots_photographs_without
     pilot = world.bank.budget_summary(ledgers["imagenes-2026-09-26"])
     assert pilot["requests"] == 26 and pilot["calls_sent"] == 52
     second = world.bank.budget_summary(ledgers["imagenes-2026-09-26-b"])
-    assert second["requests"] == 77 and second["committed"] <= second["limit_micro"]
+    assert second["requests"] == 80 and second["committed"] <= second["limit_micro"]
     # The third authorization (2026-09-27) travels with the pack, recorded and unspent.
     third = world.bank.budget_summary(ledgers["imagenes-2026-09-27"])
     assert third["requests"] == 0 and third["limit_requests"] == 100 and third["limit_micro"] == 10_000_000
