@@ -94,8 +94,8 @@ mostrando lo guardado y dice por qué no hay foto nueva. Una nueva autorización
 | 10 | Selección por compatibilidad y exposición | **S** | Lo no visto primero; `bank_limited` cuando todo se vio |
 | 11 | Presupuesto y tope de solicitudes | **R**: 26 de 30, US$2,50. **S**: reservas concurrentes en Postgres (8 hilos, exactamente 3 aceptadas). | Pasa. Hubo un error de mi herramienta: 8 solicitudes en intentos equivalentes, ya corregido y probado. |
 
-Pruebas nuevas: `test_the_image_bank.py` (35), `test_the_image_bank_on_postgres.py` (4, contra Postgres
-local), `test_the_room_shows_the_bank.py` (21), `test_image_bank_portal.py` (4) y
+Pruebas nuevas, 64 en total: `test_the_image_bank.py` (33), `test_the_image_bank_on_postgres.py` (4,
+contra Postgres local), `test_the_room_shows_the_bank.py` (21), `test_image_bank_portal.py` (4) y
 `test_tools_image_bank.py` (2).
 
 ## 6. Métricas medidas
