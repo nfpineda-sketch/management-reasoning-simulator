@@ -126,6 +126,22 @@ intentos equivalentes.
   no conectado al paciente. El paciente quedó más a la izquierda de lo pedido (27 % en vez de 40 %), con
   la mitad derecha libre para el monitor.
 
-### Lote 2 (V22: obnubilado, obnubilado con mascarilla, recuperado)
+### Lote 2 (V22: obnubilado, obnubilado con mascarilla, recuperado; 06:36–06:38 UTC)
 
 - **Antes:** reserva máxima US$1,80 y 6 solicitudes. Gastado hasta aquí: US$0,3441; 5 solicitudes.
+- **Después:** 8 llamadas, 0 reintentos. **4 solicitudes.** Acumulado: **US$0,7641** con uso informado;
+  **9 de 30** solicitudes.
+  - Obnubilado: aceptado a la primera (21 s), con limitaciones de sudor y palidez leves.
+  - Recuperado: aceptado a la primera (15 s), con la limitación de palidez leve.
+  - **Obnubilado con mascarilla de reservorio: rechazado dos veces** (la edición y su única corrección).
+- **Por qué:** las dos imágenes muestran la mascarilla con su bolsa, bien puesta, pero **sin tubo de
+  oxígeno**. Una mascarilla sin conexión no entrega oxígeno: como imagen de un soporte ejecutado es
+  incoherente. El rechazo es defendible, aunque la explicación del revisor fue imprecisa («ninguna
+  interfaz» y «tratamiento activo no pedido»). El texto de la sala ya pedía «oxygen tubing» y el modelo lo
+  omitió dos veces.
+- **Método corregido antes de reintentar** (`bank-1.2`): para cánula, mascarilla simple y de reservorio
+  se pide el tubo visible hasta el flujómetro de la pared.
+
+### Reintento del estado con mascarilla (forzado, contado)
+
+- **Antes:** reserva máxima US$0,60 y 2 solicitudes. Gastado hasta aquí: US$0,7641; 9 solicitudes.
