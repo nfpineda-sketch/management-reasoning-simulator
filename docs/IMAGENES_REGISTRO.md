@@ -401,3 +401,24 @@ El paquete del repositorio lleva las 88 imágenes, los 68 trabajos y los registr
   La sala lo dice junto a la foto y el registro del encuentro lo guarda. Son observaciones del agente, no
   revisiones.
 - **Paquete:** 102 imágenes y los registros de las tres autorizaciones.
+
+## Todas las fotos visibles, aprobadas por el docente (2026-09-27)
+
+- **Pedido:** «puedes aprobarlas todas? ya las revise y me parecen bien», después de revisarlas en el panel
+  «Patient image bank (faculty)» de la app de desarrollo.
+- **Hecho:** 94 filas nuevas en `assets/patient_images/approvals.json` (revisión visual y clínica,
+  `approved`) para las 47 fotos visibles que seguían pendientes en el paquete: V01 1, V02 2, V03 2, V05 2,
+  V08 2, V09 3, V11 2, V12 4, V14 2, V17 3, V18 1, V19 2, V21 3, V22 1, V23 3, V24 3, V26 3, V27 2, V29 2,
+  V33 1, V38 3. Con las 7 del piloto, las 54 fotos visibles quedan aprobadas en las dos revisiones.
+  Cada fila cita la aprobación del docente y dice que la registró el agente a su pedido, bajo la cuenta
+  `npinedafaculty`, como las del piloto. La app las importa una vez al desplegarse; una base sin esa cuenta
+  no registra nada.
+- **Incluidas por decisión del docente**, pese a la recomendación anterior del agente de no aprobarlas o
+  aprobarlas con reserva: los estados de V02 y V26 (enrojecimiento no visible), V03 y V17 (malestar
+  marcado con la cara tranquila) y V21 (igual a su referencia).
+- **No incluidas:** las fotos excluidas u ocultas en el panel (rechazadas por el filtro automático o
+  retiradas), entre ellas V35, las dos llegadas de V01 para `asthma_24f` y las dos candidatas de
+  `pulmonary_edema_75f` (V12 `96970e9c`, V11 `532d7202`). Siguen a la espera de su decisión.
+- **Verificado:** una importación del paquete en una base temporal con la cuenta `npinedafaculty` registra
+  las 108 filas y deja las 54 fotos visibles aprobadas en las dos revisiones. No se generó ninguna imagen
+  ni hubo gasto.
