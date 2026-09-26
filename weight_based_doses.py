@@ -18,12 +18,19 @@ chart and the reader does not ask for it again. For each order per kilogram it
 uses, in this order:
 
 1. the weight type the resident wrote with it ("1.2 mg/kg de peso ideal");
-2. the one the resident chose earlier in this encounter for the same drug;
+2. the one the resident chose earlier in this encounter for the same drug and
+   kind of order (a bolus and an infusion of the same agent are different
+   orders, so a choice made for one is not carried to the other);
 3. a rule the faculty agreed for that drug and context (none yet for medicines);
-4. the chart's actual weight, and says so -- unless the weight type changes the
-   dose materially (actual weight at least 30% above ideal, ``patient_body``). Then
-   it asks once which weight is meant, keeps the whole order, and remembers the
-   answer for that drug.
+4. the chart's actual weight, and says so. When the weight type would change
+   the dose materially (actual weight at least 30% above ideal,
+   ``patient_body``) and no rule has been agreed for the drug, the record adds
+   that this is the engine's convention while that clinical decision is
+   pending -- the reader does not resolve the indefinition by making the
+   resident choose (faculty instruction of 2026-09-26). Encounters launched
+   under the first revision of the rules (stamp "2026-09-27") asked once per
+   drug and remembered the answer; they keep that behaviour, so a saved one
+   replays as it was played.
 
 Every such order records the weight it used, what kind of weight it was and where
 it came from, beside the dose it became. The same executed amount has the same
@@ -40,6 +47,9 @@ DOSE_FIELD = {
     "procedural_sedation": "dose_mg", "neuromuscular_blockade": "dose_mg", "opioid_analgesia": "dose_mg",
     "steroid": "dose_mg", "magnesium": "dose_mg", "anticoagulation": "dose", "dextrose": "dose_g",
     "fluid": "volume_ml",
+    # 2026-09-26: the per-kilogram orders that were misread and then refused
+    # ("TXA 15 mg/kg", "adrenalina 0.01 mg/kg IM") now convert like the rest.
+    "tranexamic_acid": "dose_g", "epinephrine_im": "dose_mg",
 }
 #: The per-kilogram fields a parsed order may carry, with the unit each is in.
 PER_KG = (("dose_mg_per_kg", "mg"), ("dose_units_per_kg", "units"), ("dose_g_per_kg", "g"),
@@ -49,6 +59,11 @@ INFUSIONS = frozenset({"norepinephrine", "epinephrine", "dobutamine"})
 
 WEIGHT_QUESTION = ("This order is written per kilogram and the patient's weight is not recorded. "
                    "What does the patient weigh, in kg? The whole order is kept; only the weight is missing.")
+#: Appended to the record of a dose converted on the chart's actual weight when
+#: the weight type would change it materially and no rule has been agreed for
+#: the drug: the convention is stated, never silent, and the faculty documents
+#: can find what it touched (docs/PESOS_CASOS.md, section 4).
+PENDING_NOTE = "; engine convention while the weight type for this drug is undecided"
 WEIGHT_RETRY = ("Give the patient's weight in kg (for example, 60 kg). "
                 "The whole order is kept; only the weight is missing.")
 BASIS_RETRY = ("Say which weight this dose should use: actual, ideal or adjusted (or give the weight in kg). "
@@ -135,11 +150,13 @@ def drug_of(action):
 
 
 def _label(action):
-    name = action.get("agent") or {"fluid": "The fluid", "dextrose": "Dextrose"}.get(action.get("type"),
-                                                                                   action.get("type"))
+    name = action.get("agent") or {"fluid": "The fluid", "dextrose": "Dextrose",
+                                   "tranexamic_acid": "Tranexamic acid",
+                                   "epinephrine_im": "Intramuscular epinephrine"}.get(action.get("type"),
+                                                                                      action.get("type"))
     value, unit = per_kg(action)
     if value is not None:
-        return str(name).capitalize(), f"{value:g} {unit}/kg"
+        return str(name).capitalize(), action.get("per_kg_written") or f"{value:g} {unit}/kg"
     rate, text = _rate_per_kg(action)
     return str(name).capitalize(), text
 
@@ -160,7 +177,7 @@ def apply(action, kg, source, basis=None, description=None):
         action[field] = dose
         if field == "dose":
             action["units"] = unit
-        written = f"{value:g} {unit}/kg"
+        written = action.get("per_kg_written") or f"{value:g} {unit}/kg"
     else:
         # A rate stays as written; what it amounts to on this weight is shown.
         written = rate_text
@@ -171,6 +188,10 @@ def apply(action, kg, source, basis=None, description=None):
     action.pop("weight_question", None)
     if basis:
         action["weight_basis"] = basis
+    if description and PENDING_NOTE in description:
+        # Machine-readable twin of the note: the faculty brief and the rubric
+        # suggestion scope what depended on the engine's convention.
+        action["weight_convention_pending"] = True
     how = f", {description}" if description else ""
     action["dose_basis"] = f"{written} × {kg:g} kg{result}{how}"
     return action
@@ -215,7 +236,15 @@ def _choose(action, state, written=None):
             return float(stated["kg"]), "resident", None, "the weight the resident gave"
         return None, "weight", None, None
     if patient_body.relevant_ambiguity(patient):
-        return None, "basis", None, None
+        if patient_body.asks_when_ambiguous(state):
+            # First-revision encounters only: their reader asked once per drug,
+            # and a saved one must replay as it was played.
+            return None, "basis", None, None
+        # Faculty instruction of 2026-09-26: the gap between actual and ideal
+        # weight is not, by itself, a question. The chart's actual weight is
+        # the engine's stated convention; whether this drug should use another
+        # weight type is a pending clinical decision, recorded as such.
+        return kg, "chart", "actual", description + PENDING_NOTE
     return kg, "chart", "actual", description
 
 

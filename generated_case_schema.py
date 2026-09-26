@@ -22,7 +22,7 @@ PE_BLEEDING_RISKS = tuple(sorted(_PE_RISKS))
 from visual_observations import VISUAL_CHOICES, PERFUSION_CATEGORIES
 from generated_case_validation import ContractValidationError
 
-SCHEMA_VERSION = "mrs.generated.case.v3"
+SCHEMA_VERSION = "mrs.generated.case.v4"
 OBSERVED_NUMERIC = ("sbp", "dbp", "hr", "spo2", "respiratory_rate", "crt", "temperature_c", "glucose_mg_dl")
 LAB_NUMERIC = ("hemoglobin_g_dl", "lactate_mmol_l", "pco2_mm_hg", "bicarbonate_mmol_l", "pao2_mm_hg")
 NUMERIC_FIELDS = OBSERVED_NUMERIC + LAB_NUMERIC
@@ -111,9 +111,17 @@ RESULT_FIELDS = ("report", "lv", "rv", "pericardium", "ivc", "lungs",
                  "upper_reference_ng_l", "cortisol_ug_dl", "tsh_miu_l", "free_t4_ng_dl", "ketones_mmol_l")
 CASE_SCHEMA = obj({
     "schema_version": enum((SCHEMA_VERSION,)), "title": SHORT,
+    # Weight AND height, each with how it was obtained (schema v4, faculty
+    # instruction of 2026-09-26, point 2): a generated case records the same
+    # body data a bank case does, so one order has one interpretation in both.
     "patient": obj({"age_years": {"type": "integer", "minimum": 18, "maximum": 100},
                     "sex": enum(("male", "female")), "pronouns": enum(("she/her", "he/him")),
                     "weight_kg": {"type": "number", "minimum": 35, "maximum": 200},
+                    "weight_how": enum(("measured", "reported", "estimated")),
+                    "weight_by": SHORT,
+                    "height_m": {"type": "number", "minimum": 1.35, "maximum": 2.10},
+                    "height_how": enum(("measured", "reported", "estimated")),
+                    "height_by": SHORT,
                     "comorbidities": array(SHORT, maximum=10)}),
     "presentation": {"type": "string", "minLength": 20, "maxLength": 500},
     "history_source": enum(("Patient", "Family", "EMS", "Caregiver")),
@@ -467,6 +475,12 @@ def validate_clinical_structure(case):
         raise ValueError("Initial circulation is outside the supported encounter contract.")
     if patient["pronouns"] != ("she/her" if patient["sex"] == "female" else "he/him"):
         raise ValueError("Patient description is inconsistent.")
+    # A structural plausibility bound, not a clinical rule: weight and height
+    # must describe one possible adult body (BMI 13-70 covers every clinical
+    # extreme), so a typo in either unit cannot author an impossible patient.
+    bmi = patient["weight_kg"] / patient["height_m"] ** 2
+    if not 13.0 <= bmi <= 70.0:
+        raise ValueError("The patient's weight and height are not a plausible adult body together.")
     if len(case["examination"]) != len(EXAM_AREAS):
         raise ValueError("All examination areas must have explicit findings.")
     if not {"poc_glucose", "temperature", "basic_labs", "pocus"}.issubset(case["investigations"]):

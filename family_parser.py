@@ -865,6 +865,8 @@ _WEIGHT_BASED = frozenset({"procedural_sedation", "neuromuscular_blockade", "opi
 _PER_KG_KINDS = _WEIGHT_BASED | {"anticoagulation", "steroid", "magnesium", "dextrose"}
 _PER_KILO_ANY = re.compile(r"(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(mg|mcg|ug|g|gramos?|grams?|ui|u|units?|unidades)"
                            r"\s*/\s*kg(?!\s*/)", re.I)
+#: Kinds whose dose field is in grams, so a dose per kilogram lands in grams too.
+_GRAM_DOSE_KINDS = frozenset({"dextrose", "tranexamic_acid"})
 # Faculty decision 4 of 2026-09-25: "dejar en observacion en urgencias N horas"
 # is a destination, with its duration; keeping the patient monitored is not.
 _ED_OBSERVATION = re.compile(
@@ -891,16 +893,19 @@ _SOLUTION_VOLUME = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ml|cc|l|lt)\b", re.I)
 def _per_kilo_order(kind, agent, match, text):
     """A dose per kilogram, kept as written: the weight turns it into a dose later."""
     value, unit = float(match[1]), match[2].lower()
+    written = f"{value:g} {'mcg' if unit in {'mcg', 'ug'} else unit}/kg"
     if unit in {"mcg", "ug"}:
         value, unit = value / 1000, "mg"
     if unit in {"ui", "u", "unit", "units", "unidades"}:
         field = "dose_units_per_kg"
     elif unit in {"g", "gram", "grams", "gramo", "gramos"}:
-        field, value = ("dose_g_per_kg", value) if kind == "dextrose" else ("dose_mg_per_kg", value * 1000)
+        field, value = ("dose_g_per_kg", value) if kind in _GRAM_DOSE_KINDS else ("dose_mg_per_kg", value * 1000)
     else:
-        field, value = ("dose_g_per_kg", value / 1000) if kind == "dextrose" else ("dose_mg_per_kg", value)
-    action = {"type": kind, "agent": agent, field: value, "route": _route(text)}
-    if kind == "dextrose":
+        field, value = ("dose_g_per_kg", value / 1000) if kind in _GRAM_DOSE_KINDS else ("dose_mg_per_kg", value)
+    # The record shows the dose as the resident wrote it ("1 mcg/kg"), whatever
+    # unit the engine keeps it in.
+    action = {"type": kind, "agent": agent, field: value, "route": _route(text), "per_kg_written": written}
+    if kind in _GRAM_DOSE_KINDS:
         action.pop("agent")
     # "1.2 mg/kg de peso ideal": the weight type the resident named is kept with
     # the dose, and weight_based_doses uses it (faculty, 2026-09-27).
@@ -1227,6 +1232,13 @@ def _parse_piece_core(piece, inherited=None):
 
     if re.search(r"\b(?:[aá]cido\s+tranex[aá]mico|tranexamic\s+acid|tranexamico|\btxa\b|"
                  r"exacyl|cyklokapron)\b", body):
+        # "15 mg/kg" is a dose per kilogram; until 2026-09-26 the fixed-dose
+        # pattern read it as 15 mg and the range check then refused it.
+        per_kilo = _PER_KILO_ANY.search(body)
+        if per_kilo:
+            order = _per_kilo_order("tranexamic_acid", None, per_kilo, body)
+            order["route"] = order.get("route") or "IV"
+            return [order], verb or "give"
         dose = re.search(r"(\d+(?:[.,]\d+)?)\s*(mg|g)\b", body)
         grams = None
         if dose:
@@ -1578,6 +1590,18 @@ def _parse_piece_core(piece, inherited=None):
             milligrams = float(mass_dose[1]) / (1000 if mass_dose[2] in {"mcg", "ug"} else 1)
             route = "SC" if re.search(r"\b(?:sc|subcutaneous(?:ly)?|subcut[aá]ne[ao])\b", body) else "IM"
             return [{"type": "epinephrine_im", "dose_mg": milligrams, "route": route}], verb or "give"
+        per_kilo_im = None if rate_match else _PER_KILO_ANY.search(body)
+        if kind == "epinephrine" and per_kilo_im and intramuscular:
+            # "0.01 mg/kg IM": a dose per kilogram of the intramuscular route.
+            # Until 2026-09-26 the bare number fell through to the infusion
+            # reader, which asked for infusion units; nothing wrong ran, but
+            # the order was misread. The weight turns it into milligrams and
+            # the validation range then judges the resulting dose openly.
+            order = _per_kilo_order("epinephrine_im", None, per_kilo_im, body)
+            order.pop("agent", None)
+            order["route"] = ("SC" if re.search(r"\b(?:sc|subcutaneous(?:ly)?|subcut[aá]ne[ao])\b", body)
+                              else "IM")
+            return [order], verb or "give"
         if kind == "epinephrine" and not rate_match and mass_dose and (
                 single_dose or re.search(r"\b(?:iv|ev|intravenous|intravenos[ao])\b", body)):
             # Diluted epinephrine is also given as small IV boluses (50-150 mcg).

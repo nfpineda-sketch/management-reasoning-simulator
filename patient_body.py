@@ -31,10 +31,14 @@ The weight of each calculation (``dosing_weight``):
   B, 2026-09-27): Devine/ARDSNet, from sex and height, with the formula shown.
 - A dose per kilogram uses the weight type the resident wrote ("peso ideal",
   "actual body weight", ...). Otherwise it uses the chart's weight, and says so.
-- When the resident names no weight type, no rule has been agreed for the drug,
-  and the choice changes the dose materially (actual weight at least 30% above
-  ideal), the reader asks once per drug per encounter, and remembers the
-  answer.
+- When the resident names no weight type and no rule has been agreed for the
+  drug, the chart's actual weight is the engine's stated convention. Whether a
+  different weight type should apply is a pending clinical decision per drug
+  and indication (docs/PESOS_CASOS.md, section 4); the reader does not resolve
+  that indefinition by making the resident choose. Encounters launched under
+  the first revision of these rules (stamp "2026-09-27") asked once per drug
+  when actual weight was at least 30% above ideal; that behaviour is kept for
+  those encounters only, so a saved one replays as it was played.
 - The engine's physiology parameters whose weight basis the faculty has not
   decided keep the weight they were calibrated on (``engine_reference_weight``):
   required minute ventilation, the ventilator's default tidal volume, and
@@ -47,12 +51,20 @@ import re
 from copy import deepcopy
 
 #: Marks the encounters that follow these rules. Stored in the spec at launch.
-RULES = "2026-09-27"
+#: Revision 2 (published 2026-09-26, faculty instruction of that day): the
+#: 30%-above-ideal ratio no longer triggers a weight-type question on its own.
+#: The value sorts after the first stamp and is compared by equality only.
+RULES = "2026-09-27.2"
+#: The first revision's stamp: encounters launched under it keep its
+#: ask-when-ambiguous behaviour, so nothing already played replays differently.
+RULES_FIRST_REVISION = "2026-09-27"
 #: The weight every bank case was computed at before cases carried one.
 ENGINE_REFERENCE_WEIGHT_KG = 70.0
 #: The actual weight above which the weight type changes a dose materially
-#: (actual weight / ideal weight). A simulator convention, pending the faculty's
-#: decision table.
+#: (actual weight / ideal weight). Under revision 2 it no longer asks a
+#: question; it marks the executed order as depending on the engine's
+#: actual-weight convention, so the faculty documents can scope what that
+#: convention touched (docs/PESOS_CASOS.md, section 4).
 RELEVANT_RATIO = 1.30
 
 _SOURCE_DRAW = "docs/PESOS_CASOS.md"
@@ -97,11 +109,15 @@ BODIES = {
     "bradycardia_ccb_68m": _body(65, "reported", "by his daughter", 1.71),
     "bradycardia_avb3_78f": _body(54, "reported", "by her son", 1.55),
     "bradycardia_bb_54f": _body(64, "reported", "by her partner", 1.47),
-    # He missed his last two dialysis sessions and has eaten and drunk as usual:
-    # today's weight is above the dry weight his dialysis unit set.
-    "bradycardia_hyperk_63m": _body(122, "measured", "on the bed scale", 1.64, "reported", "by the patient",
-                                    dry_weight_kg=117,
-                                    dry_weight_by="his dialysis unit's record, before the two missed sessions"),
+    # He missed his last two dialysis sessions and has eaten and drunk as
+    # usual: today's weight is above whatever dry weight his dialysis unit
+    # set. That dry weight is NOT recorded: the 117 kg once shown here was an
+    # inference (122 minus 5 for two missed sessions), not a documented value,
+    # and the faculty withdrew it (instruction of 2026-09-26, point 7). Until
+    # the faculty defines one, a dose "de peso seco" has no number to use and
+    # the reader asks for the missing datum. Encounters that already showed
+    # 117 kg keep their saved copy.
+    "bradycardia_hyperk_63m": _body(122, "measured", "on the bed scale", 1.64, "reported", "by the patient"),
     "trauma_limb_hemorrhage_27m": _body(74, "reported", "by the patient", 1.66),
     "trauma_hemothorax_41m": _body(56, "reported", "by the patient", 1.70),
 }
@@ -124,14 +140,29 @@ def rules_apply(state):
     return bool(((state or {}).get("encounter_spec") or {}).get("weight_rules"))
 
 
+def asks_when_ambiguous(state):
+    """Whether this encounter's reader asks the weight type on a 30% actual/ideal gap.
+
+    Only encounters launched under the first revision do (their stamp is
+    "2026-09-27"): the question was their rule, and a saved one must replay as
+    it was played. From revision 2 on (faculty instruction of 2026-09-26) the
+    reader does not ask; the chart's actual weight is the stated convention and
+    the order records that the weight-type decision is pending.
+    """
+    return (((state or {}).get("encounter_spec") or {}).get("weight_rules")
+            == RULES_FIRST_REVISION)
+
+
 # --------------------------------------------------------------------------- the body
 
 def body(patient):
     """What the case records about weight and height, or None.
 
-    A bank case records ``patient["body"]``. A generated case records only a
-    weight (``patient["weight_kg"]``), which the chart shows as recorded in the
-    case, with no height.
+    A bank case records ``patient["body"]``. A generated case records the same
+    data flat on the patient: schema v4 (2026-09-26) authors weight and height
+    with how each was obtained; a case generated before v4 has only a weight,
+    which the chart shows as recorded in the case, with no height -- its
+    historical version, kept as it was.
     """
     patient = patient or {}
     recorded = patient.get("body")
@@ -139,8 +170,13 @@ def body(patient):
         return recorded
     weight = patient.get("weight_kg")
     if _number(weight):
-        return {"weight_kg": float(weight), "weight_how": "recorded", "weight_by": "in the case",
-                "height_m": patient.get("height_m") if _number(patient.get("height_m")) else None}
+        height = patient.get("height_m") if _number(patient.get("height_m")) else None
+        return {"weight_kg": float(weight),
+                "weight_how": patient.get("weight_how") or "recorded",
+                "weight_by": patient.get("weight_by") or "in the case",
+                "height_m": height,
+                "height_how": patient.get("height_how") or patient.get("weight_how") or "recorded",
+                "height_by": patient.get("height_by") or patient.get("weight_by") or "in the case"}
     return None
 
 

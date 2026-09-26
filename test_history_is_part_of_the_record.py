@@ -226,11 +226,27 @@ def text_of(blob):
 
 
 def learner_document(events, case_id="hypoglycemia_76f"):
+    # The exact production path: the payload is built from a session by
+    # analysis_payload_from_session, which carries the frozen encounter events
+    # and the case identifier; nothing is injected that production does not
+    # pass (the old version of this helper injected payload["session"], a key
+    # no production payload has, which is why the defect it should have caught
+    # -- the section never rendering -- stayed invisible).
+    from management_trace_analysis import source_fingerprint
     from management_trace_report import render_management_trace_pdf
+    from management_trace_store import analysis_payload_from_session
     from test_management_trace_report import report_example
-    report, payload = report_example()
-    payload.setdefault("session", {})["events"] = list(events)
-    payload["session"].setdefault("encounter", {})["authored_case_id"] = case_id
+    report, fixture = report_example()
+    session = {
+        "encounter_ended": True, "expert_comparison_unlocked": True,
+        "encounter_closed_trace": fixture["trace"],
+        "precomparison_decision_review": fixture["reflections"],
+        "review_prompts": fixture["reflection_prompts"],
+        "encounter_closed_events": list(events),
+        "encounter_closed_state": {"encounter_spec": {"clinical_case": {"id": case_id}}},
+    }
+    payload = analysis_payload_from_session(session)
+    report["source_hash"] = source_fingerprint(payload)
     return text_of(render_management_trace_pdf(report, payload, case_label="c",
                                                learner_label="l"))
 

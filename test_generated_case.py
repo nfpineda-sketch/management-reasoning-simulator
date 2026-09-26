@@ -46,7 +46,9 @@ def novel_payload(*, diagnosis="Acute adrenal crisis following glucocorticoid wi
                "neurological_symptoms": ["I have no headache, focal weakness or seizure."], "leg_symptoms": ["My legs are not painful or swollen."]}
     return {"schema_version": SCHEMA_VERSION, "title": "Weakness and dizziness",
             "patient": {"age_years": age, "sex": sex, "pronouns": "she/her" if sex == "female" else "he/him",
-                        "weight_kg": 72, "comorbidities": ["Inflammatory arthritis"]},
+                        "weight_kg": 72, "weight_how": "measured", "weight_by": "at triage",
+                        "height_m": 1.68, "height_how": "measured", "height_by": "at triage",
+                        "comorbidities": ["Inflammatory arthritis"]},
             "presentation": f"A {age}-year-old {'woman' if sex == 'female' else 'man'} arrives with weakness and dizziness. The patient looks uncomfortable and answers questions.",
             "history_source": "Patient", "history": history,
             "examination": [{"area": area, "finding": finding} for area, finding in {

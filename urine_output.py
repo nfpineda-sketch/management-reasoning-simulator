@@ -18,6 +18,24 @@ and they move on different clocks.
 
 # Millilitres per kilogram per hour at normal renal perfusion.
 BASELINE_ML_KG_H = 1.0
+# Residual renal function a case can declare (``engine.renal`` in the case),
+# as the share of the normal baseline that kidney still makes. Encounters
+# launched before their case declared one keep the spec they launched with,
+# so nothing already played changes (faculty instruction of 2026-09-26,
+# point 4):
+#
+# * ``baseline_urine: "minimal"`` is the reading of a history of passing
+#   almost no urine -- clearly oliguric, never absolute anuria, because the
+#   history says "almost". The share below is a simulator convention to run
+#   the model, presented as a pending clinical decision (docs/PESOS_CASOS.md,
+#   section 4, decision D), not a fact deduced from the case.
+# * ``baseline_urine_ml_h`` declares the baseline absolutely, when the
+#   faculty fixes one.
+#
+# The same residual share scales the furosemide response: a kidney making a
+# tenth of the usual urine responds to the diuretic in that proportion, on
+# top of what the creatinine already blunts.
+RESIDUAL_SHARES = {"minimal": 0.10}
 # Perfusion closes the kidney down: this is the share of baseline output left
 # per unit of circulation burden, floored at anuria.
 OUTPUT_PER_BURDEN = 1.6
@@ -33,6 +51,18 @@ REPORT_EVERY_MIN = 30              # how often a collection is read out
 VOID_ML = 250                      # the volume a patient notices without a catheter
 
 
+def _declared_renal(state):
+    """What the case declares about the kidney (``engine.renal``), or {}."""
+    declared = (state.get("encounter_spec", {}).get("clinical_case", {})
+                .get("engine", {}) or {}).get("renal")
+    return declared if isinstance(declared, dict) else {}
+
+
+def residual_share(state):
+    """The share of the normal baseline this case's kidney makes (1.0 unless declared)."""
+    return RESIDUAL_SHARES.get(_declared_renal(state).get("baseline_urine"), 1.0)
+
+
 def _responsiveness(state):
     f = state["family_state"]
     creatinine = float((state.get("encounter_spec", {}).get("clinical_case", {})
@@ -40,7 +70,7 @@ def _responsiveness(state):
                         .get("result", {}) or {}).get("creatinine_mg_dl") or 1.0)
     renal = CREATININE_HALF_RESPONSE / (CREATININE_HALF_RESPONSE + max(0.0, creatinine - 1.0))
     perfusion = max(0.0, 1 - OUTPUT_PER_BURDEN * max(0.0, float(f.get("circulation", 1.0)) - 1.0))
-    return max(0.0, renal * perfusion)
+    return max(0.0, renal * perfusion * residual_share(state))
 
 
 def rate_ml_per_min(state):
@@ -49,7 +79,11 @@ def rate_ml_per_min(state):
     weight = float((state.get("encounter_spec", {}).get("clinical_case", {})
                     .get("patient", {}).get("weight_kg") or 70) or 70)
     perfusion = max(0.0, 1 - OUTPUT_PER_BURDEN * max(0.0, float(f.get("circulation", 1.0)) - 1.0))
-    base = BASELINE_ML_KG_H * weight / 60 * perfusion
+    declared = _declared_renal(state)
+    if declared.get("baseline_urine_ml_h") is not None:
+        base = float(declared["baseline_urine_ml_h"]) / 60 * perfusion
+    else:
+        base = BASELINE_ML_KG_H * weight / 60 * perfusion * residual_share(state)
     extra = 0.0
     for dose in f.get("furosemide_doses", ()):
         onset = FUROSEMIDE_ONSET_MIN + (FUROSEMIDE_ORAL_EXTRA_MIN if dose.get("route") == "PO" else 0)

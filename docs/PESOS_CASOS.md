@@ -131,19 +131,26 @@ nombre.
 
 **F. Dosis por kilo** (`weight_based_doses`). El peso sale, en este orden, de:
 1. el tipo de peso que el residente escribe con la orden;
-2. el que eligió antes en el encuentro para el mismo fármaco;
+2. el que eligió antes en el encuentro para el mismo fármaco y la misma clase de orden (un bolo y una infusión
+   del mismo agente son órdenes distintas: la elección de una no se extrapola a la otra);
 3. una regla acordada para ese fármaco y contexto (hoy ninguna, salvo B);
 4. el peso real de la ficha, dicho en el registro.
 
-**La pregunta.** Se hace sólo si no hay tipo nombrado ni regla acordada y la elección cambia la dosis de verdad:
-peso real ≥ 1,30 × peso ideal. Es un umbral del simulador, pendiente (sección 4). Se pregunta **una vez por
-fármaco** en el encuentro, sin mover el reloj, y la respuesta queda registrada. En los 15 pacientes restantes no
-se pregunta nada.
+**La pregunta (revisada el 2026-09-26, punto 1 de tu instrucción).** El desnivel real/ideal ya no pregunta por
+sí solo. Sin tipo nombrado ni regla acordada, la dosis corre sobre el peso real de la ficha; cuando el desnivel
+es material (real ≥ 1,30 × ideal), el registro añade que es la convención del motor mientras el tipo de peso del
+fármaco está pendiente, y la observación queda marcada para el alcance de la evaluación (`model_conventions`).
+El lector pregunta sólo cuando falta un dato que una regla o un tipo nombrado necesitan (la talla para un peso
+ideal; un peso seco no registrado), conservando la orden completa, sin mover el reloj y pidiendo únicamente el
+dato faltante; una orden nueva completa reemplaza a la retenida en vez de repetirse la pregunta. Los encuentros
+lanzados bajo la primera revisión del sello («2026-09-27») conservan su pregunta de entonces, para que lo
+guardado se reproduzca igual; el sello vigente es «2026-09-27.2».
 
 **Un mismo efecto por la misma cantidad.** El efecto simulado se mide contra un único peso por paciente: el real
 de la ficha, como convención provisional hasta que decidas C y E. Así, 56,4 mg de rocuronio duran lo mismo
-escritos como «1,2 mg/kg» que como «56,4 mg». La evaluación no juzga dosis por kilo en ninguna parte; lo verifiqué
-en rúbricas, declaraciones y análisis.
+escritos como «1,2 mg/kg» que como «56,4 mg». Ninguna regla de evaluación juzga dosis por kilo de forma directa,
+pero la convención tiene efectos indirectos (sección 6, redacción corregida): por eso cada encuentro lista sus
+observaciones dependientes de convenciones en el Faculty Brief y junto a la rúbrica.
 
 **Defectos corregidos de paso**, porque tocaban la interpretación del peso:
 - «SF 30 ml/kg» se leía como 30 mL; ahora es 30 mL/kg sobre el peso.
@@ -174,15 +181,15 @@ fuente en sí existe.
 | **C · Rocuronio/vecuronio, bolos posteriores** | Igual | Peso ideal o magro, titulado por tren de cuatro | Schwartz, Anesth Analg 1992;74:515 (vecuronio: farmacocinética similar normalizada a peso ideal); SCCM/ASHP 2016 | Duración de cada bolo | Igual |
 | **C · Bloqueante en infusión** | No modelado como infusión | Peso ideal o ajustado, o tasa fija | SCCM/ASHP, Crit Care Med 2016;44:2079 (recomendación débil); ACURASYS y ROSE: cisatracurio 37,5 mg/h fijo | — | — |
 | **C · Succinilcolina** | Peso real (pregunta si relevante) | Acordar **peso real** 1–1,5 mg/kg; así deja de preguntarse | Lemmens y Brodsky, Anesth Analg 2006;102:438 (ECA, n=45: con peso ideal, un tercio con malas condiciones) | Ninguno | Ninguno |
-| **D · Diuresis basal** | 1,0 mL/kg/h × 70 kg = 70 mL/h, reducida por la carga circulatoria, más furosemida. La creatinina sólo reduce la respuesta a la furosemida | Ver nota 3 | KDIGO 2012 (0,5 mL/kg/h; no dice qué peso). Con peso real se sobrediagnostica oliguria en obesos (evidencia baja) | Un paciente de 122 kg con 70 mL/h está a 0,57 mL/kg/h «real» y a 1,16 «ideal» | Ninguna regla usa mL/kg/h |
+| **D · Diuresis basal** | 1,0 mL/kg/h × 70 kg = 70 mL/h, reducida por la carga circulatoria, más furosemida. La creatinina sólo reduce la respuesta a la furosemida. **Desde el 2026-09-26 (punto 4)**: un caso puede declarar su función renal basal (`engine.renal`): «minimal» (participación residual del 10%, convención provisional del simulador) o una basal absoluta en mL/h. El caso en diálisis la declara: hace ~7 mL/h, no 70, y la furosemida responde en esa proporción. La cifra exacta del residuo sigue siendo tuya | Ver nota 3 | KDIGO 2012 (0,5 mL/kg/h; no dice qué peso). Con peso real se sobrediagnostica oliguria en obesos (evidencia baja) | El paciente de 122 kg en diálisis ya no contradice su historia | La convención residual aparece en el Brief cuando el encuentro tocó la diuresis |
 | **E · Noradrenalina y adrenalina** | mcg/kg/min × peso real → mcg/min. El efecto sale de los mcg/min absolutos (calibrados a 70 kg) | Referencia en mcg/min; si se escribe por kilo en obesidad, sobre peso ideal o ajustado | Radosevich, Am J Crit Care 2016;25:27 y Vadiei, Ann Pharmacother 2017;51:194 (observacionales, evidencia baja) | `anaphylaxis_63m` (115 kg): 0,1 mcg/kg/min = 11,5 mcg/min real (+13,8 mmHg) o 6,8 ideal (+8,1) | Indirecto: hipotensión sostenida |
 | **E · Dobutamina** | mcg/kg/min sobre peso real; efecto por kilo del mismo peso | Peso real con tope, o ideal | Muy poca evidencia | Igual respuesta por kilo en cualquier peso | Indirecto |
 | **E · Sedantes en infusión** | Por kilo sobre peso real; costo en PA medido sobre peso real | Ver nota 4 | Ingrande, Anesth Analg 2011;113:57 (propofol: inducción con peso magro); Servin, Anesthesiology 1993;78:657 (mantención con peso corregido) | Sólo cambia la PA (propofol: 12 mmHg a 3 mg/kg/h) | Indirecto |
 | **Cristaloide 30 mL/kg** | Peso real (pregunta si relevante). Antes se leía como 30 mL | Peso ajustado si IMC > 30, o peso real | Surviving Sepsis 2021 no fija el peso; la medida SEP-1 acepta el ideal (evidencia muy baja, contradictoria) | `obstructive_pyelonephritis_58f`: 2340 mL real, 1818 ideal | Trauma: más de 2000 mL de cristaloide sin sangre se señala (cifra absoluta) |
 | **Anticoagulantes** | Peso real (pregunta si relevante) | Acordar **peso real**: enoxaparina 1 mg/kg sin tope (0,8 mg/kg con anti-Xa si IMC ≥ 40); heparina en SCA 60 U/kg (máx. 4000) y 12 U/kg/h (máx. 1000) | Guía ACC/AHA SCA sin SDST 2014; ASH 2018 | La exposición anticoagulante del motor sigue los mg | Ninguno |
-| **Umbral de la pregunta** | Real ≥ 1,30 × ideal (16 pacientes) | Confirmar o cambiar (en farmacocinética se usan 120–130%) | Fichas técnicas (vecuronio: «30% sobre el peso ideal») | Cuántas veces se pregunta | Ninguno |
-| **Casos generados por IA** | Tienen peso, no talla: el Vt por kilo usa el peso registrado, con nota | Agregar talla al esquema de generación | — | Sólo casos generados | — |
-| **Peso seco en diálisis** | 117 kg: 122 kg actuales menos 5 kg por dos sesiones perdidas | Confirmar o cambiar | Deducido del antecedente | Dato de la ficha; nada se dosifica con él | Ninguno |
+| **Umbral de la pregunta** | **Resuelto el 2026-09-26 (punto 1): retirado como disparador universal.** Sin tipo nombrado ni regla acordada, la dosis corre sobre el peso real y el registro declara la convención como decisión pendiente; los encuentros de la primera revisión conservan su pregunta | — | — | El umbral 1,30 sólo marca cuándo la diferencia es material para el registro y el alcance de la evaluación | La nota de convención aparece en el Brief y junto a la rúbrica |
+| **Casos generados por IA** | **Resuelto el 2026-09-26 (punto 2): esquema v4** exige peso y talla con su origen; misma interpretación que el banco. Los generados antes de v4 conservan su versión histórica (talla no registrada; un tipo de peso que la necesite pregunta el dato faltante) | — | — | Sólo casos generados nuevos | — |
+| **Peso seco en diálisis** | **Retirado el 2026-09-26 (punto 7): no registrado.** Los 117 kg eran una inferencia (122 − 5), no un antecedente. La ficha no muestra peso seco y una dosis «de peso seco» pregunta el dato faltante | Definir el peso seco del caso, con fuente propia del caso, si quieres que exista | — | Dato de la ficha; nada se dosifica con él | Ninguno |
 
 **Nota 1 · Ventilación minuto requerida.** B ya aplicado cambia cuánto ventila un «8 mL/kg»: ahora sigue al peso
 predicho. Si la ventilación requerida se queda en 70 kg, un paciente de talla baja ventila menos que antes para
@@ -267,6 +274,10 @@ propofol, midazolam, dexmedetomidina, fentanilo y ketamina en infusión.
   | Obesa | ≥ 27 |
   | Obesa severa | ≥ 33 |
 
+- **Desde el 2026-09-26 (punto 6): los rangos orientan, no excluyen por sí solos.** Una ficha a menos de 2
+  puntos de IMC del rango de una contextura es una diferencia pequeña alrededor de un límite: la foto sigue
+  usable, ordenada tras cualquier ajuste mejor (núcleo → rango → borde), y nunca motiva pagar un reemplazo.
+  Sólo más allá de ese margen la contradicción es clara y excluye. De una foto no se deduce un peso exacto.
 - **Entre dos personas que sirven**, primero la de cuerpo más cercano a la ficha, pero después de lo ya guardado:
   nunca se paga una foto sólo por estar más cerca.
 - La identidad se mantiene durante todo el encuentro.
@@ -302,12 +313,14 @@ propofol, midazolam, dexmedetomidina, fentanilo y ketamina en infusión.
 - **Costo:** US$0,64 y 7 solicitudes del saldo de la segunda autorización, que queda en US$3,64 y 23
   solicitudes. La tercera autorización (US$10, tope de 100 solicitudes) quedó registrada y sin gasto.
 - **V38 es ahora la llegada de tres diagnósticos distintos**: no queda asociada a uno solo.
-- **`pulmonary_edema_75f`** (120 kg) nunca tuvo foto. Sus dos candidatas (V11 y V12) contradecían su ficha:
-  contextura promedio para un IMC de 43,5. **Resuelto el 2026-09-27** con V34, identidad nueva y compatible
-  (obesa, edad compatible): referencia y llegada generadas, pendientes de su revisión
-  (`docs/IMAGENES_REGISTRO.md`). Mientras no las revise, la vista neutral sigue mostrándose. V12 mantiene
-  su aprobación anterior para los casos donde su contextura sí calza; `compatible()` la excluye de éste
-  sin que haga falta tocar esa aprobación.
+- **`pulmonary_edema_75f`** (120 kg) nunca tuvo foto. Sus dos candidatas (V11 y V12, contextura promedio)
+  siguen fuera incluso con los rangos como orientación (IMC 43,5, contradicción clara). El 2026-09-26
+  autorizaste que una imagen nueva no quede excluida del trabajo autorizado, y la **tanda 7 ya corrió**: V34
+  (identidad nueva, obesa, edad compatible), referencia y llegada generadas con el saldo de la segunda
+  autorización, aceptadas por el revisor automático y **pendientes de tu revisión visual y clínica**
+  (`docs/IMAGENES_REGISTRO.md`). Mientras no las revises, la sala muestra la vista neutral. V12 mantiene su
+  aprobación anterior para los casos donde su contextura sí calza; `compatible()` la excluye de éste sin
+  tocar esa aprobación.
 
 **Revisión por clases**, siguiendo tu criterio. Nada se rechazó por una cara tranquila o la boca cerrada, y ninguna
 foto se leyó como prueba de una frecuencia respiratoria.
@@ -317,8 +330,11 @@ foto se leyó como prueba de una frecuencia respiratoria.
   - los estados de V09 (`6b6eca45`), V11 (`ec9315a6`, `a734490c`), V12 (`fa2a94af`, `f69b7508`), V14
     (`ab017b3c`), V17 (`c0d772c1`), V18 (`a0ad2024`), V22 (`791a32bd`), V23 (`ad05d22b`, `2f626c73`), V24
     (`92c0a925`, `ed245064`), V26 (`df73eae5`), V27 (`868e3acf`) y V08 (`451721dd`).
-- **Compatible, que necesita el monitor o el examen:** la sala dice junto a la foto qué hallazgos no muestra
-  («… not discernible in this still view; assess during examination»), y el registro del encuentro lo guarda.
+- **Compatible, que necesita el monitor o el examen:** desde el 2026-09-26 (punto 6 de tu instrucción) la sala
+  muestra junto a **toda** foto vigente la misma frase neutral («A still photograph does not show every clinical
+  sign; examine the patient to assess what it cannot carry»), sin nombrar qué hallazgos faltan: nombrarlos
+  revelaba qué define el caso antes de examinar. Los códigos específicos de esta tabla siguen guardándose en el
+  registro de visualizaciones del encuentro y se muestran en tu portal de revisión.
 
   | Foto | No muestra |
   |---|---|
@@ -360,20 +376,24 @@ Las comprobaciones que pediste en el punto 6. Reutilicé encuentros y pruebas gu
 | Peso y talla accesibles y consistentes en ficha, cálculos y documentación | `test_weight_and_height`: la tabla es el sorteo, la ficha rotula estimados y peso seco, y el motor usa el mismo número. La tabla de este documento sale de `patient_body.BODIES` | Pasa |
 | El Vt por kilo usa el peso predicho | Pruebas de fórmula, de tipo de peso nombrado y de encuentro anterior (sigue en 70 kg) | Pasa |
 | Dosis absolutas y tipos de peso explícitos se respetan | Vt absoluto conservado (defecto corregido); «peso real / ideal / ajustado / seco» en la orden; peso escrito con la orden; la misma cantidad tiene el mismo efecto | Pasa |
-| Sin penalizaciones por supuestos ocultos | Ver lista abajo | Pasa. Las dos consecuencias que sí existen quedan escritas en el registro y en la sección 4 |
+| Sin penalizaciones por supuestos ocultos | Ver lista abajo | **Corregido el 2026-09-26: la afirmación original era demasiado fuerte.** Que la rúbrica no puntúe mg/kg no elimina los efectos indirectos: una convención del motor cambia gases, presión, duración del bloqueo o diuresis, y por esa vía las decisiones posteriores y su lectura. Ahora cada encuentro lista sus observaciones dependientes de convenciones pendientes en el Faculty Brief y junto a la sugerencia de rúbrica (`model_conventions`), con la regla de no fundar una deficiencia sólo en ellas |
 | Encuentros previos: datos y evaluaciones originales | Encuentro guardado el 2026-09-25 (`opioid_67f`): 10 órdenes (dosis por kilo, infusiones, bloqueante, sedación) desde su lanzamiento y desde su estado guardado, con el código anterior y el nuevo | Salida idéntica. Además, ningún código escribe un registro guardado y la base de evaluación sigue congelada |
 | La selección de imágenes no depende de 15 kg | `test_image_identities`: la constante y sus funciones ya no existen; todo caso tiene alguien compatible; la persona más cercana va primero sin pagar | Pasa |
 
-**Sin penalizaciones por supuestos ocultos:**
-- Ninguna regla de evaluación juzga dosis, volúmenes, ventilación ni diuresis por kilo. Lo revisé en rúbricas,
-  declaraciones y análisis.
-- La fisiología pendiente no cambia con el peso de la ficha: ventilación minuto requerida, Vt por defecto y
-  diuresis.
+**Supuestos ocultos y efectos indirectos (redacción corregida el 2026-09-26):**
+- Ninguna regla de evaluación juzga dosis, volúmenes, ventilación ni diuresis por kilo de forma directa. Lo
+  revisé en rúbricas, declaraciones y análisis.
+- **Pero los efectos indirectos existen**: una convención del motor puede cambiar gases, presión arterial,
+  duración del bloqueo o evolución clínica y, por esa vía, afectar decisiones posteriores del residente y su
+  evaluación. La afirmación original («sin penalizaciones») era demasiado fuerte.
+- Desde el 2026-09-26, `model_conventions` identifica por encuentro las observaciones que dependen de una
+  convención pendiente (tipo de peso por fármaco, efecto de infusiones, duración del bloqueante, VM y Vt por
+  defecto, diuresis basal) y las muestra en el Faculty Brief y junto a la sugerencia de rúbrica, con su decisión
+  pendiente y esta regla: no fundar una deficiencia sólo en una de esas salidas; el resto del encuentro se evalúa
+  como siempre. El alcance es la observación, nunca el dominio completo.
 - Hipoglicemia: ninguna de las 60 trayectorias registradas cambió; sólo aparece el campo nuevo `/patient/body`,
   declarado en el registro de correcciones.
 - Los 11 guiones piloto conservan el estado de evaluación que declaran.
-- Las dos consecuencias reales (efecto medido sobre peso real; Vt por kilo con la VM en 70 kg) quedan escritas en
-  el registro y en la sección 4.
 
 **Pruebas:**
 - **Suite completa**, en cuatro partes:
@@ -388,19 +408,21 @@ Las comprobaciones que pediste en el punto 6. Reutilicé encuentros y pruebas gu
   completa sin detenciones en español y en inglés. Ningún otro guion del lote tiene órdenes por kilo; el guion
   piloto de `pulmonary_embolism_61m` no pregunta (peso real 1,27 veces el ideal, bajo el umbral).
 
-**Hallazgos fuera de alcance, sin corregir** (encontrados al revisar; conviene tratarlos aparte):
-1. **Documento A.** La sección «The history you took» parece no mostrarse nunca en producción: la llamada de
-   `management_trace_report.py` recibe la carga de análisis, que no trae `session`. La prueba que la cubre inyecta
-   ese dato a mano.
-2. **Fentanilo.** El rango de opioides (0,5–30 mg) rechaza las dosis habituales de fentanilo (50–100 mcg) y
-   cualquier fentanilo por kilo.
-3. **Motor antiguo PS001/PS002.** Lee «0,25 mg/kg» como 0,25 mg en diltiazem, amiodarona, betabloqueadores,
-   furosemida y etomidato. Además, la noradrenalina usa 100 kg por defecto y la dobutamina 70.
-4. **Diuresis del paciente en diálisis.** Produce 70 mL/h: el modelo no tiene función renal basal (sección 4,
-   nota 3).
-5. **Adrenalina IM y ácido tranexámico en mg/kg.** Se leen mal y luego se rechazan: no se ejecuta nada
-   equivocado, pero el mensaje confunde.
-6. **Pruebas que dependen del orden.** `test_cognitive_encounters.py` deja estado que hace que el caso generado
-   por IA de `test_problem_launch.py` caiga en un caso del banco si corre después en el mismo proceso. Pasa igual
-   con el código anterior.
+**Hallazgos fuera de alcance (estado al 2026-09-26,** instrucción de cierre**):**
+1. **Documento A — corregido** (C-2026-09-26-13). `history_review` lee también los `encounter_events` congelados
+   que la carga de análisis sí trae, y la carga nombra su caso; «The history you took» se muestra por el
+   recorrido real y la prueba ya no inyecta `session`.
+2. **Fentanilo — corregido** (C-2026-09-26-14). Rango propio en microgramos, etiqueta en mcg, por kilo aceptado,
+   equivalencia declarada aplicada.
+3. **Motor antiguo PS001/PS002 — documentado, sin corregir a propósito.** No es accesible para ningún usuario en
+   la aplicación actual: el selector no ofrece PS001/PS002, `generate_problem_config` rechaza todo id fuera de
+   los desafíos, la reanudación exige `mrs_attempt_v1` (sólo encuentros del currículo) y `MRS_REPLAY_CASE`
+   rechaza un estado sin `encounter_spec`, que los estados PS no tienen. Sólo la suite de regresiones lo
+   ejecuta. Corregir sus lecturas mg/kg sería ampliar trabajo sobre código inalcanzable (tu punto 3).
+4. **Diuresis del paciente en diálisis — corregido** (C-2026-09-26-16). Función renal residual declarable;
+   el caso declara «minimal» y produce ~7 mL/h, no 70.
+5. **Adrenalina IM y ácido tranexámico en mg/kg — corregido** (C-2026-09-26-15). Se entienden por kilo, se
+   convierten con el peso de la ficha y el rango juzga la dosis resultante abiertamente.
+6. **Pruebas que dependen del orden.** Pendiente de reproducir en esta sesión (requiere pytest, bloqueado por la
+   red del entorno al escribir esto); ver el informe de cierre.
 

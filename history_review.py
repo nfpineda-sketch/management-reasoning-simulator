@@ -58,12 +58,20 @@ TOPIC_PATTERNS = {
 
 def _events(record):
     payload = (record or {}).get("payload") if isinstance(record, dict) else None
-    session = payload.get("session") if isinstance(payload, dict) else None
-    if not isinstance(session, dict):
+    if not isinstance(payload, dict):
         return []
-    # The frozen copy taken when the encounter closed is the one that matches
-    # the trace; the live list is the fallback for a record saved without it.
-    events = session.get("encounter_closed_events") or session.get("events") or []
+    session = payload.get("session")
+    if isinstance(session, dict):
+        # The frozen copy taken when the encounter closed is the one that matches
+        # the trace; the live list is the fallback for a record saved without it.
+        events = session.get("encounter_closed_events") or session.get("events") or []
+        return events[:MAX_EVENTS] if isinstance(events, list) else []
+    # The learner analysis payload carries no session; its frozen event list
+    # (the same encounter_closed_events, chosen by analysis_payload_from_session)
+    # is the record. Until 2026-09-26 this path returned nothing, so "The
+    # history you took" never rendered in production and only a test that
+    # injected a session by hand could see it.
+    events = payload.get("encounter_events") or []
     return events[:MAX_EVENTS] if isinstance(events, list) else []
 
 

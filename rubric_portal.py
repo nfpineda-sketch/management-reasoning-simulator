@@ -98,6 +98,17 @@ def render_rubric_assessment(context, record, *, training_year=None):
             st.info(f"No rubric coverage is declared for {case_id}. Scores remain available; "
                     "no critical event is defined for this case.")
 
+        # Outputs of this encounter that stand on undecided engine conventions
+        # (faculty instruction of 2026-09-26, point 5): the note bounds those
+        # observations only, never the domain, and it is information for your
+        # judgement, not a score change.
+        import model_conventions
+        conventions = model_conventions.for_record(record)
+        if conventions:
+            st.info(model_conventions.RULE + "\n\n"
+                    + "\n".join(f"- **{row['decision']}** — {row['depends']}"
+                                for row in conventions))
+
         _proposal_controls(store, token, record, proposal)
         return _review_form(store, token, record, case_id, proposal, review, training_year, history)
 

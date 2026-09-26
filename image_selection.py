@@ -15,9 +15,12 @@ The order of priorities is the faculty's:
 3. **Then what is already saved.** Between equally new identities, one whose
    image for the arrival state already exists is shown at once and costs
    nothing.
-3b. **Then the nearer body** (2026-09-27). Every compatible person fits the
+3b. **Then the nearer body** (2026-09-27; guidance, not a test, since
+   2026-09-26). A compatible person shows no plain contradiction with the
    chart; between two, one whose build sits in the core of the chart's weight
-   comes before one who only fits at its edge (``image_identities.near``).
+   comes before one in its range, and one in its range before one only at the
+   range's edge (``image_identities.near``). Sitting at the edge keeps a
+   useful photograph usable; it is never a reason to pay for a nearer one.
 4. **Then balance.** An identity drawn less often in this family, and less
    often overall, comes first, so that no face becomes the face of one
    family, one outcome or one severity.

@@ -31,6 +31,8 @@ RELEVANCE = ("clinical", "cosmetic", "none")
 INSTRUCTION_2026_09_25 = "Instrucción docente del 2026-09-25 (etapas 0-2 del catálogo de hipoglicemia)"
 INSTRUCTION_2026_09_27 = ("Instrucción docente del 2026-09-27 (peso y talla; decisiones A, B y F; "
                           "compatibilidad visual amplia)")
+INSTRUCTION_2026_09_26B = ("Instrucción docente del 2026-09-26 (cierre de jugabilidad, unificación de "
+                           "recorridos, fidelidad del registro y alcance de la evaluación)")
 
 CORRECTIONS = (
     {
@@ -418,8 +420,187 @@ CORRECTIONS = (
         "affects": {"modules": ["image_identities", "image_arrivals"], "versions": {}},
         "clinical_relevance": "none",
         "tests": ["test_image_identities.py::test_a_case_without_a_weight_shows_only_a_body_that_could_weigh_the_engines_70_kg",
-                  "test_image_identities.py::test_a_heavier_case_draws_a_heavier_person",
+                  "test_image_identities.py::test_only_a_plain_contradiction_excludes_and_the_ranges_guide_the_choice",
                   "test_image_identities.py::test_the_bank_is_no_longer_all_slim_and_heavier_bodies_span_every_tone"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-11",
+        "date": "2026-09-26",
+        "title": "El desnivel real/ideal deja de preguntar por sí solo; la convención se registra como pendiente",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Punto 1 de la instrucción: el umbral real ≥ 1,30 × ideal no es una barrera general. Sin tipo de "
+                   "peso nombrado ni regla acordada, la dosis corre sobre el peso real de la ficha y el registro "
+                   "declara la convención y que el tipo de peso del fármaco es una decisión clínica pendiente "
+                   "(weight_convention_pending). Una elección explícita se reutiliza sólo para el mismo fármaco y "
+                   "clase de orden. Los encuentros de la primera revisión del sello (2026-09-27) conservan su "
+                   "pregunta, para que lo guardado se reproduzca igual; el sello nuevo es 2026-09-27.2. Con las "
+                   "reglas vigentes, una orden nueva completa reemplaza a la retenida en vez de repetir la pregunta."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["patient_body", "weight_based_doses", "pending_family_orders", "tanda20",
+                                "tanda20_en"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_weight_and_height.py::test_the_weight_gap_alone_is_not_a_question_and_the_convention_is_recorded",
+                  "test_weight_and_height.py::test_an_encounter_of_the_first_revision_still_asks_as_it_did",
+                  "test_doses_by_solution_and_by_weight.py::test_the_weight_gap_no_longer_asks_and_the_convention_is_recorded",
+                  "test_doses_by_solution_and_by_weight.py::test_an_encounter_of_the_first_revision_still_asks_the_weight_type"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-12",
+        "date": "2026-09-26",
+        "title": "Los casos generados registran talla y origen del cuerpo (esquema v4): un recorrido, una interpretación",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Punto 2: el esquema de generación exige peso Y talla con cómo se obtuvo cada uno, y una "
+                   "verosimilitud estructural (IMC 13-70). patient_body lee esos campos planos, así que la ficha, "
+                   "los tipos de peso y el Vt por kilo funcionan igual en casos del banco y generados. Un caso "
+                   "generado antes de v4 conserva su versión histórica: sólo peso, talla no registrada, y un tipo "
+                   "de peso que la necesite pregunta por el dato faltante sin inventarlo."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["generated_case_schema", "generated_case", "patient_body"],
+                    "versions": {"generated_case_schema": {"from": "mrs.generated.case.v3",
+                                                           "to": "mrs.generated.case.v4"}}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_weight_and_height.py::test_a_generated_case_records_the_same_body_data_a_bank_case_does",
+                  "test_weight_and_height.py::test_a_case_generated_before_v4_keeps_its_historical_reading"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-13",
+        "date": "2026-09-26",
+        "title": "«The history you took» vuelve al documento del residente por el recorrido real",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("La carga de análisis nunca lleva `session`, así que history_review no encontraba eventos y la "
+                   "sección no se mostraba en producción; la prueba lo ocultaba inyectando `session` a mano. Ahora "
+                   "history_review lee también los `encounter_events` congelados que la carga sí lleva, la carga "
+                   "nombra su caso (authored_case_id, excluido de la huella: los análisis guardados siguen "
+                   "válidos), y la prueba construye la carga por el mismo camino que producción."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["history_review", "management_trace_store", "management_trace_report"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_history_is_part_of_the_record.py::test_the_learner_sees_what_they_asked_and_what_they_did_not",
+                  "test_history_is_part_of_the_record.py::test_the_learner_who_asked_nothing_is_told_so_plainly",
+                  "test_history_is_part_of_the_record.py::test_a_topic_that_was_asked_about_is_not_listed_as_unasked"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-14",
+        "date": "2026-09-26",
+        "title": "Fentanilo en microgramos: rango propio, etiqueta en mcg y equivalencia declarada",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("El rango de morfina (0,5-30 mg) rechazaba toda dosis habitual de fentanilo (50-100 mcg) y "
+                   "cualquier fentanilo por kilo. Ahora el fentanilo tiene su propio rango (10-500 mcg, guardado en "
+                   "mg), la etiqueta y el mensaje hablan en microgramos, la orden por kilo conserva su escritura "
+                   "(«1 mcg/kg»), y el factor de equivalencia aplica lo que el propio código declaraba (100 mcg ≈ "
+                   "10 mg de morfina): el ×10 anterior era un décimo de su enunciado y ninguna orden realista lo "
+                   "ejerció, porque el rango las rechazaba antes."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["family_engine", "family_parser", "weight_based_doses"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_weight_and_height.py::test_fentanyl_doses_are_read_written_and_bounded_in_micrograms",
+                  "test_weight_and_height.py::test_a_fentanyl_dose_becomes_its_stated_morphine_equivalence"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-15",
+        "date": "2026-09-26",
+        "title": "Adrenalina IM y ácido tranexámico por kilo: comprensión, validación y ejecución separadas",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«TXA 15 mg/kg» se leía como 15 mg fijos y el rango lo rechazaba; «adrenalina 0,01 mg/kg IM» "
+                   "caía al lector de infusiones. Ahora ambas se entienden por kilo, se convierten con el peso de "
+                   "la ficha, se muestran como se escribieron y el rango juzga abiertamente la dosis resultante; "
+                   "nada se corrige en silencio. Un TXA sin dosis aplica su carga fija estándar de 1 g y lo dice "
+                   "en el registro, en vez de aplicarla calladamente."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["family_parser", "family_engine", "weight_based_doses"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_weight_and_height.py::test_tranexamic_acid_per_kilogram_converts_and_a_missing_dose_is_stated",
+                  "test_weight_and_height.py::test_intramuscular_epinephrine_per_kilogram_converts_and_is_judged_openly"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-16",
+        "date": "2026-09-26",
+        "title": "Función renal residual declarable; el caso en diálisis deja de orinar 70 mL/h",
+        "scope": {"level": "variant", "family": "bradycardia", "variants": ["bradycardia_hyperk_63m"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("Punto 4: un caso puede declarar su función renal basal (engine.renal): «minimal» para «I pass "
+                   "almost no urine» -- oligúrico, nunca anuria absoluta, con una participación residual del 10% "
+                   "como convención del simulador presentada como decisión pendiente (decisión D) -- o una basal "
+                   "absoluta en mL/h cuando la facultad la fije. La misma participación limita la respuesta a la "
+                   "furosemida. Nada cambia en bloque: sólo el caso que lo declara, y un encuentro guardado "
+                   "conserva la copia de caso con la que se lanzó."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["urine_output", "clinical_cases"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_weight_and_height.py::test_the_dialysis_case_no_longer_makes_the_urine_of_a_working_kidney",
+                  "test_weight_and_height.py::test_an_encounter_saved_before_the_declaration_keeps_its_own_case_copy",
+                  "test_weight_and_height.py::test_no_other_case_changed_its_urine_and_a_declared_absolute_baseline_is_possible"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-17",
+        "date": "2026-09-26",
+        "title": "El peso seco inferido (117 kg) se retira: no está registrado hasta que la facultad lo defina",
+        "scope": {"level": "variant", "family": "bradycardia", "variants": ["bradycardia_hyperk_63m"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("Punto 7: los 117 kg salían de restar 5 kg por dos sesiones perdidas -- una propuesta, no un "
+                   "antecedente demostrado. En las versiones nuevas del caso el peso seco no está disponible; la "
+                   "ficha no lo muestra y una dosis «de peso seco» pregunta por el dato faltante conservando la "
+                   "orden completa. Lo ya mostrado en encuentros guardados queda intacto en su copia."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["patient_body", "tools_case_bodies"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_weight_and_height.py::test_the_dry_weight_is_not_recorded_until_the_faculty_defines_it"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-18",
+        "date": "2026-09-26",
+        "title": "La evaluación conoce sus convenciones: alcance por observación en el Brief y junto a la rúbrica",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Punto 5: que la rúbrica no puntúe mg/kg no elimina los efectos indirectos (gases, presión, "
+                   "duración del bloqueo, diuresis). model_conventions identifica por encuentro las observaciones "
+                   "que dependen de una convención pendiente y las muestra, con su decisión, en el Faculty Brief y "
+                   "junto a la sugerencia de rúbrica, con la regla de no fundar una deficiencia sólo en ellas. El "
+                   "alcance es la observación, nunca el dominio, y la validación docente se mantiene."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["model_conventions", "faculty_report", "rubric_portal", "weight_based_doses"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_model_conventions.py::test_a_per_kilogram_dose_on_the_convention_is_named_with_its_decision",
+                  "test_model_conventions.py::test_an_explicitly_named_weight_type_is_not_a_convention_note",
+                  "test_model_conventions.py::test_a_patient_without_the_relevant_gap_carries_no_weight_note",
+                  "test_model_conventions.py::test_the_dialysis_case_notes_its_residual_diuresis_only_when_urine_was_touched",
+                  "test_model_conventions.py::test_the_rule_bounds_the_observation_and_not_the_domain"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-19",
+        "date": "2026-09-26",
+        "title": "Imágenes: los rangos de IMC orientan sin excluir por poco, y la nota de la foto es neutral",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Punto 6: una ficha a menos de 2 puntos de IMC del rango de una contextura es una diferencia "
+                   "pequeña alrededor de un límite -- la foto sigue usable, ordenada tras cualquier ajuste mejor, y "
+                   "nunca motiva pagar un reemplazo; sólo más allá la contradicción es clara. La sala muestra una "
+                   "misma frase neutral junto a toda foto vigente, sin nombrar qué hallazgos no muestra (nombrarlos "
+                   "revelaba qué define el caso); los códigos siguen en el registro de visualizaciones y en la "
+                   "revisión docente. Se planifica la tanda 7 (V34 para pulmonary_edema_75f, el caso sin foto)."),
+        "authorised_by": INSTRUCTION_2026_09_26B,
+        "affects": {"modules": ["image_identities", "image_selection", "clinical_scene", "image_arrivals"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_image_identities.py::test_only_a_plain_contradiction_excludes_and_the_ranges_guide_the_choice",
+                  "test_image_identities.py::test_photographed_people_are_matched_by_how_their_photograph_looks",
+                  "test_the_room_shows_the_bank.py::test_the_room_s_still_view_note_is_neutral_and_the_record_keeps_the_codes"],
         "preservation": None,
     },
     {
@@ -440,7 +621,7 @@ CORRECTIONS = (
         "clinical_relevance": "clinical",
         "tests": ["test_weight_and_height.py::test_every_bank_case_records_its_weight_and_height_and_how_each_was_obtained",
                   "test_weight_and_height.py::test_the_table_is_the_seeded_draw_and_meets_the_faculty_s_conditions",
-                  "test_weight_and_height.py::test_a_previous_dry_weight_is_never_today_s_weight",
+                  "test_weight_and_height.py::test_the_dry_weight_is_not_recorded_until_the_faculty_defines_it",
                   "test_weight_and_height.py::test_the_chart_says_when_a_weight_is_an_estimate",
                   "test_weight_and_height.py::test_new_encounters_carry_the_rules_and_old_ones_keep_theirs",
                   "test_hypoglycemia_preservation.py::test_bank_cases_match_the_record_except_declared_corrections"],
@@ -486,13 +667,17 @@ CORRECTIONS = (
                                 "pending_family_orders", "inotrope_support", "airway_pharmacology", "app"],
                     "versions": {}},
         "clinical_relevance": "clinical",
-        "tests": ["test_weight_and_height.py::test_the_weight_type_is_asked_only_when_it_changes_the_dose_and_only_once_per_drug",
+        # La conducta de "preguntar una vez si real ≥ 1,30 × ideal" fue la de la
+        # primera revisión del sello y quedó conservada para esos encuentros;
+        # C-2026-09-26-11 la retira para los lanzamientos nuevos. Las pruebas
+        # citadas cubren hoy ambas revisiones con sus nombres actuales.
+        "tests": ["test_weight_and_height.py::test_an_encounter_of_the_first_revision_still_asks_as_it_did",
                   "test_weight_and_height.py::test_the_same_amount_of_blocker_has_the_same_effect_however_it_was_written",
                   "test_weight_and_height.py::test_a_rate_per_kilogram_is_converted_on_the_chart_weight_and_recorded",
                   "test_weight_and_height.py::test_a_fluid_per_kilogram_is_a_volume_on_the_weight_not_that_many_millilitres",
                   "test_weight_and_height.py::test_a_sedation_rate_per_kilogram_per_minute_is_read_as_such",
                   "test_doses_by_solution_and_by_weight.py::test_a_dose_per_kilogram_uses_the_weight_in_the_chart",
-                  "test_doses_by_solution_and_by_weight.py::test_the_weight_type_is_asked_once_when_it_changes_the_dose",
+                  "test_doses_by_solution_and_by_weight.py::test_an_encounter_of_the_first_revision_still_asks_the_weight_type",
                   "test_doses_by_solution_and_by_weight.py::test_an_encounter_launched_before_the_weight_rules_still_asks_the_weight"],
         "preservation": None,
     },

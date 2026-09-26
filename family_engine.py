@@ -65,6 +65,10 @@ _MEDICINES = {
     "naloxone": ({"IV", "IO", "IM", "IN"}, .01, 10),
     "atropine": ({"IV", "IO"}, .1, 3),
     "opioid_analgesia": ({"IV", "IO", "IM", "SC"}, .5, 30),
+    # The class range above is morphine's. Fentanyl is written in micrograms:
+    # until 2026-09-26 the morphine range refused every usual fentanyl dose
+    # (50-100 mcg) and any fentanyl per kilogram. Its own range is wide the
+    # way the others are -- room to be wrong in a way the record can show.
     "antipyretic": ({"IV", "IO", "PO", "IM"}, 10, 4000),
     "ppi": ({"IV", "PO"}, 1, 160),
     "aspirin": ({"PO"}, 1, 650),
@@ -87,6 +91,25 @@ _MEDICINES = {
     # Induction and maintenance sedation are part of intubating an asthmatic, so
     # they are no longer restricted to generated encounters.
 }
+#: Dose bounds (in the kind's own dose field) for an agent whose usual doses
+#: the class range would refuse. Fentanyl: 10 to 500 mcg, held as mg.
+_AGENT_DOSE_RANGES = {("opioid_analgesia", "fentanyl"): (.01, .5)}
+#: Agents whose doses are written and shown in micrograms (held as mg inside).
+_MCG_AGENTS = frozenset({"fentanyl"})
+
+
+def _dose_range(kind, agent):
+    routes, lower, upper = _MEDICINES[kind]
+    lower, upper = _AGENT_DOSE_RANGES.get((kind, str(agent or "").lower()), (lower, upper))
+    return routes, lower, upper
+
+
+def _dose_text(agent, milligrams):
+    """A dose as the bedside writes it: fentanyl in mcg, everything else in mg."""
+    if str(agent or "").lower() in _MCG_AGENTS:
+        return f"{milligrams * 1000:g} mcg"
+    return f"{milligrams:g} mg"
+
 
 # Intravenous magnesium in severe asthma (faculty decision 2026-09-19): given
 # before intubation, it adds a modest bronchodilation on top of the beta-agonist.
@@ -481,13 +504,19 @@ def _validate(state, parsed):
             a["delay_min"] = int(math.ceil(a["delay_min"]))
         elif kind in _MEDICINES:
             field = "dose_g" if kind == "dextrose" else "dose_mg"
-            routes, lower, upper = _MEDICINES[kind]
+            routes, lower, upper = _dose_range(kind, a.get("agent"))
             # A class name is not something a resident wrote. Ask about the drug
             # they named when the class has no everyday name of its own.
             named = str(a.get("agent") or "").strip() if kind in _CLASS_ONLY_KINDS else ""
+            if kind == "opioid_analgesia":
+                # "opioid_analgesia" is a field name, not a word anyone wrote.
+                named = str(a.get("agent") or "").strip() or "opioid"
             spoken = named or kind
             if not _number(a.get(field), lower, upper):
-                return None, f"Please specify or confirm the {spoken} dose in {'grams' if field == 'dose_g' else 'milligrams'}."
+                unit = ("grams" if field == "dose_g"
+                        else "micrograms" if str(a.get("agent") or "").lower() in _MCG_AGENTS
+                        else "milligrams")
+                return None, f"Please specify or confirm the {spoken} dose in {unit}."
             a["route"] = _ROUTES.get(str(a.get("route", "")).strip().lower())
             if a["route"] not in routes:
                 return None, f"Please specify a supported route for {spoken}."
@@ -557,7 +586,11 @@ def _validate(state, parsed):
                 return None, "Specify a tourniquet, direct pressure or wound packing."
         elif kind == "tranexamic_acid":
             if a.get("dose_g") is None:
+                # The standard fixed loading dose, applied when no dose was
+                # written -- and said so in the record, never silently
+                # (faculty instruction of 2026-09-26, point 3).
                 a["dose_g"] = 1.0
+                a["dose_basis"] = "no dose written; 1 g is the standard fixed loading dose the simulator applies"
             if not _number(a.get("dose_g"), .5, 4):
                 return None, "Specify a tranexamic acid dose from 0.5 to 4 g."
             a["route"] = str(a.get("route") or "IV").upper()
@@ -772,8 +805,12 @@ def _medicine_effect(state, a, amount):
         f["dextrose_g"] += amount * glucose_rescue.delivered_share(f, a.get("route"))
         f.setdefault("glucose_given_at", f["elapsed"])
     elif kind == "opioid_analgesia":
-        # Fentanyl is written in mcg; 100 mcg is about 10 mg of morphine.
-        f["morphine_mg"] = f.get("morphine_mg", 0.0) + (amount if a.get("agent") != "fentanyl" else amount * 10)
+        # Fentanyl is written in mcg and held in mg; 100 mcg (0.1 mg) is about
+        # 10 mg of morphine, so the morphine-equivalent factor on the stored
+        # milligrams is 100. Until 2026-09-26 the code multiplied by 10 -- a
+        # tenth of its own stated equivalence -- which no realistic order ever
+        # exercised, because the morphine range refused every dose under 0.5 mg.
+        f["morphine_mg"] = f.get("morphine_mg", 0.0) + (amount if a.get("agent") != "fentanyl" else amount * 100)
     elif kind == "naloxone":
         # 0.4 mg IV is one unit of antidote. Larger doses are not capped at the
         # ventilation target: pushing past it is how withdrawal is precipitated.
@@ -995,7 +1032,8 @@ def _order(state, a):
         if not timed:
             _medicine_effect(state, a, a["dose_mg"])
         duration = 2 if a["route"] in {"IV", "IO"} else 5
-        label = f"{a.get('agent', 'morphine')} {a['dose_mg']:g} mg {a['route']} administered"
+        label = (f"{a.get('agent', 'morphine')} {_dose_text(a.get('agent'), a['dose_mg'])} "
+                 f"{a['route']} administered")
     elif kind == "naloxone":
         if not timed:
             _medicine_effect(state, a, a["dose_mg"])

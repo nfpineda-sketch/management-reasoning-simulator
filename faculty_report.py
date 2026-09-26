@@ -311,6 +311,39 @@ def _history_section(record, styles, *, compact):
     return flow
 
 
+def _conventions_section(record, styles, *, compact):
+    """The outputs of this encounter that stand on undecided engine conventions.
+
+    Faculty instruction of 2026-09-26, point 5: a convention can change gases,
+    pressure, a blocker's duration or the urine, and through them the
+    decisions that followed. The brief names those specific observations and
+    their pending decision, so no deficiency is grounded on one of them alone;
+    it never widens to the domain, and everything unnamed keeps its ordinary
+    weight.
+    """
+    import model_conventions
+    rows = model_conventions.for_record(record)
+    if not rows:
+        return []
+
+    def style(*names):
+        return next((styles[name] for name in names if name in styles), styles["body"])
+
+    def p(text, *names):
+        return Paragraph(_xml(text), style(*names) if names else styles["body"])
+
+    flow = [p("ENGINE CONVENTIONS THIS ENCOUNTER TOUCHED", "eyebrow", "label"),
+            p(model_conventions.RULE, "small", "muted")]
+    for row in rows[: 4 if compact else 8]:
+        if compact:
+            flow.append(p(f"{row['decision']}: {row['depends']}", "small", "muted"))
+        else:
+            flow.append(p(f"Pending: {row['decision']}.", "small"))
+            flow.append(p(row["observation"], "small", "muted"))
+            flow.append(p(f"Rests on it: {row['depends']}", "small", "muted"))
+    return flow
+
+
 def _rubric_section(assessment, styles, content_width, *, compact):
     """The five-domain profile, shared by both briefs so they cannot disagree.
 
@@ -498,6 +531,7 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
     section("Performance synthesis", analysis.get("summary"))
     story.extend(_rubric_section(assessment, styles, content_width, compact=False))
     story.extend(_history_section(record, styles, compact=False))
+    story.extend(_conventions_section(record, styles, compact=False))
     section("Assistance context", assistance_text(report))
     story.append(p("Strengths supported by the record", "subhead"))
     bullets(analysis.get("strengths"))
@@ -826,6 +860,7 @@ def _render_compact(report, record, inputs, app_url, correct=None, assessment=No
         # The rubric profile is what the faculty reads first at the table.
         story.extend(_rubric_section(assessment, styles, usable, compact=True))
         story.extend(_history_section(record, styles, compact=True))
+        story.extend(_conventions_section(record, styles, compact=True))
         review_points = analysis.get("review_points", [])
         review_points = review_points if isinstance(review_points, list) else []
         story.extend([Spacer(1, 7), p(_t("{n} selected review priorities").format(

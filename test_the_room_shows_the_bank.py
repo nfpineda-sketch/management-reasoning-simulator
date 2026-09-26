@@ -390,9 +390,11 @@ def test_the_repository_pack_gives_a_new_database_the_pilots_photographs_without
     assert third["requests"] == 0 and third["limit_requests"] == 100 and third["limit_micro"] == 10_000_000
 
 
-def test_a_photograph_that_does_not_show_a_finding_says_so_and_the_record_keeps_it(world, tmp_path):
-    # Faculty, 2026-09-27: an image that shows some findings is completed by the monitor
-    # and the examination, and the resident is not held to a sign it did not show.
+def test_the_room_s_still_view_note_is_neutral_and_the_record_keeps_the_codes(world, tmp_path):
+    # Faculty instruction of 2026-09-26, point 6: the room's warning about a
+    # still image is the same sentence for every photograph -- naming the
+    # findings a photograph does not show would reveal what the case defines.
+    # The specific codes stay in the display log and the faculty review.
     world.monkeypatch.setattr(image_pack, "PACK_DIR", image_pack.Path(__file__).resolve().parent / "assets" / "patient_images")
     if image_pack.read_manifest() is None:
         pytest.skip("No pack in this checkout.")
@@ -404,8 +406,15 @@ def test_a_photograph_that_does_not_show_a_finding_says_so_and_the_record_keeps_
     shown = image_scene._display(world.bank, asset)
     assert "skin_color" in shown.limitations
     html = clinical_scene.scene_html(shown, "", current=True)
-    assert "Skin colour" in html and "not discernible in this still view; assess during examination" in html
-    # What the room showed, and what it said the photograph did not show, is what the record keeps.
+    assert clinical_scene.STILL_VIEW_NOTE in html
+    assert "Skin colour" not in html and "skin_color" not in html
+    # The same sentence beside a photograph with nothing withheld: its presence
+    # carries no information about this patient.
+    plain = next((a for a in world.bank.assets() if a["id"] not in observed), None)
+    if plain is not None:
+        html_plain = clinical_scene.scene_html(image_scene._display(world.bank, plain), "", current=True)
+        assert clinical_scene.STILL_VIEW_NOTE in html_plain
+    # What the room showed, and what the photograph did not show, is what the record keeps.
     resident = world.residents["resident_a"]
     attempt = world.accounts.create_attempt(resident["token"], "R1-03", {"presentation": "Synthetic"})
     world.bank.log_display(resident["token"], attempt, identity_id=asset["identity_id"], contract=asset["contract"],

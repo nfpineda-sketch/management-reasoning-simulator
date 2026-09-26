@@ -102,6 +102,21 @@ def complete_bundle(pending, text, state=None):
             if needs_weight(action):
                 retry = answer_weight(action, text, state)
                 if retry:
+                    # Not readable as an answer. In an encounter under the
+                    # current weight rules, a complete new order means the
+                    # resident has moved on: it runs and the held bundle's
+                    # cost is stated by the caller, the same as for every
+                    # other held question -- the weight question is not a loop
+                    # that refuses new orders (faculty instruction of
+                    # 2026-09-26, point 1). Encounters launched under the old
+                    # rules or the first revision keep the retry they had, so
+                    # a saved one replays as it was played. Anything that is
+                    # not a new order keeps asking for the one datum.
+                    import patient_body
+                    current = (patient_body.rules_apply(state)
+                               and not patient_body.asks_when_ambiguous(state))
+                    if current and _is_a_new_submission(parse_family_actions(body)['actions']):
+                        return {'superseded': True}
                     return {'clarification': retry}
         parsed.pop('clarification', None)
         parsed['raw_text'] = str(parsed.get('raw_text', '')) + '\nClarification: ' + str(text)

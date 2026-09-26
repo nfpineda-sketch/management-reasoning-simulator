@@ -525,8 +525,10 @@ _EN = {
             ("order", "He takes a beta-blocker, which is why he is not responding. My priority is to get around "
                       "the blockade. Give glucagon 1 mg IV; start an epinephrine infusion at 0.1 mcg/kg/min. I "
                       "expect the BP to rise. Reassess in 10 minutes BP and HR."),
-            # 115 kg at 1.72 m (2026-09-27): the reader asks which weight the rate is on.
-            ("answer", "Actual weight."),
+            # 115 kg at 1.72 m. Under the first weight-rules revision the reader
+            # asked which weight the rate was on; since revision 2 (2026-09-26)
+            # it does not ask, converts on the chart's actual weight and records
+            # the convention, so the script needs no scripted answer.
             ("order", "Admit him to the ICU"),
             ("answer", "I expect him to stay stable on the infusion. Reassess in 15 minutes BP."),
         ],

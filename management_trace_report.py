@@ -459,7 +459,10 @@ def _history_section(payload, p, styles):
     """
     import history_review
     from faculty_analysis import case_id_of
-    summary = history_review.review({"payload": payload}, case_id_of({"payload": payload}))
+    # The analysis payload names its case beside the frozen evidence; an older
+    # payload without the field falls back to the session-shaped lookup.
+    case_id = str(payload.get("authored_case_id") or "") or case_id_of({"payload": payload})
+    summary = history_review.review({"payload": payload}, case_id)
     if not summary["offered"] and not summary["exchanges"]:
         return []
     story = [Spacer(1, 12), p("The history you took", "heading")]

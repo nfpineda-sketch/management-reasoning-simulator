@@ -93,6 +93,13 @@ APPARENT_BUILDS = ("slim", "average", "heavier", "obese", "severely obese")
 # an obese one for a normal weight.
 BUILD_BMI = {"slim": (0.0, 28.0), "average": (17.0, 35.0), "heavier": (22.0, 40.0),
              "obese": (27.0, 99.0), "severely obese": (33.0, 99.0)}
+# The ranges guide which candidate comes first; they are not an automatic test
+# of incompatibility (faculty instruction of 2026-09-26, point 6). A chart
+# within this many BMI units of a build's range is a small difference around a
+# limit: the photograph is kept usable -- ranked after every better fit, and
+# never a reason to pay for a replacement -- and only past it is the
+# contradiction plain.
+EDGE_BMI = 2.0
 # Where each build looks most at home; between two people who both fit, the one
 # in their core comes first.
 BUILD_CORE = {"slim": (0.0, 25.0), "average": (18.5, 30.0), "heavier": (25.0, 35.0),
@@ -205,7 +212,14 @@ def case_bmi(patient):
 
 
 def compatible(identity_record, patient):
-    """Whether this person can be the case's patient. The case decides: age, sex, and a body the chart allows."""
+    """Whether this person can be the case's patient: age, sex, and no plain bodily contradiction.
+
+    The BMI ranges guide the choice among candidates (``near``); they exclude a
+    photograph only when the contradiction would be plain -- more than
+    ``EDGE_BMI`` beyond the build's range. A chart sitting just past a limit is
+    a small difference, not a contradiction, and never a reason to regenerate
+    (faculty instruction of 2026-09-26, point 6).
+    """
     if not isinstance(patient, dict):
         return False
     age, sex = patient.get("age_years"), patient.get("sex")
@@ -223,16 +237,20 @@ def compatible(identity_record, patient):
         # No weight in the chart: the engine computes at 70 kg.
         return build not in ("obese", "severely obese")
     lowest, highest = BUILD_BMI[build]
-    return lowest <= bmi < highest
+    return lowest - EDGE_BMI <= bmi < highest + EDGE_BMI
 
 
 def near(identity_record, patient):
-    """Whether the chart sits in the core of this person's build: 0 if so, 1 if only at its edge."""
+    """How far the chart sits from this person's build: 0 in its core, 1 in its range, 2 at the range's edge."""
     bmi = case_bmi(patient)
     if bmi is None:
         return 0
-    lowest, highest = BUILD_CORE[apparent_build(identity_record)]
-    return 0 if lowest <= bmi < highest else 1
+    build = apparent_build(identity_record)
+    core_low, core_high = BUILD_CORE[build]
+    if core_low <= bmi < core_high:
+        return 0
+    lowest, highest = BUILD_BMI[build]
+    return 1 if lowest <= bmi < highest else 2
 
 
 def compatible_identities(patient):

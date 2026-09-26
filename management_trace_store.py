@@ -18,8 +18,16 @@ from management_trace_analysis import (
 
 
 def analysis_payload_from_session(session):
-    """Choose the original frozen evidence and pre-comparison reflection only."""
+    """Choose the original frozen evidence and pre-comparison reflection only.
+
+    ``authored_case_id`` travels with the payload so the learner report can
+    look up what the case authors (its history topics) without receiving the
+    case specification itself. It is metadata beside the frozen evidence:
+    ``build_analysis_source`` excludes it, so fingerprints of saved analyses
+    are unchanged.
+    """
     session = session if isinstance(session, dict) else {}
+    from faculty_analysis import case_id_of
     return {
         "encounter_ended": session.get("encounter_ended") is True,
         "reflection_locked": session.get("expert_comparison_unlocked") is True,
@@ -27,6 +35,7 @@ def analysis_payload_from_session(session):
         "reflections": deepcopy(session.get("precomparison_decision_review") or {}),
         "reflection_prompts": deepcopy(session.get("review_prompts") or []),
         "encounter_events": deepcopy(session.get("encounter_closed_events") or []),
+        "authored_case_id": case_id_of({"payload": {"session": session}}),
     }
 
 

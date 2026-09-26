@@ -70,7 +70,11 @@ PLAN = (
     # Batch 7 (2026-09-27): pulmonary_edema_75f (120 kg, BMI 43.5) never had a
     # compatible candidate -- its two earlier ones (V11, V12) are an average
     # build and contradict the chart (docs/PESOS_CASOS.md). V34 is new: no
-    # photographed woman fits an obese build at her age.
+    # photographed woman fits an obese build at her age. Authorized by the
+    # faculty instruction of 2026-09-26 (point 6: a new image rather than a
+    # substitution is inside the authorized work); run on 2026-09-26 within
+    # the second authorization's balance, screen-accepted, pending the
+    # faculty's own review.
     {"batch": 7, "identity": "V34", "case": "pulmonary_edema_75f"},
 )
 

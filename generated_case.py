@@ -58,7 +58,10 @@ hidden diagnosis in the arrival presentation. Arrival is two short sentences of 
 findings remain in source history and exam. Findings may support or contradict the first plausible explanation without being traps.
 
 Write English output; conversation elsewhere handles bilingual questions. Describe a fictional adult age 18–100, male or female
-(the current image renderer's supported contract), with consistent pronouns and weight. Every history topic must contain explicit
+(the current image renderer's supported contract), with consistent pronouns and body data: weight AND height, each with how it was
+obtained (measured, reported or estimated) and by whom, coherent with how the patient arrived — an alert stable patient is measured
+at triage, one too unwell to stand reports it, one who cannot answer has it reported by whoever came or estimated by the team. Vary
+body habitus across encounters without tying it to age, diagnosis or severity. Every history topic must contain explicit
 positive/negative facts; do not invent negative findings later. Use the actual source (family/EMS/caregiver when consciousness prevents
 history); when Patient is chosen all facts are known by this patient. Include all SIX examination areas in the schema. Patient
 appearance must convey illness proportionately (comfort, pallor, diaphoresis, respiratory effort and mental status), not a smiling

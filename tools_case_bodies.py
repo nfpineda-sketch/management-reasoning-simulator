@@ -22,8 +22,9 @@ done, reproducibly. It never reads a photograph, a history or a comorbidity.
    after 50. Body-mass index: uniform within the class. Weight = BMI × height²,
    to the kilogram. No two patients share both height and weight.
 
-``patient_body.BODIES`` adds how each was obtained and, for the patient on
-dialysis, the dry weight his unit set before the sessions he missed.
+``patient_body.BODIES`` adds how each was obtained. The patient on dialysis
+records no dry weight: the one once shown was an inference the faculty
+withdrew (2026-09-26), pending a defined value.
 """
 from __future__ import annotations
 

@@ -18,16 +18,23 @@ def test_a_case_without_a_weight_shows_only_a_body_that_could_weigh_the_engines_
     assert "heavier" in shown
 
 
-def test_a_heavier_case_draws_a_heavier_person():
-    # Faculty, 2026-09-27: no weight is read from a photograph, and only a clear
-    # contradiction between the body shown and the chart excludes a person.
+def test_only_a_plain_contradiction_excludes_and_the_ranges_guide_the_choice():
+    # Faculty instruction of 2026-09-26, point 6: the BMI ranges guide which
+    # candidate comes first; a chart just past a build's limit is a small
+    # difference, not a contradiction. Only well past it is a person excluded.
     def builds(patient):
         return {I.apparent_build(record) for record in I.compatible_identities(patient)}
     at_35 = _patient(55, "female", 90, 1.60)                        # BMI 35.2
-    assert builds(at_35) == {"heavier", "obese"}
+    assert {"heavier", "obese"} <= builds(at_35)
+    assert "slim" not in builds(at_35)                              # 35.2 is well past slim's 28
     assert "average" in builds(_patient(55, "male", 99, 1.72))      # BMI 33.5: not a plain contradiction
-    assert builds(_patient(55, "male", 140, 1.74)) == {"obese", "severely obese"}
-    assert "slim" not in builds(_patient(24, "female", 83, 1.70))   # BMI 28.7
+    assert builds(_patient(55, "male", 140, 1.74)) == {"obese", "severely obese"}   # BMI 46.2
+    # BMI 28.7 sits 0.7 past slim's limit: a small difference around a limit
+    # keeps the photograph usable, ranked at the edge, after every better fit.
+    edge = _patient(24, "female", 83, 1.70)
+    slim = next(r for r in I.compatible_identities(edge) if I.apparent_build(r) == "slim")
+    heavier = next(r for r in I.compatible_identities(edge) if I.apparent_build(r) == "heavier")
+    assert I.near(slim, edge) == 2 and I.near(heavier, edge) < 2
     # Every chart finds someone: no case is left without a person.
     assert I.compatible_identities(_patient(30, "female", 38, 1.60))
     assert I.compatible_identities(_patient(55, "male", 190, 1.74))
@@ -43,10 +50,20 @@ def test_photographed_people_are_matched_by_how_their_photograph_looks():
     patient = lambda case: variant_by_id(case)["patient"]
     # The first sixteen were drawn slim or fit, whatever their build word said.
     assert I.apparent_build(I.identity("V03")) == "slim" and I.identity("V03")["habitus"] == "normal"
-    assert not I.compatible(I.identity("V03"), patient("asthma_24f"))            # 83 kg at 1.70 m
-    assert I.compatible(I.identity("V22"), patient("acs_61m_posterior"))          # 99 kg at 1.72 m: fits
-    assert not I.compatible(I.identity("V22"), patient("gi_bleed_57m"))           # 111 kg at 1.76 m: does not
+    # 83 kg at 1.70 m (BMI 28.7): 0.7 past slim's limit is a small difference,
+    # so V03 stays usable at the edge and a nearer build is preferred to it.
+    assert I.compatible(I.identity("V03"), patient("asthma_24f"))
+    assert I.near(I.identity("V03"), patient("asthma_24f")) == 2
+    assert I.near(I.identity("V01"), patient("asthma_24f")) == 0                 # heavier, in its core
+    assert I.compatible(I.identity("V22"), patient("acs_61m_posterior"))         # 99 kg at 1.72 m: fits
+    # 111 kg at 1.76 m (BMI 35.8): just past average's 35, usable at the edge;
+    # V38's build sits in its core, so V38 comes first.
+    assert I.compatible(I.identity("V22"), patient("gi_bleed_57m"))
+    assert I.near(I.identity("V22"), patient("gi_bleed_57m")) == 2
+    assert I.near(I.identity("V38"), patient("gi_bleed_57m")) == 0
     assert I.compatible(I.identity("V38"), patient("bradycardia_hyperk_63m"))
+    # 122 kg at 1.64 m (BMI 45.4) IS a plain contradiction for an average build.
+    assert not I.compatible(I.identity("V22"), patient("bradycardia_hyperk_63m"))
     # A person not yet photographed is taken as the prompt asks.
     assert I.apparent_build(I.identity("V34")) == "obese"
 

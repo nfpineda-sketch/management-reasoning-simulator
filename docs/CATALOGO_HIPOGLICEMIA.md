@@ -142,6 +142,15 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-26-08 | Con la barra lateral abierta, la sala del encuentro quedaba en parte debajo de ella | general | technical_defect | none | — |
 | C-2026-09-26-09 | Imágenes del paciente: las decisiones aprobadas por el docente, y sin gasto en lo que ya falló | general | technical_defect | none | — |
 | C-2026-09-26-10 | Imágenes del paciente: contextura corporal realista, que sigue el peso del caso | general | technical_defect | none | — |
+| C-2026-09-26-11 | El desnivel real/ideal deja de preguntar por sí solo; la convención se registra como pendiente | general | clinical_decision_applied | clinical | — |
+| C-2026-09-26-12 | Los casos generados registran talla y origen del cuerpo (esquema v4): un recorrido, una interpretación | general | clinical_decision_applied | clinical | generated_case_schema mrs.generated.case.v3 → mrs.generated.case.v4 |
+| C-2026-09-26-13 | «The history you took» vuelve al documento del residente por el recorrido real | general | technical_defect | clinical | — |
+| C-2026-09-26-14 | Fentanilo en microgramos: rango propio, etiqueta en mcg y equivalencia declarada | general | technical_defect | clinical | — |
+| C-2026-09-26-15 | Adrenalina IM y ácido tranexámico por kilo: comprensión, validación y ejecución separadas | general | technical_defect | clinical | — |
+| C-2026-09-26-16 | Función renal residual declarable; el caso en diálisis deja de orinar 70 mL/h | variante bradycardia_hyperk_63m | clinical_decision_applied | clinical | — |
+| C-2026-09-26-17 | El peso seco inferido (117 kg) se retira: no está registrado hasta que la facultad lo defina | variante bradycardia_hyperk_63m | clinical_decision_applied | clinical | — |
+| C-2026-09-26-18 | La evaluación conoce sus convenciones: alcance por observación en el Brief y junto a la rúbrica | general | policy | clinical | — |
+| C-2026-09-26-19 | Imágenes: los rangos de IMC orientan sin excluir por poco, y la nota de la foto es neutral | general | clinical_decision_applied | clinical | — |
 | C-2026-09-27-01 | Peso y talla en los 31 casos del banco y en la ficha, sólo para encuentros nuevos | general | clinical_decision_applied | clinical | — |
 | C-2026-09-27-02 | Volumen corriente por kilo sobre el peso corporal predicho; el volumen absoluto se respeta | general | clinical_decision_applied | clinical | — |
 | C-2026-09-27-03 | Dosis por kilo: el tipo de peso explícito se respeta, se registra el peso usado y un mismo efecto por dosis | general | clinical_decision_applied | clinical | — |

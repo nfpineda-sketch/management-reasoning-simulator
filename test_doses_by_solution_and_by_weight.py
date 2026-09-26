@@ -111,11 +111,28 @@ ACS_ENOXAPARIN = ("Creo que es un infarto posterior, porque tiene dolor tipico y
                   "y ECG.")
 
 
-def test_the_weight_type_is_asked_once_when_it_changes_the_dose(tmp_path, monkeypatch):
+def test_the_weight_gap_no_longer_asks_and_the_convention_is_recorded(tmp_path, monkeypatch):
     # 99 kg at 1.72 m: the ideal weight is 67.8 kg, so "1 mg/kg" is 99 mg or 68 mg
-    # depending on the weight meant. No rule is agreed for the drug: the reader asks
-    # once, the clock does not move, and the answer is kept for that drug.
+    # depending on the weight meant. Faculty instruction of 2026-09-26 (point 1):
+    # the gap alone is not a question. The order runs at once on the chart's
+    # actual weight and the record states the convention and that the weight
+    # type for the drug is a pending decision.
     at = start(tmp_path, monkeypatch, "acs_61m_posterior", "R2-04")
+    minute = at.session_state["state"]["sim_time"]
+    submit(at, ACS_ENOXAPARIN)
+    assert not at.session_state["pending_action"]
+    assert at.session_state["state"]["sim_time"] > minute
+    given = [s for s in labels(at) if s and "noxaparin" in s]
+    assert given and "99 mg" in given[0] and "1 mg/kg × 99 kg, actual body weight" in given[0], given
+    assert "engine convention while the weight type for this drug is undecided" in given[0], given
+
+
+def test_an_encounter_of_the_first_revision_still_asks_the_weight_type(tmp_path, monkeypatch):
+    # Launched under the first stamp ("2026-09-27"), the reader asked once per
+    # drug; a saved encounter replays exactly as it was played.
+    import patient_body
+    at = start(tmp_path, monkeypatch, "acs_61m_posterior", "R2-04")
+    at.session_state["state"]["encounter_spec"]["weight_rules"] = patient_body.RULES_FIRST_REVISION
     minute = at.session_state["state"]["sim_time"]
     submit(at, ACS_ENOXAPARIN)
     pending = at.session_state["pending_action"]

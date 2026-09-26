@@ -1362,6 +1362,11 @@ FAMILIES["bradycardia"]["variants"].append(_case(
      "What did the calcium change, and what did it not?"],
     ["calcium", "bronchodilator", "consult"],
     visual=_visual(shock=True),
+    # "I pass almost no urine; that has been true for years": the case declares
+    # minimal residual renal function, so the model no longer makes the 70 mL/h
+    # of a working kidney (faculty instruction of 2026-09-26, point 4). The
+    # exact residual baseline is a pending clinical decision (urine_output).
+    renal={"baseline_urine": "minimal"},
     bradycardia={"cause": "hyperk", "block": False, "av_block_location": "infranodal",
                  "potassium": 7.6, "well_rate": 72, "escape_rate": 38, "target_rate": 72}))
 

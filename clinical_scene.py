@@ -200,6 +200,14 @@ def _session_scene_image(state, events, context=None):
     return current
 
 
+#: Shown, identically, beside every current photograph: a still image never
+#: shows every finding, and saying WHICH ones it does not show would tell the
+#: resident what the case defines before they examine. Neutral and constant,
+#: its presence carries no information about this patient.
+STILL_VIEW_NOTE = ('A still photograph does not show every clinical sign; '
+                   'examine the patient to assess what it cannot carry.')
+
+
 def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, observations='', image_status=None,
                photo_apart=False):
     """The bed space. With ``photo_apart`` the photograph is its own element (``image_scene``) and
@@ -214,22 +222,14 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
     status = 'Patient illustration · current state' if current else (
         'Updating patient appearance' if pending else 'Current patient image unavailable')
     detail = scene_status_text(image_status) if not current else ''
-    limitations = getattr(image_b64, 'limitations', ()) if current else ()
-    limited_details = []
-    if 'mild_skin_color' in limitations:
-        limited_details.append('Mild pallor')
-    if 'skin_color' in limitations:
-        limited_details.append('Skin colour')
-    if 'mild_skin_moisture' in limitations or 'sweating' in limitations:
-        limited_details.append('Skin moisture')
-    if 'breathing_effort' in limitations:
-        limited_details.append('Breathing effort')
-    if 'distress' in limitations:
-        limited_details.append('Degree of distress')
-    if 'consciousness' in limitations:
-        limited_details.append('Level of consciousness')
-    limitation = (', '.join(limited_details) + ': not discernible in this still view; assess during examination.'
-                  if limited_details else '')
+    # One fixed sentence beside every photograph (faculty instruction of
+    # 2026-09-26, point 6). Naming the findings a photograph does not show
+    # told the resident what there was to find -- "breathing effort: not
+    # discernible" says the case defines a breathing effort -- so the room's
+    # warning is neutral and identical for every patient, and the specific
+    # codes stay where they belong: the display log and the faculty's review
+    # (image_scene._log, image_pack.read_observations).
+    limitation = STILL_VIEW_NOTE if current else ''
     return ("<style>" + BEDSPACE_CSS + "</style>" +
             f'<div class="clinical-scene" style="{bg}">' +
             f'<div class="scene-monitor">{monitor}{ecg}</div>' +
