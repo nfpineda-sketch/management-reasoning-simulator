@@ -55,7 +55,28 @@ Ejemplo real, el mismo encuentro con el selector en español:
 > SpO₂ 96% · FR 22/min. Alerta; esfuerzo respiratorio normal; llene capilar 3.6 s. El paciente
 > refiere dolor intenso.
 
-## Segunda etapa, pendiente
+## Segunda etapa: instrucción del 2026-09-26
+
+> «Si el encuentro se corre en español, los PDF se generan en español; si se corre en inglés, en inglés.
+> Todo lo que se almacena en la app se puede definir si verlo en inglés o español.»
+
+| Parte | Estado |
+|---|---|
+| **1 · Idioma del encuentro** | **Hecho** (C-2026-09-26-22). El encuentro guarda el idioma de pantalla con que se cerró (`encounter_language`). El Management Trace, el Faculty Brief y el documento de rúbrica salen en ese idioma, con un selector «Idioma del documento · Document language» junto a cada descarga. Un encuentro cerrado antes no registró idioma: sus documentos siguen la elección de quien los abre, sin adivinar. |
+| **2 · Texto fijo de los documentos** | **Hecho** (C-2026-09-26-23). Encabezados, referencias, signos y sus valores, exámenes, órdenes, temas de historia, dominios, notas de convenciones y trazabilidad, en español con el catálogo revisado. |
+| **3 · Texto del modelo** | En curso: traducción al pedirlo, guardada; el original en inglés sigue siendo el canónico. |
+| **4 · Portales y pantallas de revisión** | Pendiente. |
+| **5 · Narrativa de los 31 casos** | En curso: borrador en español en `case_text/es/`, que se usa sólo después de tu revisión, caso por caso. |
+
+**El idioma del encuentro es el de la pantalla, no el de las órdenes.** La decisión 16 los separó: escribir
+en español no mueve el selector. Un residente que juega en español debe tener el selector en «Español»
+(o la app `MRS_LANGUAGE=es`).
+
+**Queda en inglés a propósito:** los títulos oficiales de los objetivos del currículo (redacción oficial
+de competencias, decisión del 2026-09-23). Si quieres una versión en español, dímelo y la preparo para tu
+revisión.
+
+## Segunda etapa, pendiente (lista original del 2026-09-21)
 
 - **La narrativa autorizada de cada caso**: presentación, respuestas de la anamnesis y prosa del
   examen físico siguen en inglés. Se dejaron fuera a propósito: traducirlas por sustitución

@@ -197,3 +197,70 @@ def test_the_faculty_brief_downloaded_is_in_the_chosen_language(cohort):
     assert not app.exception
     english = [blob for blob in briefs(app) if "Performance synthesis" in text_of(blob)]
     assert english, "choosing English writes the same brief in English"
+
+
+# --- the document's own words, all of them ----------------------------------
+
+# The document's own labels. The resident's words keep whatever language they were
+# written in ("Breathing effort, oxygenation and alertness at the next review").
+ENGLISH_FURNITURE = ("DECISION 1", "Based on:", "Changed:", "Unchanged:", "(available at", ", sampled at",
+                     " requested", "Alertness ", "Breathing effort Increased", "Extremities ",
+                     "Pulse present", "Domain ", "Rubric version", "Assessment status")
+
+
+def test_a_spanish_document_says_its_own_words_in_spanish():
+    """What the record assembled around its values -- headings, references, observations,
+    study requests, the rubric's traceability -- was English inside a Spanish document
+    until 2026-09-26. The model's prose and the case's narrative have their own stages."""
+    from faculty_report import render_faculty_brief_pdf
+    from management_trace_report import render_management_trace_pdf
+    from rubric_report import render_rubric_report_pdf
+    from test_faculty_report import brief_example
+    from test_management_trace_report import report_example
+    from test_rubric_document import RECORD, proposal
+    from test_rubric_reports import review
+    trace_report, payload = report_example()
+    report, record = brief_example()
+    spanish = {
+        "trace": text_of(render_management_trace_pdf(trace_report, payload, language="es")),
+        "brief": text_of(render_faculty_brief_pdf(report, record, compact=False, language="es")),
+        "rubric": text_of(render_rubric_report_pdf(review(), proposal(), RECORD, language="es")),
+    }
+    english = {
+        "trace": text_of(render_management_trace_pdf(trace_report, payload, language="en")),
+        "rubric": text_of(render_rubric_report_pdf(review(), proposal(), RECORD, language="en")),
+    }
+    for name, text in spanish.items():
+        leaks = [word for word in ENGLISH_FURNITURE if word in text]
+        assert not leaks, (name, leaks)
+    assert "DECISIÓN 1" in spanish["trace"] and "Basado en:" in spanish["trace"]
+    assert "DECISION 1" in english["trace"] and "Based on:" in english["trace"]
+    assert "Versión de la rúbrica" in spanish["rubric"] and "Rubric version" in english["rubric"]
+
+
+def test_an_order_is_written_in_spanish_with_its_dose_untouched():
+    import report_presentation as presentation
+    orders = [({"type": "diagnostic", "diagnostic": "lactate", "result": {"time_min": 7}},
+               "Lactate requested · result at 7 min", "Solicitud de lactato · resultado a los 7 min"),
+              ({"type": "disposition", "destination": "ward"}, "Admission to ward", "Ingreso a sala"),
+              ({"type": "consult", "service": "gastroenterology"}, "Gastroenterology contacted",
+               "Interconsulta a gastroenterología"),
+              ({"type": "fluid", "volume_ml": 1000, "fluid_type": "normal saline", "route": "IV"},
+               "1000 mL normal saline IV", "1000 mL suero fisiológico IV"),
+              ({"type": "oxygen", "flow_lpm": 10, "device": "Simple mask"},
+               "Oxygen 10 L/min via Simple mask", "Oxígeno 10 L/min por mascarilla simple"),
+              ({"agent": "epinephrine", "rate": 0.1, "units": "mcg/kg/min", "operation": "start"},
+               "Epinephrine 0.1 mcg/kg/min (started)", "Epinephrine 0.1 mcg/kg/min (iniciado)")]
+    for action, english, spanish in orders:
+        assert presentation.action_phrase(action) == english
+        assert presentation.action_phrase(action, "es") == spanish
+    assert presentation.study_name("abg", "es") == "gases arteriales"
+    assert presentation.result_field("lactate_mmol_l", "4.4", "es") == "lactato 4.4 mmol/L"
+    assert presentation.result_field("lactate_mmol_l", "4.4") == "lactate 4.4 mmol/L"
+
+
+def test_the_history_topics_have_spanish_names():
+    from history_topics import HISTORY_TOPIC_LABELS, HISTORY_TOPIC_LABELS_ES, topic_label
+    assert set(HISTORY_TOPIC_LABELS) == set(HISTORY_TOPIC_LABELS_ES)
+    assert topic_label("medications", "es") == "Medicamentos"
+    assert topic_label("medications") == "Medications"

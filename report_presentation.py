@@ -119,6 +119,57 @@ _SUPPORT_NAMES = {
 }
 
 
+# The same names in a Spanish document (faculty, 2026-09-26: a document is written
+# in the language its encounter was played in). The room's catalog names the
+# studies the same way (language.py); numbers, units and drug names never change.
+_STUDY_NAMES_ES = {
+    "ecg": "ECG de 12 derivaciones", "ecg_right": "ECG con derivaciones derechas (V3R-V4R)",
+    "ecg_posterior": "ECG con derivaciones posteriores (V7-V9)",
+    "pocus": "ecografía a pie de cama (POCUS)", "chest_xray": "radiografía de tórax",
+    "ctpa": "angioTAC de tórax", "renal_ultrasound": "ecografía renal y de vías urinarias",
+    "efast": "FAST extendido (eFAST)", "pelvis_xray": "radiografía de pelvis",
+    "basic_labs": "exámenes de laboratorio básicos", "poc_glucose": "glicemia capilar",
+    "troponin": "troponina", "lactate": "lactato", "hemoglobin": "hemoglobina",
+    "blood_cultures": "hemocultivos", "urinalysis": "orina completa", "temperature": "temperatura",
+    "abg": "gases arteriales", "vbg": "gases venosos", "blood_gas": "gases en sangre",
+    "liver_panel": "perfil hepático", "head_ct": "tomografía de cerebro",
+    "abdominal_ct": "tomografía de abdomen", "d_dimer": "dímero D", "cortisol": "cortisol",
+    "thyroid_function": "pruebas tiroideas", "ketones": "cetonas", "toxicology": "panel toxicológico",
+    "crossmatch": "grupo y pruebas cruzadas",
+}
+# The fields a study reports, by their key.
+_FIELD_NAMES_ES = {
+    "aorta_abdominal": "aorta abdominal", "aorta_descending": "aorta descendente", "aorta_root": "raíz aórtica",
+    "bicarbonate": "bicarbonato", "bun": "BUN", "creatinine": "creatinina",
+    "d_dimer_ng_ml_feu": "dímero D (ng/mL FEU)", "dvt_femoral": "venas femorales (TVP)", "dvt_popliteal": "venas poplíteas (TVP)",
+    "fio2": "FiO2", "glucose": "glicemia", "ivc": "VCI", "lung_consolidation": "consolidación pulmonar",
+    "lung_m_mode": "modo M pulmonar", "lung_sliding": "deslizamiento pleural",
+    "lung_sliding_left": "deslizamiento pleural izquierdo", "lung_sliding_right": "deslizamiento pleural derecho",
+    "lungs": "pulmones", "luq_pleural": "cuadrante superior izquierdo, pleural",
+    "luq_splenorenal": "cuadrante superior izquierdo, esplenorrenal",
+    "luq_subdiaphragmatic": "cuadrante superior izquierdo, subdiafragmático", "lv": "VI", "rv": "VD",
+    "paco2": "PaCO2", "pao2": "PaO2", "pco2": "PCO2", "ph": "pH", "pericardium": "pericardio",
+    "potassium": "potasio", "sodium": "sodio", "report": "informe",
+    "ruq_morison": "cuadrante superior derecho, Morison", "ruq_pleural": "cuadrante superior derecho, pleural",
+    "ruq_subdiaphragmatic": "cuadrante superior derecho, subdiafragmático",
+    "suprapubic_longitudinal": "suprapúbico longitudinal", "suprapubic_transverse": "suprapúbico transversal",
+    "upper_reference": "límite superior de referencia",
+    "upper_reference_ng_ml_feu": "límite superior de referencia (ng/mL FEU)", "value": "valor",
+    "wbc_k_ul": "leucocitos (k/µL)",
+}
+_ROUTES_ES = {"nebulised": "nebulizado", "inhaled": "inhalado"}
+_OPERATION_ES = {"started": "iniciado", "stopped": "suspendido", "adjusted": "ajustado",
+                 "continued unchanged": "sin cambios", "increased": "aumentado", "decreased": "disminuido"}
+_SUPPORT_NAMES_ES = {
+    "vascular_access": "vía venosa periférica", "monitoring": "monitorización continua y oximetría de pulso",
+    "urinary_catheter": "sonda vesical", "gastric_tube": "sonda nasogástrica", "npo": "régimen cero",
+    "oxygen": "oxígeno", "niv": "ventilación no invasiva", "invasive_ventilation": "ventilación invasiva",
+    "bag_mask": "ventilación con bolsa-mascarilla", "disposition": "hospitalización",
+}
+_DESTINATIONS_ES = {"ICU": "UCI", "intermediate care": "intermedio", "ward": "sala",
+                    "coronary care unit": "unidad coronaria", "coronary care": "unidad coronaria"}
+
+
 # A result key carries its unit as a suffix; a report has to print the unit.
 _UNIT_SUFFIX = (
     ("_mmol_l", "mmol/L"), ("_mg_dl", "mg/dL"), ("_ng_l", "ng/L"), ("_ng_ml", "ng/mL"),
@@ -128,8 +179,8 @@ _UNIT_SUFFIX = (
 )
 
 
-def result_field(key, value):
-    """``lactate_mmol_l: 3.2`` reads as ``lactate 3.2 mmol/L``."""
+def result_field(key, value, language="en"):
+    """``lactate_mmol_l: 3.2`` reads as ``lactate 3.2 mmol/L`` (``lactato 3.2 mmol/L``)."""
     name = str(key or "")
     unit = ""
     for suffix, written in _UNIT_SUFFIX:
@@ -137,12 +188,16 @@ def result_field(key, value):
             name, unit = name[: -len(suffix)], written
             break
     label = _STUDY_NAMES.get(name, name.replace("_", " ")).strip()
+    if language == "es":
+        label = _STUDY_NAMES_ES.get(name) or _FIELD_NAMES_ES.get(name) or label
     text = str(value if value is not None else "").strip()
     return " ".join(bit for bit in (label, text, unit) if bit)
 
 
-def study_name(key):
+def study_name(key, language="en"):
     """The bedside name of a study, for a report a clinician reads."""
+    if language == "es" and str(key or "") in _STUDY_NAMES_ES:
+        return _STUDY_NAMES_ES[str(key)]
     return _STUDY_NAMES.get(str(key or ""), str(key or "study").replace("_", " "))
 
 
@@ -159,79 +214,119 @@ def _amount(value, unit):
     return f"{number:g} {unit}" if number is not None else ""
 
 
-def _timing(action):
+def _timing(action, language="en"):
     """Delivery time and availability, which are clinical, not bookkeeping."""
+    spanish = language == "es"
     bits = []
     over = _number(action.get("administration_duration_min"))
     if over:
-        bits.append(f"over {over:g} min")
+        bits.append(f"en {over:g} min" if spanish else f"over {over:g} min")
     result = action.get("result") if isinstance(action.get("result"), dict) else {}
     available = _number(result.get("time_min"))
     if available is not None:
-        bits.append(f"result at {available:g} min")
+        bits.append(f"resultado a los {available:g} min" if spanish else f"result at {available:g} min")
     elif action.get("type") == "diagnostic":
         duration = _number(action.get("duration_min"))
         if duration:
-            bits.append(f"takes {duration:g} min")
+            bits.append(f"demora {duration:g} min" if spanish else f"takes {duration:g} min")
     return bits
 
 
-def action_phrase(action):
+def action_phrase(action, language="en"):
     """One executed action, written the way it was ordered.
 
     Doses, routes, settings and timings are kept; the engine's bookkeeping
     fields are not. An action this function does not know is described by its
-    own label rather than by its field dump.
+    own label rather than by its field dump. ``language="es"`` writes the same
+    order in Spanish, for a document in the language its encounter was played
+    in (faculty, 2026-09-26); doses, units and drug names are the same in both.
     """
     if not isinstance(action, dict):
         return ""
+    spanish = language == "es"
+    if spanish:
+        import language as languages
+        say = lambda text: languages.say(text, "es")  # noqa: E731
     # The engine already writes the plain sentence for something that was
     # standing rather than started. Found 2026-09-23: an intravenous line
     # recorded as "already in place; not repeated" was printed as "(started)".
     label = " ".join(str(action.get("label") or "").split())
     if label and _ALREADY_IN_PLACE.search(label):
+        label = say(label) if spanish else label
         return label[:1].upper() + label[1:]
     kind = str(action.get("type") or action.get("support_type") or "").strip()
     route = _ROUTES.get(str(action.get("route") or ""), str(action.get("route") or ""))
     operation = _OPERATION.get(str(action.get("operation") or ""), "")
-    timing = _timing(action)
+    if spanish:
+        route = _ROUTES_ES.get(route, route)
+    shown_operation = _OPERATION_ES.get(operation, operation) if spanish else operation
+    timing = _timing(action, language)
 
     if kind == "diagnostic":
         key = str(action.get("diagnostic") or action.get("diagnostic_type") or "study")
-        phrase = _STUDY_NAMES.get(key, key.replace("_", " ")) + " requested"
+        if spanish:
+            phrase = "solicitud de " + study_name(key, "es")
+        else:
+            phrase = _STUDY_NAMES.get(key, key.replace("_", " ")) + " requested"
     elif kind == "reassessment":
         delay = _number(action.get("delay_min"))
-        phrase = "reassessment" + (f" after {delay:g} min" if delay is not None else "")
+        if spanish:
+            phrase = "reevaluación" + (f" en {delay:g} min" if delay is not None else "")
+        else:
+            phrase = "reassessment" + (f" after {delay:g} min" if delay is not None else "")
     elif kind == "fluid":
         volume = _amount(action.get("volume_ml"), "mL")
         fluid = str(action.get("fluid_type") or "fluid")
+        if spanish:
+            fluid = "fluido" if fluid == "fluid" else say(fluid)
         phrase = " ".join(bit for bit in (volume, fluid, route) if bit)
         if operation == "stopped":
-            phrase = f"{fluid} infusion stopped"
+            phrase = f"infusión de {fluid} suspendida" if spanish else f"{fluid} infusion stopped"
     elif kind in {"disposition"}:
         destination = str(action.get("destination") or "")
-        phrase = "discharge home" if destination == "home" else f"admission to {destination or 'a ward'}"
+        if spanish:
+            phrase = ("alta a domicilio" if destination == "home"
+                      else "observación en urgencias" if destination == "ED observation"
+                      else "ingreso a " + (_DESTINATIONS_ES.get(destination) or say(destination) or "sala"))
+        else:
+            phrase = "discharge home" if destination == "home" else f"admission to {destination or 'a ward'}"
     elif kind in {"consult", "reperfusion_referral"}:
-        phrase = f"{action.get('service') or action.get('destination') or 'specialty'} contacted"
+        service = str(action.get("service") or action.get("destination") or "specialty")
+        if spanish:
+            from language import _SERVICES_ES, _to
+            name = {"cath lab": "hemodinamia"}.get(service.lower()) or _SERVICES_ES.get(service) \
+                or _SERVICES_ES.get(service.lower())
+            phrase = "interconsulta " + (_to(name) if name else "a " + service)
+        else:
+            phrase = f"{service} contacted"
     elif kind == "cardioversion":
-        phrase = "synchronized cardioversion " + _amount(action.get("energy_j"), "J")
+        phrase = ("cardioversión sincronizada " if spanish else "synchronized cardioversion ") \
+            + _amount(action.get("energy_j"), "J")
     elif kind == "oxygen" or action.get("support_type") == "oxygen":
         flow = _amount(action.get("flow_lpm") or action.get("flow_l_min"), "L/min")
         device = str(action.get("device") or "").strip()
-        phrase = " ".join(bit for bit in ("oxygen", flow, f"via {device}" if device else "") if bit)
+        if spanish:
+            device = say(device)
+            device = device[:1].lower() + device[1:]
+            phrase = " ".join(bit for bit in ("oxígeno", flow, f"por {device}" if device else "") if bit)
+        else:
+            phrase = " ".join(bit for bit in ("oxygen", flow, f"via {device}" if device else "") if bit)
     elif kind == "niv" or action.get("support_type") == "niv":
         settings = [_amount(action.get("ipap_cmh2o"), "cm H2O IPAP"),
                     _amount(action.get("epap_cmh2o"), "cm H2O EPAP"),
                     _amount(action.get("fio2_percent"), "% FiO2")]
-        phrase = "non-invasive ventilation " + ", ".join(bit for bit in settings if bit)
+        phrase = ("ventilación no invasiva " if spanish else "non-invasive ventilation ") \
+            + ", ".join(bit for bit in settings if bit)
     elif kind == "invasive_ventilation" or action.get("support_type") == "invasive_ventilation":
         settings = [str(action.get("ventilator_mode") or "").strip(),
                     _amount(action.get("fio2_percent"), "% FiO2"),
                     _amount(action.get("peep_cmh2o"), "cm H2O PEEP")]
-        phrase = "invasive ventilation " + ", ".join(bit for bit in settings if bit)
+        phrase = ("ventilación invasiva " if spanish else "invasive ventilation ") \
+            + ", ".join(bit for bit in settings if bit)
     elif kind == "transcutaneous_pacing":
         settings = [_amount(action.get("rate_per_min"), "/min"), _amount(action.get("output_ma"), "mA")]
-        phrase = "transcutaneous pacing " + ", ".join(bit for bit in settings if bit)
+        phrase = ("marcapaso transcutáneo " if spanish else "transcutaneous pacing ") \
+            + ", ".join(bit for bit in settings if bit)
     elif action.get("rate") is not None or action.get("rate_mcg_min") is not None:
         agent = str(action.get("agent") or kind).replace("_", " ")
         rate = (_amount(action.get("rate_mcg_min"), "mcg/min") if action.get("rate_mcg_min") is not None
@@ -244,9 +339,11 @@ def action_phrase(action):
                 else _amount(action.get("dose"), str(action.get("units") or "")).strip())
         phrase = " ".join(bit for bit in (agent, dose, route) if bit)
     elif kind in _SUPPORT_NAMES:
-        phrase = _SUPPORT_NAMES[kind]
+        phrase = _SUPPORT_NAMES_ES[kind] if spanish else _SUPPORT_NAMES[kind]
     else:
         phrase = str(action.get("label") or kind or "action").replace("_", " ")
+        if spanish:
+            phrase = say(phrase)
 
     # A compound order (induction, sedation) carries its own drug list; the
     # drugs given are the clinical content and must not be summarised away.
@@ -259,25 +356,32 @@ def action_phrase(action):
                 else _amount(medication.get("dose_mg"), "mg") if medication.get("dose_mg") is not None
                 else _amount(medication.get("dose"), str(medication.get("units") or "")).strip())
         way = _ROUTES.get(str(medication.get("route") or ""), str(medication.get("route") or ""))
+        if spanish:
+            way = _ROUTES_ES.get(way, way)
         written = " ".join(bit for bit in (name, dose, way) if bit)
         if written:
             given.append(written)
     if given:
-        phrase = f"{phrase} with " + " + ".join(given)
+        phrase = f"{phrase} {'con' if spanish else 'with'} " + " + ".join(given)
 
     phrase = " ".join(phrase.split())
-    if operation and operation not in phrase and kind not in {"diagnostic", "reassessment", "disposition", "consult"}:
-        phrase = f"{phrase} ({operation})"
+    if shown_operation and shown_operation not in phrase \
+            and kind not in {"diagnostic", "reassessment", "disposition", "consult"}:
+        phrase = f"{phrase} ({shown_operation})"
     if action.get("repeated"):
-        phrase += " — already in place, not repeated"
+        phrase += " — ya instalado, no se repite" if spanish else " — already in place, not repeated"
     if timing:
         phrase += " · " + ", ".join(timing)
+    if spanish:
+        # What the room's catalog says of the rest ("Packed red cells"), so the
+        # document names an order the way the encounter showed it.
+        phrase = say(phrase)
     if not phrase:
         return ""
     return phrase if phrase[:2].isupper() else phrase[:1].upper() + phrase[1:]
 
 
-def action_lines(actions):
+def action_lines(actions, language="en"):
     """Every executed action of one decision, deduplicated, in order.
 
     A ``procedure`` summary is the engine narrating what happened ("the monitor
@@ -288,7 +392,7 @@ def action_lines(actions):
     for action in actions or []:
         if isinstance(action, dict) and action.get("type") == "procedure":
             continue
-        phrase = action_phrase(action)
+        phrase = action_phrase(action, language)
         if phrase and phrase not in seen:
             seen.add(phrase)
             lines.append(phrase)

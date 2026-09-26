@@ -104,6 +104,18 @@ def _t(text, language=None):
     return report_language.t(text, language or _reader_language())
 
 
+def _reader():
+    """The language this document is being written in (``language.presenting``)."""
+    from language import current
+    return current()
+
+
+def _value(text):
+    """One observed value ("Increased", "Warm") in the document's language."""
+    import language as languages
+    return languages.observed_value(text, _reader())
+
+
 def _say(text, language=None):
     """The page furniture, which is drawn on the canvas and never sees _xml."""
     import report_language
@@ -164,7 +176,7 @@ def _styles():
 
 def _time(value):
     number = _number(value)
-    return f"{number:g} min" if number is not None and number >= 0 else "Time not recorded"
+    return f"{number:g} min" if number is not None and number >= 0 else _t("Time not recorded")
 
 
 def _timestamp(value):
@@ -323,7 +335,7 @@ class _Trend(Flowable):
 
 def _action_text(action):
     """One executed action, written as an order rather than as engine fields."""
-    return presentation.action_phrase(action)
+    return presentation.action_phrase(action, _reader())
 
 
 def _observed_vitals(event):
@@ -336,10 +348,11 @@ def _observed_vitals(event):
         if not left and not right:
             continue
         suffix = f" {unit}" if unit else ""
+        name, missing = _t(label), _t("not recorded")
         if left != right:
-            changed.append(f"{label} {left or 'not recorded'} &#8594; {right or 'not recorded'}{suffix}")
+            changed.append(f"{name} {_value(left) or missing} &#8594; {_value(right) or missing}{suffix}")
         else:
-            unchanged.append(f"{label} {right}{suffix}")
+            unchanged.append(f"{name} {_value(right)}{suffix}")
     return changed, unchanged
 
 
@@ -350,14 +363,14 @@ def _observed_studies(event):
     for name, report in _mapping(_mapping(event.get("state_after")).get("diagnostics_available")).items():
         if not isinstance(report, dict) or report == prior.get(name):
             continue
-        fields = [presentation.result_field(key, _scalar(value)) for key, value in report.items()
+        fields = [presentation.result_field(key, _scalar(value), _reader()) for key, value in report.items()
                   if key not in {"time_min", "collected_at_min"} and _scalar(value)]
         if not fields:
             continue
-        timing = "available at " + _time(report.get("time_min"))
+        timing = _t("available at {time}").format(time=_time(report.get("time_min")))
         if report.get("collected_at_min") is not None:
-            timing += ", sampled at " + _time(report["collected_at_min"])
-        lines.append((presentation.study_name(name) + " (" + timing + ")", "; ".join(fields)))
+            timing += _t(", sampled at {time}").format(time=_time(report["collected_at_min"]))
+        lines.append((presentation.study_name(name, _reader()) + " (" + timing + ")", "; ".join(fields)))
     return lines
 
 
@@ -372,7 +385,7 @@ def _decision_title(item, event, stage, title_caps=presentation.TITLE_CAPS):
     if written and not presentation.was_truncated(written, title_caps):
         return written
     names = []
-    for phrase in presentation.action_lines(event.get("executed_actions", [])):
+    for phrase in presentation.action_lines(event.get("executed_actions", []), _reader()):
         name = phrase.split(" · ")[0].split(";")[0]
         name = re.sub(r"\s*\(.*?\)\s*$", "", name)
         name = re.sub(r"\s+requested$", "", name)
@@ -380,13 +393,13 @@ def _decision_title(item, event, stage, title_caps=presentation.TITLE_CAPS):
         if name and name.lower() not in {n.lower() for n in names}:
             names.append(name)
     for study in stage.get("awaiting", []):
-        name = presentation.study_name(study)
+        name = presentation.study_name(study, _reader())
         if name.lower() not in {n.lower() for n in names}:
             names.append(name)
     if not names:
-        return "Recorded decision"
+        return _t("Recorded decision")
     shown, extra = names[:4], len(names) - 4
-    heading = shown[0] if len(shown) == 1 else ", ".join(shown[:-1]) + " and " + shown[-1]
+    heading = shown[0] if len(shown) == 1 else ", ".join(shown[:-1]) + _t(" and ") + shown[-1]
     return heading + (_t(", and {n} more").format(n=extra) if extra > 0 else "")
 
 
@@ -413,8 +426,8 @@ def _recorded_course(timeline):
         if not before and not after:
             continue
         suffix = f" {unit}" if unit else ""
-        moves.append(f"{_xml(label)} {_xml(before)}{_xml(suffix)} unchanged" if before == after
-                     else f"{_xml(label)} {_xml(before)} &#8594; {_xml(after)}{_xml(suffix)}")
+        moves.append(f"{_xml(_t(label))} {_xml(before)}{_xml(suffix)} {_xml(_t('unchanged'))}" if before == after
+                     else f"{_xml(_t(label))} {_xml(before)} &#8594; {_xml(after)}{_xml(suffix)}")
     return _xml(span) + ". " + "; ".join(moves) + "." if moves else _xml(span) + "."
 
 
@@ -425,10 +438,10 @@ def _observed_response(event):
     if changed:
         parts.append("; ".join(changed))
     if unchanged:
-        parts.append("Unchanged: " + "; ".join(unchanged))
+        parts.append(_t("Unchanged:") + " " + "; ".join(unchanged))
     for heading, body in _observed_studies(event):
         parts.append(heading + ": " + body)
-    return ". ".join(parts) or "No before/after observations recorded."
+    return ". ".join(parts) or _t("No before/after observations recorded.")
 
 
 def _all_claims(analysis):
@@ -478,7 +491,9 @@ def _history_section(payload, p, styles):
                        "during this encounter.", "note"))
     if summary["not_named"]:
         story.append(p("AVAILABLE AND NOT ASKED ABOUT", "label"))
-        story.append(p(", ".join(row["label"] for row in summary["not_named"]) + ".", "body"))
+        from history_topics import topic_label
+        story.append(p(", ".join(topic_label(row["topic"], _reader()) for row in summary["not_named"]) + ".",
+                       "body"))
         story.append(p(HISTORY_RULE, "note"))
     return story
 
@@ -571,13 +586,13 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
                 label = _t("Information obtained")
             else:
                 label = _t("Non-executed entry")
-            return f"{label} at {_time(event.get('decision_time_min'))}"
+            return _t("{label} at {time}").format(label=label, time=_time(event.get("decision_time_min")))
         if ref in encounter_index:
             event = encounter_index[ref]
             kind = _text(event.get("kind")).replace("_", " ")
             kind = {"you": "your own order", "patient history": "history", "clinical update": "patient update",
                     "diagnostic result": "study result"}.get(kind, kind) or "encounter record"
-            return f"{kind} at {_time(event.get('time_min'))}"
+            return _t("{label} at {time}").format(label=_t(kind), time=_time(event.get("time_min")))
         reflection = reflection_index.get(ref, {})
         decision = index.get(reflection.get("decision_ref"), {})
         return _t("your later reflection on D{n}").format(
@@ -600,7 +615,7 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
                 if label not in seen:
                     seen.add(label)
                     labels.append(label)
-            suffix = "Based on: " + ", ".join(labels)
+            suffix = _t("Based on: {refs}").format(refs=", ".join(labels))
             text += '<br/><font size="7.6" color="#607482">' + _xml(suffix) + "</font>"
         return Paragraph(text, styles[style])
 
@@ -672,11 +687,13 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
         done = presentation.action_lines(
             [action for action in event.get("executed_actions", [])
              if not (isinstance(action, dict)
-                     and str(action.get("diagnostic") or action.get("diagnostic_type") or "") in elsewhere)])
-        done += [presentation.study_name(study) + " requested" for study in stage["awaiting"]]
-        summary = "; ".join(done[:2]) if done else "no executed action recorded"
+                     and str(action.get("diagnostic") or action.get("diagnostic_type") or "") in elsewhere)],
+            _reader())
+        done += [_t("{study} requested").format(study=presentation.study_name(study, _reader()))
+                 for study in stage["awaiting"]]
+        summary = "; ".join(done[:2]) if done else _t("no executed action recorded")
         if len(done) > 2:
-            summary += f"; +{len(done) - 2} more"
+            summary += _t("; +{n} more").format(n=len(done) - 2)
         legend_lines.append(f'<b>D{event["decision_number"]}</b> · {_time(event.get("decision_time_min"))} — {summary}')
     legend = [p("WHAT EACH MARK WAS", "label")]
     legend += [Paragraph(_xml(line).replace("&lt;b&gt;", "<b>").replace("&lt;/b&gt;", "</b>"), styles["tiny"])
@@ -744,14 +761,14 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
         lines = presentation.action_lines(
             [action for action in event.get("executed_actions", [])
              if isinstance(action, dict)
-             and not (action.get("diagnostic") or action.get("diagnostic_type"))])
+             and not (action.get("diagnostic") or action.get("diagnostic_type"))], _reader())
         answered = {}
         for rows in stages.values():
             for row in rows["reported"]:
                 if row["requested_at_decision"] == event["decision_number"]:
                     answered.setdefault(row["study"], row)
         for study in stage["requested"]:
-            phrase = presentation.study_name(study) + " requested"
+            phrase = _t("{study} requested").format(study=presentation.study_name(study, _reader()))
             row = answered.get(study)
             if row:
                 when = []
@@ -765,21 +782,24 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
                 # Recorded as asked for; the simulator has no result for it here.
                 phrase += " · " + _t("not modelled in this version of the simulator")
             elif study in stage["awaiting"]:
-                phrase += " · no result recorded"
+                phrase += " · " + _t("no result recorded")
             lines.append(phrase if phrase[:2].isupper() else phrase[:1].upper() + phrase[1:])
 
-        time_range = f"{_time(event.get('decision_time_min'))} to {_time(event.get('response_time_min'))}"
+        time_range = _t("{start} to {end}").format(start=_time(event.get("decision_time_min")),
+                                                   end=_time(event.get("response_time_min")))
         changed, unchanged = _observed_vitals(event)
         studies = _observed_studies(event)
         before = _mapping(_mapping(event.get("state_before")).get("observable"))
         observed_before = "; ".join(
-            f"{label} {_scalar(before.get(key))}{(' ' + unit) if unit else ''}"
+            f"{_t(label)} {_value(_scalar(before.get(key)))}{(' ' + unit) if unit else ''}"
             for key, label, unit in OBSERVED_FIELDS if _scalar(before.get(key)))
 
         story.append(KeepTogether([
             Spacer(1, 9), HRFlowable(width="100%", thickness=1, color=LINE),
             _OpenDecision(marks, event["decision_number"]),
-            p(f"DECISION {event['decision_number']} · {time_range} · {_text(event.get('execution_status')).replace('_', ' ') or 'not recorded'}", "label"),
+            p(_t("DECISION {n} · {span} · {status}").format(
+                n=event["decision_number"], span=time_range,
+                status=_t(_text(event.get("execution_status")).replace("_", " ") or "not recorded")), "label"),
             p(_decision_title(item, event, stage, title_caps), "card_title"),
             p("1 · WHAT YOU HAD OBSERVED", "label"),
             p(observed_before or "No observations were recorded before this decision."),
@@ -890,11 +910,11 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
         plan = _text(reasoning.get("reassessment_target")) or "Not recorded."
         result_bits = []
         if changed:
-            result_bits.append("<b>Changed:</b> " + "; ".join(changed))
+            result_bits.append("<b>" + _xml(_t("Changed:")) + "</b> " + "; ".join(changed))
         if unchanged:
-            result_bits.append("<b>Unchanged:</b> " + "; ".join(unchanged))
+            result_bits.append("<b>" + _xml(_t("Unchanged:")) + "</b> " + "; ".join(unchanged))
         if not changed and not unchanged:
-            result_bits.append("No before/after observations were recorded.")
+            result_bits.append(_xml(_t("No before/after observations were recorded.")))
         for heading, body in studies:
             result_bits.append(f"<b>{_xml(heading)}:</b> " + _xml(body))
         # Request, sample and report are three moments, and a missing result is
@@ -914,14 +934,15 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
                     n=row["requested_at_decision"]))
             if parts:
                 result_bits.append('<font color="#607482">'
-                                   + _xml(presentation.study_name(row["study"]) + ": " + ", ".join(parts))
+                                   + _xml(presentation.study_name(row["study"], _reader()) + ": "
+                                          + ", ".join(parts))
                                    + "</font>")
         closed = limits.get("closed_at_min")
         ending = (_t(" before the encounter closed at {n:g} min").format(n=closed)
                   if closed is not None else "")
         for study in stage["awaiting"]:
             result_bits.append('<font color="#607482">' + _xml(
-                presentation.study_name(study)
+                presentation.study_name(study, _reader())
                 + _t(": requested; no result was recorded") + ending) + "</font>")
         if any(findings.URINE_WORDS.search(line) for line in lines):
             result_bits.append('<font color="#607482">' + _xml(urine_line) + "</font>")

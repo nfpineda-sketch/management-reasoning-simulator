@@ -218,12 +218,32 @@ def _coverage_label(totals, language):
             f"{assessed} of {total} domains assessable - no comparable total")
 
 
+#: The traceability labels of a Spanish document (faculty, 2026-09-26: a document
+#: is written in the language its encounter was played in).
+_TRACE_ES = {
+    "Rubric version": "Versión de la rúbrica", "Assessment status": "Estado de la evaluación",
+    "Reviewed by": "Revisado por", "Review revision": "Revisión de la evaluación",
+    "AI proposal": "Propuesta de IA", "Proposal model": "Modelo de la propuesta",
+    "Proposal prompt version": "Versión del prompt de la propuesta",
+    "Proposal generated": "Propuesta generada", "Record read by the proposal": "Registro leído por la propuesta",
+    "Case coverage version": "Versión de cobertura del caso", "Authored case": "Caso de autor",
+    "From the proposal": "Desde la propuesta",
+}
+
+
 def traceability(review, proposal=None, language="en"):
     """Where every number came from, for the full brief and the audit."""
+    rows = _traceability(review, proposal, language)
+    if language == "es":
+        rows = [(_TRACE_ES.get(label, label), value) for label, value in rows]
+    return rows
+
+
+def _traceability(review, proposal, language):
     rows = []
     if review:
         rows.append(("Rubric version", review.get("rubric_version", "")))
-        rows.append(("Assessment status", status_line(review, proposal, "en")["label"]))
+        rows.append(("Assessment status", status_line(review, proposal, language)["label"]))
         if review.get("reviewer"):
             rows.append(("Reviewed by", review["reviewer"]))
         if review.get("sequence"):
@@ -240,13 +260,14 @@ def traceability(review, proposal=None, language="en"):
         if proposal.get("case_id"):
             rows.append(("Authored case", proposal["case_id"]))
         if review:
-            rows.append(("From the proposal", from_the_proposal(review, proposal)))
+            rows.append(("From the proposal", from_the_proposal(review, proposal, language)))
     elif review:
-        rows.append(("AI proposal", "none used for this decision"))
+        rows.append(("AI proposal", "ninguna usada para esta decisión" if language == "es"
+                     else "none used for this decision"))
     return [(label, str(value)) for label, value in rows if str(value).strip()]
 
 
-def from_the_proposal(review, proposal):
+def from_the_proposal(review, proposal, language="en"):
     """What the faculty kept, changed and added, measured against the proposal it started from.
 
     Faculty decision 15 of 2026-09-25: the final faculty version keeps the
@@ -266,6 +287,10 @@ def from_the_proposal(review, proposal):
     confirmed = sum(1 for row in events if row["event_id"] in proposed_events and row["status"] == "confirmed")
     dismissed = sum(1 for row in events if row["event_id"] in proposed_events and row["status"] == "dismissed")
     added = sum(1 for row in events if row["event_id"] not in proposed_events and row["status"] == "confirmed")
+    if language == "es":
+        return (f"{kept} de {len(DOMAIN_IDS)} valores de dominio conservados, {changed} cambiados con "
+                f"justificación escrita; {confirmed} evento(s) propuesto(s) confirmado(s), {dismissed} "
+                f"descartado(s), {added} agregado(s) por el docente")
     return (f"{kept} of {len(DOMAIN_IDS)} domain values kept, {changed} changed with a written "
             f"justification; {confirmed} proposed event(s) confirmed, {dismissed} dismissed, "
             f"{added} added by the faculty")

@@ -75,6 +75,9 @@ def current():
 
 # Whole messages, where a sentence has to be said rather than substituted.
 MESSAGES = {
+ # The standing line, said whole so the Spanish agrees with its noun (2026-09-26).
+ "Peripheral intravenous access already in place; not repeated":
+ "Vía venosa periférica ya instalada; no se repite",
  'You have not recorded a destination. Do you want to continue or finish?':
  'No has registrado un destino. ¿Quieres continuar o finalizar?',
  'How is this encounter ending?':
@@ -186,6 +189,26 @@ MESSAGES = {
  "El análisis con IA no está configurado en esta aplicación. Puedes revisar y descargar tu registro original del encuentro.",
 }
 
+# One observed value as the record stores it ("Increased", "Warm"), for a document
+# or a table that prints it on its own. Exact matches only: a bare word must
+# never be replaced inside a longer sentence (faculty, 2026-09-26).
+OBSERVED_VALUES_ES = {
+    "Alert": "Alerta", "Drowsy": "Somnoliento", "Obtunded": "Obnubilado", "Unresponsive": "Sin respuesta",
+    "Confused": "Confuso", "Agitated": "Agitado", "Normal": "Normal", "Increased": "Aumentado",
+    "Mildly increased": "Levemente aumentado", "Markedly increased": "Muy aumentado", "Reduced": "Reducido",
+    "Absent": "Ausente", "Warm": "Tibias", "Cool": "Frías", "Cold": "Heladas", "Very cold": "Muy frías",
+    "Mottled": "Moteadas", "Yes": "Sí", "No": "No",
+}
+
+
+def observed_value(text, language=None):
+    """One stored observation value in the reading language; anything else as ``say`` says it."""
+    language = language or current()
+    if language == "en" or not text:
+        return text
+    return OBSERVED_VALUES_ES.get(str(text).strip()) or say(text, language)
+
+
 # Ordered substitutions: the composable fragments the engine assembles its
 # sentences from. Longest and most specific first; anything with no rule stays
 # in English rather than breaking.
@@ -263,6 +286,7 @@ _RULES = (
  (r"\bInvasive ventilation\b", "Ventilación invasiva"),
  (r"\bat (\d+(?:\.\d+)?) L/min", r"a \1 L/min"),
  (r"\bPacked red cells\b", "Glóbulos rojos"),
+ (r"\b(\d+) units started\b", r"\1 unidades iniciadas"), (r"\b1 unit started\b", "1 unidad iniciada"),
  (r"\bnormal saline\b", "suero fisiológico"), (r"\bNormal saline\b", "Suero fisiológico"),
  (r"\blactated Ringer's\b", "Ringer lactato"),
  (r"\bstarted over (\d+) min\b", r"a pasar en \1 min"),

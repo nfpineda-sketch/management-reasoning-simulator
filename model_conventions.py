@@ -29,6 +29,20 @@ _VENTILATION_TYPES = frozenset({"intubation", "ventilator", "ventilator_adjustme
 _INFUSION_TYPES = frozenset({"norepinephrine", "epinephrine", "dobutamine", "sedation_infusion"})
 
 
+#: The sentences that name this encounter's orders, whole, so a Spanish document
+#: can say them with the orders where Spanish puts them (faculty, 2026-09-26).
+WEIGHT_BASIS = ("Converted on the chart's actual weight, the engine's stated convention while the "
+                "weight type for each drug is undecided: {orders}.")
+INFUSION_EFFECT = ("Rates per kilogram converted on the actual weight; the simulated effect follows "
+                   "the absolute mcg/min, calibrated at 70 kg: {orders}.")
+BLOCKER_DURATION = ("The block's duration was measured on the actual weight, the engine's convention, "
+                    "whatever weight the dose was written on: {orders}.")
+
+
+def _observation(template, orders):
+    return template.format(orders="; ".join(orders))
+
+
 def _spec(record_state):
     return (record_state or {}).get("encounter_spec") or {}
 
@@ -90,25 +104,22 @@ def notes(trace, state):
         rows.append({
             "id": "weight_basis",
             "decision": "Weight type per drug and indication (decisions C and E)",
-            "observation": ("Converted on the chart's actual weight, the engine's stated "
-                            "convention while the weight type for each drug is undecided: "
-                            + "; ".join(weight_orders) + "."),
+            "observation": _observation(WEIGHT_BASIS, weight_orders),
+            "observation_template": WEIGHT_BASIS, "orders": "; ".join(weight_orders),
             "depends": "The executed dose, and what followed from it."})
     if infusion_orders:
         rows.append({
             "id": "infusion_effect",
             "decision": "Infusion weight basis and effect reference (decision E)",
-            "observation": ("Rates per kilogram converted on the actual weight; the simulated "
-                            "effect follows the absolute mcg/min, calibrated at 70 kg: "
-                            + "; ".join(infusion_orders) + "."),
+            "observation": _observation(INFUSION_EFFECT, infusion_orders),
+            "observation_template": INFUSION_EFFECT, "orders": "; ".join(infusion_orders),
             "depends": "The pressure and heart-rate response recorded after these rates."})
     if blockers and patient_body.rules_apply(state) and ambiguous:
         rows.append({
             "id": "blocker_duration",
             "decision": "Neuromuscular blocker dosing weight (decision C)",
-            "observation": ("The block's duration was measured on the actual weight, the "
-                            "engine's convention, whatever weight the dose was written on: "
-                            + "; ".join(blockers) + "."),
+            "observation": _observation(BLOCKER_DURATION, blockers),
+            "observation_template": BLOCKER_DURATION, "orders": "; ".join(blockers),
             "depends": "How long paralysis lasted, and any decision timed against it."})
     if ventilated and case.get("engine", {}).get("family") == "asthma":
         rows.append({

@@ -667,5 +667,87 @@ ES = {
         'Límite de alcance: {limit}',
     'The record cannot settle this: {reason}.':
         'El registro no puede resolver esto: {reason}.',
+    # A document written in the language its encounter was played in (faculty,
+    # 2026-09-26): the record's observations, references, study requests and
+    # decision headings, which were assembled around their values in English.
+    "HR":
+        "FC",
+    "SBP":
+        "PAS",
+    "DBP":
+        "PAD",
+    "RR":
+        "FR",
+    "CRT":
+        "LLC",
+    "Alertness":
+        "Conciencia",
+    "Extremities":
+        "Extremidades",
+    "Rhythm":
+        "Ritmo",
+    "Heart rate":
+        "Frecuencia cardíaca",
+    "not recorded":
+        "no registrado",
+    "available at {time}":
+        "disponible a los {time}",
+    ", sampled at {time}":
+        ", muestra tomada a los {time}",
+    " and ":
+        " y ",
+    "unchanged":
+        "sin cambio",
+    "Unchanged:":
+        "Sin cambio:",
+    "Changed:":
+        "Cambió:",
+    "{label} at {time}":
+        "{label} a los {time}",
+    "history":
+        "historia",
+    "study result":
+        "resultado de examen",
+    "presentation":
+        "presentación",
+    "procedure":
+        "procedimiento",
+    "clarification":
+        "aclaración",
+    "Based on: {refs}":
+        "Basado en: {refs}",
+    "{study} requested":
+        "solicitud de {study}",
+    "; +{n} more":
+        "; +{n} más",
+    "no result recorded":
+        "sin resultado registrado",
+    "{start} to {end}":
+        "{start} a {end}",
+    "DECISION {n} · {span} · {status}":
+        "DECISIÓN {n} · {span} · {status}",
+    "executed":
+        "ejecutada",
+    "not executed":
+        "no ejecutada",
+    "terminal locked":
+        "cerrada al terminar el encuentro",
+    "clarification required":
+        "requiere aclaración",
+    "information":
+        "información",
+    "Decision {n}":
+        "Decisión {n}",
+    "Reflection {n}":
+        "Reflexión {n}",
+    "Domain {n}":
+        "Dominio {n}",
+    # The convention notes that name this encounter's orders (model_conventions).
+    "Converted on the chart's actual weight, the engine's stated convention while the weight type for each drug is undecided: {orders}.":
+        "Convertido con el peso real de la ficha, la convención declarada del motor mientras el tipo de peso de cada fármaco está pendiente: {orders}.",
+    "Rates per kilogram converted on the actual weight; the simulated effect follows the absolute mcg/min, calibrated at 70 kg: {orders}.":
+        "Dosis por kilo convertidas con el peso real; el efecto simulado sigue los mcg/min absolutos, calibrados a 70 kg: {orders}.",
+    "The block's duration was measured on the actual weight, the engine's convention, whatever weight the dose was written on: {orders}.":
+        "La duración del bloqueo se midió con el peso real, la convención del motor, cualquiera sea el peso con que se escribió la dosis: {orders}.",
 }
 TABLES = {"es": ES}

@@ -218,6 +218,14 @@ def _timestamp(value):
     return _string(value) or "Not recorded"
 
 
+def _evidence_label(label):
+    """"Decision 2" and "Reflection 3" in the document's language; the number is the record's."""
+    match = re.fullmatch(r"(Decision|Reflection) ([\w.:-]+)", label or "")
+    if not match:
+        return label
+    return _t("Decision {n}" if match.group(1) == "Decision" else "Reflection {n}").format(n=match.group(2))
+
+
 def _evidence_index(record):
     """Strict projection: no action summaries, states, or arbitrary dictionaries."""
     payload = record.get("payload") if isinstance(record.get("payload"), dict) else {}
@@ -227,7 +235,7 @@ def _evidence_index(record):
         time = (_minute(details.get("decision_time_min")) if item["kind"] == "decision"
                 else _t("Post-encounter reflection"))
         index[item["ref"]] = {
-            "label": _string(item.get("label")), "time": time,
+            "label": _evidence_label(_string(item.get("label"))), "time": time,
             "input": _string(details.get("learner_input")) if item["kind"] == "decision" else "",
         }
     return index
@@ -266,7 +274,7 @@ def _validated_inputs(report, record):
 
 def _domain_label(domain_id):
     """"D3" is a decision in these documents; a rubric domain is spelled out."""
-    return "Domain " + str(domain_id).lstrip("Dd")
+    return _t("Domain {n}").format(n=str(domain_id).lstrip("Dd"))
 
 
 def _history_section(record, styles, *, compact):
@@ -280,6 +288,8 @@ def _history_section(record, styles, *, compact):
     """
     import history_review
     from faculty_analysis import case_id_of
+    from history_topics import topic_label
+    from language import current as _reader_language
     summary = history_review.review(record, case_id_of(record))
     if not summary["offered"] and not summary["exchanges"]:
         return []
@@ -303,7 +313,7 @@ def _history_section(record, styles, *, compact):
                           f"- {item['answered']}", "small", "muted"))
     if summary["not_named"]:
         flow.append(p(_t("Available and not asked about: {topics}.").format(
-            topics=", ".join(_t(row["label"]) for row in summary["not_named"]))))
+            topics=", ".join(topic_label(row["topic"], _reader_language()) for row in summary["not_named"]))))
         flow.append(p("The patient answers for the whole encounter, so these were available. "
                       "Not asking is an omission of the resident's, not a limitation of the "
                       "record, and it is not a reason to withhold a judgement.",
@@ -335,6 +345,9 @@ def _conventions_section(record, styles, *, compact):
     flow = [p(_t("ENGINE CONVENTIONS THIS ENCOUNTER TOUCHED"), "eyebrow", "label"),
             p(_t(model_conventions.RULE), "small", "muted")]
     for row in rows[: 4 if compact else 8]:
+        if row.get("observation_template"):
+            # The orders are the record's; the sentence around them is the document's.
+            row = {**row, "observation": _t(row["observation_template"]).format(orders=row["orders"])}
         if compact:
             flow.append(p(f"{_t(row['decision'])}: {_t(row['depends'])}", "small", "muted"))
         else:
@@ -735,7 +748,7 @@ def _compact_references(refs, index, maximum=3):
             # surface uses. Until 2026-09-24 this was the stored position plus
             # one, which is a different decision whenever a question, an
             # examination or a held order came before it.
-            number = re.fullmatch(r"Decision (\d+)", item["label"] or "")
+            number = re.fullmatch(r"Decisi(?:on|ón) (\d+)", item["label"] or "")
             anchors.append(f"D{number.group(1)} {item['time']}" if number
                            else f"{item['label']} {item['time']}")
         else:

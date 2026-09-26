@@ -674,6 +674,31 @@ CORRECTIONS = (
         "preservation": None,
     },
     {
+        "id": "C-2026-09-26-23",
+        "date": "2026-09-26",
+        "title": "Un documento en español dice en español sus propias palabras",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("Lo que el documento arma alrededor de sus valores salía en inglés dentro de un documento en "
+                   "español: encabezados de decisión, «Based on», signos observados y sus valores, «Changed / "
+                   "Unchanged», nombres de exámenes y campos de resultado, órdenes (ingresos, interconsultas, "
+                   "solicitudes, oxígeno), temas de historia, dominios, notas de convenciones y la trazabilidad "
+                   "de la rúbrica. Ahora se escriben en español con el catálogo revisado (sin IA); dosis, unidades, "
+                   "números y nombres de fármacos no cambian (decisión 16) y el camino en inglés queda idéntico. "
+                   "Quedan fuera, en sus propias etapas: el texto del modelo, la narrativa del caso y los títulos "
+                   "oficiales de los objetivos del currículo (redacción oficial, 2026-09-23)."),
+        "authorised_by": INSTRUCTION_2026_09_26C,
+        "affects": {"modules": ["management_trace_report", "faculty_report", "report_presentation",
+                                "rubric_presentation", "model_conventions", "language", "history_topics",
+                                "report_language"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_document_language.py::test_a_spanish_document_says_its_own_words_in_spanish",
+                  "test_document_language.py::test_an_order_is_written_in_spanish_with_its_dose_untouched",
+                  "test_document_language.py::test_the_history_topics_have_spanish_names",
+                  "test_the_documents_speak_the_readers_language.py::test_no_document_word_stays_english_when_the_reader_chose_spanish"],
+        "preservation": None,
+    },
+    {
         "id": "C-2026-09-27-01",
         "date": "2026-09-27",
         "title": "Peso y talla en los 31 casos del banco y en la ficha, sólo para encuentros nuevos",
