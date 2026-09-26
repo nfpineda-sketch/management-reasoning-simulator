@@ -206,3 +206,38 @@ intentos equivalentes.
     vista neutral identificada, y el sudor sigue en el examen escrito.
   - No se sustituye por otra identidad de piel más clara: eso sería justamente asociar el hallazgo a un
     tono de piel.
+- **V11 (06:52 UTC):** ancla y somnolienta con `bank-1.3`, aceptadas a la primera: **2 solicitudes**, 48 s.
+  Acumulado: **US$2,4959; 26 de 30.** Brazos y manos sin cánula: la corrección funcionó. En la esquina
+  del ancla volvieron a aparecer bolsas colgadas, que la edición del estado quitó. La instrucción sobre
+  la sala no se cumple siempre, y el revisor automático no lo detecta siempre.
+
+## Cierre del piloto (06:53 UTC)
+
+**No se hacen más solicitudes pagadas esta noche.** Quedan 4 solicitudes y US$7,50 sin usar: no son una
+meta.
+
+| | |
+|---|---|
+| Solicitudes de imagen | **26 de 30**: 5 creaciones, 11 ediciones, 10 correcciones. 8 de ellas fueron el error de la herramienta. |
+| Revisiones automáticas | 26 (no cuentan entre las 30; su costo sí cuenta) |
+| Reintentos por falla del proveedor | 0 |
+| Fallas o *timeouts* del proveedor | 0 |
+| Gasto | **US$2,4959**, todo calculado con el uso informado por el proveedor, a la tarifa verificada para las imágenes y a la cota para las revisiones. La factura real está en tu cuenta de OpenAI. |
+| Saldo | **US$7,5041 y 4 solicitudes** |
+
+Imágenes utilizables:
+
+- **V22:** ancla, somnoliento, obnubilado y recuperado.
+- **V18:** ancla.
+- **V11:** ancla y somnolienta.
+
+Todas quedan **pendientes de revisión visual y clínica**: el revisor automático no es una aprobación.
+
+Rechazadas o retiradas, con su motivo, fuera de la selección y visibles para tu revisión:
+
+- las 10 del estado con mascarilla;
+- las 4 del sudor marcado de V18;
+- las primeras anclas de V22 y V11 y sus estados.
+
+Todo viaja en `assets/patient_images/`: las imágenes, su procedencia, los 17 trabajos y las 72 filas de
+este registro. La app lo importa a su base al arrancar, una vez, sin sobrescribir nada.
