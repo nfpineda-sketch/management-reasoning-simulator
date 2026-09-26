@@ -384,7 +384,7 @@ def test_the_repository_pack_gives_a_new_database_the_pilots_photographs_without
     pilot = world.bank.budget_summary(ledgers["imagenes-2026-09-26"])
     assert pilot["requests"] == 26 and pilot["calls_sent"] == 52
     second = world.bank.budget_summary(ledgers["imagenes-2026-09-26-b"])
-    assert second["requests"] == 63 and second["committed"] <= second["limit_micro"]
+    assert second["requests"] == 70 and second["committed"] <= second["limit_micro"]
 
 
 def test_the_image_issue_is_offered_only_for_a_state_that_failed(world):

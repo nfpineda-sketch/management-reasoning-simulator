@@ -49,6 +49,14 @@ PLAN = (
     {"batch": 4, "identity": "V09", "case": "pneumonia_46f"},
     {"batch": 4, "identity": "V17", "case": "opioid_35m"},
     {"batch": 4, "identity": "V12", "case": "pulmonary_edema_75f"},
+    # Batch 5 (identities 1.1): only the reference photographs of heavier people, to see
+    # whether the generator draws them realistically and with dignity before any state is
+    # paid for. Run with --anchors-only; the case only names who the person could be.
+    {"batch": 5, "identity": "V08", "case": "bradycardia_bb_54f"},
+    {"batch": 5, "identity": "V19", "case": "acs_48m_wellens"},
+    {"batch": 5, "identity": "V33", "case": "bradycardia_bb_54f"},
+    {"batch": 5, "identity": "V35", "case": "pneumonia_46f"},
+    {"batch": 5, "identity": "V38", "case": "gi_bleed_57m"},
 )
 
 

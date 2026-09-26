@@ -34,7 +34,57 @@ cada una (C-2026-09-26-09):
   acs_52m_de_winter, acs_70f_left_main, hypoglycemia_28m, obstructive_pyelonephritis_58f,
   trauma_limb_hemorrhage_27m). Probar otro modelo sería un presupuesto nuevo.
 
-## Las preguntas originales
+## Contextura corporal: lo que falta y una decisión nueva (2026-09-26, noche)
+
+**Lo que faltaba.** Las 30 personas del banco tenían sólo «slim», «average» o «sturdy», y el generador
+las dibujó a todas delgadas o en forma. Ninguna con sobrepeso u obesidad, cuando en ambas ciudades son la
+mayoría de los adultos:
+
+| | Normal | Sobrepeso | Obesidad |
+|---|---|---|---|
+| EE.UU., NHANES 2021–23 (adultos ≥20) | ~28% | 32% | 40% (9% severa); 46% entre 40 y 59 años |
+| Cleveland (ciudad), CDC 2022 | | | 45% |
+| Chile, ENS 2016–17 (≥15 años) | ~26% | 40% | 34% (3% mórbida) |
+
+En tono de piel, el banco tenía los seis tonos por igual. Cleveland es 47% afroamericana, 32% blanca no
+hispana y 13% hispana; Santiago es mayoritariamente mestiza, con 9% que se declara mapuche (Censo 2017) y
+cerca de 13% de migrantes (sobre todo venezolanos, peruanos, colombianos y haitianos). El tono de piel es
+una aproximación gruesa de todo eso; el banco no usa categorías raciales.
+
+**Lo que hice (identidades 1.1, C-2026-09-26-10):**
+
+- La contextura es una dimensión propia: normal, sobrepeso, obesidad y obesidad severa, en palabras
+  clínicas simples y «realista, con dignidad, nunca exagerada»; la normal dice «no atlética».
+- Diez personas nuevas (V31–V40), casi todas más pesadas y la mayoría en los tonos oliva y cálidos de
+  Santiago y del Cleveland hispano; y las catorce que aún no tenían foto recibieron la contextura que la
+  distribución necesita. Las dieciséis ya fotografiadas no cambian: su foto es cómo se ven.
+- Resultado: 40 personas, 55% con sobrepeso u obesidad (antes, ninguna). Tonos: 5, 6, 10, 6, 7 y 6 del
+  más claro al más oscuro. La contextura no depende del tono ni del diagnóstico; cada banda de edad y sexo
+  sigue teniendo un tono claro, uno medio y uno oscuro.
+- Piloto de cinco referencias (US$0,36): el generador dibuja bien sobrepeso, obesidad y obesidad severa.
+
+**La contextura sigue al peso del caso**, como la edad y el sexo. Y aquí está la decisión:
+
+## 11. Peso de los casos (nueva, tuya)
+
+Ningún caso del banco declara peso. El lector le pide el peso al residente para las dosis por kilo, pero
+el motor calcula a **70 kg** las infusiones por kilo, la diuresis por kilo y el volumen corriente. Una foto
+de un paciente obeso en un caso que el motor trata como de 70 kg llevaría al residente a estimar, dosificar
+y juzgar la diuresis con un peso que el motor no usa. Por eso hoy **los casos sin peso sólo muestran
+contextura normal o sobrepeso**, y la obesidad queda para los casos generados por IA, que sí traen peso.
+
+Para que los obesos aparezcan en los casos del banco, cada caso necesita un **peso (y talla) verificados**:
+es un dato clínico que cambia dosis y fisiología, así que es tu decisión. Te propongo:
+
+- Repartir pesos entre los 31 casos según la distribución real de su edad y sexo (del orden de 8 normales,
+  11 con sobrepeso, 10 obesos y 2 con obesidad severa), **independientes del diagnóstico** para que la
+  foto no se vuelva pista.
+- Mostrar el peso en la ficha del paciente, como en un servicio de urgencia real.
+- Te preparo la tabla caso por caso para que la revises antes de aplicarla.
+
+La otra opción es dejar los casos sin peso: el banco se ve más real que antes (sobrepeso incluido), pero la
+obesidad sólo aparece en casos generados.
+
 
 ## Revisar lo generado
 

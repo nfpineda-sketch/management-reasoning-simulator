@@ -343,3 +343,23 @@ asma y V17 · cólico renal (malestar marcado con la cara tranquila), V02 · ana
 
 El paquete del repositorio lleva las 88 imágenes, los 68 trabajos y los registros de los dos presupuestos
 (72 y 202 filas), más tus 14 aprobaciones de las 7 fotos del piloto en `approvals.json`.
+
+## Contextura corporal (2026-09-26, noche)
+
+- **Pedido:** «todos se ven demasiado atléticos»; acercar el banco a los pacientes reales de Cleveland y
+  Santiago, con obesos.
+- **Identidades 1.1:** la contextura pasa a ser una dimensión propia (normal, sobrepeso, obesidad,
+  obesidad severa), dicha en el prompt con palabras clínicas simples, «realista y con dignidad, nunca
+  exagerada»; la normal dice «no atlética». Diez personas nuevas (V31–V40) y las catorce sin foto
+  reciben la contextura que la distribución necesita. Las dieciséis ya fotografiadas no cambian.
+- **La contextura sigue el peso del caso**, como la edad y el sexo. Un caso sin peso se calcula a 70 kg,
+  así que sólo admite contextura normal o sobrepeso; la obesidad queda para casos con un peso que la
+  justifique (hoy, los generados por IA, que traen peso).
+- **Tanda 5 (antes):** sólo referencias de cinco personas más pesadas (V08, V19, V33, V35, V38), para ver
+  si el generador las dibuja bien antes de pagar ningún estado. Reserva máxima US$2,50; costo esperado
+  ~US$0,25.
+- **Tanda 5 (después):** 7 solicitudes, US$0,36. Aceptadas: V08 (sobrepeso), V19 y V33 (obesidad), V38
+  (obesidad severa). V35 (obesidad) rechazada dos veces por el mismo «tratamiento activo» de antes; a mi
+  vista está bien: queda para tu revisión. Las cinco se ven realistas y con dignidad, sin caricatura, en
+  tonos claro, medio y oscuro. Acumulado de la segunda autorización: **US$5,722, 70 solicitudes; saldo
+  US$4,278.**

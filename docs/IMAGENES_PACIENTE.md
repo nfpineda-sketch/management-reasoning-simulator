@@ -12,6 +12,9 @@ reutilización y evolución con el paciente. Sin video, GIF ni animación. El co
   US$4,637. 13 personas nuevas, 24 estados de llegada; **23 de 31 casos** con foto de llegada (antes, 1).
   El detalle, en `docs/IMAGENES_REGISTRO.md`.
 - La sección de inventario de abajo es la del piloto (26 imágenes); el paquete tiene ahora 88.
+- **Contextura (noche):** el banco pasa a 40 personas, 55% con sobrepeso u obesidad; la contextura sigue
+  el peso del caso. Hay una decisión tuya pendiente sobre el peso de los casos: ver
+  `docs/IMAGENES_DECISIONES_CLINICAS.md`, decisión 11.
 
 ## En una frase
 

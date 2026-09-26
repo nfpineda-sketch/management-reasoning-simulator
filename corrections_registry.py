@@ -399,6 +399,27 @@ CORRECTIONS = (
                   "test_scene_pipeline.py::test_without_an_account_database_no_picture_is_paid_for"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-26-10",
+        "date": "2026-09-26",
+        "title": "Imágenes del paciente: contextura corporal realista, que sigue el peso del caso",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Las 30 personas del banco se dibujaban delgadas o atléticas, cuando la mayoría de los adultos "
+                   "de Cleveland y Santiago tiene sobrepeso u obesidad (NHANES 2021-23, CDC 2022, ENS 2016-17). "
+                   "Identidades 1.1: la contextura es una dimensión propia (normal, sobrepeso, obesidad, obesidad "
+                   "severa) nombrada en el prompt con palabras clínicas y respetuosas; diez personas nuevas; 55% "
+                   "con sobrepeso u obesidad, repartidas en todos los tonos. La contextura sigue el peso del caso: "
+                   "un caso sin peso, que el motor calcula a 70 kg, sólo muestra contextura normal o sobrepeso. "
+                   "Las personas ya fotografiadas no cambian."),
+        "authorised_by": "Instrucción docente del 2026-09-26 («creo que todos se ven demasiado atléticos»)",
+        "affects": {"modules": ["image_identities", "image_arrivals"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_image_identities.py::test_a_case_without_a_weight_shows_only_a_body_that_could_weigh_the_engines_70_kg",
+                  "test_image_identities.py::test_a_heavier_case_draws_a_heavier_person",
+                  "test_image_identities.py::test_the_bank_is_no_longer_all_slim_and_heavier_bodies_span_every_tone"],
+        "preservation": None,
+    },
 )
 
 
