@@ -55,8 +55,14 @@ def _case_label(record):
 
 
 def _trace_pdf(context, record):
-    """The learner's own document, re-rendered from the analysis already saved."""
-    from management_trace_store import ManagementTraceStore
+    """The learner's own document, re-rendered from the analysis already saved.
+
+    Rendered against the frozen evidence the analysis was written from and saved
+    against (``analysis_payload_from_session``), as the encounter's own page does.
+    Until 2026-09-26 it was handed the whole saved record, which that check
+    refuses, so "My progress" said no reading was saved beside a valid one.
+    """
+    from management_trace_store import ManagementTraceStore, analysis_payload_from_session
     from management_trace_report import render_management_trace_pdf
     store = ManagementTraceStore(context["store"])
     report = store.get_latest(context["token"], record["id"])
@@ -64,7 +70,7 @@ def _trace_pdf(context, record):
         return None
     session = (record.get("payload") or {}).get("session") or {}
     return render_management_trace_pdf(
-        report, record["payload"], case_label=_case_label(record),
+        report, analysis_payload_from_session(session), case_label=_case_label(record),
         learner_label=str(context["user"]["username"]),
         review_completed=bool(session.get("review_completed")),
         adaptation_plan=session.get("adaptation_plan"))
