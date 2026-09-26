@@ -76,14 +76,65 @@ def test_a_description_or_an_expectation_is_not_an_order(text):
     assert _read(text) == []
 
 
+# Read since 2026-09-26 (they were the known gaps below until then).
+@pytest.mark.parametrize("text, expected", [
+    ("Glucosa capilar", [{"type": "diagnostic", "diagnostic": "poc_glucose"}]),
+    ("Glicemia capilar", [{"type": "diagnostic", "diagnostic": "poc_glucose"}]),
+    ("Hemoglucotest ahora", [{"type": "diagnostic", "diagnostic": "poc_glucose"}]),
+    ("Nueva vía venosa", [{"type": "vascular_access", "operation": "start"}]),
+    ("Vía venosa nueva", [{"type": "vascular_access", "operation": "start"}]),
+    ("2 vvp gruesas", [{"type": "vascular_access", "operation": "start"}]),
+    ("VVP", [{"type": "vascular_access", "operation": "start"}]),
+    ("Consulto a endocrinología", [{"type": "consult", "service": "endocrinology"}]),
+    ("Bolo de SF 500 ml EV", [{"type": "fluid", "volume_ml": 500.0, "fluid_type": "normal saline", "route": "IV"}]),
+])
+def test_orders_written_as_on_a_chart(text, expected):
+    assert _read(text) == expected
+
+
+@pytest.mark.parametrize("text", ["Vía venosa", "Vía venosa permeable", "VVP permeable"])
+def test_a_line_the_patient_has_is_not_an_order_for_a_new_one(text):
+    assert _read(text) == []
+
+
+@pytest.mark.parametrize("text, grams", [
+    ("Bolo de glucosado al 50% 50 mL EV", 25.0), ("Bolo de dextrosa 25 g EV", 25.0),
+    ("2 ampollas de glucosa al 30% 20 ml cada una EV", 12.0),
+])
+def test_glucose_written_as_a_bolus_or_by_the_ampoule(text, grams):
+    [action] = _read(text)
+    assert (action["type"], action["dose_g"], action["route"]) == ("dextrose", grams, "IV")
+
+
+def test_ampoules_with_no_volume_are_an_order_whose_dose_is_asked_for():
+    """Dropped in silence until 2026-09-26; now the same order as with a verb."""
+    assert _read("2 ampollas de glucosado al 30%") == [{"type": "dextrose", "dose_g": None, "route": None}]
+    assert _read("Doy 2 ampollas de glucosa al 30%") == [{"type": "dextrose", "dose_g": None, "route": None}]
+
+
+def test_ampoules_whose_volume_may_be_the_total_or_each_ask_for_the_total():
+    [question] = parse_family_actions("Doy 2 ampollas de glucosa al 30% de 20 ml")["actions"]
+    assert question["type"] == "clarification" and "total" in question["message"]
+
+
+@pytest.mark.parametrize("text", ["Suero glucosado al 5% a 100 ml/h", "Inicio SG 5% a 100 ml/h", "D5 a 100 ml/h",
+                                  "Suero glucosado 5% 500 ml", "Glucosado al 20% a 50 ml/h"])
+def test_a_glucose_infusion_the_engine_does_not_run_is_recorded_not_converted(text):
+    """Read as the 10% infusion until 2026-09-26. Faculty decision 3: indicated, effect not modelled."""
+    parsed = parse_family_actions(text)
+    assert parsed["actions"] == []
+    assert parsed["recognized_future_actions"] == [text.lower()]
+
+
+def test_the_rest_of_the_submission_runs_beside_an_infusion_that_is_not_modelled():
+    parsed = parse_family_actions("Doy 25 g de glucosa ev y suero glucosado al 5% a 100 ml/h")
+    assert [(a["type"], a.get("dose_g")) for a in parsed["actions"]] == [("dextrose", 25.0)]
+    assert parsed["recognized_future_actions"] == ["suero glucosado al 5% a 100 ml/h"]
+
+
 GAPS = [
-    ("Coloco una vía intraósea", "vascular_access", "no hay acción de acceso intraóseo"),
-    ("Reviso la vía venosa", "examination", "revisar la vía no es una acción ni un examen"),
-    ("Consulto a endocrinología", "consult:endocrinology", "el servicio no se reconoce"),
-    ("2 ampollas de glucosado al 30%", "dextrose", "una ampolla sin volumen se pierde"),
-    ("Bolo de glucosado al 50% 50 mL EV", "dextrose", "'glucosado' no es todavía un nombre del agente"),
-    ("Glucosa capilar", "diagnostic", "sin verbo no se lee como pedido"),
-    ("Nueva vía venosa", "vascular_access", "sin verbo no se lee como orden"),
+    ("Coloco una vía intraósea", "vascular_access", "no hay acción de acceso intraóseo (DC3)"),
+    ("Reviso la vía venosa", "examination", "revisar la vía no es una acción ni un examen (DC2)"),
 ]
 
 

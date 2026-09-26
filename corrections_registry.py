@@ -204,6 +204,67 @@ CORRECTIONS = (
                   "test_hypoglycemia_reader.py::test_known_gaps_of_the_reader"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-26-01",
+        "date": "2026-09-26",
+        "title": "El panel de la rúbrica conserva sus botones, la telaraña su etiqueta superior y el rechazo nombra el evento",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Visto en la app de desarrollo al revisar un encuentro de la tanda: copias atenuadas de «Save "
+                   "draft» y «Confirm assessment» bajo el rechazo (cada dominio «no evaluable» agrega un campo y la "
+                   "fila de botones cambiaba de lugar entre recargas), «Severity» cortada por el borde del dibujo, "
+                   "y un rechazo que no decía qué evento. La regla no cambió: confirmar un evento que el registro "
+                   "contradice exige un motivo escrito."),
+        "authorised_by": "Instrucción docente del 2026-09-26 (captura del panel de rúbrica)",
+        "affects": {"modules": ["rubric_portal", "rubric_radar", "rubric_store"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_rubric_portal.py::test_the_buttons_keep_their_place_while_domains_change",
+                  "test_rubric_radar.py::test_the_label_at_the_top_is_inside_the_drawing",
+                  "test_the_record_settles_what_it_can.py::test_confirming_an_event_the_record_contradicts_needs_a_written_reason"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-02",
+        "date": "2026-09-26",
+        "title": "«My progress» reconstruye el Management Trace del residente desde el análisis guardado",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Escenario 1 de la tanda: «No AI reading of this encounter was saved» junto a un análisis "
+                   "guardado y válido. El portal del residente comprobaba el análisis contra el registro completo "
+                   "y no contra la evidencia congelada con que se escribió y guardó."),
+        "authorised_by": "Instrucción docente del 2026-09-26 (pendientes técnicos durante la noche)",
+        "affects": {"modules": ["resident_portal"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_the_resident_gets_their_management_trace.py::test_my_progress_rebuilds_the_saved_management_trace",
+                  "test_the_resident_gets_their_management_trace.py::test_an_encounter_without_a_saved_analysis_still_says_so"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-26-03",
+        "date": "2026-09-26",
+        "title": "El lector: órdenes de glucosa, vías e interconsultas escritas como en una ficha",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Brechas técnicas de las verificaciones focalizadas del lector, sin decisión clínica: «Glucosa "
+                   "capilar», «Nueva vía venosa» y «2 VVP» sin verbo se perdían; «Bolo de…» se devolvía como "
+                   "ilegible; «glucosado» no nombraba el agente; «2 ampollas de glucosado al 30%» se perdía sin "
+                   "aviso y «2 ampollas… 20 mL cada una» se leía como una; «suero glucosado al 5% a 100 mL/h» se "
+                   "leía como la infusión al 10 % y ahora queda indicado, sin efecto modelado (decisión 3); "
+                   "«Consulto a endocrinología» preguntaba qué especialista. Las etiquetas de interconsulta se leen "
+                   "en español. Quedan como brechas la vía intraósea (DC3) y revisar la vía (DC2)."),
+        "authorised_by": "Instrucción docente del 2026-09-26 (pendientes técnicos durante la noche)",
+        "affects": {"modules": ["family_parser", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_hypoglycemia_reader.py::test_orders_written_as_on_a_chart",
+                  "test_hypoglycemia_reader.py::test_a_line_the_patient_has_is_not_an_order_for_a_new_one",
+                  "test_hypoglycemia_reader.py::test_glucose_written_as_a_bolus_or_by_the_ampoule",
+                  "test_hypoglycemia_reader.py::test_ampoules_with_no_volume_are_an_order_whose_dose_is_asked_for",
+                  "test_hypoglycemia_reader.py::test_ampoules_whose_volume_may_be_the_total_or_each_ask_for_the_total",
+                  "test_hypoglycemia_reader.py::test_a_glucose_infusion_the_engine_does_not_run_is_recorded_not_converted",
+                  "test_hypoglycemia_reader.py::test_the_rest_of_the_submission_runs_beside_an_infusion_that_is_not_modelled",
+                  "test_presentation_language.py::test_a_consult_reads_in_spanish_whatever_the_service"],
+        "preservation": None,
+    },
 )
 
 

@@ -41,7 +41,7 @@ _AGENTS = {
         "prednisone": r"prednisone|prednisona", "methylprednisolone": r"methylprednisolone|metilprednisolona",
         "hydrocortisone": r"hydrocortisone|hidrocortisona", "dexamethasone": r"dexamethasone|dexametasona",
     },
-    "dextrose": {"dextrose": r"dextrose|dextrosa|glucosa(?:\s+intravenosa)?|d50|d10"},
+    "dextrose": {"dextrose": r"dextrose|dextrosa|glucosa(?:\s+intravenosa)?|glucosado|d50|d10"},
     "magnesium": {"magnesium sulfate": r"magnesium(?:\s+sulfate)?|sulfato\s+de\s+magnesio|magnesio|mgso4|mg\s*so4"},
     "thrombolysis": {"tenecteplase": r"tenecteplase|tenecteplasa|tnk", "alteplase": r"alteplase|alteplasa|rt-?pa|\btpa\b",
                      "streptokinase": r"streptokinase|estreptoquinasa"},
@@ -136,7 +136,8 @@ _DIAGNOSTICS = {
                   r"bun|urea|nitrogeno ureico|blood urea nitrogen|"
                   r"perfil bioquimico|perfil hepatico|pruebas hepaticas|liver (?:panel|function tests)|lfts",
     "temperature": r"temperature|temperatura|temp",
-    "poc_glucose": r"poc glucose|blood glucose|blood sugar|fingerstick|finger stick|glucose|glucosa|glicemia|glucemia|hgt|hemoglucotest",
+    "poc_glucose": r"poc glucose|blood glucose|blood sugar|fingerstick|finger stick|"
+                   r"(?:glucosa|glicemia|glucemia)\s+capilar|glucose|glucosa|glicemia|glucemia|hgt|hemoglucotest",
     "chest_xray": r"chest x[- ]?ray|chest radiograph|cxr|radiografia(?:\s+(?:de\s+)?torax)?|"
                   r"rx(?:\s+de)?(?:\s+torax)?|placa(?:\s+(?:de\s+)?torax)?|x[- ]?rays?|radiograph",
     "urinalysis": r"urinalysis|urine analysis|urine dip|orina completa|examen de orina",
@@ -213,6 +214,14 @@ _SUPPORT_ORDERS = (
 
 
 _NAMES_A_DRUG = None
+
+# A new peripheral line asked for without a verb (2026-09-26): a count or
+# "nueva" before it, or "VVP" standing alone, which is how a chart writes it.
+_VERBLESS_LINE = re.compile(
+    r"\s*(?:(?:(?:nuevas?|otras?|\d+|una|dos)\s+)(?:vias?\s+venosas?(?:\s+perifericas?)?|vias?\s+perifericas?|vvps?)"
+    r"|vvps?"
+    r"|vias?\s+venosas?(?:\s+perifericas?)?\s+nuevas?)"
+    r"(?:\s+(?:nuevas?|gruesas?|de\s+grueso\s+calibre|bilaterales?|perifericas?))*\s*\.?\s*")
 
 
 def _support_order(body, verb):
@@ -494,6 +503,35 @@ _UNMODELED_ORDER = re.compile(
     r"auto-?inyector|auto-?injector|epi-?pen)\b"
     r"|\b(?:indic\w*|recet\w*|prescrib\w*)\b.*\b(?:al|para\s+el)\s+alta\b"
     r"|\b(?:prescribe|prescribed)\b.*\b(?:at|on|for)\s+discharge\b")
+
+# A glucose solution at a concentration the engine does not run as an infusion.
+# It models a dextrose dose and the 10% infusion; "suero glucosado al 5% a 100
+# ml/h" was read as the 10% infusion (hypoglycaemia reader checks, 2026-09-26).
+# A concentration below 10%, or any other than 10% given at a rate, is recorded
+# as the resident's indication with its effect not modelled (faculty decision 3),
+# never converted. A bolus written as concentration and volume ("glucosa al 30%
+# 50 mL") is still a dose (faculty decision 2).
+_DEXTROSE_SOLUTION = re.compile(r"\b(?:suero\s+glucosado|solucion\s+glucosada|glucosado|sg|dextros[ae]|glucosa)\b"
+                                r"|\bd\s*(?=\d)")
+_SOLUTION_PERCENT_ANY = re.compile(r"(\d+(?:[.,]\d+)?)\s*%")
+_D_NUMBER = re.compile(r"\bd\s*(\d+(?:[.,]\d+)?)\s*w?\b")
+_INFUSION_CONTEXT = re.compile(r"\d+(?:[.,]\d+)?\s*(?:ml|cc)\s*(?:/|\s+(?:por|per|cada)\s+)\s*(?:h|hr|hora|hour)\b"
+                               r"|\binfusi|\bgoteo\b|\bbic\b|\bmantenci|\bmaintenance\b")
+
+
+def _unmodelled_dextrose(piece):
+    """True for a glucose solution the engine would misread as its 10% infusion."""
+    text = str(piece or "").lower()
+    if not _DEXTROSE_SOLUTION.search(text):
+        return False
+    match = _SOLUTION_PERCENT_ANY.search(text) or _D_NUMBER.search(text)
+    if not match:
+        return False
+    percent = float(match.group(1).replace(",", "."))
+    if percent == 10:
+        return False
+    return percent < 10 or bool(_INFUSION_CONTEXT.search(text))
+
 
 # The medicine an unmodelled indication names, and whether it is for home.
 _UNMODELLED_CLASSES = (
@@ -867,6 +905,19 @@ def _per_kilo_order(kind, agent, match, text):
     return action
 
 
+_AMPOULE_COUNT = re.compile(r"\b(\d+|una|dos|tres|cuatro|one|two|three|four)\s+(?:ampollas?|amps?|ampoules?)\b")
+_COUNT_WORDS = {"una": 1, "one": 1, "dos": 2, "two": 2, "tres": 3, "three": 3, "cuatro": 4, "four": 4}
+
+
+def _ampoule_count(text):
+    """How many ampoules an order names, or 1."""
+    match = _AMPOULE_COUNT.search(str(text or "").lower())
+    if not match:
+        return 1
+    word = match.group(1)
+    return float(word) if word.isdigit() else float(_COUNT_WORDS[word])
+
+
 def _dextrose_from_solution(text):
     """(grams, basis, percent, ml) for "glucosa al 30% 50 ml", or None: 30% x 50 mL = 15 g."""
     percent = _SOLUTION_PERCENT.search(text)
@@ -918,6 +969,17 @@ def _medication(text, kind, agent):
             # Converted, and said so: the grams are the resident's solution, not a
             # dose the application chose (faculty decision 2, 2026-09-25).
             grams, basis, share, ml = solution
+            count = _ampoule_count(text)
+            if count > 1:
+                # "2 ampollas de glucosa al 30% 20 mL cada una" is two ampoules, and
+                # was read as one (2026-09-26). Without "cada una" the volume may be
+                # the total or each, so the total is asked for, never guessed.
+                if not re.search(r"\bcada\s+una\b|\bc/u\b|\beach\b", text):
+                    return _clarification(
+                        f"Write the total dextrose: the grams, or the concentration with the total "
+                        f"volume. {count:g} ampoules with {ml:g} mL may mean {ml:g} mL in all or in each.")
+                grams, basis = round(grams * count, 2), f"{count:g} × {share:g}% × {ml:g} mL"
+                ml = ml * count
             action.update(dose_g=grams, dose_basis=basis, solution_percent=share, solution_ml=ml)
         return action
     return {"type": kind, "agent": agent, "dose_mg": mg, "route": route}
@@ -1196,7 +1258,7 @@ def _parse_piece_core(piece, inherited=None):
         # gives the blood makes the sentence a transfusion instead.
         crossmatch = diagnostic == "crossmatch" and match and not _TRANSFUSING.search(body)
         if match and (verb in _DIAG_VERBS or crossmatch
-                      or re.fullmatch(r"\s*(?:" + pattern + r")\s*\??", body)):
+                      or re.fullmatch(r"\s*(?:" + pattern + r")(?:\s+(?:ahora|ya|now|stat|urgente))?\s*\??", body)):
             diagnostics.append((match.start(), {"type": "diagnostic", "diagnostic": diagnostic}))
     if diagnostics:
         return [action for _, action in sorted(diagnostics, key=lambda x: x[0])], verb or "order"
@@ -1253,7 +1315,22 @@ def _parse_piece_core(piece, inherited=None):
         # analgesia oral y control en 7 dias" produced no action and no question
         # at all -- the closing decision of the encounter, lost in silence
         # (2026-09-23).
-        if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start
+        # "Nueva vía venosa", "2 VVP gruesas": a new line as written on a chart.
+        # Only forms that ask for one: "vía venosa permeable" describes the line
+        # the patient has, and whether "reviso la vía" is an examination is a
+        # faculty decision (docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md, DC2).
+        if _VERBLESS_LINE.fullmatch(body):
+            return [{"type": "vascular_access", "operation": "start"}], None
+        # "Bolo de dextrosa 25 g EV" and "bolo de SF 500 mL" are orders as written
+        # on a chart; they were quoted back as unreadable (hypoglycaemia reader
+        # checks, 2026-09-26).
+        bolus_start = bool(re.match(r"(?:bolo|bolus)\s+(?:de\s+|of\s+)?\S", body))
+        # "2 ampollas de glucosado al 30%": a count of ampoules starts an order too;
+        # without a volume the engine asks for the dose instead of the order being
+        # dropped in silence (2026-09-26).
+        ampoule_start = bool(re.match(r"(?:\d+|una|dos|tres|one|two|three)\s+(?:ampollas?|amps?|ampoules?)\b", body))
+        if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start or bolus_start
+                or ampoule_start
                 or re.match(route_first + shorthand + r"\b", body)
                 or re.match(r"(?:alta|discharge|hospitaliza|ingresa|traslada|admit|transfer)", body)):
             return [], None
@@ -1282,6 +1359,13 @@ def _parse_piece_core(piece, inherited=None):
                                           r"ureteral\s+stent|stent\s+ureteral|"
                                           r"desobstru|descompresi[oó]n\s+(?:de\s+la\s+)?v[ií]a\s+urinaria"),
                               ("surgery", r"cirug[ií]a general|general surgery|cirujano"),
+                              # Named and asked "which specialist?" all the same
+                              # (hypoglycaemia reader checks, 2026-09-26).
+                              ("endocrinology", r"endocrinolog|diabetolog"),
+                              ("nephrology", r"nefrolog|nephrolog"),
+                              ("neurology", r"neurolog"),
+                              ("internal medicine", r"medicina\s+interna|internal\s+medicine|internista"),
+                              ("toxicology", r"toxicolog|poison\s+control"),
                               ("ICU", r"\bicu\b|\buci\b|intensive care|cuidados intensivos")):
             if re.search(pattern, body):
                 service = name
@@ -1595,7 +1679,8 @@ def _parse_piece_core(piece, inherited=None):
         # glucose written as its solution ("D50 50 mL IV", "dextrosa al 50% 50 mL")
         # carries its dose; until 2026-09-25 it was dropped without a word.
         if (verb or re.search(r"\d\s*(?:mcg|ug|mg|g|units?|ui)\b", body)
-                or (kind == "dextrose" and _dextrose_from_solution(body))):
+                or (kind == "dextrose" and (_dextrose_from_solution(body)
+                                            or re.search(r"\bampollas?\b|\bamps?\b|\d\s*%", body)))):
             if _operation(verb) == "continue":
                 # "Manten la heparina" is a decision not to change anything. The
                 # engine answers with what is already recorded instead of holding
@@ -1893,7 +1978,7 @@ def parse_family_actions(text) -> dict:
                 reasoning_head = True
                 inherited = None
                 continue
-            if _UNMODELED_ORDER.search(piece):
+            if _UNMODELED_ORDER.search(piece) or _unmodelled_dextrose(piece):
                 # Recognised and not something this version executes: recorded as
                 # the resident's indication, with its administration and effect
                 # not modelled, and the other orders run (2026-09-24; faculty

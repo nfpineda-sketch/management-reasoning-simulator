@@ -77,3 +77,19 @@ def test_the_environment_can_choose_the_language_for_a_headless_run(monkeypatch)
     assert language.configured() == "es"
     monkeypatch.setenv("MRS_LANGUAGE", "klingon")
     assert language.configured() == "en"
+
+
+def test_a_consult_reads_in_spanish_whatever_the_service():
+    """Only the cath lab had a Spanish sentence, and half of one (2026-09-26)."""
+    import language
+    assert (language.say("endocrinology contacted; definitive intervention has not yet occurred", "es")
+            == "Se contactó a endocrinología; la intervención definitiva todavía no ocurre")
+    assert language.say("PERT contacted; definitive intervention has not yet occurred", "es").startswith(
+        "Se contactó al equipo PERT;")
+    assert (language.say("ICU already contacted at minute 12; not repeated", "es")
+            == "Ya se había contactado a la UCI en el minuto 12; no se repite")
+    assert (language.say("cath lab contacted; definitive intervention has not yet occurred", "es")
+            == "hemodinamia contactada; la intervención definitiva todavía no ocurre")
+    # English is untouched.
+    assert (language.say("endocrinology contacted; definitive intervention has not yet occurred", "en")
+            == "endocrinology contacted; definitive intervention has not yet occurred")

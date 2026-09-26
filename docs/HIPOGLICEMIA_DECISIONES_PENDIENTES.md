@@ -176,12 +176,24 @@ avisa.
 
 - «Coloco una vía intraósea» (DC3).
 - «Reviso la vía venosa»: no es una acción ni un examen (DC2).
-- «Consulto a endocrinología»: el servicio no se reconoce.
-- «2 ampollas de glucosado al 30%»: una ampolla sin volumen se pierde sin aviso.
-- «Bolo de glucosado al 50% 50 mL EV»: «glucosado» todavía no es un nombre del agente.
-- «Glucosa capilar» y «Nueva vía venosa» sin verbo.
-- Sin prueba de falla esperada: «suero glucosado al 5%» se lee como la infusión al 10 %, la única que
-  modela el motor.
+
+Una pregunta de lectura, sin prueba de falla esperada: «suero glucosado» **sin** concentración se lee como la
+infusión al 10 %, la única que modela el motor. En la práctica local suele querer decir glucosado al 5 %.
+**Decidir:** si se lee como 10 % o si se pregunta la concentración.
+
+Corregido el 2026-09-26 (C-2026-09-26-03):
+
+- «Glucosa capilar», «Glicemia capilar» y «Hemoglucotest ahora» sin verbo;
+- «Nueva vía venosa», «Vía venosa nueva», «2 VVP gruesas» y «VVP» sin verbo. «Vía venosa permeable» sigue
+  sin leerse como orden: describe la vía que el paciente ya tiene;
+- «Bolo de…» sin verbo, de glucosa o de cristaloide, se devolvía como ilegible;
+- «glucosado» como nombre del agente («Bolo de glucosado al 50% 50 mL EV» son 25 g);
+- «2 ampollas de glucosado al 30%», sin volumen, se perdía sin aviso: ahora es la orden y el motor pide la
+  dosis. «2 ampollas… 20 mL cada una» son 12 g (antes, 6 g); si no dice «cada una», se pregunta el total;
+- «suero glucosado al 5% a 100 mL/h», «D5» o un glucosado al 20 % en infusión se leían como la infusión al
+  10 %: ahora quedan como indicados, sin efecto modelado (decisión 3);
+- «Consulto a endocrinología» (y nefrología, neurología, medicina interna y toxicología) preguntaba qué
+  especialista.
 
 Corregido el 2026-09-25 (C-2026-09-25-09):
 

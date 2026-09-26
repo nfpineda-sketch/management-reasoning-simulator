@@ -132,6 +132,9 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-25-07 | Las declaraciones de evaluación se congelan con cada encuentro | general | technical_defect | none | — |
 | C-2026-09-25-08 | Sin configuración explícita, sólo el administrador inicia una generación libre | general | policy | none | — |
 | C-2026-09-25-09 | El lector: la infusión al 10 % en español y la glucosa escrita como solución | general | technical_defect | clinical | — |
+| C-2026-09-26-01 | El panel de la rúbrica conserva sus botones, la telaraña su etiqueta superior y el rechazo nombra el evento | general | technical_defect | none | — |
+| C-2026-09-26-02 | «My progress» reconstruye el Management Trace del residente desde el análisis guardado | general | technical_defect | none | — |
+| C-2026-09-26-03 | El lector: órdenes de glucosa, vías e interconsultas escritas como en una ficha | general | technical_defect | clinical | — |
 
 ## La batería, configuración por configuración
 

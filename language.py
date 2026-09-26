@@ -165,6 +165,19 @@ MESSAGES = {
 # Ordered substitutions: the composable fragments the engine assembles its
 # sentences from. Longest and most specific first; anything with no rule stays
 # in English rather than breaking.
+# The services a consult names, as a Spanish sentence names them. The cath lab
+# has its own sentences below.
+_SERVICES_ES = {"PERT": "el equipo PERT", "cardiology": "cardiología", "gastroenterology": "gastroenterología",
+                "urology": "urología", "surgery": "cirugía general", "ICU": "la UCI",
+                "endocrinology": "endocrinología", "nephrology": "nefrología", "neurology": "neurología",
+                "internal medicine": "medicina interna", "toxicology": "toxicología"}
+
+
+def _to(name):
+    """'a' before a service, contracted before a masculine article: "al equipo PERT"."""
+    return "al " + name[3:] if name.startswith("el ") else "a " + name
+
+
 _RULES = (
  # --- response card scaffolding -------------------------------------------
  (r"\bAfter (\d+) minutes,", r"Tras \1 minutos,"),
@@ -232,8 +245,21 @@ _RULES = (
  (r"\bTransfer/admission requested: ", "Traslado u hospitalización solicitada: "),
  (r"\bDischarge home requested\b", "Alta a domicilio indicada"),
  (r"\bcath lab activated\b", "hemodinamia activada"),
+ # A consult to any other service, and the same consult asked for again
+ # (2026-09-26: the label stayed in English whatever the reading language).
+ (r"\b(" + "|".join(_SERVICES_ES) + r") contacted; definitive intervention has not yet occurred",
+  lambda m: f"Se contactó {_to(_SERVICES_ES[m.group(1)])}; la intervención definitiva todavía no ocurre"),
+ (r"\b(" + "|".join(_SERVICES_ES) + r") already contacted at minute (\d+); not repeated",
+  lambda m: f"Ya se había contactado {_to(_SERVICES_ES[m.group(1)])} en el minuto {m.group(2)}; no se repite"),
+ (r"Write the total dextrose: the grams, or the concentration with the total volume\. (\d+(?:\.\d+)?) ampoules "
+  r"with (\d+(?:\.\d+)?) mL may mean \2 mL in all or in each\.",
+  r"Indica la glucosa total: los gramos, o la concentración con el volumen total. \1 ampollas con \2 mL pueden "
+  r"ser \2 mL en total o en cada una."),
  (r"\bcath lab contacted for angiography\b", "hemodinamia contactada para coronariografía"),
+ (r"\bcath lab already contacted at minute (\d+); not repeated",
+  r"Ya se había contactado a hemodinamia en el minuto \1; no se repite"),
  (r"\bcath lab contacted\b", "hemodinamia contactada"),
+ (r"; definitive intervention has not yet occurred\b", "; la intervención definitiva todavía no ocurre"),
  (r"\bcontacting ([a-z ]+) \(no intervention yet\)", r"contactando a \1 (sin intervención aún)"),
  # --- held orders ----------------------------------------------------------
  (r"\*\*ORDER HELD — CLARIFICATION REQUIRED\*\*", "**ORDEN RETENIDA — SE NECESITA UNA ACLARACIÓN**"),
