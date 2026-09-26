@@ -114,7 +114,18 @@ intentos equivalentes.
 - **Defecto de concurrencia encontrado en las pruebas y corregido:** dos estados de una persona sin ancla,
   pedidos a la vez, dibujaban dos anclas distintas. Ahora el ancla es un trabajo propio y único.
 
-### Lote 1b (V22 de nuevo, con el método corregido)
+### Lote 1b (V22 de nuevo, con el método corregido; 06:35–06:36 UTC)
 
 - **Antes:** reserva máxima US$1,10 (ancla y estado, cada uno con su corrección) y 4 solicitudes. Gastado
   hasta aquí: US$0,2142; 3 solicitudes.
+- **Después:** 37 s. 4 llamadas, 0 reintentos, 0 fallas, 0 correcciones: **2 solicitudes** (ancla y
+  estado). Acumulado: **US$0,3441** con uso informado por el proveedor; **5 de 30** solicitudes.
+- **Revisión:** identidad igual de buena. El somnoliento ahora se reconoce a tamaño normal, en
+  proporción: párpados a media altura, mirada que se va hacia abajo, boca entreabierta. La sala ya no
+  tiene bolsas junto a la cama; queda equipo de pared (tomas de gases, tubos enrollados en la esquina),
+  no conectado al paciente. El paciente quedó más a la izquierda de lo pedido (27 % en vez de 40 %), con
+  la mitad derecha libre para el monitor.
+
+### Lote 2 (V22: obnubilado, obnubilado con mascarilla, recuperado)
+
+- **Antes:** reserva máxima US$1,80 y 6 solicitudes. Gastado hasta aquí: US$0,3441; 5 solicitudes.
