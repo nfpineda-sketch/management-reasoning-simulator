@@ -384,3 +384,16 @@ def test_the_image_issue_is_offered_only_for_a_state_that_failed(world):
     assert view.diagnostic_candidate(context=room.context) is not None
     assert view.failure()["code"] == "MISMATCH"
     assert view.diagnostic_evidence(context=room.context)
+
+
+def test_a_database_that_cannot_be_reached_leaves_the_room_working_with_its_neutral_view(world):
+    room = encounter(world)
+
+    def unreachable(*args, **kwargs):
+        raise AccountError("The account database is temporarily unavailable. Please try again.")
+
+    world.monkeypatch.setattr(ImageBank, "usable_asset", unreachable)
+    assert room.look() is None
+    assert room.status == {"state": "unavailable", "code": "INTERNAL"}
+    assert "saved photograph could not be read" in clinical_scene.scene_status_text(room.status)
+    assert calls(world) == 0

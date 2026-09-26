@@ -234,7 +234,29 @@ def _log(bank, context, view, attempt_id, state, contract, status, image):
 
 
 def scene_image(state, events, context):
-    """The photograph of the current state, or None; sets the room's image flags either way."""
+    """The photograph of the current state, or None; sets the room's image flags either way.
+
+    Nothing about the photograph may stop the encounter: a database that
+    cannot be reached, or any other failure here, leaves the room with its
+    neutral view and the reason, and the monitor, the examination and the
+    orders work as before.
+    """
+    try:
+        return _scene_image(state, events, context)
+    except Exception as error:
+        import logging
+        logging.getLogger(__name__).warning("image_scene_failed %s", type(error).__name__)
+        st.session_state["_scene_current"] = False
+        st.session_state["_scene_failed"] = False
+        st.session_state["_scene_pending"] = False
+        st.session_state["_scene_status"] = {"state": "unavailable", "code": "INTERNAL"}
+        view = st.session_state.get("_scene_jobs")
+        if isinstance(view, View):
+            view.current_status = st.session_state["_scene_status"]
+        return None
+
+
+def _scene_image(state, events, context):
     from image_bank import contract_key
     from patient_appearance import appearance_state
     import image_broker
@@ -260,10 +282,9 @@ def scene_image(state, events, context):
     view.current_key = state_key
     image = None
     if view.identity is None:
-        try:
-            view.identity, view.identity_reason = _choose_identity(bank, context, state, attempt_id)
-        except Exception:
-            view.identity, view.identity_reason = None, {"reason": "unavailable"}
+        # A database error is not "no compatible person": it reaches scene_image's
+        # handler, which says so, and the next rerun asks again.
+        view.identity, view.identity_reason = _choose_identity(bank, context, state, attempt_id)
         if view.identity is not None:
             _preload(bank, view.identity["id"])
     if view.identity is None:

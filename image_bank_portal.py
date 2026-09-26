@@ -31,6 +31,14 @@ def _state_line(contract):
 
 def render_image_bank(context):
     """Faculty and administrators: the bank, its budget, and the two human reviews."""
+    try:
+        _render_image_bank(context)
+    except AccountError as error:
+        # The rest of the dashboard stays usable when the bank cannot be read.
+        st.caption(str(error))
+
+
+def _render_image_bank(context):
     from image_bank import ImageBank
     from image_identities import BY_ID, describe
     from image_pricing import configured_budget, usd
