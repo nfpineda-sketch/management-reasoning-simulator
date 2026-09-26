@@ -213,6 +213,44 @@ ES = {
         'APOYO A LA EVALUACIÓN DEL ENCUENTRO',
     'Each decision is shown as it happened: what you had observed, how you reasoned, what you ordered, what you expected, what was recorded next, and what changed after it. Your later reflection is summarised separately by the model, because it is retrospective and does not describe what you necessarily knew at the time.':
         'Cada decisión se muestra tal como ocurrió: lo que había observado, cómo razonó, lo que indicó, lo que esperaba, lo que se registró después, y qué cambió tras ella. Su reflexión posterior la resume el modelo por separado, porque es retrospectiva y no describe lo que necesariamente sabía en ese momento.',
+    'ENGINE CONVENTIONS THIS ENCOUNTER TOUCHED':
+        'CONVENCIONES DEL MOTOR QUE ESTE ENCUENTRO TOCÓ',
+    'These outputs follow engine conventions the faculty has not yet decided (docs/PESOS_CASOS.md, section 4). They bound those specific observations only: do not ground a deficiency on one of them alone. Everything else in the encounter is evaluated as usual.':
+        'Estas salidas siguen convenciones del motor que la facultad aún no decide (docs/PESOS_CASOS.md, sección 4). Acotan sólo esas observaciones específicas: no funde una deficiencia únicamente en una de ellas. Todo lo demás del encuentro se evalúa como siempre.',
+    'Pending: {decision}.':
+        'Pendiente: {decision}.',
+    'Rests on it: {depends}':
+        'Descansa en ella: {depends}',
+    'Weight type per drug and indication (decisions C and E)':
+        'Tipo de peso por fármaco e indicación (decisiones C y E)',
+    'Infusion weight basis and effect reference (decision E)':
+        'Peso de las infusiones y referencia de su efecto (decisión E)',
+    'Neuromuscular blocker dosing weight (decision C)':
+        'Peso de dosificación del bloqueante neuromuscular (decisión C)',
+    'Required minute ventilation and default tidal volume (section 4)':
+        'Ventilación minuto requerida y volumen corriente por defecto (sección 4)',
+    'Baseline urine output and residual renal function (decision D)':
+        'Diuresis basal y función renal residual (decisión D)',
+    'Baseline urine output weight basis (decision D)':
+        'Base de peso de la diuresis basal (decisión D)',
+    'The executed dose, and what followed from it.':
+        'La dosis ejecutada, y lo que siguió de ella.',
+    'The pressure and heart-rate response recorded after these rates.':
+        'La respuesta de presión y frecuencia registrada tras esas tasas.',
+    'How long paralysis lasted, and any decision timed against it.':
+        'Cuánto duró la parálisis, y toda decisión medida contra ella.',
+    'The PaCO2 and pH trajectory on the ventilator.':
+        'La trayectoria de PaCO2 y pH en el ventilador.',
+    'The measured urine output, and the response to the diuretic.':
+        'La diuresis medida, y la respuesta al diurético.',
+    'The measured urine output before and after the diuretic.':
+        'La diuresis medida antes y después del diurético.',
+    'The gases follow a required minute ventilation and a default tidal volume calibrated at 70 kg, while a tidal volume per kilogram uses the predicted body weight (decision B).':
+        'Los gases siguen una ventilación minuto requerida y un volumen corriente por defecto calibrados a 70 kg, mientras un volumen por kilo usa el peso corporal predicho (decisión B).',
+    'This case declares minimal residual renal function; the exact residual baseline the model ran on is a simulator convention pending that decision.':
+        'Este caso declara una función renal residual mínima; la basal residual exacta con la que corrió el modelo es una convención del simulador pendiente de esa decisión.',
+    'The baseline urine output is calibrated at 70 kg whatever the chart weighs, pending the faculty\'s basis for it.':
+        'La diuresis basal está calibrada a 70 kg pese lo que pese la ficha, pendiente de la base que la facultad decida.',
     'Encounter revision':
         'Revisión del encuentro',
     'Evidence to discuss':

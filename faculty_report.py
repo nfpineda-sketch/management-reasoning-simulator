@@ -332,15 +332,15 @@ def _conventions_section(record, styles, *, compact):
     def p(text, *names):
         return Paragraph(_xml(text), style(*names) if names else styles["body"])
 
-    flow = [p("ENGINE CONVENTIONS THIS ENCOUNTER TOUCHED", "eyebrow", "label"),
-            p(model_conventions.RULE, "small", "muted")]
+    flow = [p(_t("ENGINE CONVENTIONS THIS ENCOUNTER TOUCHED"), "eyebrow", "label"),
+            p(_t(model_conventions.RULE), "small", "muted")]
     for row in rows[: 4 if compact else 8]:
         if compact:
-            flow.append(p(f"{row['decision']}: {row['depends']}", "small", "muted"))
+            flow.append(p(f"{_t(row['decision'])}: {_t(row['depends'])}", "small", "muted"))
         else:
-            flow.append(p(f"Pending: {row['decision']}.", "small"))
-            flow.append(p(row["observation"], "small", "muted"))
-            flow.append(p(f"Rests on it: {row['depends']}", "small", "muted"))
+            flow.append(p(_t("Pending: {decision}.").format(decision=_t(row["decision"])), "small"))
+            flow.append(p(_t(row["observation"]), "small", "muted"))
+            flow.append(p(_t("Rests on it: {depends}").format(depends=_t(row["depends"])), "small", "muted"))
     return flow
 
 

@@ -67,7 +67,12 @@ def test_session_adapter_selects_only_frozen_evidence_and_locked_original_reflec
                    faculty_assessment={"notes": "DO_NOT_USE"})
     original = deepcopy(session)
     adapted = analysis_payload_from_session(session)
-    assert adapted == {**sample_payload(), "encounter_events": []}
+    # authored_case_id (2026-09-26) is metadata beside the frozen evidence, so
+    # "The history you took" can look up what the case authors; it is excluded
+    # from the analysis source, so fingerprints of saved analyses do not move.
+    assert adapted == {**sample_payload(), "encounter_events": [], "authored_case_id": ""}
+    from management_trace_analysis import build_analysis_source
+    assert "authored_case_id" not in build_analysis_source(adapted)
     adapted["trace"][0]["learner_input"] = "Changed copy"
     assert session == original
 
