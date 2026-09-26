@@ -3630,8 +3630,10 @@ def generate_problem_config(challenge_id):
     generation, scene_key = launch_options(
         _runtime_secret("OPENAI_API_KEY"), (account.get("user") or {}).get("role"))
     import image_scene
-    if image_scene.enabled(account):
-        scene_key = ""  # the room asks the image bank itself (2026-09-26)
+    if image_scene.enabled(account) or not account.get("store"):
+        # The room asks the image bank itself (2026-09-26); without an account
+        # database no picture is paid for at all (faculty decision 10).
+        scene_key = ""
     try:
         with ScenePreparation(scene_key,
                               _runtime_secret("MRS_IMAGE_MODEL") or "gpt-image-1.5",

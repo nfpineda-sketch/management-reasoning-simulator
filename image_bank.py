@@ -42,6 +42,7 @@ STAFF = frozenset({"faculty", "admin"})
 REVIEW_FIELDS = ("visual_review", "clinical_review")
 REVIEW_DECISIONS = ("pending", "approved", "rejected")
 SCREEN_ACCEPTED = ("accepted", "accepted_with_limitations")
+SCREEN_EXCLUSION = "Rejected by the automated screen."
 MAX_NOTE = 1000
 MAX_BLOB_BYTES = 12_000_000
 
@@ -49,9 +50,32 @@ MAX_BLOB_BYTES = 12_000_000
 DEFAULT_LEASE_SECONDS = 15 * 60
 
 
+# Faculty decision 7 (2026-09-26): a still cannot show a mild sweat, a mild
+# pallor or a mildly increased effort -- the screen itself calls them not
+# discernible. A state with one of them is drawn as its baseline and shares that
+# photograph; the room says beside it what the photograph cannot show.
+EQUIVALENT = {"diaphoresis": ("mild", "absent", "mild_skin_moisture"),
+              "skin_color": ("mild pallor", "natural", "mild_skin_color"),
+              "work_of_breathing": ("mildly increased", "normal", "breathing_effort")}
+
+
+def drawn_contract(contract):
+    """The contract a photograph is drawn for: each non-discernible mild value as its baseline."""
+    drawn = dict(contract)
+    for domain, (mild, baseline, _) in EQUIVALENT.items():
+        if drawn.get(domain) == mild:
+            drawn[domain] = baseline
+    return drawn
+
+
+def undrawn(contract):
+    """What the photograph of this state's drawn contract cannot show, as the room's limitation codes."""
+    return [code for domain, (mild, _, code) in EQUIVALENT.items() if contract.get(domain) == mild]
+
+
 def contract_key(contract):
     """The state an image shows, as a key: only the drawable facts, no version, no vital sign."""
-    canonical = json.dumps(contract, sort_keys=True, separators=(",", ":"))
+    canonical = json.dumps(drawn_contract(contract), sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -294,6 +318,14 @@ class ImageBank:
         with self.accounts._transaction(write=True) as connection:
             for statement in statements:
                 self._execute(connection, statement)
+            # Keys follow contract_key: a saved photograph of "mild sweat" is found
+            # again under the key it is now drawn for (faculty decision 7).
+            for row in self._execute(connection,
+                                     "SELECT id, state_key, contract_json FROM mrs_image_assets").fetchall() or []:
+                key = contract_key(_load(row["contract_json"], {}))
+                if key != row["state_key"]:
+                    self._execute(connection, "UPDATE mrs_image_assets SET state_key = ? WHERE id = ?",
+                                  (key, row["id"]))
 
     # --- images ---------------------------------------------------------------------
     def put_blob(self, raw):
@@ -437,7 +469,7 @@ class ImageBank:
             if screen == "rejected":
                 self._execute(connection, """UPDATE mrs_image_assets SET screen = ?, screen_json = ?, excluded = 1,
                     exclusion_reason = ? WHERE id = ?""",
-                    (screen, _json(record), "Rejected by the automated screen.", asset_id))
+                    (screen, _json(record), SCREEN_EXCLUSION, asset_id))
             else:
                 self._execute(connection, "UPDATE mrs_image_assets SET screen = ?, screen_json = ? WHERE id = ?",
                               (screen, _json(record), asset_id))
@@ -489,6 +521,36 @@ class ImageBank:
             (id, asset_id, field, value, note, actor_id, actor_role, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
             (uuid.uuid4().hex, asset_id, field, value, note, actor["id"], actor["role"], int(time.time())))
+
+    def import_approval(self, entry):
+        """A review given elsewhere and carried in the image pack, recorded once under its own account.
+
+        Returns "added", "known" (already recorded), "no_account" (that staff
+        account is not in this database) or "no_asset". The account is the one
+        the review names; nobody else's is ever used.
+        """
+        field, value = entry["field"], entry["value"]
+        if field not in REVIEW_FIELDS or value not in REVIEW_DECISIONS:
+            raise ValueError("A pack review names an unknown field or decision.")
+        with self.accounts._transaction(write=True) as connection:
+            if self._execute(connection, "SELECT id FROM mrs_image_reviews WHERE id = ?",
+                             (entry["id"],)).fetchone() is not None:
+                return "known"
+            actor = self._execute(connection, "SELECT id, role FROM mrs_users WHERE username = ?",
+                                  (entry["username"],)).fetchone()
+            if actor is None or actor["role"] not in STAFF:
+                return "no_account"
+            if self._execute(connection, "SELECT id FROM mrs_image_assets WHERE id = ?",
+                             (entry["asset_id"],)).fetchone() is None:
+                return "no_asset"
+            self._execute(connection, f"UPDATE mrs_image_assets SET {field} = ? WHERE id = ?",
+                          (value, entry["asset_id"]))
+            self._execute(connection, """INSERT INTO mrs_image_reviews
+                (id, asset_id, field, value, note, actor_id, actor_role, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (entry["id"], entry["asset_id"], field, value, _note(entry.get("note")), actor["id"],
+                 actor["role"], int(entry["created_at"])))
+        return "added"
 
     def reviews(self, token, asset_id):
         with self.accounts._transaction() as connection:
@@ -572,6 +634,13 @@ class ImageBank:
             raise ValueError("This budget identifier was recorded with other limits; a new "
                              "authorization needs a new identifier.")
         return stored
+
+    def budgets(self):
+        """Every budget recorded here, oldest first, with the limits it was recorded with."""
+        with self.accounts._transaction() as connection:
+            rows = self._execute(connection, "SELECT * FROM mrs_image_budgets ORDER BY created_at, id").fetchall()
+        return [{"id": row["id"], "limit_micro": int(row["limit_micro"]), "limit_requests": int(row["limit_requests"]),
+                 "authorization": row["authorization_text"]} for row in rows or []]
 
     def _totals(self, connection, budget_id):
         row = self._execute(connection, """SELECT

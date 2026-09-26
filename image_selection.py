@@ -29,13 +29,29 @@ import hashlib
 REVIEW_RANK = {"approved": 0, "pending": 1}
 
 
+def human_approved(asset):
+    """Both reviews a person records, visual and clinical, approved."""
+    return asset.get("visual_review") == "approved" and asset.get("clinical_review") == "approved"
+
+
 def usable(asset):
-    """An asset the room may show: made, readable, screened, not refused and not excluded."""
-    return (asset is not None and not asset.get("excluded")
-            and asset.get("technical_check") == "passed"
-            and asset.get("screen") in ("accepted", "accepted_with_limitations")
-            and asset.get("visual_review") != "rejected"
-            and asset.get("clinical_review") != "rejected")
+    """An asset the room may show: made, readable, screened, not refused and not excluded.
+
+    Faculty decision 5 (2026-09-26): a person's approved visual and clinical
+    reviews enable a photograph the automated screen rejected. Only the
+    screen's own exclusion is lifted that way; a person's or a withdrawal's
+    never is, and a rejected review always keeps the photograph out.
+    """
+    from image_bank import SCREEN_EXCLUSION
+    if asset is None or asset.get("technical_check") != "passed":
+        return False
+    if asset.get("visual_review") == "rejected" or asset.get("clinical_review") == "rejected":
+        return False
+    if asset.get("screen") not in ("accepted", "accepted_with_limitations") and not human_approved(asset):
+        return False
+    if asset.get("excluded"):
+        return asset.get("exclusion_reason") == SCREEN_EXCLUSION and human_approved(asset)
+    return True
 
 
 def best_asset(assets):

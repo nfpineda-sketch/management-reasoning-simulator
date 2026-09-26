@@ -372,6 +372,33 @@ CORRECTIONS = (
         "tests": ["test_clinical_scene.py::test_an_open_sidebar_covers_none_of_the_room"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-26-09",
+        "date": "2026-09-26",
+        "title": "Imágenes del paciente: las decisiones aprobadas por el docente, y sin gasto en lo que ya falló",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Decisiones aprobadas el 2026-09-26. (5) Las revisiones visual y clínica aprobadas habilitan una "
+                   "foto que el revisor automático rechazó; nunca levantan la exclusión de una persona. (7) Sudor "
+                   "leve, palidez leve y esfuerzo levemente aumentado se dibujan como su basal y comparten foto; la "
+                   "sala dice al lado lo que la foto no muestra. (8) MRS_IMAGE_REQUIRE_REVIEW exige ambas "
+                   "revisiones antes de mostrar una foto (para producción). (10) Sin base de cuentas no se paga "
+                   "ninguna foto. (3) El equipo de pared no conectado no es tratamiento para el revisor. Además, "
+                   "por la instrucción de evitar gastos que terminan en rechazo, no se piden la mascarilla de "
+                   "reservorio ni el sudor marcado en piel oscura. Las aprobaciones del docente viajan en el "
+                   "paquete, a nombre de su cuenta y con nota de quién las registró."),
+        "authorised_by": "Instrucción docente del 2026-09-26 (decisiones de imágenes «Aprobado»; aprobación de las 7 fotos)",
+        "affects": {"modules": ["image_bank", "image_selection", "image_broker", "image_scene", "image_pack",
+                                "image_consistency", "clinical_scene", "image_bank_portal", "app"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_the_image_bank.py::test_approved_reviews_enable_a_photograph_the_screen_rejected_and_nothing_else_does",
+                  "test_the_image_bank.py::test_mild_findings_share_the_photograph_of_their_baseline_and_are_named_beside_it",
+                  "test_the_image_bank.py::test_a_state_known_to_fail_is_never_paid_for",
+                  "test_the_image_bank.py::test_pack_approvals_are_recorded_once_under_the_account_they_name",
+                  "test_the_room_shows_the_bank.py::test_with_review_required_only_a_photograph_a_person_approved_is_shown",
+                  "test_scene_pipeline.py::test_without_an_account_database_no_picture_is_paid_for"],
+        "preservation": None,
+    },
 )
 
 

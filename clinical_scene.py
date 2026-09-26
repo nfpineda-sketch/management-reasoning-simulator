@@ -173,12 +173,16 @@ def _session_scene_image(state, events, context=None):
     from image_scene import generation_allowed
     role = ((context or {}).get('user') or {}).get('role')
     review_case = bool((st.session_state.get('encounter_assignment') or {}).get('review_case'))
-    if not generation_allowed(role, review_case):
+    # Faculty decision 10 (2026-09-26): without an account database there is no
+    # persistent budget, so this path pays for nothing.
+    no_accounts = not (context or {}).get('store')
+    if no_accounts or not generation_allowed(role, review_case):
         current = jobs.current(signature)
         st.session_state['_scene_current'] = current is not None
         st.session_state['_scene_failed'] = False
         st.session_state['_scene_pending'] = False
-        st.session_state['_scene_status'] = {'state': 'unavailable', 'code': 'NOT_ALLOWED'}
+        st.session_state['_scene_status'] = {'state': 'unavailable',
+                                             'code': 'NO_ACCOUNTS' if no_accounts else 'NOT_ALLOWED'}
         return current
     jobs.request(signature, state, setting('OPENAI_API_KEY'),
                  setting('MRS_IMAGE_MODEL', 'gpt-image-1.5'),
@@ -268,6 +272,12 @@ UNAVAILABLE = {
     'UNSUPPORTED': ('No synthetic patient in the image bank fits this case. The monitor and the examination '
                     'are current.'),
     'CONTRACT': ('This appearance has no supported photograph. The monitor and the examination are current.'),
+    'UNRENDERABLE': ('The image generator could not draw this appearance reliably, so no photograph is requested. '
+                     'The monitor and the examination are current.'),
+    'REVIEW_PENDING': ('The photograph of this appearance is awaiting faculty review. The monitor and the '
+                       'examination are current.'),
+    'NO_ACCOUNTS': ('Without the account database there is no image budget, so no photograph is requested. The '
+                    'monitor and the examination are current.'),
     'PRICE': ('The configured image model has no verified price, so no photograph is requested. The monitor '
               'and the examination are current.'),
     'BUDGET_DOLLARS': ('The image budget of this environment is used up; saved photographs are still shown. '

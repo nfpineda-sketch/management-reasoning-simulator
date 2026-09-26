@@ -57,6 +57,25 @@ def _setting(name, default=""):
     return setting(name, default)
 
 
+REQUIRE_REVIEW_SETTING = "MRS_IMAGE_REQUIRE_REVIEW"
+
+
+def review_required():
+    """Faculty decision 8 (2026-09-26): in production a photograph is shown only after a person's
+    visual and clinical reviews approved it. Off unless the setting says so."""
+    return str(_setting(REQUIRE_REVIEW_SETTING, "")).strip().lower() in {"on", "1", "true", "yes"}
+
+
+def _for_state(image, contract):
+    """The photograph labelled for this state: what its drawn contract cannot show is said beside it."""
+    from image_bank import undrawn
+    extra = [code for code in undrawn(contract) if code not in image.limitations]
+    if not extra:
+        return image
+    return DisplayImage(str(image), mime=image.mime, limitations=(*image.limitations, *extra),
+                        asset_id=image.asset_id, identity_id=image.identity_id)
+
+
 def enabled(context):
     """The bank serves this room: an account database, and not switched off."""
     if not context or context.get("store") is None:
@@ -318,7 +337,10 @@ def _scene_image(state, events, context):
                 requested_by=f"user:{context['user'].get('id')}", budget=budget,
                 force=state_key in view.force)
             view.force.discard(state_key)
-        if outcome.state == "ready":
+        from image_selection import human_approved
+        if outcome.state == "ready" and review_required() and not human_approved(outcome.asset):
+            status = {"state": "unavailable", "code": "REVIEW_PENDING"}
+        elif outcome.state == "ready":
             image = _display(bank, outcome.asset)
             if image is not None:
                 view.cache[state_key] = image
@@ -334,6 +356,8 @@ def _scene_image(state, events, context):
         else:
             view.pending_since.pop(state_key, None)
             status = {"state": outcome.state, "code": outcome.code, "stage": outcome.stage or "CREATE"}
+    if image is not None:
+        image = _for_state(image, contract)
     view.current_status = status
     _log(bank, context, view, attempt_id, state, contract, status, image)
     st.session_state["_scene_current"] = image is not None

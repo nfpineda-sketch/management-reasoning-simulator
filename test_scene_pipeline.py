@@ -55,6 +55,11 @@ def pool(monkeypatch):
     return pool
 
 
+# The session-only path runs only with an account database (faculty decision 10,
+# 2026-09-26): these tests drive it as a deployment with the image bank switched off.
+WITH_ACCOUNTS = {"store": object()}
+
+
 def test_scene_and_edit_are_screened_with_the_visible_contract(monkeypatch, state):
     calls = []
     before = deepcopy(state)
@@ -229,20 +234,20 @@ def test_scene_image_returns_only_requested_signature_during_failure_or_pending(
     session = {"_attempt_id": "same-encounter"}
     monkeypatch.setattr(clinical_scene, "st", SimpleNamespace(session_state=session))
     monkeypatch.setattr(clinical_scene, "setting", lambda name, default="": "" if name == "OPENAI_API_KEY" else default)
-    assert clinical_scene.scene_image(state, [arrival]) is None
+    assert clinical_scene._session_scene_image(state, [arrival], WITH_ACCOUNTS) is None
     jobs = session["_scene_jobs"]
     signature = appearance_signature(state)
     jobs.base = "old-approved-reference"
     jobs.images["previous-signature"] = "old-approved-image"
     jobs.pending = (signature, Future())
-    assert clinical_scene.scene_image(state, [arrival]) is None
+    assert clinical_scene._session_scene_image(state, [arrival], WITH_ACCOUNTS) is None
     assert session["_scene_pending"] and not session["_scene_current"]
     jobs.pending[1].set_exception(ImageConsistencyError("mismatch", ("expression",)))
-    assert clinical_scene.scene_image(state, [arrival]) is None
+    assert clinical_scene._session_scene_image(state, [arrival], WITH_ACCOUNTS) is None
     assert session["_scene_failed"] and not session["_scene_pending"] and not session["_scene_current"]
     jobs.failed.clear()
     jobs.images[signature] = "approved-current-image"
-    assert clinical_scene.scene_image(state, [arrival]) == "approved-current-image"
+    assert clinical_scene._session_scene_image(state, [arrival], WITH_ACCOUNTS) == "approved-current-image"
     assert session["_scene_current"] and not session["_scene_failed"]
 
 
@@ -253,10 +258,20 @@ def test_scene_image_schedules_screened_functions_and_configurable_review_model(
         "OPENAI_API_KEY": "test-key", "MRS_IMAGE_MODEL": "image-model",
         "MRS_IMAGE_REVIEW_MODEL": " review-model ",
     }.get(name, default))
-    assert clinical_scene.scene_image(state, [{"kind": "presentation"}]) is None
+    assert clinical_scene._session_scene_image(state, [{"kind": "presentation"}], WITH_ACCOUNTS) is None
     callback = pool.calls[0][0]
     assert isinstance(callback, partial) and callback.func is scene_pipeline.screened_scene
     assert callback.keywords["review_model"] == "review-model"
     assert callable(callback.keywords["progress"])
     assert session["_scene_jobs"].status(appearance_signature(state))["queued"]
     assert session["_scene_pending"] and not session["_scene_current"]
+
+
+def test_without_an_account_database_no_picture_is_paid_for(monkeypatch, state, pool):
+    # Faculty decision 10 (2026-09-26): shared mode keeps no persistent budget, so it pays nothing.
+    session = {"_attempt_id": "shared-mode"}
+    monkeypatch.setattr(clinical_scene, "st", SimpleNamespace(session_state=session))
+    monkeypatch.setattr(clinical_scene, "setting", lambda name, default="": "test-key" if name == "OPENAI_API_KEY" else default)
+    assert clinical_scene.scene_image(state, [{"kind": "presentation"}]) is None
+    assert session["_scene_status"] == {"state": "unavailable", "code": "NO_ACCOUNTS"}
+    assert pool.calls == []

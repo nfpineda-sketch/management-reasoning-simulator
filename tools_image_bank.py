@@ -43,6 +43,13 @@ def _budget():
     return configured_budget(lambda name: withhold(name, os.environ.get(name, "")))
 
 
+def _plan_module(args):
+    """The pilot's plan (hypoglycemia, first authorization) or the case arrivals (second one)."""
+    import image_arrivals
+    import image_pilot
+    return image_arrivals if getattr(args, "plan", "pilot") == "arrivals" else image_pilot
+
+
 def _usd(micro):
     from image_pricing import usd
     return f"US${usd(micro):.4f}"
@@ -50,7 +57,7 @@ def _usd(micro):
 
 def plan(args):
     import image_broker
-    import image_pilot
+    image_pilot = _plan_module(args)
     from clinical_cases import FAMILIES
     from image_identities import compatible, describe, identity
     from image_pricing import ceiling
@@ -60,7 +67,8 @@ def plan(args):
     for item in image_pilot.items(args.batch):
         person = identity(item["identity"])
         contract = image_pilot.contract(item)
-        fits = compatible(person, cases[item["case"]]["patient"])
+        fits = compatible(person, image_pilot.patient(item) if hasattr(image_pilot, "patient")
+                          else cases[item["case"]]["patient"])
         from image_bank import contract_key
         ready = bank is not None and bank.usable_asset(person["id"], contract_key(contract)) is not None
         needs_anchor = person["id"] not in anchors and (
@@ -74,12 +82,13 @@ def plan(args):
         print(f"batch {item['batch']} · {person['id']} ({describe(person)}) · case {item['case']} "
               f"({'compatible' if fits else 'NOT COMPATIBLE'}) · {item['state']} · "
               f"{'ready' if ready else 'to make'} · worst case {_usd(worst)}"
-              f"{' with its anchor' if needs_anchor else ''}")
+              f"{' with its anchor' if needs_anchor else ''}"
+              f"{' · KNOWN TO FAIL, not requested' if image_broker.known_to_fail(person, contract) else ''}")
 
 
 def run(args):
     import image_broker
-    import image_pilot
+    image_pilot = _plan_module(args)
     from image_identities import identity
     bank = _bank(args.database_url)
     budget = _budget()
@@ -96,7 +105,9 @@ def run(args):
         if args.only and item["state"] != args.only:
             continue
         person = identity(item["identity"])
-        contract = image_pilot.contract(item)
+        # ``--anchors-only``: the person's reference photograph alone, to be looked at
+        # before any state is paid for (a state edited from a flawed anchor inherits it).
+        contract = dict(image_broker.ANCHOR_CONTRACT) if args.anchors_only else image_pilot.contract(item)
         started = time.monotonic()
         outcome, stalled = None, False
         for attempt in range(3):   # a new person's anchor first, then the state
@@ -199,12 +210,15 @@ def main(argv=None):
         command.add_argument("--database-url", required=name != "plan", default="")
         if name in ("plan", "run"):
             command.add_argument("--batch", type=int, default=None)
+            command.add_argument("--plan", choices=("pilot", "arrivals"), default="pilot")
         if name == "run":
             command.add_argument("--proxy-credentials", action="store_true")
             command.add_argument("--image-model", default="gpt-image-1.5")
             command.add_argument("--review-model", default="gpt-5-mini")
             command.add_argument("--force", action="store_true", help="ask again for a state that is cooling down")
             command.add_argument("--only", default="", help="only this state of the batch")
+            command.add_argument("--anchors-only", action="store_true",
+                                 help="only each new person's reference photograph, to review before the states")
         if name == "export":
             command.add_argument("--out", default=str(ROOT / "assets" / "patient_images"))
         if name == "import":

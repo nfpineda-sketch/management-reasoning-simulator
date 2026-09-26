@@ -4,6 +4,15 @@ Trabajo autorizado el 2026-09-26: mantener imágenes estáticas y mejorar su gen
 reutilización y evolución con el paciente. Sin video, GIF ni animación. El consumo está en
 `docs/IMAGENES_REGISTRO.md`; las decisiones que te tocan, en `docs/IMAGENES_DECISIONES_CLINICAS.md`.
 
+## Actualización del 2026-09-26 (tarde)
+
+- **Tus decisiones, aplicadas** (C-2026-09-26-09): el detalle, en `docs/IMAGENES_DECISIONES_CLINICAS.md`.
+- **Tus 14 aprobaciones** de las 7 fotos del piloto viajan en el paquete y se registran al reiniciar la app.
+- **Segunda autorización (US$10 más):** gastados US$5,363 en 63 solicitudes, en tandas revisadas; quedan
+  US$4,637. 13 personas nuevas, 24 estados de llegada; **23 de 31 casos** con foto de llegada (antes, 1).
+  El detalle, en `docs/IMAGENES_REGISTRO.md`.
+- La sección de inventario de abajo es la del piloto (26 imágenes); el paquete tiene ahora 88.
+
 ## En una frase
 
 La foto del paciente pasó de vivir en la memoria de una pestaña a vivir en la base de la app:

@@ -270,3 +270,76 @@ este registro. La app lo importa a su base al arrancar, una vez, sin sobrescribi
   lo que hayan usado los encuentros de la app de desarrollo después del reinicio: eso sólo se ve en su
   panel.
 
+
+## Segunda autorización (2026-09-26, tarde)
+
+- **Autorización:** «Aprueba US$10 más sobre el presupuesto restante actual. Evita gastos que generen
+  imágenes rechazadas o que no lleven a una imagen que se pueda guardar y utilizar.»
+- **Cómo se reparte** (tu elección: tandas controladas): un presupuesto nuevo y aparte,
+  `imagenes-2026-09-26-b`, de **US$10**, que gasto yo por tandas revisadas. El tope de 100 solicitudes es
+  sólo un techo de seguridad: manda el de dólares. La app sigue con el saldo antiguo
+  (`imagenes-2026-09-26`: 4 solicitudes). Entre los dos, lo gastado nunca supera US$20.
+- **Precio:** el mismo verificado hoy (gpt-image-1.5; revisor gpt-5-mini a la cota). Costo real del piloto
+  por llamada: creación US$0,022, edición US$0,073, corrección US$0,120, revisión US$0,018.
+- **Qué se genera:** sólo la foto de llegada de los casos que no tenían ninguna (`image_arrivals.py`):
+  23 de 31 casos. No se piden estados que ya fallaron (mascarilla de reservorio; sudor marcado): los 7
+  casos que llegan con sudor marcado quedan con la vista neutral y el examen escrito, porque dibujarlo sólo
+  en pieles claras ataría el hallazgo al tono de piel.
+- **Tanda 1 (antes):** V22 · acs_61m_posterior, V11 · acs_66f_nonst, V18 · opioid_35m,
+  V11 · hypoglycemia_76f, V27 (persona nueva) · bradycardia_ccb_68m. Reserva máxima US$3,50.
+- **Tanda 1 (después):** 8 solicitudes, **US$0,784** (uso informado por el proveedor). Guardadas y
+  aceptadas: V11 · acs_66f_nonst, V18 · opioid_35m, V11 · hypoglycemia_76f (tras una corrección) y la
+  referencia de V27. V22 · acs_61m_posterior quedó sin veredicto del revisor (se vuelve a revisar, sin
+  generar otra). V27 · bradycardia_ccb_68m: 2 candidatas rechazadas por «tratamiento activo»; a mi vista
+  el revisor reaccionó a equipo colgado en la pared de la referencia, que según tu decisión 3 es aceptable.
+  No las repito: quedan para tu revisión (decisión 5).
+- **Cambio de método:** en adelante, primero las referencias de las personas nuevas (`--anchors-only`,
+  ~US$0,04 cada una); las miro y retiro las que traen bombas, bolsas o líneas antes de pagar sus estados,
+  que heredan el fondo de la referencia.
+- **Referencias de las tandas 2 y 3:** 12 personas nuevas, US$0,80. Las miré todas antes de pagar sus
+  estados: retiré 3 (V05 y V09 con bomba o bolsa y líneas junto a la cama; V12 dos veces, la segunda con
+  un trazo tipo electrocardiograma impreso en la bata) y las rehice por US$0,32.
+- **Estados de las tandas 2 y 3:** 13 pedidos, 9 guardados (V09, V05, V29, V03, V24, V23, V12, V26, V17) y
+  la de V22 de la tanda 1 tras volver a revisarla (US$0,02). Rechazados: V21, V02, V14 (2 candidatas cada
+  uno). V11 · pulmonary_edema_75f quedó sin veredicto. Acumulado: **US$3,70, 47 solicitudes.**
+- **Los 10 rechazos de esta autorización tienen el mismo motivo, «tratamiento activo»**, también con la
+  pared limpia (V21): el revisor lee como vía venosa la pulsera de identificación junto a la pinza del
+  oxímetro. Varias aceptadas muestran un malestar o un esfuerzo marcados con la cara tranquila (V03, V17)
+  y el enrojecimiento no se distingue en piel morena (V26): el revisor las acepta, pero las marco para tu
+  revisión.
+- **Método bank-1.5:** sin pulsera, reloj ni cinta en las muñecas; el oxímetro, sólo una pinza en un dedo;
+  y el malestar o el esfuerzo marcados, visibles en la cara y la postura. El revisor no cambia.
+- **Reintento único (antes):** V21, V02, V14 y V27 con bank-1.5, y la revisión pendiente de V11.
+- **Reintento único (después):** V21, V02, V14 y V27 aceptadas al primer intento (US$0,37); V11 ·
+  pulmonary_edema_75f rechazada otra vez (cuello «relajado» y «tratamiento activo»), aunque muestra el
+  malestar marcado: queda para tu revisión. Las aceptadas todavía llevan la pulsera, así que no atribuyo el
+  resultado a bank-1.5: el revisor es variable. V02 · anafilaxia salió sin enrojecimiento ni malestar
+  visibles: la marco débil para tu revisión. Acumulado: **US$4,23, 52 solicitudes.**
+- **Tanda 4 (antes):** segundas personas para las llegadas más frecuentes, sólo ediciones sobre referencias
+  ya miradas: V23, V24, V12, V21, V26, V02, V09, V17 y V12 (edema pulmonar, que así queda cubierto).
+- **Tanda 4 (después):** 7 de 9 guardadas (V23, V24, V12, V21, V26, V09, V17). V02 · pulmonary_embolism_33f
+  rechazada; V12 · pulmonary_edema_75f sin veredicto dos veces (se ve el malestar marcado: queda para tu
+  revisión). Una edición falló del lado del proveedor sin informar uso: quedó cobrada a la estimación
+  (US$0,15), y su reintento salió bien.
+
+### Cierre de la segunda autorización
+
+**No se hacen más solicitudes.** Quedan US$4,64 sin usar: no son una meta.
+
+| | |
+|---|---|
+| Solicitudes de imagen | **63** (de un techo de seguridad de 100) |
+| Gasto | **US$5,363**: US$5,213 con el uso informado por el proveedor y US$0,150 estimado (la falla sin uso informado) |
+| Saldo | **US$4,637** |
+| Fallas del proveedor y reintentos | 1 y 1 |
+| Fotos aceptadas por el revisor | 37: 13 referencias de personas nuevas y 24 estados de llegada |
+| Casos con foto de llegada | **23 de 31** (antes, 1). Sin foto: 7 con sudor marcado (a propósito) y pulmonary_edema_75f (2 candidatas para tu revisión) |
+| Referencias retiradas por mí antes de pagar sus estados | 4 (bomba o bolsa junto a la cama; un trazo impreso en la bata) |
+
+Todas las fotos nuevas quedan **pendientes de tu revisión visual y clínica**. Marcadas débiles por mí: V03 ·
+asma y V17 · cólico renal (malestar marcado con la cara tranquila), V02 · anafilaxia y V26 · anafilaxia
+(enrojecimiento no visible). Sin aprobación, se muestran igual en desarrollo; en producción, con
+`MRS_IMAGE_REQUIRE_REVIEW=on`, no.
+
+El paquete del repositorio lleva las 88 imágenes, los 68 trabajos y los registros de los dos presupuestos
+(72 y 202 filas), más tus 14 aprobaciones de las 7 fotos del piloto en `approvals.json`.

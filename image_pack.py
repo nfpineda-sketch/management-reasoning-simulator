@@ -24,6 +24,10 @@ from pathlib import Path
 PACK_VERSION = 1
 PACK_DIR = Path(__file__).resolve().parent / "assets" / "patient_images"
 MANIFEST = "manifest.json"
+# Reviews a person gave outside the application's database, each under the
+# account it names (faculty, 2026-09-26: the pilot's photographs approved in the
+# chat). Written by hand or by the tool, never by an export.
+APPROVALS = "approvals.json"
 
 
 def _webp(raw, quality):
@@ -63,10 +67,16 @@ def export_pack(bank, directory=PACK_DIR, *, budget):
                               if master is not None and asset["role"] == "anchor"
                               and asset["screen"] in ("accepted", "accepted_with_limitations") else None)
         assets.append(entry)
-    manifest = {"pack_version": PACK_VERSION, "budget": {key: budget[key] for key in
-                                                          ("id", "limit_micro", "limit_requests", "authorization")},
+    limits = ("id", "limit_micro", "limit_requests", "authorization")
+    # Every budget the bank has spent from travels with its ledger: a later
+    # authorization never drops the record of an earlier one.
+    budgets = {entry["id"]: entry for entry in bank.budgets()}
+    budgets.setdefault(budget["id"], budget)
+    manifest = {"pack_version": PACK_VERSION, "budget": {key: budget[key] for key in limits},
                 "assets": assets, "jobs": sorted(bank.jobs(limit=10000), key=lambda j: (j["finished_at"], j["id"])),
-                "ledger": bank.ledger(budget["id"], limit=10000)}
+                "ledger": bank.ledger(budget["id"], limit=10000),
+                "ledgers": [{"budget": {key: entry[key] for key in limits}, "rows": bank.ledger(entry["id"], limit=10000)}
+                            for entry in budgets.values()]}
     (directory / MANIFEST).write_text(json.dumps(manifest, indent=1, sort_keys=True, ensure_ascii=False) + "\n",
                                       encoding="utf-8")
     return manifest
@@ -108,9 +118,21 @@ def import_pack(bank, directory=PACK_DIR):
                        created_at=entry["created_at"], visual_review=entry.get("visual_review", "pending"),
                        clinical_review=entry.get("clinical_review", "pending"))
         added += 1
-    ledger = bank.import_ledger(manifest["budget"], manifest.get("ledger") or [])
+    ledgers = manifest.get("ledgers") or [{"budget": manifest["budget"], "rows": manifest.get("ledger") or []}]
+    ledger = sum(bank.import_ledger(entry["budget"], entry["rows"]) for entry in ledgers)
     jobs = sum(1 for job in manifest.get("jobs") or [] if bank.import_job(job))
-    return {"assets": added, "ledger": ledger, "jobs": jobs}
+    approvals = {}
+    for entry in read_approvals(directory):
+        outcome = bank.import_approval(entry)
+        approvals[outcome] = approvals.get(outcome, 0) + 1
+    return {"assets": added, "ledger": ledger, "jobs": jobs, "approvals": approvals}
+
+
+def read_approvals(directory=PACK_DIR):
+    path = Path(directory) / APPROVALS
+    if not path.exists():
+        return []
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _read(directory, record):
@@ -126,7 +148,9 @@ def ensure_imported(bank, directory=None):
     path = directory / MANIFEST
     if not path.exists():
         return None
-    digest = hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+    approvals = directory / APPROVALS
+    digest = hashlib.sha256(path.read_bytes() + (approvals.read_bytes() if approvals.exists() else b"")
+                            ).hexdigest()[:16]
     marker = f"image_pack:{digest}"
     if bank.accounts.schema_ready(marker):
         return None

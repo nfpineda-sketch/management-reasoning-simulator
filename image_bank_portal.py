@@ -101,7 +101,9 @@ def _render_image_bank(context):
                         f"{' (' + limitations + ')' if limitations else ''} · visual review "
                         f"{_REVIEW.get(asset['visual_review'], asset['visual_review'])} · clinical review "
                         f"{_REVIEW.get(asset['clinical_review'], asset['clinical_review'])}"
-                        + (f"  \nExcluded: {asset['exclusion_reason']}" if asset["excluded"] else "")
+                        + ("  \nIn use: approved in the visual and clinical reviews over the automated screen"
+                           if asset["excluded"] and usable(asset) else
+                           f"  \nExcluded: {asset['exclusion_reason']}" if asset["excluded"] else "")
                         + "".join(f"  \nScreen found: {item.get('finding', '')}"
                                   for item in (asset.get("screen_details") or {}).get("evidence", []))
                         + f"  \n`{asset['id'][:10]}` · {asset['generation'].get('model', '')} · "

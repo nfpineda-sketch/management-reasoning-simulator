@@ -25,6 +25,11 @@ def png():
     return base64.b64encode(output.getvalue()).decode()
 
 
+# The session-only path runs only with an account database (faculty decision 10,
+# 2026-09-26): these tests drive it as a deployment with the image bank switched off.
+WITH_ACCOUNTS = {"store": object()}
+
+
 @pytest.mark.parametrize("stage", ["CREATE", "EDIT"])
 def test_image_sdk_errors_retain_stage_without_provider_body(stage, png):
     calls = []
@@ -111,11 +116,11 @@ def test_image_retry_keeps_case_and_only_schedules_current_appearance(monkeypatc
     state, events = result["state"], [{"kind": "presentation", "text": result["presentation"]}]
     before = deepcopy((state, events))
     pool.calls[0][2].set_exception(SceneImageError("TIMEOUT", "SCREEN"))
-    assert clinical_scene.scene_image(state, events) is None
+    assert clinical_scene._session_scene_image(state, events, WITH_ACCOUNTS) is None
     jobs = session["_scene_jobs"]
     assert session["_scene_status"]["reference"] == "IMAGE-SCREEN-TIMEOUT"
     assert jobs.retry(appearance_signature(state))
-    assert clinical_scene.scene_image(state, events) is None
+    assert clinical_scene._session_scene_image(state, events, WITH_ACCOUNTS) is None
     assert len(pool.calls) == 2 and session["_scene_status"]["state"] == "pending"
     assert (state, events) == before
     assert jobs.pending[1] is pool.calls[1][2]
@@ -128,6 +133,6 @@ def test_open_v0172_session_can_replace_legacy_job_without_discard_method(monkey
     monkeypatch.setattr(clinical_scene, "st", SimpleNamespace(session_state=session))
     monkeypatch.setattr(clinical_scene, "setting", lambda key, default="": "test-key" if key == "OPENAI_API_KEY" else default)
     state = {"case_id": "PS001", "observable": {}, "treatments": {}}
-    assert clinical_scene.scene_image(state, [{"kind": "presentation"}]) is None
+    assert clinical_scene._session_scene_image(state, [{"kind": "presentation"}], WITH_ACCOUNTS) is None
     assert session["_scene_jobs"] is not old and pending.cancelled()
     assert not session["_scene_current"] and len(pool.calls) == 1

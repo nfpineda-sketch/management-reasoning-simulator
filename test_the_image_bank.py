@@ -24,9 +24,11 @@ from image_pricing import DEFAULT_BUDGET, MICRO
 from scene_errors import CHECK_IDS
 
 IMAGE_MODEL, REVIEW_MODEL = "gpt-image-1.5", "gpt-5-mini"
+# States the provider can draw: a reservoir mask, and marked sweat on dark skin,
+# are no longer asked for at all (see test_a_state_known_to_fail_is_never_paid_for).
 ARRIVAL = {"mental_status": "drowsy", "expression": "uncomfortable", "work_of_breathing": "normal",
-           "skin_color": "mild pallor", "diaphoresis": "marked", "mottling": False, "respiratory_support": "none"}
-MASKED = {**ARRIVAL, "respiratory_support": "non-rebreather mask"}
+           "skin_color": "pallor", "diaphoresis": "absent", "mottling": False, "respiratory_support": "none"}
+MASKED = {**ARRIVAL, "respiratory_support": "simple mask"}
 
 
 def png(seed):
@@ -165,7 +167,7 @@ def test_a_second_state_of_the_same_person_is_one_edit_of_the_same_anchor(bank):
     assert provider.kinds()[before:] == ["edit", "screen"]
     anchor = bank.usable_asset("V27", image_broker.ANCHOR_KEY)
     assert masked.asset["reference_asset_id"] == anchor["id"]
-    assert "non_rebreather_mask" in masked.asset["devices"]
+    assert "simple_mask" in masked.asset["devices"]
 
 
 def test_the_anchor_prompt_names_the_person_by_appearance_and_never_by_the_case(bank):
@@ -461,7 +463,7 @@ def test_a_late_result_is_kept_for_its_own_state(bank):
 
 def test_devices_are_those_of_the_contract_and_nothing_else():
     assert image_broker.devices_for(ARRIVAL) == ["ecg_electrodes", "blood_pressure_cuff", "pulse_oximeter"]
-    assert image_broker.devices_for(MASKED)[-1] == "non_rebreather_mask"
+    assert image_broker.devices_for(MASKED)[-1] == "simple_mask"
     assert image_broker.devices_for({**ARRIVAL, "respiratory_support": "invasive ventilation"})[-1] == "endotracheal_tube"
 
 
@@ -511,7 +513,9 @@ def test_an_oxygen_interface_is_asked_for_connected_to_the_wall(bank):
     provider = Provider()
     settle(bank, provider, MASKED)
     edit = next(kwargs for kind, kwargs in provider.calls if kind == "edit")["prompt"]
-    assert "oxygen tubing must be clearly visible" in edit and "a mask that is not connected delivers nothing" in edit
+    assert "oxygen tubing must be clearly visible" in edit
+    assert "a mask that is not connected delivers nothing" in image_broker.edit_prompt(
+        {**ARRIVAL, "respiratory_support": "non-rebreather mask"})
     assert "oxygen tubing must be clearly visible" not in image_broker.edit_prompt(ARRIVAL)
 
 
@@ -521,3 +525,141 @@ def test_marked_sweat_is_asked_for_as_texture_and_light_on_any_skin_tone():
     assert "visible on any skin tone as texture and light, never as a change of skin color" in prompt
     assert "texture and light" not in image_broker.edit_prompt({**ARRIVAL, "diaphoresis": "mild"})
     assert "No intravenous cannula, catheter, dressing or tubing on the patient's arms" in prompt
+
+
+# --- faculty decisions of 2026-09-26 --------------------------------------------------------------------------------
+def test_a_state_known_to_fail_is_never_paid_for(bank):
+    # "Evita gastos que generen imágenes rechazadas": the pilot's reservoir mask (10 of 10
+    # rejected) and marked sweat on dark skin (4 of 4, decision 6) are not requested at all.
+    provider = Provider()
+    reservoir = {**ARRIVAL, "respiratory_support": "non-rebreather mask"}
+    marked = {**ARRIVAL, "diaphoresis": "marked"}
+    for person, contract in (("V22", reservoir), ("V27", marked), ("V18", marked)):
+        outcome = ask(bank, provider, contract, person=person)
+        assert outcome.state == "unavailable" and outcome.code == "UNRENDERABLE"
+    assert provider.calls == [] and bank.ledger(DEFAULT_BUDGET["id"]) == []
+    # The same sweat on light skin is still drawn: the rule follows the evidence, nothing more.
+    assert ask(bank, provider, marked, person="V22").state == "pending"
+
+
+def test_mild_findings_share_the_photograph_of_their_baseline_and_are_named_beside_it(bank):
+    # Decision 7: a still cannot show a mild sweat, a mild pallor or a mildly increased
+    # effort; such a state is drawn as its baseline and the room says what it cannot show.
+    import image_scene
+    from image_bank import drawn_contract, undrawn
+    provider = Provider()
+    baseline = {**ARRIVAL, "skin_color": "natural"}
+    mild = {**baseline, "diaphoresis": "mild", "skin_color": "mild pallor", "work_of_breathing": "mildly increased"}
+    assert drawn_contract(mild) == baseline and contract_key(mild) == contract_key(baseline)
+    _, drawn = settle(bank, provider, baseline, person="V22")
+    before = len(provider.calls)
+    outcome = ask(bank, provider, mild, person="V22")
+    assert outcome.state == "ready" and outcome.asset["id"] == drawn.asset["id"] and len(provider.calls) == before
+    image = image_scene._for_state(image_scene._display(bank, outcome.asset), mild)
+    assert set(image.limitations) == set(undrawn(mild)) == {"mild_skin_moisture", "mild_skin_color",
+                                                            "breathing_effort"}
+    assert image_scene._for_state(image_scene._display(bank, outcome.asset), baseline).limitations == ()
+    # A new state with a mild finding is asked for as its baseline: the prompt never names it.
+    fresh = {**mild, "mental_status": "alert", "expression": "neutral", "respiratory_support": "simple mask"}
+    settle(bank, provider, fresh, person="V22")
+    prompt = next(kwargs for kind, kwargs in reversed(provider.calls) if kind == "edit")["prompt"]
+    assert "mild pallor" not in prompt
+
+
+def test_a_photograph_saved_under_its_old_key_is_found_under_the_drawn_key(tmp_path):
+    from image_bank import SCREEN_ACCEPTED
+    url = f"sqlite:///{tmp_path / 'upgrade.sqlite3'}"
+    first = ImageBank(AccountStore(url, allow_sqlite=True))
+    provider = Provider()
+    settle(first, provider, ARRIVAL, person="V22")
+    mild = {**ARRIVAL, "diaphoresis": "mild"}
+    state = first.add_asset(identity_id="V22", identity_version="1.0", role="state", contract=mild,
+                            devices=[], display_sha256=first.put_blob(png("old")),
+                            reference_asset_id=first.current_anchor("V22")["id"], generation={},
+                            screen=SCREEN_ACCEPTED[1], screen_details={"limitations": ["mild_skin_moisture"]})
+    # As the pilot's database has it: the key of the contract as it was written.
+    old_key = hashlib.sha256(json.dumps(mild, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    with first.accounts._transaction(write=True) as connection:
+        first._execute(connection, "UPDATE mrs_image_assets SET state_key = ? WHERE id = ?", (old_key, state["id"]))
+    AccountStore.forget_schemas()
+    upgraded = ImageBank(AccountStore(url, allow_sqlite=True))
+    assert upgraded.asset(state["id"])["state_key"] == contract_key(mild) == contract_key(ARRIVAL)
+
+
+def test_approved_reviews_enable_a_photograph_the_screen_rejected_and_nothing_else_does(bank):
+    # Decision 5: a person's approved visual and clinical reviews over the automated screen.
+    from image_selection import usable
+    provider = Provider()
+    settle(bank, provider, ARRIVAL, person="V22")
+    accounts = bank.accounts
+    rejected = bank.add_asset(identity_id="V22", identity_version="1.0", role="state", contract=MASKED, devices=[],
+                              display_sha256=bank.put_blob(png("masked")), generation={}, screen="rejected",
+                              reference_asset_id=bank.current_anchor("V22")["id"], excluded=True,
+                              exclusion_reason="Rejected by the automated screen.")
+
+    def review(field, value):
+        with accounts._transaction(write=True) as connection:
+            bank._execute(connection, f"UPDATE mrs_image_assets SET {field} = ? WHERE id = ?", (value, rejected["id"]))
+        return bank.asset(rejected["id"])
+
+    assert not usable(bank.asset(rejected["id"]))
+    assert not usable(review("visual_review", "approved"))                  # one review is not enough
+    assert usable(review("clinical_review", "approved"))
+    assert bank.usable_asset("V22", contract_key(MASKED))["id"] == rejected["id"]
+    assert not usable(review("clinical_review", "rejected"))                # a rejected review always wins
+    review("clinical_review", "approved")
+    with accounts._transaction(write=True) as connection:                    # a person's exclusion is never lifted
+        bank._execute(connection, "UPDATE mrs_image_assets SET exclusion_reason = ? WHERE id = ?",
+                      ("Excluded by a person.", rejected["id"]))
+    assert not usable(bank.asset(rejected["id"]))
+
+
+def _faculty(accounts, username):
+    from account_store import hash_password
+    accounts.bootstrap_admin("pack_admin", hash_password("pack-only-admin-password"))
+    admin = accounts.authenticate("pack_admin", "pack-only-admin-password")
+    accounts.register(username, f"{username}-only-password", accounts.create_invite(admin, "faculty", None))
+
+
+def test_pack_approvals_are_recorded_once_under_the_account_they_name(bank, tmp_path):
+    import image_pack
+    provider = Provider()
+    settle(bank, provider, ARRIVAL, person="V22")
+    pack = tmp_path / "pack"
+    image_pack.export_pack(bank, pack, budget=dict(DEFAULT_BUDGET))
+    anchor = bank.current_anchor("V22")
+    approvals = [{"id": f"approval-{field}", "asset_id": anchor["id"], "field": field, "value": "approved",
+                  "username": "docente_real", "note": "Approved in the chat, recorded by the agent.",
+                  "created_at": 1790000000} for field in ("visual_review", "clinical_review")]
+    (pack / image_pack.APPROVALS).write_text(json.dumps(approvals), encoding="utf-8")
+
+    elsewhere = ImageBank(AccountStore(f"sqlite:///{tmp_path / 'no-such-account.sqlite3'}", allow_sqlite=True))
+    assert image_pack.import_pack(elsewhere, pack)["approvals"] == {"no_account": 2}
+    assert elsewhere.asset(anchor["id"])["visual_review"] == "pending"      # nobody else's name is used
+
+    target = ImageBank(AccountStore(f"sqlite:///{tmp_path / 'target.sqlite3'}", allow_sqlite=True))
+    _faculty(target.accounts, "docente_real")
+    assert image_pack.import_pack(target, pack)["approvals"] == {"added": 2}
+    asset = target.asset(anchor["id"])
+    assert asset["visual_review"] == asset["clinical_review"] == "approved"
+    with target.accounts._transaction() as connection:
+        rows = connection.execute("""SELECT r.field, r.note, u.username FROM mrs_image_reviews r
+            JOIN mrs_users u ON u.id = r.actor_id WHERE r.asset_id = ?""", (anchor["id"],)).fetchall()
+    assert {row["username"] for row in rows} == {"docente_real"} and len(rows) == 2
+    assert all("recorded by the agent" in row["note"] for row in rows)
+    assert image_pack.import_pack(target, pack)["approvals"] == {"known": 2}  # once, however often it is imported
+
+
+def test_the_pack_keeps_the_ledger_of_every_budget(bank, tmp_path):
+    import image_pack
+    provider = Provider()
+    first = dict(DEFAULT_BUDGET)
+    second = {**DEFAULT_BUDGET, "id": "second-authorization", "limit_micro": 10 * MICRO, "limit_requests": 100}
+    settle(bank, provider, ARRIVAL, person="V22", budget=first)
+    settle(bank, provider, MASKED, person="V22", budget=second)
+    manifest = image_pack.export_pack(bank, tmp_path / "pack", budget=second)
+    assert {entry["budget"]["id"] for entry in manifest["ledgers"]} == {first["id"], second["id"]}
+    fresh = ImageBank(AccountStore(f"sqlite:///{tmp_path / 'fresh.sqlite3'}", allow_sqlite=True))
+    image_pack.import_pack(fresh, tmp_path / "pack")
+    for budget in (first, second):
+        assert fresh.budget_summary(budget)["requests"] == bank.budget_summary(budget)["requests"] > 0

@@ -31,7 +31,10 @@ CASE, FAMILY = "hypoglycemia_76f", "hypoglycemia"
 # "Oxígeno por mascarilla de reservorio a 15 L/min" and "Retiro el oxígeno".
 DEXTROSE = {"type": "dextrose", "dose_g": 25.0, "route": "IV", "dose_basis": "50% × 50 mL",
             "solution_percent": 50.0, "solution_ml": 50.0}
-OXYGEN = {"type": "oxygen", "device": "non-rebreather mask", "flow_lpm": 15.0}
+# A mask the provider can draw: a reservoir mask is no longer requested at all
+# (test_a_reservoir_mask_is_never_paid_for_and_the_room_says_why).
+OXYGEN = {"type": "oxygen", "device": "simple mask", "flow_lpm": 8.0}
+RESERVOIR = {"type": "oxygen", "device": "non-rebreather mask", "flow_lpm": 15.0}
 ROOM_AIR = {"type": "oxygen", "device": "room air", "flow_lpm": 0}
 
 
@@ -134,7 +137,9 @@ def test_2_a_change_of_state_is_an_edit_of_the_same_persons_anchor(world):
     bank = world.bank
     anchor = bank.current_anchor(arrival.identity_id)
     for image in (arrival, later):
-        assert bank.asset(image.asset_id)["reference_asset_id"] == anchor["id"]
+        # Recovered with a mild pallor is drawn as the reference state itself (decision 7).
+        asset = bank.asset(image.asset_id)
+        assert asset["id"] == anchor["id"] or asset["reference_asset_id"] == anchor["id"]
 
 
 # 3 -- devices appear with the executed order and leave with it ----------------------------------------------
@@ -143,8 +148,8 @@ def test_3_the_mask_appears_when_the_order_runs_and_its_photograph_is_the_masked
     room.settle()
     room.order(OXYGEN)
     masked = room.settle()
-    assert appearance_state(room.state)["respiratory_support"] == "non-rebreather mask"
-    assert "non_rebreather_mask" in world.bank.asset(masked.asset_id)["devices"]
+    assert appearance_state(room.state)["respiratory_support"] == "simple mask"
+    assert "simple_mask" in world.bank.asset(masked.asset_id)["devices"]
 
 
 def test_3_a_held_order_is_not_an_executed_device(world):
@@ -176,16 +181,16 @@ def test_4_a_state_change_during_a_request_never_shows_the_earlier_state(world):
     room = encounter(world)
     room.settle()                                   # the person and the arrival exist
     world.provider.gate = threading.Event()
-    room.order(DEXTROSE, {"type": "reassessment", "delay_min": 15})
-    recovered_key = contract_key(appearance_state(room.state))
+    room.order(OXYGEN)
+    masked_key = contract_key(appearance_state(room.state))
     assert room.look() is None and room.status["state"] == "pending"
-    room.order({"type": "reassessment", "delay_min": 1})
+    room.order(ROOM_AIR)                            # the mask comes off while its photograph is made
     # Whatever is pending, the room shows no earlier photograph as the patient now.
     shown = room.look()
     assert shown is None or world.bank.asset(shown.asset_id)["state_key"] == contract_key(appearance_state(room.state))
     world.provider.gate.set()
     image_broker.wait(30)
-    assert world.bank.usable_asset(room.session["_scene_jobs"].identity["id"], recovered_key) is not None
+    assert world.bank.usable_asset(room.session["_scene_jobs"].identity["id"], masked_key) is not None
 
 
 # 5 -- a failure, then a late answer ----------------------------------------------------------------------
@@ -320,7 +325,7 @@ def test_11_a_role_the_paid_gate_refuses_is_never_charged_but_sees_what_is_saved
     before = calls(world)
     b = encounter(world, "resident_b")
     assert b.look() == saved                           # the saved arrival is free to show
-    b.order(DEXTROSE, {"type": "reassessment", "delay_min": 15})
+    b.order(OXYGEN)
     assert b.look() is None and b.status["code"] == "NOT_ALLOWED"
     assert calls(world) == before
 
@@ -359,6 +364,9 @@ def test_the_repository_pack_gives_a_new_database_the_pilots_photographs_without
     world.monkeypatch.setattr(image_pack, "PACK_DIR", image_pack.Path(__file__).resolve().parent / "assets" / "patient_images")
     if image_pack.read_manifest() is None:
         pytest.skip("No pack in this checkout.")
+    # The faculty member who approved the pilot's photographs in the chat has an account here.
+    code = world.accounts.create_invite(world.admin, "faculty", None)
+    world.accounts.register("npinedafaculty", "faculty-only-test-password", code)
     state = trajectories.launch("hypoglycemia_54m_thiamine", FAMILY, allow_review_candidates=True)
     resident = world.residents["resident_a"]
     attempt = world.accounts.create_attempt(resident["token"], "R1-03", {"presentation": "Synthetic"})
@@ -367,9 +375,16 @@ def test_the_repository_pack_gives_a_new_database_the_pilots_photographs_without
     assert image is not None and calls(world) == 0
     asset = world.bank.asset(image.asset_id)
     assert asset["generation"]["imported_from_pack"] and asset["identity_id"] == "V22"
-    assert asset["visual_review"] == asset["clinical_review"] == "pending"
-    summary = world.bank.budget_summary(image_pack.read_manifest()["budget"])
-    assert summary["requests"] == 26 and summary["calls_sent"] == 52
+    # Approved under that account, with the note that says who recorded it and why.
+    assert asset["visual_review"] == asset["clinical_review"] == "approved"
+    reviews = world.bank.reviews(world.admin, asset["id"])
+    assert {row["username"] for row in reviews} == {"npinedafaculty"} and all(
+        "registrada por el agente" in row["note"] for row in reviews)
+    ledgers = {entry["budget"]["id"]: entry["budget"] for entry in image_pack.read_manifest()["ledgers"]}
+    pilot = world.bank.budget_summary(ledgers["imagenes-2026-09-26"])
+    assert pilot["requests"] == 26 and pilot["calls_sent"] == 52
+    second = world.bank.budget_summary(ledgers["imagenes-2026-09-26-b"])
+    assert second["requests"] == 63 and second["committed"] <= second["limit_micro"]
 
 
 def test_the_image_issue_is_offered_only_for_a_state_that_failed(world):
@@ -397,3 +412,28 @@ def test_a_database_that_cannot_be_reached_leaves_the_room_working_with_its_neut
     assert room.status == {"state": "unavailable", "code": "INTERNAL"}
     assert "saved photograph could not be read" in clinical_scene.scene_status_text(room.status)
     assert calls(world) == 0
+
+
+# faculty decisions of 2026-09-26 -------------------------------------------------------------------------------------
+def test_a_reservoir_mask_is_never_paid_for_and_the_room_says_why(world):
+    room = encounter(world)
+    room.settle()
+    before = calls(world)
+    room.order(RESERVOIR)
+    assert room.settle() is None
+    assert room.status["state"] == "unavailable" and room.status["code"] == "UNRENDERABLE"
+    assert calls(world) == before
+    assert "could not draw" in clinical_scene.scene_status_text(room.status)
+
+
+def test_with_review_required_only_a_photograph_a_person_approved_is_shown(world):
+    # Decision 8: for production, a photograph is shown once the visual and clinical reviews approve it.
+    saved = encounter(world).settle()
+    world.settings["MRS_IMAGE_REQUIRE_REVIEW"] = "on"
+    room = encounter(world, "resident_b")
+    before = calls(world)
+    assert room.look() is None and room.status["code"] == "REVIEW_PENDING" and calls(world) == before
+    for field in ("visual_review", "clinical_review"):
+        world.bank.review(world.admin, saved.asset_id, field, "approved", "Checked face, hands and devices.")
+    again = encounter(world, "resident_b")
+    assert again.look() == saved and calls(world) == before

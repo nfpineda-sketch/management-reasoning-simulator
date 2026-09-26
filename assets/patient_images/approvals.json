@@ -1,0 +1,156 @@
+[
+ {
+  "id": "4dc52edac3205f3f9f3755126ef3e77f",
+  "asset_id": "e83cdc48b8094ce094f27fd617472bf4",
+  "identity_id": "V22",
+  "role": "anchor",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "74a4314f8d7d59fe9c618016a191a02b",
+  "asset_id": "e83cdc48b8094ce094f27fd617472bf4",
+  "identity_id": "V22",
+  "role": "anchor",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "099ea2bc125955238af7ed0fbcb20bde",
+  "asset_id": "fdde9713bbe64e2e8a2e1ded31d72cfa",
+  "identity_id": "V22",
+  "role": "state",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "d225dfa23d9e55f7b9fc85a9a3778873",
+  "asset_id": "fdde9713bbe64e2e8a2e1ded31d72cfa",
+  "identity_id": "V22",
+  "role": "state",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "a87da27d5faa5319936944f1b8a2860a",
+  "asset_id": "fe231b670946413b9681109fca1e8247",
+  "identity_id": "V22",
+  "role": "state",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "2437869afc3d58eaa7966f04bfc16317",
+  "asset_id": "fe231b670946413b9681109fca1e8247",
+  "identity_id": "V22",
+  "role": "state",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "663693daa78b5d33a58bb2a23f6fba98",
+  "asset_id": "c1eb4f53017b4a889197e483b0778ecc",
+  "identity_id": "V22",
+  "role": "state",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "b88d3efaa43c5822a547a0833f1d26af",
+  "asset_id": "c1eb4f53017b4a889197e483b0778ecc",
+  "identity_id": "V22",
+  "role": "state",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "6fbe68b81a0f525b8c00994250f9ea19",
+  "asset_id": "51839cb0ef0c44fbb3ed5c96db7c1c08",
+  "identity_id": "V18",
+  "role": "anchor",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "c7d1aca0298c5728a17a60b7b293f7b0",
+  "asset_id": "51839cb0ef0c44fbb3ed5c96db7c1c08",
+  "identity_id": "V18",
+  "role": "anchor",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "7010f00a90935cfd86b3a6d4155a52c2",
+  "asset_id": "e586ceaca4f4472fb2438c5df72470cc",
+  "identity_id": "V11",
+  "role": "anchor",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "022bdd28c086513c9ca78613ffb32219",
+  "asset_id": "e586ceaca4f4472fb2438c5df72470cc",
+  "identity_id": "V11",
+  "role": "anchor",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "fb25a06c43e55f94b6f62d387d637698",
+  "asset_id": "65dea3d7f2134e44ad6bb7eaff16fdfe",
+  "identity_id": "V11",
+  "role": "state",
+  "field": "visual_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ },
+ {
+  "id": "5ec73fd41a9d56c4be634e87c277fc28",
+  "asset_id": "65dea3d7f2134e44ad6bb7eaff16fdfe",
+  "identity_id": "V11",
+  "role": "state",
+  "field": "clinical_review",
+  "value": "approved",
+  "username": "npinedafaculty",
+  "note": "Aprobación del docente dada en el chat del 2026-09-26 («Apruébalas, se ven bien»), registrada por el agente a su pedido.",
+  "created_at": 1790433967
+ }
+]

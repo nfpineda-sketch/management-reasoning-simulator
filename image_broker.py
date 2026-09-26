@@ -43,7 +43,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from io import BytesIO
 
-from image_bank import BudgetRefused, contract_key
+from image_bank import SCREEN_EXCLUSION, BudgetRefused, contract_key, drawn_contract
 from image_pricing import IMAGE_REQUESTS, PriceUnknown, ceiling, cost_from_usage, usage_record
 from scene_errors import SceneImageError, provider_image_error
 
@@ -59,19 +59,40 @@ from image_bank import ANCHOR_CONTRACT, ANCHOR_KEY  # noqa: E402  (one definitio
 # first "drowsy" edit kept the anchor's open, camera-directed gaze, because the
 # edit brief asks for conservative changes. Neither addition names a condition,
 # and neither relaxes the screen: the same targets are checked afterwards.
-PROMPT_VERSION = "bank-1.3"
+# bank-1.4 (faculty decision 3): equipment hanging unconnected on the wall or
+# beside the bed is not a treatment for the screen either; a line that reaches
+# the patient still is. bank-1.5: no wristband beside the finger clip, and a
+# marked discomfort or effort drawn so that it shows.
+PROMPT_VERSION = "bank-1.5"
 ROOM_WITHOUT_TREATMENT = (
     " No intravenous bags, IV poles, infusion lines, syringes, pumps or drains anywhere in the room: "
     "nothing in the bed space may suggest a treatment beyond the listed monitoring and support."
     # Batch 3: an anchor came with a cannula and its line taped to the wrist.
     " No intravenous cannula, catheter, dressing or tubing on the patient's arms or hands: the only things "
-    "attached to the patient are the listed monitors and support.")
+    "attached to the patient are the listed monitors and support."
+    # Second authorization, batches 1-3: 10 of 10 rejections were "active treatment"
+    # with a clean wall, beside an identification band next to the finger clip.
+    " No wristband, bracelet, watch or tape on either wrist; the pulse oximeter is only a small clip on one "
+    "fingertip with a thin cable. Remove any the reference shows.")
 # Batch 3: on dark brown skin, two candidates of "marked" sweating showed dry skin.
 # Sweat is texture and light, visible on every skin tone; it is not a colour.
 DIAPHORESIS_VISIBLE = {
     "marked": ("The marked sweating must be visible on any skin tone as texture and light, never as a change "
                "of skin color: distinct beads of sweat on the forehead, temples and upper lip, and a wet sheen "
                "that catches the light, in proportion, without dripping or theatrical exaggeration."),
+}
+# Second authorization: the screen accepted "markedly uncomfortable" and "markedly
+# increased" states drawn with a calm face and a relaxed posture. Neither names a
+# condition; the screen checks the same targets afterwards.
+EXPRESSION_VISIBLE = {
+    "markedly uncomfortable": ("The marked discomfort must be recognizable at normal viewing size: brow "
+                               "drawn together, eyes tight, a strained mouth. Not a calm or neutral face."),
+}
+EFFORT_VISIBLE = {
+    "markedly increased": ("The breathing effort must be visible in the posture: sitting more upright, "
+                           "shoulders raised, neck muscles tense, lips parted."),
+    "severe": ("The breathing effort must be visible in the posture: sitting upright and leaning slightly "
+               "forward, shoulders raised, neck muscles tense, mouth open."),
 }
 MENTAL_STATUS_VISIBLE = {
     "drowsy": ("The drowsiness must be recognizable at normal viewing size, in proportion: eyelids "
@@ -85,6 +106,19 @@ MENTAL_STATUS_VISIBLE = {
 }
 
 MONITORS = ("ecg_electrodes", "blood_pressure_cuff", "pulse_oximeter")
+
+# Contracts the pilot could not draw: a request for them pays for a rejection
+# (faculty, 2026-09-26: avoid spending that ends in a rejected image). The room
+# shows its neutral view and says why; a photograph a person approved over the
+# automated screen is still shown (decision 5), and the case is never changed.
+def known_to_fail(identity_record, contract):
+    """Why this person in this state is not requested, or None."""
+    if contract.get("respiratory_support") == "non-rebreather mask":
+        return "The automated screen did not recognise the reservoir mask in 10 of 10 candidates."
+    if contract.get("diaphoresis") == "marked" and int(identity_record.get("skin_tone") or 0) >= 5:
+        return "Marked sweat was not drawn on dark skin in 4 of 4 candidates (faculty decision 6)."
+    return None
+
 
 TRANSIENT = frozenset({"RATE", "PROVIDER", "CONNECTION"})
 RETRY_PAUSE_SECONDS = 3.0
@@ -199,10 +233,13 @@ def request(bank, identity_record, contract, *, api_key, allowed, image_model, r
             requested_by, budget, client_factory=None, force=False):
     """Ready, pending, failed or unavailable -- and start the job when it is allowed to start."""
     identity_id = identity_record["id"]
+    contract = drawn_contract(contract)
     state_key = contract_key(contract)
     asset = bank.usable_asset(identity_id, state_key)
     if asset is not None:
         return Outcome("ready", asset=asset)
+    if known_to_fail(identity_record, contract):
+        return Outcome("unavailable", code="UNRENDERABLE")
     anchor_first = state_key != ANCHOR_KEY and bank.current_anchor(identity_id) is None
     if anchor_first:
         # First the person's reference photograph, as a job of its own: two states
@@ -387,6 +424,8 @@ def edit_prompt(contract):
     """The room's edit brief, with the bank's clarifications."""
     from patient_appearance import edit_prompt_for
     extra = [MENTAL_STATUS_VISIBLE.get(contract.get("mental_status"), ""),
+             EXPRESSION_VISIBLE.get(contract.get("expression"), ""),
+             EFFORT_VISIBLE.get(contract.get("work_of_breathing"), ""),
              DIAPHORESIS_VISIBLE.get(contract.get("diaphoresis"), ""),
              SUPPORT_VISIBLE.get(contract.get("respiratory_support"), "")]
     return edit_prompt_for(contract) + "".join(" " + item for item in extra if item) + ROOM_WITHOUT_TREATMENT
@@ -417,7 +456,7 @@ def _store(bank, identity_record, contract, role, raw, *, screen, details, refer
                           master_sha256=master, reference_asset_id=reference["id"] if reference else None,
                           generation=generation, screen=screen, screen_details=details,
                           excluded=screen == "rejected",
-                          exclusion_reason="Rejected by the automated screen." if screen == "rejected" else "")
+                          exclusion_reason=SCREEN_EXCLUSION if screen == "rejected" else "")
 
 
 def _generation(identity_record, image_model, review_model, job_id, requested_by, stage, repaired=False):
