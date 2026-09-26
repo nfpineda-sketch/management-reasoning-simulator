@@ -172,3 +172,27 @@ intentos equivalentes.
 - V11 (mujer de unos 68, piel oliva clara): ancla y somnolienta con sudor leve.
 - **Antes:** cuatro trabajos, uno tras otro. Peor caso de cada uno: US$0,50 el ancla y US$0,60 el estado,
   2 solicitudes cada uno. Gastado hasta aquí: US$1,7242; 17 solicitudes. Quedan 13.
+- **Después (06:45–06:46 UTC):** 10 llamadas, 0 reintentos. **5 solicitudes.** Acumulado: **US$2,1275**;
+  **22 de 30**.
+  - V11: ancla y somnolienta aceptadas a la primera. La identidad se conserva y la somnolencia se
+    reconoce.
+  - **V18 somnoliento con sudor marcado: rechazado dos veces**, con razón: la piel se ve seca. El
+    generador no dibujó el sudor marcado sobre piel café oscura.
+- **Revisión:**
+  - **El ancla de V11 trae una cánula venosa con su línea en la muñeca**, y su estado la heredó. No está
+    en el contrato ni fue ejecutada. En hipoglicemia importa, porque el motor modela el acceso venoso.
+    El revisor automático no la detectó. Ancla y estado quedan **retirados** con el motivo.
+  - **El ancla de V18 tiene en la pared un set de infusión con su tubo hacia la cama.** Es la misma
+    tendencia de las primeras anclas de V22: el generador agrega equipo de infusión pese a la
+    instrucción, y el revisor automático no lo detecta de forma constante. Queda para tu revisión
+    visual; no la retiro porque no está conectado al paciente.
+- **Método corregido** (`bank-1.3`):
+  - se prohíbe explícitamente cualquier cánula, catéter, apósito o tubo en brazos y manos;
+  - el sudor marcado se pide como textura y brillo, visible en cualquier tono de piel, nunca como
+    cambio de color.
+
+### Intentos finales (con `bank-1.3`)
+
+- V18 somnoliento con sudor marcado: un intento, forzado una sola vez. Peor caso US$0,60, 2 solicitudes.
+- Después, si quedan al menos 4 solicitudes: V11 ancla y somnolienta. Peor caso US$1,10, 4 solicitudes.
+- Gastado hasta aquí: US$2,1275; 22 solicitudes. Después de esto no se hacen más solicitudes esta noche.
