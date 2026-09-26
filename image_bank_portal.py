@@ -71,6 +71,18 @@ def _render_image_bank(context):
             f"reported usage, {_dollars(summary['estimated'])} estimated, {_dollars(summary['in_flight'])} "
             f"reserved in flight) · image requests {summary['requests']} of {summary['limit_requests']} · "
             f"retries {summary['retries']}")
+        # Every other authorization recorded here, such as the reviewed batches run
+        # outside the app: its spending is in the same ledger and stays visible.
+        for other in bank.budgets():
+            if other["id"] == summary["budget_id"]:
+                continue
+            spent = bank.budget_summary(other)
+            st.markdown(
+                f"Budget `{other['id']}` (not the one this app spends from) · committed "
+                f"{_dollars(spent['committed'])} of {_dollars(spent['limit_micro'])} "
+                f"({_dollars(spent['from_usage'])} from the provider's reported usage, "
+                f"{_dollars(spent['estimated'])} estimated) · image requests {spent['requests']} of "
+                f"{spent['limit_requests']} · retries {spent['retries']}")
         show_all = st.toggle("Show rejected and excluded images too", value=False, key="_image_bank_all")
         by_person = {}
         for asset in assets:

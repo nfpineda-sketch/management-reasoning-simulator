@@ -36,6 +36,16 @@ def test_the_budget_line_shows_dollars_not_a_formula(cohort):
 
 
 @pytest.mark.skipif(not HAS_PACK, reason="No pack in this checkout.")
+def test_every_budget_in_the_ledger_has_its_line(cohort):
+    # The second authorization was spent in reviewed batches outside the app; the
+    # app spends from the first. Both stay visible, each with its own totals.
+    _, admin, _ = cohort
+    lines = [str(item.value) for item in _panel(open_app(admin)).markdown if "Budget" in str(item.value)]
+    assert any("imagenes-2026-09-26`" in line and "not the one" not in line for line in lines)
+    assert any("imagenes-2026-09-26-b" in line and "not the one this app spends from" in line for line in lines)
+
+
+@pytest.mark.skipif(not HAS_PACK, reason="No pack in this checkout.")
 def test_the_pilots_photographs_are_there_with_every_review_pending(cohort):
     store, admin, _ = cohort
     at = open_app(admin)
