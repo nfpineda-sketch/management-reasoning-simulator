@@ -64,7 +64,7 @@ Ejemplo real, el mismo encuentro con el selector en español:
 |---|---|
 | **1 · Idioma del encuentro** | **Hecho** (C-2026-09-26-22). El encuentro guarda el idioma de pantalla con que se cerró (`encounter_language`). El Management Trace, el Faculty Brief y el documento de rúbrica salen en ese idioma, con un selector «Idioma del documento · Document language» junto a cada descarga. Un encuentro cerrado antes no registró idioma: sus documentos siguen la elección de quien los abre, sin adivinar. |
 | **2 · Texto fijo de los documentos** | **Hecho** (C-2026-09-26-23). Encabezados, referencias, signos y sus valores, exámenes, órdenes, temas de historia, dominios, notas de convenciones y trazabilidad, en español con el catálogo revisado. |
-| **3 · Texto del modelo** | En curso: traducción al pedirlo, guardada; el original en inglés sigue siendo el canónico. |
+| **3 · Texto del modelo** | **Hecho** (C-2026-09-26-24). Al pedir un documento en español se traducen, en una llamada, las frases del modelo que imprime (después de las correcciones), con `MRS_TRANSLATION_MODEL` (por defecto gpt-5-mini). Se guardan y se reutilizan; el original en inglés sigue siendo el registro. Nunca se envían las palabras del residente. Sin clave no se traduce y el documento lo dice. |
 | **4 · Portales y pantallas de revisión** | Pendiente. |
 | **5 · Narrativa de los 31 casos** | En curso: borrador en español en `case_text/es/`, que se usa sólo después de tu revisión, caso por caso. |
 

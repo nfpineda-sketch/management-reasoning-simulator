@@ -699,6 +699,32 @@ CORRECTIONS = (
         "preservation": None,
     },
     {
+        "id": "C-2026-09-26-24",
+        "date": "2026-09-26",
+        "title": "El texto del modelo se traduce al pedirlo, una vez, y el original en inglés sigue siendo el registro",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Decisión docente del 2026-09-26: el análisis de IA se sigue generando en inglés (la evaluación, "
+                   "el registro de correcciones y la reproducibilidad leen ese original) y, al pedir un documento en "
+                   "español, se traducen exactamente las frases del modelo que imprime, después de las correcciones "
+                   "registradas. La traducción se guarda por el hash del inglés y del prompt (mrs_prose_translations) "
+                   "y se reutiliza; una frase corregida se traduce de nuevo. Nunca se envían las palabras del "
+                   "residente ni el texto propio del documento. Sin clave configurada (o sin conexión) no se traduce "
+                   "nada y el documento lo dice. Modelo: MRS_TRANSLATION_MODEL (por defecto gpt-5-mini)."),
+        "authorised_by": INSTRUCTION_2026_09_26C,
+        "affects": {"modules": ["prose_translation", "management_trace_report", "faculty_report", "rubric_report",
+                                "rubric_presentation", "management_trace_portal", "resident_portal",
+                                "faculty_portal"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_prose_translation.py::test_a_translation_is_paid_for_once_and_reused",
+                  "test_prose_translation.py::test_english_asks_for_nothing_and_no_key_translates_nothing",
+                  "test_prose_translation.py::test_the_management_trace_sends_only_the_model_s_sentences",
+                  "test_prose_translation.py::test_the_faculty_brief_sends_only_the_model_s_sentences",
+                  "test_prose_translation.py::test_the_rubric_document_sends_the_proposal_s_prose_and_never_the_learner_s_words",
+                  "test_prose_translation.py::test_a_document_without_translations_keeps_the_english_and_says_so"],
+        "preservation": None,
+    },
+    {
         "id": "C-2026-09-27-01",
         "date": "2026-09-27",
         "title": "Peso y talla en los 31 casos del banco y en la ficha, sólo para encuentros nuevos",

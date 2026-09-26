@@ -64,6 +64,7 @@ def _trace_pdf(context, record, language=None):
     """
     from management_trace_store import ManagementTraceStore, analysis_payload_from_session
     from management_trace_report import render_management_trace_pdf
+    import prose_translation
     store = ManagementTraceStore(context["store"])
     report = store.get_latest(context["token"], record["id"])
     if report is None:
@@ -73,7 +74,8 @@ def _trace_pdf(context, record, language=None):
         report, analysis_payload_from_session(session), case_label=_case_label(record),
         learner_label=str(context["user"]["username"]),
         review_completed=bool(session.get("review_completed")),
-        adaptation_plan=session.get("adaptation_plan"), language=language)
+        adaptation_plan=session.get("adaptation_plan"), language=language,
+        translate=prose_translation.translator(context))
 
 
 def _rubric_pdf(context, record, language="en"):
@@ -88,8 +90,10 @@ def _rubric_pdf(context, record, language="en"):
                                    context["user"]["id"],
                                    context["user"].get("training_year"))
     try:
+        import prose_translation
         return render_rubric_report_pdf(review, proposal, record, audience="learner",
-                                        badge=badge, language=language), review
+                                        badge=badge, language=language,
+                                        translate=prose_translation.translator(context)), review
     except (RubricReportError, ValueError):
         return None, review
 

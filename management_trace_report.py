@@ -88,13 +88,13 @@ def _scalar(value):
     return ""
 
 
-def _language_note(p, language=None):
+def _language_note(p, language=None, translated=False):
     """Said on the page, in a document not wholly written in the reader's language."""
-    from faculty_report import LANGUAGE_NOTE
+    from faculty_report import LANGUAGE_NOTE, TRANSLATED_NOTE
     from language import current as _reader_language
     if (language or _reader_language()) == "en":
         return []
-    return [p(LANGUAGE_NOTE, "tiny")]
+    return [p(TRANSLATED_NOTE if translated else LANGUAGE_NOTE, "tiny")]
 
 
 def _t(text, language=None):
@@ -374,7 +374,7 @@ def _observed_studies(event):
     return lines
 
 
-def _decision_title(item, event, stage, title_caps=presentation.TITLE_CAPS):
+def _decision_title(item, event, stage, title_caps=presentation.TITLE_CAPS, prose=None):
     """The decision's own heading, complete.
 
     A title cut at the schema's limit is not shown as a title. What the
@@ -383,7 +383,7 @@ def _decision_title(item, event, stage, title_caps=presentation.TITLE_CAPS):
     """
     written = _text(item.get("title"))
     if written and not presentation.was_truncated(written, title_caps):
-        return written
+        return _model_text(prose, written)
     names = []
     for phrase in presentation.action_lines(event.get("executed_actions", []), _reader()):
         name = phrase.split(" · ")[0].split(";")[0]
@@ -509,7 +509,7 @@ def _raw_event(payload, ref):
 
 def render_management_trace_pdf(
     report, payload, *, case_label="", learner_label="", review_completed=False,
-    adaptation_plan=None, corrections=None, language=None,
+    adaptation_plan=None, corrections=None, language=None, translate=None,
 ):
     """Render a learner report; the report must match frozen source + reflection.
 
@@ -519,16 +519,39 @@ def render_management_trace_pdf(
     ``language`` writes the document in that language -- the one its encounter
     was played in, or its reader's choice (``document_language``); without it
     the session's language stands, as before.
+
+    ``translate(texts, language) -> {english: translation}`` puts the model's
+    prose in a non-English document (``prose_translation``). A first pass
+    collects the exact sentences this document prints, after the recorded
+    corrections; they are translated once, and the document is written with
+    them. Every check still reads the English, which stays the record.
     """
     import language as languages
+    options = dict(case_label=case_label, learner_label=learner_label, review_completed=review_completed,
+                   adaptation_plan=adaptation_plan, corrections=corrections)
     with languages.presenting(language):
-        return _render_management_trace_pdf(
-            report, payload, case_label=case_label, learner_label=learner_label,
-            review_completed=review_completed, adaptation_plan=adaptation_plan, corrections=corrections)
+        if translate is None or _reader() == "en":
+            return _render_management_trace_pdf(report, payload, prose=None, **options)
+        collected = []
+        _render_management_trace_pdf(report, payload, prose=collected, **options)
+        wanted = list(dict.fromkeys(text for text in collected if text and text.strip()))
+        mapping = (translate(wanted, _reader()) or {}) if wanted else {}
+        complete = bool(wanted) and all(text in mapping for text in wanted)
+        return _render_management_trace_pdf(report, payload, prose=mapping, translated=complete, **options)
+
+
+def _model_text(prose, text):
+    """The model's sentence as this pass prints it: collected, translated, or as written."""
+    if isinstance(prose, list):
+        prose.append(text)
+        return text
+    if isinstance(prose, dict):
+        return prose.get(text, text)
+    return text
 
 
 def _render_management_trace_pdf(report, payload, *, case_label, learner_label, review_completed,
-                                 adaptation_plan, corrections):
+                                 adaptation_plan, corrections, prose=None, translated=False):
     from management_trace_analysis import build_analysis_source, usable_analysis
 
     # A format fault in one passage withholds that passage, not the report
@@ -607,7 +630,7 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
     def claim_paragraph(claim, style="body"):
         claim = _mapping(claim)
         refs = claim.get("evidence_refs", [])
-        text = _xml(correct(presentation.claim_text(claim.get("text", ""), claim_caps)))
+        text = _xml(_model_text(prose, correct(presentation.claim_text(claim.get("text", ""), claim_caps))))
         if refs:
             seen, labels = set(), []
             for ref in refs:
@@ -800,7 +823,7 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
             p(_t("DECISION {n} · {span} · {status}").format(
                 n=event["decision_number"], span=time_range,
                 status=_t(_text(event.get("execution_status")).replace("_", " ") or "not recorded")), "label"),
-            p(_decision_title(item, event, stage, title_caps), "card_title"),
+            p(_decision_title(item, event, stage, title_caps, prose), "card_title"),
             p("1 · WHAT YOU HAD OBSERVED", "label"),
             p(observed_before or "No observations were recorded before this decision."),
         ]))
@@ -1013,7 +1036,7 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
         Spacer(1, 10),
         HRFlowable(width="100%", thickness=.6, color=LINE),
         p("Report provenance", "label"),
-        *_language_note(p),
+        *_language_note(p, translated=translated),
         p(
         _t("Encounter: {encounter} | Generated: {when} | Model: {model}\n"
            "Analysis: {schema} | Prompt: {prompt} | Renderer: {renderer}\n"

@@ -191,9 +191,10 @@ def _pdf_download(context, report, record, *, compact, assessment=None, language
     cache_key = repr(pdf_key)
     if cache_key not in st.session_state:
         try:
+            import prose_translation
             st.session_state[cache_key] = render_faculty_brief_pdf(
                 report, record, compact=compact, app_url=app_url, assessment=assessment,
-                language=language)
+                language=language, translate=prose_translation.translator(context, _secret))
         except (ValueError, LayoutError):
             if compact:
                 st.warning("This report could not be fitted into the concise PDF. Open the full analysis below; you can still review and record assessments.")
@@ -255,8 +256,10 @@ def _rubric_pdf_download(context, review, proposal, record, language="en"):
                       bool(badge), (badge or {}).get("initials"), language))
     if cache_key not in st.session_state:
         try:
+            import prose_translation
             st.session_state[cache_key] = render_rubric_report_pdf(
-                review, proposal, record, average=average, badge=badge, language=language)
+                review, proposal, record, average=average, badge=badge, language=language,
+                translate=prose_translation.translator(context, _secret))
         except (RubricReportError, ValueError, LayoutError):
             st.caption("The rubric document could not be prepared. The assessment above is "
                        "unchanged and remains available.")

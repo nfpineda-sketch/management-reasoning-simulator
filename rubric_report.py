@@ -309,7 +309,7 @@ def _events_block(assessment, styles, language, unasked=(), faculty=True):
 
 
 def build_rubric_document(review, proposal=None, record=None, *, language="en",
-                          audience="faculty", average=None, badge=None):
+                          audience="faculty", average=None, badge=None, prose_map=None):
     """The flowables of the document, so a test can read it without a PDF."""
     if audience not in {"faculty", "learner"}:
         raise RubricReportError("A rubric report is rendered for faculty or for a learner.")
@@ -328,7 +328,7 @@ def build_rubric_document(review, proposal=None, record=None, *, language="en",
             "released to the resident.")
     _fonts()
     styles = _big_styles(_styles(), language)
-    assessment = presentation.summary(review, proposal, language, record=record)
+    assessment = presentation.summary(review, proposal, language, record=record, prose_map=prose_map)
     width = A4[0] - 2 * MARGIN
 
     spanish = language == "es"
@@ -392,12 +392,22 @@ def build_rubric_document(review, proposal=None, record=None, *, language="en",
 
 
 def render_rubric_report_pdf(review, proposal=None, record=None, *, language="en",
-                             audience="faculty", average=None, badge=None):
-    """One page where it fits, and as many as the evidence needs where it does not."""
+                             audience="faculty", average=None, badge=None, translate=None):
+    """One page where it fits, and as many as the evidence needs where it does not.
+
+    ``translate(texts, language)`` puts the proposal's prose in a non-English
+    document (``prose_translation``); the English stays the record.
+    """
     import language as languages
     with languages.presenting(language):
-        flow, assessment = build_rubric_document(review, proposal, record, language=language,
-                                                 audience=audience, average=average, badge=badge)
+        options = dict(language=language, audience=audience, average=average, badge=badge)
+        mapping = None
+        if translate is not None and language != "en":
+            collected = []
+            build_rubric_document(review, proposal, record, prose_map=collected, **options)
+            wanted = list(dict.fromkeys(text for text in collected if text and text.strip()))
+            mapping = (translate(wanted, language) or {}) if wanted else None
+        flow, assessment = build_rubric_document(review, proposal, record, prose_map=mapping, **options)
         buffer = BytesIO()
         document = SimpleDocTemplate(
             buffer, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN,

@@ -749,5 +749,8 @@ ES = {
         "Dosis por kilo convertidas con el peso real; el efecto simulado sigue los mcg/min absolutos, calibrados a 70 kg: {orders}.",
     "The block's duration was measured on the actual weight, the engine's convention, whatever weight the dose was written on: {orders}.":
         "La duración del bloqueo se midió con el peso real, la convención del motor, cualquiera sea el peso con que se escribió la dosis: {orders}.",
+    # A document whose model prose was translated for it (prose_translation).
+    "The AI reasoning was translated automatically from its English original, which remains the reference record; the clinical identifiers and the curriculum objective titles are written in English.":
+        "El razonamiento de la IA se tradujo automáticamente de su original en inglés, que sigue siendo el registro de referencia; los identificadores clínicos y los títulos de los objetivos del currículo están en inglés.",
 }
 TABLES = {"es": ES}

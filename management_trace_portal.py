@@ -215,10 +215,11 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
         [report, adaptation_plan, bool(review_completed), case_label, RENDERER_VERSION, written_in],
         sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     if pdf_key not in st.session_state:
+        import prose_translation
         st.session_state[pdf_key] = render_management_trace_pdf(
             report, payload, case_label=case_label,
             review_completed=review_completed, adaptation_plan=adaptation_plan,
-            language=written_in,
+            language=written_in, translate=prose_translation.translator(context),
         )
     st.download_button("Download Management Trace PDF", st.session_state[pdf_key],
                        file_name="management_trace_v0.17.0.pdf", mime="application/pdf",

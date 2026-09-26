@@ -120,9 +120,15 @@ LANGUAGE_NOTE = (
     "written in English; the scores, the sections and the recorded judgements are the same "
     "in both languages."
 )
+#: The same page when the model's prose was translated for it (prose_translation).
+TRANSLATED_NOTE = (
+    "The AI reasoning was translated automatically from its English original, which remains the "
+    "reference record; the clinical identifiers and the curriculum objective titles are written "
+    "in English."
+)
 
 
-def _language_note(p, language=None):
+def _language_note(p, language=None, translated=False):
     """Said on the page, in a document not wholly written in the reader's language.
 
     The model generates its prose in English by contract and the curriculum
@@ -132,7 +138,7 @@ def _language_note(p, language=None):
     from language import current as _reader_language
     if (language or _reader_language()) == "en":
         return []
-    return [p(LANGUAGE_NOTE, "small")]
+    return [p(TRANSLATED_NOTE if translated else LANGUAGE_NOTE, "small")]
 
 
 def _t(text, language=None):
@@ -455,7 +461,7 @@ def _rubric_section(assessment, styles, content_width, *, compact):
     return flow
 
 
-def _render_full(report, record, inputs, correct=None, assessment=None):
+def _render_full(report, record, inputs, correct=None, assessment=None, prose=None, translated=False):
     """Preserve the complete stored analysis, allowing paragraphs to flow."""
     analysis, objectives, supported, index, decisions = inputs
     _fonts()
@@ -475,7 +481,7 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
     correct = correct or presentation.CorrectionLog()
 
     def p(value, style="body"):
-        return Paragraph(_xml(correct(value)), styles[style])
+        return Paragraph(_xml(_model_text(prose, correct(value))), styles[style])
 
     def section(title, text):
         story.append(p(title, "subhead"))
@@ -484,7 +490,7 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
     def bullets(values, limits=None):
         for value in values if isinstance(values, list) else []:
             written = correct(value)
-            story.append(Paragraph("<b>•</b> " + _xml(written), styles["body"]))
+            story.append(Paragraph("<b>•</b> " + _xml(_model_text(prose, written)), styles["body"]))
             caveat = findings.unsettled(written, limits) if limits else []
             if caveat:
                 story.append(p(_t("Ask this rather than judge it: {caveat}.").format(
@@ -630,7 +636,7 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
         ]
         if item.get("questions"):
             block.append(p("Questions before recording", "subhead"))
-            block += [Paragraph("<b>•</b> " + _xml(correct(value)), styles["body"])
+            block += [Paragraph("<b>•</b> " + _xml(_model_text(prose, correct(value))), styles["body"])
                       for value in item.get("questions") if isinstance(item.get("questions"), list)]
         block.append(p(_t("Scope limit: {limit}").format(limit=catalog["limitation"]), "small"))
         if catalog.get("competency_mapping"):
@@ -654,7 +660,7 @@ def _render_full(report, record, inputs, correct=None, assessment=None):
     bullets(analysis.get("limits"))
     story.append(p("This brief does not save an assessment, add observations, or confirm an objective. Only the supported simulated components are considered.", "small"))
     story.append(Spacer(1, 8))
-    story += _language_note(p)
+    story += _language_note(p, translated=translated)
     story.append(p("Generation record", "subhead"))
     story.append(p(
         _t("Encounter: {encounter}\nAttempt ID: {attempt}\n"
@@ -758,7 +764,8 @@ def _compact_references(refs, index, maximum=3):
     return " · ".join(anchors) or "No supporting reference selected"
 
 
-def _render_compact(report, record, inputs, app_url, correct=None, assessment=None):
+def _render_compact(report, record, inputs, app_url, correct=None, assessment=None, prose=None,
+                    translated=False):
     """Two-page reading route through an unchanged, optionally verbose report.
 
     The matrix does not replace the rationale, feedback or complete decision
@@ -790,7 +797,7 @@ def _render_compact(report, record, inputs, app_url, correct=None, assessment=No
     correct = correct or presentation.CorrectionLog()
 
     def p(text, style="body"):
-        return Paragraph(_xml(correct(text)), styles[style])
+        return Paragraph(_xml(_model_text(prose, correct(text))), styles[style])
 
     document = SimpleDocTemplate(
         out, pagesize=A4, leftMargin=margin, rightMargin=margin,
@@ -1087,7 +1094,7 @@ def _render_compact(report, record, inputs, app_url, correct=None, assessment=No
 
 
 def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corrections=None,
-                             assessment=None, language=None):
+                             assessment=None, language=None, translate=None):
     """Render an unchanged stored brief as a concise review or the full report.
 
     The default is a two-page reading aid. ``compact=False`` retains complete
@@ -1095,7 +1102,10 @@ def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corr
     adds an encounter selector link; authentication remains enforced by the app.
     ``language`` writes the document in that language -- the one its encounter
     was played in, or its reader's choice (``document_language``); without it
-    the session's language stands, as before.
+    the session's language stands, as before. ``translate(texts, language)``
+    puts the model's prose in a non-English document (``prose_translation``):
+    a first pass collects what this document prints, the model's sentences
+    among it are translated once, and the document is written with them.
     """
     inputs = _validated_inputs(report, record)
     # Recorded factual corrections are applied to the model's text at render
@@ -1107,7 +1117,51 @@ def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corr
         corrections if corrections is not None else report_corrections.for_record(record),
         references=presentation.reference_labels(session.get("management_trace") or []),
         language="en")
-    with languages.presenting(language):
+    def render(prose=None, translated=False):
         if compact:
-            return _render_compact(report, record, inputs, app_url, correct, assessment)
-        return _render_full(report, record, inputs, correct, assessment)
+            return _render_compact(report, record, inputs, app_url, correct, assessment, prose, translated)
+        return _render_full(report, record, inputs, correct, assessment, prose, translated)
+
+    with languages.presenting(language):
+        if translate is None or languages.current() == "en":
+            return render()
+        collected = []
+        render(collected)
+        wanted = _model_sentences(collected, report, correct)
+        mapping = (translate(wanted, languages.current()) or {}) if wanted else {}
+        return render(mapping, bool(wanted) and all(text in mapping for text in wanted))
+
+
+def _model_text(prose, text):
+    """What this pass prints of a sentence: collected, translated, or as written."""
+    if isinstance(prose, list):
+        prose.append(text)
+        return text
+    if isinstance(prose, dict):
+        return prose.get(text, text)
+    return text
+
+
+def _model_sentences(collected, report, correct):
+    """Of everything a pass printed, the model's own sentences (whole, or the excerpt shown)."""
+    import report_language
+    written = []
+
+    def walk(value):
+        if isinstance(value, str):
+            written.append(" ".join(str(correct(value) or "").split()))
+        elif isinstance(value, dict):
+            for inner in value.values():
+                walk(inner)
+        elif isinstance(value, list):
+            for inner in value:
+                walk(inner)
+    walk((report or {}).get("analysis"))
+    found = []
+    for text in dict.fromkeys(collected):
+        plain = " ".join(str(text or "").split())
+        if len(plain) < 8 or text in report_language.ES:
+            continue
+        if any(plain in sentence for sentence in written):
+            found.append(text)
+    return found

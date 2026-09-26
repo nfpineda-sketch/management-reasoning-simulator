@@ -184,12 +184,29 @@ def record_check(proposal, record, language="en"):
     return {"events": events, "domains": domains, "flags": flags}
 
 
-def summary(review, proposal=None, language="en", record=None):
-    """Everything a surface needs, computed once, in one shape."""
+def summary(review, proposal=None, language="en", record=None, prose_map=None):
+    """Everything a surface needs, computed once, in one shape.
+
+    ``prose_map`` puts the model's sentences in another language
+    (``prose_translation``): a list collects them as they would be printed, a
+    mapping replaces each with its translation. The English stays the record.
+    """
     totals = (review or {}).get("totals") or {}
     complete = bool(totals.get("coverage", {}).get("complete"))
     check = record_check(proposal, record, language)
-    prose = model_prose(record)
+    written = model_prose(record)
+    if isinstance(prose_map, list):
+        def prose(text):
+            shown = written(text)
+            if shown:
+                prose_map.append(shown)
+            return shown
+    elif isinstance(prose_map, dict):
+        def prose(text):
+            shown = written(text)
+            return prose_map.get(shown, shown)
+    else:
+        prose = written
     return {
         "rubric_version": (review or proposal or {}).get("rubric_version", VERSION),
         "status": status_line(review, proposal, language),
