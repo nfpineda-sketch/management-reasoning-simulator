@@ -21,6 +21,7 @@ from rubric import DOMAIN_IDS, DOMAINS, NOT_ASSESSABLE, headline, score as compu
 from rubric_analysis import (RubricAnalysisError, case_id_of, generate_rubric_proposal,
                              proposed_event_rows)
 from rubric_store import RubricStore
+from screen_language import rows as _rows, t as _t
 
 STAFF = {"faculty", "admin"}
 _CHOICES = [0, 1, 2, 3, NOT_ASSESSABLE]
@@ -84,19 +85,18 @@ def render_rubric_assessment(context, record, *, training_year=None):
     # an invalid identifier and a damaged record each say what they are; none
     # of them closes the panel or the encounter's documents (2026-09-25).
     basis = evaluation_basis.resolve(record)
-    with st.expander("Management reasoning rubric - pilot 1.0", expanded=False):
-        st.caption("A pilot instrument. Its scores are not ACGME Milestone levels, Canadian "
+    with st.expander(_t("Management reasoning rubric - pilot 1.0"), expanded=False):
+        st.caption(_t("A pilot instrument. Its scores are not ACGME Milestone levels, Canadian "
                    "stages or EPA supervision levels, and they do not assess a specialist's "
                    "competence. You confirm or change every value; the totals are computed "
-                   "from what you record.")
+                   "from what you record."))
         limitation = (basis.get("limitation") or {}).get("en")
         if basis["status"] in ("unknown_case", "corrupt"):
             st.error(limitation)
         elif limitation:
             st.info(limitation)
         elif basis["declaration"] is None:
-            st.info(f"No rubric coverage is declared for {case_id}. Scores remain available; "
-                    "no critical event is defined for this case.")
+            st.info(_t('No rubric coverage is declared for {v0}. Scores remain available; no critical event is defined for this case.', v0=case_id))
 
         # Outputs of this encounter that stand on undecided engine conventions
         # (faculty instruction of 2026-09-26, point 5): the note bounds those
@@ -130,21 +130,19 @@ def _declared_context(store, token, record):
 def _proposal_controls(store, token, record, proposal):
     api_key = _secret("OPENAI_API_KEY")
     if proposal:
-        st.caption(f"AI proposal {proposal.get('sequence', 1)} · model "
-                   f"{proposal.get('model', '')} · prompt {proposal.get('prompt_version', '')} · "
-                   f"generated {proposal.get('generated_at', '')}")
+        st.caption(_t('AI proposal {v0} · model {v1} · prompt {v2} · generated {v3}', v0=proposal.get('sequence', 1), v1=proposal.get('model', ''), v2=proposal.get('prompt_version', ''), v3=proposal.get('generated_at', '')))
     else:
-        st.caption("No AI proposal has been generated for this encounter revision.")
+        st.caption(_t("No AI proposal has been generated for this encounter revision."))
     if not api_key:
-        st.info("AI generation is unavailable until OPENAI_API_KEY is configured. "
-                "You can still score the rubric yourself.")
+        st.info(_t("AI generation is unavailable until OPENAI_API_KEY is configured. "
+                "You can still score the rubric yourself."))
     label = "Generate a new AI proposal" if proposal else "Generate an AI proposal"
     if st.button(label, key=_key(record, "generate"), disabled=not api_key):
         model = _secret("MRS_RUBRIC_MODEL", _secret("MRS_FACULTY_MODEL", _secret("OPENAI_MODEL", "")))
         if not model:
-            st.error("No rubric analysis model is configured.")
+            st.error(_t("No rubric analysis model is configured."))
             return
-        with st.spinner("Requesting one bounded proposal..."):
+        with st.spinner(_t("Requesting one bounded proposal...")):
             try:
                 report = generate_rubric_proposal(record, api_key=api_key, model=model,
                                                   context=_declared_context(store, token, record))
@@ -152,7 +150,7 @@ def _proposal_controls(store, token, record, proposal):
             except (RubricAnalysisError, AccountError) as error:
                 # A failure leaves the encounter and its reports untouched. It is
                 # never a zero and never a partial score.
-                st.error(f"{error} The rubric assessment remains pending.")
+                st.error(_t('{v0} The rubric assessment remains pending.', v0=error))
                 return
         st.rerun()
 
@@ -167,9 +165,9 @@ def _render_flags(check):
         subject = (f"`{flag['event_id']}`" if flag.get("event_id")
                    else f"Domain {str(flag.get('domain_id', ''))[1:]}")
         lines.append(f"- {subject}: {flag['label']}. " + " ".join(flag.get("facts") or []))
-    st.warning("**Check before deciding: the proposal and the record disagree.**\n\n"
+    st.warning(_t("**Check before deciding: the proposal and the record disagree.**\n\n")
                + "\n".join(lines)
-               + "\n\nThese marks change nothing by themselves; the decision stays yours.")
+               + _t("\n\nThese marks change nothing by themselves; the decision stays yours."))
 
 
 def _review_form(store, token, record, case_id, proposal, review, training_year=None, history=None):
@@ -195,22 +193,22 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
             proposed = suggestion.get("score")
             # Decisions on screen are D1, D2, D3. A rubric domain is spelled out
             # so the two cannot be read as the same thing.
-            st.markdown(f"**Domain {domain[1:]} · {DOMAINS[domain]['title']}**")
+            st.markdown(_t('**Domain {v0} · {v1}**', v0=domain[1:], v1=DOMAINS[domain]['title']))
             st.caption(DOMAINS[domain]["asks"])
-            with st.popover(f"Descriptors for domain {domain[1:]}"):
+            with st.popover(_t('Descriptors for domain {v0}', v0=domain[1:])):
                 for level, text in sorted(DOMAINS[domain]["levels"].items()):
                     st.markdown(f"**{level}** — {text}")
             domain_check = (check.get("domains") or {}).get(domain) or {}
             for fact in domain_check.get("facts", []):
-                st.caption(f"Record: {fact}")
+                st.caption(_t('Record: {v0}', v0=fact))
             if suggestion:
-                st.caption(f"AI proposes **{_label(proposed)}**. {prose(suggestion.get('rationale', ''))}")
+                st.caption(_t('AI proposes **{v0}**. {v1}', v0=_label(proposed), v1=prose(suggestion.get('rationale', ''))))
                 if suggestion.get("contrary_evidence"):
-                    st.caption(f"Against it: {prose(suggestion['contrary_evidence'])}")
+                    st.caption(_t('Against it: {v0}', v0=prose(suggestion['contrary_evidence'])))
                 if suggestion.get("next_level_gap"):
-                    st.caption(f"For the next level: {prose(suggestion['next_level_gap'])}")
+                    st.caption(_t('For the next level: {v0}', v0=prose(suggestion['next_level_gap'])))
                 for item in suggestion.get("learner_evidence", []):
-                    st.caption(f"At minute {item.get('minute')}: “{item.get('quote', '')}”")
+                    st.caption(_t('At minute {v0}: “{v1}”', v0=item.get('minute'), v1=item.get('quote', '')))
             # Faculty decision of 2026-09-23: an untouched domain starts at "not
             # assessable", not at what the AI proposed. Across thirteen real
             # proposals the model chose "not assessable" exactly never -- including
@@ -219,7 +217,7 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
             # reviewer towards scoring. Starting here pushes towards deciding: a
             # domain left alone cannot be confirmed without a written reason.
             default = saved_scores.get(domain, NOT_ASSESSABLE)
-            value = st.selectbox("Your score", _CHOICES, index=_CHOICES.index(default),
+            value = st.selectbox(_t("Your score"), _CHOICES, index=_CHOICES.index(default),
                                  format_func=_label, key=_key(record, "score", domain))
             scores[domain] = value
             if value == NOT_ASSESSABLE:
@@ -229,11 +227,11 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
                 offered = (" ".join(domain_check.get("facts", []))
                            if domain_check.get("suggestion") == "no_opportunity" else "")
                 reasons[domain] = st.text_input(
-                    "Why is it not assessable? (a zero is a demonstrated failure; this is not one)",
+                    _t("Why is it not assessable? (a zero is a demonstrated failure; this is not one)"),
                     value=saved_reasons.get(domain, offered), key=_key(record, "reason", domain))
             if suggestion and proposed in _CHOICES and value != proposed:
                 justifications[domain] = st.text_input(
-                    f"Why you changed it from the proposed {_label(proposed)}",
+                    _t('Why you changed it from the proposed {v0}', v0=_label(proposed)),
                     value=saved_changes.get(domain, {}).get("justification", ""),
                     key=_key(record, "why", domain))
             st.divider()
@@ -248,17 +246,17 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
         if preview:
             st.markdown(f"**{headline(preview)}**")
             if not preview["coverage"]["complete"]:
-                st.caption("A partial assessment keeps its events and their penalty but has no "
-                           "total comparable with a complete episode.")
+                st.caption(_t("A partial assessment keeps its events and their penalty but has no "
+                           "total comparable with a complete episode."))
             # The shape of what is on screen, redrawn as the selectboxes move, so a
             # reviewer sees the profile they are about to save rather than the one
             # they saved last time.
             _live_shape(store, token, record, {"scores": scores}, proposal, training_year)
     columns = st.columns(2)
     action = None
-    if columns[0].button("Save draft", key=_key(record, "draft")):
+    if columns[0].button(_t("Save draft"), key=_key(record, "draft")):
         action = "draft"
-    if columns[1].button("Confirm assessment", key=_key(record, "confirm"), type="primary"):
+    if columns[1].button(_t("Confirm assessment"), key=_key(record, "confirm"), type="primary"):
         action = "confirmed"
     if action:
         try:
@@ -268,7 +266,7 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
         except AccountError as error:
             st.error(str(error))
             return review
-        st.success(f"Saved as revision {saved['sequence']} · {headline(saved['totals'])}")
+        st.success(_t('Saved as revision {v0} · {v1}', v0=saved['sequence'], v1=headline(saved['totals'])))
         return saved
     _history(store, token, record, history)
     return review
@@ -302,26 +300,23 @@ def _event_controls(record, case_id, proposed_events, saved_events, check=None):
     # here, because it is exactly what the event no longer waits for.
     import history_review
     asked_topics = set(history_review.review(record, case_id)["named"])
-    st.markdown("**Critical events defined for this case**")
-    st.caption("Each is defined before the encounter. A confirmed event costs 3 points and "
+    st.markdown("**" + _t('Critical events defined for this case') + "**")
+    st.caption(_t("Each is defined before the encounter. A confirmed event costs 3 points and "
                "stays visible however high the total is. Anything else that concerns you is "
-               "recorded for review and carries no deduction.")
+               "recorded for review and carries no deduction."))
     decided = []
     for event in defined:
         kind = "Dangerous action" if event["kind"] == "dangerous_action" else "Critical omission"
         proposed = event["event_id"] in proposed_events
         saved = saved_events.get(event["event_id"], {})
         st.markdown(f"`{event['event_id']}` — **{kind}.** {event['action']}")
-        st.caption(f"Triggers when: {event['trigger']} · Window {event['window_min'][0]}–"
-                   f"{event['window_min'][1]} min")
-        st.caption("Acceptable alternatives: " + "; ".join(event["alternatives"]))
-        st.caption("Does not count when: " + "; ".join(event["exclusions"]))
+        st.caption(_t('Triggers when: {v0} · Window {v1}–{v2} min', v0=event['trigger'], v1=event['window_min'][0], v2=event['window_min'][1]))
+        st.caption(_t("Acceptable alternatives: ") + "; ".join(event["alternatives"]))
+        st.caption(_t("Does not count when: ") + "; ".join(event["exclusions"]))
         for row in event["information_on_asking"]:
             topic, tells = row
             state = "asked about" if topic in asked_topics else "**never asked about**"
-            st.caption(f"Available on asking — {topic.replace('_', ' ')} ({tells}): {state}. "
-                       "The patient answers for the whole encounter, so this was available "
-                       "either way; not asking is part of the omission, not an excuse for it.")
+            st.caption(_t('Available on asking — {v0} ({v1}): {v2}. The patient answers for the whole encounter, so this was available either way; not asking is part of the omission, not an excuse for it.', v0=topic.replace('_', ' '), v1=tells, v2=state))
         screen = ((check or {}).get("events") or {}).get(event["event_id"]) or {}
         against = screen.get("status") in ("contradicted", "excluded")
         if screen.get("facts"):
@@ -332,31 +327,31 @@ def _event_controls(record, case_id, proposed_events, saved_events, check=None):
                      }.get(screen.get("status"), "Record")
             st.caption(f"**{label}.** " + " ".join(screen["facts"]))
         if proposed and against:
-            st.error("The AI proposes this event, but the record contradicts it. Confirming it "
-                     "requires your written reason.")
+            st.error(_t("The AI proposes this event, but the record contradicts it. Confirming it "
+                     "requires your written reason."))
         elif proposed:
-            st.warning("The AI proposes this event occurred. Confirm or dismiss it.")
+            st.warning(_t("The AI proposes this event occurred. Confirm or dismiss it."))
         options = ["proposed", "confirmed", "dismissed"] if proposed else ["proposed", "confirmed"]
         labels = {"proposed": "Not decided yet", "confirmed": "Confirmed - applies the penalty",
                   "dismissed": "Dismissed - no penalty"}
         current = saved.get("status", "proposed")
-        state = st.radio("Your decision", options,
+        state = st.radio(_t("Your decision"), options,
                          index=options.index(current) if current in options else 0,
                          format_func=labels.get, horizontal=True,
                          key=_key(record, "event", event["event_id"]))
         justification = ""
         if state == "confirmed" and against:
             justification = st.text_input(
-                "Why you confirm it although the record contradicts it",
+                _t("Why you confirm it although the record contradicts it"),
                 value=saved.get("justification", ""),
                 key=_key(record, "eventagainst", event["event_id"]))
         elif state != "proposed" and not proposed:
             justification = st.text_input(
-                "Why (the AI did not propose this one)", value=saved.get("justification", ""),
+                _t("Why (the AI did not propose this one)"), value=saved.get("justification", ""),
                 key=_key(record, "eventwhy", event["event_id"]))
         elif state != "proposed":
             justification = st.text_input(
-                "Note (optional)", value=saved.get("justification", ""),
+                _t("Note (optional)"), value=saved.get("justification", ""),
                 key=_key(record, "eventnote", event["event_id"]))
         if state != "proposed" or proposed:
             decided.append({"event_id": event["event_id"], "status": state,
@@ -373,13 +368,11 @@ def _history(store, token, record, history=None):
             return
     if len(history) <= 1:
         return
-    with st.expander(f"Revision history ({len(history)})"):
+    with st.expander(_t('Revision history ({v0})', v0=len(history))):
         for row in history:
-            st.caption(f"Revision {row['sequence']} · {row['status']} · {row['reviewer']} · "
-                       f"{headline(row['totals'])}")
+            st.caption(_t('Revision {v0} · {v1} · {v2} · {v3}', v0=row['sequence'], v1=row['status'], v2=row['reviewer'], v3=headline(row['totals'])))
             for domain, change in (row.get("changes") or {}).items():
-                st.caption(f"   {domain}: proposed {change['proposed']} → "
-                           f"{change['confirmed']} — {change['justification']}")
+                st.caption(_t('   {v0}: proposed {v1} → {v2} — {v3}', v0=domain, v1=change['proposed'], v2=change['confirmed'], v3=change['justification']))
 
 
 def _radar_html(series, language, caption="", badge=None):
@@ -420,9 +413,9 @@ def render_rubric_shape(review, proposal=None, *, language="en", average=None, c
     if gaps:
         # Said in words as well as drawn, because an axis with no point is
         # quieter than a low one and it must not read as a zero.
-        st.caption("Drawn as a gap rather than at the centre, because it is not a zero: "
+        st.caption(_t("Drawn as a gap rather than at the centre, because it is not a zero: ")
                    + ", ".join(f"domain {domain[1:]}" for domain in gaps)
-                   + (" was" if len(gaps) == 1 else " were") + " not assessable in this encounter.")
+                   + (" was" if len(gaps) == 1 else " were") + _t(" not assessable in this encounter."))
 
 
 def render_rubric_profile(context, user_id=None, *, language="en", training_year=None):
@@ -444,46 +437,39 @@ def render_rubric_profile(context, user_id=None, *, language="en", training_year
     import resident_profile
     badge = resident_profile.badge(context["store"], context["token"], user_id, training_year)
     spanish = language == "es"
-    st.markdown("**Management reasoning profile** (pilot rubric " + summary["rubric_version"] + ")")
+    st.markdown(_t("**Management reasoning profile** (pilot rubric ") + summary["rubric_version"] + ")")
     st.caption(rubric_progress.FRAMING[1 if spanish else 0])
     waiting = _awaiting_confirmation(context, user_id, reviews)
     if waiting:
-        st.caption(f"{waiting} completed encounter(s) await a faculty member's confirmation and are "
-                   "not included: a suggestion is not a result.")
+        st.caption(_t("{v0} completed encounter(s) await a faculty member's confirmation and are not included: a suggestion is not a result.", v0=waiting))
     if not summary["encounters"]:
-        st.caption("No encounter has a rubric assessment a faculty member has confirmed yet. "
-                   "An encounter nobody has assessed is absent from this profile, not a zero.")
+        st.caption(_t("No encounter has a rubric assessment a faculty member has confirmed yet. "
+                   "An encounter nobody has assessed is absent from this profile, not a zero."))
         _render_results(summary)
         return summary
-    st.caption(f"Encounters included: {summary['encounters']} (confirmed, rubric "
-               f"{summary['rubric_version']}).")
+    st.caption(_t('Encounters included: {v0} (confirmed, rubric {v1}).', v0=summary['encounters'], v1=summary['rubric_version']))
     for version, count in sorted(summary["set_apart"].items()):
-        st.caption(f"{count} encounter(s) confirmed under rubric {version or 'without a version'} are "
-                   "listed below and not averaged in: the two scales are not assumed to be the same.")
+        st.caption(_t('{v0} encounter(s) confirmed under rubric {v1} are listed below and not averaged in: the two scales are not assumed to be the same.', v0=count, v1=version or _t('without a version')))
+    import report_language
     latest = reviews[-1]
     series = [{**rubric_radar.series_from_review(latest, language=language),
-               "label": "Latest encounter" if language != "es" else "Último encuentro"}]
+               "label": report_language.t("Latest encounter", language)}]
     average = rubric_progress.average_series(summary, language, colour=rubric_radar.SERIES_COLOURS[1])
     if average:
         series.append(average)
     st.markdown(_radar_html(series, language, rubric_progress.caption(summary, language), badge),
                 unsafe_allow_html=True)
     for row in rubric_progress.table(summary, language):
-        st.markdown(f"**Domain {row['domain_id'][1:]} · {row['title']}** — {row['mean_label']}")
+        st.markdown(_t('**Domain {v0} · {v1}** — {v2}', v0=row['domain_id'][1:], v1=row['title'], v2=row['mean_label']))
         st.caption(row["note"])
     if summary["mean_adjusted"] is not None:
-        st.caption(f"Mean adjusted total {summary['mean_adjusted']}/{summary['maximum']} over "
-                   f"{summary['complete_encounters']} encounter(s) where all five domains were "
-                   f"assessable. Partial assessments keep their events but have no comparable total.")
+        st.caption(_t('Mean adjusted total {v0}/{v1} over {v2} encounter(s) where all five domains were assessable. Partial assessments keep their events but have no comparable total.', v0=summary['mean_adjusted'], v1=summary['maximum'], v2=summary['complete_encounters']))
     if summary["critical_events"]:
-        st.caption(f"{summary['critical_events']} confirmed critical event(s) across these "
-                   "encounters. A safety event is counted, never averaged into a domain.")
+        st.caption(_t('{v0} confirmed critical event(s) across these encounters. A safety event is counted, never averaged into a domain.', v0=summary['critical_events']))
         for alert in summary["alerts"]:
-            st.caption(f"⚠ {alert['event_id']} · confirmed {_when(alert['confirmed_at'])}")
+            st.caption(_t('⚠ {v0} · confirmed {v1}', v0=alert['event_id'], v1=_when(alert['confirmed_at'])))
     if summary["weakest"]:
-        st.caption(f"Lowest mean: domain {summary['weakest'][1:]} · "
-                   f"{DOMAINS[summary['weakest']]['title']}. This is where the shape is pulled "
-                   "in, not a judgement about the resident.")
+        st.caption(_t('Lowest mean: domain {v0} · {v1}. This is where the shape is pulled in, not a judgement about the resident.', v0=summary['weakest'][1:], v1=DOMAINS[summary['weakest']]['title']))
     _render_results(summary)
     return summary
 
@@ -501,18 +487,18 @@ def _render_results(summary):
     rows = summary.get("results") or []
     if not rows:
         return
-    with st.expander(f"Individual results ({len(rows)})"):
-        st.dataframe([{
+    with st.expander(_t('Individual results ({v0})', v0=len(rows))):
+        st.dataframe(_rows([{
             "Confirmed": _when(row["confirmed_at"]),
             "Challenge": row.get("challenge_id") or "",
             "Case": row.get("case_id") or "",
             **{f"D{domain[1:]}": ("N/A" if value == NOT_ASSESSABLE else value)
                for domain, value in row["scores"].items()},
             "Total": (f"{row['adjusted']}/15" if row["adjusted"] is not None
-                      else f"partial {row['partial_subtotal']} ({row['assessed']}/5)"),
+                      else _t("partial {v0} ({v1}/5)", v0=row['partial_subtotal'], v1=row['assessed'])),
             "Alerts": ", ".join(row["critical_events"]),
-            "Rubric": row["rubric_version"] + ("" if row["included"] else " (not averaged)"),
-        } for row in rows], hide_index=True)
+            "Rubric": row["rubric_version"] + ("" if row["included"] else _t(" (not averaged)")),
+        } for row in rows]), hide_index=True)
 
 
 def _awaiting_confirmation(context, user_id, reviews):

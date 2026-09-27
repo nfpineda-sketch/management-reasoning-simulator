@@ -17,6 +17,7 @@ from urllib.parse import urlsplit
 import streamlit as st
 
 from account_store import AccountError, AccountLocked, AccountStore
+from screen_language import t as _t
 
 
 _TOKEN_KEY = "_account_token"
@@ -39,7 +40,7 @@ def _setting(name: str, default: str = "") -> str:
 
 
 def _closed(message: str) -> None:
-    st.title("Management Reasoning Simulator")
+    st.title(_t("Management Reasoning Simulator"))
     st.error(message)
     st.stop()
 
@@ -161,16 +162,16 @@ def require_account_access() -> dict[str, Any]:
                 return {"store": store, "token": token, "user": user}
         else:
             _clear_identity()
-        st.warning("Your session has ended. Please sign in again.")
+        st.warning(_t("Your session has ended. Please sign in again."))
 
-    st.title("Management Reasoning Simulator")
-    st.caption("Sign in to continue your training. New accounts require an invitation.")
-    sign_in, register = st.tabs(["Sign in", "Create account"])
+    st.title(_t("Management Reasoning Simulator"))
+    st.caption(_t("Sign in to continue your training. New accounts require an invitation."))
+    sign_in, register = st.tabs([_t("Sign in"), _t("Create account")])
     with sign_in:
         with st.form("account_login", clear_on_submit=True):
-            username = st.text_input("Username", max_chars=80)
-            password = st.text_input("Password", type="password", max_chars=256)
-            submit = st.form_submit_button("Sign in", type="primary")
+            username = st.text_input(_t("Username"), max_chars=80)
+            password = st.text_input(_t("Password"), type="password", max_chars=256)
+            submit = st.form_submit_button(_t("Sign in"), type="primary")
         if submit:
             try:
                 new_token = store.authenticate(username, password)
@@ -182,24 +183,24 @@ def require_account_access() -> dict[str, Any]:
                 # spares the administrator retyping credentials that are right.
                 st.error(str(locked))
             except AccountError:
-                st.error("Unable to sign in. Check your credentials or try again later.")
+                st.error(_t("Unable to sign in. Check your credentials or try again later."))
             except Exception:
-                st.error("Account access is temporarily unavailable. Please try again later.")
+                st.error(_t("Account access is temporarily unavailable. Please try again later."))
             else:
                 _start_session(new_token, user)
     with register:
         with st.form("account_register", clear_on_submit=True):
-            invite = st.text_input("Invitation code", type="password", max_chars=256)
-            new_username = st.text_input("Choose a username", max_chars=80)
-            new_password = st.text_input("Choose a password", type="password", max_chars=256)
-            confirmed_password = st.text_input("Confirm password", type="password", max_chars=256)
-            st.caption("Use a unique password with at least 12 characters. Your invitation determines your role and training year.")
-            create = st.form_submit_button("Create account", type="primary")
+            invite = st.text_input(_t("Invitation code"), type="password", max_chars=256)
+            new_username = st.text_input(_t("Choose a username"), max_chars=80)
+            new_password = st.text_input(_t("Choose a password"), type="password", max_chars=256)
+            confirmed_password = st.text_input(_t("Confirm password"), type="password", max_chars=256)
+            st.caption(_t("Use a unique password with at least 12 characters. Your invitation determines your role and training year."))
+            create = st.form_submit_button(_t("Create account"), type="primary")
         if create:
             if new_password != confirmed_password:
-                st.error("The passwords do not match.")
+                st.error(_t("The passwords do not match."))
             elif len(new_password) < 12:
-                st.error("Choose a password with at least 12 characters.")
+                st.error(_t("Choose a password with at least 12 characters."))
             else:
                 try:
                     new_token = store.register(new_username, new_password, invite)
@@ -207,9 +208,9 @@ def require_account_access() -> dict[str, Any]:
                     if not user:
                         raise AccountError("Registration failed.")
                 except AccountError:
-                    st.error("Unable to create this account. Check that your username is available and your invitation is valid.")
+                    st.error(_t("Unable to create this account. Check that your username is available and your invitation is valid."))
                 except Exception:
-                    st.error("Account access is temporarily unavailable. Please try again later.")
+                    st.error(_t("Account access is temporarily unavailable. Please try again later."))
                 else:
                     _start_session(new_token, user)
     st.stop()
@@ -227,68 +228,68 @@ def _sign_out(context: dict[str, Any]) -> None:
 
 def _render_admin_controls(context: dict[str, Any]) -> None:
     store, token = context["store"], context["token"]
-    with st.sidebar.expander("Account administration"):
-        st.caption("Invitations define access privileges. Send each invitation privately to its intended user.")
+    with st.sidebar.expander(_t("Account administration")):
+        st.caption(_t("Invitations define access privileges. Send each invitation privately to its intended user."))
         # The role is chosen outside the form, so that the training year is
         # asked for only when it means something: a resident's (2026-09-25).
-        role = st.selectbox("Invite role", _ROLES, key="_invite_role")
+        role = st.selectbox(_t("Invite role"), _ROLES, key="_invite_role")
         with st.form("account_invite", clear_on_submit=True):
-            year = (st.selectbox("Training year", (1, 2, 3), key="_invite_year")
+            year = (st.selectbox(_t("Training year"), (1, 2, 3), key="_invite_year")
                     if role == "resident" else None)
-            create_invite = st.form_submit_button("Create invitation")
+            create_invite = st.form_submit_button(_t("Create invitation"))
         if create_invite:
             try:
                 invitation = store.create_invite(token, role, int(year) if year is not None else None)
             except AccountError:
-                st.error("Unable to create an invitation. Check your administrator access.")
+                st.error(_t("Unable to create an invitation. Check your administrator access."))
             except Exception:
-                st.error("Account storage is temporarily unavailable.")
+                st.error(_t("Account storage is temporarily unavailable."))
             else:
                 st.session_state["_created_account_invite"] = invitation
         if st.session_state.get("_created_account_invite"):
-            st.caption("Copy this invitation and share it privately:")
+            st.caption(_t("Copy this invitation and share it privately:"))
             st.code(st.session_state["_created_account_invite"], language=None)
-            if st.button("Hide invitation", key="_hide_account_invite"):
+            if st.button(_t("Hide invitation"), key="_hide_account_invite"):
                 del st.session_state["_created_account_invite"]
                 st.rerun()
 
         try:
             users = store.list_users(token)
         except AccountError:
-            st.error("Administrator access is required to manage accounts.")
+            st.error(_t("Administrator access is required to manage accounts."))
             return
         except Exception:
-            st.error("Account storage is temporarily unavailable.")
+            st.error(_t("Account storage is temporarily unavailable."))
             return
         if not users:
             return
         users_by_id = {user["id"]: user for user in users}
         selected_id = st.selectbox(
-            "Manage an account", list(users_by_id),
+            _t("Manage an account"), list(users_by_id),
             format_func=lambda user_id: str(users_by_id[user_id]["username"]),
             key="_managed_account_id",
         )
         selected = users_by_id[selected_id]
         # The user-specific form key prevents another account's values from
         # lingering in role/year widgets when the selection changes.
-        selected_role = st.selectbox("Role", _ROLES, index=_ROLES.index(selected["role"]),
+        selected_role = st.selectbox(_t("Role"), _ROLES, index=_ROLES.index(selected["role"]),
                                      key=f"_account_role_{selected_id}")
         with st.form(f"account_edit_{selected_id}"):
-            selected_year = (st.selectbox("Resident year", (1, 2, 3),
+            selected_year = (st.selectbox(_t("Resident year"), (1, 2, 3),
                                           index=max(0, min(2, int(selected.get("training_year") or 1) - 1)))
                              if selected_role == "resident" else None)
-            selected_active = st.checkbox("Account active", value=bool(selected.get("active")))
-            st.caption("Changing access invalidates this user's existing sessions.")
-            save = st.form_submit_button("Save account")
+            selected_active = st.checkbox(_t("Account active"), value=bool(selected.get("active")))
+            st.caption(_t("Changing access invalidates this user's existing sessions."))
+            save = st.form_submit_button(_t("Save account"))
         if save:
             try:
                 store.update_user(token, selected_id, role=selected_role,
                                   training_year=int(selected_year) if selected_year is not None else None,
                                   active=selected_active)
             except AccountError:
-                st.error("Unable to update this account. At least one active administrator must remain.")
+                st.error(_t("Unable to update this account. At least one active administrator must remain."))
             except Exception:
-                st.error("Account storage is temporarily unavailable.")
+                st.error(_t("Account storage is temporarily unavailable."))
             else:
                 if selected_id == context["user"]["id"]:
                     _clear_identity()
@@ -305,18 +306,18 @@ def _render_password_change(context: dict[str, Any]) -> None:
     Changing it revokes every other session and issues a fresh one here, which
     is what makes it useful after a password has been shared or seen.
     """
-    with st.sidebar.expander("Change your password"):
+    with st.sidebar.expander(_t("Change your password")):
         with st.form("account_password", clear_on_submit=True):
-            current = st.text_input("Current password", type="password", max_chars=1024)
-            fresh = st.text_input("New password", type="password", max_chars=1024)
-            again = st.text_input("Repeat the new password", type="password", max_chars=1024)
-            st.caption("At least 12 characters. Signing in again will be required "
-                       "everywhere else you are signed in.")
-            submitted = st.form_submit_button("Change password")
+            current = st.text_input(_t("Current password"), type="password", max_chars=1024)
+            fresh = st.text_input(_t("New password"), type="password", max_chars=1024)
+            again = st.text_input(_t("Repeat the new password"), type="password", max_chars=1024)
+            st.caption(_t("At least 12 characters. Signing in again will be required "
+                       "everywhere else you are signed in."))
+            submitted = st.form_submit_button(_t("Change password"))
         if not submitted:
             return
         if fresh != again:
-            st.error("The two new passwords do not match.")
+            st.error(_t("The two new passwords do not match."))
             return
         try:
             token = context["store"].change_password(context["token"], current, fresh)
@@ -324,7 +325,7 @@ def _render_password_change(context: dict[str, Any]) -> None:
             st.error(str(error))
             return
         except Exception:
-            st.error("Account storage is temporarily unavailable.")
+            st.error(_t("Account storage is temporarily unavailable."))
             return
         # Every session was revoked, including this one. Keeping the fresh
         # token leaves the person signed in where they are standing, and signs
@@ -337,10 +338,10 @@ def _render_password_change(context: dict[str, Any]) -> None:
 def render_account_sidebar(context: dict[str, Any]) -> None:
     """Show identity and role-appropriate account controls after the access gate."""
     user = context["user"]
-    st.sidebar.caption("Signed in")
+    st.sidebar.caption(_t("Signed in"))
     st.sidebar.write(str(user["username"]))
     st.sidebar.caption(str(user["role"]).capitalize())
-    if st.sidebar.button("Sign out", key="_account_sign_out"):
+    if st.sidebar.button(_t("Sign out"), key="_account_sign_out"):
         _sign_out(context)
     if st.session_state.get("_account_notice"):
         st.sidebar.success(st.session_state.pop("_account_notice"))

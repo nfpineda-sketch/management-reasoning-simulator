@@ -10,6 +10,7 @@ from __future__ import annotations
 import streamlit as st
 
 from account_store import AccountError
+from screen_language import rows as _rows, t as _t
 
 _SCREEN = {"accepted": "Accepted", "accepted_with_limitations": "Accepted, with limitations",
            "rejected": "Rejected", "not_screened": "Not screened yet"}
@@ -54,10 +55,10 @@ def _render_image_bank(context):
     from image_selection import usable
     import image_pack
     from clinical_scene import setting
-    with st.expander("Patient image bank (faculty)"):
-        st.caption("Synthetic people and the photographs the encounter room shows. The automated screen is a "
+    with st.expander(_t("Patient image bank (faculty)")):
+        st.caption(_t("Synthetic people and the photographs the encounter room shows. The automated screen is a "
                    "check, not an approval: the visual and clinical reviews below are recorded with the "
-                   "account that records them. Nothing here is a real patient.")
+                   "account that records them. Nothing here is a real patient."))
         try:
             bank = ImageBank(context["store"])
             image_pack.ensure_imported(bank)
@@ -68,11 +69,7 @@ def _render_image_bank(context):
             st.caption(str(error))
             return
         st.markdown(
-            f"**Budget `{summary['budget_id']}`** · committed {_dollars(summary['committed'])} of "
-            f"{_dollars(summary['limit_micro'])} ({_dollars(summary['from_usage'])} from the provider's "
-            f"reported usage, {_dollars(summary['estimated'])} estimated, {_dollars(summary['in_flight'])} "
-            f"reserved in flight) · image requests {summary['requests']} of {summary['limit_requests']} · "
-            f"retries {summary['retries']}")
+            _t("**Budget `{v0}`** · committed {v1} of {v2} ({v3} from the provider's reported usage, {v4} estimated, {v5} reserved in flight) · image requests {v6} of {v7} · retries {v8}", v0=summary['budget_id'], v1=_dollars(summary['committed']), v2=_dollars(summary['limit_micro']), v3=_dollars(summary['from_usage']), v4=_dollars(summary['estimated']), v5=_dollars(summary['in_flight']), v6=summary['requests'], v7=summary['limit_requests'], v8=summary['retries']))
         # Every other authorization recorded here, such as the reviewed batches run
         # outside the app: its spending is in the same ledger and stays visible.
         for other in bank.budgets():
@@ -80,27 +77,23 @@ def _render_image_bank(context):
                 continue
             spent = bank.budget_summary(other)
             st.markdown(
-                f"Budget `{other['id']}` (not the one this app spends from) · committed "
-                f"{_dollars(spent['committed'])} of {_dollars(spent['limit_micro'])} "
-                f"({_dollars(spent['from_usage'])} from the provider's reported usage, "
-                f"{_dollars(spent['estimated'])} estimated) · image requests {spent['requests']} of "
-                f"{spent['limit_requests']} · retries {spent['retries']}")
-        show_all = st.toggle("Show rejected and excluded images too", value=False, key="_image_bank_all")
+                _t("Budget `{v0}` (not the one this app spends from) · committed {v1} of {v2} ({v3} from the provider's reported usage, {v4} estimated) · image requests {v5} of {v6} · retries {v7}", v0=other['id'], v1=_dollars(spent['committed']), v2=_dollars(spent['limit_micro']), v3=_dollars(spent['from_usage']), v4=_dollars(spent['estimated']), v5=spent['requests'], v6=spent['limit_requests'], v7=spent['retries']))
+        show_all = st.toggle(_t("Show rejected and excluded images too"), value=False, key="_image_bank_all")
         observed = image_pack.read_observations()
         by_person = {}
         for asset in assets:
             by_person.setdefault(asset["identity_id"], []).append(asset)
         if not by_person:
-            st.caption("The bank is empty.")
+            st.caption(_t("The bank is empty."))
             return
         choices = []
         for person_id in sorted(by_person):
             person = BY_ID.get(person_id)
-            st.markdown(f"**{person_id}** · {describe(person) if person else 'unknown identity'}")
+            st.markdown(f"**{person_id}** · {describe(person) if person else _t('unknown identity')}")
             shown = [a for a in sorted(by_person[person_id], key=lambda a: (a["role"] != "anchor", a["created_at"]))
                      if show_all or usable(a)]
             if not shown:
-                st.caption("No usable photograph of this person.")
+                st.caption(_t("No usable photograph of this person."))
                 continue
             columns = st.columns(3)
             for index, asset in enumerate(shown):
@@ -111,18 +104,14 @@ def _render_image_bank(context):
                     limitations = ", ".join(_LIMITS.get(item, item) for item in
                                             (asset.get("screen_details") or {}).get("limitations", []))
                     st.caption(
-                        f"{'Anchor' if asset['role'] == 'anchor' else 'State'} · {_state_line(asset['contract'])}  \n"
-                        f"Screen: {_SCREEN.get(asset['screen'], asset['screen'])}"
-                        f"{' (' + limitations + ')' if limitations else ''} · visual review "
-                        f"{_REVIEW.get(asset['visual_review'], asset['visual_review'])} · clinical review "
-                        f"{_REVIEW.get(asset['clinical_review'], asset['clinical_review'])}"
-                        + ("  \nIn use: approved in the visual and clinical reviews over the automated screen"
+                        _t('{v0} · {v1}  \nScreen: {v2}{v3} · visual review {v4} · clinical review {v5}', v0=_t('Anchor' if asset['role'] == 'anchor' else 'State'), v1=_state_line(asset['contract']), v2=_SCREEN.get(asset['screen'], asset['screen']), v3=' (' + limitations + ')' if limitations else '', v4=_REVIEW.get(asset['visual_review'], asset['visual_review']), v5=_REVIEW.get(asset['clinical_review'], asset['clinical_review']))
+                        + ("  \n" + _t("In use: approved in the visual and clinical reviews over the automated screen")
                            if asset["excluded"] and usable(asset) else
-                           f"  \nExcluded: {asset['exclusion_reason']}" if asset["excluded"] else "")
-                        + "".join(f"  \nScreen found: {item.get('finding', '')}"
+                           "  \n" + _t("Excluded: ") + str(asset['exclusion_reason']) if asset["excluded"] else "")
+                        + "".join("  \n" + _t("Screen found: ") + str(item.get('finding', ''))
                                   for item in (asset.get("screen_details") or {}).get("evidence", []))
-                        + (f"  \nNot shown, on a reading of the photograph (not a review): "
-                           f"{', '.join(_LIMITS[code] for code in observed.get(asset['id'], ()))}"
+                        + ("  \n" + _t("Not shown, on a reading of the photograph (not a review): ")
+                           + ', '.join(_LIMITS[code] for code in observed.get(asset['id'], ()))
                            if observed.get(asset["id"]) else "")
                         + f"  \n`{asset['id'][:10]}` · {asset['generation'].get('model', '')} · "
                           f"{(asset['generation'].get('versions') or {}).get('prompt', '')}")
@@ -130,15 +119,15 @@ def _render_image_bank(context):
         if not choices:
             return
         with st.form("_image_bank_review", clear_on_submit=True):
-            chosen = st.selectbox("Image", [a["id"] for a in choices],
+            chosen = st.selectbox(_t("Image"), [a["id"] for a in choices],
                                   format_func=lambda key: next(f"{a['identity_id']} · {key[:10]} · "
                                                                f"{_state_line(a['contract'])}"
                                                                for a in choices if a["id"] == key))
-            action = st.radio("Record", ["Visual review", "Clinical review", "Exclude", "Bring back"],
+            action = st.radio(_t("Record"), ["Visual review", "Clinical review", "Exclude", "Bring back"], format_func=_t,
                               horizontal=True)
-            decision = st.radio("Decision (for a review)", ["approved", "rejected", "pending"], horizontal=True)
-            note = st.text_area("What you looked at and why", max_chars=1000)
-            if st.form_submit_button("Record"):
+            decision = st.radio(_t("Decision (for a review)"), ["approved", "rejected", "pending"], horizontal=True)
+            note = st.text_area(_t("What you looked at and why"), max_chars=1000)
+            if st.form_submit_button(_t("Record")):
                 try:
                     if action == "Visual review":
                         bank.review(context["token"], chosen, "visual_review", decision, note)
@@ -146,7 +135,7 @@ def _render_image_bank(context):
                         bank.review(context["token"], chosen, "clinical_review", decision, note)
                     else:
                         bank.exclude(context["token"], chosen, note, excluded=action == "Exclude")
-                    st.success("Recorded with your account.")
+                    st.success(_t("Recorded with your account."))
                 except AccountError as error:
                     st.error(str(error))
 
@@ -160,13 +149,13 @@ def render_image_record(context, record):
         return
     if not rows:
         return
-    with st.expander(f"Patient image · what the room showed ({len(rows)})"):
-        st.caption("Each change in what the encounter room showed. Without a photograph the room showed its "
+    with st.expander(_t('Patient image · what the room showed ({v0})', v0=len(rows))):
+        st.caption(_t("Each change in what the encounter room showed. Without a photograph the room showed its "
                    "neutral view, with the monitor and the examination current; a finding the photograph "
-                   "could not show was stated beside it.")
-        st.dataframe([{
-            "Minute": row["sim_time"], "Shown": {"image": "Photograph", "pending": "Being prepared",
-                                                 "failed": "None (failed)", "unavailable": "None"}[row["outcome"]],
+                   "could not show was stated beside it."))
+        st.dataframe(_rows([{
+            "Minute": row["sim_time"], "Shown": _t({"image": "Photograph", "pending": "Being prepared",
+                                                    "failed": "None (failed)", "unavailable": "None"}[row["outcome"]]),
             "Why none": row["code"], "Person": row["identity_id"], "State": _state_line(row["contract"]),
             "Not discernible": ", ".join(_LIMITS.get(item, item) for item in row["limitations"]),
-        } for row in rows], hide_index=True)
+        } for row in rows]), hide_index=True)

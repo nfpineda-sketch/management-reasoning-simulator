@@ -15,3 +15,8 @@ def t(text, **values):
     import report_language
     said = report_language.t(text, language.current())
     return said.format(**values) if values else said
+
+
+def rows(table):
+    """A table's column names in the reader's language; its cells are shown as given."""
+    return [{t(name): value for name, value in row.items()} for row in table]

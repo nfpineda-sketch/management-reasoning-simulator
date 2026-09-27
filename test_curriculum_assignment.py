@@ -192,7 +192,8 @@ def runtime_functions(fake_st):
     path = Path(__file__).with_name("curriculum_runtime.py")
     tree = ast.parse(path.read_text())
     selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in {"render_dashboard", "render_learning_focus"}]
-    namespace = {"st": fake_st, "CHALLENGES": CHALLENGES,
+    from screen_language import rows as _rows, t as _t  # the screens' own words (Idioma 4c)
+    namespace = {"st": fake_st, "CHALLENGES": CHALLENGES, "_t": _t, "_rows": _rows,
                  "render_progress_dashboard": lambda context, title=None: None,
                  # Separate panes with their own tests; what these tests watch
                  # is which objective labels reach a learner.

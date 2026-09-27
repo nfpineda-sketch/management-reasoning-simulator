@@ -16,6 +16,7 @@ from image_bank_portal import render_image_bank
 from case_text_portal import render_case_text_review
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
+from screen_language import rows as _rows, t as _t
 
 RUNTIME_VERSION = "0.24.13"
 PAYLOAD_VERSION = "mrs_attempt_v1"
@@ -74,10 +75,10 @@ def save_session(context, status=None):
         )
     except AccountError as exc:
         st.error(str(exc))
-        st.info("Your current work remains in this browser session. Resolve the save problem before continuing. If another tab changed this attempt, reopen it from your dashboard.")
-        if st.button("Retry save", key="retry_attempt_save"):
+        st.info(_t("Your current work remains in this browser session. Resolve the save problem before continuing. If another tab changed this attempt, reopen it from your dashboard."))
+        if st.button(_t("Retry save"), key="retry_attempt_save"):
             st.rerun()
-        if st.button("Discard this tab's unsaved changes and reopen dashboard", key="discard_unsaved_attempt"):
+        if st.button(_t("Discard this tab's unsaved changes and reopen dashboard"), key="discard_unsaved_attempt"):
             st.session_state.clear()
             st.session_state["_account_token"] = context["token"]
             st.session_state["_account_user_id"] = context["user"]["id"]
@@ -311,33 +312,33 @@ def _render_catalog_review(context):
     """Faculty only: where each configuration stands, and the one action that reviews it."""
     from catalog_reviews import CatalogReviewStore
     store, token = context["store"], context["token"]
-    with st.expander("Clinical review of the hypoglycemia catalogue (faculty)"):
-        st.caption("Compatible and tested are computed by the code (docs/CATALOGO_HIPOGLICEMIA.md). "
+    with st.expander(_t("Clinical review of the hypoglycemia catalogue (faculty)")):
+        st.caption(_t("Compatible and tested are computed by the code (docs/CATALOGO_HIPOGLICEMIA.md). "
                    "A clinical review is yours alone: it is recorded with your account and refers to this "
-                   "version of the configuration; a clinically relevant change later asks for a new one.")
+                   "version of the configuration; a clinically relevant change later asks for a new one."))
         try:
             reviews = CatalogReviewStore(store)
             rows = reviews.statuses(token)
         except AccountError as error:
             st.caption(str(error))
             return
-        st.dataframe([{
+        st.dataframe(_rows([{
             "Configuration": row["configuration_id"], "Origin": row["origin"],
             "Mechanism · access · severity": " · ".join(row["axes"][axis] for axis in
                                                          ("mechanism", "iv_access", "severity")),
-            "Compatible": "yes" if row["compatible"] else "no",
+            "Compatible": _t("yes" if row["compatible"] else "no"),
             "Clinical review": _REVIEW_STATES.get(row["state"], row["state"])
-                               + (f" ({', '.join(row['changed'])} changed)" if row["changed"] else ""),
+                               + (_t(" ({fields} changed)", fields=', '.join(row['changed'])) if row["changed"] else ""),
             "Last reviewer": ((row.get("review") or {}).get("reviewer") or {}).get("username", ""),
-        } for row in rows], hide_index=True)
+        } for row in rows]), hide_index=True)
         with st.form("_catalog_review_form", clear_on_submit=True):
-            chosen = st.selectbox("Configuration", [row["configuration_id"] for row in rows])
-            decision = st.radio("Decision", ["approved", "changes_requested", "rejected"], horizontal=True)
-            note = st.text_area("What you reviewed and why", max_chars=1200)
-            if st.form_submit_button("Record clinical review"):
+            chosen = st.selectbox(_t("Configuration"), [row["configuration_id"] for row in rows])
+            decision = st.radio(_t("Decision"), ["approved", "changes_requested", "rejected"], horizontal=True)
+            note = st.text_area(_t("What you reviewed and why"), max_chars=1200)
+            if st.form_submit_button(_t("Record clinical review")):
                 try:
                     reviews.record(token, chosen, decision, note)
-                    st.success("Review recorded.")
+                    st.success(_t("Review recorded."))
                 except AccountError as error:
                     st.error(str(error))
 
@@ -361,10 +362,10 @@ NO_RESIDENT_IN_SCOPE = ("No resident has been assigned to you for choosing cases
 def _render_direction_grants(context, store):
     """An administrator authorizes a faculty member to choose one resident's cases."""
     from progress_store import ProgressStore
-    with st.expander("Who may choose a resident's cases"):
-        st.caption("Administrators may choose any resident's next case. A faculty member may choose "
+    with st.expander(_t("Who may choose a resident's cases")):
+        st.caption(_t("Administrators may choose any resident's next case. A faculty member may choose "
                    "only the cases of the residents authorized here. Each authorization keeps its "
-                   "reason, and a revoked one stays in the history.")
+                   "reason, and a revoked one stays in the history."))
         try:
             faculty = store.faculty_members(context["token"])
             residents = ProgressStore(context["store"]).list_residents(context["token"])
@@ -374,28 +375,27 @@ def _render_direction_grants(context, store):
             return
         for item in grants:
             columns = st.columns([4, 1])
-            columns[0].caption(f"{'Active' if item['active'] else 'Revoked'}: {item['faculty']} → "
-                               f"{item['resident']} · by {item['granted_by']} · {item['reason']}"
-                               + (f" · revoked: {item['revoke_reason']}" if not item["active"] else ""))
-            if item["active"] and columns[1].button("Revoke", key="revoke_grant_" + item["id"]):
+            columns[0].caption(_t('{v0}: {v1} → {v2} · by {v3} · {v4}', v0=_t('Active' if item['active'] else 'Revoked'), v1=item['faculty'], v2=item['resident'], v3=item['granted_by'], v4=item['reason'])
+                               + (_t(" · revoked: {reason}", reason=item['revoke_reason']) if not item["active"] else ""))
+            if item["active"] and columns[1].button(_t("Revoke"), key="revoke_grant_" + item["id"]):
                 store.revoke(context["token"], item["id"], "Revoked by an administrator from the dashboard.")
                 st.rerun()
         if not faculty or not residents:
-            st.caption("Authorizing needs at least one faculty account and one resident account.")
+            st.caption(_t("Authorizing needs at least one faculty account and one resident account."))
             return
         with st.form("direction_grant"):
-            member = st.selectbox("Faculty member", faculty, format_func=lambda row: row["username"])
-            resident = st.selectbox("Resident to authorize for", residents,
+            member = st.selectbox(_t("Faculty member"), faculty, format_func=lambda row: row["username"])
+            resident = st.selectbox(_t("Resident to authorize for"), residents,
                                     format_func=lambda row: row["username"])
-            reason = st.text_input("Why this faculty member", max_chars=500)
-            submitted = st.form_submit_button("Authorize")
+            reason = st.text_input(_t("Why this faculty member"), max_chars=500)
+            submitted = st.form_submit_button(_t("Authorize"))
         if submitted:
             try:
                 store.grant(context["token"], member["id"], resident["id"], reason)
             except AccountError as error:
                 st.error(str(error))
             else:
-                st.success("Authorized.")
+                st.success(_t("Authorized."))
 
 
 def _render_directives(context):
@@ -404,11 +404,11 @@ def _render_directives(context):
     store = DirectiveStore(context["store"])
     if context["user"]["role"] == "admin":
         _render_direction_grants(context, store)
-    with st.expander("Direct a resident's next encounter"):
-        st.caption("The resident's next launch uses this case instead of the curriculum's choice, "
+    with st.expander(_t("Direct a resident's next encounter")):
+        st.caption(_t("The resident's next launch uses this case instead of the curriculum's choice, "
                    "once. Who chose it and why stay in this history, for faculty; the resident is "
                    "not told that the case was chosen, which one it is, or why. Without a directive "
-                   "the curriculum decides, exactly as before.")
+                   "the curriculum decides, exactly as before."))
         try:
             residents = store.residents_in_scope(context["token"])
             waiting = store.waiting(context["token"])
@@ -417,37 +417,36 @@ def _render_directives(context):
             return
         for item in waiting:
             columns = st.columns([4, 1])
-            columns[0].caption(f"Waiting: {item['resident']} · {item['challenge_id']} · "
-                               f"{item['variant_id']} · by {item['directed_by']} · {item['reason']}")
-            if columns[1].button("Cancel", key="cancel_directive_" + item["id"]):
+            columns[0].caption(_t('Waiting: {v0} · {v1} · {v2} · by {v3} · {v4}', v0=item['resident'], v1=item['challenge_id'], v2=item['variant_id'], v3=item['directed_by'], v4=item['reason']))
+            if columns[1].button(_t("Cancel"), key="cancel_directive_" + item["id"]):
                 store.cancel(context["token"], item["id"])
                 st.rerun()
         if not residents:
             st.caption(NO_RESIDENT_IN_SCOPE if context["user"]["role"] == "faculty"
-                       else "No resident account exists yet.")
+                       else _t("No resident account exists yet."))
             return
-        if st.checkbox("Show the history of directives", key="directive_history"):
+        if st.checkbox(_t("Show the history of directives"), key="directive_history"):
             history = [row for person in residents for row in store.history(context["token"], person["id"])]
-            st.dataframe([{"Saved": _date(row["created_at"]), "Resident": row["resident"],
+            st.dataframe(_rows([{"Saved": _date(row["created_at"]), "Resident": row["resident"],
                            "Case": row["variant_id"], "State": row["state"], "By": row["directed_by"],
                            "Why": row["reason"], "Encounter": row["attempt_id"] or "—"}
-                          for row in history], hide_index=True)
+                          for row in history]), hide_index=True)
         # Outside the form, so the cases offered follow the challenge chosen.
-        challenge = st.selectbox("Challenge", list(CHALLENGES), key="directive_challenge",
+        challenge = st.selectbox(_t("Challenge"), list(CHALLENGES), key="directive_challenge",
                                  format_func=lambda key: key + " · " + CHALLENGES[key]["title"])
         with st.form("encounter_directive"):
-            resident = st.selectbox("Resident", residents, format_func=lambda row: row["username"])
+            resident = st.selectbox(_t("Resident"), residents, format_func=lambda row: row["username"])
             options = case_options(challenge)
-            variant = st.selectbox("Case", [option[0] for option in options] or ["—"])
-            reason = st.text_input("Why this case", max_chars=500)
-            submitted = st.form_submit_button("Save directive")
+            variant = st.selectbox(_t("Case"), [option[0] for option in options] or ["—"])
+            reason = st.text_input(_t("Why this case"), max_chars=500)
+            submitted = st.form_submit_button(_t("Save directive"))
         if submitted:
             try:
                 store.direct(context["token"], resident["id"], challenge, variant, reason)
             except AccountError as error:
                 st.error(str(error))
             else:
-                st.success("Saved. The resident's next encounter will use this case.")
+                st.success(_t("Saved. The resident's next encounter will use this case."))
 
 
 def render_dashboard(context, initial_state, reset_session):
@@ -456,7 +455,7 @@ def render_dashboard(context, initial_state, reset_session):
         return
     if user["role"] == "resident":
         view = st.sidebar.radio(
-            "Navigation", ("Clinical encounters", "My progress"),
+            _t("Navigation"), ("Clinical encounters", "My progress"), format_func=_t,
             key="_resident_dashboard_view",
         )
         if view == "My progress":
@@ -471,54 +470,54 @@ def render_dashboard(context, initial_state, reset_session):
     completed = [a for a in own if a["status"] == "completed" and not a["is_sandbox"]]
     faculty_choice = review_choice = None
     if user["role"] == "resident":
-        st.subheader("Your next clinical encounter")
-        st.caption(f"Training year {user['training_year']} · {len(completed)} completed encounter reviews")
-        st.write("Manage the patient, explain your reasoning, and reassess as the encounter evolves. Your learning focus will be discussed after the encounter.")
+        st.subheader(_t("Your next clinical encounter"))
+        st.caption(_t('Training year {v0} · {v1} completed encounter reviews', v0=user['training_year'], v1=len(completed)))
+        st.write(_t("Manage the patient, explain your reasoning, and reassess as the encounter evolves. Your learning focus will be discussed after the encounter."))
     else:
-        st.subheader("Faculty sandbox")
-        st.caption(f"These encounters are excluded from resident progress. {len(CHALLENGES)} challenges are available.")
-        faculty_choice = st.selectbox("Management challenge", list(CHALLENGES), format_func=lambda key: key + " · " + CHALLENGES[key]["title"])
+        st.subheader(_t("Faculty sandbox"))
+        st.caption(_t('These encounters are excluded from resident progress. {v0} challenges are available.', v0=len(CHALLENGES)))
+        faculty_choice = st.selectbox(_t("Management challenge"), list(CHALLENGES), format_func=lambda key: key + " · " + CHALLENGES[key]["title"])
         review = review_options(faculty_choice)
         if review:
             # Faculty only: the catalogue's configurations, the nine awaiting
             # clinical review among them (docs/CATALOGO_HIPOGLICEMIA.md).
             review_choice = st.selectbox(
-                "Case to open (faculty review)", [""] + list(review),
+                _t("Case to open (faculty review)"), [""] + list(review),
                 format_func=lambda key: "As usual: the application chooses" if not key else review[key],
                 key="_faculty_review_case")
             if review_choice:
-                st.caption("Opened for clinical review in the sandbox: no generation, no picture, and "
-                           "never offered to residents.")
+                st.caption(_t("Opened for clinical review in the sandbox: no generation, no picture, and "
+                           "never offered to residents."))
             _render_catalog_review(context)
         render_image_bank(context)
         render_case_text_review(context)
-        with st.expander("Clinical and cognitive catalog"):
-            st.dataframe([
+        with st.expander(_t("Clinical and cognitive catalog")):
+            st.dataframe(_rows([
                 {"Code": key, "Learning focus": challenge["title"],
-                 "Cognitive focus": challenge.get("bias_name", "Management reasoning"),
-                 "Scenario": "New AI-authored clinical case",
-                 "Competencies": challenge.get("acgme", "Management reasoning")}
+                 "Cognitive focus": _t(challenge.get("bias_name", "Management reasoning")),
+                 "Scenario": _t("New AI-authored clinical case"),
+                 "Competencies": _t(challenge.get("acgme", "Management reasoning"))}
                 for key, challenge in CHALLENGES.items()
-            ], hide_index=True)
-            st.caption("These are formative teaching opportunities. The catalog does not diagnose a learner's cognitive bias or establish competence.")
-    st.caption("You may enter your reasoning and orders in English or Spanish. Patient information and feedback are in English.")
-    st.caption("Your encounter and reflection are saved to your account. Faculty in this pilot program can review them.")
+            ]), hide_index=True)
+            st.caption(_t("These are formative teaching opportunities. The catalog does not diagnose a learner's cognitive bias or establish competence."))
+    st.caption(_t("You may enter your reasoning and orders in English or Spanish. The patient's information and the feedback are shown in the language set in the sidebar."))
+    st.caption(_t("Your encounter and reflection are saved to your account. Faculty in this pilot program can review them."))
     retained = st.session_state.get('_case_generation_failure')
     if retained and retained.get('owner') == user['id'] and not retained.get('report_id'):
         try:
             retained['report_id'] = store.save_generation_failure(token, retained['data'])
-            st.caption('Support report: ' + retained['report_id'])
+            st.caption(_t('Support report: ') + retained['report_id'])
         except AccountError:
-            st.warning('The support report could not be saved. The failure remains in this session.')
+            st.warning(_t('The support report could not be saved. The failure remains in this session.'))
     if user['role'] == 'admin':
-        with st.expander('Case preparation diagnostics'):
-            if st.button('Load saved generation failures'):
+        with st.expander(_t('Case preparation diagnostics')):
+            if st.button(_t('Load saved generation failures')):
                 try:
                     reports = store.list_generation_failures(token)
                     if not reports:
-                        st.info('No saved generation failures.')
+                        st.info(_t('No saved generation failures.'))
                     for report in reports:
-                        st.download_button('Download report ' + report['id'][:8],
+                        st.download_button(_t('Download report ') + report['id'][:8],
                             json.dumps(report, ensure_ascii=False, indent=2),
                             file_name='case_preparation_' + report['id'] + '.json',
                             mime='application/json', key='failure_' + report['id'])
@@ -526,11 +525,11 @@ def render_dashboard(context, initial_state, reset_session):
                     st.error(str(error))
     failure = st.session_state.get('_case_generation_failure')
     if user['role'] in {'faculty', 'admin'} and failure and failure.get('owner') == user['id']:
-        st.download_button('Download case preparation diagnostic',
+        st.download_button(_t('Download case preparation diagnostic'),
             json.dumps(failure['data'], ensure_ascii=False, indent=2),
             file_name='case_preparation_diagnostic.json', mime='application/json')
     active = next((a for a in own if a["status"] == "active"), None)
-    if st.button("Resume encounter" if active else "Begin Encounter", type="primary"):
+    if st.button(_t("Resume encounter") if active else _t("Begin Encounter"), type="primary"):
         from generated_case import GeneratedCaseError
         try:
             if active:
@@ -550,30 +549,30 @@ def render_dashboard(context, initial_state, reset_session):
                 try:
                     report_id = store.save_generation_failure(token, diagnostic)
                     st.session_state['_case_generation_failure']['report_id'] = report_id
-                    st.caption('Support report: ' + report_id)
+                    st.caption(_t('Support report: ') + report_id)
                 except AccountError:
-                    st.warning('The support report could not be saved. The failure remains in this session.')
+                    st.warning(_t('The support report could not be saved. The failure remains in this session.'))
             st.error(str(exc))
             st.stop()
         st.rerun()
     if completed:
-        with st.expander("Previous completed reviews"):
+        with st.expander(_t("Previous completed reviews")):
             for i, attempt in enumerate(reversed(completed), 1):
-                st.write(f"Encounter review · {_date(attempt['updated_at'])}")
-                if st.button("Open review", key="resume_" + attempt["id"]):
+                st.write(_t('Encounter review · {v0}', v0=_date(attempt['updated_at'])))
+                if st.button(_t("Open review"), key="resume_" + attempt["id"]):
                     restore_attempt(context, attempt, reset_session)
                     st.rerun()
     if user["role"] in {"faculty", "admin"}:
         requested = st.query_params.get("faculty_attempt", "")
-        with st.expander("Resident activity and recorded evidence", expanded=bool(requested)):
+        with st.expander(_t("Resident activity and recorded evidence"), expanded=bool(requested)):
             resident_attempts = [a for a in attempts if not a["is_sandbox"]]
-            st.caption("Single-program pilot. These are activity records and evidence prompts for faculty review, not competency scores.")
+            st.caption(_t("Single-program pilot. These are activity records and evidence prompts for faculty review, not competency scores."))
             _render_directives(context)
             waiting = _awaiting_review(context)
-            st.dataframe([{"Resident": a["username"], "Challenge": a["challenge_id"], "Status": a["status"],
+            st.dataframe(_rows([{"Resident": a["username"], "Challenge": a["challenge_id"], "Status": a["status"],
                            "Updated": _date(a["updated_at"]),
                            "Awaiting your review": waiting.get(a["id"], "")}
-                          for a in resident_attempts], hide_index=True)
+                          for a in resident_attempts]), hide_index=True)
             if resident_attempts:
                 # A PDF link selects from the already authorized list; it never
                 # fetches an arbitrary ID or bypasses the staff review gates.
@@ -584,19 +583,19 @@ def render_dashboard(context, initial_state, reset_session):
                     if requested in attempt_ids:
                         st.session_state[selection_key] = requested
                     else:
-                        st.info("The linked encounter is not available to this account. Select an available encounter below.")
+                        st.info(_t("The linked encounter is not available to this account. Select an available encounter below."))
                     st.session_state[link_key] = requested
                 if st.session_state.get(selection_key) not in attempt_ids:
                     st.session_state[selection_key] = next(
                         (a["id"] for a in resident_attempts if a["status"] == "completed"), attempt_ids[0])
-                selected = st.selectbox("Encounter record", attempt_ids, key=selection_key,
+                selected = st.selectbox(_t("Encounter record"), attempt_ids, key=selection_key,
                     format_func=lambda key: next(a["username"] + " · " + a["challenge_id"] + " · " + a["status"] + " · " + _date(a["updated_at"]) for a in resident_attempts if a["id"] == key))
                 record = store.get_attempt(token, selected)
                 render_faculty_analysis(context, record)
                 render_attempt_assessment(context, record)
-                with st.expander("Complete encounter record and export"):
+                with st.expander(_t("Complete encounter record and export")):
                     st.json((record.get("payload") or {}).get("evidence", {}), expanded=False)
-                    st.download_button("Download faculty record", json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
+                    st.download_button(_t("Download faculty record"), json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
         _render_rubric_profile(context, render_progress_dashboard(context))
 
 
@@ -675,14 +674,14 @@ def _render_own_record(context):
     Trace was downloadable during the encounter and never again (2026-09-23).
     """
     import resident_portal
-    with st.expander("Your photograph and initials"):
+    with st.expander(_t("Your photograph and initials")):
         # The expander already carries the title; repeating it inside printed
         # it twice on the page (seen in the resident's first sign-in).
         resident_portal.render_photo_and_initials(context, heading=False)
     encounters = resident_portal.render_my_encounters(context)
-    with st.expander("What you said you would do differently"):
+    with st.expander(_t("What you said you would do differently")):
         resident_portal.render_adaptation_thread(context, encounters)
-    with st.expander("Download your complete record"):
+    with st.expander(_t("Download your complete record")):
         resident_portal.render_account_export(context, encounters)
 
 
@@ -696,10 +695,10 @@ def _render_rubric_profile(context, user_id=None):
     """
     if not context:
         return
-    with st.expander("Management reasoning rubric profile", expanded=False):
-        st.caption("A pilot instrument. These are not ACGME Milestone levels, Canadian stages "
+    with st.expander(_t("Management reasoning rubric profile"), expanded=False):
+        st.caption(_t("A pilot instrument. These are not ACGME Milestone levels, Canadian stages "
                    "or EPA supervision levels, and they neither feed nor replace the objective "
-                   "record above. Only assessments a faculty member has confirmed appear here.")
+                   "record above. Only assessments a faculty member has confirmed appear here."))
         from rubric_portal import render_rubric_profile
         # The year is read here and passed in: the rubric must not import the
         # objective record, and the page is what knows both.
@@ -718,14 +717,14 @@ def render_learning_focus(context):
     spec = closed_state.get("encounter_spec") or state.get("encounter_spec") or {}
     challenge = CHALLENGES.get(assignment.get("challenge_id") or spec.get("challenge_id"))
     if challenge:
-        with st.expander("Learning focus for this encounter", expanded=True):
+        with st.expander(_t("Learning focus for this encounter"), expanded=True):
             st.write(challenge["title"])
             if challenge.get("bias_name"):
-                st.write("Cognitive focus: " + challenge["bias_name"])
+                st.write(_t("Cognitive focus: ") + challenge["bias_name"])
             st.write(challenge["objective"])
             for question in challenge.get("debrief_questions", ()):
                 st.write(question)
-            st.caption("This local curriculum mapping supports formative faculty review. Completing a case does not establish competence.")
+            st.caption(_t("This local curriculum mapping supports formative faculty review. Completing a case does not establish competence."))
 
 
 def return_to_dashboard(context, reset_session, abandon=False):

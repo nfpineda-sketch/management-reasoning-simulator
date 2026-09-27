@@ -954,6 +954,27 @@ CORRECTIONS = (
                   "test_screens_speak_the_readers_language.py::test_english_is_returned_untouched"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-27-09",
+        "date": "2026-09-27",
+        "title": "Los portales docentes, la rúbrica, el progreso, el banco de imágenes, las cuentas y el currículo en el idioma de quien lee",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Las pantallas del docente y del administrador —informe docente, rúbrica, progreso por objetivo, banco de "
+                   "imágenes, cuentas y el panel del currículo— dicen sus propias palabras desde el catálogo revisado, con los "
+                   "encabezados de sus tablas y las opciones de sus formularios. Lo guardado se muestra como se guardó: los "
+                   "valores que se registran siguen en inglés y sólo cambia cómo se leen. El aviso que decía que la información "
+                   "del paciente está en inglés dice ahora que sigue el idioma de la barra lateral. La guarda recorre también "
+                   "estos portales y exige cada frase pedida al catálogo tal como se escribe, con sus valores."),
+        "authorised_by": INSTRUCTION_2026_09_26C,
+        "affects": {"modules": ["screen_language", "faculty_portal", "rubric_portal", "progress_portal", "image_bank_portal",
+                                "account_portal", "curriculum_runtime", "report_language"],
+                    "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_screens_speak_the_readers_language.py::test_every_word_the_screen_writes_can_be_said_in_spanish",
+                  "test_screens_speak_the_readers_language.py::test_every_wrapped_phrase_is_in_the_catalog_as_written"],
+        "preservation": None,
+    },
 )
 
 

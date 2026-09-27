@@ -14,6 +14,7 @@ from faculty_analysis import FacultyAnalysisError, generate_faculty_brief, sourc
 from faculty_analysis_store import FacultyBriefStore
 from faculty_report import render_faculty_brief_pdf
 from objectives import OBJECTIVES, evidence_items
+from screen_language import rows as _rows, t as _t
 
 
 # The context a brief written before 2026-09-24 was generated under: the
@@ -96,38 +97,38 @@ def render_assistance_context(context, record):
     # shown below (one database round trip fewer per rerun).
     history = store.history(context["token"], record["id"])
     current = encounter_context.current_of(history)
-    st.markdown("**Assistance context**")
+    st.markdown("**" + _t('Assistance context') + "**")
     st.caption(_declared(current["assistance"]))
     if current["execution"] is not None:
         st.caption(_declared(current["execution"], "execution"))
     st.caption(encounter_context.NO_CLINICAL_HELP_FEATURE[0])
     if len(history) > 1:
-        with st.expander(f"Declaration history ({len(history)})"):
+        with st.expander(_t('Declaration history ({v0})', v0=len(history))):
             for row in history:
                 st.caption(f"{row['field']} {row['sequence']}: {_declared(row, row['field'])}")
-    with st.expander("Complete or correct the assistance context"):
-        st.caption("A new declaration is added to the history; nothing earlier is overwritten, "
-                   "and no assessment already confirmed changes.")
+    with st.expander(_t("Complete or correct the assistance context")):
+        st.caption(_t("A new declaration is added to the history; nothing earlier is overwritten, "
+                   "and no assessment already confirmed changes."))
         decisions = {item["ref"]: item["label"] for item in evidence_items(record["payload"])
                      if item["kind"] == "decision"}
         with st.form("assistance_context_" + record["id"]):
-            value = st.radio("Help received during the encounter", list(encounter_context.ASSISTANCE),
+            value = st.radio(_t("Help received during the encounter"), list(encounter_context.ASSISTANCE),
                              format_func=lambda key: encounter_context.label("assistance", key),
                              index=None, horizontal=True)
-            description = st.text_area("What help, if any (optional)", max_chars=1000)
-            affected = st.multiselect("Decisions the help affected (optional)", list(decisions),
+            description = st.text_area(_t("What help, if any (optional)"), max_chars=1000)
+            affected = st.multiselect(_t("Decisions the help affected (optional)"), list(decisions),
                                       format_func=decisions.get)
-            note = st.text_input("Why you are completing or correcting it (optional)", max_chars=1000)
-            submitted = st.form_submit_button("Save declaration")
+            note = st.text_input(_t("Why you are completing or correcting it (optional)"), max_chars=1000)
+            submitted = st.form_submit_button(_t("Save declaration"))
         if submitted:
             if value is None:
-                st.error("Choose what is known about the help received.")
+                st.error(_t("Choose what is known about the help received."))
             else:
                 store.declare(context["token"], record["id"], value=value,
                               description=description if value == "external_help" else "",
                               affected_refs=affected if value == "external_help" else (),
                               note=note)
-                st.success("Declaration saved and added to the history.")
+                st.success(_t("Declaration saved and added to the history."))
                 current = store.current(context["token"], record["id"])
     return current
 
@@ -197,9 +198,9 @@ def _pdf_download(context, report, record, *, compact, assessment=None, language
                 language=language, translate=prose_translation.translator(context, _secret))
         except (ValueError, LayoutError):
             if compact:
-                st.warning("This report could not be fitted into the concise PDF. Open the full analysis below; you can still review and record assessments.")
+                st.warning(_t("This report could not be fitted into the concise PDF. Open the full analysis below; you can still review and record assessments."))
             else:
-                st.warning("The full PDF could not be prepared. The saved analysis and assessment form remain available here.")
+                st.warning(_t("The full PDF could not be prepared. The saved analysis and assessment form remain available here."))
             return
     label = "Download 2-page faculty brief (PDF)" if compact else "Download full faculty analysis (PDF)"
     st.download_button(label, st.session_state[cache_key],
@@ -261,16 +262,16 @@ def _rubric_pdf_download(context, review, proposal, record, language="en"):
                 review, proposal, record, average=average, badge=badge, language=language,
                 translate=prose_translation.translator(context, _secret))
         except (RubricReportError, ValueError, LayoutError):
-            st.caption("The rubric document could not be prepared. The assessment above is "
-                       "unchanged and remains available.")
+            st.caption(_t("The rubric document could not be prepared. The assessment above is "
+                       "unchanged and remains available."))
             return
     st.download_button(
-        "Download rubric assessment (PDF)", st.session_state[cache_key],
+        _t("Download rubric assessment (PDF)"), st.session_state[cache_key],
         file_name="rubric_assessment_" + record["id"][:12] + ".pdf",
         mime="application/pdf", key="download_rubric_" + record["id"])
-    st.caption("Faculty document. It is not released to the resident until you have reviewed "
-               "and completed it." if review_key.get("status") != "confirmed" else
-               "Confirmed. The resident's profile now includes this encounter.")
+    st.caption(_t("Faculty document. It is not released to the resident until you have reviewed "
+               "and completed it.") if review_key.get("status") != "confirmed" else
+               _t("Confirmed. The resident's profile now includes this encounter."))
 
 
 def proposal_for_document(store, token, record, saved_review):
@@ -325,71 +326,71 @@ def render_faculty_analysis(context, record):
         record = _staff_record(context, record)
         # What the room showed of the patient, read only when asked for: one query
         # more on every rerun of this page would undo part of its diet (2026-09-26).
-        if st.toggle("Show the patient image record", key="_image_record_" + record["id"]):
+        if st.toggle(_t("Show the patient image record"), key="_image_record_" + record["id"]):
             from image_bank_portal import render_image_record
             render_image_record(context, record)
         brief_store = FacultyBriefStore(context["store"])
         report = brief_store.get_latest(context["token"], record["id"])
-        with st.expander("AI faculty assessment brief", expanded=True):
-            st.caption("Private decision support for faculty. Review suggestions against the recorded evidence before making an assessment.")
+        with st.expander(_t("AI faculty assessment brief"), expanded=True):
+            st.caption(_t("Private decision support for faculty. Review suggestions against the recorded evidence before making an assessment."))
             import encounter_context
             declared = render_assistance_context(context, record)
-            st.caption("An unreported context is a valid state: the brief is generated either way, "
-                       "and an autonomy the record cannot establish is left for your confirmation.")
+            st.caption(_t("An unreported context is a valid state: the brief is generated either way, "
+                       "and an autonomy the record cannot establish is left for your confirmation."))
             api_key = _secret("OPENAI_API_KEY")
             if not api_key:
-                st.info("AI generation is unavailable until OPENAI_API_KEY is configured in the private deployment secrets. Saved reports remain available.")
+                st.info(_t("AI generation is unavailable until OPENAI_API_KEY is configured in the private deployment secrets. Saved reports remain available."))
             label = "Generate a new AI faculty brief" if report else "Generate AI faculty brief"
             if st.button(label, key="generate_faculty_" + record["id"], disabled=not bool(api_key)):
                 record = _staff_record(context, record)
                 model = _secret("MRS_FACULTY_MODEL", _secret("OPENAI_MODEL", "gpt-5.6-luna"))
-                with st.spinner("Analyzing the completed encounter and its recorded evidence..."):
+                with st.spinner(_t("Analyzing the completed encounter and its recorded evidence...")):
                     generated = generate_faculty_brief(
                         record, api_key=api_key, model=model,
                         context=encounter_context.snapshot(declared))
                     report = brief_store.save(context["token"], record["id"], generated)
-                st.success("Faculty analysis saved. Review it here or download the PDF.")
+                st.success(_t("Faculty analysis saved. Review it here or download the PDF."))
             if not report:
-                st.caption("Generate a brief to review the reasoning, key decisions, evidence by objective, and suggested feedback.")
+                st.caption(_t("Generate a brief to review the reasoning, key decisions, evidence by objective, and suggested feedback."))
                 return
-            st.caption("Generated " + report["generated_at"] + " · " + report["model"])
+            st.caption(_t("Generated ") + report["generated_at"] + " · " + report["model"])
             written_under = (report.get("assistance_snapshot") or {}).get("assistance")
             if written_under is None:
-                st.caption("Written under the faculty-reported context of its time: "
+                st.caption(_t("Written under the faculty-reported context of its time: ")
                            + ASSISTANCE.get(report["assistance_context"], report["assistance_context"]))
             else:
-                st.caption("Written under: " + str(written_under.get("label")))
+                st.caption(_t("Written under: ") + str(written_under.get("label")))
                 current = declared.get("assistance")
                 if (current or {}).get("sequence", 0) != written_under.get("sequence", 0):
-                    st.info("The assistance context was declared again after this brief was "
+                    st.info(_t("The assistance context was declared again after this brief was "
                             "written. The brief is kept exactly as written; generate a new one to "
-                            "use the current declaration, and both will remain on record.")
+                            "use the current declaration, and both will remain on record."))
             if report.get("autonomy_withheld"):
-                st.caption("Autonomy the declared context did not allow the AI to propose was left "
-                           "for your confirmation: " + ", ".join(report["autonomy_withheld"]) + ".")
+                st.caption(_t("Autonomy the declared context did not allow the AI to propose was left "
+                           "for your confirmation: ") + ", ".join(report["autonomy_withheld"]) + ".")
             analysis = report["analysis"]
             _pdf_download(context, report, record, compact=True, assessment=assessment,
                           language=written_in)
-            st.caption("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification.")
+            st.caption(_t("Start with the 2-page brief, then review an objective below, edit its draft and record your judgment. The full analysis remains available for verification."))
             labels = _labels(record)
             correct = _prose(record)
             # The same held state the PDFs show: a negative suggestion whose
             # basis the record cannot settle waits for the faculty's reading.
             limits = findings.encounter_limits(
                 ((record.get("payload") or {}).get("session") or {}).get("management_trace") or [])
-            st.dataframe([
+            st.dataframe(_rows([
                 {"Objective": key["objective_id"] + " · " + OBJECTIVES[key["objective_id"]]["title"],
-                 "AI suggestion": (findings.HELD_STATUS if findings.hold_for_review(key, limits)
-                                   else RECOMMENDATIONS[key["recommendation"]]),
-                 "Depth": (key["depth"] or "Faculty judgment needed").capitalize(),
-                 "Autonomy": ((key["autonomy"] or "").capitalize()
-                              or encounter_context.AUTONOMY_NOT_DETERMINED[0])}
+                 "AI suggestion": _t(findings.HELD_STATUS if findings.hold_for_review(key, limits)
+                                      else RECOMMENDATIONS[key["recommendation"]]),
+                 "Depth": _t((key["depth"] or "Faculty judgment needed").capitalize()),
+                 "Autonomy": (_t((key["autonomy"] or "").capitalize())
+                              or _t(encounter_context.AUTONOMY_NOT_DETERMINED[0]))}
                 for key in analysis["objectives"]
-            ], hide_index=True, use_container_width=True)
-            with st.expander("Read the analysis and debriefing questions"):
+            ]), hide_index=True, use_container_width=True)
+            with st.expander(_t("Read the analysis and debriefing questions")):
                 _pdf_download(context, report, record, compact=False, assessment=assessment,
                               language=written_in)
-                st.markdown("**Performance synthesis**")
+                st.markdown("**" + _t('Performance synthesis') + "**")
                 st.write(correct(analysis["summary"]))
                 for title, values in (("Strengths", analysis["strengths"]),
                                       ("Points to review", analysis["review_points"])):
@@ -399,10 +400,10 @@ def render_faculty_analysis(context, record):
                 for decision in analysis["key_decisions"]:
                     st.caption(_reference_text(decision["evidence_refs"], labels))
                     st.write(correct(decision["analysis"]))
-                    st.write("Discuss: " + correct(decision["question"]))
-                st.markdown("**Reflection and adaptation**")
+                    st.write(_t("Discuss: ") + correct(decision["question"]))
+                st.markdown("**" + _t('Reflection and adaptation') + "**")
                 st.write(correct(analysis["learning_cycle"]))
-                st.markdown("**Limits of this analysis**")
+                st.markdown("**" + _t('Limits of this analysis') + "**")
                 for value in analysis["limits"]:
                     st.write(correct(value))
                 for suggestion in analysis["objectives"]:
@@ -411,8 +412,8 @@ def render_faculty_analysis(context, record):
                     st.caption(_reference_text(suggestion["evidence_refs"], labels))
                     st.write(correct(suggestion["feedback"]))
                     for question in suggestion["questions"]:
-                        st.write("Discuss: " + correct(question))
-            st.caption("Select an objective below to load its suggestion as an editable draft. Only Record objective assessment saves your final judgment.")
+                        st.write(_t("Discuss: ") + correct(question))
+            st.caption(_t("Select an objective below to load its suggestion as an editable draft. Only Record objective assessment saves your final judgment."))
     except (AccountError, FacultyAnalysisError) as exc:
         st.error(str(exc))
 
@@ -445,18 +446,18 @@ def render_suggestion_loader(context, record, objective_id, widget_prefix):
             ((record.get("payload") or {}).get("session") or {}).get("management_trace") or [])
         held = findings.hold_for_review(suggestion, limits)
         if held:
-            st.caption("AI draft: " + findings.HELD_STATUS)
-            st.info("AI suggestion on record: " + RECOMMENDATIONS[suggestion["recommendation"]]
-                    + ". It is held for your reading because " + held[0]
-                    + ". No new rating was assigned and no recorded judgment was changed.")
+            st.caption(_t("AI draft: ") + findings.HELD_STATUS)
+            st.info(_t("AI suggestion on record: ") + RECOMMENDATIONS[suggestion["recommendation"]]
+                    + _t(". It is held for your reading because ") + held[0]
+                    + _t(". No new rating was assigned and no recorded judgment was changed."))
         else:
-            st.caption("AI draft: " + RECOMMENDATIONS[suggestion["recommendation"]])
+            st.caption(_t("AI draft: ") + RECOMMENDATIONS[suggestion["recommendation"]])
         correct = _prose(record)
         st.write(correct(suggestion["rationale"]))
         if suggestion.get("autonomy") is None and suggestion["recommendation"] != "insufficient_evidence":
             import encounter_context
             st.caption(encounter_context.AUTONOMY_NOT_DETERMINED[0] + ".")
-        if st.button("Load AI suggestion into editable form", key=widget_prefix + "_load_ai"):
+        if st.button(_t("Load AI suggestion into editable form"), key=widget_prefix + "_load_ai"):
             # What is loaded becomes the faculty's draft, and a saved
             # observation is read by the resident: it arrives with the
             # identifiers already written as decisions.
@@ -472,8 +473,8 @@ def render_suggestion_loader(context, record, objective_id, widget_prefix):
                       "assistance_context": report["assistance_context"]}
             st.session_state[marker_key] = marker
     if marker:
-        st.info("AI draft loaded. Edit every field as needed and confirm your assessment before saving. An unanswered field is not an unsatisfactory judgment.")
-        if st.button("Discard loaded AI draft", key=widget_prefix + "_discard_ai"):
+        st.info(_t("AI draft loaded. Edit every field as needed and confirm your assessment before saving. An unanswered field is not an unsatisfactory judgment."))
+        if st.button(_t("Discard loaded AI draft"), key=widget_prefix + "_discard_ai"):
             for field in field_names:
                 st.session_state.pop(widget_prefix + "_" + field, None)
             st.session_state.pop(marker_key, None)
