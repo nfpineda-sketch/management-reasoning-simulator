@@ -32,7 +32,7 @@ exclusivamente el corpus de ensayo existente».
      texto cambiado, palabras truncadas y órdenes guardadas como «modelo de
      trabajo».
    - Es un hallazgo CRITICAL según la §3 del charter (fidelidad del Management
-     Trace). No se corrigió: queda como R-1 en la cola de decisiones.
+     Trace). No se corrigió: queda como DF-7 en la cola de decisiones.
 3. **Costo:** US$0, con 0 llamadas de IA registradas en los 40 encuentros
    (`ai_calls_spent` = 0) y 0 decisiones interpretadas por IA. El cómputo fue de
    unos 13 minutos locales.
