@@ -77,6 +77,8 @@ def current():
 # Whole messages, where a sentence has to be said rather than substituted.
 MESSAGES = {
  # The standing line, said whole so the Spanish agrees with its noun (2026-09-26).
+ "I couldn't match that question to the recorded history. Please rephrase it or use History topics.":
+ "No pude relacionar esa pregunta con la historia registrada. Reformúlala o usa los temas de la anamnesis.",
  "Peripheral intravenous access already in place; not repeated":
  "Vía venosa periférica ya instalada; no se repite",
  'You have not recorded a destination. Do you want to continue or finish?':
@@ -238,6 +240,36 @@ _SERVICES_ES = {"PERT": "el equipo PERT", "cardiology": "cardiología", "gastroe
                 "internal medicine": "medicina interna", "toxicology": "toxicología"}
 
 
+#: Where a patient is admitted, as a Spanish sentence names it (the engine's destinations).
+_DESTINATIONS_ES = {"ICU": "UCI", "ward": "sala", "intermediate care": "intermedio", "coronary care unit": "unidad coronaria",
+                    "coronary care": "unidad coronaria", "operating room": "pabellón", "theatre": "pabellón",
+                    "cath lab": "hemodinamia", "stroke unit": "unidad de ACV", "step-down unit": "intermedio"}
+#: How an external bleed is controlled, and the words a site is written with.
+_HAEMOSTASIS_ES = {"Tourniquet": "Torniquete aplicado", "Direct pressure": "Compresión directa aplicada",
+                   "Pressure": "Compresión aplicada", "Packing": "Taponamiento aplicado",
+                   "Wound packing": "Taponamiento de la herida aplicado", "Pressure dressing": "Vendaje compresivo aplicado"}
+_SITE_WORDS_ES = {"left": "izquierdo", "right": "derecho", "thigh": "muslo", "leg": "pierna", "arm": "brazo",
+                  "forearm": "antebrazo", "groin": "ingle", "scalp": "cuero cabelludo", "neck": "cuello",
+                  "wound": "herida", "limb": "extremidad", "upper": "superior", "lower": "inferior", "axilla": "axila",
+                  "calf": "pantorrilla", "hand": "mano", "foot": "pie", "the": ""}
+
+
+def _site_es(site):
+    """A bleeding site in Spanish word by word ("left thigh" -> "muslo izquierdo"), as far as its words are known."""
+    words = [word for word in str(site).split() if word]
+    if words and all(word.lower() in _SITE_WORDS_ES for word in words):
+        side = [word for word in words if word.lower() in {"left", "right"}]
+        rest = [word for word in words if word.lower() not in {"left", "right", "the"}]
+        femenine = bool(rest) and rest[-1].lower() in {"leg", "groin", "wound", "limb", "axilla", "calf", "hand"}
+        said = " ".join(_SITE_WORDS_ES[word.lower()] for word in rest)
+        if side:
+            adjective = _SITE_WORDS_ES[side[0].lower()]
+            said += " " + (adjective[:-1] + "a" if femenine else adjective)
+        article = "la" if femenine else "el"
+        return f"{article} {said}".strip()
+    return site
+
+
 def _to(name):
     """'a' before a service, contracted before a masculine article: "al equipo PERT"."""
     return "al " + name[3:] if name.startswith("el ") else "a " + name
@@ -291,6 +323,135 @@ _RULES = (
   "Espigas de marcapasos sin captura, sobre un bloqueo AV completo"),
  (r"\bAsystole\b", "Asistolía"),
  # --- orders and their labels ---------------------------------------------
+ # Whole engine labels first, before the generic words below translate them by
+ # halves ("Epinephrine inicio at 0.1", "started as a bolus (no rate written")
+ # (2026-09-27: found in the Spanish rehearsal of scenario 19).
+ (r"\bSynchronized cardioversion delivered: ", "Cardioversión sincronizada administrada: "),
+ (r"\bAirway equipment prepared; intubation has not occurred\b",
+  "Equipo de vía aérea preparado; la intubación no se ha realizado"),
+ (r"\bstopping crystalloid \((\d+) mL not given\)", r"suspensión del cristaloide (\1 mL sin administrar)"),
+ (r"\bwithholding further fluid \(none was running\)", "sin más volumen (no había volumen pasando)"),
+ (r" started as a bolus \(no rate written; the simulator's standard rate, about (\d+) mL/min\)",
+  r" iniciado en bolo (sin velocidad escrita; velocidad estándar del simulador, unos \1 mL/min)"),
+ (r"\((\d+) mL of ([\d.]+) mL infused by ([\d.]+) min; remainder due at ([\d.]+) min\)",
+  r"(\1 mL de \2 mL pasados al minuto \3; el resto termina al minuto \4)"),
+ (r"(\d mL(?: (?:IV|IO|PO|SC))?) started\b(?! over)", r"\1 iniciado"),
+ (r"\b([A-Z][\w -]*?) reviewed; the result already on file is unchanged",
+  r"\1: se revisó; el resultado ya registrado no cambia"),
+ (r"\b([A-Z][\w -]*?) has been requested and is not back yet; it is expected at (\d+) min",
+  r"\1: solicitado, todavía sin resultado; se espera al minuto \2"),
+ (r"\b([A-Z][\w -]*?) has not been requested in this encounter", r"\1: no se ha solicitado en este encuentro"),
+ (r"\bPelvic binder applied at the greater trochanters; the pelvic volume is (?:reduced|reducido)\b",
+  "Faja pélvica aplicada a nivel de los trocánteres mayores; el volumen pélvico se reduce"),
+ (r"\bPelvic binder applied at the greater trochanters\b", "Faja pélvica aplicada a nivel de los trocánteres mayores"),
+ (r"\b(\d+(?:\.\d+)?) mcg IV bolus\b", r"\1 mcg IV en bolo"),
+ (r"\bContinuous nebulized (\w+) running at ([\d.]+) mg/h; unchanged", r"\1 nebulizado continuo a \2 mg/h; sin cambios"),
+ (r"\bContinuous nebulized (\w+) adjusted to ([\d.]+) mg/h", r"\1 nebulizado continuo ajustado a \2 mg/h"),
+ (r"\bContinuous nebulized (\w+) ([\d.]+) mg/h started", r"\1 nebulizado continuo a \2 mg/h iniciado"),
+ (r"\bContinuous nebulized albuterol stopped\b", "Albuterol nebulizado continuo suspendido"),
+ (r"\b(start|adjust|continue) at (?=[\d.])",
+  lambda m: {"start": "inicio a ", "adjust": "ajuste a ", "continue": "continúa a "}[m.group(1)]),
+ (r"; engine convention while the weight type for this drug is undecided\b",
+  "; convención del motor mientras el tipo de peso de este fármaco está pendiente"),
+ (r"; this is analgesia, not sedation\b", "; esto es analgesia, no sedación"),
+ (r"; the atrial rate rises and the ventricular escape does not follow\b",
+  "; la frecuencia auricular sube y el escape ventricular no la sigue"),
+ (r"\bOral carbohydrate given\b", "Carbohidratos orales administrados"),
+ (r"\bDextrose 10% at ([\d.]+) mL/h started\b", r"Dextrose 10% a \1 mL/h iniciada"),
+ (r"\bNaloxone infusion at ([\d.]+) mg/h started\b", r"infusión de Naloxone a \1 mg/h iniciada"),
+ (r"(\d mg (?:IV|IO|PO|IM|SC)) given: this ECG shows no occlusion pattern, so thrombolysis carries its bleeding "
+  r"risk without an artery to open",
+  r"\1 administrado: este ECG no muestra un patrón de oclusión, así que la trombolisis tiene su riesgo de "
+  r"sangrado sin una arteria que abrir"),
+ (r"(\d mg (?:IV|IO|PO|IM|SC)) given: the artery is already open", r"\1 administrado: la arteria ya está abierta"),
+ (r"(\d mg (?:IV|IO|PO|IM|SC)) given: reperfusion is expected at minute (\d+)",
+  r"\1 administrado: se espera la reperfusión al minuto \2"),
+ (r"(\d mg (?:IV|IO|PO|IM|SC)) given\b", r"\1 administrado"),
+ (r"\bExercise stress test started\b", "Prueba de esfuerzo iniciada"),
+ (r"\bExercise stress test performed: no ischaemic change at the workload achieved\b",
+  "Prueba de esfuerzo realizada: sin cambios isquémicos con la carga alcanzada"),
+ (r"\b(Needle|Finger|Chest tube) decompression of the (left|right) chest: ",
+  lambda m: {"Needle": "Descompresión con aguja", "Finger": "Descompresión digital",
+             "Chest tube": "Descompresión con tubo pleural"}[m.group(1)]
+  + " del hemitórax " + {"left": "izquierdo", "right": "derecho"}[m.group(2)] + ": "),
+ (r"\bChest tube in the (left|right) chest: (\d+) mL of blood drained immediately and it continues to fill",
+  lambda m: "Tubo pleural en el hemitórax " + {"left": "izquierdo", "right": "derecho"}[m.group(1)]
+  + f": se drenan {m.group(2)} mL de sangre de inmediato y sigue llenándose"),
+ (r"no air under tension was released\. A haemothorax is drained with a tube, not a needle",
+  "no salió aire a tensión. Un hemotórax se drena con un tubo, no con una aguja"),
+ (r"no air under tension was released", "no salió aire a tensión"),
+ (r"nothing was released and no blood drained", "no salió aire ni se drenó sangre"),
+ (r"the collection is on the other side", "la colección está al otro lado"),
+ (r"the pneumothorax is on the other side", "el neumotórax está al otro lado"),
+ (r"air under tension released; the pressure and the saturation recover",
+  "salió aire a tensión; la presión y la saturación se recuperan"),
+ (r"\bVentilator circuit disconnected; the chest is allowed to empty\b",
+  "Circuito del ventilador desconectado; se deja vaciar el tórax"),
+ (r"\bVentilator settings: ", "Parámetros del ventilador: "),
+ (r"\bIntubation completed; invasive ventilation started\b", "Intubación realizada; ventilación invasiva iniciada"),
+ (r"\bBag-mask assisted ventilation started\b", "Ventilación asistida con bolsa-mascarilla iniciada"),
+ (r"\b(Tourniquet|Direct pressure|Pressure|Packing|Wound packing|Pressure dressing) applied to the ([\w -]+?): "
+  r"the external bleeding is controlled",
+  lambda m: _HAEMOSTASIS_ES.get(m.group(1), m.group(1)) + " en " + _site_es(m.group(2))
+  + ": el sangrado externo está controlado"),
+ (r"\b(Tourniquet|Direct pressure|Pressure|Packing|Wound packing|Pressure dressing) applied to the ([\w -]+?): "
+  r"there is no external source bleeding here",
+  lambda m: _HAEMOSTASIS_ES.get(m.group(1), m.group(1)) + " en " + _site_es(m.group(2))
+  + ": aquí no hay una fuente de sangrado externo"),
+ (r"\bDischarge home already requested; not repeated\b", "Alta a domicilio ya indicada; no se repite"),
+ (r"\bED observation for ([\d.]+) h ordered; the period has not been completed\b",
+  r"Observación en urgencias por \1 h indicada; el período no se ha completado"),
+ (r"\bED observation ordered, with no duration stated\b", "Observación en urgencias indicada, sin duración"),
+ (r" \(ordered again\)", " (indicada de nuevo)"),
+ (r"\bAdmission to ([\w ]+?) already requested; not repeated\b",
+  lambda m: f"Ingreso a {_DESTINATIONS_ES.get(m.group(1), m.group(1))} ya solicitado; no se repite"),
+ (r"\badmission to ([\w ]+?) already requested \(not repeated\)",
+  lambda m: f"ingreso a {_DESTINATIONS_ES.get(m.group(1), m.group(1))} ya solicitado (no se repite)"),
+ (r"\bdischarge home already requested \(not repeated\)", "alta a domicilio ya indicada (no se repite)"),
+ (r"\brequesting admission to ([\w ]+?)(?=,|$| \+)",
+  lambda m: f"solicitar ingreso a {_DESTINATIONS_ES.get(m.group(1), m.group(1))}"),
+ (r"\bdischarging the patient home\b", "dar el alta a domicilio"),
+ (r"(?<=Traslado u hospitalización solicitada: )([\w ]+)",
+  lambda m: _DESTINATIONS_ES.get(m.group(1).strip(), m.group(1))),
+ (r"\b(urinary catheter|nasogastric tube|peripheral intravenous access|continuous monitoring and pulse oximetry"
+  r"|nil by mouth) removed\b",
+  lambda m: {"urinary catheter": "sonda vesical retirada", "nasogastric tube": "sonda nasogástrica retirada",
+             "peripheral intravenous access": "acceso venoso periférico retirado",
+             "continuous monitoring and pulse oximetry": "monitorización continua y oximetría de pulso retiradas",
+             "nil by mouth": "régimen cero suspendido"}[m.group(1)]),
+ (r"\b(urinary catheter|nasogastric tube|continuous monitoring and pulse oximetry|nil by mouth) already in place; "
+  r"not repeated",
+  lambda m: {"urinary catheter": "sonda vesical ya instalada; no se repite",
+             "nasogastric tube": "sonda nasogástrica ya instalada; no se repite",
+             "continuous monitoring and pulse oximetry": "monitorización continua y oximetría de pulso ya en curso; no se repite",
+             "nil by mouth": "régimen cero ya registrado; no se repite"}[m.group(1)]),
+ (r"\bperipheral intravenous access placed\b", "acceso venoso periférico instalado"),
+ (r"\bperipheral intravenous access replaced\b", "acceso venoso periférico reemplazado"),
+ (r"\b(cath lab|" + "|".join(_SERVICES_ES) + r") already contacted \(not repeated\)",
+  lambda m: ("hemodinamia" if m.group(1) == "cath lab" else _SERVICES_ES[m.group(1)]) + " ya contactado (no se repite)"),
+ (r"\bcontacting (cath lab|" + "|".join(_SERVICES_ES) + r") \(no intervention yet\)",
+  lambda m: "contactando " + _to("hemodinamia" if m.group(1) == "cath lab" else _SERVICES_ES[m.group(1)])
+  + " (sin intervención aún)"),
+ (r"\bWhile awaiting diagnostic results over (\d+) minutes?,", r"Mientras se esperaban los resultados, en \1 minutos,"),
+ (r"\bOn immediate reassessment,", "En la reevaluación inmediata,"),
+ (r"\bexhausted: shallow and ineffective effort\b", "agotado: esfuerzo superficial e ineficaz"),
+ (r"\bExhausted: shallow and ineffective effort\b", "Agotado: esfuerzo superficial e ineficaz"),
+ # The guided completion of a held order: its labels, never the resident's words between them.
+ (r"\*\*Working model:\*\*", "**Modelo de trabajo:**"),
+ (r"\*\*Management priority:\*\*", "**Prioridad de manejo:**"),
+ (r"\*\*Expected effect:\*\*", "**Efecto esperado:**"),
+ (r"\*\*Reassessment:\*\* (.*?) in (\d+) minutes", r"**Reevaluación:** \1 en \2 minutos"),
+ (r"\*\*Reassessment:\*\* (.*?) in \[time\] minutes", r"**Reevaluación:** \1 en [tiempo] minutos"),
+ # What an order recognised and did not execute (unexecuted_items), the resident's words quoted.
+ (r"Indicated and recorded as your decision: (.+?)\. Its administration and effect are not modelled in this "
+  r"simulator, so nothing was given and nothing changed\.",
+  "Indicado y registrado como tu decisión: \u00ab\\1\u00bb. Su administración y su efecto no están modelados en "
+  "este simulador, así que no se administró nada y nada cambió."),
+ (r"Prescription for home recorded: (.+?)\. It is a prescription, not a dose given here\.",
+  "Receta para el domicilio registrada: \u00ab\\1\u00bb. Es una receta, no una dosis administrada aquí."),
+ (r"Recorded as a conditional plan, not executed now: (.+?)\.$",
+  "Registrado como plan condicional, no ejecutado ahora: \u00ab\\1\u00bb."),
+ (r"Recorded as advice to the patient: (.+?)\.$", "Registrado como indicación al paciente: \u00ab\\1\u00bb."),
  (r"\badministered\b", "administrado"),
  (r"\bstarted at\b", "iniciado a"), (r"\badjusted to\b", "ajustado a"),
  (r"\b(\w+) infusion stopped\b", r"infusión de \1 suspendida"),
@@ -365,6 +526,28 @@ _RULES = (
   "Usa tus propias palabras, o completa los inicios de frase en pantalla."),
  (r"You do not need to repeat the order\.", "No necesitas repetir la orden."),
  # --- investigations -------------------------------------------------------
+ # The additional-lead ECGs (acs_reperfusion.additional_leads), whole.
+ (r"\bRight-sided leads V3R and V4R, recorded alongside the standard twelve\.",
+  "Derivaciones derechas V3R y V4R, registradas junto con las doce estándar."),
+ (r"\bPosterior leads V7, V8 and V9, recorded alongside the standard twelve\.",
+  "Derivaciones posteriores V7, V8 y V9, registradas junto con las doce estándar."),
+ (r"ST elevation of 1\.5 mm in V4R, with 1 mm in V3R\. The inferior elevation is unchanged in this tracing\.",
+  "Supradesnivel del ST de 1.5 mm en V4R, con 1 mm en V3R. El supradesnivel inferior no cambia en este trazado."),
+ (r"The V4R elevation has resolved since the artery was opened\.",
+  "El supradesnivel en V4R se resolvió desde que se abrió la arteria."),
+ (r"No ST elevation in V3R or V4R\.", "Sin supradesnivel del ST en V3R ni V4R."),
+ (r"ST elevation of 1 mm in V7 to V9, concordant with the reciprocal depression already present anteriorly\.",
+  "Supradesnivel del ST de 1 mm en V7 a V9, concordante con el infradesnivel recíproco ya presente en la cara anterior."),
+ (r"The posterior elevation has resolved since the artery was opened\.",
+  "El supradesnivel posterior se resolvió desde que se abrió la arteria."),
+ (r"No ST elevation in V7, V8 or V9\.", "Sin supradesnivel del ST en V7, V8 ni V9."),
+ (r"Textual report: this encounter records the additional leads in words; the rendered tracing shows the standard "
+  r"twelve\.", "Informe en texto: este encuentro registra las derivaciones adicionales por escrito; el trazado "
+  "dibujado muestra las doce estándar."),
+ (r"The fluid was given faster than the obstructed right ventricle can accept: it distends, the septum shifts and "
+  r"the output falls\. Volume here is given slowly and in small amounts, or not at all\.",
+  "El volumen se administró más rápido de lo que el ventrículo derecho obstruido puede recibir: se distiende, el "
+  "tabique se desplaza y el gasto cae. Aquí el volumen se da lento y en pequeñas cantidades, o no se da."),
  # The fixed structure of every study report (family_reports, pocus_report):
  # its names, its field labels and the POCUS sections. With a case's findings
  # in Spanish (case_text), an English label left beside them would make the
@@ -683,6 +866,113 @@ def narrative(text, language=None, case=None):
         return text
     pattern, table = installed
     return pattern.sub(lambda match: table[match.group(0)], str(text))
+
+
+#: The examination findings the engine composes from the observations
+#: (family_engine.examination_finding, patient_appearance.appearance_summary).
+_EXPRESSION_ES = {"neutral": "neutra", "uncomfortable": "incómoda", "markedly uncomfortable": "muy incómoda",
+                  "passive": "pasiva", "sedated": "sedada"}
+_SKIN_ES = {"natural": "natural", "mild pallor": "palidez leve", "pallor": "palidez"}
+_SWEAT_ES = {"absent": "ausente", "mild": "leve", "marked": "marcada"}
+
+
+def _in_sentence(value, language):
+    """An observed value inside a Spanish sentence: lower case, an acronym kept."""
+    said = observed_value(str(value).strip(), language)
+    return said if said.isupper() else said[:1].lower() + said[1:]
+
+
+def _appearance(parts, language):
+    names = {"Mental status": "Estado mental", "Expression": "Expresión", "Color": "Color", "Diaphoresis": "Diaforesis"}
+    tables = {"Expression": _EXPRESSION_ES, "Color": _SKIN_ES, "Diaphoresis": _SWEAT_ES}
+    said = []
+    for part in parts:
+        if part == "Mottling on visible extremities":
+            said.append("Moteado en las extremidades visibles")
+            continue
+        name, _, value = part.partition(": ")
+        if name not in names:
+            return None
+        table = tables.get(name)
+        if table is not None and value not in table:
+            return None
+        said.append(names[name] + ": " + (table[value] if table is not None else observed_value(value, language)))
+    return ". ".join(said) + "."
+
+
+def _neurological_tail(tail, language, case):
+    """The pupils and limbs the engine quotes from the case's own neurological passage, from its approved translation."""
+    import re as _re
+    tail = tail.strip()
+    if not tail:
+        return ""
+    installed = _NARRATIVE.get(language, {}).get(case or _CASE.get() or "")
+    if installed:
+        for english, spanish in installed[1].items():
+            fragments = [bit.strip(" .") for bit in _re.split(r"(?<=[.!?])\s+", tail) if bit.strip(" .")]
+            if fragments and all(bit in english for bit in fragments):
+                # The same kinds of finding the English quoted, and no more.
+                kinds = []
+                if _re.search(r"\bpupils?\b", tail, flags=_re.I):
+                    kinds.append(r"pupilas?")
+                if _re.search(r"lateraliz|lateralis|focal|limbs", tail, flags=_re.I):
+                    kinds.append(r"moviliza|sin déficit")
+                found = _re.findall(r"\b(?:" + "|".join(kinds) + r")[^.!?;]*[.!?]?", spanish, flags=_re.I) if kinds else []
+                if found:
+                    return " " + ". ".join(bit[:1].upper() + bit[1:].strip().rstrip(",.") for bit in found) + "."
+    return " " + tail
+
+
+def case_words(text, language=None, case=None):
+    """What the case says (history answers, presentation): its approved passages, or a fixed message whole."""
+    language = language or current()
+    if language == "en" or not text:
+        return text
+    return MESSAGES.get(str(text).strip()) or narrative(str(text), language, case)
+
+
+def examination(text, language=None, case=None):
+    """An examination finding in the reading language, whole.
+
+    The case's own passages as the faculty approved them (``narrative``); the
+    findings the engine composes from the observations ("Respiratory rate: 30/min.
+    Work of breathing: Increased") from their templates. Anything else stays as
+    written rather than being translated by halves.
+    """
+    import re as _re
+    language = language or current()
+    if language == "en" or not text:
+        return text
+    body = narrative(str(text), language, case).strip()
+    match = _re.fullmatch(r"Respiratory rate: ([\d.]+|—)/min\. Work of breathing: (.+)", body)
+    if match:
+        return f"Frecuencia respiratoria: {match[1]}/min. Trabajo respiratorio: {_in_sentence(match[2], language)}"
+    if body == "Pulse absent. Capillary refill is not measurable.":
+        return "Pulso ausente. El llene capilar no es medible."
+    match = _re.fullmatch(r"Capillary refill: ([\d.]+|—) s\. Extremities: (.+)", body)
+    if match:
+        return f"Llene capilar: {match[1]} s. Extremidades: {_in_sentence(match[2], language)}"
+    match = _re.fullmatch(r"Capillary refill ([\d.]+|not measured) s; extremities (.+)\.", body)
+    if match:
+        refill = "no medido" if match[1] == "not measured" else match[1] + " s"
+        return f"Llene capilar {refill}; extremidades {_in_sentence(match[2], language)}."
+    match = _re.fullmatch(r"([^.:]+)\. Respiratory effort: (.+)\.", body)
+    if match:
+        return (f"{observed_value(match[1], language)}. Esfuerzo respiratorio: "
+                f"{_in_sentence(match[2], language)}.")
+    match = _re.fullmatch(r"Current mental status: ([^.]+)\.( The patient engages in conversation and follows "
+                          r"commands\.| Engagement is reduced; interpret alongside respiratory and circulatory "
+                          r"findings\.)(.*)", body, flags=_re.S)
+    if match:
+        engaged = ("El paciente conversa y obedece órdenes." if "engages" in match[2] else
+                   "La interacción está disminuida; interprétala junto con los hallazgos respiratorios y circulatorios.")
+        return (f"Estado mental actual: {_in_sentence(match[1], language)}. {engaged}"
+                + _neurological_tail(match[3], language, case))
+    parts = [part.strip() for part in body.rstrip(".").split(". ")]
+    appearance = _appearance(parts, language) if parts and all(
+        part.startswith(("Mental status: ", "Expression: ", "Color: ", "Diaphoresis: "))
+        or part == "Mottling on visible extremities" for part in parts) else None
+    return appearance or body
 
 
 def say(text, language=None):

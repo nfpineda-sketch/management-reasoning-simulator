@@ -2597,6 +2597,7 @@ def _review_payload(
     carry_forward_plan=None,
     prior_attempt_summary=None,
     encounter_language=None,
+    authored_case_id=None,
 ):
     """Build the versioned, learner-facing Decision Review export payload.
 
@@ -2654,8 +2655,9 @@ def _review_payload(
             # spec itself never leaves the engine: it holds the answers. This is
             # only its identifier, and the rubric cannot look up a case's declared
             # opportunities and critical events without it.
+            # The frozen snapshot carries no spec, so the caller may name the case it came from.
             "authored_case_id": str((((final_state or {}).get("encounter_spec") or {})
-                                     .get("clinical_case") or {}).get("id") or ""),
+                                     .get("clinical_case") or {}).get("id") or authored_case_id or ""),
             "case_label": case_label,
             "closed_time_min": int(closed_time_min or 0),
             "final_patient_state": clean_final_state,
@@ -2776,7 +2778,12 @@ def _record_input(text):
     text = str(text or "")
     if _record_reader() == "en":
         return text
-    return text.replace("\n\nReasoning clarification: ", "\n\n" + _record_words("Reasoning clarification:") + " ")
+    import language as languages
+    text = text.replace("\n\nReasoning clarification: ", "\n\n" + _record_words("Reasoning clarification:") + " ")
+    if "\n\nGuided reasoning completion: " in text:
+        head, _, completion = text.partition("\n\nGuided reasoning completion: ")
+        text = head + "\n\n" + _record_words("Guided reasoning completion:") + " " + languages.say(completion)
+    return text
 
 
 def _record_state(snapshot):
@@ -2849,6 +2856,20 @@ def _record_model(payload, comparison):
     prompt = next((item for item in prompts if item.get("review_id") == comparison.get("review_id")), None)
     events = (payload.get("management_trace", {}) or {}).get("events", []) or []
     event = _event_for_review_prompt(prompt, events) if prompt else None
+    if event and str((event.get("state_before") or {}).get("case_id", "")).startswith("CE-"):
+        from cognitive_review import trajectory_review
+        composed = trajectory_review(event, source_decision=prompt.get("decision"), language=reader)
+        if composed:
+            return composed
+    return model
+
+
+def _review_model_words(prompt, model, trace):
+    """The expert comparison model on the review screen, in the reader's language (as ``_record_model``)."""
+    reader = _record_reader()
+    if reader == "en" or not model:
+        return model
+    event = _event_for_review_prompt(prompt, trace)
     if event and str((event.get("state_before") or {}).get("case_id", "")).startswith("CE-"):
         from cognitive_review import trajectory_review
         composed = trajectory_review(event, source_decision=prompt.get("decision"), language=reader)
@@ -3844,6 +3865,8 @@ def _render_export_controls(
         st.session_state.get("carry_forward_plan", {}),
         st.session_state.get("prior_attempt_summary"),
         encounter_language=st.session_state.get("encounter_language"),
+        authored_case_id=(((st.session_state.get("state") or {}).get("encounter_spec") or {})
+                          .get("clinical_case") or {}).get("id"),
     )
     case_id = str((final_state or {}).get("case_id") or "encounter").lower()
     with st.expander(_record_words("Complete original encounter record · PDF, Markdown and JSON"), expanded=False):
@@ -4078,22 +4101,24 @@ def render_decision_review(trace, final_state):
         comparison_unlocked,
     )
 
-    st.markdown("## Decision Review")
-    st.caption(
+    # The review's own words in the reader's language; the resident's stay as written (2026-09-26).
+    w = _record_words
+    st.markdown("## " + w("Decision Review"))
+    st.caption(w(
         "First record your own retrospective reasoning. The expert model remains hidden until your "
         "reflection is complete and locked; comparison is reflective and non-scoring."
-    )
+    ))
     progress_parts = [
-        f'{progress["filled_fields"]}/{progress["total_fields"]} fields autosaved',
-        f'{progress["decisions_complete"]}/{progress["decisions_total"]} decisions',
+        w("{done}/{total} fields autosaved", done=progress["filled_fields"], total=progress["total_fields"]),
+        w("{done}/{total} decisions", done=progress["decisions_complete"], total=progress["decisions_total"]),
     ]
     if expert_models:
         progress_parts.append(
-            f'{progress["comparisons_complete"]}/{progress["comparisons_total"]} comparisons'
+            w("{done}/{total} comparisons", done=progress["comparisons_complete"], total=progress["comparisons_total"])
         )
-    progress_parts.append(f'{progress["plan_fields_filled"]}/{progress["plan_fields_total"]} plan fields')
+    progress_parts.append(w("{done}/{total} plan fields", done=progress["plan_fields_filled"], total=progress["plan_fields_total"]))
     st.progress(progress["fraction"], text=" · ".join(progress_parts))
-    st.caption("Autosave is active when you leave a field or move to another step.")
+    st.caption(w("Autosave is active when you leave a field or move to another step."))
     _render_analyzed_management_trace()
     _render_export_controls(
         trace,
@@ -4112,12 +4137,12 @@ def render_decision_review(trace, final_state):
         st.session_state.review_stage = "decision"
     nav_decision, nav_comparison, nav_plan, nav_summary = st.columns(4)
     with nav_decision:
-        if st.button("1 · Decision Review", use_container_width=True, disabled=stage == "decision"):
+        if st.button(w("1 · Decision Review"), use_container_width=True, disabled=stage == "decision"):
             st.session_state.review_stage = "decision"
             rerun_app()
     with nav_comparison:
         if st.button(
-            "2 · Expert Comparison",
+            w("2 · Expert Comparison"),
             use_container_width=True,
             disabled=(stage == "comparison" or not comparison_unlocked),
         ):
@@ -4125,7 +4150,7 @@ def render_decision_review(trace, final_state):
             rerun_app()
     with nav_plan:
         if st.button(
-            "3 · Adaptation Plan",
+            w("3 · Adaptation Plan"),
             use_container_width=True,
             disabled=(stage == "adaptation" or not comparison_unlocked),
         ):
@@ -4133,7 +4158,7 @@ def render_decision_review(trace, final_state):
             rerun_app()
     with nav_summary:
         if st.button(
-            "4 · Final Summary",
+            w("4 · Final Summary"),
             use_container_width=True,
             disabled=(stage == "summary" or not comparison_unlocked),
         ):
@@ -4142,7 +4167,7 @@ def render_decision_review(trace, final_state):
 
     if stage == "decision":
         if not prompts:
-            st.info("No reflection prompt was generated. Continue to the Adaptation Plan.")
+            st.info(w("No reflection prompt was generated. Continue to the Adaptation Plan."))
             return
 
         active_index = max(0, min(int(st.session_state.get("active_review_index", 0)), len(prompts) - 1))
@@ -4152,62 +4177,63 @@ def render_decision_review(trace, final_state):
         answer = responses.get(review_id, {}) or {}
 
         if comparison_unlocked:
-            st.info("Your original reflection is locked because the expert model has been revealed.")
+            st.info(w("Your original reflection is locked because the expert model has been revealed."))
         with st.container(border=True):
-            st.caption(f'Review point {active_index + 1} of {len(prompts)}')
-            st.markdown("### " + _review_heading(prompt))
-            st.markdown("*" + prompt.get("label", "Reflection") + "*")
-            st.write(prompt.get("prompt", ""))
+            st.caption(w("Review point {number} of {total}", number=active_index + 1, total=len(prompts)))
+            st.markdown("### " + _record_heading(_review_heading(prompt)))
+            st.markdown("*" + _record_prompt_label(prompt.get("label", "Reflection")) + "*")
+            st.write(_record_prompt(prompt.get("prompt", "")))
             for field, label in REVIEW_RESPONSE_FIELDS:
                 key = _review_widget_key(review_id, field)
                 if key not in st.session_state or comparison_unlocked:
                     st.session_state[key] = str(answer.get(field) or "")
-                st.text_area(label, key=key, height=88, disabled=comparison_unlocked)
+                st.text_area(w(label), key=key, height=88, disabled=comparison_unlocked)
 
         previous_col, next_col = st.columns(2)
         with previous_col:
-            if st.button("Previous decision", use_container_width=True, disabled=active_index == 0):
+            if st.button(w("Previous decision"), use_container_width=True, disabled=active_index == 0):
                 st.session_state.active_review_index = active_index - 1
                 rerun_app()
         with next_col:
             if active_index < len(prompts) - 1:
-                if st.button("Next decision", type="primary", use_container_width=True):
+                if st.button(w("Next decision"), type="primary", use_container_width=True):
                     st.session_state.active_review_index = active_index + 1
                     rerun_app()
             elif comparison_unlocked:
-                if st.button("Continue to Expert Comparison", type="primary", use_container_width=True):
+                if st.button(w("Continue to Expert Comparison"), type="primary", use_container_width=True):
                     st.session_state.review_stage = "comparison"
                     rerun_app()
 
         if len(prompts) > 1:
-            st.markdown("### Other review points")
+            st.markdown("### " + w("Other review points"))
             for index, other in enumerate(prompts):
                 if index == active_index:
                     continue
                 other_answer = responses.get(other.get("review_id"), {}) or {}
                 filled = sum(bool(str(other_answer.get(field) or "").strip()) for field, _ in REVIEW_RESPONSE_FIELDS)
-                status = "Complete" if filled == len(REVIEW_RESPONSE_FIELDS) else f"{filled}/{len(REVIEW_RESPONSE_FIELDS)} fields"
-                with st.expander(f'{_review_heading(other)} · {status}', expanded=False):
-                    st.markdown("*" + other.get("label", "Reflection") + "*")
-                    st.write(other.get("prompt", ""))
+                status = (w("Complete") if filled == len(REVIEW_RESPONSE_FIELDS)
+                          else w("{done}/{total} fields", done=filled, total=len(REVIEW_RESPONSE_FIELDS)))
+                with st.expander(f'{_record_heading(_review_heading(other))} · {status}', expanded=False):
+                    st.markdown("*" + _record_prompt_label(other.get("label", "Reflection")) + "*")
+                    st.write(_record_prompt(other.get("prompt", "")))
                     preview = next(
                         (_compact_text(other_answer.get(field), 220) for field, _ in REVIEW_RESPONSE_FIELDS if str(other_answer.get(field) or "").strip()),
-                        "No response recorded yet.",
+                        w("No response recorded yet."),
                     )
-                    st.caption("Saved response preview: " + preview)
-                    if st.button("Review this decision", key=f"open_review_{other.get('review_id')}"):
+                    st.caption(w("Saved response preview:") + " " + preview)
+                    if st.button(w("Review this decision"), key=f"open_review_{other.get('review_id')}"):
                         st.session_state.active_review_index = index
                         rerun_app()
 
         if not comparison_unlocked:
-            st.markdown("### Reveal comparison")
+            st.markdown("### " + w("Reveal comparison"))
             decision_complete = _decision_review_complete(prompts, responses)
-            st.caption(
+            st.caption(w(
                 "Complete all four fields for every selected decision. Revealing the model locks these "
                 "responses so the comparison cannot rewrite your initial reflection."
-            )
+            ))
             if st.button(
-                "Lock Decision Review & Reveal Expert Comparison",
+                w("Lock Decision Review & Reveal Expert Comparison"),
                 type="primary",
                 use_container_width=True,
                 disabled=not decision_complete,
@@ -4220,15 +4246,15 @@ def render_decision_review(trace, final_state):
                 rerun_app()
 
     elif stage == "comparison":
-        st.markdown("## Expert Comparison")
-        st.caption(
+        st.markdown("## " + w("Expert Comparison"))
+        st.caption(w(
             "Compare your locked reflection with one defensible expert reasoning model. This is a "
             "faculty-validation draft, not an answer key and not a score."
-        )
+        ))
         comparison_prompts = [p for p in prompts if p.get("review_id") in expert_models]
         if not comparison_prompts:
-            st.info("No faculty-validation expert model is available for these review points.")
-            if st.button("Continue to Adaptation Plan", type="primary"):
+            st.info(w("No faculty-validation expert model is available for these review points."))
+            if st.button(w("Continue to Adaptation Plan"), type="primary"):
                 st.session_state.review_stage = "adaptation"
                 rerun_app()
             return
@@ -4240,47 +4266,47 @@ def render_decision_review(trace, final_state):
         st.session_state.active_comparison_index = active_index
         prompt = comparison_prompts[active_index]
         review_id = prompt.get("review_id")
-        model = expert_models.get(review_id, {}) or {}
+        model = _review_model_words(prompt, expert_models.get(review_id, {}) or {}, trace)
         comparison_answer = comparison_responses.get(review_id, {}) or {}
 
         with st.container(border=True):
-            st.caption(f'Comparison point {active_index + 1} of {len(comparison_prompts)}')
-            st.markdown("### " + _review_heading(prompt))
-            with st.expander("Your locked reflection", expanded=False):
+            st.caption(w("Comparison point {number} of {total}", number=active_index + 1, total=len(comparison_prompts)))
+            st.markdown("### " + _record_heading(_review_heading(prompt)))
+            with st.expander(w("Your locked reflection"), expanded=False):
                 for field, label in REVIEW_RESPONSE_FIELDS:
-                    st.markdown("**" + label + "**")
+                    st.markdown("**" + w(label) + "**")
                     st.write((responses.get(review_id, {}) or {}).get(field) or "—")
-            st.markdown("#### Expert reasoning model")
-            st.markdown("**Framing**")
+            st.markdown("#### " + w("Expert reasoning model"))
+            st.markdown("**" + w("Framing") + "**")
             st.write(model.get("framing") or "—")
-            st.markdown("**Management priority**")
+            st.markdown("**" + w("Management priority") + "**")
             st.write(model.get("priority") or "—")
-            st.markdown("**Key cues**")
+            st.markdown("**" + w("Key cues") + "**")
             for cue in model.get("cues", []) or []:
                 st.write("• " + str(cue))
             left, right = st.columns(2)
             with left:
-                st.markdown("**One defensible action**")
+                st.markdown("**" + w("One defensible action") + "**")
                 st.write(model.get("action") or "—")
-                st.markdown("**Reassessment targets**")
+                st.markdown("**" + w("Reassessment targets") + "**")
                 st.write(model.get("reassessment") or "—")
             with right:
-                st.markdown("**Trade-off to manage**")
+                st.markdown("**" + w("Trade-off to manage") + "**")
                 st.write(model.get("tradeoff") or "—")
-            st.markdown("#### Your comparison")
+            st.markdown("#### " + w("Your comparison"))
             for field, label in EXPERT_COMPARISON_FIELDS:
                 key = _comparison_widget_key(review_id, field)
                 if key not in st.session_state:
                     st.session_state[key] = str(comparison_answer.get(field) or "")
-                st.text_area(label, key=key, height=88)
+                st.text_area(w(label), key=key, height=88)
 
         previous_col, next_col = st.columns(2)
         with previous_col:
-            if st.button("Previous comparison", use_container_width=True, disabled=active_index == 0):
+            if st.button(w("Previous comparison"), use_container_width=True, disabled=active_index == 0):
                 st.session_state.active_comparison_index = active_index - 1
                 rerun_app()
         with next_col:
-            next_label = "Continue to Adaptation Plan" if active_index == len(comparison_prompts) - 1 else "Next comparison"
+            next_label = w("Continue to Adaptation Plan") if active_index == len(comparison_prompts) - 1 else w("Next comparison")
             if st.button(next_label, type="primary", use_container_width=True):
                 if active_index == len(comparison_prompts) - 1:
                     st.session_state.review_stage = "adaptation"
@@ -4289,16 +4315,17 @@ def render_decision_review(trace, final_state):
                 rerun_app()
 
         if len(comparison_prompts) > 1:
-            st.markdown("### Other comparison points")
+            st.markdown("### " + w("Other comparison points"))
             for index, other in enumerate(comparison_prompts):
                 if index == active_index:
                     continue
                 other_answer = comparison_responses.get(other.get("review_id"), {}) or {}
                 filled = sum(bool(str(other_answer.get(field) or "").strip()) for field, _ in EXPERT_COMPARISON_FIELDS)
-                status = "Complete" if filled == len(EXPERT_COMPARISON_FIELDS) else f"{filled}/{len(EXPERT_COMPARISON_FIELDS)} fields"
-                with st.expander(f'{_review_heading(other)} · {status}', expanded=False):
-                    st.caption("Expert model available · faculty-validation draft")
-                    if st.button("Compare this decision", key=f"open_comparison_{other.get('review_id')}"):
+                status = (w("Complete") if filled == len(EXPERT_COMPARISON_FIELDS)
+                          else w("{done}/{total} fields", done=filled, total=len(EXPERT_COMPARISON_FIELDS)))
+                with st.expander(f'{_record_heading(_review_heading(other))} · {status}', expanded=False):
+                    st.caption(w("Expert model available · faculty-validation draft"))
+                    if st.button(w("Compare this decision"), key=f"open_comparison_{other.get('review_id')}"):
                         st.session_state.active_comparison_index = index
                         rerun_app()
 
@@ -4308,11 +4335,11 @@ def render_decision_review(trace, final_state):
             bool(str(suggestions.get(field) or "").strip()) and not bool(user_edited.get(field))
             for field, _ in ADAPTATION_PLAN_FIELDS
         )
-        st.markdown("## Adaptation Plan")
-        st.caption(
-            f'{suggested_count} fields were drafted from your locked reflection. Use the comparison '
-            "insights to define your next management priority; every field remains editable."
-        )
+        st.markdown("## " + w("Adaptation Plan"))
+        st.caption(w(
+            "{count} fields were drafted from your locked reflection. Use the comparison "
+            "insights to define your next management priority; every field remains editable.", count=suggested_count
+        ))
         with st.container(border=True):
             field_pairs = [
                 (("cue", "Clinical cue to watch"), ("threshold", "Threshold for changing course")),
@@ -4326,81 +4353,81 @@ def render_decision_review(trace, final_state):
                         key = _adaptation_widget_key(field)
                         if key not in st.session_state:
                             st.session_state[key] = str(adaptation_plan.get(field) or "")
-                        source = " · drafted from your review" if suggestions.get(field) and not user_edited.get(field) else ""
-                        st.text_area(label + source, key=key, height=92)
+                        source = w(" · drafted from your review") if suggestions.get(field) and not user_edited.get(field) else ""
+                        st.text_area(w(label) + source, key=key, height=92)
 
         back_col, summary_col = st.columns(2)
         with back_col:
-            if st.button("Back to Expert Comparison", use_container_width=True):
+            if st.button(w("Back to Expert Comparison"), use_container_width=True):
                 st.session_state.review_stage = "comparison"
                 rerun_app()
         with summary_col:
-            if st.button("Continue to Final Summary", type="primary", use_container_width=True):
+            if st.button(w("Continue to Final Summary"), type="primary", use_container_width=True):
                 st.session_state.review_stage = "summary"
                 rerun_app()
 
     else:
-        st.markdown("## Final Summary")
+        st.markdown("## " + w("Final Summary"))
         status_cols = st.columns(4)
-        status_cols[0].metric("Decisions", f'{progress["decisions_complete"]}/{progress["decisions_total"]}')
-        status_cols[1].metric("Comparisons", f'{progress["comparisons_complete"]}/{progress["comparisons_total"]}')
-        status_cols[2].metric("Plan fields", f'{progress["plan_fields_filled"]}/{progress["plan_fields_total"]}')
-        status_cols[3].metric("Status", "Complete" if st.session_state.review_completed else "Draft")
+        status_cols[0].metric(w("Decisions"), f'{progress["decisions_complete"]}/{progress["decisions_total"]}')
+        status_cols[1].metric(w("Comparisons"), f'{progress["comparisons_complete"]}/{progress["comparisons_total"]}')
+        status_cols[2].metric(w("Plan fields"), f'{progress["plan_fields_filled"]}/{progress["plan_fields_total"]}')
+        status_cols[3].metric(w("Status"), w("Complete") if st.session_state.review_completed else w("Draft"))
 
         if st.session_state.review_completed:
-            st.success("Decision Review, Expert Comparison, and Adaptation Plan are complete and ready to export.")
+            st.success(w("Decision Review, Expert Comparison, and Adaptation Plan are complete and ready to export."))
         else:
             missing = _review_missing_items(
                 prompts, responses, adaptation_plan, expert_models, comparison_responses
             )
-            st.warning(f'{len(missing)} field(s) remain incomplete. The current draft can still be exported.')
-            with st.expander("Show incomplete fields", expanded=False):
+            st.warning(w("{count} field(s) remain incomplete. The current draft can still be exported.", count=len(missing)))
+            with st.expander(w("Show incomplete fields"), expanded=False):
                 for item in missing:
-                    st.write("• " + item)
+                    st.write("• " + " — ".join(_record_heading(part) for part in item.split(" — ")))
 
-        st.markdown("### Decision synthesis")
+        st.markdown("### " + w("Decision synthesis"))
         for record in _compact_review_summary(prompts, responses):
             icon = "✓" if record["complete"] else "○"
-            with st.expander(f'{icon} {record["heading"]} · {record["filled"]}/{record["total"]}', expanded=False):
-                st.markdown("*" + record["label"] + "*")
-                st.write(record["preview"])
+            with st.expander(f'{icon} {_record_heading(record["heading"])} · {record["filled"]}/{record["total"]}', expanded=False):
+                st.markdown("*" + _record_prompt_label(record["label"]) + "*")
+                st.write(w(record["preview"]) if record["preview"] == "No response recorded yet." else record["preview"])
 
-        st.markdown("### Comparison synthesis")
+        st.markdown("### " + w("Comparison synthesis"))
         for prompt in prompts:
             review_id = prompt.get("review_id")
             if review_id not in expert_models:
                 continue
             answer = comparison_responses.get(review_id, {}) or {}
             filled = sum(bool(str(answer.get(field) or "").strip()) for field, _ in EXPERT_COMPARISON_FIELDS)
-            with st.expander(f'{_review_heading(prompt)} · {filled}/{len(EXPERT_COMPARISON_FIELDS)}', expanded=False):
+            with st.expander(f'{_record_heading(_review_heading(prompt))} · {filled}/{len(EXPERT_COMPARISON_FIELDS)}', expanded=False):
                 for field, label in EXPERT_COMPARISON_FIELDS:
-                    st.markdown("**" + label + "**")
+                    st.markdown("**" + w(label) + "**")
                     st.write(answer.get(field) or "—")
 
-        st.markdown("### Prospective Adaptation Plan")
+        st.markdown("### " + w("Prospective Adaptation Plan"))
         with st.container(border=True):
             for index in range(0, len(ADAPTATION_PLAN_FIELDS), 2):
                 columns = st.columns(2)
                 for column, (field, label) in zip(columns, ADAPTATION_PLAN_FIELDS[index:index + 2]):
                     with column:
-                        st.markdown("**" + label + "**")
+                        st.markdown("**" + w(label) + "**")
                         st.write(adaptation_plan.get(field) or "—")
 
         view_decision, edit_comparison, edit_plan = st.columns(3)
         with view_decision:
-            if st.button("View Locked Review", use_container_width=True):
+            if st.button(w("View Locked Review"), use_container_width=True):
                 st.session_state.review_stage = "decision"
                 rerun_app()
         with edit_comparison:
-            if st.button("Edit Comparison", use_container_width=True):
+            if st.button(w("Edit Comparison"), use_container_width=True):
                 st.session_state.review_stage = "comparison"
                 rerun_app()
         with edit_plan:
-            if st.button("Edit Adaptation Plan", use_container_width=True):
+            if st.button(w("Edit Adaptation Plan"), use_container_width=True):
                 st.session_state.review_stage = "adaptation"
                 rerun_app()
 
-        st.markdown("### Download complete record")
+        st.markdown("### " + w("Download complete record"))
         summary_payload = _render_export_controls(
             trace,
             final_state,
@@ -4412,14 +4439,14 @@ def render_decision_review(trace, final_state):
             "summary",
         )
 
-        st.markdown("### Adapt & Repeat")
-        st.caption(
-            ("Start a new assigned encounter with your Adaptation Plan. The next clinical trajectory and review begin empty."
-             if globals().get("ACCOUNT_CONTEXT") else
-             "Start a clean attempt of the same encounter. Only the prospective Adaptation Plan is carried forward; the clinical trajectory, Management Trace, self-review, and comparison restart empty.")
-        )
+        st.markdown("### " + w("Adapt & Repeat"))
+        st.caption(w(
+            "Start a new assigned encounter with your Adaptation Plan. The next clinical trajectory and review begin empty."
+            if globals().get("ACCOUNT_CONTEXT") else
+            "Start a clean attempt of the same encounter. Only the prospective Adaptation Plan is carried forward; the clinical trajectory, Management Trace, self-review, and comparison restart empty."
+        ))
         if st.button(
-            ("Next Encounter with This Adaptation Plan" if globals().get("ACCOUNT_CONTEXT") else "Repeat Encounter with This Adaptation Plan"),
+            w("Next Encounter with This Adaptation Plan" if globals().get("ACCOUNT_CONTEXT") else "Repeat Encounter with This Adaptation Plan"),
             type="primary",
             use_container_width=True,
             disabled=not st.session_state.review_completed,
@@ -9548,7 +9575,8 @@ _NARRATIVE_EVENTS = frozenset({"presentation", "patient_history", "examination"}
 def render_event(event):
     import language
     body = (language.say(event["text"]) if event["kind"] in _TRANSLATED_EVENTS
-            else language.narrative(event["text"]) if event["kind"] in _NARRATIVE_EVENTS
+            else language.examination(event["text"]) if event["kind"] == "examination"
+            else language.case_words(event["text"]) if event["kind"] in _NARRATIVE_EVENTS
             else event["text"])
     labels = {
         "patient_history": "PATIENT HISTORY",

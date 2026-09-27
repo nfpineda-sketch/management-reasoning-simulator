@@ -134,7 +134,7 @@ def test_the_english_review_model_is_unchanged_by_the_spanish_one():
     assert set(spanish) == set(english) and spanish["source_action_types"] == english["source_action_types"]
 
 
-RECORD_FUNCTIONS = ("_review_markdown_in", "_review_pdf_in", "_render_export_controls")
+RECORD_FUNCTIONS = ("_review_markdown_in", "_review_pdf_in", "_render_export_controls", "render_decision_review")
 
 
 def record_strings():

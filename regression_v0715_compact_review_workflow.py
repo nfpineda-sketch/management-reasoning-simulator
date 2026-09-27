@@ -12,8 +12,9 @@ assert '"1 · Decision Review"' in source
 assert '"2 · Expert Comparison"' in source
 assert '"3 · Adaptation Plan"' in source
 assert '"4 · Final Summary"' in source
-assert 'st.markdown("### Other review points")' in source
-assert 'st.expander(f\'{_review_heading(other)} · {status}\'' in source
+# The review's own words go through the catalog since 2026-09-27 (Idioma 4b); the element is the same.
+assert 'st.markdown("### " + w("Other review points"))' in source
+assert 'st.expander(f\'{_record_heading(_review_heading(other))} · {status}\'' in source
 assert '"Autosave is active when' in source
 assert '_render_export_controls(' in source
 assert '"top",' in source and '"summary",' in source

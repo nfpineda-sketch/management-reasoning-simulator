@@ -905,6 +905,35 @@ CORRECTIONS = (
                   "test_family_report_wording.py::test_only_a_specimen_is_a_sample"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-27-07",
+        "date": "2026-09-27",
+        "title": "La sala y las pantallas de revisión dicen en español, enteras, las frases fijas del motor",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("El ensayo de los 20 escenarios mostró en la sala en español líneas mezcladas: etiquetas de órdenes "
+                   "del motor traducidas a medias («suero fisiológico 1000 mL IV started as a bolus…», «Epinephrine "
+                   "inicio at 0.1 mcg/kg/min», «Tras requesting admission to ICU»), hallazgos de examen compuestos "
+                   "por el motor («Respiratory rate: 34/min. Work of breathing: …»), el completado guiado del "
+                   "razonamiento, los mensajes de órdenes no modeladas y otros avisos. Ahora cada frase fija se dice "
+                   "entera desde el catálogo revisado; lo que escribió el residente se cita «así»; nombres de "
+                   "fármacos, dosis y unidades como los escribe el motor (decisión 16). Las pantallas de revisión "
+                   "(revisión de decisiones, comparación experta, plan de adaptación, resumen final) muestran sus "
+                   "textos, preguntas y el modelo experto en el idioma de quien lee. El registro del encuentro nombra "
+                   "ahora el caso de autor, que el estado congelado no guardaba, para usar su narrativa aprobada."),
+        "authorised_by": INSTRUCTION_2026_09_26C,
+        "affects": {"modules": ["language", "app", "report_language"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_room_labels_in_spanish.py::test_an_engine_order_is_said_whole_in_spanish",
+                  "test_room_labels_in_spanish.py::test_what_the_engine_writes_stays_as_written",
+                  "test_room_labels_in_spanish.py::test_the_room_s_other_fixed_sentences_are_said_whole",
+                  "test_room_labels_in_spanish.py::test_what_the_resident_wrote_is_quoted_not_translated",
+                  "test_room_labels_in_spanish.py::test_an_examination_finding_the_engine_composes_is_said_whole",
+                  "test_room_labels_in_spanish.py::test_the_neurological_finding_quotes_the_case_s_approved_words_only",
+                  "test_room_labels_in_spanish.py::test_a_fixed_message_among_the_history_answers_is_said_whole",
+                  "test_review_record_language.py::test_every_word_the_record_writes_can_be_said_in_spanish"],
+        "preservation": None,
+    },
 )
 
 

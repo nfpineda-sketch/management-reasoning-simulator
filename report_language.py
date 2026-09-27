@@ -933,6 +933,8 @@ ES = {
         '{time} | Decisión {number}',
     "Reasoning clarification:":
         "Aclaración del razonamiento:",
+    "Guided reasoning completion:":
+        "Razonamiento completado con guía:",
     "Comparison point":
         "Punto de comparación",
     "Review prompt":
@@ -951,5 +953,126 @@ ES = {
         'Razonamiento a lo largo de las decisiones',
     'You made several management decisions without explicitly stating the reasoning guiding them. Looking back across this sequence, what problem representation and management priorities drove your actions, and when did your working model change?':
         'Tomaste varias decisiones de manejo sin expresar explícitamente el razonamiento que las guiaba. Mirando esta secuencia en retrospectiva, ¿qué representación del problema y qué prioridades de manejo guiaron tus acciones, y cuándo cambió tu modelo de trabajo?',
+    # The review screens after an encounter (app.render_decision_review, Idioma 4b).
+    'First record your own retrospective reasoning. The expert model remains hidden until your reflection is complete and locked; comparison is reflective and non-scoring.':
+        'Primero registra tu propio razonamiento retrospectivo. El modelo experto permanece oculto hasta que tu reflexión esté completa y bloqueada; la comparación es reflexiva y sin puntaje.',
+    '{done}/{total} fields autosaved':
+        '{done}/{total} campos guardados automáticamente',
+    '{done}/{total} decisions':
+        '{done}/{total} decisiones',
+    '{done}/{total} plan fields':
+        '{done}/{total} campos del plan',
+    'Autosave is active when you leave a field or move to another step.':
+        'El guardado automático se activa al salir de un campo o pasar a otro paso.',
+    '{done}/{total} comparisons':
+        '{done}/{total} comparaciones',
+    '1 · Decision Review':
+        '1 · Revisión de decisiones',
+    '2 · Expert Comparison':
+        '2 · Comparación experta',
+    '3 · Adaptation Plan':
+        '3 · Plan de adaptación',
+    '4 · Final Summary':
+        '4 · Resumen final',
+    'No reflection prompt was generated. Continue to the Adaptation Plan.':
+        'No se generó ninguna pregunta de reflexión. Continúa al Plan de adaptación.',
+    'Your original reflection is locked because the expert model has been revealed.':
+        'Tu reflexión original está bloqueada porque ya se reveló el modelo experto.',
+    'Review point {number} of {total}':
+        'Punto de revisión {number} de {total}',
+    'Previous decision':
+        'Decisión anterior',
+    'Next decision':
+        'Decisión siguiente',
+    'Complete all four fields for every selected decision. Revealing the model locks these responses so the comparison cannot rewrite your initial reflection.':
+        'Completa los cuatro campos de cada decisión seleccionada. Revelar el modelo bloquea estas respuestas, para que la comparación no pueda reescribir tu reflexión inicial.',
+    'Lock Decision Review & Reveal Expert Comparison':
+        'Bloquear la revisión y revelar la comparación experta',
+    'Compare your locked reflection with one defensible expert reasoning model. This is a faculty-validation draft, not an answer key and not a score.':
+        'Compara tu reflexión bloqueada con un modelo de razonamiento experto defendible. Es un borrador para validación docente, no una pauta de respuestas ni un puntaje.',
+    'Other review points':
+        'Otros puntos de revisión',
+    '{done}/{total} fields':
+        '{done}/{total} campos',
+    'Reveal comparison':
+        'Revelar la comparación',
+    'No faculty-validation expert model is available for these review points.':
+        'No hay un modelo experto para validación docente en estos puntos de revisión.',
+    'Continue to Adaptation Plan':
+        'Continuar al Plan de adaptación',
+    'Comparison point {number} of {total}':
+        'Punto de comparación {number} de {total}',
+    'Previous comparison':
+        'Comparación anterior',
+    'Next comparison':
+        'Comparación siguiente',
+    '{count} fields were drafted from your locked reflection. Use the comparison insights to define your next management priority; every field remains editable.':
+        '{count} campos se redactaron a partir de tu reflexión bloqueada. Usa lo que aprendiste de la comparación para definir tu siguiente prioridad de manejo; todos los campos siguen siendo editables.',
+    'Decisions':
+        'Decisiones',
+    'Comparisons':
+        'Comparaciones',
+    'Plan fields':
+        'Campos del plan',
+    'Status':
+        'Estado',
+    'Start a new assigned encounter with your Adaptation Plan. The next clinical trajectory and review begin empty.':
+        'Inicia un nuevo encuentro asignado con tu Plan de adaptación. La siguiente trayectoria clínica y su revisión comienzan vacías.',
+    'Start a clean attempt of the same encounter. Only the prospective Adaptation Plan is carried forward; the clinical trajectory, Management Trace, self-review, and comparison restart empty.':
+        'Inicia un intento limpio del mismo encuentro. Sólo se lleva el Plan de adaptación prospectivo; la trayectoria clínica, la Management Trace, la autorrevisión y la comparación comienzan vacías.',
+    'Next Encounter with This Adaptation Plan':
+        'Siguiente encuentro con este Plan de adaptación',
+    'Repeat Encounter with This Adaptation Plan':
+        'Repetir el encuentro con este Plan de adaptación',
+    'Continue to Expert Comparison':
+        'Continuar a la comparación experta',
+    'No response recorded yet.':
+        'Todavía no hay respuesta registrada.',
+    'Review this decision':
+        'Revisar esta decisión',
+    'Your locked reflection':
+        'Tu reflexión bloqueada',
+    'Expert reasoning model':
+        'Modelo de razonamiento experto',
+    'Your comparison':
+        'Tu comparación',
+    'Other comparison points':
+        'Otros puntos de comparación',
+    'Back to Expert Comparison':
+        'Volver a la comparación experta',
+    'Continue to Final Summary':
+        'Continuar al Resumen final',
+    'Final Summary':
+        'Resumen final',
+    'Decision Review, Expert Comparison, and Adaptation Plan are complete and ready to export.':
+        'La revisión de decisiones, la comparación experta y el Plan de adaptación están completos y listos para exportar.',
+    '{count} field(s) remain incomplete. The current draft can still be exported.':
+        'Quedan {count} campo(s) incompletos. El borrador actual igual se puede exportar.',
+    'Decision synthesis':
+        'Síntesis de las decisiones',
+    'Comparison synthesis':
+        'Síntesis de la comparación',
+    'View Locked Review':
+        'Ver la revisión bloqueada',
+    'Edit Comparison':
+        'Editar la comparación',
+    'Edit Adaptation Plan':
+        'Editar el Plan de adaptación',
+    'Download complete record':
+        'Descargar el registro completo',
+    'Adapt & Repeat':
+        'Adaptar y repetir',
+    'Framing':
+        'Encuadre',
+    'Expert model available · faculty-validation draft':
+        'Modelo experto disponible · borrador para validación docente',
+    'Compare this decision':
+        'Comparar esta decisión',
+    'Show incomplete fields':
+        'Mostrar los campos incompletos',
+    'Saved response preview:':
+        'Vista previa de la respuesta guardada:',
+    ' · drafted from your review':
+        ' · redactado a partir de tu revisión',
 }
 TABLES = {"es": ES}
