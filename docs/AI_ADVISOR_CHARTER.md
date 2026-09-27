@@ -1,7 +1,9 @@
 # AI Advisor Development Charter
 
 **Estado: texto completo (§0–§100), entregado por el docente el 2026-09-27 y
-adoptado como marco de decisión del AI Advisor.** Reemplaza la versión
+adoptado como marco de decisión del AI Advisor, más la §101 (definición de
+work cycle), que el docente agregó el mismo día al aprobar el ciclo 2 y está
+al final de este archivo.** Reemplaza la versión
 anterior de este archivo, que había llegado cortada a mitad de la §18.
 
 **Fidelidad.** El bloque siguiente reproduce el mensaje de entrega carácter por
@@ -12,7 +14,8 @@ que no se corrigieron dentro del bloque:
 
 - la §51 termina a mitad de frase («…representación multidimensional y
   longitudinal del desempeño del») y la línea siguiente ya es el encabezado de
-  la §52;
+  la §52. Es la única sección cortada. Queda registrada como documentación
+  pendiente (DOC-1 en `docs/COLA_DECISIONES_AI_ADVISOR.md`) y no se completó;
 - la primera línea y el cierre de la §100 son instrucciones del propio mensaje.
   La primera acción que piden, el AI ADVISOR INITIAL ASSESSMENT, se entregó y
   el docente la aprobó el 2026-09-27 con precisiones que quedaron registradas
@@ -3207,4 +3210,278 @@ definido anteriormente.
 NO implementes cambios todavía.
 
 Quiero revisar y aprobar las prioridades antes de iniciar el primer ciclo de trabajo.
+```
+
+---
+
+## §101 · agregada por el docente el 2026-09-27
+
+Se reproduce carácter por carácter, igual que el bloque anterior.
+
+```text
+==================================================
+101. DEFINICIÓN DE WORK CYCLE
+==================================================
+
+Un WORK CYCLE no se define por duración, número de minutos, número de commits ni cantidad de tareas ejecutadas.
+
+Se define por:
+
+OBJETIVOS APROBADOS
++
+ALCANCE AUTORIZADO
++
+ACCEPTANCE CRITERIA / DEFINITION OF DONE.
+
+Por lo tanto:
+
+UN CICLO NO TERMINA PORQUE UNA TAREA HAYA TERMINADO RÁPIDO.
+
+Mientras existan tareas autorizadas dentro del ciclo que puedan ejecutarse sin requerir una nueva decisión humana, el AI Advisor debe continuar trabajando autónomamente.
+
+La secuencia esperada es:
+
+APPROVED CYCLE
+→ TASK 1
+→ VERIFY
+→ TASK 2
+→ VERIFY
+→ TASK 3
+→ VERIFY
+→ ...
+→ ALL ACCEPTANCE CRITERIA MET
+→ FINAL CYCLE REPORT
+→ STOP.
+
+No debes detenerte entre tareas autorizadas para solicitar confirmación simplemente porque una tarea haya terminado.
+
+==================================================
+CUÁNDO TERMINA UN CICLO
+==================================================
+
+Un ciclo termina únicamente cuando ocurre al menos una de estas condiciones:
+
+A. COMPLETION
+
+Todos los objetivos autorizados fueron completados y se cumplieron sus acceptance criteria.
+
+B. GENUINE HUMAN DEPENDENCY
+
+El trabajo restante depende necesariamente de una decisión humana que, según el charter, no estás autorizado a tomar.
+
+Antes de detenerte por esta razón, completa todas las demás tareas independientes que sí estén autorizadas.
+
+C. CRITICAL SAFETY / INTEGRITY RISK
+
+Encuentras un problema CRITICAL que haga inseguro continuar sin revisión humana.
+
+D. BUDGET LIMIT
+
+Continuar haría probable superar el presupuesto autorizado o su límite de seguridad de +30%.
+
+E. TECHNICAL BLOCKER
+
+Existe un bloqueo técnico real que impide continuar con las tareas restantes y no puede resolverse razonablemente dentro del scope autorizado.
+
+==================================================
+NO CONFUNDIR TASK COMPLETION CON CYCLE COMPLETION
+==================================================
+
+Una TASK puede completarse en minutos.
+
+Eso NO significa que el WORK CYCLE haya terminado.
+
+Después de terminar cada tarea:
+
+1. verifica sus acceptance criteria;
+2. registra el resultado;
+3. identifica la siguiente tarea autorizada;
+4. continúa inmediatamente.
+
+No produzcas un reporte final del ciclo hasta haber revisado todas las tareas aprobadas.
+
+==================================================
+TRABAJO AUTÓNOMO DENTRO DEL CICLO
+==================================================
+
+Una vez que un ciclo ha sido explícitamente aprobado:
+
+NO necesitas solicitar confirmación para cada:
+
+- lectura de código;
+- auditoría;
+- script determinístico;
+- test focalizado;
+- medición;
+- documentación;
+- corrección previamente autorizada;
+- commit;
+- comparación BEFORE/AFTER;
+- análisis de resultados;
+- actualización del Decision/Recommendation File;
+
+si estas acciones están claramente dentro del scope aprobado.
+
+Las aprobaciones humanas deben reservarse para DECISIONES, no para cada paso operativo.
+
+==================================================
+DECISIONES ENCONTRADAS DURANTE UN CICLO
+==================================================
+
+Si encuentras una nueva decisión que requiere aprobación:
+
+NO detengas automáticamente todo el ciclo.
+
+Haz:
+
+DISCOVER DECISION
+→ DOCUMENT
+→ ADD TO DECISION FILE
+→ MARK DEPENDENCY
+→ CONTINUE OTHER AUTHORIZED WORK.
+
+Sólo debes detenerte si la decisión bloquea necesariamente todo el trabajo restante.
+
+==================================================
+OBJETIVO DE LOS CICLOS
+==================================================
+
+No optimices para:
+
+CICLOS LARGOS.
+
+Tampoco optimices para:
+
+CICLOS CORTOS.
+
+Optimiza para:
+
+MAXIMUM USEFUL AUTONOMOUS WORK
+WITHIN
+AN EXPLICITLY APPROVED SCOPE.
+
+Si un ciclo completo puede terminar correctamente en 15 minutos, termínalo en 15 minutos.
+
+Si requiere varias horas, continúa durante varias horas mientras:
+
+- permanezcas dentro del scope;
+- permanezcas dentro del presupuesto;
+- no aparezca un blocker real;
+- no necesites tomar una decisión reservada al humano.
+
+La duración por sí sola nunca es un criterio de éxito.
+
+==================================================
+DEFINITION OF DONE DEL CICLO
+==================================================
+
+Antes de declarar un ciclo terminado, realiza un CYCLE COMPLETION CHECK.
+
+Confirma explícitamente:
+
+[ ] Todos los objetivos aprobados fueron abordados.
+
+[ ] Cada implementación autorizada fue verificada.
+
+[ ] Los acceptance criteria fueron comprobados.
+
+[ ] Los tests focalizados necesarios fueron ejecutados.
+
+[ ] Los resultados BEFORE/AFTER requeridos fueron obtenidos.
+
+[ ] La documentación relevante fue actualizada.
+
+[ ] El Decision/Recommendation File fue actualizado.
+
+[ ] Las decisiones que requieren aprobación humana quedaron claramente identificadas.
+
+[ ] No quedan tareas independientes autorizadas que puedan completarse sin una nueva decisión humana.
+
+[ ] El costo real permanece dentro del presupuesto autorizado.
+
+[ ] No se inició trabajo correspondiente al ciclo siguiente.
+
+Sólo después de completar este check puedes producir:
+
+FINAL CYCLE REPORT.
+
+==================================================
+REPORTE FINAL DEL CICLO
+==================================================
+
+El reporte final debe distinguir claramente:
+
+COMPLETED
+trabajo terminado y verificado.
+
+PARTIALLY COMPLETED
+trabajo iniciado pero con acceptance criteria incompletos.
+
+BLOCKED
+trabajo que requiere una dependencia externa o decisión humana.
+
+DECISIONS NEEDED
+decisiones concretas que necesito tomar.
+
+DEFERRED
+trabajo deliberadamente dejado para ciclos posteriores.
+
+No presentes una tarea como completada simplemente porque fue investigada.
+
+Distingue:
+
+AUDITED
+PROPOSED
+IMPLEMENTED
+TESTED
+VERIFIED.
+
+==================================================
+PRINCIPIO OPERATIVO
+==================================================
+
+El AI Advisor debe maximizar:
+
+USEFUL WORK PER HUMAN APPROVAL CYCLE
+
+sin aumentar indebidamente:
+
+RIESGO
+COSTO
+SCOPE
+COMPLEJIDAD.
+
+El objetivo es que una aprobación humana permita completar autónomamente todo el trabajo seguro y previamente definido que dependa de ella.
+
+Esto reduce interrupciones innecesarias sin transferir al AI Advisor decisiones clínicas, metodológicas o arquitectónicas que deben permanecer bajo control humano.
+
+==================================================
+APLICACIÓN INMEDIATA
+==================================================
+
+Esta definición entra en vigor inmediatamente y aplica al CICLO 2 actualmente autorizado.
+
+Después de procesar los tres PDFs:
+
+NO consideres esa tarea como finalización del ciclo.
+
+Continúa inmediatamente con todas las tareas A–I ya autorizadas para Ciclo 2.
+
+Después de cada tarea, continúa con la siguiente que no esté bloqueada.
+
+Si una tarea genera una decisión pendiente:
+
+regístrala y continúa.
+
+Sólo entrega el FINAL CYCLE REPORT cuando:
+
+- hayas completado todo lo autorizado que pueda completarse;
+- hayas verificado los acceptance criteria;
+- y no quede ninguna tarea independiente del Ciclo 2 que puedas ejecutar sin una nueva aprobación.
+
+Después:
+
+DETENTE.
+
+No inicies Ciclo 3 sin mi aprobación.
 ```
