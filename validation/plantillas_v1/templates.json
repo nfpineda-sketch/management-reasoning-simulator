@@ -1,0 +1,115 @@
+{
+ "corpus_version": "VALIDATION_CORPUS_V1",
+ "template_version": "VC1",
+ "note": "The case codes stand for bank cases (validation_corpus.PILOT_CASES); the documents never name them. Spanish case text comes from case_text/es: confirm its faculty approval before any document is sent.",
+ "documents": [
+  {
+   "file": "EMxx_C01_es.docx",
+   "case": "C01",
+   "language": "es",
+   "participant": null,
+   "template_version": "VC1-ES",
+   "sha256": "fed45e5ab7433f390fe235a5e9ab4bca1238d586ae66628b826eaf87082d0010",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "file": "EMxx_C01_en.docx",
+   "case": "C01",
+   "language": "en",
+   "participant": null,
+   "template_version": "VC1-EN",
+   "sha256": "fb252f78d9a21dbfc9673a303e6d14f0a4c4c57d668cbb5a5ee1a35d2eb5e8cb",
+   "case_text": "bank case (English, canonical)"
+  },
+  {
+   "file": "EMxx_C02_es.docx",
+   "case": "C02",
+   "language": "es",
+   "participant": null,
+   "template_version": "VC1-ES",
+   "sha256": "601934badd1eadf414d3c739eee5bae2e46dac237809b1c146a4941f5ae07768",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "file": "EMxx_C02_en.docx",
+   "case": "C02",
+   "language": "en",
+   "participant": null,
+   "template_version": "VC1-EN",
+   "sha256": "468f91a58f9a969be08e95f42f1b515c9c09c11c87f49a0b69cdefe4f102ab00",
+   "case_text": "bank case (English, canonical)"
+  },
+  {
+   "file": "EMxx_C03_es.docx",
+   "case": "C03",
+   "language": "es",
+   "participant": null,
+   "template_version": "VC1-ES",
+   "sha256": "b1d8d81329c103bc6d3047dc5a8f9fc022109acfcd0c5e4c1f0a2fa6cb8c49b6",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "file": "EMxx_C03_en.docx",
+   "case": "C03",
+   "language": "en",
+   "participant": null,
+   "template_version": "VC1-EN",
+   "sha256": "fe7f701b4df7300e0c51c32f078f555f146f81652c09bb372fc9447a87d75b6c",
+   "case_text": "bank case (English, canonical)"
+  },
+  {
+   "file": "EMxx_C04_es.docx",
+   "case": "C04",
+   "language": "es",
+   "participant": null,
+   "template_version": "VC1-ES",
+   "sha256": "cbf5e2ebb45850e9b2dad3af778e836b50952a29873e822ec6a2f322c8465a3d",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "file": "EMxx_C04_en.docx",
+   "case": "C04",
+   "language": "en",
+   "participant": null,
+   "template_version": "VC1-EN",
+   "sha256": "ebb79075c50706b92f16b1d18c05a38af7b15745dd0e4edf058a2a45584d1c0d",
+   "case_text": "bank case (English, canonical)"
+  },
+  {
+   "file": "EMxx_C05_es.docx",
+   "case": "C05",
+   "language": "es",
+   "participant": null,
+   "template_version": "VC1-ES",
+   "sha256": "397349e53d5cf7ff98a1c07bb509bf45d2e1ec592e87e14359bb293c8ab727d5",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "file": "EMxx_C05_en.docx",
+   "case": "C05",
+   "language": "en",
+   "participant": null,
+   "template_version": "VC1-EN",
+   "sha256": "4cb73496edb3e6bc2119671466be59cd8ef10a0ebe232a3339c3c7560b358d5a",
+   "case_text": "bank case (English, canonical)"
+  },
+  {
+   "file": "EMxx_C06_es.docx",
+   "case": "C06",
+   "language": "es",
+   "participant": null,
+   "template_version": "VC1-ES",
+   "sha256": "82ac6e394cd4ed140562430b8ef3befda0433e8a111e013723985a2b3a8565fa",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "file": "EMxx_C06_en.docx",
+   "case": "C06",
+   "language": "en",
+   "participant": null,
+   "template_version": "VC1-EN",
+   "sha256": "513a28fa893ac89706b6686d1911bb827cfacbaee0493aa417786f3ceac00884",
+   "case_text": "bank case (English, canonical)"
+  }
+ ]
+}

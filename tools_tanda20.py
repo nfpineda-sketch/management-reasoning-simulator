@@ -378,6 +378,20 @@ def _rehearse(script, workdir):
                     result.setdefault("unanticipated_holds", []).append(
                         {"step": index, "kind": outcome["held"], "said": outcome["said"][-1:]})
                     result["steps"].append(_resolve(at, outcome["held"], script.get("language", "es")))
+                    # A completed explanation can uncover a second question (the
+                    # route, after the reasoning). A script that plays only
+                    # orders -- the validation corpus -- must not let its next
+                    # order be taken as that answer, so it resolves until
+                    # nothing is held; the twenty scripts keep one resolution.
+                    for _ in range(3 if script.get("resolve_until_clear") else 0):
+                        if not _pending(at):
+                            break
+                        result["steps"].append(_resolve(at, _pending(at), script.get("language", "es")))
+                    if script.get("resolve_until_clear") and _pending(at):
+                        _click(at, "Cancel pending orders")
+                        result["steps"].append({"step": ["auto-cancel", "still held"], "said": [], "held": _pending(at),
+                                                "new_trace_entries": 0,
+                                                "sim_time": (at.session_state["state"] or {}).get("sim_time")})
             if _pending(at):
                 result["pending_at_close"] = _pending(at)
             result["sim_time_at_close"] = (at.session_state["state"] or {}).get("sim_time")

@@ -2,8 +2,12 @@
 
 Ciclo 2 del AI Advisor, punto 6 de la aprobación docente del 2026-09-27 (DF-6).
 
-**Estado: PROPUESTA.** No se construyó nada ni se usaron datos reales de
-residentes.
+**Estado: REEMPLAZADO para la Fase 1** por `docs/VALIDATION_CORPUS_FASE1.md`
+(decisión docente DF-6 del Ciclo 3, 2026-09-27). Por esa decisión no se
+construyen las 240 frases artificiales: la Fase 1 usa series de indicaciones
+que médicos de urgencia escriben en Word a partir de casos del banco. Se
+conserva este diseño como antecedente. Las métricas, la mitad sellada fuera
+del repositorio y la regla de corregir por clase pasaron al nuevo diseño.
 
 ## 1. Para qué
 
