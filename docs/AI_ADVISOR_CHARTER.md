@@ -2,8 +2,9 @@
 
 **Estado: texto completo (§0–§100), entregado por el docente el 2026-09-27 y
 adoptado como marco de decisión del AI Advisor, más la §101 (definición de
-work cycle), que el docente agregó el mismo día al aprobar el ciclo 2 y está
-al final de este archivo.** Reemplaza la versión
+work cycle), que el docente agregó el mismo día al aprobar el ciclo 2, y el
+addendum A1 (evidencia, contribuciones y validación), aprobado al autorizar el
+ciclo 3. Ambos están al final de este archivo.** Reemplaza la versión
 anterior de este archivo, que había llegado cortada a mitad de la §18.
 
 **Fidelidad.** El bloque siguiente reproduce el mensaje de entrega carácter por
@@ -12,10 +13,11 @@ como bloque de texto para que el formato Markdown no altere sus diagramas,
 fórmulas ni saltos de línea. Dos observaciones sobre el texto tal como llegó,
 que no se corrigieron dentro del bloque:
 
-- la §51 termina a mitad de frase («…representación multidimensional y
-  longitudinal del desempeño del») y la línea siguiente ya es el encabezado de
-  la §52. Es la única sección cortada. Queda registrada como documentación
-  pendiente (DOC-1 en `docs/COLA_DECISIONES_AI_ADVISOR.md`) y no se completó;
+- la §51 llegó cortada a mitad de frase («…representación multidimensional y
+  longitudinal del desempeño del»), con la línea siguiente ya en el encabezado
+  de la §52. Era la única sección cortada. Al autorizar el ciclo 3, el docente
+  indicó completarla con la palabra «residente.», y es la única modificación
+  hecha dentro del bloque (DOC-1, cerrado);
 - la primera línea y el cierre de la §100 son instrucciones del propio mensaje.
   La primera acción que piden, el AI ADVISOR INITIAL ASSESSMENT, se entregó y
   el docente la aprobó el 2026-09-27 con precisiones que quedaron registradas
@@ -1894,7 +1896,7 @@ ACUMULAR múltiples evidencias a través del tiempo;
 
 MAPEAR esas evidencias hacia frameworks de formación;
 
-y construir progresivamente una representación multidimensional y longitudinal del desempeño del
+y construir progresivamente una representación multidimensional y longitudinal del desempeño del residente.
 
 ==================================================
 52. PRINCIPIO FINAL
@@ -3485,3 +3487,158 @@ DETENTE.
 
 No inicies Ciclo 3 sin mi aprobación.
 ```
+
+## Addendum A1 · v1 · 2026-09-27 · Evidencia, contribuciones y validación
+
+**Origen.** El docente aprobó estos principios al autorizar el ciclo 3. El AI
+Advisor los redactó a partir de ese mensaje, conservando sus términos. No
+reemplazan ninguna sección anterior: la §0–§101 sigue vigente tal como está.
+
+### §102 · Terminología
+
+Estos términos no son sinónimos:
+
+- **CASE TARGET:** el objetivo con que se generó el encuentro. No es el único
+  objetivo observable.
+- **OBSERVATION OPPORTUNITY:** lo que el caso permite observar.
+- **OBSERVATION:** el comportamiento realmente observado.
+- **CONFIRMED OBSERVATION:** la observación que faculty valida.
+- **EVIDENCE CONTRIBUTION:** la relación entre una observación y un componente
+  de un framework externo.
+- **CONSTRUCT COVERAGE:** la acumulación de contribuciones sobre partes
+  distintas de un mismo constructo.
+- **COMPETENCY / ENTRUSTMENT DETERMINATION:** una decisión posterior que este
+  sistema no realiza automáticamente.
+
+### §103 · Observation opportunities
+
+**El encuentro no determina qué competencias se demostraron.** Determina qué
+objetivos tuvieron una oportunidad real de ser observados. El desempeño genera
+la evidencia y faculty confirma la observación.
+
+- **Tres estados:** YES, NO con su razón, y NOT REVIEWED. NOT REVIEWED nunca
+  equivale a NO: la falta de metadata no es una decisión clínica.
+- **Una herramienta disponible no es una oportunidad:** POCUS disponible ≠
+  oportunidad C14.
+- **La declaración** es explícita, auditable, versionable y revisable
+  clínicamente, y se congela al iniciar el encuentro.
+- **Es prospectiva.** Los encuentros históricos conservan sus reglas, su
+  evidencia, su scoring y sus confirmaciones.
+- **Ausencia de oportunidad ≠ desempeño insuficiente.** NO EVALUABLE / NO
+  OBSERVADO ≠ 0. **Oportunidad YES ≠ objetivo demostrado.**
+- **La evidencia esperable** que nombra la declaración orienta, pero no es una
+  lista cerrada. Faculty puede:
+  - reconocer evidencia válida no anticipada;
+  - rechazar evidencia propuesta;
+  - señalar que una oportunidad declarada no ocurrió;
+  - a futuro, señalar una observación incidental.
+
+  Todo override queda trazado.
+- **Observaciones incidentales:** son parte de la arquitectura objetivo. El
+  CASE TARGET no limita qué otros objetivos pueden observarse.
+
+### §104 · Contribución directa y parcial
+
+- **DIRECT CONTRIBUTION:** la observación representa directamente el elemento
+  del framework al que está mapeada.
+- **PARTIAL CONTRIBUTION:** aporta evidencia válida sobre uno o más componentes
+  identificables del constructo, sin cubrirlo completo.
+- **PARTIAL IS NOT A DEFECT:** se preserva. No significa mapping incorrecto ni
+  defectuoso.
+- **No son puntajes.** DIRECT y PARTIAL describen el alcance de la evidencia.
+  No son scores, pesos, porcentajes ni niveles de confianza: nunca DIRECT = 1 y
+  PARTIAL = 0,5.
+- **Una PARTIAL se activa sólo si puede decirse qué componente observa y qué
+  queda fuera.** Si no, queda documentada e inactiva, para revisión.
+- **Una relación documentable no obliga a activarla.** Se prioriza la
+  contribución significativa sobre la cobertura máxima de mappings.
+- **Fuentes:**
+  - cada contribución conserva documento, versión y página;
+  - *Pathway to Competence* sirve para identificar hitos cuando es el documento
+    que describe la conducta observada;
+  - la *EPA Guide* da identidad, contexto y requisitos de cada EPA;
+  - no se fuerza una EPA cuyo contexto contradice el encuentro.
+
+### §105 · Evidencia a nivel de componente
+
+- **La cadena es** OBJECTIVE → OBSERVED COMPONENT / BEHAVIOR → MILESTONE / EPA
+  → FRAMEWORK, y no OBJECTIVE → EPA +1.
+- **Una unidad de evidencia puede tener varias contribuciones.** La unidad es
+  una observación de un encuentro, con su evidencia del trace y su
+  confirmación. Sus contribuciones no la convierten en varias observaciones
+  independientes.
+- **OBSERVATION COUNT ≠ CONSTRUCT COVERAGE.** Se preserva qué se observó, no
+  sólo cuántas veces.
+- **TD/F/C ya son EPAs del Royal College.** Observarlas en el simulador aporta
+  evidencia hacia la EPA mediante lo observable en el encuentro, no la EPA
+  completa. Se conserva la granularidad cuando la EPA exige contextos,
+  volumen, poblaciones o desempeño procedural.
+
+### §106 · Construct coverage no es competencia
+
+- **Varias PARTIAL complementarias** pueden aumentar la cobertura, pero no se
+  convierten en VERIFIED ni en competencia. Cada unidad conserva su alcance
+  original.
+- **Hay que distinguir dos coberturas:** la de los componentes que este
+  simulador puede observar y la del constructo externo completo.
+- **El sistema produce evidencia observacional longitudinal confirmada por
+  faculty.**
+  - No declara EPA COMPLETED, MILESTONE ACHIEVED, COMPETENT ni ENTRUSTED.
+  - Esa determinación es una capa metodológica posterior.
+  - Puede requerir observación en el lugar de trabajo, desempeño procedural,
+    volumen, contexto real y juicio docente.
+- **Por ahora sólo se preservan los datos.** No hay porcentaje, score,
+  semáforo, completo/incompleto ni umbral de cobertura.
+
+### §107 · Evidencia multisource
+
+El modelo no asume que toda la evidencia futura provenga de este simulador.
+Podrían aportar a la misma EPA o Milestone:
+
+- la observación clínica directa;
+- la simulación procedural;
+- la evaluación docente;
+- otra fuente validada.
+
+No se implementan fuentes externas hasta que se decida.
+
+### §108 · Validación del lector con un corpus independiente
+
+- **Fase 1, offline.** Médicos de urgencia escriben en Word, en texto libre, a
+  partir de casos, sin usar el simulador ni conocer su sintaxis. Mide si el
+  motor entiende lenguaje clínico natural.
+- **Fase 2, futura.** Encuentros reales completos. Mide la usabilidad dinámica:
+  repetición, adaptación, fricción, aclaraciones y latencia. No se mezcla con
+  la fase 1.
+- **Cada idioma se escribe de forma natural.** No se traduce para fabricar
+  paridad.
+- **Development subset y sealed validation subset:**
+  - el sellado queda fuera del repositorio;
+  - no se usa para modificar el parser ni para tests;
+  - se corre sólo sobre una versión candidata congelada;
+  - una entrada usada para corregir el motor pasa a RETIRED FROM VALIDATION.
+- **El corpus evalúa el motor.** Nunca se cambia la respuesta esperada para que
+  coincida con el motor.
+- **El motor recibe sólo el texto libre original.** La anotación (intención
+  clínica y redacción) es para evaluar. El procesamiento es determinista: la
+  validación básica no necesita IA.
+- **Proveniencia registrada:** versión del corpus, tipo de fuente, idioma, caso,
+  fecha, estado development/sealed, versión de la anotación y versión del motor.
+  Sin datos personales innecesarios: basta un código de participante.
+- **Contacto con participantes.** El AI Advisor prepara los materiales, pero no
+  contacta participantes ni distribuye documentos sin autorización explícita.
+
+### §109 · Perfil longitudinal: dimensiones separadas
+
+1. **Management Trace:** la evidencia primaria.
+2. **Management Reasoning Profile:** D1–D5 longitudinales, con n.
+3. **Safety:** critical safety events confirmados.
+4. **Competency evidence:** Decision Challenges y TD/F/C, con sus
+   contribuciones hacia EPAs y Milestones.
+5. **Construct coverage:** qué componentes recibieron evidencia y cuáles no.
+6. **Depth / autonomy:** características de cada observación.
+7. **Evidence density:** cuántas observaciones sustentan cada parte.
+8. **Temporal progression:** preservada en los datos, todavía sin algoritmo
+   agregado.
+
+No se reducen a un único score.
