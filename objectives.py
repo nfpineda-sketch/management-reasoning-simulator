@@ -66,12 +66,19 @@ OBJECTIVES = {
         "supported": True,
         "limitation": "Does not assess actual team leadership or the full breadth of critical illness.",
     },
+    # Trauma encounters exist since 2026-09-23; the text said they did not.
+    # Corrected on the faculty's instruction of 2026-09-27 (DF-4), and C2 stays
+    # disabled: see docs/AUDITORIA_OPORTUNIDAD_C2.md.
     "C2": {
         "title": "Manage critical trauma resuscitation",
         "target": 25,
-        "scope": "Reserved for future trauma-specific simulated management encounters.",
+        "scope": ("Not enabled. The case bank now includes trauma encounters, but it has not been "
+                  "established that they offer enough breadth of observation opportunities to "
+                  "represent this EPA."),
         "supported": False,
-        "limitation": "Critical trauma encounters are not implemented in the current curriculum pilot.",
+        "limitation": ("Enabling C2 needs clinical and methodological review of whether the available "
+                       "trauma encounters give sufficient breadth of opportunities to observe critical "
+                       "trauma resuscitation; no minimum has been set."),
     },
     "C3": {
         "title": "Manage airway and ventilation",

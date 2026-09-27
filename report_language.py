@@ -1524,8 +1524,9 @@ ES = {
         'Aún no hay cuentas de residentes disponibles.',
     'Not determined: requires your confirmation':
         'No determinada: requiere tu confirmación',
-    'Not supported by the current encounter engine':
-        'No lo admite el motor de encuentros actual',
+    'Not enabled: current encounters are not established as offering enough opportunities to observe this objective':
+        'No habilitado: no se ha establecido que los encuentros actuales ofrezcan oportunidades suficientes '
+        'para observar este objetivo',
     'Objective for faculty decision':
         'Objetivo para decisión docente',
     'Objective observed in this encounter':

@@ -119,7 +119,11 @@ def _progress_table(goals):
         "Status": _t(goal["status"].replace("_", " ").capitalize()),
         "Follow-up": _t("Review later concerns") if goal.get("review_recommended") else (
             str(goal.get("post_confirmation_count", 0)) + _t(" observations since confirmation") if goal.get("post_confirmation_count") else "—"),
-        "Scope": goal["scope"] if goal["supported"] else _t("Not supported by the current encounter engine"),
+        # Not "not supported by the engine": trauma encounters exist and C2 is
+        # disabled for another reason (DF-4, 2026-09-27).
+        "Scope": goal["scope"] if goal["supported"] else _t(
+            "Not enabled: current encounters are not established as offering enough opportunities "
+            "to observe this objective"),
     } for goal in goals]), hide_index=True)
     st.caption(_t("These are configurable program targets. One completed encounter may contribute to several objectives. Each objective can receive at most one active observation per encounter. Only faculty-reviewed satisfactory observations increase the counter; depth and autonomy describe that observation without multiplying it."))
     st.caption(_t("Observation continues after the target and after faculty confirmation. New strengths and concerns remain in the record; they never automatically award or revoke achievement. Faculty confirmation concerns the simulated component and does not certify a workplace EPA."))
