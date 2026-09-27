@@ -708,6 +708,22 @@ class ImageBank:
             rows = self._execute(connection, "SELECT id FROM mrs_image_assets").fetchall()
         return {row["id"] for row in rows or []}
 
+    def known_pack_rows(self):
+        """What a pack import would find here, read in one transaction: assets, jobs, reviews, staff accounts.
+
+        Each process imports the pack again, and a job or a review already here,
+        or a review whose account is not in this database, used to cost a
+        transaction of its own to find out: some two hundred connections to a
+        remote database on the first page after a restart (2026-09-27). Those
+        are now skipped without one.
+        """
+        with self.accounts._transaction() as connection:
+            found = [{row["id"] for row in self._execute(connection, f"SELECT id FROM {table}").fetchall() or []}
+                     for table in ("mrs_image_assets", "mrs_image_jobs", "mrs_image_reviews")]
+            staff = {row["username"] for row in self._execute(
+                connection, "SELECT username, role FROM mrs_users").fetchall() or [] if row["role"] in STAFF}
+        return (*found, staff)
+
     def import_ledger(self, budget, entries):
         """Ledger rows written elsewhere (the pilot, run outside this database), kept exactly.
 

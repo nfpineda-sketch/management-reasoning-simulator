@@ -97,7 +97,7 @@ def import_pack(bank, directory=PACK_DIR):
         return {"assets": 0, "ledger": 0, "jobs": 0}
     if manifest.get("pack_version") != PACK_VERSION:
         raise ValueError("This image pack was written by another version.")
-    known = bank.known_assets()
+    known, known_jobs, known_reviews, staff = bank.known_pack_rows()
     added = 0
     for entry in manifest["assets"]:
         if entry["id"] in known:
@@ -120,10 +120,11 @@ def import_pack(bank, directory=PACK_DIR):
         added += 1
     ledgers = manifest.get("ledgers") or [{"budget": manifest["budget"], "rows": manifest.get("ledger") or []}]
     ledger = sum(bank.import_ledger(entry["budget"], entry["rows"]) for entry in ledgers)
-    jobs = sum(1 for job in manifest.get("jobs") or [] if bank.import_job(job))
+    jobs = sum(1 for job in manifest.get("jobs") or [] if job["id"] not in known_jobs and bank.import_job(job))
     approvals = {}
     for entry in read_approvals(directory):
-        outcome = bank.import_approval(entry)
+        outcome = ("known" if entry["id"] in known_reviews else
+                   "no_account" if entry["username"] not in staff else bank.import_approval(entry))
         approvals[outcome] = approvals.get(outcome, 0) + 1
     return {"assets": added, "ledger": ledger, "jobs": jobs, "approvals": approvals}
 

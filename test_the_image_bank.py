@@ -663,3 +663,31 @@ def test_the_pack_keeps_the_ledger_of_every_budget(bank, tmp_path):
     image_pack.import_pack(fresh, tmp_path / "pack")
     for budget in (first, second):
         assert fresh.budget_summary(budget)["requests"] == bank.budget_summary(budget)["requests"] > 0
+
+
+def test_importing_the_repository_pack_again_after_a_restart_costs_a_few_transactions(bank, monkeypatch):
+    """Every process imports the pack again; what is already here is found in one read (2026-09-27).
+
+    It used to cost one remote connection per job and per review already here:
+    some two hundred on the first faculty page after a restart, which kept the
+    page running for a minute or more on the development app.
+    """
+    import image_pack
+    if image_pack.read_manifest(image_pack.PACK_DIR) is None:
+        pytest.skip("no image pack in this checkout")
+    first = image_pack.import_pack(bank)
+    assert first["assets"] > 0
+    counted = []
+    original = AccountStore._transaction
+
+    def counting(self, write=False):
+        counted.append(write)
+        return original(self, write)
+
+    monkeypatch.setattr(AccountStore, "_transaction", counting)
+    again = image_pack.import_pack(bank)
+    assert again["assets"] == 0 and again["jobs"] == 0 and again["ledger"] == 0
+    # The reviews are the same outcomes as before, found without a transaction each.
+    assert sum(again["approvals"].values()) == sum(first["approvals"].values())
+    assert set(again["approvals"]) <= {"known", "no_account"}
+    assert len(counted) <= 12, len(counted)
