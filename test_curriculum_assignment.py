@@ -210,6 +210,8 @@ def runtime_functions(fake_st):
                  "render_image_bank": lambda context: None,
                  # And the review of the cases' Spanish (test_case_text).
                  "render_case_text_review": lambda context: None,
+                 # And the review of the rubric descriptors' Spanish (test_rubric_text).
+                 "render_rubric_text_review": lambda context: None,
                  "render_attempt_assessment": lambda context, record: None}
     exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), namespace)
     return namespace

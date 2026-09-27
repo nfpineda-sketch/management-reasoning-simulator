@@ -36,12 +36,14 @@ def attempt_on_case(accounts, token, case_id=CASE):
     return attempt_id
 
 
-def page(cohort, attempt_id, actor="faculty"):
+def page(cohort, attempt_id, actor="faculty", language=None):
     accounts, _, users = cohort
     app = AppTest.from_string(APP, default_timeout=20)
     app.session_state["database_url"] = accounts._url
     app.session_state["test_token"] = users[actor]["token"]
     app.session_state["test_attempt"] = attempt_id
+    if language:
+        app.session_state["presentation_language"] = language
     app.run()
     assert not app.exception
     return app

@@ -30,6 +30,15 @@ def _domain_title(domain):
     """The domain's reviewed Spanish title when the screen is in Spanish (rubric.DOMAINS)."""
     import language
     return DOMAINS[domain]["title_es" if language.current() == "es" else "title"]
+
+
+def _domain_text(domain):
+    """What the domain asks and its descriptors: in Spanish once a faculty member approved them (rubric_text)."""
+    import language
+    import rubric_text
+    return rubric_text.descriptors(domain, language.current())
+
+
 _CHOICES = [0, 1, 2, 3, NOT_ASSESSABLE]
 
 
@@ -96,6 +105,17 @@ def render_rubric_assessment(context, record, *, training_year=None):
                    "stages or EPA supervision levels, and they do not assess a specialist's "
                    "competence. You confirm or change every value; the totals are computed "
                    "from what you record."))
+        # The descriptors read in Spanish domain by domain, once a faculty member
+        # approved their translation (rubric_text); until then, in English, whole.
+        import language
+        import rubric_text
+        try:
+            rubric_text.install(context["store"])
+        except Exception:
+            pass
+        if language.current() == "es" and any(rubric_text.descriptors(domain, "es")["language"] != "es"
+                                              for domain in DOMAIN_IDS):
+            st.caption(_t("Descriptors a faculty member has not yet approved in Spanish are shown in English."))
         limitation = (basis.get("limitation") or {}).get("en")
         if basis["status"] in ("unknown_case", "corrupt"):
             st.error(limitation)
@@ -200,9 +220,10 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
             # Decisions on screen are D1, D2, D3. A rubric domain is spelled out
             # so the two cannot be read as the same thing.
             st.markdown(_t('**Domain {v0} · {v1}**', v0=domain[1:], v1=_domain_title(domain)))
-            st.caption(DOMAINS[domain]["asks"])
+            described = _domain_text(domain)
+            st.caption(described["asks"])
             with st.popover(_t('Descriptors for domain {v0}', v0=domain[1:])):
-                for level, text in sorted(DOMAINS[domain]["levels"].items()):
+                for level, text in sorted(described["levels"].items()):
                     st.markdown(f"**{level}** — {text}")
             domain_check = (check.get("domains") or {}).get(domain) or {}
             for fact in domain_check.get("facts", []):

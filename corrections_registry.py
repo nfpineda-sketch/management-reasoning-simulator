@@ -36,6 +36,8 @@ INSTRUCTION_2026_09_26B = ("Instrucción docente del 2026-09-26 (cierre de jugab
 INSTRUCTION_2026_09_26C = ("Instrucción docente del 2026-09-26 (idioma: un encuentro jugado en español da sus "
                            "documentos en español, uno en inglés en inglés, y lo almacenado se puede ver en "
                            "cualquiera de los dos)")
+INSTRUCTION_2026_09_27B = ("Instrucción docente del 2026-09-27 (preparar el borrador en español de los descriptores "
+                           "de la rúbrica, para revisión docente antes de usarlo)")
 
 CORRECTIONS = (
     {
@@ -973,6 +975,27 @@ CORRECTIONS = (
         "clinical_relevance": "cosmetic",
         "tests": ["test_screens_speak_the_readers_language.py::test_every_word_the_screen_writes_can_be_said_in_spanish",
                   "test_screens_speak_the_readers_language.py::test_every_wrapped_phrase_is_in_the_catalog_as_written"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-27-10",
+        "date": "2026-09-27",
+        "title": "Los descriptores de la rúbrica en español, sólo después de la aprobación docente de cada dominio",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Lo que evalúa cada dominio y sus cuatro descriptores de nivel son los criterios de la rúbrica. Su "
+                   "español es un borrador junto al inglés (rubric_text/es/descriptors.json) que un docente revisa dominio "
+                   "por dominio en el panel docente, como la narrativa de los casos. Un dominio se lee en español sólo "
+                   "cuando está aprobado y cada descriptor sigue traduciendo el inglés vigente; si no, en inglés, completo. "
+                   "La aprobación queda con la cuenta de quien aprueba y nombra el texto exacto que leyó. Los criterios no "
+                   "cambian: los puntajes, la propuesta de la IA y su prompt siguen usando el inglés. Nada se aprobó."),
+        "authorised_by": INSTRUCTION_2026_09_27B,
+        "affects": {"modules": ["rubric_text", "rubric_text_portal", "rubric_portal", "curriculum_runtime",
+                                "report_language"],
+                    "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_rubric_text.py::test_nothing_is_spanish_until_a_faculty_member_approves_it",
+                  "test_rubric_text.py::test_the_criteria_the_scores_and_the_ai_use_stay_english_whatever_is_approved"],
         "preservation": None,
     },
 )

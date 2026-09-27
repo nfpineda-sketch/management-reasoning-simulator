@@ -14,6 +14,7 @@ from generation_progress import encounter_preparation
 from scene_preparation import ScenePreparation
 from image_bank_portal import render_image_bank
 from case_text_portal import render_case_text_review
+from rubric_text_portal import render_rubric_text_review
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
 from screen_language import rows as _rows, t as _t
@@ -491,6 +492,7 @@ def render_dashboard(context, initial_state, reset_session):
             _render_catalog_review(context)
         render_image_bank(context)
         render_case_text_review(context)
+        render_rubric_text_review(context)
         with st.expander(_t("Clinical and cognitive catalog")):
             st.dataframe(_rows([
                 {"Code": key, "Learning focus": challenge["title"],

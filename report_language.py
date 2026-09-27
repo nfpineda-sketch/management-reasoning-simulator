@@ -2159,11 +2159,11 @@ ES = {
     'Requires faculty review':
         'Requiere revisión docente',
     'A focused management decision with explicit supporting evidence.':
-        'Una decisión de manejo acotada, con evidencia de apoyo explícita.',
+        'Una decisión de manejo focalizada, con evidencia de apoyo explícita.',
     'Related decisions integrating response, reassessment, and competing priorities.':
-        'Decisiones relacionadas que integran la respuesta, la reevaluación y prioridades en competencia.',
+        'Decisiones relacionadas que integran respuesta, reevaluación y prioridades en competencia.',
     'Management reasoning under uncertainty or evolving, competing clinical problems.':
-        'Razonamiento de manejo bajo incertidumbre o ante problemas clínicos cambiantes y en competencia.',
+        'Razonamiento de manejo frente a incertidumbre o a problemas clínicos que evolucionan y compiten.',
     'Faculty or structured guidance directed the management reasoning.':
         'Un docente o una guía estructurada dirigió el razonamiento de manejo.',
     'Prompts were needed before the resident completed the reasoning.':
@@ -2250,6 +2250,8 @@ ES = {
         'Guardar',
     'Saved.':
         'Guardado.',
+    'Descriptors a faculty member has not yet approved in Spanish are shown in English.':
+        'Los descriptores que un docente aún no aprueba en español se muestran en inglés.',
     'Developing':
         'En desarrollo',
     'Not observed':

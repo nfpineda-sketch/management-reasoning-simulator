@@ -1,0 +1,115 @@
+{
+ "rubric_version": "1.0-pilot",
+ "domains": {
+  "D1": {
+   "asks": {
+    "en": "Whether the threats were identified, what had to come first was decided, and the urgency of the action matched the threat.",
+    "es": "Si se identificaron las amenazas, si se decidió qué debía hacerse primero y si la urgencia de la acción correspondió a la amenaza."
+   },
+   "levels/0": {
+    "en": "Misses an observable threat, or delays an essential action in a way that matters clinically.",
+    "es": "Pasa por alto una amenaza observable, o retrasa una acción esencial de un modo clínicamente relevante."
+   },
+   "levels/1": {
+    "en": "Recognises the problem but orders the priorities wrongly, or needs a substantial corrective prompt.",
+    "es": "Reconoce el problema, pero ordena mal las prioridades, o necesita una indicación correctiva sustancial."
+   },
+   "levels/2": {
+    "en": "Recognises the threats and prioritises timely actions.",
+    "es": "Reconoce las amenazas y prioriza acciones oportunas."
+   },
+   "levels/3": {
+    "en": "Also anticipates plausible deterioration and arranges contingencies without delaying what is essential.",
+    "es": "Además, anticipa un deterioro plausible y prepara contingencias sin retrasar lo esencial."
+   }
+  },
+  "D2": {
+   "asks": {
+    "en": "Whether relevant information was obtained and interpreted, and an explanation was built that guides decisions.",
+    "es": "Si se obtuvo e interpretó información pertinente, y si se construyó una explicación que guíe las decisiones."
+   },
+   "levels/0": {
+    "en": "Omits or misinterprets essential information, compromising management.",
+    "es": "Omite o interpreta mal información esencial, lo que compromete el manejo."
+   },
+   "levels/1": {
+    "en": "Assessment incomplete or poorly directed; findings only partly integrated.",
+    "es": "Evaluación incompleta o mal dirigida; hallazgos integrados sólo en parte."
+   },
+   "levels/2": {
+    "en": "Obtains and interprets relevant information and considers relevant alternatives.",
+    "es": "Obtiene e interpreta información pertinente y considera alternativas pertinentes."
+   },
+   "levels/3": {
+    "en": "Also integrates uncertainty and discordant data, and selects further information for its capacity to change management.",
+    "es": "Además, integra la incertidumbre y los datos discordantes, y selecciona información adicional por su capacidad de cambiar el manejo."
+   }
+  },
+  "D3": {
+   "asks": {
+    "en": "Whether the interventions were appropriate, specified enough to be carried out, and weighed against risk, contraindications and this patient's needs.",
+    "es": "Si las intervenciones fueron apropiadas, si estaban especificadas lo suficiente para poder ejecutarse y si se sopesaron frente al riesgo, las contraindicaciones y las necesidades de este paciente."
+   },
+   "levels/0": {
+    "en": "Omits an essential intervention, or orders something clearly dangerous in this context.",
+    "es": "Omite una intervención esencial, u ordena algo claramente peligroso en este contexto."
+   },
+   "levels/1": {
+    "en": "Partly appropriate management, with relevant omissions or insufficient specification.",
+    "es": "Manejo apropiado sólo en parte, con omisiones relevantes o especificación insuficiente."
+   },
+   "levels/2": {
+    "en": "Orders appropriate management, sufficiently specified and safe.",
+    "es": "Ordena un manejo apropiado, suficientemente especificado y seguro."
+   },
+   "levels/3": {
+    "en": "Also individualises the management, anticipates adverse effects and coordinates the complementary measures that belong with it.",
+    "es": "Además, individualiza el manejo, anticipa efectos adversos y coordina las medidas complementarias que le corresponden."
+   }
+  },
+  "D4": {
+   "asks": {
+    "en": "Whether what to watch was defined, delivery and response were checked, and reassessment happened within an appropriate interval.",
+    "es": "Si se definió qué vigilar, si se comprobaron la ejecución y la respuesta, y si la reevaluación ocurrió en un intervalo apropiado."
+   },
+   "levels/0": {
+    "en": "Does not check the response or reassess, though there was both need and opportunity.",
+    "es": "No comprueba la respuesta ni reevalúa, aunque había necesidad y oportunidad."
+   },
+   "levels/1": {
+    "en": "Reassessment late, incomplete, or unrelated to what had to be watched.",
+    "es": "Reevaluación tardía, incompleta o sin relación con lo que había que vigilar."
+   },
+   "levels/2": {
+    "en": "Checks delivery and response with appropriate variables and intervals.",
+    "es": "Comprueba la ejecución y la respuesta con variables e intervalos apropiados."
+   },
+   "levels/3": {
+    "en": "Also sets targets and alarm thresholds, and actively looks for treatment failure or complications.",
+    "es": "Además, fija metas y umbrales de alarma, y busca activamente la falla del tratamiento o las complicaciones."
+   }
+  },
+  "D5": {
+   "asks": {
+    "en": "Whether the course was integrated, the plan changed or justifiably kept, support requested, and a safe continuity defined.",
+    "es": "Si se integró la evolución, si el plan se cambió o se mantuvo de forma justificada, si se pidió apoyo y si se definió una continuidad segura."
+   },
+   "levels/0": {
+    "en": "Persists with an inadequate plan despite the available evidence, or proposes an unsafe continuity.",
+    "es": "Persiste en un plan inadecuado pese a la evidencia disponible, o propone una continuidad insegura."
+   },
+   "levels/1": {
+    "en": "Recognises the course but adjusts incompletely or late.",
+    "es": "Reconoce la evolución, pero ajusta de forma incompleta o tardía."
+   },
+   "levels/2": {
+    "en": "Updates or justifiably keeps the plan and defines the next safe step.",
+    "es": "Actualiza el plan o lo mantiene de forma justificada, y define el siguiente paso seguro."
+   },
+   "levels/3": {
+    "en": "Also sets alternatives for failure, timely escalation, and a handover or follow-up with its loose ends stated.",
+    "es": "Además, define alternativas ante una falla, un escalamiento oportuno y un traspaso o seguimiento con sus pendientes explícitos."
+   }
+  }
+ }
+}
