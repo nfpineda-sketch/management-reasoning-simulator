@@ -5683,8 +5683,17 @@ def extract_explicit_reasoning(text):
     """
     reasoning = {}
     joined = re.sub(r"\s+", " ", text).strip()
-    # Tolerate common dictated/typed variants such as ``i.m`` and ``im``.
-    joined = re.sub(r"\bi\s*[.'’]?\s*m\b", "I'm", joined, flags=re.I)
+    # Tolerate "Im", "i m" and dictated "I.m" for "I'm", but only where they can
+    # be the English pronoun: opening a clause and followed by a participle or a
+    # state ("I.m addressing heart rate first"). After a dose "im" is the
+    # intramuscular route, and the rewrite used to turn "adrenalina 0.5 mg im"
+    # into "I'm" and quote it back as the resident's working model (DF-7,
+    # 2026-09-27).
+    joined = re.sub(r"\bi\s*[’`]\s*m\b", "I'm", joined, flags=re.I)
+    joined = re.sub(
+        r"(?:^|(?<=[.;:!?,] )|(?<=\band )|(?<=\bbut )|(?<=\bso )|(?<=\bbecause ))i\s*\.?\s*m\s+"
+        r"(?=(?:[a-z]+ing|concerned|worried|not|also|still|sure|unsure|afraid|aware|uncertain)\b)",
+        "I'm ", joined, flags=re.I)
     joined = re.sub(r"\brythm\b", "rhythm", joined, flags=re.I)
     # Common typed misspellings seen in local testing: "stil", "reasses".
     joined = re.sub(r"\bstil\b", "still", joined, flags=re.I)
@@ -5699,13 +5708,82 @@ def extract_explicit_reasoning(text):
     working_model_explicit = bool(re.search(
         r"\b(?:my working model is|mi modelo de trabajo es)\b", joined, re.I))
 
+    # What the order reader would execute is an order, never a working model.
+    # The reader is asked, not a list of verbs, so that "doy", "inicio",
+    # "consulto" and every other form it knows count in both languages; before
+    # this, "Doy adrenalina 0.5 mg im" and "inicio adrenalina en infusion" were
+    # stored as models the resident stated (DF-7, 2026-09-27). Nested, like the
+    # Spanish capture below, because regressions load this function by itself.
+    from family_parser import _DECLARED_INTENTION, parse_family_actions
+
+    # A clause ends at a comma, a semicolon or a colon, and where the reader
+    # itself starts a new clause for a declared intention ("Given the hypoxemia
+    # I will start NIV", "como esta hipotenso le voy a pasar volumen"), so that
+    # a model and the order after it are parted where the reader parts them. A
+    # pronoun stays with its verb: "le voy a pasar" is one clause, not "le".
+    _clause_boundary = re.compile(
+        r"(?<=[,;:])\s+|(?<!\b(?:me|te|se|le|lo|la))(?<!\b(?:nos|les|los|las))" + _DECLARED_INTENTION.pattern,
+        re.I)
+
+    def _clause_parts(text):
+        return [part for part in _clause_boundary.split(str(text or "")) if part.strip()]
+
+    def _is_order(clause):
+        clause = str(clause or "").replace("\ue000", ".").strip()
+        if not clause:
+            return False
+        return any(action.get("type") not in {"reassessment", "clarification"}
+                   for action in parse_family_actions(clause)["actions"])
+
+    def _is_reassessment(clause):
+        clause = str(clause or "").replace("\ue000", ".").strip()
+        actions = parse_family_actions(clause)["actions"] if clause else []
+        return bool(actions) and all(action.get("type") == "reassessment" for action in actions)
+
+    # The reason given for an order is the model behind it: "Consulto a
+    # hemodinamia para angioplastia primaria porque es un IAM con supradesnivel".
+    _stated_reason = re.compile(
+        r"\b(?:because|since|given\s+that|porque|ya\s+que|dado\s+que|puesto\s+que|debido\s+a\s+que)\s+", re.I)
+
+    def _order_free(value):
+        """A captured model up to the first clause the reader executes.
+
+        A working model does not run on into the order that follows it. When
+        the model's first clause is itself an order, the reason the resident
+        gave for it is the model; without a stated reason there is none, and
+        the gate asks or carries the last one instead of inventing it.
+        """
+        text = str(value or "")
+        if not text or not _is_order(text):
+            return value
+        parts = _clause_parts(text)
+        kept = []
+        for part in parts:
+            if _is_order(part):
+                break
+            kept.append(part)
+        if kept:
+            return _clean_reasoning_phrase(" ".join(kept))
+        reason = _stated_reason.search(parts[0])
+        if reason:
+            remainder = _clean_reasoning_phrase(parts[0][reason.end():])
+            if remainder and not _is_order(remainder):
+                if re.match(r"^(?:it|this|that)\b", remainder, re.I):
+                    # "because this is a STEMI" names it; "because it is the
+                    # primary problem" needs an antecedent the order may not give.
+                    remainder = _resolve_reasoning_coreference(remainder, text, reason.start())
+                if remainder:
+                    return re.sub(r"^(?:es|ser[ií]a|se\s+trata\s+de|corresponde\s+a)\s+", "", remainder,
+                                  flags=re.I) or remainder
+        return None
+
     thought = None
     m = re.search(
         r"\b(?:i think|i believe|i suspect|my impression is|my working diagnosis is|my working model is|i am concerned that|i\'m concerned that|this (?:looks|seems) like|"
         # Spanish lead-ins. The capture below still copies only the learner's words.
         r"creo que|pienso que|sospecho que|considero que|mi impresi[oó]n es(?: que)?|mi modelo de trabajo es|"
         r"mi diagn[oó]stico de trabajo es|me preocupa que)\s+"
-        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|thus\b|because\b|and i\b (?:want|will|would)\b|so i\b|"
+        r"(.+?)(?=\s*,?\s*\b(?:so\b|therefore\b|thus\b|because\b|and i\b (?:want|will|would)\b|so i\b|"
         r"por lo que\b|as[ií] que\b|porque\b|entonces\b)|[.;]|$)",
         joined, re.I
     )
@@ -5724,7 +5802,7 @@ def extract_explicit_reasoning(text):
             r"consistent with|concern(?:ing)? for|picture of|looks like|seems like|"
             r"probablemente|probable|posible|sospecha de|parece(?: ser| un| una)?|impresiona(?: como)?|"
             r"se trata de|cuadro (?:compatible con|sugerente de|de)|compatible con|sugerente de)\s+"
-            r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|because\b|por lo que\b|porque\b)|[.;]|$)",
+            r"(.+?)(?=\s*,?\s*\b(?:so\b|therefore\b|because\b|por lo que\b|porque\b)|[.;]|$)",
             joined, re.I,
         )
         if m:
@@ -5740,7 +5818,7 @@ def extract_explicit_reasoning(text):
             r"(?:suggests?|is suggestive of|are suggestive of|points? to|is consistent with|are consistent with|"
             r"is compatible with|are compatible with|favou?rs?|"
             r"sugiere(?:n)?|orienta(?:n)? a|es compatible con|son compatibles con|es sugerente de)\s+"
-            r"(?:an?\s+|the\s+|un\s+|una\s+)?(.+?)(?=\s*,?\s*(?:so\b|therefore\b|because\b|por lo que\b|porque\b)|[.;]|$)",
+            r"(?:an?\s+|the\s+|un\s+|una\s+)?(.+?)(?=\s*,?\s*\b(?:so\b|therefore\b|because\b|por lo que\b|porque\b)|[.;]|$)",
             joined, re.I,
         )
         if m:
@@ -5804,7 +5882,7 @@ def extract_explicit_reasoning(text):
     if "problem_representation" not in reasoning:
         m = re.search(
             r"\b(?:the patient|patient|he|she)\s+(?:is|remains|appears|looks|seems|has|continues\s+to\s+have)\s+"
-            r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|because\b|and i\b (?:want|will|would))|[.;]|$)",
+            r"(.+?)(?=\s*,?\s*\b(?:so\b|therefore\b|because\b|and i\b (?:want|will|would))|[.;]|$)",
             joined, re.I
         )
         if m:
@@ -5815,6 +5893,18 @@ def extract_explicit_reasoning(text):
                 r"\b(?:give|start|stop|continue|increase|decrease|cardiovert|reassess|order)\b",
                 candidate, re.I
             ):
+                # A consequence keeps the cause the resident gave for it in the
+                # same sentence: "He takes a beta-blocker, which is why he is
+                # not responding" is one model, as "Toma betabloqueador, por
+                # eso no responde" is, and not "not responding" alone (EN/ES
+                # measurement, 2026-09-27).
+                sentence_start = max(joined.rfind(".", 0, m.start()), joined.rfind(";", 0, m.start())) + 1
+                lead = joined[sentence_start:m.start()]
+                if re.search(r"\b(?:which\s+is\s+why|that'?s\s+why|that\s+is\s+why|so|therefore|thus)\s*$",
+                             lead, re.I):
+                    whole = _clean_reasoning_phrase(joined[sentence_start:m.end(1)])
+                    if whole and not _is_order(whole):
+                        candidate = whole
                 reasoning["problem_representation"] = candidate
 
     # Preserve an explicitly stated inference such as "This indicates that
@@ -5842,13 +5932,16 @@ def extract_explicit_reasoning(text):
             r"\b(?:response suggests|persistent|persists|has improved|have improved|"
             r"deteriorat|hypox|hemodynamic|perfusion pressure|perfusion recovery|"
             r"perfusion abnormality|additional fluid|hypovolem|reduced (?:effective )?"
-            r"circulating volume|reduced preload)\b",
+            r"circulating volume|reduced preload|"
+            # The same appraisal in Spanish (EN/ES measurement, 2026-09-27).
+            r"la\s+respuesta\s+sugiere|persiste|persistente|ha\s+mejorado|han\s+mejorado|"
+            r"deterior\w*|hipox\w*|hemodin[aá]mic\w*|hipovolem\w*|precarga\s+reducida)\b",
             candidate, re.I,
         ))
-        action_language = bool(candidate and re.match(
+        action_language = bool(candidate and (re.match(
             r"^(?:give|administer|start|stop|continue|increase|decrease|intubate|order|obtain|perform)\b",
             candidate, re.I,
-        ))
+        ) or _is_order(candidate)))
         if response_language and not action_language:
             reasoning["problem_representation"] = candidate
 
@@ -5881,13 +5974,26 @@ def extract_explicit_reasoning(text):
             r"decompensat\w*|cardiogenic|embol\w*|pneumon\w*|exacerbat\w*|asthma|"
             r"anaphyla\w*|ketoacidosis|hypoglyc\w*|hyperglyc\w*|overdose|toxicity|"
             r"intoxicat\w*|opioid\w*|bleed\w*|ha?emorrhag\w*|dehydrat\w*|hypovol[ae]m\w*|"
-            r"infarct\w*|ischa?em\w*|tamponade|pneumothorax|adrenal\w*|"
+            # "adrenal" names the gland's crisis; "adrenaline" and "adrenalina"
+            # are the drug, and reading them as a finding stored the order as
+            # the resident's working model (DF-7, 2026-09-27).
+            r"infarct\w*|ischa?em\w*|tamponade|pneumothorax|adrenal(?!in)\w*|suprarrenal\w*|"
             r"insuficiencia|descompensad\w*|sobrecarga|congesti[oó]n|cardiog[eé]nic\w*|"
             r"embolia|tromboembolismo|neumon[ií]a|exacerbaci[oó]n|asma|anafila\w*|"
             r"cetoacidosis|hipoglic\w*|hiperglic\w*|intoxicaci[oó]n|sangrado|hemorragia|"
             r"deshidrataci[oó]n|hipovolemi\w*|infarto|isquemi\w*|taponamiento|neumot[oó]rax|"
             r"choque|s[eé]ptic\w*|hipotens\w*|hipox\w*|hipoperfusi[oó]n|taquicardi\w*|"
-            r"bradicardi\w*|arritmi\w*|fibrilaci[oó]n|shock)\b",
+            r"bradicardi\w*|arritmi\w*|fibrilaci[oó]n|shock|"
+            # The Spanish of every English cue above that had none, so that the
+            # same finding makes a working model in either language: "falla
+            # ventilatoria" was missed where "ventilatory failure" was read, and
+            # "la orina no muestra infeccion" where the urinalysis was (EN/ES
+            # measurement, 2026-09-27). Exhaustion and the adjective of asthma
+            # were missing from both.
+            r"falla|fallo|agotamiento|exhaust\w*|asthmatic\w*|asm[aá]tic\w*|infecci[oó]n\w*|infeccios\w*|"
+            r"lactato|ll?en(?:e|ado)\s+capilar|(?:mala|baja|lenta|pobre)\s+perfusi[oó]n|"
+            r"extremidades\s+fr[ií]as|neurol[oó]gic\w*|estado\s+mental|compromiso\s+de\s+conciencia|"
+            r"obnubilad\w*|somnolien\w*|disne\w*|respiratori\w*|sobredosis|toxicidad|opioide\w*)\b",
             re.I,
         )
         # Acronyms are matched case-sensitively: "mi" is Spanish for "my".
@@ -5911,6 +6017,27 @@ def extract_explicit_reasoning(text):
             candidate = _clean_reasoning_phrase(clause)
             if candidate and other_slot.match(candidate):
                 continue
+            # The findings come before the first order or reassessment, in either
+            # language. The command pattern above knows English verbs and
+            # Spanish infinitives; the reader knows every form ("Doy adrenalina
+            # 0.5 mg im", "Reevalúa en 20 minutos"), and a clause it executes is
+            # an order whatever finding it names on the way (DF-7, 2026-09-27).
+            if candidate and (_is_order(candidate) or _is_reassessment(candidate)):
+                # What was written before the order in the same sentence is still
+                # the model: "hipoglicemia, dextrosa 25 g EV, espero que recupere
+                # conciencia" states "hipoglicemia", and the order, the
+                # expectation and the reassessment keep their own slots. The
+                # whole sentence used to be recorded as the model.
+                head = []
+                for part in _clause_parts(candidate):
+                    if _is_order(part) or _is_reassessment(part) or other_slot.match(part.strip()):
+                        break
+                    head.append(part)
+                candidate = _clean_reasoning_phrase(" ".join(head)) if head else ""
+                candidate = re.sub(r"^(?:the\s+)?patient\s+", "", candidate or "", flags=re.I)
+                if candidate and (cue_pattern.search(candidate) or acronym_pattern.search(candidate)):
+                    clinical_clauses.append(candidate)
+                break
             candidate = re.sub(r"^(?:the\s+)?patient\s+", "", candidate or "", flags=re.I)
             if candidate and (cue_pattern.search(candidate) or acronym_pattern.search(candidate)):
                 clinical_clauses.append(candidate)
@@ -5939,7 +6066,7 @@ def extract_explicit_reasoning(text):
     # Other explicit rationale language. Never derive rationale from the action.
     if "rationale" not in reasoning:
         m = re.search(
-            r"\bbecause\s+(.+?)(?=\s*,?\s*(?:so\b|therefore\b|thus\b|and i\b (?:want|will|would))|[.;]|$)",
+            r"\bbecause\s+(.+?)(?=\s*,?\s*\b(?:so\b|therefore\b|thus\b|and i\b (?:want|will|would))|[.;]|$)",
             joined, re.I
         )
         if m:
@@ -5973,16 +6100,16 @@ def extract_explicit_reasoning(text):
         # A labelled priority counts the same: "Priority: restore oxygen delivery."
         r"(?:\b(?:my|the) (?:(?:main|first|immediate|management) )?priority is (?:to )?|"
         r"(?:^|(?<=[.;]))\s*(?:(?:main|first|immediate|management) )?priority\s*:\s*(?:to )?)"
-        r"(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|" + _en_order_clause + r"|[.;]|$)", joined, re.I
+        r"(.+?)(?=\s*,?\s*\b(?:so\b|therefore\b|and i\b)|" + _en_order_clause + r"|[.;]|$)", joined, re.I
     )
     if not m:
         m = re.search(
-            r"\bi (?:need|want) to prioritize\s+(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and\b)|[.;]|$)",
+            r"\bi (?:need|want) to prioritize\s+(.+?)(?=\s*,?\s*\b(?:so\b|therefore\b|and\b)|[.;]|$)",
             joined, re.I
         )
     if not m:
         m = re.search(
-            r"\b(?:my|the) (?:management )?goal is (?:to )?(.+?)(?=\s*,?\s*(?:so\b|therefore\b|and i\b)|"
+            r"\b(?:my|the) (?:management )?goal is (?:to )?(.+?)(?=\s*,?\s*\b(?:so\b|therefore\b|and i\b)|"
             + _en_order_clause + r"|[.;]|$)",
             joined, re.I
         )
@@ -6127,7 +6254,7 @@ def extract_explicit_reasoning(text):
     direct_expectations = re.finditer(
         r"\b(?:i|we)\s+(?:(?P<negation>do\s+not|don['’]t|would\s+not|wouldn['’]t)\s+|would\s+)?"
         r"(?:expect|anticipate)\s+(?P<effect>.+?)"
-        r"(?=\s+if\b|\s*,?\s*(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
+        r"(?=\s+if\b|\s*,?\s*\b(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
         joined,
         re.I,
     )
@@ -6153,7 +6280,7 @@ def extract_explicit_reasoning(text):
     effect_pattern = re.compile(
         r"(?<!priority is )\b(?:in order to|to|hoping to|expect(?:ing)? to)\s+"
         r"(improve|restore|increase|decrease|reduce|support|correct|stabilize)\s+"
-        r"(.+?)(?=\s*,?\s*(?:and then|and reassess|and recheck|then|reassess|recheck)|[.;]|$)", re.I
+        r"(.+?)(?=\s*,?\s*\b(?:and then|and reassess|and recheck|then|reassess|recheck)|[.;]|$)", re.I
     )
     for em in ([] if "expected_effect" in reasoning else effect_pattern.finditer(joined)):
         prefix = joined[max(0, em.start()-90):em.start()].lower()
@@ -6168,7 +6295,7 @@ def extract_explicit_reasoning(text):
         m2 = re.search(
             r"\b(?:i expect|i would expect|i'm expecting|i am expecting) (?:this|it|that)?\s*(?:to|will)\s+"
             r"(improve|restore|increase|decrease|reduce|support|correct|stabilize)\s+"
-            r"(.+?)(?=\s*,?\s*(?:and then|and reassess|and recheck|then|reassess|recheck)|[.;]|$)", joined, re.I
+            r"(.+?)(?=\s*,?\s*\b(?:and then|and reassess|and recheck|then|reassess|recheck)|[.;]|$)", joined, re.I
         )
         if m2:
             reasoning["expected_effect"] = _clean_reasoning_phrase(f"{m2.group(1)} {m2.group(2)}")
@@ -6177,7 +6304,7 @@ def extract_explicit_reasoning(text):
     # "I expect further improvement in perfusion if low preload is still important."
     if "expected_effect" not in reasoning:
         m3 = re.search(
-            r"\bi expect\s+(.+?)(?=\s+if\b|\s*,?\s*(?:and then|and reassess|and recheck|then|reassess|recheck)\b|[.;]|$)",
+            r"\bi expect\s+(.+?)(?=\s+if\b|\s*,?\s*\b(?:and then|and reassess|and recheck|then|reassess|recheck)\b|[.;]|$)",
             joined, re.I
         )
         if m3:
@@ -6196,7 +6323,7 @@ def extract_explicit_reasoning(text):
     if "expected_effect" not in reasoning:
         natural_effect = re.search(
             r"\b(?:the\s+)?(?:patient|he|she|this|it)\s+(?:should|would)\s+"
-            r"(.+?)(?=\s*,?\s*(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
+            r"(.+?)(?=\s*,?\s*\b(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
             joined,
             re.I,
         )
@@ -6208,7 +6335,7 @@ def extract_explicit_reasoning(text):
     if "expected_effect" not in reasoning:
         natural_expectation = re.search(
             r"\b(?:(?:i|we)\s+(?:expect|anticipate)|expecting|anticipating|esperando)\s+(.+?)"
-            r"(?=\s*,?\s*(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
+            r"(?=\s*,?\s*\b(?:and\s+)?(?:reassess|recheck|reevaluate)\b|[.;]|$)",
             joined,
             re.I,
         )
@@ -6233,17 +6360,28 @@ def extract_explicit_reasoning(text):
                      r"sub[ai]|baj|mejor|aument|disminu|limit|corrig|correg|estabiliz|"
                      r"alivi|reviert|revert|descarg|manten|preven|evit|abr|oxigen|"
                      r"perfund|compens|fren|orin|diure|ced|normaliz|recuper)")
+        # The purpose ends where the next category begins, as the stated aim
+        # below does: "para bajar la precarga, espero que mejore la disnea y
+        # reevaluo la saturacion" states "bajar la precarga". It used to run on
+        # to the end of the sentence, hidden only while the whole sentence was
+        # recorded as the model (DF-7, 2026-09-27).
         purpose = re.search(
             r"\b(?:to|para|a\s+fin\s+de|con\s+el\s+fin\s+de|buscando|"
             r"in\s+order\s+to)\s+(" + direction + r"\w*\s+.+?)"
-            r"(?=\s*,?\s*(?:and\s+|y\s+)?(?:reassess|recheck|reevaluate|reevaluar|"
-            r"revaluar|controlo|controlar|then|luego)\b|[.;]|$)",
+            r"(?=\s*,?\s*\b(?:and\s+|y\s+)?(?:reassess|recheck|reevaluate|reevaluar|"
+            r"revaluar|reeval[uú][oa]|controlo|controlar|control\s+de|reviso|then|luego|"
+            r"i\s+will\s+\w+|espero|i\s+expect|expecting)\b|[.;]|$)",
             joined, re.I,
         )
         candidate = _clean_reasoning_phrase(purpose.group(1)) if purpose else None
         if candidate:
+            # A model or a rationale claims a purpose only with its order
+            # removed, as it will be recorded: "Because of the hypotension I
+            # will give 500 mL to raise the MAP" states the reason and the
+            # expectation, as the same order in Spanish did (DF-7, 2026-09-27).
             claimed = " ".join(
-                str(reasoning.get(key) or "")
+                str((reasoning.get(key) if key == "management_priority" else _order_free(reasoning.get(key)))
+                    or "")
                 for key in ("management_priority", "problem_representation", "rationale")
             ).lower()
             if candidate.lower() not in claimed:
@@ -6259,8 +6397,8 @@ def extract_explicit_reasoning(text):
             r"la\s+idea\s+es(?:\s+que)?|el\s+plan\s+es|me\s+interesa|"
             r"the\s+(?:goal|aim|idea|plan)\s+is(?:\s+to)?|my\s+(?:goal|aim)\s+is(?:\s+to)?|"
             r"i\s+am\s+aiming\s+(?:for|to)|aiming\s+(?:for|to)|looking\s+to)\s+"
-            r"(.+?)(?=\s*,?\s*(?:and\s+|y\s+)?(?:reassess|recheck|reevaluate|reevaluar|"
-            r"reevalu[oa]|controlo|control\s+de|reviso|then|luego|i\s+will\s+\w+)\b|[.;]|$)",
+            r"(.+?)(?=\s*,?\s*\b(?:and\s+|y\s+)?(?:reassess|recheck|reevaluate|reevaluar|"
+            r"reeval[uú][oa]|controlo|control\s+de|reviso|then|luego|i\s+will\s+\w+)\b|[.;]|$)",
             joined, re.I,
         )
         candidate = _clean_reasoning_phrase(aim.group(1)) if aim else None
@@ -6408,7 +6546,11 @@ def extract_explicit_reasoning(text):
         if not (reasoning.get("problem_representation") or reasoning.get("rationale")):
             _ES_CAUSAL = (r"\b(?:porque|debido\s+a(?:l)?|por\s+lo\s+que|as[ií]\s+que|sugiere[n]?|indica[n]?|"
                           r"significa[n]?\s+que|refleja[n]?|corresponde[n]?\s+a|es\s+compatible\s+con|"
-                          r"se\s+explica\s+por|traduce)\b")
+                          r"se\s+explica\s+por|traduce|"
+                          # A consequence stated with its cause, as English
+                          # "which is why" (EN/ES measurement, 2026-09-27).
+                          r"por\s+eso|por\s+ello|de\s+ah[ií]\s+que|lo\s+que\s+explica|lo\s+cual\s+explica|"
+                          r"esto\s+explica|eso\s+explica)\b")
             for sentence in re.split(r"(?<=[.;])\s+", joined):
                 clause = sentence.strip(" .;")
                 if not clause or not re.search(_ES_CAUSAL, clause, re.I):
@@ -6428,7 +6570,7 @@ def extract_explicit_reasoning(text):
                 # kept nothing causal once the priority was removed.
                 if not clause or not re.search(_ES_CAUSAL, clause, re.I):
                     continue
-                if re.search(r"\b(?:" + _ES_ORDER_VERBS + r")\b", clause, re.I):
+                if re.search(r"\b(?:" + _ES_ORDER_VERBS + r")\b", clause, re.I) or _is_order(clause):
                     continue
                 phrase = _clean_reasoning_phrase(clause)
                 if phrase:
@@ -6514,7 +6656,72 @@ def extract_explicit_reasoning(text):
             if target and target.lower() not in {"al paciente", "paciente", "de nuevo", "nuevamente", "otra vez"}:
                 reasoning["reassessment_target"] = target
 
+    # A model or a rationale never runs on into an order, whichever pattern
+    # captured it (DF-7, 2026-09-27). Checked before the causal captures below,
+    # so that a model freed of an order can still be found in its own sentence.
+    for key in ("problem_representation", "rationale"):
+        if reasoning.get(key):
+            freed = _order_free(reasoning[key])
+            if freed:
+                reasoning[key] = freed
+            else:
+                reasoning.pop(key, None)
+
+    # The reason given for an order, when nothing else stated a model, is its
+    # rationale in either language: English read "Consult surgery for
+    # laparotomy because this is a perforated viscus" and Spanish read nothing in
+    # "Llamo a cirugia para laparotomia porque es una viscera perforada".
+    if not (reasoning.get("problem_representation") or reasoning.get("rationale")):
+        for sentence in re.split(r"(?<=[.;])\s+", joined):
+            clause = sentence.strip(" .;")
+            if clause and _stated_reason.search(clause) and _is_order(clause):
+                freed = _order_free(clause)
+                if freed:
+                    reasoning["rationale"] = freed
+                    break
+
+    # An English causal statement is the resident's working model, as the
+    # Spanish block below reads it: "She takes glimepiride: it can fall again for
+    # hours, so she cannot go home" was carried over by an older model in
+    # English while the Spanish record kept it (EN/ES measurement, 2026-09-27).
+    if not (reasoning.get("problem_representation") or reasoning.get("rationale")):
+        _en_causal = re.compile(
+            r"\b(?:so|therefore|thus|which\s+is\s+why|that'?s\s+why|that\s+is\s+why|"
+            r"this\s+(?:means|explains)|which\s+(?:means|explains)|means\s+that|due\s+to|"
+            r"suggests?|indicates?|is\s+consistent\s+with|is\s+explained\s+by)\b", re.I)
+        for sentence in re.split(r"(?<=[.;])\s+", joined):
+            clause = sentence.strip(" .;")
+            if not clause or not _en_causal.search(clause):
+                continue
+            # A priority, an expectation or a reassessment in the same sentence
+            # keeps its own slot; the model is what comes before it.
+            clause = re.split(
+                r"\b(?:(?:my|the)\s+(?:(?:main|first|immediate|management)\s+)?(?:priority|goal)\s+is|"
+                r"priority\s*:|i\s+(?:would\s+)?(?:expect|anticipate)|reassess|recheck)\b",
+                clause, maxsplit=1, flags=re.I)[0].strip(" ,;.")
+            if not clause or not _en_causal.search(clause) or _is_order(clause):
+                continue
+            phrase = _clean_reasoning_phrase(clause)
+            if phrase:
+                reasoning["problem_representation"] = phrase
+                break
+
     _capture_spanish_reasoning(joined, reasoning)
+
+    # "porque" is the Spanish "because". The English record kept the reason the
+    # resident gave as their rationale ("…because she speaks in short phrases,
+    # RR 34 and SpO2 90%") and the Spanish record lost the same reason in 21 of
+    # the corpus's decisions (EN/ES measurement, 2026-09-27). Read after the
+    # Spanish block, so that a Spanish causal model is still found as before.
+    if "rationale" not in reasoning:
+        m = re.search(
+            r"\b(?:porque|ya\s+que|dado\s+que|puesto\s+que|debido\s+a\s+que)\s+(.+?)"
+            r"(?=\s*,?\s*\b(?:as[ií]\s+que|por\s+lo\s+que|entonces|y\s+(?:quiero|voy\s+a))\b|[.;]|$)",
+            joined, re.I)
+        if m:
+            rationale = _order_free(_clean_reasoning_phrase(m.group(1)))
+            if rationale:
+                reasoning["rationale"] = rationale
 
     if "management_priority" not in reasoning and reasoning.get("expected_effect"):
         grounded = " ".join(
@@ -7024,7 +7231,7 @@ def clinical_interpreter(text):
         actions.append({
             "type": "reassessment",
             "delay_min": parse_delay_min(text),
-            "focus": "perfusion" if ("perfusion" in t or "hemodynamic" in t) else "general",
+            "focus": "perfusion" if re.search(r"perfusi|hemodynamic|hemodin[aá]mic", t) else "general",
         })
 
     # v0.6.0.31: diagnostic information layer. These requests are now executable
@@ -8109,8 +8316,12 @@ def complete_pending_reasoning_fields(
     replacement = {
         "type": "reassessment",
         "delay_min": delay,
+        # The Spanish names of the same observations: "PA, FC" was a general
+        # reassessment where "BP, HR" was a perfusion one (EN/ES measurement,
+        # 2026-09-27).
         "focus": "perfusion" if re.search(
-            r"\b(?:perfusion|capillary|crt|blood pressure|bp|map)\b",
+            r"\b(?:perfusion|capillary|crt|blood pressure|bp|map|"
+            r"perfusi[oó]n|llene|llenado|presi[oó]n(?:\s+arterial)?|pa|pam)\b",
             str(reassessment_target or ""),
             re.I,
         ) else "general",

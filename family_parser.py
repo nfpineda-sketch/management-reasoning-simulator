@@ -435,7 +435,8 @@ _ES_PROCLITIC = re.compile(
 # reason for it. The command pattern is anchored to the start of a clause, so
 # without a comma the order was read as prose and nothing happened at all —
 # neither an execution nor a question (measured 2026-09-23). A declared
-# intention starts its own clause.
+# intention starts its own clause. Exported: the reasoning capture parts a
+# working model from the order after it at the same place (DF-7, 2026-09-27).
 _DECLARED_INTENTION = re.compile(
     r"(?<=[^.;,\n])\s+(?=(?:i\s+(?:will|am\s+going\s+to)|i'll|i'm\s+going\s+to|"
     r"(?:le\s+|les\s+)?voy\s+a|vamos\s+a)\s+\w)", re.I)
@@ -605,7 +606,15 @@ _CONDITION_CLAUSE = re.compile(r"\b(?:if|si|unless|salvo\s+que)\b[^,]*(?:,|$)")
 _DISCHARGE_ADVICE = re.compile(
     r"^(?:con\s+)?(?:control(?:es)?|seguimiento|citacion|cita|signos?\s+de\s+alarma|indicaciones|"
     r"instrucciones|reposo|dieta|receta|educacion|follow[- ]?up|return\s+precautions?|"
-    r"safety[- ]net(?:ting)?)\b")
+    r"safety[- ]net(?:ting)?)\b"
+    # English names the service first: "urology follow-up" was dropped where
+    # "control urologico" was kept (EN/ES measurement, 2026-09-27).
+    r"|^(?:with\s+)?(?:(?:a|an)\s+)?(?:[a-z]+\s+){1,2}(?:follow[- ]?up|appointment)\b")
+# Safety-netting that lists what should bring the patient back. The list is the
+# advice, so it runs to the end of the sentence instead of being cut at commas.
+_LISTED_ADVICE = re.compile(
+    r"\b(?:return\s+precautions?|safety[- ]net(?:ting)?(?:\s+advice)?|with\s+instructions\s+to|"
+    r"advised\s+to|told\s+to|signos\s+de\s+alarma|senales\s+de\s+alarma)\b")
 _CONDITIONAL = re.compile(
     r"\b(?:if|unless|consider|considering|might|could|would|perhaps|maybe|si|salvo que|considerar|considero|podria|quizas|tal vez)\b"
 )
@@ -1955,6 +1964,18 @@ def parse_family_actions(text) -> dict:
                                 for action in parse_family_actions(bare)["actions"])):
                         keep(sentence, "conditional")
                     continue
+        # Safety-netting written without "if" lists what should bring the patient
+        # back: "return precautions for fever, vomiting or uncontrolled pain".
+        # Split at its commas, only "fever" stayed with the advice and the rest
+        # was read as nothing, where "regresar si tiene fiebre, vomitos o dolor
+        # incontrolable" was kept whole (EN/ES measurement, 2026-09-27).
+        listed = _LISTED_ADVICE.search(sentence)
+        if listed:
+            keep(sentence[listed.start():].strip(" ,"), "advice")
+            sentence = re.sub(r"(?:,\s*)?\b(?:and|y|e|then|luego)\s*$", "",
+                              sentence[:listed.start()].strip(" ,")).strip(" ,")
+            if not sentence:
+                continue
         inherited = None
         negated = False
         # Do not split the clinical device name "bag and mask", nor the blood

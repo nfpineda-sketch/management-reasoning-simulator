@@ -160,3 +160,183 @@ python tools_order_reading.py --compare DIR     # escribe DIR/comparison.json
 
 La herramienta se niega a correr si ve una clave de proveedor. Sus funciones de
 comparación tienen pruebas en `test_tools_order_reading.py`.
+
+## Ciclo 2 · DF-7: antes y después (2026-09-27)
+
+**Qué se corrigió.** El docente aprobó corregir en la fuente, por clase, los
+defectos de fidelidad del razonamiento. La medición se repitió sobre el mismo
+corpus, con la misma semilla (3000) y sin llamadas de IA.
+
+**Cambio en la herramienta.** Desde este ciclo también sigue la categoría
+`rationale`. Las bases de ambas mediciones se releyeron con esa versión, sin
+volver a jugar el antes (`--reread`).
+
+### Resultado
+
+| Métrica | ES antes | ES después | EN antes | EN después |
+|---|---|---|---|---|
+| Órdenes ejecutadas | 96/96 | 96/96 | 96/96 | 96/96 |
+| Órdenes no reconocidas · decisiones sin acción leída | 0 · 0 | 0 · 0 | 0 · 0 | 0 · 0 |
+| Retenciones previstas · no previstas | 19 · 0 | 19 · 0 | 19 · 0 | 19 · 0 |
+| Encuentros completos | 20/20 | 20/20 | 20/20 | 20/20 |
+| Categorías declaradas por el residente (`stated`) | 192 | **212** | 213 | 213 |
+| … con texto que no está en lo que escribió | **4** | **0** | 0 | 0 |
+| «Modelo de trabajo» que es una orden | **5** | **0** | **1** | **0** |
+| `rationale` declarado | **0** | **21** | 22 | 22 |
+| Decisiones con diferencia pareada EN/ES | **62** | **1** | — | — |
+| Llamadas de IA | 0 | 0 | 0 | 0 |
+
+Cambios de acciones, tiempos, retenciones y cierres entre antes y después, en
+las 238 decisiones: sólo los tres buscados.
+
+- **ES, 2 decisiones:** el foco de la reevaluación «PA, FC…» pasa de `general` a
+  `perfusion`, como el inglés «BP, HR…».
+- **EN, 1 decisión:** el alta conserva «urology follow-up» y el aviso completo
+  «return precautions for fever, vomiting or uncontrolled pain», como el español.
+
+No cambió ningún minuto, ninguna retención ni ningún cierre.
+
+### Causas raíz y cambios
+
+Todo está en la fuente: `app.py`, `extract_explicit_reasoning`, salvo donde se
+indica otro archivo.
+
+1. **«im» se reescribía como «I'm».**
+   - **Antes:** la reescritura se aplicaba en cualquier posición.
+   - **Ahora:** sólo se reescribe cuando abre una cláusula y la sigue un
+     participio o un estado («I.m addressing…», «Im concerned…»).
+   - **Resultado:** tras una dosis siempre es la vía intramuscular.
+2. **Palabras terminadas en «-so» se truncaban.**
+   - **Causa:** los 16 marcadores de cláusula (so, therefore, because, porque,
+     then…) no exigían límite de palabra antes.
+   - **Ahora:** lo exigen, así que «compromiso» y «also» ya no se cortan.
+3. **Órdenes registradas como modelo de trabajo.** La causa era doble:
+   - el indicio `adrenal\w*` también reconocía «adrenalina» y «adrenaline»;
+   - la lista de verbos de orden sólo tenía infinitivos, así que «doy»,
+     «inicio» y «consulto» no se reconocían.
+
+   Ahora:
+
+   - **Qué es una orden.** Lo decide el propio lector (`parse_family_actions`),
+     que conoce todas las formas en ambos idiomas.
+   - **Dónde se corta un modelo.** Se detiene antes de la orden que lo sigue.
+   - **La razón de una orden.** Si la orden trae su razón («porque es un IAM»,
+     «because this is a STEMI»), esa razón es la rationale.
+   - **Los hallazgos compactos.** Se conservan hasta la primera orden o
+     reevaluación, aunque estén en la misma oración: «hipoglicemia, dextrosa
+     25 g EV, espero que…» registra «hipoglicemia» como modelo, y la orden, la
+     expectativa y la reevaluación quedan en sus propias categorías.
+   - **Dónde termina una cláusula.** En la coma, el punto y coma o los dos
+     puntos, y donde el propio lector abre una cláusula para una intención
+     declarada («Given the hypoxemia I will start NIV», «como está hipotenso le
+     voy a pasar volumen»). Se reutiliza su patrón (`_DECLARED_INTENTION`), no
+     una lista nueva.
+4. **Asimetrías EN/ES del razonamiento registrado:**
+   - **Vocabulario de hallazgos.** Faltaba en español lo que el inglés sí tenía:
+     «falla», «infección», «lactato», «llene capilar», «estado mental»,
+     «disnea»… Faltaban en ambos idiomas «exhaustion/agotamiento» y
+     «asthmatic/asmático».
+   - **Enunciados causales en inglés.** No había captura como la española (so,
+     which is why, suggests…). Ahora la hay.
+   - **«por eso» y equivalentes.** Faltaban en la captura causal española.
+   - **Consecuencia con su causa.** «He takes a beta-blocker, which is why he is
+     not responding» queda como un modelo, igual que «Toma betabloqueador, por
+     eso no responde».
+   - **«porque» como rationale.** No se registraba como la razón declarada,
+     mientras «because» sí. Eran 21 decisiones del corpus.
+   - **Valoración de la respuesta.** Se agregó en español.
+   - **El propósito de una orden termina donde empieza otra categoría.** «para
+     bajar la precarga, espero que mejore la disnea y reevalúo…» registra
+     «bajar la precarga», igual que ya hacía la captura del objetivo («busco…»,
+     «the aim is…»). Ambas aceptan ahora «reevalúo» con tilde.
+   - **Una orden dentro de la razón no se lleva la expectativa.** «Because of
+     the poor perfusion I will give 500 mL … to raise the blood pressure»
+     perdía «raise the blood pressure», porque la razón todavía contenía la
+     orden; en español se conservaba.
+   - **Foco de la reevaluación y alta en inglés.** Foco: `app.py` (formulario
+     guiado e intérprete). Alta: `family_parser.py`, que ahora reconoce el
+     seguimiento que nombra primero al servicio y el aviso de regreso con su
+     lista completa.
+
+### Qué no cambió y queda registrado
+
+- **1 diferencia pareada que queda (guion 5, decisión 9).** El inglés escribe
+  «because of the work of breathing» y lo registra como razón. El español
+  escribe «por el trabajo respiratorio» y arrastra el modelo previo. «por» es
+  demasiado ambiguo en español para tratarlo como causal. Las dos lecturas son
+  fieles a lo escrito.
+- **«since» en inglés** no se lee como razón, porque también es temporal
+  («hypotensive since arrival»).
+- **Seguimiento pegado al alta.** «With cardiology follow-up» o «con control en
+  policlínico» dentro de la misma orden de alta no se registran como indicación,
+  en ninguno de los dos idiomas. Es anterior a este ciclo; queda en la cola.
+- **Encontrado al probar, anterior al ciclo, igual en HEAD:**
+  - en inglés, «to reduce the congestion and I will recheck…» registra «reduce
+    the congestion and I will» como expectativa (el patrón de efecto no termina
+    en «and I will»);
+  - el vocabulario de hallazgos es una lista cerrada: «Hyperkalemia with peaked
+    T waves» e «Hiperkalemia con T picudas» no se leen como modelo en ninguno de
+    los dos idiomas, y el gate lo pregunta.
+
+  Quedan en la cola (DF-11); el corpus de validación (DF-6) medirá cuánto pesan.
+- **Correcciones ortográficas** («rythm» → «rhythm», «urianalysis» →
+  «urinalysis»). Siguen cambiando la cita, sin cambiar el sentido. Dos
+  regresiones las fijan (v0814, v0816); no eran parte de los defectos aprobados.
+
+### Lo que encontró la suite completa
+
+La primera corrida completa, con la versión medida arriba, dio 13 fallas. Se
+corrigieron por su clase, y la medición se repitió con el código final.
+
+- **12 en `test_the_gate_asks_for_four_things.py`** (6 frases × 2 pruebas).
+  - **Qué eran.** Órdenes compactas que nombran las cuatro categorías, como
+    «hipoglicemia, dextrosa 25 g EV, espero que recupere conciencia, controlo
+    HGT en 15 minutos».
+  - **Por qué fallaban.** Antes de DF-7 su «modelo» era la oración entera, orden
+    incluida: justo el defecto que DF-7 corrige. La primera versión de la
+    corrección descartaba esa oración en vez de cortarla antes de la orden, y el
+    gate volvía a retener órdenes completas (la preocupación docente del
+    2026-09-23). Además, el propósito de la orden corría hasta el final de la
+    oración; antes lo tapaba el modelo defectuoso.
+  - **Corrección.** Las de «Causas raíz» sobre los hallazgos compactos, el
+    límite de cláusula y el propósito.
+- **1 en `test_offline_cases.py`.**
+  - **Qué era.** La herramienta de medición del ciclo 1 leía el valor de las
+    claves de proveedor para negarse a correr (commit aae45a9).
+  - **Corrección.** Ahora mira sólo los nombres y nunca lee un valor.
+- **Medición repetida con el código final.** Los mismos números de la tabla y
+  ninguna de las 238 decisiones registradas cambió: estas clases no aparecen en
+  el corpus de ensayo.
+
+### Latencia
+
+- **Por llamada, código final.** La extracción pasa de 3,4 ms a 4,1–4,4 ms por
+  orden: mejor de 5 pasadas sobre las 192 órdenes del corpus, en el mismo
+  equipo. Ese milisegundo es la consulta al lector para decidir qué es una
+  orden.
+- **Por encuentro.** Se jugaron los guiones ES 1–4 alternando el código de HEAD
+  y la versión medida arriba, dos veces cada uno:
+
+  | Corrida | Antes (HEAD) | Después |
+  |---|---|---|
+  | 1 | 95,0 s | 93,3 s |
+  | 2 | 99,4 s | 105,7 s |
+
+  La diferencia de medias (+2,3 s, 2 %) es menor que la variación entre dos
+  corridas del mismo código (4,4 s antes y 12,4 s después).
+- **Corpus completo con el código final.** 488 s (ES) y 494 s (EN), frente a
+  486 s y 487 s de la versión anterior.
+- **Conclusión.** El aumento de la corrida completa frente al ciclo 1 (393 s →
+  486–501 s) vino del entorno, no del cambio.
+
+### Pruebas
+
+- **`test_reasoning_fidelity_classes.py` (nuevo, 32 casos).** Cada clase se prueba
+  en ambos idiomas con frases escritas para la prueba, no copiadas del corpus
+  (§57).
+- **Tests focalizados de razonamiento y lectura:** 366, todos pasan. Incluyen
+  `test_spanish_working_model`, `test_working_model_recognition` y
+  `test_the_twenty_in_english`.
+- **Regresiones:** 56 de 56 pasan.
+- **Suite completa, código final (4 shards):** 4696 pasan, 77 omitidas y 2
+  xfail, sin fallas.

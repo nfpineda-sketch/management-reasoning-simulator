@@ -38,8 +38,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 REHEARSAL_ADMIN = ("ensayo_admin", "rehearsal-only-password")  # tools_tanda20._rehearse's own copy
-SLOTS = ("problem_representation", "expected_effect", "reassessment_target", "management_priority",
-         "contingency", "threshold")
+SLOTS = ("problem_representation", "rationale", "expected_effect", "reassessment_target",
+         "management_priority", "contingency", "threshold")
 CLARIFICATION_STATUSES = ("clarification_required", "not_executed")
 
 
@@ -148,8 +148,10 @@ def _numbers(spec):
 
 
 def play(language, numbers, out, seed):
-    if any(os.environ.get(name) for name in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY")):
-        raise SystemExit("A provider key is visible: this measurement must not be able to spend.")
+    # Only the names are looked at: the tool refuses to run where a provider key
+    # is set and never reads a key's value (test_offline_cases).
+    if {"OPENAI_API_KEY", "ANTHROPIC_API_KEY"} & set(os.environ):
+        raise SystemExit("A provider key is set: this measurement must not be able to spend.")
     os.environ["MRS_OFFLINE_CASES"] = "1"
     import tools_tanda20
     by_number, _ = tools_tanda20._scripts(language)
@@ -290,6 +292,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--play", nargs=2, metavar=("es|en", "N|N-M|all"))
     parser.add_argument("--compare", metavar="DIR")
+    parser.add_argument("--reread", metavar="DIR", help="read the stored encounters of DIR again")
     parser.add_argument("--out", default="local-data/order-reading")
     parser.add_argument("--seed", type=int, default=3000)
     args = parser.parse_args(argv)
@@ -298,6 +301,14 @@ def main(argv=None):
         if language not in ("es", "en"):
             parser.error("--play takes es or en")
         play(language, _numbers(spec), args.out, args.seed)
+        return 0
+    if args.reread:
+        # The stored encounters are kept beside the results: read them again with
+        # the current compact_entry, without playing anything.
+        for path in sorted(Path(args.reread).glob("[ne][ns]/[0-9][0-9].json")):
+            run = json.loads(path.read_text(encoding="utf-8"))
+            run["stored"] = stored_encounter(path.parent / "db" / f"rehearsal-{int(path.stem):02d}.sqlite3")
+            path.write_text(json.dumps(run, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
         return 0
     if args.compare:
         report = compare(args.compare)
