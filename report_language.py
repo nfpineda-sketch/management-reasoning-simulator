@@ -752,5 +752,204 @@ ES = {
     # A document whose model prose was translated for it (prose_translation).
     "The AI reasoning was translated automatically from its English original, which remains the reference record; the clinical identifiers and the curriculum objective titles are written in English.":
         "El razonamiento de la IA se tradujo automáticamente de su original en inglés, que sigue siendo el registro de referencia; los identificadores clínicos y los títulos de los objetivos del currículo están en inglés.",
+    # The Decision Review record (app._review_pdf, _review_markdown) and its downloads (Idioma 4a).
+    " · composed by the app from the resident's own words, not stated as such":
+        ' · compuesto por la aplicación a partir de las palabras del residente, no expresado así',
+    'A learner-authored commitment for a similar future encounter.':
+        'Un compromiso escrito por el residente para un encuentro similar en el futuro.',
+    'A portable record of the clinical trajectory, learner reflection, expert comparison, and prospective adaptation plan.':
+        'Un registro portable de la trayectoria clínica, la reflexión del residente, la comparación experta y el plan de adaptación prospectivo.',
+    'ATTEMPT':
+        'INTENTO',
+    'CASE':
+        'CASO',
+    'CLOSED':
+        'CIERRE',
+    'STATUS':
+        'ESTADO',
+    'Across Decisions {first}–{last} · {times}':
+        'Entre las decisiones {first}–{last} · {times}',
+    'Action':
+        'Acción',
+    'Adaptation Plan':
+        'Plan de adaptación',
+    'Attempt:':
+        'Intento:',
+    'BP':
+        'PA',
+    'Carry-Forward Plan':
+        'Plan traído del intento anterior',
+    'Case:':
+        'Caso:',
+    'Complete':
+        'Completa',
+    'Draft':
+        'Borrador',
+    'Complete original encounter record · PDF, Markdown and JSON':
+        'Registro original completo del encuentro · PDF, Markdown y JSON',
+    'Complete review':
+        'Revisión completa',
+    'Decision Review':
+        'Revisión de decisiones',
+    'Descriptive and non-scoring. No reasoning is added unless the learner explicitly stated it.':
+        'Descriptiva y sin puntaje. No se agrega ningún razonamiento que el residente no haya expresado explícitamente.',
+    'Diagnostic result | {time}:':
+        'Resultado de examen | {time}:',
+    'Diagnostic result · {time}:':
+        'Resultado de examen · {time}:',
+    'Download JSON':
+        'Descargar JSON',
+    'Download Markdown':
+        'Descargar Markdown',
+    'Download PDF':
+        'Descargar PDF',
+    'Draft export available':
+        'Borrador disponible para exportar',
+    'Draft review - incomplete fields remain.':
+        'Borrador de revisión: quedan campos incompletos.',
+    'Educational simulation - reflective and non-scoring':
+        'Simulación educativa - reflexiva y sin puntaje',
+    'Encounter':
+        'Encuentro',
+    'Encounter closed:':
+        'Cierre del encuentro:',
+    'Expert Comparison':
+        'Comparación experta',
+    'Expert comparison has not been revealed.':
+        'La comparación experta todavía no se ha revelado.',
+    'Expert framing':
+        'Encuadre experto',
+    'How has your working model changed?':
+        '¿Cómo cambió tu modelo de trabajo?',
+    'Key cues':
+        'Claves principales',
+    'Management Reasoning Decision Review':
+        'Revisión de decisiones de Management Reasoning',
+    'Management Reasoning<br/>Decision Review':
+        'Management Reasoning<br/>Revisión de decisiones',
+    'Management Trace is a time-resolved record of how a learner translates patient state into management priorities and actions, anticipates their effects, observes the resulting patient response, and adapts subsequent management.':
+        'La Management Trace es un registro ordenado en el tiempo de cómo un residente traduce el estado del paciente en prioridades y acciones de manejo, anticipa sus efectos, observa la respuesta del paciente y adapta el manejo siguiente.',
+    'Management priority':
+        'Prioridad de manejo',
+    'Management reasoning':
+        'Razonamiento de manejo',
+    'Mental status':
+        'Estado mental',
+    'Work of breathing':
+        'Trabajo respiratorio',
+    'No executed action recorded':
+        'No se registró una acción ejecutada',
+    'No executed management decisions were recorded.':
+        'No se registraron decisiones de manejo ejecutadas.',
+    'No material observable change recorded.':
+        'No se registró un cambio observable relevante.',
+    'No reflection prompt was generated.':
+        'No se generó ninguna pregunta de reflexión.',
+    'Not answered':
+        'Sin respuesta',
+    'Not explicitly stated':
+        'No expresado explícitamente',
+    'Not recorded':
+        'No registrado',
+    'Not specified':
+        'No especificado',
+    'Observed response | {time}':
+        'Respuesta observada | {time}',
+    'Observed response · {time}':
+        'Respuesta observada · {time}',
+    'One defensible action':
+        'Una acción defendible',
+    'One defensible expert reasoning model for comparison. It is non-scoring, is not an answer key, and requires faculty validation.':
+        'Un modelo de razonamiento experto defendible, para comparar. No da puntaje, no es una pauta de respuestas y requiere validación docente.',
+    'Original learner input':
+        'Texto original del residente',
+    'PATIENT STATE':
+        'ESTADO DEL PACIENTE',
+    'Page {page}':
+        'Página {page}',
+    'Patient state':
+        'Estado del paciente',
+    'Preservation goal':
+        'Objetivo de preservación',
+    'Problem':
+        'Problema',
+    'Prospective Adaptation Plan':
+        'Plan de adaptación prospectivo',
+    'Prospective commitment for a similar future encounter.':
+        'Compromiso prospectivo para un encuentro similar en el futuro.',
+    'Prospective learning intention brought into this repeat attempt.':
+        'Intención de aprendizaje prospectiva traída a este nuevo intento.',
+    'Reassessment':
+        'Reevaluación',
+    'Reassessment target':
+        'Objetivo de reevaluación',
+    'Reassessment targets':
+        'Objetivos de reevaluación',
+    'Reflective, non-scoring clinical management review':
+        'Revisión reflexiva del manejo clínico, sin puntaje',
+    'Retrospective learner reflection. These responses do not alter the Management Trace above.':
+        'Reflexión retrospectiva del residente. Estas respuestas no modifican la Management Trace anterior.',
+    'Retrospective learner reflection. These responses do not alter the Management Trace.':
+        'Reflexión retrospectiva del residente. Estas respuestas no modifican la Management Trace.',
+    'Review complete and ready to export.':
+        'Revisión completa y lista para exportar.',
+    'Review status:':
+        'Estado de la revisión:',
+    'Simulator:':
+        'Simulador:',
+    'Some reflection prompts or expert models were written for this case in English and are shown as written.':
+        'Algunas preguntas de reflexión o modelos expertos de este caso se escribieron en inglés y se muestran tal como están.',
+    'The frozen trace and current autosaved responses are exportable at any stage.':
+        'La traza congelada y las respuestas guardadas automáticamente se pueden exportar en cualquier etapa.',
+    'This report supports facilitated reflection and deliberate practice. It does not provide a score or replace clinical supervision.':
+        'Este informe apoya la reflexión guiada y la práctica deliberada. No entrega un puntaje ni reemplaza la supervisión clínica.',
+    'This review is reflective and non-scoring. The expert model is one defensible approach, not an answer key.':
+        'Esta revisión es reflexiva y sin puntaje. El modelo experto es un enfoque defendible, no una pauta de respuestas.',
+    'This trace is descriptive and non-scoring. It does not add reasoning that the learner did not explicitly state.':
+        'Esta traza es descriptiva y sin puntaje. No agrega razonamiento que el residente no haya expresado explícitamente.',
+    'Trade-off to manage':
+        'Compromiso que hay que manejar',
+    'What alternative action would you take?':
+        '¿Qué acción alternativa tomarías?',
+    'What finding or threshold should influence your next priority?':
+        '¿Qué hallazgo o umbral debería influir en tu siguiente prioridad?',
+    'What response would you expect, and what would you reassess?':
+        '¿Qué respuesta esperarías y qué reevaluarías?',
+    'What will you change or preserve next time?':
+        '¿Qué cambiarás o mantendrás la próxima vez?',
+    'Where did your reasoning align with this model?':
+        '¿En qué coincidió tu razonamiento con este modelo?',
+    'advice to the patient':
+        'indicación al paciente',
+    'conditional plan; not executed now':
+        'plan condicional; no se ejecutó ahora',
+    'indicated; administration and effect not modelled':
+        'indicado; administración y efecto no modelados',
+    'prescription for home; not a dose given here':
+        'receta para el domicilio; no es una dosis administrada aquí',
+    'recognized; not yet executable':
+        'reconocido; todavía no ejecutable',
+    '{time} | Decision {number}':
+        '{time} | Decisión {number}',
+    "Reasoning clarification:":
+        "Aclaración del razonamiento:",
+    "Comparison point":
+        "Punto de comparación",
+    "Review prompt":
+        "Pregunta de revisión",
+    '{time} · Decision {number}':
+        '{time} · Decisión {number}',
+    'Review your management model':
+        'Revisa tu modelo de manejo',
+    'What response did you expect, what did you observe, and how would those observations influence your next priority?':
+        '¿Qué respuesta esperabas, qué observaste y cómo influirían esas observaciones en tu siguiente prioridad?',
+    'Reasoning not explicitly stated':
+        'Razonamiento no expresado explícitamente',
+    'No management reasoning was explicitly stated. What problem representation, priority, and expected effect were guiding this action?':
+        'No se expresó explícitamente un razonamiento de manejo. ¿Qué representación del problema, qué prioridad y qué efecto esperado guiaban esta acción?',
+    'Reasoning across decisions':
+        'Razonamiento a lo largo de las decisiones',
+    'You made several management decisions without explicitly stating the reasoning guiding them. Looking back across this sequence, what problem representation and management priorities drove your actions, and when did your working model change?':
+        'Tomaste varias decisiones de manejo sin expresar explícitamente el razonamiento que las guiaba. Mirando esta secuencia en retrospectiva, ¿qué representación del problema y qué prioridades de manejo guiaron tus acciones, y cuándo cambió tu modelo de trabajo?',
 }
 TABLES = {"es": ES}

@@ -26,6 +26,23 @@ tree = ast.parse(source)
 selected = {
     "_pdf_safe_text",
     "_review_pdf",
+    # The record in its encounter's language (Idioma 4a, 2026-09-27): the helpers it calls.
+    "_review_pdf_in",
+    "_record_words",
+    "_record_reader",
+    "_record_language",
+    "_record_case",
+    "_record_heading",
+    "_record_prompt_label",
+    "_record_prompt",
+    "_record_slot",
+    "_record_input",
+    "_record_state",
+    "_record_deltas",
+    "_record_diagnostics",
+    "_trace_action_words",
+    "_record_model",
+    "_record_in_english",
 }
 nodes = [
     node for node in tree.body

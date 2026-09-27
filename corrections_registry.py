@@ -858,6 +858,53 @@ CORRECTIONS = (
                   "test_image_identities.py::test_between_two_who_fit_the_nearer_body_comes_first"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-27-05",
+        "date": "2026-09-27",
+        "title": "El registro completo del encuentro (PDF y Markdown de la revisión) se escribe en el idioma del encuentro",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("El cuarto PDF, el registro original completo con su revisión de decisiones, comparación experta y "
+                   "plan de adaptación, seguía sólo en inglés. Ahora se escribe en el idioma en que se jugó el encuentro, "
+                   "con un selector para elegir el otro; el JSON sigue siendo el registro tal como se guardó. Las "
+                   "palabras propias del documento salen del catálogo revisado; las preguntas de reflexión y el modelo "
+                   "experto de los encuentros del currículo se componen de nuevo desde la misma evidencia, con las "
+                   "palabras del residente citadas tal como las escribió; lo que un caso antiguo escribió en inglés se "
+                   "muestra así y el documento lo dice. El inglés queda idéntico."),
+        "authorised_by": INSTRUCTION_2026_09_26C,
+        "affects": {"modules": ["app", "cognitive_review", "report_language", "language"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_review_record_language.py::test_the_record_follows_its_encounter_s_language_unless_its_reader_chooses",
+                  "test_review_record_language.py::test_a_spanish_record_says_its_own_words_in_spanish",
+                  "test_review_record_language.py::test_the_resident_s_words_stay_as_written_and_are_quoted_when_cited",
+                  "test_review_record_language.py::test_the_expert_model_is_composed_again_from_the_same_evidence",
+                  "test_review_record_language.py::test_a_prompt_written_in_english_for_its_case_is_shown_as_written_and_said_so",
+                  "test_review_record_language.py::test_every_word_the_record_writes_can_be_said_in_spanish"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-27-06",
+        "date": "2026-09-27",
+        "title": "Un informe de examen dice su propia estructura en español, y una imagen se realiza, no se toma como muestra",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("En la sala y en los documentos en español, la estructura de los informes seguía en inglés: las "
+                   "secciones y etiquetas del POCUS («HEART», «LV contractility:») y campos de laboratorio como «WBC "
+                   "(K/µL)». Con los hallazgos de un caso aprobado en español (case_text), cada línea del POCUS habría "
+                   "mezclado los dos idiomas. Las etiquetas se traducen donde el informe las escribe, nunca dentro de "
+                   "los hallazgos. Además, la ecografía renal, el eFAST y la radiografía de pelvis decían «Sample "
+                   "obtained at minute» («Muestra tomada»), como si fueran una muestra: ahora dicen «Performed» "
+                   "(«Realizado»), igual que las demás imágenes. Sólo cambia el texto de encuentros nuevos."),
+        "authorised_by": INSTRUCTION_2026_09_26C,
+        "affects": {"modules": ["language", "family_reports"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_study_reports_in_spanish.py::test_every_study_name_and_field_label_has_its_spanish",
+                  "test_study_reports_in_spanish.py::test_a_pocus_report_has_no_english_structure",
+                  "test_study_reports_in_spanish.py::test_imaging_is_performed_and_only_a_specimen_is_sampled_in_both_languages",
+                  "test_study_reports_in_spanish.py::test_an_approved_case_reads_its_reports_wholly_in_spanish",
+                  "test_family_report_wording.py::test_only_a_specimen_is_a_sample"],
+        "preservation": None,
+    },
 )
 
 

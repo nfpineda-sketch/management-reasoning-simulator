@@ -11,6 +11,7 @@ from family_reports import format_administration, format_result
 @pytest.mark.parametrize("test_id, verb", [
     ("chest_xray", "Performed"), ("ecg", "Performed"), ("ctpa", "Performed"),
     ("head_ct", "Performed"), ("temperature", "Measured"),
+    ("renal_ultrasound", "Performed"), ("efast", "Performed"), ("pelvis_xray", "Performed"),
     ("lactate", "Sample obtained"), ("vbg", "Sample obtained"), ("blood_cultures", "Sample obtained"),
 ])
 def test_only_a_specimen_is_a_sample(test_id, verb):

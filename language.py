@@ -195,19 +195,36 @@ MESSAGES = {
 # never be replaced inside a longer sentence (faculty, 2026-09-26).
 OBSERVED_VALUES_ES = {
     "Alert": "Alerta", "Drowsy": "Somnoliento", "Obtunded": "Obnubilado", "Unresponsive": "Sin respuesta",
-    "Confused": "Confuso", "Agitated": "Agitado", "Normal": "Normal", "Increased": "Aumentado",
-    "Mildly increased": "Levemente aumentado", "Markedly increased": "Muy aumentado", "Reduced": "Reducido",
+    "Confused": "Confuso", "Agitated": "Agitado", "Sedated": "Sedado",
+    "Sedated after intubation": "Sedado tras la intubación", "Normal": "Normal",
+    "Increased": "Aumentado", "Mildly increased": "Levemente aumentado", "Markedly increased": "Muy aumentado",
+    "Severe": "Severo", "Ventilator-supported": "Con soporte ventilatorio", "Reduced": "Reducido",
     "Absent": "Ausente", "Warm": "Tibias", "Cool": "Frías", "Cold": "Heladas", "Very cold": "Muy frías",
-    "Mottled": "Moteadas", "Yes": "Sí", "No": "No",
+    "Mottled": "Moteadas", "Mottled/cold": "Moteadas/heladas", "Yes": "Sí", "No": "No",
+    # The rhythms the engine names by their English initials, by their Spanish ones.
+    "AF": "FA", "VT": "TV", "VF": "FV", "PEA": "AESP",
 }
+#: The same values whatever their case: the trace keeps some lowercased ("cool").
+_OBSERVED_FOLDED = {key.lower(): value for key, value in OBSERVED_VALUES_ES.items()}
 
 
 def observed_value(text, language=None):
-    """One stored observation value in the reading language; anything else as ``say`` says it."""
+    """One stored observation value in the reading language; anything else as ``say`` says it.
+
+    A value stored in lower case ("cool") is said in lower case ("frías"); an
+    acronym keeps its capitals.
+    """
     language = language or current()
     if language == "en" or not text:
         return text
-    return OBSERVED_VALUES_ES.get(str(text).strip()) or say(text, language)
+    stripped = str(text).strip()
+    exact = OBSERVED_VALUES_ES.get(stripped)
+    if exact:
+        return exact
+    folded = _OBSERVED_FOLDED.get(stripped.lower())
+    if folded:
+        return folded.lower() if stripped == stripped.lower() and not folded.isupper() else folded
+    return say(text, language)
 
 
 # Ordered substitutions: the composable fragments the engine assembles its
@@ -348,6 +365,45 @@ _RULES = (
   "Usa tus propias palabras, o completa los inicios de frase en pantalla."),
  (r"You do not need to repeat the order\.", "No necesitas repetir la orden."),
  # --- investigations -------------------------------------------------------
+ # The fixed structure of every study report (family_reports, pocus_report):
+ # its names, its field labels and the POCUS sections. With a case's findings
+ # in Spanish (case_text), an English label left beside them would make the
+ # very mixed line decision 16 objects to (2026-09-26). Each label is anchored
+ # where the report writes it, never inside the findings.
+ (r"\bPOCUS · performed at minute (\d+(?:\.\d+)?)", r"POCUS · realizada en el minuto \1"),
+ (r"(?m)(?:^|(?<=\| )|(?<=: ))HEART(?=$| — )", "CORAZÓN"),
+ (r"(?m)(?:^|(?<=\| )|(?<=: ))INFERIOR VENA CAVA(?=$| — )", "VENA CAVA INFERIOR"),
+ (r"(?m)(?:^|(?<=\| )|(?<=: ))LUNGS(?=$| — )", "PULMONES"),
+ (r"(?m)(?:^|(?<=\| )|(?<=: ))VEINS · COMPRESSION(?=$| — )", "VENAS · COMPRESIÓN"),
+ (r"(?m)^ADDITIONAL FINDINGS$", "HALLAZGOS ADICIONALES"),
+ (r"(?:(?<=\| )|(?<=: ))Additional findings — ", "Hallazgos adicionales — "),
+ (r"(?<=· |— )LV contractility: ", "Contractilidad del VI: "),
+ (r"(?<=· |— )RV size and relation to LV: ", "Tamaño del VD y relación con el VI: "),
+ (r"(?<=· |— |: )Pericardium: ", "Pericardio: "),
+ (r"(?<=· |— |: )IVC: ", "VCI: "),
+ (r"(?<=· |— )Pleural sliding: ", "Deslizamiento pleural: "),
+ (r"(?<=· |— )B-lines: ", "Líneas B: "),
+ (r"(?<=· |— )Consolidation and pleural effusion: ", "Consolidación y derrame pleural: "),
+ (r"(?<=· |— )Aortic root: ", "Raíz aórtica: "),
+ (r"(?<=· |— )Descending thoracic aorta: ", "Aorta torácica descendente: "),
+ (r"(?<=· |— )Abdominal aorta: ", "Aorta abdominal: "),
+ (r"(?<=· |— )Femoral veins: ", "Venas femorales: "),
+ (r"(?<=· |— )Popliteal veins: ", "Venas poplíteas: "),
+ (r"(?<=: )Not documented\b", "No documentado"),
+ (r"(?<=· |: )LV: ", "VI: "), (r"(?<=· |: )RV: ", "VD: "), (r"(?<=· |: )Lungs: ", "Pulmones: "),
+ (r"(?<=· |: )Finding: ", "Hallazgo: "), (r"(?<=· |: )History: ", "Historia: "),
+ (r"\bFree T4 \(ng/dL\)", "T4 libre (ng/dL)"), (r"\bBase excess \(mmol/L\)", "Exceso de base (mmol/L)"),
+ (r"\bValue \(mmol/L\)", "Valor (mmol/L)"), (r"\bP/F ratio\b", "Relación P/F"),
+ (r"\bWBC \(K/µL\)", "Leucocitos (K/µL)"), (r"\bPlatelets \(K/µL\)", "Plaquetas (K/µL)"),
+ (r"\bCreatinine \(mg/dL\)", "Creatinina (mg/dL)"), (r"\bGlucose \(mg/dL\)", "Glucosa (mg/dL)"),
+ (r"\bCRP \(mg/L\)", "PCR (mg/L)"),
+ (r"\bThyroid function\b", "Pruebas tiroideas"), (r"\bKetones\b", "Cetonas"),
+ (r"(?m)^Toxicology:", "Panel toxicológico:"),
+ (r"\bRenal tract ultrasound\b", "Ecografía renal y de vías urinarias"),
+ (r"\bPelvis X-ray\b", "Radiografía de pelvis"),
+ (r"(?m)^Investigation:", "Examen:"),
+ (r"\bNo tracing could be acquired\.", "No se pudo obtener un trazado."),
+ (r"\bNo result has been recorded\.", "No se ha registrado ningún resultado."),
  (r"\bPerformed at minute (\d+)", r"Realizado en el minuto \1"),
  (r"\bSample obtained at minute (\d+)", r"Muestra tomada en el minuto \1"),
  (r"\bMeasured at minute (\d+)", r"Medido en el minuto \1"),

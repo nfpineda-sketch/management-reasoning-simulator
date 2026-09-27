@@ -889,8 +889,10 @@ def _patient_diagnostic_heading(label, result):
     time_min = (result or {}).get("time_min")
     return f"**{label} · {_trace_time(time_min)}**" if time_min is not None else f"**{label}**"
 
-def _trace_state_text(snapshot):
+def _trace_state_text(snapshot, language="en"):
     """Learner-facing observable state only; never expose hidden physiology."""
+    if language != "en":
+        return _trace_state_words(snapshot, language)
     o = (snapshot or {}).get("observable", {})
     tr = (snapshot or {}).get("treatments", {}) or {}
     parts = []
@@ -1001,6 +1003,93 @@ def _trace_state_text(snapshot):
         else:
             parts.append("Basic labs result available")
     return " · ".join(parts) if parts else "—"
+
+def _trace_state_words(snapshot, language):
+    """``_trace_state_text`` in another language (faculty, 2026-09-26).
+
+    The same observations in the same order; names in the reader's language,
+    numbers, units, modes and drug names as recorded (decision 16), a report's
+    structure and an approved case's findings as the room says them.
+    """
+    import language as languages
+    import report_presentation as presentation
+    o = (snapshot or {}).get("observable", {})
+    tr = (snapshot or {}).get("treatments", {}) or {}
+    parts = []
+    rhythm, hr = o.get("rhythm"), o.get("hr")
+    if rhythm and hr is not None:
+        parts.append(f"{languages.observed_value(rhythm, language)}, FC {hr}/min")
+    elif hr is not None:
+        parts.append(f"FC {hr}/min")
+    sbp, dbp = o.get("sbp"), o.get("dbp")
+    if sbp is not None and dbp is not None:
+        parts.append(f"PA {sbp}/{dbp}")
+    if o.get("crt") is not None:
+        parts.append(f"llene capilar {o.get('crt')} s")
+    for key in ("extremities", "mental_status"):
+        if o.get(key):
+            parts.append(languages.observed_value(str(o[key]).lower(), language))
+    spo2 = o.get("spo2")
+    if spo2 is not None:
+        parts.append(f"SpO₂ {spo2}%")
+        if tr.get("invasive_ventilation"):
+            parts.append(
+                f'{tr.get("ventilator_mode") or "VC/AC"} · '
+                f'FiO₂ {tr.get("ventilator_fio2_percent") or 40:g}% · '
+                f'PEEP {tr.get("ventilator_peep_cmh2o") or 5:g} cm H₂O'
+            )
+        elif tr.get("niv"):
+            fio2 = tr.get("niv_fio2_percent")
+            fio = f' · FiO₂ {fio2:g}%' if fio2 is not None else ""
+            if (tr.get("niv_mode") == "BiPAP" and tr.get("niv_ipap_cmh2o") is not None
+                    and tr.get("niv_epap_cmh2o") is not None):
+                parts.append(f'BiPAP {tr.get("niv_ipap_cmh2o"):g}/{tr.get("niv_epap_cmh2o"):g} cm H₂O{fio}')
+            else:
+                parts.append(f'{tr.get("niv_mode") or "VNI"} {tr.get("niv_pressure_cmh2o", 0):g} cm H₂O{fio}')
+        elif tr.get("oxygen"):
+            parts.append(presentation.action_phrase(
+                {"type": "oxygen", "device": tr.get("oxygen_device") or "",
+                 "flow_lpm": tr.get("oxygen_flow_lpm", 0)}, language))
+        else:
+            parts.append("aire ambiente")
+    if tr.get("norepinephrine"):
+        parts.append(f'Norepinephrine {tr.get("norepinephrine_rate", 0):g} '
+                     f'{tr.get("norepinephrine_units") or "mcg/kg/min"} en curso')
+    if tr.get("dobutamine"):
+        parts.append(f'Dobutamine {tr.get("dobutamine_rate", 0):g} '
+                     f'{tr.get("dobutamine_units") or "mcg/kg/min"} en curso')
+    if tr.get("nitroglycerin"):
+        parts.append(f'Nitroglycerin {tr.get("nitroglycerin_rate_mcg_min", 0):g} mcg/min en curso')
+    d = (snapshot or {}).get("diagnostics", {}) or {}
+    lact = d.get("lactate")
+    if lact and lact.get("value_mmol_l") is not None:
+        parts.append(f'Lactato {lact["value_mmol_l"]:.1f} mmol/L')
+    vbg = d.get("vbg")
+    if vbg and vbg.get("ph") is not None:
+        parts.append(f'Gases venosos: pH {vbg["ph"]:.2f}, pCO₂ {vbg.get("pco2_mm_hg"):g} mmHg, '
+                     f'HCO₃ {vbg.get("bicarbonate_mmol_l"):g} mmol/L')
+    abg = d.get("abg")
+    if abg and abg.get("ph") is not None:
+        parts.append(f'Gases arteriales: pH {abg["ph"]:.2f}, PaCO₂ {abg.get("paco2_mm_hg"):g} mmHg, '
+                     f'PaO₂ {abg.get("pao2_mm_hg"):g} mmHg, P/F {abg.get("pf_ratio"):g}')
+    pocus = d.get("pocus")
+    if pocus:
+        from pocus_report import format_pocus
+        sections = format_pocus(pocus, compact=True).splitlines()[1:]
+        parts.append("POCUS: " + languages.say(" | ".join(sections), language))
+    labs = d.get("basic_labs")
+    if labs:
+        lab_bits = []
+        if labs.get("wbc_k_ul") is not None:
+            lab_bits.append(f'leucocitos {labs["wbc_k_ul"]:g} K/µL')
+        if labs.get("bicarbonate_mmol_l") is not None:
+            lab_bits.append(f'HCO₃ {labs["bicarbonate_mmol_l"]:g} mmol/L')
+        if labs.get("creatinine_mg_dl") is not None:
+            lab_bits.append(f'creatinina {labs["creatinine_mg_dl"]:g} mg/dL')
+        parts.append("Laboratorio: " + ", ".join(lab_bits) if lab_bits
+                     else "Resultado de laboratorio básico disponible")
+    return " · ".join(parts) if parts else "—"
+
 
 def _trace_reasoning_text(reasoning):
     r = reasoning or {}
@@ -2507,8 +2596,13 @@ def _review_payload(
     attempt_number=1,
     carry_forward_plan=None,
     prior_attempt_summary=None,
+    encounter_language=None,
 ):
-    """Build the versioned, learner-facing Decision Review export payload."""
+    """Build the versioned, learner-facing Decision Review export payload.
+
+    ``encounter_language`` is the language the encounter was played in; its
+    record is written in it unless the reader chooses the other one.
+    """
     clean_trace = _strip_private_review_data(trace or [])
     clean_final_state = _strip_private_review_data(final_state or {})
     prompt_reviews = []
@@ -2565,6 +2659,7 @@ def _review_payload(
             "case_label": case_label,
             "closed_time_min": int(closed_time_min or 0),
             "final_patient_state": clean_final_state,
+            **({"encounter_language": encounter_language} if encounter_language in ("en", "es") else {}),
         },
         "learning_cycle": {
             "attempt_number": max(1, int(attempt_number or 1)),
@@ -2602,36 +2697,224 @@ def _review_payload(
     }
 
 
-def _review_markdown(payload):
-    """Render a portable Markdown review without hidden engine state."""
+def _record_words(text, **values):
+    """The Decision Review record's own words in the language it is being written in.
+
+    English returns the text as it always was. A record in Spanish reads the
+    reviewed catalog (report_language), with its values named so Spanish can
+    order them. The resident's words and the clinical identifiers never pass
+    through here (faculty, 2026-09-26).
+    """
+    import language as languages
+    import report_language
+    said = report_language.t(text, languages.current())
+    return said.format(**values) if values else said
+
+
+def _record_reader():
+    """The language the record is being written in (``language.presenting``)."""
+    import language as languages
+    return languages.current()
+
+
+def _record_language(payload, language=None):
+    """A record's language: the one asked for, else its encounter's, else the reader's."""
+    import language as languages
+    if language in languages.LANGUAGES:
+        return language
+    recorded = ((payload or {}).get("encounter") or {}).get("encounter_language")
+    return recorded if recorded in languages.LANGUAGES else languages.current()
+
+
+def _record_case(payload):
+    """The bank case the record's encounter was played on, for its approved narrative (case_text)."""
+    return str(((payload or {}).get("encounter") or {}).get("authored_case_id") or "")
+
+
+def _record_heading(heading):
+    """A review point's heading ("00:12 · Decision 4") in the record's language."""
+    if _record_reader() == "en":
+        return heading
+    text = str(heading or "")
+    match = re.fullmatch(r"(.+) · Decision (\d+)", text)
+    if match:
+        return _record_words("{time} · Decision {number}", time=match[1], number=match[2])
+    match = re.fullmatch(r"Across Decisions (\S+)–(\S+) · (.+)", text)
+    if match:
+        return _record_words("Across Decisions {first}–{last} · {times}",
+                             first=match[1], last=match[2], times=match[3])
+    return _record_words(text)
+
+
+def _record_prompt_label(label):
+    """A review prompt's label in the record's language."""
+    if _record_reader() == "en":
+        return label
+    from cognitive_review import LABELS_ES
+    return LABELS_ES.get(str(label)) or _record_words(str(label))
+
+
+def _record_prompt(text):
+    """A stored review prompt in the record's language, the resident's words quoted as written."""
+    reader = _record_reader()
+    if reader == "en":
+        return text
+    from cognitive_review import prompt_in
+    return prompt_in(text, reader) or _record_words(str(text or ""))
+
+
+def _record_slot(label):
+    """A reasoning slot's name in the record's language, with the note a composed slot carries."""
+    if _record_reader() == "en":
+        return label
+    base, separator, note = str(label).partition(" · ")
+    return _record_words(base) + (_record_words(separator + note) if separator else "")
+
+
+def _record_input(text):
+    """The resident's own entry, as written; only the app's label for a later clarification is said in the record's language."""
+    text = str(text or "")
+    if _record_reader() == "en":
+        return text
+    return text.replace("\n\nReasoning clarification: ", "\n\n" + _record_words("Reasoning clarification:") + " ")
+
+
+def _record_state(snapshot):
+    """The patient's observable state at a decision, in the record's language."""
+    reader = _record_reader()
+    return _trace_state_text(snapshot) if reader == "en" else _trace_state_text(snapshot, reader)
+
+
+def _record_deltas(before, after, reasoning=None):
+    """What changed between a decision and its response, named and valued in the record's language."""
+    deltas = _trace_observable_delta(before, after, reasoning)
+    if _record_reader() == "en":
+        return deltas
+    import language as languages
+    worded = {"Rhythm", "Extremities", "Mental status", "Work of breathing"}
+    return [(_record_words(label),
+             languages.observed_value(old) if label in worded else old,
+             languages.observed_value(new) if label in worded else new)
+            for label, old, new in deltas]
+
+
+def _record_diagnostics(event):
+    """The results reported in a decision's interval, as the room says them in the record's language."""
+    results = _trace_diagnostic_results(event)
+    if _record_reader() == "en":
+        return results
+    import language as languages
+    return [(time_text, languages.say(text)) for time_text, text in results]
+
+
+def _trace_action_words(event):
+    """A decision's executed actions in the record's language.
+
+    English keeps the record's own wording (``_trace_action_text``). Another
+    language writes each order from its fields, as the Management Trace does
+    (``report_presentation.action_phrase``); what was recognised and not
+    executed keeps the resident's words, quoted, with what it was.
+    """
+    reader = _record_reader()
+    if reader == "en":
+        return _trace_action_text(event)
+    import report_presentation as presentation
+    import unexecuted_items
+    summaries = _summaries_in_learner_order(event.get("action_summaries") or [], event.get("learner_input", ""))
+    # "reassess" is the older name of the same order.
+    phrases = presentation.action_lines([{**summary, "type": "reassessment"} if summary.get("type") == "reassess"
+                                         else summary for summary in summaries if isinstance(summary, dict)], reader)
+    for item, kind_label in (unexecuted_items.trace_labels(event) if event.get("recognized_future_actions") else []):
+        if item:
+            phrases.append("«" + item + "» (" + _record_words(kind_label or "recognized; not yet executable") + ")")
+    if not phrases:
+        phrases = [presentation.action_phrase(action, reader) for action in event.get("interpreted_action") or []
+                   if isinstance(action, dict) and action.get("type") != "reassessment"]
+    return " + ".join(phrase for phrase in phrases if phrase) or _record_words("Reassessment")
+
+
+def _record_model(payload, comparison):
+    """The expert comparison model in the record's language.
+
+    For the curriculum's encounters the model is composed from the frozen trace
+    (``cognitive_review.trajectory_review``), so it is composed again in the
+    record's language from the same evidence. A model authored in English (the
+    legacy PS001/PS002 drafts) is shown as written; the record says so.
+    """
+    model = comparison.get("expert_model", {}) or {}
+    reader = _record_reader()
+    if reader == "en":
+        return model
+    prompts = (payload.get("decision_review", {}) or {}).get("prompts", []) or []
+    prompt = next((item for item in prompts if item.get("review_id") == comparison.get("review_id")), None)
+    events = (payload.get("management_trace", {}) or {}).get("events", []) or []
+    event = _event_for_review_prompt(prompt, events) if prompt else None
+    if event and str((event.get("state_before") or {}).get("case_id", "")).startswith("CE-"):
+        from cognitive_review import trajectory_review
+        composed = trajectory_review(event, source_decision=prompt.get("decision"), language=reader)
+        if composed:
+            return composed
+    return model
+
+
+def _record_in_english(payload):
+    """Whether a record in another language still shows prompts or models written for its case in English."""
+    if _record_reader() == "en":
+        return False
+    prompts = (payload.get("decision_review", {}) or {}).get("prompts", []) or []
+    for prompt in prompts:
+        if _record_prompt(prompt.get("prompt") or "") == (prompt.get("prompt") or "") and prompt.get("prompt"):
+            return True
+    comparison_block = payload.get("expert_comparison", {}) or {}
+    for comparison in (comparison_block.get("comparisons", []) if comparison_block.get("revealed") else []):
+        if _record_model(payload, comparison) is (comparison.get("expert_model", {}) or {}):
+            return True
+    return False
+
+
+def _review_markdown(payload, language=None):
+    """Render a portable Markdown review without hidden engine state.
+
+    ``language`` writes it in that language; by default the encounter's own
+    (``encounter_language``), else the reader's (faculty, 2026-09-26). The
+    resident's words stay as they wrote them, in whichever language.
+    """
+    import language as languages
+    with languages.presenting(_record_language(payload, language)), languages.narrating(_record_case(payload)):
+        return _review_markdown_in(payload)
+
+
+def _review_markdown_in(payload):
+    """The Markdown record, in the language ``_review_markdown`` set."""
+    w = _record_words
     encounter = payload.get("encounter", {})
     trace_block = payload.get("management_trace", {})
     lines = [
-        "# Management Reasoning Decision Review",
+        "# " + w("Management Reasoning Decision Review"),
         "",
-        f'- **Simulator:** Management Reasoning Simulator v{payload.get("simulator", {}).get("version", SIMULATOR_VERSION)}',
-        f'- **Case:** {encounter.get("case_label") or encounter.get("case_id") or "—"}',
-        f'- **Encounter closed:** {_trace_time(encounter.get("closed_time_min", 0))}',
-        f'- **Attempt:** {int((payload.get("learning_cycle", {}) or {}).get("attempt_number", 1))}',
-        f'- **Review status:** {"Complete" if payload.get("review_complete") else "Draft"}',
+        f'- **{w("Simulator:")}** Management Reasoning Simulator v{payload.get("simulator", {}).get("version", SIMULATOR_VERSION)}',
+        f'- **{w("Case:")}** {encounter.get("case_label") or encounter.get("case_id") or "—"}',
+        f'- **{w("Encounter closed:")}** {_trace_time(encounter.get("closed_time_min", 0))}',
+        f'- **{w("Attempt:")}** {int((payload.get("learning_cycle", {}) or {}).get("attempt_number", 1))}',
+        f'- **{w("Review status:")}** {w("Complete") if payload.get("review_complete") else w("Draft")}',
         "",
     ]
     carry_forward = (payload.get("learning_cycle", {}) or {}).get("carry_forward_plan", {}) or {}
     if any(str(carry_forward.get(field) or "").strip() for field, _ in ADAPTATION_PLAN_FIELDS):
         lines.extend([
-            "## Carry-Forward Plan",
+            "## " + w("Carry-Forward Plan"),
             "",
-            "Prospective learning intention brought into this repeat attempt.",
+            w("Prospective learning intention brought into this repeat attempt."),
             "",
         ])
         for field, label in ADAPTATION_PLAN_FIELDS:
-            lines.extend([f'**{label}**', "", str(carry_forward.get(field) or "—"), ""])
+            lines.extend([f'**{w(label)}**', "", str(carry_forward.get(field) or "—"), ""])
     lines.extend([
         "## Management Trace",
         "",
-        "> " + str(trace_block.get("definition") or MANAGEMENT_TRACE_DEFINITION),
+        "> " + w(str(trace_block.get("definition") or MANAGEMENT_TRACE_DEFINITION)),
         "",
-        "This trace is descriptive and non-scoring. It does not add reasoning that the learner did not explicitly state.",
+        w("This trace is descriptive and non-scoring. It does not add reasoning that the learner did not explicitly state."),
         "",
     ])
     events = [
@@ -2639,136 +2922,139 @@ def _review_markdown(payload):
         if event.get("execution_status") in {"executed", "terminal_locked"}
     ]
     if not events:
-        lines.extend(["No executed management decisions were recorded.", ""])
+        lines.extend([w("No executed management decisions were recorded."), ""])
     for index, event in enumerate(events, 1):
         before = event.get("state_before") or {}
         after = event.get("state_after") or {}
         response_time = after.get("sim_time_min", event.get("response_time_min", 0))
         lines.extend([
-            f'### {_trace_time(event.get("decision_time_min", 0))} · Decision {index}',
+            "### " + w("{time} · Decision {number}", time=_trace_time(event.get("decision_time_min", 0)), number=index),
             "",
-            "**Patient state**",
+            f'**{w("Patient state")}**',
             "",
-            _trace_state_text(before),
+            _record_state(before),
             "",
-            "**Management reasoning**",
+            f'**{w("Management reasoning")}**',
             "",
         ])
         reasoning_items = _trace_reasoning_items(event.get("reasoning"))
         if reasoning_items:
             for label, value in reasoning_items:
-                lines.append(f'- **{label}:** {value}')
+                lines.append(f'- **{_record_slot(label)}:** {value}')
         else:
-            lines.append("*Not explicitly stated*")
+            lines.append("*" + w("Not explicitly stated") + "*")
         lines.extend([
             "",
-            "**Original learner input**",
+            f'**{w("Original learner input")}**',
             "",
-            str(event.get("learner_input") or "—"),
+            _record_input(event.get("learner_input")) or "—",
             "",
-            "**Action**",
+            f'**{w("Action")}**',
             "",
-            _trace_action_text(event),
+            _trace_action_words(event),
             "",
-            f'**Observed response · {_trace_time(response_time)}**',
+            "**" + w("Observed response · {time}", time=_trace_time(response_time)) + "**",
             "",
         ])
-        deltas = _trace_observable_delta(before, after, event.get("reasoning"))
-        diagnostics = _trace_diagnostic_results(event)
+        deltas = _record_deltas(before, after, event.get("reasoning"))
+        diagnostics = _record_diagnostics(event)
         if deltas:
             for label, old, new in deltas:
                 lines.append(f'- **{label}:** {old} → {new}')
         if diagnostics:
             for time_text, result_text in diagnostics:
                 # Keep a multi-line report such as POCUS inside its list item.
-                lines.append(f'- **Diagnostic result · {time_text}:** ' + str(result_text).replace("\n", "  \n  "))
+                lines.append("- **" + w("Diagnostic result · {time}:", time=time_text) + "** "
+                             + str(result_text).replace("\n", "  \n  "))
         if not deltas and not diagnostics:
-            lines.append("*No material observable change recorded.*")
+            lines.append("*" + w("No material observable change recorded.") + "*")
         lines.append("")
 
     lines.extend([
-        "## Decision Review",
+        "## " + w("Decision Review"),
         "",
-        "Retrospective learner reflection. These responses do not alter the Management Trace above.",
+        w("Retrospective learner reflection. These responses do not alter the Management Trace above."),
         "",
     ])
     prompts = payload.get("decision_review", {}).get("prompts", [])
     if not prompts:
-        lines.extend(["No reflection prompt was generated.", ""])
+        lines.extend([w("No reflection prompt was generated."), ""])
     for prompt in prompts:
         lines.extend([
-            f'### {prompt.get("heading", "Review prompt")}',
+            f'### {_record_heading(prompt.get("heading", "Review prompt"))}',
             "",
-            f'*{prompt.get("label", "Reflection")}*',
+            f'*{_record_prompt_label(prompt.get("label", "Reflection"))}*',
             "",
-            str(prompt.get("prompt") or ""),
+            _record_prompt(str(prompt.get("prompt") or "")),
             "",
         ])
         answers = prompt.get("responses", {}) or {}
         for field, label in REVIEW_RESPONSE_FIELDS:
-            lines.extend([f'**{label}**', "", str(answers.get(field) or "*Not answered*"), ""])
+            lines.extend([f'**{w(label)}**', "", str(answers.get(field) or ("*" + w("Not answered") + "*")), ""])
 
     lines.extend([
-        "## Expert Comparison",
+        "## " + w("Expert Comparison"),
         "",
-        "One defensible expert reasoning model for comparison. It is non-scoring, is not an answer key, and requires faculty validation.",
+        w("One defensible expert reasoning model for comparison. It is non-scoring, is not an answer key, and requires faculty validation."),
         "",
     ])
     comparison_block = payload.get("expert_comparison", {}) or {}
     comparisons = comparison_block.get("comparisons", []) if comparison_block.get("revealed") else []
     if not comparisons:
-        lines.extend(["Expert comparison has not been revealed.", ""])
+        lines.extend([w("Expert comparison has not been revealed."), ""])
     for comparison in comparisons:
-        model = comparison.get("expert_model", {}) or {}
+        model = _record_model(payload, comparison)
         learner_comparison = comparison.get("learner_comparison", {}) or {}
         lines.extend([
-            f'### {comparison.get("heading", "Comparison point")}',
+            f'### {_record_heading(comparison.get("heading", "Comparison point"))}',
             "",
-            "**Expert framing**",
+            f'**{w("Expert framing")}**',
             "",
             str(model.get("framing") or "—"),
             "",
-            "**Management priority**",
+            f'**{w("Management priority")}**',
             "",
             str(model.get("priority") or "—"),
             "",
-            "**Key cues**",
+            f'**{w("Key cues")}**',
             "",
         ])
         for cue in model.get("cues", []) or []:
             lines.append("- " + str(cue))
         lines.extend([
             "",
-            "**One defensible action**",
+            f'**{w("One defensible action")}**',
             "",
             str(model.get("action") or "—"),
             "",
-            "**Trade-off to manage**",
+            f'**{w("Trade-off to manage")}**',
             "",
             str(model.get("tradeoff") or "—"),
             "",
-            "**Reassessment targets**",
+            f'**{w("Reassessment targets")}**',
             "",
             str(model.get("reassessment") or "—"),
             "",
         ])
         for field, label in EXPERT_COMPARISON_FIELDS:
-            lines.extend([f'**{label}**', "", str(learner_comparison.get(field) or "*Not answered*"), ""])
+            lines.extend([f'**{w(label)}**', "", str(learner_comparison.get(field) or ("*" + w("Not answered") + "*")), ""])
 
     lines.extend([
-        "## Adaptation Plan",
+        "## " + w("Adaptation Plan"),
         "",
-        "Prospective commitment for a similar future encounter.",
+        w("Prospective commitment for a similar future encounter."),
         "",
     ])
     plan = payload.get("adaptation_plan", {}) or {}
     for field, label in ADAPTATION_PLAN_FIELDS:
-        lines.extend([f'**{label}**', "", str(plan.get(field) or "*Not answered*"), ""])
+        lines.extend([f'**{w(label)}**', "", str(plan.get(field) or ("*" + w("Not answered") + "*")), ""])
     lines.extend([
         "---",
-        "This review is reflective and non-scoring. The expert model is one defensible approach, not an answer key.",
+        w("This review is reflective and non-scoring. The expert model is one defensible approach, not an answer key."),
         "",
     ])
+    if _record_in_english(payload):
+        lines[-1:-1] = [w("Some reflection prompts or expert models were written for this case in English and are shown as written.")]
     return "\n".join(lines)
 
 
@@ -2811,8 +3097,20 @@ def _pdf_safe_text(value):
     return text
 
 
-def _review_pdf(payload):
-    """Render a printable, privacy-safe PDF of the learner review record."""
+def _review_pdf(payload, language=None):
+    """Render a printable, privacy-safe PDF of the learner review record.
+
+    ``language`` writes it in that language; by default the encounter's own
+    (``encounter_language``), else the reader's (faculty, 2026-09-26). The
+    resident's words stay as they wrote them, in whichever language.
+    """
+    import language as languages
+    with languages.presenting(_record_language(payload, language)), languages.narrating(_record_case(payload)):
+        return _review_pdf_in(payload)
+
+
+def _review_pdf_in(payload):
+    """The PDF record, in the language ``_review_pdf`` set."""
     from pathlib import Path
     from xml.sax.saxutils import escape as xml_escape
 
@@ -2942,18 +3240,19 @@ def _review_pdf(payload):
 
     def paragraph(value, style=body_style):
         normalized = str(value or "").strip()
-        return Paragraph(safe(normalized or "Not recorded"), style)
+        return Paragraph(safe(normalized or _record_words("Not recorded")), style)
 
     def add_labeled_value(story, label, value, missing="Not answered"):
-        story.append(Paragraph(safe(label), label_style))
-        story.append(paragraph(value or missing))
+        story.append(Paragraph(safe(_record_words(label)), label_style))
+        story.append(paragraph(value or _record_words(missing)))
 
     encounter = payload.get("encounter", {}) or {}
     learning_cycle = payload.get("learning_cycle", {}) or {}
-    case_id = str(encounter.get("case_id") or "Encounter")
+    case_id = str(encounter.get("case_id") or _record_words("Encounter"))
     case_label = encounter.get("case_label") or case_id
     version = str((payload.get("simulator", {}) or {}).get("version") or SIMULATOR_VERSION)
-    status = "Complete" if payload.get("review_complete") else "Draft"
+    complete = bool(payload.get("review_complete"))
+    status = _record_words("Complete") if complete else _record_words("Draft")
 
     buffer = BytesIO()
     document = SimpleDocTemplate(
@@ -2963,9 +3262,9 @@ def _review_pdf(payload):
         rightMargin=0.62 * inch,
         topMargin=0.67 * inch,
         bottomMargin=0.58 * inch,
-        title=f"{case_id} Management Reasoning Decision Review",
+        title=f"{case_id} " + _record_words("Management Reasoning Decision Review"),
         author="Management Reasoning Simulator",
-        subject="Reflective, non-scoring clinical management review",
+        subject=_record_words("Reflective, non-scoring clinical management review"),
     )
 
     def draw_page_frame(canvas, doc):
@@ -2981,24 +3280,25 @@ def _review_pdf(payload):
         canvas.setFillColor(mid_gray)
         canvas.drawRightString(page_width - doc.rightMargin, page_height - 0.31 * inch, _pdf_safe_text(case_id))
         canvas.line(doc.leftMargin, 0.43 * inch, page_width - doc.rightMargin, 0.43 * inch)
-        canvas.drawString(doc.leftMargin, 0.25 * inch, "Educational simulation - reflective and non-scoring")
-        canvas.drawRightString(page_width - doc.rightMargin, 0.25 * inch, f"Page {doc.page}")
+        canvas.drawString(doc.leftMargin, 0.25 * inch, _record_words("Educational simulation - reflective and non-scoring"))
+        canvas.drawRightString(page_width - doc.rightMargin, 0.25 * inch, _record_words("Page {page}", page=doc.page))
         canvas.restoreState()
 
     story = [
-        Paragraph("Management Reasoning<br/>Decision Review", title_style),
+        Paragraph(_record_words("Management Reasoning<br/>Decision Review"), title_style),
         Paragraph(
-            "A portable record of the clinical trajectory, learner reflection, expert comparison, and prospective adaptation plan.",
+            _record_words("A portable record of the clinical trajectory, learner reflection, expert comparison, and prospective adaptation plan."),
             subtitle_style,
         ),
     ]
     metadata = [
-        [Paragraph("CASE", label_style), Paragraph("CLOSED", label_style), Paragraph("ATTEMPT", label_style), Paragraph("STATUS", label_style)],
+        [Paragraph(_record_words("CASE"), label_style), Paragraph(_record_words("CLOSED"), label_style),
+         Paragraph(_record_words("ATTEMPT"), label_style), Paragraph(_record_words("STATUS"), label_style)],
         [
             paragraph(case_label),
             paragraph(_trace_time(encounter.get("closed_time_min", 0))),
             paragraph(str(max(1, int(learning_cycle.get("attempt_number", 1) or 1)))),
-            Paragraph(safe(status), ParagraphStyle("MRS_Status", parent=body_style, fontName="MRS-Bold", textColor=colors.HexColor("#16743B") if status == "Complete" else colors.HexColor("#9A6700"))),
+            Paragraph(safe(status), ParagraphStyle("MRS_Status", parent=body_style, fontName="MRS-Bold", textColor=colors.HexColor("#16743B") if complete else colors.HexColor("#9A6700"))),
         ],
     ]
     metadata_table = Table(metadata, colWidths=[document.width * 0.46, document.width * 0.18, document.width * 0.16, document.width * 0.20])
@@ -3016,15 +3316,15 @@ def _review_pdf(payload):
 
     carry_forward = learning_cycle.get("carry_forward_plan", {}) or {}
     if any(str(carry_forward.get(field) or "").strip() for field, _ in ADAPTATION_PLAN_FIELDS):
-        story.append(Paragraph("Carry-Forward Plan", section_style))
-        story.append(Paragraph("Prospective learning intention brought into this repeat attempt.", small_style))
+        story.append(Paragraph(_record_words("Carry-Forward Plan"), section_style))
+        story.append(Paragraph(_record_words("Prospective learning intention brought into this repeat attempt."), small_style))
         for field, label in ADAPTATION_PLAN_FIELDS:
             add_labeled_value(story, label, carry_forward.get(field), missing="Not specified")
         story.append(PageBreak())
 
     trace_block = payload.get("management_trace", {}) or {}
     story.append(Paragraph("Management Trace", section_style))
-    definition_table = Table([[paragraph(trace_block.get("definition") or MANAGEMENT_TRACE_DEFINITION, small_style)]], colWidths=[document.width])
+    definition_table = Table([[paragraph(_record_words(str(trace_block.get("definition") or MANAGEMENT_TRACE_DEFINITION)), small_style)]], colWidths=[document.width])
     definition_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), pale_blue),
         ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor("#B9CCE0")),
@@ -3036,24 +3336,24 @@ def _review_pdf(payload):
     story.extend([
         definition_table,
         Spacer(1, 5),
-        Paragraph("Descriptive and non-scoring. No reasoning is added unless the learner explicitly stated it.", small_style),
+        Paragraph(_record_words("Descriptive and non-scoring. No reasoning is added unless the learner explicitly stated it."), small_style),
     ])
     events = [
         event for event in trace_block.get("events", [])
         if event.get("execution_status") in {"executed", "terminal_locked"}
     ]
     if not events:
-        story.append(paragraph("No executed management decisions were recorded."))
+        story.append(paragraph(_record_words("No executed management decisions were recorded.")))
     for index, event in enumerate(events, 1):
         before = event.get("state_before") or {}
         after = event.get("state_after") or {}
         response_time = after.get("sim_time_min", event.get("response_time_min", 0))
-        heading = f'{_trace_time(event.get("decision_time_min", 0))} | Decision {index}'
+        heading = _record_words("{time} | Decision {number}", time=_trace_time(event.get("decision_time_min", 0)), number=index)
         story.append(CondPageBreak(3.15 * inch))
         story.append(KeepTogether([
             Paragraph(safe(heading), decision_style),
             Table(
-                [[Paragraph("PATIENT STATE", label_style), paragraph(_trace_state_text(before))]],
+                [[Paragraph(_record_words("PATIENT STATE"), label_style), paragraph(_record_state(before))]],
                 colWidths=[document.width * 0.18, document.width * 0.82],
                 style=TableStyle([
                     ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FAFBFC")),
@@ -3066,70 +3366,70 @@ def _review_pdf(payload):
                 ]),
             ),
         ]))
-        story.append(Paragraph("Management reasoning", label_style))
+        story.append(Paragraph(_record_words("Management reasoning"), label_style))
         reasoning_items = _trace_reasoning_items(event.get("reasoning"))
         if reasoning_items:
             for label, value in reasoning_items:
-                story.append(Paragraph(f"<b>{safe(label)}:</b> {safe(value)}", body_style))
+                story.append(Paragraph(f"<b>{safe(_record_slot(label))}:</b> {safe(value)}", body_style))
         else:
-            story.append(Paragraph("<i>Not explicitly stated</i>", body_style))
-        add_labeled_value(story, "Original learner input", event.get("learner_input"), missing="Not recorded")
-        add_labeled_value(story, "Action", _trace_action_text(event), missing="No executed action recorded")
-        response_story = [Paragraph(safe(f"Observed response | {_trace_time(response_time)}"), label_style)]
-        deltas = _trace_observable_delta(before, after, event.get("reasoning"))
-        diagnostics = _trace_diagnostic_results(event)
+            story.append(Paragraph("<i>" + _record_words("Not explicitly stated") + "</i>", body_style))
+        add_labeled_value(story, "Original learner input", _record_input(event.get("learner_input")), missing="Not recorded")
+        add_labeled_value(story, "Action", _trace_action_words(event), missing="No executed action recorded")
+        response_story = [Paragraph(safe(_record_words("Observed response | {time}", time=_trace_time(response_time))), label_style)]
+        deltas = _record_deltas(before, after, event.get("reasoning"))
+        diagnostics = _record_diagnostics(event)
         if deltas:
             for label, old, new in deltas:
                 response_story.append(Paragraph(f"- <b>{safe(label)}:</b> {safe(old)} -&gt; {safe(new)}", body_style))
         if diagnostics:
             for time_text, result_text in diagnostics:
-                response_story.append(Paragraph(f"- <b>Diagnostic result | {safe(time_text)}:</b> " + safe(result_text).replace("\n", "<br/>"), body_style))
+                response_story.append(Paragraph("- <b>" + safe(_record_words("Diagnostic result | {time}:", time=time_text)) + "</b> " + safe(result_text).replace("\n", "<br/>"), body_style))
         if not deltas and not diagnostics:
-            response_story.append(Paragraph("<i>No material observable change recorded.</i>", body_style))
+            response_story.append(Paragraph("<i>" + _record_words("No material observable change recorded.") + "</i>", body_style))
         story.append(KeepTogether(response_story))
         story.append(Spacer(1, 5))
 
     story.append(PageBreak())
-    story.append(Paragraph("Decision Review", section_style))
-    story.append(Paragraph("Retrospective learner reflection. These responses do not alter the Management Trace.", small_style))
+    story.append(Paragraph(_record_words("Decision Review"), section_style))
+    story.append(Paragraph(_record_words("Retrospective learner reflection. These responses do not alter the Management Trace."), small_style))
     prompts = (payload.get("decision_review", {}) or {}).get("prompts", []) or []
     if not prompts:
-        story.append(paragraph("No reflection prompt was generated."))
+        story.append(paragraph(_record_words("No reflection prompt was generated.")))
     for prompt in prompts:
         story.append(CondPageBreak(2.9 * inch))
-        story.append(Paragraph(safe(prompt.get("heading") or "Review prompt"), decision_style))
+        story.append(Paragraph(safe(_record_heading(prompt.get("heading") or "Review prompt")), decision_style))
         if prompt.get("label"):
-            story.append(Paragraph(f"<i>{safe(prompt.get('label'))}</i>", body_style))
-        story.append(paragraph(prompt.get("prompt"), small_style))
+            story.append(Paragraph(f"<i>{safe(_record_prompt_label(prompt.get('label')))}</i>", body_style))
+        story.append(paragraph(_record_prompt(prompt.get("prompt")), small_style))
         answers = prompt.get("responses", {}) or {}
         for field, label in REVIEW_RESPONSE_FIELDS:
             add_labeled_value(story, label, answers.get(field))
 
     story.append(PageBreak())
-    story.append(Paragraph("Expert Comparison", section_style))
+    story.append(Paragraph(_record_words("Expert Comparison"), section_style))
     story.append(Paragraph(
-        "One defensible expert reasoning model for comparison. It is non-scoring, is not an answer key, and requires faculty validation.",
+        _record_words("One defensible expert reasoning model for comparison. It is non-scoring, is not an answer key, and requires faculty validation."),
         small_style,
     ))
     comparison_block = payload.get("expert_comparison", {}) or {}
     comparisons = comparison_block.get("comparisons", []) if comparison_block.get("revealed") else []
     if not comparisons:
-        story.append(paragraph("Expert comparison has not been revealed."))
+        story.append(paragraph(_record_words("Expert comparison has not been revealed.")))
     for comparison in comparisons:
-        model = comparison.get("expert_model", {}) or {}
+        model = _record_model(payload, comparison)
         learner_comparison = comparison.get("learner_comparison", {}) or {}
         comparison_story = [
-            Paragraph(safe(comparison.get("heading") or "Comparison point"), decision_style)
+            Paragraph(safe(_record_heading(comparison.get("heading") or "Comparison point")), decision_style)
         ]
         add_labeled_value(comparison_story, "Expert framing", model.get("framing"), missing="Not specified")
         add_labeled_value(comparison_story, "Management priority", model.get("priority"), missing="Not specified")
-        comparison_story.append(Paragraph("Key cues", label_style))
+        comparison_story.append(Paragraph(_record_words("Key cues"), label_style))
         cues = model.get("cues", []) or []
         if cues:
             for cue in cues:
                 comparison_story.append(Paragraph(f"- {safe(cue)}", body_style))
         else:
-            comparison_story.append(paragraph("Not specified", body_style))
+            comparison_story.append(paragraph(_record_words("Not specified"), body_style))
         add_labeled_value(comparison_story, "One defensible action", model.get("action"), missing="Not specified")
         add_labeled_value(comparison_story, "Trade-off to manage", model.get("tradeoff"), missing="Not specified")
         add_labeled_value(comparison_story, "Reassessment targets", model.get("reassessment"), missing="Not specified")
@@ -3139,14 +3439,14 @@ def _review_pdf(payload):
         story.append(Spacer(1, 6))
 
     story.append(PageBreak())
-    story.append(Paragraph("Prospective Adaptation Plan", section_style))
-    story.append(Paragraph("A learner-authored commitment for a similar future encounter.", small_style))
+    story.append(Paragraph(_record_words("Prospective Adaptation Plan"), section_style))
+    story.append(Paragraph(_record_words("A learner-authored commitment for a similar future encounter."), small_style))
     plan = payload.get("adaptation_plan", {}) or {}
     plan_rows = []
     for field, label in ADAPTATION_PLAN_FIELDS:
         plan_rows.append([
-            Paragraph(safe(label), label_style),
-            paragraph(plan.get(field) or "Not answered"),
+            Paragraph(safe(_record_words(label)), label_style),
+            paragraph(plan.get(field) or _record_words("Not answered")),
         ])
     plan_table = Table(plan_rows, colWidths=[document.width * 0.28, document.width * 0.72], repeatRows=0)
     plan_table.setStyle(TableStyle([
@@ -3163,7 +3463,7 @@ def _review_pdf(payload):
     story.extend([plan_table, Spacer(1, 12)])
     closing_table = Table(
         [[Paragraph(
-            safe("Review complete and ready to export." if payload.get("review_complete") else "Draft review - incomplete fields remain."),
+            safe(_record_words("Review complete and ready to export.") if payload.get("review_complete") else _record_words("Draft review - incomplete fields remain.")),
             centered_small_style,
         )]],
         colWidths=[document.width],
@@ -3180,10 +3480,14 @@ def _review_pdf(payload):
         closing_table,
         Spacer(1, 9),
         Paragraph(
-            "This report supports facilitated reflection and deliberate practice. It does not provide a score or replace clinical supervision.",
+            _record_words("This report supports facilitated reflection and deliberate practice. It does not provide a score or replace clinical supervision."),
             centered_small_style,
         ),
     ])
+    if _record_in_english(payload):
+        story.append(Paragraph(safe(_record_words(
+            "Some reflection prompts or expert models were written for this case in English and are shown as written.")),
+            centered_small_style))
 
     document.build(story, onFirstPage=draw_page_frame, onLaterPages=draw_page_frame)
     return buffer.getvalue()
@@ -3539,18 +3843,25 @@ def _render_export_controls(
         st.session_state.get("attempt_number", 1),
         st.session_state.get("carry_forward_plan", {}),
         st.session_state.get("prior_attempt_summary"),
+        encounter_language=st.session_state.get("encounter_language"),
     )
     case_id = str((final_state or {}).get("case_id") or "encounter").lower()
-    with st.expander("Complete original encounter record · PDF, Markdown and JSON", expanded=False):
+    with st.expander(_record_words("Complete original encounter record · PDF, Markdown and JSON"), expanded=False):
+        # The PDF and the Markdown in the encounter's language, or the other one;
+        # the JSON is the record itself and stays as stored (faculty, 2026-09-26).
+        import document_language
+        choice = document_language.choose(f"review_record_language_{location}",
+                                          {"encounter_language": st.session_state.get("encounter_language")})
         info, col_pdf, col_md, col_json = st.columns([1.9, 1, 1, 1])
         with info:
-            status = "Complete review" if payload.get("review_complete") else "Draft export available"
+            status = (_record_words("Complete review") if payload.get("review_complete")
+                      else _record_words("Draft export available"))
             st.markdown("**" + status + "**")
-            st.caption("The frozen trace and current autosaved responses are exportable at any stage.")
+            st.caption(_record_words("The frozen trace and current autosaved responses are exportable at any stage."))
         with col_pdf:
             st.download_button(
-                "Download PDF",
-                data=_review_pdf(payload),
+                _record_words("Download PDF"),
+                data=_review_pdf(payload, language=choice),
                 file_name=f"{case_id}_decision_review_v0819.pdf",
                 mime="application/pdf",
                 use_container_width=True,
@@ -3558,8 +3869,8 @@ def _render_export_controls(
             )
         with col_md:
             st.download_button(
-                "Download Markdown",
-                data=_review_markdown(payload),
+                _record_words("Download Markdown"),
+                data=_review_markdown(payload, language=choice),
                 file_name=f"{case_id}_decision_review_v0819.md",
                 mime="text/markdown",
                 use_container_width=True,
@@ -3567,7 +3878,7 @@ def _render_export_controls(
             )
         with col_json:
             st.download_button(
-                "Download JSON",
+                _record_words("Download JSON"),
                 data=_review_json(payload),
                 file_name=f"{case_id}_decision_review_v0819.json",
                 mime="application/json",

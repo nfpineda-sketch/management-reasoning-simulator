@@ -38,6 +38,8 @@ TIMING_VERBS = {
     "chest_xray": "Performed", "head_ct": "Performed", "abdominal_ct": "Performed",
     "ctpa": "Performed", "ecg": "Performed", "temperature": "Measured",
     "ecg_right": "Performed", "ecg_posterior": "Performed",
+    # Imaging added later, which read "Sample obtained" until 2026-09-27.
+    "renal_ultrasound": "Performed", "efast": "Performed", "pelvis_xray": "Performed",
 }
 
 

@@ -34,6 +34,23 @@ selected_functions = {
     "_review_is_complete",
     "_review_payload",
     "_review_markdown",
+    # The record in its encounter's language (Idioma 4a, 2026-09-27): the helpers it calls.
+    "_review_markdown_in",
+    "_record_words",
+    "_record_reader",
+    "_record_language",
+    "_record_case",
+    "_record_heading",
+    "_record_prompt_label",
+    "_record_prompt",
+    "_record_slot",
+    "_record_input",
+    "_record_state",
+    "_record_deltas",
+    "_record_diagnostics",
+    "_trace_action_words",
+    "_record_model",
+    "_record_in_english",
     "begin_repeat_encounter",
 }
 selected_constants = {
