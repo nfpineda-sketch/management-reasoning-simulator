@@ -24,6 +24,12 @@ from rubric_store import RubricStore
 from screen_language import rows as _rows, t as _t
 
 STAFF = {"faculty", "admin"}
+
+
+def _domain_title(domain):
+    """The domain's reviewed Spanish title when the screen is in Spanish (rubric.DOMAINS)."""
+    import language
+    return DOMAINS[domain]["title_es" if language.current() == "es" else "title"]
 _CHOICES = [0, 1, 2, 3, NOT_ASSESSABLE]
 
 
@@ -193,7 +199,7 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
             proposed = suggestion.get("score")
             # Decisions on screen are D1, D2, D3. A rubric domain is spelled out
             # so the two cannot be read as the same thing.
-            st.markdown(_t('**Domain {v0} · {v1}**', v0=domain[1:], v1=DOMAINS[domain]['title']))
+            st.markdown(_t('**Domain {v0} · {v1}**', v0=domain[1:], v1=_domain_title(domain)))
             st.caption(DOMAINS[domain]["asks"])
             with st.popover(_t('Descriptors for domain {v0}', v0=domain[1:])):
                 for level, text in sorted(DOMAINS[domain]["levels"].items()):
@@ -469,7 +475,7 @@ def render_rubric_profile(context, user_id=None, *, language="en", training_year
         for alert in summary["alerts"]:
             st.caption(_t('⚠ {v0} · confirmed {v1}', v0=alert['event_id'], v1=_when(alert['confirmed_at'])))
     if summary["weakest"]:
-        st.caption(_t('Lowest mean: domain {v0} · {v1}. This is where the shape is pulled in, not a judgement about the resident.', v0=summary['weakest'][1:], v1=DOMAINS[summary['weakest']]['title']))
+        st.caption(_t('Lowest mean: domain {v0} · {v1}. This is where the shape is pulled in, not a judgement about the resident.', v0=summary['weakest'][1:], v1=_domain_title(summary['weakest'])))
     _render_results(summary)
     return summary
 
