@@ -167,6 +167,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-27-08 | El portal del residente, la pantalla de la Management Trace y el registro de la sala en el idioma de quien lee | general | policy | cosmetic | — |
 | C-2026-09-27-09 | Los portales docentes, la rúbrica, el progreso, el banco de imágenes, las cuentas y el currículo en el idioma de quien lee | general | policy | cosmetic | — |
 | C-2026-09-27-10 | Los descriptores de la rúbrica en español, sólo después de la aprobación docente de cada dominio | general | policy | cosmetic | — |
+| C-2026-09-27-11 | Revisión docente de la traducción de la rúbrica: redacción, orientación frente a indicación, ayuda y autonomía, D4 frente a D5 | general | policy | cosmetic | — |
 
 ## La batería, configuración por configuración
 

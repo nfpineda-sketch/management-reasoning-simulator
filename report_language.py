@@ -390,7 +390,7 @@ ES = {
     'Procedural sedation':
         'Sedación para procedimientos',
     'Prompted - additional prompts were needed (faculty-reported).':
-        'Con indicaciones - se necesitaron indicaciones adicionales (informado por el docente).',
+        'Con orientación - se necesitó orientación adicional (informado por el docente).',
     'Pulse present':
         'Pulso presente',
     'QUESTIONS FOR YOUR NEXT ENCOUNTER':
@@ -526,7 +526,7 @@ ES = {
     'clinical update':
         'actualización clínica',
     'decision prompts shown; full analysis contains the rest.':
-        'indicaciones de decisión mostradas; el análisis completo contiene el resto.',
+        'preguntas por decisión mostradas; el análisis completo contiene el resto.',
     'diagnostic result':
         'resultado de examen',
     'encounter record':
@@ -586,7 +586,7 @@ ES = {
     ', and {n} more':
         ', y {n} más',
     '3 of {n} decision prompts shown; full analysis contains the rest.':
-        '3 de {n} indicaciones de decisión mostradas; el análisis completo contiene el resto.',
+        '3 de {n} preguntas por decisión mostradas; el análisis completo contiene el resto.',
     'AI draft - faculty judgment required | Model: {model} | Generated: {when}\nEncounter revision {revision} | Source: {source}':
         'Borrador de IA - requiere juicio docente | Modelo: {model} | Generado: {when}\nRevisión del encuentro {revision} | Origen: {source}',
     'Changed from the proposed {score}:':
@@ -1335,7 +1335,7 @@ ES = {
     'Private decision support for faculty. Review suggestions against the recorded evidence before making an assessment.':
         'Apoyo privado a la decisión para docentes. Contrasta las sugerencias con la evidencia registrada antes de hacer una evaluación.',
     'Prompted - additional prompts were needed':
-        'Con indicaciones - se necesitaron indicaciones adicionales',
+        'Con orientación - se necesitó orientación adicional',
     'Read the analysis and debriefing questions':
         'Lee el análisis y las preguntas de debriefing',
     'Reference unavailable':
@@ -2151,7 +2151,7 @@ ES = {
     'Guided':
         'Guiada',
     'Prompted':
-        'Con indicaciones',
+        'Con orientación',
     'Independent':
         'Independiente',
     'Satisfactory':
@@ -2167,9 +2167,9 @@ ES = {
     'Faculty or structured guidance directed the management reasoning.':
         'Un docente o una guía estructurada dirigió el razonamiento de manejo.',
     'Prompts were needed before the resident completed the reasoning.':
-        'Se necesitaron indicaciones antes de que el residente completara el razonamiento.',
+        'Se necesitó orientación antes de que el residente completara el razonamiento.',
     'The observed reasoning was completed without additional guidance or prompts.':
-        'El razonamiento observado se completó sin guía ni indicaciones adicionales.',
+        'El razonamiento observado se completó sin guía ni orientación adicionales.',
     'the decision':
         'la decisión',
     'the depth':
@@ -2252,6 +2252,8 @@ ES = {
         'Guardado.',
     'Descriptors a faculty member has not yet approved in Spanish are shown in English.':
         'Los descriptores que un docente aún no aprueba en español se muestran en inglés.',
+    'D4 assesses monitoring and reassessment; D5 assesses how that information is used to adapt the management or justifiably keep it, and to secure its continuity.':
+        'D4 evalúa monitorización y reevaluación; D5 evalúa cómo se utiliza esa información para adaptar o mantener justificadamente el manejo y asegurar su continuidad.',
     'Developing':
         'En desarrollo',
     'Not observed':

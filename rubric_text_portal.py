@@ -48,6 +48,10 @@ def _render(context):
             "your account, and an edit to either language after an approval shows the domain as pending again. "
             "· Borrador en español; se usa sólo después de tu aprobación, dominio por dominio. Los puntajes y la "
             "propuesta de la IA siguen usando la rúbrica en inglés.")
+        st.caption(
+            "Approving this translation does not validate the instrument, nor does it show that the two "
+            "languages are equivalent. · La aprobación de esta traducción no implica validación del "
+            "instrumento ni equivalencia demostrada entre idiomas.")
         reviews = rubric_text.RubricTextReviews(context["store"])
         latest = reviews.latest()
         pack = rubric_text.pack_approvals()

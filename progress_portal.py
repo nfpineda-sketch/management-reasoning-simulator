@@ -14,6 +14,8 @@ from objectives import (
     DEPTH_DESCRIPTIONS, AUTONOMY_DESCRIPTIONS, evidence_items,
 )
 from progress_store import AUTONOMY_NOT_DETERMINED, ProgressStore, pending_fields
+# Named apart: the assessment form keeps its own "encounter_context" (the clinical context field).
+from encounter_context import AUTONOMY_GUIDANCE, said as _said
 from faculty_portal import render_suggestion_loader
 from screen_language import rows as _rows, t as _t
 
@@ -220,7 +222,8 @@ def render_attempt_assessment(context, record):
                                     placeholder=_t("Not determined: requires your confirmation"),
                                     help="\n\n".join(_t(key.capitalize()) + ": " + _t(AUTONOMY_DESCRIPTIONS[key]) for key in AUTONOMY_LEVELS)
                                     + "\n\n" + _t("Could not be determined: the record does not let you judge it. "
-                                                  "It is not a negative result and not independence."))
+                                                  "It is not a negative result and not independence.")
+                                    + "\n\n" + _said(AUTONOMY_GUIDANCE))
             st.caption(_t("Depth and autonomy are local observation descriptors, not ACGME milestone levels or residency years. "
                        "Autonomy is asked for only to confirm this objective; a draft can keep it pending."))
             encounter_context = st.text_input(_t("Observed clinical context"), max_chars=500, key=widget_prefix + "_context")

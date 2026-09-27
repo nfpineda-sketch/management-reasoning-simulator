@@ -70,9 +70,25 @@ Las etiquetas de profundidad describen la observación concreta:
 | `complex` | Razonamiento frente a incertidumbre o problemas clínicos que evolucionan y compiten. |
 
 Las etiquetas de autonomía son `guided` (guiado), `prompted` (requirió
-indicaciones) e `independent` (sin ayuda adicional para el razonamiento
+orientación) e `independent` (sin ayuda adicional para el razonamiento
 observado). El docente debe documentar la ayuda relevante que conozca; el texto
 de una respuesta no permite inferir por sí solo autonomía.
+
+Qué cuenta como ayuda (docente, 2026-09-27; «indicación» se reserva para las
+órdenes clínicas y «orientación» es la ayuda que recibe el residente):
+
+- Una solicitud para completar la documentación —por ejemplo, «falta registrar
+  qué vas a reevaluar»— no demuestra por sí sola menor autonomía clínica.
+- Una sugerencia que aporta contenido clínico —por ejemplo, señalar una
+  intervención que el residente no había considerado— sí constituye asistencia
+  y debe quedar registrada como ayuda recibida.
+- Elegir una respuesta clínica ofrecida por el sistema no equivale a formularla
+  espontáneamente.
+- El registro conserva la procedencia de cada respuesta, y una ayuda que no se
+  conoce queda como «No informado»: nunca se lee como desempeño independiente.
+
+La misma aclaración aparece, en inglés y en español, en el formulario de ayuda
+recibida y en la ayuda del campo de autonomía (`encounter_context.AUTONOMY_GUIDANCE`).
 
 Estas etiquetas son definiciones locales de la aplicación. No equivalen
 automáticamente a un año de residencia, un nivel de Milestones ACGME ni una etapa

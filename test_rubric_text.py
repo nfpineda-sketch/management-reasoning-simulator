@@ -104,7 +104,7 @@ def test_an_edit_to_the_spanish_after_the_approval_takes_the_domain_back_to_engl
     rubric_text.RubricTextReviews(accounts).record(users["faculty"], "D3", "approved", "")
     assert spanish_on_screen(accounts, "D3")["language"] == "es"
     edited = json.loads(json.dumps(rubric_text.drafts()))
-    edited["D3"]["levels/2"]["es"] = "Indica un manejo apropiado, suficientemente especificado y seguro."
+    edited["D3"]["levels/2"]["es"] = "Prescribe un manejo apropiado, suficientemente especificado y seguro."
     monkeypatch.setattr(rubric_text, "drafts", lambda language="es": edited)
     latest = rubric_text.RubricTextReviews(accounts).latest()
     assert rubric_text.status("D3", edited["D3"], latest) == "outdated"
@@ -179,6 +179,9 @@ def test_the_rubric_screen_reads_an_approved_domain_in_spanish_and_the_others_in
 
     before = captions("es")
     assert rubric.DOMAINS["D1"]["asks"] in before
+    # D4 and D5 are told apart for the faculty, in the language on screen (2026-09-27).
+    assert ("D4 evalúa monitorización y reevaluación; D5 evalúa cómo se utiliza esa información para adaptar "
+            "o mantener justificadamente el manejo y asegurar su continuidad.") in before
     assert "Los descriptores que un docente aún no aprueba en español se muestran en inglés." in before
     rubric_text.RubricTextReviews(accounts).record(users["faculty"]["token"], "D1", "approved", "")
     after = captions("es")
@@ -186,6 +189,7 @@ def test_the_rubric_screen_reads_an_approved_domain_in_spanish_and_the_others_in
     assert rubric.DOMAINS["D2"]["asks"] in after
     english = captions("en")
     assert rubric.DOMAINS["D1"]["asks"] in english and "se muestran en inglés" not in english
+    assert "D4 assesses monitoring and reassessment; D5 assesses how that information is used" in english
 
 
 REVIEW_APP = """
@@ -213,6 +217,8 @@ def test_the_review_panel_records_the_faculty_member_s_decision_and_shows_nothin
     assert not panel("resident").expander
     app = panel("faculty")
     assert "**0** approved" in " ".join(item.value for item in app.markdown)
+    notices = " ".join(str(item.value) for item in app.caption)
+    assert "no implica validación del instrumento ni equivalencia demostrada entre idiomas" in notices
     shown = " ".join(item.value for item in app.markdown)
     assert rubric_text.drafts()["D1"]["levels/3"]["es"] in shown and rubric.DOMAINS["D1"]["levels"][3] in shown
     next(button for button in app.button if button.label.startswith("Approve")).click().run()
@@ -228,3 +234,33 @@ def test_the_review_document_shows_the_words_on_file():
     for domain, rows in rubric_text.drafts().items():
         for key, row in rows.items():
             assert f"| {row['en']} | {row['es']} |" in document, (domain, key)
+
+
+def test_the_faculty_review_of_2026_09_27_is_applied_word_for_word():
+    drafts = rubric_text.drafts()
+    expected = {
+        ("D1", "levels/1"): "o requiere orientación correctiva importante.",
+        ("D1", "levels/3"): "prepara planes de contingencia",
+        ("D3", "levels/2"): "Indica un manejo apropiado",
+        ("D4", "levels/3"): "establece objetivos clínicos y umbrales de alarma",
+        ("D4", "levels/3", "signs"): "busca activamente signos de fracaso terapéutico o complicaciones",
+        ("D5", "levels/3"): "un traspaso de la atención o un seguimiento que explicite los asuntos pendientes",
+    }
+    for (domain, key, *_), words in expected.items():
+        assert words in drafts[domain][key]["es"], (domain, key)
+    spanish = " ".join(row["es"] for rows in drafts.values() for row in rows.values())
+    for gone in ("indicación correctiva", "Ordena un manejo", "prepara contingencias", "fija metas",
+                 "la falla del tratamiento", "pendientes explícitos"):
+        assert gone not in spanish, gone
+
+
+def test_indicacion_is_kept_for_clinical_orders_and_orientacion_is_the_help_a_resident_receives():
+    import report_language
+    prompts = {key: said for key, said in report_language.ES.items() if "prompt" in key.lower()}
+    assert prompts and not [key for key, said in prompts.items() if re.search(r"indicaci[oó]n", said, re.I)]
+    assert report_language.ES["Prompted"] == "Con orientación"
+    assert not re.search(r"\bindicaci[oó]n", " ".join(row["es"] for rows in rubric_text.drafts().values()
+                                                     for row in rows.values()), re.I)
+    # The clinical sense stays: orders, an indication for a drug, advice to the patient.
+    assert "indicaciones" in report_language.ES[next(key for key in report_language.ES
+                                                     if key.startswith("You may enter your reasoning and orders"))]

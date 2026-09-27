@@ -220,6 +220,10 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
             # Decisions on screen are D1, D2, D3. A rubric domain is spelled out
             # so the two cannot be read as the same thing.
             st.markdown(_t('**Domain {v0} · {v1}**', v0=domain[1:], v1=_domain_title(domain)))
+            if domain == "D4":
+                # The two are easy to conflate (faculty, 2026-09-27; rubric.SEPARATION_NOTE).
+                st.caption(_t("D4 assesses monitoring and reassessment; D5 assesses how that information is "
+                              "used to adapt the management or justifiably keep it, and to secure its continuity."))
             described = _domain_text(domain)
             st.caption(described["asks"])
             with st.popover(_t('Descriptors for domain {v0}', v0=domain[1:])):

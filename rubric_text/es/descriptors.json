@@ -12,7 +12,7 @@
    },
    "levels/1": {
     "en": "Recognises the problem but orders the priorities wrongly, or needs a substantial corrective prompt.",
-    "es": "Reconoce el problema, pero ordena mal las prioridades, o necesita una indicación correctiva sustancial."
+    "es": "Reconoce el problema, pero ordena mal las prioridades, o requiere orientación correctiva importante."
    },
    "levels/2": {
     "en": "Recognises the threats and prioritises timely actions.",
@@ -20,7 +20,7 @@
    },
    "levels/3": {
     "en": "Also anticipates plausible deterioration and arranges contingencies without delaying what is essential.",
-    "es": "Además, anticipa un deterioro plausible y prepara contingencias sin retrasar lo esencial."
+    "es": "Además, anticipa un deterioro plausible y prepara planes de contingencia sin retrasar lo esencial."
    }
   },
   "D2": {
@@ -60,7 +60,7 @@
    },
    "levels/2": {
     "en": "Orders appropriate management, sufficiently specified and safe.",
-    "es": "Ordena un manejo apropiado, suficientemente especificado y seguro."
+    "es": "Indica un manejo apropiado, suficientemente especificado y seguro."
    },
    "levels/3": {
     "en": "Also individualises the management, anticipates adverse effects and coordinates the complementary measures that belong with it.",
@@ -86,7 +86,7 @@
    },
    "levels/3": {
     "en": "Also sets targets and alarm thresholds, and actively looks for treatment failure or complications.",
-    "es": "Además, fija metas y umbrales de alarma, y busca activamente la falla del tratamiento o las complicaciones."
+    "es": "Además, establece objetivos clínicos y umbrales de alarma, y busca activamente signos de fracaso terapéutico o complicaciones."
    }
   },
   "D5": {
@@ -108,7 +108,7 @@
    },
    "levels/3": {
     "en": "Also sets alternatives for failure, timely escalation, and a handover or follow-up with its loose ends stated.",
-    "es": "Además, define alternativas ante una falla, un escalamiento oportuno y un traspaso o seguimiento con sus pendientes explícitos."
+    "es": "Además, define alternativas ante una falla, un escalamiento oportuno y un traspaso de la atención o un seguimiento que explicite los asuntos pendientes."
    }
   }
  }

@@ -38,6 +38,9 @@ INSTRUCTION_2026_09_26C = ("Instrucción docente del 2026-09-26 (idioma: un encu
                            "cualquiera de los dos)")
 INSTRUCTION_2026_09_27B = ("Instrucción docente del 2026-09-27 (preparar el borrador en español de los descriptores "
                            "de la rúbrica, para revisión docente antes de usarlo)")
+INSTRUCTION_2026_09_27C = ("Instrucción docente del 2026-09-27 (revisión de la traducción de la rúbrica: redacción, "
+                           "«indicación» sólo para órdenes clínicas y «orientación» para la ayuda al residente, qué "
+                           "cuenta como ayuda al juzgar la autonomía y nota visible D4/D5)")
 
 CORRECTIONS = (
     {
@@ -996,6 +999,30 @@ CORRECTIONS = (
         "clinical_relevance": "cosmetic",
         "tests": ["test_rubric_text.py::test_nothing_is_spanish_until_a_faculty_member_approves_it",
                   "test_rubric_text.py::test_the_criteria_the_scores_and_the_ai_use_stay_english_whatever_is_approved"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-27-11",
+        "date": "2026-09-27",
+        "title": "Revisión docente de la traducción de la rúbrica: redacción, orientación frente a indicación, ayuda y autonomía, D4 frente a D5",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Seis descriptores reescritos como pidió el docente (D1 niveles 1 y 3, D3 nivel 2, D4 nivel 3, D5 "
+                   "nivel 3); siguen sin aprobar y los corregidos necesitan una aprobación nueva. «Indicación» queda para "
+                   "las órdenes clínicas y «orientación» para la ayuda al residente: la autonomía «Con indicaciones» pasa a "
+                   "«Con orientación» y las «indicaciones de decisión» del informe docente a «preguntas por decisión». Los "
+                   "formularios donde se declara la ayuda y se registra la autonomía dicen, en inglés y en español, qué "
+                   "cuenta como ayuda; la escala, el prompt del informe docente y la procedencia no cambian. La pantalla de "
+                   "la rúbrica explica D4 frente a D5, y el panel de revisión dice que aprobar la traducción no valida el "
+                   "instrumento ni demuestra equivalencia entre idiomas."),
+        "authorised_by": INSTRUCTION_2026_09_27C,
+        "affects": {"modules": ["rubric_text", "rubric_text_portal", "rubric_portal", "encounter_context",
+                                "faculty_portal", "progress_portal", "report_language"],
+                    "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_rubric_text.py::test_the_faculty_review_of_2026_09_27_is_applied_word_for_word",
+                  "test_rubric_text.py::test_indicacion_is_kept_for_clinical_orders_and_orientacion_is_the_help_a_resident_receives",
+                  "test_autonomy_guidance.py::test_a_faculty_member_reads_it_where_help_is_declared_and_where_autonomy_is_recorded"],
         "preservation": None,
     },
 )

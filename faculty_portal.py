@@ -101,7 +101,7 @@ def render_assistance_context(context, record):
     st.caption(_declared(current["assistance"]))
     if current["execution"] is not None:
         st.caption(_declared(current["execution"], "execution"))
-    st.caption(encounter_context.NO_CLINICAL_HELP_FEATURE[0])
+    st.caption(encounter_context.said(encounter_context.NO_CLINICAL_HELP_FEATURE))
     if len(history) > 1:
         with st.expander(_t('Declaration history ({v0})', v0=len(history))):
             for row in history:
@@ -109,6 +109,7 @@ def render_assistance_context(context, record):
     with st.expander(_t("Complete or correct the assistance context")):
         st.caption(_t("A new declaration is added to the history; nothing earlier is overwritten, "
                    "and no assessment already confirmed changes."))
+        st.caption(encounter_context.said(encounter_context.AUTONOMY_GUIDANCE))
         decisions = {item["ref"]: item["label"] for item in evidence_items(record["payload"])
                      if item["kind"] == "decision"}
         with st.form("assistance_context_" + record["id"]):
@@ -456,7 +457,7 @@ def render_suggestion_loader(context, record, objective_id, widget_prefix):
         st.write(correct(suggestion["rationale"]))
         if suggestion.get("autonomy") is None and suggestion["recommendation"] != "insufficient_evidence":
             import encounter_context
-            st.caption(encounter_context.AUTONOMY_NOT_DETERMINED[0] + ".")
+            st.caption(encounter_context.said(encounter_context.AUTONOMY_NOT_DETERMINED) + ".")
         if st.button(_t("Load AI suggestion into editable form"), key=widget_prefix + "_load_ai"):
             # What is loaded becomes the faculty's draft, and a saved
             # observation is read by the resident: it arrives with the

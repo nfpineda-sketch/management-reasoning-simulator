@@ -61,6 +61,32 @@ NO_CLINICAL_HELP_FEATURE = (
     "y quedan registradas con cada decisión.")
 
 
+#: How help is read when autonomy is judged (faculty, 2026-09-27). The scale does
+#: not change; this says what counts as help, in the faculty's instructions of
+#: both languages, and the brief's prompt already reads the record the same way.
+AUTONOMY_GUIDANCE = (
+    "How to read help when judging autonomy: a request to complete the documentation (for example, "
+    "“you have not recorded what you will reassess”) does not by itself show lower clinical "
+    "autonomy. A suggestion that adds clinical content (for example, pointing out an intervention the "
+    "resident had not considered) is assistance and must be recorded as help received. Choosing a "
+    "clinical answer offered by the system is not the same as formulating it unprompted. The record "
+    "keeps where each answer came from, and help that is not known is recorded as “Not reported”: "
+    "it is never read as independent performance.",
+    "Cómo leer la ayuda al juzgar la autonomía: una solicitud para completar la documentación (por "
+    "ejemplo, «falta registrar qué vas a reevaluar») no demuestra por sí sola menor autonomía clínica. "
+    "Una sugerencia que aporta contenido clínico (por ejemplo, señalar una intervención que el residente "
+    "no había considerado) sí constituye asistencia y debe quedar registrada como ayuda recibida. Elegir "
+    "una respuesta clínica ofrecida por el sistema no equivale a formularla espontáneamente. El registro "
+    "conserva la procedencia de cada respuesta, y la ayuda que no se conoce se registra como «No informado»: "
+    "nunca se lee como desempeño independiente.")
+
+
+def said(pair):
+    """One of this module's (English, Spanish) texts, in the language on screen."""
+    import language
+    return pair[1] if language.current() == "es" else pair[0]
+
+
 def label(field, value, language="en"):
     pair = LABELS.get((field, value))
     if pair is None:
