@@ -42,6 +42,14 @@ is selected. Existing account setup details are in
 - Each completed encounter remains immutable and belongs to its user.
 - A faculty member records an observation for each demonstrated, eligible
   objective, selecting the source decisions, depth, assistance and feedback.
+  An objective is eligible when the encounter offered an observation
+  opportunity for it: its generation target, a declaration frozen with the
+  encounter, or, for a case nobody has reviewed yet, the labelled rule that
+  applied before (cycle 3, `docs/OBSERVATION_OPPORTUNITIES.md`). An opportunity
+  is never an observation.
+- Each new observation records its provenance: the opportunity it was
+  confirmed under and, for R1-03, R1-04 and R2-01, the direct or partial
+  contribution of each link. Earlier observations read as legacy.
 - One active observation per encounter and objective prevents duplicate credit.
   Both satisfactory and needs-improvement observations remain in the history.
 - New cognitive objectives require the matching saved challenge and at least

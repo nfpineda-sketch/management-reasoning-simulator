@@ -184,10 +184,61 @@ local no controla: el foco de sus key features, el tipo de presentación y la
 proporción de observaciones clínicas frente a simuladas. Afirmar la contribución
 a una EPA cuyo contexto no coincide sería forzar cobertura (charter §9 y §43.11).
 
-## 5. Qué no se hizo
+## 5. Qué no se hizo (Ciclo 2; superado por la sección 6)
 
 - No se implementó ningún mapping.
 - No se tocó `CHALLENGE_MAPPINGS`, `_ACGME` ni `_RC`.
 - No se incorporaron R1-03, R1-04 ni R2-01 a Objective Progress.
 - MK1 sigue sin usarse.
 - La decisión está en DF-2 de `docs/COLA_DECISIONES_AI_ADVISOR.md`.
+
+## 6. Ciclo 3 · vínculos activos e inactivos (DF-2, 2026-09-27)
+
+**Qué se implementó.** La decisión docente aprobó incorporar R1-03, R1-04 y R2-01
+al pipeline observacional con contribuciones DIRECT o PARTIAL.
+
+- Implementación en `competency_mapping._FOUNDATION_CONTRIBUTIONS` (mapping 1.1.0).
+- Arquitectura en `docs/OBSERVATION_OPPORTUNITIES.md`.
+- No se reprocesaron los PDFs: se usó la verificación de las secciones 1–4.
+
+**Regla aplicada (§93).** Un vínculo PARTIAL se activa solo si se puede decir
+con claridad **qué componente se observa** y **qué queda fuera**. Si no, queda
+documentado aquí, inactivo, para revisión docente.
+
+### Activos
+
+| Desafío | Vínculo | Tipo | Componente observado | Queda fuera |
+|---|---|---|---|---|
+| R1-03 | ACGME PC4 L3 (p. 10) | DIRECT | Sostener la explicación de la taquicardia frente al curso y la respuesta, y revisarla si discrepan | — |
+| R1-03 | ACGME MK2 L4 (p. 16) | PARTIAL | Re-evaluar la explicación frente a la respuesta, dentro de un encuentro | El hábito continuo y el manejo explícito del error cognitivo |
+| R1-03 | RC ME 2.2 Foundations (Pathway p. 11) | PARTIAL | Una explicación causal de trabajo, formada y usada mientras avanza el tratamiento inicial | El diagnóstico diferencial; el manejo de síntomas solo mediante órdenes simuladas. Contexto: F1 hito 3 (EPA Guide p. 10), sin contribución a la EPA completa |
+| R1-04 | ACGME PC1 L3 (p. 7) | DIRECT | Reevaluar tras una intervención estabilizadora, con variables y momento elegidos | — |
+| R1-04 | ACGME PC6 L3 (p. 12) | PARTIAL | Evaluar la efectividad de una intervención terapéutica frente a la expectativa previa | Decidir qué pacientes necesitan evaluación continua; efectividad de intervenciones diagnósticas |
+| R1-04 | RC ME 4.1 Foundations (Pathway pp. 22–23) | PARTIAL | Reevaluar al paciente y la respuesta frente a una expectativa declarada | El seguimiento de investigaciones en curso. Sin EPA: F2 (no complicadas) contradice el contexto |
+| R2-01 | ACGME PC1 L3 (p. 7) | DIRECT | Reconocer un compromiso circulatorio que la presión sola no muestra | — |
+| R2-01 | ACGME PC4 L3 (p. 10) | DIRECT | Revisar el mecanismo circulatorio tras la respuesta | — |
+| R2-01 | ACGME MK1 L2 (p. 15) | PARTIAL | Aplicar conocimiento fisiológico de presión, flujo y perfusión en el mecanismo declarado | El conocimiento científico en sí, su amplitud y su profundidad |
+| R2-01 | ACGME MK2 L4 (p. 16) | PARTIAL | Re-evaluar mecanismo y prioridad frente a la respuesta, dentro de un encuentro | El hábito continuo y el manejo explícito del error cognitivo |
+| R2-01 | RC ME 1.6 Core (Pathway p. 9), razonamiento sin información completa | DIRECT | Razonar desde varias observaciones a un mecanismo y una acción antes de tener el cuadro completo | — (contexto: C1 hito 1, EPA Guide p. 18) |
+| R2-01 | RC ME 1.6 Core (Pathway p. 9), adaptar el cuidado | DIRECT | Revisar mecanismo y prioridad a medida que se despliega la respuesta | — |
+
+### Documentados e inactivos (revisión docente)
+
+| Desafío | Vínculo | Estado de la sección 3 | Por qué no se activó |
+|---|---|---|---|
+| R1-03 | ACGME PC5 L3 | PARTIAL | Solo aplica si la prioridad elegida es un fármaco, y el desafío no lo exige: el componente observado no se puede afirmar en general |
+| R1-03 | RC ME 2.2 vía TD1 hito 8 | PARTIAL | Describe reconocer la disritmia en el ECG, no explicar su contribución |
+| R1-03 | RC ME 2.4 | PARTIAL | Plan de manejo genérico, sin ligar la prioridad a la hipótesis |
+| R1-04 | ACGME PC6 L1 y L4 | VERIFIED | Redundantes con PC6 L3, que ya representa el componente observado |
+| R1-04 | RC ME 4.1 vía TP6 hito 4 y C1 hito 6 | PARTIAL | Centrados en planes de cuidado continuo, no en comprobar el efecto esperado |
+| R1-04 | RC ME 2.4 (TD1 hito 9) | PARTIAL | Monitorizar sí; formular y comparar una expectativa, no |
+| R2-01 | ACGME PC1 L3, segunda oración («Reassesses… after… a stabilizing intervention») | VERIFIED | Se superpone con R1-04; no es la conducta central de R2-01 |
+| R2-01 | ACGME MK1 L3 | PARTIAL | Integrar comorbilidades no es parte del desafío |
+| R2-01 | RC ME 2.4 (Foundations/Core, C5 hito 6) | PARTIAL | Plan genérico; la colaboración de C5 no es observable |
+
+**Qué no cambió:**
+
+- los ocho Decision Challenges conservan sus vínculos sin cambios;
+- un encuentro generado para R1-03, R1-04 o R2-01 es una oportunidad y **nunca**
+  evidencia automática: la observación existe solo con la valoración docente
+  (`test_an_encounter_generated_for_a_challenge_is_an_opportunity_not_evidence`).

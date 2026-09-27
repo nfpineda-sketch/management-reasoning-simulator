@@ -14,6 +14,14 @@ La siguiente correspondencia es un diseño educativo local basado en los documen
 | R1-04 · primer año | Anticipar y comprobar el efecto de una intervención | Formular una expectativa verificable; elegir variables y un momento de reevaluación; distinguir la orden de su ejecución; comparar lo observado con lo esperado. | ACGME PC1 y PC6; Royal College Medical Expert 2.4 y 4.1. |
 | R2-01 · segundo año | Separar presión, flujo y perfusión en un deterioro mixto | Integrar varios datos circulatorios; proponer un mecanismo y una acción dirigida; revisar el mecanismo y la prioridad según la respuesta. | ACGME PC1, PC4, MK1, MK2; Royal College Medical Expert 1.6 y 2.4. |
 
+**Ciclo 3 (DF-2, 2026-09-27): referencias frente a vínculos activos.** Las
+referencias curriculares de esta tabla son las de la matriz. En el registro de
+progreso solo están activos los vínculos que la verificación respalda, con
+contribución directa o parcial:
+
+- **Documentados e inactivos:** PC5, ME 2.4 y MK1 L3.
+- **Detalle:** `docs/VERIFICACION_MAPPINGS_FUNDACIONALES.md`, sección 6.
+
 R1-03 presupone interpretación básica del ritmo y la perfusión. R1-04 presupone conocimiento del mecanismo y la temporalidad de la intervención elegida. Para R2-01, la matriz propone R1-01 y R1-03 o evidencia docente equivalente. Como R1-01 no está implementado, el programa debe revisar esos conocimientos al asignar el año; este piloto no verifica automáticamente esos prerrequisitos.
 
 ## Asignación y evidencia

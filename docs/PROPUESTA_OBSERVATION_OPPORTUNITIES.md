@@ -2,11 +2,14 @@
 
 Ciclo 1 del AI Advisor, punto 4 de la aprobación docente del 2026-09-27.
 
-**Estado.** La arquitectura conceptual quedó aprobada por el docente el
-2026-09-27. D-1 a D-6 siguen pendientes, con su análisis en la §9.
+**Estado: IMPLEMENTADO en el Ciclo 3** (2026-09-27), con las decisiones
+docentes D-1 a D-6. La arquitectura implementada, la regla de transición DF-12
+y la unidad de evidencia están en `docs/OBSERVATION_OPPORTUNITIES.md`.
 
-Nada de esto está implementado. No hay lógica específica para C14, ni cambios
-de elegibilidad, mappings, scoring, Objective Progress o UX.
+Este documento se conserva como la propuesta que se aprobó. Su texto describe
+el estado anterior a la implementación: «nada de esto está implementado» valía
+hasta el Ciclo 2. C14 sigue sin activarse caso por caso; hay un borrador en
+`docs/BORRADOR_C14_OBSERVATION_OPPORTUNITIES.md`.
 
 Principio pedido por el docente:
 

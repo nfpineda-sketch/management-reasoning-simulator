@@ -1,10 +1,20 @@
 # Registro de objetivos de manejo simulado
 
 El catálogo separa los **objetivos longitudinales** de los desafíos locales que
-asignan un encuentro (`R1-03`, `R1-04`, `R2-01`). Un mismo encuentro puede aportar
-evidencia para varios objetivos, pero cada objetivo requiere una valoración
-docente independiente. La asignación de un caso no implica que todos sus
-objetivos posibles se hayan demostrado.
+asignan un encuentro. Un mismo encuentro puede aportar evidencia para varios
+objetivos, pero cada objetivo requiere una valoración docente independiente. La
+asignación de un caso no implica que todos sus objetivos posibles se hayan
+demostrado.
+
+**Desde el Ciclo 3 (2026-09-27):**
+
+- **Objetivos nuevos.** `R1-03`, `R1-04` y `R2-01` también son objetivos
+  (DF-2). Cada vínculo dice si la contribución es directa o parcial, qué
+  componente se observa y qué queda fuera.
+- **Elegibilidad.** Qué objetivos admite un encuentro depende de su *observation
+  opportunity* congelada (DF-1). Un objetivo sin revisar en un caso conserva la
+  regla anterior, rotulada como transición.
+- **Detalle:** `docs/OBSERVATION_OPPORTUNITIES.md`.
 
 ## Metas del programa y alcance
 
