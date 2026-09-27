@@ -1,0 +1,274 @@
+{
+ "pulmonary_edema_58m": {
+  "/presentation": {
+   "en": "A 58-year-old man arrives with rapidly worsening breathlessness. He remains upright and can speak only a few words at a time.",
+   "es": "Un hombre de 58 años llega con disnea que empeora rápidamente. Se mantiene erguido y solo puede decir unas pocas palabras a la vez."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I suddenly cannot catch my breath, especially if I lie back.",
+   "es": "De un momento a otro no me alcanza el aire, sobre todo si me recuesto."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I woke up gasping and have been coughing up a small amount of frothy sputum.",
+   "es": "Me desperté ahogándome y he estado tosiendo con un poco de expectoración espumosa."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have not had fever or a preceding productive cough.",
+   "es": "No he tenido fiebre ni tos productiva previa."
+  },
+  "/history/medical_history/0": {
+   "en": "I have high blood pressure; I have never been told I have asthma.",
+   "es": "Tengo presión alta; nunca me han dicho que tenga asma."
+  },
+  "/history/medications/0": {
+   "en": "I ran out of my usual antihypertensive medication four days ago.",
+   "es": "Hace cuatro días se me acabó mi medicamento antihipertensivo habitual."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "Severe breathlessness began about an hour ago and worsened rapidly.",
+   "es": "La falta de aire intensa empezó hace alrededor de una hora y empeoró rápidamente."
+  },
+  "/history/risk_factors/0": {
+   "en": "My blood pressure has been high and I have missed several days of treatment.",
+   "es": "He tenido la presión alta y me he saltado varios días de tratamiento."
+  },
+  "/history/breathing/0": {
+   "en": "Lying flat makes my breathing markedly worse.",
+   "es": "Acostarme plano me empeora mucho la respiración."
+  },
+  "/history/chest_pain/0": {
+   "en": "I feel chest tightness with the effort of breathing, without a separate persistent crushing pain.",
+   "es": "Siento opresión en el pecho con el esfuerzo de respirar, sin un dolor aparte, aplastante y persistente."
+  },
+  "/history/oral_intake/0": {
+   "en": "I have eaten and drunk normally.",
+   "es": "He comido y tomado con normalidad."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "I have no urinary burning or frequency.",
+   "es": "No tengo ardor al orinar ni estoy orinando más seguido."
+  },
+  "/examination/Cardiac": {
+   "en": "Rapid regular pulse; elevated jugular venous pressure.",
+   "es": "Pulso rápido y regular; presión venosa yugular elevada."
+  },
+  "/examination/Respiratory": {
+   "en": "Severe respiratory effort with widespread bilateral crackles and some expiratory wheeze.",
+   "es": "Esfuerzo respiratorio severo, con crepitaciones bilaterales difusas y algunas sibilancias espiratorias."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Awake, oriented and distressed; answers are brief because of breathlessness.",
+   "es": "Vigil, orientado y angustiado; sus respuestas son breves por la disnea."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Moderately reduced global contraction",
+   "es": "Contracción global moderadamente disminuida"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "2.4 cm; <50% inspiratory collapse",
+   "es": "2.4 cm; colapso inspiratorio <50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "Diffuse bilateral B-lines in the anterior and lateral zones",
+   "es": "Líneas B difusas bilaterales en las zonas anteriores y laterales"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Bilateral perihilar air-space and interstitial opacities with vascular congestion.",
+   "es": "Opacidades alveolares e intersticiales perihiliares bilaterales con congestión vascular."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "pulmonary_edema_75f": {
+  "/presentation": {
+   "en": "A 75-year-old woman presents with breathlessness that is now preventing her from resting in bed.",
+   "es": "Una mujer de 75 años consulta por disnea que ahora le impide descansar en la cama."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "My breathing has become so bad that I have to sit up all the time.",
+   "es": "Mi respiración ha empeorado tanto que tengo que estar sentada todo el tiempo."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "My ankles have become more swollen and my clothes feel tighter.",
+   "es": "Se me han hinchado más los tobillos y siento la ropa más apretada."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have no fever, rigors or new sputum.",
+   "es": "No tengo fiebre, escalofríos con temblor ni expectoración nueva."
+  },
+  "/history/medical_history/0": {
+   "en": "I have heart failure with an ejection fraction around 30% and chronic kidney disease.",
+   "es": "Tengo insuficiencia cardíaca con una fracción de eyección de alrededor del 30% y enfermedad renal crónica."
+  },
+  "/history/medications/0": {
+   "en": "I take a loop diuretic and heart-failure medicines, but missed the diuretic for three days while travelling.",
+   "es": "Tomo un diurético de asa y medicamentos para la insuficiencia cardíaca, pero me salté el diurético durante tres días mientras estaba de viaje."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The swelling increased over four days; my breathing became much worse overnight.",
+   "es": "La hinchazón fue aumentando a lo largo de cuatro días; durante la noche la respiración se me puso mucho peor."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have known reduced cardiac function and missed my usual diuretic.",
+   "es": "Tengo la función cardíaca disminuida, ya conocida, y me salté mi diurético habitual."
+  },
+  "/history/breathing/0": {
+   "en": "I have slept sitting up for the last two nights.",
+   "es": "Las últimas dos noches he dormido sentada."
+  },
+  "/history/chest_pain/0": {
+   "en": "I have not had a new focal or pressure-like chest pain.",
+   "es": "No he tenido un dolor de pecho nuevo, ya sea localizado u opresivo."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "I have passed less urine but have no dysuria.",
+   "es": "He orinado menos, pero no tengo disuria."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular tachycardia, elevated jugular venous pressure and bilateral pitting ankle edema.",
+   "es": "Taquicardia regular, presión venosa yugular elevada y edema bilateral de tobillos con fóvea."
+  },
+  "/examination/Respiratory": {
+   "en": "Marked respiratory effort with bilateral crackles extending to the mid-zones.",
+   "es": "Esfuerzo respiratorio marcado, con crepitaciones bilaterales que se extienden hasta los campos medios."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft; no focal tenderness.",
+   "es": "Blando; sin dolor focal a la palpación."
+  },
+  "/examination/Neurological": {
+   "en": "Awake and oriented, speaking in short phrases.",
+   "es": "Vigil y orientada, habla en frases cortas."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Severely reduced global contraction",
+   "es": "Contracción global severamente disminuida"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "2.5 cm; minimal inspiratory collapse",
+   "es": "2.5 cm; colapso inspiratorio mínimo"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "Diffuse bilateral B-lines in the anterior and lateral zones",
+   "es": "Líneas B difusas bilaterales en las zonas anteriores y laterales"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation; small bilateral pleural effusions",
+   "es": "Sin consolidación; pequeños derrames pleurales bilaterales"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Cardiomegaly, bilateral vascular and interstitial congestion, and small pleural effusions.",
+   "es": "Cardiomegalia, congestión vascular e intersticial bilateral, y pequeños derrames pleurales."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ }
+}

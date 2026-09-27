@@ -1,0 +1,586 @@
+{
+ "bradycardia_ccb_68m": {
+  "/presentation": {
+   "en": "A 68-year-old man is brought in after collapsing at home. He is pale, cold and very slow on the monitor. Handover notes a collapse and a slow rate; the boxes came in with the daughter.",
+   "es": "Un hombre de 68 años es traído tras colapsar en su casa. Está pálido, frío y con una frecuencia muy lenta en el monitor. La entrega menciona un colapso y una frecuencia lenta; las cajas de los medicamentos llegaron con la hija."
+  },
+  "/history_source": {
+   "en": "Daughter",
+   "es": "Hija"
+  },
+  "/history/chief_complaint/0": {
+   "en": "His daughter says he has felt dizzy and weak all afternoon and then slumped in his chair.",
+   "es": "Su hija cuenta que se ha sentido mareado y débil toda la tarde y que luego se desplomó en su silla."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "His daughter reports no chest pain and no breathlessness before the collapse.",
+   "es": "Su hija refiere que no tuvo dolor en el pecho ni falta de aire antes del colapso."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "He has been nauseated and vomited once.",
+   "es": "Ha tenido náuseas y vomitó una vez."
+  },
+  "/history/medical_history/0": {
+   "en": "His daughter reports high blood pressure and an irregular heart rhythm treated for years.",
+   "es": "Su hija refiere presión alta y un ritmo cardíaco irregular tratado desde hace años."
+  },
+  "/history/medications/0": {
+   "en": "His daughter brought the boxes: verapamil, which he doubled last week on advice, and enalapril. She thinks he may have taken extra today because of palpitations.",
+   "es": "Su hija trajo las cajas de los medicamentos: verapamilo, cuya dosis duplicó la semana pasada siguiendo indicaciones, y enalapril. Ella cree que hoy podría haber tomado de más por palpitaciones."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The dizziness began this afternoon; the collapse was about forty minutes ago.",
+   "es": "El mareo comenzó esta tarde; el colapso fue hace unos cuarenta minutos."
+  },
+  "/history/risk_factors/0": {
+   "en": "He lives alone and manages his own medication; the doses were changed last week.",
+   "es": "Vive solo y maneja él mismo sus medicamentos; las dosis se cambiaron la semana pasada."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "There was no seizure, no head strike and no focal weakness afterwards.",
+   "es": "No hubo convulsión, ni golpe en la cabeza, ni debilidad focal después."
+  },
+  "/history/chest_pain/0": {
+   "en": "His daughter reports no chest pain before or after the collapse.",
+   "es": "Su hija refiere que no tuvo dolor en el pecho ni antes ni después del colapso."
+  },
+  "/history/breathing/0": {
+   "en": "His daughter says the breathing has looked normal throughout.",
+   "es": "Su hija cuenta que la respiración se ha visto normal todo el tiempo."
+  },
+  "/history/oral_intake/0": {
+   "en": "He has eaten little today and vomited once.",
+   "es": "Hoy ha comido poco y vomitó una vez."
+  },
+  "/history/exposure/0": {
+   "en": "There is no other medicine in the house and no alcohol or drug use she knows of.",
+   "es": "No hay otros medicamentos en la casa y, que ella sepa, no consume alcohol ni drogas."
+  },
+  "/examination/Cardiac": {
+   "en": "Very slow regular pulse; peripheries cool with delayed capillary refill; no murmur.",
+   "es": "Pulso muy lento y regular; extremidades frías con llene capilar enlentecido; sin soplos."
+  },
+  "/examination/Respiratory": {
+   "en": "Normal rate and effort with clear breath sounds.",
+   "es": "Frecuencia y esfuerzo respiratorios normales, con murmullo pulmonar sin ruidos agregados."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/General appearance": {
+   "en": "Pale and cold; alert but slow to answer, with no rash or swelling.",
+   "es": "Pálido y frío; alerta, pero lento para responder, sin erupción ni edema."
+  },
+  "/examination/Neurological": {
+   "en": "Awake, oriented and moving all limbs; no focal deficit.",
+   "es": "Vigil, orientado y moviliza todas las extremidades; sin déficit focal."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Globally reduced contraction at a slow rate; no regional difference identified",
+   "es": "Contracción globalmente disminuida a frecuencia lenta; no se identifica diferencia regional"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.9 cm; <50% inspiratory collapse",
+   "es": "1.9 cm; colapso inspiratorio <50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Clear lung fields; no consolidation, edema or pneumothorax.",
+   "es": "Campos pulmonares limpios; sin consolidación, edema ni neumotórax."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "bradycardia_avb3_78f": {
+  "/presentation": {
+   "en": "A 78-year-old woman is brought in after repeated blackouts at home. She is grey, cold and difficult to keep awake.",
+   "es": "Una mujer de 78 años es traída tras desmayos repetidos en su casa. Está grisácea, fría y cuesta mantenerla despierta."
+  },
+  "/history_source": {
+   "en": "Son",
+   "es": "Hijo"
+  },
+  "/history/chief_complaint/0": {
+   "en": "Her son says she has blacked out three times today, each time without warning.",
+   "es": "Su hijo cuenta que hoy se ha desmayado tres veces, cada vez sin previo aviso."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "Her son reports no chest pain and no palpitations that she described.",
+   "es": "Su hijo refiere que ella no describió dolor en el pecho ni palpitaciones."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "She has been increasingly breathless on stairs for a fortnight.",
+   "es": "Desde hace dos semanas le falta cada vez más el aire al subir escaleras."
+  },
+  "/history/medical_history/0": {
+   "en": "Her son reports high blood pressure and kidney disease; she has never had a heart attack.",
+   "es": "Su hijo refiere presión alta y enfermedad renal; nunca ha tenido un infarto."
+  },
+  "/history/medications/0": {
+   "en": "Her son lists amlodipine and atorvastatin. He is certain there is no beta blocker and no digoxin, and the doses have not changed.",
+   "es": "Su hijo enumera amlodipino y atorvastatina. Está seguro de que no toma ningún betabloqueador ni digoxina, y de que las dosis no han cambiado."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The blackouts began this morning and have become more frequent through the day.",
+   "es": "Los desmayos comenzaron esta mañana y se han vuelto más frecuentes a lo largo del día."
+  },
+  "/history/risk_factors/0": {
+   "en": "She has had two weeks of exertional breathlessness before today.",
+   "es": "Antes de hoy, llevaba dos semanas con falta de aire al hacer esfuerzos."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "The episodes were sudden, brief and without shaking, tongue-biting or confusion afterwards.",
+   "es": "Los episodios fueron súbitos, breves y sin sacudidas, mordedura de lengua ni confusión posterior."
+  },
+  "/history/chest_pain/0": {
+   "en": "Her son reports no chest pain at any point.",
+   "es": "Su hijo refiere que en ningún momento tuvo dolor en el pecho."
+  },
+  "/history/breathing/0": {
+   "en": "The breathlessness on exertion has been building for a fortnight.",
+   "es": "La falta de aire al hacer esfuerzos ha ido aumentando desde hace dos semanas."
+  },
+  "/history/exposure/0": {
+   "en": "There is no new medicine, no overdose and no herbal preparation.",
+   "es": "No hay ningún medicamento nuevo, ni sobredosis, ni preparado de hierbas."
+  },
+  "/history/oral_intake/0": {
+   "en": "She has been eating and drinking normally.",
+   "es": "Ha estado comiendo y tomando líquidos con normalidad."
+  },
+  "/examination/Cardiac": {
+   "en": "Very slow regular pulse with cannon waves in the neck; peripheries cool.",
+   "es": "Pulso muy lento y regular, con ondas en cañón en el cuello; extremidades frías."
+  },
+  "/examination/Respiratory": {
+   "en": "Normal effort with clear breath sounds.",
+   "es": "Esfuerzo respiratorio normal, con murmullo pulmonar sin ruidos agregados."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/General appearance": {
+   "en": "Grey and cold; rouses to voice and drifts back.",
+   "es": "Grisácea y fría; despierta al llamado verbal y vuelve a adormecerse."
+  },
+  "/examination/Neurological": {
+   "en": "Opens eyes to voice, follows simple commands slowly, moves all limbs.",
+   "es": "Abre los ojos al llamado verbal, obedece órdenes simples con lentitud, moviliza todas las extremidades."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved contraction at a slow, regular ventricular rate independent of the atria",
+   "es": "Contracción conservada a frecuencia ventricular lenta y regular independiente de las aurículas"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.7 cm; <50% inspiratory collapse",
+   "es": "1.7 cm; colapso inspiratorio <50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Clear lung fields; no consolidation or edema.",
+   "es": "Campos pulmonares limpios; sin consolidación ni edema."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "bradycardia_bb_54f": {
+  "/presentation": {
+   "en": "A 54-year-old woman is brought in after being found drowsy at home beside an empty blister pack. She is cold and very slow.",
+   "es": "Una mujer de 54 años es traída tras ser encontrada somnolienta en su casa junto a un blíster vacío. Está fría y muy lenta."
+  },
+  "/history_source": {
+   "en": "Partner",
+   "es": "Pareja"
+  },
+  "/history/chief_complaint/0": {
+   "en": "Her partner says she was upset last night and he found her like this this morning.",
+   "es": "Su pareja cuenta que anoche ella estaba alterada y que él la encontró así esta mañana."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "Her partner reports no chest pain and no breathlessness that she described.",
+   "es": "Su pareja refiere que ella no describió dolor en el pecho ni falta de aire."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "She has vomited once since he found her.",
+   "es": "Ha vomitado una vez desde que él la encontró."
+  },
+  "/history/medical_history/0": {
+   "en": "Her partner reports high blood pressure and migraine; he knows of no heart disease.",
+   "es": "Su pareja refiere presión alta y migraña; no sabe de ninguna enfermedad del corazón."
+  },
+  "/history/medications/0": {
+   "en": "Her partner brought an empty blister pack of propranolol and says a full one was there yesterday. She also takes losartan.",
+   "es": "Su pareja trajo un blíster vacío de propranolol y cuenta que ayer había uno lleno. También toma losartán."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "She was last seen well around midnight and was found drowsy at about seven this morning.",
+   "es": "La vieron bien por última vez cerca de la medianoche y la encontraron somnolienta alrededor de las siete de esta mañana."
+  },
+  "/history/risk_factors/0": {
+   "en": "Her partner says there had been an argument and she had been low for weeks.",
+   "es": "Su pareja cuenta que había habido una discusión y que ella llevaba semanas con el ánimo bajo."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "There was no seizure and no head strike that he saw.",
+   "es": "Él no vio ninguna convulsión ni golpe en la cabeza."
+  },
+  "/history/chest_pain/0": {
+   "en": "Her partner reports no complaint of chest pain.",
+   "es": "Su pareja refiere que ella no se quejó de dolor en el pecho."
+  },
+  "/history/breathing/0": {
+   "en": "Her partner says the breathing has looked slow but regular.",
+   "es": "Su pareja cuenta que la respiración se ha visto lenta pero regular."
+  },
+  "/history/oral_intake/0": {
+   "en": "She has eaten nothing since last night and vomited once.",
+   "es": "No ha comido nada desde anoche y vomitó una vez."
+  },
+  "/history/exposure/0": {
+   "en": "He found no other empty packet and no alcohol.",
+   "es": "No encontró ningún otro envase vacío ni alcohol."
+  },
+  "/examination/Cardiac": {
+   "en": "Very slow regular pulse; peripheries cold with delayed refill; no murmur.",
+   "es": "Pulso muy lento y regular; extremidades frías con llene enlentecido; sin soplos."
+  },
+  "/examination/Respiratory": {
+   "en": "Slow regular breathing with clear breath sounds.",
+   "es": "Respiración lenta y regular, con murmullo pulmonar sin ruidos agregados."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/General appearance": {
+   "en": "Cold and pale; drowsy but rousable, with no rash.",
+   "es": "Fría y pálida; somnolienta pero despertable, sin erupción."
+  },
+  "/examination/Neurological": {
+   "en": "Opens eyes to voice, follows simple commands slowly, moves all limbs.",
+   "es": "Abre los ojos al llamado verbal, obedece órdenes simples con lentitud, moviliza todas las extremidades."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Globally reduced contraction at a slow rate; no regional difference identified",
+   "es": "Contracción globalmente disminuida a frecuencia lenta; no se identifica diferencia regional"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.9 cm; <50% inspiratory collapse",
+   "es": "1.9 cm; colapso inspiratorio <50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Clear lung fields; no consolidation or edema.",
+   "es": "Campos pulmonares limpios; sin consolidación ni edema."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "bradycardia_hyperk_63m": {
+  "/presentation": {
+   "en": "A 63-year-old man on dialysis arrives weak and nauseated after missing sessions. He is cold, slow and short of breath on minimal effort.",
+   "es": "Un hombre de 63 años en diálisis llega débil y con náuseas tras faltar a sesiones. Está frío, lento y con falta de aire al mínimo esfuerzo."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I have felt weak and sick and my legs will not hold me.",
+   "es": "Me he sentido débil y con náuseas, y las piernas no me sostienen."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I have been short of breath climbing the stairs since yesterday.",
+   "es": "Desde ayer me falta el aire al subir las escaleras."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "My hands and feet feel numb and tingling.",
+   "es": "Siento las manos y los pies adormecidos y con hormigueo."
+  },
+  "/history/medical_history/0": {
+   "en": "I am on dialysis three times a week for kidney failure, and I have diabetes.",
+   "es": "Me hago diálisis tres veces por semana por insuficiencia renal, y tengo diabetes."
+  },
+  "/history/medications/0": {
+   "en": "I take calcium carbonate with meals, insulin, and a tablet for blood pressure. I was started on spironolactone a month ago.",
+   "es": "Tomo carbonato de calcio con las comidas, me pongo insulina y tomo una pastilla para la presión. Hace un mes me indicaron espironolactona."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The weakness began two days ago and is worse today.",
+   "es": "La debilidad empezó hace dos días y hoy está peor."
+  },
+  "/history/risk_factors/0": {
+   "en": "I missed my last two dialysis sessions because the transport did not come.",
+   "es": "Falté a mis dos últimas sesiones de diálisis porque no llegó el transporte."
+  },
+  "/history/oral_intake/0": {
+   "en": "I have eaten and drunk as usual, including fruit and potatoes.",
+   "es": "He comido y tomado líquidos como siempre, incluyendo fruta y papas."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "I pass almost no urine; that has been true for years.",
+   "es": "Casi no orino; eso es así desde hace años."
+  },
+  "/history/breathing/0": {
+   "en": "The breathlessness is on effort, not at rest, and it is new since yesterday.",
+   "es": "La falta de aire es al hacer esfuerzos, no en reposo, y empezó ayer."
+  },
+  "/history/chest_pain/0": {
+   "en": "I have no chest pain.",
+   "es": "No tengo dolor en el pecho."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "The numbness in my hands and feet is new and there has been no weakness on one side.",
+   "es": "El adormecimiento de las manos y los pies es nuevo y no he tenido debilidad de un solo lado."
+  },
+  "/examination/Cardiac": {
+   "en": "Very slow regular pulse; peripheries cool with delayed refill.",
+   "es": "Pulso muy lento y regular; extremidades frías con llene enlentecido."
+  },
+  "/examination/Respiratory": {
+   "en": "Slightly increased rate with clear breath sounds; no crackles.",
+   "es": "Frecuencia ligeramente aumentada, con murmullo pulmonar sin ruidos agregados; sin crépitos."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender; no bladder palpable.",
+   "es": "Blando e indoloro; sin globo vesical palpable."
+  },
+  "/examination/General appearance": {
+   "en": "Pale and unwell with a dialysis fistula in the left forearm.",
+   "es": "Pálido y con aspecto enfermo, con una fístula de diálisis en el antebrazo izquierdo."
+  },
+  "/examination/Neurological": {
+   "en": "Awake and oriented; reduced power in both legs with reduced reflexes.",
+   "es": "Vigil y orientado; fuerza disminuida en ambas extremidades inferiores, con reflejos disminuidos."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Globally reduced contraction at a slow rate; no regional difference identified",
+   "es": "Contracción globalmente disminuida a frecuencia lenta; no se identifica diferencia regional"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.9 cm; <50% inspiratory collapse",
+   "es": "1.9 cm; colapso inspiratorio <50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Clear lung fields; no consolidation or pulmonary edema.",
+   "es": "Campos pulmonares limpios; sin consolidación ni edema pulmonar."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ }
+}

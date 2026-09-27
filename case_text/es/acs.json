@@ -1,0 +1,854 @@
+{
+ "acs_54m_inferior": {
+  "/presentation": {
+   "en": "A 54-year-old man presents with persistent upper-abdominal discomfort and nausea. He looks uncomfortable and sweaty. The triage note records 'indigestion?' as an unconfirmed impression.",
+   "es": "Un hombre de 54 años consulta por molestia persistente en la parte alta del abdomen y náuseas. Se ve incómodo y sudoroso. La nota de triage registra '¿indigestión?' como impresión no confirmada."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I have a heavy discomfort high in my abdomen that will not go away.",
+   "es": "Tengo una molestia como de peso en la parte alta del abdomen que no se me pasa."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "The discomfort sometimes extends into my chest and jaw.",
+   "es": "A veces la molestia se me extiende al pecho y a la mandíbula."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I feel nauseated and have broken into a sweat.",
+   "es": "Tengo náuseas y empecé a sudar."
+  },
+  "/history/medical_history/0": {
+   "en": "I have high blood pressure and high cholesterol, but no previous heart attack.",
+   "es": "Tengo presión alta y colesterol alto, pero no he tenido ningún infarto antes."
+  },
+  "/history/medications/0": {
+   "en": "I take losartan and atorvastatin; I have not taken an antiplatelet today.",
+   "es": "Tomo losartán y atorvastatina; hoy no he tomado ningún antiagregante plaquetario."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The discomfort started 75 minutes ago while walking and has persisted at rest.",
+   "es": "La molestia empezó hace 75 minutos mientras caminaba y ha persistido en reposo."
+  },
+  "/history/risk_factors/0": {
+   "en": "I smoke, and my father had coronary disease in his fifties.",
+   "es": "Fumo, y mi papá tuvo enfermedad coronaria cuando tenía cincuenta y tantos años."
+  },
+  "/history/chest_pain/0": {
+   "en": "The upper-abdominal heaviness extends behind the sternum and into my jaw; it is not reproduced by touching my chest.",
+   "es": "La pesadez en la parte alta del abdomen se me extiende por detrás del esternón y hasta la mandíbula; no se reproduce al tocarme el pecho."
+  },
+  "/history/breathing/0": {
+   "en": "I feel mildly short of breath, without pleuritic pain.",
+   "es": "Me falta un poco el aire, sin dolor pleurítico."
+  },
+  "/history/bleeding/0": {
+   "en": "I have no hematemesis or black stool.",
+   "es": "No tengo hematemesis ni deposiciones negras."
+  },
+  "/examination/Cardiac": {
+   "en": "Slow regular pulse; no new murmur heard.",
+   "es": "Pulso lento y regular; no se ausculta soplo nuevo."
+  },
+  "/examination/Respiratory": {
+   "en": "No increased respiratory effort; lungs are clear on auscultation.",
+   "es": "Sin aumento del esfuerzo respiratorio; pulmones limpios a la auscultación."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft, with no focal tenderness or guarding despite the reported discomfort.",
+   "es": "Blando, sin dolor focal a la palpación ni resistencia muscular, a pesar de la molestia referida."
+  },
+  "/examination/Neurological": {
+   "en": "Awake, oriented and moving all limbs normally.",
+   "es": "Vigil, orientado y moviliza las cuatro extremidades con normalidad."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Reduced contraction of the inferior wall; the other walls contract normally",
+   "es": "Contracción disminuida de la pared inferior; las demás paredes se contraen normalmente"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; RV free wall contracts normally; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; la pared libre del VD se contrae normalmente; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.8 cm; about 50% inspiratory collapse",
+   "es": "1.8 cm; colapso inspiratorio de aproximadamente 50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal consolidation or pulmonary edema.",
+   "es": "Sin consolidación focal ni edema pulmonar."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/ecg_right/result/report": {
+   "en": "Right-sided leads.",
+   "es": "Derivaciones derechas."
+  },
+  "/investigations/ecg_posterior/result/report": {
+   "en": "Posterior leads.",
+   "es": "Derivaciones posteriores."
+  }
+ },
+ "acs_66f_nonst": {
+  "/presentation": {
+   "en": "A 66-year-old woman reports new breathlessness and a persistent heavy sensation across her upper chest.",
+   "es": "Una mujer de 66 años refiere disnea nueva y una sensación persistente de peso a lo ancho de la parte alta del pecho."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I feel unusually short of breath and there is a weight across my upper chest.",
+   "es": "Me falta el aire de una forma poco habitual y tengo un peso a lo ancho de la parte alta del pecho."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I have been nauseated and more tired than usual.",
+   "es": "He tenido náuseas y he estado más cansada de lo habitual."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have not had fever, sputum or pain on deep inspiration.",
+   "es": "No he tenido fiebre, expectoración ni dolor al inspirar profundo."
+  },
+  "/history/medical_history/0": {
+   "en": "I have diabetes and high blood pressure; these symptoms are new for me.",
+   "es": "Tengo diabetes y presión alta; estos síntomas son nuevos para mí."
+  },
+  "/history/medications/0": {
+   "en": "I take metformin, losartan and a statin.",
+   "es": "Tomo metformina, losartán y una estatina."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The symptoms started about three hours ago during light activity and have not fully resolved.",
+   "es": "Los síntomas empezaron hace unas tres horas durante una actividad liviana y no se me han pasado del todo."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have diabetes and hypertension; my sister has coronary disease.",
+   "es": "Tengo diabetes e hipertensión; mi hermana tiene enfermedad coronaria."
+  },
+  "/history/chest_pain/0": {
+   "en": "The heaviness is persistent, not positional and not reproduced by pressing on the chest.",
+   "es": "La pesadez es persistente, no cambia con la posición y no se reproduce al presionar el pecho."
+  },
+  "/history/breathing/0": {
+   "en": "I become breathless with much less activity than usual.",
+   "es": "Me falta el aire con mucha menos actividad de lo habitual."
+  },
+  "/history/bleeding/0": {
+   "en": "I have no recent bleeding or black stools.",
+   "es": "No he tenido sangrado reciente ni deposiciones negras."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular mildly rapid pulse; no new murmur.",
+   "es": "Pulso regular, levemente rápido; sin soplo nuevo."
+  },
+  "/examination/Respiratory": {
+   "en": "Mildly increased effort; no focal crackles or wheeze.",
+   "es": "Esfuerzo respiratorio levemente aumentado; sin crepitaciones focales ni sibilancias."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Alert, oriented and conversant.",
+   "es": "Alerta, orientada y capaz de conversar."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Mild hypokinesis of the inferolateral wall; global contraction otherwise preserved",
+   "es": "Hipocinesia leve de la pared inferolateral; contracción global por lo demás conservada"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.7 cm; about 50% inspiratory collapse",
+   "es": "1.7 cm; colapso inspiratorio de aproximadamente 50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No acute focal pulmonary abnormality.",
+   "es": "Sin alteraciones pulmonares focales agudas."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/ecg_right/result/report": {
+   "en": "Right-sided leads.",
+   "es": "Derivaciones derechas."
+  },
+  "/investigations/ecg_posterior/result/report": {
+   "en": "Posterior leads.",
+   "es": "Derivaciones posteriores."
+  }
+ },
+ "acs_61m_posterior": {
+  "/presentation": {
+   "en": "A 61-year-old man reports two hours of pressure across his chest and back, with nausea.",
+   "es": "Un hombre de 61 años refiere opresión que abarca el pecho y la espalda, de dos horas de evolución, con náuseas."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "There is a pressure in my chest that goes through to my back.",
+   "es": "Tengo una opresión en el pecho que me atraviesa hasta la espalda."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I feel sick and clammy.",
+   "es": "Tengo náuseas y sudor frío."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have no fever, cough or pain on breathing.",
+   "es": "No tengo fiebre, tos ni dolor al respirar."
+  },
+  "/history/medical_history/0": {
+   "en": "I have high blood pressure and I stopped smoking five years ago; I have had no heart attack.",
+   "es": "Tengo presión alta y dejé de fumar hace cinco años; no he tenido ningún infarto."
+  },
+  "/history/medications/0": {
+   "en": "I take amlodipine; I have not taken an antiplatelet today.",
+   "es": "Tomo amlodipino; hoy no he tomado ningún antiagregante plaquetario."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The pressure started two hours ago while I was at rest and has not eased.",
+   "es": "La opresión empezó hace dos horas, mientras estaba en reposo, y no ha cedido."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have high blood pressure and a smoking history.",
+   "es": "Tengo presión alta y he sido fumador."
+  },
+  "/history/chest_pain/0": {
+   "en": "The pressure is central and goes through to the back; it does not change with breathing or position.",
+   "es": "La opresión es central y me atraviesa hasta la espalda; no cambia al respirar ni con la posición."
+  },
+  "/history/breathing/0": {
+   "en": "I am not especially short of breath.",
+   "es": "No tengo mucha falta de aire."
+  },
+  "/history/bleeding/0": {
+   "en": "I have had no bleeding.",
+   "es": "No he tenido ningún sangrado."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular pulse at a normal rate; no new murmur.",
+   "es": "Pulso regular, de frecuencia normal; sin soplo nuevo."
+  },
+  "/examination/Respiratory": {
+   "en": "No increased effort; lungs clear.",
+   "es": "Sin aumento del esfuerzo respiratorio; pulmones limpios."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Alert, oriented and moving all limbs normally.",
+   "es": "Alerta, orientado y moviliza las cuatro extremidades con normalidad."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Hypokinesis of the posterior wall; the anterior and lateral walls contract normally",
+   "es": "Hipocinesia de la pared posterior; las paredes anterior y lateral se contraen normalmente"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.6 cm; about 50% inspiratory collapse",
+   "es": "1.6 cm; colapso inspiratorio de aproximadamente 50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal consolidation or pulmonary edema.",
+   "es": "Sin consolidación focal ni edema pulmonar."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/ecg_right/result/report": {
+   "en": "Right-sided leads.",
+   "es": "Derivaciones derechas."
+  },
+  "/investigations/ecg_posterior/result/report": {
+   "en": "Posterior leads.",
+   "es": "Derivaciones posteriores."
+  }
+ },
+ "acs_52m_de_winter": {
+  "/presentation": {
+   "en": "A 52-year-old man arrives with 40 minutes of heavy central chest pain and sweating.",
+   "es": "Un hombre de 52 años llega con dolor torácico central tipo peso y sudoración, de 40 minutos de evolución."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "My chest feels crushed and I am sweating.",
+   "es": "Siento como si me aplastaran el pecho y estoy sudando."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I feel short of breath and nauseated.",
+   "es": "Me falta el aire y tengo náuseas."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have no cough, fever or pleuritic pain.",
+   "es": "No tengo tos, fiebre ni dolor pleurítico."
+  },
+  "/history/medical_history/0": {
+   "en": "I have high cholesterol; I have never had a heart attack.",
+   "es": "Tengo colesterol alto; nunca he tenido un infarto."
+  },
+  "/history/medications/0": {
+   "en": "I take atorvastatin only; I have not taken an antiplatelet today.",
+   "es": "Solo tomo atorvastatina; hoy no he tomado ningún antiagregante plaquetario."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The pain began 40 minutes ago at rest and has been constant since.",
+   "es": "El dolor empezó hace 40 minutos, en reposo, y ha sido constante desde entonces."
+  },
+  "/history/risk_factors/0": {
+   "en": "I smoke and my brother had a stent at 55.",
+   "es": "Fumo y a mi hermano le pusieron un stent a los 55."
+  },
+  "/history/chest_pain/0": {
+   "en": "The pain is central, heavy, and radiates to both arms; it is not positional.",
+   "es": "El dolor es central, se siente como un peso y se me irradia a los dos brazos; no cambia con la posición."
+  },
+  "/history/breathing/0": {
+   "en": "I am mildly short of breath with the pain.",
+   "es": "Me falta un poco el aire con el dolor."
+  },
+  "/history/bleeding/0": {
+   "en": "I have had no bleeding.",
+   "es": "No he tenido ningún sangrado."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular pulse; no new murmur; skin is cool and damp.",
+   "es": "Pulso regular; sin soplo nuevo; piel fría y húmeda."
+  },
+  "/examination/Respiratory": {
+   "en": "Mildly increased effort; no crackles or wheeze.",
+   "es": "Esfuerzo respiratorio levemente aumentado; sin crepitaciones ni sibilancias."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Alert and oriented.",
+   "es": "Alerta, con orientación conservada."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Akinesis of the anterior wall and apex; the inferior wall contracts normally",
+   "es": "Acinesia de la pared anterior y del ápex; la pared inferior se contrae normalmente"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.5 cm; about 50% inspiratory collapse",
+   "es": "1.5 cm; colapso inspiratorio de aproximadamente 50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal consolidation or pulmonary edema.",
+   "es": "Sin consolidación focal ni edema pulmonar."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/ecg_right/result/report": {
+   "en": "Right-sided leads.",
+   "es": "Derivaciones derechas."
+  },
+  "/investigations/ecg_posterior/result/report": {
+   "en": "Posterior leads.",
+   "es": "Derivaciones posteriores."
+  }
+ },
+ "acs_48m_wellens": {
+  "/presentation": {
+   "en": "A 48-year-old man is pain-free now after three episodes of chest pressure today, the last one an hour ago.",
+   "es": "Un hombre de 48 años se encuentra ahora sin dolor, tras presentar hoy tres episodios de opresión en el pecho, el último hace una hora."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I had three episodes of chest pressure today; right now I feel fine.",
+   "es": "Hoy tuve tres episodios de opresión en el pecho; en este momento me siento bien."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "Each episode came with sweating and settled on its own.",
+   "es": "Cada episodio vino acompañado de sudoración y se me pasó solo."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have no fever, cough or pleuritic pain.",
+   "es": "No tengo fiebre, tos ni dolor pleurítico."
+  },
+  "/history/medical_history/0": {
+   "en": "I have no diagnosed heart disease and take no regular medicines.",
+   "es": "No tengo ninguna enfermedad del corazón diagnosticada y no tomo medicamentos de forma habitual."
+  },
+  "/history/medications/0": {
+   "en": "I take no regular medicines and have not taken an antiplatelet.",
+   "es": "No tomo medicamentos de forma habitual y no he tomado ningún antiagregante plaquetario."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The episodes began this morning; the last one ended an hour ago and lasted twenty minutes.",
+   "es": "Los episodios empezaron esta mañana; el último terminó hace una hora y duró veinte minutos."
+  },
+  "/history/risk_factors/0": {
+   "en": "I smoke twenty cigarettes a day.",
+   "es": "Fumo veinte cigarrillos al día."
+  },
+  "/history/chest_pain/0": {
+   "en": "During the episodes the pressure was central and heavy; between them I have no pain at all.",
+   "es": "Durante los episodios, la opresión era central y se sentía como un peso; entre un episodio y otro no tengo nada de dolor."
+  },
+  "/history/breathing/0": {
+   "en": "My breathing is normal now.",
+   "es": "Ahora respiro normalmente."
+  },
+  "/history/bleeding/0": {
+   "en": "I have had no bleeding.",
+   "es": "No he tenido ningún sangrado."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular pulse at a normal rate; no murmur; skin warm and dry.",
+   "es": "Pulso regular, de frecuencia normal; sin soplos; piel tibia y seca."
+  },
+  "/examination/Respiratory": {
+   "en": "Normal effort; lungs clear.",
+   "es": "Esfuerzo respiratorio normal; pulmones limpios."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Alert, oriented and comfortable.",
+   "es": "Alerta, orientado y cómodo."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Normal wall motion in every segment at rest",
+   "es": "Motilidad parietal normal en todos los segmentos en reposo"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.5 cm; >50% inspiratory collapse",
+   "es": "1.5 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No acute cardiopulmonary abnormality.",
+   "es": "Sin alteraciones cardiopulmonares agudas."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/ecg_right/result/report": {
+   "en": "Right-sided leads.",
+   "es": "Derivaciones derechas."
+  },
+  "/investigations/ecg_posterior/result/report": {
+   "en": "Posterior leads.",
+   "es": "Derivaciones posteriores."
+  }
+ },
+ "acs_70f_left_main": {
+  "/presentation": {
+   "en": "A 70-year-old woman presents with chest pressure, breathlessness and sweating that began an hour ago.",
+   "es": "Una mujer de 70 años consulta por opresión en el pecho, disnea y sudoración que comenzaron hace una hora."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "My chest is tight and I cannot catch my breath.",
+   "es": "Siento el pecho apretado y no me alcanza el aire."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I feel sick and very sweaty.",
+   "es": "Tengo náuseas y estoy muy sudorosa."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have no fever or productive cough.",
+   "es": "No tengo fiebre ni tos productiva."
+  },
+  "/history/medical_history/0": {
+   "en": "I have diabetes, high blood pressure and kidney disease; I have had no heart attack.",
+   "es": "Tengo diabetes, presión alta y enfermedad renal; no he tenido ningún infarto."
+  },
+  "/history/medications/0": {
+   "en": "I take metformin, losartan and a statin; I have not taken an antiplatelet today.",
+   "es": "Tomo metformina, losartán y una estatina; hoy no he tomado ningún antiagregante plaquetario."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The tightness and breathlessness began an hour ago at rest.",
+   "es": "La opresión y la falta de aire empezaron hace una hora, en reposo."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have diabetes, high blood pressure and kidney disease.",
+   "es": "Tengo diabetes, presión alta y enfermedad renal."
+  },
+  "/history/chest_pain/0": {
+   "en": "The tightness is central and constant, with sweating; it does not change with breathing.",
+   "es": "La opresión es central y constante, con sudoración; no cambia al respirar."
+  },
+  "/history/breathing/0": {
+   "en": "The breathlessness came with the chest tightness.",
+   "es": "La falta de aire apareció junto con la opresión en el pecho."
+  },
+  "/history/bleeding/0": {
+   "en": "I have had no bleeding.",
+   "es": "No he tenido ningún sangrado."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular tachycardia; no new murmur; extremities are cool.",
+   "es": "Taquicardia regular; sin soplo nuevo; extremidades frías."
+  },
+  "/examination/Respiratory": {
+   "en": "Mildly increased effort; scattered basal crackles.",
+   "es": "Esfuerzo respiratorio levemente aumentado; crepitaciones basales dispersas."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Alert and oriented.",
+   "es": "Alerta, con orientación conservada."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Globally reduced contraction without a single focal defect",
+   "es": "Contracción globalmente disminuida sin un defecto focal único"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.9 cm; about 50% inspiratory collapse",
+   "es": "1.9 cm; colapso inspiratorio de aproximadamente 50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Mild pulmonary congestion without focal consolidation.",
+   "es": "Congestión pulmonar leve sin consolidación focal."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/ecg_right/result/report": {
+   "en": "Right-sided leads.",
+   "es": "Derivaciones derechas."
+  },
+  "/investigations/ecg_posterior/result/report": {
+   "en": "Posterior leads.",
+   "es": "Derivaciones posteriores."
+  }
+ }
+}

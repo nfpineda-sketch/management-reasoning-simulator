@@ -1,0 +1,298 @@
+{
+ "pulmonary_embolism_33f": {
+  "/presentation": {
+   "en": "A 33-year-old woman arrives with sudden breathlessness and sharp right-sided chest discomfort. She wonders whether anxiety could explain the episode; this has not been assessed.",
+   "es": "Una mujer de 33 años llega con disnea súbita y molestia punzante en el hemitórax derecho. Se pregunta si la ansiedad podría explicar el episodio; esto no ha sido evaluado."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I suddenly became short of breath and it hurts on the right when I breathe in.",
+   "es": "De repente me empezó a faltar el aire y me duele en el lado derecho al inspirar."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I have felt my heart racing and a little lightheaded.",
+   "es": "He sentido el corazón acelerado y me he sentido un poco mareada."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have no fever or productive cough.",
+   "es": "No tengo fiebre ni tos productiva."
+  },
+  "/history/medical_history/0": {
+   "en": "I had surgery for an ankle fracture 12 days ago and have been much less mobile.",
+   "es": "Me operaron de una fractura de tobillo hace 12 días y me he movido mucho menos."
+  },
+  "/history/medications/0": {
+   "en": "I use an estrogen-containing contraceptive and occasional acetaminophen.",
+   "es": "Uso un anticonceptivo con estrógeno y, de vez en cuando, paracetamol."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The breathing and chest discomfort started abruptly about two hours ago.",
+   "es": "La dificultad para respirar y la molestia en el pecho comenzaron bruscamente hace unas dos horas."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have recent surgery, reduced mobility and use an estrogen-containing contraceptive.",
+   "es": "Me operaron hace poco, tengo la movilidad reducida y uso un anticonceptivo con estrógeno."
+  },
+  "/history/chest_pain/0": {
+   "en": "The pain is sharp and worsens with inspiration; it is not relieved by rest.",
+   "es": "El dolor es punzante y empeora al inspirar; no se alivia con el reposo."
+  },
+  "/history/breathing/0": {
+   "en": "The breathlessness started suddenly while I was sitting.",
+   "es": "La falta de aire empezó de repente mientras estaba sentada."
+  },
+  "/history/bleeding/0": {
+   "en": "I have not coughed blood or had other recent bleeding.",
+   "es": "No he tosido sangre ni he tenido otros sangrados recientes."
+  },
+  "/history/leg_symptoms/0": {
+   "en": "My operated leg has been more swollen, including the calf, since yesterday.",
+   "es": "Desde ayer tengo más hinchada la pierna operada, incluida la pantorrilla."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular tachycardia; no new murmur.",
+   "es": "Taquicardia regular; sin soplos nuevos."
+  },
+  "/examination/Respiratory": {
+   "en": "Increased effort; breath sounds are equal without focal crackles or wheeze.",
+   "es": "Esfuerzo respiratorio aumentado; murmullo pulmonar simétrico, sin crépitos focales ni sibilancias."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Alert and oriented.",
+   "es": "Alerta, con orientación conservada."
+  },
+  "/examination/Extremities": {
+   "en": "Unilateral calf swelling and tenderness on the operated side.",
+   "es": "Aumento de volumen unilateral y dolor a la palpación de la pantorrilla del lado operado."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved contraction",
+   "es": "Contracción conservada"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Mildly enlarged, approximately equal to the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Levemente aumentado de tamaño, aproximadamente igual al VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "2.0 cm; <50% inspiratory collapse",
+   "es": "2.0 cm; colapso inspiratorio <50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Non-compressible on the operated (symptomatic) side, with echogenic intraluminal material; compressible on the other side",
+   "es": "No compresible en el lado operado (sintomático), con material ecogénico intraluminal; compresible en el otro lado"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal consolidation, edema or pneumothorax.",
+   "es": "Sin consolidación focal, edema ni neumotórax."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/ctpa/result/report": {
+   "en": "Acute lobar and segmental filling defects in the right and left pulmonary arteries. Mild RV enlargement.",
+   "es": "Defectos de llenado agudos lobares y segmentarios en las arterias pulmonares derecha e izquierda. Leve aumento de tamaño del VD."
+  },
+  "/investigations/d_dimer/result/report": {
+   "en": "Age-adjusted upper reference: 500 ng/mL FEU up to 50 years, age x 10 above it. Above the limit: this does not establish a diagnosis and does not exclude one.",
+   "es": "Referencia superior ajustada por edad: 500 ng/mL FEU hasta los 50 años, y edad x 10 por encima. Sobre el límite: esto no establece un diagnóstico ni lo descarta."
+  }
+ },
+ "pulmonary_embolism_61m": {
+  "/presentation": {
+   "en": "A 61-year-old man is brought in after nearly collapsing. He is breathless and says he feels faint even while lying on the trolley.",
+   "es": "Un hombre de 61 años es traído tras casi desplomarse. Está disneico y dice sentirse a punto de desmayarse incluso estando acostado en la camilla."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I suddenly felt breathless and nearly passed out.",
+   "es": "De repente sentí que me faltaba el aire y casi me desmayo."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I have felt my heart racing and had discomfort when taking a deep breath.",
+   "es": "He sentido el corazón acelerado y he tenido una molestia al respirar profundo."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have no fever, sputum or recent vomiting.",
+   "es": "No tengo fiebre, flemas ni vómitos recientes."
+  },
+  "/history/medical_history/0": {
+   "en": "I am receiving chemotherapy for colon cancer; I have not previously had a clot.",
+   "es": "Estoy recibiendo quimioterapia por un cáncer de colon; no he tenido coágulos antes."
+  },
+  "/history/medications/0": {
+   "en": "I receive scheduled chemotherapy and as-needed anti-nausea medication; I do not take an anticoagulant.",
+   "es": "Recibo quimioterapia programada y un medicamento para las náuseas cuando lo necesito; no tomo ningún anticoagulante."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The severe breathlessness and near-collapse began about 45 minutes ago.",
+   "es": "La falta de aire intensa y el episodio en que casi me desplomé comenzaron hace unos 45 minutos."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have active cancer and have spent much of the last week in bed because of fatigue.",
+   "es": "Tengo un cáncer activo y he pasado gran parte de la última semana en cama por el cansancio."
+  },
+  "/history/chest_pain/0": {
+   "en": "There is mild chest discomfort on a deep breath, without a sustained crushing pressure.",
+   "es": "Hay una molestia leve en el pecho al respirar profundo, sin una presión opresiva sostenida."
+  },
+  "/history/bleeding/0": {
+   "en": "I have no recent black stool, rectal bleeding or hematemesis.",
+   "es": "No he tenido recientemente deposiciones negras, sangrado por el recto ni vómitos con sangre."
+  },
+  "/history/leg_symptoms/0": {
+   "en": "My left calf has been swollen for several days.",
+   "es": "Tengo la pantorrilla izquierda hinchada desde hace varios días."
+  },
+  "/examination/Cardiac": {
+   "en": "Rapid regular pulse; elevated jugular venous pressure.",
+   "es": "Pulso rápido y regular; presión venosa yugular elevada."
+  },
+  "/examination/Respiratory": {
+   "en": "Marked respiratory effort with equal breath sounds and no widespread crackles.",
+   "es": "Esfuerzo respiratorio marcado, con murmullo pulmonar simétrico y sin crépitos difusos."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft, without guarding or focal tenderness.",
+   "es": "Blando, sin defensa muscular ni dolor focal a la palpación."
+  },
+  "/examination/Neurological": {
+   "en": "Awake and answers appropriately, but reports persistent faintness.",
+   "es": "Vigil y responde adecuadamente, pero refiere sensación persistente de desmayo."
+  },
+  "/examination/Extremities": {
+   "en": "Left calf swelling and tenderness.",
+   "es": "Aumento de volumen y dolor a la palpación de la pantorrilla izquierda."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Small, underfilled cavity with vigorous contraction",
+   "es": "Cavidad pequeña, con llenado disminuido y contracción vigorosa"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Larger than the LV; septal flattening with a D-shaped LV; reduced free-wall contraction with apical sparing (McConnell sign)",
+   "es": "Mayor que el VI; aplanamiento septal con VI en forma de D; contracción disminuida de la pared libre con preservación apical (signo de McConnell)"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "2.3 cm; minimal inspiratory collapse",
+   "es": "2.3 cm; colapso inspiratorio mínimo"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Left popliteal vein non-compressible; right popliteal vein compressible",
+   "es": "Vena poplítea izquierda no compresible; vena poplítea derecha compresible"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal consolidation or pulmonary edema.",
+   "es": "Sin consolidación focal ni edema pulmonar."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/ctpa/result/report": {
+   "en": "Extensive acute bilateral main and lobar pulmonary arterial filling defects with RV enlargement and septal flattening.",
+   "es": "Extensos defectos de llenado agudos bilaterales en las arterias pulmonares principales y lobares con aumento de tamaño del VD y aplanamiento septal."
+  },
+  "/investigations/d_dimer/result/report": {
+   "en": "Age-adjusted upper reference: 500 ng/mL FEU up to 50 years, age x 10 above it. Above the limit: this does not establish a diagnosis and does not exclude one.",
+   "es": "Referencia superior ajustada por edad: 500 ng/mL FEU hasta los 50 años, y edad x 10 por encima. Sobre el límite: esto no establece un diagnóstico ni lo descarta."
+  }
+ }
+}

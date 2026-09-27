@@ -1,0 +1,302 @@
+{
+ "anaphylaxis_29f": {
+  "/presentation": {
+   "en": "A 29-year-old woman arrives from a restaurant with a spreading rash, a swollen face and noisy breathing. She is anxious and speaks in short phrases.",
+   "es": "Una mujer de 29 años llega desde un restaurante con una erupción que se extiende, la cara hinchada y respiración ruidosa. Está ansiosa y habla con frases cortas."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "My face and throat feel like they are closing and my whole body is itching.",
+   "es": "Siento como si la cara y la garganta se me estuvieran cerrando, y me pica todo el cuerpo."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "The rash came up everywhere within minutes and my lips are swollen.",
+   "es": "La erupción me salió por todas partes en cuestión de minutos y tengo los labios hinchados."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I feel light-headed and my chest is tight.",
+   "es": "Me siento mareada y tengo el pecho apretado."
+  },
+  "/history/medical_history/0": {
+   "en": "I have hay fever; I have never had a reaction like this and I have no asthma.",
+   "es": "Tengo rinitis alérgica; nunca había tenido una reacción así y no tengo asma."
+  },
+  "/history/medications/0": {
+   "en": "I take no regular medication. I have no adrenaline autoinjector.",
+   "es": "No tomo medicamentos habituales. No tengo autoinyector de adrenalina."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "It began about fifteen minutes into the meal and has worsened since.",
+   "es": "Comenzó unos quince minutos después de empezar a comer y ha empeorado desde entonces."
+  },
+  "/history/risk_factors/0": {
+   "en": "I ate a dish with a satay sauce; I have avoided peanuts since childhood without ever being tested.",
+   "es": "Comí un plato con salsa satay; evito el maní desde niña, sin que nunca me hayan hecho exámenes."
+  },
+  "/history/exposure/0": {
+   "en": "The meal contained a peanut sauce; there was no sting, no new medicine and no contrast.",
+   "es": "La comida tenía una salsa de maní; no hubo picadura, ni medicamento nuevo, ni medio de contraste."
+  },
+  "/history/breathing/0": {
+   "en": "My chest feels tight and my throat feels narrow when I breathe in.",
+   "es": "Siento el pecho apretado y la garganta estrecha cuando tomo aire."
+  },
+  "/history/chest_pain/0": {
+   "en": "There is tightness across the chest but no crushing central pain.",
+   "es": "Hay una opresión que atraviesa el pecho, pero no un dolor aplastante en el centro."
+  },
+  "/history/oral_intake/0": {
+   "en": "I had eaten only a few mouthfuls when it started.",
+   "es": "Había comido solo unos pocos bocados cuando empezó."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "I have no burning or frequency when passing urine.",
+   "es": "No tengo ardor al orinar ni orino más seguido."
+  },
+  "/history/bleeding/0": {
+   "en": "I have not coughed or vomited blood.",
+   "es": "No he tosido ni vomitado sangre."
+  },
+  "/examination/Cardiac": {
+   "en": "Rapid regular pulse; the peripheries are warm and well filled.",
+   "es": "Pulso rápido y regular; extremidades tibias y bien perfundidas."
+  },
+  "/examination/Respiratory": {
+   "en": "Increased effort with widespread expiratory wheeze and audible inspiratory stridor.",
+   "es": "Esfuerzo respiratorio aumentado, con sibilancias espiratorias difusas y estridor inspiratorio audible."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft; mild diffuse discomfort without guarding.",
+   "es": "Blando; molestia difusa leve, sin defensa."
+  },
+  "/examination/General appearance": {
+   "en": "Widespread urticarial wheals, flushing and periorbital and lip swelling.",
+   "es": "Habones urticariales difusos, enrojecimiento y edema periorbitario y labial."
+  },
+  "/examination/Neurological": {
+   "en": "Awake, oriented and anxious; answers are short because of the breathing.",
+   "es": "Vigil, orientada y ansiosa; sus respuestas son breves a causa de la respiración."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Vigorous, hyperdynamic contraction with near-obliteration in systole",
+   "es": "Contracción vigorosa e hiperdinámica con obliteración casi completa en sístole"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "0.9 cm; >50% inspiratory collapse",
+   "es": "0.9 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Hyperinflated lung fields without consolidation, edema or pneumothorax.",
+   "es": "Campos pulmonares hiperinsuflados sin consolidación, edema ni neumotórax."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "anaphylaxis_63m_betablocked": {
+  "/presentation": {
+   "en": "A 63-year-old man is brought in after a wasp sting in his garden. He is flushed, wheezing and difficult to rouse fully. Handover notes a sting and a rash; the medication list came with the family, not with the patient.",
+   "es": "Un hombre de 63 años es traído tras una picadura de avispa en su jardín. Está enrojecido, con sibilancias y cuesta despertarlo por completo. La entrega menciona una picadura y una erupción; la lista de medicamentos llegó con la familia, no con el paciente."
+  },
+  "/history_source": {
+   "en": "Wife",
+   "es": "Esposa"
+  },
+  "/history/chief_complaint/0": {
+   "en": "His wife says he was stung, came inside saying he felt strange, and then became grey and floppy.",
+   "es": "Su esposa cuenta que lo picaron, que entró a la casa diciendo que se sentía raro y que después se puso grisáceo y quedó sin fuerza."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "His wife reports a rash over his chest and arms within minutes.",
+   "es": "Su esposa refiere que en cuestión de minutos le apareció una erupción en el pecho y los brazos."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "He complained of tightness in the throat before he stopped speaking clearly.",
+   "es": "Se quejó de opresión en la garganta antes de dejar de hablar con claridad."
+  },
+  "/history/medical_history/0": {
+   "en": "His wife reports high blood pressure and an irregular heart rhythm. He has been stung before without a reaction.",
+   "es": "Su esposa refiere presión alta y un ritmo cardíaco irregular. Lo han picado antes sin que haya tenido una reacción."
+  },
+  "/history/medications/0": {
+   "en": "His wife lists atenolol and apixaban, taken every morning; he took both today.",
+   "es": "Su esposa enumera atenolol y apixabán, que toma todas las mañanas; hoy tomó ambos."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The sting was about twenty minutes ago and he deteriorated within ten.",
+   "es": "La picadura fue hace unos veinte minutos y empeoró en menos de diez."
+  },
+  "/history/risk_factors/0": {
+   "en": "He keeps bees at the end of the garden and has been stung several times over the years.",
+   "es": "Cría abejas al fondo del jardín y lo han picado varias veces a lo largo de los años."
+  },
+  "/history/exposure/0": {
+   "en": "His wife saw the wasp and the sting site on the forearm; no new medicine and no food were involved.",
+   "es": "Su esposa vio la avispa y el sitio de la picadura en el antebrazo; no hubo ningún medicamento nuevo ni alimento involucrado."
+  },
+  "/history/breathing/0": {
+   "en": "His wife says the wheeze began before he became drowsy.",
+   "es": "Su esposa cuenta que las sibilancias comenzaron antes de que se pusiera somnoliento."
+  },
+  "/history/chest_pain/0": {
+   "en": "His wife reports no complaint of chest pain before he stopped speaking.",
+   "es": "Su esposa refiere que no se quejó de dolor en el pecho antes de dejar de hablar."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "There was no witnessed seizure, head strike or focal weakness.",
+   "es": "No se presenció ninguna convulsión, golpe en la cabeza ni debilidad focal."
+  },
+  "/history/oral_intake/0": {
+   "en": "He had eaten breakfast several hours earlier.",
+   "es": "Había desayunado varias horas antes."
+  },
+  "/history/bleeding/0": {
+   "en": "There is no bleeding from the sting site or elsewhere.",
+   "es": "No hay sangrado en el sitio de la picadura ni en otra parte."
+  },
+  "/examination/Cardiac": {
+   "en": "Irregular pulse at a rate that does not rise with the low pressure; peripheries warm.",
+   "es": "Pulso irregular, con una frecuencia que no aumenta pese a la presión baja; extremidades tibias."
+  },
+  "/examination/Respiratory": {
+   "en": "Increased effort with widespread wheeze; no stridor heard.",
+   "es": "Esfuerzo respiratorio aumentado, con sibilancias difusas; no se escucha estridor."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/General appearance": {
+   "en": "Flushing over the chest and arms with scattered wheals; a sting site on the right forearm.",
+   "es": "Enrojecimiento en el tórax y los brazos, con habones dispersos; sitio de picadura en el antebrazo derecho."
+  },
+  "/examination/Neurological": {
+   "en": "Opens eyes to voice and follows simple commands slowly; moves all limbs.",
+   "es": "Abre los ojos al llamado verbal y obedece órdenes simples con lentitud; moviliza todas las extremidades."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved contraction without the hyperdynamic pattern",
+   "es": "Contracción conservada sin el patrón hiperdinámico"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.1 cm; >50% inspiratory collapse",
+   "es": "1.1 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No consolidation, edema or pneumothorax.",
+   "es": "Sin consolidación, edema ni neumotórax."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ }
+}

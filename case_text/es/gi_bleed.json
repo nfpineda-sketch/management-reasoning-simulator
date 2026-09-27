@@ -1,0 +1,278 @@
+{
+ "gi_bleed_57m": {
+  "/presentation": {
+   "en": "A 57-year-old man presents after nearly fainting when standing. He looks pale and says he feels profoundly weak.",
+   "es": "Un hombre de 57 años consulta tras casi desmayarse al ponerse de pie. Se ve pálido y dice sentirse profundamente débil."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I nearly passed out when I stood up and still feel very weak.",
+   "es": "Casi me desmayo cuando me paré y todavía me siento muy débil."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I have had dark, sticky stools since yesterday.",
+   "es": "Desde ayer tengo deposiciones oscuras y pegajosas."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have felt mild burning high in my abdomen and become breathless on walking.",
+   "es": "He sentido un ardor leve en la parte alta del abdomen y me ha faltado el aire al caminar."
+  },
+  "/history/medical_history/0": {
+   "en": "I have knee arthritis and intermittent indigestion; no known liver disease.",
+   "es": "Tengo artritis en la rodilla y a veces indigestión; no tengo ninguna enfermedad conocida del hígado."
+  },
+  "/history/medications/0": {
+   "en": "I have taken ibuprofen most days for my knee over the last two weeks.",
+   "es": "En las últimas dos semanas he tomado ibuprofeno casi todos los días por la rodilla."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The dark stools began yesterday; the near-faint occurred this morning.",
+   "es": "Las deposiciones oscuras empezaron ayer; el episodio en que casi me desmayé fue esta mañana."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have used regular anti-inflammatory tablets and have new dark stools.",
+   "es": "He tomado pastillas antiinflamatorias en forma regular y tengo deposiciones oscuras que antes no tenía."
+  },
+  "/history/bleeding/0": {
+   "en": "The stools are black and sticky, not just dark brown; I have not vomited blood.",
+   "es": "Las deposiciones son negras y pegajosas, no solo café oscuro; no he vomitado sangre."
+  },
+  "/history/chest_pain/0": {
+   "en": "I have no central chest pressure.",
+   "es": "No tengo presión en el centro del pecho."
+  },
+  "/history/oral_intake/0": {
+   "en": "I have had less appetite but have not had vomiting or diarrhea.",
+   "es": "He tenido menos apetito, pero no he tenido vómitos ni diarrea."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "I have no urinary burning or frequency.",
+   "es": "No tengo ardor al orinar ni estoy orinando más seguido."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular tachycardia with weak peripheral pulses.",
+   "es": "Taquicardia regular con pulsos periféricos débiles."
+  },
+  "/examination/Respiratory": {
+   "en": "No increased effort; lungs clear on auscultation despite tachypnea.",
+   "es": "Sin aumento del esfuerzo respiratorio; auscultación pulmonar sin ruidos agregados pese a la taquipnea."
+  },
+  "/examination/Abdomen": {
+   "en": "Mild epigastric tenderness without guarding. Rectal examination reveals black tarry stool.",
+   "es": "Dolor leve a la palpación del epigastrio, sin defensa muscular. El tacto rectal muestra deposición negra, de aspecto alquitranado."
+  },
+  "/examination/Neurological": {
+   "en": "Awake and oriented, reporting persistent faintness.",
+   "es": "Vigil y orientado, refiere sensación persistente de desmayo."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Small cavity with hyperdynamic contraction; near-obliteration of the cavity in systole",
+   "es": "Cavidad pequeña con contracción hiperdinámica; obliteración casi completa de la cavidad en sístole"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "0.9 cm; near-complete inspiratory collapse",
+   "es": "0.9 cm; colapso inspiratorio casi completo"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal consolidation or pulmonary edema.",
+   "es": "Sin consolidación focal ni edema pulmonar."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "gi_bleed_72f": {
+  "/presentation": {
+   "en": "A 72-year-old woman presents with worsening fatigue and lightheadedness. She had to stop walking from the waiting room because she felt faint.",
+   "es": "Una mujer de 72 años consulta por cansancio y mareo que han ido empeorando. Tuvo que detenerse mientras caminaba desde la sala de espera porque se sintió a punto de desmayarse."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I am unusually tired and keep feeling lightheaded when I move.",
+   "es": "Estoy más cansada de lo normal y me mareo cada vez que me muevo."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "My stools have become black and sticky over several days.",
+   "es": "Mis deposiciones se han ido poniendo negras y pegajosas a lo largo de varios días."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have little abdominal pain and have not vomited blood.",
+   "es": "Tengo poco dolor abdominal y no he vomitado sangre."
+  },
+  "/history/medical_history/0": {
+   "en": "I had a stomach ulcer years ago and have arthritis.",
+   "es": "Tuve una úlcera de estómago hace años y tengo artritis."
+  },
+  "/history/medications/0": {
+   "en": "I have recently been taking naproxen for arthritis; I am not taking a stomach-protecting medicine.",
+   "es": "Últimamente he estado tomando naproxeno para la artritis; no estoy tomando ningún medicamento para proteger el estómago."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "Fatigue began four days ago; the lightheadedness is much worse today.",
+   "es": "El cansancio empezó hace cuatro días; hoy el mareo está mucho peor."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have a prior ulcer and recent regular anti-inflammatory use.",
+   "es": "Tuve una úlcera antes y últimamente he tomado antiinflamatorios en forma regular."
+  },
+  "/history/bleeding/0": {
+   "en": "I have passed black, sticky stool for three days, with another episode this morning.",
+   "es": "Hace tres días que tengo deposiciones negras y pegajosas, y esta mañana tuve otro episodio."
+  },
+  "/history/chest_pain/0": {
+   "en": "I have not had new central chest pain.",
+   "es": "No he tenido dolor nuevo en el centro del pecho."
+  },
+  "/history/oral_intake/0": {
+   "en": "I have been drinking normally, without diarrhea or repeated vomiting.",
+   "es": "He estado tomando líquidos normalmente, sin diarrea ni vómitos repetidos."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "I have no urinary symptoms.",
+   "es": "No tengo molestias urinarias."
+  },
+  "/examination/Cardiac": {
+   "en": "Rapid regular pulse; no new murmur.",
+   "es": "Pulso rápido y regular; sin soplos nuevos."
+  },
+  "/examination/Respiratory": {
+   "en": "No increased respiratory effort; breath sounds clear bilaterally.",
+   "es": "Sin aumento del esfuerzo respiratorio; murmullo pulmonar bilateral sin ruidos agregados."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft without guarding or significant tenderness. Rectal examination reveals melena.",
+   "es": "Blando, sin defensa muscular ni dolor significativo a la palpación. El tacto rectal muestra melena."
+  },
+  "/examination/Neurological": {
+   "en": "Alert, oriented and moving all limbs symmetrically.",
+   "es": "Alerta, orientada y moviliza las cuatro extremidades en forma simétrica."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Hyperdynamic contraction",
+   "es": "Contracción hiperdinámica"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.1 cm; >50% inspiratory collapse",
+   "es": "1.1 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No acute cardiopulmonary abnormality.",
+   "es": "Sin alteraciones cardiopulmonares agudas."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ }
+}

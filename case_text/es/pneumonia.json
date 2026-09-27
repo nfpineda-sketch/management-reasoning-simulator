@@ -1,0 +1,282 @@
+{
+ "pneumonia_46f": {
+  "/presentation": {
+   "en": "A 46-year-old woman presents with breathlessness and worsening weakness. She is awake and pauses between sentences.",
+   "es": "Una mujer de 46 años consulta por disnea y debilidad progresiva. Está vigil y hace pausas entre frases."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I feel short of breath and too weak to stand for long.",
+   "es": "Me falta el aire y me siento demasiado débil para estar mucho rato de pie."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I have had a cough with yellow sputum and shaking chills.",
+   "es": "He tenido tos con expectoración amarilla y escalofríos con temblor."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "It hurts on the right when I take a deep breath.",
+   "es": "Me duele en el lado derecho cuando respiro profundo."
+  },
+  "/history/medical_history/0": {
+   "en": "I have rheumatoid arthritis; I have not previously needed oxygen.",
+   "es": "Tengo artritis reumatoide; antes no había necesitado oxígeno."
+  },
+  "/history/medications/0": {
+   "en": "I take methotrexate weekly and folic acid; no antibiotic has been started.",
+   "es": "Tomo metotrexato semanal y ácido fólico; no me han iniciado ningún antibiótico."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The cough began three days ago; the breathing and weakness worsened today.",
+   "es": "La tos empezó hace tres días; hoy empeoraron la respiración y la debilidad."
+  },
+  "/history/risk_factors/0": {
+   "en": "I receive methotrexate and have eaten and drunk little since yesterday.",
+   "es": "Estoy en tratamiento con metotrexato y desde ayer he comido y tomado poco."
+  },
+  "/history/chest_pain/0": {
+   "en": "The right-sided pain occurs with coughing or deep inspiration, not as a central pressure.",
+   "es": "El dolor del lado derecho aparece al toser o al inspirar profundo, no como una opresión central."
+  },
+  "/history/breathing/0": {
+   "en": "The shortness of breath is now present while sitting still.",
+   "es": "Ahora me falta el aire estando sentada y quieta."
+  },
+  "/history/oral_intake/0": {
+   "en": "I have had very little to eat or drink since yesterday.",
+   "es": "Desde ayer he comido y tomado muy poco."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "I have no burning or frequency when passing urine.",
+   "es": "No tengo ardor al orinar ni orino más seguido."
+  },
+  "/history/bleeding/0": {
+   "en": "I have not coughed blood, vomited blood or passed black stools.",
+   "es": "No he tosido sangre, no he vomitado sangre ni he tenido deposiciones negras."
+  },
+  "/examination/Cardiac": {
+   "en": "Rapid regular pulse; no new murmur heard.",
+   "es": "Pulso rápido y regular; no se ausculta soplo nuevo."
+  },
+  "/examination/Respiratory": {
+   "en": "Increased respiratory effort; focal crackles and bronchial breathing at the right base.",
+   "es": "Esfuerzo respiratorio aumentado; crepitaciones focales y soplo tubario en la base derecha."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft; no focal tenderness or guarding.",
+   "es": "Blando; sin dolor focal a la palpación ni resistencia muscular."
+  },
+  "/examination/Neurological": {
+   "en": "Awake, oriented and moving all limbs symmetrically.",
+   "es": "Vigil, orientada y moviliza las cuatro extremidades en forma simétrica."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved, vigorous contraction",
+   "es": "Contracción conservada y vigorosa"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.0 cm; >50% inspiratory collapse",
+   "es": "1.0 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "Focal B-lines at the right base; no diffuse bilateral B-lines",
+   "es": "Líneas B focales en la base derecha; sin líneas B difusas bilaterales"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "Right basal subpleural consolidation with dynamic air bronchograms; no pleural effusion",
+   "es": "Consolidación subpleural basal derecha con broncogramas aéreos dinámicos; sin derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Right lower-lobe air-space opacity. No pulmonary edema or pneumothorax.",
+   "es": "Opacidad alveolar en el lóbulo inferior derecho. Sin edema pulmonar ni neumotórax."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "pneumonia_83m": {
+  "/presentation": {
+   "en": "An 83-year-old man is brought by his daughter after becoming unusually sleepy and nearly falling at home. The referral note suggests possible dehydration after poor intake; no diagnosis has been established.",
+   "es": "Un hombre de 83 años es traído por su hija tras presentar una somnolencia inusual y estar a punto de caerse en casa. La nota de derivación sugiere una posible deshidratación tras una baja ingesta; no se ha establecido ningún diagnóstico."
+  },
+  "/history_source": {
+   "en": "Daughter",
+   "es": "Hija"
+  },
+  "/history/chief_complaint/0": {
+   "en": "His daughter reports that he has become sleepy and much less steady on his feet.",
+   "es": "Su hija refiere que se ha puesto somnoliento y mucho menos estable de pie."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "His daughter noticed a new cough and reduced appetite over two days.",
+   "es": "Su hija notó una tos nueva y disminución del apetito en los últimos dos días."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "He has been breathing faster today.",
+   "es": "Hoy ha estado respirando más rápido."
+  },
+  "/history/medical_history/0": {
+   "en": "His daughter reports hypertension and hearing impairment; he normally walks independently and converses clearly.",
+   "es": "Su hija refiere hipertensión e hipoacusia; habitualmente camina sin ayuda y conversa con claridad."
+  },
+  "/history/medications/0": {
+   "en": "His daughter lists amlodipine as his only regular prescription.",
+   "es": "Su hija menciona amlodipino como su único medicamento recetado de uso habitual."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The cough began two days ago; sleepiness and near-fall occurred this morning.",
+   "es": "La tos empezó hace dos días; la somnolencia y la casi caída ocurrieron esta mañana."
+  },
+  "/history/risk_factors/0": {
+   "en": "He is independently mobile at baseline and has had poor oral intake during this illness.",
+   "es": "En su estado basal se moviliza en forma independiente y durante este cuadro ha tenido una baja ingesta oral."
+  },
+  "/history/breathing/0": {
+   "en": "His daughter says the faster breathing began before the near-fall.",
+   "es": "Su hija cuenta que la respiración rápida empezó antes de la casi caída."
+  },
+  "/history/oral_intake/0": {
+   "en": "His daughter says he has taken only small sips and little food today.",
+   "es": "Su hija cuenta que hoy solo ha tomado pequeños sorbos y ha comido poco."
+  },
+  "/history/exposure/0": {
+   "en": "There was no witnessed head strike, seizure or new sedative exposure.",
+   "es": "No se presenció golpe en la cabeza, convulsión ni exposición a un sedante nuevo."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "His daughter reports no preceding urinary complaints.",
+   "es": "Su hija no refiere molestias urinarias previas."
+  },
+  "/examination/Cardiac": {
+   "en": "Rapid regular pulse; no new murmur heard.",
+   "es": "Pulso rápido y regular; no se ausculta soplo nuevo."
+  },
+  "/examination/Respiratory": {
+   "en": "Tachypnea with focal crackles and reduced air entry at the left base.",
+   "es": "Taquipnea con crepitaciones focales y murmullo pulmonar disminuido en la base izquierda."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender; no suprapubic tenderness.",
+   "es": "Blando e indoloro; sin dolor suprapúbico a la palpación."
+  },
+  "/examination/Neurological": {
+   "en": "Opens eyes to voice, follows simple commands slowly, and moves all limbs without an obvious focal deficit.",
+   "es": "Abre los ojos al estímulo verbal, obedece órdenes simples con lentitud y moviliza las cuatro extremidades sin déficit focal evidente."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved contraction",
+   "es": "Contracción conservada"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.2 cm; >50% inspiratory collapse",
+   "es": "1.2 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "Focal B-lines at the left base; no diffuse bilateral B-lines",
+   "es": "Líneas B focales en la base izquierda; sin líneas B difusas bilaterales"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "Left basal consolidation with air bronchograms; no pleural effusion",
+   "es": "Consolidación basal izquierda con broncogramas aéreos; sin derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Left lower-lobe consolidation without diffuse edema.",
+   "es": "Consolidación en el lóbulo inferior izquierdo sin edema difuso."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ }
+}

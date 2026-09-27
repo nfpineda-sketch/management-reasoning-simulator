@@ -399,7 +399,8 @@ def render_rubric_report_pdf(review, proposal=None, record=None, *, language="en
     document (``prose_translation``); the English stays the record.
     """
     import language as languages
-    with languages.presenting(language):
+    from faculty_analysis import case_id_of
+    with languages.presenting(language), languages.narrating(case_id_of(record)):
         options = dict(language=language, audience=audience, average=average, badge=badge)
         mapping = None
         if translate is not None and language != "en":

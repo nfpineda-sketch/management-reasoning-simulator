@@ -66,7 +66,7 @@ Ejemplo real, el mismo encuentro con el selector en español:
 | **2 · Texto fijo de los documentos** | **Hecho** (C-2026-09-26-23). Encabezados, referencias, signos y sus valores, exámenes, órdenes, temas de historia, dominios, notas de convenciones y trazabilidad, en español con el catálogo revisado. |
 | **3 · Texto del modelo** | **Hecho** (C-2026-09-26-24). Al pedir un documento en español se traducen, en una llamada, las frases del modelo que imprime (después de las correcciones), con `MRS_TRANSLATION_MODEL` (por defecto gpt-5-mini). Se guardan y se reutilizan; el original en inglés sigue siendo el registro. Nunca se envían las palabras del residente. Sin clave no se traduce y el documento lo dice. |
 | **4 · Portales y pantallas de revisión** | Pendiente. |
-| **5 · Narrativa de los 31 casos** | En curso: borrador en español en `case_text/es/`, que se usa sólo después de tu revisión, caso por caso. |
+| **5 · Narrativa de los 31 casos** | **Hecho, a la espera de tu revisión** (C-2026-09-26-25). La presentación, la anamnesis, el examen físico y los informes de exámenes de los 31 casos están traducidos en `case_text/es/`. Cada caso se usa en español sólo después de que lo apruebes en el panel docente («Case narrative in Spanish»); hasta entonces sigue en inglés, entero. Los puntos para tu decisión están en `docs/TRADUCCION_CASOS.md`. |
 
 **El idioma del encuentro es el de la pantalla, no el de las órdenes.** La decisión 16 los separó: escribir
 en español no mueve el selector. Un residente que juega en español debe tener el selector en «Español»
@@ -78,9 +78,8 @@ revisión.
 
 ## Segunda etapa, pendiente (lista original del 2026-09-21)
 
-- **La narrativa autorizada de cada caso**: presentación, respuestas de la anamnesis y prosa del
-  examen físico siguen en inglés. Se dejaron fuera a propósito: traducirlas por sustitución
-  produciría exactamente la frase mezclada que la decisión objeta.
+- ~~**La narrativa autorizada de cada caso**~~: traducida el 2026-09-26 como pasajes enteros revisados
+  por la docencia, no por sustitución, que produciría la frase mezclada que la decisión objeta (parte 5).
 - **La revisión posterior**: Decision Review, Expert Comparison, Adaptation Plan, Final Summary
   y el Management Trace siguen en inglés, incluida la frase que originó la decisión
   (*"Your recorded expected effect was: …"*). Cuando se traduzca, el texto original del

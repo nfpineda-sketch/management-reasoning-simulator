@@ -1,0 +1,302 @@
+{
+ "renal_colic_34m": {
+  "/presentation": {
+   "en": "A 34-year-old man arrives with severe right-sided flank pain that comes in waves. He cannot stay still on the trolley.",
+   "es": "Un hombre de 34 años llega con dolor intenso en el flanco derecho, que se presenta en oleadas. No logra quedarse quieto en la camilla."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "The pain grips my right side and goes down into my groin, in waves.",
+   "es": "El dolor me aprieta el lado derecho y me baja hacia la ingle, en oleadas."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I have vomited twice with the pain.",
+   "es": "He vomitado dos veces con el dolor."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "There is no fever and no burning when I pass urine.",
+   "es": "No tengo fiebre ni ardor al orinar."
+  },
+  "/history/medical_history/0": {
+   "en": "I have never had a stone or a kidney problem and I take nothing regularly.",
+   "es": "Nunca he tenido un cálculo ni ningún problema de riñón y no tomo nada de forma habitual."
+  },
+  "/history/medications/0": {
+   "en": "I have taken paracetamol at home with no relief. No antibiotics.",
+   "es": "He tomado paracetamol en casa, sin alivio. Ningún antibiótico."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The pain started abruptly four hours ago and comes and goes every few minutes.",
+   "es": "El dolor empezó de golpe hace cuatro horas y va y viene cada pocos minutos."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have been drinking little in the heat and I work outdoors.",
+   "es": "He estado tomando poco líquido con el calor y trabajo al aire libre."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "There is no burning, no frequency and no visible blood, but the urine looks concentrated.",
+   "es": "No hay ardor, no orino más seguido y no hay sangre visible, pero la orina se ve concentrada."
+  },
+  "/history/exposure/0": {
+   "en": "There has been no instrumentation, no catheter and no recent hospital stay.",
+   "es": "No ha habido instrumentación, ni sonda, ni hospitalización reciente."
+  },
+  "/history/oral_intake/0": {
+   "en": "I have been drinking very little water for several days.",
+   "es": "Llevo varios días tomando muy poca agua."
+  },
+  "/history/breathing/0": {
+   "en": "My breathing is normal; it is the pain that makes me restless.",
+   "es": "Mi respiración está normal; es el dolor lo que me pone inquieto."
+  },
+  "/history/chest_pain/0": {
+   "en": "There is no chest pain.",
+   "es": "No hay dolor en el pecho."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular pulse at a normal rate; peripheries warm and well filled.",
+   "es": "Pulso regular, de frecuencia normal; extremidades tibias y bien perfundidas."
+  },
+  "/examination/Respiratory": {
+   "en": "Normal effort with clear breath sounds.",
+   "es": "Esfuerzo respiratorio normal, con murmullo pulmonar sin ruidos agregados."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft, with right renal angle tenderness; no guarding, rebound or palpable mass.",
+   "es": "Blando, con dolor a la palpación del ángulo costovertebral derecho; sin defensa, rebote ni masa palpable."
+  },
+  "/examination/General appearance": {
+   "en": "Restless and in evident pain, moving constantly; no rash and no pallor.",
+   "es": "Inquieto y con dolor evidente, se mueve constantemente; sin erupción ni palidez."
+  },
+  "/examination/Neurological": {
+   "en": "Awake, oriented and fully cooperative.",
+   "es": "Vigil, orientado y completamente cooperador."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved, vigorous contraction",
+   "es": "Contracción conservada y vigorosa"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.4 cm; >50% inspiratory collapse",
+   "es": "1.4 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Clear lung fields; no free subdiaphragmatic air.",
+   "es": "Campos pulmonares limpios; sin aire libre subdiafragmático."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "Blood +++. No leukocyte esterase and no nitrite. Few red cells; no white cells or bacteria.",
+   "es": "Sangre +++. Sin esterasa leucocitaria ni nitritos. Escasos hematíes; sin leucocitos ni bacterias."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/renal_ultrasound/result/report": {
+   "en": "Mild right pelvicalyceal dilatation with a 5 mm calculus at the vesicoureteric junction. The left kidney is normal. No perinephric collection. The bladder is not distended.",
+   "es": "Dilatación pielocalicial derecha leve con un cálculo de 5 mm en la unión ureterovesical. El riñón izquierdo es normal. Sin colección perirrenal. La vejiga no está distendida."
+  }
+ },
+ "obstructive_pyelonephritis_58f": {
+  "/presentation": {
+   "en": "A 58-year-old woman arrives with left-sided flank pain and fever. She is flushed, shivering and slow to answer.",
+   "es": "Una mujer de 58 años llega con dolor en el flanco izquierdo y fiebre. Está enrojecida, con escalofríos y lenta para responder."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "My left side has ached for two days and today I started shaking with fever.",
+   "es": "Me duele el lado izquierdo desde hace dos días y hoy empecé a tiritar de fiebre."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I have been burning when I pass urine and going very often.",
+   "es": "He tenido ardor al orinar y he estado yendo al baño muy seguido."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have vomited and I feel weak standing up.",
+   "es": "He vomitado y me siento débil al ponerme de pie."
+  },
+  "/history/medical_history/0": {
+   "en": "I have type 2 diabetes. I had a stone on the left three years ago that passed by itself.",
+   "es": "Tengo diabetes tipo 2. Hace tres años tuve un cálculo en el lado izquierdo que salió solo."
+  },
+  "/history/medications/0": {
+   "en": "I take metformin. I have taken no antibiotic for this.",
+   "es": "Tomo metformina. No he tomado ningún antibiótico por esto."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The pain began two days ago and the fever and shaking started this morning.",
+   "es": "El dolor empezó hace dos días, y la fiebre y los escalofríos comenzaron esta mañana."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have diabetes and a previous stone on the same side.",
+   "es": "Tengo diabetes y un cálculo anterior en el mismo lado."
+  },
+  "/history/urinary_symptoms/0": {
+   "en": "The urine burns, I go constantly and it has looked cloudy and smelt strong since yesterday.",
+   "es": "Me arde al orinar, voy al baño a cada rato y desde ayer la orina se ve turbia y tiene un olor fuerte."
+  },
+  "/history/exposure/0": {
+   "en": "I have had no catheter, no procedure and no recent hospital admission.",
+   "es": "No he tenido sonda, ni ningún procedimiento, ni una hospitalización reciente."
+  },
+  "/history/oral_intake/0": {
+   "en": "I have kept almost nothing down since yesterday.",
+   "es": "Desde ayer casi no he podido retener nada."
+  },
+  "/history/breathing/0": {
+   "en": "My breathing feels faster than usual but I am not short of breath.",
+   "es": "Siento que respiro más rápido de lo normal, pero no me falta el aire."
+  },
+  "/history/bleeding/0": {
+   "en": "I have not seen blood in the urine or anywhere else.",
+   "es": "No he visto sangre en la orina ni en ninguna otra parte."
+  },
+  "/examination/Cardiac": {
+   "en": "Rapid regular pulse; peripheries cool with delayed capillary refill.",
+   "es": "Pulso rápido y regular; extremidades frías con llene capilar enlentecido."
+  },
+  "/examination/Respiratory": {
+   "en": "Mildly increased rate with clear breath sounds.",
+   "es": "Frecuencia levemente aumentada, con murmullo pulmonar sin ruidos agregados."
+  },
+  "/examination/Abdomen": {
+   "en": "Marked left renal angle tenderness; the abdomen is otherwise soft without guarding.",
+   "es": "Dolor marcado a la palpación del ángulo costovertebral izquierdo; por lo demás, el abdomen está blando, sin defensa."
+  },
+  "/examination/General appearance": {
+   "en": "Flushed and shivering; looks unwell and answers slowly.",
+   "es": "Enrojecida y con escalofríos; se ve enferma y responde con lentitud."
+  },
+  "/examination/Neurological": {
+   "en": "Awake and oriented but slowed; moves all limbs normally.",
+   "es": "Vigil y orientada, pero enlentecida; moviliza todas las extremidades con normalidad."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved, vigorous contraction",
+   "es": "Contracción conservada y vigorosa"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.0 cm; >50% inspiratory collapse",
+   "es": "1.0 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Clear lung fields; no consolidation and no free subdiaphragmatic air.",
+   "es": "Campos pulmonares limpios; sin consolidación y sin aire libre subdiafragmático."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "Leukocyte esterase +++ and nitrite positive. Blood ++. Numerous white cells and bacteria.",
+   "es": "Esterasa leucocitaria +++ y nitritos positivos. Sangre ++. Abundantes leucocitos y bacterias."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/renal_ultrasound/result/report": {
+   "en": "Moderate left pelvicalyceal dilatation with a dilated proximal ureter and a 9 mm calculus at the pelviureteric junction. The right kidney is normal. No perinephric collection is demonstrated. The bladder is not distended.",
+   "es": "Dilatación pielocalicial izquierda moderada con un uréter proximal dilatado y un cálculo de 9 mm en la unión pieloureteral. El riñón derecho es normal. No se demuestra colección perirrenal. La vejiga no está distendida."
+  }
+ }
+}

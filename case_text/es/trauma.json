@@ -1,0 +1,398 @@
+{
+ "trauma_limb_hemorrhage_27m": {
+  "/presentation": {
+   "en": "A 27-year-old man arrives by ambulance after a machinery injury to the right thigh. A soaked dressing is in place and blood is running off the trolley.",
+   "es": "Un hombre de 27 años llega en ambulancia tras una lesión por maquinaria en el muslo derecho. Tiene colocado un apósito empapado y la sangre escurre de la camilla."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "My leg is bleeding and I feel like I am going to pass out.",
+   "es": "Me sangra la pierna y siento que me voy a desmayar."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "The dressing they put on has not stopped it.",
+   "es": "El apósito que me pusieron no ha parado el sangrado."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I feel cold and my hands are shaking.",
+   "es": "Tengo frío y me tiemblan las manos."
+  },
+  "/history/medical_history/0": {
+   "en": "I have no medical problems and I take nothing.",
+   "es": "No tengo problemas de salud y no tomo nada."
+  },
+  "/history/medications/0": {
+   "en": "I take no medication and no blood thinner.",
+   "es": "No tomo medicamentos ni nada para diluir la sangre."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The injury was about twenty minutes ago at work.",
+   "es": "La lesión ocurrió hace unos veinte minutos, en el trabajo."
+  },
+  "/history/risk_factors/0": {
+   "en": "There was no fall from height, no vehicle and no head strike; the machine caught the thigh.",
+   "es": "No hubo caída de altura, ni vehículos involucrados, ni golpe en la cabeza; la máquina atrapó el muslo."
+  },
+  "/history/bleeding/0": {
+   "en": "It has been bleeding steadily since it happened and the dressing is soaked through.",
+   "es": "Ha sangrado de forma continua desde que ocurrió y el apósito está empapado por completo."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "He did not lose consciousness and has no neck pain.",
+   "es": "No perdió el conocimiento y no tiene dolor de cuello."
+  },
+  "/history/breathing/0": {
+   "en": "His breathing is fast but he is not short of breath.",
+   "es": "Respira rápido, pero no le falta el aire."
+  },
+  "/history/chest_pain/0": {
+   "en": "There is no chest or abdominal pain.",
+   "es": "No hay dolor en el pecho ni en el abdomen."
+  },
+  "/history/exposure/0": {
+   "en": "No other wound has been found and he was fully exposed in the ambulance.",
+   "es": "No se ha encontrado ninguna otra herida y fue expuesto por completo en la ambulancia."
+  },
+  "/examination/Cardiac": {
+   "en": "Fast, thready pulse; peripheries cold with delayed capillary refill.",
+   "es": "Pulso rápido y filiforme; extremidades frías con llene capilar enlentecido."
+  },
+  "/examination/Respiratory": {
+   "en": "Increased rate with equal air entry and no chest wall injury.",
+   "es": "Frecuencia aumentada, con murmullo pulmonar simétrico y sin lesión de la pared torácica."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender; the pelvis is stable to gentle assessment.",
+   "es": "Blando e indoloro; la pelvis es estable al evaluarla con suavidad."
+  },
+  "/examination/General appearance": {
+   "en": "Pale, cold and sweating; a soaked dressing over a deep right thigh wound that is bleeding.",
+   "es": "Pálido, frío y sudoroso; apósito empapado sobre una herida profunda del muslo derecho que está sangrando."
+  },
+  "/examination/Neurological": {
+   "en": "Fully alert and oriented; moves all limbs.",
+   "es": "Completamente alerta y orientado; moviliza todas las extremidades."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Vigorous contraction with near-obliteration in systole",
+   "es": "Contracción vigorosa con obliteración casi completa en sístole"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "0.7 cm; complete inspiratory collapse",
+   "es": "0.7 cm; colapso inspiratorio completo"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No pneumothorax, haemothorax or mediastinal widening.",
+   "es": "Sin neumotórax, hemotórax ni ensanchamiento mediastínico."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/efast/result/ruq_morison": {
+   "en": "No free fluid in the hepatorenal recess",
+   "es": "Sin líquido libre en el receso hepatorrenal"
+  },
+  "/investigations/efast/result/ruq_subdiaphragmatic": {
+   "en": "No free fluid above the liver",
+   "es": "Sin líquido libre por encima del hígado"
+  },
+  "/investigations/efast/result/ruq_pleural": {
+   "en": "No fluid in the right pleural recess",
+   "es": "Sin líquido en el receso pleural derecho"
+  },
+  "/investigations/efast/result/luq_splenorenal": {
+   "en": "No free fluid in the splenorenal recess",
+   "es": "Sin líquido libre en el receso esplenorrenal"
+  },
+  "/investigations/efast/result/luq_subdiaphragmatic": {
+   "en": "No free fluid above the spleen",
+   "es": "Sin líquido libre por encima del bazo"
+  },
+  "/investigations/efast/result/luq_pleural": {
+   "en": "No fluid in the left pleural recess",
+   "es": "Sin líquido en el receso pleural izquierdo"
+  },
+  "/investigations/efast/result/suprapubic_longitudinal": {
+   "en": "No free fluid behind or around the bladder",
+   "es": "Sin líquido libre retrovesical ni perivesical"
+  },
+  "/investigations/efast/result/suprapubic_transverse": {
+   "en": "No free fluid behind or around the bladder",
+   "es": "Sin líquido libre retrovesical ni perivesical"
+  },
+  "/investigations/efast/result/pericardium": {
+   "en": "No pericardial fluid",
+   "es": "Sin líquido pericárdico"
+  },
+  "/investigations/efast/result/lung_sliding_right": {
+   "en": "Sliding present",
+   "es": "Deslizamiento presente"
+  },
+  "/investigations/efast/result/lung_sliding_left": {
+   "en": "Sliding present",
+   "es": "Deslizamiento presente"
+  },
+  "/investigations/efast/result/lung_m_mode": {
+   "en": "Seashore sign bilaterally; comet tails seen",
+   "es": "Signo de la playa bilateral; se observan colas de cometa"
+  },
+  "/investigations/pelvis_xray/result/report": {
+   "en": "No pelvic fracture and no diastasis of the symphysis or the sacroiliac joints.",
+   "es": "Sin fractura pélvica y sin diástasis de la sínfisis ni de las articulaciones sacroilíacas."
+  }
+ },
+ "trauma_hemothorax_41m": {
+  "/presentation": {
+   "en": "A 41-year-old man arrives after a high-speed collision. He is pale and breathing hard, with reduced air entry on the left.",
+   "es": "Un hombre de 41 años llega tras un choque a alta velocidad. Está pálido y respira con esfuerzo, con murmullo pulmonar disminuido en el lado izquierdo."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "I cannot get a proper breath and my left side hurts when I try.",
+   "es": "No logro respirar bien y me duele el lado izquierdo cuando lo intento."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "The seatbelt caught me across the chest.",
+   "es": "El cinturón de seguridad me apretó el pecho de lado a lado."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I feel dizzy when they sit me up.",
+   "es": "Me mareo cuando me sientan."
+  },
+  "/history/medical_history/0": {
+   "en": "I have no medical problems and take no medication.",
+   "es": "No tengo problemas de salud y no tomo medicamentos."
+  },
+  "/history/medications/0": {
+   "en": "I take nothing, including no blood thinner.",
+   "es": "No tomo nada, tampoco nada para diluir la sangre."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The collision was about twenty-five minutes ago.",
+   "es": "El choque fue hace unos veinticinco minutos."
+  },
+  "/history/risk_factors/0": {
+   "en": "He was the restrained driver in a head-on collision at speed; the airbag deployed.",
+   "es": "Era el conductor, con cinturón de seguridad puesto, en un choque frontal a alta velocidad; el airbag se activó."
+  },
+  "/history/bleeding/0": {
+   "en": "There is no external bleeding anywhere that has been found.",
+   "es": "No se ha encontrado sangrado externo en ninguna parte."
+  },
+  "/history/breathing/0": {
+   "en": "The breathlessness began immediately and is worse lying flat.",
+   "es": "La falta de aire comenzó de inmediato y es peor al estar acostado."
+  },
+  "/history/chest_pain/0": {
+   "en": "The pain is across the left chest and worse with breathing.",
+   "es": "El dolor abarca el lado izquierdo del pecho y empeora al respirar."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "He did not lose consciousness and has no neck pain or limb weakness.",
+   "es": "No perdió el conocimiento y no tiene dolor de cuello ni debilidad en las extremidades."
+  },
+  "/history/exposure/0": {
+   "en": "He was fully exposed; there is bruising across the chest and abdomen from the belt.",
+   "es": "Fue expuesto por completo; hay una equimosis por el cinturón que cruza el tórax y el abdomen."
+  },
+  "/examination/Cardiac": {
+   "en": "Fast, thready pulse; peripheries cold; heart sounds heard without a rub.",
+   "es": "Pulso rápido y filiforme; extremidades frías; se auscultan ruidos cardíacos, sin frote."
+  },
+  "/examination/Respiratory": {
+   "en": "Increased effort with markedly reduced air entry and dullness at the left base.",
+   "es": "Esfuerzo respiratorio aumentado, con murmullo pulmonar muy disminuido y matidez en la base izquierda."
+  },
+  "/examination/Abdomen": {
+   "en": "Seatbelt bruising with mild generalised tenderness; the pelvis is stable.",
+   "es": "Equimosis por el cinturón de seguridad, con dolor leve generalizado a la palpación; la pelvis es estable."
+  },
+  "/examination/General appearance": {
+   "en": "Pale and cold with seatbelt marking across the chest and abdomen.",
+   "es": "Pálido y frío, con la marca del cinturón de seguridad que cruza el tórax y el abdomen."
+  },
+  "/examination/Neurological": {
+   "en": "Alert and oriented; moves all limbs.",
+   "es": "Alerta y orientado; moviliza todas las extremidades."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Vigorous contraction with near-obliteration in systole",
+   "es": "Contracción vigorosa con obliteración casi completa en sístole"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "0.8 cm; complete inspiratory collapse",
+   "es": "0.8 cm; colapso inspiratorio completo"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "Left pleural effusion with echogenic contents; no consolidation",
+   "es": "Derrame pleural izquierdo con contenido ecogénico; sin consolidación"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Dense opacification of the left hemithorax with a meniscus and loss of the left hemidiaphragm outline; the mediastinum is not shifted; no pneumothorax.",
+   "es": "Opacificación densa del hemitórax izquierdo con menisco y borramiento del contorno del hemidiafragma izquierdo; el mediastino no está desplazado; sin neumotórax."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/investigations/efast/result/ruq_morison": {
+   "en": "No free fluid in the hepatorenal recess",
+   "es": "Sin líquido libre en el receso hepatorrenal"
+  },
+  "/investigations/efast/result/ruq_subdiaphragmatic": {
+   "en": "No free fluid above the liver",
+   "es": "Sin líquido libre por encima del hígado"
+  },
+  "/investigations/efast/result/ruq_pleural": {
+   "en": "No fluid in the right pleural recess",
+   "es": "Sin líquido en el receso pleural derecho"
+  },
+  "/investigations/efast/result/luq_splenorenal": {
+   "en": "No free fluid in the splenorenal recess",
+   "es": "Sin líquido libre en el receso esplenorrenal"
+  },
+  "/investigations/efast/result/luq_subdiaphragmatic": {
+   "en": "No free fluid above the spleen",
+   "es": "Sin líquido libre por encima del bazo"
+  },
+  "/investigations/efast/result/luq_pleural": {
+   "en": "Fluid in the left pleural recess",
+   "es": "Líquido en el receso pleural izquierdo"
+  },
+  "/investigations/efast/result/suprapubic_longitudinal": {
+   "en": "No free fluid behind or around the bladder",
+   "es": "Sin líquido libre retrovesical ni perivesical"
+  },
+  "/investigations/efast/result/suprapubic_transverse": {
+   "en": "No free fluid behind or around the bladder",
+   "es": "Sin líquido libre retrovesical ni perivesical"
+  },
+  "/investigations/efast/result/pericardium": {
+   "en": "No pericardial fluid",
+   "es": "Sin líquido pericárdico"
+  },
+  "/investigations/efast/result/lung_sliding_right": {
+   "en": "Sliding present",
+   "es": "Deslizamiento presente"
+  },
+  "/investigations/efast/result/lung_sliding_left": {
+   "en": "Sliding present",
+   "es": "Deslizamiento presente"
+  },
+  "/investigations/efast/result/lung_m_mode": {
+   "en": "Seashore sign bilaterally; comet tails seen",
+   "es": "Signo de la playa bilateral; se observan colas de cometa"
+  },
+  "/investigations/pelvis_xray/result/report": {
+   "en": "No pelvic fracture and no diastasis of the symphysis or the sacroiliac joints.",
+   "es": "Sin fractura pélvica y sin diástasis de la sínfisis ni de las articulaciones sacroilíacas."
+  }
+ }
+}

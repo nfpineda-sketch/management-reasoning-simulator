@@ -20,9 +20,10 @@ translated where it is displayed. So the clinical identifiers, the numbers, the
 doses, the units and the drug names are the same in both languages, and a
 language change cannot alter physiology, timing or assessment.
 
-This is the first stage the decision asked for: the fixed text — labels, states
-and system messages. The authored narrative of each case (presentation, history
-answers, examination prose) is still English and is the next stage.
+This was the first stage the decision asked for: the fixed text — labels, states
+and system messages. The authored narrative of each bank case (presentation,
+history answers, examination and study-report prose) followed on 2026-09-26 as
+whole passages the faculty approved case by case (``narrative``, ``case_text``).
 """
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -360,7 +361,7 @@ _RULES = (
  (r"\bCT pulmonary angiography\b", "AngioTAC de tórax"),
  (r"\bHead CT\b", "Tomografía de cerebro"), (r"\bAbdominal CT\b", "Tomografía de abdomen"),
  (r"\bBlood group and crossmatch\b", "Grupo y pruebas cruzadas"),
- (r"\bRight-sided ECG \(V3R-V4R\)", "ECG con derivadas derechas (V3R-V4R)"),
+ (r"\bRight-sided ECG \(V3R-V4R\)", "ECG con derivaciones derechas (V3R-V4R)"),
  (r"\bPosterior ECG \(V7-V9\)", "ECG con derivaciones posteriores (V7-V9)"),
  (r"\bGlucose (\d+) mg/dL", r"Glucosa \1 mg/dL"),
  # The age-adjusted rule reads before the plain one: rules apply in order.
@@ -574,12 +575,66 @@ _RULES = (
 _COMPILED = tuple((re.compile(pattern), replacement) for pattern, replacement in _RULES)
 
 
+#: The bank cases' narrative the faculty approved in another language
+#: (``case_text.install``), kept per case: {language: {case: (pattern, table)}},
+#: longest first, so a sentence is replaced entirely or not at all -- never half
+#: one language (faculty, 2026-09-26). Cases share many sentences; each case reads
+#: only its own table, so approving one case never turns another one's lines Spanish.
+_NARRATIVE = {}
+#: The case whose narrative is being presented: the room's (``narrate``, once per
+#: run) or a document's (``narrating``). Without one, nothing is replaced.
+_CASE = ContextVar("narrated_case", default=None)
+
+
+def set_narrative(tables, language="es"):
+    """Install the approved passages of each case: {case: {English: translation}}.
+
+    Each passage is matched whole, as words: longest first, and never inside a
+    longer word, so a one-word passage cannot rewrite part of another word.
+    """
+    compiled = {}
+    for case, table in (tables or {}).items():
+        if not table:
+            continue
+        ordered = sorted(table, key=len, reverse=True)
+        pattern = re.compile("|".join(rf"(?<!\w){re.escape(english)}(?!\w)" for english in ordered))
+        compiled[case] = (pattern, dict(table))
+    _NARRATIVE[language] = compiled
+
+
+def narrate(case):
+    """The case the room presents in this script run; set on every run, before anything is drawn."""
+    _CASE.set(str(case or "") or None)
+
+
+@contextmanager
+def narrating(case):
+    """Present the narrative of ``case`` inside this block: a document names its own encounter's case."""
+    token = _CASE.set(str(case or "") or None)
+    try:
+        yield
+    finally:
+        _CASE.reset(token)
+
+
+def narrative(text, language=None, case=None):
+    """The approved translation of the case's own passages within this text; the rest untouched."""
+    language = language or current()
+    if language == "en" or not text:
+        return text
+    installed = _NARRATIVE.get(language, {}).get(case or _CASE.get() or "")
+    if not installed:
+        return text
+    pattern, table = installed
+    return pattern.sub(lambda match: table[match.group(0)], str(text))
+
+
 def say(text, language=None):
     """Present a stored English string in the reading language."""
     language = language or current()
     if language == "en" or not text:
         return text
-    body = str(text)
+    body = narrative(str(text), language)
     exact = MESSAGES.get(body.strip())
     if exact:
         return exact

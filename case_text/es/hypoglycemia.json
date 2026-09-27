@@ -1,0 +1,404 @@
+{
+ "hypoglycemia_28m": {
+  "/presentation": {
+   "en": "A 28-year-old man is brought from work after becoming confused and having difficulty answering simple questions.",
+   "es": "Un hombre de 28 años es traído desde su trabajo tras quedar confundido y con dificultad para responder preguntas simples."
+  },
+  "/history_source": {
+   "en": "Coworker and emergency medication information",
+   "es": "Compañero de trabajo e información de emergencia sobre medicamentos"
+  },
+  "/history/chief_complaint/0": {
+   "en": "His coworker reports sudden confusion and difficulty finding words.",
+   "es": "Su compañero de trabajo refiere que de repente quedó confundido y con dificultad para encontrar las palabras."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "His coworker noticed shaking and sweating before he became confused.",
+   "es": "Su compañero de trabajo notó que temblaba y sudaba antes de quedar confundido."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "There was no witnessed seizure, fall or head injury.",
+   "es": "No se presenció ninguna convulsión, caída ni golpe en la cabeza."
+  },
+  "/history/medical_history/0": {
+   "en": "His coworker reports type 1 diabetes; his emergency information confirms this.",
+   "es": "Su compañero de trabajo refiere que tiene diabetes tipo 1; su información de emergencia lo confirma."
+  },
+  "/history/medications/0": {
+   "en": "His medication record lists basal and mealtime insulin.",
+   "es": "Su registro de medicamentos incluye insulina basal y prandial."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "He was well at the start of work and became confused over the last 20 minutes.",
+   "es": "Estaba bien al comienzo de la jornada y quedó confundido en los últimos 20 minutos."
+  },
+  "/history/risk_factors/0": {
+   "en": "His coworker reports that he took his usual mealtime insulin but was called away before eating lunch.",
+   "es": "Su compañero de trabajo refiere que se puso su insulina prandial habitual, pero lo llamaron y tuvo que irse antes de almorzar."
+  },
+  "/history/oral_intake/0": {
+   "en": "His lunch was left uneaten after he took his mealtime insulin.",
+   "es": "Su almuerzo quedó sin comer después de que se puso la insulina prandial."
+  },
+  "/history/exposure/0": {
+   "en": "His coworker reports no known alcohol or sedative exposure during the shift.",
+   "es": "Su compañero de trabajo no refiere exposición conocida a alcohol ni a sedantes durante el turno."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "He became confused and had difficulty speaking; no one saw a persistent one-sided weakness.",
+   "es": "Quedó confundido y le costaba hablar; nadie vio una debilidad persistente de un lado del cuerpo."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular tachycardia with palpable peripheral pulses.",
+   "es": "Taquicardia regular con pulsos periféricos palpables."
+  },
+  "/examination/Respiratory": {
+   "en": "Normal effort; clear bilateral breath sounds.",
+   "es": "Esfuerzo respiratorio normal; murmullo pulmonar bilateral sin ruidos agregados."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Drowsy and confused, but opens eyes to voice; speech is slow and all limbs move symmetrically. Pupils are equal and reactive.",
+   "es": "Somnoliento y confuso, pero abre los ojos a la voz; habla lentamente y moviliza las cuatro extremidades en forma simétrica. Pupilas isocóricas y reactivas."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved, mildly hyperdynamic contraction",
+   "es": "Contracción conservada, levemente hiperdinámica"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.1 cm; >50% inspiratory collapse",
+   "es": "1.1 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No acute pulmonary abnormality.",
+   "es": "Sin alteraciones pulmonares agudas."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "hypoglycemia_76f": {
+  "/presentation": {
+   "en": "A 76-year-old woman is brought by her son because she has become difficult to wake this morning.",
+   "es": "Una mujer de 76 años es traída por su hijo porque esta mañana está difícil de despertar."
+  },
+  "/history_source": {
+   "en": "Son and medication list",
+   "es": "Hijo y lista de medicamentos"
+  },
+  "/history/chief_complaint/0": {
+   "en": "Her son reports that she has become unusually difficult to wake.",
+   "es": "Su hijo refiere que está más difícil de despertar que de costumbre."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "Her son noticed sweating and reduced interaction.",
+   "es": "Su hijo notó que sudaba y que interactuaba menos."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "There was no witnessed seizure or head injury.",
+   "es": "No se presenció ninguna convulsión ni golpe en la cabeza."
+  },
+  "/history/medical_history/0": {
+   "en": "Her son reports type 2 diabetes and chronic kidney disease; she is normally alert and independent at home.",
+   "es": "Su hijo refiere que tiene diabetes tipo 2 y enfermedad renal crónica; habitualmente está alerta y es independiente en su casa."
+  },
+  "/history/medications/0": {
+   "en": "Her medication list includes glimepiride; she continued taking it despite eating very little.",
+   "es": "Su lista de medicamentos incluye glimepirida; siguió tomándola pese a que comía muy poco."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "Her intake has been poor for two days; she was markedly less responsive this morning.",
+   "es": "Su ingesta ha sido escasa durante dos días; esta mañana estaba marcadamente menos reactiva."
+  },
+  "/history/risk_factors/0": {
+   "en": "She has continued a sulfonylurea during poor intake and has impaired renal function.",
+   "es": "Ha seguido tomando una sulfonilurea mientras su ingesta era escasa y tiene la función renal alterada."
+  },
+  "/history/oral_intake/0": {
+   "en": "Her son reports that she has eaten little for two days but continued her usual tablets.",
+   "es": "Su hijo refiere que lleva dos días comiendo poco, pero siguió tomando sus pastillas habituales."
+  },
+  "/history/exposure/0": {
+   "en": "Her son reports no new sedatives or known alcohol ingestion.",
+   "es": "Su hijo no refiere sedantes nuevos ni ingesta conocida de alcohol."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "Her son describes a generalized reduction in responsiveness rather than a witnessed focal weakness.",
+   "es": "Su hijo describe una disminución generalizada de la reactividad en lugar de una debilidad focal presenciada."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular pulse with preserved peripheral volume.",
+   "es": "Pulso regular, con pulsos periféricos de amplitud conservada."
+  },
+  "/examination/Respiratory": {
+   "en": "Normal effort and clear bilateral breath sounds.",
+   "es": "Esfuerzo respiratorio normal y murmullo pulmonar bilateral sin ruidos agregados."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft without focal tenderness.",
+   "es": "Blando, sin dolor focal a la palpación."
+  },
+  "/examination/Neurological": {
+   "en": "Opens eyes only briefly to a firm stimulus and localizes with both arms. Pupils are equal and reactive.",
+   "es": "Abre los ojos solo brevemente ante un estímulo firme y localiza con ambos brazos. Pupilas isocóricas y reactivas."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved contraction",
+   "es": "Contracción conservada"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.7 cm; about 50% inspiratory collapse",
+   "es": "1.7 cm; colapso inspiratorio de aproximadamente 50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal consolidation or edema.",
+   "es": "Sin consolidación focal ni edema."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "hypoglycemia_54m_thiamine": {
+  "/presentation": {
+   "en": "A 54-year-old man is brought from a shelter after being found drowsy and unsteady. He has eaten almost nothing for days.",
+   "es": "Un hombre de 54 años es traído desde un albergue tras ser encontrado somnoliento e inestable. Lleva días sin comer casi nada."
+  },
+  "/history_source": {
+   "en": "Shelter staff and the paramedic record",
+   "es": "Personal del albergue y registro de los paramédicos"
+  },
+  "/history/chief_complaint/0": {
+   "en": "His speech is muddled and he says he feels shaky.",
+   "es": "Habla de forma confusa y dice que se siente tembloroso."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "He has been unsteady on his feet.",
+   "es": "Ha estado inestable de pie."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "He has had no fever, cough or vomiting.",
+   "es": "No ha tenido fiebre, tos ni vómitos."
+  },
+  "/history/medical_history/0": {
+   "en": "He drinks heavily every day and has eaten very little for a week; he is not diabetic.",
+   "es": "Bebe mucho alcohol todos los días y lleva una semana comiendo muy poco; no es diabético."
+  },
+  "/history/medications/0": {
+   "en": "He takes no regular medicines and has received no vitamins.",
+   "es": "No toma medicamentos de uso habitual y no ha recibido vitaminas."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "The confusion and unsteadiness came on through this morning.",
+   "es": "La confusión y la inestabilidad fueron apareciendo durante esta mañana."
+  },
+  "/history/risk_factors/0": {
+   "en": "He drinks heavily and has eaten almost nothing for days.",
+   "es": "Bebe mucho alcohol y lleva días sin comer casi nada."
+  },
+  "/history/oral_intake/0": {
+   "en": "He has had almost nothing to eat for about a week, and alcohol most days.",
+   "es": "Lleva alrededor de una semana sin comer casi nada, y ha bebido alcohol casi todos los días."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "His walking has been unsteady and he says his vision feels unfocused.",
+   "es": "Ha caminado de forma inestable y dice que siente la vista desenfocada."
+  },
+  "/history/chest_pain/0": {
+   "en": "He reports no chest pain.",
+   "es": "No refiere dolor torácico."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular mildly rapid pulse; no murmur.",
+   "es": "Pulso regular y levemente rápido; sin soplos."
+  },
+  "/examination/Respiratory": {
+   "en": "Normal effort; clear breath sounds.",
+   "es": "Esfuerzo respiratorio normal; murmullo pulmonar sin ruidos agregados."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft, without tenderness or organomegaly.",
+   "es": "Blando, sin dolor a la palpación ni visceromegalias."
+  },
+  "/examination/Neurological": {
+   "en": "Drowsy but rousable; gaze is unsteady with a few beats of nystagmus, and gait could not be tested safely. Pupils are equal and reactive.",
+   "es": "Somnoliento pero despertable; mirada inestable con algunas sacudidas de nistagmo, y no fue posible evaluar la marcha de forma segura. Pupilas isocóricas y reactivas."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved, mildly hyperdynamic contraction",
+   "es": "Contracción conservada, levemente hiperdinámica"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.1 cm; >50% inspiratory collapse",
+   "es": "1.1 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal consolidation.",
+   "es": "Sin consolidación focal."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ }
+}

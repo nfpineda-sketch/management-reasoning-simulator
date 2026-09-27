@@ -13,6 +13,7 @@ from encounter_generator import generate_encounter
 from generation_progress import encounter_preparation
 from scene_preparation import ScenePreparation
 from image_bank_portal import render_image_bank
+from case_text_portal import render_case_text_review
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
 
@@ -490,6 +491,7 @@ def render_dashboard(context, initial_state, reset_session):
                            "never offered to residents.")
             _render_catalog_review(context)
         render_image_bank(context)
+        render_case_text_review(context)
         with st.expander("Clinical and cognitive catalog"):
             st.dataframe([
                 {"Code": key, "Learning focus": challenge["title"],

@@ -725,6 +725,42 @@ CORRECTIONS = (
         "preservation": None,
     },
     {
+        "id": "C-2026-09-26-25",
+        "date": "2026-09-26",
+        "title": "La narrativa de los 31 casos del banco en español, usada sólo después de la revisión docente de cada caso",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Decisión docente del 2026-09-26: la presentación, quién da la historia, las respuestas de la "
+                   "anamnesis, el examen físico y la prosa de los informes de exámenes de los 31 casos se traducen "
+                   "como datos junto al inglés (case_text/es/, tools_case_text.py), y un caso se muestra en español "
+                   "sólo después de que un docente aprueba su traducción en el panel docente. La revisión queda con "
+                   "la cuenta de quien la registra y nombra la versión exacta leída; un cambio posterior en cualquiera "
+                   "de los dos idiomas devuelve el caso a pendiente, y un pasaje cuyo inglés cambió no se usa. La "
+                   "aprobación vale sólo para su caso: una frase que otro caso dice igual sigue en inglés en él. Un "
+                   "pasaje se reemplaza entero o no se reemplaza, de modo que ninguna línea mezcla idiomas. El registro "
+                   "del encuentro sigue en inglés; el español es presentación. La etiqueta fija que la sala pone "
+                   "junto a la fuente de la historia se traduce con ella («Fuente de la historia: Esposa»). "
+                   "Además, la orden de ECG derecho se presenta como «derivaciones derechas», igual que la "
+                   "posterior."),
+        "authorised_by": INSTRUCTION_2026_09_26C,
+        "affects": {"modules": ["case_text", "case_text_portal", "tools_case_text", "language", "app",
+                                "management_trace_report", "faculty_report", "rubric_report",
+                                "curriculum_runtime"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_case_text.py::test_every_drafted_passage_translates_what_its_case_says_today",
+                  "test_case_text.py::test_nothing_is_spanish_until_a_faculty_member_approves_it",
+                  "test_case_text.py::test_an_approval_is_the_faculty_member_s_and_names_what_they_read",
+                  "test_case_text.py::test_an_edit_after_the_approval_takes_the_case_back_to_pending",
+                  "test_case_text.py::test_a_passage_whose_english_changed_is_not_used_even_in_an_approved_case",
+                  "test_case_text.py::test_a_sentence_is_replaced_whole_or_not_at_all",
+                  "test_case_text.py::test_the_room_reads_the_approved_narrative_of_its_own_case",
+                  "test_case_text.py::test_the_room_s_arrival_line_is_whole_in_one_language",
+                  "test_case_text.py::test_approvals_carried_from_another_deployment_count_for_the_same_words",
+                  "test_case_text.py::test_the_documents_use_the_approved_narrative_in_spanish_only",
+                  "test_case_text.py::test_the_review_page_records_the_approval_of_whoever_signs_it"],
+        "preservation": None,
+    },
+    {
         "id": "C-2026-09-27-01",
         "date": "2026-09-27",
         "title": "Peso y talla en los 31 casos del banco y en la ficha, sólo para encuentros nuevos",

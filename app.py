@@ -9229,9 +9229,16 @@ _TRANSLATED_EVENTS = frozenset({
 })
 
 
+#: What the case itself says: in another language only as the faculty approved it
+#: (case_text), whole passages, never the engine's substitutions (decision 16).
+_NARRATIVE_EVENTS = frozenset({"presentation", "patient_history", "examination"})
+
+
 def render_event(event):
     import language
-    body = language.say(event["text"]) if event["kind"] in _TRANSLATED_EVENTS else event["text"]
+    body = (language.say(event["text"]) if event["kind"] in _TRANSLATED_EVENTS
+            else language.narrative(event["text"]) if event["kind"] in _NARRATIVE_EVENTS
+            else event["text"])
     labels = {
         "patient_history": "PATIENT HISTORY",
         "examination": "EXAMINATION",
@@ -9283,6 +9290,29 @@ def _language_selector():
 
 
 _language_selector()
+
+
+def _install_case_narrative():
+    """The bank cases' narrative the faculty approved in Spanish, for the room and the documents.
+
+    The room reads only its own case's approved passages, and only while an
+    encounter is open; the dashboard has no case of its own, and a document
+    names the case of the encounter it writes (``language.narrating``).
+    """
+    import language
+    state = st.session_state.get("state") if isinstance(st.session_state.get("state"), dict) else {}
+    spec = state.get("encounter_spec") if isinstance(state.get("encounter_spec"), dict) else {}
+    case = spec.get("clinical_case") if isinstance(spec.get("clinical_case"), dict) else {}
+    language.narrate(case.get("id") if st.session_state.get("started") else None)
+    try:
+        import case_text
+        context = globals().get("ACCOUNT_CONTEXT")
+        case_text.install(context["store"] if context else None)
+    except Exception:
+        pass  # the room stays in English rather than failing (case_text)
+
+
+_install_case_narrative()
 st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_language_interpretation_enabled() else "Local language interpretation is active.")
@@ -9413,7 +9443,9 @@ with st.container(key="encounter-console"):
             st.info('The patient cannot provide a history at present. Review the history already obtained in the clinical chart.')
         else:
             if history_source:
-                st.caption("History source: " + str(history_source))
+                # Whole in one language: Spanish once the case's translation is approved (case_text).
+                import language
+                st.caption(language.narrative("History source: " + str(history_source)))
             if cannot_speak:
                 st.info("The patient cannot answer at present. Questions are directed to the available collateral source.")
             presentation = next((e["text"] for e in st.session_state.events if e["kind"] == "presentation"), "")

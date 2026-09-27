@@ -461,6 +461,18 @@ HISTORY_RULE = ("The patient answers what you ask, for the whole encounter. A to
                 "was not obtained.")
 
 
+def _authored_case(payload):
+    """The bank case this payload's encounter was played on, or "".
+
+    The analysis payload names its case beside the frozen evidence; an older
+    payload without the field falls back to the session-shaped lookup.
+    """
+    from faculty_analysis import case_id_of
+    if not isinstance(payload, dict):
+        return ""
+    return str(payload.get("authored_case_id") or "") or case_id_of({"payload": payload})
+
+
 def _history_section(payload, p, styles):
     """What was asked and what was never asked about, as recorded facts.
 
@@ -471,11 +483,8 @@ def _history_section(payload, p, styles):
     (faculty, 2026-09-23).
     """
     import history_review
-    from faculty_analysis import case_id_of
-    # The analysis payload names its case beside the frozen evidence; an older
-    # payload without the field falls back to the session-shaped lookup.
-    case_id = str(payload.get("authored_case_id") or "") or case_id_of({"payload": payload})
-    summary = history_review.review({"payload": payload}, case_id)
+    import language as languages
+    summary = history_review.review({"payload": payload}, _authored_case(payload))
     if not summary["offered"] and not summary["exchanges"]:
         return []
     story = [Spacer(1, 12), p("The history you took", "heading")]
@@ -485,7 +494,7 @@ def _history_section(payload, p, styles):
             story.append(KeepTogether([
                 Paragraph(_xml(f"{_time(item['minute'])} \u00b7 \u201c{item['asked']}\u201d"),
                           styles["quote"]),
-                Paragraph(_xml(item["answered"]), styles["small"])]))
+                Paragraph(_xml(languages.narrative(item["answered"])), styles["small"])]))
     else:
         story.append(p("No question was asked of the patient or the available history source "
                        "during this encounter.", "note"))
@@ -529,7 +538,7 @@ def render_management_trace_pdf(
     import language as languages
     options = dict(case_label=case_label, learner_label=learner_label, review_completed=review_completed,
                    adaptation_plan=adaptation_plan, corrections=corrections)
-    with languages.presenting(language):
+    with languages.presenting(language), languages.narrating(_authored_case(payload)):
         if translate is None or _reader() == "en":
             return _render_management_trace_pdf(report, payload, prose=None, **options)
         collected = []
@@ -670,7 +679,9 @@ def _render_management_trace_pdf(report, payload, *, case_label, learner_label, 
     # encounter id is read from the frozen payload the source was built from.
     raw_trace = payload.get("trace") if isinstance(payload, dict) else None
     case_id = _text(_mapping(_mapping((raw_trace or [{}])[0]).get("state_before")).get("case_id"))
-    encounter_id = presentation.identifier(case_id, _text(case_label), fallback=_text(case_label))
+    import language as languages
+    shown_label = languages.narrative(_text(case_label))  # the case's words, as the faculty approved them
+    encounter_id = presentation.identifier(case_id, shown_label, fallback=shown_label)
     stages = findings.order_stages(raw_trace)
     limits = findings.encounter_limits(raw_trace)
     urine_line = findings.urine_statement(raw_trace)

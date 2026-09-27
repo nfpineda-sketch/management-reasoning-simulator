@@ -1,0 +1,270 @@
+{
+ "opioid_35m": {
+  "/presentation": {
+   "en": "A 35-year-old man is brought by a friend because he is difficult to wake and is breathing slowly.",
+   "es": "Un hombre de 35 años es traído por un amigo porque cuesta despertarlo y respira lentamente."
+  },
+  "/history_source": {
+   "en": "Accompanying friend",
+   "es": "Amigo acompañante"
+  },
+  "/history/chief_complaint/0": {
+   "en": "His friend says he became difficult to wake and started breathing very slowly.",
+   "es": "Su amigo cuenta que se volvió difícil despertarlo y que empezó a respirar muy lentamente."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "His friend noticed increasing sleepiness after he took a tablet for back pain.",
+   "es": "Su amigo notó somnolencia progresiva después de que tomó una pastilla para el dolor de espalda."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "There was no witnessed seizure, fall or trauma.",
+   "es": "No se presenció ninguna convulsión, caída ni traumatismo."
+  },
+  "/history/medical_history/0": {
+   "en": "His friend reports a recent back strain and no known chronic neurological disorder.",
+   "es": "Su amigo refiere una distensión de espalda reciente y ningún trastorno neurológico crónico conocido."
+  },
+  "/history/medications/0": {
+   "en": "He took a tablet obtained from an acquaintance for pain; its contents are not confirmed.",
+   "es": "Tomó una pastilla para el dolor obtenida de un conocido; su contenido no está confirmado."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "Increasing sleepiness began within the last hour after the tablet.",
+   "es": "La somnolencia progresiva comenzó en la última hora, después de tomar la pastilla."
+  },
+  "/history/risk_factors/0": {
+   "en": "There is a recent exposure to a medication of uncertain contents.",
+   "es": "Hay una exposición reciente a un medicamento de contenido incierto."
+  },
+  "/history/exposure/0": {
+   "en": "His friend reports one pain tablet from an acquaintance; the drug identity and amount are not established.",
+   "es": "Su amigo refiere una pastilla para el dolor obtenida de un conocido; no se han establecido la identidad del fármaco ni la cantidad."
+  },
+  "/history/breathing/0": {
+   "en": "His friend counted long pauses between small, shallow breaths.",
+   "es": "Su amigo contó pausas largas entre respiraciones pequeñas y superficiales."
+  },
+  "/history/neurological_symptoms/0": {
+   "en": "He became progressively sleepy without a witnessed focal deficit.",
+   "es": "Se puso progresivamente somnoliento, sin que se presenciara un déficit focal."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular palpable pulse.",
+   "es": "Pulso regular y palpable."
+  },
+  "/examination/Respiratory": {
+   "en": "Very slow, shallow breaths with reduced chest excursion; breath sounds are equal when air enters.",
+   "es": "Respiraciones muy lentas y superficiales, con expansión torácica disminuida; el murmullo pulmonar es simétrico cuando entra aire."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft without focal tenderness.",
+   "es": "Blando, sin dolor focal a la palpación."
+  },
+  "/examination/Neurological": {
+   "en": "Obtunded, with small reactive pupils and brief bilateral withdrawal to firm stimulation; no visible head injury.",
+   "es": "Obnubilado, con pupilas pequeñas y reactivas, y retiro bilateral breve ante un estímulo firme; sin traumatismo craneano visible."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved contraction",
+   "es": "Contracción conservada"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.8 cm; minimal respiratory variation with shallow breaths",
+   "es": "1.8 cm; variación respiratoria mínima con respiraciones superficiales"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal infiltrate or pulmonary edema.",
+   "es": "Sin infiltrado focal ni edema pulmonar."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "opioid_67f": {
+  "/presentation": {
+   "en": "A 67-year-old woman is brought from home with increasing sleepiness and slow breathing noticed by her spouse.",
+   "es": "Una mujer de 67 años es traída desde su casa con somnolencia progresiva y respiración lenta advertidas por su cónyuge."
+  },
+  "/history_source": {
+   "en": "Spouse and medication list",
+   "es": "Cónyuge y lista de medicamentos"
+  },
+  "/history/chief_complaint/0": {
+   "en": "Her spouse reports that she has become increasingly sleepy and is breathing slowly.",
+   "es": "Su cónyuge refiere que ella se ha puesto cada vez más somnolienta y que respira lentamente."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "Her spouse has struggled to keep her awake this morning.",
+   "es": "A su cónyuge le ha costado mantenerla despierta esta mañana."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "There was no witnessed seizure, head injury or febrile illness.",
+   "es": "No se presenció ninguna convulsión, traumatismo craneano ni cuadro febril."
+  },
+  "/history/medical_history/0": {
+   "en": "Her spouse reports chronic pain and chronic kidney disease; she normally converses clearly and manages at home.",
+   "es": "Su cónyuge refiere dolor crónico y enfermedad renal crónica; habitualmente conversa con claridad y se las arregla en casa."
+  },
+  "/history/medications/0": {
+   "en": "Her medication list includes sustained-release morphine; her spouse is uncertain whether today's dose was repeated.",
+   "es": "Su lista de medicamentos incluye morfina de liberación prolongada; su cónyuge no sabe con certeza si la dosis de hoy se repitió."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "She became progressively sleepier during the morning after taking her regular medication.",
+   "es": "Se puso progresivamente más somnolienta durante la mañana, después de tomar sus medicamentos habituales."
+  },
+  "/history/risk_factors/0": {
+   "en": "She receives a long-acting opioid and has impaired renal function.",
+   "es": "Recibe un opioide de acción prolongada y tiene la función renal deteriorada."
+  },
+  "/history/exposure/0": {
+   "en": "Sustained-release morphine is prescribed; a possible repeated dose is unconfirmed, and no intent is established.",
+   "es": "Tiene indicada morfina de liberación prolongada; no se ha confirmado una posible dosis repetida, y no se ha establecido intencionalidad."
+  },
+  "/history/breathing/0": {
+   "en": "Her spouse noticed unusually slow shallow breathing with occasional pauses.",
+   "es": "Su cónyuge notó una respiración inusualmente lenta y superficial, con pausas ocasionales."
+  },
+  "/history/oral_intake/0": {
+   "en": "She has eaten little today because she has been too sleepy.",
+   "es": "Hoy ha comido poco porque ha estado demasiado somnolienta."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular palpable pulse.",
+   "es": "Pulso regular y palpable."
+  },
+  "/examination/Respiratory": {
+   "en": "Slow shallow breathing with reduced chest excursion; no focal wheeze or crackles.",
+   "es": "Respiración lenta y superficial, con expansión torácica disminuida; sin sibilancias ni crépitos focales."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Obtunded with small reactive pupils, briefly withdrawing both arms to a firm stimulus.",
+   "es": "Obnubilada, con pupilas pequeñas y reactivas, retira brevemente ambos brazos ante un estímulo firme."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved contraction",
+   "es": "Contracción conservada"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.9 cm; minimal respiratory variation with shallow breaths",
+   "es": "1.9 cm; variación respiratoria mínima con respiraciones superficiales"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "No focal consolidation or edema.",
+   "es": "Sin consolidación focal ni edema."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ }
+}

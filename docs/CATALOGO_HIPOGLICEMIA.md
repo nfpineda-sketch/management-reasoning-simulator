@@ -156,6 +156,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-26-22 | Los documentos se escriben en el idioma en que se jugó el encuentro; quien los abre puede elegir el otro | general | policy | cosmetic | — |
 | C-2026-09-26-23 | Un documento en español dice en español sus propias palabras | general | text | cosmetic | — |
 | C-2026-09-26-24 | El texto del modelo se traduce al pedirlo, una vez, y el original en inglés sigue siendo el registro | general | policy | cosmetic | — |
+| C-2026-09-26-25 | La narrativa de los 31 casos del banco en español, usada sólo después de la revisión docente de cada caso | general | policy | cosmetic | — |
 | C-2026-09-27-01 | Peso y talla en los 31 casos del banco y en la ficha, sólo para encuentros nuevos | general | clinical_decision_applied | clinical | — |
 | C-2026-09-27-02 | Volumen corriente por kilo sobre el peso corporal predicho; el volumen absoluto se respeta | general | clinical_decision_applied | clinical | — |
 | C-2026-09-27-03 | Dosis por kilo: el tipo de peso explícito se respeta, se registra el peso usado y un mismo efecto por dosis | general | clinical_decision_applied | clinical | — |

@@ -1,0 +1,270 @@
+{
+ "asthma_24f": {
+  "/presentation": {
+   "en": "A 24-year-old woman presents with worsening breathlessness and chest tightness. She is sitting forward and speaking in short phrases.",
+   "es": "Una mujer de 24 años consulta por disnea y opresión torácica que han ido empeorando. Está sentada inclinada hacia adelante y habla en frases cortas."
+  },
+  "/history_source": {
+   "en": "Patient",
+   "es": "Paciente"
+  },
+  "/history/chief_complaint/0": {
+   "en": "My chest is tight and I cannot get my breathing under control.",
+   "es": "Siento el pecho apretado y no logro controlar la respiración."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "I have a dry cough and can hear myself wheezing.",
+   "es": "Tengo tos seca y escucho que me silba el pecho."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "I have no fever, productive sputum, rash or lip swelling.",
+   "es": "No tengo fiebre, flemas, erupción en la piel ni hinchazón de los labios."
+  },
+  "/history/medical_history/0": {
+   "en": "I have asthma and allergic rhinitis; I have previously needed an emergency visit but have never been intubated.",
+   "es": "Tengo asma y rinitis alérgica; antes he necesitado una consulta de urgencia, pero nunca me han intubado."
+  },
+  "/history/medications/0": {
+   "en": "I have used my reliever repeatedly today; my preventer inhaler ran out last week.",
+   "es": "Hoy he usado una y otra vez mi inhalador de rescate; el inhalador de mantención se me acabó la semana pasada."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "Symptoms worsened over eight hours after a day outdoors with heavy pollen exposure.",
+   "es": "Los síntomas empeoraron a lo largo de ocho horas después de un día al aire libre con alta exposición al polen."
+  },
+  "/history/risk_factors/0": {
+   "en": "I have been without my inhaled controller and have needed frequent reliever use.",
+   "es": "He estado sin mi inhalador de mantención y he necesitado usar el inhalador de rescate con frecuencia."
+  },
+  "/history/breathing/0": {
+   "en": "It is difficult to breathe out, and the reliever only helps briefly.",
+   "es": "Me cuesta sacar el aire, y el inhalador de rescate solo me ayuda por poco rato."
+  },
+  "/history/chest_pain/0": {
+   "en": "The sensation is tightness with breathing, not a separate focal or crushing pain.",
+   "es": "La sensación es de pecho apretado al respirar, no un dolor aparte que sea localizado u opresivo."
+  },
+  "/history/exposure/0": {
+   "en": "There was heavy pollen exposure; no food exposure or new medication preceded the symptoms.",
+   "es": "Hubo una alta exposición al polen; ninguna exposición a alimentos ni medicamento nuevo precedió a los síntomas."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular tachycardia; no new murmur.",
+   "es": "Taquicardia regular; sin soplos nuevos."
+  },
+  "/examination/Respiratory": {
+   "en": "Marked effort, prolonged expiration and widespread expiratory wheeze with reduced air entry. Peak expiratory flow is 35% of her documented personal best.",
+   "es": "Esfuerzo respiratorio marcado, espiración prolongada y sibilancias espiratorias difusas, con murmullo pulmonar disminuido. El flujo espiratorio máximo corresponde al 35% de su mejor valor personal registrado."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Awake, oriented and cooperative, but speech is limited by breathing.",
+   "es": "Vigil, orientada y cooperadora, pero con el habla limitada por la respiración."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved contraction",
+   "es": "Contracción conservada"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.4 cm; >50% inspiratory collapse",
+   "es": "1.4 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Hyperinflation without focal consolidation or pneumothorax.",
+   "es": "Hiperinsuflación sin consolidación focal ni neumotórax."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ },
+ "asthma_49m": {
+  "/presentation": {
+   "en": "A 49-year-old man is brought in with persistent breathing difficulty. He appears tired and responds to questions only briefly. Handover notes that the wheeze sounds quieter than it did earlier.",
+   "es": "Un hombre de 49 años es traído por dificultad respiratoria persistente. Se ve cansado y solo responde brevemente a las preguntas. En la entrega se señala que las sibilancias suenan más silenciosas que antes."
+  },
+  "/history_source": {
+   "en": "Partner",
+   "es": "Pareja"
+  },
+  "/history/chief_complaint/0": {
+   "en": "His partner reports worsening breathing difficulty and increasing exhaustion.",
+   "es": "Su pareja refiere que la dificultad respiratoria ha ido empeorando y que está cada vez más agotado."
+  },
+  "/history/associated_symptoms/0": {
+   "en": "His partner says the wheeze was louder earlier and he is now finding it difficult to speak.",
+   "es": "Su pareja cuenta que antes el pecho le silbaba más fuerte y que ahora le cuesta hablar."
+  },
+  "/history/associated_symptoms/1": {
+   "en": "There has been a dry cough without fever, purulent sputum or a rash.",
+   "es": "Ha tenido tos seca, sin fiebre, expectoración purulenta ni erupción en la piel."
+  },
+  "/history/medical_history/0": {
+   "en": "His partner reports asthma and a previous intensive care admission requiring ventilation.",
+   "es": "Su pareja refiere que tiene asma y que antes estuvo hospitalizado en cuidados intensivos, donde requirió ventilación."
+  },
+  "/history/medications/0": {
+   "en": "He uses an inhaled corticosteroid/long-acting bronchodilator and has repeatedly used his rescue inhaler today.",
+   "es": "Usa un corticoide inhalado/broncodilatador de acción prolongada y hoy ha usado una y otra vez su inhalador de rescate."
+  },
+  "/history/allergies/0": {
+   "en": "No known medication allergies are reported.",
+   "es": "No se refieren alergias medicamentosas conocidas."
+  },
+  "/history/onset/0": {
+   "en": "Breathing worsened through the day after cleaning a dusty storage room; he became sleepier over the last hour.",
+   "es": "La respiración empeoró a lo largo del día después de limpiar una bodega polvorienta; en la última hora se fue poniendo más somnoliento."
+  },
+  "/history/risk_factors/0": {
+   "en": "He has a previous near-fatal exacerbation and little response to repeated home reliever use.",
+   "es": "Tiene el antecedente de una exacerbación casi fatal y ha respondido poco al uso repetido del inhalador de rescate en casa."
+  },
+  "/history/breathing/0": {
+   "en": "His partner says he is moving less air and can no longer complete a sentence.",
+   "es": "Su pareja cuenta que está moviendo menos aire y que ya no logra terminar una frase."
+  },
+  "/history/exposure/0": {
+   "en": "Dust exposure preceded the symptoms; there was no witnessed aspiration or new medication.",
+   "es": "La exposición al polvo precedió a los síntomas; no hubo aspiración presenciada ni medicamento nuevo."
+  },
+  "/history/chest_pain/0": {
+   "en": "Before becoming sleepy he described diffuse tightness rather than a focal chest pain.",
+   "es": "Antes de ponerse somnoliento describió una opresión difusa en lugar de un dolor torácico localizado."
+  },
+  "/examination/Cardiac": {
+   "en": "Regular tachycardia.",
+   "es": "Taquicardia regular."
+  },
+  "/examination/Respiratory": {
+   "en": "Severe effort with very poor bilateral air entry and only faint wheeze. He cannot complete a reliable peak-flow maneuver.",
+   "es": "Esfuerzo respiratorio severo, con murmullo pulmonar muy disminuido en forma bilateral y solo sibilancias tenues. No logra completar una maniobra confiable de flujo espiratorio máximo."
+  },
+  "/examination/Abdomen": {
+   "en": "Soft and non-tender.",
+   "es": "Blando e indoloro."
+  },
+  "/examination/Neurological": {
+   "en": "Drowsy, opens eyes to voice and follows simple commands briefly; no lateralizing motor deficit.",
+   "es": "Somnoliento, abre los ojos a la voz y obedece órdenes simples por breves momentos; sin déficit motor lateralizado."
+  },
+  "/investigations/pocus/result/lv": {
+   "en": "Preserved contraction",
+   "es": "Contracción conservada"
+  },
+  "/investigations/pocus/result/rv": {
+   "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+   "es": "Menor que el VI; sin aplanamiento septal (sin signo D); sin signo de McConnell"
+  },
+  "/investigations/pocus/result/pericardium": {
+   "en": "No pericardial effusion",
+   "es": "Sin derrame pericárdico"
+  },
+  "/investigations/pocus/result/ivc": {
+   "en": "1.6 cm; >50% inspiratory collapse",
+   "es": "1.6 cm; colapso inspiratorio >50%"
+  },
+  "/investigations/pocus/result/lung_sliding": {
+   "en": "Present bilaterally; no pneumothorax",
+   "es": "Presente bilateralmente; sin neumotórax"
+  },
+  "/investigations/pocus/result/lungs": {
+   "en": "No B-lines; A-line pattern bilaterally",
+   "es": "Sin líneas B; patrón de líneas A bilateral"
+  },
+  "/investigations/pocus/result/lung_consolidation": {
+   "en": "No consolidation or pleural effusion",
+   "es": "Sin consolidación ni derrame pleural"
+  },
+  "/investigations/pocus/result/aorta_root": {
+   "en": "Not dilated",
+   "es": "No dilatada"
+  },
+  "/investigations/pocus/result/aorta_descending": {
+   "en": "Not dilated in the visible segment",
+   "es": "No dilatada en el segmento visible"
+  },
+  "/investigations/pocus/result/aorta_abdominal": {
+   "en": "Normal calibre from the diaphragm to the iliac bifurcation",
+   "es": "Calibre normal desde el diafragma hasta la bifurcación ilíaca"
+  },
+  "/investigations/pocus/result/dvt_femoral": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/pocus/result/dvt_popliteal": {
+   "en": "Compressible bilaterally",
+   "es": "Compresibles bilateralmente"
+  },
+  "/investigations/chest_xray/result/report": {
+   "en": "Hyperinflation without pneumothorax or focal air-space opacity.",
+   "es": "Hiperinsuflación sin neumotórax ni opacidad alveolar focal."
+  },
+  "/investigations/troponin/result/report": {
+   "en": "Single sample; interpret with symptoms and ECG. Serial testing requires a new sample.",
+   "es": "Muestra única; interpretar junto con los síntomas y el ECG. La medición seriada requiere una nueva muestra."
+  },
+  "/investigations/urinalysis/result/report": {
+   "en": "No leukocyte esterase, nitrite or blood detected.",
+   "es": "No se detectan esterasa leucocitaria, nitritos ni sangre."
+  },
+  "/investigations/blood_cultures/result/report": {
+   "en": "Samples collected; culture identification and susceptibility results are pending.",
+   "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  }
+ }
+}

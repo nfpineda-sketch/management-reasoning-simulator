@@ -295,7 +295,7 @@ def _history_section(record, styles, *, compact):
     import history_review
     from faculty_analysis import case_id_of
     from history_topics import topic_label
-    from language import current as _reader_language
+    from language import current as _reader_language, narrative
     summary = history_review.review(record, case_id_of(record))
     if not summary["offered"] and not summary["exchanges"]:
         return []
@@ -316,7 +316,7 @@ def _history_section(record, styles, *, compact):
     else:
         for item in summary["exchanges"][:40]:
             flow.append(p(f"{_minute(item['minute'])} \u201c{item['asked']}\u201d "
-                          f"- {item['answered']}", "small", "muted"))
+                          f"- {narrative(item['answered'])}", "small", "muted"))
     if summary["not_named"]:
         flow.append(p(_t("Available and not asked about: {topics}.").format(
             topics=", ".join(topic_label(row["topic"], _reader_language()) for row in summary["not_named"]))))
@@ -1122,7 +1122,8 @@ def render_faculty_brief_pdf(report, record, *, compact=True, app_url=None, corr
             return _render_compact(report, record, inputs, app_url, correct, assessment, prose, translated)
         return _render_full(report, record, inputs, correct, assessment, prose, translated)
 
-    with languages.presenting(language):
+    from faculty_analysis import case_id_of
+    with languages.presenting(language), languages.narrating(case_id_of(record)):
         if translate is None or languages.current() == "en":
             return render()
         collected = []
