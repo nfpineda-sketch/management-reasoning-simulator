@@ -164,6 +164,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-27-05 | El registro completo del encuentro (PDF y Markdown de la revisión) se escribe en el idioma del encuentro | general | policy | cosmetic | — |
 | C-2026-09-27-06 | Un informe de examen dice su propia estructura en español, y una imagen se realiza, no se toma como muestra | general | text | cosmetic | — |
 | C-2026-09-27-07 | La sala y las pantallas de revisión dicen en español, enteras, las frases fijas del motor | general | text | cosmetic | — |
+| C-2026-09-27-08 | El portal del residente, la pantalla de la Management Trace y el registro de la sala en el idioma de quien lee | general | policy | cosmetic | — |
 
 ## La batería, configuración por configuración
 

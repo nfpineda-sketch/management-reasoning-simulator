@@ -1074,5 +1074,192 @@ ES = {
         'Vista previa de la respuesta guardada:',
     ' · drafted from your review':
         ' · redactado a partir de tu revisión',
+    # The resident's portal and the Management Trace screen (Idioma 4b).
+    'A copy of your own record from a pilot simulator. It is not a certificate, a transcript, or evidence that a workplace EPA was achieved. The rubric is a pilot instrument and its scores are not ACGME Milestone levels, Canadian stages or EPA supervision levels.':
+        'Una copia de tu propio registro en un simulador piloto. No es un certificado, un expediente académico ni evidencia de que se haya logrado una EPA en el lugar de trabajo. La rúbrica es un instrumento piloto y sus puntajes no son niveles de los Milestones de ACGME, etapas canadienses ni niveles de supervisión de EPA.',
+    'A photograph of your face':
+        'Una fotografía de tu cara',
+    'Accepted {date} · version {version}':
+        'Aceptado el {date} · versión {version}',
+    "Choosing 'Not now' changes nothing else: you can begin encounters immediately, and you can add a photograph later from My progress, or never.":
+        'Elegir «Ahora no» no cambia nada más: puedes comenzar encuentros de inmediato y agregar una fotografía más tarde desde Mi progreso, o nunca.',
+    'Clinical encounter':
+        'Encuentro clínico',
+    'Continue to my encounters':
+        'Continuar a mis encuentros',
+    'Current initials:':
+        'Iniciales actuales:',
+    'Delete my photograph and initials':
+        'Borrar mi fotografía y mis iniciales',
+    'Download your Management Trace (PDF)':
+        'Descargar tu Management Trace (PDF)',
+    'Download your complete record (JSON)':
+        'Descargar tu registro completo (JSON)',
+    'Download your rubric assessment (PDF)':
+        'Descargar tu evaluación con rúbrica (PDF)',
+    'Encounters in this programme are reviewed at a distance. A face beside your initials and your training year helps a faculty member keep one encounter apart from another. It appears in one place: the centre of your profile chart. No other resident can see it.':
+        'Los encuentros de este programa se revisan a distancia. Una cara junto a tus iniciales y tu año de formación ayuda a un docente a distinguir un encuentro de otro. Aparece en un solo lugar: el centro de tu gráfico de perfil. Ningún otro residente puede verla.',
+    'Everything saved under your account: your encounters, your own reflections and plans, and every rubric assessment a faculty member has confirmed. It is a copy of your record, not a certificate.':
+        'Todo lo guardado en tu cuenta: tus encuentros, tus propias reflexiones y planes, y cada evaluación con rúbrica que un docente haya confirmado. Es una copia de tu registro, no un certificado.',
+    'I have read this and agree':
+        'Lo leí y estoy de acuerdo',
+    'Next encounter: {when} · {challenge}':
+        'Encuentro siguiente: {when} · {challenge}',
+    'No AI reading of this encounter was saved, so the Management Trace cannot be rebuilt. The encounter record itself is intact.':
+        'No se guardó una lectura de IA de este encuentro, así que la Management Trace no se puede reconstruir. El registro del encuentro está intacto.',
+    'No completed encounter is saved yet. Your first one will appear here with its Management Trace.':
+        'Todavía no hay encuentros completados guardados. El primero aparecerá aquí con su Management Trace.',
+    'No confirmed rubric assessment yet.':
+        'Todavía no hay una evaluación con rúbrica confirmada.',
+    'Nothing yet. Each encounter ends by asking what you would carry into the next one, and those answers collect here.':
+        'Nada todavía. Cada encuentro termina preguntando qué llevarías al siguiente, y esas respuestas se reúnen aquí.',
+    'One step, once. Everything else about your account is already ready.':
+        'Un paso, una sola vez. Todo lo demás de tu cuenta ya está listo.',
+    'Read the agreement':
+        'Leer el acuerdo',
+    'Set up your account':
+        'Configura tu cuenta',
+    'Shown in one place: the centre of your profile chart, and on the assessment documents that carry it. You and faculty of this programme can see it. No other resident can see your photograph, your chart or anything else of yours.':
+        'Se muestra en un solo lugar: el centro de tu gráfico de perfil, y en los documentos de evaluación que lo incluyen. La ven tú y los docentes de este programa. Ningún otro residente puede ver tu fotografía, tu gráfico ni nada tuyo.',
+    'Thank you. One last optional step, and you are ready to begin.':
+        'Gracias. Un último paso opcional y estarás listo para comenzar.',
+    'The agreement you accepted':
+        'El acuerdo que aceptaste',
+    'The file is re-encoded as a small square image before it is stored. Nothing of the original is kept, including where and when it was taken.':
+        'El archivo se vuelve a codificar como una imagen cuadrada pequeña antes de guardarlo. No se conserva nada del original, ni dónde ni cuándo se tomó.',
+    'This is your most recent encounter; the next one is still ahead.':
+        'Este es tu encuentro más reciente; el siguiente todavía está por venir.',
+    'What you said you would do differently':
+        'Lo que dijiste que harías distinto',
+    'Written after each encounter, in your own words, and set beside the encounter that followed it. Nothing here is scored.':
+        'Escrito después de cada encuentro, con tus propias palabras, y puesto junto al encuentro que vino después. Nada de esto tiene puntaje.',
+    'You can also do this later, or not at all.':
+        'También puedes hacerlo más tarde, o no hacerlo.',
+    'Your complete record':
+        'Tu registro completo',
+    'Your completed encounters':
+        'Tus encuentros completados',
+    'Your initials':
+        'Tus iniciales',
+    'Your own record. A rubric assessment appears here once a faculty member has reviewed and completed it; until then it is still theirs.':
+        'Tu propio registro. Una evaluación con rúbrica aparece aquí cuando un docente la revisa y la completa; hasta entonces sigue siendo suya.',
+    'Your photograph and initials':
+        'Tu fotografía y tus iniciales',
+    '{count} encounter(s) · {assessed} with a confirmed assessment.':
+        '{count} encuentro(s) · {assessed} con una evaluación confirmada.',
+    'Not now':
+        'Ahora no',
+    'none stored':
+        'ninguna guardada',
+    'A working model was not explicitly recorded.':
+        'No se registró explícitamente un modelo de trabajo.',
+    'AI analysis is not configured for this application. You can still review and download your original encounter record.':
+        'El análisis de IA no está configurado en esta aplicación. Igual puedes revisar y descargar el registro original de tu encuentro.',
+    'AI interpretation of your recorded encounter · your original decisions and locked reflection are preserved.':
+        'Interpretación de IA de tu encuentro registrado · tus decisiones originales y tu reflexión bloqueada se conservan.',
+    'Blood pressure · mmHg':
+        'Presión arterial · mmHg',
+    'Connecting your decisions, expectations and observed patient responses...':
+        'Relacionando tus decisiones, expectativas y las respuestas observadas del paciente...',
+    'Decision {number}':
+        'Decisión {number}',
+    'Download Management Trace PDF':
+        'Descargar el PDF de la Management Trace',
+    'Encounter information':
+        'Información del encuentro',
+    'Executed actions':
+        'Acciones ejecutadas',
+    'Expectation and observed response':
+        'Expectativa y respuesta observada',
+    'Heart rate · /min':
+        'Frecuencia cardíaca · /min',
+    'How your management evolved':
+        'Cómo evolucionó tu manejo',
+    'Later reflection on {decision}':
+        'Reflexión posterior sobre {decision}',
+    'No explicit expectation was recorded.':
+        'No se registró una expectativa explícita.',
+    'Order as entered':
+        'Orden tal como se escribió',
+    'Oxygen saturation · %':
+        'Saturación de oxígeno · %',
+    "Partial analysis: {count} passage(s) were withheld because they broke a rule of this report (a number in the prose, or a citation outside what that decision may cite). They are listed in the PDF's technical record. Your complete encounter record is unaffected.":
+        'Análisis parcial: se retuvieron {count} pasaje(s) porque rompían una regla de este informe (un número en la prosa, o una cita fuera de lo que esa decisión puede citar). Están en el registro técnico del PDF. El registro completo de tu encuentro no se ve afectado.',
+    'Patterns to retain':
+        'Patrones que conservar',
+    'Questions for your next encounter':
+        'Preguntas para tu próximo encuentro',
+    'Recorded order':
+        'Orden registrada',
+    'Recorded order and patient response':
+        'Orden registrada y respuesta del paciente',
+    'Retry Management Trace analysis':
+        'Reintentar el análisis de la Management Trace',
+    'The AI reasoning is shown in English; the Spanish PDF of your Management Trace translates it.':
+        'El razonamiento de la IA se muestra en inglés; el PDF en español de tu Management Trace lo trae traducido.',
+    'Values recorded at decision and response times. Lines connect observations; they do not represent continuous measurements.':
+        'Valores registrados en los momentos de decisión y de respuesta. Las líneas unen observaciones; no representan mediciones continuas.',
+    'What you expected':
+        'Lo que esperabas',
+    'Your Management Trace':
+        'Tu Management Trace',
+    'Your analysis was not available. The complete encounter record remains available below.':
+        'Tu análisis no estuvo disponible. El registro completo del encuentro sigue disponible más abajo.',
+    'Your later reflection':
+        'Tu reflexión posterior',
+    'Your recorded reasoning':
+        'Tu razonamiento registrado',
+    'a recorded decision':
+        'una decisión registrada',
+    'Evidence:':
+        'Evidencia:',
+    'Priority:':
+        'Prioridad:',
+    'Observation':
+        'Observación',
+    'Before':
+        'Antes',
+    'After':
+        'Después',
+    'Systolic BP':
+        'PA sistólica',
+    'Presentation':
+        'Presentación',
+    'Patient history':
+        'Anamnesis',
+    'Examination':
+        'Examen físico',
+    'Diagnostic result':
+        'Resultado de examen',
+    'Clinical update':
+        'Actualización clínica',
+    'Procedure':
+        'Procedimiento',
+    'Clarification':
+        'Aclaración',
+    'Prototype':
+        'Registro',
+    'Study not performed':
+        'Examen no realizado',
+    # The room's decision-by-decision record (app.render_management_trace).
+    'No executed management decisions were recorded in this encounter.':
+        'No se registraron decisiones de manejo ejecutadas en este encuentro.',
+    'Clinical response':
+        'Respuesta clínica',
+    'New diagnostic information':
+        'Nueva información diagnóstica',
+    # The completed encounter's page in the room.
+    'Completed encounter review':
+        'Revisión del encuentro completado',
+    'This saved review is read-only. Start a new encounter to apply your Adaptation Plan.':
+        'Esta revisión guardada es de sólo lectura. Inicia un nuevo encuentro para aplicar tu Plan de adaptación.',
+    'Your Adaptation Plan':
+        'Tu Plan de adaptación',
+    'Your original orders, stated reasoning and recorded responses remain unchanged.':
+        'Tus órdenes originales, el razonamiento que expresaste y las respuestas registradas se mantienen sin cambios.',
+    'Complete your independent reflection to receive an analyzed Management Trace with your clinical trajectory and key decisions.':
+        'Completa tu reflexión independiente para recibir una Management Trace analizada con tu trayectoria clínica y tus decisiones clave.',
+    'Original decision-by-decision record':
+        'Registro original, decisión por decisión',
 }
 TABLES = {"es": ES}

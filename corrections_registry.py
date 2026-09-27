@@ -934,6 +934,26 @@ CORRECTIONS = (
                   "test_review_record_language.py::test_every_word_the_record_writes_can_be_said_in_spanish"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-27-08",
+        "date": "2026-09-27",
+        "title": "El portal del residente, la pantalla de la Management Trace y el registro de la sala en el idioma de quien lee",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Lo que el residente ve de sus encuentros guardados —su portal, su Management Trace en pantalla, el "
+                   "registro decisión por decisión y la página del encuentro completado— dice sus propias palabras desde el "
+                   "catálogo revisado (screen_language), en el idioma elegido. El razonamiento de la IA se muestra "
+                   "traducido sólo si su traducción ya estaba guardada (la pantalla nunca paga una llamada); si no, en "
+                   "inglés, y la pantalla lo dice. El nombre del caso sigue la narrativa aprobada. Una guarda recorre los "
+                   "textos de estas pantallas y exige su español en el catálogo."),
+        "authorised_by": INSTRUCTION_2026_09_26C,
+        "affects": {"modules": ["screen_language", "resident_portal", "management_trace_portal", "app", "report_language"],
+                    "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_screens_speak_the_readers_language.py::test_every_word_the_screen_writes_can_be_said_in_spanish",
+                  "test_screens_speak_the_readers_language.py::test_english_is_returned_untouched"],
+        "preservation": None,
+    },
 )
 
 

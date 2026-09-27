@@ -8,7 +8,9 @@ from pathlib import Path
 
 source = Path("app.py").read_text()
 assert "MVP v0.8.21 — dynamic learner-visible ECG with lower-pressure PS001 entry" in source
-assert "diagnostics = _trace_diagnostic_results(event)" in source
+# Since 2026-09-27 the trace says its diagnostics in the reader's language, through the same results.
+assert "diagnostics = _record_diagnostics(event)" in source
+assert "_trace_diagnostic_results(event)" in source
 
 tree = ast.parse(source)
 nodes = []

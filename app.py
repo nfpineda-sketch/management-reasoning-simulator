@@ -4469,7 +4469,7 @@ def render_management_trace(trace):
     """Post-encounter learner timeline: state -> stated reasoning -> action -> response."""
     events = [e for e in trace if e.get("execution_status") in {"executed", "terminal_locked"}]
     if not events:
-        st.info("No executed management decisions were recorded in this encounter.")
+        st.info(_record_words("No executed management decisions were recorded in this encounter."))
         return
     st.markdown("""<style>
     .mt-card{border:1px solid #d9dee7;border-radius:14px;padding:18px 20px;margin:0 0 18px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.03)}
@@ -4477,23 +4477,24 @@ def render_management_trace(trace):
     .mt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.mt-block{border-radius:10px;background:#f7f8fa;padding:13px 15px;min-height:92px}.mt-label{font-size:.76rem;text-transform:uppercase;letter-spacing:.055em;color:#6b7280;font-weight:700;margin-bottom:7px}.mt-body{font-size:.96rem;line-height:1.48;color:#252a34}.mt-reason{margin:0 0 5px}.mt-muted{color:#7a808b;font-style:italic}.mt-response-group{margin:0 0 10px}.mt-response-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.045em;color:#778091;font-weight:700;margin:0 0 6px}.mt-deltas{list-style:none;margin:0;padding:0}.mt-delta{display:inline-block;margin:0 10px 6px 0;padding:4px 8px;border-radius:7px;background:#eef1f5;font-size:.9rem}.mt-result-list{display:grid;gap:7px}.mt-result{display:block;padding:9px 11px;border:1px solid #d8dee8;border-left:4px solid #65758d;border-radius:7px;background:#fff;font-size:.9rem;line-height:1.42}.mt-result-time{display:block;color:#596579;font-size:.78rem;font-weight:700;margin:0 0 3px}.mt-result-text{display:block;color:#2f3642}.mt-arrow{color:#737b88;padding:0 4px}@media(max-width:850px){.mt-grid{grid-template-columns:1fr}}
     </style>""", unsafe_allow_html=True)
     import html
+    w = _record_words  # the screen's reader language; the resident's words stay as written
     for i, event in enumerate(events, 1):
         t0 = _trace_time(event.get("decision_time_min", 0))
         t1 = _trace_time((event.get("state_after") or {}).get("sim_time_min", event.get("response_time_min", 0)))
-        state = html.escape(_trace_state_text(event.get("state_before")))
-        action = html.escape(_trace_action_text(event))
+        state = html.escape(_record_state(event.get("state_before")))
+        action = html.escape(_trace_action_words(event))
         reasoning = _trace_reasoning_items(event.get("reasoning"))
-        reasoning_html = "".join(f'<div class="mt-reason"><strong>{html.escape(label)}:</strong> {html.escape(value)}</div>' for label, value in reasoning) if reasoning else '<div class="mt-muted">Not explicitly stated</div>'
-        deltas = _trace_observable_delta(event.get("state_before"), event.get("state_after"), event.get("reasoning"))
-        diagnostics = _trace_diagnostic_results(event)
+        reasoning_html = "".join(f'<div class="mt-reason"><strong>{html.escape(_record_slot(label))}:</strong> {html.escape(value)}</div>' for label, value in reasoning) if reasoning else '<div class="mt-muted">' + w("Not explicitly stated") + '</div>'
+        deltas = _record_deltas(event.get("state_before"), event.get("state_after"), event.get("reasoning"))
+        diagnostics = _record_diagnostics(event)
         clinical_items = "".join(f'<li class="mt-delta"><strong>{html.escape(label)}</strong>: {html.escape(before)} <span class="mt-arrow">→</span> {html.escape(after)}</li>' for label, before, after in deltas)
-        delta_html = f'<div class="mt-response-group"><div class="mt-response-title">Clinical response</div><ul class="mt-deltas">{clinical_items}</ul></div>' if clinical_items else ""
-        diagnostic_items = "".join(f'<div class="mt-result"><span class="mt-result-time">Diagnostic result · {html.escape(time_text)}:</span><span class="mt-result-text">{html.escape(result_text).replace(chr(10), "<br>")}</span></div>' for time_text, result_text in diagnostics)
-        diagnostic_html = f'<div class="mt-response-group"><div class="mt-response-title">New diagnostic information</div><div class="mt-result-list">{diagnostic_items}</div></div>' if diagnostic_items else ""
+        delta_html = f'<div class="mt-response-group"><div class="mt-response-title">{w("Clinical response")}</div><ul class="mt-deltas">{clinical_items}</ul></div>' if clinical_items else ""
+        diagnostic_items = "".join(f'<div class="mt-result"><span class="mt-result-time">{html.escape(w("Diagnostic result · {time}:", time=time_text))}</span><span class="mt-result-text">{html.escape(result_text).replace(chr(10), "<br>")}</span></div>' for time_text, result_text in diagnostics)
+        diagnostic_html = f'<div class="mt-response-group"><div class="mt-response-title">{w("New diagnostic information")}</div><div class="mt-result-list">{diagnostic_items}</div></div>' if diagnostic_items else ""
         if not delta_html and not diagnostic_html:
-            delta_html = '<span class="mt-muted">No material observable change recorded.</span>'
+            delta_html = '<span class="mt-muted">' + w("No material observable change recorded.") + '</span>'
         delta_html += diagnostic_html
-        card = f'<div class="mt-card"><div class="mt-head"><span class="mt-time">{t0}</span><span class="mt-head-sep">·</span><span class="mt-title">Decision {i}</span></div><div class="mt-grid"><div class="mt-block"><div class="mt-label">Patient state</div><div class="mt-body">{state}</div></div><div class="mt-block"><div class="mt-label">Management reasoning</div><div class="mt-body">{reasoning_html}</div></div><div class="mt-block"><div class="mt-label">Action</div><div class="mt-body">{action}</div></div><div class="mt-block"><div class="mt-label">Observed response · {t1}</div><div class="mt-body">{delta_html}</div></div></div></div>'
+        card = f'<div class="mt-card"><div class="mt-head"><span class="mt-time">{t0}</span><span class="mt-head-sep">·</span><span class="mt-title">{w("Decision {number}", number=i)}</span></div><div class="mt-grid"><div class="mt-block"><div class="mt-label">{w("Patient state")}</div><div class="mt-body">{state}</div></div><div class="mt-block"><div class="mt-label">{w("Management reasoning")}</div><div class="mt-body">{reasoning_html}</div></div><div class="mt-block"><div class="mt-label">{w("Action")}</div><div class="mt-body">{action}</div></div><div class="mt-block"><div class="mt-label">{w("Observed response · {time}", time=t1)}</div><div class="mt-body">{delta_html}</div></div></div></div>'
         st.markdown(card, unsafe_allow_html=True)
 
 
@@ -9718,8 +9719,8 @@ if not st.session_state.started:
     st.stop()
 
 if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
-    st.subheader("Completed encounter review")
-    st.caption("This saved review is read-only. Start a new encounter to apply your Adaptation Plan.")
+    st.subheader(_record_words("Completed encounter review"))
+    st.caption(_record_words("This saved review is read-only. Start a new encounter to apply your Adaptation Plan."))
     render_learning_focus(ACCOUNT_CONTEXT)
     frozen_trace = st.session_state.get("encounter_closed_trace") or []
     frozen_state = st.session_state.get("encounter_closed_state") or {}
@@ -9730,7 +9731,7 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
     render_closing_question(ACCOUNT_CONTEXT, st.session_state.get("_attempt_id"), frozen_trace,
                             language=language.current())
     _render_analyzed_management_trace()
-    with st.expander("Original decision-by-decision record", expanded=False):
+    with st.expander(_record_words("Original decision-by-decision record"), expanded=False):
         render_management_trace(frozen_trace)
     prompts = st.session_state.get("review_prompts") or []
     responses = st.session_state.get("precomparison_decision_review") or st.session_state.get("decision_review") or {}
@@ -9750,14 +9751,14 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
                     st.markdown("**" + label + "**")
                     st.write(((st.session_state.get("expert_comparison_responses") or {}).get(prompt["review_id"]) or {}).get(field, ""))
     plan = st.session_state.get("adaptation_plan") or {}
-    st.subheader("Your Adaptation Plan")
+    st.subheader(_record_words("Your Adaptation Plan"))
     for field, label in ADAPTATION_PLAN_FIELDS:
         st.write(label + ": " + str(plan.get(field) or ""))
     payload = _render_export_controls(
         frozen_trace, frozen_state, prompts, responses, plan,
         st.session_state.get("expert_comparison_responses") or {}, True, "saved",
     )
-    if st.button("Next Encounter with This Adaptation Plan", type="primary"):
+    if st.button(_record_words("Next Encounter with This Adaptation Plan"), type="primary"):
         begin_repeat_encounter(plan, payload)
         rerun_app()
     if st.button("Return to dashboard"):
@@ -10763,11 +10764,11 @@ with st.container(key="encounter-console"):
             from assistance_portal import render_closing_question
             render_closing_question(ACCOUNT_CONTEXT, st.session_state.get("_attempt_id"),
                                     frozen_trace, language=language.current())
-        with st.expander("Original decision-by-decision record", expanded=False):
-            st.caption("Your original orders, stated reasoning and recorded responses remain unchanged.")
+        with st.expander(_record_words("Original decision-by-decision record"), expanded=False):
+            st.caption(_record_words("Your original orders, stated reasoning and recorded responses remain unchanged."))
             render_management_trace(frozen_trace)
         if not st.session_state.get("expert_comparison_unlocked"):
-            st.caption("Complete your independent reflection to receive an analyzed Management Trace with your clinical trajectory and key decisions.")
+            st.caption(_record_words("Complete your independent reflection to receive an analyzed Management Trace with your clinical trajectory and key decisions."))
         render_decision_review(frozen_trace, frozen_state)
 
     st.divider()

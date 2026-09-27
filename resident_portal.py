@@ -22,6 +22,7 @@ import time
 import streamlit as st
 
 from account_store import AccountError
+from screen_language import t as _t
 
 
 MAX_LISTED = 200
@@ -45,13 +46,17 @@ def own_encounters(context):
 
 
 def _case_label(record):
+    import language
+    from faculty_analysis import case_id_of
     encounter = record.get("encounter") or {}
     if isinstance(encounter, dict):
         for key in ("case_label", "presentation"):
             value = str(encounter.get(key) or "").strip()
             if value:
+                # The case's own words as the faculty approved them, before they are shortened.
+                value = language.narrative(value, case=case_id_of(record))
                 return value.split("\n")[0][:160]
-    return "Clinical encounter"
+    return _t("Clinical encounter")
 
 
 def _trace_pdf(context, record, language=None):
@@ -105,13 +110,13 @@ def render_my_encounters(context):
     except AccountError as error:
         st.caption(str(error))
         return []
-    st.markdown("**Your completed encounters**")
+    st.markdown("**" + _t('Your completed encounters') + "**")
     if not encounters:
-        st.caption("No completed encounter is saved yet. Your first one will appear here "
-                   "with its Management Trace.")
+        st.caption(_t("No completed encounter is saved yet. Your first one will appear here "
+                   "with its Management Trace."))
         return []
-    st.caption("Your own record. A rubric assessment appears here once a faculty member has "
-               "reviewed and completed it; until then it is still theirs.")
+    st.caption(_t("Your own record. A rubric assessment appears here once a faculty member has "
+               "reviewed and completed it; until then it is still theirs."))
     for record in encounters:
         with st.expander(f"{_date(record['updated_at'])} · {record['challenge_id']} · "
                          f"{_case_label(record)}"):
@@ -124,12 +129,12 @@ def render_my_encounters(context):
             except (AccountError, ValueError):
                 pdf = None
             if pdf:
-                st.download_button("Download your Management Trace (PDF)", pdf,
+                st.download_button(_t("Download your Management Trace (PDF)"), pdf,
                                    file_name=f"management_trace_{record['id'][:12]}.pdf",
                                    mime="application/pdf", key=f"trace_{record['id']}")
             else:
-                st.caption("No AI reading of this encounter was saved, so the Management "
-                           "Trace cannot be rebuilt. The encounter record itself is intact.")
+                st.caption(_t("No AI reading of this encounter was saved, so the Management "
+                           "Trace cannot be rebuilt. The encounter record itself is intact."))
             try:
                 assessment, review = _rubric_pdf(context, record, written_in)
             except (AccountError, ValueError):
@@ -137,11 +142,11 @@ def render_my_encounters(context):
             if assessment and review:
                 from rubric import headline
                 st.markdown(f"**{headline(review['totals'])}**")
-                st.download_button("Download your rubric assessment (PDF)", assessment,
+                st.download_button(_t("Download your rubric assessment (PDF)"), assessment,
                                    file_name=f"rubric_{record['id'][:12]}.pdf",
                                    mime="application/pdf", key=f"rubric_{record['id']}")
             else:
-                st.caption("No confirmed rubric assessment yet.")
+                st.caption(_t("No confirmed rubric assessment yet."))
     return encounters
 
 
@@ -180,21 +185,22 @@ def render_adaptation_thread(context, encounters=None):
     except AccountError as error:
         st.caption(str(error))
         return []
-    st.markdown("**What you said you would do differently**")
+    st.markdown("**" + _t('What you said you would do differently') + "**")
     if not rows:
-        st.caption("Nothing yet. Each encounter ends by asking what you would carry into the "
-                   "next one, and those answers collect here.")
+        st.caption(_t("Nothing yet. Each encounter ends by asking what you would carry into the "
+                   "next one, and those answers collect here."))
         return rows
-    st.caption("Written after each encounter, in your own words, and set beside the encounter "
-               "that followed it. Nothing here is scored.")
+    st.caption(_t("Written after each encounter, in your own words, and set beside the encounter "
+               "that followed it. Nothing here is scored."))
     for row in rows:
         st.markdown(f"**{row['when']} · {row['challenge_id']}**")
         for field, value in row["plan"].items():
             st.markdown(f"> {value}")
         if row["next_attempt_id"]:
-            st.caption(f"Next encounter: {row['next_when']} · {row['next_challenge']}")
+            st.caption(_t("Next encounter: {when} · {challenge}", when=row['next_when'],
+                          challenge=row['next_challenge']))
         else:
-            st.caption("This is your most recent encounter; the next one is still ahead.")
+            st.caption(_t("This is your most recent encounter; the next one is still ahead."))
     return rows
 
 
@@ -270,22 +276,22 @@ def _exported_review(review):
 
 def render_account_export(context, encounters=None):
     """One button, and what it will and will not contain."""
-    st.markdown("**Your complete record**")
-    st.caption("Everything saved under your account: your encounters, your own reflections and "
+    st.markdown("**" + _t('Your complete record') + "**")
+    st.caption(_t("Everything saved under your account: your encounters, your own reflections and "
                "plans, and every rubric assessment a faculty member has confirmed. It is a copy "
-               "of your record, not a certificate.")
+               "of your record, not a certificate."))
     try:
         bundle = account_export(context, encounters)
     except AccountError as error:
         st.caption(str(error))
         return
     st.download_button(
-        "Download your complete record (JSON)",
+        _t("Download your complete record (JSON)"),
         json.dumps(bundle, ensure_ascii=False, indent=2, default=str),
         file_name=f"mrs_record_{context['user']['username']}.json",
         mime="application/json", key="_resident_account_export")
-    st.caption(f"{len(bundle['encounters'])} encounter(s) · "
-               f"{bundle['rubric_profile']['encounters_assessed']} with a confirmed assessment.")
+    st.caption(_t("{count} encounter(s) · {assessed} with a confirmed assessment.", count=len(bundle['encounters']),
+                  assessed=bundle['rubric_profile']['encounters_assessed']))
 
 
 def render_photo_and_initials(context, *, heading=True):
@@ -305,15 +311,15 @@ def render_photo_and_initials(context, *, heading=True):
         return
 
     if heading:
-        st.markdown("**Your photograph and initials**")
-    st.caption("Shown in one place: the centre of your profile chart, and on the assessment "
+        st.markdown("**" + _t('Your photograph and initials') + "**")
+    st.caption(_t("Shown in one place: the centre of your profile chart, and on the assessment "
                "documents that carry it. You and faculty of this programme can see it. "
-               "No other resident can see your photograph, your chart or anything else of yours.")
+               "No other resident can see your photograph, your chart or anything else of yours."))
 
     if not accepted:
-        with st.expander("Read the agreement", expanded=True):
+        with st.expander(_t("Read the agreement"), expanded=True):
             st.markdown(resident_profile.AGREEMENT)
-        if st.button("I have read this and agree", key="_resident_photo_agree"):
+        if st.button(_t("I have read this and agree"), key="_resident_photo_agree"):
             try:
                 store.accept(context["token"])
             except AccountError as error:
@@ -322,22 +328,23 @@ def render_photo_and_initials(context, *, heading=True):
                 st.rerun()
         return
 
-    with st.expander("The agreement you accepted"):
+    with st.expander(_t("The agreement you accepted")):
         st.markdown(resident_profile.AGREEMENT)
-        st.caption(f"Accepted {_date(accepted)} · version {resident_profile.AGREEMENT_VERSION}")
+        st.caption(_t("Accepted {date} · version {version}", date=_date(accepted),
+                      version=resident_profile.AGREEMENT_VERSION))
 
     if profile["photo"]:
         st.image(resident_profile.data_uri(profile["photo"]), width=128)
-    st.caption("Current initials: " + (profile["initials"] or "none stored"))
+    st.caption(_t("Current initials:") + " " + (profile["initials"] or _t("none stored")))
 
     with st.form("resident_photo", clear_on_submit=False):
-        initials = st.text_input("Your initials", value=profile["initials"],
+        initials = st.text_input(_t("Your initials"), value=profile["initials"],
                                  max_chars=resident_profile.MAX_INITIALS * 4)
-        upload = st.file_uploader("A photograph of your face",
+        upload = st.file_uploader(_t("A photograph of your face"),
                                   type=["png", "jpg", "jpeg", "webp"])
-        st.caption("The file is re-encoded as a small square image before it is stored. "
-                   "Nothing of the original is kept, including where and when it was taken.")
-        saved = st.form_submit_button("Save")
+        st.caption(_t("The file is re-encoded as a small square image before it is stored. "
+                   "Nothing of the original is kept, including where and when it was taken."))
+        saved = st.form_submit_button(_t("Save"))
     if saved:
         try:
             store.save(context["token"], initials=initials,
@@ -345,17 +352,17 @@ def render_photo_and_initials(context, *, heading=True):
         except AccountError as error:
             st.error(str(error))
         else:
-            st.success("Saved.")
+            st.success(_t("Saved."))
             st.rerun()
 
     if (profile["photo"] or profile["initials"]) and st.button(
-            "Delete my photograph and initials", key="_resident_photo_forget"):
+            _t("Delete my photograph and initials"), key="_resident_photo_forget"):
         try:
             store.forget(context["token"])
         except AccountError as error:
             st.error(str(error))
         else:
-            st.success("Deleted.")
+            st.success(_t("Deleted."))
             st.rerun()
 
 
@@ -386,34 +393,34 @@ def render_setup(context):
     """
     import resident_profile
     store = resident_profile.ProfileStore(context["store"])
-    st.subheader("Set up your account")
-    st.caption("One step, once. Everything else about your account is already ready.")
+    st.subheader(_t("Set up your account"))
+    st.caption(_t("One step, once. Everything else about your account is already ready."))
 
-    st.markdown("**Your photograph and initials**")
-    st.caption("Encounters in this programme are reviewed at a distance. A face beside your "
+    st.markdown("**" + _t('Your photograph and initials') + "**")
+    st.caption(_t("Encounters in this programme are reviewed at a distance. A face beside your "
                "initials and your training year helps a faculty member keep one encounter "
                "apart from another. It appears in one place: the centre of your profile "
-               "chart. No other resident can see it.")
-    with st.expander("Read the agreement", expanded=True):
+               "chart. No other resident can see it."))
+    with st.expander(_t("Read the agreement"), expanded=True):
         st.markdown(resident_profile.AGREEMENT)
 
     columns = st.columns(2)
-    if columns[0].button("I have read this and agree", type="primary", key="_setup_agree"):
+    if columns[0].button(_t("I have read this and agree"), type="primary", key="_setup_agree"):
         try:
             store.accept(context["token"])
         except AccountError as error:
             st.error(str(error))
         else:
             st.rerun()
-    if columns[1].button("Not now", key="_setup_decline"):
+    if columns[1].button(_t("Not now"), key="_setup_decline"):
         try:
             store.decline(context["token"])
         except AccountError as error:
             st.error(str(error))
         else:
             st.rerun()
-    st.caption("Choosing 'Not now' changes nothing else: you can begin encounters immediately, "
-               "and you can add a photograph later from My progress, or never.")
+    st.caption(_t("Choosing 'Not now' changes nothing else: you can begin encounters immediately, "
+               "and you can add a photograph later from My progress, or never."))
 
 
 def needs_photo_step(context):
@@ -433,10 +440,10 @@ def needs_photo_step(context):
 
 def render_setup_photo(context):
     """Right after agreeing: the photograph itself, and a way past it."""
-    st.subheader("Set up your account")
-    st.caption("Thank you. One last optional step, and you are ready to begin.")
+    st.subheader(_t("Set up your account"))
+    st.caption(_t("Thank you. One last optional step, and you are ready to begin."))
     render_photo_and_initials(context)
-    if st.button("Continue to my encounters", type="primary", key="_setup_continue"):
+    if st.button(_t("Continue to my encounters"), type="primary", key="_setup_continue"):
         st.session_state["_resident_setup_done"] = True
         st.rerun()
-    st.caption("You can also do this later, or not at all.")
+    st.caption(_t("You can also do this later, or not at all."))

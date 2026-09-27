@@ -13,6 +13,7 @@ from management_trace_analysis import (
     accept_management_trace_analysis, usable_analysis, validate_management_trace_analysis,
 )
 from management_trace_store import ManagementTraceStore
+from screen_language import t as _t
 
 
 def _time(value):
@@ -22,13 +23,19 @@ def _time(value):
 def _reference_labels(source):
     labels = {}
     for row in source["timeline"]:
-        name = f"Decision {row['decision_number']}" if row["decision_number"] else "Recorded order"
+        name = _t("Decision {number}", number=row['decision_number']) if row["decision_number"] else _t("Recorded order")
         labels[row["source_ref"]] = name + " · " + _time(row["decision_time_min"])
     for row in source["reflections"]:
-        labels[row["source_ref"]] = "Later reflection on " + labels.get(row["decision_ref"], "a recorded decision")
+        labels[row["source_ref"]] = _t("Later reflection on {decision}",
+                                       decision=labels.get(row["decision_ref"], _t("a recorded decision")))
     for row in source.get("encounter_events", []):
-        labels[row["source_ref"]] = str(row.get("kind", "Encounter information")).replace("_", " ").capitalize() + " · " + _time(row.get("time_min", 0))
+        labels[row["source_ref"]] = _t(str(row.get("kind", "Encounter information")).replace("_", " ").capitalize()) + " · " + _time(row.get("time_min", 0))
     return labels
+
+
+#: The model's sentences already translated for this reader, from the stored
+#: translations only (prose_translation): the screen never pays for a call.
+_PROSE = {}
 
 
 def _claim(claim, labels, correct=None):
@@ -36,8 +43,9 @@ def _claim(claim, labels, correct=None):
     # withheld passage is absent, not shown with a warning (decision B3).
     if not claim:
         return
-    st.write(correct(claim["text"]) if correct else claim["text"])
-    st.caption("Evidence: " + "; ".join(labels.get(ref, ref) for ref in claim["evidence_refs"]))
+    text = correct(claim["text"]) if correct else claim["text"]
+    st.write(_PROSE.get(text, text))
+    st.caption(_t("Evidence:") + " " + "; ".join(labels.get(ref, ref) for ref in claim["evidence_refs"]))
 
 
 def _trends(source):
@@ -57,14 +65,14 @@ def _trends(source):
     frame = pd.DataFrame(points)
     if frame["Minute"].nunique() < 2:
         return
-    for column, title, values in zip(st.columns(3), ("Heart rate · /min", "Blood pressure · mmHg", "Oxygen saturation · %"),
+    for column, title, values in zip(st.columns(3), (_t("Heart rate · /min"), _t("Blood pressure · mmHg"), _t("Oxygen saturation · %")),
                                      (("HR",), ("SBP", "DBP"), ("SpO₂",))):
         selected = [key for key in values if key in frame]
         with column:
             st.caption(title)
             if selected:
                 st.line_chart(frame, x="Minute", y=selected, height=175)
-    st.caption("Values recorded at decision and response times. Lines connect observations; they do not represent continuous measurements.")
+    st.caption(_t("Values recorded at decision and response times. Lines connect observations; they do not represent continuous measurements."))
 
 
 def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini", context=None,
@@ -78,7 +86,7 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
     """
     if payload.get("encounter_ended") is not True or payload.get("reflection_locked") is not True:
         return None
-    st.subheader("Your Management Trace")
+    st.subheader(_t("Your Management Trace"))
     try:
         source = build_analysis_source(payload)
         fingerprint = source_fingerprint(payload)
@@ -104,15 +112,15 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
     attempted = cache_key + "_attempted"
     retry = False
     if report is None and st.session_state.get(attempted):
-        st.info("Your analysis was not available. The complete encounter record remains available below.")
-        retry = st.button("Retry Management Trace analysis", key=cache_key + "_retry")
+        st.info(_t("Your analysis was not available. The complete encounter record remains available below."))
+        retry = st.button(_t("Retry Management Trace analysis"), key=cache_key + "_retry")
     if report is None and not api_key:
-        st.info("AI analysis is not configured for this application. You can still review and download your original encounter record.")
+        st.info(_t("AI analysis is not configured for this application. You can still review and download your original encounter record."))
         return None
     if report is None and (retry or not st.session_state.get(attempted)):
         st.session_state[attempted] = True
         try:
-            with st.spinner("Connecting your decisions, expectations and observed patient responses..."):
+            with st.spinner(_t("Connecting your decisions, expectations and observed patient responses...")):
                 report = generate_management_trace_analysis(payload, api_key=api_key, model=model)
             if store:
                 report = store.save(context["token"], st.session_state["_attempt_id"], report)
@@ -127,10 +135,10 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
     report, withheld = usable_analysis(report, payload)
     analysis = report["analysis"]
     if withheld:
-        st.warning(f"Partial analysis: {len(withheld)} passage(s) were withheld because they broke a "
-                   "rule of this report (a number in the prose, or a citation outside what that "
-                   "decision may cite). They are listed in the PDF's technical record. "
-                   "Your complete encounter record is unaffected.")
+        st.warning(_t("Partial analysis: {count} passage(s) were withheld because they broke a "
+                      "rule of this report (a number in the prose, or a citation outside what that "
+                      "decision may cite). They are listed in the PDF's technical record. "
+                      "Your complete encounter record is unaffected.", count=len(withheld)))
     import report_corrections
     import report_presentation
     correct = report_presentation.CorrectionLog(
@@ -139,7 +147,22 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
                                                         payload.get("encounter_events") or []),
         language="en")
     labels = _reference_labels(source)
-    st.caption("AI interpretation of your recorded encounter · your original decisions and locked reflection are preserved.")
+    _PROSE.clear()
+    import language
+    if language.current() != "en" and context:
+        # Only what was translated and stored before (a Spanish document asks for it): free, and
+        # the English stays the record. What is not there yet is shown in English, and said so.
+        try:
+            import prose_translation
+            from management_trace_report import _all_claims
+            texts = ([correct(claim["text"]) for claim in _all_claims(analysis)]
+                     + [moment["title"] for moment in analysis.get("pivotal_decisions") or []])
+            _PROSE.update(prose_translation.ProseTranslations(context["store"]).known(texts, language.current()))
+            if len(_PROSE) < len(set(texts)):
+                st.caption(_t("The AI reasoning is shown in English; the Spanish PDF of your Management Trace translates it."))
+        except Exception:
+            _PROSE.clear()
+    st.caption(_t("AI interpretation of your recorded encounter · your original decisions and locked reflection are preserved."))
     _claim(analysis["overview"], labels, correct)
     _trends(source)
     _claim(analysis["trajectory"], labels, correct)
@@ -148,30 +171,30 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
         event = indexed[moment["decision_ref"]]
         with st.container(border=True):
             st.caption(labels[moment["decision_ref"]] + " → " + _time(event["response_time_min"]))
-            st.markdown("**" + moment["title"] + "**")
+            st.markdown("**" + _PROSE.get(moment["title"], moment["title"]) + "**")
             left, right = st.columns(2)
             with left:
-                st.markdown("**Your recorded reasoning**")
+                st.markdown("**" + _t('Your recorded reasoning') + "**")
                 reasoning = event["recorded_reasoning"]
-                st.write(reasoning.get("problem_representation") or "A working model was not explicitly recorded.")
+                st.write(reasoning.get("problem_representation") or _t("A working model was not explicitly recorded."))
                 if reasoning.get("management_priority"):
-                    st.write("Priority: " + reasoning["management_priority"])
-                st.markdown("**What you expected**")
-                st.write(reasoning.get("expected_effect") or "No explicit expectation was recorded.")
+                    st.write(_t("Priority:") + " " + reasoning["management_priority"])
+                st.markdown("**" + _t('What you expected') + "**")
+                st.write(reasoning.get("expected_effect") or _t("No explicit expectation was recorded."))
             with right:
-                st.markdown("**AI interpretation**")
+                st.markdown("**" + _t('AI interpretation') + "**")
                 _claim(moment["interpretation"], labels, correct)
-                st.markdown("**Expectation and observed response**")
+                st.markdown("**" + _t('Expectation and observed response') + "**")
                 _claim(moment["expected_vs_observed"], labels, correct)
-            st.markdown("**How your management evolved**")
+            st.markdown("**" + _t('How your management evolved') + "**")
             _claim(moment["adaptation"], labels, correct)
             if moment["reflection_insight"]:
-                with st.expander("Your later reflection"):
+                with st.expander(_t("Your later reflection")):
                     _claim(moment["reflection_insight"], labels, correct)
-            with st.expander("Recorded order and patient response"):
-                st.markdown("**Order as entered**")
+            with st.expander(_t("Recorded order and patient response")):
+                st.markdown("**" + _t('Order as entered') + "**")
                 st.write(event["learner_input"])
-                st.markdown("**Executed actions**")
+                st.markdown("**" + _t('Executed actions') + "**")
                 for action in event["executed_actions"]:
                     title = action.get("label") or action.get("agent") or str(action.get("type", "Intervention")).replace("_", " ")
                     details = []
@@ -183,26 +206,29 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
                         details.append(str(action["route"]))
                     if "time_min" in action:
                         details.append(_time(action["time_min"]))
-                    st.write(str(title) + (" · " + " · ".join(details) if details else ""))
+                    import language
+                    st.write(language.say(str(title)) + (" · " + " · ".join(details) if details else ""))
                 rows = []
                 before = event["state_before"].get("observable", {})
                 after = event["state_after"].get("observable", {})
+                import language
                 for field, label in (("hr", "Heart rate"), ("sbp", "Systolic BP"), ("spo2", "SpO₂"),
                                      ("respiratory_rate", "Respiratory rate"), ("mental_status", "Mental status"),
                                      ("crt", "Capillary refill")):
                     if field in before or field in after:
-                        rows.append({"Observation": label, "Before": str(before.get(field, "—")),
-                                     "After": str(after.get(field, "—"))})
+                        rows.append({_t("Observation"): _t(label),
+                                     _t("Before"): language.observed_value(str(before.get(field, "—"))),
+                                     _t("After"): language.observed_value(str(after.get(field, "—")))})
                 st.dataframe(rows, hide_index=True, use_container_width=True)
     left, right = st.columns(2)
     with left:
-        st.markdown("**Patterns to retain**")
+        st.markdown("**" + _t('Patterns to retain') + "**")
         for claim in analysis["strengths"]:
             _claim(claim, labels, correct)
         if not analysis["strengths"]:
-            st.write("No additional evidence-supported pattern was identified.")
+            st.write(_t("No additional evidence-supported pattern was identified."))
     with right:
-        st.markdown("**Questions for your next encounter**")
+        st.markdown("**" + _t('Questions for your next encounter') + "**")
         for claim in analysis["questions"]:
             _claim(claim, labels, correct)
     from management_trace_report import RENDERER_VERSION, render_management_trace_pdf
@@ -221,7 +247,7 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
             review_completed=review_completed, adaptation_plan=adaptation_plan,
             language=written_in, translate=prose_translation.translator(context),
         )
-    st.download_button("Download Management Trace PDF", st.session_state[pdf_key],
+    st.download_button(_t("Download Management Trace PDF"), st.session_state[pdf_key],
                        file_name="management_trace_v0.17.0.pdf", mime="application/pdf",
                        type="primary", key=cache_key + "_download")
     return report
