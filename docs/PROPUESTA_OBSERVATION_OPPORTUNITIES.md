@@ -2,9 +2,11 @@
 
 Ciclo 1 del AI Advisor, punto 4 de la aprobación docente del 2026-09-27.
 
-**Estado: PROPUESTA PARA APROBACIÓN.** Nada de esto está implementado. No hay
-lógica específica para C14, ni cambios de elegibilidad, mappings, scoring,
-Objective Progress o UX.
+**Estado.** La arquitectura conceptual quedó aprobada por el docente el
+2026-09-27. D-1 a D-6 siguen pendientes, con su análisis en la §9.
+
+Nada de esto está implementado. No hay lógica específica para C14, ni cambios
+de elegibilidad, mappings, scoring, Objective Progress o UX.
 
 Principio pedido por el docente:
 
@@ -247,3 +249,177 @@ procedimental), TD1, F1 y C1.
   - Es trabajo clínico: CLINICAL REVIEW.
 - **D-6.** Fase 2: ¿se habilitan observaciones incidentales de Decision
   Challenges (§98) con el mismo mecanismo?
+
+## 9. Análisis de D-1 a D-6 (ciclo 2, 2026-09-27)
+
+**Qué cambió desde la propuesta.** El docente aprobó la arquitectura conceptual y
+pidió este análisis antes de tocar la elegibilidad. Nada de lo que sigue está
+implementado.
+
+**Qué dicen las EPAs (EPA Guide 2018 v1.1).** Las condiciones que pone cada EPA
+para contar una observación orientan qué declara cada caso:
+
+- **C14 (p. 42).** Pide seleccionar, **adquirir** e interpretar el POCUS para
+  guiar el manejo. Nombra los estados clínicos que el POCUS debe determinar:
+  derrame pericárdico y taponamiento, estimación global de la fracción de
+  eyección del ventrículo izquierdo, neumotórax, hemotórax, derrame pleural,
+  aneurisma de aorta abdominal, líquido libre abdominal o pélvico y gestación
+  intrauterina de primer trimestre. Exige adquirir la imagen en cada
+  observación.
+- **C3 (p. 22).** Se centra en la intubación, la estrategia de ventilación y el
+  cuidado posintubación.
+- **C4 (p. 23).** Se centra en seleccionar, preparar, monitorizar y administrar
+  sedación y analgesia procedimental.
+- **Lo que el simulador no reproduce.** No hay adquisición de imagen, ni
+  maniobras, ni entorno clínico real. Los alcances locales de C14, C3 y C4 ya lo
+  dicen en `objectives.py`.
+- **Consecuencia.** Una oportunidad declarada solo puede referirse al componente
+  simulado de manejo que cada objetivo define localmente.
+
+### D-1 · El mecanismo
+
+- **Problema.** La elegibilidad de TD1, F1, C1, C3, C4 y C14 es una lista fija;
+  no depende de lo que el caso permite observar.
+- **Opciones:**
+  - (a) Un bloque `objectives` en la declaración del caso, verificado y
+    congelado con `case_assessment` y `evaluation_basis`.
+  - (b) Un registro paralelo.
+  - (c) Una heurística sobre el Trace.
+  - (d) Que la IA decida la oportunidad al analizar.
+- **Recomendación: (a).** Es la misma maquinaria que ya hace confiables D1–D5:
+  verificación contra el caso, copia congelada, huella, versión y estados
+  históricos.
+- **Impacto.** La evidencia TD/F/C sólo puede nacer donde el caso lo permitía. El
+  portal y el brief ya filtran por elegibilidad, así que heredan el cambio. El
+  brief propone sobre menos objetivos, lo que reduce su costo.
+- **Riesgo:**
+  - un objetivo real sin declarar deja de poder observarse;
+  - se mitiga con la matriz de cobertura y con la activación por objetivo
+    (D-2).
+- **Costo:**
+  - mecanismo: una sesión, con tests focalizados;
+  - declaraciones: trabajo clínico por caso (D-5).
+- **Decisión requerida:** ¿aprueba (a)?
+
+### D-2 · Qué significa que un caso no declare un objetivo
+
+- **Problema.** La ausencia de una declaración no distingue «este caso no ofrece
+  C3» de «nadie revisó todavía si ofrece C3».
+- **Opciones:**
+  - (a) Ausencia = no ofrece (falla cerrada).
+  - (b) Sí o no explícito para cada objetivo en cada caso: 31 × 6 declaraciones
+    antes de empezar.
+  - (c) Tres estados: declarado (sí), declarado que no (con razón, como
+    `not_assessable` en D1–D5) y no revisado. La elegibilidad falla cerrada en
+    los dos últimos, y la matriz distingue «no ofrece» de «no revisado».
+- **Recomendación: (c), activada objetivo por objetivo.**
+  - Un objetivo pasa a depender de oportunidades declaradas sólo cuando sus
+    declaraciones del banco fueron revisadas; empezaría por C14.
+  - Mientras tanto, los demás conservan la regla actual, marcada en pantalla como
+    «oportunidad no declarada».
+  - Así el cambio nunca apaga de golpe la posibilidad de observar TD/F/C.
+- **Impacto.** Queda auditable qué se revisó (§67). No confunde falta de
+  revisión con falta de oportunidad (§36).
+- **Riesgo.** Durante la transición conviven dos reglas; cada observación debe
+  registrar bajo cuál se hizo, lo que el congelamiento ya permite.
+- **Costo.** Bajo en código: un campo de razón por objetivo no ofrecido y una
+  marca de activación por objetivo.
+- **Decisión requerida:** ¿(a), (b) o (c)? ¿Activación objetivo por objetivo?
+
+### D-3 · Los encuentros anteriores
+
+- **Problema.** Los encuentros congelados antes del bloque `objectives` no tienen
+  oportunidades declaradas.
+- **Opciones:**
+  - (a) Prospectivo: las observaciones existentes no cambian. Las evaluaciones
+    nuevas de encuentros viejos usan la regla actual, marcada como «oportunidad
+    no declarada».
+  - (b) Encuentros viejos sin observaciones TD/F/C nuevas.
+  - (c) Reevaluación explícita con las declaraciones vigentes, a pedido, con
+    motivo y persona. `evaluation_basis.reevaluation` ya lo hace para D1–D5.
+- **Recomendación: (a), con (c) disponible a pedido.** Nunca una migración
+  automática (§75).
+- **Impacto.** No se pierde evidencia histórica y su debilidad queda a la vista.
+- **Riesgo.** Una etiqueta visible no impide que se use mal. Por eso los reportes
+  futuros deberían separar las observaciones con oportunidad declarada de las que
+  no la tienen.
+- **Costo.** Bajo.
+- **Decisión requerida:** ¿(a) + (c)?
+
+### D-4 · La evidencia citada debe incluir el elemento de la oportunidad
+
+- **Problema.** Hoy se puede confirmar C14 citando una decisión sin relación con
+  el POCUS.
+- **Opciones:**
+  - (a) Exigencia: la declaración nombra qué elemento del Trace debe citarse
+    (`evidence.any_of`), por ejemplo la solicitud del POCUS y una decisión
+    posterior.
+  - (b) Sólo advertencia.
+  - (c) Nada.
+- **Recomendación: (a), por declaración.**
+  - No juzga la calidad: sigue siendo el docente quien decide si fue
+    satisfactorio.
+  - Sólo impide atribuir C14 a una evidencia sin POCUS.
+  - En el simulador el POCUS sólo existe si se pide, así que la exigencia es
+    siempre satisfacible cuando hubo desempeño.
+- **Impacto.** Coherencia entre la oportunidad, la evidencia y la observación
+  (§64).
+- **Riesgo.** Una declaración mal escrita bloquearía una confirmación válida. Se
+  mitiga porque cada declaración pasa por `verify` y por revisión docente.
+- **Costo.** Bajo.
+- **Decisión requerida:** ¿(a) o (b)?
+
+### D-5 · El piloto: quién redacta, quién aprueba y con qué alcance
+
+- **Problema.** Las declaraciones son juicio clínico por caso (§96).
+- **Opciones:**
+  - (a) El AI Advisor redacta borradores y un docente aprueba cada caso.
+  - (b) Redacta el docente.
+  - (c) Sólo un subconjunto de casos.
+- **Recomendación: (a) con C14 primero, sobre los 31 casos del banco.**
+  - **Cada borrador dice:** sí o no; qué decisión de manejo informa el POCUS en
+    ese caso; cuál de los estados de la EPA C14 (p. 42) determina, por ejemplo
+    derrame pleural o líquido libre en el E-FAST del trauma; y qué evidencia
+    debe citarse.
+  - **Aprobación y activación:** un docente aprueba o corrige cada borrador, y
+    sólo entonces C14 se activa (D-2).
+  - **Después:** C3, C4, TD1, F1 y C1, uno por vez.
+- **Impacto.** El primer objetivo con oportunidad real y auditable, en el
+  objetivo con más observaciones pedidas (50).
+- **Riesgo.** Sesgo del redactor. Se mitiga con la aprobación docente
+  obligatoria (CLINICAL REVIEW).
+- **Costo:**
+  - redacción: una sesión, sin IA de pago, desde los datos del caso;
+  - revisión docente: unos minutos por caso.
+- **Decisión requerida:**
+  - ¿(a) con C14 primero?
+  - ¿Revisan los 31 casos juntos o por lotes?
+
+### D-6 · Observaciones incidentales de Decision Challenges
+
+- **Problema.** Un objetivo R* sólo es elegible en el encuentro generado para ese
+  desafío. La §98 pide admitir observaciones incidentales cuando hay oportunidad
+  real.
+- **Opciones:**
+  - (a) Declaraciones incidentales en el caso, con el mismo mecanismo.
+  - (b) Mantener sólo el objetivo de generación.
+  - (c) Que el docente agregue una observación incidental justificándola, sin
+    declaración.
+- **Recomendación: (b) por ahora, y (a) después del piloto TD/F/C.**
+  - La oportunidad de un desafío de sesgo depende del contexto con que se generó
+    el encuentro; por ejemplo, el texto de «turno previo» de disponibilidad.
+    Eso la hace más difícil de declarar en otro caso.
+  - Además, R1-03, R1-04 y R2-01 esperan antes la decisión de mappings (DF-2).
+  - (c) produciría evidencia sin oportunidad declarada, que es justo lo que la
+    §96 evita.
+- **Impacto.** Se posterga una ganancia de evidencia convergente (§12), sin
+  perder coherencia.
+- **Riesgo.** Hay observaciones reales que no se registran mientras tanto.
+- **Costo.** Ninguno ahora.
+- **Decisión requerida:** ¿(b) ahora y (a) después?
+
+### Confirmación
+
+- **Elegibilidad sin cambios.** `objective_is_eligible` sigue siendo la misma
+  (`competency_mapping.py:259`).
+- **Nada implementado.** Ningún caso tiene todavía un bloque `objectives`.
