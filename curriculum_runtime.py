@@ -36,7 +36,7 @@ SESSION_FIELDS = (
     "ai_calls_spent", "ai_call_ledger",
     # How the encounter ended, as the resident said it ended (decision 9).
     "encounter_close", "close_pending",
-    # The language it was played in, recorded when it closes: its documents are
+    # The language it was played in, fixed when it starts: its documents are
     # written in it unless their reader chooses the other (document_language).
     "encounter_language",
 )
@@ -111,6 +111,10 @@ def restore_attempt(context, record, reset_session):
         encounter = record["encounter"]
         st.session_state.state = deepcopy(encounter["state"])
         st.session_state.started = True
+        # A new encounter's language is the one on screen as it starts, fixed until
+        # it closes (faculty, 2026-09-27; document_language).
+        import language
+        st.session_state.encounter_language = language.current()
         st.session_state.events = [{"kind": "presentation", "text": encounter["presentation"], "time": 0}]
         st.session_state.encounter_assignment = encounter.get("assignment", {})
         # reset_session() leaves the picker's default challenge here; the

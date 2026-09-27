@@ -6,6 +6,10 @@ stores can be seen in either." The encounter records its language when it
 closes; each document is written in it unless its reader chooses the other;
 an encounter that closed before recorded none, and keeps following its
 reader's choice -- it is never guessed.
+
+Faculty, 2026-09-27: the encounter's language is the one chosen when it
+starts, fixed until it closes, with the selector locked meanwhile; the
+screens keep following whoever reads them.
 """
 from io import BytesIO
 
@@ -56,7 +60,18 @@ def test_the_language_travels_with_the_saved_session():
     assert document_language.FIELD in curriculum_runtime.SESSION_FIELDS
 
 
-def test_an_encounter_records_the_language_it_closes_in(monkeypatch):
+def test_closing_keeps_the_language_the_encounter_started_in(monkeypatch):
+    from test_curriculum_trajectories import initialize, load_engine
+    engine = load_engine()
+    session = initialize(engine, engine["INITIAL_STATE"])
+    session["encounter_language"] = "en"
+    monkeypatch.setenv("MRS_LANGUAGE", "es")
+    engine["begin_decision_review"]([], session["state"])
+    assert session["encounter_ended"] is True and session["encounter_language"] == "en"
+
+
+def test_an_encounter_that_recorded_no_language_at_its_start_records_the_one_it_closes_in(monkeypatch):
+    """An encounter already under way on 2026-09-27 keeps the earlier rule; nothing is migrated."""
     from test_curriculum_trajectories import initialize, load_engine
     engine = load_engine()
     session = initialize(engine, engine["INITIAL_STATE"])
@@ -66,29 +81,96 @@ def test_an_encounter_records_the_language_it_closes_in(monkeypatch):
     assert session["encounter_ended"] is True and session["encounter_language"] == "es"
 
 
-def test_the_encounter_page_records_the_language_it_was_played_in_and_saves_it(tmp_path, monkeypatch):
+@pytest.mark.parametrize("played, other", [("es", "en"), ("en", "es")])
+def test_the_language_chosen_at_the_start_holds_through_the_encounter_and_its_documents(
+        tmp_path, monkeypatch, played, other):
+    """Smoke test, both ways: start in one language, try to switch mid-encounter, close, download."""
     from test_doses_by_solution_and_by_weight import ANTICOAGULATE, start, submit, widget
-    at = start(tmp_path, monkeypatch, "pulmonary_embolism_33f", "R2-02")
-    at.session_state["presentation_language"] = "es"
+    # The deployment's default language is the one chosen: AppTest formats a translated option
+    # outside the app's session, where only that default can be read.
+    monkeypatch.setenv("MRS_LANGUAGE", played)
+    at = start(tmp_path, monkeypatch, "pulmonary_embolism_33f", "R2-02", language=played)
+    assert at.session_state["encounter_language"] == played
+    selector = widget(at.selectbox, "Idioma · Language")
+    assert selector.disabled and selector.value == played
+    # A change forced on the widget mid-encounter does not take: the encounter keeps its language.
+    at.session_state["presentation_language"] = other
     at.run()
+    assert at.session_state["presentation_language"] == played and at.session_state["encounter_language"] == played
     submit(at, ANTICOAGULATE)
     submit(at, "Creo que es un tromboembolismo pulmonar. Mi prioridad es un destino monitorizado. "
                "La hospitalizo en UCI. Espero que se mantenga estable. Reevaluo en 15 minutos PA y saturacion.")
     widget(at.button, "Complete Encounter & Begin Review").click().run()
     assert not at.exception
     assert at.session_state["encounter_ended"] is True
-    assert at.session_state["encounter_language"] == "es"
+    assert at.session_state["encounter_language"] == played
     from account_store import AccountStore
+    import json
     import os
     accounts = AccountStore(os.environ["MRS_DATABASE_URL"], allow_sqlite=True)
     with accounts._transaction() as connection:
         row = accounts._execute(connection, "SELECT payload_json FROM mrs_attempts").fetchone()
-    import json
-    assert json.loads(row["payload_json"])["session"]["encounter_language"] == "es"
+    assert json.loads(row["payload_json"])["session"]["encounter_language"] == played
+    # Closed: the selector is the reader's again, and the record's download starts in the encounter's
+    # language and can be taken in the other one on request.
+    assert not widget(at.selectbox, "Idioma · Language").disabled
+    documents = [item for item in at.radio if item.label == "Idioma del documento · Document language"]
+    assert documents and all(item.value == played for item in documents)
+    documents[0].set_value(other).run()
+    assert not at.exception
+    assert [item for item in at.radio if item.label == "Idioma del documento · Document language"][0].value == other
+    assert at.session_state["encounter_language"] == played
+
+
+@pytest.mark.parametrize("viewer", ["en", "es"])
+def test_a_faculty_member_reads_in_their_own_language_and_the_documents_start_in_the_encounter_s(
+        tmp_path, viewer):
+    from streamlit.testing.v1 import AppTest
+    from test_autonomy_guidance import cohort_for
+    from test_faculty_portal import APP
+    accounts, _, users = cohort_for(tmp_path)
+    token = users["resident"]["token"]
+    attempt_id = accounts.create_attempt(token, "R1-03", {"presentation": "Synthetic test encounter"})
+    accounts.save_attempt(token, attempt_id, {
+        "schema_version": "mrs_attempt_v1",
+        "session": {"review_completed": True, "encounter_language": "es",  # played in Spanish
+                    "management_trace": [
+                        {"execution_status": "executed", "learner_input": "Reassess the patient in three minutes.",
+                         "decision_time_min": 0, "response_time_min": 3,
+                         "reasoning": {"problem_representation": "A synthetic working model"},
+                         "state_before": {"observable": {"mental_status": "alert"}},
+                         "state_after": {"observable": {"mental_status": "alert"}}}]},
+    }, status="completed")
+
+    def page():
+        app = AppTest.from_string(APP, default_timeout=15)
+        app.session_state["database_url"] = accounts._url
+        app.session_state["test_token"] = users["faculty"]["token"]
+        app.session_state["test_attempt"] = attempt_id
+        app.session_state["presentation_language"] = viewer
+        app.run()
+        assert not app.exception
+        return app
+
+    app = page()
+    shown = " ".join(str(item.value) for item in app.markdown)
+    heading = {"en": "**Assistance context**", "es": "**" + language_t("Assistance context", "es") + "**"}[viewer]
+    assert heading in shown
+    documents = next(item for item in app.radio if item.label == "Idioma del documento · Document language")
+    assert documents.value == "es"
+    documents.set_value("en").run()
+    assert not app.exception
+    assert next(item for item in app.radio if item.label == "Idioma del documento · Document language").value == "en"
+
+
+def language_t(text, code):
+    import report_language
+    return report_language.t(text, code)
 
 
 def test_a_new_encounter_does_not_inherit_the_last_one_s_language():
-    # Every place that opens an encounter clears it, so the next one records its own.
+    # Every place that opens an encounter fixes the language on screen as it starts,
+    # or clears the last one (the reset), so none carries an earlier encounter's.
     import ast
     from pathlib import Path
     tree = ast.parse((Path(__file__).with_name("app.py")).read_text(encoding="utf-8"))
@@ -98,7 +180,8 @@ def test_a_new_encounter_does_not_inherit_the_last_one_s_language():
             body = ast.unparse(node) if isinstance(node, ast.FunctionDef) else ""
             if "st.session_state.encounter_ended = False" in body:
                 opened += 1
-                cleared += "st.session_state.pop('encounter_language', None)" in body
+                cleared += ("st.session_state.pop('encounter_language', None)" in body
+                            or "st.session_state.encounter_language = language.current()" in body)
     assert opened >= 2 and cleared == opened
 
 

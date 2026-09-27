@@ -41,6 +41,9 @@ INSTRUCTION_2026_09_27B = ("Instrucción docente del 2026-09-27 (preparar el bor
 INSTRUCTION_2026_09_27C = ("Instrucción docente del 2026-09-27 (revisión de la traducción de la rúbrica: redacción, "
                            "«indicación» sólo para órdenes clínicas y «orientación» para la ayuda al residente, qué "
                            "cuenta como ayuda al juzgar la autonomía y nota visible D4/D5)")
+INSTRUCTION_2026_09_27D = ("Instrucción docente del 2026-09-27 (el idioma del encuentro se fija al iniciarlo y no "
+                           "cambia; las pantallas siguen a quien las mira; cada descarga empieza en el idioma del "
+                           "encuentro y puede pedirse en el otro)")
 
 CORRECTIONS = (
     {
@@ -668,8 +671,8 @@ CORRECTIONS = (
                                 "management_trace_portal", "resident_portal", "faculty_portal"],
                     "versions": {}},
         "clinical_relevance": "cosmetic",
-        "tests": ["test_document_language.py::test_an_encounter_records_the_language_it_closes_in",
-                  "test_document_language.py::test_the_encounter_page_records_the_language_it_was_played_in_and_saves_it",
+        "tests": ["test_document_language.py::test_an_encounter_that_recorded_no_language_at_its_start_records_the_one_it_closes_in",
+                  "test_document_language.py::test_the_language_chosen_at_the_start_holds_through_the_encounter_and_its_documents",
                   "test_document_language.py::test_the_language_is_read_from_the_record_and_never_guessed",
                   "test_document_language.py::test_the_management_trace_is_written_in_the_language_it_is_given",
                   "test_document_language.py::test_the_faculty_brief_is_written_in_the_language_it_is_given",
@@ -1023,6 +1026,26 @@ CORRECTIONS = (
         "tests": ["test_rubric_text.py::test_the_faculty_review_of_2026_09_27_is_applied_word_for_word",
                   "test_rubric_text.py::test_indicacion_is_kept_for_clinical_orders_and_orientacion_is_the_help_a_resident_receives",
                   "test_autonomy_guidance.py::test_a_faculty_member_reads_it_where_help_is_declared_and_where_autonomy_is_recorded"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-27-12",
+        "date": "2026-09-27",
+        "title": "El idioma del encuentro se fija al iniciarlo y el selector queda bloqueado mientras está en curso",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("El encuentro guarda como encounter_language el idioma de pantalla con que se inicia, y el selector "
+                   "de idioma queda bloqueado hasta que se cierra; antes y después es la preferencia de quien mira. Ese "
+                   "idioma sigue siendo el de partida de todos sus documentos, que pueden pedirse en el otro, y las "
+                   "pantallas del docente siguen su propio idioma. Un encuentro que no registró idioma al iniciarse "
+                   "conserva la regla anterior (el idioma con que se cierra) y los históricos siguen la elección de quien "
+                   "lee: nada se migra. Análisis, puntajes y documentos ya generados no cambian."),
+        "authorised_by": INSTRUCTION_2026_09_27D,
+        "affects": {"modules": ["app", "curriculum_runtime", "document_language"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_document_language.py::test_the_language_chosen_at_the_start_holds_through_the_encounter_and_its_documents",
+                  "test_document_language.py::test_a_faculty_member_reads_in_their_own_language_and_the_documents_start_in_the_encounter_s",
+                  "test_document_language.py::test_closing_keeps_the_language_the_encounter_started_in"],
         "preservation": None,
     },
 )

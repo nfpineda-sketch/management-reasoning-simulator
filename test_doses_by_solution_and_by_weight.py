@@ -25,7 +25,7 @@ def widget(elements, label):
     return next(item for item in elements if item.label == label)
 
 
-def start(tmp_path, monkeypatch, variant, challenge):
+def start(tmp_path, monkeypatch, variant, challenge, language=None):
     url = f"sqlite:///{tmp_path / 'accounts.sqlite3'}"
     accounts = AccountStore(url, allow_sqlite=True)
     with accounts._transaction(write=True) as connection:
@@ -46,8 +46,11 @@ def start(tmp_path, monkeypatch, variant, challenge):
     ProfileStore(accounts).decline(token)
     at = AppTest.from_file(APP, default_timeout=120)
     at.session_state["_account_token"] = token
+    if language:
+        at.session_state["presentation_language"] = language  # chosen before the encounter starts
     at.run()
-    widget(at.button, "Begin Encounter").click().run()
+    import report_language
+    widget(at.button, report_language.t("Begin Encounter", language or "en")).click().run()
     assert at.session_state["state"]["encounter_spec"]["variant_id"] == variant
     return at
 

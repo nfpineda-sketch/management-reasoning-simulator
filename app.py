@@ -3936,10 +3936,13 @@ def begin_decision_review(trace, state):
     frozen_trace = deepcopy(trace or [])
     frozen_state = management_state_snapshot(state)
     st.session_state.encounter_ended = True
-    # The language the encounter was played in: its documents follow it unless
-    # their reader chooses the other (faculty, 2026-09-26; document_language).
+    # The language the encounter was played in, fixed when it started: its
+    # documents follow it unless their reader chooses the other (faculty,
+    # 2026-09-26 and 2026-09-27; document_language). An encounter already under
+    # way when that rule arrived recorded none at its start, and records the one
+    # it closes in, as before.
     import language
-    st.session_state.encounter_language = language.current()
+    st.session_state.encounter_language = st.session_state.get("encounter_language") or language.current()
     st.session_state.encounter_closed_trace = frozen_trace
     st.session_state.encounter_closed_events = deepcopy(st.session_state.get("events") or [])
     st.session_state.encounter_closed_state = frozen_state
@@ -4038,8 +4041,10 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     st.session_state.history = []
     st.session_state.management_trace = []
     st.session_state.encounter_ended = False
-    # A new encounter records its own language when it closes (document_language).
-    st.session_state.pop("encounter_language", None)
+    # A new encounter's language is the one on screen as it starts, fixed until it
+    # closes (faculty, 2026-09-27; document_language).
+    import language
+    st.session_state.encounter_language = language.current()
     st.session_state.encounter_closed_trace = None
     st.session_state.encounter_closed_events = None
     st.session_state.encounter_closed_state = None
@@ -9622,10 +9627,18 @@ def _language_selector():
     options = list(language.LANGUAGES)
     if st.session_state.get("presentation_language") not in options:
         st.session_state["presentation_language"] = language.configured()
+    # An encounter under way keeps the language it started in, and the selector
+    # cannot change it by accident until it closes (faculty, 2026-09-27). Before
+    # and after, it is the reader's own preference.
+    under_way = bool(st.session_state.get("started")) and not st.session_state.get("encounter_ended")
+    if under_way and st.session_state.get("encounter_language") in options:
+        st.session_state["presentation_language"] = st.session_state["encounter_language"]
     st.sidebar.selectbox(
         "Idioma · Language", options, key="presentation_language",
-        format_func=lambda code: language.LANGUAGES[code],
-        help="Presentation only. Orders are read in Spanish and English either way.",
+        format_func=lambda code: language.LANGUAGES[code], disabled=under_way,
+        help=("Fijo durante el encuentro: es el idioma en que se inició. · Fixed during the encounter: "
+              "the language it started in." if under_way else
+              "Presentation only. Orders are read in Spanish and English either way."),
     )
 
 
@@ -9683,8 +9696,10 @@ if not st.session_state.started:
         st.session_state.history = []
         st.session_state.management_trace = []
         st.session_state.encounter_ended = False
-        # A new encounter records its own language when it closes (document_language).
-        st.session_state.pop("encounter_language", None)
+        # A new encounter's language is the one on screen as it starts, fixed until
+        # it closes (faculty, 2026-09-27; document_language).
+        import language
+        st.session_state.encounter_language = language.current()
         st.session_state.encounter_closed_trace = None
         st.session_state.encounter_closed_events = None
         st.session_state.encounter_closed_state = None

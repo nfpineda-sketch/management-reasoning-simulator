@@ -4,9 +4,14 @@
 is run in English, in English. Whatever the app stores can be seen in either."
 
 * An encounter keeps the language it was played in, ``encounter_language``:
-  the reader's language when the encounter closes (``app.begin_decision_review``),
-  saved with the rest of the session. It is metadata beside the evidence and
-  enters no analysis: ``build_analysis_source`` reads named fields only.
+  the language on screen when it starts, fixed until it closes -- the selector
+  is locked meanwhile (faculty, 2026-09-27) -- and saved with the rest of the
+  session. An encounter already under way when that rule arrived records the
+  language it closes in (``app.begin_decision_review``). It is metadata beside
+  the evidence and enters no analysis: ``build_analysis_source`` reads named
+  fields only.
+* The screens follow whoever is reading them: a faculty member reviews a
+  Spanish encounter with an English screen if that is their choice.
 * Its documents are written in that language unless their reader chooses the
   other one, beside the download. The same stored record is presented again,
   never regenerated.
