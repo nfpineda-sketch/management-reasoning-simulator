@@ -2,414 +2,376 @@
 
 Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 
-- **Qué contiene:** sólo las recomendaciones que requieren una decisión del
-  docente. No es un backlog.
+- **Qué contiene:** sólo lo que requiere una decisión del docente, más el estado
+  de lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-27, al cerrar el ciclo 1. Ninguna entrada está
-  implementada.
+- **Actualizado:** 2026-09-27, al cerrar el ciclo 2.
 
 | ID | Clase | Tema | Estado |
 |---|---|---|---|
-| DF-7 | CRITICAL | Razonamiento del residente alterado o mal atribuido en el Management Trace | Abierta · nueva |
-| DF-1 | CRITICAL · STRUCTURAL | Oportunidades de observación para TD/F/C (propuesta de mecanismo) | Abierta · propuesta entregada |
-| DF-2 | CRITICAL · METHODOLOGICAL REVIEW | R1-03, R1-04 y R2-01 al pipeline observacional | Abierta · verificación documental hecha |
-| DF-6 | HIGH VALUE · METHODOLOGICAL REVIEW | Fuente de datos para medir el lector de órdenes EN/ES fuera de la muestra de ajuste | Abierta · nueva |
-| DF-3 | METHODOLOGICAL REVIEW | MK1 de R2-01 | Abierta · fuente exacta identificada |
-| DF-4 | CLINICAL REVIEW | C2 y los casos trauma | Abierta · auditoría hecha |
-| DF-9 | METHODOLOGICAL REVIEW | −3, doble efecto de safety y varios eventos por una conducta | Registrada · sin decisión ahora |
-| DF-5 | — | C15 | Cerrada por el charter (sin acción) |
+| DF-7 | CRITICAL | Razonamiento del residente alterado o mal atribuido en el Management Trace | **Implementado y verificado** en el ciclo 2 · queda DF-10 |
+| DF-1 | CRITICAL · STRUCTURAL | Observation opportunities para TD/F/C | Arquitectura aprobada · **D-1 a D-6 pendientes** |
+| DF-2 | CRITICAL · METHODOLOGICAL REVIEW | R1-03, R1-04 y R2-01 al pipeline observacional | Verificado contra los PDF · **decisión pendiente** |
+| DF-6 | HIGH VALUE · METHODOLOGICAL REVIEW | Corpus de validación EN/ES independiente | Diseño entregado · **decisión pendiente** |
+| DF-10 | HIGH VALUE | Seguimiento pegado al alta, perdido en ambos idiomas | **Nuevo** · decisión pendiente |
+| DF-4 | CLINICAL + METHODOLOGICAL REVIEW | C2 y los casos trauma | Texto obsoleto corregido · C2 deshabilitada · **amplitud pendiente** |
+| DOC-1 | Documentación | §51 del charter, truncada | **Pendiente del texto del docente** |
+| DF-3 | — | MK1 de R2-01 | **Cerrado documentalmente** (fuente verificada); su uso pasa a DF-2 |
+| DF-9 | METHODOLOGICAL REVIEW | −3, doble efecto de safety y varios eventos por una conducta | Registrado · sin decisión ahora |
+| DF-11 | LOW PRIORITY | Residuos menores de la lectura | Registrado |
+| DF-5 | — | C15 | Deshabilitada, sin acción |
 
 ---
 
-### [CRITICAL] DF-7 · El Trace altera o atribuye mal el razonamiento del residente
+### [CRITICAL] DF-7 · Fidelidad del razonamiento en el Management Trace · IMPLEMENTADO Y VERIFICADO
+
+**Qué se hizo.** Se corrigieron en la fuente, por clase y no por frase:
+
+- «im» ya no se reescribe como «I'm»;
+- las palabras terminadas en «-so» ya no se truncan;
+- una orden ya no se registra como modelo de trabajo;
+- se eliminaron las asimetrías EN/ES del razonamiento registrado.
+
+Detalle en `docs/MEDICION_RECONOCIMIENTO_ORDENES.md`, sección «Ciclo 2».
+
+**Resultado sobre el mismo corpus** (antes → después):
+
+- **Citas alteradas:** ES 4 → 0.
+- **Órdenes como modelo de trabajo:** ES 5 → 0 y EN 1 → 0.
+- **Rationale declarado en ES:** 0 → 21, igual que el inglés.
+- **Diferencias pareadas EN/ES:** 62 → 1. La que queda es la ambigüedad de
+  «por» en español, fiel en ambos idiomas.
+- **Capa de órdenes:** sin cambios en órdenes, tiempos, retenciones ni cierres,
+  salvo las 3 correcciones buscadas.
+- **Suite completa.** La primera corrida encontró 13 fallas: 12 órdenes
+  compactas que el gate volvía a retener y una lectura de claves en la
+  herramienta del ciclo 1. Se corrigieron por clase y la medición se repitió con
+  el código final: mismos números, ninguna decisión cambiada.
+- **Pruebas:** 32 nuevas, 366 focalizadas, 56 regresiones y la suite completa
+  (4696) pasan.
+- **Latencia:** unos 1 ms más por orden (3,4 → 4,1–4,4 ms); el tiempo por
+  encuentro no cambió.
+
+**Sin decisión pendiente.** Lo que no se corrigió está en DF-10 y DF-11.
+
+---
+
+### [CRITICAL · STRUCTURAL] DF-1 · Observation opportunities: D-1 a D-6
 
 **PROBLEM**
 
-La extracción determinista de las cuatro categorías
-(`app.py`, `extract_explicit_reasoning`) produce tres tipos de error:
-
-- cambia palabras del residente;
-- trunca otras;
-- guarda órdenes como si fueran su «modelo de trabajo».
-
-Además, capta actualizaciones del modelo de forma distinta según el idioma.
+La elegibilidad de TD1, F1, C1, C3, C4 y C14 es una lista fija
+(`competency_mapping.py:259`).
 
 **EVIDENCE**
 
-Todo es KNOWN y reproducible (`docs/MEDICION_RECONOCIMIENTO_ORDENES.md`):
-
-- **«im» pasa a «I'm» (`app.py:5687`).** «Doy adrenalina 0.5 mg im» queda
-  registrado como modelo de trabajo declarado: «Doy adrenalina 0.5 mg I'm».
-  Ocurre en 3 decisiones.
-- **Truncamiento antes de «so» (`app.py:5708` y siguientes).** La expresión
-  busca «so» sin límite de palabra previo: «compromiso» queda como «compromi».
-  En inglés afectaría a «also».
-- **Una orden como modelo de trabajo.** Pasa en 5 de 30 modelos declarados en
-  español y en 1 de 29 en inglés. Ejemplo: «inicio adrenalina en infusion…»,
-  donde el residente había escrito «Toma betabloqueador, por eso no responde».
-- **Diferencias pareadas EN/ES en el razonamiento.** 6 de 119 decisiones, con
-  déficits en ambos sentidos. Por ejemplo, el español no registra «falla
-  ventilatoria inminente» y el inglés no registra «glimepiride… cannot go home».
-- **Menores, en la capa de órdenes:**
-  - el inglés pierde «urology follow-up» y recorta las indicaciones de regreso;
-  - en español «PA, FC» se lee como foco `general`, cuando en inglés el
-    equivalente se lee como `perfusion`.
+- `docs/PROPUESTA_OBSERVATION_OPPORTUNITIES.md`, §9, trae el análisis de cada
+  decisión, con lo que dicen las EPAs en la v1.1.
+- Por ejemplo, C14 (p. 42) exige adquirir imagen y nombra los estados clínicos
+  que el POCUS determina.
 
 **WHY IT MATTERS**
 
-- El brief, la propuesta de rúbrica y los PDF leen esas categorías como
-  razonamiento del residente (§33).
-- Atribuirle lo que no escribió va contra la §62.
-- Es fidelidad del Management Trace: CRITICAL según la §3.
+Es la integridad de la evidencia longitudinal (§8, §10, §96).
 
 **RECOMMENDATION**
 
-Corregir en la fuente, en el ciclo 2, por clase de error y no por frase (§57):
-
-- reescribir sólo para buscar patrones, y citar siempre desde el texto original
-  del residente;
-- exigir límite de palabra antes de los marcadores de cláusula;
-- no aceptar como modelo de trabajo una cláusula que el lector ejecuta como
-  orden;
-- añadir pruebas pareadas EN/ES de las cuatro categorías, además de las de
-  acciones.
+| Decisión | Recomendación |
+|---|---|
+| D-1 | (a) bloque `objectives` en la declaración del caso |
+| D-2 | (c) tres estados, activación objetivo por objetivo |
+| D-3 | (a) prospectivo + (c) reevaluación a pedido |
+| D-4 | (a) evidencia exigida por declaración |
+| D-5 | (a) el AI Advisor redacta y el docente aprueba; C14 primero, sobre los 31 casos |
+| D-6 | (b) por ahora; (a) después del piloto |
 
 **ALTERNATIVES**
 
-- Corregir sólo los dos errores de expresión regular: bajo costo, pero deja la
-  atribución.
-- Marcar las categorías dudosas en la interfaz docente en vez de corregir: agrega
-  fricción y no arregla la fuente.
+Están en la §9 de la propuesta, para cada decisión.
 
 **COST / EFFORT**
 
-- Medio: una sesión.
-- Sin costo de IA: se verifica con `tools_order_reading.py` y pruebas
-  focalizadas.
+- Mecanismo: una sesión.
+- Borradores de C14: una sesión.
+- Revisión docente: unos minutos por caso.
 
 **RISK**
 
-- Tocar el lector puede cambiar lo que se retiene o se pregunta en otros
-  guiones.
-- Mitigación: repetir la medición pareada completa antes y después.
-- Los encuentros históricos no cambian (§75).
+- Declaraciones incompletas.
+- Convivencia de dos reglas durante la transición: se mitiga con la activación
+  por objetivo.
 
 **DECISION NEEDED**
 
-¿Autoriza corregir estos defectos en el ciclo 2, con la medición pareada como
-criterio de aceptación?
+¿Aprueba D-1 a D-6 como se recomiendan, o con cambios?
+
+La elegibilidad no se tocará hasta esa aprobación.
 
 ---
 
-### [CRITICAL · STRUCTURAL] DF-1 · Oportunidades de observación para TD1, F1, C1, C3, C4 y C14
+### [CRITICAL · METHODOLOGICAL REVIEW] DF-2 · R1-03, R1-04 y R2-01 al pipeline
 
 **PROBLEM**
 
-`objective_is_eligible` devuelve verdadero para estos seis en todo encuentro
-completado (`competency_mapping.py:259`). Pueden acreditarse sin oportunidad
-real (§10).
+Estos tres desafíos se asignan y se juegan, pero no pueden convertirse en
+evidencia.
 
 **EVIDENCE**
 
-- La lista fija está en el código.
-- El brief propone sobre 6 o 7 objetivos en todo encuentro.
-- Los 31 casos traen POCUS, así que la disponibilidad de un estudio no sirve como
-  regla.
-- Detalle en `docs/PROPUESTA_OBSERVATION_OPPORTUNITIES.md`.
+`docs/VERIFICACION_MAPPINGS_FUNDACIONALES.md`, verificado contra los tres PDF:
+
+| Desafío | ACGME | Royal College |
+|---|---|---|
+| R1-03 | PC4 y MK2 VERIFIED · PC5 PARTIAL | ME 2.2 VERIFIED: Pathway Foundations p. 11 = F1 hito 3 · ME 2.4 PARTIAL |
+| R1-04 | PC1 y PC6 VERIFIED | ME 4.1 VERIFIED en Pathway Foundations pp. 22–23; como EPA sólo PARTIAL (F2 es de presentaciones no complicadas) · ME 2.4 PARTIAL |
+| R2-01 | PC1, PC4 y MK2 VERIFIED · MK1 PARTIAL | ME 1.6 VERIFIED: Pathway Core p. 9 y C1 hito 1 · ME 2.4 PARTIAL |
 
 **WHY IT MATTERS**
 
-- Es la integridad de la evidencia longitudinal.
-- Ausencia de oportunidad ≠ desempeño insuficiente (§8, §63).
+Hoy es evidencia perdida (§9).
 
 **RECOMMENDATION**
 
-Mecanismo (a) de la propuesta:
-
-- **Declarar:** un bloque `objectives` en la declaración de cada caso, al lado de
-  D1–D5.
-- **Verificar:** con `case_assessment.verify`.
-- **Congelar:** con `evaluation_basis`.
-- **Leer:** `objective_is_eligible` usa esa copia congelada.
-- **Piloto:** C14, con declaraciones redactadas por el AI Advisor y aprobadas por
-  un docente.
+- **Lado Royal College:**
+  - **A.** *Pathway to Competence* como fuente primaria para estos tres
+    desafíos, sólo con los vínculos VERIFIED.
+  - **C.** Para los PARTIAL: no se incorporan. ME 2.4 en los tres no entra, en
+    lugar de mantenerse sólo para completar cobertura.
+  - **B.** Sólo como anotación opcional, donde el contexto de la EPA calza.
+- **Lado ACGME:** los vínculos VERIFIED. PC5 y MK1 quedan a decisión del
+  docente.
+- **Diseño:** las conductas observables se adaptan de `docs/CURRICULUM_PILOT.md`.
 
 **ALTERNATIVES**
 
-- (b) Un registro paralelo de oportunidades.
-- (c) Una heurística sobre el Trace.
-- (d) Que la IA decida la oportunidad al analizar.
-
-Las tres se desaconsejan; las razones están en la propuesta, §5.
+- **B como regla general.** Descartada: en R1-04 obligaría a una EPA cuyo
+  contexto contradice el encuentro.
+- **Sólo ACGME.**
 
 **COST / EFFORT**
 
-- Mecanismo: medio, una sesión.
-- Declaraciones: trabajo clínico por caso. Es el costo dominante.
-- El brief baja de costo, porque sólo propone sobre objetivos declarados.
+Una sesión, más la revisión docente de las conductas.
 
 **RISK**
 
-- Declaraciones incompletas: se mitiga con la matriz de cobertura.
-- Encuentros históricos: requieren una decisión explícita.
+- **Estructural:** una segunda fuente del Royal College sin EPA en
+  `competency_mapping`.
+- **Si se aprueban vínculos PARTIAL:** evidencia más débil.
 
 **DECISION NEEDED**
 
-Las decisiones D-1 a D-6 de la propuesta, §8:
+1. ¿A + C como se recomienda?
+2. ¿Incorporar PC5 (R1-03) y MK1 (R2-01), que son PARTIAL?
+3. ¿Aprueba adaptar las conductas documentadas?
 
-- el mecanismo;
-- qué significa que un caso no declare un objetivo;
-- los encuentros históricos;
-- si la evidencia citada debe incluir el elemento de la oportunidad;
-- el piloto de C14;
-- las observaciones incidentales.
+Nada se incorpora a Objective Progress hasta esa aprobación.
 
 ---
 
-### [CRITICAL · METHODOLOGICAL REVIEW] DF-2 · R1-03, R1-04 y R2-01 generan encuentros que no pueden convertirse en evidencia
+### [HIGH VALUE · METHODOLOGICAL REVIEW] DF-6 · Corpus de validación EN/ES independiente
 
 **PROBLEM**
 
-Estos tres desafíos se asignan y se juegan, sobre los perfiles PS001, pero no
-existen como objetivo. El docente no puede confirmar nada de ellos (§9).
+El único corpus disponible es la muestra con la que se ajustó el lector.
 
 **EVIDENCE**
 
-`docs/VERIFICACION_MAPPINGS_FUNDACIONALES.md`:
-
-- **Lado ACGME:** todos sus códigos, salvo MK1, están en la tabla verificada del
-  código.
-- **Lado Royal College:** cita competencias CanMEDS de *Pathway to Competence*,
-  que no está en `SOURCES` y no tiene el nivel de hito de EPA que exige el
-  pipeline.
-- **Diseño:** faltan conductas observables, frase de oportunidad y condiciones de
-  evidencia. Las conductas existen en español en `docs/CURRICULUM_PILOT.md`.
+`docs/DISENO_VALIDATION_CORPUS.md`.
 
 **WHY IT MATTERS**
 
-- Cada uno de estos encuentros es hoy evidencia perdida.
-- Es incoherente con la arquitectura objetivo (§8).
+Sin datos externos no se sabe cuántas órdenes reales se leen mal (§37, §90).
 
 **RECOMMENDATION**
 
-Incorporarlos con el patrón de los 8 desafíos de sesgo:
-
-- **Lado ACGME:** los códigos ya verificados.
-- **Lado Royal College:** la opción (c); queda pendiente y visible hasta decidir
-  entre (a) y (b).
-- **Diseño:** adaptar las conductas documentadas a `CHALLENGE_MAPPINGS`.
-- **MK1:** fuera hasta resolver DF-3.
+- 60 intenciones × 2 redacciones × 2 idiomas = 240 entradas.
+- Escritores nativos independientes, que no conocen el lector.
+- Mitad visible y mitad sellada.
+- Métricas de la §90 más fidelidad de las categorías y paridad EN/ES.
+- Herramienta determinista.
 
 **ALTERNATIVES**
 
-- **(a)** Registrar *Pathway to Competence* como segunda fuente del Royal
-  College, a nivel de competencia.
-- **(b)** Anclarlos a hitos ya verificados de la *EPA Guide* que llevan los
-  mismos códigos CanMEDS (C5, TP6). Es un mapping nuevo.
+- Paráfrasis generadas por IA: tienen costo y un estilo que no es el de un
+  clínico.
+- Encuentros reales: requieren autorización y revisión de privacidad.
 
 **COST / EFFORT**
 
-- Medio: una sesión de código simétrico al existente, más la revisión docente de
-  las conductas.
+- Unas 9 a 12 h humanas, entre 3 y 5 personas.
+- Una sesión de herramienta.
+- US$0 en IA.
 
 **RISK**
 
-- Bajo si se usa sólo lo verificado.
-- Anclar a EPA sin juicio docente sería inventar un mapping (§43.11).
+- Contaminación: se mitiga con la mitad sellada y la regla de corregir sólo
+  por clase.
+- Tamaño inicial limitado.
 
 **DECISION NEEDED**
 
-- ¿(c) ahora, y (a) o (b) después?
-- ¿Aprueba adaptar las conductas de `docs/CURRICULUM_PILOT.md:13-15` como sus
-  conductas observables?
+- ¿Aprueba el diseño?
+- ¿Quién escribe las tarjetas y quién redacta en cada idioma?
+- ¿Dónde se custodia la mitad sellada?
 
 ---
 
-### [HIGH VALUE · METHODOLOGICAL REVIEW] DF-6 · ¿Con qué datos se mide de verdad el lector EN/ES?
+### [HIGH VALUE] DF-10 · Un seguimiento pegado a la orden de alta se pierde, en ambos idiomas
 
 **PROBLEM**
 
-El único corpus disponible es la muestra con la que se ajustó el lector. Da
-96/96 en ambos idiomas, pero no estima fallas reales (§57). Por instrucción, la
-medición de órdenes se detuvo aquí.
+«Discharge her with cardiology follow-up» y «La doy de alta con control en
+policlínico» ejecutan el alta, pero el seguimiento no queda registrado como
+indicación. Sí queda cuando va como elemento aparte de una lista
+(«…, urology follow-up», «…, control urologico»).
 
 **EVIDENCE**
 
-- `docs/MEDICION_RECONOCIMIENTO_ORDENES.md`.
-- `test_the_twenty_in_english.py` exige paridad sobre esos mismos textos.
-- El corpus no incluye la familia trauma.
+- Se reprodujo con `parse_family_actions` durante DF-7.
+- No es una asimetría EN/ES: falla igual en ambos idiomas.
+- Por eso no se corrigió en el ciclo 2 (§85, control de alcance).
 
 **WHY IT MATTERS**
 
-Es la prioridad 1 del charter (§37). Sin una muestra independiente no se puede
-saber cuántas órdenes reales se leen mal ni en qué idioma (§90).
+El plan de continuidad es evidencia de D5 y del evento crítico de alta sin
+seguimiento. Perderlo empobrece el registro de lo que el residente decidió.
 
 **RECOMMENDATION**
 
-- **(a)** Un corpus nuevo, escrito por docentes o residentes que no conozcan el
-  lector: las mismas situaciones en EN y ES, incluida trauma, con la intención
-  clínica anotada por quien escribe. Esa anotación es el estándar que falta para
-  medir interpretación parcial o incorrecta.
-- **(b)** Después, si se aprueba con revisión de privacidad (§76), encuentros
-  reales de residentes desidentificados.
+En `family_parser`, cuando la orden de alta trae un complemento «with/con» que
+empieza como una indicación («follow-up», «control», «cita», «seguimiento»),
+separarlo como indicación. Es la misma clase que ya se corrigió para las listas.
 
 **ALTERNATIVES**
 
-Paráfrasis generadas por IA:
-
-- baratas de producir;
-- pero con estilo de modelo y no de clínico;
-- tienen costo de IA y requieren autorización de presupuesto.
+Ninguna razonable: hoy se pierde en silencio.
 
 **COST / EFFORT**
 
-- (a) Tiempo docente, sin costo de IA. La herramienta ya existe.
-- (b) Revisión de privacidad y acceso a datos.
+Bajo: unas horas, con pruebas en ambos idiomas.
 
 **RISK**
 
-- (a) Un corpus pequeño puede no generalizar.
-- (b) Datos personales.
+Bajo. Debe verificarse que no parta órdenes de alta con complementos que no son
+indicaciones, como «con analgesia».
 
 **DECISION NEEDED**
 
-¿(a), (b), ambas o ninguna por ahora? Si (a): ¿quién escribe el corpus y de qué
-tamaño?
+¿Autoriza corregirlo en el ciclo 3?
 
 ---
 
-### [METHODOLOGICAL REVIEW] DF-3 · MK1 de R2-01
+### [CLINICAL + METHODOLOGICAL REVIEW] DF-4 · C2
 
 **PROBLEM**
 
-R2-01 cita ACGME MK1, que no está en la tabla verificada del código. Por
-instrucción, no se usa mientras siga UNVERIFIED.
+C2 está deshabilitada. Existen casos trauma, pero no se ha establecido que su
+amplitud represente la EPA.
 
 **EVIDENCE**
 
-- `docs/CURRICULUM_PILOT.md:61` cita «MK1 *Scientific Knowledge*, p. 15» de la
-  edición aportada al inicio del proyecto.
-- La búsqueda anterior no la había encontrado porque cubría sólo el código.
-- La página es coherente con la tabla verificada (INFERRED).
-- `www.acgme.org` está bloqueado desde este entorno.
+- `docs/AUDITORIA_OPORTUNIDAD_C2.md`.
+- **EPA Guide v1.1, p. 20:** C2 se centra en liderar un equipo en el trauma
+  grave de uno o varios sistemas. Pide 25 observaciones: al menos 5 adultos
+  con trauma penetrante, al menos 10 adultos en entorno clínico (no simulado) y
+  al menos 5 presentaciones pediátricas.
+- **Qué ofrece el banco:** 2 casos adultos, uno penetrante y uno contuso.
 
 **WHY IT MATTERS**
 
-Un código sin fuente verificada rompe el estándar de trazabilidad que el resto
-cumple (§43.11).
-
-**RECOMMENDATION**
-
-Verificar contra la fuente exacta:
-
-- **Documento:** ACGME *Emergency Medicine Milestones*, Worksheet 2.1, segunda
-  revisión de febrero de 2021, vigente desde el 1 de julio de 2021.
-- **Archivo:** `emergencymedicinemilestones.pdf`.
-- **Ubicación:** subcompetencia *Medical Knowledge 1*, PDF p. 15, hoja impresa 9
-  (INFERRED).
-- **Qué leer:** título, páginas, texto de los niveles 1 a 5 y versión en la
-  portada.
-- **Después:** decidir si las conductas de R2-01 son evidencia de MK1.
-
-**ALTERNATIVES**
-
-- (a) Habilitar `www.acgme.org` en la red del entorno.
-- (b) Que el docente aporte las páginas.
-- (c) Retirar MK1 de R2-01 y dejar PC1, PC4 y MK2.
-
-**COST / EFFORT**
-
-Bajo.
-
-**RISK**
-
-Bajo. Sin la fuente, el vínculo sigue excluido.
-
-**DECISION NEEDED**
-
-¿(a), (b) o (c)?
-
----
-
-### [CLINICAL REVIEW] DF-4 · C2 y los casos trauma
-
-**PROBLEM**
-
-C2 está deshabilitada con un texto que dice que no existen encuentros de trauma.
-Desde el 2026-09-23 existen dos.
-
-**EVIDENCE**
-
-`docs/AUDITORIA_OPORTUNIDAD_C2.md`:
-
-- **Los dos casos sí son resucitación de trauma:** xABCDE, control de hemorragia,
-  sangre frente a cristaloide, drenaje y búsqueda de otra fuente.
-- **Tienen el soporte del motor:** reloj de sangrado, acciones ejecutables, D1–D5
-  declarados y eventos críticos propios.
-- **La amplitud no alcanza:** 2 mecanismos aislados, adultos, sin equipo, sin
-  quirófano, sin pelvis, abdomen, TCE ni pediatría.
-- **Exposición:** llegan a un residente 1 de cada 7 veces por R2-04 y 1 de cada 4
-  por R2-05.
-- **Fuente oficial sin leer:** el criterio del Royal College para C2 (EPA Guide
-  2018, p. 19 de la edición de 51 páginas) no se pudo consultar desde este
-  entorno.
-
-**WHY IT MATTERS**
-
-- Habilitarla por la mera presencia de un paciente traumatizado acreditaría una
-  EPA sin la variedad que implica (§11).
-- Con 2 casos y una meta de 25 observaciones, se mezcla evidencia nueva con
-  memoria del caso.
+Habilitarla con evidencia estrecha acreditaría una EPA sin la variedad que
+implica (§11).
 
 **RECOMMENDATION**
 
 - Mantener C2 deshabilitada.
-- Si se habilita, que sea sólo mediante DF-1: declarada en los casos que la
-  ofrecen, con un alcance acotado al componente simulado de manejo, como C1 y
-  C3.
-- Actualizar el texto de C2 para que diga por qué sigue deshabilitada.
+- Si se habilita algún día, que sea mediante DF-1, sólo en los casos
+  declarados.
+
+**Hecho en el ciclo 2.** El texto obsoleto se corrigió en dos lugares:
+
+- `objectives.py`, en el alcance y la limitación de C2;
+- la tabla de progreso: «Not enabled: current encounters are not established as
+  offering enough opportunities…», con su versión en español.
+
+No se fijó ningún número mínimo.
 
 **ALTERNATIVES**
 
-- Habilitarla ya para los dos casos.
-- Esperar a tener más mecanismos: pelvis, abdomen, multisistémico.
+Habilitarla para los 2 casos. No se recomienda.
 
 **COST / EFFORT**
 
-- Bajo para el texto.
-- Clínico para decidir la amplitud mínima.
+Clínico: decidir la amplitud.
 
 **RISK**
 
-Acreditar una EPA con evidencia estrecha.
+Acreditar con evidencia estrecha.
 
 **DECISION NEEDED**
 
-- ¿Qué amplitud mínima de casos trauma exige para habilitar C2?
-- ¿Autoriza corregir el texto de C2?
+¿Qué amplitud de casos trauma consideraría suficiente para habilitar C2? Es
+una decisión clínica y metodológica. El AI Advisor no propone un número.
+
+---
+
+### DOC-1 · §51 del charter, truncada
+
+- **Qué llegó.** El texto de la §51 («DEFINICIÓN FINAL DEL PRODUCTO») termina en
+  «…y construir progresivamente una representación multidimensional y
+  longitudinal del desempeño del», y la línea siguiente ya es la §52.
+- **Qué se hizo.** Nada se completó ni se infirió. Es la única sección cortada:
+  se revisaron las otras 100 más la §101.
+- **DECISION NEEDED:** ¿el texto final de la §51?
+
+---
+
+### DF-3 · MK1 · CERRADO DOCUMENTALMENTE
+
+- **Fuente verificada:** ACGME *Emergency Medicine Milestones* v2.1, PDF p. 15
+  (hoja impresa 9), «Medical Knowledge 1: Scientific Knowledge».
+- **Vínculo R2-01 → MK1:** PARTIAL. MK1 describe conocimiento, y el simulador
+  sólo ve su aplicación.
+- **Su uso se decide en DF-2.**
 
 ---
 
 ### [METHODOLOGICAL REVIEW] DF-9 · Penalidad −3, doble efecto de safety y varios eventos por una conducta
 
-Registro pedido por las §20 a §22 y las preguntas 1 a 3 de la §48.
-
-- **Qué se mantiene:** el charter conserva por ahora `max(0, base − 3 × eventos
-  confirmados)`, el doble efecto sobre D3 y el total, y la acumulación de eventos.
-  Nada de esto se modificó.
-- **Qué falta:** estos tres puntos no se consideran validados. Faltan ejemplos
-  reales:
-  - encuentros confirmados donde una sola conducta active dos eventos;
-  - o donde el doble efecto cambie la interpretación.
-- **Acción del AI Advisor:** registrar esos ejemplos cuando aparezcan en
+- **Se mantiene sin cambios**, como pide el charter (§19 a §22 y §47):
+  `max(0, base − 3 × eventos confirmados)`, el doble efecto sobre D3 y el total,
+  y la acumulación de eventos.
+- **Los eventos críticos siguen siendo una señal independiente**, que no
+  modifica los promedios D1–D5.
+- **Acción del AI Advisor:** registrar ejemplos reales cuando aparezcan en
   encuentros confirmados.
 - **DECISION NEEDED:** ninguna ahora.
 
 ---
 
-### DF-5 · C15 (sin acción)
+### [LOW PRIORITY] DF-11 · Residuos menores de la lectura
 
-- El charter (§11) decide mantener C15 deshabilitada mientras no existan
-  encuentros que creen oportunidad de cuidados al final de la vida.
-- El banco sigue sin esa familia.
-- Queda registrada para que la cola cubra los cinco vacíos de la §7.
+- **«since» en inglés.** No se lee como razón porque también es temporal.
+- **Encontrado al probar DF-7, anterior al ciclo:**
+  - en inglés, «to reduce the congestion and I will recheck…» registra «and I
+    will» dentro de la expectativa;
+  - «Hyperkalemia with peaked T waves» e «Hiperkalemia con T picudas» no se leen
+    como modelo en ninguno de los dos idiomas, porque el vocabulario de
+    hallazgos es una lista cerrada.
+- **Correcciones ortográficas en las citas.** «rythm» → «rhythm» y
+  «urianalysis» → «urinalysis» cambian la palabra citada, no su sentido. Las
+  fijan las regresiones v0814 y v0816.
+- **Guion 5, decisión 9.** «por» en español no se lee como causal; queda una
+  diferencia pareada fiel en ambos idiomas.
+- **`objectives.TARGET_SOURCE`.** Cita las páginas de la edición de 51 páginas
+  (v1.0). La edición verificada en `SOURCES` es la v1.1 de 59 páginas, con otras
+  páginas pero los mismos conteos. Aclararlo modificaría el texto de un objetivo.
+- **DECISION NEEDED:** ninguna urgente. Se pueden atender en un ciclo con
+  capacidad libre.
+
+---
+
+### DF-5 · C15
+
+Deshabilitada, sin cambios. No hay encuentros diseñados para cuidados al final
+de la vida (§11).
