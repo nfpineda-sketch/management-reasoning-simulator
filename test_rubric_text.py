@@ -264,3 +264,36 @@ def test_indicacion_is_kept_for_clinical_orders_and_orientacion_is_the_help_a_re
     # The clinical sense stays: orders, an indication for a drug, advice to the patient.
     assert "indicaciones" in report_language.ES[next(key for key in report_language.ES
                                                      if key.startswith("You may enter your reasoning and orders"))]
+
+
+def test_once_approved_the_spanish_screen_shows_only_approved_descriptors_and_no_domain_mixes_languages(screen_cohort):
+    """Closing check of 2026-09-27: each domain reads whole in one language, Spanish only where approved."""
+    from test_rubric_portal import attempt_on_case, page
+    accounts, _, users = screen_cohort
+    attempt_id = attempt_on_case(accounts, users["resident"]["token"])
+    drafts = rubric_text.drafts()
+    reviews = rubric_text.RubricTextReviews(accounts)
+
+    def screen():
+        rubric_text._INSTALLED.clear()
+        app = page(screen_cohort, attempt_id, language="es")
+        return " ".join([str(item.value) for item in app.caption] + [str(item.value) for item in app.markdown])
+
+    def english(domain):
+        return [rubric.DOMAINS[domain]["asks"], *rubric.DOMAINS[domain]["levels"].values()]
+
+    def spanish(domain):
+        return [row["es"] for row in drafts[domain].values()]
+
+    for approved in (("D1", "D3"), rubric.DOMAIN_IDS):
+        for domain in approved:
+            if rubric_text.status(domain, drafts[domain], reviews.latest()) != "approved":
+                reviews.record(users["faculty"]["token"], domain, "approved", "")
+        shown = screen()
+        for domain in rubric.DOMAIN_IDS:
+            in_spanish = [text in shown for text in spanish(domain)]
+            in_english = [text in shown for text in english(domain)]
+            if domain in approved:
+                assert all(in_spanish) and not any(in_english), domain
+            else:
+                assert all(in_english) and not any(in_spanish), domain

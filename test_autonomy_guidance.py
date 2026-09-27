@@ -77,6 +77,9 @@ def test_a_faculty_member_reads_it_where_help_is_declared_and_where_autonomy_is_
         assert guidance in captions, code
         autonomy = [item for item in app.selectbox if item.label in ("Observed autonomy", "Autonomía observada")]
         assert autonomy and guidance in (autonomy[0].help or ""), code
+        # The level a resident reaches with help is "Con orientación" in Spanish (faculty, 2026-09-27).
+        assert ("Con orientación" if code == "es" else "Prompted") in autonomy[0].options, code
+        assert "Con indicaciones" not in autonomy[0].options
 
 
 def cohort_for(tmp_path):
