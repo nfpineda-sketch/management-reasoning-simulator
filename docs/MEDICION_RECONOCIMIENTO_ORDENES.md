@@ -340,3 +340,93 @@ corrigieron por su clase, y la medición se repitió con el código final.
 - **Regresiones:** 56 de 56 pasan.
 - **Suite completa, código final (4 shards):** 4696 pasan, 77 omitidas y 2
   xfail, sin fallas.
+
+## Ciclo 3 · DF-10: el alta conserva el plan con que se escribe (2026-09-27)
+
+**Defecto.** «Discharge her with cardiology follow-up» y «La doy de alta con
+control en policlínico» ejecutaban el alta, pero el seguimiento no quedaba
+registrado, en ninguno de los dos idiomas. El mismo seguimiento sí se
+registraba cuando iba como elemento aparte («…, control urológico»).
+
+**Causa raíz.** El lector parte cada oración en fragmentos por comas y
+conjunciones. «Con control…» / «with … follow-up» queda dentro del fragmento
+del alta, y ese fragmento sólo produce la disposición: el complemento se
+descartaba en silencio.
+
+**Corrección** (`family_parser.py`, por clase):
+
+- **El plan escrito dentro de la orden de alta.** Cuando un fragmento produce un
+  alta a domicilio, cada «with»/«con» puede abrir su plan. Se registra como
+  indicación al paciente sólo lo que el propio lector ya reconoce como
+  indicación en una lista (`_DISCHARGE_ADVICE`). Lo demás queda como antes:
+  «con su esposa», «with his wife», «con paracetamol».
+- **Artículo.** `_DISCHARGE_ADVICE` acepta un artículo delante: «a follow-up
+  appointment», «una cita».
+- **Orden del plan.** La indicación que cierra una oración (aviso de regreso,
+  signos de alarma) se registra después de lo que la oración dice antes. Así
+  el seguimiento y el aviso quedan en el orden en que se escribieron.
+- **Sólo el alta.** Una hospitalización «con control de glicemia» no cambia:
+  es una indicación intrahospitalaria, no un plan para la casa.
+
+**Consecuencia corregida en el mismo cambio.** Si un alta sin razonamiento
+queda retenida, el mensaje de la orden retenida enumera lo que la orden también
+trae. Antes decía «These medications have not been administered» para
+cualquier cosa. Con el seguimiento recuperado, ese mensaje habría anunciado un
+seguimiento como un medicamento no administrado. Ahora dice qué es cada
+elemento (`unexecuted_items.held_messages`), con su traducción al español.
+
+### Antes y después
+
+**Frases escritas para la prueba, EN y ES.** Son 10 altas con plan.
+
+- **Antes:** el seguimiento se perdía en 7.
+- **Después:** se conserva en 9, en el orden del texto, sin duplicarse cuando
+  además va en la lista.
+- **La décima** («OK to discharge with…») no se reconoce como alta. Es otro
+  defecto, registrado abajo.
+- **Las 2 frases sin plan** no cambian, y el alta se ejecuta igual en todas.
+
+| Frase (ejemplo) | Antes | Después |
+|---|---|---|
+| Discharge him home with orthopedic follow-up in two weeks. | — | orthopedic follow-up in two weeks |
+| Lo doy de alta con control en policlínico de traumatología en dos semanas. | — | control en policlinico de traumatologia en dos semanas |
+| Alta con seguimiento por neurología y volver si reaparecen los síntomas. | volver si… | seguimiento por neurologia, volver si… |
+| Discharge her with cardiology follow-up and return if the palpitations come back. | return if… | cardiology follow-up, return if… |
+
+**Corpus de ensayo** (mismo corpus, semilla 3000, 0 llamadas de IA): cambió
+una sola decisión, y es la misma en los dos idiomas. Es el guion 18, decisión 3,
+del caso `acs_66f_nonst`:
+
+- ES «La doy de alta con control ambulatorio» registra ahora «control
+  ambulatorio».
+- EN «Discharge her with outpatient follow-up» registra ahora «outpatient
+  follow-up».
+
+Nada más cambió: 96/96 órdenes, 0 retenciones no previstas, las mismas
+categorías de razonamiento y la misma diferencia pareada.
+
+**Pruebas.**
+
+- **`test_a_discharge_keeps_the_plan_it_is_written_with.py`:** 17 casos EN/ES.
+  Cubren:
+  - el seguimiento conservado y el alta ejecutada;
+  - el orden del plan;
+  - que no se duplique;
+  - que no invente un plan;
+  - que la hospitalización no cambie;
+  - la rationale conservada;
+  - el mensaje de la orden retenida y su traducción.
+- **Pruebas del alta y del lector:** 398 pasan.
+- **Regresiones:** 56 de 56 pasan.
+
+### Encontrado y no corregido (registrado)
+
+Son defectos distintos de DF-10; se registran en la cola.
+
+- «OK to discharge with…» no se reconoce como alta.
+- Una receta unida al alta con «with»/«con» («with ibuprofen», «con
+  paracetamol») se pierde. Como elemento aparte de la lista, se registra.
+- «Con hora en policlínico» (hora = cita) no se reconoce como seguimiento.
+- Cuatro líneas del mensaje de la orden retenida no tienen traducción al
+  español: «I recognised…», «Still to state…», «In your own words…» y «What you
+  already wrote is kept.».

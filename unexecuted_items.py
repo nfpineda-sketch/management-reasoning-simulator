@@ -53,6 +53,30 @@ def messages(parsed):
     return lines, unclassified
 
 
+# The same items while the order that carries them is held: nothing has been
+# recorded or given yet. The single sentence these replace called every item a
+# medication, and a discharge's follow-up recovered by DF-10 would have been
+# announced as a medicine not administered (2026-09-27).
+_HELD = {
+    "not_modelled": "Also in this order, indicated with administration and effect not modelled: {items}.",
+    "prescription": "Also in this order, a prescription for home: {items}.",
+    "conditional": "Also in this order, a conditional plan: {items}.",
+    "advice": "Also in this order, advice to the patient: {items}.",
+}
+
+
+def held_messages(parsed):
+    """What a held order also carries, by kind, without saying it was recorded or given."""
+    grouped = {}
+    for detail in details_of(parsed):
+        grouped.setdefault(detail.get("kind"), []).append(str(detail.get("text") or "").strip())
+    lines = [_HELD[kind].format(items="; ".join(grouped[kind]))
+             for kind in ("not_modelled", "prescription", "conditional", "advice") if grouped.get(kind)]
+    if grouped.get(None):
+        lines.append("Also recognized but not executable in this build: " + ", ".join(grouped[None]) + ".")
+    return lines
+
+
 def trace_labels(event):
     """Each item with what it is, for the learner's Management Trace."""
     return [(str(detail.get("text") or ""), LABELS.get(detail.get("kind")))

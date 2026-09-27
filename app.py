@@ -8132,16 +8132,13 @@ def reasoning_gate_prompt(parsed, missing):
         "In your own words, or in the fields on screen:",
     ]
     lines.extend(f"- {REASONING_GATE_FIELD_LABELS[field]}" for field in missing)
-    recognized_unmodeled = [
-        str(item) for item in (parsed.get("recognized_future_actions") or []) if item
-    ]
-    if recognized_unmodeled:
-        lines.extend([
-            "",
-            "**Also recognized but not executable in this build:** "
-            + ", ".join(recognized_unmodeled)
-            + ". These medications have not been administered.",
-        ])
+    # Each item as what it is: a discharge's follow-up is advice, not a
+    # medicine that was not administered (DF-10, 2026-09-27).
+    import unexecuted_items
+    also = unexecuted_items.held_messages(parsed)
+    if also:
+        lines.append("")
+        lines.extend(also)
     lines.extend([
         "",
         "You do not need to repeat the order. What you already wrote is kept.",
@@ -10451,17 +10448,9 @@ with st.container(key="encounter-console"):
                     "complete the reasoning in your own words or use the guided fields."
                 )
                 st.markdown(f"**Held order:** {_reasoning_gate_action_summary(held_parsed)}")
-                held_unmodeled = [
-                    str(item)
-                    for item in (held_parsed.get("recognized_future_actions") or [])
-                    if item
-                ]
-                if held_unmodeled:
-                    st.info(
-                        "Also recognized but not executable in this build: "
-                        + ", ".join(held_unmodeled)
-                        + ". These medications have not been administered."
-                    )
+                import unexecuted_items
+                for line in unexecuted_items.held_messages(held_parsed):
+                    st.info(_lang.say(line))
                 for observation in held_parsed.get("reasoning_observations", []) or []:
                     st.info(observation)
                 import reasoning_questions as _questions

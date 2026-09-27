@@ -186,8 +186,8 @@ def test_the_order_inside_a_reason_does_not_take_the_expectation_with_it(extract
 
 def test_an_english_follow_up_named_by_its_service_is_kept_with_the_discharge():
     # As a list item after the discharge, the way "control urologico" is kept.
-    # A follow-up attached by "with"/"con" to the discharge itself is lost in
-    # both languages; that is recorded apart (docs/COLA_DECISIONES_AI_ADVISOR.md).
+    # Attached by "with"/"con" to the discharge itself it is kept too (DF-10,
+    # test_a_discharge_keeps_the_plan_it_is_written_with.py).
     parsed = parse_family_actions("Discharge her with analgesia, cardiology follow-up and return precautions "
                                   "for chest pain, dyspnea or syncope.")
     assert [a["type"] for a in parsed["actions"]] == ["disposition"]

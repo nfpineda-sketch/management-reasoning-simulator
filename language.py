@@ -525,6 +525,15 @@ _RULES = (
  (r"Use your own words, or complete the guided sentence starters on screen\.",
   "Usa tus propias palabras, o completa los inicios de frase en pantalla."),
  (r"You do not need to repeat the order\.", "No necesitas repetir la orden."),
+ # What a held order also carries, by kind (unexecuted_items.held_messages).
+ (r"Also in this order, indicated with administration and effect not modelled: (.+?)\.(?=\n|$)",
+  "También en esta orden, indicado sin modelar su administración ni su efecto: «\\1»."),
+ (r"Also in this order, a prescription for home: (.+?)\.(?=\n|$)",
+  "También en esta orden, una receta para el domicilio: «\\1»."),
+ (r"Also in this order, a conditional plan: (.+?)\.(?=\n|$)",
+  "También en esta orden, un plan condicional: «\\1»."),
+ (r"Also in this order, advice to the patient: (.+?)\.(?=\n|$)",
+  "También en esta orden, una indicación al paciente: «\\1»."),
  # --- investigations -------------------------------------------------------
  # The additional-lead ECGs (acs_reperfusion.additional_leads), whole.
  (r"\bRight-sided leads V3R and V4R, recorded alongside the standard twelve\.",

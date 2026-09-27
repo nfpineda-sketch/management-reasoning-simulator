@@ -604,12 +604,18 @@ _CONDITION_CLAUSE = re.compile(r"\b(?:if|si|unless|salvo\s+que)\b[^,]*(?:,|$)")
 # ", control urologico" held the whole submission as a study nobody could name
 # (2026-09-25).
 _DISCHARGE_ADVICE = re.compile(
-    r"^(?:con\s+)?(?:control(?:es)?|seguimiento|citacion|cita|signos?\s+de\s+alarma|indicaciones|"
+    # An article may come first: "a follow-up appointment", "una cita" (DF-10).
+    r"^(?:con\s+|with\s+)?(?:(?:a|an|un|una)\s+)?(?:control(?:es)?|seguimiento|citacion|cita|"
+    r"signos?\s+de\s+alarma|indicaciones|"
     r"instrucciones|reposo|dieta|receta|educacion|follow[- ]?up|return\s+precautions?|"
     r"safety[- ]net(?:ting)?)\b"
     # English names the service first: "urology follow-up" was dropped where
     # "control urologico" was kept (EN/ES measurement, 2026-09-27).
     r"|^(?:with\s+)?(?:(?:a|an)\s+)?(?:[a-z]+\s+){1,2}(?:follow[- ]?up|appointment)\b")
+# The plan a discharge is written with: "discharge him with orthopedic
+# follow-up", "la doy de alta con control en policlinico". Each "with"/"con"
+# may open it, and only what reads as advice is kept (DF-10).
+_ATTACHED_PLAN = re.compile(r"\b(?:with|con)\s+")
 # Safety-netting that lists what should bring the patient back. The list is the
 # advice, so it runs to the end of the sentence instead of being cut at commas.
 _LISTED_ADVICE = re.compile(
@@ -1884,8 +1890,19 @@ def parse_family_actions(text) -> dict:
         details.append({"text": text, "kind": kind, **(unmodelled_detail(text) if kind == "not_modelled" else {})})
         if kind == "not_modelled" and details[-1].get("prescription"):
             details[-1]["kind"] = "prescription"
+
+    # Advice that closes a sentence is recorded after what the sentence says
+    # before it, so the plan keeps the resident's order: "discharge with
+    # cardiology follow-up and return if the palpitations come back" is the
+    # follow-up, then the return advice (DF-10, 2026-09-27).
+    trailing_advice = []
+
+    def flush_trailing_advice():
+        while trailing_advice:
+            keep(trailing_advice.pop(0), "advice")
     queue = re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
     while queue:
+        flush_trailing_advice()
         sentence = queue.pop(0).strip()
         if not sentence:
             continue
@@ -1919,7 +1936,7 @@ def parse_family_actions(text) -> dict:
             advice = (None if boundary else
                       _ADVICE_CLAUSE.search(sentence[:conditional.start()]))
             if advice:
-                keep(re.sub(r"^(?:,\s*|(?:y|e|and)\s+)", "", sentence[advice.start():]), "advice")
+                trailing_advice.append(re.sub(r"^(?:,\s*|(?:y|e|and)\s+)", "", sentence[advice.start():]))
                 # The conjunction that introduced the advice goes with it.
                 sentence = re.sub(r"(?:,\s*)?\b(?:and|y|then|luego)\s*$", "",
                                   sentence[:advice.start()].strip(" ,")).strip(" ,")
@@ -1971,7 +1988,7 @@ def parse_family_actions(text) -> dict:
         # incontrolable" was kept whole (EN/ES measurement, 2026-09-27).
         listed = _LISTED_ADVICE.search(sentence)
         if listed:
-            keep(sentence[listed.start():].strip(" ,"), "advice")
+            trailing_advice.append(sentence[listed.start():].strip(" ,"))
             sentence = re.sub(r"(?:,\s*)?\b(?:and|y|e|then|luego)\s*$", "",
                               sentence[:listed.start()].strip(" ,")).strip(" ,")
             if not sentence:
@@ -2075,12 +2092,27 @@ def parse_family_actions(text) -> dict:
                 continue
             parsed, inherited = _parse_piece(piece, inherited)
             discharged = discharged or any(action.get("type") == "disposition" for action in parsed)
+            if any(action.get("type") == "disposition" and action.get("destination") == "home"
+                   for action in parsed):
+                # The plan written into the discharge order itself is the same
+                # advice as the plan listed after it: "discharge him with
+                # orthopedic follow-up" and "lo doy de alta con control en
+                # policlinico" executed the discharge and lost the follow-up,
+                # in both languages, where ", control urologico" was kept
+                # (DF-10, 2026-09-27). Anything else it is written with ("with
+                # his wife", "con paracetamol") is left as it was.
+                for attached in _ATTACHED_PLAN.finditer(piece):
+                    plan = piece[attached.end():].strip(" ,")
+                    if _DISCHARGE_ADVICE.match(plan):
+                        keep(plan, "advice")
+                        break
             if (reasoning_head and len(parsed) == 1 and parsed[0].get("type") == "clarification"
                     and str(parsed[0].get("message", "")).startswith("The requested study")):
                 # The rest of a stated priority is not a request for a study.
                 inherited = None
                 continue
             actions.extend(parsed)
+    flush_trailing_advice()
     actions = _one_sample_each(actions)
     if held_until:
         deferred = parse_family_actions(held_until)
