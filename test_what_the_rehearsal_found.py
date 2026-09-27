@@ -192,9 +192,11 @@ def test_an_admission_is_still_an_admission():
 # incontrolable" and the record held no destination. The condition of the return
 # advice made the whole sentence conditional, and it vanished without a word.
 
+# Since DF-10 (2026-09-27) the plan keeps the order it was written in: the
+# return advice that closes the sentence comes after the follow-up before it.
 @pytest.mark.parametrize("text, advice", [
     ("Lo doy de alta con analgesia, control urologico y regresar si tiene fiebre o dolor incontrolable.",
-     ["regresar si tiene fiebre o dolor incontrolable", "control urologico"]),
+     ["control urologico", "regresar si tiene fiebre o dolor incontrolable"]),
     ("Lo doy de alta y regresar si tiene fiebre", ["regresar si tiene fiebre"]),
     ("Lo doy de alta, regresar si tiene fiebre", ["regresar si tiene fiebre"]),
     ("La envio a su casa con su esposo y le digo que vuelva si se duerme", ["le digo que vuelva si se duerme"]),
