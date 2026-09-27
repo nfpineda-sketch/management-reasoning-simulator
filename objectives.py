@@ -7,15 +7,17 @@ not attest completion of a whole workplace EPA. Original targets were supplied
 by the program owner; newer defaults are identified explicitly as local review
 milestones. Neither is used as an official EPA completion requirement.
 
-These objectives are distinct from the R1-03/R1-04/R2-01 local encounter
-challenges. Neither the counts nor the depth/autonomy tags establish a PGY,
-ACGME milestone level, competence decision, or automatic passing result.
+Since 2026-09-27 (DF-2, cycle 3) the R1-03, R1-04 and R2-01 challenges are
+objectives too: each link of theirs says whether it is a direct or a partial
+contribution, the component observed and what stays outside it. Neither the
+counts nor the depth/autonomy tags establish a PGY, ACGME milestone level,
+competence decision, or automatic passing result.
 """
 
 from copy import deepcopy
 
 
-OBJECTIVE_CATALOG_VERSION = "0.2.0"
+OBJECTIVE_CATALOG_VERSION = "0.3.0"  # 0.3.0 (2026-09-27): R1-03, R1-04, R2-01 (DF-2)
 TARGET_SOURCE = (
     "Observation count stated by the Royal College Emergency Medicine EPA Guide (2018), "
     "verified against the 51-page 2018 VERSION 1.0 on 2026-09-23: TD1 10 (p.4), F1 15 (p.10), "
@@ -116,10 +118,11 @@ del _objective
 
 # The added R* records are local reasoning components with explicit external
 # competency links. They are not new Royal College EPAs or automatic awards.
-from cognitive_catalog import BIAS_CHALLENGES
+# The foundation challenges follow the Decision Challenges (DF-2, 2026-09-27).
+from curriculum import CHALLENGES
 from competency_mapping import objective_definitions
 
-OBJECTIVES.update(objective_definitions(BIAS_CHALLENGES))
+OBJECTIVES.update(objective_definitions(CHALLENGES))
 
 
 _REVIEW_FIELDS = (

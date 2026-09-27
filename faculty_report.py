@@ -23,6 +23,7 @@ from reportlab.platypus import (
     Spacer, Table, TableStyle,
 )
 
+from competency_mapping import CONTRIBUTION_LABELS
 from objectives import AUTONOMY_LEVELS, DEPTH_LEVELS, OBJECTIVES, evidence_items
 from faculty_analysis import (DYNAMIC_OBJECTIVE_PROMPTS, PROMPT_VERSION,
                               SUPPORTED_OBJECTIVES, supported_objectives)
@@ -258,8 +259,8 @@ def _validated_inputs(report, record):
     if not isinstance(analysis, dict):
         raise ValueError("The faculty brief has no analysis.")
     objectives = analysis.get("objectives", [])
-    supported = list(supported_objectives(record) if report.get("prompt_version") in DYNAMIC_OBJECTIVE_PROMPTS
-                     else SUPPORTED_OBJECTIVES)
+    supported = list(supported_objectives(record, report.get("prompt_version"))
+                     if report.get("prompt_version") in DYNAMIC_OBJECTIVE_PROMPTS else SUPPORTED_OBJECTIVES)
     if not isinstance(objectives, list) or len(objectives) != len(supported) or {
         item.get("objective_id") for item in objectives if isinstance(item, dict)
     } != set(supported):
@@ -643,9 +644,18 @@ def _render_full(report, record, inputs, correct=None, assessment=None, prose=No
             block.append(p("Competency correspondence · local simulated evidence", "subhead"))
             for mapping in catalog["competency_mapping"]:
                 label = mapping["framework"] + " · " + mapping["code"]
-                block.append(Paragraph('<link href="' + escape(mapping["source_url"], {'"': '&quot;'})
-                    + '">' + _xml(label) + '</link>', styles["small"]))
+                if mapping.get("source_url"):
+                    block.append(Paragraph('<link href="' + escape(mapping["source_url"], {'"': '&quot;'})
+                        + '">' + _xml(label) + '</link>', styles["small"]))
+                else:
+                    block.append(p(label, "small"))
                 block.append(p(mapping.get("source_locator", ""), "small"))
+                # What this link contributes, and what stays outside it (DF-2).
+                if mapping.get("contribution"):
+                    block.append(p(_t(CONTRIBUTION_LABELS[mapping["contribution"]]) + " "
+                                   + str(mapping.get("component_observed") or ""), "small"))
+                    if mapping.get("limitation"):
+                        block.append(p(_t("Not observed: {limit}").format(limit=mapping["limitation"]), "small"))
         if objective_id == supported[-1]:
             last_objective = block          # closes the document with the metadata
         else:
@@ -695,6 +705,9 @@ _COMPACT_TITLES = {
     "C3": "Airway and ventilation",
     "C4": "Procedural sedation",
     "C14": "POCUS in management",
+    "R1-03": "Relate the rhythm to the patient",
+    "R1-04": "Anticipate and check an effect",
+    "R2-01": "Pressure, flow and perfusion",
     "R1-05": "Reconsider the initial model",
     "R1-06": "Keep alternatives open",
     "R2-02": "Seek discordant evidence",

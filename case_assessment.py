@@ -105,6 +105,13 @@ def verify(case_or_id):
     topics = set(case.get("history", {}))
     for event in entry.get("critical_events", ()):
         problems.extend(_verify_event(case, event, studies, actions, topics))
+    # The observation opportunities the case declares, if any (DF-1,
+    # 2026-09-27): their shape only. An objective nobody has reviewed is simply
+    # absent. Whether each named objective exists is checked on the objectives'
+    # side (observation_opportunities.verify_bank), so that the rubric never
+    # learns the objective catalogue (test_rubric_is_separate_from_challenges).
+    from observation_opportunities import verify_block
+    problems.extend(verify_block(case["id"], entry.get("objectives")))
     return problems
 
 

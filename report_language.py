@@ -377,6 +377,13 @@ ES = {
         'PATRONES QUE CONVIENE CONSERVAR',
     'POCUS in management':
         'POCUS en el manejo',
+    # The foundation challenges' compact titles (DF-2, 2026-09-27).
+    'Relate the rhythm to the patient':
+        'Relacionar el ritmo con el paciente',
+    'Anticipate and check an effect':
+        'Anticipar y comprobar un efecto',
+    'Pressure, flow and perfusion':
+        'Presión, flujo y perfusión',
     'PROVISIONAL OBJECTIVE ASSESSMENTS':
         'EVALUACIONES DE OBJETIVOS PROVISIONALES',
     'Performance synthesis':
@@ -665,6 +672,38 @@ ES = {
         'Rúbrica piloto {version}. No son niveles de Milestone de ACGME, etapas canadienses ni niveles de supervisión de APC.',
     'Scope limit: {limit}':
         'Límite de alcance: {limit}',
+    # What each competency link contributes (DF-2, 2026-09-27). Labels of the
+    # scope of the evidence, never scores.
+    'Direct contribution:':
+        'Contribución directa:',
+    'Partial contribution:':
+        'Contribución parcial:',
+    'Not observed: {limit}':
+        'No observado: {limit}',
+    # Where an objective's observation opportunity comes from (DF-1,
+    # observation_opportunities._NOTES), on the faculty's assessment form.
+    'Observation opportunity: {note}':
+        'Oportunidad de observación: {note}',
+    'What the record might show, as guidance: {items}':
+        'Lo que el registro podría mostrar, como orientación: {items}',
+    'The encounter was generated to offer this objective.':
+        'El encuentro se generó para ofrecer este objetivo.',
+    'The case declares a real opportunity to observe this objective.':
+        'El caso declara una oportunidad real de observar este objetivo.',
+    'The case declares no opportunity to observe this objective.':
+        'El caso declara que no hay oportunidad de observar este objetivo.',
+    ('Not reviewed for this case. It stays observable under the rule that applied '
+     'before observation opportunities were declared.'):
+        ('Sin revisar para este caso. Sigue siendo observable con la regla que regía '
+         'antes de que se declararan las oportunidades de observación.'),
+    ('Not reviewed for this case. Under the rule that applied before, only the '
+     'encounter generated for this objective offers it.'):
+        ('Sin revisar para este caso. Con la regla que regía antes, sólo el encuentro '
+         'generado para este objetivo lo ofrece.'),
+    'This objective is not enabled.':
+        'Este objetivo no está habilitado.',
+    'This objective does not exist.':
+        'Este objetivo no existe.',
     'The record cannot settle this: {reason}.':
         'El registro no puede resolver esto: {reason}.',
     # A document written in the language its encounter was played in (faculty,

@@ -78,11 +78,19 @@ def completed(accounts, token):
     return attempt_id
 
 
-def _suggesting(autonomy, refs=("trace:0",)):
+def _suggesting(autonomy, refs=("trace:0",), record=None):
     analysis = sample_analysis()
     row = analysis["objectives"][0]
     row.update(recommendation="satisfactory", depth="integrated", autonomy=autonomy,
                evidence_refs=list(refs))
+    if record is not None:
+        # The brief addresses every objective the encounter offered. Since
+        # 2026-09-27 (DF-2) the R1-03 encounter used here offers R1-03 too.
+        from faculty_analysis import supported_objectives
+        listed = {item["objective_id"] for item in analysis["objectives"]}
+        template = analysis["objectives"][-1]
+        analysis["objectives"] += [{**template, "objective_id": objective_id}
+                                   for objective_id in supported_objectives(record) if objective_id not in listed]
     return analysis
 
 
@@ -157,7 +165,7 @@ def test_a_synthetic_run_is_recorded_apart_and_only_by_who_may_say_so(cohort):
 # --- section 10, situations 1-3 and 6: the brief -----------------------------
 def _brief(record, snapshot, autonomy, refs=("trace:0",)):
     return generate_faculty_brief(record, api_key="k", model="m", context=snapshot,
-                                  client=StubClient(_suggesting(autonomy, refs)))
+                                  client=StubClient(_suggesting(autonomy, refs, record)))
 
 
 def test_1_not_reported_the_brief_is_generated_and_autonomy_is_left_for_the_faculty(cohort):

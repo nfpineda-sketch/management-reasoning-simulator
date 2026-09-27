@@ -134,7 +134,10 @@ def test_unfinished_abandoned_sandbox_and_missing_attempts_cannot_be_reviewed(co
         progress.assess(users["admin"]["token"], attempt_id, "C4", assessment())
 
 
-@pytest.mark.parametrize("objective_id", ["C2", "C15", "R1-03", "invalid"])
+# The encounter is R1-03's. Since 2026-09-27 (DF-2) R1-03 is an objective it
+# offers (test_foundation_challenges_as_objectives.py); another challenge it
+# was not generated for, R1-04, still cannot be credited from it.
+@pytest.mark.parametrize("objective_id", ["C2", "C15", "R1-04", "invalid"])
 def test_unsupported_or_local_challenge_ids_cannot_gain_epa_component_credit(cohort, objective_id):
     accounts, progress, users = cohort
     attempt_id, _ = completed_attempt(accounts, users["resident"]["token"])
@@ -428,7 +431,8 @@ def test_targets_match_program_supplied_catalog_without_multiplying_by_depth(coh
     legacy = {item["objective_id"]: item["target"] for item in values if not item["objective_id"].startswith("R")}
     assert legacy == {"TD1": 10, "F1": 15, "C1": 40, "C2": 25, "C3": 20, "C4": 20, "C14": 50, "C15": 5}
     challenges = [item for item in values if item["objective_id"].startswith("R")]
-    assert len(challenges) == 8 and all(item["target"] == 3 for item in challenges)
+    # Eight Decision Challenges and, since 2026-09-27 (DF-2), R1-03, R1-04 and R2-01.
+    assert len(challenges) == 11 and all(item["target"] == 3 for item in challenges)
     assert all(item["count"] == 0 and not item["confirmed"] for item in values)
     assert all("does not satisfy the EPA" in item["target_source"]
                for item in values if not item["objective_id"].startswith("R"))

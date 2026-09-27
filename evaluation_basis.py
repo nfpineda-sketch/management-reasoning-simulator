@@ -107,11 +107,15 @@ def versions(case_id=None):
     """The versions an evaluation of this case depends on, as the code stands."""
     import family_engine
     import glucose_rescue
+    import observation_opportunities
     import rubric
     from case_assessment import COVERAGE_VERSION
     found = {"coverage": COVERAGE_VERSION, "rubric": rubric.VERSION,
              "engine": {"family_engine": family_engine.FAMILY_ENGINE_VERSION,
-                        "execution": family_engine.EXECUTION_VERSION}}
+                        "execution": family_engine.EXECUTION_VERSION},
+             # The reading of the declaration's ``objectives`` block. A basis
+             # without it was frozen before observation opportunities existed.
+             "opportunities": observation_opportunities.VERSION}
     catalog = catalog_reference(case_id)
     if catalog is not None:
         found["catalog"] = catalog

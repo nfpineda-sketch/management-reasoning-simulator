@@ -93,7 +93,8 @@ class ProgressStore:
                 evidence_json TEXT NOT NULL, notes TEXT NOT NULL,
                 source_revision INTEGER NOT NULL, payload_sha TEXT NOT NULL,
                 created_at BIGINT NOT NULL,
-                voided_at BIGINT, voided_by TEXT REFERENCES mrs_users(id), void_reason TEXT
+                voided_at BIGINT, voided_by TEXT REFERENCES mrs_users(id), void_reason TEXT,
+                provenance_json TEXT
             )""",
             """CREATE UNIQUE INDEX IF NOT EXISTS mrs_progress_current_observation
                 ON mrs_progress_observations(attempt_id, objective_id) WHERE voided_at IS NULL""",
@@ -145,6 +146,19 @@ class ProgressStore:
                     self._execute(connection, f"ALTER TABLE mrs_progress_confirmations ADD COLUMN {column} INTEGER")
             if "observation_ids_json" not in columns:
                 self._execute(connection, "ALTER TABLE mrs_progress_confirmations ADD COLUMN observation_ids_json TEXT")
+            # What an observation was confirmed under: its opportunity and the
+            # contributions of its links (DF-1 and DF-2, 2026-09-27). Older
+            # observations keep NULL, which reads as legacy: nothing is inferred
+            # for them afterwards.
+            if self.accounts._sqlite:
+                observed = {row["name"] for row in self._execute(connection,
+                    "PRAGMA table_info(mrs_progress_observations)").fetchall()}
+            else:
+                observed = {row["column_name"] for row in self._execute(connection,
+                    "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() "
+                    "AND table_name = 'mrs_progress_observations'").fetchall()}
+            if "provenance_json" not in observed:
+                self._execute(connection, "ALTER TABLE mrs_progress_observations ADD COLUMN provenance_json TEXT")
             # Snapshot legacy confirmations before accepting continued evidence.
             # IDs avoid ambiguous comparisons when assessments share a second.
             for confirmation in self._execute(connection, "SELECT user_id, objective_id FROM mrs_progress_confirmations WHERE observation_ids_json IS NULL").fetchall():
@@ -250,6 +264,9 @@ class ProgressStore:
         result["voided"] = result["voided_at"] is not None
         result["evidence"] = json.loads(result.pop("evidence_json"))
         result["evidence_refs"] = [item["ref"] for item in result["evidence"]]
+        provenance = result.pop("provenance_json", None)
+        # None for an observation recorded before provenance existed (legacy).
+        result["provenance"] = json.loads(provenance) if provenance else None
         return result
 
     def list_residents(self, token):
@@ -350,7 +367,15 @@ class ProgressStore:
             session = payload.get("session") if isinstance(payload, dict) else None
             if not isinstance(session, dict) or session.get("review_completed") is not True:
                 raise AccountError("Review requires the resident's completed encounter reflection.")
-            if not objective_is_eligible(objective_id, self.accounts._attempt(attempt)):
+            # Whether this encounter offered the objective, read from the
+            # declaration frozen with it (observation_opportunities). An
+            # opportunity makes it assessable; only this assessment observes it.
+            from observation_opportunities import resolve as opportunity_of
+            opportunity = opportunity_of(objective_id, self.accounts._attempt(attempt))
+            if not opportunity["eligible"]:
+                if opportunity["rule"] == "declared":
+                    raise AccountError("This case declares no opportunity to observe this objective: "
+                                       + str(opportunity.get("reason") or ""))
                 raise AccountError("This objective does not match the saved clinical challenge.")
             existing = self._execute(connection, """SELECT id FROM mrs_progress_observations
                 WHERE attempt_id = ? AND objective_id = ? AND voided_at IS NULL""",
@@ -399,19 +424,37 @@ class ProgressStore:
                         or brief["source_hash"] != source_fingerprint(self.accounts._attempt(attempt))):
                     raise AccountError("The AI draft does not match this completed encounter. Reload its analysis.")
             observation_id = uuid.uuid4().hex
+            # The evidence unit: one observation of one encounter, its evidence
+            # and this confirmation, with the opportunity it was confirmed under
+            # and, where the objective states them, the contributions of its
+            # links. Several links are several contributions of the same unit,
+            # never several observations (DF-2, 2026-09-27).
+            from competency_mapping import MAPPING_VERSION
+            contributions = [link for link in definition.get("competency_mapping", []) or []
+                             if isinstance(link, dict) and link.get("contribution")]
+            provenance = {
+                "schema": "mrs.observation_provenance.v1",
+                "evidence_source": "management_reasoning_simulator",
+                "opportunity": opportunity,
+                "mapping_version": MAPPING_VERSION,
+                "contributions": contributions or None,
+            }
             self._execute(connection, """INSERT INTO mrs_progress_observations
                 (id, attempt_id, user_id, objective_id, assessor_id, satisfactory, depth,
-                 autonomy, context, evidence_json, notes, source_revision, payload_sha, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                 autonomy, context, evidence_json, notes, source_revision, payload_sha, created_at,
+                 provenance_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (observation_id, attempt_id, attempt["user_id"], objective_id, actor["id"],
                  int(assessment["satisfactory"]), assessment["depth"], assessment["autonomy"],
                  context, encoded_evidence, notes, attempt["revision"],
-                 hashlib.sha256(_json(payload).encode("utf-8")).hexdigest(), int(time.time())))
+                 hashlib.sha256(_json(payload).encode("utf-8")).hexdigest(), int(time.time()),
+                 _json(provenance)))
             status = "credited" if assessment["satisfactory"] else "recorded"
             self._audit(connection, actor, status, attempt["user_id"], objective_id, observation_id,
                         {"target": target, "source_revision": attempt["revision"],
                          "after_target": count >= target,
                          "after_confirmation": bool(confirmation and confirmation["confirmed"]),
+                         "opportunity": {"state": opportunity["state"], "rule": opportunity["rule"]},
                          **({"ai_brief_id": ai_brief_id} if ai_brief_id is not None else {})})
             return {"status": status, "observation_id": observation_id,
                     "count": count + int(assessment["satisfactory"]), "target": target}

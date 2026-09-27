@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import streamlit as st
 
 from account_store import AccountError
-from competency_mapping import objective_is_eligible
+from competency_mapping import CONTRIBUTION_LABELS, objective_is_eligible
 from objectives import (
     OBJECTIVES, DEPTH_LEVELS, AUTONOMY_LEVELS,
     DEPTH_DESCRIPTIONS, AUTONOMY_DESCRIPTIONS, evidence_items,
@@ -182,12 +182,31 @@ def render_attempt_assessment(context, record):
         objective = OBJECTIVES[objective_id]
         st.write(objective["scope"])
         st.caption(objective["limitation"])
+        # Where the opportunity comes from, so the faculty can judge whether it
+        # really occurred (DF-1, 2026-09-27). What the case says to look for is
+        # guidance: evidence it does not list still counts.
+        from observation_opportunities import resolve as _opportunity
+        opportunity = _opportunity(objective_id, record)
+        st.caption(_t("Observation opportunity: {note}", note=_t(opportunity["note"])))
+        if opportunity.get("rationale"):
+            st.caption(opportunity["rationale"])
+        if opportunity.get("expected_evidence"):
+            st.caption(_t("What the record might show, as guidance: {items}",
+                          items="; ".join(opportunity["expected_evidence"])))
         if objective.get("observable_behaviors"):
             with st.expander(_t("Competency evidence to review")):
                 for behavior in objective["observable_behaviors"]:
                     st.write(behavior)
                 for mapping in objective.get("competency_mapping", []):
-                    st.markdown("[" + mapping["framework"] + " · " + mapping["code"] + "](" + mapping["source_url"] + ")")
+                    label = mapping["framework"] + " · " + mapping["code"]
+                    st.markdown("[" + label + "](" + mapping["source_url"] + ")" if mapping.get("source_url")
+                                else label)
+                    # What this link contributes and what stays outside it (DF-2).
+                    if mapping.get("contribution"):
+                        st.caption(_t(CONTRIBUTION_LABELS[mapping["contribution"]]) + " "
+                                   + str(mapping.get("component_observed") or ""))
+                        if mapping.get("limitation"):
+                            st.caption(_t("Not observed: {limit}", limit=mapping["limitation"]))
         st.caption(_t("Only assess what the recorded encounter demonstrates. Unobserved actions and skills outside this scope are not credited."))
         widget_prefix = prefix + "_" + objective_id
         try:

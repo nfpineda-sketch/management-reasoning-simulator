@@ -34,13 +34,16 @@ def reflection(**extra):
 
 
 def test_targets_preserve_legacy_scopes_and_add_explicitly_local_cognitive_objectives():
-    from cognitive_catalog import BIAS_CHALLENGES
-    assert {key: value["target"] for key, value in OBJECTIVES.items() if key not in BIAS_CHALLENGES} == {
+    # The local challenge objectives: the eight Decision Challenges and, since
+    # 2026-09-27 (DF-2), the three foundation challenges. The EPA objectives and
+    # their targets are unchanged.
+    LOCAL_CHALLENGES = CHALLENGES
+    assert {key: value["target"] for key, value in OBJECTIVES.items() if key not in LOCAL_CHALLENGES} == {
         "TD1": 10, "F1": 15, "C1": 40, "C2": 25,
         "C3": 20, "C4": 20, "C14": 50, "C15": 5,
     }
-    assert OBJECTIVES.keys() & CHALLENGES.keys() == BIAS_CHALLENGES.keys()
-    for key in BIAS_CHALLENGES:
+    assert OBJECTIVES.keys() & CHALLENGES.keys() == CHALLENGES.keys()
+    for key in LOCAL_CHALLENGES:
         value = OBJECTIVES[key]
         assert value["target"] == 3
         assert value["challenge_id"] == key and value["competency_mapping"]
@@ -48,7 +51,7 @@ def test_targets_preserve_legacy_scopes_and_add_explicitly_local_cognitive_objec
     assert {key for key, value in OBJECTIVES.items() if not value["supported"]} == {"C2", "C15"}
     for key, value in OBJECTIVES.items():
         assert value["scope"] and value["limitation"]
-        if key not in BIAS_CHALLENGES:
+        if key not in LOCAL_CHALLENGES:
             # The count itself was verified against the guide on 2026-09-23, so
             # the provenance now names it. What must never disappear is the part
             # that says reaching it here does not satisfy the EPA: the guide's
@@ -59,7 +62,7 @@ def test_targets_preserve_legacy_scopes_and_add_explicitly_local_cognitive_objec
         else:
             assert "local" in value["target_source"].lower()
         assert value["assessment_scope"] == (
-            "simulated_reasoning_component" if key in BIAS_CHALLENGES else "simulated_management_component")
+            "simulated_reasoning_component" if key in LOCAL_CHALLENGES else "simulated_management_component")
     assert DEPTH_LEVELS == ("foundational", "integrated", "complex")
     assert AUTONOMY_LEVELS == ("guided", "prompted", "independent")
 

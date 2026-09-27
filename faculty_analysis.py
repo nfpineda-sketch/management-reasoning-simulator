@@ -31,19 +31,26 @@ SCHEMA_VERSION = "faculty_brief_v1"
 # 1.5 (2026-09-25, faculty decisions of that day): each decision carries the
 # medicines the learner indicated that the simulator does not model, and the
 # prescriptions for home, as decisions with no administration or effect.
-PROMPT_VERSION = "1.5"
-SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", PROMPT_VERSION)
+# 1.6 (2026-09-27, DF-1 and DF-2): the objective list is what the encounter
+# offered (observation_opportunities), and R1-03, R1-04 and R2-01 are
+# objectives. A declared opportunity travels with its objective, as guidance
+# for what to look for, never as proof it happened.
+PROMPT_VERSION = "1.6"
+SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", PROMPT_VERSION)
 # Briefs from 1.0 to 1.3 carry the faculty-reported context they were written
 # under, one of these, and keep validating against it. From 1.4 the stored
 # value is always "unknown": nobody pre-declares an autonomy level any more.
 ASSISTANCE_CONTEXTS = ("unknown", *AUTONOMY_LEVELS)
-DECLARED_CONTEXT_PROMPTS = ("1.4", "1.5")
+DECLARED_CONTEXT_PROMPTS = ("1.4", "1.5", "1.6")
 # Preserve the six-objective legacy envelope for already saved faculty drafts.
 SUPPORTED_OBJECTIVES = ("TD1", "F1", "C1", "C3", "C4", "C14")
 # Prompt versions that ask for the record's own objective list rather than the
 # fixed six. A stored brief must be read with the list it was written against,
 # so a later prompt revision cannot make an earlier brief unreadable.
-DYNAMIC_OBJECTIVE_PROMPTS = ("1.2", "1.3", "1.4", "1.5")
+DYNAMIC_OBJECTIVE_PROMPTS = ("1.2", "1.3", "1.4", "1.5", "1.6")
+# The prompt version each later objective joined the list with. A brief written
+# before is read without it: an R1-03 brief of prompt 1.5 did not address R1-03.
+_OBJECTIVE_SINCE = {"R1-03": "1.6", "R1-04": "1.6", "R2-01": "1.6"}
 MAX_INPUT_BYTES = 260_000
 MAX_TRACE_EVENTS = 120
 MAX_OUTPUT_TOKENS = 10_000
@@ -53,9 +60,42 @@ class FacultyAnalysisError(ValueError):
     """A safe user-facing failure; raw provider errors must not be displayed."""
 
 
-def supported_objectives(record):
+def _objective_rubric(key, record):
+    """What the brief is told about one objective, with its declared opportunity if any.
+
+    A case that declares the opportunity says what to look for; the brief gets
+    it as guidance and never as proof that it happened (DF-1, 2026-09-27).
+    """
+    from observation_opportunities import resolve
+    row = {"objective_id": key, **{field: OBJECTIVES[key][field] for field in (
+        "title", "scope", "limitation", "observable_behaviors", "evidence_requirements", "competency_mapping")
+        if field in OBJECTIVES[key]}}
+    opportunity = resolve(key, record)
+    if opportunity["rule"] == "declared" and opportunity["state"] == "yes":
+        row["observation_opportunity"] = {
+            **{field: opportunity[field] for field in ("rationale", "observable_component", "expected_evidence")
+               if field in opportunity},
+            "guidance": ("Declared by the case before the encounter: what could be observed and what the record "
+                         "might show. It is not evidence that it happened, and valid evidence it does not list "
+                         "still counts."),
+        }
+    return row
+
+
+def _version(value):
+    return tuple(int(part) for part in str(value).split("."))
+
+
+def supported_objectives(record, prompt_version=None):
+    """The objectives this encounter offered, as a brief of ``prompt_version`` listed them.
+
+    Without a version, the current prompt's list. An objective that joined the
+    list with a later prompt is left out of an earlier brief's list.
+    """
+    written = _version(prompt_version or PROMPT_VERSION)
     return tuple(key for key, value in OBJECTIVES.items()
-                 if value["supported"] and objective_is_eligible(key, record))
+                 if value["supported"] and objective_is_eligible(key, record)
+                 and written >= _version(_OBJECTIVE_SINCE.get(key, "1.0")))
 
 
 _OBSERVABLE = frozenset("sbp dbp hr rhythm spo2 crt mental_status extremities respiratory_rate work_of_breathing pulse_present".split())
@@ -421,9 +461,7 @@ def build_analysis_source(record, assistance_context="unknown", context=None):
         # never a limitation of the record.
         "unasked_history_topics": [row["label"] for row in history["not_named"]],
         "history_availability": HISTORY_AVAILABILITY,
-        "objective_rubric": [{"objective_id": key, **{field: OBJECTIVES[key][field] for field in (
-            "title", "scope", "limitation", "observable_behaviors", "evidence_requirements", "competency_mapping")
-            if field in OBJECTIVES[key]}} for key in supported_objectives(record)],
+        "objective_rubric": [_objective_rubric(key, record) for key in supported_objectives(record)],
     }
     if len(_canonical(source).encode("utf-8")) > MAX_INPUT_BYTES:
         raise FacultyAnalysisError("This encounter is too large for a single faculty analysis. No request was sent.")
@@ -799,8 +837,8 @@ def validate_brief(report, record, assistance_context=None):
     source = build_analysis_source(record, context, snapshot)
     refs = {row["evidence_ref"] for row in source["decision_events"] if row["evidence_ref"]}
     refs.update(row["evidence_ref"] for row in source["recorded_reflections"])
-    objective_ids = (supported_objectives(record) if report["prompt_version"] in DYNAMIC_OBJECTIVE_PROMPTS
-                     else SUPPORTED_OBJECTIVES)
+    objective_ids = (supported_objectives(record, report["prompt_version"])
+                     if report["prompt_version"] in DYNAMIC_OBJECTIVE_PROMPTS else SUPPORTED_OBJECTIVES)
     _check_schema(report["analysis"], _analysis_schema(refs, objective_ids))
     analysis = report["analysis"]
     if {row["objective_id"] for row in analysis["objectives"]} != set(objective_ids):

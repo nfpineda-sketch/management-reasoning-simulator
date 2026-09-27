@@ -8,7 +8,9 @@ from objectives import OBJECTIVES
 
 
 def test_every_cognitive_challenge_has_specific_traceable_links_to_both_frameworks():
-    assert set(CHALLENGE_MAPPINGS) == set(BIAS_CHALLENGES)
+    # Since 2026-09-27 (DF-2) the three foundation challenges are mapped too, with
+    # the scope of each contribution (test_foundation_challenges_as_objectives.py).
+    assert set(CHALLENGE_MAPPINGS) == set(BIAS_CHALLENGES) | {"R1-03", "R1-04", "R2-01"}
     for key, challenge in BIAS_CHALLENGES.items():
         mapping = mapping_for_challenge(key)
         assert {link['framework'] for link in mapping['competency_mapping']} == {'ACGME', 'Royal College'}
