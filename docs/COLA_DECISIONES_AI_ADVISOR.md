@@ -5,9 +5,9 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-28, al cerrar el ciclo 6 (sección «Cierre del
-  ciclo 6», con la cola final en cinco clases). La apertura del ciclo 6, el
-  cierre del ciclo 5 y su extensión nocturna siguen más abajo.
+- **Actualizado:** 2026-09-28, al abrir el ciclo 7 (sección «Decisiones del
+  2026-09-28 (apertura del ciclo 7)»). El cierre del ciclo 6, su apertura y
+  los ciclos anteriores siguen más abajo.
 
 ## Pendientes de decisión
 
@@ -30,6 +30,210 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 | DF-17 | METHODOLOGICAL REVIEW | *Faculty override* de una oportunidad | DEFERRED |
 | DF-4 | CLINICAL + METHODOLOGICAL REVIEW | C2 y los casos trauma | C2 deshabilitada |
 | DF-18 · DF-9 · DF-11 · DF-5 | — | Multisource · −3 · residuos menores · C15 | Registrados, sin acción |
+
+## Decisiones del 2026-09-28 (apertura del ciclo 7)
+
+El docente aprobó la propuesta del ciclo 7 con modificaciones y ordenó
+ejecutarlo sin otra aprobación, con máxima autonomía dentro del alcance
+aprobado (el docente está offline). Las reglas permanentes del lector y del
+Trace quedaron además en el charter, addendum A2.
+
+**Objetivo.** Dejar el simulador técnicamente apto para un piloto formativo
+controlado con residentes, sin contaminar el piloto de validación, sin
+modificar scoring, sin declarar competencia y sin ampliar features
+innecesariamente. Prioridad: fidelidad del Management Trace → seguridad
+clínica → jugabilidad → integridad de datos → calidad de la evidencia
+observacional → preparación de la validación → costo-efectividad.
+
+- **TD-21 · principio D aprobado, no la opción A.**
+  - Mientras haya una hemorragia activa clínicamente significativa, con
+    pérdida o déficit hemorrágico modelado en curso, una Hb ≥ 10 aislada **no
+    basta** como evidencia de sobrecarga transfusional.
+  - La regla genérica vuelve a ser evaluable cuando el sangrado está
+    controlado, cuando ya no hay déficit hemorrágico modelado, o cuando existe
+    otra evidencia clínicamente coherente de sobretransfusión.
+  - No se crea una equivalencia «mL perdidos → unidades permitidas».
+  - Antes de implementar se compara A con D (plausibilidad, complejidad,
+    consecuencias no buscadas, reversibilidad, verificabilidad). Si D es
+    pequeña, general y robusta, se implementa D; si exige reconstruir la
+    fisiología, TD-21 se detiene y se documenta, y el ciclo sigue.
+  - **Aceptación:** transfusión apropiada durante hemorragia activa
+    significativa → sin sobrecarga falsa; transfusión claramente excesiva
+    fuera de ese estado → el mecanismo actual sigue siendo posible. Se
+    verifican trauma ×2, HDA ×2, casos sin sangrado y casos generados de
+    sangrado. Sin cambios al −3 ni a la metodología de eventos críticos.
+- **TD-26 (C7-01) · autorizado, CRITICAL.** Si la persona residente ordena
+  con claridad un hemoderivado, el motor no puede perderlo en silencio.
+  - **A** · glóbulos rojos (soportados): se ejecutan las unidades indicadas.
+  - **B** · plasma, plaquetas, crioprecipitado, sangre total, si no están
+    modelados: se registra fielmente que fueron indicados, «effect not
+    modeled»; nunca se convierten en glóbulos rojos ni se inventan efectos.
+  - **C** · protocolo de transfusión masiva: se registra que se activó; si el
+    motor necesita saber qué dar ahora, se aclara; nunca se traduce en
+    unidades ni proporciones inventadas, ni en un protocolo institucional que
+    la persona residente no escribió.
+  - **D** · una orden ambigua de hemoderivado: se aclara.
+  - Estándar A–J completo. Regla: **una corrección del lector no está completa
+    porque pasen sus ejemplos originales.**
+- **C7-06 · aprobado en la misma tanda A–J:** la prueba de embarazo que
+  retiene la tanda (TD-22), el lenguaje de control de hemorragia («pack the
+  wound», «hold pressure») y el acceso IO («humeral IO»), con variantes
+  naturales EN/ES. Lo que se ejecuta hace responder al paciente según el
+  motor; lo que no se ejecuta no aparece como hecho en el Trace.
+- **Otros defectos del lector: DEFERRED.** D5W / D5 half-normal, el
+  antibiótico unido a un traslado a pabellón y el resto de TD-14, salvo que
+  sean regresiones de C7-01/C7-06 o compartan exactamente la causa raíz y
+  corregirlos sea una extensión trivial, general y segura. El ciclo 7 no es
+  una limpieza general del lector.
+- **PostgreSQL (H2) · autorizado un clúster PostgreSQL 16 local y
+  descartable**, sin datos reales, en `/var/tmp/mrs-pg-c7` o equivalente, que
+  se borra al terminar.
+  - Ni producción ni Neon, si el local funciona.
+  - Si hacen falta credenciales externas, infraestructura nueva, gasto o
+    producción: se detiene PostgreSQL, se reporta BLOCKED y el ciclo sigue.
+    Si el local falla tras un intento razonable, se documentan el bloqueo
+    exacto y lo que habría que hacer en staging.
+  - **Alcance:** L-F01, L-F04, unicidad de las observaciones, confirmación
+    docente, persistencia de la rúbrica, Objective Progress, persistencia y
+    procedencia del Trace, y la conducta de las oportunidades C4/C14. Una
+    corrida temprana y otra sobre el candidato final. Sin infraestructura
+    permanente.
+- **C14 (H3) · `acs_54m_inferior` = NO**, con la razón basada en ACEP y
+  concisa: la conclusión es sobre la **oportunidad de observación**, no sobre
+  la posibilidad técnica («POCUS cannot evaluate the RV» sería demasiado
+  fuerte). Después, 31/31 casos revisados: **14 YES / 17 NO / 0 NOT
+  REVIEWED**; se retira la transición de C14 donde ya no corresponde y se
+  regeneran la tabla y la matriz. C14 no tiene scoring que cambiar.
+- **ACEP · resultado conceptual aceptado.** ACEP concibe la competencia en EUS
+  como INDICATION → ACQUISITION → INTERPRETATION → INTEGRATION INTO
+  MANAGEMENT. El simulador actual observa la indicación o selección
+  (potencialmente), la interpretación clínica de un hallazgo POCUS descrito y
+  la integración al manejo; **no** observa la adquisición ni el
+  reconocimiento directo en la imagen, porque entrega un informe escrito. Su
+  evidencia POCUS es una **contribución PARCIAL**, nunca competencia POCUS
+  completa.
+  - **Terminología:** mientras el POCUS sea texto, no se dice «resident
+    recognized the ultrasound finding on imaging»; se dice «resident
+    interpreted the provided POCUS finding» o «resident integrated the provided
+    POCUS information into management». Vale para documentación, faculty
+    briefs y afirmaciones metodológicas futuras, sin reescribir históricos.
+  - **ACEP 2016 es una fuente metodológica y de diseño, no un mapping nuevo**,
+    ni la definición única o final de la competencia POCUS contemporánea. Nada
+    de puntajes, progreso, certificación ni estado de competencia ACEP. Puede
+    informar C14, el diseño POCUS futuro, las descripciones de componentes y la
+    biblioteca futura. No se abre una revisión bibliográfica nueva.
+  - **Alcance cardíaco:** lo que la fuente sí respalda (ventanas estándar,
+    actividad cardíaca, derrame y taponamiento, función cualitativa del VI,
+    volumen o presión venosa central, VCI y evaluación hemodinámica
+    pertinentes, integración al manejo) y lo que no establece como expectativa
+    general (motilidad regional, el VD tal como lo usan algunos casos, eco
+    cuantitativa avanzada) se marcan como SOURCE LIMITATION / REVIEW NEEDED.
+    No se eliminan capacidades por no aparecer en el documento.
+  - **Casos REVIEW NEEDED, sin cambio en el ciclo 7:** `acs_61m_posterior`,
+    `acs_52m_de_winter`, `pulmonary_embolism_61m`, `renal_colic_34m`,
+    `bradycardia_avb3_78f` y `acs_48m_wellens`. No bloquean TD-21 ni TD-26.
+  - El C14 actual se evalúa con la capacidad actual (POCUS en texto). La
+    biblioteca visual futura exigirá revisar C14 aparte, sin cambiar
+    Objective Progress, la meta de 50 ni crear subpuntajes.
+- **Arquitectura POCUS futura: FUTURE ARCHITECTURE, no deuda técnica ni bug.**
+  Resumen en `docs/ARQUITECTURA_POCUS_OBJETIVO.md`. No se implementa nada en el
+  ciclo 7.
+- **C4 (H4) · C4 = NO en los 31 casos, en los casos generados y en PS001**,
+  cuando comparten el entorno de observación actual. La razón es una
+  limitación del entorno y del motor, no de los casos.
+  - No se toca el motor para fabricar C4, ni se obtiene «C4 = PARTIAL» de una
+    orden procedural.
+  - Es prospectivo: los encuentros históricos conservan su contexto de
+    evaluación; no se migran observaciones.
+  - La evidencia C4 futura vendrá de simulación procedural y/u observación en
+    el lugar de trabajo. C4 sigue fuera aunque se implementen los demás TDFC.
+- **DF-24:** I-F02 A · **L-F02 A** (autorización explícita: sólo cambia qué
+  revisión alimenta el radar, no el scoring, D1–D5 ni el promedio
+  longitudinal) · observación anulada A · retiro de rúbrica confirmada A ahora
+  (sin estado «retirada») · L-F07 B. Fuera: I-F18 y la meta cambiada tras
+  confirmar. Cada cambio con falla actual, conducta esperada, prueba focalizada
+  y compatibilidad hacia atrás, sin refactor del flujo longitudinal.
+- **TDFC:** TDFC-1, 2, 3, 4, 5, 6 y 8 aprobados conceptualmente según las
+  recomendaciones actuales; TDFC-7 ya estaba decidido.
+  - La implementación es **P3**: sólo si TD-21, TD-26 y C7-06 están
+    resueltos, PostgreSQL verificado o legítimamente bloqueado, C4/C14 y el
+    DF-24 aprobado cerrados, sin nuevos bloqueos CRITICAL/HIGH y con capacidad
+    significativa. Si no, pasa **intacta** al ciclo 8: todo lo aprobado de
+    forma coherente, o nada.
+  - Si se implementa: el modelo de C14 (borrador → decisión aprobada →
+    declaración por caso → procedencia → congelada con el encuentro), con el
+    componente observable y lo que queda fuera para TD1, F1, C1 y C3. Sin
+    puntaje de competencia.
+- **DF-23 · conservador.** La fila 3 entra con C7-06. La fila 4a
+  (`acs_70f_left_main`, «No B-lines» frente a una congestión que progresa):
+  se presenta el texto EN/ES y la señal que corrige; se implementa sólo si
+  elimina una contradicción factual sin cambiar el Decision Challenge, con
+  ANTES/DESPUÉS; si cambia la interpretación clínica, se difiere. Las filas 8,
+  7, 4b y 6 siguen como decisiones clínicas. No se limpia la variabilidad
+  plausible.
+- **Piloto de validación español:** sigue como fue diseñado. El SPANISH PILOT
+  BASELINE `939978a` es inmutable: no se modifican el baseline, los 18 DOCX ni
+  los defectos conocidos retrospectivamente, no se usa SEALED y no se llevan
+  al baseline las correcciones del ciclo 7.
+  - Con respuestas humanas: MEASURE FIRST. Primero el corpus español contra
+    `939978a`; después, cuando corresponda, los mismos datos de desarrollo
+    contra el motor endurecido. Se reportan ambos; no se ocultan defectos del
+    baseline porque ya estén corregidos.
+- **Piloto de validación inglés:** existen versiones inglesas equivalentes de
+  los 18 documentos. Será un corpus **separado**, con su idioma, versión de
+  corpus, códigos de participante (EM07–EM12), asignación, baseline, versión
+  de defectos conocidos y sorteo development/sealed propios.
+  - Texto escrito naturalmente en inglés por clínicos que escriben en inglés;
+    nunca una traducción. Nada se envía en el ciclo 7.
+  - Se puede preparar su infraestructura si P0/P1 están completos y el costo
+    marginal es bajo, reutilizando el pipeline existente. No se regeneran los
+    DOCX ingleses si existen fuera del repositorio: se documenta «ENGLISH DOCX
+    AVAILABLE EXTERNALLY / NOT PRESENT IN REPOSITORY», sin inventar su
+    contenido. Al incorporarlos, se verifican contra los españoles (mismo caso,
+    mismas instrucciones, misma asignación, otro idioma de respuesta).
+  - **Separación de idiomas (C7-09a):** una validación determinística del
+    manifiesto que haga fallar con claridad una corrida que mezcle ES y EN. Sin
+    autodetección.
+  - **Baseline externo inglés:** no se elige automáticamente el HEAD del ciclo
+    7; se documentan los candidatos, y la elección se hace antes de recibir o
+    leer respuestas inglesas.
+- **Datos externos que lleguen durante el ciclo:** no se leen a mano para
+  decidir qué corregir. STORE → SPLIT → BLINDED REFERENCE ANNOTATION →
+  BASELINE RUN → MEASURE. Si falta la anotación humana, se prepara, se
+  documenta y el ciclo sigue. SEALED, nunca.
+- **Baselines, tres conceptos separados:** SPANISH PILOT BASELINE `939978a`;
+  DEVELOPMENT HARDENED BASELINE V1 `72a4a53`; DEVELOPMENT HARDENED BASELINE V2
+  = el candidato final del ciclo 7, sólo si cumple la definición de terminado.
+  Ninguno se llama «validated engine».
+- **El validation corpus evalúa el motor.** Nunca calibra puntajes de
+  residentes, umbrales de competencia, comparaciones entre médicos ni
+  benchmarks clínicos. Blind sets internos, datos externos de desarrollo y
+  sellados quedan separados; nada sellado en logs, fixtures, snapshots ni
+  reportes del repositorio.
+- **Piloto con residentes:** sólo formativo, con confirmación docente
+  obligatoria. El sistema produce evidencia observacional, no certificación,
+  determinación de competencia, EPA completada ni milestone alcanzado. Al
+  cerrar se distinguen TECHNICALLY READY FOR CONTROLLED FORMATIVE RESIDENCY
+  PILOT, EXTERNAL VALIDATION PILOT READY y VALIDATED ASSESSMENT INSTRUMENT
+  (se espera NO / NOT YET ESTABLISHED), y los bloqueos técnicos de las
+  limitaciones metodológicas.
+- **Sin cambios:** definiciones de eventos críticos, −3, puntaje ajustado,
+  D1–D5, escala 0–3, metodología del radar (salvo la selección de L-F02),
+  promedio longitudinal, DIRECT/PARTIAL (PARTIAL no es una penalidad) y la
+  confirmación docente. Se verifica que TD-21/TD-26 no produzcan una acción
+  peligrosa falsa ni una omisión crítica falsa.
+- **Costo e IA:** el menor costo razonable que preserve la calidad,
+  reutilizando el tooling del ciclo 6. IA sólo para frases ciegas, revisión
+  adversarial y revisión independiente de código; nunca para videos POCUS,
+  respuestas de validación ni verdad clínica de referencia. Regla del 130 %
+  del charter, sin sacrificar pruebas.
+- **Hallazgos nuevos:** CRITICAL se reproduce, se busca la causa, se documenta
+  y se corrige si es inequívoco, pequeño y reversible; HIGH se corrige sólo si
+  es regresión del ciclo, comparte causa con TD-26/C7-06 o amenaza la
+  integridad de datos; MEDIUM/LOW se documentan y se difieren. Después del
+  congelamiento del BASELINE V2, nada nuevo MEDIUM/LOW se corrige.
+- **Fuera de alcance:** PR, merge a `main`, release, producción, SEALED y el
+  ciclo 8 (se propone, no se inicia).
 
 ## Cierre del ciclo 6 (2026-09-28)
 

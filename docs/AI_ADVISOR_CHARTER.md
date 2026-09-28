@@ -2,9 +2,11 @@
 
 **Estado: texto completo (§0–§100), entregado por el docente el 2026-09-27 y
 adoptado como marco de decisión del AI Advisor, más la §101 (definición de
-work cycle), que el docente agregó el mismo día al aprobar el ciclo 2, y el
+work cycle), que el docente agregó el mismo día al aprobar el ciclo 2, el
 addendum A1 (evidencia, contribuciones y validación), aprobado al autorizar el
-ciclo 3. Ambos están al final de este archivo.** Reemplaza la versión
+ciclo 3, y el addendum A2 (lector clínico, pérdidas silenciosas y fidelidad
+del Trace), pedido al aprobar el ciclo 7. Los tres están al final de este
+archivo.** Reemplaza la versión
 anterior de este archivo, que había llegado cortada a mitad de la §18.
 
 **Fidelidad.** El bloque siguiente reproduce el mensaje de entrega carácter por
@@ -3642,3 +3644,95 @@ No se implementan fuentes externas hasta que se decida.
    agregado.
 
 No se reducen a un único score.
+
+## Addendum A2 · v1 · 2026-09-28 · Lector clínico, pérdidas silenciosas y fidelidad del Trace
+
+**Origen.** El docente pidió formalizar estas reglas al aprobar el ciclo 7
+(mensaje del 2026-09-28, §63–§66, §75–§82, §117 y §118). El AI Advisor las
+redactó conservando sus términos. No reemplazan ninguna sección anterior.
+
+### §110 · Estándar de toda corrección del lector clínico
+
+REPRODUCE → ROOT CAUSE → FIX CLASS → FOCUSED TESTS → INDEPENDENT EXAMPLES →
+NEGATIVE CONTROLS → BLIND / HELD-OUT SET WHEN APPROPRIATE → ADVERSARIAL REVIEW
+→ PREVIOUS-READER COMPARISON → EXECUTION CHECK → MANAGEMENT TRACE CHECK →
+EN/ES REGRESSION → FULL SUITE WHEN SHARED LOGIC CHANGED.
+
+- No todo cambio pequeño necesita el mismo volumen de frases, pero las
+  correcciones de lenguaje **HIGH o CRITICAL** cumplen el estándar completo.
+- **Una corrección no está completa porque pasen sus ejemplos originales.**
+  Debe mostrar una generalización razonable y ausencia de regresiones
+  importantes.
+- **No se persigue el 100 %.** Hay frases genuinamente ambiguas, y aclarar
+  puede ser la conducta correcta. Lo que importa distingue ejecución correcta,
+  aclaración apropiada, error parcial, error del motor, pérdida silenciosa y
+  ejecución falsa.
+
+### §111 · Una intención clínica clara no desaparece en silencio
+
+Si el sistema no puede ejecutar algo, según corresponda: **CLARIFY**, **HOLD**
+o **ACKNOWLEDGE AS NOT MODELED**. Nunca **DROP SILENTLY**. Vale sobre todo
+para fármacos, hemoderivados, procedimientos, control de hemorragia, soporte
+respiratorio y acciones críticas de destino.
+
+### §112 · NOT MODELED ≠ NOT DONE · PHYSIOLOGY ≠ TRACE
+
+- Una acción que el motor no modela fisiológicamente **no** es una acción que
+  la persona residente no hizo. El Trace preserva que fue indicada o
+  realizada dentro de la representación disponible, y no la convierte en una
+  omisión.
+- **Lo que la persona residente hizo** y **lo que el motor puede simular** son
+  dos cosas separadas. El Trace registra fielmente la primera; el motor puede
+  representar sólo una parte de sus consecuencias. Una acción no se borra del
+  Trace porque su efecto no esté implementado.
+- Un texto de registro no sugiere que el motor simuló un efecto que no simuló,
+  ni que la persona residente dejó de hacer lo que indicó.
+
+### §113 · El Management Trace es primario
+
+- Todo cambio del lector se evalúa también desde el Trace: **si un docente
+  viera sólo el Management Trace, ¿entendería lo que la persona residente
+  realmente hizo?** Un fix que mejora la ejecución pero empeora el Trace no
+  está completo.
+- **Varias acciones en una entrada:** el motor distingue EXECUTED, HELD, NOT
+  MODELED y CLARIFICATION NEEDED, y el Trace conserva esa granularidad cuando
+  importa clínicamente. Un paquete ejecutado en parte no es un éxito total ni
+  un fracaso total.
+- **Jugabilidad:** una corrección no aumenta sin necesidad las aclaraciones ni
+  obliga a repetir órdenes, dosis, vías o razonamiento. Si la intención
+  clínica ya es clara, se avanza; si es ambigua de verdad, se aclara.
+
+### §114 · Clases clínicas con reglas propias
+
+- **Protocolo de transfusión masiva:** la activación o intención y los
+  hemoderivados realmente administrados son dos conceptos. Activar el
+  protocolo no significa que se dieron X unidades, Y plasma o Z plaquetas. Se
+  registra la activación; si el motor necesita un producto o unidades
+  concretas para avanzar, se aclara. Nunca se inventan proporciones ni se
+  imponen protocolos institucionales que la persona residente no escribió.
+- **Hemoderivados no modelados:** el Trace distingue «indicado o administrado
+  en la representación» de «efecto fisiológico no modelado».
+- **Prueba de embarazo:** se registra como pedida con resultado no modelado,
+  si esa es la capacidad actual; no retiene la angio-TC, los fármacos ni las
+  demás acciones independientes del envío; nunca se inventa un resultado.
+- **Control de hemorragia:** presión directa, empaquetamiento, torniquete y lo
+  demás que el motor soporte son acciones distintas; no se convierten unas en
+  otras. Lo que el motor no modela se registra con fidelidad, con «effect not
+  modeled» cuando corresponda, sin inventar equivalencias fisiológicas.
+- **Acceso IO:** una orden clara de acceso intraóseo no desaparece ni se
+  convierte en silencio en una vía venosa. Si IO no está diferenciado
+  fisiológicamente, se registra la vía indicada y se usa sólo la abstracción
+  existente que sea metodológicamente defendible, con su limitación
+  documentada.
+
+### §115 · Estándar de error crítico
+
+Tienen prioridad sobre toda mejora cosmética o feature nueva los caminos en
+que:
+
+- A. la persona residente ordena una intervención importante y desaparece;
+- B. el sistema ejecuta una intervención no indicada;
+- C. el sistema afirma que algo se ejecutó cuando no ocurrió;
+- D. el Trace atribuye una omisión falsa;
+- E. la fisiología responde a una intervención que no ocurrió;
+- F. una intervención apropiada genera falsamente una penalidad de seguridad.
