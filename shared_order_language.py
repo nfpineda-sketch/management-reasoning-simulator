@@ -40,18 +40,21 @@ def _route(text):
         # written with or without stops. Found playing the hypoglycaemia and
         # opioid cases (2026-09-21): the order was held asking for the route the
         # resident had already written.
-        ("IV", r"\b(?:iv|ev|i\.v\.?|e\.v\.?|intravenous|intravenously|intravenos[ao]|endovenos[ao])\b"),
-        ("IO", r"\b(?:io|intraosseous|intraose[ao])\b"),
-        ("IM", r"\b(?:im|intramuscular)\b"),
-        ("PO", r"\b(?:po|vo|oral|orally|por boca|por via oral)\b"),
-        ("IN", r"\bintranasal\b|\bin\s*(?:now|ahora)?\s*$"),
+        # A route written once after a list of doses is plural in Spanish:
+        # "salbutamol 2.5 mg y bromuro de ipratropio 500 mcg nebulizados",
+        # "paracetamol 1 g y ketorolaco 30 mg endovenosos" (DF-16a, 2026-09-28).
+        ("IV", r"\b(?:iv|ev|i\.v\.?|e\.v\.?|intravenous|intravenously|intravenos[ao]s?|endovenos[ao]s?)\b"),
+        ("IO", r"\b(?:io|intraosseous|intraose[ao]s?)\b"),
+        ("IM", r"\b(?:im|intramuscular(?:es)?)\b"),
+        ("PO", r"\b(?:po|vo|oral(?:es)?|orally|por boca|por via oral)\b"),
+        ("IN", r"\bintranasal(?:es)?\b|\bin\s*(?:now|ahora)?\s*$"),
         # "nbz" is how a nebulization is written on a Chilean chart; found by the
         # rehearsal of the twenty-scenario batch (2026-09-24), where the whole
         # first bronchodilator order was held for a route already written.
-        ("nebulized", r"\b(?:nebulized|nebulised|nebulization|nebulizaci[oó]n|nebulizado|nebulizada|"
+        ("nebulized", r"\b(?:nebulized|nebulised|nebulization|nebulizaci[oó]n|nebulizad[oa]s?|"
                       r"nebulizar|nebulize|neb|nbz|nebu)\b"),
-        ("inhaled", r"\b(?:inhaled|inhalado|inhalada)\b"),
-        ("SC", r"\b(?:sc|sq|subcutaneous|subcutane[ao])\b"),
+        ("inhaled", r"\b(?:inhaled|inhalad[oa]s?)\b"),
+        ("SC", r"\b(?:sc|sq|subcutaneous|subcutane[ao]s?)\b"),
     ):
         if re.search(pattern, text):
             found.append(route)

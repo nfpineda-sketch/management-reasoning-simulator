@@ -224,6 +224,53 @@ _VERBLESS_LINE = re.compile(
     r"(?:\s+(?:nuevas?|gruesas?|de\s+grueso\s+calibre|bilaterales?|perifericas?))*\s*\.?\s*")
 
 
+# A monitor asked for by its name, alone or as one item of a set-up list:
+# "Monitor, vía venosa y oxígeno por mascarilla a 8 L/min", "monitor cardíaco",
+# "cardiac monitoring". The bare word was read as the verb "monitor" with
+# nothing to watch: it ordered nothing, "monitor cardíaco" came back as an
+# order not recognized, and the verb passed on to the next items (DF-16a,
+# 2026-09-28).
+_MONITOR_ORDER = re.compile(
+    r"(?:(?:cardiac|continuous|cardiorespiratory)\s+)?"
+    r"monitor(?:ing|izacion|izar|izo|izamos|eo|ear|eamos|ea)?"
+    r"(?:\s+(?:cardiac[oa]|continu[oa]|cardiorrespiratori[oa]|multiparametric[oa]|no\s+invasiv[oa]|"
+    r"de\s+signos\s+vitales|ecg|ekg))?"
+    r"|continuous\s+(?:cardiac\s+)?monitoring|cardiac\s+monitor(?:ing)?")
+# A set-up item written the way a chart lists it, with no verb, as one item of a
+# list: "Monitor, vía venosa y oxígeno…", "IV access, CBC and lactate", "vía
+# venosa y régimen cero". In a list it asks for the support; it was dropped in
+# silence (DF-16a, 2026-09-28). Alone, "vía venosa" is still not an order
+# (test_hypoglycemia_reader, 2026-09-26), and words that describe what the
+# patient already has keep it a description: "vía venosa permeable" is the line
+# that came in with the patient.
+_VERBLESS_SUPPORT_START = re.compile(
+    r"(?:(?:\d+|una|un|dos|one|two|a|an)\s+)?"
+    r"(?:vias?\s+(?:venosas?|perifericas?)|vvps?|accesos?\s+(?:venosos?|vasculares?)|cateter(?:es)?\s+venosos?|"
+    r"(?:peripheral\s+)?(?:iv|intravenous)\s+(?:access|line|lines|cannula)|large[- ]bore\s+ivs?|pivs?|"
+    r"regimen\s+(?:cero|0)|nada\s+por\s+boca|npo|nil\s+by\s+mouth|"
+    r"sonda\s+(?:foley|vesical|urinaria|nasogastrica|orogastrica)|foley|sng|ng\s+tube|nasogastric\s+tube|"
+    r"urinary\s+catheter)\b")
+_DESCRIBES_SUPPORT = re.compile(
+    r"\b(?:permeables?|patent|in\s+place|existing|funcionando|funcional(?:es)?|functioning|working|"
+    r"instalad[oa]s?|puest[oa]s?|previas?|que\s+(?:trae|tiene)|ya\s+(?:tiene|trae)|already|"
+    r"sin\s+cambios|retirad[oa]s?|removed|fallid[oa]s?|failed|infiltrad[oa]s?)\b")
+
+
+def _verbless_support(body):
+    """A set-up order listed without a verb, or None when it describes one."""
+    if _DESCRIBES_SUPPORT.search(body):
+        return None
+    # "IV" alone is the line in the old "IV, O2, monitor"; after a dose it is a route.
+    if re.fullmatch(r"(?:(?:\d+|una|dos|one|two)\s+)?ivs?", body):
+        return {"type": "vascular_access", "operation": "start"}
+    if not _VERBLESS_SUPPORT_START.match(body) or _names_a_drug(body):
+        return None
+    for kind, pattern in _SUPPORT_ORDERS:
+        if re.search(pattern, body):
+            return {"type": kind, "operation": "start"}
+    return None
+
+
 def _support_order(body, verb):
     """A nursing or support order, with the state it is in and no physiology.
 
@@ -583,6 +630,11 @@ _NON_ORDER = re.compile(
     r"pienso|creo|sospecho|espero|anticip[oae]|mi hipotesis|mi impresion|mi plan|porque|para mejorar|"
     r"(?:mi|la|el|nuestra|nuestro)\s+(?:prioridad|objetivo|meta))\b"
 )
+# "Volver a" + an administration verb repeats that administration: "volver a
+# nebulizar si persiste" is the next dose, not the patient coming back, and it
+# was recorded as advice to the patient (DF-16b, 2026-09-28).
+_ADMINISTRATION_INFINITIVES = (r"(?:nebulizar|administrar|dar|poner|pasar|repetir|iniciar|infundir|aplicar|"
+                               r"inyectar|colocar|cargar|transfundir|cardiovertir|descargar|chocar|bolear)")
 # How a discharge instruction is written, in both languages. The condition that
 # follows one of these belongs to the advice, not to the order before it.
 _ADVICE_CLAUSE = re.compile(
@@ -596,7 +648,8 @@ _ADVICE_CLAUSE = re.compile(
     # (rehearsal of the twenty-scenario batch, 2026-09-25).
     r"(?:,\s*|(?:y|e|and)\s+)(?:que\s+|debe\s+|debera\s+|puede\s+|"
     r"le\s+(?:digo|explico|indico|pido)\s+que\s+)?"
-    r"(?:regres(?:ar|e|a)|volver|vuelva|reconsult(?:ar|e|a)|acud(?:ir|a)|return|come\s+back))\b", re.I)
+    r"(?:regres(?:ar|e|a)|volver(?!\s+a\s+" + _ADMINISTRATION_INFINITIVES + r"\b)|vuelva|"
+    r"reconsult(?:ar|e|a)|acud(?:ir|a)|return|come\s+back))\b", re.I)
 # The condition itself, so that what it conditions can be recognised.
 _CONDITION_CLAUSE = re.compile(r"\b(?:if|si|unless|salvo\s+que)\b[^,]*(?:,|$)")
 # What a destination sends the patient with. After a discharge or an admission
@@ -625,6 +678,92 @@ _CONDITIONAL = re.compile(
     r"\b(?:if|unless|consider|considering|might|could|would|perhaps|maybe|si|salvo que|considerar|considero|podria|quizas|tal vez)\b"
 )
 _NEGATION = re.compile(r"^(?:please\s+)?(?:do not|don't|dont|never|avoid|no|not|sin|evitar|evito)\b")
+# A repeat written after the order it repeats: "salbutamol 5 mg nbz, repetir
+# cada 20 minutos si persiste el broncoespasmo", "epinephrine 0.5 mg IM, repeat
+# in 5 minutes if no improvement". The order is given now; the repeat is a plan
+# with its own interval, count and condition, and the condition belongs to the
+# repeat, never to the order. The whole sentence used to be kept as one
+# conditional plan: nothing ran, and the order was quoted back as the working
+# model (DF-16b, 2026-09-28). A repeat with no interval, count or condition is a
+# dose given again now ("repito salbutamol 5 mg nbz") and keeps that reading.
+_REPEAT_START = re.compile(
+    r"\b(?:(?:y|e|and|then|luego|despues)\s+)?(?:"
+    r"(?:se\s+)?(?:puede|podria|pueden)\s+repetir(?:se|lo|la|los|las)?|"
+    r"repetir(?:se|lo|la|los|las)?|repito|repita|repite|repitase|"
+    r"volver\s+a\s+" + _ADMINISTRATION_INFINITIVES + r"|"
+    r"(?:may|can|could)\s+(?:be\s+)?repeat(?:ed)?|to\s+be\s+repeated|repeat(?:ed)?|redose|re-dose)\b")
+_REPEAT_UNIT = r"(min(?:utos?|utes?|s)?|h(?:oras?|ours?|rs?)?)\b"
+_REPEAT_EVERY = re.compile(r"\b(?:cada|every|each|q|c/)\s*(\d+(?:\.\d+)?)\s*" + _REPEAT_UNIT)
+_REPEAT_AFTER = re.compile(r"\b(?:en|in|a\s+los|after|tras|dentro\s+de|despues\s+de)\s+(\d+(?:\.\d+)?)\s*"
+                           + _REPEAT_UNIT)
+_REPEAT_NUMBERS = {"una": 1, "one": 1, "once": 1, "dos": 2, "two": 2, "twice": 2, "tres": 3, "three": 3,
+                   "cuatro": 4, "four": 4}
+# "Por 3 veces", "hasta 3 dosis", "x3", "up to 3 times", "once": the count
+# needs its word, so "por 20 minutos" stays a duration.
+_REPEAT_COUNT = re.compile(
+    r"\bx\s*(\d+)\b|\b(?:por|hasta|up\s+to|maximo|max(?:imum)?(?:\s+of)?)\s+(\d+|una|dos|tres|cuatro|one|two|three|four)"
+    r"\s+(?:veces|vez|times?|dosis|doses?)\b|\b(\d+|una|dos|tres|cuatro|one|two|three|four)\s+(?:veces|vez|times?)\b"
+    r"|\b(once|twice)\b")
+_REPEAT_CONDITION = re.compile(
+    r"\b(?:si|if|mientras|while|hasta\s+que|until|unless|salvo\s+que|en\s+caso\s+de|prn|sos|"
+    r"hasta\s+(?!(?:\d|una|dos|tres|cuatro)\b))")
+
+
+def _minutes(match):
+    value = float(match.group(1))
+    return value * 60 if match.group(2).startswith("h") else value
+
+
+def repeat_structure(clause):
+    """Interval, count and condition of a repeat instruction: {} when it states none.
+
+    Exported: the Management Trace and the validation tooling read the same
+    structure the reader records.
+    """
+    verb = _REPEAT_START.search(clause)
+    if verb is None:
+        return {}
+    before, after = clause[:verb.start()], clause[verb.end():]
+    found = {}
+    lead = re.match(r"\s*(?:if|si|unless|salvo\s+que|en\s+caso\s+de)\b[^,]*", before)
+    tail = _REPEAT_CONDITION.search(after)
+    scope = after[:tail.start()] if tail else after
+    every = _REPEAT_EVERY.search(scope)
+    later = None if every else _REPEAT_AFTER.search(scope)
+    if every:
+        found["every_min"] = _minutes(every)
+    elif later:
+        found["after_min"] = _minutes(later)
+    count = _REPEAT_COUNT.search(scope)
+    if count:
+        word = next(group for group in count.groups() if group)
+        found["count"] = int(word) if word.isdigit() else _REPEAT_NUMBERS[word]
+    conditions = [text for text in ((lead.group(0).strip(" ,") if lead else ""),
+                                    (after[tail.start():].strip(" ,.") if tail else "")) if text]
+    if conditions:
+        found["condition"] = "; ".join(conditions)
+    return found
+
+
+def _repeat_split(sentence):
+    """(what comes before, the repeat) when a repeat instruction closes the sentence."""
+    for match in _REPEAT_START.finditer(sentence):
+        prefix = sentence[:match.start()].rstrip()
+        joined = re.match(r"(?:y|e|and|then|luego|despues)\s", match.group(0))
+        if prefix and not prefix.endswith((",", ":")) and not joined:
+            # "Order a repeat troponin": a repeat in the middle of an order is a word.
+            continue
+        head = re.sub(r"(?:,\s*)?\b(?:y|e|and|then|luego|despues)\s*$", "", prefix.rstrip(" ,:")).strip(" ,")
+        clause = re.sub(r"^(?:y|e|and|then|luego|despues)\s+", "", sentence[match.start():].strip(" ,"))
+        return head, clause
+    return None
+
+
+def _orders_now(text):
+    """Whether this text, read alone, is an order: something given, done or indicated now."""
+    parsed = parse_family_actions(text)
+    return (any(action.get("type") not in {"clarification", "reassessment"} for action in parsed["actions"])
+            or any(detail.get("kind") in {"not_modelled", "prescription"} for detail in parsed["future_details"]))
 _OXYGEN_DEVICES = (
     ("nasal cannula", r"nasal cann?ula|canula nasal|naricera|nasal prongs|nc"),
     # A reservoir mask is named after its bag or after its recirculation; both
@@ -1134,6 +1273,10 @@ def _parse_piece_core(piece, inherited=None):
         return [{"type": "airway_preparation"}], "prepare"
     text = piece.strip(" :")
     text = re.sub(r"^(?:please|por favor|then|luego|despues)\s+", "", text)
+    if _MONITOR_ORDER.fullmatch(text):
+        # The monitor itself (DF-16a). The verb still reaches the items after
+        # it, so "monitorizar, PA y FC" keeps watching what it names.
+        return [{"type": "monitoring", "operation": "start"}], "monitor"
     command = _COMMAND.match(text)
     verb = command["verb"] if command else inherited
     # A disposition names one destination and takes no list. "Hospitalizar en
@@ -1156,6 +1299,13 @@ def _parse_piece_core(piece, inherited=None):
     # before diagnostic and treatment matching, including inherited list verbs.
     observational = verb in {"monitor", "assess", "vigilar", "monitorizar", "check", "recheck", "measure", "medir", "mido", "controlar", "control"} or bool(re.match(r"(?:monitor(?:ing)?|monitorizar|vigilar)\b", body))
     vital = re.search(r"\b(?:blood pressure|bp|heart rate|hr|respiratory rate|rr|oxygen saturation|o2 saturation|spo2|saturation|sats|oxygen levels|presion arterial|saturacion|frecuencia cardiaca|frecuencia respiratoria|perfusion|breathing|respiratory effort|oxigeno|rhythm|mental status|capillary refill|crt|estado mental)\b", body)
+    if vital and vital.group(0) == "oxigeno" and (
+            re.search(_FLOW, body) or any(re.search(r"\b(?:" + pattern + r")\b", body)
+                                          for name, pattern in _OXYGEN_DEVICES if name != "room air")):
+        # Oxygen with a device or a flow is given, not watched: under the verb
+        # of a "monitor" before it in a list, "oxígeno por mascarilla a 8
+        # L/min" became a check of the saturation (DF-16a, 2026-09-28).
+        vital = None
     if observational and vital:
         delay, _ = _amount(body, r"minutes?|mins?|minutos?")
         if re.search(r"\b(?:hours?|horas?|seconds?|segundos?)\b", body):
@@ -1882,25 +2032,35 @@ def parse_family_actions(text) -> dict:
     held_until, normalized = _sequenced(normalized)
     actions, future, details = [], [], []
 
-    def keep(text, kind):
+    def keep(text, kind, **structure):
         # What is recognised and not executed now, and why: a medicine the
-        # simulator does not model, a prescription for home, a conditional plan
+        # simulator does not model, a prescription for home, a conditional plan,
+        # a repeat instruction with its interval, count and condition (DF-16b),
         # or advice to the patient (faculty decision 3, 2026-09-25).
         future.append(text)
-        details.append({"text": text, "kind": kind, **(unmodelled_detail(text) if kind == "not_modelled" else {})})
+        details.append({"text": text, "kind": kind, **structure,
+                        **(unmodelled_detail(text) if kind == "not_modelled" else {})})
         if kind == "not_modelled" and details[-1].get("prescription"):
             details[-1]["kind"] = "prescription"
 
     # Advice that closes a sentence is recorded after what the sentence says
     # before it, so the plan keeps the resident's order: "discharge with
     # cardiology follow-up and return if the palpitations come back" is the
-    # follow-up, then the return advice (DF-10, 2026-09-27).
+    # follow-up, then the return advice (DF-10, 2026-09-27). A repeat that
+    # closes a sentence follows the order it repeats the same way (DF-16b).
     trailing_advice = []
 
     def flush_trailing_advice():
         while trailing_advice:
-            keep(trailing_advice.pop(0), "advice")
+            item = trailing_advice.pop(0)
+            text, kind, structure = item if isinstance(item, tuple) else (item, "advice", {})
+            keep(text, kind, **structure)
+    # The last sentence that ordered something: what a repeat written on its
+    # own after it ("salbutamol 5 mg nbz; repetir cada 20 min") repeats.
+    last_order = None
     queue = re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
+    # Several sentences are a list too: "Monitor; vía venosa; oxígeno…".
+    several_sentences = sum(1 for sentence in queue if sentence.strip()) > 1
     while queue:
         flush_trailing_advice()
         sentence = queue.pop(0).strip()
@@ -1920,6 +2080,33 @@ def parse_family_actions(text) -> dict:
             sentence = sentence[:rationale.start()].strip(" ,")
             if not sentence:
                 continue
+        # A repeat instruction after its order (DF-16b): the order runs now, and
+        # the repeat -- interval, count and condition -- is kept as a plan.
+        repeated = _repeat_split(sentence)
+        if repeated is not None:
+            head, clause = repeated
+            standalone = not head or not _orders_now(head)
+            if standalone:
+                # "Si persiste el broncoespasmo, repetir salbutamol en 20
+                # minutos": what comes first is the repeat's own condition.
+                clause = sentence
+            # An order of its own written after the repeat is not part of it.
+            segments = re.split(r",\s*(?:(?:y|e|and|then|luego)\s+)?", clause)
+            own = next((i for i, segment in enumerate(segments) if _REPEAT_START.search(segment)), 0)
+            for index in range(own + 1, len(segments)):
+                if _orders_now(segments[index]):
+                    queue.insert(0, ", ".join(segments[index:]))
+                    clause = ", ".join(segments[:index])
+                    break
+            structure = repeat_structure(clause)
+            # Alone, a repeat is a plan only when it is scheduled or conditional,
+            # or follows an order in this entry. Otherwise it is given again now.
+            if structure and (not standalone or last_order or set(structure) - {"after_min"}):
+                if standalone:
+                    keep(clause, "repeat", of=last_order, **structure)
+                    continue
+                trailing_advice.append((clause, "repeat", {"of": head, **structure}))
+                sentence = head
         conditional = _CONDITIONAL.search(sentence)
         if conditional:
             # "Start oxygen ..., and if BP falls give fluids" contains an
@@ -1961,9 +2148,11 @@ def parse_family_actions(text) -> dict:
                     split = None
                 head = (re.sub(r"\s+(?:y|e|and)$", "", sentence[:split.start()].strip(" ,"))
                         if split else "")
-                if head and _COMMAND.match(head) and any(
-                        action.get("type") not in {"clarification", "reassessment"}
-                        for action in parse_family_actions(head)["actions"]):
+                # A head is an order whether or not it opens with a verb: chart
+                # shorthand ("SF 500 ml ev y noradrenalina si persiste
+                # hipotensa") ran nothing, the whole sentence became a plan
+                # (DF-16b, 2026-09-28).
+                if head and _orders_now(head):
                     keep(sentence[split.end():].strip(" ,"), "conditional")
                     sentence = head
                 else:
@@ -2046,7 +2235,11 @@ def parse_family_actions(text) -> dict:
             index += 1
         reasoning_head = False
         discharged = False
+        # Each item of this sentence and what it produced, for a route written
+        # once after a list of doses (_share_trailing_route).
+        members = []
         for piece in grouped:
+            members.append([piece, []])
             if not piece:
                 continue
             if _WEIGHT_STATEMENT.match(piece):
@@ -2086,11 +2279,27 @@ def parse_family_actions(text) -> dict:
                 # the resident's indication, with its administration and effect
                 # not modelled, and the other orders run (2026-09-24; faculty
                 # decision 3, 2026-09-25). A prescription for home is a
-                # prescription, never a dose given here.
-                keep(piece.strip(), "not_modelled")
+                # prescription, never a dose given here. The word that joined it
+                # to the list is not part of it ("y después ondansetrón…").
+                keep(re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip()), "not_modelled")
+                # Still a dose in the list: a route written after it is shared.
+                members[-1][1] = [{"agent": "not_modelled", "route": _route(piece), "listed_only": True}]
+                last_order = sentence
                 inherited = None
                 continue
             parsed, inherited = _parse_piece(piece, inherited)
+            item = re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip())
+            # Nothing read, or only a question the verb of an item before it
+            # raised ("monitor + IV"): a listed set-up item is still its own order.
+            lent_verb_only = (len(parsed) == 1 and parsed[0].get("type") == "clarification"
+                              and not _COMMAND.match(item))
+            if (not parsed or lent_verb_only) and (len(grouped) > 1 or several_sentences):
+                support = _verbless_support(item)
+                if support is not None:
+                    parsed, inherited = [support], None
+            members[-1][1] = parsed
+            if any(action.get("type") not in {"clarification", "reassessment"} for action in parsed):
+                last_order = sentence
             discharged = discharged or any(action.get("type") == "disposition" for action in parsed)
             if any(action.get("type") == "disposition" and action.get("destination") == "home"
                    for action in parsed):
@@ -2112,6 +2321,7 @@ def parse_family_actions(text) -> dict:
                 inherited = None
                 continue
             actions.extend(parsed)
+        _share_trailing_route(members, sentence)
     flush_trailing_advice()
     actions = _one_sample_each(actions)
     if held_until:
@@ -2128,6 +2338,37 @@ def parse_family_actions(text) -> dict:
         details.extend(deferred.get("future_details", []))
     return {"raw_text": raw, "actions": actions, "recognized_future_actions": future,
             "future_details": details}
+
+
+# A route written once after a list of doses belongs to every dose of the list:
+# "salbutamol 5 mg + ipratropio 0.5 mg nbz", "morphine 4 mg and ondansetron 4 mg
+# IV". Only the last dose kept it, and the order was held asking for a route the
+# resident had written (DF-16a, 2026-09-28). The route goes back over the doses
+# written just before it without one of their own; a dose with its own route,
+# an item that is not a dose, or a sequence ("then", "luego") ends the list.
+_SEQUENCE_WORDS = re.compile(r"\b(?:then|luego|despues|after\s+that|afterwards|posteriormente)\b")
+
+
+def _takes_the_route(item):
+    piece, parsed = item
+    return (len(parsed) == 1 and bool(parsed[0].get("agent")) and "route" in parsed[0]
+            and parsed[0].get("route") is None and _route(piece) is None
+            and (parsed[0].get("listed_only") or any(key.startswith("dose") for key in parsed[0])))
+
+
+def _share_trailing_route(members, sentence):
+    if _SEQUENCE_WORDS.search(sentence):
+        return
+    for end in range(len(members) - 1, 0, -1):
+        piece, parsed = members[end]
+        if len(parsed) != 1 or not parsed[0].get("agent") or not parsed[0].get("route") \
+                or _route(piece) != parsed[0]["route"]:
+            continue
+        index = end - 1
+        while index >= 0 and _takes_the_route(members[index]):
+            if not members[index][1][0].get("listed_only"):
+                members[index][1][0]["route"] = parsed[0]["route"]
+            index -= 1
 
 
 _LEAD_STUDIES = ("ecg_right", "ecg_posterior")

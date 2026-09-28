@@ -430,3 +430,201 @@ Son defectos distintos de DF-10; se registran en la cola.
 - Cuatro líneas del mensaje de la orden retenida no tienen traducción al
   español: «I recognised…», «Still to state…», «In your own words…» y «What you
   already wrote is kept.».
+
+## Ciclo 4 · DF-16a y DF-16b: listas de órdenes y repeticiones (2026-09-28)
+
+**Defectos.** Se encontraron en el ciclo 3 con frases escritas para la
+herramienta de validación. El docente autorizó corregir las **clases**, no las
+frases, en inglés y en español.
+
+- **DF-16a (listas).** «Monitor, vía venosa y oxígeno por mascarilla a 8 L/min»
+  ejecutaba sólo la vía venosa: el monitor no se ordenaba y el oxígeno quedaba
+  como un control de la saturación.
+- **DF-16b (acción + repetición + condición).** «Salbutamol 5 mg nbz, repetir
+  cada 20 minutos si persiste el broncoespasmo» no ejecutaba nada. La condición
+  de la repetición convertía toda la oración en un plan condicional, y el
+  Management Trace citaba la orden como modelo de trabajo.
+
+### Causas raíz
+
+**DF-16a.**
+
+1. **«Monitor» se leía como el verbo «monitorizar» sin objeto.** No ordenaba
+   nada. «Monitor cardíaco» volvía como orden no reconocida, y esa aclaración
+   retenía todo el envío. El verbo, además, pasaba a los elementos siguientes:
+   el oxígeno se convertía en «controlar la saturación».
+2. **Un elemento de soporte sin verbo propio se descartaba en silencio** dentro
+   de una lista: «vía venosa», «régimen cero», «sonda Foley», «IV access»,
+   «NPO».
+3. **La vía escrita una vez al final llegaba sólo a la última dosis** («salbutamol
+   5 mg + ipratropio 0.5 mg nbz»). Además, el plural de la vía («nebulizados»,
+   «endovenosos») no se reconocía.
+
+**DF-16b.**
+
+4. **La repetición no tenía clase propia.** La condición de la repetición se
+   aplicaba a la oración entera, y un intervalo o un número de veces sin
+   condición («repetir cada 20 min por 3 veces») volvía como orden no
+   reconocida.
+
+### Corrección (por clase)
+
+- **`family_parser.py`, monitor.** «Monitor», «monitorización», «cardiac
+  monitoring», «monitor cardíaco», «continuous monitoring», escritos solos o
+  como elemento de una lista, son la orden de monitorizar
+  (`_MONITOR_ORDER`). «Monitorizar la saturación», «Monitor BP, HR and SpO2»
+  siguen siendo controles.
+- **`family_parser.py`, oxígeno.** Con flujo o dispositivo, «oxígeno» se
+  administra; ya no es la saturación que se vigila.
+- **`family_parser.py`, soporte sin verbo en una lista.** Cuando el elemento no
+  tiene verbo propio, se lee como orden (`_verbless_support`):
+  - vía venosa, VVP, acceso venoso, «IV access», «large-bore IVs», «two IVs»;
+  - régimen cero, NPO;
+  - sonda Foley, vesical, nasogástrica.
+
+  Esto aplica sólo **dentro de una lista o de un envío con varias oraciones**.
+  Una descripción («permeable», «ya tiene», «in place», «funcionando») no es
+  una orden.
+- **`family_parser.py`, vía compartida.** Una vía escrita después de varias
+  dosis llega a cada dosis anterior que no tiene vía propia, también si hay un
+  fármaco no modelado entre ellas (`_share_trailing_route`). No cruza una
+  secuencia («luego», «then», «después»): allí la vía es de la dosis que la
+  lleva.
+- **`shared_order_language.py`.** Se reconoce el plural de cada vía:
+  endovenosos, intravenosas, intramusculares, orales, nebulizados, inhalados,
+  subcutáneos, intraóseos, intranasales.
+- **`family_parser.py`, repetición.** Una instrucción de repetición escrita
+  después de su orden se separa de ella:
+  - **La orden se ejecuta ahora.**
+  - **La repetición queda registrada con su clase propia** (`kind: "repeat"`).
+    Guarda la orden que repite, el intervalo (`every_min`) o la espera
+    (`after_min`), el número de veces (`count`) y la condición.
+  - **La condición es de la repetición, nunca de la orden.**
+  - **Una repetición que espera una condición y viene sola** («Si no mejora,
+    repetir adrenalina 0.5 mg im a los 5 minutos») es un plan: no ejecuta nada.
+  - **«Volver a nebulizar / administrar / dar …»** es una repetición. «Volver a
+    consultar» sigue siendo indicación.
+  - **`repeat_structure`** se exporta para la traza y la herramienta de
+    validación.
+- **`family_parser.py`, condición después de una orden sin verbo.** Es la
+  misma clase: la condición convertía en plan toda la acción. «Paracetamol 1 g
+  ev y ondansetrón 4 mg ev si vomita» y «NS 1 L IV and norepinephrine if still
+  hypotensive» quedaban enteras como plan condicional, sin ejecutar nada. Con
+  verbo («Doy …») ya se separaban. Ahora la orden sin verbo, abreviatura de
+  ficha, también se ejecuta, y sólo lo condicionado queda como plan.
+- **`unexecuted_items.py`, `language.py`, `report_language.py`.** La página
+  dice «Registrado como instrucción de repetición, no ejecutada ahora: «…»».
+  Si la orden queda retenida, dice «También en esta orden, una instrucción de
+  repetición: «…»». En la traza aparece como «instrucción de repetición; no se
+  ejecutó ahora».
+- **`app.py` (`extract_explicit_reasoning`).** El modelo de trabajo nunca es
+  una orden, una repetición ni la condición de una repetición:
+  - una apreciación escrita antes de la orden se corta donde empieza la orden
+    («Persiste la hipotensión»);
+  - un fragmento que empieza por «si/if/unless/en caso de» no se toma como
+    modelo.
+
+### Qué no cambió (a propósito)
+
+- **«Vía venosa» escrita sola** sigue sin ser una orden. Puede describir la vía
+  que el paciente ya tiene (decisión del 2026-09-26, `test_hypoglycemia_reader`).
+- **«Monitorizar PA, FC y saturación cada 15 minutos»** sigue siendo control de
+  signos vitales.
+- **Nada se inventa.** Una dosis sin vía escrita queda sin vía, y la página la
+  pregunta.
+- **«Repito salbutamol 5 mg nbz»**, sin intervalo ni condición, es una dosis que
+  se da de nuevo ahora.
+- **«Give a second dose of epinephrine if there is no response»** y **«Start
+  oxygen NC 3 L/min, if saturation falls»** siguen siendo planes condicionales.
+
+### Antes y después
+
+**Frases escritas para reproducir los defectos** (40, EN y ES; script
+`df16_probe.py`, fuera del repositorio):
+
+- **31 cambian, todas en la dirección esperada.** Las 9 que no cambian son las
+  frases de control.
+- **No cambian:** descripciones de vías, controles de signos vitales, el plan
+  condicional y la repetición inmediata.
+
+| Frase | Antes | Después |
+|---|---|---|
+| Monitor, vía venosa y oxígeno por mascarilla a 8 L/min | vía venosa + control de saturación | monitor + vía venosa + O2 mascarilla simple 8 L/min |
+| Monitor cardíaco + vía venosa + O2 por naricera a 3 L/min | aclaración (retiene todo) + vía + O2 | monitor + vía + O2 naricera 3 L/min |
+| Vía venosa y régimen cero | — | vía venosa + régimen cero |
+| Monitor; IV access; oxygen by non-rebreather at 15 L/min | sólo O2 | monitor + vía + O2 con reservorio 15 L/min |
+| Salbutamol 2.5 mg y bromuro de ipratropio 500 mcg nebulizados | dos broncodilatadores sin vía | los dos nebulizados |
+| Paracetamol 1 g y ketorolaco 30 mg ev | paracetamol sin vía | los dos IV |
+| Salbutamol 5 mg nbz, repetir cada 20 minutos si persiste el broncoespasmo | nada; plan condicional; la orden citada como modelo | salbutamol ejecutado; repetición {cada 20 min; si persiste…} |
+| Morfina 2 mg ev, repetir cada 5 min hasta EVA menor de 4 | morfina + aclaración (retiene) | morfina; repetición {cada 5 min; hasta EVA…} |
+| Epinephrine 0.5 mg IM, repeat in 5 minutes if no improvement | nada; plan condicional | adrenalina IM; repetición {a los 5 min; if no improvement} |
+| Doy salbutamol 5 mg nbz y volver a nebulizar si persiste | salbutamol + «volver…» como indicación al alta | salbutamol + repetición |
+
+**Frases nuevas, escritas después del fix** (39, EN y ES; `df16_heldout.py`,
+fuera del repositorio). Se escribieron después de corregir y se corrieron una
+sola vez, para comprobar que se corrigió la clase y no las frases de desarrollo:
+
+- **Resultado esperado en 34.**
+- **En 5 aparece un defecto que no es de DF-16**; queda registrado abajo.
+- **8 quedaron como pruebas de regresión.**
+
+**Corpus de ensayo** (mismo corpus, semilla 3000, 0 llamadas de IA):
+
+- **Las 40 grabaciones son idénticas** a las del ciclo 3, decisión por
+  decisión (20 ES y 20 EN).
+- **Resumen:** 96/96 órdenes ejecutadas, 0 retenciones no previstas y 0
+  modelos de trabajo que son una orden, con la misma diferencia pareada.
+- **El corpus de ensayo no trae estas formas** (listas sin verbo, repeticiones
+  con condición). Por eso la mejora se mide con frases nuevas y el corpus
+  sirve para comprobar que nada se deterioró.
+
+### Latencia
+
+| Medida (268 textos: corpus de ensayo + frases de prueba, mediana de 5 pasadas) | Antes | Después |
+|---|---|---|
+| Lectura de la orden (`parse_family_actions`) | 0,40–0,47 ms | 0,45–0,46 ms |
+| Extracción del razonamiento | 3,46–3,53 ms | 3,85–3,97 ms |
+
+El lector no cambia. La extracción del razonamiento suma unos 0,4 ms por texto:
+es la consulta extra al lector para cortar una apreciación donde empieza la
+orden. El corpus completo tardó 376 s (ES) y 379 s (EN).
+
+### Pruebas
+
+- **`test_lists_and_repeats_keep_every_order.py` (nuevo, 60 casos).** Cada
+  clase se prueba en ambos idiomas con frases escritas para la prueba, más 8
+  guardas del conjunto escrito después del fix. Incluye una prueba por la
+  página real (`tools_tanda20.rehearse`, asma): el monitor, la vía, el oxígeno
+  y los broncodilatadores se ejecutan, la repetición queda en la traza, y el
+  salbutamol no es el modelo de trabajo.
+- **Archivos de prueba del lector y de la traza:** los 69 existentes pasan
+  (1788 pasan y 2 xfail, con las 50 pruebas nuevas de la primera versión).
+- **Regresiones:** 56 de 56 pasan.
+
+### Encontrado y no corregido (registrado)
+
+No están relacionados con DF-16a/b, o no cumplen los 8 criterios del §71. Se
+registran en el manifiesto de defectos conocidos del piloto
+(`validation/pilot_v1/KNOWN_DEFECTS.md`).
+
+- **Vía escrita antes del fármaco, sin verbo, en inglés.** «IV morphine 4 mg»,
+  «Nebulized albuterol 2.5 mg», «Oral paracetamol 1 g» e «IV fluids 1 L»
+  vuelven como orden no reconocida, y la aclaración retiene el envío. Con verbo
+  («Give nebulized albuterol») sí se leen. Es anterior a DF-16. Importa para la
+  fase en inglés del piloto; en español la vía va después del fármaco.
+- **Un fármaco sin verbo y sin dosis no es una orden.** «Morfina ev»,
+  «Salbutamol nbz» siguen la regla deliberada «un nombre de fármaco sólo es
+  orden con un verbo o una dosis». Dentro de una lista se pierde sin aviso.
+  Seguido de una repetición, toda la oración queda registrada como instrucción
+  de repetición; antes no quedaba nada.
+- **«Mascarilla de alto flujo»** pide aclarar el dispositivo (ambiguo entre
+  cánula de alto flujo y mascarilla). No es un defecto de listas.
+- **«As needed / según necesidad».** La repetición guarda el intervalo y el
+  número de veces, pero no la condición; «SOS/PRN» sí quedan como condición.
+  Ninguna es una condición clínica explícita (VC-3). El texto se conserva
+  literal.
+- **«Repeat the troponin in 3 hours» escrita sola** pide la troponina ahora:
+  comportamiento anterior, sin cambio. En cambio, «Troponina ahora y repetir en
+  3 horas» ejecuta la troponina y registra la repetición.
+- **«Vigilar diuresis y estado mental»** se cita como modelo de trabajo:
+  anterior, de la misma familia que DF-7.

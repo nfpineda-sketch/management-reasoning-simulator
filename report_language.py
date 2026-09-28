@@ -962,6 +962,8 @@ ES = {
         'indicación al paciente',
     'conditional plan; not executed now':
         'plan condicional; no se ejecutó ahora',
+    'repeat instruction; not executed now':
+        'instrucción de repetición; no se ejecutó ahora',
     'indicated; administration and effect not modelled':
         'indicado; administración y efecto no modelados',
     'prescription for home; not a dose given here':

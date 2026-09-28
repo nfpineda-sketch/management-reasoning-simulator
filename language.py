@@ -451,6 +451,8 @@ _RULES = (
   "Receta para el domicilio registrada: \u00ab\\1\u00bb. Es una receta, no una dosis administrada aquí."),
  (r"Recorded as a conditional plan, not executed now: (.+?)\.$",
   "Registrado como plan condicional, no ejecutado ahora: \u00ab\\1\u00bb."),
+ (r"Recorded as a repeat instruction, not executed now: (.+?)\.$",
+  "Registrado como instrucción de repetición, no ejecutada ahora: \u00ab\\1\u00bb."),
  (r"Recorded as advice to the patient: (.+?)\.$", "Registrado como indicación al paciente: \u00ab\\1\u00bb."),
  (r"\badministered\b", "administrado"),
  (r"\bstarted at\b", "iniciado a"), (r"\badjusted to\b", "ajustado a"),
@@ -532,6 +534,8 @@ _RULES = (
   "También en esta orden, una receta para el domicilio: «\\1»."),
  (r"Also in this order, a conditional plan: (.+?)\.(?=\n|$)",
   "También en esta orden, un plan condicional: «\\1»."),
+ (r"Also in this order, a repeat instruction: (.+?)\.(?=\n|$)",
+  "También en esta orden, una instrucción de repetición: «\\1»."),
  (r"Also in this order, advice to the patient: (.+?)\.(?=\n|$)",
   "También en esta orden, una indicación al paciente: «\\1»."),
  # --- investigations -------------------------------------------------------

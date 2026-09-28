@@ -5732,8 +5732,13 @@ def extract_explicit_reasoning(text):
         clause = str(clause or "").replace("\ue000", ".").strip()
         if not clause:
             return False
-        return any(action.get("type") not in {"reassessment", "clarification"}
-                   for action in parse_family_actions(clause)["actions"])
+        parsed = parse_family_actions(clause)
+        # A plan the reader keeps for later -- a conditional order, a repeat,
+        # advice, an indicated medicine -- is an order too, never a working
+        # model: "salbutamol 5 mg nbz, repetir cada 20 minutos si persiste el
+        # broncoespasmo" was quoted back as the model (DF-16b, 2026-09-28).
+        return (any(action.get("type") not in {"reassessment", "clarification"} for action in parsed["actions"])
+                or bool(parsed.get("future_details")))
 
     def _is_reassessment(clause):
         clause = str(clause or "").replace("\ue000", ".").strip()
@@ -5928,6 +5933,13 @@ def extract_explicit_reasoning(text):
     if "problem_representation" not in reasoning:
         first = re.match(r"^(.+?)(?=[.;]|\bMy (?:management )?priority\b|$)", joined, re.I)
         candidate = _clean_reasoning_phrase(first.group(1)) if first else None
+        # The appraisal ends where an order or a plan begins, and a clause that
+        # opens with "if"/"si" is a condition, not what the resident thinks is
+        # going on (DF-16b, 2026-09-28).
+        if candidate and _is_order(candidate):
+            candidate = _order_free(candidate)
+        if candidate and re.match(r"^(?:if|si|unless|salvo\s+que|en\s+caso\s+de)\b", candidate, re.I):
+            candidate = None
         response_language = bool(candidate and re.search(
             r"\b(?:response suggests|persistent|persists|has improved|have improved|"
             r"deteriorat|hypox|hemodynamic|perfusion pressure|perfusion recovery|"
@@ -6013,9 +6025,12 @@ def extract_explicit_reasoning(text):
             re.I,
         )
         clinical_clauses = []
+        # A clause that opens with "if"/"si" is a condition, never the model:
+        # "si persiste la hipotensión, repetir adrenalina…" (DF-16b, 2026-09-28).
+        condition_first = re.compile(r"^(?:if|si|unless|salvo\s+que|en\s+caso\s+de)\b", re.I)
         for clause in re.split(r"[.;]+", clinical_prefix):
             candidate = _clean_reasoning_phrase(clause)
-            if candidate and other_slot.match(candidate):
+            if candidate and (other_slot.match(candidate) or condition_first.match(candidate)):
                 continue
             # The findings come before the first order or reassessment, in either
             # language. The command pattern above knows English verbs and
