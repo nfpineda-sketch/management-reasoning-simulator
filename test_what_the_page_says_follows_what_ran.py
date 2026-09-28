@@ -210,6 +210,29 @@ def test_the_faculty_analysis_says_an_urgent_intervention_ran_only_when_it_did(s
     assert faculty_analysis._prompted(_urgent_entry(status))["urgent_unheld"] is flagged
 
 
+def test_only_a_reply_that_says_nothing_but_unsure_keeps_the_order_held():
+    """The page reads the normalised reply: a doubt, not a negation followed by an order or a cancel."""
+    import ast
+    import re
+    tree = ast.parse(Path(APP).read_text())
+
+    def compiled(name):
+        node = next(item for item in tree.body if isinstance(item, ast.Assign)
+                    and any(getattr(target, "id", None) == name for target in item.targets))
+        return eval(compile(ast.Expression(node.value), APP, "eval"), {"re": re})
+
+    unsure, then_order = compiled("_UNSURE_REPLY"), compiled("_UNSURE_THEN_ORDER")
+
+    def a_doubt(reply):
+        match = unsure.match(reply)
+        return bool(match) and not then_order.search(reply[match.end():])
+
+    for reply in ("no se", "no se.", "mm no se", "no se la dosis", "i don't know", "not sure", "no estoy segura"):
+        assert a_doubt(reply), reply
+    for reply in ("no se administra adrenalina, sf 500 ml ev", "no se, cancelar", "not sure the dose, give 0.5 mg im"):
+        assert not a_doubt(reply), reply
+
+
 def test_the_repeated_question_reads_in_spanish():
     said = language.say("The held order is still waiting: bag mask + naloxone. Answer the question above, "
                         "or say cancel. Nothing has been administered.", "es")

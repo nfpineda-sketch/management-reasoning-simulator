@@ -911,46 +911,114 @@ siguen son post hoc, sobre frases ya vistas.
 | Un rótulo con un umbral, un estado por alcanzar o un resultado (C02) | se ejecutaba lo que seguía | se lee como antes del ciclo |
 | La vía por la que pasa un suero: «SF 500 mL por VVP», «pasar 1 L de Ringer por vía venosa periférica», «500 mL NS via the PIV», «through the IV line» | **el bolo se perdía sin aviso y se instalaba una vía** (ya en el HEAD; C01 lo destapó) | es la vía del suero; «instalar VVP» y «2 VVP» siguen pidiendo la vía |
 
-**Alcance medido:** el lector final comparado con el anterior a estas cuatro
-correcciones, sobre los 11 486 textos que tenemos (el corpus de ensayo, las 90
-frases de la auditoría, los tres conjuntos ciegos y los textos de las pruebas).
-Cambian 11:
+### Revisión adversarial del diff y comparación con el ciclo 5
 
-- las frases de las correcciones y sus pruebas;
-- el texto citado del plan de una de las 90 frases («…por VVP» pasa a «…ev»).
-  La lectura de esa frase no cambia: sigue siendo un plan condicional.
+Hecho el commit `39bac97`, una revisión adversarial del código (un agente sin
+parte en las correcciones) encontró **13 problemas que los conjuntos ciegos no
+vieron**. Casi todos eran regresiones de las propias correcciones, en órdenes
+de primera línea:
 
-**Los tres conjuntos con el código final (post hoc):**
+| Hallazgo | Ejemplo | En `39bac97` | Ahora |
+|---|---|---|---|
+| El «stop» de C04 se prestaba a la orden siguiente | «Hold NS, O2 4 L NC» | **oxígeno retirado** | suspende el suero y deja la naricera a 4 L/min |
+| «Para» es también «para» | «Para los fluidos: Ringer lactato 500 mL ev» | suspendía el suero | se pregunta, como en el ciclo 5 |
+| C07 leía preguntas, dudas y hábitos como órdenes | «Should I give aspirin 300 mg PO?», «por lo general administro aspirina» | **se administraba** | no es orden, como en el ciclo 5 |
+| C07 retenía ante prosa en primera persona | «Epinephrine 0.5 mg IM now. We give it 5 minutes…» | **adrenalina retenida** | corre |
+| La prueba de historia de C08 alcanzaba a toda pieza sin verbo | «Paracetamol 1 g ev ya que AINE contraindicado», «Urgent TXA 1 g IV», «IV TXA 1 g» | **perdida sin aviso o retenida** | corre |
+| El relato prehospitalario retenía órdenes del residente y se saltaba con «, y» | «Remove the EMS dressing and apply a tourniquet…» · «…dejó 2 VVP, y pasó tranexámico» | retenida · **TXA ejecutado** | corre · se pregunta |
+| C09 tragaba el «RR» del ventilador | «Intubate, VC/AC, RR 10, PEEP 5…» | la frecuencia se perdía | es la frecuencia de la intubación |
+| C02 leía «sedación con X antes de la cardioversión» | «Sedation with etomidate 8 mg IV before synchronized cardioversion» | **sólo corría la cardioversión** | se cita y se pregunta, como en el ciclo 5 |
+| C05 iniciaba lo preparado | «…with a norepinephrine infusion ready» | noradrenalina iniciada | no |
+| C01 releía la frase entera por cada «si no» | «atropina 1 mg ev, si no, tcp, si no, tcp…» | minutos | milisegundos |
+| C07 era cúbico ante una racha de espacios | «Por» + 600 espacios | 3,7 s (126 s con 2000) | como el ciclo 5 |
+| Suspender un suero con duración | «Suspender el SF en 30 minutos» | **la página caía** (ya antes; C04 lo hizo más alcanzable) | corre |
+| L-F01 contaba como generado un caso autorado que eligió el modelo | — | perdía sus temas de historia | los conserva |
+| La respuesta «no sé» tomaba también «no se administra…» | «No se administra adrenalina, SF 500 mL ev» | se trataba como «no sé» | es una orden |
+
+**Todos se corrigieron**, con una prueba cada uno
+(`REVIEW` en `test_critical_clinical_language_regressions.py`, y pruebas del
+motor, de L-F01 y de la página) y registro C-2026-09-28-09.
+
+**Después se comparó el lector final con el del ciclo 5** sobre los 11 739
+textos que tenemos: el corpus de ensayo, las 90 frases, los tres conjuntos
+ciegos y los textos de las pruebas. Leen distinto 225. **Se revisaron uno por
+uno**, clasificados por lo que el lector deja de leer y lo que empieza a leer:
+
+- **25 dejan de ejecutar algo.** Todos a propósito:
+  - el hallazgo que ya no es una segunda orden (C09);
+  - el TXA de una historia, un pensamiento o una pregunta;
+  - lo que hizo el equipo prehospitalario;
+  - una suspensión invertida («pásate a Ringer 1000 mL» se leía como suspender
+    el Ringer).
+- **120 empiezan a ejecutar algo.** Son las clases corregidas o textos de
+  salida de la página que las pruebas citan y nadie escribe como orden.
+- **4 cambian las dos cosas y 76 sólo preguntas o planes.** También a
+  propósito:
+  - un hallazgo ya no pregunta;
+  - un plan condicional ahora se guarda;
+  - una receta del alta queda como receta.
+
+La comparación encontró además **dos defectos más**, que se corrigieron:
+
+- **La activación de un servicio se prestaba a los fármacos que la seguían.**
+  «Activate the cath lab, aspirin 325 mg and ticagrelor 180 mg PO» volvía
+  interconsultas la aspirina y el ticagrelor. Estaba así desde antes del ciclo
+  6; C02 y C06 lo pusieron delante de más frases.
+- **Un plan condicional que nombra el TXA se perdía** («if it keeps oozing,
+  run the second gram of TXA over 8 hours»). Venía de la regla de inicio de
+  C08.
+
+**Lo que queda del ciclo 5, sin cambio:**
+
+- **Preguntar ante lo ambiguo.** «El paramédico dejó 2 VVP y coloco
+  torniquete» se pregunta: sin su tilde, «coloco» es también «colocó».
+- **La lentitud ante 2000 espacios seguidos** (≈1 s), que ya tenía el ciclo 5.
+- **Citar el texto normalizado** en una pregunta.
+
+**Lección de método.** Los conjuntos ciegos miden la clase que se corrige. Los
+efectos de una corrección sobre frases de otras clases los encontraron la
+revisión adversarial y la comparación completa con el lector anterior. Las dos
+forman parte ahora de cómo se cierra una corrección del lector.
+
+### Los tres conjuntos con el código final (post hoc)
+
+El puntuador contaba una infusión suspendida como dada: «stop the nitro drip»
+contaba como nitrato dado, y una infusión leída como suspendida contaba como
+iniciada. **Corregido el puntuador**, con el código final:
 
 | Conjunto | Negativas sin ejecución falsa (motor) | Positivas correctas en el motor | Retenidas con pregunta | Perdidas sin aviso | Ejecución falsa |
 |---|---|---|---|---|---|
-| 1 (162) | **54/54** (antes de corregir: 50) | 39/108 | 63 | 5 | 1 |
-| 2 (48) | **16/16** (antes: 15) | 9/32 | 19 | 4 | 0 |
+| 1 (162) | **54/54** (medido una vez: 50) | 40/108 | 62 | 5 | 1 |
+| 2 (48) | **16/16** (medido una vez: 15) | 9/32 | 19 | 4 | 0 |
 | 3 (48 negativas) | **48/48** (lector: 45; las 3 de arriba, retenidas) | — | — | — | — |
 
 - **La única ejecución falsa que queda es KD-06:** «Alta con prednisona…,
   loratadina 10 mg al día y receta de autoinyector…». Tras la coma, un fármaco
   de la receta queda registrado como indicado aquí.
 - **Lo que más pesa de lo que queda son las pérdidas sin aviso:** 5 de 108 y
-  4 de 32 en el motor. Casi todas son hemoderivados y vocabulario (TD-14).
+  4 de 32 en el motor. Casi todas son hemoderivados y vocabulario (TD-14 y
+  TD-26).
 
 ### Corpus de ensayo
 
 Los 20 guiones por idioma (semilla 3000), rejugados por la página real con el
 código de DF-22, se compararon con las grabaciones del ciclo 5 decisión por
-decisión.
+decisión: la entrada, el estado de ejecución, las acciones y los planes.
 
 | Medida | Ciclo 5 | Ciclo 6 |
 |---|---|---|
 | Decisiones comparadas | 238 | 238 |
 | Órdenes ejecutadas (ES / EN) | 96 / 96 | 96 / 96 |
 | Retenciones no anticipadas, mensajes sin leer, lecturas vacías | 0 | 0 |
-| Entradas con otro estado de ejecución o con otras acciones | — | **0** |
+| Entradas con otra entrada, estado, acciones o planes | — | **0** |
 | Minuto de cierre distinto | — | **0** |
 | Diferencia ES/EN conocida (procedencia de un campo, script 5) | 1 | 1, la misma |
 
-El rejuego se hizo antes de las cuatro correcciones posteriores. Ninguno de
-sus 240 textos se lee distinto con el lector final, así que vale para él.
+- **El rejuego se hizo antes de las correcciones posteriores.** Sus 213
+  entradas distintas se leen igual con el lector final, así que el rejuego
+  vale para él.
+- **Una primera versión de esta comparación leía un campo que no existe.** Se
+  rehízo con los campos del registro.
 
 ### Latencia
 
@@ -961,14 +1029,14 @@ sus 240 textos se lee distinto con el lector final, así que vale para él.
 ### Pruebas
 
 - **`test_critical_clinical_language_regressions.py` (nuevo,
-  CRITICAL_CLINICAL_LANGUAGE_REGRESSIONS):** 153 pruebas: 149 del lector y
+  CRITICAL_CLINICAL_LANGUAGE_REGRESSIONS):** 192 pruebas: 188 del lector y
   del motor, y 4 escenarios por la página real.
   - Por clase: el ejemplo de la auditoría, variantes y negativos en inglés y
     español.
   - Lo que el lector lee, lo que el motor ejecuta en el caso para el que está
     escrita la frase, y la paridad entre idiomas.
-  - Las fallas que hallaron los conjuntos ciegos.
+  - Las fallas que hallaron los conjuntos ciegos y la revisión adversarial.
   - Los escenarios críticos (anafilaxia, bradicardia, shock, oxígeno) se leen
     del Management Trace guardado.
 - **Archivos de prueba del lector:** 1037 pasan y 2 xfail.
-- **Registro:** `corrections_registry` C-2026-09-28-04.
+- **Registro:** `corrections_registry` C-2026-09-28-04 y C-2026-09-28-09.

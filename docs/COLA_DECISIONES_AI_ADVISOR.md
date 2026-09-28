@@ -38,7 +38,7 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **DF-22 · las nueve clases CRITICAL del lector, corregidas por clase**
   (C-2026-09-28-04).
   - C01 a C09 en inglés y español: el lector, el motor y el Management Trace.
-  - Suite nueva `CRITICAL_CLINICAL_LANGUAGE_REGRESSIONS`: 153 pruebas, 4 de
+  - Suite nueva `CRITICAL_CLINICAL_LANGUAGE_REGRESSIONS`: 192 pruebas, 4 de
     ellas por la página real.
   - Tres conjuntos ciegos (258 frases que nadie del desarrollo vio), medidos
     **una vez**. Encontraron regresiones de las propias correcciones; se
@@ -48,6 +48,15 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
     una pregunta; quedan pérdidas sin aviso, sobre todo de hemoderivados
     (TD-26).
   - Corpus de ensayo: 238 decisiones idénticas al ciclo 5.
+  - **Revisión adversarial del diff, después del primer commit (`39bac97`).**
+    - Halló 13 regresiones de las propias correcciones que los conjuntos
+      ciegos no vieron; por ejemplo, «Hold NS, O2 4 L NC» retiraba el oxígeno
+      y «Should I give aspirin?» la administraba.
+    - Una comparación completa con el lector del ciclo 5 halló dos más y un
+      defecto anterior al ciclo: la activación de un servicio volvía
+      interconsultas los antiagregantes que la seguían.
+    - Todo se corrigió (C-2026-09-28-09).
+    - Las 225 lecturas que difieren del ciclo 5 se revisaron una por una.
   - Detalle: `MEDICION_RECONOCIMIENTO_ORDENES.md`.
 - **59O-03, completo** (C-2026-09-28-05). El aviso de ejecución urgente y la
   oferta de explicarla salen sólo de una ejecución real. Casos A–F de punta a

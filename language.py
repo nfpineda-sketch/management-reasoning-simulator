@@ -461,6 +461,8 @@ _RULES = (
  (r"the order above", "la orden de arriba"),
  (r"Answer the question above, or say cancel\.", "Responde la pregunta de arriba o escribe «cancelar»."),
  (r"Nothing has been administered\.", "No se ha administrado nada."),
+ # "Tranexamic acid 1 g IV administered over 10 min" (C08, cycle 6).
+ (r"\badministered over (\d+(?:[.,]\d+)?) min\b", r"administrado en \1 min"),
  (r"\badministered\b", "administrado"),
  (r"\bstarted at\b", "iniciado a"), (r"\badjusted to\b", "ajustado a"),
  (r"\b(\w+) infusion stopped\b", r"infusión de \1 suspendida"),

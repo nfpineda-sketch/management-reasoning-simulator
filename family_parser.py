@@ -358,7 +358,7 @@ _CONNECTED_SUPPORT = re.compile(
     r"ventilator|ventilation)?\s*", re.I)
 _VENTILATION_SETTING = re.compile(
     r"^(?:at\s+|with\s+|a\s+|con\s+|de\s+|en\s+|in\s+|on\s+)?(?:fio2|fio₂|peep|ipap|epap|tidal\s+volume|vt|"
-    r"volumen\s+corriente|respiratory\s+rate|set\s+rate|rate|frecuencia|fr\b|flow|flujo|i\s*:\s*e|mode|modo|vc/ac|pc/ac|ac/vc|psv|"
+    r"volumen\s+corriente|respiratory\s+rate|set\s+rate|rate|frecuencia|fr\b|rr\b|flow|flujo|i\s*:\s*e|mode|modo|vc/ac|pc/ac|ac/vc|psv|"
     # "Conectalo a VMNI, BiPAP 14/8": the named mode after a support that has
     # none is that support's setting, not a second, contradictory order.
     r"bipap|cpap|"
@@ -490,12 +490,32 @@ _ES_PROCLITIC = re.compile(
 # working model from the order after it at the same place (DF-7, 2026-09-27).
 _DECLARED_INTENTION = re.compile(
     r"(?<=[^.;,\n])\s+(?=(?:i\s+(?:will|am\s+going\s+to)|i'll|i'm\s+going\s+to|"
-    r"(?:le\s+|les\s+)?voy\s+a|vamos\s+a)\s+\w"
-    # "For the massive hemothorax I place a left chest tube": an order in the
-    # first person present, after the reason for it (DF-22, C07, 2026-09-28).
-    r"|(?:i|we)\s+(?:start|give|place|insert|put|order|request|call|consult|activate|administer|begin|"
-    r"intubate|transfuse|apply|perform|obtain|send|stop|discontinue|hold|increase|decrease|titrate|"
+    r"(?:le\s+|les\s+)?voy\s+a|vamos\s+a)\s+\w)", re.I)
+# "For the massive hemothorax I place a left chest tube": an order in the first
+# person present, after the reason for it (DF-22, C07, 2026-09-28). Not in a
+# question ("Should I give aspirin 300 mg PO?"), a hedge or a habit ("I think we
+# start…", "normally we start… but not now"), a condition ("when MAP < 65 we
+# start…") or a clause that reports ("that we give too much fluid"): those ran
+# as orders, and the last cut the working model short (adversarial review of
+# cycle 6).
+_FIRST_PERSON_ORDER = re.compile(
+    r"(?<=[^.;,\n])\s+(?=(?:i|we)\s+(?:start|give|place|insert|put|order|request|call|consult|activate|administer|"
+    r"begin|intubate|transfuse|apply|perform|obtain|send|stop|discontinue|hold|increase|decrease|titrate|"
     r"reassess|draw)\b)", re.I)
+_NOT_A_FIRST_PERSON_ORDER = re.compile(
+    r"\b(?:should|shall|can|could|would|do|does|did|may|might|must|why|what|how|whether|if|unless|when|"
+    r"whenever|once|after|before|until|in\s+case|that|think|believe|guess|suppose|wonder\w*|consider\w*|"
+    r"normally|usually|generally|typically|often|sometimes|always|never|routinely|habitually)\b", re.I)
+
+
+def _first_person_split(match):
+    text = match.string
+    start = max(text.rfind(mark, 0, match.start()) for mark in ".;\n") + 1
+    ends = [index for index in (text.find(mark, match.end()) for mark in ".;\n") if index >= 0]
+    end = min(ends) if ends else len(text)
+    if "?" in text[start:end] or _NOT_A_FIRST_PERSON_ORDER.search(text[start:match.start()]):
+        return match[0]
+    return ", "
 
 
 # In Spanish the intention is a periphrasis around the infinitive the parser
@@ -527,7 +547,11 @@ _FLUID_STOP_VERB = re.compile(
     r"\b(?:hold|d/c|dc|turn\s+off|shut\s+off|cierra|cierre|cerrar|corta|corte|cortar|apaga|apague|apagar|"
     r"para|parar|pare|detener|deten|detenga)\s+(?=(?:(?:the|el|la|los|las|su|sus)\s+)?"
     r"(?:saline|normal\s+saline|ns|sf|suero(?:\s+fisiologico)?|sueros|ringer\w*|lactated\s+ringer\w*|lr|rl|"
-    r"hartmann|fluids?|fluidos?|crystalloids?|cristaloides?|maintenance\s+fluids?)\b)")
+    r"hartmann|fluids?|fluidos?|crystalloids?|cristaloides?|maintenance\s+fluids?)\b"
+    # The fluid ends the clause: "para los fluidos: Ringer 500 mL" and "para el
+    # SF: 500 mL en bolo" are "for", and stopped the fluid they ordered (found by
+    # the adversarial review of cycle 6, 2026-09-28).
+    r"(?:\s+(?:now|ahora|ya|stat|immediately|inmediatamente))?\s*(?:$|[.;,\n]|(?:y|e|and|then|luego)\b))")
 
 
 def _fluid_stop_verbs(text):
@@ -557,7 +581,8 @@ def _opening_time_word(text):
 
 
 def _declared_intention(text):
-    return _ES_INTENTION.sub(r"\1", _DECLARED_INTENTION.sub(", ", str(text or "")))
+    text = _FIRST_PERSON_ORDER.sub(_first_person_split, _DECLARED_INTENTION.sub(", ", str(text or "")))
+    return _ES_INTENTION.sub(r"\1", text)
 
 
 # "Por el hemotorax masivo izquierdo instalo tubo pleural izquierdo", "ante la
@@ -572,8 +597,15 @@ _ES_FIRST_PERSON_ORDER = (r"instalo|inicio|coloco|administro|pongo|doy|indico|so
                           r"aplico|transfundo|nebulizo|consulto|interconsulto|llamo|aviso|hospitalizo|derivo|"
                           r"intubo|ventilo|activo|titulo|ajusto|agrego|repito|reevaluo|mido|cardiovierto")
 _ES_REASON_FIRST = re.compile(
-    r"(^|[.;\n]\s*)((?:por|ante|dado|dada|debido\s+a|como|frente\s+a|en\s+vista\s+de|considerando)\s+[^.;,:\n]*?)"
-    r"\s+(?=(?:(?:le|les|lo|la|los|las)\s+)?(?:" + _ES_FIRST_PERSON_ORDER + r")\b)")
+    r"(^|[.;\n][^\S\n]*)((?:por|ante|dado|dada|debido\s+a|como|frente\s+a|en\s+vista\s+de|considerando)"
+    r"(?:[^\S\n]+[^\s.;,:]+){1,9}?)"
+    r"[^\S\n]+(?=(?:(?:le|les|lo|la|los|las)\s+)?(?:" + _ES_FIRST_PERSON_ORDER + r")\b)")
+# "Por qué no inicio noradrenalina?", "por lo general administro aspirina": a
+# question and a habit are not the reason for an order now; both ran as orders
+# (adversarial review of cycle 6). The reason above is read word by word: with
+# "[^.;,:]*?" a run of spaces made the pattern cubic and froze the page.
+_NOT_A_REASON = re.compile(
+    r"(?:por|como)\s+(?:que|lo\s+(?:general|comun|habitual|usual|normal)|costumbre|regla|norma|rutina|habito)\b")
 # Someone else as the subject right before the verb: "por la disnea el
 # paramedico inicio oxigeno" is history, not an order. "La hipotension del
 # paciente" names the patient as a possessor, not as the one acting.
@@ -590,6 +622,10 @@ def _reason_then_order(text):
     def replace(match):
         reason = match[2]
         if _SOMEONE_ELSE.search(reason) or _ARTICLE_BEFORE.search(reason) or len(reason.split()) > 9:
+            return match[0]
+        ends = [index for index in (match.string.find(mark, match.end()) for mark in ".;\n") if index >= 0]
+        clause = match.string[match.start():min(ends) if ends else len(match.string)]
+        if _NOT_A_REASON.match(reason) or "?" in clause or "¿" in clause:
             return match[0]
         return match[1] + reason + ", "
     return _ES_REASON_FIRST.sub(replace, text)
@@ -912,6 +948,19 @@ _INSTRUCTION_START = re.compile(
     r")\b")
 
 
+def _opens_with_an_order(text):
+    """Whether a reply is a new order rather than an answer to a held question.
+
+    C07 lent the order verb a bare "I"/"we" ("I place a chest tube"). A reply
+    such as "we start at 0.1 mcg/kg/min" answers a held rate question; read as a
+    new order, it discarded the held bundle (adversarial review of cycle 6).
+    """
+    text = str(text or "")
+    if re.match(r"(?:i|we)\s+(?!will\b|want\s+to\b|am\s+going\s+to\b)", text):
+        return False
+    return bool(_COMMAND.match(text))
+
+
 def _an_instruction(text):
     text = str(text or "").strip(" ,.")
     # Chart shorthand is an instruction too: "si satura menos de 90%, mascarilla
@@ -1216,13 +1265,26 @@ _NOT_THE_RESIDENTS_ORDER = re.compile(
 # A later clause of that sentence, joined by "and"/"y" or with no order verb of
 # its own, is asked about instead of run: it may still be the resident's order,
 # and a question never loses it. The resident as its subject ("and I place",
-# "y pongo") makes it the resident's order again.
+# "y pongo") makes it the resident's order again, and so does a clause with the
+# resident's own verb after a comma. An account is the team as the subject, told
+# in the past: "remove the EMS dressing and apply a tourniquet" and "ask the
+# medic what he gave and give naloxone" are the resident's orders (adversarial
+# review of cycle 6). "Y coloco", "y paso" stay asked about: without its accent
+# the verb is also the team's past ("colocó", "pasó").
+_TXA_WORD = re.compile(r"\b(?:[aá]cido\s+tranex[aá]mico|tranexamic\s+acid|tranexamico|\btxa\b|exacyl|cyklokapron)\b")
 _PREHOSPITAL_ACCOUNT = re.compile(
-    r"\b(?:medic|medics|paramedic\w*|paramedico\w*|ems|samu|en\s+route|prehospital\w*|pre-hospital\w*|"
-    r"in\s+the\s+(?:ambulance|field)|en\s+la\s+ambulancia)\b")
+    r"^(?:(?:the|our|el|la|los|las|nuestro|nuestra|nuestros)\s+)?"
+    r"(?:medic|medics|paramedic\w*|paramedico\w*|ems|samu|ambulance\s+crew|equipo\s+prehospitalario)\b"
+    r"|^(?:en\s+(?:la\s+ambulancia|el\s+samu|el\s+traslado)|in\s+the\s+(?:ambulance|field)|en\s+route|"
+    r"prehospital\w*|pre-hospital\w*)\b")
+_TOLD_IN_THE_PAST = re.compile(
+    r"\b(?:already|gave|given|got|put|placed|started|inserted|applied|administered|bagged|intubated|pushed|ran|"
+    r"hung|did|was|were|had|ya|dio|dieron|puso|pusieron|paso|pasaron|dejo|dejaron|inicio|iniciaron|instalo|"
+    r"instalaron|coloco|colocaron|administro|administraron|recibio|trajo|trajeron|intubo|intubaron|ventilo|"
+    r"ventilaron)\b")
 _RESIDENT_AS_SUBJECT = re.compile(
     r"^(?:(?:and|y|e|then|luego)\s+)?(?:i|i'll|i\s+will|i'm|i\s+am|we|we'll|we\s+will|let's|lets|yo|nosotros|"
-    r"vamos\s+a|voy\s+a|nos\s+vamos\s+a|now|ahora|pongo|doy|pido|suspendo|transfundo|mido|repito|hago)\b")
+    r"vamos\s+a|voy\s+a|nos\s+vamos\s+a|pongo|doy|pido|suspendo|transfundo|mido|repito|hago)\b")
 
 
 def _part_of_an_account(piece):
@@ -1479,17 +1541,42 @@ _DISPOSITION_VERBS = frozenset({"admit", "transfer", "discharge", "dar de alta",
 # dose) or is not a treatment ("with hourly glucose checks", "con su esposa") is
 # left as it was.
 _ATTACHED_TREATMENT = re.compile(r"\b(?:on|con|with)\s+(?:(?:a|an|un|una)\s+)?(?=\S)")
-_QUANTIFIED = ("rate", "rate_mcg_min", "rate_ml_h", "dose_mg", "dose_g", "dose_mcg", "volume_ml", "units",
-               "flow_lpm", "dose_mg_per_kg", "volume_ml_per_kg")
 # A monitored bed is part of where the patient goes, not an order of its own.
 _NOT_A_TREATMENT = frozenset({"clarification", "diagnostic", "reassessment", "examination", "disposition",
                               "consult", "reperfusion_referral", "result_review", "monitoring"})
 _QUANTITY = re.compile(r"\d+(?:[.,]\d+)?\s*(?:mg|mcg|ug|g|ml|l|u|ui|units?|unidades|meq|mmol|%)\b")
+# "Hold NS, O2 4 L NC" stopped the oxygen too: the stop verb was lent to the
+# next item of the list, which took the patient off oxygen (found by the
+# adversarial review of cycle 6; "suspender SF, O2 4 L NC" did the same before).
+# An item that names its own dose, volume or flow is a new order, not one more
+# thing to stop; "suspender SF y noradrenalina" and "stop the saline and the
+# 500 mL bolus" still stop both.
+_STOP_VERBS = frozenset({"stop", "discontinue", "suspender", "suspendo", "detener", "retirar", "retiro", "sacar",
+                         "saco", "desconectar", "desconecta", "desconecto", "disconnect"})
+_DETERMINER_START = re.compile(r"(?:the|el|la|los|las|that|this|ese|esa|este|esta|su|sus|his|her|its)\b")
+# Nor is it lent to what is said about the patient: "turn off the maintenance
+# fluids, she's wet, and switch to a nitro drip" read "stop she's wet" and held
+# the change as an unrecognized order.
+_PATIENT_STATEMENT = re.compile(
+    r"(?:she|he|they|the\s+patient|patient|pt|ella|el\s+paciente|la\s+paciente|paciente)\s*"
+    r"(?:'s|'re|is|are|was|were|esta|estan|sigue|siguen|tiene)\b")
+
+
+# "With a norepinephrine infusion ready" is prepared, not started.
+_NOT_STARTED_YET = re.compile(
+    r"\b(?:ready|prepared|available|on\s+standby|standby|at\s+the\s+bedside|to\s+hand|if\s+needed|"
+    r"lista|listas|listo|listos|preparad[oa]s?|disponibles?|a\s+mano|en\s+espera|por\s+si)\b")
 
 
 def _attached_treatment(body):
-    for match in _ATTACHED_TREATMENT.finditer(body):
+    for count, match in enumerate(_ATTACHED_TREATMENT.finditer(body)):
+        if count >= 4:
+            # Each try parses the rest of the clause: a long run of "on x" was
+            # quadratic (adversarial review of cycle 6).
+            break
         attached = body[match.end():]
+        if _NOT_STARTED_YET.search(attached):
+            continue
         parsed, _ = _parse_piece("start " + attached)
         # Whatever treatment is written with the destination goes with it,
         # quantified or not: "admit to the ICU on continuous albuterol 10 mg/h",
@@ -1630,8 +1717,11 @@ def _parse_piece_core(piece, inherited=None):
     # en route", "estaba pensando en dar tranexamico", "no corresponde acido
     # tranexamico" ran the drug once its duration was accepted (DF-22, C08;
     # found by the blind held-out check, 2026-09-28).
-    if not verb and _NOT_THE_RESIDENTS_ORDER.search(body):
-        return [], None
+    # Every other medicine passes the history test at the verbless gate below;
+    # returning here for every piece silently dropped "paracetamol 1 g ev ya que
+    # AINE contraindicado" and held "epinephrine 0.5 mg IM given anaphylaxis"
+    # (adversarial review of cycle 6).
+    someone_elses = not verb and bool(_NOT_THE_RESIDENTS_ORDER.search(body))
 
     # The x of xABCDE. A tourniquet, direct pressure and packing are the three
     # measures this engine performs, and each names where it is applied.
@@ -1642,7 +1732,7 @@ def _parse_piece_core(piece, inherited=None):
         r"(?:vendaje|ap[oó]sito)\s+(?:compresivo|hemost[aá]tico)|"
         r"(?:h[ae]mostatic|pressure)\s+dressing|control\s+de\s+(?:la\s+)?hemorragia|"
         r"h[ae]morrhage\s+control|bleeding\s+control)\b", body)
-    if bleeding:
+    if bleeding and not someone_elses:
         measure = ("tourniquet" if re.search(r"torniquete|tourniquet", body)
                    else "packing" if re.search(r"empaquet|packing|taponamiento", body)
                    else "direct pressure")
@@ -1651,15 +1741,18 @@ def _parse_piece_core(piece, inherited=None):
                 else "wound")
         return [{"type": "hemorrhage_control", "measure": measure, "site": site}], verb or "apply"
 
-    if re.search(r"\b(?:faja\s+p[eé]lvica|cintur[oó]n\s+p[eé]lvico|pelvic\s+binder|"
-                 r"binder\s+p[eé]lvico|sabana\s+p[eé]lvica|pelvic\s+(?:sheet|wrap))\b", body):
+    if not someone_elses and re.search(r"\b(?:faja\s+p[eé]lvica|cintur[oó]n\s+p[eé]lvico|pelvic\s+binder|"
+                                       r"binder\s+p[eé]lvico|sabana\s+p[eé]lvica|pelvic\s+(?:sheet|wrap))\b", body):
         return [{"type": "pelvic_binder"}], verb or "apply"
 
-    txa = re.search(r"\b(?:[aá]cido\s+tranex[aá]mico|tranexamic\s+acid|tranexamico|\btxa\b|"
-                    r"exacyl|cyklokapron)\b", body)
+    txa = _TXA_WORD.search(body)
     # Like any other medicine, without a verb it is an order only where it opens
-    # the piece, or its dose does: "TXA 1 g IV", "1 g TXA IV".
-    if txa and (verb or txa.start() == 0 or re.match(r"\d", body)):
+    # the piece, or its dose does: "TXA 1 g IV", "1 g TXA IV". A route, an
+    # article or "urgent" may come first, as for any other medicine: "IV TXA 1
+    # g", "el ácido tranexámico 1 g ev", "urgent TXA 1 g IV" were held.
+    if txa and not someone_elses and (
+            verb or re.match(r"\d", body)
+            or re.fullmatch(r"(?:(?:iv|ev|io|el|la|the|an?|urgent[e]?|stat|now|ahora)\s+)*", body[:txa.start()])):
         # "15 mg/kg" is a dose per kilogram; until 2026-09-26 the fixed-dose
         # pattern read it as 15 mg and the range check then refused it.
         per_kilo = _PER_KILO_ANY.search(body)
@@ -1800,6 +1893,15 @@ def _parse_piece_core(piece, inherited=None):
             r"(?:thromboly\w*|trombol\w*|fibrinol\w*|anticoagula\w*|analgesi\w*|sedaci[oó]n|sedation|"
             r"antibiotic\w*|antibi[oó]tic\w*|profilaxis|prophylaxis)\s+(?:con|with)\s+(?:"
             + "|".join(pattern for agents in _AGENTS.values() for pattern in agents.values()) + r")\b", body))
+        # "Sedation with etomidate 8 mg IV before synchronized cardioversion":
+        # read as a start, only the procedure ran and the sedation was lost
+        # without a word; it is quoted back as before (adversarial review of
+        # cycle 6).
+        if therapy_start and re.search(
+                r"\b(?:cardiover\w*|chest\s+tube|tubo\s+pleural|pleurostom\w*|thoracost\w*|toracost\w*|"
+                r"intubat\w*|intubac\w*|intubar|rsi|isr|pacing|marcapaso\w*|procedure|procedimiento|"
+                r"reducci[oó]n|reduction|sutur\w*|drenaje|drain\w*)\b", body):
+            therapy_start = False
         # Transcutaneous pacing written as a chart line, with its settings:
         # "marcapaso transcutaneo a 70 lpm con 60 mA" was read as nothing, so the
         # alternative after "si no responde" was never a plan (DF-22, C01).
@@ -1820,8 +1922,15 @@ def _parse_piece_core(piece, inherited=None):
     if medication_count > 1 or (medication_count and has_fluid):
         return [_clarification("Separate each medication or fluid with its own dose and route so the order is unambiguous.")], verb
 
+    # "Activate the cath lab, aspirin 325 mg and ticagrelor 180 mg PO": the
+    # activation was lent to the medicines after it, and each became a consult
+    # with no service -- the antiplatelets of a STEMI lost without a word, since
+    # before cycle 6; DF-22 (C02, C06) put it in front of more sentences
+    # (adversarial comparison with cycle 5, 2026-09-28). A medicine is never a
+    # service to activate.
     if (re.search(r"\b(?:consult|call|consultar|interconsultar|llamar)\b", text)
-            or re.search(_SERVICE_PROCEDURE, body) or verb in {"activate", "activar"}):
+            or re.search(_SERVICE_PROCEDURE, body)
+            or (verb in {"activate", "activar"} and not medication_count and not has_fluid)):
         service = None
         # The pulmonary embolism response team is asked for by its name here,
         # and the case declares involving it as what D3 turns on; only the
@@ -2538,8 +2647,15 @@ def parse_family_actions(text) -> dict:
                     # order ("transfundir 2 U de GR O negativo, si sigue
                     # hipotenso, ...") is read on its own: held and asked about,
                     # not folded into the plan where it vanished.
+                    then = contingency["then"] if contingency else ""
+                    # Only up to the next condition: each "si no, X" read the
+                    # whole rest of the sentence again, twice, and the time
+                    # doubled with every one (adversarial review of cycle 6).
+                    following = _CONDITIONAL.search(then, 1)
+                    if following:
+                        then = then[:following.start()]
                     if not (contingency and (_orders_now(head) or _an_instruction(head))
-                            and _an_instruction(contingency["then"])):
+                            and _an_instruction(then)):
                         split = None
                     else:
                         contingency_split = True
@@ -2558,7 +2674,11 @@ def parse_family_actions(text) -> dict:
                     # and "si baja la PA, SF 500 ml ev" vanished without a word
                     # (2026-09-25).
                     bare = _CONDITION_CLAUSE.sub(" ", sentence).strip(" ,:")
-                    if _COMMAND.search(re.sub(r"^.*?[, :]", "", sentence)) or re.search(
+                    # Tranexamic acid is read only where it opens its clause
+                    # (C08), so a plan such as "if it keeps oozing, run the
+                    # second gram of TXA over 8 hours" was no longer kept; it is
+                    # kept as before (comparison with cycle 5, 2026-09-28).
+                    if _TXA_WORD.search(bare) or _COMMAND.search(re.sub(r"^.*?[, :]", "", sentence)) or re.search(
                             r"\b(?:give|dar|doy|administrar|administro|start|iniciar|inicio|order|solicitar|"
                             r"solicito|pido|reassess|reevaluar|reevaluo|alta|hospitalizar|hospitalizo|"
                             r"ingresar|ingreso|trasladar|traslado|admit|discharge|transfer)\b", sentence) or (
@@ -2644,10 +2764,10 @@ def parse_family_actions(text) -> dict:
             if told is not None and told[0] and not any(
                     action.get("type") not in {"clarification", "reassessment"} for action in actions[told[1]:]):
                 account = True
-            told = (bool(piece) and bool(_PREHOSPITAL_ACCOUNT.search(piece))
-                    and not _RESIDENT_AS_SUBJECT.match(piece), len(actions))
+            told = (bool(piece) and bool(_PREHOSPITAL_ACCOUNT.match(piece.strip()))
+                    and bool(_TOLD_IN_THE_PAST.search(piece)), len(actions))
             found = sentence.find(piece, cursor) if piece else -1
-            joined_by_and = found >= 0 and bool(re.fullmatch(r"\s*(?:and|y|e)\s*", sentence[cursor:found]))
+            joined_by_and = found >= 0 and bool(re.fullmatch(r"[\s,]*(?:and|y|e)\s*", sentence[cursor:found]))
             if found >= 0:
                 cursor = found + len(piece)
             members.append([piece, []])
@@ -2702,11 +2822,27 @@ def parse_family_actions(text) -> dict:
                 last_order = sentence
                 inherited = None
                 continue
+            if inherited in _STOP_VERBS and (
+                    (_QUANTITY.search(piece) and not _DETERMINER_START.match(piece.strip()))
+                    or _PATIENT_STATEMENT.match(piece.strip())):
+                inherited = None
             parsed, inherited = _parse_piece(piece, inherited)
             item = re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip())
+            if (re.match(r"(?:i|we)\s+(?!will\b|want\s+to\b|am\s+going\b)", item) and parsed
+                    and all(action.get("type") == "clarification" and action.get("unrecognized_text")
+                            for action in parsed)
+                    and not (_names_a_drug(item) or _QUANTITY.search(item))):
+                # The first person opens an order only when it names one (C07).
+                # "We give it 5 minutes", "we continue to observe the MAP" are
+                # prose, read as before: quoted back as unrecognized orders, they
+                # held the epinephrine written before them (adversarial review of
+                # cycle 6).
+                parsed, inherited = [], None
             if (account and (joined_by_and or not _COMMAND.match(item)) and not _RESIDENT_AS_SUBJECT.match(item)
                     and any(action.get("type") not in {"clarification", "reassessment"} for action in parsed)):
                 parsed, inherited = [_part_of_an_account(item)], None
+            elif any(action.get("type") not in {"clarification", "reassessment"} for action in parsed):
+                account = False
             # Nothing read, or only a question the verb of an item before it
             # raised ("monitor + IV"): a listed set-up item is still its own order.
             lent_verb_only = (len(parsed) == 1 and parsed[0].get("type") == "clarification"

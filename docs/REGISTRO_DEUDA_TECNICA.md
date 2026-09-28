@@ -59,6 +59,8 @@ un defecto que el piloto puede medir.
 | TD-23 | Idioma | En español quedan en inglés el aviso «Urgent intervention executed…», el de la anulación docente y las frases del modelo del POCUS («mildly reduced contraction») | ciclo 6 (59O-03, DF-23 §7.2) | No | Con la próxima revisión de la traducción |
 | TD-24 | Infraestructura | PostgreSQL no se probó en el ciclo 6: el servidor local no puede usar el directorio privado de la sesión. La única consulta SQL que cambió (L-F04) es un alias de columna estándar, probada en SQLite | ciclo 6 | No | Verificar el perfil en la base de staging antes de un piloto con residentes |
 | TD-25 | Pruebas | `test_acs_reperfusion.py` llama a una prueba «reperfusion prevents the block and the arrest» y el bloqueo ocurre en su propio escenario; sólo comprueba la FV | agente DF-24/TDFC, ciclo 6 | No | Renombrar cuando se toque el archivo |
+| TD-27 | Desempeño | Una racha de ~2000 espacios seguidos tarda ~1 s en leerse; ya era así en el ciclo 5 (`_sequenced` y la intención declarada). La racha que el ciclo 6 hacía cúbica está corregida | revisión adversarial del ciclo 6 | No | Colapsar espacios al normalizar, cuando se toque el lector |
+| TD-28 | Lector | Una pregunta cita el texto normalizado, no el escrito («administrar tranexamico» por «pasó tranexámico»); ya era así antes del ciclo | revisión adversarial del ciclo 6 | No | Citar el texto original del residente |
 | TD-19 | Clínica menor | `bradycardia_bb_54f` corregida (llega somnolienta, C-2026-09-28-08). Quedan: `anaphylaxis_63m_betablocked` con pulso irregular y monitor sinusal (dos arreglos posibles); embarazo no redactado en 4 mujeres, y la pregunta por la última regla responde con el inicio de los síntomas | `docs/AUDITORIA_DF23_CICLO6.md` §2–§4 | No | Decisión docente |
 
 ## Corregido en el ciclo 6
@@ -71,6 +73,7 @@ un defecto que el piloto puede medir.
 | TD-13 | «Urgent intervention executed» y la oferta de explicarla salen sólo de una ejecución real; «no sé» ante una orden retenida ya no la hace desaparecer | C-2026-09-28-05 |
 | TD-15 | Los temas de historia se leen del caso congelado del encuentro (L-F01) | C-2026-09-28-06 |
 | TD-16 | El perfil se ordena por la fecha del encuentro (L-F04) | C-2026-09-28-07 |
+| — | Las regresiones de las propias correcciones que halló la revisión adversarial del diff: el «stop» prestado a la orden siguiente («Hold NS, O2 4 L NC» retiraba el oxígeno), la primera persona que ejecutaba preguntas, la prueba de historia que silenciaba órdenes comunes, el relato prehospitalario, el «RR» del ventilador, la sedación con su procedimiento, lo «ready», el tiempo de C01 y de C07, la página que caía al suspender un suero con duración, L-F01 con casos que eligió el modelo y «no se administra…». Y uno anterior al ciclo: la activación de un servicio se prestaba a los fármacos siguientes | C-2026-09-28-09 |
 | TD-08 (parte) · TD-19 (parte) | De Winter conserva la acinesia con la arteria cerrada; `bradycardia_bb_54f` llega somnolienta | C-2026-09-28-08 |
 
 ## Corregido en la extensión nocturna
@@ -85,5 +88,8 @@ un defecto que el piloto puede medir.
 
 - **KB-01:** el oxígeno sin flujo absoluto se retiene para preguntar el flujo.
 - **KB-02:** un «IN» suelto antes del fármaco no se lee como vía nasal.
+- **KB-03 (ciclo 6):** tras lo que hizo el equipo prehospitalario, «y coloco…» o
+  «y paso…» se pregunta: sin su tilde, el verbo es también el pasado del equipo
+  («colocó», «pasó»). Una pregunta no pierde la orden.
 - **Reenviar una orden es un turno nuevo.** Si el motor la repite depende del
   fármaco: una dosis única ya dada no se repite.

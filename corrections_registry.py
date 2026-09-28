@@ -1246,6 +1246,45 @@ CORRECTIONS = (
                   "test_the_case_says_what_the_patient_shows.py::test_the_beta_blocker_overdose_arrives_drowsy_and_does_not_worsen_on_its_own"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-28-09",
+        "date": "2026-09-28",
+        "title": "Regresiones de las correcciones del ciclo 6 halladas por la revisión adversarial del diff, corregidas",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Una revisión adversarial del diff y una comparación con el lector del ciclo 5 sobre todos los "
+                   "textos que tenemos hallaron lo que los conjuntos ciegos no vieron. «Hold NS, O2 4 L NC» quitaba "
+                   "el oxígeno: el «stop» de C04 se prestaba a la orden siguiente (ahora no a una con su dosis, "
+                   "volumen o flujo, ni a lo dicho del paciente; «suspender SF, O2 4 L NC» ya lo hacía antes); "
+                   "«para los fluidos: Ringer…» se leía como suspender. La primera persona de C07 ejecutaba una "
+                   "pregunta, una duda o un hábito («Should I give aspirin?», «por lo general administro…») y "
+                   "retenía la adrenalina ante prosa («we give it 5 minutes»). La prueba de historia de C08 "
+                   "silenciaba o retenía órdenes comunes («paracetamol… ya que AINE contraindicado», «epinephrine "
+                   "given anaphylaxis», «urgent TXA 1 g IV»). El relato prehospitalario retenía órdenes del "
+                   "residente y se saltaba con «, y». Además: una sedación con su procedimiento perdía la "
+                   "sedación; un «RR 10» tras intubar se perdía; «with a norepinephrine infusion ready» la "
+                   "iniciaba; un plan condicional con TXA se perdía; «si no, X» repetido tardaba minutos y un "
+                   "rótulo con espacios, más; suspender un suero con duración tiraba la página; un caso autorado "
+                   "que eligió el modelo perdía sus temas de historia; «no se administra…» se tomaba por «no sé». Y "
+                   "uno anterior al ciclo: la activación de un servicio se prestaba a los fármacos que la seguían "
+                   "(«activate the cath lab, aspirin 325 mg and ticagrelor 180 mg PO» los volvía interconsultas)."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE6,
+        "affects": {"modules": ["family_parser", "family_engine", "pending_family_orders", "app", "history_review",
+                                "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_critical_clinical_language_regressions.py::"
+                  "test_what_the_adversarial_review_found_reads_as_cycle_5_did_or_better",
+                  "test_critical_clinical_language_regressions.py::test_a_conditional_plan_that_names_tranexamic_acid_is_kept",
+                  "test_critical_clinical_language_regressions.py::test_a_chain_of_conditions_and_a_run_of_spaces_are_read_in_time",
+                  "test_critical_clinical_language_regressions.py::test_an_answer_in_the_first_person_is_not_taken_for_a_new_order",
+                  "test_critical_clinical_language_regressions.py::test_a_stop_written_with_a_duration_does_not_break_the_page",
+                  "test_critical_clinical_language_regressions.py::"
+                  "test_the_first_line_orders_the_review_found_held_run_in_the_engine",
+                  "test_an_old_encounter_keeps_its_own_history.py::test_an_authored_case_the_model_chose_keeps_its_frozen_topics",
+                  "test_what_the_page_says_follows_what_ran.py::"
+                  "test_only_a_reply_that_says_nothing_but_unsure_keeps_the_order_held"],
+        "preservation": None,
+    },
 )
 
 

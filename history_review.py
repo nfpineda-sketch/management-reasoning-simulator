@@ -157,8 +157,11 @@ def frozen_topics(record):
         case = spec.get("clinical_case") if isinstance(spec, dict) else None
         if not isinstance(case, dict):
             continue
-        import evaluation_basis
-        if evaluation_basis._is_generated(case.get("id"), spec):
+        # A generated case declared no topics. An authored case the model chose
+        # from the bank (provenance "ai") is still the authored case, frozen
+        # with its history: counted as generated, its encounters lost every
+        # "never asked" topic (adversarial review of cycle 6).
+        if str(case.get("id") or "").startswith("AI-") or spec.get("case_family") == "generated":
             return (), "generated"
         history = case.get("history")
         if isinstance(history, dict):

@@ -71,6 +71,7 @@ validación: un residente ve la simulación responder a lo que el motor ejecutó
 | HIGH: «Urgent intervention executed» cuando nada corrió (59O-03) | **Corregido.** Casos A–F de punta a punta, EN/ES (C-2026-09-28-05) |
 | HIGH: preguntas atadas a órdenes mal leídas (59O-06) | **En parte.** El hallazgo tras una orden ya no crea una orden fantasma (C09). Queda la tasa de SG ante una insulina (H11) |
 | — | **Nuevo, corregido:** lo que hizo el equipo prehospitalario ya no corre como orden del residente; un suero escrito con su vía («por VVP») ya no se pierde |
+| — | **Nuevo, corregido:** las regresiones de las propias correcciones que halló la revisión adversarial del diff («Hold NS, O2 4 L NC» retiraba el oxígeno), y los antiagregantes que la activación de hemodinamia volvía interconsultas (C-2026-09-28-09) |
 | HIGH: `acs_54m_inferior` y el POCUS de las oclusiones | De Winter corregido (C-2026-09-28-08). `acs_54m_inferior` sin cambio, NOT REVIEWED |
 | MEDIUM: temas de historia vivos (L-F01) y cronología del perfil (L-F04) | **Corregidos** (C-2026-09-28-06 y 07) |
 

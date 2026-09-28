@@ -964,8 +964,11 @@ def _order(state, a):
         from weight_based_doses import fallback_weight
         a = {**a, "volume_ml": round(a["volume_ml_per_kg"] * fallback_weight(state, a))}
     # Generated cases schedule timed delivery in generated_delivery; only bank cases queue here.
+    # A stop carries no volume to deliver: "suspender el SF en 30 minutos" raised
+    # KeyError: 'volume_ml' and the page showed a traceback; C04's new stop verbs
+    # made it reachable (adversarial review of cycle 6).
     timed = (a.get("administration_duration_min") is not None and state.get("engine_family") != "generated"
-             and kind != "tranexamic_acid")
+             and kind != "tranexamic_acid" and a.get("operation") != "stop")
     duration = 1
     label = kind.replace("_", " ").capitalize()
     if kind == "airway_preparation":

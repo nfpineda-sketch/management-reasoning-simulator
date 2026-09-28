@@ -5270,6 +5270,11 @@ _UNSURE_REPLY = re.compile(
     r"no\s+(?:lo\s+)?se\b|no\s+estoy\s+segur[oa]|no\s+tengo\s+(?:idea|claro)|ni\s+idea|no\s+sabria|"
     r"no\s+idea|not\s+sure|unsure|(?:i\s+)?(?:don'?t|do\s+not|dunno)\s+know|i\s+am\s+not\s+sure|i'?m\s+not\s+sure"
     r")\b")
+# What follows the doubt may still be an order or a cancellation: "no se
+# administra adrenalina, SF 500 mL ev" is an order, "no sé, cancelar" cancels
+# (adversarial review of cycle 6). "No sé la dosis" is still a doubt.
+_UNSURE_THEN_ORDER = re.compile(
+    r"\d|\b(?:cancel\w*|administr\w*|dar|doy|dale|give|start|inici\w*|intub\w*|pon\w*|pas\w*|suspend\w*|stop)\b")
 
 
 def try_resolve_pending_action(text):
@@ -5289,10 +5294,11 @@ def try_resolve_pending_action(text):
                 add_event("order_cancelled", "The held order was discarded to run this one: "
                           + " + ".join(held) + ". None of it was administered.")
             return None
-        from family_parser import _COMMAND, _normalize, _NEGATION
+        from family_parser import _normalize, _NEGATION, _opens_with_an_order
         body = _normalize(text)
         held = _understood_order_labels(pending.get("parsed") or {})
-        if resolution is None and _UNSURE_REPLY.match(body):
+        unsure = _UNSURE_REPLY.match(body)
+        if resolution is None and unsure and not _UNSURE_THEN_ORDER.search(body[unsure.end():]):
             # "No se" answers nothing, and it is no new order either: the order
             # stays held and the question stands. Read as a negated directive,
             # it used to discard the held order without a word -- a bag-mask
@@ -5300,7 +5306,7 @@ def try_resolve_pending_action(text):
             # 2026-09-28).
             return {"clarification": "The held order is still waiting: " + (" + ".join(held) or "the order above")
                                      + ". Answer the question above, or say cancel. Nothing has been administered."}
-        if (resolution and resolution.get("parsed")) or (resolution is None and (_COMMAND.match(body) or _NEGATION.match(body))):
+        if (resolution and resolution.get("parsed")) or (resolution is None and (_opens_with_an_order(body) or _NEGATION.match(body))):
             st.session_state.pending_action = None
             if resolution is None and held:
                 # A new directive replaces the held order, and what that costs is

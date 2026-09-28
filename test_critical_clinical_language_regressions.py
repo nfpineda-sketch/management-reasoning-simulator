@@ -265,6 +265,101 @@ def test_a_near_miss_runs_nothing_it_should_not(cls, lang, text, forbidden, plan
     assert set(plans) <= kinds, parsed["future_details"]
 
 
+# --- what the adversarial review of the cycle 6 diff found in the corrections themselves ----
+# Each sentence reads as cycle 5 read it, or better: (text, what must be read now, what must not).
+REVIEW = [
+    # C04: a stop is not lent to a new order, and "para" is also "for".
+    ("Hold NS, O2 4 L NC", [("fluid", {"operation": "stop"}), ("oxygen", {"device": "nasal cannula", "flow_lpm": 4.0})],
+     []),
+    ("Cierra el suero y oxígeno por naricera a 3 L/min",
+     [("fluid", {"operation": "stop"}), ("oxygen", {"device": "nasal cannula"})], []),
+    ("Hold the saline, furosemide 40 mg IV", [("fluid", {"operation": "stop"}), ("diuretic", {"dose_mg": 40.0})], []),
+    ("Suspender SF, O2 4 L NC", [("oxygen", {"device": "nasal cannula"})], []),
+    ("Suspender noradrenalina y dobutamina",
+     [("norepinephrine", {"operation": "stop"}), ("dobutamine", {"operation": "stop"})], []),
+    ("Turn off the maintenance fluids, she's wet, and switch to a nitro drip at 50 mcg/min",
+     [("fluid", {"operation": "stop"})], ["clarification"]),
+    ("Para los fluidos: Ringer lactato 500 mL ev", [], ["fluid"]),
+    # C07: a question, a hedge, a habit or prose in the first person is no order.
+    ("Should I give aspirin 300 mg PO?", [], ["aspirin"]),
+    ("Normally we start norepinephrine 0.1 mcg/kg/min but not now", [], ["norepinephrine"]),
+    ("Por qué no inicio noradrenalina 0,1 mcg/kg/min?", [], ["norepinephrine"]),
+    ("Por lo general administro aspirina 300 mg vo", [], ["aspirin"]),
+    ("I think we start norepinephrine 0.1 mcg/kg/min", [], ["norepinephrine"]),
+    ("Epinephrine 0.5 mg IM now. We give it 5 minutes and then reassess.", [("epinephrine_im", {"dose_mg": 0.5})],
+     ["clarification"]),
+    # C08: the history test guards only what is read anywhere in the piece.
+    ("Paracetamol 1 g ev ya que AINE contraindicado", [("antipyretic", {})], []),
+    ("Aspirin 300 mg PO (not given by EMS)", [("aspirin", {"dose_mg": 300.0})], []),
+    ("Epinephrine 0.5 mg IM given anaphylaxis", [("epinephrine_im", {})], ["clarification"]),
+    ("Tourniquet high on the right thigh. IV TXA 1 g.", [("hemorrhage_control", {}), ("tranexamic_acid", {})], []),
+    ("Urgent TXA 1 g IV", [("tranexamic_acid", {})], []),
+    ("El ácido tranexámico 1 g ev", [("tranexamic_acid", {})], []),
+    # The prehospital account: the team as the subject, told in the past; a comma
+    # before "and" does not bypass it.
+    ("Remove the EMS dressing and apply a tourniquet high on the right thigh", [("hemorrhage_control", {})],
+     ["clarification"]),
+    ("Aspirin given by EMS, give clopidogrel 600 mg PO and heparin 5000 units IV",
+     [("p2y12", {}), ("anticoagulation", {})], ["clarification"]),
+    ("Ask the medic what he gave and give naloxone 0.4 mg IV", [("naloxone", {"dose_mg": 0.4})], []),
+    ("El paramedico ya dejo 2 VVP, y paso tranexamico 1 g en 10 minutos.", [], ["tranexamic_acid"]),
+    ("Medic already gave TXA 1 g over 10 min en route, and put on a tourniquet.", [],
+     ["hemorrhage_control", "tranexamic_acid"]),
+    # C09: "RR" after an airway order is its rate, not a finding.
+    ("Intubate, VC/AC, RR 10, PEEP 5, FiO2 100%", [("intubation", {"rate_per_min": 10.0, "peep_cmh2o": 5.0})], []),
+    # C02: sedation or analgesia with a procedure is quoted back, not half run.
+    ("Sedation with etomidate 8 mg IV before synchronized cardioversion 200 J", [], ["cardioversion"]),
+    ("Analgesia with morphine 4 mg IV before the chest tube", [], ["chest_decompression"]),
+    # C05: prepared is not started.
+    ("Admit to the ICU with a norepinephrine infusion ready", [("disposition", {})], ["norepinephrine"]),
+    # The activation of a service is never lent to the medicines after it (since
+    # before cycle 6; C02 and C06 put it in front of more sentences).
+    ("Activate the cath lab, aspirin 325 mg and ticagrelor 180 mg PO",
+     [("consult", {"service": "cath lab"}), ("aspirin", {"dose_mg": 325.0}), ("p2y12", {"dose_mg": 180.0})], []),
+    ("IAM posterior con supra ST en V7-V9: activar hemodinamia, heparina 5.000 U ev y ticagrelor 180 mg vo",
+     [("consult", {"service": "cath lab"}), ("p2y12", {"dose_mg": 180.0})], []),
+    # C01: the instruction after a condition is read up to the next condition.
+    ("AAS 250 mg vo masticada, si reaparece el dolor, considerar activar hemodinamia", [("aspirin", {"dose_mg": 250.0})],
+     []),
+]
+
+
+@pytest.mark.parametrize("text, run, forbidden", REVIEW)
+def test_what_the_adversarial_review_found_reads_as_cycle_5_did_or_better(text, run, forbidden):
+    actions = parse_family_actions(text)["actions"]
+    for kind, fields in run:
+        assert any(_matches(action, kind, fields) for action in actions), (kind, fields, actions)
+    for kind in forbidden:
+        assert not any(action.get("type") == kind for action in actions), (kind, actions)
+
+
+def test_a_conditional_plan_that_names_tranexamic_acid_is_kept():
+    for text in ("If it keeps oozing, run the second gram of TXA over 8 hours.",
+                 "Si sigue sangrando, segundo gramo de ácido tranexámico en 8 horas."):
+        parsed = parse_family_actions(text)
+        assert not parsed["actions"] and [d["kind"] for d in parsed["future_details"]] == ["conditional"]
+
+
+def test_a_chain_of_conditions_and_a_run_of_spaces_are_read_in_time():
+    import time
+    for text in ("atropina 1 mg ev, " + "si no, tcp, " * 12, "Por" + " " * 600 + "la hipotension."):
+        start = time.perf_counter()
+        parse_family_actions(text)
+        assert time.perf_counter() - start < 2.0
+
+
+def test_an_answer_in_the_first_person_is_not_taken_for_a_new_order():
+    from family_parser import _opens_with_an_order
+    assert not _opens_with_an_order("we start at 0.1 mcg/kg/min")
+    assert _opens_with_an_order("start norepinephrine 0.1 mcg/kg/min")
+    assert _opens_with_an_order("i will give naloxone 0.4 mg iv")
+
+
+def test_the_duration_of_a_medicine_reads_in_spanish():
+    import language
+    assert language.say("Tranexamic acid 1 g IV administered over 10 min", "es").endswith("administrado en 10 min")
+
+
 def test_the_question_about_a_clause_joined_to_the_prehospital_account_reads_in_spanish():
     import language
     message = parse_family_actions(
@@ -375,6 +470,26 @@ def test_the_tranexamic_acid_duration_is_recorded_like_any_other_medicine_s(engi
     plain = _run(engine, "trauma", "trauma_limb_hemorrhage_27m", "TXA 1 g IV.")
     assert timed["executed"] and plain["executed"]
     assert timed["elapsed_min"] == 10 and plain["elapsed_min"] < 10
+
+
+def test_a_stop_written_with_a_duration_does_not_break_the_page(engine):
+    # KeyError: 'volume_ml' reached the page; C04's stop verbs made it reachable.
+    result = _run(engine, "gi_bleed", "gi_bleed_72f", "Suspender el SF en 30 minutos")
+    assert result["executed"]
+
+
+@pytest.mark.parametrize("family, case_id, text, kinds", [
+    ("trauma", "trauma_limb_hemorrhage_27m", "Tourniquet high on the right thigh. IV TXA 1 g.",
+     {"hemorrhage_control", "tranexamic_acid"}),
+    ("anaphylaxis", "anaphylaxis_29f", "Epinephrine 0.5 mg IM now. We give it 5 minutes and then reassess.",
+     {"epinephrine_im"}),
+    ("acs", "acs_61m_posterior", "Activate the cath lab, aspirin 325 mg and ticagrelor 180 mg PO", {"aspirin", "p2y12"}),
+])
+def test_the_first_line_orders_the_review_found_held_run_in_the_engine(engine, family, case_id, text, kinds):
+    result = _run(engine, family, case_id, text, SETUP.get(case_id))
+    assert result["executed"] and not result.get("clarification"), result.get("clarification")
+    ran = {summary.get("type") for summary in result.get("action_summaries") or []}
+    assert kinds <= ran, ran
 
 
 def test_the_order_is_not_quoted_as_the_working_model(engine):

@@ -1,7 +1,8 @@
 """Complete missing dose/route fields without losing an unexecuted order bundle."""
 from copy import deepcopy
 import re
-from family_parser import _normalize, _route, _amount, _medication, _COMMAND, _NEGATION, _CONDITIONAL, parse_family_actions
+from family_parser import (_normalize, _route, _amount, _medication, _NEGATION, _CONDITIONAL, _opens_with_an_order,
+                           parse_family_actions)
 
 # A fragment the parser could not read is held like any other incomplete slot:
 # the resident replaces or cancels that item and the rest of the bundle is kept.
@@ -153,7 +154,7 @@ def complete_bundle(pending, text, state=None):
         parsed['raw_text'] += '\nClarification: ' + text
         parsed['resolved_from_clarification'] = True
         return {'parsed': parsed}
-    if _COMMAND.match(body) or _NEGATION.match(body) or _CONDITIONAL.search(body):
+    if _opens_with_an_order(body) or _NEGATION.match(body) or _CONDITIONAL.search(body):
         return None  # A new directive is not a dose clarification.
     parsed = deepcopy(pending['parsed'])
     a = parsed['actions'][pending['index']]

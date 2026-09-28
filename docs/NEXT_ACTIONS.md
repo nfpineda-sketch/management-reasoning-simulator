@@ -5,8 +5,10 @@ Al cierre del ciclo 6, 2026-09-28. El detalle está en
 
 ## DONE
 
-- **DF-22:** las 9 clases CRITICAL del lector, corregidas por clase en EN/ES,
-  con 153 pruebas y tres conjuntos ciegos. Residuos en TD-14 y TD-26.
+- **DF-22:** las 9 clases CRITICAL del lector, corregidas por clase en EN/ES.
+  - Con 192 pruebas, tres conjuntos ciegos y una revisión adversarial.
+  - Esa revisión halló regresiones de las propias correcciones, ya corregidas.
+  - Residuos en TD-14 y TD-26.
 - **59O-03:** el aviso de ejecución sale sólo de lo que corrió. Una orden
   retenida ya no se pierde con «no sé».
 - **L-F01 y L-F04:** el encuentro se lee con su propio caso; el perfil sigue

@@ -116,6 +116,15 @@ def test_a_generated_case_declared_no_topics():
     assert summary["topics_source"] == "generated" and summary["offered"] == []
 
 
+def test_an_authored_case_the_model_chose_keeps_its_frozen_topics():
+    """Provenance "ai" marks an authored bank case the model selected, not a generated one."""
+    record = launched("hypoglycemia_76f", [])
+    for spec in (record["encounter"]["spec"], record["payload"]["session"]["state"]["encounter_spec"]):
+        spec["provenance"] = {"source": "ai"}
+    topics, source = history_review.frozen_topics(record)
+    assert source == "frozen" and "medications" in topics
+
+
 def test_the_frozen_session_is_read_when_the_store_column_is_absent():
     record = launched("hypoglycemia_76f", [])
     del record["encounter"]

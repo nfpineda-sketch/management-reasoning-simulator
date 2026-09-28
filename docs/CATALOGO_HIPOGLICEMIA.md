@@ -177,6 +177,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-28-06 | L-F01: un encuentro antiguo se lee con los temas de historia de su propio caso | general | technical_defect | none | — |
 | C-2026-09-28-07 | L-F04: la trayectoria del perfil sigue a los encuentros, no a las confirmaciones | general | policy | none | — |
 | C-2026-09-28-08 | DF-23: la acinesia de de Winter se sostiene con la arteria cerrada; bradycardia_bb_54f llega somnolienta | variante acs_52m_de_winter, bradycardia_bb_54f | clinical_decision_applied | clinical | — |
+| C-2026-09-28-09 | Regresiones de las correcciones del ciclo 6 halladas por la revisión adversarial del diff, corregidas | general | technical_defect | clinical | — |
 
 ## La batería, configuración por configuración
 
