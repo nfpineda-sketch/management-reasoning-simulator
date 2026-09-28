@@ -11,7 +11,7 @@ import re
 import unicodedata
 
 from shared_order_quantities import parse_volume_ml
-from shared_order_language import _normalize, _route, _amount
+from shared_order_language import ROUTE_BEFORE_THE_DRUG, _normalize, _route, _amount
 
 
 NEW_TREATMENT_ACTIONS = frozenset({
@@ -1504,12 +1504,17 @@ def _parse_piece_core(piece, inherited=None):
 
     if not verb:
         shorthand = r"(?:sf|ns|sg|suero\s+glucosado|glucosado|solucion\s+glucosada|suero\s+fisiologico|solucion\s+fisiologica|ringer(?:\s+lactato)?|lr|cristaloides?|synchronized cardioversion|synchronized shock|choque sincronizado|cardioversion|bipap|cpap|niv|vni|vmni|intubation|intubacion|bag[- ]mask|bag[- ]valve[- ]mask|bvm|ambu|oxygen|oxigeno|o2|nasal cann?ula|canula nasal|naricera|nc|non[- ]rebreather|nrb|room air|aire ambiente|dobutamine|dobutamina|norepinephrine|noradrenaline|noradrenalina|norepinefrina|norepi|epinephrine|epinefrina|adrenaline|adrenalina|nitroglycerin|nitroglicerina|nitro|needle decompression|needle thoracostomy|finger thoracostomy|chest tube|thoracostomy|descompresion con aguja|descompresión con aguja|puncion pleural|punción pleural|tubo pleural|pleurotomia|pleurotomía|continuous monitoring|monitorizacion continua|cardiac monitor|monitor cardiaco)"
-        medication_start = any(re.match(r"(?:" + pattern + r")\b", body) for agents in _AGENTS.values() for pattern in agents.values())
-        quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
         # A route written first is how the order is spoken in English: "IM
-        # adrenaline 0.5 mg". The route is not the order, so it is stepped over
-        # rather than made one.
-        route_first = r"(?:im|iv|io|sc|ev|po|in)\s+"
+        # adrenaline 0.5 mg", "IV morphine 4 mg", "oral paracetamol 1 g". The
+        # route is not the order, so it is stepped over rather than made one:
+        # what follows it must start an order by itself, and the route stays
+        # where it was written for the dose's own reading (KD-01, 2026-09-28).
+        route_first = r"(?:" + ROUTE_BEFORE_THE_DRUG + r"|in)\s+"
+        leading_route = re.match(ROUTE_BEFORE_THE_DRUG + r"\s+", body)
+        starts = (body, body[leading_route.end():]) if leading_route else (body,)
+        medication_start = any(re.match(r"(?:" + pattern + r")\b", start) for start in starts
+                               for agents in _AGENTS.values() for pattern in agents.values())
+        quantity_start = bool(re.match(r"-?\d+(?:\.\d+)?\s*(?:mcg|ug|mg|g|ml|cc|l|units?|unidades?)\b", body))
         # A disposition written without a verb is still a disposition. "Alta con
         # analgesia oral y control en 7 dias" produced no action and no question
         # at all -- the closing decision of the encounter, lost in silence
@@ -2363,6 +2368,11 @@ def _share_trailing_route(members, sentence):
         piece, parsed = members[end]
         if len(parsed) != 1 or not parsed[0].get("agent") or not parsed[0].get("route") \
                 or _route(piece) != parsed[0]["route"]:
+            continue
+        # A route written before its drug is that drug's own ("aspirin 300 mg, IV
+        # morphine 4 mg"): it was not written after the list, and the dose before
+        # it keeps what its own words say (KD-01, 2026-09-28).
+        if re.match(r"(?:(?:and|y|e|plus|mas|\+)\s+)?" + ROUTE_BEFORE_THE_DRUG + r"\s+", piece.strip()):
             continue
         index = end - 1
         while index >= 0 and _takes_the_route(members[index]):

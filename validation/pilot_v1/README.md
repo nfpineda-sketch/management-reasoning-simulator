@@ -3,6 +3,17 @@
 **Estado: PREPARADO, NO ENVIADO.** Nadie fue contactado y ningún documento se
 distribuyó.
 
+**PILOT MATERIAL V1** (docente, 2026-09-28, ciclo 5).
+
+- **Los 18 documentos no se modifican**, salvo un error factual, un spoiler,
+  un DOCX corrupto o una inconsistencia que los vuelva inutilizables.
+- **Si hubiera que modificar uno,** primero se documenta; después se versiona
+  y se verifica de nuevo.
+- **Tooling:** listo, con documentos sintéticos (`READINESS.md`).
+- **Baselines:** `../BASELINES.md`.
+
+**THE PHYSICIANS ARE NOT BEING ASSESSED.**
+
 **DOCX STRUCTURALLY VERIFIED.** Los documentos se verificaron con python-docx
 y con el lector real del producto (`manifests/docx_verification.json`). **No
 se verificaron visualmente en Microsoft Word**: esa verificación queda para
@@ -109,6 +120,20 @@ El contenido ya se revisó por programa:
    commit de `PILOT_BASELINE.md`. El sorteo no lee el texto.
 4. **Siga el orden de trabajo.** Recién después: anotación ciega, motor y
    adjudicación, en el orden de `annotation/adjudication_guide.md`.
+
+**La secuencia completa** (docente, 2026-09-28):
+
+**RETURNED DOCX → STORE UNOPENED → SPLIT → DEVELOPMENT / SEALED → BLINDED
+REFERENCE ANNOTATION → DEVELOPMENT RUN → ADJUDICATION → ERROR ANALYSIS.**
+
+- **SEALED no se corre durante el ciclo de desarrollo.** Ni se lee, ni se
+  anota con el motor a la vista, ni entra a una sesión.
+- **La corrida en español se hace en el SPANISH PILOT BASELINE** (`939978a`).
+  Sus errores se etiquetan contra la lista de defectos conocidos; ahí KD-01
+  está presente (`KNOWN_DEFECTS.md`).
+- **La anotación de referencia la hacen clínicos:** uno primario, 20 % doble,
+  y un tercero o consenso para los desacuerdos. La IA no hace de estándar de
+  referencia.
 
 ### 7. Dónde guardar los documentos devueltos
 

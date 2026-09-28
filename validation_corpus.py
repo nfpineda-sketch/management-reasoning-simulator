@@ -42,6 +42,10 @@ from xml.sax.saxutils import escape
 ROOT = Path(__file__).resolve().parent
 
 CORPUS_VERSION = "VALIDATION_CORPUS_V1"
+#: The registered engine baselines (never replaced, only added) and the list of
+#: known defects a result's errors are tagged against (faculty, 2026-09-28, §51).
+BASELINES = ROOT / "validation" / "baselines.json"
+KNOWN_DEFECTS = ROOT / "validation" / "pilot_v1" / "manifests" / "known_defects.json"
 # VC2 (cycle 4, 2026-09-28): the faculty's shorter instruction, aligned with the
 # resident's own guide (what is going on, what you do, what you expect, what
 # you will check), in free text; VC1 documents are still read.
@@ -560,6 +564,26 @@ def check_outside(path, subset):
     return resolved
 
 
+def baseline_of(engine):
+    """The registered baseline a run's engine was, its known-defects list, or None for both.
+
+    Read from the registry when the report is made, so that a run made at a
+    commit registered afterwards is still named: a baseline is only ever added.
+    A reading made with uncommitted changes is not any baseline.
+    """
+    engine = engine or {}
+    registry = json.loads(BASELINES.read_text(encoding="utf-8"))["baselines"]
+    found = next((item for item in registry if not engine.get("uncommitted_changes")
+                  and engine.get("commit") and item["commit"] == engine["commit"]), None)
+    return {"engine_baseline": found["name"] if found else None,
+            "known_defects_version": found["known_defects_version"] if found else None}
+
+
+def known_defects_version():
+    """The version of the known-defects list as it stands in this checkout."""
+    return json.loads(KNOWN_DEFECTS.read_text(encoding="utf-8"))["version"]
+
+
 # --------------------------------------------------------------------------- the development/sealed draw
 
 SPLIT_RULE = (
@@ -1049,8 +1073,21 @@ def review_of(row):
     if unknown:
         raise CorpusError(f"{entry_id}: locus {unknown} is not one of {LOCI}.")
     review["impact"] = impact or None
-    review["known_defect"] = str(row.get("known_defect") or "").strip() or None
+    # A known defect is named by its identifier in the list, or it is not known:
+    # a mistyped tag would count a new failure as a known one (§73, cycle 5).
+    tags = [part.strip().upper() for part in re.split(r"[;,]", str(row.get("known_defect") or "")) if part.strip()]
+    unknown = [tag for tag in tags if tag not in known_defect_ids()]
+    if unknown:
+        raise CorpusError(f"{entry_id}: known defect {unknown} is not in the list of known defects "
+                          "(validation/pilot_v1/KNOWN_DEFECTS.md).")
+    review["known_defect"] = "; ".join(tags) or None
     return review
+
+
+def known_defect_ids():
+    """Every identifier an adjudicator may tag: the known defects and the behaviours by design."""
+    known = json.loads(KNOWN_DEFECTS.read_text(encoding="utf-8"))
+    return {item["id"] for item in [*known["defects"], *known["known_behaviour_by_design"]]}
 
 
 def _rate(numerator, denominator):

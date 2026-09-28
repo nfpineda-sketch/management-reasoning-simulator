@@ -462,6 +462,11 @@ def test_impact_and_known_defect_order_the_work_and_are_checked():
         vc.metrics(corpus, engine, [{**row, "impact": "severe"}])
     with pytest.raises(vc.CorpusError, match="locus"):
         vc.metrics(corpus, engine, [{**row, "locus": "reasoning_extraction"}])
+    # A tag names an entry of the list, or a new failure would count as a known one.
+    with pytest.raises(vc.CorpusError, match="not in the list of known defects"):
+        vc.metrics(corpus, engine, [{**row, "known_defect": "KD-1"}])
+    [both] = vc.metrics(corpus, engine, [{**row, "known_defect": "kd-02; KB-01"}])["traceability"]
+    assert both["known_defect"] == "KD-02; KB-01"
 
 
 def test_a_fifth_of_each_document_goes_to_the_second_annotator():

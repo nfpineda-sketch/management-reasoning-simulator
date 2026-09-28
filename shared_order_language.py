@@ -60,6 +60,17 @@ def _route(text):
             found.append(route)
     return found[0] if len(found) == 1 else None
 
+
+# The route words above as they open an order written without a verb, before the
+# drug: "IV morphine 4 mg", "oral paracetamol 1 g", "nebulized albuterol 2.5 mg"
+# (KD-01, faculty 2026-09-28). Every word is one _route reads; no new route. The
+# bare "in" is left out: before a drug it is a preposition first, and the nasal
+# route is read where _route reads it, after the dose.
+ROUTE_BEFORE_THE_DRUG = (r"(?:iv|ev|intravenous|intravenos[ao]s?|endovenos[ao]s?|io|intraosseous|intraose[ao]s?|"
+                         r"im|intramuscular(?:es)?|po|vo|oral(?:es)?|sc|sq|subcutaneous|subcutane[ao]s?|"
+                         r"intranasal(?:es)?|nebulized|nebulised|nebulizad[oa]s?|neb|nbz|nebu|inhaled|"
+                         r"inhalad[oa]s?)")
+
 def _amount(text, units):
     matches = list(re.finditer(r"(?<![\w.])(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(" + units + r")\b", text))
     if len(matches) != 1:

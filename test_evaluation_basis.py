@@ -54,8 +54,14 @@ def test_an_encounter_judged_under_1_0_keeps_hypo_no_thiamine():
 def test_the_legacy_snapshot_is_the_code_before_the_change_for_every_other_case():
     legacy = evaluation_basis.legacy()["declarations"]
     assert set(legacy) == set(CASES)
-    changed = [case_id for case_id in CASES if json.loads(json.dumps(CASES[case_id])) != legacy[case_id]]
+    # The observation opportunities joined the declarations after the snapshot (C14, faculty,
+    # 2026-09-28); the snapshot never carried them and a legacy record never reads them
+    # (observation_opportunities.basis_of), so only the rubric is compared.
+    rubric = {case_id: {key: value for key, value in CASES[case_id].items() if key != "objectives"}
+              for case_id in CASES}
+    changed = [case_id for case_id in CASES if json.loads(json.dumps(rubric[case_id])) != legacy[case_id]]
     assert changed == ["hypoglycemia_54m_thiamine"]
+    assert not any("objectives" in declaration for declaration in legacy.values())
 
 
 def test_a_generated_case_is_read_without_declarations_and_without_error():

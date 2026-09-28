@@ -635,3 +635,119 @@ registran en el manifiesto de defectos conocidos del piloto
   3 horas» ejecuta la troponina y registra la repetición.
 - **«Vigilar diuresis y estado mental»** se cita como modelo de trabajo:
   anterior, de la misma familia que DF-7.
+
+## Ciclo 5 · KD-01: la vía escrita antes del fármaco (2026-09-28)
+
+Autorización docente del 2026-09-28 (§12, §24, §42, §43), DF-19.
+
+### El defecto y su causa
+
+- **La clase.** Una orden en inglés sin verbo, con la vía antes del fármaco:
+  «IV morphine 4 mg», «Oral paracetamol 1 g», «Nebulized albuterol 2.5 mg».
+- **Qué pasaba.** Se devolvía como orden no reconocida y retenía el resto del
+  envío. La misma orden escrita con el fármaco primero se leía bien.
+- **La causa** (`family_parser.py`, rama sin verbo). Una orden sin verbo tenía
+  que empezar por un fármaco, una cantidad o una abreviatura.
+  - Una vía delante sólo se saltaba antes de las abreviaturas; por eso «IM
+    epinephrine 0.5 mg» ya funcionaba.
+  - Delante de cualquier otro fármaco del catálogo no se saltaba.
+  - Tampoco se reconocían las vías escritas como palabra («oral»,
+    «nebulized», «intravenous»).
+  - La dosis y la vía ya se leían en cualquier posición: el defecto era sólo
+    reconocer dónde empieza la orden.
+- **La misma causa, dentro de una lista.** En «Aspirin 300 mg, IV morphine
+  4 mg», la vía de la morfina se tomaba como vía escrita después de la lista
+  (DF-16a), y la aspirina quedaba IV. Ocurría ya en el baseline español.
+
+### Corrección (por clase)
+
+- **Qué vías.** Una palabra de vía que el lector ya lee
+  (`shared_order_language.ROUTE_BEFORE_THE_DRUG`, **ninguna vía nueva**),
+  seguida de un fármaco que conoce, abre la orden.
+- **La vía queda donde fue escrita**, y la dosis y la vía se leen como siempre.
+  La orden es exactamente la misma que con el fármaco primero; las pruebas lo
+  comparan frase por frase.
+- **En una lista, esa vía es sólo de su fármaco.** Nunca alcanza la dosis
+  anterior. La vía escrita después de una lista de dosis sigue alcanzando a
+  cada dosis (DF-16a).
+- **Un «in» suelto no se salta (KB-02).** Antes de un fármaco es primero una
+  preposición; la vía nasal se lee después de la dosis o escrita
+  «intranasal».
+
+### Antes y después (frases escritas para esta corrección)
+
+| Frase | Antes | Después |
+|---|---|---|
+| IV morphine 4 mg | retenida: no reconocida | morfina 4 mg IV |
+| PO acetaminophen 1 g | retenida | paracetamol 1000 mg PO |
+| IV ceftriaxone 2 g | retenida | ceftriaxona 2000 mg IV |
+| Oral paracetamol 1 g | retenida | paracetamol 1000 mg PO |
+| Nebulized albuterol 2.5 mg | retenida | albuterol 2.5 mg nebulizado |
+| Inhaled salbutamol 5 mg | retenida | albuterol 5 mg inhalado |
+| IV furosemide 40 mg · IV naloxone 0.4 mg | retenidas | IV, con su dosis |
+| EV morfina 4 mg · VO paracetamol 1 g · NBZ salbutamol 2.5 mg | retenidas | leídas (español) |
+| IM epinephrine 0.5 mg | adrenalina IM | igual |
+| Aspirin 300 mg, IV morphine 4 mg | **aspirina IV** + morfina IV | aspirina **sin vía**: se pregunta; morfina IV |
+| IV morphine 4 mg every 10 minutes if pain persists | **nada, sin aviso** | plan condicional, como con el fármaco primero |
+
+**Negativos: no cambian.**
+
+- **Nada se vuelve orden ni vía:**
+  - «Oral intake is poor»;
+  - «IV access now»;
+  - «Neb treatments helped before»;
+  - «IM injection site is clean»;
+  - «Oral paracetamol 1 g was given at home».
+- **Sin dosis no se inventa ninguna:** «IV morphine», «Oral paracetamol» y
+  «EV morfina» siguen sin ser órdenes (KD-02).
+- **Dos vías para un fármaco** («IV morphine 4 mg PO») no eligen ninguna:
+  se pregunta.
+- **Dos fármacos tras una vía** piden separarlos.
+- **La vía de la vía venosa no alcanza al fármaco siguiente:** en «IV access,
+  morphine 4 mg», la morfina queda sin vía.
+- **Siguen como estaban, por otras causas:**
+  - «IV fluids 1 L» y «Normal saline 1 L IV»: fluido nombrado en palabras,
+    **KD-15** nuevo, no corregido;
+  - «SC insulin 10 units»: insulina no modelada;
+  - «IV ondansetron 4 mg»: no modelado;
+  - «IN naloxone 2 mg»: **KB-02**.
+
+### Corpus de ensayo
+
+Mismo corpus, semilla 3000, 0 llamadas de IA.
+
+- **Las 40 grabaciones, 20 ES y 20 EN, son idénticas a las del ciclo 4**,
+  decisión por decisión: 96/96 órdenes ejecutadas en cada idioma, 0
+  retenciones no previstas, 0 modelos de trabajo que son una orden.
+- **Lo único distinto** es el tiempo y el campo `plans` de la traza, que no
+  existía cuando se grabó el ciclo 4.
+- **El corpus no trae la clase.** La mejora se mide con las frases de arriba,
+  y el corpus comprueba que nada se deterioró.
+
+### Latencia
+
+| Medida (268 textos, mediana de 5 pasadas, con la máquina ocupada) | Antes | Después |
+|---|---|---|
+| Lectura de la orden (`parse_family_actions`) | 0,57 ms | 0,55 ms |
+| Extracción del razonamiento | 4,03 ms | 4,12 ms |
+
+Iguales dentro del ruido. Las cifras absolutas son mayores que las del ciclo 4
+porque la medición corrió en paralelo con el corpus.
+
+### Pruebas
+
+- **`test_a_route_written_before_the_drug.py` (nuevo, 53 casos):**
+  - la clase en EN y ES;
+  - igualdad frase por frase con el fármaco primero;
+  - sólo vías que el lector ya lee;
+  - negativos;
+  - la vía en una lista;
+  - ejecución en el motor;
+  - la orden no es el modelo de trabajo;
+  - una prueba por la página real, en inglés, leída desde el Management Trace
+    guardado.
+- **Archivos de prueba del lector y de la traza:** 1888 pasan y 2 xfail.
+- **Regresiones:** 56 de 56.
+- **Registro:** `corrections_registry` C-2026-09-28-02. KD-01 sigue presente en
+  el SPANISH PILOT BASELINE y está corregido desde el ENGLISH VALIDATION
+  BASELINE (`validation/BASELINES.md`).

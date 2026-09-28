@@ -44,6 +44,9 @@ INSTRUCTION_2026_09_27C = ("Instrucción docente del 2026-09-27 (revisión de la
 INSTRUCTION_2026_09_27D = ("Instrucción docente del 2026-09-27 (el idioma del encuentro se fija al iniciarlo y no "
                            "cambia; las pantallas siguen a quien las mira; cada descarga empieza en el idioma del "
                            "encuentro y puede pedirse en el otro)")
+INSTRUCTION_2026_09_28 = ("Instrucción docente del 2026-09-28 (ciclo 5 del AI Advisor: activar C14 en los casos "
+                          "donde la revisión A–H lo resolvió, dejar acs_54m_inferior sin revisar y corregir KD-01 "
+                          "por clase)")
 
 CORRECTIONS = (
     {
@@ -1046,6 +1049,56 @@ CORRECTIONS = (
         "tests": ["test_document_language.py::test_the_language_chosen_at_the_start_holds_through_the_encounter_and_its_documents",
                   "test_document_language.py::test_a_faculty_member_reads_in_their_own_language_and_the_documents_start_in_the_encounter_s",
                   "test_document_language.py::test_closing_keeps_the_language_the_encounter_started_in"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-01",
+        "date": "2026-09-28",
+        "title": "C14 declarado caso por caso en el banco: 14 con oportunidad, 16 sin ella y acs_54m_inferior sin revisar",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Las decisiones A–H sobre C14 (usar el POCUS para guiar el manejo) se escriben en el bloque objectives "
+                   "de 30 casos del banco (case_assessment_bank.C14_DECLARATIONS), cada una con quién la revisó, cuándo, "
+                   "su grupo de decisión y la versión C14-REVIEW-1; un NO lleva su razón. acs_54m_inferior queda sin "
+                   "declarar hasta resolver la contradicción entre el compromiso del ventrículo derecho y su POCUS. Una "
+                   "oportunidad sólo hace evaluable C14 en un encuentro nuevo y nunca lo observa: la observación sigue "
+                   "siendo la del docente. Un NO no es evaluable, nunca una falla. La regla transitoria se retira sólo "
+                   "para C14 y sólo en los casos revisados; TD1, F1, C1, C3 y C4 la conservan. Los encuentros ya "
+                   "iniciados conservan su base congelada. Dominios, eventos críticos y puntajes no cambian."),
+        "authorised_by": INSTRUCTION_2026_09_28,
+        "affects": {"modules": ["case_assessment_bank", "c14_review"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_c14_opportunities.py::test_the_bank_holds_the_reviewed_rows_and_leaves_one_case_not_reviewed",
+                  "test_c14_opportunities.py::test_a_no_encounter_cannot_confirm_c14_and_records_no_failure",
+                  "test_c14_opportunities.py::test_historical_observations_are_neither_reanalysed_nor_lost",
+                  "test_c14_review.py::test_the_bank_carries_exactly_what_the_approved_answers_derive",
+                  "test_evaluation_basis.py::test_the_legacy_snapshot_is_the_code_before_the_change_for_every_other_case",
+                  "test_hypoglycemia_preservation.py::test_declarations_match_the_record_except_the_new_version"],
+        # The three hypoglycaemia cases now carry their C14 row: a new version of their declaration.
+        "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_76f", "hypoglycemia_54m_thiamine"],
+                         "declaration": "new_version"},
+    },
+    {
+        "id": "C-2026-09-28-02",
+        "date": "2026-09-28",
+        "title": "KD-01: una vía escrita antes del fármaco, sin verbo, es la vía de ese fármaco",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«IV morphine 4 mg», «Oral paracetamol 1 g» o «Nebulized albuterol 2.5 mg» se devolvían como órdenes "
+                   "no reconocidas y retenían el resto del envío. Corregido por clase: una palabra de vía que el lector ya "
+                   "lee (shared_order_language.ROUTE_BEFORE_THE_DRUG, ninguna vía nueva), seguida de un fármaco que "
+                   "conoce y su dosis, se salta para encontrar la orden y se lee donde fue escrita; la orden es la misma "
+                   "que escrita con el fármaco primero. En una lista esa vía es sólo de su fármaco: «Aspirin 300 mg, IV "
+                   "morphine 4 mg» ya no da la aspirina IV (la misma confusión). Un «in» suelto no se salta (KB-02); un "
+                   "fluido nombrado en palabras queda como KD-15. Presente en el baseline español del piloto; corregido "
+                   "desde el baseline inglés de validación."),
+        "authorised_by": INSTRUCTION_2026_09_28,
+        "affects": {"modules": ["family_parser", "shared_order_language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_a_route_written_before_the_drug.py::test_the_route_before_the_drug_is_read_as_that_drug_s_route",
+                  "test_a_route_written_before_the_drug.py::test_it_is_the_same_order_as_the_drug_written_first",
+                  "test_a_route_written_before_the_drug.py::test_the_route_before_a_drug_reaches_no_other_order",
+                  "test_a_route_written_before_the_drug.py::test_input_execution_and_trace_through_the_real_page"],
         "preservation": None,
     },
 )

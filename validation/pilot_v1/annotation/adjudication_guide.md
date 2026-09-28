@@ -121,6 +121,12 @@ Va en la columna `known_defect`.
 - **Nunca se fuerza la coincidencia.**
 - **Conducta por diseño.** Una conducta marcada así (`KB-01`: oxígeno sin flujo
   absoluto) tampoco es una falla nueva, y se escribe su ID.
+- **Más de uno:** se separan con `;` (`KD-02; KB-01`).
+- **La herramienta rechaza un ID que no esté en la lista** (ciclo 5). Un ID
+  mal escrito contaría una falla nueva como conocida.
+- **Mirar el baseline del reporte** (`engine_baseline`). Un defecto se etiqueta
+  sólo si está presente en ese baseline (`present_in`). Por ejemplo, KD-01 sí
+  en el español y no en el inglés.
 
 ## Desacuerdos entre anotadores (el 20 %)
 

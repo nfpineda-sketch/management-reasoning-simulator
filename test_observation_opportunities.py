@@ -3,8 +3,9 @@
 The acceptance criteria of the faculty's authorisation of cycle 3 (2026-09-27,
 §55). The declarations here are test fixtures, not clinical review: they are
 written into a bank case for the length of one test, frozen through the real
-path (``evaluation_basis.freeze``) and read back from the record, and no bank
-case carries one.
+path (``evaluation_basis.freeze``) and read back from the record. The bank's own
+C14 declarations, approved by the faculty on 2026-09-28, are tested in
+test_c14_opportunities.
 """
 import time
 import uuid
@@ -61,20 +62,26 @@ def test_a_case_declares_an_opportunity_and_the_three_states_stay_apart(declared
 
 # --- 3: not reviewed is never no, and the transition keeps what was observable ----------
 
-def test_no_bank_case_declares_anything_yet_so_nothing_observable_was_lost():
+def test_only_c14_is_declared_and_everything_else_keeps_the_transition():
+    # Cycle 5 (faculty, 2026-09-28): C14 is reviewed in every case but
+    # acs_54m_inferior; TD1, F1, C1, C3 and C4 are not reviewed anywhere yet.
     for case_id in case_assessment_bank.CASES:
-        assert "objectives" not in case_assessment_bank.CASES[case_id], case_id
+        declared = case_assessment_bank.CASES[case_id].get("objectives") or {}
+        assert set(declared) <= {"C14"}, case_id
         view = opportunities.summary(record(basis=evaluation_basis.freeze(case_id)))
-        for objective_id in opportunities.TRANSITION_OBJECTIVES:
+        for objective_id in set(opportunities.TRANSITION_OBJECTIVES) - {"C14"}:
             assert view[objective_id]["state"] == "not_reviewed"
             assert view[objective_id]["eligible"] is True
-            assert view[objective_id]["declaration_source"] == "case_without_objectives"
-        assert all(item["state"] != "no" for item in view.values())
+            assert view[objective_id]["rule"] == "transition_fallback"
+        assert (view["C14"]["rule"] == "declared") is (case_id != "acs_54m_inferior"), case_id
 
 
 def test_a_basis_frozen_before_opportunities_existed_is_labelled_as_such():
     frozen = evaluation_basis.freeze(CASE)
     frozen["versions"].pop("opportunities")
+    # A basis that old never carried a declaration either, and its fingerprint said so.
+    frozen["declaration"].pop("objectives", None)
+    frozen["fingerprint"] = evaluation_basis.fingerprint(frozen["declaration"])
     view = opportunities.resolve("C14", record(basis=frozen))
     assert view["declaration_source"] == "frozen_before_opportunities"
     assert (view["state"], view["eligible"]) == ("not_reviewed", True)

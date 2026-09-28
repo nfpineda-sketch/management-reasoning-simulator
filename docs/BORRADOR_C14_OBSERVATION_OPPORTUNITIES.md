@@ -3,7 +3,14 @@
 Ciclo 3 del AI Advisor, punto G de la autorización docente del 2026-09-27 (DF-1,
 D-5).
 
-**Estado: BORRADOR PARA REVISIÓN CLÍNICA.**
+**Estado: SUPERADO POR LA REVISIÓN DOCENTE (ciclo 5, 2026-09-28).**
+
+- **El docente respondió** las ocho decisiones A–H el 2026-09-28, y las 30
+  filas resueltas están en el banco (`case_assessment_bank.C14_DECLARATIONS`).
+- **La tabla vigente es `docs/C14_TABLA_FINAL.md`.** Esta tabla queda como el
+  borrador del ciclo 3 que se revisó.
+- **`acs_54m_inferior` sigue sin revisar.** Ver
+  `docs/AUDITORIA_ACS_54M_INFERIOR.md`.
 
 **Ciclo 4 (2026-09-28).** Las dudas se prepararon como ocho decisiones clínicas
 en `docs/C14_DECISIONES_A_H.md`: formato A–H, con recomendación, casos

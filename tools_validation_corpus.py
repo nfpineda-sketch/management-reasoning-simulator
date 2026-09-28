@@ -275,6 +275,10 @@ def _provenance(corpus, engine, rows):
             "cases": sorted({d["case"] for d in corpus["documents"]}),
             "collection_dates": sorted({d["collected_on"] for d in corpus["documents"]}),
             "engine": engine["engine"], "seed": engine["seed"], "run_on": engine["run_on"],
+            # Which baseline read the entries and which list of known defects its
+            # errors are tagged against (faculty, 2026-09-28, §51): None for both
+            # when the engine was not a registered baseline.
+            **vc.baseline_of(engine["engine"]),
             "documents": len(corpus["documents"]), "retired_entries": len(corpus.get("retired_entries") or [])}
 
 

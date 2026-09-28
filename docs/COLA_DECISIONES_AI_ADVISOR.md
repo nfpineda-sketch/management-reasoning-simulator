@@ -26,6 +26,89 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 | DF-11 | LOW PRIORITY | Residuos menores de la lectura | Registrado |
 | DF-5 | — | C15 | Deshabilitada, sin acción |
 
+## Decisiones del 2026-09-28 (apertura del ciclo 5)
+
+El docente aprobó el cierre del ciclo 4 y ordenó iniciar el ciclo 5 sin otra
+aprobación.
+
+- **DF-13 · C14, decisiones A–H aprobadas**, con estas precisiones:
+  - **A:** `acs_61m_posterior` y `acs_52m_de_winter` YES; `acs_66f_nonst` NO.
+    `acs_54m_inferior` NO se activa: se audita la contradicción entre el VD
+    declarado y el POCUS con VD normal. La auditoría no corrige el dato si
+    corregirlo exige elegir entre las dos representaciones; recomienda y deja
+    la decisión al docente.
+  - **B:** `acs_48m_wellens` NO.
+  - **C:** YES en `pneumonia_46f`, `pneumonia_83m`, `gi_bleed_57m`,
+    `gi_bleed_72f` y `obstructive_pyelonephritis_58f`; NO en `anaphylaxis_29f`
+    y `anaphylaxis_63m_betablocked`.
+    - Principio: el POCUS cuenta cuando selecciona, limita, titula o reevalúa
+      la estrategia de fluidos o hemodinámica.
+  - **D:** asma ×2 NO, porque el evento revela el diagnóstico de neumotórax.
+    No se cambia el evento para fabricar una oportunidad.
+  - **E:** las tres bradicardias NO.
+  - **F:** la consolidación sola no crea C14. Las neumonías son YES por C, con
+    una sola oportunidad.
+  - **G:** los dos TEP YES.
+    - Se conserva qué componente concreto se observa: sobrecarga del VD, TVP
+      proximal, integración con la hemodinamia, estrategia de reperfusión o
+      anticoagulación.
+    - POCUS realizado no es C14 demostrado.
+  - **H:** `renal_colic_34m` NO. La pielonefritis 58f es YES por C, no por la
+    ecografía renal formal.
+  - **Filas claras del borrador:** se mantienen.
+- **Metadata C14:**
+  - antes de escribirla, la tabla final derivada;
+  - cada fila con procedencia (`human_clinical_review`, Nicolás Pineda,
+    2026-09-28, grupo de decisión, versión);
+  - un NO se registra con su razón, nunca como ausencia;
+  - `acs_54m_inferior` queda NOT REVIEWED;
+  - el fallback se retira caso a caso, sin tocar el mecanismo global.
+- **Pruebas C14 exigidas (§21):**
+  - YES evaluable; NO no confirmable; NOT REVIEWED sólo transitorio;
+  - YES sin evidencia automática;
+  - confirmación docente;
+  - observación incidental;
+  - el target no decide C14;
+  - históricos intactos;
+  - congelado al iniciar.
+  - Además: sin doble conteo (§22), la evidencia esperada no es lista cerrada
+    (§36), NO no es falla (§37), YES no es OBSERVED (§38) y C14 incidental bajo
+    otro R1/R2/R3 (§39).
+- **DF-19 · KD-01 autorizado:** corrección por clase de vía + fármaco + dosis
+  sin verbo, con la vía primero. Sólo vías soportadas. Pruebas positivas y
+  negativas, EN y sin regresión ES, ejecución y Management Trace.
+- **Baselines:**
+  - **SPANISH PILOT BASELINE = `939978a`**; no se reemplaza retroactivamente.
+  - Después de KD-01, con la suite completa en verde, el nuevo SHA se registra
+    como **ENGLISH VALIDATION BASELINE**.
+  - Cada corrida de validación registra CORPUS VERSION, LANGUAGE, ENGINE
+    BASELINE y KNOWN DEFECTS VERSION.
+  - La primera medición en español usa el baseline español.
+- **Defectos conocidos:** actualizar la lista después de KD-01. No se corrigen
+  KD-02 a KD-14 salvo que KD-01 resuelva alguno por la misma causa o aparezca
+  una regresión.
+- **DF-15 · piloto aprobado.** Los 18 documentos son PILOT MATERIAL V1.
+  - No se modifican salvo error factual, spoiler, corrupción del DOCX o una
+    inconsistencia que los vuelva inutilizables; y en ese caso se documenta,
+    se versiona y se verifica de nuevo.
+  - Se mantienen la anotación (clínico primario, 20 % doble, tercero o
+    consenso) y VC-3.
+  - La IA no hace de estándar de referencia.
+  - **THE PHYSICIANS ARE NOT BEING ASSESSED.**
+- **Se mantienen:**
+  - DF-17 diferido;
+  - C2 y C15 deshabilitadas;
+  - los 9 PARTIAL inactivos.
+- **Fuera de alcance del ciclo 5:**
+  - corregir clínicamente `acs_54m_inferior` sin aprobación;
+  - revisar TD1/F1/C1/C3/C4 caso por caso;
+  - cambiar puntajes, D1–D5, eventos críticos o el −3;
+  - override, fuentes externas, construct coverage;
+  - correr el piloto sin respuestas humanas reales;
+  - contactar, enviar o distribuir;
+  - PR, merge o release;
+  - iniciar el ciclo 6.
+
 ## Decisiones del 2026-09-28 (apertura del ciclo 4)
 
 - **DF-12 · aprobada como regla TRANSITORIA.**

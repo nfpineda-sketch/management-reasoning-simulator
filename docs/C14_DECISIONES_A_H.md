@@ -3,7 +3,33 @@
 Ciclo 4 del AI Advisor, autorización docente del 2026-09-28 (DF-13, §5–§7 y
 §31–§33).
 
-**Estado: PREPARADO PARA DECISIÓN DOCENTE. C14 NO ESTÁ ACTIVO.**
+**Estado: DECIDIDO (2026-09-28) Y APLICADO EN EL CICLO 5.**
+
+- **El docente aprobó las ocho recomendaciones**, con estas precisiones:
+  - **A:** `acs_61m_posterior` y `acs_52m_de_winter` YES; `acs_66f_nonst` NO;
+    `acs_54m_inferior` pendiente de auditar su contradicción
+    (`docs/AUDITORIA_ACS_54M_INFERIOR.md`).
+  - **B:** Wellens NO.
+  - **C:** YES en las dos neumonías, las dos hemorragias digestivas y la
+    pielonefritis 58f; NO en las dos anafilaxias. El POCUS cuenta cuando
+    selecciona, limita, titula o reevalúa la estrategia de fluidos o
+    hemodinámica.
+  - **D:** asma NO, porque el evento revela el neumotórax. No se cambia el
+    evento para fabricar una oportunidad.
+  - **E:** bradicardias NO.
+  - **F:** la consolidación sola no crea C14. Las neumonías son YES por C, con
+    una sola oportunidad.
+  - **G:** los dos TEP YES. POCUS realizado no es C14 demostrado.
+  - **H:** cólico renal NO. La pielonefritis es YES por C, no por la
+    ecografía renal formal.
+  - **Filas claras:** las del borrador se mantienen.
+- **Las filas están en el banco**, con su procedencia. La tabla derivada está
+  en `docs/C14_TABLA_FINAL.md`.
+- **Las pruebas** están en `test_c14_opportunities.py`.
+
+Lo que sigue abajo es el documento de decisión tal como se presentó.
+
+**Estado anterior: PREPARADO PARA DECISIÓN DOCENTE. C14 NO ESTÁ ACTIVO.**
 
 - Nada de esto está escrito en el banco de casos. Ningún caso tiene un bloque
   `objectives`, y una prueba lo verifica (`test_observation_opportunities.py`).

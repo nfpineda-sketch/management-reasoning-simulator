@@ -1,6 +1,9 @@
 """The C14 review: eight faculty decisions (A-H) and the rows they derive.
 
-Cycle 4 of the AI Advisor (faculty, 2026-09-28, DF-13). C14 is NOT activated.
+Cycle 4 of the AI Advisor (faculty, 2026-09-28, DF-13) prepared it; on the same day the
+faculty approved the eight recommendations (APPROVED), and cycle 5 wrote the rows they derive
+into the bank (case_assessment_bank.C14_DECLARATIONS), with acs_54m_inferior left out until
+its data are resolved.
 The cycle 3 draft classified the 31 bank cases as 6 YES, 6 NO and 19 UNCERTAIN
 (docs/BORRADOR_C14_OBSERVATION_OPPORTUNITIES.md); the uncertain ones were
 grouped into eight clinical decisions so that the faculty answers eight
@@ -8,9 +11,9 @@ questions instead of reviewing 31 rows from scratch
 (docs/C14_DECISIONES_A_H.md).
 
 This module holds that draft and derives, from the faculty's answers, the state
-each case's C14 row would take. It writes nothing: no case has an
-``objectives`` block until the faculty approves the rows, and the transition
-rule keeps C14 observable meanwhile (observation_opportunities, DF-12).
+each case's C14 row takes. It writes nothing to the bank; the bank's declarations
+are checked against it (test_c14_review, test_c14_opportunities), and
+``final_table`` renders the rows the bank declares (docs/C14_TABLA_FINAL.md).
 
     derive({})                      # the draft, unchanged
     derive({"A": "approve", ...})   # the rows those answers imply
@@ -103,6 +106,9 @@ DECISIONS = {
 
 # The AI Advisor's recommendation for each decision (docs/C14_DECISIONES_A_H.md).
 RECOMMENDED = {letter: "approve" for letter in DECISIONS}
+# The faculty's answers of 2026-09-28: every recommendation approved. A keeps
+# acs_54m_inferior uncertain, which the bank leaves undeclared (not reviewed).
+APPROVED = {letter: "approve" for letter in DECISIONS}
 
 
 def decisions_for(case_id):
@@ -138,3 +144,52 @@ def derive(answers):
 
 def counts(rows):
     return {state: sum(1 for value in rows.values() if value == state) for state in STATES}
+
+
+# --- the final table: what the bank declares, row by row (cycle 5) ---------------------------
+
+NOT_REVIEWED_NOTE = ("Not reviewed: the case declares right ventricular involvement and its authored POCUS shows "
+                     "a normal RV. It keeps the transition rule until that is decided "
+                     "(docs/AUDITORIA_ACS_54M_INFERIOR.md).")
+
+
+def final_table():
+    """One row per bank case, in the draft's order, read from the bank's declarations."""
+    from case_assessment_bank import C14_DECLARATIONS
+    rows = []
+    for case_id in DRAFT:
+        entry = C14_DECLARATIONS.get(case_id)
+        if entry is None:
+            rows.append({"case_id": case_id, "opportunity": "NOT REVIEWED", "rationale": NOT_REVIEWED_NOTE,
+                         "observable_component": "", "expected_evidence": (), "review_source": "none yet"})
+            continue
+        reviewed = entry["reviewed"]
+        group = reviewed["decision_group"]
+        rows.append({
+            "case_id": case_id, "opportunity": entry["opportunity"].upper(),
+            "rationale": entry.get("rationale") or entry["reason"],
+            "observable_component": entry.get("observable_component", ""),
+            "expected_evidence": tuple(entry.get("expected_evidence", ())),
+            "review_source": (f"{reviewed['source']}; {reviewed['by']}, {reviewed['on']}; "
+                              + ("clear row" if group == "clear" else f"decision {group}")
+                              + f"; {reviewed['version']}")})
+    return rows
+
+
+def final_table_markdown():
+    """The table of docs/C14_TABLA_FINAL.md, exactly."""
+    def cell(value):
+        return str(value).replace("|", "\\|").replace("\n", " ")
+    lines = ["| CASE ID | OPPORTUNITY | RATIONALE (YES) / REASON (NO) | OBSERVABLE COMPONENT | "
+             "EXPECTED TRACE EVIDENCE | REVIEW SOURCE |",
+             "|---|---|---|---|---|---|"]
+    for row in final_table():
+        evidence = "; ".join(row["expected_evidence"]) or "—"
+        lines.append("| " + " | ".join(cell(value) for value in (
+            f"`{row['case_id']}`", row["opportunity"], row["rationale"], row["observable_component"] or "—",
+            evidence, row["review_source"])) + " |")
+    return "\n".join(lines) + "\n"
+
+
+if __name__ == "__main__":
+    print(final_table_markdown(), end="")

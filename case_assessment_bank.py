@@ -1471,3 +1471,219 @@ CASES.update(_trauma(
          ["D2", "D5"],
          [("exposure", "the seatbelt bruising across the chest and abdomen"),
           ("bleeding", "that no external source has been found")])]))
+
+
+# --- C14 · Use POCUS to guide management: the faculty's clinical review --------------------
+# Approved by the faculty on 2026-09-28 (DF-13, decisions A-H of docs/C14_DECISIONES_A_H.md);
+# the rows are the ones c14_review.derive gives for those answers. An opportunity makes C14
+# assessable in a new encounter and never observes it (observation_opportunities): the
+# resident's performance, a proposal and the faculty's confirmation still decide. "No" means
+# the case does not offer the objective -- not evaluable, never a failure. The expected
+# evidence guides and is not a whitelist. acs_54m_inferior is left out on purpose: its
+# authored POCUS contradicts the right ventricular involvement the case declares
+# (docs/AUDITORIA_ACS_54M_INFERIOR.md), and it keeps the transition rule until that is
+# resolved.
+
+def _c14_review(group):
+    # "clear": a row the draft already classified and the faculty kept (§9 of the decisions).
+    return {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "human_clinical_review",
+            "decision_group": group, "version": "C14-REVIEW-1"}
+
+
+def _c14_yes(group, rationale, component, evidence):
+    return {"opportunity": "yes", "rationale": rationale, "observable_component": component,
+            "expected_evidence": tuple(evidence), "reviewed": _c14_review(group)}
+
+
+def _c14_no(group, reason):
+    return {"opportunity": "no", "reason": reason, "reviewed": _c14_review(group)}
+
+
+_C14_NO_BRADYCARDIA = (
+    "The POCUS is the same in the three toxic or metabolic bradycardias -- globally reduced "
+    "contraction at a slow rate -- so it does not discriminate the cause, which the case separates "
+    "by the history, the glucose and the ECG, and the modelled responses do not depend on it "
+    "(decision E).")
+_C14_NO_ASTHMA = (
+    "Bronchodilation does not depend on POCUS. A pneumothorax appears only after ventilation with "
+    "sustained high plateau pressures, and its event already names the diagnosis, so a POCUS would "
+    "only confirm it (decision D). Redesigning that event is a separate case decision.")
+_C14_NO_HYPOGLYCEMIA = "The capillary glucose and the glucose treat it; the POCUS adds nothing to the management."
+_C14_NO_OPIOID = ("Opioid respiratory depression is treated with naloxone and ventilation; the POCUS adds "
+                  "nothing to the management.")
+_C14_VOLUME_EVIDENCE = (
+    "requests POCUS and names the volume findings (the IVC and the LV)",
+    "gives, limits or titrates volume, or moves to a vasopressor, because of them",
+    "reassesses with POCUS after volume")
+
+C14_DECLARATIONS = {
+    "acs_70f_left_main": _c14_yes(
+        "clear",
+        "Borderline pressure with globally reduced contraction on POCUS: the global LV function, a "
+        "state the EPA lists, is what should limit volume and prompt early support while reperfusion "
+        "is arranged; the engine answers volume poorly in this profile.",
+        "Deciding volume, support and urgency from the global LV function.",
+        ("requests POCUS and names the globally reduced contraction",
+         "limits or withholds volume, or escalates support, because of it",
+         "relates it to the urgency of reperfusion")),
+    "acs_61m_posterior": _c14_yes(
+        "A",
+        "ST depression in V1-V3 with posterior hypokinesis on POCUS: the regional wall motion can "
+        "prioritise reperfusion for an occlusion the 12-lead understates (decision A); in the engine "
+        "the wall motion evolves with the ischaemic minutes.",
+        "Using regional wall motion to prioritise the reperfusion decision.",
+        ("requests POCUS and names the posterior hypokinesis",
+         "uses it with the ECG and the posterior leads to treat the pattern as an occlusion",
+         "activates or expedites reperfusion")),
+    "acs_52m_de_winter": _c14_yes(
+        "A",
+        "Akinesis of the anterior wall and apex supports treating the de Winter pattern as an "
+        "anterior occlusion (decision A); in the engine the wall motion evolves with the ischaemic "
+        "minutes.",
+        "Using regional wall motion to prioritise the reperfusion decision.",
+        ("requests POCUS and names the anterior akinesis",
+         "relates it to the ECG pattern as an occlusion",
+         "activates or expedites reperfusion")),
+    "acs_66f_nonst": _c14_no(
+        "A",
+        "The acute coronary syndrome is already established by the ECG and a troponin of 180 ng/L; "
+        "the mild inferolateral hypokinesis does not change the pathway, with no occlusion and an "
+        "angiography that can wait (decision A)."),
+    "acs_48m_wellens": _c14_no(
+        "B",
+        "The right decision -- angiography and no provocation test -- does not depend on POCUS, and a "
+        "normal resting POCUS cannot reasonably guide it. Not being reassured by it is diagnostic "
+        "reasoning, not C14 (decision B)."),
+    "pneumonia_46f": _c14_yes(
+        "C",
+        "Septic hypotension (92/58) with a 1.0 cm collapsing IVC, a vigorous LV and no diffuse B-lines: "
+        "POCUS can select and titrate the fluid strategy and time the vasopressor, and a repeat scan "
+        "shows the IVC filling with volume (decision C). The consolidation may be named but does not "
+        "by itself make the opportunity (decision F): one opportunity for the case.",
+        "Guiding and reassessing the fluid and haemodynamic strategy with POCUS.",
+        _C14_VOLUME_EVIDENCE),
+    "pneumonia_83m": _c14_yes(
+        "C",
+        "An older patient referred as dehydrated, 96/60 with a 1.2 cm collapsing IVC and a preserved "
+        "LV: POCUS can select and titrate the fluid strategy and time the vasopressor, and a repeat "
+        "scan shows the IVC filling with volume (decision C). The consolidation may be named but does "
+        "not by itself make the opportunity (decision F): one opportunity for the case.",
+        "Guiding and reassessing the fluid and haemodynamic strategy with POCUS.",
+        _C14_VOLUME_EVIDENCE),
+    "gi_bleed_57m": _c14_yes(
+        "C",
+        "Haemorrhagic shock (88/54) with a small hyperdynamic LV and a near-completely collapsing IVC: "
+        "the volume assessment is a target of the resuscitation alongside transfusion, and a repeat "
+        "scan shows the IVC filling with volume and blood (decision C).",
+        "Using the POCUS volume assessment to guide and reassess resuscitation.",
+        ("requests POCUS and names the empty, hyperdynamic LV and the collapsed IVC",
+         "relates them to transfusion or volume",
+         "reassesses with POCUS after resuscitation")),
+    "gi_bleed_72f": _c14_yes(
+        "C",
+        "Hypotension from bleeding (98/62) with a hyperdynamic LV and a 1.1 cm collapsing IVC: the "
+        "volume assessment is a target of the resuscitation alongside transfusion, and a repeat scan "
+        "shows the IVC filling with volume and blood (decision C).",
+        "Using the POCUS volume assessment to guide and reassess resuscitation.",
+        ("requests POCUS and names the hyperdynamic LV and the collapsing IVC",
+         "relates them to transfusion or volume",
+         "reassesses with POCUS after resuscitation")),
+    "obstructive_pyelonephritis_58f": _c14_yes(
+        "C",
+        "Septic shock from an infected obstruction (94/54) with a 1.0 cm collapsing IVC and a vigorous "
+        "LV: POCUS can select and limit the fluid strategy and time the vasopressor (decision C). The "
+        "renal ultrasound is a formal study in the simulator and does not count by itself (decision H). "
+        "A repeat scan still shows the arrival IVC: the simulator does not model its response here.",
+        "Guiding the fluid and haemodynamic strategy with POCUS in septic shock.",
+        _C14_VOLUME_EVIDENCE[:2]),
+    "anaphylaxis_29f": _c14_no(
+        "C",
+        "Adrenaline and volume are indicated whatever the POCUS shows; the hyperdynamic LV and the "
+        "collapsing IVC confirm a distributive shock without changing its management (decision C)."),
+    "anaphylaxis_63m_betablocked": _c14_no(
+        "C",
+        "In this refractory reaction the case's lever is the medication history and glucagon; volume "
+        "is given regardless, and the POCUS supports without guiding the decision (decision C)."),
+    "asthma_24f": _c14_no("D", _C14_NO_ASTHMA),
+    "asthma_49m": _c14_no("D", _C14_NO_ASTHMA),
+    "bradycardia_ccb_68m": _c14_no("E", _C14_NO_BRADYCARDIA),
+    "bradycardia_bb_54f": _c14_no("E", _C14_NO_BRADYCARDIA),
+    "bradycardia_avb3_78f": _c14_no(
+        "E",
+        "The decision is pacing, and the pulse and the pressure confirm its capture; the simulator's "
+        "POCUS does not reflect the capture and would contradict the monitor after pacing "
+        "(decision E)."),
+    "bradycardia_hyperk_63m": _c14_no(
+        "clear",
+        "Hyperkalaemia is treated with calcium, insulin with glucose and removal; the POCUS does not "
+        "change that management."),
+    "hypoglycemia_28m": _c14_no("clear", _C14_NO_HYPOGLYCEMIA),
+    "hypoglycemia_76f": _c14_no("clear", _C14_NO_HYPOGLYCEMIA),
+    "hypoglycemia_54m_thiamine": _c14_no(
+        "clear", _C14_NO_HYPOGLYCEMIA + " The thiamine is decided by the history."),
+    "opioid_35m": _c14_no("clear", _C14_NO_OPIOID),
+    "opioid_67f": _c14_no("clear", _C14_NO_OPIOID),
+    "pulmonary_edema_58m": _c14_yes(
+        "clear",
+        "Diffuse B-lines, a moderately depressed LV and a plethoric IVC separate congestion from the "
+        "other causes of this presentation; loading volume is a critical event of the case.",
+        "Deciding nitrate, diuretic or NIV, and withholding volume, from the B-lines, the LV and the IVC.",
+        ("requests POCUS and names the diffuse B-lines and the depressed LV",
+         "withholds volume because of them",
+         "gives nitrate, diuretic or NIV because of them")),
+    "pulmonary_edema_75f": _c14_yes(
+        "clear",
+        "Diffuse B-lines, a severely depressed LV, a plethoric IVC and small effusions separate "
+        "congestion from the other causes of this presentation; loading volume is a critical event of "
+        "the case.",
+        "Deciding nitrate, diuretic or NIV, and withholding volume, from the B-lines, the LV and the IVC.",
+        ("requests POCUS and names the diffuse B-lines and the depressed LV",
+         "withholds volume because of them",
+         "gives nitrate, diuretic or NIV because of them")),
+    "pulmonary_embolism_33f": _c14_yes(
+        "G",
+        "Stable (110/70) with SpO2 90 %: a mildly enlarged RV without septal flattening and a "
+        "non-compressible popliteal vein. The proximal DVT confirms thromboembolic disease before the "
+        "CT angiogram (20 minutes) returns, and an RV without shock argues against thrombolysis, a "
+        "dangerous action in this case (decision G).",
+        "Integrating the RV and a proximal DVT with the haemodynamic stability: anticoagulation before "
+        "confirmation, and no thrombolysis.",
+        ("requests POCUS and names the proximal DVT or the RV",
+         "anticoagulates, or states it as pending the angiogram, because of it",
+         "withholds thrombolysis with the stable haemodynamics and the RV stated")),
+    "pulmonary_embolism_61m": _c14_yes(
+        "G",
+        "Obstructive shock (86/54, SpO2 88 %): an RV larger than the LV with a D-sign and McConnell's "
+        "sign, and a non-compressible popliteal vein, justify treating a high-risk embolism and "
+        "deciding reperfusion before the CT angiogram (decision G).",
+        "Deciding reperfusion and anticoagulation from RV strain and a proximal DVT in shock.",
+        ("requests POCUS and names the dilated RV with a D-sign or McConnell's sign, or the DVT",
+         "anticoagulates and decides reperfusion because of it",
+         "acts without waiting for the angiogram")),
+    "renal_colic_34m": _c14_no(
+        "H",
+        "The renal ultrasound, the study that settles this disposition, is a formal study in the "
+        "simulator and not POCUS; the POCUS proper does not change the management of a colic without "
+        "shock (decision H)."),
+    "trauma_limb_hemorrhage_27m": _c14_yes(
+        "clear",
+        "Shock (96/54, HR 132) after a machinery injury to the thigh: a negative five-window E-FAST "
+        "excludes a cavity source and keeps the control on the compressible limb. Free fluid, "
+        "haemothorax, pneumothorax and the pericardium are states the EPA lists.",
+        "Directing haemorrhage control with the absence of cavity bleeding on the E-FAST.",
+        ("requests the E-FAST and names it negative",
+         "keeps haemorrhage control on the limb rather than searching a cavity",
+         "states what would change that")),
+    "trauma_hemothorax_41m": _c14_yes(
+        "clear",
+        "The E-FAST shows an echogenic left pleural collection in shock: a haemothorax, a state the "
+        "EPA lists, that defines the drain; the case's critical events are the undrained haemothorax "
+        "and the drained one never looked at again.",
+        "Deciding the drain and its reassessment from the haemothorax on the E-FAST.",
+        ("requests the E-FAST and names the left haemothorax",
+         "places a chest tube because of it",
+         "reassesses after the drain with the E-FAST, a film or surgery")),
+}
+
+for _case_id, _declaration in C14_DECLARATIONS.items():
+    CASES[_case_id].setdefault("objectives", {})["C14"] = _declaration

@@ -60,7 +60,13 @@ def test_an_answer_outside_the_scheme_is_refused(answers):
         derive(answers)
 
 
-def test_nothing_is_written_to_the_bank():
+def test_the_bank_carries_exactly_what_the_approved_answers_derive():
     import case_assessment_bank
-    derive(RECOMMENDED)
-    assert not any("objectives" in declaration for declaration in case_assessment_bank.CASES.values())
+    rows = derive(c14_review.APPROVED)
+    for case_id, state in rows.items():
+        declared = (case_assessment_bank.CASES[case_id].get("objectives") or {}).get("C14")
+        if state == "uncertain":
+            # Uncertain after the answers: left out of the bank, so not reviewed.
+            assert declared is None, case_id
+        else:
+            assert declared["opportunity"] == state, case_id

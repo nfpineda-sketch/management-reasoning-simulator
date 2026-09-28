@@ -1,21 +1,41 @@
 {
  "pilot_id": "VALIDATION_PILOT_V1",
- "baseline": "validation/pilot_v1/PILOT_BASELINE.md",
+ "version": 2,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-28",
+   "baseline": "SPANISH PILOT BASELINE",
+   "note": "Cycle 4: KD-01 to KD-14 and KB-01, as present in the Spanish pilot baseline."
+  },
+  {
+   "version": 2,
+   "date": "2026-09-28",
+   "baseline": "ENGLISH VALIDATION BASELINE",
+   "note": "Cycle 5: KD-01 fixed from the English validation baseline on (it stays present in the Spanish one); KD-15 and KB-02 registered while fixing it. Each defect says which baselines it is present in, so one list tags a result of either."
+  }
+ ],
+ "baseline": "validation/BASELINES.md (registry: validation/baselines.json)",
  "purpose": "Known failures present in the pilot baseline, so that a pilot result can be told apart as KNOWN or NEW (§73). Nothing is hidden to improve a measure. The adjudicator writes the id in the 'known_defect' column when an error matches one of these.",
  "severity_scale": "CRITICAL · HIGH · MEDIUM · LOW, the pilot's impact scale (§60); for ordering work, never a score",
  "defects": [
   {
    "id": "KD-01",
    "class": "An English order that puts the route before the drug and has no verb",
-   "example": "IV morphine 4 mg · Nebulized albuterol 2.5 mg · Oral paracetamol 1 g · IV fluids 1 L",
+   "example": "IV morphine 4 mg · Nebulized albuterol 2.5 mg · Oral paracetamol 1 g",
    "what_happens": "Read as an order not recognized; the clarification holds the other orders of the submission until it is rephrased. With a verb ('Give nebulized albuterol') it is read.",
    "severity": "MEDIUM",
    "location": "parsing",
    "known_cause": "A verbless order must start with the drug or the fluid; a leading route word is not skipped.",
    "why_not_fixed": "Not related to DF-16a/b (criterion 1 of §71); found by the held-out check of cycle 4.",
-   "pilot_relevance": "Low in the Spanish phase (Spanish writes the route after the drug); likely frequent in the English phase.",
-   "next_step": "Cheap fix before the English documents are collected (cycle 5 proposal).",
-   "registered": "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 4"
+   "pilot_relevance": "Present in the Spanish pilot baseline (Spanish rarely writes the route first); fixed in the English validation baseline.",
+   "next_step": "Fixed in the English validation baseline. A route-first error read at the Spanish baseline is KD-01.",
+   "registered": "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 4",
+   "present_in": [
+    "SPANISH PILOT BASELINE"
+   ],
+   "fixed_in": "ENGLISH VALIDATION BASELINE",
+   "fix": "Cycle 5, by class: a route word the reader already knows, written before a medicine it knows and its dose, is stepped over to find the order and read where it was written (shared_order_language.ROUTE_BEFORE_THE_DRUG). In a list it stays that drug's route: it no longer reaches the dose before it ('Aspirin 300 mg, IV morphine 4 mg' gave the aspirin IV, the same misreading). Tests: test_a_route_written_before_the_drug.py."
   },
   {
    "id": "KD-02",
@@ -28,7 +48,11 @@
    "why_not_fixed": "A design decision (ask for the dose, or ignore) and not a DF-16 defect.",
    "pilot_relevance": "Possible in chart shorthand; the pilot will show how often.",
    "next_step": "Measure its frequency; then a faculty decision on whether a bare drug with a route should ask for its dose.",
-   "registered": "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 4"
+   "registered": "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 4",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-03",
@@ -41,7 +65,11 @@
    "why_not_fixed": "Live interaction; recommended for phase 2 (DF-16d).",
    "pilot_relevance": "None in phase 1: the harness cancels a held order before the next entry (resolve_until_clear).",
    "next_step": "Phase 2 (live encounters).",
-   "registered": "docs/COLA_DECISIONES_AI_ADVISOR.md, DF-16d"
+   "registered": "docs/COLA_DECISIONES_AI_ADVISOR.md, DF-16d",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-04",
@@ -54,7 +82,11 @@
    "why_not_fixed": "Independent of DF-16a/b (DF-16e); to be documented first (faculty, 2026-09-28).",
    "pilot_relevance": "Possibly frequent in Spanish reassessment wording ('reevalúo si mejora…'); it would lower reassessment capture.",
    "next_step": "Tag it in adjudication; if frequent, a small class fix (cycle 5 proposal).",
-   "registered": "docs/COLA_DECISIONES_AI_ADVISOR.md, DF-16e"
+   "registered": "docs/COLA_DECISIONES_AI_ADVISOR.md, DF-16e",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-05",
@@ -67,7 +99,11 @@
    "why_not_fixed": "Independent of DF-16a/b (DF-16f).",
    "pilot_relevance": "English phase.",
    "next_step": "Class fix with the English discharge forms.",
-   "registered": "DF-10 and DF-16f"
+   "registered": "DF-10 and DF-16f",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-06",
@@ -80,7 +116,11 @@
    "why_not_fixed": "Independent of DF-16a/b (DF-16g).",
    "pilot_relevance": "Likely in C05 (renal colic with discharge).",
    "next_step": "Keep a prescription from the discharge clause as a prescription.",
-   "registered": "DF-16g"
+   "registered": "DF-16g",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-07",
@@ -93,7 +133,11 @@
    "why_not_fixed": "Independent of DF-16a/b (DF-16h).",
    "pilot_relevance": "Possible in C05.",
    "next_step": "Vocabulary addition when a class fix touches follow-up.",
-   "registered": "DF-16h"
+   "registered": "DF-16h",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-08",
@@ -106,7 +150,11 @@
    "why_not_fixed": "Independent (DF-16i).",
    "pilot_relevance": "None: the pilot does not show the page to physicians.",
    "next_step": "Add the translations.",
-   "registered": "DF-16i"
+   "registered": "DF-16i",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-09",
@@ -119,7 +167,11 @@
    "why_not_fixed": "Whether an 'as needed' is a condition is an annotation question (VC-3 logic); low value before data.",
    "pilot_relevance": "Low.",
    "next_step": "Decide with the annotation guide; align the reader.",
-   "registered": "cycle 4 held-out check"
+   "registered": "cycle 4 held-out check",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-10",
@@ -132,7 +184,11 @@
    "why_not_fixed": "Behaviour unchanged by DF-16b; changing it needs its own review.",
    "pilot_relevance": "Low.",
    "next_step": "Review with the timed reassessment design.",
-   "registered": "cycle 4 held-out check"
+   "registered": "cycle 4 held-out check",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-11",
@@ -145,7 +201,11 @@
    "why_not_fixed": "Found in cycle 4 probes; same family as DF-7, not DF-16.",
    "pilot_relevance": "Possible; it would show as an unfaithful slot.",
    "next_step": "Class fix in the DF-7 family.",
-   "registered": "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 4"
+   "registered": "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 4",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-12",
@@ -158,7 +218,11 @@
    "why_not_fixed": "DF-11, low priority.",
    "pilot_relevance": "It would lower rationale capture.",
    "next_step": "Let the pilot say which findings matter.",
-   "registered": "DF-11"
+   "registered": "DF-11",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-13",
@@ -171,7 +235,11 @@
    "why_not_fixed": "DF-11, low priority.",
    "pilot_relevance": "Low.",
    "next_step": "Measure.",
-   "registered": "DF-11"
+   "registered": "DF-11",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   },
   {
    "id": "KD-14",
@@ -184,7 +252,28 @@
    "why_not_fixed": "DF-11; the regressions fix the current behaviour.",
    "pilot_relevance": "Would show as a not word-for-word quote.",
    "next_step": "Decide whether quotes keep the original spelling.",
-   "registered": "DF-11"
+   "registered": "DF-11",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
+  },
+  {
+   "id": "KD-15",
+   "class": "A fluid named in words, with no verb, is not an order ('IV fluids 1 L', 'Normal saline 1 L IV')",
+   "example": "IV fluids 1 L · Normal saline 1 L IV · Fluids 1 L IV",
+   "what_happens": "Quoted back as an order not recognized; the other orders of the submission are held. '1 L normal saline IV', 'SF 1000 mL' or 'Give normal saline 1 L IV' are read.",
+   "severity": "MEDIUM",
+   "location": "parsing",
+   "known_cause": "A verbless order must start with a medicine, a quantity or a fluid shorthand (SF, NS, LR, cristaloides); 'fluids', 'normal saline' and 'saline' are not in that list.",
+   "why_not_fixed": "Found while fixing KD-01 (its old example 'IV fluids 1 L'), but a second cause: stepping over the route leaves 'fluids 1 L', which is not an order either. Outside the class the faculty authorised (route + medication + dose).",
+   "pilot_relevance": "Possible in the English phase; Spanish writes 'SF 1000 mL' or 'suero fisiológico', which are read.",
+   "next_step": "Class fix with the verbless fluid names, after the faculty decides it.",
+   "registered": "validation/pilot_v1/KNOWN_DEFECTS.md, cycle 5",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE"
+   ]
   }
  ],
  "known_behaviour_by_design": [
@@ -193,11 +282,20 @@
    "class": "Oxygen without an absolute flow is held for a clarification, by design",
    "example": "O2 por mascarilla para saturar sobre 94 %",
    "note": "Not a defect: the pilot measures whether clinicians find the question unnecessary (DF-16, 'qué no es un defecto')."
+  },
+  {
+   "id": "KB-02",
+   "class": "A bare 'IN' before the drug is not read as the nasal route",
+   "example": "IN naloxone 2 mg",
+   "note": "By design (cycle 5): before a drug, 'in' is an English preposition first. The nasal route is read where the reader reads it, after the dose ('naloxone 2 mg IN'), or spelled 'intranasal'. The order is held, never given by another route."
   }
  ],
  "fixed_in_cycle_4": [
   "DF-16a (lists of orders)",
   "DF-16b (order + repeat + condition)",
   "DF-16c (plural route and a route shared by a list of doses)"
+ ],
+ "fixed_in_cycle_5": [
+  "KD-01 (a route written before the drug), from the English validation baseline on"
  ]
 }

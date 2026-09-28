@@ -1,0 +1,15 @@
+{
+ "purpose": "The engine versions a validation result is measured against (faculty, 2026-09-28, cycle 5, §13, §44, §51). A baseline is never replaced retroactively: a new one is added. A run records its engine commit; the report names the baseline that commit is, from this registry, and the version of the known-defects list its errors are tagged against. A commit read with uncommitted changes is no baseline.",
+ "baselines": [
+  {
+   "name": "SPANISH PILOT BASELINE",
+   "language": "es",
+   "commit": "939978a5147ab859a6dc3566ef4e1a98611a5093",
+   "simulator_version": "0.24.13-clinical-encounter",
+   "registered_on": "2026-09-28",
+   "known_defects_version": 1,
+   "record": "validation/pilot_v1/PILOT_BASELINE.md",
+   "use": "The Spanish physicians' documents are measured against this commit first, before any change to the engine."
+  }
+ ]
+}

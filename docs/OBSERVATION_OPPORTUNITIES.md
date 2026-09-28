@@ -104,11 +104,29 @@ Después solo se lee esa copia:
 
 **Por qué esta transición.**
 
-- **No quita ni agrega nada.** Hoy ningún caso del banco declara oportunidades,
-  así que cada encuentro conserva exactamente la elegibilidad que tenía. Es el
-  mecanismo más conservador y reversible (§56).
+- **No quita ni agrega nada a un caso sin revisar.** Cada encuentro de ese
+  caso conserva exactamente la elegibilidad que tenía. Es el mecanismo más
+  conservador y reversible (§56).
 - **Se retira caso por caso.** Cuando el docente aprueba la declaración de un
   caso, ese caso deja de usar la transición.
+
+**Dónde está hoy (ciclo 5, 2026-09-28).**
+
+- **C14 está declarado en 30 casos:** 14 YES y 16 NO, con su procedencia
+  (`reviewed`: `by`, `on`, `source`, `decision_group`, `version`). La tabla
+  está en `docs/C14_TABLA_FINAL.md`.
+- **`acs_54m_inferior` sigue NOT REVIEWED** y conserva la transición para C14.
+  Su POCUS contradice el VD que el caso declara
+  (`docs/AUDITORIA_ACS_54M_INFERIOR.md`).
+- **TD1, F1, C1, C3 y C4 siguen sin revisar en todos los casos**, así que
+  `TRANSITION_OBJECTIVES` no cambia.
+- **Las pruebas** están en `test_c14_opportunities.py`:
+  - YES es evaluable y NO no lo es;
+  - NOT REVIEWED conserva sólo la transición;
+  - nada se observa sin el docente;
+  - C14 incidental bajo otro objetivo;
+  - los encuentros históricos y las declaraciones congeladas no cambian;
+  - varios hallazgos de POCUS en un encuentro son una sola observación.
 
 **La transición es TRANSITORIA** (decisión docente del 2026-09-28, DF-12). No
 es la arquitectura final ni debe convertirse en una regla permanente.
@@ -268,7 +286,9 @@ Tampoco un motor de competencias ni un servicio de ontología (§82 y §94).
 
 Detalle en `docs/COLA_DECISIONES_AI_ADVISOR.md`:
 
-- activar C14 caso por caso, con el borrador de 31 filas;
+- C14 en `acs_54m_inferior`, después de decidir sus datos (las otras 30 filas se
+  activaron en el ciclo 5);
+- la revisión de TD1, F1, C1, C3 y C4, objetivo por objetivo;
 - los vínculos PARTIAL inactivos;
 - el *faculty override*: registrar explícitamente que una oportunidad declarada
   no ocurrió. **No implementado**; hoy el docente simplemente no valora;
