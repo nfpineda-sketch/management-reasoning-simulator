@@ -95,7 +95,9 @@ Después solo se lee esa copia:
 
 1. **`generation_target`.** El encuentro se generó para ese Decision Challenge.
    Lo ofrece.
-2. **`declared`.** El caso congelado lo declara `yes` o `no`.
+2. **`declared`.** El caso congelado lo declara `yes` o `no`; si el caso no lo
+   declara, cuenta lo que declara el **entorno de observación** congelado con
+   el encuentro (ciclo 7, abajo).
 3. **`transition_fallback`** (DF-12). Nadie lo revisó para este caso y se
    mantiene la regla anterior, rotulada: TD1, F1, C1, C3, C4 y C14 en todo
    encuentro, y un Decision Challenge solo en el encuentro generado para él.
@@ -110,16 +112,30 @@ Después solo se lee esa copia:
 - **Se retira caso por caso.** Cuando el docente aprueba la declaración de un
   caso, ese caso deja de usar la transición.
 
-**Dónde está hoy (ciclo 5, 2026-09-28).**
+**Dónde está hoy (ciclo 7, 2026-09-28).**
 
-- **C14 está declarado en 30 casos:** 14 YES y 16 NO, con su procedencia
+- **C14 está declarado en los 31 casos:** 14 YES y 17 NO, con su procedencia
   (`reviewed`: `by`, `on`, `source`, `decision_group`, `version`). La tabla
-  está en `docs/C14_TABLA_FINAL.md`.
-- **`acs_54m_inferior` sigue NOT REVIEWED** y conserva la transición para C14.
-  Su POCUS contradice el VD que el caso declara
-  (`docs/AUDITORIA_ACS_54M_INFERIOR.md`).
-- **TD1, F1, C1, C3 y C4 siguen sin revisar en todos los casos**, así que
-  `TRANSITION_OBJECTIVES` no cambia.
+  está en `docs/C14_TABLA_FINAL.md`. `acs_54m_inferior` es NO desde el ciclo 7
+  (DF-20, revisión `C14-REVIEW-2`): la razón es sobre la oportunidad de
+  observación, no sobre lo que el POCUS puede mostrar.
+- **C4 es NO en todo el entorno de observación** (TDFC-7/8 y H4 del ciclo 7):
+  - cada caso del banco lo declara, con su razón
+    (`case_assessment_bank.C4_DECLARATIONS`);
+  - el entorno lo declara una vez (`observation_opportunities.ENVIRONMENT`), y
+    `evaluation_basis.freeze` copia esa declaración en todo encuentro nuevo:
+    también en los casos generados y en los encuentros sin caso autorado
+    (PS001), que no tienen declaración propia;
+  - la declaración de un caso gana a la del entorno;
+  - **es prospectiva:** un encuentro congelado antes no trae el bloque del
+    entorno y conserva la transición con que empezó; una observación C4 ya
+    confirmada no se pierde ni se relee. Por eso C4 sigue en
+    `TRANSITION_OBJECTIVES`, aunque ningún encuentro nuevo llegue a esa regla;
+  - el motor no se tocó; la evidencia C4 vendrá de simulación procedural u
+    observación en el lugar de trabajo (`test_c4_is_not_observable_in_this_environment.py`).
+- **TD1, F1, C1 y C3 siguen sin revisar en todos los casos** (TDFC aprobado
+  conceptualmente, sin escribir). En los casos generados y en PS001, C14 y
+  TD/F/C conservan la transición (DF-12, L-F07 B).
 - **Las pruebas** están en `test_c14_opportunities.py`:
   - YES es evaluable y NO no lo es;
   - NOT REVIEWED conserva sólo la transición;

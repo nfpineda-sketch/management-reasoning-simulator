@@ -373,6 +373,9 @@ class ProgressStore:
             from observation_opportunities import resolve as opportunity_of
             opportunity = opportunity_of(objective_id, self.accounts._attempt(attempt))
             if not opportunity["eligible"]:
+                if opportunity["rule"] == "declared" and opportunity.get("scope") == "observation_environment":
+                    raise AccountError("The simulator's observation environment declares no opportunity to "
+                                       "observe this objective: " + str(opportunity.get("reason") or ""))
                 if opportunity["rule"] == "declared":
                     raise AccountError("This case declares no opportunity to observe this objective: "
                                        + str(opportunity.get("reason") or ""))

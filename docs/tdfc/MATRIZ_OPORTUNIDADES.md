@@ -1,16 +1,19 @@
 # Matriz de oportunidades del banco · caso × objetivo
 
-Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28.
+Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28. Actualizada en el ciclo 7: C14 revisado
+en los 31 casos y C4 declarado NO en todos.
 
 **Estado: BORRADOR. Generado por `generar_matriz.py`; no se edita a mano.**
 
 - **Qué es.** Cobertura de oportunidades de observación que ofrece el banco de 31 casos, objetivo por
   objetivo. **No es cobertura del constructo de un residente** y no calcula competencia de nadie.
-- **De dónde sale.** Las columnas TD1 a C4 son el borrador de `BORRADOR_TDFC.md` (tabla «Estados por
-  caso»). C14 es lo que el banco declara (`case_assessment_bank.C14_DECLARATIONS`). Los Decision
-  Challenges salen de `curriculum.CHALLENGES`: un desafío es TARGET en los casos de sus `families`.
+- **De dónde sale.** Las columnas TD1 a C3 son el borrador de `BORRADOR_TDFC.md` (tabla «Estados por
+  caso»). C4 y C14 son lo que el banco declara (`case_assessment_bank.C4_DECLARATIONS` y
+  `C14_DECLARATIONS`). Los Decision Challenges salen de `curriculum.CHALLENGES`: un desafío es TARGET
+  en los casos de sus `families`.
 - **DRAFT ≠ APPROVED OPPORTUNITY.** En el banco, toda celda DRAFT sigue hoy NOT REVIEWED y abierta por
-  la regla de transición (TD1, F1, C1, C3 y C4 son observables en todo encuentro).
+  la regla de transición (TD1, F1, C1 y C3 son observables en todo encuentro). TDFC-1 a 6 y 8 están
+  aprobadas conceptualmente (ciclo 7), sin escribir todavía en el banco.
 
 ## Leyenda
 
@@ -19,7 +22,7 @@ Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28.
 | TARGET | TARGET | La familia del caso está en las `families` del desafío: el encuentro generado para ese desafío puede usar este caso. |
 | DECL+ | DECLARED YES | El caso declara la oportunidad, con revisión docente (hoy sólo C14). |
 | DECL− | DECLARED NO | El caso declara que no la hay: no evaluable, nunca una falla. |
-| NR | NOT REVIEWED | Nadie la declaró. En un desafío: no se ofrece fuera del encuentro generado para él. En C14 (`acs_54m_inferior`): sigue abierta por la transición. |
+| NR | NOT REVIEWED | Nadie la declaró. En un desafío: no se ofrece fuera del encuentro generado para él. |
 | DRAFT+ | DRAFT YES | Este borrador propone oportunidad. |
 | DRAFT− | DRAFT NO | Este borrador propone que no la hay. |
 | DRAFT? | DRAFT UNCERTAIN | Depende de una decisión clínica (TDFC-1 a TDFC-8). |
@@ -28,37 +31,37 @@ Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28.
 
 | Caso | Familia | R1-03 | R1-04 | R1-05 | R1-06 | R1-07 | R2-01 | R2-02 | R2-03 | R2-04 | R2-05 | R3-01 | TD1 | F1 | C1 | C3 | C4 | C14 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `acs_54m_inferior` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DRAFT− | NR |
-| `acs_66f_nonst` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT? | DRAFT− | DRAFT− | DRAFT− | DRAFT− | DECL− |
-| `acs_61m_posterior` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT? | DRAFT− | DRAFT− | DRAFT− | DRAFT− | DECL+ |
-| `acs_52m_de_winter` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT? | DRAFT− | DRAFT− | DRAFT− | DRAFT− | DECL+ |
-| `acs_48m_wellens` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT− | DRAFT− | DRAFT− | DRAFT− | DRAFT− | DECL− |
-| `acs_70f_left_main` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DECL+ |
-| `anaphylaxis_29f` | anaphylaxis | NR | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− |
-| `anaphylaxis_63m_betablocked` | anaphylaxis | NR | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DECL− |
-| `asthma_24f` | asthma | NR | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT? | DRAFT? | DRAFT− | DECL− |
-| `asthma_49m` | asthma | NR | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− |
-| `bradycardia_ccb_68m` | bradycardia | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DRAFT− | DECL− |
-| `bradycardia_avb3_78f` | bradycardia | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DRAFT? | DECL− |
-| `bradycardia_bb_54f` | bradycardia | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DRAFT− | DECL− |
-| `bradycardia_hyperk_63m` | bradycardia | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DRAFT− | DECL− |
-| `gi_bleed_57m` | gi_bleed | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DRAFT− | DECL+ |
-| `gi_bleed_72f` | gi_bleed | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DRAFT− | DECL+ |
-| `hypoglycemia_28m` | hypoglycemia | NR | NR | NR | TARGET | TARGET | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT? | DRAFT− | DRAFT− | DRAFT− | DECL− |
-| `hypoglycemia_76f` | hypoglycemia | NR | NR | NR | TARGET | TARGET | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT? | DRAFT− | DRAFT− | DRAFT− | DECL− |
-| `hypoglycemia_54m_thiamine` | hypoglycemia | NR | NR | NR | TARGET | TARGET | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT? | DRAFT− | DRAFT− | DRAFT− | DECL− |
-| `opioid_35m` | opioid | NR | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− |
-| `opioid_67f` | opioid | NR | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− |
-| `pneumonia_46f` | pneumonia | NR | NR | TARGET | NR | NR | NR | NR | TARGET | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DECL+ |
-| `pneumonia_83m` | pneumonia | NR | NR | TARGET | NR | NR | NR | NR | TARGET | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DECL+ |
-| `pulmonary_edema_58m` | pulmonary_edema | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL+ |
-| `pulmonary_edema_75f` | pulmonary_edema | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL+ |
-| `pulmonary_embolism_33f` | pulmonary_embolism | NR | NR | NR | NR | NR | NR | TARGET | TARGET | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT? | DRAFT? | DRAFT− | DECL+ |
-| `pulmonary_embolism_61m` | pulmonary_embolism | NR | NR | NR | NR | NR | NR | TARGET | TARGET | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DECL+ |
-| `renal_colic_34m` | renal_colic | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | DRAFT− | DRAFT− | DRAFT− | DRAFT− | DRAFT? | DECL− |
-| `obstructive_pyelonephritis_58f` | renal_colic | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DRAFT− | DECL+ |
-| `trauma_limb_hemorrhage_27m` | trauma | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DRAFT? | DECL+ |
-| `trauma_hemothorax_41m` | trauma | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DRAFT? | DECL+ |
+| `acs_54m_inferior` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DECL− | DECL− |
+| `acs_66f_nonst` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT? | DRAFT− | DRAFT− | DRAFT− | DECL− | DECL− |
+| `acs_61m_posterior` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT? | DRAFT− | DRAFT− | DRAFT− | DECL− | DECL+ |
+| `acs_52m_de_winter` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT? | DRAFT− | DRAFT− | DRAFT− | DECL− | DECL+ |
+| `acs_48m_wellens` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT− | DRAFT− | DRAFT− | DRAFT− | DECL− | DECL− |
+| `acs_70f_left_main` | acs | NR | NR | NR | NR | TARGET | NR | TARGET | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DECL− | DECL+ |
+| `anaphylaxis_29f` | anaphylaxis | NR | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DECL− | DECL− |
+| `anaphylaxis_63m_betablocked` | anaphylaxis | NR | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DECL− | DECL− |
+| `asthma_24f` | asthma | NR | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT? | DRAFT? | DECL− | DECL− |
+| `asthma_49m` | asthma | NR | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DECL− | DECL− |
+| `bradycardia_ccb_68m` | bradycardia | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− | DECL− |
+| `bradycardia_avb3_78f` | bradycardia | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− | DECL− |
+| `bradycardia_bb_54f` | bradycardia | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− | DECL− |
+| `bradycardia_hyperk_63m` | bradycardia | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− | DECL− |
+| `gi_bleed_57m` | gi_bleed | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− | DECL+ |
+| `gi_bleed_72f` | gi_bleed | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− | DECL+ |
+| `hypoglycemia_28m` | hypoglycemia | NR | NR | NR | TARGET | TARGET | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT? | DRAFT− | DRAFT− | DECL− | DECL− |
+| `hypoglycemia_76f` | hypoglycemia | NR | NR | NR | TARGET | TARGET | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT? | DRAFT− | DRAFT− | DECL− | DECL− |
+| `hypoglycemia_54m_thiamine` | hypoglycemia | NR | NR | NR | TARGET | TARGET | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT? | DRAFT− | DRAFT− | DECL− | DECL− |
+| `opioid_35m` | opioid | NR | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DECL− | DECL− |
+| `opioid_67f` | opioid | NR | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DECL− | DECL− |
+| `pneumonia_46f` | pneumonia | NR | NR | TARGET | NR | NR | NR | NR | TARGET | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DECL− | DECL+ |
+| `pneumonia_83m` | pneumonia | NR | NR | TARGET | NR | NR | NR | NR | TARGET | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DECL− | DECL+ |
+| `pulmonary_edema_58m` | pulmonary_edema | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DECL− | DECL+ |
+| `pulmonary_edema_75f` | pulmonary_edema | NR | NR | TARGET | NR | NR | NR | NR | NR | NR | NR | TARGET | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT+ | DECL− | DECL+ |
+| `pulmonary_embolism_33f` | pulmonary_embolism | NR | NR | NR | NR | NR | NR | TARGET | TARGET | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT? | DRAFT? | DECL− | DECL+ |
+| `pulmonary_embolism_61m` | pulmonary_embolism | NR | NR | NR | NR | NR | NR | TARGET | TARGET | TARGET | NR | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT? | DECL− | DECL+ |
+| `renal_colic_34m` | renal_colic | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | DRAFT− | DRAFT− | DRAFT− | DRAFT− | DECL− | DECL− |
+| `obstructive_pyelonephritis_58f` | renal_colic | NR | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT+ | DRAFT− | DECL− | DECL+ |
+| `trauma_limb_hemorrhage_27m` | trauma | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DECL− | DECL+ |
+| `trauma_hemothorax_41m` | trauma | NR | NR | NR | NR | NR | NR | NR | NR | TARGET | TARGET | NR | DRAFT+ | DRAFT+ | DRAFT? | DRAFT− | DECL− | DECL+ |
 
 ## Totales por objetivo
 
@@ -79,13 +82,14 @@ Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28.
 | F1 | 0 | 0 | 0 | 0 | 23 | 5 | 3 | 31 |
 | C1 | 0 | 0 | 0 | 0 | 18 | 8 | 5 | 31 |
 | C3 | 0 | 0 | 0 | 0 | 6 | 18 | 7 | 31 |
-| C4 | 0 | 0 | 0 | 0 | 0 | 27 | 4 | 31 |
-| C14 | 0 | 14 | 16 | 1 | 0 | 0 | 0 | 31 |
+| C4 | 0 | 0 | 31 | 0 | 0 | 0 | 0 | 31 |
+| C14 | 0 | 14 | 17 | 0 | 0 | 0 | 0 | 31 |
 
 - **Desafíos sin `families`:** R1-03, R1-04, R2-01. Se sirven con encuentros generados
   (`encounter_generator.SUPPORTED_CHALLENGES`); ningún caso del banco es su TARGET.
 - **Casos que son TARGET de al menos un desafío:** 31 de 31.
-- **C14** no cambia: 14 DECLARED YES, 16 DECLARED NO y 1 NOT REVIEWED (`acs_54m_inferior`).
+- **C14:** 14 DECLARED YES, 17 DECLARED NO y 0 NOT REVIEWED (ciclo 7: `acs_54m_inferior` NO).
+- **C4:** 31 DECLARED NO: la razón es del entorno de observación, no de los casos (TDFC-7/8, H4).
 
 ## Dudas del borrador y la decisión que las resuelve
 
@@ -119,10 +123,10 @@ Leídas como texto y analizadas con `ast`: no se importó ni ejecutó ningún m�
 
 | Archivo | sha256 (12) |
 |---|---|
-| `case_assessment_bank.py` | f55922e282e5 |
+| `case_assessment_bank.py` | 09a1d7fc7d38 |
 | `cognitive_catalog.py` | 919baeb78f97 |
 | `curriculum.py` | 8dda19ce4af9 |
-| `clinical_cases.py` | a5abedfb573e |
+| `clinical_cases.py` | 27f0eeb7e3d0 |
 | `hypoglycemia_catalog.py` | d4e5f7fb6893 |
-| `c14_review.py` | 1bbc6c9d84b5 |
+| `c14_review.py` | 625312d5b486 |
 | `BORRADOR_TDFC.md` (esta carpeta) | 3afaa555e03f |

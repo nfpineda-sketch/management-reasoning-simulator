@@ -54,26 +54,28 @@ def test_a_case_declares_an_opportunity_and_the_three_states_stay_apart(declared
     assert (view["C14"]["state"], view["C14"]["eligible"], view["C14"]["rule"]) == ("yes", True, "declared")
     assert (view["C3"]["state"], view["C3"]["eligible"], view["C3"]["rule"]) == ("no", False, "declared")
     assert view["C3"]["reason"] == DECLARED["C3"]["reason"]
-    # Not declared either way: not reviewed, and never read as "no".
-    assert (view["C4"]["state"], view["C4"]["rule"]) == ("not_reviewed", "transition_fallback")
+    # Not declared either way: not reviewed, and never read as "no". (C4 is declared by the
+    # observation environment since cycle 7, so C1 is the example here.)
+    assert (view["C1"]["state"], view["C1"]["rule"]) == ("not_reviewed", "transition_fallback")
     assert view["C14"]["expected_evidence"] == DECLARED["C14"]["expected_evidence"]
     assert view["C14"]["reviewed"] == FIXTURE_REVIEW
 
 
 # --- 3: not reviewed is never no, and the transition keeps what was observable ----------
 
-def test_only_c14_is_declared_and_everything_else_keeps_the_transition():
-    # Cycle 5 (faculty, 2026-09-28): C14 is reviewed in every case but
-    # acs_54m_inferior; TD1, F1, C1, C3 and C4 are not reviewed anywhere yet.
+def test_c14_and_c4_are_declared_and_td_f_c_keep_the_transition():
+    # Cycle 7 (faculty, 2026-09-28): C14 is reviewed in all 31 cases and C4 is NO in every
+    # one (TDFC-7/8, H4); TD1, F1, C1 and C3 are not reviewed anywhere yet.
     for case_id in case_assessment_bank.CASES:
         declared = case_assessment_bank.CASES[case_id].get("objectives") or {}
-        assert set(declared) <= {"C14"}, case_id
+        assert set(declared) == {"C14", "C4"}, case_id
         view = opportunities.summary(record(basis=evaluation_basis.freeze(case_id)))
-        for objective_id in set(opportunities.TRANSITION_OBJECTIVES) - {"C14"}:
+        for objective_id in set(opportunities.TRANSITION_OBJECTIVES) - {"C14", "C4"}:
             assert view[objective_id]["state"] == "not_reviewed"
             assert view[objective_id]["eligible"] is True
             assert view[objective_id]["rule"] == "transition_fallback"
-        assert (view["C14"]["rule"] == "declared") is (case_id != "acs_54m_inferior"), case_id
+        assert view["C14"]["rule"] == "declared", case_id
+        assert (view["C4"]["state"], view["C4"]["eligible"], view["C4"]["rule"]) == ("no", False, "declared")
 
 
 def test_a_basis_frozen_before_opportunities_existed_is_labelled_as_such():

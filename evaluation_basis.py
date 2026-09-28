@@ -129,12 +129,25 @@ def catalog_reference(case_id):
     return hypoglycemia_catalog.reference(case_id)
 
 
+def _environment():
+    """The observation environment's declarations and their fingerprint, to freeze."""
+    import observation_opportunities
+    block = _plain(observation_opportunities.environment_block())
+    return {"environment": block, "environment_fingerprint": fingerprint(block)}
+
+
 def freeze(case_id, *, spec=None, code_version=None, frozen_at=None):
-    """The basis an encounter is launched with. Raises for a case no declaration knows."""
+    """The basis an encounter is launched with. Raises for a case no declaration knows.
+
+    Every basis also carries what the observation environment declares
+    (observation_opportunities.ENVIRONMENT, cycle 7): a generated case or an
+    encounter with no authored case has no declaration of its own, and the
+    environment's limits still apply to it from its first minute.
+    """
     case_id = str(case_id or "")
     basis = {"schema": SCHEMA, "case_id": case_id,
              "frozen_at": frozen_at or datetime.now(timezone.utc).isoformat(timespec="seconds"),
-             "code_version": code_version, "versions": versions(case_id)}
+             "code_version": code_version, "versions": versions(case_id), **_environment()}
     if not case_id:
         return {**basis, "source": "none", "declaration": None, "fingerprint": None}
     if _is_generated(case_id, spec):
@@ -283,17 +296,25 @@ def _from_frozen(frozen, case_id):
     named = str(frozen.get("case_id") or "")
     if case_id and str(case_id) != named:
         return _view("corrupt", str(case_id), error=f"the frozen basis is for {named!r}, not {case_id!r}")
+    # The observation environment's declarations, when the basis was frozen
+    # with them (cycle 7). A basis frozen earlier has none, and none are added.
+    environment = frozen.get("environment")
+    if environment is not None and (not isinstance(environment, dict)
+                                    or fingerprint(environment) != frozen.get("environment_fingerprint")):
+        return _view("corrupt", named, error="the frozen environment does not match its fingerprint")
+    kept = {"environment": _tupled(environment)} if environment is not None else {}
     source = frozen.get("source")
     if source == "none":
-        return _view("no_authored_case", "", versions_=frozen.get("versions"))
+        return _view("no_authored_case", "", versions_=frozen.get("versions"), extra=kept)
     if source == "generated":
-        return _view("generated", named, source="generated", versions_=frozen.get("versions"))
+        return _view("generated", named, source="generated", versions_=frozen.get("versions"), extra=kept)
     declaration = frozen.get("declaration")
     if not isinstance(declaration, dict) or fingerprint(declaration) != frozen.get("fingerprint"):
         return _view("corrupt", named, error="the frozen declarations do not match their fingerprint")
     return _view("frozen", named, declaration, source=source, versions_=frozen.get("versions"),
                  fingerprint_=frozen["fingerprint"],
-                 extra={"frozen_at": frozen.get("frozen_at"), "code_version": frozen.get("code_version")})
+                 extra={"frozen_at": frozen.get("frozen_at"), "code_version": frozen.get("code_version"),
+                        **kept})
 
 
 def reevaluation(record, *, reason, requested_by):
@@ -319,7 +340,8 @@ def reevaluation(record, *, reason, requested_by):
     plain = _plain(declaration)
     return _view("reevaluation", previous["case_id"], plain, source=source,
                  versions_=versions(previous["case_id"]), fingerprint_=fingerprint(plain),
-                 extra={"reason": reason, "requested_by": requested_by,
+                 extra={"environment": _tupled(_environment()["environment"]),
+                        "reason": reason, "requested_by": requested_by,
                         "requested_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                         "previous": {"status": previous["status"], "fingerprint": previous["fingerprint"],
                                      "versions": previous["versions"]}})

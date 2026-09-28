@@ -60,13 +60,20 @@ def test_an_answer_outside_the_scheme_is_refused(answers):
         derive(answers)
 
 
-def test_the_bank_carries_exactly_what_the_approved_answers_derive():
+def test_the_bank_carries_exactly_what_the_approved_answers_and_the_later_decision_derive():
     import case_assessment_bank
-    rows = derive(c14_review.APPROVED)
+    rows = c14_review.final_states()
+    # Cycle 7: every bank case is reviewed for C14 (faculty, 2026-09-28).
+    assert c14_review.counts(rows) == {"yes": 14, "no": 17, "uncertain": 0}
     for case_id, state in rows.items():
         declared = (case_assessment_bank.CASES[case_id].get("objectives") or {}).get("C14")
-        if state == "uncertain":
-            # Uncertain after the answers: left out of the bank, so not reviewed.
-            assert declared is None, case_id
-        else:
-            assert declared["opportunity"] == state, case_id
+        assert declared["opportunity"] == state, case_id
+
+
+def test_the_later_decision_settles_only_the_row_decision_a_left_open():
+    # A keeps what it said the day it was answered; DF-20 settles acs_54m_inferior after it.
+    assert derive(c14_review.APPROVED)["acs_54m_inferior"] == "uncertain"
+    assert set(c14_review.LATER) == {"acs_54m_inferior"}
+    assert c14_review.LATER["acs_54m_inferior"] == {"decision": "DF-20", "state": "no"}
+    before, after = derive(c14_review.APPROVED), c14_review.final_states()
+    assert {case for case in before if before[case] != after[case]} == {"acs_54m_inferior"}

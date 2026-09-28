@@ -3,7 +3,9 @@
 Cycle 4 of the AI Advisor (faculty, 2026-09-28, DF-13) prepared it; on the same day the
 faculty approved the eight recommendations (APPROVED), and cycle 5 wrote the rows they derive
 into the bank (case_assessment_bank.C14_DECLARATIONS), with acs_54m_inferior left out until
-its data are resolved.
+its data were resolved. Cycle 7 wrote that last row: DF-20 kept the case's data and
+physiology, and the faculty confirmed its NO (LATER, applied after the eight answers by
+``final_states``). All 31 bank cases are reviewed.
 The cycle 3 draft classified the 31 bank cases as 6 YES, 6 NO and 19 UNCERTAIN
 (docs/BORRADOR_C14_OBSERVATION_OPPORTUNITIES.md); the uncertain ones were
 grouped into eight clinical decisions so that the faculty answers eight
@@ -107,8 +109,13 @@ DECISIONS = {
 # The AI Advisor's recommendation for each decision (docs/C14_DECISIONES_A_H.md).
 RECOMMENDED = {letter: "approve" for letter in DECISIONS}
 # The faculty's answers of 2026-09-28: every recommendation approved. A keeps
-# acs_54m_inferior uncertain, which the bank leaves undeclared (not reviewed).
+# acs_54m_inferior uncertain; a later decision settles it (LATER).
 APPROVED = {letter: "approve" for letter in DECISIONS}
+
+# Decisions taken after A-H, applied after the answers so that each decision keeps what it
+# said the day it was answered. DF-20 (cycle 6) changed neither the data nor the physiology
+# of acs_54m_inferior, and on 2026-09-28 (cycle 7, H3) the faculty confirmed its C14 NO.
+LATER = {"acs_54m_inferior": {"decision": "DF-20", "state": "no"}}
 
 
 def decisions_for(case_id):
@@ -144,6 +151,13 @@ def derive(answers):
 
 def counts(rows):
     return {state: sum(1 for value in rows.values() if value == state) for state in STATES}
+
+
+def final_states():
+    """What the bank declares: the rows the approved answers derive, then the later decisions."""
+    rows = derive(APPROVED)
+    rows.update({case_id: later["state"] for case_id, later in LATER.items()})
+    return rows
 
 
 # --- the final table: what the bank declares, row by row (cycle 5) ---------------------------

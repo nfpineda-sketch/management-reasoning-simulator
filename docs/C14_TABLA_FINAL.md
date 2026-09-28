@@ -1,4 +1,4 @@
-# C14 · Tabla final derivada (ciclo 5)
+# C14 · Tabla final derivada (ciclo 5, completada en el ciclo 7)
 
 Autorización docente del 2026-09-28 (§17–§19, §22).
 
@@ -9,7 +9,8 @@ Autorización docente del 2026-09-28 (§17–§19, §22).
   documento sea exactamente lo que el banco declara.
 - **De dónde salen las filas:**
   - las decisiones A–H aprobadas (`docs/C14_DECISIONES_A_H.md`), derivadas por
-    `c14_review.derive(APPROVED)`;
+    `c14_review.derive(APPROVED)`, y la decisión posterior DF-20 para
+    `acs_54m_inferior` (`c14_review.final_states`);
   - las filas claras del borrador del ciclo 3
     (`docs/BORRADOR_C14_OBSERVATION_OPPORTUNITIES.md`), que el docente
     mantuvo.
@@ -19,8 +20,14 @@ Autorización docente del 2026-09-28 (§17–§19, §22).
 | Estado | Casos |
 |---|---|
 | YES | 14 |
-| NO | 16 |
-| NOT REVIEWED | 1 (`acs_54m_inferior`) |
+| NO | 17 |
+| NOT REVIEWED | 0 |
+
+**Ciclo 7 (2026-09-28).** `acs_54m_inferior` pasó de NOT REVIEWED a NO: DF-20 no
+cambió sus datos ni su fisiología, y el docente confirmó el NO con una razón
+sobre la **oportunidad de observación**, no sobre lo que el POCUS puede mostrar
+técnicamente (`c14_review.LATER`, revisión `C14-REVIEW-2`). Los 31 casos del
+banco quedan revisados para C14.
 
 **Lo que las filas no dicen:**
 
@@ -41,7 +48,7 @@ Autorización docente del 2026-09-28 (§17–§19, §22).
 
 | CASE ID | OPPORTUNITY | RATIONALE (YES) / REASON (NO) | OBSERVABLE COMPONENT | EXPECTED TRACE EVIDENCE | REVIEW SOURCE |
 |---|---|---|---|---|---|
-| `acs_54m_inferior` | NOT REVIEWED | Not reviewed: the case declares right ventricular involvement and its authored POCUS shows a normal RV. It keeps the transition rule until that is decided (docs/AUDITORIA_ACS_54M_INFERIOR.md). | — | — | none yet |
+| `acs_54m_inferior` | NO | The encounter does not create a meaningful opportunity to observe POCUS-guided management: recognising right ventricular involvement through the available POCUS is not an expectation the ACEP 2016 emergency ultrasound guideline used here establishes (pp. 25, 29), and the nitrate, antiplatelet and cautious-volume decisions are driven mainly by the ECG, the right-sided leads (V4R) and the haemodynamic context rather than by the POCUS finding. | — | — | human_clinical_review; Nicolás Pineda, 2026-09-28; decision DF-20; C14-REVIEW-2 |
 | `acs_66f_nonst` | NO | The acute coronary syndrome is already established by the ECG and a troponin of 180 ng/L; the mild inferolateral hypokinesis does not change the pathway, with no occlusion and an angiography that can wait (decision A). | — | — | human_clinical_review; Nicolás Pineda, 2026-09-28; decision A; C14-REVIEW-1 |
 | `acs_61m_posterior` | YES | ST depression in V1-V3 with posterior hypokinesis on POCUS: the regional wall motion can prioritise reperfusion for an occlusion the 12-lead understates (decision A); in the engine the wall motion evolves with the ischaemic minutes. | Using regional wall motion to prioritise the reperfusion decision. | requests POCUS and names the posterior hypokinesis; uses it with the ECG and the posterior leads to treat the pattern as an occlusion; activates or expedites reperfusion | human_clinical_review; Nicolás Pineda, 2026-09-28; decision A; C14-REVIEW-1 |
 | `acs_52m_de_winter` | YES | Akinesis of the anterior wall and apex supports treating the de Winter pattern as an anterior occlusion (decision A); in the engine the wall motion evolves with the ischaemic minutes. | Using regional wall motion to prioritise the reperfusion decision. | requests POCUS and names the anterior akinesis; relates it to the ECG pattern as an occlusion; activates or expedites reperfusion | human_clinical_review; Nicolás Pineda, 2026-09-28; decision A; C14-REVIEW-1 |

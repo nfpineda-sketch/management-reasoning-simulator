@@ -50,6 +50,9 @@ INSTRUCTION_2026_09_28 = ("Instrucción docente del 2026-09-28 (ciclo 5 del AI A
 INSTRUCTION_2026_09_28_NIGHT = ("Instrucción docente del 2026-09-28, extensión nocturna del ciclo 5 (59Z y 59BT: "
                                 "corregir sólo bugs inequívocos de aislamiento o de persistencia, pequeños, "
                                 "reversibles y probados)")
+INSTRUCTION_2026_09_28_CYCLE7 = ("Instrucción docente del 2026-09-28, ciclo 7 del AI Advisor (C4 = NO en todo el entorno "
+                                 "de observación, C14 NO en acs_54m_inferior, TD-21 con el principio D, TD-26 y C7-06 "
+                                 "por clase con el estándar A–J, DF-24 aprobado y DF-23 conservador)")
 INSTRUCTION_2026_09_28_CYCLE6 = ("Instrucción docente del 2026-09-28, ciclo 6 del AI Advisor (DF-22 por clase, 59O-03 y "
                                  "seguridad de la aclaración, L-F01, L-F04 y sólo las correcciones de DF-23 que "
                                  "cumplen las seis condiciones)")
@@ -1074,10 +1077,10 @@ CORRECTIONS = (
         "authorised_by": INSTRUCTION_2026_09_28,
         "affects": {"modules": ["case_assessment_bank", "c14_review"], "versions": {}},
         "clinical_relevance": "clinical",
-        "tests": ["test_c14_opportunities.py::test_the_bank_holds_the_reviewed_rows_and_leaves_one_case_not_reviewed",
+        "tests": ["test_c14_opportunities.py::test_the_bank_holds_a_reviewed_row_for_every_case",
                   "test_c14_opportunities.py::test_a_no_encounter_cannot_confirm_c14_and_records_no_failure",
                   "test_c14_opportunities.py::test_historical_observations_are_neither_reanalysed_nor_lost",
-                  "test_c14_review.py::test_the_bank_carries_exactly_what_the_approved_answers_derive",
+                  "test_c14_review.py::test_the_bank_carries_exactly_what_the_approved_answers_and_the_later_decision_derive",
                   "test_evaluation_basis.py::test_the_legacy_snapshot_is_the_code_before_the_change_for_every_other_case",
                   "test_hypoglycemia_preservation.py::test_declarations_match_the_record_except_the_new_version"],
         # The three hypoglycaemia cases now carry their C14 row: a new version of their declaration.
@@ -1283,6 +1286,60 @@ CORRECTIONS = (
                   "test_an_old_encounter_keeps_its_own_history.py::test_an_authored_case_the_model_chose_keeps_its_frozen_topics",
                   "test_what_the_page_says_follows_what_ran.py::"
                   "test_only_a_reply_that_says_nothing_but_unsure_keeps_the_order_held"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-10",
+        "date": "2026-09-28",
+        "title": "C4 = NO en todo el entorno de observación: los 31 casos, los casos generados y PS001",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("TDFC-7 (y TDFC-8 para la analgesia del cólico): el motor no modela los componentes de la "
+                   "sedación y analgesia procedural que observa C4, y pedir un procedimiento no es una oportunidad. "
+                   "La razón es del entorno, no de los casos (H4 del ciclo 7). Cada caso del banco declara C4 NO con su "
+                   "razón y su procedencia (case_assessment_bank.C4_DECLARATIONS), y el entorno declara lo mismo una vez "
+                   "(observation_opportunities.ENVIRONMENT): evaluation_basis.freeze lo congela en todo encuentro nuevo, "
+                   "también en los generados y en los que no tienen caso autorado. Es prospectivo: un encuentro congelado "
+                   "antes conserva la transición con que empezó, y una observación ya confirmada no se pierde ni se relee. "
+                   "El motor no se tocó; la evidencia C4 vendrá de simulación procedural u observación en el lugar de "
+                   "trabajo."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE7,
+        "affects": {"modules": ["case_assessment_bank", "observation_opportunities", "evaluation_basis",
+                                "progress_store"],
+                    "versions": {"opportunities": {"from": "1.0", "to": "1.1"}}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_c4_is_not_observable_in_this_environment.py::"
+                  "test_every_bank_case_declares_c4_no_with_its_reason_and_provenance",
+                  "test_c4_is_not_observable_in_this_environment.py::"
+                  "test_encounters_outside_the_bank_are_frozen_with_the_environment_s_no",
+                  "test_c4_is_not_observable_in_this_environment.py::"
+                  "test_an_encounter_frozen_before_the_environment_keeps_the_transition",
+                  "test_c4_is_not_observable_in_this_environment.py::"
+                  "test_a_c4_observation_confirmed_before_stays_and_is_not_re_read",
+                  "test_c4_is_not_observable_in_this_environment.py::test_the_faculty_cannot_confirm_c4_in_a_new_encounter"],
+        # The three hypoglycaemia cases now carry their C4 row: a new version of their declaration.
+        "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_76f", "hypoglycemia_54m_thiamine"],
+                         "declaration": "new_version"},
+    },
+    {
+        "id": "C-2026-09-28-11",
+        "date": "2026-09-28",
+        "title": "C14 NO en acs_54m_inferior: los 31 casos del banco quedan revisados para C14",
+        "scope": {"level": "variant", "variants": ["acs_54m_inferior"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("DF-20 no cambió los datos ni la fisiología del caso, y el docente confirmó su C14 NO (H3 del ciclo "
+                   "7) con una razón sobre la oportunidad de observación y no sobre lo que el POCUS puede mostrar: "
+                   "reconocer el compromiso del ventrículo derecho con el POCUS disponible no es una expectativa que "
+                   "establezca el marco ACEP 2016 usado aquí, y los nitratos, la antiagregación y el volumen prudente "
+                   "dependen sobre todo del ECG, de las derivadas derechas y de la hemodinamia. La fila lleva la "
+                   "revisión C14-REVIEW-2; c14_review.LATER la aplica después de las respuestas A–H, que no cambian. "
+                   "Los encuentros ya iniciados conservan su base congelada."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE7,
+        "affects": {"modules": ["case_assessment_bank", "c14_review"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_c14_opportunities.py::test_acs_54m_inferior_is_no_for_the_opportunity_not_for_what_pocus_can_show",
+                  "test_c14_opportunities.py::test_the_bank_holds_a_reviewed_row_for_every_case",
+                  "test_c14_review.py::test_the_later_decision_settles_only_the_row_decision_a_left_open"],
         "preservation": None,
     },
 )

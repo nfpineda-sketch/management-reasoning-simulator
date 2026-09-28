@@ -1479,15 +1479,15 @@ CASES.update(_trauma(
 # assessable in a new encounter and never observes it (observation_opportunities): the
 # resident's performance, a proposal and the faculty's confirmation still decide. "No" means
 # the case does not offer the objective -- not evaluable, never a failure. The expected
-# evidence guides and is not a whitelist. acs_54m_inferior is left out on purpose: its
-# authored POCUS contradicts the right ventricular involvement the case declares
-# (docs/AUDITORIA_ACS_54M_INFERIOR.md), and it keeps the transition rule until that is
-# resolved.
+# evidence guides and is not a whitelist. acs_54m_inferior, left out in cycle 5 while its
+# right ventricle was audited, is NO since cycle 7 (DF-20: no change to its data or its
+# physiology; the faculty confirmed the NO on 2026-09-28, with the reason below): all 31
+# bank cases are reviewed for C14.
 
-def _c14_review(group):
+def _c14_review(group, version="C14-REVIEW-1"):
     # "clear": a row the draft already classified and the faculty kept (§9 of the decisions).
     return {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "human_clinical_review",
-            "decision_group": group, "version": "C14-REVIEW-1"}
+            "decision_group": group, "version": version}
 
 
 def _c14_yes(group, rationale, component, evidence):
@@ -1495,8 +1495,8 @@ def _c14_yes(group, rationale, component, evidence):
             "expected_evidence": tuple(evidence), "reviewed": _c14_review(group)}
 
 
-def _c14_no(group, reason):
-    return {"opportunity": "no", "reason": reason, "reviewed": _c14_review(group)}
+def _c14_no(group, reason, version="C14-REVIEW-1"):
+    return {"opportunity": "no", "reason": reason, "reviewed": _c14_review(group, version)}
 
 
 _C14_NO_BRADYCARDIA = (
@@ -1517,6 +1517,16 @@ _C14_VOLUME_EVIDENCE = (
     "reassesses with POCUS after volume")
 
 C14_DECLARATIONS = {
+    # Cycle 7 (faculty, 2026-09-28, DF-20 and H3): the conclusion is about the
+    # opportunity to observe, not about what POCUS can technically show.
+    "acs_54m_inferior": _c14_no(
+        "DF-20",
+        "The encounter does not create a meaningful opportunity to observe POCUS-guided management: "
+        "recognising right ventricular involvement through the available POCUS is not an expectation "
+        "the ACEP 2016 emergency ultrasound guideline used here establishes (pp. 25, 29), and the nitrate, "
+        "antiplatelet and cautious-volume decisions are driven mainly by the ECG, the right-sided leads "
+        "(V4R) and the haemodynamic context rather than by the POCUS finding.",
+        version="C14-REVIEW-2"),
     "acs_70f_left_main": _c14_yes(
         "clear",
         "Borderline pressure with globally reduced contraction on POCUS: the global LV function, a "
@@ -1687,3 +1697,31 @@ C14_DECLARATIONS = {
 
 for _case_id, _declaration in C14_DECLARATIONS.items():
     CASES[_case_id].setdefault("objectives", {})["C14"] = _declaration
+
+
+# --- C4 · Procedural sedation and analgesia: NO in every bank case (cycle 7) ------------------
+# Decided by the faculty in TDFC-7 (and TDFC-8 for the colic's analgesia), written on
+# 2026-09-28 at the opening of cycle 7 (H4). The reason is the observation environment's,
+# not the cases': observation_opportunities.ENVIRONMENT declares the same NO for every new
+# encounter, generated cases and encounters with no authored case included. These rows make
+# it explicit in each bank case. Nothing in the engine was changed to create or remove an
+# opportunity, and encounters started before keep the rule they were frozen with.
+
+def _c4_no(group, reason):
+    return {"opportunity": "no", "reason": reason,
+            "reviewed": {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "faculty_decision",
+                         "decision_group": group, "version": "C4-REVIEW-1"}}
+
+
+import observation_opportunities as _observation_opportunities
+
+_C4_NO = _observation_opportunities.C4_ENVIRONMENT_REASON
+_C4_NO_ANALGESIA = (
+    _C4_NO + " The colic's own systemic analgesia, with no procedure, is observed by the case's "
+    "rubric, not by C4 (TDFC-8).")
+C4_DECLARATIONS = {case_id: (_c4_no("TDFC-8", _C4_NO_ANALGESIA) if case_id == "renal_colic_34m"
+                             else _c4_no("TDFC-7", _C4_NO))
+                   for case_id in CASES}
+
+for _case_id, _declaration in C4_DECLARATIONS.items():
+    CASES[_case_id].setdefault("objectives", {})["C4"] = _declaration

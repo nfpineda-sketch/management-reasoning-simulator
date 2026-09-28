@@ -52,6 +52,16 @@ withdrawn first, then TD/F/C objective by objective, each only after its
 clinical review; when every case of an objective is reviewed, the objective
 leaves ``TRANSITION_OBJECTIVES``.
 
+The observation environment (faculty, 2026-09-28, cycle 7). Some limits are
+not a case's but the simulator's: C4 has no real opportunity in any encounter
+this engine runs, because the engine does not model the procedural components
+the EPA observes. ``ENVIRONMENT`` declares those objectives once, with who
+decided it and why, and ``evaluation_basis.freeze`` copies it into every new
+encounter -- a bank case, a generated case or an encounter with no authored
+case. A case's own declaration wins over it. An encounter frozen before the
+environment declared anything keeps the transition it started with: the
+declaration is prospective, and historical encounters keep their context.
+
 An opportunity is never a demonstration. ``yes`` only makes an objective
 assessable: an observation exists when a faculty member assesses the
 recorded performance (``progress_store.assess``), and never before.
@@ -63,18 +73,40 @@ per encounter.
 """
 from __future__ import annotations
 
-VERSION = "1.0"
+# 1.1 (2026-09-28, cycle 7): the observation environment's own declarations.
+VERSION = "1.1"
 STATES = ("yes", "no", "not_reviewed")
 # The rule that applied before opportunities were declared, kept for the
-# transition: these six were observable in every encounter.
+# transition: these six were observable in every encounter. C4 stays listed
+# because the encounters frozen before the environment declared it keep this
+# rule; no new encounter reaches it (ENVIRONMENT).
 TRANSITION_OBJECTIVES = ("TD1", "F1", "C1", "C3", "C4", "C14")
 
+C4_ENVIRONMENT_REASON = (
+    "This simulator's observation environment offers no real opportunity to observe C4: the engine "
+    "does not model the components of procedural sedation and analgesia the EPA observes (the "
+    "procedure's pain, the depth of sedation, respiratory depression), and asking for a procedure is "
+    "not an opportunity for C4 (TDFC-7). Evidence for C4 comes from procedural simulation or "
+    "workplace observation.")
+
+# What the simulator itself does not let anyone observe, whatever the case
+# (faculty, 2026-09-28: TDFC-7, and H4 of cycle 7 for its scope). Frozen into
+# every new encounter by evaluation_basis.freeze; a case's declaration wins.
+ENVIRONMENT = {
+    "C4": {"opportunity": "no", "reason": C4_ENVIRONMENT_REASON, "scope": "observation_environment",
+           "reviewed": {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "faculty_decision",
+                        "decision_group": "TDFC-7", "version": "C4-ENVIRONMENT-1"}},
+}
+
 _NEEDS = {"yes": ("rationale", "observable_component", "expected_evidence"), "no": ("reason",)}
-_CARRIED = ("rationale", "reason", "observable_component", "expected_evidence", "reviewed")
+_CARRIED = ("rationale", "reason", "observable_component", "expected_evidence", "reviewed", "scope")
 _NOTES = {
     "generation_target": "The encounter was generated to offer this objective.",
     "declared_yes": "The case declares a real opportunity to observe this objective.",
     "declared_no": "The case declares no opportunity to observe this objective.",
+    "environment_yes": "The simulator's observation environment declares an opportunity to observe this objective.",
+    "environment_no": ("The simulator's observation environment declares no opportunity to observe "
+                       "this objective, whatever the case."),
     "transition_open": ("Not reviewed for this case. It stays observable under the rule that applied "
                         "before observation opportunities were declared."),
     "transition_closed": ("Not reviewed for this case. Under the rule that applied before, only the "
@@ -131,10 +163,16 @@ def verify_bank():
     """Every problem in the bank's declared opportunities, objective names included."""
     from case_assessment_bank import CANDIDATES, CASES
     from objectives import OBJECTIVES
-    problems = []
+    problems = verify_block("observation environment", ENVIRONMENT, OBJECTIVES)
     for case_id, declaration in {**CANDIDATES, **CASES}.items():
         problems.extend(verify_block(case_id, declaration.get("objectives"), OBJECTIVES))
     return problems
+
+
+def environment_block():
+    """The observation environment's declarations, as a plain copy to freeze."""
+    from copy import deepcopy
+    return deepcopy(ENVIRONMENT)
 
 
 def basis_of(record):
@@ -142,21 +180,28 @@ def basis_of(record):
 
     Only a frozen copy is read. A record saved before copies existed, or one
     whose copy cannot be read, has no declared opportunities: the current
-    declarations of its case are never applied to it retroactively.
+    declarations of its case are never applied to it retroactively. The
+    observation environment's declarations are read only from a copy frozen
+    with the encounter, and a case's own declaration wins over them.
     """
     import evaluation_basis
     basis = evaluation_basis.resolve(record)
     status = basis["status"]
     found = {"basis_status": status, "case_id": basis.get("case_id") or None,
              "basis_fingerprint": basis.get("fingerprint")}
+    environment = basis.get("environment") if isinstance(basis.get("environment"), dict) else None
     if status != "frozen":
+        if environment and status in ("generated", "no_authored_case"):
+            return dict(environment), {**found, "declaration_source": "observation_environment"}
         return None, {**found, "declaration_source": "record_without_frozen_declaration"}
     declared = (basis.get("declaration") or {}).get("objectives")
     if declared is None:
+        # The case declares nothing; what the environment declares still applies.
         read_opportunities = "opportunities" in (basis.get("versions") or {})
-        return None, {**found, "declaration_source": ("case_without_objectives" if read_opportunities
-                                                      else "frozen_before_opportunities")}
-    return declared, {**found, "declaration_source": "frozen_declaration"}
+        return (dict(environment) if environment else None), {
+            **found, "declaration_source": ("case_without_objectives" if read_opportunities
+                                            else "frozen_before_opportunities")}
+    return {**(environment or {}), **declared}, {**found, "declaration_source": "frozen_declaration"}
 
 
 def resolve(objective_id, record, *, basis=None):
@@ -184,8 +229,9 @@ def resolve(objective_id, record, *, basis=None):
                 "note": _NOTES["generation_target"]}
     if entry is not None:
         state = entry["opportunity"]
+        environment = entry.get("scope") == "observation_environment"
         return {**result, "state": state, "eligible": state == "yes", "rule": "declared",
-                "note": _NOTES["declared_" + state]}
+                "note": _NOTES["environment_" + state if environment else "declared_" + state]}
     open_ = objective_id in TRANSITION_OBJECTIVES
     return {**result, "state": "not_reviewed", "eligible": open_, "rule": "transition_fallback",
             "note": _NOTES["transition_open" if open_ else "transition_closed"]}

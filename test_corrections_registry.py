@@ -65,9 +65,11 @@ def test_the_versions_the_registry_names_are_the_code_s():
     from case_assessment import COVERAGE_VERSION
     import generated_case_schema
     import hypoglycemia_catalog
+    import observation_opportunities
     current = {"coverage": COVERAGE_VERSION, "glucose_rescue": glucose_rescue.VERSION,
                "catalog": f"hypoglycemia {hypoglycemia_catalog.VERSION}",
-               "generated_case_schema": generated_case_schema.SCHEMA_VERSION}
+               "generated_case_schema": generated_case_schema.SCHEMA_VERSION,
+               "opportunities": observation_opportunities.VERSION}
     named = {}
     for entry in registry.CORRECTIONS:
         for key, change in entry["affects"]["versions"].items():

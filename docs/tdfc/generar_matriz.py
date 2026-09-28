@@ -118,6 +118,18 @@ def leer_c14():
     return declarados, ruta
 
 
+def leer_c4():
+    """Si el banco declara C4 en todos sus casos (ciclo 7): C4_DECLARATIONS recorre CASES."""
+    texto, ruta = _texto("case_assessment_bank.py")
+    valor = _asignacion(ast.parse(texto), "C4_DECLARATIONS")
+    recorre_banco = (isinstance(valor, ast.DictComp) and len(valor.generators) == 1
+                     and isinstance(valor.generators[0].iter, ast.Name) and valor.generators[0].iter.id == "CASES")
+    llamadas = {n.func.id for n in ast.walk(valor) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+    if not recorre_banco or llamadas != {"_c4_no"}:
+        raise Inconsistencia("C4_DECLARATIONS ya no declara NO en todos los casos del banco: revisar la matriz.")
+    return True, ruta
+
+
 def leer_desafios():
     texto, ruta_cc = _texto("cognitive_catalog.py")
     sesgo = _asignacion(ast.parse(texto), "BIAS_CHALLENGES")
@@ -238,14 +250,14 @@ def verificar(borrador, casos_banco, orden, c14):
             if tuple(cubre(caso, objetivo)) != celda["decisiones"]:
                 problemas.append(f"{caso} {objetivo}: el borrador cita {celda['decisiones']} y el script "
                                  f"{tuple(cubre(caso, objetivo))}.")
-    if len(c14) != 30 or "acs_54m_inferior" in c14:
-        problemas.append("C14_DECLARATIONS ya no son las 30 filas del ciclo 5 sin acs_54m_inferior.")
+    if len(c14) != 31 or (c14.get("acs_54m_inferior") or {}).get("estado") != "no":
+        problemas.append("C14_DECLARATIONS ya no son las 31 filas del ciclo 7 (acs_54m_inferior NO).")
     if problemas:
         raise Inconsistencia("\n".join(problemas))
 
 
 # --- la matriz --------------------------------------------------------------------------------
-def celdas_matriz(borrador, familias, c14):
+def celdas_matriz(borrador, familias, c14, c4_declarado=True):
     matriz = {}
     for caso, fila in borrador.items():
         valores = {}
@@ -253,6 +265,9 @@ def celdas_matriz(borrador, familias, c14):
             valores[desafio] = "TARGET" if fila["familia"] in fams else "NOT REVIEWED"
         for objetivo in TDFC:
             valores[objetivo] = "DRAFT " + fila["estados"][objetivo]["estado"].upper()
+        if c4_declarado:
+            # Ciclo 7 (TDFC-7/8 y H4): el banco declara C4 NO en todos sus casos.
+            valores["C4"] = "DECLARED NO"
         declarado = c14.get(caso)
         valores["C14"] = ("NOT REVIEWED" if declarado is None
                           else "DECLARED YES" if declarado["estado"] == "yes" else "DECLARED NO")
@@ -294,17 +309,20 @@ def escribir(borrador, familias, c14, fuentes):
     partes = [
         "# Matriz de oportunidades del banco · caso × objetivo",
         "",
-        "Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28.",
+        "Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28. Actualizada en el ciclo 7: C14 revisado",
+        "en los 31 casos y C4 declarado NO en todos.",
         "",
         "**Estado: BORRADOR. Generado por `generar_matriz.py`; no se edita a mano.**",
         "",
         "- **Qué es.** Cobertura de oportunidades de observación que ofrece el banco de 31 casos, objetivo por",
         "  objetivo. **No es cobertura del constructo de un residente** y no calcula competencia de nadie.",
-        "- **De dónde sale.** Las columnas TD1 a C4 son el borrador de `BORRADOR_TDFC.md` (tabla «Estados por",
-        "  caso»). C14 es lo que el banco declara (`case_assessment_bank.C14_DECLARATIONS`). Los Decision",
-        "  Challenges salen de `curriculum.CHALLENGES`: un desafío es TARGET en los casos de sus `families`.",
+        "- **De dónde sale.** Las columnas TD1 a C3 son el borrador de `BORRADOR_TDFC.md` (tabla «Estados por",
+        "  caso»). C4 y C14 son lo que el banco declara (`case_assessment_bank.C4_DECLARATIONS` y",
+        "  `C14_DECLARATIONS`). Los Decision Challenges salen de `curriculum.CHALLENGES`: un desafío es TARGET",
+        "  en los casos de sus `families`.",
         "- **DRAFT ≠ APPROVED OPPORTUNITY.** En el banco, toda celda DRAFT sigue hoy NOT REVIEWED y abierta por",
-        "  la regla de transición (TD1, F1, C1, C3 y C4 son observables en todo encuentro).",
+        "  la regla de transición (TD1, F1, C1 y C3 son observables en todo encuentro). TDFC-1 a 6 y 8 están",
+        "  aprobadas conceptualmente (ciclo 7), sin escribir todavía en el banco.",
         "",
         "## Leyenda",
         "",
@@ -314,7 +332,7 @@ def escribir(borrador, familias, c14, fuentes):
             ("DECL+", "DECLARED YES", "El caso declara la oportunidad, con revisión docente (hoy sólo C14)."),
             ("DECL−", "DECLARED NO", "El caso declara que no la hay: no evaluable, nunca una falla."),
             ("NR", "NOT REVIEWED", "Nadie la declaró. En un desafío: no se ofrece fuera del encuentro generado "
-                                   "para él. En C14 (`acs_54m_inferior`): sigue abierta por la transición."),
+                                   "para él."),
             ("DRAFT+", "DRAFT YES", "Este borrador propone oportunidad."),
             ("DRAFT−", "DRAFT NO", "Este borrador propone que no la hay."),
             ("DRAFT?", "DRAFT UNCERTAIN", "Depende de una decisión clínica (TDFC-1 a TDFC-8)."),
@@ -331,10 +349,11 @@ def escribir(borrador, familias, c14, fuentes):
         f"- **Desafíos sin `families`:** {', '.join(sin_familias)}. Se sirven con encuentros generados",
         "  (`encounter_generator.SUPPORTED_CHALLENGES`); ningún caso del banco es su TARGET.",
         f"- **Casos que son TARGET de al menos un desafío:** {objetivo_por_caso} de {len(matriz)}.",
-        "- **C14** no cambia: {} DECLARED YES, {} DECLARED NO y {} NOT REVIEWED ({}).".format(
+        "- **C14:** {} DECLARED YES, {} DECLARED NO y {} NOT REVIEWED (ciclo 7: `acs_54m_inferior` NO).".format(
             *(sum(1 for caso in matriz if matriz[caso]["C14"] == v)
-              for v in ("DECLARED YES", "DECLARED NO", "NOT REVIEWED")),
-            ", ".join(f"`{caso}`" for caso in matriz if matriz[caso]["C14"] == "NOT REVIEWED")),
+              for v in ("DECLARED YES", "DECLARED NO", "NOT REVIEWED"))),
+        "- **C4:** {} DECLARED NO: la razón es del entorno de observación, no de los casos (TDFC-7/8, H4).".format(
+            sum(1 for caso in matriz if matriz[caso]["C4"] == "DECLARED NO")),
         "",
         "## Dudas del borrador y la decisión que las resuelve",
         "",
@@ -362,6 +381,7 @@ def escribir(borrador, familias, c14, fuentes):
 
 def main():
     c14, ruta_c14 = leer_c14()
+    leer_c4()
     familias, rutas_desafios = leer_desafios()
     casos, orden, rutas_casos = leer_casos()
     borrador = leer_borrador()

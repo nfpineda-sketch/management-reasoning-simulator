@@ -1,13 +1,12 @@
 """C14 in the bank: the faculty's clinical review of 2026-09-28, applied (DF-13, cycle 5).
 
-Fourteen cases declare a real opportunity to use POCUS to guide management and sixteen
+Fourteen cases declare a real opportunity to use POCUS to guide management and seventeen
 declare there is none, each with who reviewed it, when, and under which decision (A-H of
-docs/C14_DECISIONES_A_H.md). acs_54m_inferior stays not reviewed until its data are resolved
-(docs/AUDITORIA_ACS_54M_INFERIOR.md). What the faculty asked these tests to show (§21, §22,
-§36 to §39): an opportunity makes C14 assessable and never observes it; a NO is not
-evaluable, never a failure; the not-reviewed case keeps only the transition; the target
-does not decide C14; historical encounters and frozen declarations do not move; and several
-POCUS findings in one encounter are one observation.
+docs/C14_DECISIONES_A_H.md, and DF-20 for acs_54m_inferior, confirmed in cycle 7). What the
+faculty asked these tests to show (§21, §22, §36 to §39): an opportunity makes C14 assessable
+and never observes it; a NO is not evaluable, never a failure; a case nobody reviewed keeps
+only the transition; the target does not decide C14; historical encounters and frozen
+declarations do not move; and several POCUS findings in one encounter are one observation.
 """
 import time
 import uuid
@@ -22,9 +21,8 @@ from account_store import AccountError
 from test_observation_opportunities import assessment, cohort, completed, progress_of  # noqa: F401  (fixture)
 
 C14 = case_assessment_bank.C14_DECLARATIONS
-YES, NO, NOT_REVIEWED = "pneumonia_46f", "hypoglycemia_28m", "acs_54m_inferior"
-REVIEW = {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "human_clinical_review",
-          "version": "C14-REVIEW-1"}
+YES, NO, LATER = "pneumonia_46f", "hypoglycemia_28m", "acs_54m_inferior"
+REVIEW = {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "human_clinical_review"}
 
 
 def encounter(case_id, challenge_id="R2-03"):
@@ -61,16 +59,22 @@ def played(accounts, token, case_id, challenge_id, inputs):
 
 # --- the rows the faculty approved, and only those -----------------------------------------
 
-def test_the_bank_holds_the_reviewed_rows_and_leaves_one_case_not_reviewed():
-    assert set(C14) == set(c14_review.DRAFT) - {NOT_REVIEWED}
+def test_the_bank_holds_a_reviewed_row_for_every_case():
+    # Cycle 7: 31/31 reviewed, 14 YES and 17 NO, none left to the transition.
+    assert set(C14) == set(c14_review.DRAFT)
     states = [entry["opportunity"] for entry in C14.values()]
-    assert (states.count("yes"), states.count("no")) == (14, 16)
-    assert "C14" not in (case_assessment_bank.CASES[NOT_REVIEWED].get("objectives") or {})
+    assert (states.count("yes"), states.count("no")) == (14, 17)
     for case_id, entry in C14.items():
         assert case_assessment_bank.CASES[case_id]["objectives"]["C14"] is entry
         reviewed = entry["reviewed"]
         assert {key: reviewed[key] for key in REVIEW} == REVIEW, case_id
-        # The decision that settled the row, or "clear" for a row the draft already classified.
+        # The decision that settled the row, or "clear" for a row the draft already classified;
+        # the one row decided after A-H names that later decision and its own review round.
+        if case_id in c14_review.LATER:
+            assert (reviewed["decision_group"], reviewed["version"]) == ("DF-20", "C14-REVIEW-2")
+            assert entry["opportunity"] == c14_review.LATER[case_id]["state"]
+            continue
+        assert reviewed["version"] == "C14-REVIEW-1", case_id
         assert reviewed["decision_group"] in (c14_review.decisions_for(case_id) or ["clear"]), case_id
         if entry["opportunity"] == "yes":
             assert entry["rationale"] and entry["observable_component"] and entry["expected_evidence"], case_id
@@ -88,11 +92,23 @@ def test_yes_no_and_not_reviewed_resolve_from_the_frozen_basis():
     no = opportunities.resolve("C14", encounter(NO))
     assert (no["state"], no["eligible"], no["rule"]) == ("no", False, "declared")
     assert no["reason"] == C14[NO]["reason"]
-    # Only the documented transition: assessable as before, and labelled not reviewed.
-    pending = opportunities.resolve("C14", encounter(NOT_REVIEWED))
+    # A case nobody reviewed keeps only the documented transition: assessable as before, and
+    # labelled not reviewed. No bank case is in that state since cycle 7, so one is made here.
+    with pytest.MonkeyPatch.context() as unreviewed:
+        unreviewed.setitem(case_assessment_bank.CASES, YES, without_objectives(YES))
+        pending = opportunities.resolve("C14", encounter(YES))
     assert (pending["state"], pending["eligible"], pending["rule"]) == ("not_reviewed", True, "transition_fallback")
     assert pending["declaration_source"] == "case_without_objectives"
     assert not {"reason", "rationale", "expected_evidence", "reviewed"} & set(pending)
+
+
+def test_acs_54m_inferior_is_no_for_the_opportunity_not_for_what_pocus_can_show():
+    later = opportunities.resolve("C14", encounter(LATER))
+    assert (later["state"], later["eligible"], later["rule"]) == ("no", False, "declared")
+    # The faculty's wording: a conclusion about the observation opportunity, grounded in the
+    # ACEP framework used here, never "POCUS cannot evaluate the RV".
+    assert "opportunity" in later["reason"] and "ACEP" in later["reason"] and "V4R" in later["reason"]
+    assert "cannot" not in later["reason"].lower()
 
 
 def test_the_encounter_target_never_decides_c14():
@@ -214,7 +230,11 @@ def test_a_no_encounter_cannot_confirm_c14_and_records_no_failure(cohort):
 
 def test_the_brief_is_offered_c14_where_the_case_declares_it():
     import faculty_analysis
-    yes, no, pending = encounter(YES), encounter(NO), encounter(NOT_REVIEWED)
+    yes, no = encounter(YES), encounter(NO)
+    with pytest.MonkeyPatch.context() as unreviewed:
+        # A case nobody reviewed for C14; none is left in the bank since cycle 7.
+        unreviewed.setitem(case_assessment_bank.CASES, YES, without_objectives(YES))
+        pending = encounter(YES)
     assert "C14" in faculty_analysis.supported_objectives(yes)
     assert "C14" not in faculty_analysis.supported_objectives(no)
     assert "C14" in faculty_analysis.supported_objectives(pending)
@@ -265,4 +285,7 @@ def test_the_final_table_document_is_the_bank_s_declarations():
     assert document.endswith(c14_review.final_table_markdown())
     rows = c14_review.final_table()
     assert [row["case_id"] for row in rows] == list(c14_review.DRAFT)
-    assert {row["opportunity"] for row in rows if row["case_id"] == NOT_REVIEWED} == {"NOT REVIEWED"}
+    # Cycle 7: nothing left NOT REVIEWED; the last row names the later decision that settled it.
+    assert {row["opportunity"] for row in rows} == {"YES", "NO"}
+    assert [row["review_source"] for row in rows if row["case_id"] == LATER] == [
+        "human_clinical_review; Nicolás Pineda, 2026-09-28; decision DF-20; C14-REVIEW-2"]
