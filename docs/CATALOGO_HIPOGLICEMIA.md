@@ -171,6 +171,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-27-12 | El idioma del encuentro se fija al iniciarlo y el selector queda bloqueado mientras está en curso | general | policy | cosmetic | — |
 | C-2026-09-28-01 | C14 declarado caso por caso en el banco: 14 con oportunidad, 16 sin ella y acs_54m_inferior sin revisar | general | clinical_decision_applied | clinical | — |
 | C-2026-09-28-02 | KD-01: una vía escrita antes del fármaco, sin verbo, es la vía de ese fármaco | general | technical_defect | clinical | — |
+| C-2026-09-28-03 | Un encuentro nuevo empieza sin el cierre del encuentro anterior | general | technical_defect | none | — |
 
 ## La batería, configuración por configuración
 
