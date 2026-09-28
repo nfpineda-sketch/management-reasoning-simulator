@@ -40,7 +40,8 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   - La tabla derivada está en `docs/C14_TABLA_FINAL.md`, y una prueba la ata
     al banco.
   - La regla de transición se retiró sólo para C14 y sólo en esos 30 casos.
-  - 15 pruebas nuevas cubren §21, §22 y §36–§39.
+  - 16 pruebas nuevas (`test_c14_opportunities.py`) cubren §21, §22 y
+    §36–§39.
 - **`acs_54m_inferior` auditado (DF-20), sin cambios.**
   - Clasificación B: inconsistencia de datos del caso.
   - Recomendación A: el VD comprometido es el diseño.
