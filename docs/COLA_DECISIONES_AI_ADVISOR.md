@@ -5,16 +5,18 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-28, al abrir el ciclo 4 con las decisiones docentes
-  de ese día (sección «Decisiones del 2026-09-28»).
+- **Actualizado:** 2026-09-28, al cerrar el ciclo 4 (sección «Cierre del ciclo
+  4»). Las decisiones docentes que lo abrieron están en «Decisiones del
+  2026-09-28».
 
 ## Pendientes de decisión
 
 | ID | Clase | Tema | Estado |
 |---|---|---|---|
-| DF-13 | HIGH VALUE · CLINICAL REVIEW | Activar C14 caso por caso | **No activar todavía** · el ciclo 4 prepara A–H para una decisión rápida |
-| DF-15 | HIGH VALUE · METHODOLOGICAL REVIEW | Piloto del validation corpus, Fase 1 | **Aprobado con modificaciones** · el ciclo 4 lo deja listo para distribuir |
-| DF-16 | HIGH (2) · MEDIUM (2) · LOW | Defectos del lector encontrados en el ciclo 3 | **a y b autorizados** para el ciclo 4 · el resto se documenta |
+| DF-13 | HIGH VALUE · CLINICAL REVIEW | Activar C14 caso por caso | **A–H listas para responder** (`docs/C14_DECISIONES_A_H.md`) · nada activado |
+| DF-15 | HIGH VALUE · METHODOLOGICAL REVIEW | Piloto del validation corpus, Fase 1 | **Paquete listo, no enviado** (`validation/pilot_v1/`) · baseline congelado |
+| DF-16 | HIGH (2) · MEDIUM (2) · LOW | Defectos del lector encontrados en el ciclo 3 | **a, b y c corregidos** · el resto, en el manifiesto de defectos conocidos del piloto |
+| DF-19 | HIGH VALUE · LOW EFFORT | Arreglos baratos antes de la fase en inglés del piloto | **Propuesto para el ciclo 5** (KD-01; KD-04 si el piloto lo muestra frecuente) |
 | DF-14 | METHODOLOGICAL REVIEW | Vínculos PARTIAL inactivos de R1-03, R1-04 y R2-01 | **Confirmado: siguen inactivos** · documentados para revisión posterior |
 | DF-12 | STRUCTURAL | Regla de transición para objetivos NOT REVIEWED | **Aprobada como transitoria**, no permanente |
 | DF-17 | METHODOLOGICAL REVIEW | *Faculty override*: registrar que una oportunidad no ocurrió | **DEFERRED:** se diseña después del piloto C14 |
@@ -101,20 +103,29 @@ Ningún caso del banco declara todavía su oportunidad.
 
 **EVIDENCE**
 
-`docs/BORRADOR_C14_OBSERVATION_OPPORTUNITIES.md`:
-
-- **Filas del borrador:** 31 casos: 6 YES, 6 NO y 19 UNCERTAIN.
-- **Qué trae cada fila:** racional, componente observable, evidencia esperable
-  y nota de revisión.
-- **Las 19 dudas:** se reducen a 8 preguntas (A–H), más una verificación
-  técnica en `bradycardia_avb3_78f`.
+- **Borrador del ciclo 3:** `docs/BORRADOR_C14_OBSERVATION_OPPORTUNITIES.md`,
+  con 31 casos: 6 YES, 6 NO y 19 UNCERTAIN.
+- **Ciclo 4:** `docs/C14_DECISIONES_A_H.md` convierte las 19 dudas en ocho
+  decisiones clínicas A–H, en el formato del §32. Cada una trae casos
+  afectados, recomendación y consecuencias si se aprueba o se rechaza.
+  `c14_review.derive` deriva las filas de las respuestas y no escribe nada.
+- **Lo que reveló revisar el borrador contra los casos y el motor:**
+  - los dos TEP traen una TVP proximal en el POCUS que el borrador omitía;
+  - la pielonefritis séptica pertenece también a la pregunta de volumen;
+  - el POCUS del bloqueo completo no refleja la captura;
+  - el evento del neumotórax en el asma nombra su diagnóstico;
+  - `acs_54m_inferior` declara compromiso del VD y su POCUS dice VD normal.
+    Es una inconsistencia de datos para decidir; no se cambió.
+- **Si se aprueban las ocho recomendaciones:** 14 SÍ, 16 NO y 1 UNCERTAIN. El
+  UNCERTAIN es `acs_54m_inferior`, por esa inconsistencia.
 
 **RECOMMENDATION**
 
-1. Responder A–H.
-2. Aprobar, modificar o rechazar fila por fila.
+1. Responder A–H: «A approve / B approve / C modify: … ».
+2. Aprobar, modificar o rechazar la tabla de filas que resulte, con los casos
+   claros.
 3. El AI Advisor escribe en el bloque `objectives` sólo lo aprobado, con quién
-   lo revisó y cuándo.
+   lo revisó y cuándo, y retira C14 de la regla de transición caso a caso.
 
 **ALTERNATIVES**
 
@@ -137,6 +148,8 @@ Ningún caso del banco declara todavía su oportunidad.
 
 - Respuestas a A–H.
 - Aprobación de las filas.
+- Si se corrige el VD de `acs_54m_inferior`: es un dato clínico del caso y
+  requiere autorización.
 
 ---
 
@@ -157,7 +170,21 @@ generalización (DF-6 modificado por el docente).
 - 25 tests;
 - una corrida sintética de punta a punta.
 
-**RECOMMENDATION** (piloto, §96)
+**CICLO 4 · PREPARADO, NO ENVIADO.** Todo está en `validation/pilot_v1/`
+(empiece por su `README.md`):
+
+- **Documentos.** Los 18 documentos VC2, personalizados, **DOCX STRUCTURALLY
+  VERIFIED** y no verificados en Word.
+- **Material de envío y de trabajo:**
+  - la matriz de asignación;
+  - el texto del mensaje en ES y EN;
+  - la anotación (plantilla, guía y adjudicación);
+  - el procedimiento del sorteo;
+  - el manifiesto de defectos conocidos;
+  - el baseline.
+- **La propuesta del ciclo 3**, de abajo, queda como antecedente.
+
+**RECOMMENDATION del ciclo 3** (piloto, §96)
 
 - **Médicos y casos:**
   - 6 médicos en español, en 3 pares;
@@ -193,21 +220,32 @@ generalización (DF-6 modificado por el docente).
 - **Word real:** sin probar; se validó con python-docx, no con Word.
 - **n chico:** las métricas del piloto son descriptivas.
 
-**DECISION NEEDED**
+**DECISION NEEDED** (VC-1 a VC-4 se decidieron el 2026-09-28)
 
-- **VC-1.** ¿Aprueba el piloto (médicos, casos, pares, sorteo, inglés)?
-- **VC-2.** ¿Quién anota y quién adjudica? Recomendación: un clínico que no
-  dirija las correcciones del lector.
-- **VC-3.** ¿Las indicaciones de regreso al alta cuentan como contingencia o
-  como seguimiento? La guía propone seguimiento, por coherencia con DF-10.
-- **VC-4.** Confirmar la aprobación del texto en español de los seis casos y
-  abrir un documento en Word antes de enviarlo.
+- **Acción docente:**
+  - abrir los 18 documentos en Word;
+  - confirmar el texto en español de los seis casos, que es la aprobación para
+    el piloto;
+  - enviarlos.
+- **Anotación:** decidir quién anota, quién hace la doble anotación y quién
+  adjudica.
 
-El AI Advisor no contacta a nadie ni envía nada (§97).
+El AI Advisor no contacta a nadie ni envía nada.
 
 ---
 
 ### [HIGH · MEDIUM · LOW] DF-16 · Defectos del lector encontrados en el ciclo 3
+
+**CICLO 4.**
+
+- **a, b y c, corregidos por clase**, EN/ES, con frases nuevas, antes y
+  después, y la traza verificada. Detalle en
+  `docs/MEDICION_RECONOCIMIENTO_ORDENES.md`, sección «Ciclo 4 · DF-16».
+- **d a i siguen documentados**, ahora como defectos conocidos del baseline
+  del piloto: d = KD-03, e = KD-04, f = KD-05, g = KD-06, h = KD-07,
+  i = KD-08.
+- **Lo encontrado al verificar**, de KD-01 a KD-14, está en
+  `validation/pilot_v1/KNOWN_DEFECTS.md`.
 
 **PROBLEM**
 
@@ -261,6 +299,56 @@ consideran una aclaración innecesaria.
 **DECISION NEEDED**
 
 ¿Autoriza corregir a y b, y cuáles más, en el ciclo 4?
+
+---
+
+### [HIGH VALUE · LOW EFFORT] DF-19 · Arreglos baratos antes de la fase en inglés
+
+**PROBLEM**
+
+La comprobación con frases escritas después del fix (ciclo 4) encontró una
+forma inglesa común que el lector no reconoce: la vía antes del fármaco y sin
+verbo.
+
+- **Ejemplos:** «IV morphine 4 mg», «Nebulized albuterol 2.5 mg», «Oral
+  paracetamol 1 g», «IV fluids 1 L».
+- **Qué pasa:** la orden vuelve como no reconocida y retiene el envío.
+- **Por qué no se corrigió:** no está relacionada con DF-16, así que no cumple
+  el criterio 1 del §71. Quedó documentada como KD-01.
+
+**EVIDENCE**
+
+- **Español:** la vía va después del fármaco y sí se lee, así que el piloto en
+  español casi no la verá.
+- **Inglés:** en la fase en inglés será probablemente frecuente.
+
+**RECOMMENDATION**
+
+- **Antes de recolectar documentos en inglés:** corregir la clase KD-01 con
+  frases nuevas y medir antes y después. Es barato: la vía inicial no se salta
+  hoy.
+- **Si el piloto en español muestra frecuente «reevaluar … si …»** (KD-04), un
+  arreglo de clase pequeño.
+- **Ambos arreglos**, con el orden que fija el piloto: desarrollo sólo con
+  development y nuevo baseline.
+
+**ALTERNATIVES**
+
+- Esperar a que el corpus inglés muestre el defecto. Costaría documentos
+  independientes para descubrir algo ya conocido.
+
+**COST / EFFORT**
+
+Bajo: un ciclo corto, sin IA.
+
+**RISK**
+
+- Bajo con pruebas de frases nuevas y el corpus de ensayo.
+- Cambia el lector, así que exige un nuevo baseline para la fase en inglés.
+
+**DECISION NEEDED**
+
+Autorizar KD-01 en el ciclo 5, o esperar el piloto.
 
 ---
 
