@@ -223,6 +223,16 @@ TRANSFUSION = {
     "diuretic_relief_per_mg": .012,   # 40 mg of furosemide undoes about half a unit
     "max_units": 4.0,
 }
+# TD-21 (faculty, 2026-09-28, principle D): while a modelled haemorrhage is still active --
+# a source still bleeding, or blood lost not yet replaced -- an isolated haemoglobin at or
+# above the threshold is not evidence of overload, and the units given then are not counted
+# as unnecessary. Once the bleeding is controlled and the loss replaced, the rule applies
+# again. It applies where the haemoglobin is isolated from the loss: the trauma family does
+# not lower it as the patient bleeds. The gastrointestinal bleed does, and dilutes it with
+# crystalloid, so there a haemoglobin at the threshold already says the loss was replaced
+# and the rule stays as it was (2026-09-20: the threshold is the haemoglobin, not the
+# diagnosis). Set to False to go back to the haemoglobin alone everywhere.
+HAEMORRHAGE_SUSPENDS_THE_HAEMOGLOBIN_RULE = True
 TRANSFUSION_OVERLOAD_TEXT = (
     "Transfusion-associated circulatory overload: the haemoglobin was already adequate, so the units added volume "
     "rather than oxygen-carrying capacity. The saturation is falling and the breathing is faster, with crackles "
@@ -1600,6 +1610,15 @@ def _edema_minute(state, fluid):
     f["nitro_bp_effect"] = effect + (target - effect) / e["nitro_bp_tau_min"]
 
 
+def _haemorrhage_active(family, f, state):
+    """Whether a unit given now replaces an active haemorrhage whose loss the haemoglobin does not show (TD-21)."""
+    if not HAEMORRHAGE_SUSPENDS_THE_HAEMOGLOBIN_RULE:
+        return False
+    if family == "trauma":
+        return trauma_hemorrhage.active(f, state)
+    return False
+
+
 def _gi_bleeding_fraction(f):
     """Share of the untreated bleeding rate that continues."""
     if f.get("endoscopy_at") is not None:
@@ -1719,6 +1738,9 @@ def _minute(state):
     f["pending_fluid_ml"] = max(0, f["pending_fluid_ml"] - fluid)
     f["pending_blood_units"] = max(0, f["pending_blood_units"] - blood)
     f["dextrose_g"] -= glucose
+    # Read before this minute's unit and this minute's bleeding: is the unit replacing an
+    # active haemorrhage? (TD-21, principle D)
+    replacing_a_haemorrhage = bool(blood) and _haemorrhage_active(family, f, state)
     f["blood_delivered_units"] += blood
     f["fluid_delivered_ml"] += fluid
     state["treatments"]["total_crystalloid_ml"] = round(f["fluid_delivered_ml"], 1)
@@ -1754,8 +1776,10 @@ def _minute(state):
                 {"type": "procedure", "label": event, "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
     f["hemoglobin"] += blood * .85
     if blood:
-        # Volume the patient did not need is volume all the same.
-        if f["hemoglobin"] - blood * .85 >= TRANSFUSION["unnecessary_above_g_dl"]:
+        # Volume the patient did not need is volume all the same -- unless it is replacing a
+        # haemorrhage that is still active, where the haemoglobin alone cannot say so (TD-21).
+        if (not replacing_a_haemorrhage
+                and f["hemoglobin"] - blood * .85 >= TRANSFUSION["unnecessary_above_g_dl"]):
             f["transfusion_overload_units"] = min(TRANSFUSION["max_units"],
                                                   f.get("transfusion_overload_units", 0.0) + blood)
             f.setdefault("transfusion_overload_at", f["elapsed"])

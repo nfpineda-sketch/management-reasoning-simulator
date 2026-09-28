@@ -114,6 +114,19 @@ def deficit_fraction(f):
     return min(1.0, missing / BLOOD_VOLUME_ML)
 
 
+def active(f, state):
+    """Whether this haemorrhage is still active: a source still bleeding, or blood lost not yet replaced.
+
+    TD-21 (faculty, 2026-09-28, principle D): while it is, a haemoglobin at or above the
+    transfusion threshold is not by itself evidence that a unit was unnecessary -- this family
+    does not lower the haemoglobin with the loss, so the haemoglobin says nothing about the
+    deficit. Before the first minute has run, the arrival deficit counts as already lost. No
+    threshold is added: the case's declared sources are what make the haemorrhage significant.
+    """
+    lost = float(f.get("blood_lost_ml", float(spec(state).get("arrival_deficit", 0.0)) * BLOOD_VOLUME_ML))
+    return bleeding_ml_per_min(f, state) > 0 or deficit_fraction({**f, "blood_lost_ml": lost}) > 0
+
+
 def step(f, state):
     """Lose a minute's worth of blood. Returns a procedure event, or None.
 

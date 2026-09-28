@@ -78,3 +78,51 @@ def test_a_wet_lung_tolerates_it_worse(engine):
     dry, _ = course(engine, "acs", "acs_54m_inferior",
                     ["Transfuse 1 unit packed red blood cells over 30 minutes. Reassess in 35 minutes."])
     assert transfusion_overload(congested) > transfusion_overload(dry)
+
+
+# --- TD-21 (faculty, 2026-09-28, principle D): an active haemorrhage is not an overload ------
+
+TOURNIQUET = "Apply a tourniquet to the limb."
+LIMB, CHEST = "trauma_limb_hemorrhage_27m", "trauma_hemothorax_41m"
+
+
+def test_an_appropriate_transfusion_during_an_active_haemorrhage_is_not_an_overload(engine):
+    # The trauma family does not lower the haemoglobin as the patient bleeds, so a
+    # haemoglobin of 10 said nothing about a deficit it could not see (docs/AUDITORIA_DF23_CICLO6.md §7.1).
+    limb, labels = course(engine, "trauma", LIMB, [
+        TOURNIQUET, "Transfuse 2 units packed red blood cells over 20 minutes.", "Reassess in 30 minutes."])
+    assert transfusion_overload(limb) == 0 and "circulatory overload" not in labels
+    assert limb["observable"]["spo2"] >= 96
+    assert "crackles since the transfusion" not in current_findings(limb)["Respiratory"]
+    chest, labels = course(engine, "trauma", CHEST, [
+        "Transfuse 2 units packed red blood cells over 20 minutes.", "Reassess in 30 minutes."])
+    assert transfusion_overload(chest) == 0 and "circulatory overload" not in labels
+
+
+def test_once_the_bleeding_is_controlled_and_the_loss_replaced_more_blood_overloads_again(engine):
+    import trauma_hemorrhage
+    state, _ = course(engine, "trauma", LIMB, [
+        TOURNIQUET, "Transfuse 2 units packed red blood cells over 20 minutes.",
+        "Give 1 L normal saline over 30 minutes.", "Reassess in 30 minutes."])
+    assert transfusion_overload(state) == 0
+    assert not trauma_hemorrhage.active(state["family_state"], state)
+    execute_family_bundle(state, parse_family_actions(
+        "Transfuse 4 units packed red blood cells over 60 minutes. Reassess in 60 minutes."))
+    assert transfusion_overload(state) > 1.5
+    assert state["observable"]["spo2"] <= 90
+
+
+def test_the_haemoglobin_still_decides_where_it_follows_the_loss(engine):
+    # The gastrointestinal bleed lowers its haemoglobin with the bleeding: nothing moved there.
+    before_endoscopy, labels = course(engine, "gi_bleed", "gi_bleed_57m", [
+        "Transfuse 4 units packed red blood cells over 60 minutes.",
+        "Transfuse 4 units packed red blood cells over 60 minutes. Reassess in 60 minutes."])
+    assert transfusion_overload(before_endoscopy) > 0 and "circulatory overload" in labels
+
+
+def test_the_suspension_is_one_switch_that_goes_back_to_the_haemoglobin_alone(engine, monkeypatch):
+    import family_engine
+    monkeypatch.setattr(family_engine, "HAEMORRHAGE_SUSPENDS_THE_HAEMOGLOBIN_RULE", False)
+    limb, labels = course(engine, "trauma", LIMB, [
+        TOURNIQUET, "Transfuse 2 units packed red blood cells over 20 minutes.", "Reassess in 30 minutes."])
+    assert transfusion_overload(limb) > 0 and "circulatory overload" in labels

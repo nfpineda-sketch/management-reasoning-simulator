@@ -1342,6 +1342,30 @@ CORRECTIONS = (
                   "test_c14_review.py::test_the_later_decision_settles_only_the_row_decision_a_left_open"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-28-12",
+        "date": "2026-09-28",
+        "title": "TD-21: transfundir una hemorragia activa en trauma ya no dispara una sobrecarga falsa",
+        "scope": {"level": "family", "family": "trauma"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Principio D aprobado por el docente: mientras la hemorragia modelada siga activa (una fuente que "
+                   "sangra o sangre perdida no repuesta), una hemoglobina ≥ 10 aislada no es evidencia de sobrecarga, "
+                   "porque la familia trauma no baja la hemoglobina con la pérdida. Las unidades dadas entonces no se "
+                   "cuentan como innecesarias; con el sangrado controlado y la pérdida repuesta, la regla vuelve. Sin "
+                   "equivalencia mL-unidades ni umbral nuevo. La HDA, cuya hemoglobina sí sigue la pérdida, no cambia "
+                   "(regla del 2026-09-20). Un solo interruptor la revierte. Sin cambios en el −3, los eventos críticos "
+                   "ni las rúbricas. Detalle y ANTES/DESPUÉS en docs/TD21_SOBRECARGA_TRANSFUSIONAL.md."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE7,
+        "affects": {"modules": ["family_engine", "trauma_hemorrhage"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_transfusion_overload.py::"
+                  "test_an_appropriate_transfusion_during_an_active_haemorrhage_is_not_an_overload",
+                  "test_transfusion_overload.py::"
+                  "test_once_the_bleeding_is_controlled_and_the_loss_replaced_more_blood_overloads_again",
+                  "test_transfusion_overload.py::test_the_haemoglobin_still_decides_where_it_follows_the_loss",
+                  "test_transfusion_overload.py::test_the_suspension_is_one_switch_that_goes_back_to_the_haemoglobin_alone"],
+        "preservation": None,
+    },
 )
 
 
