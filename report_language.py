@@ -970,6 +970,8 @@ ES = {
         'hemoderivado indicado; efecto fisiológico no modelado',
     'massive transfusion protocol activated; the activation gives no blood product by itself':
         'protocolo de transfusión masiva activado; la activación no administra hemoderivados por sí sola',
+    'massive transfusion protocol stood down; no unit already given is taken back':
+        'protocolo de transfusión masiva desactivado; ninguna unidad ya administrada se revierte',
     'prescription for home; not a dose given here':
         'receta para el domicilio; no es una dosis administrada aquí',
     'recognized; not yet executable':
@@ -1664,6 +1666,10 @@ ES = {
         'Anula una evaluación solo para corregir su registro. El juicio original y el motivo quedan en el historial de auditoría. Una observación satisfactoria anulada deja de contribuir al conteo.',
     'Void assessment':
         'Anular evaluación',
+    'Component this encounter can show: {text}':
+        'Componente que este encuentro puede mostrar: {text}',
+    'Outside this encounter: {text}':
+        'Fuera de este encuentro: {text}',
     'The resident reads this reason on their progress page, beside the original judgment and the notes. Write it for them to read.':
         'La persona residente lee este motivo en su página de progreso, junto al juicio original y las notas. Escríbelo para que lo lea.',
     'This draft does not replace confirmed revision {v0}: the resident, the profile and the radar keep showing that revision until you confirm another.':

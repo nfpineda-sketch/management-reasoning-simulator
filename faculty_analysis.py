@@ -77,7 +77,8 @@ def _objective_rubric(key, record):
     opportunity = resolve(key, record)
     if opportunity["rule"] == "declared" and opportunity["state"] == "yes":
         row["observation_opportunity"] = {
-            **{field: opportunity[field] for field in ("rationale", "observable_component", "expected_evidence")
+            **{field: opportunity[field] for field in ("rationale", "observable_component", "expected_evidence",
+                                                       "outside_the_encounter")
                if field in opportunity},
             "guidance": ("Declared by the case before the encounter: what could be observed and what the record "
                          "might show. It is not evidence that it happened, and valid evidence it does not list "

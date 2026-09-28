@@ -1063,3 +1063,33 @@ residente se leen bien.
 - **Lo que queda** está en «Límites documentados» del documento de TD-26 y en
   `docs/REGISTRO_DEUDA_TECNICA.md` (TD-14, TD-29 a TD-31). Nada de eso es una
   pérdida sin aviso de un hemoderivado indicado con claridad.
+
+## Ciclo 8 · TD-29, TD-30, TD-31, TD-32 y KD-05 (2026-09-28)
+
+El detalle, con las reglas y las correcciones post hoc de la revisión
+adversarial, está en `docs/CICLO8_LECTOR.md`. Como en los ciclos 6 y 7, todas las
+frases son **INTERNAL DEVELOPMENT DATA**: nada aquí estima cuántas órdenes
+reales de un residente se leen bien. El lector de comparación es el V2
+congelado (`9d2cd9e`).
+
+| Medición | Frases | V2 | Lector del ciclo 8 |
+|---|---|---|---|
+| Conjunto independiente (se usó para desarrollar) | 80 | 31 correctas · 25 perdidas · 9 ejecuciones falsas | **79** · 0 perdidas · 0 falsas |
+| Conjunto ciego 1, medido una vez | 70 | 29 (30 con el puntaje corregido) | **Medido:** 41 · 10 perdidas · 18 retenidas · 0 falsas. **Post hoc:** 52 · 3 perdidas · 15 retenidas · 0 falsas |
+| Revisión adversarial | ~390 | — | 6 CRITICAL, 10 HIGH y 7 MEDIUM del propio ciclo, corregidos; cada frase marcada queda igual que en V2 o mejor. __ADV2M__ |
+| Todo texto de orden que guarda el repositorio | 13 029 | — | 95 se leen distinto fuera de las pruebas del ciclo; todas revisadas |
+| Conjuntos del ciclo 7 | 149 | — | Totales iguales a V2, salvo un desacuerdo de etiqueta (H-ES-20) |
+| Conjunto ciego 2, medido una vez con el lector final | 50 | __H2V2__ | __H2NEW__ |
+
+- **Las perdidas y retenidas que quedan en el ciego 1 son de otras clases:**
+  exámenes y fármacos abreviados («CBC coags», «protonix», «TP/TTPA»), el
+  oxígeno «alto flujo», los horarios y el verbo de una lista. Están en TD-14 y
+  TD-35.
+- **El puntaje automático tenía un error:** contaba como pregunta equivocada
+  que una infusión escrita sin velocidad pidiera su velocidad. Se corrigió
+  entre el ciego 1 y el ciego 2, igual en los dos lectores.
+- **El ciego 2 no quedó intacto del todo:** __H2LEAKM__
+
+### Corpus de ensayo
+
+__REHEARSALM__

@@ -748,6 +748,21 @@ def _validate(state, parsed):
                 return None, (f"{a['volume_ml']:g} mL at {a['rate_ml_h']:g} mL/h would run for "
                               f"{a['administration_duration_min'] / 60:.1f} h; this simulator runs a fluid order over "
                               "at most 120 min. Restate it as a bolus or a shorter infusion.")
+            # A volume written with its hours says so too: "SF 1000 ml ev durante 8 h" (post hoc,
+            # adversarial review of cycle 8; the hours were not read before, and it ran as a bolus).
+            if (kind == "fluid" and not a.get("rate_ml_h") and a.get("volume_ml")
+                    and a["administration_duration_min"] > 120):
+                return None, (f"{a['volume_ml']:g} mL over {a['administration_duration_min'] / 60:g} h: this "
+                              "simulator runs a fluid order over at most 120 min. Restate it as a bolus or a "
+                              "shorter infusion.")
+            # Red cells given one after another add up their time ("2 U GR en 2 horas c/u" is 4 h in
+            # all); longer than this simulator runs a transfusion, it says so, as for a fluid, and the
+            # resident restates it (post hoc, adversarial review of cycle 8).
+            if kind == "blood" and a.get("units") and _number(a["administration_duration_min"], 120, float("inf")) \
+                    and a["administration_duration_min"] > 120:
+                return None, (f"{a['units']:g} units over {a['administration_duration_min'] / 60:g} h in all: this "
+                              "simulator runs a transfusion over at most 120 min. Restate it with a shorter time, "
+                              "or transfuse fewer units now.")
             # Tranexamic acid is given over ten minutes by standard; the duration
             # written with it held the whole urgent bundle, tourniquet included
             # (DF-22, C08, 2026-09-28). It is recorded as written and changes no

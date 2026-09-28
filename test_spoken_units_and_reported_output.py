@@ -92,7 +92,8 @@ def test_a_volume_that_really_is_an_order_is_still_caught():
     # volume of something the engine cannot give, with no verb, is still held,
     # not silently dropped.
     action = only("Manitol 250 mL.")
-    assert action["type"] == "clarification" and "250 ml" in action["unrecognized_text"]
+    # Quoted as written since cycle 8 (TD-28): "Manitol 250 mL".
+    assert action["type"] == "clarification" and "250 ml" in action["unrecognized_text"].lower()
 
 
 def test_a_fluid_written_the_way_a_chart_writes_it_is_given():

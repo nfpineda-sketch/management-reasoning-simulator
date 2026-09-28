@@ -275,6 +275,8 @@ _CATEGORY_NAMES = {
     "blood_product": ("a blood product", "un hemoderivado"),
     "massive_transfusion": ("the massive transfusion protocol's activation",
                             "la activación del protocolo de transfusión masiva"),
+    "massive_transfusion_stop": ("the massive transfusion protocol stood down",
+                                 "la desactivación del protocolo de transfusión masiva"),
     "other": ("a medicine", "un medicamento"),
 }
 
@@ -293,7 +295,7 @@ def _indicated_fact(rows):
     # A blood product and the protocol's activation are orders whose effect is
     # not modelled; "no administration" would say the resident did not give it
     # (TD-26; charter §112).
-    ordered = [r for r in rows if r["category"] in {"blood_product", "massive_transfusion"}]
+    ordered = [r for r in rows if r["category"] in {"blood_product", "massive_transfusion", "massive_transfusion_stop"}]
     indicated = [r for r in rows if r not in ordered]
     en, es = [], []
     if indicated:

@@ -5,9 +5,9 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-28, al cerrar el ciclo 7 (sección «Cierre del
-  ciclo 7»). La apertura del ciclo 7, el ciclo 6 y los anteriores siguen más
-  abajo.
+- **Actualizado:** 2026-09-28, al abrir el ciclo 8 (sección «Apertura del
+  ciclo 8»). El cierre y la apertura del ciclo 7, el ciclo 6 y los anteriores
+  siguen más abajo.
 
 ## Pendientes de decisión
 
@@ -27,6 +27,55 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 | Biblioteca POCUS | FUTURE ARCHITECTURE | Videos reales, adquisición y reconocimiento en la imagen | `ARQUITECTURA_POCUS_OBJETIVO.md`. No es deuda ni bug |
 | DF-25 · DF-14 · DF-12 · DF-17 · DF-4 | — | Brechas del banco · PARTIAL · transición · *override* · C2 | Sin cambio |
 | DF-18 · DF-9 · DF-11 · DF-5 | — | Multisource · −3 · residuos menores · C15 | Registrados, sin acción |
+
+## Apertura del ciclo 8 (2026-09-28)
+
+**La instrucción, al cerrar el ciclo 7:**
+
+- «Tengo que salir ahora, pero me gustaría dejarte trabajando en el siguiente
+  ciclo».
+- Luego: «que el ciclo 8 abarque más tareas que no requieran mucha aprobación
+  por mí. Si algo lo requiere, me lo entregas en el informe final como lo hemos
+  hecho hasta ahora».
+
+**Alcance elegido por el AI Advisor,** sólo con trabajo ya aprobado o que no
+pide una decisión clínica ni metodológica nueva:
+
+1. **TDFC** (TD1, F1, C1 y C3):
+   - aprobado conceptualmente en el ciclo 7 (§28), «según las recomendaciones
+     actuales»;
+   - con el modelo de C14 (§92);
+   - las filas de `acs_54m_inferior` esperan DF-20, como dice la
+     recomendación de TDFC-5;
+   - C4 sigue fuera (§93).
+2. **Lector, por clase y con el estándar A–J:**
+   - TD-29: la condición «cuando/when/once»;
+   - TD-30: órdenes sin verbo que se pierden sin aviso;
+   - TD-31: la pregunta de la adrenalina IM sin dosis;
+   - TD-32: los residuos LOW de TD-26;
+   - KD-05: «OK to discharge».
+3. **Deuda menor:** TD-27, TD-28, TD-25, TD-06 y TD-23.
+4. **Verificación:**
+   - el ensayo de los 20 escenarios ES/EN;
+   - la suite completa y las 56 regresiones.
+
+**Lo que no se toca** porque pide su decisión, y va al informe final:
+
+- TD-33, DF-20 y DF-23 (4a, 4b, 6, 7, 8);
+- KD-02 y KD-15;
+- la regla de medidas combinadas (TD-31, segunda mitad);
+- DC3 (la mitad de la dosis);
+- el baseline inglés;
+- el piloto con residentes y la prueba en la base real.
+
+**Reglas que siguen:**
+
+- sin PR, merge a `main`, release, producción ni staging;
+- sin SEALED ni datos reales;
+- sin contactar a nadie;
+- push sólo a `clinical-encounter-v0.13`;
+- el baseline español `939978a` y el V2 `9d2cd9e` quedan intactos;
+- un solo reporte al final, y STOP: no se inicia el ciclo 9.
 
 ## Cierre del ciclo 7 (2026-09-28)
 

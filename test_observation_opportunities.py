@@ -63,17 +63,25 @@ def test_a_case_declares_an_opportunity_and_the_three_states_stay_apart(declared
 
 # --- 3: not reviewed is never no, and the transition keeps what was observable ----------
 
-def test_c14_and_c4_are_declared_and_td_f_c_keep_the_transition():
+def test_c14_c4_and_td_f_c_are_declared_and_only_the_pending_case_keeps_the_transition():
     # Cycle 7 (faculty, 2026-09-28): C14 is reviewed in all 31 cases and C4 is NO in every
-    # one (TDFC-7/8, H4); TD1, F1, C1 and C3 are not reviewed anywhere yet.
+    # one (TDFC-7/8, H4). Cycle 8: TD1, F1, C1 and C3 are declared in every case but
+    # acs_54m_inferior, which waits for DF-20 and keeps the transition for those four.
+    import tdfc_review
+    td_f_c = set(opportunities.TRANSITION_OBJECTIVES) - {"C14", "C4"}
     for case_id in case_assessment_bank.CASES:
         declared = case_assessment_bank.CASES[case_id].get("objectives") or {}
-        assert set(declared) == {"C14", "C4"}, case_id
+        pending = case_id in tdfc_review.PENDING
+        assert set(declared) == ({"C14", "C4"} if pending else {"C14", "C4"} | td_f_c), case_id
         view = opportunities.summary(record(basis=evaluation_basis.freeze(case_id)))
-        for objective_id in set(opportunities.TRANSITION_OBJECTIVES) - {"C14", "C4"}:
-            assert view[objective_id]["state"] == "not_reviewed"
-            assert view[objective_id]["eligible"] is True
-            assert view[objective_id]["rule"] == "transition_fallback"
+        for objective_id in td_f_c:
+            if pending:
+                assert (view[objective_id]["state"], view[objective_id]["eligible"],
+                        view[objective_id]["rule"]) == ("not_reviewed", True, "transition_fallback")
+            else:
+                state = declared[objective_id]["opportunity"]
+                assert (view[objective_id]["state"], view[objective_id]["eligible"],
+                        view[objective_id]["rule"]) == (state, state == "yes", "declared"), (case_id, objective_id)
         assert view["C14"]["rule"] == "declared", case_id
         assert (view["C4"]["state"], view["C4"]["eligible"], view["C4"]["rule"]) == ("no", False, "declared")
 

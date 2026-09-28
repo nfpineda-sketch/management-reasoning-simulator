@@ -50,7 +50,10 @@ It is TRANSITIONAL, not the architecture (faculty, 2026-09-28): the target is
 that only opportunities explicitly reviewed for a case are evaluable. C14 is
 withdrawn first, then TD/F/C objective by objective, each only after its
 clinical review; when every case of an objective is reviewed, the objective
-leaves ``TRANSITION_OBJECTIVES``.
+leaves ``TRANSITION_OBJECTIVES``. Since cycle 8 every bank case but
+acs_54m_inferior declares TD1, F1, C1 and C3 (tdfc_declarations); that case,
+generated cases, encounters with no authored case and encounters frozen before
+keep the transition, so the four stay listed.
 
 The observation environment (faculty, 2026-09-28, cycle 7). Some limits are
 not a case's but the simulator's: C4 has no real opportunity in any encounter
@@ -99,7 +102,10 @@ ENVIRONMENT = {
 }
 
 _NEEDS = {"yes": ("rationale", "observable_component", "expected_evidence"), "no": ("reason",)}
-_CARRIED = ("rationale", "reason", "observable_component", "expected_evidence", "reviewed", "scope")
+# What stays outside the encounter travels with a YES: an opportunity is never the full EPA
+# observed (TDFC, cycle 8).
+_CARRIED = ("rationale", "reason", "observable_component", "expected_evidence", "outside_the_encounter",
+            "reviewed", "scope")
 _NOTES = {
     "generation_target": "The encounter was generated to offer this objective.",
     "declared_yes": "The case declares a real opportunity to observe this objective.",

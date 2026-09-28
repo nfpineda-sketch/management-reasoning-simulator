@@ -83,7 +83,10 @@ def test_two_hours_of_occlusion_end_in_ventricular_fibrillation(engine):
     assert "Ventricular fibrillation" in labels(events)
 
 
-def test_reperfusion_prevents_the_block_and_the_arrest(engine):
+def test_reperfusion_prevents_the_arrest_and_the_shock(engine):
+    # What it checks: no fibrillation, a pulse and a ventricle out of shock once the artery is
+    # open. The block has a test of its own in its own scenario; the name promised it here
+    # (TD-25, renamed in cycle 8).
     state, _ = course(engine, ["Activate the cath lab. Reassess in 40 minutes.", "Reassess in 90 minutes."])
     f = state["family_state"]
     assert acs.is_open(f) and f.get("vf_at") is None

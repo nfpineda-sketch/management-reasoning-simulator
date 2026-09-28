@@ -113,9 +113,9 @@ Comparación con el registro del 2026-09-25 (commit d184845), antes de que exist
 
 | Variante | Caso | Declaración | Lanzamiento | Guiones distintos |
 |---|---|---|---|---|
-| `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10) | idéntico | ninguno de 20 |
-| `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10) | idéntico | ninguno de 20 |
-| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01, C-2026-09-28-10) | idéntico | ninguno de 20 |
+| `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | ninguno de 20 |
+| `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | ninguno de 20 |
+| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | ninguno de 20 |
 
 Cada diferencia está declarada en el registro de correcciones; la prueba `test_hypoglycemia_preservation` acepta esas y ninguna otra.
 
@@ -169,6 +169,8 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-27-10 | Los descriptores de la rúbrica en español, sólo después de la aprobación docente de cada dominio | general | policy | cosmetic | — |
 | C-2026-09-27-11 | Revisión docente de la traducción de la rúbrica: redacción, orientación frente a indicación, ayuda y autonomía, D4 frente a D5 | general | policy | cosmetic | — |
 | C-2026-09-27-12 | El idioma del encuentro se fija al iniciarlo y el selector queda bloqueado mientras está en curso | general | policy | cosmetic | — |
+| C-2026-09-27-13 | DF-7: el razonamiento del residente se registra como lo escribió en el Management Trace | general | technical_defect | none | — |
+| C-2026-09-27-14 | DF-10: el alta conserva el plan con el que se escribe, en ambos idiomas | general | technical_defect | clinical | — |
 | C-2026-09-28-01 | C14 declarado caso por caso en el banco: 14 con oportunidad, 16 sin ella y acs_54m_inferior sin revisar | general | clinical_decision_applied | clinical | — |
 | C-2026-09-28-02 | KD-01: una vía escrita antes del fármaco, sin verbo, es la vía de ese fármaco | general | technical_defect | clinical | — |
 | C-2026-09-28-03 | Un encuentro nuevo empieza sin el cierre del encuentro anterior | general | technical_defect | none | — |
@@ -185,6 +187,14 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-28-14 | C7-06 y TD-22: medidas de control de hemorragia, acceso intraóseo y prueba de embarazo, por clase y EN/ES | general | technical_defect | clinical | — |
 | C-2026-09-28-15 | DF-24: quién confirmó, qué revisión alimenta el radar, la razón de la anulación y el aviso del borrador | general | policy | clinical | — |
 | C-2026-09-28-16 | L-F07 B: las 9 composiciones del catálogo de hipoglicemia heredan el C14 NO de su caso de origen | variante hypoglycemia_cfg_alcohol_fasting_failed_moderate, hypoglycemia_cfg_alcohol_fasting_working_moderate, hypoglycemia_cfg_alcohol_fasting_working_severe, hypoglycemia_cfg_insulin_failed_moderate, hypoglycemia_cfg_insulin_failed_severe, hypoglycemia_cfg_insulin_working_moderate, hypoglycemia_cfg_sulfonylurea_failed_moderate, hypoglycemia_cfg_sulfonylurea_failed_severe, hypoglycemia_cfg_sulfonylurea_working_moderate | policy | clinical | — |
+| C-2026-09-28-17 | TDFC: TD1, F1, C1 y C3 declarados caso por caso, con su componente observable y lo que queda fuera | general | clinical_decision_applied | clinical | — |
+| C-2026-09-28-18 | DF-16a/b/c: una lista de órdenes conserva cada orden; una repetición deja correr su orden | general | technical_defect | clinical | — |
+| C-2026-09-28-19 | TD-29: «cuando», «when» y «once» hacen de una orden un plan cuando nombran el estado del paciente | general | technical_defect | clinical | — |
+| C-2026-09-28-20 | TD-30: interconsultas, endoscopía, cultivos y vías escritas sin verbo ya no se pierden | general | technical_defect | clinical | — |
+| C-2026-09-28-21 | TD-31: la adrenalina IM sin dosis pregunta su dosis en miligramos, nunca una velocidad | general | technical_defect | clinical | — |
+| C-2026-09-28-22 | TD-32: los residuos de hemoderivados ya no se pierden ni se leen como un pedido | general | technical_defect | clinical | — |
+| C-2026-09-28-23 | KD-05: «OK to discharge» y «ok para alta» son un alta; el alta conserva su receta | general | technical_defect | clinical | — |
+| C-2026-09-28-24 | Deuda menor del ciclo 8: TD-23, TD-25, TD-27 y TD-28 | general | technical_defect | none | — |
 
 ## La batería, configuración por configuración
 

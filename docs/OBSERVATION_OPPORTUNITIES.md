@@ -112,7 +112,7 @@ Después solo se lee esa copia:
 - **Se retira caso por caso.** Cuando el docente aprueba la declaración de un
   caso, ese caso deja de usar la transición.
 
-**Dónde está hoy (ciclo 7, 2026-09-28).**
+**Dónde está hoy (ciclo 8, 2026-09-28).**
 
 - **C14 está declarado en los 31 casos:** 14 YES y 17 NO, con su procedencia
   (`reviewed`: `by`, `on`, `source`, `decision_group`, `version`). La tabla
@@ -133,9 +133,22 @@ Después solo se lee esa copia:
     `TRANSITION_OBJECTIVES`, aunque ningún encuentro nuevo llegue a esa regla;
   - el motor no se tocó; la evidencia C4 vendrá de simulación procedural u
     observación en el lugar de trabajo (`test_c4_is_not_observable_in_this_environment.py`).
-- **TD1, F1, C1 y C3 siguen sin revisar en todos los casos** (TDFC aprobado
-  conceptualmente, sin escribir). En los casos generados y en PS001, C14 y
-  TD/F/C conservan la transición (DF-12, L-F07 B).
+- **TD1, F1, C1 y C3 están declarados en 30 casos** (ciclo 8, C-2026-09-28-17),
+  con el modelo de C14: TDFC-1 a 6 y 8, aprobadas conceptualmente en el ciclo 7
+  (§28), se escriben caso por caso con su procedencia (`decision_group`
+  «clear» o «TDFC-n», `version` TDFC-REVIEW-1) y se congelan con el encuentro.
+  - **Conteos:** TD1 25 YES / 5 NO, F1 25/5, C1 18/12 y C3 10/20. TDFC-6
+    sigue la recomendación: C3 YES en las dos neumonías y en
+    `pulmonary_embolism_61m`.
+  - **Cada YES nombra su componente observable y lo que queda fuera del
+    encuentro** (`observable_component`, `outside_the_encounter`); una NO es
+    no evaluable, nunca una falla.
+  - **`acs_54m_inferior` espera DF-20** y conserva la transición en TD/F/C,
+    como los casos generados, PS001, los encuentros congelados antes y las
+    composiciones de hipoglicemia. Por eso TD1, F1, C1 y C3 siguen en
+    `TRANSITION_OBJECTIVES`.
+  - **Tabla final:** `docs/tdfc/TDFC_TABLA_FINAL.md`. **Pruebas:**
+    `test_tdfc_opportunities.py`.
 - **Las 9 composiciones del catálogo de hipoglicemia heredan el C14 NO de su
   caso de origen** (L-F07 B, ciclo 7, C-2026-09-28-16). Cada una lleva la
   misma razón y la firma de su revisión, con `inherited_from`. Sólo se agrega

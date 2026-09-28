@@ -23,6 +23,9 @@ are (TD-26, 2026-09-28; charter §112, §114):
 * ``massive_transfusion``: the activation of the massive transfusion protocol.
   Activating it gives no product by itself; the units given are the ones
   ordered, and none is invented.
+* ``massive_transfusion_stop``: the protocol stood down ("deactivate MTP").
+  Recorded as the resident's decision; it takes back no unit already given
+  (TD-32, cycle 8).
 
 Nothing here marks anything as given, and nothing invents a response.
 """
@@ -40,6 +43,7 @@ LABELS = {
 CATEGORY_LABELS = {
     "blood_product": "blood product ordered; physiologic effect not modelled",
     "massive_transfusion": "massive transfusion protocol activated; the activation gives no blood product by itself",
+    "massive_transfusion_stop": "massive transfusion protocol stood down; no unit already given is taken back",
 }
 _CATEGORY_MESSAGES = {
     "blood_product": ("Blood product ordered and recorded as your decision: {items}. Its physiologic effect is not "
@@ -47,10 +51,13 @@ _CATEGORY_MESSAGES = {
                       "not include its effect."),
     "massive_transfusion": ("Massive transfusion protocol activation recorded: {items}. Activating it gives no blood "
                             "product by itself; the units given are the ones ordered."),
+    "massive_transfusion_stop": ("Massive transfusion protocol stood down and recorded as your decision: {items}. "
+                                 "No unit already given is taken back."),
 }
 _CATEGORY_HELD = {
     "blood_product": "Also in this order, a blood product whose physiologic effect is not modelled: {items}.",
     "massive_transfusion": "Also in this order, the massive transfusion protocol's activation: {items}.",
+    "massive_transfusion_stop": "Also in this order, the massive transfusion protocol stood down: {items}.",
 }
 
 
@@ -86,7 +93,7 @@ def messages(parsed):
     for detail in details_of(parsed):
         grouped.setdefault(_kind_of(detail), []).append(str(detail.get("text") or "").strip())
     lines = []
-    for kind in ("massive_transfusion", "blood_product", "not_modelled", "prescription", "conditional", "repeat",
+    for kind in ("massive_transfusion", "massive_transfusion_stop", "blood_product", "not_modelled", "prescription", "conditional", "repeat",
                  "advice"):
         if grouped.get(kind):
             lines.append({**_MESSAGES, **_CATEGORY_MESSAGES}[kind].format(items="; ".join(grouped[kind])))
@@ -113,7 +120,7 @@ def held_messages(parsed):
     for detail in details_of(parsed):
         grouped.setdefault(_kind_of(detail), []).append(str(detail.get("text") or "").strip())
     lines = [{**_HELD, **_CATEGORY_HELD}[kind].format(items="; ".join(grouped[kind]))
-             for kind in ("massive_transfusion", "blood_product", "not_modelled", "prescription", "conditional",
+             for kind in ("massive_transfusion", "massive_transfusion_stop", "blood_product", "not_modelled", "prescription", "conditional",
                           "repeat", "advice") if grouped.get(kind)]
     if grouped.get(None):
         lines.append("Also recognized but not executable in this build: " + ", ".join(grouped[None]) + ".")

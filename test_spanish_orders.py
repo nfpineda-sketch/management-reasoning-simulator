@@ -63,8 +63,9 @@ def test_an_admission_with_no_destination_is_asked_about():
 def test_an_unreadable_order_with_a_dose_is_quoted_back():
     parsed = actions("Chorrea 1000 mL de suero fisiológico IV.")
     assert parsed[0]["type"] == "clarification"
-    # The fragment is quoted as the parser read it: normalized, without accents.
-    assert parsed[0]["unrecognized_text"] == "chorrea 1000 ml de suero fisiologico iv"
+    # The fragment is quoted as the resident wrote it, accents and case kept; until cycle 8 it
+    # was quoted as the parser read it, normalized and without accents (TD-28).
+    assert parsed[0]["unrecognized_text"] == "Chorrea 1000 mL de suero fisiológico IV"
     assert "not recognized" in parsed[0]["message"]
     assert "held until then" in parsed[0]["message"]
 

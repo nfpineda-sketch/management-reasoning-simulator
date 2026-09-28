@@ -1,10 +1,11 @@
-"""Matriz de oportunidades del banco (instrucción docente 59D) · BORRADOR.
+"""Matriz de oportunidades del banco (instrucción docente 59D; declarada en el ciclo 8).
 
 Lee, sin importar ni ejecutar nada del repositorio:
 
 * la tabla de estados de BORRADOR_TDFC.md (entre los marcadores
   ``estados-tdfc``): el borrador de TD1, F1, C1, C3 y C4, fuente única;
-* ``case_assessment_bank.C14_DECLARATIONS`` (qué declara el banco para C14);
+* ``case_assessment_bank.C14_DECLARATIONS`` (qué declara el banco para C14) y
+  ``tdfc_declarations.DECLARATIONS`` (TD1, F1, C1 y C3, desde el ciclo 8);
 * ``cognitive_catalog.BIAS_CHALLENGES`` y ``curriculum._FOUNDATION_CHALLENGES``
   (los Decision Challenges y sus ``families``);
 * ``clinical_cases.py``, ``hypoglycemia_catalog.py`` y ``c14_review.DRAFT``
@@ -64,10 +65,15 @@ DECISIONES = {
                **_cells([("trauma_limb_hemorrhage_27m", "C1"), ("trauma_hemothorax_41m", "C1")], _NO, _YES)},
     "TDFC-5": {"titulo": "C1 y C3 · Deterioro por diseño durante la espera de la reperfusión",
                **_cells([("acs_54m_inferior", "C1"), ("acs_70f_left_main", "C3")], _YES, _NO)},
+    # La recomendación aprobada difiere del borrador (que proponía YES en los seis): YES en
+    # las dos neumonías y en pulmonary_embolism_61m, NO en los otros tres (ciclo 8).
     "TDFC-6": {"titulo": "C3 · Oxígeno ante hipoxemia sin falla ventilatoria ni amenaza de vía aérea",
-               **_cells([("pneumonia_46f", "C3"), ("pneumonia_83m", "C3"), ("pulmonary_embolism_33f", "C3"),
-                         ("pulmonary_embolism_61m", "C3"), ("asthma_24f", "C3"),
-                         ("anaphylaxis_63m_betablocked", "C3")], _YES, _NO)},
+               "approve": {("pneumonia_46f", "C3"): _YES, ("pneumonia_83m", "C3"): _YES,
+                           ("pulmonary_embolism_61m", "C3"): _YES, ("pulmonary_embolism_33f", "C3"): _NO,
+                           ("asthma_24f", "C3"): _NO, ("anaphylaxis_63m_betablocked", "C3"): _NO},
+               "reject": {pareja: _NO for pareja in (
+                   ("pneumonia_46f", "C3"), ("pneumonia_83m", "C3"), ("pulmonary_embolism_33f", "C3"),
+                   ("pulmonary_embolism_61m", "C3"), ("asthma_24f", "C3"), ("anaphylaxis_63m_betablocked", "C3"))}},
     "TDFC-7": {"titulo": "C4 · Sedoanalgesia para un procedimiento que el caso trae y no declara",
                **_cells([("bradycardia_avb3_78f", "C4"), ("trauma_hemothorax_41m", "C4"),
                          ("trauma_limb_hemorrhage_27m", "C4")], _NO, _YES)},
@@ -75,6 +81,8 @@ DECISIONES = {
                **_cells([("renal_colic_34m", "C4")], _NO, _YES)},
 }
 RECOMENDADO = {clave: "approve" for clave in DECISIONES}
+# Casos cuyas filas TD/F/C esperan una decisión y conservan la transición (tdfc_review.PENDING).
+PENDIENTES = {"acs_54m_inferior": "DF-20"}
 TODO_RECHAZADO = {clave: "reject" for clave in DECISIONES}
 
 
@@ -128,6 +136,23 @@ def leer_c4():
     if not recorre_banco or llamadas != {"_c4_no"}:
         raise Inconsistencia("C4_DECLARATIONS ya no declara NO en todos los casos del banco: revisar la matriz.")
     return True, ruta
+
+
+def leer_tdfc():
+    """Lo que el banco declara para TD1, F1, C1 y C3 (tdfc_declarations.DECLARATIONS, ciclo 8)."""
+    texto, ruta = _texto("tdfc_declarations.py")
+    valor = _asignacion(ast.parse(texto), "DECLARATIONS")
+    declarados = {}
+    for clave, filas in zip(valor.keys, valor.values):
+        caso = _constante(clave)
+        declarados[caso] = {}
+        for objetivo, llamada in zip(filas.keys, filas.values):
+            funcion = llamada.func.id if isinstance(llamada, ast.Call) and isinstance(llamada.func, ast.Name) else None
+            if funcion not in {"_yes", "_no"}:
+                raise Inconsistencia(f"tdfc_declarations: valor inesperado en {caso}.")
+            grupo = _constante(llamada.args[1] if funcion == "_yes" else llamada.args[0])
+            declarados[caso][_constante(objetivo)] = {"estado": "yes" if funcion == "_yes" else "no", "grupo": grupo}
+    return declarados, ruta
 
 
 def leer_desafios():
@@ -234,8 +259,17 @@ def conteo(filas, objetivo):
 
 
 # --- verificación cruzada -------------------------------------------------------------------
-def verificar(borrador, casos_banco, orden, c14):
+def verificar(borrador, casos_banco, orden, c14, tdfc=None):
     problemas = []
+    if tdfc is not None:
+        aprobado = derivar(borrador, RECOMENDADO)
+        if set(tdfc) != set(borrador) - set(PENDIENTES):
+            problemas.append(f"TDFC declarado en otros casos: {sorted(set(tdfc) ^ (set(borrador) - set(PENDIENTES)))}.")
+        for caso, filas in tdfc.items():
+            for objetivo, fila in filas.items():
+                if fila["estado"] != aprobado.get(caso, {}).get(objetivo):
+                    problemas.append(f"{caso} {objetivo}: el banco declara {fila['estado']} y las decisiones "
+                                     f"aprobadas derivan {aprobado.get(caso, {}).get(objetivo)}.")
     if len(borrador) != 31:
         problemas.append(f"El borrador tiene {len(borrador)} casos, no 31.")
     if set(borrador) != set(casos_banco):
@@ -257,7 +291,7 @@ def verificar(borrador, casos_banco, orden, c14):
 
 
 # --- la matriz --------------------------------------------------------------------------------
-def celdas_matriz(borrador, familias, c14, c4_declarado=True):
+def celdas_matriz(borrador, familias, c14, c4_declarado=True, tdfc=None):
     matriz = {}
     for caso, fila in borrador.items():
         valores = {}
@@ -265,6 +299,11 @@ def celdas_matriz(borrador, familias, c14, c4_declarado=True):
             valores[desafio] = "TARGET" if fila["familia"] in fams else "NOT REVIEWED"
         for objetivo in TDFC:
             valores[objetivo] = "DRAFT " + fila["estados"][objetivo]["estado"].upper()
+            if tdfc is not None and objetivo != "C4":
+                # Ciclo 8: el banco declara TD1, F1, C1 y C3; un caso pendiente conserva la transición.
+                declarado_tdfc = (tdfc.get(caso) or {}).get(objetivo)
+                valores[objetivo] = ("NOT REVIEWED" if declarado_tdfc is None
+                                     else "DECLARED YES" if declarado_tdfc["estado"] == "yes" else "DECLARED NO")
         if c4_declarado:
             # Ciclo 7 (TDFC-7/8 y H4): el banco declara C4 NO en todos sus casos.
             valores["C4"] = "DECLARED NO"
@@ -281,8 +320,8 @@ def _tabla(encabezados, filas):
     return "\n".join(lineas)
 
 
-def escribir(borrador, familias, c14, fuentes):
-    matriz = celdas_matriz(borrador, familias, c14)
+def escribir(borrador, familias, c14, fuentes, tdfc=None):
+    matriz = celdas_matriz(borrador, familias, c14, tdfc=tdfc)
     columnas = list(familias) + list(TDFC) + ["C14"]
     ahora = derivar(borrador, {})
     aprobado = derivar(borrador, RECOMENDADO)
@@ -309,27 +348,26 @@ def escribir(borrador, familias, c14, fuentes):
     partes = [
         "# Matriz de oportunidades del banco · caso × objetivo",
         "",
-        "Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28. Actualizada en el ciclo 7: C14 revisado",
-        "en los 31 casos y C4 declarado NO en todos.",
+        "Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28. Actualizada en el ciclo 7 (C14 revisado",
+        "en los 31 casos y C4 declarado NO en todos) y en el ciclo 8 (TD1, F1, C1 y C3 declarados en 30 casos).",
         "",
-        "**Estado: BORRADOR. Generado por `generar_matriz.py`; no se edita a mano.**",
+        "**Generado por `generar_matriz.py`; no se edita a mano.**",
         "",
         "- **Qué es.** Cobertura de oportunidades de observación que ofrece el banco de 31 casos, objetivo por",
         "  objetivo. **No es cobertura del constructo de un residente** y no calcula competencia de nadie.",
-        "- **De dónde sale.** Las columnas TD1 a C3 son el borrador de `BORRADOR_TDFC.md` (tabla «Estados por",
-        "  caso»). C4 y C14 son lo que el banco declara (`case_assessment_bank.C4_DECLARATIONS` y",
-        "  `C14_DECLARATIONS`). Los Decision Challenges salen de `curriculum.CHALLENGES`: un desafío es TARGET",
+        "- **De dónde sale.** TD1 a C3 son lo que el banco declara desde el ciclo 8",
+        "  (`tdfc_declarations.DECLARATIONS`, derivado de `BORRADOR_TDFC.md` y de TDFC-1 a 6 y 8, aprobadas",
+        "  conceptualmente en el ciclo 7). C4 y C14 son lo que el banco declara (`case_assessment_bank.C4_DECLARATIONS`",
+        "  y `C14_DECLARATIONS`). Los Decision Challenges salen de `curriculum.CHALLENGES`: un desafío es TARGET",
         "  en los casos de sus `families`.",
-        "- **DRAFT ≠ APPROVED OPPORTUNITY.** En el banco, toda celda DRAFT sigue hoy NOT REVIEWED y abierta por",
-        "  la regla de transición (TD1, F1, C1 y C3 son observables en todo encuentro). TDFC-1 a 6 y 8 están",
-        "  aprobadas conceptualmente (ciclo 7), sin escribir todavía en el banco.",
+        "- **`acs_54m_inferior`** no declara TD1, F1, C1 ni C3: espera DF-20 y conserva la transición (NR).",
         "",
         "## Leyenda",
         "",
         _tabla(("Código", "Valor", "Qué significa aquí"), [
             ("TARGET", "TARGET", "La familia del caso está en las `families` del desafío: el encuentro generado "
                                  "para ese desafío puede usar este caso."),
-            ("DECL+", "DECLARED YES", "El caso declara la oportunidad, con revisión docente (hoy sólo C14)."),
+            ("DECL+", "DECLARED YES", "El caso declara la oportunidad, con su procedencia (decisión docente)."),
             ("DECL−", "DECLARED NO", "El caso declara que no la hay: no evaluable, nunca una falla."),
             ("NR", "NOT REVIEWED", "Nadie la declaró. En un desafío: no se ofrece fuera del encuentro generado "
                                    "para él."),
@@ -359,12 +397,13 @@ def escribir(borrador, familias, c14, fuentes):
         "",
         _tabla(("Decisión", "Pregunta", "Celdas DRAFT UNCERTAIN"), dudas),
         "",
-        "## Qué dejarían las respuestas (YES / NO / UNCERTAIN)",
+        "## Lo que dejan las respuestas (YES / NO / UNCERTAIN, sobre 31 casos)",
         "",
         "Derivado con la misma lógica que `c14_review.derive`: una celda dudosa toma el resultado de su",
-        "decisión; sin respuesta, sigue en duda. No es una recomendación de aprobar en bloque.",
+        "decisión. «Aprobado» es lo que el docente aprobó (ciclo 7, §28); el banco lo declara en 30 casos,",
+        "porque las filas de `acs_54m_inferior` esperan DF-20.",
         "",
-        _tabla(("Objetivo", "Borrador actual", "Si se aprueban las 8 recomendaciones", "Si se rechazan las 8"),
+        _tabla(("Objetivo", "Borrador", "Aprobado (TDFC-1 a 8)", "Si se hubieran rechazado las 8"),
                proyecciones),
         "",
         "## Fuentes leídas",
@@ -382,12 +421,13 @@ def escribir(borrador, familias, c14, fuentes):
 def main():
     c14, ruta_c14 = leer_c14()
     leer_c4()
+    tdfc, ruta_tdfc = leer_tdfc()
     familias, rutas_desafios = leer_desafios()
     casos, orden, rutas_casos = leer_casos()
     borrador = leer_borrador()
-    verificar(borrador, casos, orden, c14)
-    fuentes = [ruta_c14, *rutas_desafios, *rutas_casos]
-    ahora, aprobado, rechazado = escribir(borrador, familias, c14, fuentes)
+    verificar(borrador, casos, orden, c14, tdfc)
+    fuentes = [ruta_c14, ruta_tdfc, *rutas_desafios, *rutas_casos]
+    ahora, aprobado, rechazado = escribir(borrador, familias, c14, fuentes, tdfc)
     print(f"Escrito: {SALIDA}")
     print("Objetivo  borrador(Y/N/U)  aprobado(Y/N/U)  rechazado(Y/N/U)")
     for objetivo in TDFC:

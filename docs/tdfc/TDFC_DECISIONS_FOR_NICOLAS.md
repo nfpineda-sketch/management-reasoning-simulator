@@ -3,6 +3,18 @@
 Ciclo 6 · 2026-09-28 · oportunidades de TD1, F1, C1, C3 y C4 en los 31 casos
 del banco.
 
+> **Actualización del ciclo 8 (2026-09-28).** Las decisiones se aprobaron
+> conceptualmente en el ciclo 7 (§28), «según las recomendaciones actuales», y
+> el ciclo 8 las escribió en el banco (C-2026-09-28-17):
+>
+> - TD1 25 YES / 5 NO, F1 25/5, C1 18/12 y C3 10/20, en 30 casos;
+> - TDFC-6 sigue la recomendación;
+> - `acs_54m_inferior` espera DF-20 (TDFC-5) y conserva la transición;
+> - C4 es NO desde el ciclo 7.
+>
+> La tabla aplicada, con las dudas residuales de las filas «claras», está en
+> `TDFC_TABLA_FINAL.md`. Lo que sigue es el documento del ciclo 6, sin cambios.
+
 - **TDFC-7 · C4 = NO está decidido.** El motor no modela adecuadamente el
   componente relevante del dolor procedural, y pedir un procedimiento no es una
   oportunidad de C4. No se pregunta de nuevo.

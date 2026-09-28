@@ -98,6 +98,14 @@ MESSAGES = {
  'Continuar el encuentro',
  'Finish now':
  'Finalizar ahora',
+ # The room's notices after an urgent order and a facilitator's override (TD-23, cycle 8).
+ "Facilitator override accepted. The held order was executed with incomplete prospective reasoning.":
+ "Anulación docente aceptada. La orden retenida se ejecutó con el razonamiento prospectivo incompleto.",
+ "Facilitator override accepted, but the order did not run: see the message below.":
+ "Anulación docente aceptada, pero la orden no se ejecutó: mira el mensaje de abajo.",
+ # The engine's answer to a delivery time it cannot run (cycle 8).
+ "Specify a positive supported delivery duration for a fluid, blood or fixed-dose medication.":
+ "Indica un tiempo de administración válido para el fluido, la sangre o el medicamento de dosis fija.",
  'What do you think is going on?':
  '¿Qué crees que está pasando?',
  'What are you going to do?':
@@ -283,7 +291,66 @@ def _to(name):
     return "al " + name[3:] if name.startswith("el ") else "a " + name
 
 
-_RULES = (
+# The wall motion a coronary occlusion shows on the scan (acs_reperfusion.wall_motion), said
+# whole: word by word it read "mildly reducido contraction" (TD-23, cycle 8).
+_WALLS_ES = {"inferior wall": ("La pared inferior", "a"), "lateral wall": ("La pared lateral", "a"),
+             "posterior wall": ("La pared posterior", "a"), "anterior wall and apex": ("La pared anterior y el ápex", "o"),
+             "anterior and lateral walls": ("Las paredes anterior y lateral", "a")}
+_WALL_GRADES_ES = (("contracts normally", "contract normally", "se contrae normalmente", "se contraen normalmente"),
+                   ("shows mildly reduced contraction", "show mildly reduced contraction",
+                    "muestra una contracción levemente disminuida", "muestran una contracción levemente disminuida"),
+                   ("shows moderately reduced contraction", "show moderately reduced contraction",
+                    "muestra una contracción moderadamente disminuida",
+                    "muestran una contracción moderadamente disminuida"),
+                   ("is akinetic", "are akinetic", "está acinética", "están acinétic{}s"))
+_WALL_MOTION_RULES = tuple(
+    (r"\bThe " + wall + " " + (many if " and " in wall or wall.endswith("walls") else one) + r"\b",
+     spanish + " " + (many_es.format(ending) if " and " in wall or wall.endswith("walls") else one_es))
+    for wall, (spanish, ending) in _WALLS_ES.items() for one, many, one_es, many_es in _WALL_GRADES_ES) + (
+    (r"; the other walls contract normally\b", "; las demás paredes se contraen normalmente"),
+    (r"\bContraction is globally normal, without a single focal defect\b",
+     "La contracción es globalmente normal, sin un defecto focal único"),
+    (r"\bContraction is globally (mildly|moderately|severely) reduced, without a single focal defect\b",
+     lambda m: "La contracción está globalmente " + {"mildly": "levemente", "moderately": "moderadamente",
+                                                       "severely": "gravemente"}[m[1]] + " disminuida, sin un defecto focal único"),
+    # What was not stated when an urgent order ran without its reasoning (TD-23, cycle 8).
+    (r"Urgent intervention executed without waiting for the reasoning\. Not stated: (.+?)\. You can explain it "
+     r"afterwards; it is recorded as a retrospective explanation\.",
+     lambda m: "Intervención urgente ejecutada sin esperar el razonamiento. No se indicó: " + _gate_fields_es(m[1]) +
+     ". Puedes explicarlo después; queda registrado como explicación retrospectiva."),
+)
+# The reasoning gate's questions as the urgent notice lists them (lowercase, without "?").
+_GATE_FIELDS_ES = {
+    "what do you think is going on": "qué crees que está pasando",
+    "which problem are you addressing first (optional)": "qué problema estás abordando primero (opcional)",
+    "what do you expect to happen, or what are you trying to clarify": "qué esperas que ocurra o qué buscas aclarar",
+    "what will you check, and when": "qué vas a revisar y cuándo",
+    "when will you check it": "cuándo lo vas a revisar",
+}
+
+
+def _gate_fields_es(fields):
+    # A question may hold a comma of its own ("what will you check, and when"), so each is
+    # replaced whole rather than split.
+    for english, spanish in _GATE_FIELDS_ES.items():
+        fields = fields.replace(english, spanish)
+    return fields
+
+
+_RULES = _WALL_MOTION_RULES + (
+ # A delivery time longer than this simulator runs (cycle 8); before the word rules below.
+ (r"([\d.]+) mL at ([\d.]+) mL/h would run for ([\d.]+) h; this simulator runs a fluid order over at most 120 min\. "
+  r"Restate it as a bolus or a shorter infusion\.",
+  r"\1 mL a \2 mL/h durarían \3 h; este simulador pasa un fluido en 120 min como máximo. Escríbelo como bolo o "
+  r"como una infusión más corta."),
+ (r"([\d.]+) mL over ([\d.]+) h: this simulator runs a fluid order over at most 120 min\. Restate it as a bolus or "
+  r"a shorter infusion\.",
+  r"\1 mL en \2 h: este simulador pasa un fluido en 120 min como máximo. Escríbelo como bolo o como una infusión más "
+  r"corta."),
+ (r"([\d.]+) units over ([\d.]+) h in all: this simulator runs a transfusion over at most 120 min\. Restate it "
+  r"with a shorter time, or transfuse fewer units now\.",
+  r"\1 unidades en \2 h en total: este simulador pasa una transfusión en 120 min como máximo. Escríbela con un "
+  r"tiempo más corto, o transfunde menos unidades ahora."),
  # --- response card scaffolding -------------------------------------------
  (r"\bAfter (\d+) minutes,", r"Tras \1 minutos,"),
  (r"\bAfter ", "Tras "),
@@ -472,6 +539,12 @@ _RULES = (
   "También en esta orden, un hemoderivado cuyo efecto fisiológico no está modelado: \u00ab\\1\u00bb."),
  (r"Also in this order, the massive transfusion protocol's activation: (.+?)\.(?=\n|$)",
   "También en esta orden, la activación del protocolo de transfusión masiva: \u00ab\\1\u00bb."),
+ (r"Massive transfusion protocol stood down and recorded as your decision: (.+?)\. No unit already given is taken "
+  r"back\.",
+  "Desactivación del protocolo de transfusión masiva registrada como tu decisión: \u00ab\\1\u00bb. Ninguna unidad "
+  "ya administrada se revierte."),
+ (r"Also in this order, the massive transfusion protocol stood down: (.+?)\.(?=\n|$)",
+  "También en esta orden, la desactivación del protocolo de transfusión masiva: \u00ab\\1\u00bb."),
  (r"Indicated and recorded as your decision: (.+?)\. Its administration and effect are not modelled in this "
   r"simulator, so nothing was given and nothing changed\.",
   "Indicado y registrado como tu decisión: \u00ab\\1\u00bb. Su administración y su efecto no están modelados en "
@@ -656,6 +729,7 @@ _RULES = (
  (r"\bHead CT\b", "Tomografía de cerebro"), (r"\bAbdominal CT\b", "Tomografía de abdomen"),
  (r"\bBlood group and crossmatch\b", "Grupo y pruebas cruzadas"),
  (r"\bPregnancy test\b", "Prueba de embarazo"),
+ (r"\bUrine culture\b", "Urocultivo"),
  (r"\bRight-sided ECG \(V3R-V4R\)", "ECG con derivaciones derechas (V3R-V4R)"),
  (r"\bPosterior ECG \(V7-V9\)", "ECG con derivaciones posteriores (V7-V9)"),
  (r"\bGlucose (\d+) mg/dL", r"Glucosa \1 mg/dL"),

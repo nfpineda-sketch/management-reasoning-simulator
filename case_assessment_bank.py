@@ -1736,3 +1736,15 @@ C4_DECLARATIONS = {case_id: (_c4_no("TDFC-8", _C4_NO_ANALGESIA) if case_id == "r
 
 for _case_id, _declaration in C4_DECLARATIONS.items():
     CASES[_case_id].setdefault("objectives", {})["C4"] = _declaration
+
+
+# --- TD1, F1, C1 and C3 (cycle 8): the faculty's TDFC decisions --------------------------------
+# TDFC-1 to 6 and 8 approved conceptually as recommended on 2026-09-28 (cycle 7, §28); the rows
+# are the ones tdfc_review.final_states derives, written with their provenance in
+# tdfc_declarations. acs_54m_inferior keeps the transition until DF-20 (tdfc_review.PENDING), as
+# generated cases and encounters with no authored case do (DF-12). New encounters only: an
+# encounter started before keeps the declaration it was frozen with.
+import tdfc_declarations as _tdfc_declarations
+
+for _case_id, _rows in _tdfc_declarations.DECLARATIONS.items():
+    CASES[_case_id].setdefault("objectives", {}).update(_rows)

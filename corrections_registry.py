@@ -53,6 +53,9 @@ INSTRUCTION_2026_09_28_NIGHT = ("Instrucción docente del 2026-09-28, extensión
 INSTRUCTION_2026_09_28_CYCLE7 = ("Instrucción docente del 2026-09-28, ciclo 7 del AI Advisor (C4 = NO en todo el entorno "
                                  "de observación, C14 NO en acs_54m_inferior, TD-21 con el principio D, TD-26 y C7-06 "
                                  "por clase con el estándar A–J, DF-24 aprobado y DF-23 conservador)")
+INSTRUCTION_2026_09_28_CYCLE8 = ("Instrucción docente del 2026-09-28 al cerrar el ciclo 7 (dejar al AI Advisor trabajando en "
+                                 "el ciclo 8, con tareas que no requieran mucha aprobación; lo que la requiera, al informe "
+                                 "final), sobre la aprobación conceptual de TDFC-1 a 6 y 8 del ciclo 7 (§28)")
 INSTRUCTION_2026_09_28_CYCLE6 = ("Instrucción docente del 2026-09-28, ciclo 6 del AI Advisor (DF-22 por clase, 59O-03 y "
                                  "seguridad de la aclaración, L-F01, L-F04 y sólo las correcciones de DF-23 que "
                                  "cumplen las seis condiciones)")
@@ -1061,6 +1064,51 @@ CORRECTIONS = (
         "preservation": None,
     },
     {
+        "id": "C-2026-09-27-13",
+        "date": "2026-09-27",
+        "title": "DF-7: el razonamiento del residente se registra como lo escribió en el Management Trace",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Registrado en el ciclo 8 (TD-06): el registro no nombraba esta corrección del ciclo 2 (commit "
+                   "f1948f1). El modelo de trabajo, la prioridad, el efecto esperado y el motivo de una orden se "
+                   "leían mal por clase: «IM» reescrito como «I am», un conector cortado dentro de una palabra, la "
+                   "orden arrastrada dentro del modelo y la razón que no llegaba a ser la justificación. Se corrigió "
+                   "por clase, en inglés y en español, sin cambiar lo que se ejecuta. Medición en "
+                   "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, ciclo 2."),
+        "authorised_by": ("Instrucción docente del 2026-09-27, ciclo 2 del AI Advisor (DF-7: fidelidad del "
+                          "razonamiento en el Management Trace)"),
+        "affects": {"modules": ["app", "family_parser", "tools_order_reading"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_reasoning_fidelity_classes.py::test_the_intramuscular_route_is_never_rewritten_as_i_am",
+                  "test_reasoning_fidelity_classes.py::test_a_model_stops_before_the_order_that_follows_it",
+                  "test_reasoning_fidelity_classes.py::"
+                  "test_the_reason_given_for_an_order_is_its_rationale_in_both_languages",
+                  "test_reasoning_fidelity_classes.py::"
+                  "test_the_same_finding_makes_a_working_model_in_both_languages"],
+    },
+    {
+        "id": "C-2026-09-27-14",
+        "date": "2026-09-27",
+        "title": "DF-10: el alta conserva el plan con el que se escribe, en ambos idiomas",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Registrado en el ciclo 8 (TD-06): el registro no nombraba esta corrección del ciclo 3 (commits "
+                   "9d35b00 y e54b919). «Discharge him with orthopedic follow-up» y «lo doy de alta con control en "
+                   "policlínico» ejecutaban el alta y perdían el seguimiento, que sí se guardaba escrito después "
+                   "del alta. Ahora el plan unido con with/con se registra como indicación al paciente, en el orden "
+                   "escrito, y el alta sigue corriendo. «OK to discharge…» quedó como KD-05 y se corrige en el "
+                   "ciclo 8 (C-2026-09-28-23)."),
+        "authorised_by": ("Instrucción docente del 2026-09-27, ciclo 3 del AI Advisor (DF-10: el seguimiento unido "
+                          "al alta con with/con)"),
+        "affects": {"modules": ["family_parser", "unexecuted_items", "language", "app"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_a_discharge_keeps_the_plan_it_is_written_with.py::"
+                  "test_the_follow_up_written_into_the_discharge_is_kept_and_the_discharge_still_runs",
+                  "test_a_discharge_keeps_the_plan_it_is_written_with.py::"
+                  "test_the_follow_up_and_the_return_advice_keep_the_order_they_were_written_in",
+                  "test_a_discharge_keeps_the_plan_it_is_written_with.py::test_an_admission_written_with_a_plan_is_left_as_it_was"],
+    },
+    {
         "id": "C-2026-09-28-01",
         "date": "2026-09-28",
         "title": "C14 declarado caso por caso en el banco: 14 con oportunidad, 16 sin ella y acs_54m_inferior sin revisar",
@@ -1489,6 +1537,263 @@ CORRECTIONS = (
                   "test_df24_approved_integrity_changes.py::test_a_new_composition_encounter_reads_c14_as_declared_no",
                   "test_df24_approved_integrity_changes.py::test_generated_cases_and_encounters_without_a_case_keep_the_transition"],
         "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-17",
+        "date": "2026-09-28",
+        "title": "TDFC: TD1, F1, C1 y C3 declarados caso por caso, con su componente observable y lo que queda fuera",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("TDFC-1 a 6 y 8, aprobadas conceptualmente «según las recomendaciones actuales» (ciclo 7, §28), "
+                   "se escriben en el banco con el modelo de C14 (§92): borrador, decisión, declaración por caso, "
+                   "procedencia y congelada con el encuentro. Son 120 filas en 30 casos: TD1 25 YES / 5 NO, F1 25/5, C1 "
+                   "18/12 y C3 10/20. TDFC-6 sigue la recomendación y no el borrador: C3 YES en las dos neumonías y "
+                   "en pulmonary_embolism_61m. Cada YES nombra el componente que deja observar y lo que queda fuera del "
+                   "encuentro (§30); una NO es no evaluable, nunca una falla. acs_54m_inferior espera DF-20 y conserva "
+                   "la transición, igual que los casos generados, los encuentros sin caso autorado y las composiciones "
+                   "de hipoglicemia. C4 sigue fuera (§93). Es prospectivo: un encuentro anterior conserva su "
+                   "declaración congelada. Sin cambios en casos, eventos, dominios ni puntajes. Tabla: "
+                   "docs/tdfc/TDFC_TABLA_FINAL.md."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
+        "affects": {"modules": ["tdfc_review", "tdfc_declarations", "case_assessment_bank", "observation_opportunities",
+                                "faculty_analysis", "progress_portal", "report_language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_tdfc_opportunities.py::test_the_bank_declares_exactly_the_rows_the_approved_decisions_derive",
+                  "test_tdfc_opportunities.py::test_the_counts_are_the_recommendation_s_with_the_pending_case_apart",
+                  "test_tdfc_opportunities.py::test_tdfc_6_is_the_recommendation_not_the_draft",
+                  "test_tdfc_opportunities.py::test_a_yes_names_its_component_and_what_stays_outside_and_a_no_its_reason",
+                  "test_tdfc_opportunities.py::test_each_row_says_which_decision_settled_it_and_on_what_basis",
+                  "test_tdfc_opportunities.py::test_a_new_encounter_freezes_the_rows_and_reads_them_as_declared",
+                  "test_tdfc_opportunities.py::test_an_encounter_frozen_before_keeps_the_transition_it_started_with",
+                  "test_tdfc_opportunities.py::test_the_pending_case_generated_cases_and_encounters_without_a_case_keep_the_transition",
+                  "test_tdfc_opportunities.py::test_c4_stays_out_whatever_the_case",
+                  "test_observation_opportunities.py::"
+                  "test_c14_c4_and_td_f_c_are_declared_and_only_the_pending_case_keeps_the_transition"],
+        # The three hypoglycaemia cases now carry their TD/F/C rows: a new version of their declaration.
+        "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_76f", "hypoglycemia_54m_thiamine"],
+                         "declaration": "new_version"},
+    },
+    {
+        "id": "C-2026-09-28-18",
+        "date": "2026-09-28",
+        "title": "DF-16a/b/c: una lista de órdenes conserva cada orden; una repetición deja correr su orden",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Registrado en el ciclo 8 (TD-06): el registro no nombraba esta corrección del ciclo 4 (commit "
+                   "643a936). En una lista escrita («Monitor, vía venosa y oxígeno por mascarilla a 8 L/min») se "
+                   "perdían ítems sin aviso (DF-16a); una orden seguida de su repetición y su condición («salbutamol "
+                   "5 mg nbz, repetir cada 20 minutos si persiste») no corría y quedaba sólo el plan (DF-16b); y la "
+                   "vía escrita una vez al final de una lista de dosis no llegaba a cada dosis (DF-16c). Se "
+                   "corrigió por clase, EN/ES, con la traza verificada; los restos quedaron en KD-01 a KD-14."),
+        "authorised_by": ("Instrucción docente del 2026-09-28 que abre el ciclo 4 (DF-16a/b: listas de órdenes, "
+                          "orden con repetición y condición)"),
+        "affects": {"modules": ["family_parser", "shared_order_language", "unexecuted_items", "language",
+                                "report_language", "app"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_lists_and_repeats_keep_every_order.py::test_a_setup_list_keeps_every_item",
+                  "test_lists_and_repeats_keep_every_order.py::test_the_order_runs_and_the_repeat_is_its_plan",
+                  "test_lists_and_repeats_keep_every_order.py::"
+                  "test_a_route_written_after_a_list_of_doses_reaches_each_dose",
+                  "test_lists_and_repeats_keep_every_order.py::test_input_execution_and_trace_through_the_real_page"],
+    },
+    {
+        "id": "C-2026-09-28-19",
+        "date": "2026-09-28",
+        "title": "TD-29: «cuando», «when» y «once» hacen de una orden un plan cuando nombran el estado del paciente",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«When BP drops, give NS 500 mL» y «Cuando baje la PA, bolo SF 500 mL» corrían ahora; «if» y «si» "
+                   "ya las guardaban como plan (DF-16b). Ahora «when/whenever/once/as soon as/cuando/en cuanto/una "
+                   "vez que/tan pronto como», y «apenas» con subjuntivo, son una condición cuando la cláusula nombra "
+                   "un signo vital, un examen o al paciente con un cambio, un umbral o un estado por alcanzar, o "
+                   "cuando lo que sigue es el curso del paciente («cuando empeore», «once stable»). Lo que el equipo "
+                   "puede hacer («cuando puedas», «as soon as possible»), lo que se espera sin valor por alcanzar "
+                   "(«when blood arrives»), un relato y «en cuanto a» se leen como antes. Además: lo que una "
+                   "condición manda se guarda aunque el lector no pueda ejecutarlo, si la condición gobierna la "
+                   "frase entera; el «if» tras «check/decidir/preguntar» es «whether»; el aviso de reconsulta en su "
+                   "propia frase es indicación al paciente. Post hoc, tras el conjunto ciego: la condición sin coma "
+                   "que se une a su orden, y el resultado con el valor por alcanzar («when lactate comes back >4»). "
+                   "Post hoc, tras la revisión adversarial: un «cuando» dentro de lo que el residente vio no es "
+                   "condición («Mareada cuando la PA baja a 80/50, SF 500 ml ev» perdía el suero sin aviso), ni en "
+                   "indicativo o en pasado («cuando se acuesta la saturación cae»), ni con el residente o el equipo "
+                   "como sujeto («when I examine her»), ni «once again/once more»; «then/luego» y «ahora» separan la "
+                   "orden de su repetición condicionada; y la condición reconoce un umbral con cualquier nombre "
+                   "(«when FSBG < 60») y el curso que la clase no nombraba («cuando se agote», «when afebrile»). "
+                   "Nada que no sea un plan deja de ejecutarse: la comparación con V2 sobre todo texto del "
+                   "repositorio se revisó frase por frase (docs/CICLO8_LECTOR.md)."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
+        "affects": {"modules": ["family_parser"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle8_reader_classes.py::test_a_condition_on_the_patient_keeps_the_order_as_a_plan",
+                  "test_cycle8_reader_classes.py::test_the_order_before_the_condition_runs_and_the_one_after_it_is_the_plan",
+                  "test_cycle8_reader_classes.py::test_what_the_team_can_do_a_story_and_the_same_turn_order_now",
+                  "test_cycle8_reader_classes.py::test_what_a_condition_leads_to_is_kept_even_when_the_reader_cannot_run_it",
+                  "test_cycle8_reader_classes.py::test_if_after_a_verb_of_finding_out_is_whether",
+                  "test_cycle8_reader_classes.py::test_return_advice_in_a_sentence_of_its_own_is_advice",
+                  "test_cycle8_reader_classes.py::test_a_plan_on_the_patient_runs_nothing_in_the_room",
+                  "test_cycle8_reader_classes.py::test_a_when_in_what_the_resident_saw_is_no_condition",
+                  "test_cycle8_reader_classes.py::test_the_order_now_runs_and_its_repeat_on_a_condition_is_the_plan",
+                  "test_cycle8_reader_classes.py::test_a_condition_the_class_missed_is_a_plan",
+                  "test_cycle8_reader_classes.py::test_the_account_of_the_ambulance_stays_one_plan"],
+    },
+    {
+        "id": "C-2026-09-28-20",
+        "date": "2026-09-28",
+        "title": "TD-30: interconsultas, endoscopía, cultivos y vías escritas sin verbo ya no se pierden",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«Surgery consult», «IC a urología», «Endoscopía urgente», «hemocultivos x2» y «2 large-bore IVs» "
+                   "se perdían sin aviso. Ahora: la interconsulta escrita como sustantivo es la interconsulta, y "
+                   "«cirugía/surgery» es cirugía general (una subespecialidad sigue preguntando cuál); la endoscopía "
+                   "pedida es la llamada a gastroenterología, que el motor ya modela; los cultivos con su número y "
+                   "sus sitios, y «take», son el examen; la vía nombrada por su número o su calibre es la vía. Lo "
+                   "ya hecho, pendiente o respondido no se pide de nuevo. Post hoc, tras el conjunto ciego: "
+                   "abreviaturas de servicio («IC uro», «gen surg», «cards»), «urgent scope», «endoscopía alta», «RL» "
+                   "como Ringer lactato ante un volumen, «meanwhile/mientras tanto» antes de una orden, y los "
+                   "exámenes unidos por «y» que cierra un estado («hemocultivos x2 y urocultivo ya tomados»). Post "
+                   "hoc, tras la revisión adversarial: el estado de un examen no se lleva la orden que le sigue "
+                   "(«Hemocultivos tomados y ceftriaxona 2 g ev»); el urocultivo se registra como pedido, sin "
+                   "resultado, como la prueba de embarazo; una interconsulta pedida con verbo es interconsulta "
+                   "aunque algo más esté «ya»; la escrita sin verbo con su estado, su negación o su fecha no se "
+                   "pide; tras un alta, una derivación es el plan del paciente; «IC con FE…» es insuficiencia "
+                   "cardiaca; «blood cx» son cultivos; los servicios no clínicos se leen como antes; y la "
+                   "endoscopía escrita sin verbo pide su urgencia, nunca la de los antecedentes."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
+        "affects": {"modules": ["family_parser", "family_reports", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle8_reader_classes.py::test_a_consult_written_as_a_noun_is_the_consult",
+                  "test_cycle8_reader_classes.py::test_an_endoscopy_asked_for_is_the_call_to_gastroenterology",
+                  "test_cycle8_reader_classes.py::test_what_has_happened_or_is_pending_orders_nothing",
+                  "test_cycle8_reader_classes.py::test_cultures_with_their_count_are_asked_for_beside_the_antibiotic",
+                  "test_cycle8_reader_classes.py::test_a_line_named_by_its_count_or_bore_is_the_line",
+                  "test_cycle8_reader_classes.py::test_rl_before_a_volume_is_lactated_ringer",
+                  "test_a_route_written_before_the_drug.py::"
+                  "test_in_the_meantime_opens_an_order_with_its_own_route_never_the_nasal_one",
+                  "test_cycle8_reader_classes.py::test_a_study_s_state_takes_nothing_after_it",
+                  "test_cycle8_reader_classes.py::test_a_urine_culture_is_asked_for_beside_the_rest",
+                  "test_cycle8_reader_classes.py::test_a_urine_culture_is_recorded_with_no_result",
+                  "test_cycle8_reader_classes.py::test_a_consult_asked_for_is_one_whatever_else_is_already_so",
+                  "test_cycle8_reader_classes.py::test_a_consult_written_with_its_state_is_not_asked_for",
+                  "test_cycle8_reader_classes.py::test_a_referral_after_a_discharge_is_the_patient_s_plan",
+                  "test_cycle8_reader_classes.py::test_heart_failure_and_a_non_clinical_consult_hold_nothing",
+                  "test_cycle8_reader_classes.py::test_blood_cultures_written_cx_are_not_surgery",
+                  "test_cycle8_reader_classes.py::test_an_endoscopy_done_calls_no_one"],
+    },
+    {
+        "id": "C-2026-09-28-21",
+        "date": "2026-09-28",
+        "title": "TD-31: la adrenalina IM sin dosis pregunta su dosis en miligramos, nunca una velocidad",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«Epinephrine IM now» y «Adrenalina IM ya» se leían como una infusión y el motor preguntaba una "
+                   "velocidad en mcg/min. Ahora son la orden intramuscular sin dosis, y el motor pregunta la dosis "
+                   "IM en miligramos, como ya hacía con una dosis fuera de rango. También con sólo su concentración "
+                   "(«1:1000», «1 mg/mL»), con «epi» ante una vía, una dosis o un goteo, y con la vía escrita antes "
+                   "(«IM epi stat», post hoc); el sitio de inyección escrito después es de esa orden. Post hoc, "
+                   "tras la revisión adversarial: «epi» es adrenalina sólo con su dosis con unidad o su vía, "
+                   "nunca ante un puntaje o un diagnóstico («Epi 8/10 pain», «EPI 1ria»), ni la dosis de otro, "
+                   "de antes o de un plan («given by EMS», «20 min ago», «at home», «PRN»). La mitad de "
+                   "TD-31 sobre las medidas combinadas pide una decisión y no se tocó."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
+        "affects": {"modules": ["family_parser"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle8_reader_classes.py::test_an_intramuscular_adrenaline_without_a_dose_is_the_im_order_still_to_be_dosed",
+                  "test_cycle8_reader_classes.py::test_a_dosed_im_order_and_an_infusion_read_as_before",
+                  "test_cycle8_reader_classes.py::test_the_room_asks_an_undosed_im_adrenaline_its_dose_in_milligrams",
+                  "test_cycle8_reader_classes.py::test_an_earlier_or_someone_else_s_epi_is_never_given",
+                  "test_cycle8_reader_classes.py::test_epi_before_a_score_or_a_diagnosis_is_not_adrenaline"],
+    },
+    {
+        "id": "C-2026-09-28-22",
+        "date": "2026-09-28",
+        "title": "TD-32: los residuos de hemoderivados ya no se pierden ni se leen como un pedido",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«2 U. GR» perdía su producto en el punto; «Deactivate MTP» no dejaba registro; «Platelets if "
+                   "count < 50» se perdía; «Type and cross pending» pedía otra prueba cruzada; «2 U GR en 2 horas "
+                   "c/u» corría en 2 horas en total. Ahora el punto de «U.» no corta la frase; la desactivación del "
+                   "protocolo queda registrada como tal (categoría massive_transfusion_stop, con su mensaje en "
+                   "ambos idiomas), sin quitar ninguna unidad ya dada; las plaquetas según recuento son un plan; el "
+                   "estado de las pruebas cruzadas no es un pedido; el tiempo de cada unidad se suma. Post hoc, "
+                   "tras el conjunto ciego: «2u», las horas abreviadas («2 h», «hrs»), el tiempo escrito como su "
+                   "propia cláusula y las plaquetas abreviadas («plts», «plaq»). Post hoc, tras la revisión "
+                   "adversarial: el punto de «U.» sólo se salta ante glóbulos rojos no nombrados antes («Transfuse "
+                   "PRBC 2 U. Platelets if count < 50.» son dos frases); la desactivación preguntada, sugerida o "
+                   "escrita como el tiempo de otra cosa no se registra; «to be ready for the OR» es el propósito de "
+                   "las pruebas cruzadas, no su estado; el control escrito en horas no es el tiempo del "
+                   "tratamiento («con control de PA en 1 h»); y unas unidades que suman más de lo que el "
+                   "simulador pasa se preguntan con un mensaje propio, como ya un fluido."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
+        "affects": {"modules": ["family_parser", "family_engine", "unexecuted_items", "rubric_screening", "language",
+                                "report_language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle8_reader_classes.py::test_the_point_of_u_is_not_a_full_stop",
+                  "test_cycle8_reader_classes.py::test_the_protocol_stood_down_is_recorded_and_gives_nothing",
+                  "test_cycle8_reader_classes.py::test_platelets_on_a_count_are_a_plan",
+                  "test_cycle8_reader_classes.py::test_the_state_of_a_crossmatch_is_not_a_new_one",
+                  "test_cycle8_reader_classes.py::test_each_unit_s_time_adds_up",
+                  "test_cycle8_reader_classes.py::test_a_point_after_the_count_of_named_red_cells_ends_the_sentence",
+                  "test_cycle8_reader_classes.py::test_a_stand_down_asked_or_as_a_time_is_not_recorded",
+                  "test_cycle8_reader_classes.py::test_a_crossmatch_with_its_purpose_is_asked_for",
+                  "test_cycle8_reader_classes.py::test_when_the_patient_is_checked_is_not_how_long_the_order_runs",
+                  "test_cycle8_reader_classes.py::test_units_run_one_after_another_longer_than_the_simulator_runs_are_asked",
+                  "test_cycle8_reader_classes.py::test_a_volume_over_hours_is_asked_as_a_fluid_rate_is"],
+    },
+    {
+        "id": "C-2026-09-28-23",
+        "date": "2026-09-28",
+        "title": "KD-05: «OK to discharge» y «ok para alta» son un alta; el alta conserva su receta",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«OK to discharge with cardiology follow-up» no se leía (KD-05). Ahora el alta dicha como una "
+                   "autorización es un alta, en ambos idiomas, salvo negada o preguntada. Al corregirlo aparecieron "
+                   "dos pérdidas del alta anteriores al ciclo: «Discharge home with an EpiPen prescription» tomaba "
+                   "toda la cláusula como receta y perdía el alta; y los medicamentos con un régimen para la casa "
+                   "listados después del alta se leían como dosis y su pregunta retenía el alta. Ahora el alta corre "
+                   "y lo que se lleva el paciente es su receta; los medicamentos de un ingreso no. «w/» es «with». "
+                   "Post hoc, tras la revisión adversarial: «OK to d/c IV fluids» es suspender, no un alta; una "
+                   "hora, un plazo o una negación después de la autorización la posponen o la niegan («OK to dc "
+                   "home after 4 h observation», «OK to discharge: no»), salvo un curso del paciente, que la hace "
+                   "plan («OK for d/c home once afebrile»); la autorización de otro servicio es suya («Per "
+                   "surgery, OK to discharge»); «alta dosis» no es un alta; lo que se da antes de que el paciente "
+                   "se vaya no es receta; y la adrenalina autoinyectable con el alta es su receta. "
+                   "El defecto sigue presente en las dos líneas base registradas; el manifiesto no cambia hasta "
+                   "que se elija una nueva."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
+        "affects": {"modules": ["family_parser"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle8_reader_classes.py::test_ok_to_discharge_is_a_discharge",
+                  "test_cycle8_reader_classes.py::test_a_denied_or_asked_clearance_is_no_discharge",
+                  "test_cycle8_reader_classes.py::test_a_discharge_with_its_prescription_keeps_the_discharge",
+                  "test_cycle8_reader_classes.py::test_what_goes_home_with_the_patient_is_a_prescription",
+                  "test_cycle8_reader_classes.py::test_an_admission_s_medicines_are_not_prescriptions",
+                  "test_cycle8_reader_classes.py::test_a_clearance_that_is_not_a_discharge_now",
+                  "test_cycle8_reader_classes.py::test_a_dose_given_before_the_patient_leaves_is_no_prescription",
+                  "test_cycle8_reader_classes.py::test_a_consult_and_a_repeated_check_are_not_advice",
+                  "test_cycle8_reader_classes.py::test_the_autoinjector_goes_home_and_one_given_now_is_given"],
+    },
+    {
+        "id": "C-2026-09-28-24",
+        "date": "2026-09-28",
+        "title": "Deuda menor del ciclo 8: TD-23, TD-25, TD-27 y TD-28",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("TD-23: en español, la ecografía del infarto decía «mildly reducido contraction»; ahora cada "
+                   "frase de movilidad parietal se dice entera en español, y también los avisos de intervención "
+                   "urgente y de anulación docente. TD-25: la prueba «reperfusion prevents the block and the "
+                   "arrest» se llama por lo que comprueba. TD-27: una racha de miles de espacios tardaba segundos "
+                   "(14 s con 8000); ahora se lee como un espacio, en 1 ms. TD-28: una pregunta cita la orden como "
+                   "el residente la escribió («Pasa pipetazo 4,5 g EV»), no la versión normalizada «administrar "
+                   "pipetazo 4.5 g ev». Sin cambios en lo que se ejecuta."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
+        "affects": {"modules": ["language", "family_parser", "test_acs_reperfusion"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_acs_reperfusion.py::test_reperfusion_prevents_the_arrest_and_the_shock",
+                  "test_spanish_orders.py::test_an_unreadable_order_with_a_dose_is_quoted_back",
+                  "test_cycle8_minor_debt.py::test_the_wall_motion_of_an_occlusion_is_said_whole_in_spanish",
+                  "test_cycle8_minor_debt.py::test_the_urgent_and_override_notices_are_said_in_spanish",
+                  "test_cycle8_minor_debt.py::test_a_long_run_of_spaces_is_read_at_once",
+                  "test_cycle8_minor_debt.py::test_a_question_quotes_the_order_as_it_was_written"],
     },
 )
 

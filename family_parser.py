@@ -212,6 +212,21 @@ _PRODUCT_COUNT = re.compile(r"(?<![\w.])\d+\s*(?:u|units?|unidad(?:es)?|bolsas?|
 _MASSIVE_TRANSFUSION_NAMES = (r"massive\s+transfusion(?:\s+protocol)?|(?:protocolo\s+de\s+)?transfusion\s+masiva|"
                               r"major\s+ha?emorrhage\s+protocol|protocolo\s+de\s+hemorragia\s+masiva|mtp|ptm")
 _MASSIVE_TRANSFUSION = re.compile(r"\b(?:" + _MASSIVE_TRANSFUSION_NAMES + r")\b")
+# The protocol stood down (TD-32, cycle 8).
+_MTP_STOP = re.compile(
+    r"\b(?:deactivat\w*|desactiv\w*|stand(?:ing)?\s+down|stop|suspend\w*|cancel\w*|terminat\w*|end|finaliz\w*|"
+    r"termin(?:ar|o|a|e|amos|en)|apag\w*)\s+(?:(?:the|el|la|al)\s+)?(?:" + _MASSIVE_TRANSFUSION_NAMES + r")\b"
+    r"|\b(?:" + _MASSIVE_TRANSFUSION_NAMES + r")\s+(?:off|stood\s+down|deactivated|desactivad\w*|suspendid\w*|"
+    r"cancelad\w*|terminad\w*|finalizad\w*)\b")
+# The stand-down asked, suggested or written as the time of something else is not one (post hoc,
+# adversarial review of cycle 8): "Stop MTP?", "Can we stop MTP now?", "We should stop MTP soon",
+# "Once we stop MTP, recheck labs", "Cuando termine el PTM, controlar calcio iónico".
+_MTP_STOP_NOT_NOW = re.compile(
+    r"\?|\b(?:can|could|should|shall|may)\s+we\b|\bwe\s+(?:should|could|may|might|can)\b|\bsoon\b|\bpronto\b|"
+    r"\b(?:podemos|podriamos|deberiamos|debemos|habria\s+que)\b|"
+    r"\b(?:once|when|whenever|after|until|before|cuando|una\s+vez\s+que|tras|despues\s+de|hasta\s+que|antes\s+de|"
+    r"en\s+cuanto)\s+(?:(?:we|the|el|la|se|lo|la)\s+)*(?:stop|stand|deactivat|desactiv|termin|suspend|finaliz|"
+    r"cancel|end|apag)")
 _ACTIVATING = re.compile(r"\b(?:activate|activating|activation|activaci[oó]n|call|trigger|initiate|start|declare|"
                          r"order|request|"
                          r"activ(?:ar|o|a|e|amos|emos|en|an)|llam(?:ar|o|a|e|amos|emos|en|an)|"
@@ -307,6 +322,10 @@ _DIAGNOSTICS = {
                   r"rx(?:\s+de)?(?:\s+torax)?|placa(?:\s+(?:de\s+)?torax)?|x[- ]?rays?|radiograph",
     "urinalysis": r"urinalysis|urine analysis|urine dip|orina completa|examen de orina",
     "blood_cultures": r"blood cultures?|hemocultivos?",
+    # Asked for beside the blood cultures, and read by the cultures of cycle 8, "urocultivo" was then
+    # quoted back as unreadable and held the antibiotic written with it (post hoc, adversarial
+    # review of cycle 8). Recorded as requested, with no result, as the pregnancy test is.
+    "urine_culture": r"urine\s+cultures?|urocultivos?|cultivo\s+de\s+orina",
     # The first test of the embolism algorithm, and it did not exist: a request
     # for it held the whole submission as unreadable (played 2026-09-22).
     "d_dimer": r"d[- ]?dimer|dd[- ]?dimer|dimero[- ]?d|d[- ]?dimero|dimero|dimeros? d",
@@ -385,8 +404,17 @@ _NAMES_A_DRUG = None
 _VERBLESS_LINE = re.compile(
     r"\s*(?:(?:(?:nuevas?|otras?|\d+|una|dos)\s+)(?:vias?\s+venosas?(?:\s+perifericas?)?|vias?\s+perifericas?|vvps?)"
     r"|vvps?"
-    r"|vias?\s+venosas?(?:\s+perifericas?)?\s+nuevas?)"
-    r"(?:\s+(?:nuevas?|gruesas?|de\s+grueso\s+calibre|bilaterales?|perifericas?))*\s*\.?\s*")
+    r"|vias?\s+venosas?(?:\s+perifericas?)?\s+nuevas?"
+    # The same line in English, named by its count or its bore: "2 large-bore IVs (16G)",
+    # "two 18G IVs", "large-bore IV access x2" (TD-30, cycle 8). A bare "IV" is left alone:
+    # after a dose it is the route.
+    r"|(?:(?:\d+|one|two|a|an)\s*x?\s+)?(?:(?:(?:large|wide)[- ]?bore|big|peripheral|(?:14|16|18|20)\s*-?\s*g(?:auge)?)"
+    r"\s+)+(?:ivs?|iv\s+lines?|iv\s+access|cannulas?|cannulae|lines?)"
+    r"|(?:\d+|two|2x)\s+(?:ivs|iv\s+lines))"
+    r"(?:\s+(?:nuevas?|gruesas?|de\s+grueso\s+calibre|bilaterales?|perifericas?|bilateral(?:ly)?|x\s*\d|now|stat|"
+    r"(?:in|en)\s+(?:both|ambos)\s+(?:arms|antecubitals|brazos)|\((?:14|16|18|20)\s*-?\s*g(?:auge)?\)|"
+    r"(?:14|16|18|20)\s*-?\s*g(?:auge)?))*"
+    r"(?:\s+(?:or|o)\s+(?:an?\s+|una\s+)?(?:io|intraosseous|intraosea|via\s+intraosea))?\s*\.?\s*")
 
 
 # A monitor asked for by its name, alone or as one item of a set-up list:
@@ -944,7 +972,8 @@ _UNMODELLED_CLASSES = (
     # its own (adversarial review of cycle 7).
     ("blood_product", _PRODUCT_NAMES + "|" + _PRODUCT_WORDS),
     ("massive_transfusion", _MASSIVE_TRANSFUSION_NAMES),
-    ("adrenaline_autoinjector", r"auto-?inyector|auto-?injector|epi-?pen"),
+    # "Adrenalina autoinyectable" is the same prescription (post hoc, adversarial review of cycle 8).
+    ("adrenaline_autoinjector", r"auto-?inyect(?:or|able)|auto-?inject(?:or|able)|epi-?pen"),
     ("antihistamine", r"clorfenamina|clorfeniramina|chlorphenamine|chlorpheniramine|difenhidramina|diphenhydramine|"
                       r"antihistaminic[oa]s?|antihistamines?|cetirizina|cetirizine|loratadina|loratadine|"
                       r"desloratadina|hidroxicina|hydroxyzine"),
@@ -958,6 +987,9 @@ _FOR_HOME = re.compile(r"\b(?:al|para\s+el)\s+alta\b|\b(?:at|on|for)\s+discharge
 def unmodelled_detail(text):
     """{category, agent, prescription} for a medicine the simulator does not model."""
     lowered = _normalize(str(text or ""))
+    stop = _MTP_STOP.search(lowered)
+    if stop:
+        return {"category": "massive_transfusion_stop", "agent": stop.group(0), "prescription": False}
     category, agent = "other", ""
     for name, pattern in _UNMODELLED_CLASSES:
         match = re.search(r"\b(?:" + pattern + r")\b", lowered)
@@ -1193,6 +1225,8 @@ _RED_CELL_LINE_PART = re.compile(
     r"(?<![\w.])\d+(?:[.,]\d+)?(?![\w.])|\bx\s*\d+\b|\b(?:una?|uno|one|two|three|four|five|six|dos|tres|cuatro|cinco|"
     r"seis|single|x)\b|"
     r"\b(?:u|units?|unidad(?:es)?|bolsas?|bags?|concentrad[oa]s?|paquetes?|each|cada\s+una)\b\.?|c/u|"
+    # "2u PRBC over 2h each", "en 2 hrs c/u": the count and the time (post hoc, blind set of cycle 8).
+    r"(?<![\w.])\d+\s*u\b|\b(?:over|en|durante|in)\s+\d+(?:[.,]\d+)?\s*(?:h|hrs?|hours?|horas?|min(?:utes?|utos?|s)?)\b|"
     r"/\s*(?:h|hr|hora|hour)\b|\b(?:por|per)\s+(?:hora|hour)\b|"
     r"\b(?:de|of|del|the|las|los|la|el|more|mas|adicional(?:es)?|extra)\b|"
     r"\b(?:o|0)\s*(?:rh\s*)?-?\s*(?:neg|negativ[oae]s?|negative|pos|positiv[oae]s?|positive)\b|"
@@ -1445,10 +1479,17 @@ _TO_TRANSFUSE = re.compile(r"\b(?:para|for|to|in\s+order\s+to)\s+(?:(?:poder|be\
 # A study written as the whole order, with what may come around it: "UPT", "a
 # quick UPT", "run a troponin", "beta-hCG stat". "Run a quick UPT" was lost
 # without a word beside the adrenaline (TD-22, A–J of cycle 7).
-_A_STUDY_ALONE = (r"\s*(?:(?:run|draw|send\s+off)\s+(?:(?:a|an|the|un|una|el|la)\s+)?"
+# "Take" and "collect" are how a sample is asked for in English ("take blood cultures x2"), and
+# a count or the sites are part of it: "hemocultivos x2", "blood cultures x2 from two separate
+# sites" were lost without a word, alone or before the antibiotic (TD-30, cycle 8).
+_A_STUDY_ALONE = (r"\s*(?:(?:run|draw|send\s+off|take|collect)\s+(?:(?:a|an|the|un|una|el|la)\s+)?"
                   r"(?:(?:quick|stat|urgent|rapid|rapido|rapida|urgente)\s+)?|"
                   r"(?:(?:a|an|the|un|una|el|la)\s+)?(?:quick|stat|urgent|rapid|rapido|rapida|urgente)\s+)?(?:{})"
-                  r"(?:\s+(?:ahora|ya|now|stat|urgente|rapido|rapida|too|also|tambien))*\s*\??")
+                  r"(?:\s+(?:ahora|ya|now|stat|urgente|rapido|rapida|too|also|tambien)|\s*[x×]\s*\d|\s+\d\s*x\b|"
+                  r"\s+(?:from|de|en)\s+(?:two|2|dos)\s+(?:separate\s+|different\s+|distintos\s+|diferentes\s+)?"
+                  r"(?:sites|sitios|puntos|venas|veins)(?:\s+(?:distintos|diferentes))?|"
+                  r"\s+(?:(?:two|2|dos)\s+(?:sets|frascos|muestras|samples))|\s+(?:bilaterales?|perifericos?|peripheral))*"
+                  r"\s*\??")
 _DIAG_VERBS = {
     "want", "order", "request", "obtain", "check", "measure", "send", "get", "perform", "do",
     "solicitar", "solicito", "solicite", "pedir", "pido", "medir", "mido", "controlar",
@@ -1480,13 +1521,166 @@ _ADVICE_CLAUSE = re.compile(
     r"le\s+(?:digo|explico|indico|pido)\s+que\s+)?"
     r"(?:regres(?:ar|e|a)|volver(?!\s+a\s+" + _ADMINISTRATION_INFINITIVES + r"\b)|vuelva|"
     r"reconsult(?:ar|e|a)|acud(?:ir|a)|return|come\s+back))\b", re.I)
+# A condition on what the patient becomes, said with "when" as with "if": "When BP drops, give
+# NS 500 mL", "cuando baje la PA, bolo de SF 500 mL" and "once glucose is below 70, give D50
+# 50 mL" gave the dose now (TD-29, cycle 8). The clause is one only when it names a vital sign,
+# a laboratory value or the patient with a change, a threshold or a state to be reached; or
+# when what follows the word at once is the patient's course ("cuando empeore", "once
+# stable"). What the team can do ("cuando puedas", "as soon as possible"), something awaited
+# with no value to reach ("when blood arrives", asked about as before, "cuando vuelva el K"),
+# a story ("when I examined him his BP was 80/50") and "en cuanto a" ("as to") are read as
+# before. A result with the value it must reach is a condition: "when lactate comes back >4
+# give 30 mL/kg LR", "en cuanto salga la troponina positiva" (post hoc, blind set of cycle 8). "Apenas" is
+# one only before a verb in the subjunctive: in a note it is as often "barely" ("apenas mejora
+# la PA") as "as soon as".
+_WHEN_PARAMETER = (r"bp|blood\s+pressure|sbp|dbp|map|pressure|pa|pas|pad|pam|presion(?:\s+arterial)?|heart\s+rate|"
+                   r"hr|pulse|fc|frecuencia(?:\s+cardiaca|\s+respiratoria)?|spo2|sats?|saturation|saturacion|"
+                   r"oxygen(?:ation)?|oxigenacion|glucose|blood\s+sugar|bg|cbg|glucosa|glicemia|hgt|potassium|"
+                   r"potasio|k|lactate|lactato|hb|hgb|hemoglobin|hemoglobina|platelets?|plaquetas|inr|temperature|"
+                   r"temp|temperatura|fever|fiebre|rr|fr|respiratory\s+rate|gcs|glasgow|pain|dolor|urine\s+output|"
+                   r"diuresis|ph|pco2|paco2|qrs|mental\s+status|consciousness|conciencia|he|she|patient|paciente|"
+                   r"pt|condition|estado|cuadro|systolic|diastolic|sistolica|diastolica|peak\s+flow|pef|etco2|"
+                   r"fingerstick|capillary\s+glucose|glicemia\s+capilar|sugar|dextro|mecanica(?:\s+ventilatoria)?|"
+                   r"work\s+of\s+breathing|trabajo\s+respiratorio|sodium|sodio|creatinine|creatinina|"
+                   r"bicarbonate|bicarbonato|hco3|troponin|troponina|"
+                   # Post hoc, adversarial review of cycle 8: a parameter it did not list made the
+                   # order run now ("D50 50 mL IV when FSBG < 60", "Transfuse 1 unit PRBC when Hct <
+                   # 21"), and so did the course of the bleeding ("once hemostasis achieved").
+                   r"fsbg|bgl|hct|hto|hematocrit|hematocrito|uo|pefr|symptoms?|sintomas?|bleeding|"
+                   r"sangrado|hemorrhage|hemorragia|hemostasis|hemostasia")
+_WHEN_STATE = (r"stable|estables?|stabili[sz]ed|estabilizad[oa]s?|unstable|inestables?|hypotensive|hipotens[oa]s?|"
+               r"hypoxic|hypoxemic|hipoxemic[oa]s?|bradycardic|bradicardic[oa]s?|tachycardic|taquicardic[oa]s?|"
+               r"awake|despiert[oa]s?|alert|conscious|consciente|worse|peor|febrile|febril|agitated|agitad[oa]s?|"
+               r"in\s+shock|en\s+shock|hypoglyc(?:a)?emic|hipoglicemic[oa]s?|symptomatic|sintomatic[oa]s?|"
+               # Post hoc, adversarial review of cycle 8: "Discharge home when afebrile x 24 h",
+               # "Alta cuando esté asintomático", "Intubar cuando esté somnolienta" ran now.
+               r"asymptomatic|asintomatic[oa]s?|afebrile|afebriles?|drowsy|somnolient[oa]s?|tired|"
+               r"cansad[oa]s?|agotad[oa]s?|exhausted|symptom[- ]free|pain[- ]free|sin\s+dolor|sin\s+sintomas")
+_WHEN_CHANGE = (r"\b(?:drops?|dropping|falls?|falling|decreases?|decreasing|goes\s+down|rises?|rising|increases?|"
+                r"increasing|goes\s+up|climbs?|below|above|under|over|less\s+than|more\s+than|greater\s+than|"
+                r"lower\s+than|higher\s+than|reach(?:es)?|baj(?:e|en|a|an)|ca(?:iga|igan|e|en)|disminuy\w*|"
+                r"sub(?:e|a|an|en)|aument\w*|menor(?:es)?|mayor(?:es)?|sobre|alcance|persist\w*|worsen\w*|"
+                r"deteriorat\w*|decompensat\w*|empeor\w*|descompens\w*|desatur\w*|improves?|improving|"
+                r"mejor(?:e|a|en|an)|normali[zc]\w*|stabili[sz]\w*|estabili[zc]\w*|recover\w*|recuper\w*|"
+                r"wakes?\s+up|despiert\w*|low|high|bajo|baja|alto|alta|positiv[oa]s?|positive|negativ[oa]s?|"
+                r"negative|elevad[oa]s?|elevated|abnormal|alterad[oa]s?|"
+                # Post hoc, adversarial review of cycle 8 ("when she tires", "once symptoms resolve",
+                # "cuando se controle el sangrado").
+                r"tires?|tiring|fatigues?|resolves?|resolved|resolving|resuelv(?:a|an)|ced(?:a|an)|subsides?|"
+                r"controlled|controlad[oa]s?|se\s+controle|achieved|lograd[oa]|stops?|stopped|ces(?:e|en)|"
+                + _WHEN_STATE + r")\b|[<>≤≥]")
+# The clause the word opens ends at a comma, a colon or the next clause.
+_WHEN_CLAUSE = r"(?:(?!\b(?:and|y|then|luego|pero|but)\b)[^,;:])"
+_WHEN_COURSE = (r"(?:(?:se|le|lo|la)\s+)?(?:empeor\w*|descompens\w*|desatur\w*|deterior\w*|agrav\w*|mejore|mejoren|"
+                r"estabilic\w*|normalic\w*|recuper\w*|despiert\w*|(?:(?:he|she|the\s+patient|pt|el\s+paciente|"
+                r"la\s+paciente)\s+)?(?:(?:este|esten|esta|estan|se\s+encuentre|se\s+ponga|siga|is|becomes|gets|"
+                r"remains)\s+)?(?:hemodynamically\s+|hemodinamicamente\s+)?(?:" + _WHEN_STATE + r")|"
+                # Post hoc, adversarial review of cycle 8: "Intubar cuando se agote", "alta cuando
+                # tolere VO", "alta una vez que complete 6 horas de observación" ran now.
+                r"se\s+agot(?:e|en)|se\s+cans(?:e|en)|tolere[n]?\s+(?:la\s+)?(?:vo|via\s+oral|oral|alimentacion|"
+                r"dieta|regimen)|tolerates?\s+(?:po|oral|diet|food|fluids)|(?:complete|completen|cumpla|cumplan)\s+"
+                r"(?:(?:las?|sus?)\s+)?(?:\d+\s+horas?|observacion))\b")
+# What makes the clause a description, not a condition (post hoc, adversarial review of cycle 8):
+# what the team can do, the past, the resident or the team as its subject ("when I examine
+# her she is hypotensive", "whenever we pause the fluids"), and in Spanish the indicative, since a
+# condition is written in the subjunctive ("cuando baje la PA") while "cuando se acuesta la
+# saturación cae a 85%" and "cuando la reevalúo la PA sigue baja" say what the resident saw.
+_WHEN_DESCRIBES = (
+    r"puedas|pueda|puedan|podamos|possible|posible|you\s+can|we\s+can|able|ready|listo|lista|listos|tengas|"
+    r"tengamos|was|were|had|fue|estaba|estaban|tenia|arrived|llego|i|we|got|came|stood|laid|went|"
+    r"examined|reassessed|released|paused|moved|transferred|"
+    r"cae|caen|sube|suben|baj(?:a|an)\s+(?:a|de|hasta|bajo)|disminuye|disminuyen|aumenta|aumentan|persiste|"
+    r"persisten|empeora|empeoran|mejora|mejoran|desatura|desaturan|sigue|siguen|tiene|tienen|venia|venian|llega|"
+    r"llegan|llegaron|trasladaron|trasladamos|cayo|subio|empeoro|mejoro|desaturo|descompenso|evaluo|reevaluo|"
+    r"examino|acostamos|acuesto|sentamos|paramos|retiramos|soltamos|suelto|movilizamos|movilizo|reviso|revisamos|"
+    r"inicio|iniciamos|acuesta|sienta|levanta|marea|suelta|retira|se\s+pone")
+# What the patient does, then what was measured when they did it: "when she talks her sats drop
+# to 88%", "when he stands up his HR increases to 140". "Once she speaks in full sentences" is
+# still a condition.
+_WHEN_ACTIVITY_FINDING = (
+    r"\b(?:he|she|they|the\s+patient|pt)\s+(?:talks?|speaks?|stands?|sits?|lies|walks?|ambulates?|moves?|"
+    r"coughs?|eats?|gets?\s+up)\b" + _WHEN_CLAUSE + r"*?\d")
+_WHEN_CONDITION = (
+    r"(?:(?:when|whenever|as\s+soon\s+as|cuando|en\s+cuanto(?!\s+al?\b)|tan\s+pronto\s+como|una\s+vez\s+que)\b"
+    r"(?!" + _WHEN_CLAUSE + r"*\b(?:" + _WHEN_DESCRIBES + r")\b)(?!" + _WHEN_CLAUSE + r"*?" + _WHEN_ACTIVITY_FINDING + r")"
+    r"(?=" + _WHEN_CLAUSE + r"{0,60}?\b(?:" + _WHEN_PARAMETER + r")\b" + _WHEN_CLAUSE + r"{0,40}?(?:" + _WHEN_CHANGE
+    + r")|" + _WHEN_CLAUSE + r"{0,40}?(?:" + _WHEN_CHANGE + r")" + _WHEN_CLAUSE + r"{0,40}?\b(?:" + _WHEN_PARAMETER
+    + r")\b|\s+" + _WHEN_COURSE
+    # A value compared with a number is a threshold whatever it is called: "when FSBG < 60",
+    # "cuando T° > 38,5" (post hoc, adversarial review of cycle 8).
+    + r"|" + _WHEN_CLAUSE + r"{0,40}?[<>≤≥]\s*\d)"
+    # "Once" is also "one time" ("give it once more", "once again her pressure drops"): only the
+    # patient's value or state right after it makes it a condition ("once his fingerstick
+    # glucose drops below 70").
+    r"|once(?!\s+(?:again|more|daily|a\s+day|only|weekly|a\s+week)\b)"
+    r"(?!" + _WHEN_CLAUSE + r"*\b(?:" + _WHEN_DESCRIBES + r")\b)(?!" + _WHEN_CLAUSE + r"*?" + _WHEN_ACTIVITY_FINDING + r")"
+    r"(?=\s+(?:(?:the|his|her)\s+)?(?:[a-z]+\s+){0,2}?(?:" + _WHEN_PARAMETER + r")\b" + _WHEN_CLAUSE
+    + r"{0,40}?(?:" + _WHEN_CHANGE + r")|\s+" + _WHEN_COURSE + r"|" + _WHEN_CLAUSE + r"{0,40}?[<>≤≥]\s*\d)"
+    # "Apenas" is "as soon as" only before what the patient is yet to do, in the subjunctive
+    # ("apenas la HGT baje de 70"); before what the patient does it is "barely" ("apenas
+    # mejora la PA con volumen").
+    r"|apenas(?!" + _WHEN_CLAUSE + r"*\b(?:puedas|pueda|puedan|podamos|tengas|tenga|llegue|lleguen)\b)"
+    r"(?=" + _WHEN_CLAUSE + r"{0,40}?\b(?:baje|bajen|caiga|caigan|suba|suban|disminuya|disminuyan|aumente|aumenten|"
+    r"persista|persistan|empeore|empeoren|mejore|mejoren|desature|desaturen|descompense|descompensen|"
+    r"normalice|normalicen|estabilice|estabilicen|recupere|recuperen|despierte|despierten|alcance|alcancen)\b))"
+)
+# How a service is written in a chart's shorthand (post hoc, blind set of cycle 8).
+_SERVICE_ABBREVIATIONS = (r"uro|urolog\w*|cx|cirug\w*|cardio(?:logia)?|cards|gastro\w*|neuro(?:logia)?|nefro\w*|uci|upc|"
+                          r"tox\w*|endocrino\w*|medicina\s+interna|hemodinamia|trauma(?:tologia)?|vascular")
+# A clinical service by its name or its chart abbreviation: what "IC" must be followed by to be a
+# consult, since "IC con FE preservada" is heart failure (post hoc, adversarial review of cycle 8).
+_SERVICE_NAMES = (r"cardiolog\w*|cirug\w*|surgery|urolog\w*|gastro\w*|neurolog\w*|neurocirug\w*|nefrolog\w*|icu|"
+                  r"traumatolog\w*|ortoped\w*|hemodinamia|infectolog\w*|neumolog\w*|broncopulmonar|hematolog\w*|"
+                  r"toxicolog\w*|obstetric\w*|ginecolog\w*|psiquiatr\w*|pediatr\w*|anestesi\w*|otorrino\w*|"
+                  r"oftalmolog\w*|dermatolog\w*|reumatolog\w*|oncolog\w*|geriatr\w*|inmunolog\w*|alergolog\w*|"
+                  r"intensivo|intensivista|" + _SERVICE_ABBREVIATIONS)
+# Services this simulator does not model as a consult, left as before the cycle (post hoc,
+# adversarial review of cycle 8): "Social work consult, ceftriaxone 2 g IV" held the antibiotic.
+_NON_CLINICAL_SERVICE = (r"social\s+work|sw|nutrition|dietitian|dietary|pharmacy|pharmacist|pt|ot|physical\s+therapy|"
+                         r"occupational\s+therapy|case\s+management|chaplain|spiritual\s+care|trabajo\s+social|"
+                         r"asistente\s+social|nutricion\w*|farmacia|farmaceutic\w*|kinesiolog\w*|kine|"
+                         r"terapia\s+ocupacional")
+# Advice to the patient that opens its own sentence: "Regresar si tiene fiebre", "Return if the
+# pain comes back" (cycle 8). "Volver a nebulizar" is the next dose, "consultar a cirugía" and
+# "return to the ward" are orders.
+_RETURN_ADVICE = re.compile(
+    r"(?:(?:y|e|and)\s+)?(?:que\s+|debe\s+|debera\s+|puede\s+|should\s+|to\s+)?"
+    # "Volver a controlar creatinina si oliguria" repeats a check, and "consultar cirugía si persiste
+    # el sangrado" calls a service (post hoc, adversarial review of cycle 8).
+    r"(?:regres(?:ar|e|a)|volver(?!\s+a\s+(?!consultar\b)[a-z]+(?:ar|er|ir)\b)|vuelva|reconsult(?:ar|e|a)|"
+    r"acud(?:ir|a)|consult(?:ar|e)(?!\s+(?:(?:a|al|con|de|el|la)\s+)?(?:" + _SERVICE_NAMES + r")\b)"
+    r"(?!\s+(?:a|al|con|de)\b)|return(?!\s+to\s+(?:the\s+)?(?:ward|icu|unit|floor|"
+    r"or|theatre|cath))|come\s+back|seek\s+(?:medical\s+)?(?:care|attention|help))\b")
+# "If" and "si" after a verb of finding out are "whether": "check if she is pregnant", "evaluar
+# si requiere intubación".
+_WHETHER = re.compile(r"\b(?:check|see|ask|decide|determine|assess|evaluate|find\s+out|confirm|verify|know|"
+                      r"decidir|decido|ver|veo|preguntar|pregunto|evaluar|evaluo|valorar|valoro|averiguar|"
+                      r"confirmar|verificar|definir|saber|chequear)\s*$")
+# Where an intramuscular injection goes, written on its own after it (TD-31, cycle 8).
+_INJECTION_SITE = re.compile(
+    r"(?:(?:in|into|to|on|at|en|al|a|el|la)\s+)*(?:(?:the|his|her|left|right|izquierd[oa]|derech[oa])\s+)*"
+    r"(?:(?:antero)?lateral\s+thigh|mid[- ]?outer\s+thigh|outer\s+thigh|thigh|vastus\s+lateralis|deltoid|"
+    r"cara\s+(?:antero)?lateral\s+del\s+muslo|cara\s+externa\s+del\s+muslo|muslo|vasto\s+(?:lateral|externo)|deltoides)"
+    r"(?:\s+(?:muscle|musculo|anterolateral|lateral|izquierdo|derecho|left|right))*\s*[.!]?")
+# A discharge said as a clearance where an order would start ("ok to dc home"; KD-05, cycle 8).
+_OK_DISCHARGE_TAIL = re.compile(r"(?:ok(?:ay)?\s+(?:to|for|para)\s+)?(?:d/?c|discharge|dar\s+de\s+alta|alta)\b")
+# The time red cells run in, as a clause of its own (post hoc, blind set of cycle 8).
+_BLOOD_TIMING = re.compile(
+    r"(?:(?:to\s+)?(?:administrar|pasar|run|give|infuse|infundir|transfundir|transfuse)\s+)?(?:en|over|durante|in)\s+"
+    r"(?P<value>\d+(?:[.,]\d+)?)\s*(?P<unit>h|hrs?|hours?|horas?|min(?:utes?|utos?|s)?)"
+    r"(?:\s+(?P<each>c/u|each|cada\s+un[ao]|cada\s+unidad|per\s+unit|por\s+unidad))?\s*[.!]?")
+# A regimen for home: how often and for how long (post hoc, blind set of cycle 8).
+_HOME_REGIMEN = re.compile(
+    r"\bc/\s*\d+\s*(?:h|hrs?|horas?)\b|\bcada\s+\d+\s*(?:h|hrs?|horas?)\b|\b(?:x|por|durante)\s*\d+\s*(?:d|dias?|días?|days?)\b|"
+    r"\b\d+\s*(?:d|dias?|días?|days?)\b|\b(?:bid|tid|qid|qd|qhs|q\s*\d+\s*h|prn|sos|puffs?|inhalaciones)\b")
 # The condition itself, so that what it conditions can be recognised.
 # A colon closes a condition as a comma does: "si no responde: adrenalina 0.5 mg
 # im" is a plan with its order, and was dropped without a word (DF-22, 2026-09-28).
-_CONDITION_CLAUSE = re.compile(r"\b(?:if|si|unless|salvo\s+que)\b[^,:]*(?:[,:]|$)")
+_CONDITION_CLAUSE = re.compile(r"\b(?:if|si|unless|salvo\s+que|" + _WHEN_CONDITION + r")\b[^,:]*(?:[,:]|$)")
 # A condition set between an order and its alternative: "atropina 1 mg ev, si no
 # responde, marcapaso transcutaneo". What follows the condition is the plan.
-_CONTINGENCY = re.compile(r"(?:if|si|unless|salvo\s+que|en\s+caso\s+de)\b[^,:]*[,:]\s*(?P<then>\S.*)$")
+_CONTINGENCY = re.compile(r"(?:if|si|unless|salvo\s+que|en\s+caso\s+de|" + _WHEN_CONDITION
+                          + r")\b[^,:]*[,:]\s*(?P<then>\S.*)$")
 # What a destination sends the patient with. After a discharge or an admission
 # in the same sentence it is the plan that goes with them, not an order here:
 # ", control urologico" held the whole submission as a study nobody could name
@@ -1494,6 +1688,8 @@ _CONTINGENCY = re.compile(r"(?:if|si|unless|salvo\s+que|en\s+caso\s+de)\b[^,:]*[
 _DISCHARGE_ADVICE = re.compile(
     # An article may come first: "a follow-up appointment", "una cita" (DF-10).
     r"^(?:con\s+|with\s+)?(?:(?:a|an|un|una)\s+)?(?:control(?:es)?|seguimiento|citacion|cita|"
+    # A referral goes home with the patient too (post hoc, adversarial review of cycle 8).
+    r"(?:(?:[a-z]+\s+){0,2})?referral|derivacion|interconsulta|"
     r"signos?\s+de\s+alarma|indicaciones|"
     r"instrucciones|reposo|dieta|receta|educacion|follow[- ]?up|return\s+precautions?|"
     r"safety[- ]net(?:ting)?)\b"
@@ -1511,6 +1707,7 @@ _LISTED_ADVICE = re.compile(
     r"advised\s+to|told\s+to|signos\s+de\s+alarma|senales\s+de\s+alarma)\b")
 _CONDITIONAL = re.compile(
     r"\b(?:if|unless|consider|considering|might|could|would|perhaps|maybe|si|salvo que|considerar|considero|podria|quizas|tal vez)\b"
+    r"|\b" + _WHEN_CONDITION
 )
 _NEGATION = re.compile(r"^(?:please\s+)?(?:do not|don't|dont|never|avoid|no|not|sin|evitar|evito)\b")
 # What the resident finds, said with "no" or "sin": "sin acceso venoso visible",
@@ -1788,6 +1985,52 @@ def _sequenced(normalized):
 #: A procedure only one service performs. Naming it is asking for that service.
 _SERVICE_PROCEDURE = (r"nefrostom[ií]a|nephrostomy|cat[eé]ter\s+doble\s+j|doble\s+j|"
                       r"double[- ]j|ureteral\s+stent|stent\s+ureteral")
+# An endoscopy asked for, alone or with a request verb: "Endoscopía urgente", "EDA urgente",
+# "urgent upper endoscopy", "solicito EDA". Gastroenterology performs it in this simulator an
+# hour after the call (family_engine, "endoscopy_after_consult_min"), so the request is the
+# call; it was lost without a word or refused as an unknown study (TD-30, cycle 8). What was
+# done ("EDA de ayer normal", "post-endoscopy") is not a request.
+_ENDOSCOPY_REQUEST = re.compile(
+    r"(?:(?:an?|una|la|the)\s+)?(?:(?:urgent|urgente|stat|early|precoz|emergent|emergency|de\s+urgencia)\s+)?"
+    r"(?:upper\s+(?:gi\s+)?)?"
+    r"(?:endoscop(?:y|ia)(?:\s+(?:digestiva\s+)?alta)?|eda|veda|egd|ogd|gastroscop(?:y|ia)|"
+    r"videoendoscopia(?:\s+digestiva\s+alta)?)"
+    r"(?:\s+(?:urgente|urgent|stat|now|ahora|ya|precoz|temprana|early|hoy|today|de\s+urgencia|asap|"
+    r"as\s+soon\s+as\s+possible|lo\s+antes\s+posible|cuanto\s+antes))*"
+    r"(?:\s+(?:para|for|to|por|re)\b.*)?\s*[.!]?"
+    # "Urgent scope", "GI scope now": "scope" is the endoscopy only with its urgency or its
+    # service; alone it is not (post hoc, blind set of cycle 8).
+    r"|(?:(?:an?|the)\s+)?(?:(?:urgent|stat|early|emergent|emergency|gi|upper)\s+)+scope"
+    r"(?:\s+(?:now|stat|today|tonight|urgently|asap))*(?:\s+(?:for|to|re)\b.*)?\s*[.!]?"
+    r"|scope\s+(?:(?:him|her|the\s+patient)\s+)?(?:now|stat|today|tonight|urgently|asap)(?:\s+(?:for|to|re)\b.*)?\s*[.!]?")
+_ENDOSCOPY_URGENCY = re.compile(r"\b(?:urgent|urgente|stat|now|ahora|ya|de\s+urgencia|precoz|temprana|early|emergent|"
+                                r"emergency|hoy|today|tonight|asap|urgently|as\s+soon\s+as\s+possible|"
+                                r"lo\s+antes\s+posible|cuanto\s+antes)\b")
+_ENDOSCOPY_DONE = re.compile(r"\b(?:hace|ago|last|previous|previously|prior|previa|previo|anterior|antecedentes?|history|"
+                             r"pmh|ayer|yesterday|showed|mostro|normal|done|realizad[oa]|hech[oa]|ligadura|banding|"
+                             r"clipped|clips?)\b|:")
+# A consult written as a noun on a chart line: "surgery consult", "GI consult re urgent EGD",
+# "interconsulta a cirugía", "IC a urología ahora". Lost without a word (TD-30, cycle 8).
+# "Per cardiology consult", "consult pending" and a consult already done are not a request.
+_CONSULT_NOUN = re.compile(
+    r"(?!(?:per|segun|according|after|tras|post|por|from|by|the|la|el)\b)(?!(?:" + _NON_CLINICAL_SERVICE + r")\s+)"
+    r"(?:(?:urgent|stat|urgente|early|precoz)\s+)?(?:[a-z]+\s+){0,2}?(?:consult|consultation|referral)\b"
+    r"(?!\s*(?:was|is|has|had|already|pending|done|requested|placed|called|note|recommend\w*|said|says))"
+    r"|interconsulta\s+(?:a|al|con|to)\s+[a-z]"
+    r"|ic\s+(?:a|al|con|to)\s+(?:(?:la|el)\s+)?(?:" + _SERVICE_NAMES + r")\b"
+    # "IC uro", "IC cx vascular", "IC cardio": the chart's abbreviations (post hoc, blind set
+    # of cycle 8). "IC descompensada" is heart failure, not a consult.
+    r"|(?:interconsulta|ic)\s+(?:" + _SERVICE_ABBREVIATIONS + r")\b")
+# What a consult written without a verb says has happened, or will not happen now (post hoc,
+# adversarial review of cycle 8): "Surgery consult not needed at this time", "declined by patient",
+# "deferred", "tomorrow", "GI consult in AM", "Surgery consult?", "saw pt", "appreciated", "IC a
+# cirugía pendiente", "IC a cirugía: sin indicación quirúrgica". Each ran a consult.
+_CONSULT_STATUS = re.compile(
+    r"\b(?:not\s+(?:needed|indicated|required|necessary)|no\s+(?:need|operative|surgical|indication)|declined|refused|"
+    r"deferred|tomorrow|in\s+(?:the\s+)?(?:am|morning)|saw|seen|appreciated|recs?|recommend\w*|following|aware|"
+    r"on\s+board|signed\s+off|cleared|pending|pendientes?|respondid[oa]s?|realizad[oa]s?|solicitad[oa]s?|"
+    r"en\s+curso|manana|sin\s+indicacion|no\s+requiere|evaluo|lo\s+vio|la\s+vio|ya)\b|\?|:\s*(?:no|sin)\b|"
+    r"\s[-–—]\s*no\b")
 
 
 # The physiologic direction a resident states as a goal or an expectation.
@@ -2303,7 +2546,9 @@ def _parse_piece_core(piece, inherited=None):
                     r"rapid\s+sequence\s+(?:intubation|induction))\s*[.!]?", piece):
         return [{"type": "airway_preparation"}], "prepare"
     text = piece.strip(" :")
-    text = re.sub(r"^(?:please|por favor|then|luego|despues)\s+", "", text)
+    # "Meanwhile NS 500 mL bolus", "mientras tanto RL 500 ml" (post hoc, blind set of cycle 8).
+    text = re.sub(r"^(?:please|por favor|then|luego|despues|meanwhile|in\s+the\s+meantime|mientras\s+tanto|entretanto|"
+                  r"en\s+el\s+intertanto)\s+", "", text)
     if _MONITOR_ORDER.fullmatch(text):
         # The monitor itself (DF-16a). The verb still reaches the items after
         # it, so "monitorizar, PA y FC" keeps watching what it names.
@@ -2566,7 +2811,18 @@ def _parse_piece_core(piece, inherited=None):
         # A crossmatch is asked for without a study verb as often as with one
         # ("reservar 2 unidades", "grupo y pruebas cruzadas"). Only a verb that
         # gives the blood makes the sentence a transfusion instead.
-        crossmatch = diagnostic == "crossmatch" and match and not _TRANSFUSING.search(_TO_TRANSFUSE.sub(" ", text))
+        # "Type and cross pending", "pruebas cruzadas en curso": where the crossmatch is, not
+        # one asked for (TD-32, cycle 8).
+        # Its purpose is no state: "Type and cross 4 units to be ready for the OR", "…2 units awaiting OR"
+        # and "…4 units sent stat" ask for it (post hoc, adversarial review of cycle 8).
+        crossmatch = (diagnostic == "crossmatch" and match and not _TRANSFUSING.search(_TO_TRANSFUSE.sub(" ", text))
+                      and not re.search(r"\b(?:pending|pendientes?|en\s+curso|in\s+(?:process|progress)|processing|"
+                                        r"procesando|en\s+proceso|sent(?!\s+(?:stat|now|asap|urgently))|"
+                                        r"enviad[oa]s?(?!\s+(?:urgente|ahora|ya))|already|ya\s+(?:fueron|estan|se)|"
+                                        r"(?<!to\s)(?<!be\s)(?<!para\s)(?:listas?|listos?|ready)|done|hech[oa]s?|"
+                                        r"realizad[oa]s?|tomad[oa]s?|solicitad[oa]s?|drawn|"
+                                        r"(?:awaiting|esperando)(?=\s+(?:the\s+|el\s+|los\s+)?(?:results?|resultados?|"
+                                        r"blood\s+bank|banco))|resulted|disponibles?)\b", body))
         if match and (verb in _DIAG_VERBS or crossmatch
                       or re.fullmatch(r"\s*(?:" + pattern + r")(?:\s+(?:ahora|ya|now|stat|urgente))?\s*\??", body)
                       or (not verb and re.fullmatch(_A_STUDY_ALONE.format(pattern), body))):
@@ -2576,8 +2832,10 @@ def _parse_piece_core(piece, inherited=None):
     # Asking which gases is right when the resident asked for gases. "Los gases
     # muestran retencion de CO2" is a result they are reading, not an order, and
     # it held a whole escalation to non-invasive ventilation (2026-09-24).
-    if re.search(r"\b(?:gases|gasometria|blood gases?)\b", body) and (
-            verb in _DIAG_VERBS or re.fullmatch(r"\s*(?:(?:los|unos|the)\s+)?(?:gases|gasometria|blood gases?)\s*\??", body)):
+    # "Blood gases?" read "blood gase" or "blood gases": "a blood gas" was never matched (cycle 8).
+    if re.search(r"\b(?:gases|gasometria|blood\s+gas(?:es)?)\b", body) and (
+            verb in _DIAG_VERBS or re.fullmatch(r"\s*(?:(?:take|draw|send|run|collect)\s+)?(?:(?:los|unos|the|a|an)\s+)?"
+                                                r"(?:gases|gasometria|blood\s+gas(?:es)?)\s*\??", body)):
         return [{'type': 'clarification', 'message': 'Specify arterial (ABG) or venous (VBG) blood gases.',
                  'pending_action': {'type': 'diagnostic', 'diagnostic': None}}], verb
     if re.search(r"\b(?:stress\s+test|exercise\s+(?:test|stress)|treadmill|test\s+de\s+esfuerzo|"
@@ -2611,6 +2869,8 @@ def _parse_piece_core(piece, inherited=None):
         support = _support_order(body, verb)
         if support is not None:
             return [support], verb
+        if _ENDOSCOPY_REQUEST.fullmatch(body) and not _ENDOSCOPY_DONE.search(body):
+            return [{"type": "consult", "service": "gastroenterology"}], verb
         return [_clarification("The requested study was not recognized. Specify one supported study per order.")], verb
 
     if not verb:
@@ -2636,6 +2896,13 @@ def _parse_piece_core(piece, inherited=None):
         # faculty decision (docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md, DC2).
         if _VERBLESS_LINE.fullmatch(body):
             return [{"type": "vascular_access", "operation": "start"}], None
+        # Written alone, the endoscopy is asked for only with its urgency: "EDA por várices hace 1 año",
+        # "PMH: EGD for banding last year" and "EDA por gastro: ligadura de várices" are what was
+        # done, and each called gastroenterology (post hoc, adversarial review of cycle 8).
+        if (not someone_elses and _ENDOSCOPY_REQUEST.fullmatch(body) and _ENDOSCOPY_URGENCY.search(body)
+                and not _ENDOSCOPY_DONE.search(body)):
+            return [{"type": "consult", "service": "gastroenterology"}], None
+        consult_start = not someone_elses and bool(_CONSULT_NOUN.match(body))
         # "Bolo de dextrosa 25 g EV" and "bolo de SF 500 mL" are orders as written
         # on a chart; they were quoted back as unreadable (hypoglycaemia reader
         # checks, 2026-09-26).
@@ -2673,8 +2940,21 @@ def _parse_piece_core(piece, inherited=None):
         pacing_start = bool(re.match(r"(?:" + _PACING + r")", body)
                             and re.search(r"\d\s*(?:ma|miliamp\w*|milliamp\w*|lpm|bpm|(?:latidos?\s*)?(?:por|/)\s*min)\b",
                                           body))
+        # "Epi" is adrenaline on a chart line when a route, a dose or a strength follows it: "Epi
+        # 1:1000 IM stat" and "Epi IM stat" were lost without a word (TD-31, cycle 8).
+        # So is "epi" after its route ("IM epi stat"), a dose of any size ("epi 300 mcg IM x1")
+        # and "epi gtt" (post hoc, blind set of cycle 8).
+        # Only with a dose that has its unit or its route: "Epi 8/10 pain" is epigastric pain and
+        # "EPI 1ria" a diagnosis. Never someone else's or an earlier dose: "Epi 0.5 mg IM given by
+        # EMS", "Epi 0.3 mg IM 20 min ago", "Epi IM at school" gave the drug again (post hoc,
+        # adversarial review of cycle 8).
+        epi_start = not someone_elses and not _AN_EARLIER_DOSE.search(body) and (any(re.match(
+            r"epi\s+(?:(?:im|sc|iv|ev|io|intramuscular\w*|subcut\w*|drip|gtt|goteo|bic|infusion|infusi[oó]n|push)\b|"
+            r"(?:\d+(?:[.,]\d+)?|[.,]\d+)\s*(?:mg|mcg|ug|µg|ml|cc)\b|1\s*:\s*10{3,4}\b|"
+            r"(?:\d+(?:[.,]\d+)?|[.,]\d+)\s+(?:im|iv|ev|sc|io)\b)", start) for start in starts) or bool(
+            leading_route and re.match(r"epi\b", body[leading_route.end():])))
         if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start or bolus_start
-                or ampoule_start or therapy_start or pacing_start or blood_start
+                or ampoule_start or therapy_start or pacing_start or blood_start or consult_start or epi_start
                 or re.match(side_first + shorthand + r"\b", body)
                 or re.match(route_first + shorthand + r"\b", body)
                 or re.match(r"(?:alta|discharge|hospitaliza|ingresa|traslada|admit|transfer)", body)):
@@ -2693,28 +2973,72 @@ def _parse_piece_core(piece, inherited=None):
     # before cycle 6; DF-22 (C02, C06) put it in front of more sentences
     # (adversarial comparison with cycle 5, 2026-09-28). A medicine is never a
     # service to activate.
+    # "Interconsulta", "referral" and "IC a ..." are consults written as nouns (TD-30, cycle 8). After
+    # a discharge they are the plan the patient goes home with: "Discharge home with allergy
+    # referral" and "Alta con interconsulta a inmunología" held the discharge asking which
+    # specialist (post hoc, adversarial review of cycle 8).
+    consult_noun = re.search(r"\b(?:interconsulta|referral)\b|\bic\s+(?:(?:a|al|con)\s+(?:(?:la|el)\s+)?)?(?:"
+                             + _SERVICE_NAMES + r")\b", text)
     if (re.search(r"\b(?:consult|call|consultar|interconsultar|llamar)\b", text)
+            or (consult_noun and not re.search(r"\b(?:discharge\w*|alta|d/?c|home|domicilio|casa)\b",
+                                               text[:consult_noun.start()]))
             or re.search(_SERVICE_PROCEDURE, body)
             or (verb in {"activate", "activar"} and not medication_count and not has_fluid)):
+        # A consult that has already happened is not one asked for now: "la interconsulta a
+        # cirugía ya fue respondida" was a consult to nobody, asked which specialist, and
+        # with the service now read it would have run (TD-30, cycle 8). Only where no order verb
+        # asks for it: "Consult urology for decompression since she is already septic" and "Llamar
+        # nuevamente a cirugía que ya lo vio" are consults (post hoc, adversarial review of cycle 8).
+        # "La interconsulta" reads as the imperative "interconsulta", so the consult said to be
+        # answered, done or seen is no request whatever verb was read.
+        if re.search(r"\bfue\s+(?:respondid|realizad|hech|vist|evaluad|solicitad|pedid)\w*|\brespondid[oa]s?\b|"
+                     r"\b(?:was|were|has\s+been|had\s+been)\s+(?:seen|called|consulted|answered|done|requested|"
+                     r"placed)\b", text) or (not verb and re.search(
+                         r"\b(?:already|previously|ya\s+(?:fue|lo|la|le|se|vio|evaluo|respondio|vino|paso)|"
+                         r"saw\s+(?:him|her|the\s+patient))\b", text)):
+            return [], None
+        if not verb and (_CONSULT_STATUS.search(text) or re.match(r"(?:" + _NON_CLINICAL_SERVICE + r")\s+consult", text)):
+            return [], None
         service = None
+        # A surgical subspecialty is not general surgery: "vascular surgery consult" is asked
+        # which specialist, as before, rather than sent to general surgery (TD-30, cycle 8).
+        subspecialty = re.search(
+            r"\b(?:vascular|vasc|thoracic|cardiac|cardiothoracic|plastic|pediatric|paediatric|orthop\w*|maxillo\w*|hand|"
+            r"transplant|bariatric|colorectal|hepatobiliary)\s+surg\w*|\bneurosurg\w*|\bneurocirug\w*|"
+            r"\bcx\s+(?:vascular|cardio\w*|toracica|plastica|infantil|pediatrica)|"
+            r"\bcirug[ií]a\s+(?:vascular|card\w*|tor[aá]cica|pl[aá]stica|pedi[aá]trica|infantil|maxilo\w*|"
+            r"ortop\w*|traumatol\w*|de\s+mano|de\s+t[oó]rax)", body)
         # The pulmonary embolism response team is asked for by its name here,
         # and the case declares involving it as what D3 turns on; only the
         # English acronym was listed (2026-09-23).
         for name, pattern in (("PERT", r"\bpert\b|equipo (?:de |para )?(?:respuesta )?"
                                        r"(?:de |a )?(?:tromboembolismo|tep|embolia pulmonar)"),
-                              ("cardiology", r"cardiolog"),
+                              ("cardiology", r"cardiolog|\bcardio\b|\bcards\b"),
                               # The STEMI code is how the cath lab is called here
                               # ("activo codigo infarto"; DF-22, C06).
                               ("cath lab", r"cath(?:eterization)? lab|hemodinamia|hemodinamica|"
-                                           r"codigo\s+(?:infarto|iam|scacest|stemi)|stemi\s+(?:code|alert)|code\s+stemi"), ("gastroenterology", r"gastroenterolog|endoscop"),
+                                           r"codigo\s+(?:infarto|iam|scacest|stemi)|stemi\s+(?:code|alert)|code\s+stemi"),
+                              # "GI consult", "gastro", an upper endoscopy by its abbreviations
+                              # (TD-30, cycle 8); "GI bleed" is not the service.
+                              ("gastroenterology", r"gastroenterolog|endoscop|\bgi\s+(?:consult\w*|team|service|"
+                                                   r"on[- ]call|fellow)|\bgastro\b|\beda\b|\bveda\b|\begd\b|"
+                                                   r"\bogd\b|gastroscop"),
                               # The service that decompresses an obstructed,
                               # infected kidney, asked for by its name or by what
                               # it is being asked to do (2026-09-23).
-                              ("urology", r"urolog|nefrostom[ií]a|nephrostomy|"
+                              ("urology", r"urolog|\buro\b|nefrostom[ií]a|nephrostomy|"
                                           r"cat[eé]ter\s+doble\s+j|doble\s+j|double[- ]j|"
                                           r"ureteral\s+stent|stent\s+ureteral|"
                                           r"desobstru|descompresi[oó]n\s+(?:de\s+la\s+)?v[ií]a\s+urinaria"),
-                              ("surgery", r"cirug[ií]a general|general surgery|cirujano"),
+                              # "Surgery consult", "interconsulta a cirugía": general surgery by
+                              # its plain name too (TD-30, cycle 8); a subspecialty stays asked.
+                              ("surgery", r"cirug[ií]a general|general surgery|cirujano" + (
+                                  "" if subspecialty else r"|(?<![\w-])(?:trauma\s+)?surgery\b|\bsurgical\s+"
+                                                          r"(?:team|service|consult\w*)|\bcirug[ií]a\b|"
+                                                          r"\bgen(?:eral)?\.?\s+surg\b|"
+                                                          # "Blood cx" are cultures (post hoc, adversarial
+                                                          # review of cycle 8).
+                                                          r"(?<!blood\s)(?<!urine\s)(?<!sputum\s)(?<!wound\s)\bcx\b")),
                               # Named and asked "which specialist?" all the same
                               # (hypoglycaemia reader checks, 2026-09-26).
                               ("endocrinology", r"endocrinolog|diabetolog"),
@@ -2934,6 +3258,15 @@ def _parse_piece_core(piece, inherited=None):
             order["route"] = ("SC" if re.search(r"\b(?:sc|subcutaneous(?:ly)?|subcut[aá]ne[ao])\b", body)
                               else "IM")
             return [order], verb or "give"
+        # An intramuscular adrenaline written without a dose, or with only its strength
+        # ("1:1000", "1 mg/mL"), is the intramuscular order still to be dosed: the engine asks
+        # its dose in milligrams. It was read as an infusion and asked a rate in mcg/min
+        # (TD-31, cycle 8).
+        if (kind == "epinephrine" and intramuscular and not rate_match and not mass_dose and not per_kilo_im
+                and not re.search(r"\b(?:drip|gtt|infusion|infusi[oó]n|bic|goteo|perfusion|perfusi[oó]n|continuous|"
+                                  r"continu[ao])\b", body)):
+            route = "SC" if re.search(r"\b(?:sc|subcutaneous(?:ly)?|subcut[aá]ne[ao])\b", body) else "IM"
+            return [{"type": "epinephrine_im", "dose_mg": None, "route": route}], verb
         if kind == "epinephrine" and not rate_match and mass_dose and (
                 single_dose or re.search(r"\b(?:iv|ev|intravenous|intravenos[ao])\b", body)):
             # Diluted epinephrine is also given as small IV boluses (50-150 mcg).
@@ -3106,7 +3439,8 @@ def _parse_piece_core(piece, inherited=None):
 
 
 def _parse_piece(piece, inherited=None):
-    dose_piece = re.sub(r"\b(?:over|durante|en)\s+\d+(?:\.\d+)?\s*(?:minutes?|mins?|minutos?|hours?|horas?|seconds?|segundos?)\b", "", piece)
+    dose_piece = re.sub(r"\b(?:over|durante|en)\s+\d+(?:\.\d+)?\s*(?:minutes?|mins?|minutos?|hours?|horas?|hrs?|h|seconds?|"
+                        r"segundos?)\b", "", piece)
     if re.search(r"\b(?:reassess|reevaluar|reevaluo|revalorar|reassessment)\b", piece):
         dose_piece = piece
     actions, verb = _parse_piece_core(dose_piece, inherited)
@@ -3123,7 +3457,17 @@ def _parse_piece(piece, inherited=None):
     # Delivery time is attached to this treatment clause, never to reasoning or
     # the reassessment clause. Retain unsupported/ambiguous timing as a question.
     text = _NON_ORDER.split(piece, maxsplit=1)[0]
-    matches = list(re.finditer(r"\b(?:over|durante|en)\s+(\d+(?:\.\d+)?)\s*(minutes?|mins?|minutos?|hours?|horas?|seconds?|segundos?)\b", text))
+    # "En 2 h", "over 2 hrs": the hour written short (post hoc, blind set of cycle 8); it was
+    # dropped, and "2 U GR en 2 h" was asked whether to transfuse at all.
+    matches = list(re.finditer(r"\b(?:over|durante|en)\s+(\d+(?:\.\d+)?)\s*(minutes?|mins?|minutos?|hours?|horas?|hrs?|h|"
+                               r"seconds?|segundos?)\b", text))
+    # When the patient is checked again is not how long the treatment runs: "Furosemida 40 mg ev
+    # con control de diuresis en 2 h" ran the furosemide over 2 hours, and "Noradrenalina 0,1
+    # mcg/kg/min ev con control de PAM en 1 h" was held (post hoc, adversarial review of cycle 8;
+    # "en 1 hora" was read so before the cycle).
+    matches = [match for match in matches if not re.search(
+        r"\b(?:control(?:es|ar)?|controlando|chequear|check|recheck|monitor\w*|vigilar|reevaluar|reassess\w*|medir|"
+        r"evaluar|evaluate|revisar|seguimiento|follow[- ]?up|f/u)\b[^,;]*$", text[:match.start()])]
     # A disposition or a consult has no delivery time: "de alta con control en 24
     # horas" states when the patient is seen again, not how long an order runs.
     treatments = [a for a in actions if a['type'] not in {'diagnostic', 'reassessment', 'clarification',
@@ -3132,7 +3476,13 @@ def _parse_piece(piece, inherited=None):
         if len(matches) != 1 or len(treatments) != 1:
             return [_clarification("Specify one delivery duration for each treatment.")], verb
         value, unit = float(matches[0][1]), matches[0][2]
-        value *= 60 if unit.startswith(('hour', 'hora')) else 1 / 60 if unit.startswith(('second', 'segundo')) else 1
+        value *= 60 if unit.startswith(('hour', 'hora', 'hr')) or unit == 'h' else 1 / 60 if unit.startswith(('second', 'segundo')) else 1
+        # "2 U GR en 2 horas c/u", "2 U PRBC over 2 h each": the time of each unit, so the
+        # units run one after another; they ran in 2 hours in all (TD-32, cycle 8).
+        if (treatments[0].get("type") == "blood" and (treatments[0].get("units") or 0) > 1
+                and re.match(r"\s*(?:c/u|cada\s+un[ao]|cada\s+unidad|each|per\s+unit|por\s+unidad)\b",
+                             text[matches[0].end():])):
+            value *= treatments[0]["units"]
         treatments[0]['administration_duration_min'] = value
     return actions, verb
 
@@ -3227,6 +3577,12 @@ def _label_before_colon(head):
     unreadable order -- is stepped over. "Oxygen: nasal cannula 2 L/min" and
     "Norepinephrine: 0.1 mcg/kg/min" keep reading as the one order they are.
     """
+    # A heading that names the goal of what follows it: "Hemorrhage control: surgery
+    # consult" lost the consult, since the heading alone asks which measure, and "control"
+    # opens "control de hemorragia" as a verb would (TD-30, cycle 8).
+    if re.fullmatch(r"(?:h[ae]morrhage|bleeding|hemorragia|sangrado)\s+control|"
+                    r"control\s+(?:de\s+(?:la\s+)?hemorragia|del\s+sangrado|de\s+sangrado|of\s+(?:the\s+)?bleeding)", head):
+        return True
     if _COLON_KEEPS.search(head) or _WITHHOLD_HEAD.fullmatch(head) or _COMMAND.match(head):
         return False
     if re.fullmatch(r"(?:" + _RED_CELL_NAMES + r"|gre?|(?:o|0)\s*(?:rh\s*)?-?\s*(?:neg|pos)\w*)", head):
@@ -3268,6 +3624,191 @@ def _order_after_reasoning(text):
     return None
 
 
+# A dose that was given before, somewhere else or by someone else, or that is a plan: "20 min ago",
+# "prior to arrival", "at home", "by mom", "ya administrada", "at 14:05", "q5-15 min PRN" (post hoc,
+# adversarial review of cycle 8).
+_AN_EARLIER_DOSE = re.compile(
+    r"\b(?:ago|hace\s+\d|prior\s+to\s+arrival|pta|at\s+(?:home|school|work)|en\s+(?:la\s+)?casa|en\s+el\s+colegio|"
+    r"by\s+(?:his|her|the)?\s*(?:mom|mother|dad|father|wife|husband|family|parents?|school\s+nurse)|administrad[oa]s?|"
+    r"dad[oa]s?|given|administered|repeated|repetid[oa]s?|prn|sos|at\s+\d{1,2}[:.]\d{2}|a\s+las\s+\d{1,2}[:.]\d{2}|"
+    r"descartad[oa]s?)\b|\bq\s*\d+\s*(?:-\s*\d+\s*)?min")
+_WHEN_WORD = re.compile(r"(?:when|whenever|as\s+soon\s+as|cuando|en\s+cuanto|tan\s+pronto\s+como|una\s+vez\s+que|once|"
+                        r"apenas)\b")
+# A reason that the "when" belongs to: "Give D50 50 mL IV now as he gets confused when his glucose
+# drops", "dado que la PA cae cuando se sienta".
+_REASON_BEFORE_WHEN = re.compile(
+    r"\b(?:as|since|because|given\s+that)\s+(?:he|she|they|it|the\s+patient|pt|his|her|their)\b|"
+    r"\b(?:porque|ya\s+que|dado\s+que|debido\s+a\s+que|puesto\s+que)\b|^como\b")
+
+
+def _describes_what_was_seen(sentence, conditional):
+    """Whether a "when" is part of what the resident saw rather than a condition on an order.
+
+    What stands before it in its own clause decides: an order ("transfundir 2 U GR cuando Hb < 7")
+    makes it the order's condition; the patient's finding ("mareada cuando la PA baja", "presyncope
+    when BP drops") or a reason ("... as he gets confused when his glucose drops") makes it part
+    of the description (post hoc, adversarial review of cycle 8).
+    """
+    if not _WHEN_WORD.match(conditional.group(0)):
+        return False
+    segment = re.split(r"[,;:]|\s[-–—]\s|->|→|\s+(?:y|e|and|then|luego|so|entonces)\s+",
+                       sentence[:conditional.start()])[-1].strip()
+    if not segment:
+        return False
+    if _REASON_BEFORE_WHEN.search(segment):
+        return True
+    return not (_COMMAND.match(segment) or _REPEAT_START.match(segment) or _names_a_drug(segment)
+                or re.match(r"(?:again|another|otra\s+vez|de\s+nuevo|nuevamente)\b", segment) or _orders_now(segment))
+
+
+def _order_inside(clause):
+    """Where an order starts inside a condition written without a comma, or "".
+
+    "cuando la sat baje de 92% repetir", "when hgb drops below 7 transfuse 1 unit PRBC" (post hoc,
+    adversarial review of cycle 8).
+    """
+    for start in re.finditer(r"(?:^|\s|->|→|=>)\s*(?=[a-z])", clause):
+        rest = clause[start.end():]
+        # "Iban a iniciar dopamina" tells what someone was going to do.
+        if re.search(r"\b(?:iba|iban|ibamos|iria|irian|was|were)\s+(?:a|going\s+to)\s*$", clause[:start.end()]):
+            continue
+        if _COMMAND.match(rest) or _OK_DISCHARGE_TAIL.match(rest) or _REPEAT_START.match(rest):
+            return rest
+    return ""
+
+
+def _ringer_abbreviation(text):
+    """"RL" is how Ringer lactato is written in Chile ("RL 500 ml ev", "bolo de RL").
+
+    It was read as nothing, or quoted back with a verb (post hoc, blind set of cycle 8). Only
+    before a volume, a route or a bolus, or after what gives a fluid, is it the fluid.
+    """
+    text = re.sub(r"\brl\b(?=\s*(?:\d|ev\b|iv\b|a\s+chorro|en\s+bolo|bolo|tibio|wide\s+open))", "lr", text)
+    return re.sub(r"\b(de|pasar|administrar|bolo|bolus|con)\s+rl\b", r"\1 lr", text)
+
+
+_STUDIES_DONE = None
+
+
+def _studies_done():
+    """Studies joined by "y"/"and" and closed by what has happened to them (post hoc, cycle 8)."""
+    global _STUDIES_DONE
+    if _STUDIES_DONE is None:
+        item = (r"\b(?:" + "|".join(_DIAGNOSTICS.values()) + r"|urocultivos?|urine\s+cultures?|cultivos?|cultures?)\b"
+                r"(?:\s*[x×]\s*\d+)?")
+        _STUDIES_DONE = re.compile(
+            r"(?:^|(?<=[,;:]))\s*" + item + r"(?:\s*(?:\by\b|\band\b|\+|&)\s*" + item + r")*\s+"
+            r"(?:(?:ya|already)\s+)?(?:tomad[oa]s?|enviad[oa]s?|drawn|sent|done|realizad[oa]s?|pendientes?|pending|"
+            r"en\s+curso|in\s+progress|resulted|listos?|listas?)\b")
+    return _STUDIES_DONE
+
+
+def _state_tail(rest):
+    """How much of what follows a study's state still describes it.
+
+    "Hemocultivos x2 ya tomados en el SAPU" ends with the state's own words; "Hemocultivos tomados y
+    ceftriaxona 2 g ev", "Blood cultures pending - start ceftriaxone", "Lactate pending so give 30
+    mL/kg LR" go on to an order, which is read. The whole rest of the clause went with the state,
+    and the antibiotic was lost without a word (post hoc, adversarial review of cycle 8).
+    """
+    clause = re.match(r"[^,;:]*", rest).group(0)
+    # "Before" names when the study was taken ("tomados antes del antibiótico"), unless an order
+    # follows it ("drawn prior to ceftriaxone 2 g IV", asked about as before).
+    stop = re.search(r"\s[-–—]\s|->|→|\s+(?:y|e|and|then|luego|so|pero|but)\b|"
+                     r"\s+(?:prior\s+to|before|antes\s+de(?:l)?)\s+(?=(?:starting\s+|iniciar\s+|dar\s+)?(?:la\s+|el\s+|the\s+)?"
+                     r"(?!antibiotics?\b|antibioticos?\b|abx\b|atb\b|tratamiento\b|treatment\b))", clause)
+    end = stop.start() if stop else len(clause)
+    for start in re.finditer(r"\s+(?=[a-z])", clause[:end]):
+        if _COMMAND.match(clause[start.end():]) or _orders_now(clause[start.end():end]):
+            return start.start()
+    return end
+
+
+def _chart_with(text):
+    """"W/" is "with" in a chart note ("OK to dc home w/ epipen rx"); "w/o" is left alone.
+
+    Unread, the discharge that carried the prescription was lost (post hoc, blind set of cycle 8).
+    """
+    return re.sub(r"\bw/(?!o\b)\s*", "with ", text)
+
+
+def _unit_point(text):
+    """The point of "U." before the product it counts is an abbreviation, not a full stop.
+
+    "2 U. GR" and "2 U. PRBCs" ended the sentence at the point, and the units lost
+    their product: nothing was read, or the count was asked again (TD-32, cycle 8).
+    """
+    # Only before red cells, and only when the sentence has not named its product before the count:
+    # "Transfuse PRBC 2 U. Platelets if count < 50." and "PRBC 2 U. FFP 2 U." are two sentences,
+    # and read as one the red cells were not given (post hoc, adversarial review of cycle 8).
+    def join(match):
+        opening = max(text.rfind(".", 0, match.start()), text.rfind(";", 0, match.start()),
+                      text.rfind("\n", 0, match.start())) + 1
+        if re.search(r"\b(?:" + _RED_CELL_WORDS + r"|gre?|" + _PRODUCT_NAMES + r"|" + _PRODUCT_WORDS + r")\b",
+                     text[opening:match.start()]):
+            return match.group(0)
+        return match[1] + " u "
+    return re.sub(r"\b(\d+)\s*u\.\s*(?=(?:de\s+)?(?:" + _RED_CELL_WORDS + r"|gre?|o\s*(?:rh\s*)?[-+]?\s*(?:neg|pos))\b)",
+                  join, text)
+
+
+# "OK to discharge", "ok para alta": the discharge said as a clearance, in both languages
+# (KD-05, cycle 8). Not when it is denied or asked ("not ok for discharge yet", "¿está ok
+# para alta?"), and not "labs OK".
+_OK_TO_DISCHARGE = re.compile(
+    r"(?P<lead>^|(?<=[.;\n,])\s*)(?:(?:the\s+)?(?:pt|patient|he|she|el\s+paciente|la\s+paciente|paciente)"
+    r"(?:\s+is\s+|'s\s+|\s+esta\s+|\s+))?(?:ok(?:ay)?|okey)\s+(?:(?:to|for|para)\s+)?"
+    r"(?P<what>(?:be\s+)?discharged?(?:\s+home)?|d/?c(?:\s+home)?|go\s+home|(?:dar(?:le|la|lo)?\s+de\s+)?alta"
+    # "Ok para alta dosis de salbutamol" is a high dose (post hoc, adversarial review of cycle 8).
+    r"(?!\s+(?:dosis|flujo|frecuencia|concentracion|presion|intensidad|prioridad|sospecha|probabilidad)\b)"
+    r"(?:\s+a\s+(?:domicilio|(?:la\s+)?casa))?|irse\s+(?:a\s+(?:la\s+)?casa|de\s+alta)|egreso|"
+    # "Ok para la casa" (post hoc, blind set of cycle 8).
+    r"(?:ir\s+)?(?:a\s+)?(?:la\s+)?casa|domicilio)\b")
+
+
+# What makes a clearance something other than a discharge now (post hoc, adversarial review of
+# cycle 8). "OK to d/c IV fluids" stops the fluids: "d/c" is a discharge only with nothing after
+# it but the patient's plan. A time or a condition puts it off ("OK to dc home after 4 h
+# observation", "ok para alta mañana"), a "no" after it denies it ("OK to discharge: no"), and
+# another service's clearance is theirs ("Per surgery, OK to discharge", "OK to discharge from
+# ortho standpoint"). Each of these was a discharge now, the trigger of two critical events.
+_DC_OBJECT_ALLOWED = re.compile(r"\s*(?:$|[.,;!]|(?:with|con|and|y|home|to\s+home|f/u|follow)\b)")
+_CLEARANCE_PUT_OFF = re.compile(
+    r"\b(?:after|once|when|whenever|until|tomorrow|tonight|later|in\s+the\s+(?:am|morning)|am|pending|if|unless|"
+    r"tras|despues|luego\s+de|una\s+vez|cuando|en\s+cuanto|hasta|manana|mas\s+tarde|pendiente|si|salvo)\b")
+_CLEARANCE_DENIED = re.compile(r"\s*(?:[:\-–—]\s*)?(?:no|not|nope|todavia\s+no|aun\s+no|not\s+yet)\b|\s*,?\s*(?:but|pero)\b")
+_SOMEONE_ELSES_CLEARANCE = re.compile(
+    r"\b(?:per|according\s+to|segun|por\s+parte\s+de)\s+(?!(?:protocol|protocolo)\b)[a-z]|"
+    r"\b(?:standpoint|perspective|point\s+of\s+view|punto\s+de\s+vista)\b")
+
+
+def _ok_to_discharge(text):
+    def say(match):
+        sentence = text[match.start():].split(".")[0]
+        if "?" in sentence or "¿" in text[max(0, match.start() - 2):match.end()]:
+            return match.group(0)
+        start = max(text.rfind(".", 0, match.start()), text.rfind(";", 0, match.start()),
+                    text.rfind("\n", 0, match.start())) + 1
+        ends = [i for i in (text.find(".", match.end()), text.find(";", match.end()), text.find("\n", match.end()))
+                if i >= 0]
+        whole = text[start:min(ends) if ends else len(text)]
+        tail = text[match.end():min(ends) if ends else len(text)]
+        clause_tail = re.split(r"[,;:]|\s[-–—]\s", tail)[0]
+        if match["what"].startswith("d") and "home" not in match["what"] and not _DC_OBJECT_ALLOWED.match(tail):
+            return match.group(0)
+        if _CLEARANCE_DENIED.match(tail) or _SOMEONE_ELSES_CLEARANCE.search(whole):
+            return match.group(0)
+        # A condition on the patient's course is read as the discharge's condition, a plan
+        # ("OK for d/c home once afebrile"); any other time puts the clearance off.
+        if _CLEARANCE_PUT_OFF.search(clause_tail) and not re.match(r"\s*\b" + _WHEN_CONDITION, clause_tail):
+            return match.group(0)
+        spanish = bool(re.search(r"alta|casa|irse|egreso|domicilio", match["what"]))
+        home = bool(re.search(r"home|casa|domicilio", match["what"])) or match["what"].startswith(("go", "irse", "ir "))
+        return match["lead"] + ("alta" + (" a domicilio" if home else "") if spanish
+                                else "discharge" + (" home" if home else ""))
+    return _OK_TO_DISCHARGE.sub(say, text)
+
+
 def parse_family_actions(text) -> dict:
     """Return source-ordered action dictionaries without changing patient state.
 
@@ -3276,9 +3817,14 @@ def parse_family_actions(text) -> dict:
     A conditional instruction is retained as a future plan, never executed now.
     """
     raw = str(text or "")
+    # A run of spaces or tabs means one space; a run of thousands took seconds to read, since
+    # several steps scan the text again at every position (TD-27, cycle 8). Line breaks still
+    # end a sentence.
+    spaced = re.sub(r"[ \t\u00a0]{2,}", " ", raw)
     normalized = _spanish_imperatives(
         _spanish_proclitics(_reason_then_order(_declared_intention(_opening_time_word(
-            _fluid_stop_verbs(_through_the_line(_correcting_with(_normalize(raw)))))))))
+            _fluid_stop_verbs(_through_the_line(_correcting_with(_ok_to_discharge(_unit_point(_chart_with(
+                _ringer_abbreviation(_normalize(spaced)))))))))))))
     # A resident who says to wait for a result before treating has said
     # something about sequence that the engine must not optimise away (faculty
     # specification 2026-09-23, section 5). The two halves are parsed
@@ -3350,6 +3896,16 @@ def parse_family_actions(text) -> dict:
         if summary and not any(_COMMAND.match(part.strip())
                                for part in re.split(r",|;|\b(?:y|and|then|luego)\b", sentence[summary.end():])):
             continue
+        # "Hemocultivos x2 y urocultivo ya tomados", "blood cultures and lactate already
+        # drawn": the state closes every study joined before it, and none is asked for again
+        # (post hoc, blind set of cycle 8; without the count it was so before the cycle).
+        done = _studies_done().search(sentence)
+        if done:
+            after = done.end() + _state_tail(sentence[done.end():])
+            rest = re.sub(r"^(?:[\s,:\-–—>]|(?:y|e|and|then|luego|so|pero|but)\b)+", "", sentence[after:])
+            sentence = (sentence[:done.start()] + " " + rest).strip(" ,")
+            if not sentence:
+                continue
         # Two blood products given one ratio or one shared count: "GR y plasma 1:1,
         # 4 U de cada uno" and "Plasma y GR 1:1" were lost without a word, and
         # "PRBC and FFP 1:1, 4 units each" half read (post hoc, cycle 7). Which
@@ -3414,6 +3970,12 @@ def parse_family_actions(text) -> dict:
                 trailing_advice.append((clause, "repeat", {"of": _repeat_target(head, clause), **structure}))
                 sentence = head
         conditional = _CONDITIONAL.search(sentence)
+        # A "when" inside what the resident saw is no condition: "Mareada cuando la PA baja a
+        # 80/50, SF 500 ml ev" and "Presyncope when BP drops below 90 on standing, epinephrine
+        # 0.5 mg IM now" lost their order without a word (post hoc, adversarial review of cycle
+        # 8). The sentence reads on as it did before the cycle, and a condition after it counts.
+        while conditional and _describes_what_was_seen(sentence, conditional):
+            conditional = _CONDITIONAL.search(sentence, conditional.end())
         if conditional:
             # "Start oxygen ..., and if BP falls give fluids" contains an
             # unconditional first order. "Give oxygen if sats fall" does not.
@@ -3447,7 +4009,9 @@ def parse_family_actions(text) -> dict:
                 # rest is the plan.
                 split = None
                 contingency_split = False
-                for match in re.finditer(r",\s*|\s+(?:y|e|and)\s+", sentence[:conditional.start()]):
+                # "Then" parts them too: "NS 500 mL bolus now then repeat when SBP < 90" gives the
+                # bolus now (post hoc, adversarial review of cycle 8).
+                for match in re.finditer(r",\s*|\s+(?:y|e|and|then|luego)\s+", sentence[:conditional.start()]):
                     split = match
                 if split and not sentence[split.end():conditional.start()].strip():
                     # "Start oxygen NC 3 L/min, if saturation falls": nothing stands
@@ -3462,14 +4026,20 @@ def parse_family_actions(text) -> dict:
                     # order ("transfundir 2 U de GR O negativo, si sigue
                     # hipotenso, ...") is read on its own: held and asked about,
                     # not folded into the plan where it vanished.
-                    then = contingency["then"] if contingency else ""
+                    # A condition that runs on into its own order without a comma is one too:
+                    # "Salbutamol 5 mg NBZ ahora, cuando la sat baje de 92% repetir" gave nothing
+                    # now (post hoc, adversarial review of cycle 8).
+                    then = contingency["then"] if contingency else _order_inside(sentence[conditional.end():])
                     # Only up to the next condition: each "si no, X" read the
                     # whole rest of the sentence again, twice, and the time
                     # doubled with every one (adversarial review of cycle 6).
                     following = _CONDITIONAL.search(then, 1)
                     if following:
                         then = then[:following.start()]
-                    if not (contingency and (_orders_now(head) or _an_instruction(head))
+                    # Without the comma only the resident's own order parts from its plan: "En el SAMU le
+                    # dieron atropina 0,5 mg ev, si no respondía iban a iniciar dopamina" is an account.
+                    if not ((contingency and (_orders_now(head) or _an_instruction(head))
+                             or (then and not contingency and _orders_now(head)))
                             and _an_instruction(then)):
                         split = None
                     else:
@@ -3489,6 +4059,51 @@ def parse_family_actions(text) -> dict:
                     # and "si baja la PA, SF 500 ml ev" vanished without a word
                     # (2026-09-25).
                     bare = _CONDITION_CLAUSE.sub(" ", sentence).strip(" ,:")
+                    if not bare:
+                        # A condition written without a comma runs on into its order: "when hgb
+                        # drops below 7 transfuse 1 unit PRBC", "whenever she gets drowsy or pCO2
+                        # >45 -> call ICU". The order is where an order verb, or a discharge said
+                        # as a clearance, starts; the whole was lost without a word (post hoc,
+                        # blind set of cycle 8).
+                        clause = sentence[conditional.end():]
+                        bare = next((clause[start.end():] for start in re.finditer(r"(?:^|\s|->|→|=>)\s*(?=[a-z])", clause)
+                                     if _COMMAND.match(clause[start.end():]) or _OK_DISCHARGE_TAIL.match(clause[start.end():])),
+                                    "")
+                    # Advice to the patient in a sentence of its own is advice, as it is after
+                    # the discharge in the same sentence: "Lo doy de alta. Regresar si tiene
+                    # fiebre." lost the advice without a word (cycle 8).
+                    if _RETURN_ADVICE.match(sentence):
+                        keep(sentence, "advice")
+                        continue
+                    # What the condition leads to needs only to be an instruction, not an order
+                    # the reader can run: "Once MAP is above 65: stop the bolus and run NS at
+                    # 100 mL/h", "if bleeding continues, place a second one proximal to the
+                    # first", "Si persiste hipotensa, agregar vancomicina 25 mg/kg ev" and
+                    # "once his fingerstick glucose drops below 70, push 50 mL of D50 IV" were
+                    # lost without a word (TD-29 and TD-30, found comparing with the V2 reader,
+                    # cycle 8). An instruction is an order verb, a verb with a medicine or a
+                    # quantity, or a substance with the quantity given. Someone else's account
+                    # is not one, and "if" after "check", "decidir" or "preguntar" is
+                    # "whether". It applies only where the condition governs the whole
+                    # sentence: it opens it, or nothing parts it from the order ("platelets if
+                    # count < 50"). In "PA 76/46, sangrado arterial - pasar 2 UGR ahora, O neg
+                    # si no hay tipificada" it qualifies one clause, and a plan of the whole
+                    # would misname the order before it, which is not read.
+                    before = sentence[:conditional.start()].strip(" ,")
+                    whole = not before or not (re.search(r"[,;:]|\s+(?:y|e|and|then|luego)\s+", before)
+                                               or re.search(r"[,;:]", sentence[conditional.start():]))
+                    instruction = whole and bool(bare and bare != sentence and (_COMMAND.match(bare) or _OK_DISCHARGE_TAIL.match(bare) or (
+                        _INSTRUCTION_START.match(bare) and (_names_a_drug(bare) or _QUANTITY.search(bare))) or (
+                        _ADMINISTERED_QUANTITY.search(bare) and _names_a_substance(bare)) or (
+                        # "Platelets if count < 50", "plaquetas si recuento < 50" (TD-32, cycle 8).
+                        # "Plts if < 50k", "plaq 1 U c/10 kg si recuento < 50 mil" (post hoc,
+                        # blind set of cycle 8).
+                        re.fullmatch(r"(?:(?:\d+|one|two|una|dos)\s+(?:u|units?|unidades?|pools?|bolsas?)\s+(?:de\s+|of\s+)?)?"
+                                     r"(?:" + _PRODUCT_NAMES + r"|" + _PRODUCT_WORDS + r"|plts?|plaq|" + _RED_CELL_WORDS + r")"
+                                     r"(?:\s+(?:\d+\s*(?:u|units?|unidades?|pools?|bolsas?)|now|ahora|c/\s*\d+\s*kg|"
+                                     r"(?:por|per)\s+(?:cada\s+)?\d+\s*kg|\d+\s*ml/kg))*", bare)))
+                        and not _NOT_THE_RESIDENTS_ORDER.search(bare)
+                        and not _WHETHER.search(sentence[:conditional.start()]))
                     # Tranexamic acid is read only where it opens its clause
                     # (C08), so a plan such as "if it keeps oozing, run the
                     # second gram of TXA over 8 hours" was no longer kept; it is
@@ -3497,7 +4112,7 @@ def parse_family_actions(text) -> dict:
                             r"\b(?:give|dar|doy|administrar|administro|start|iniciar|inicio|order|solicitar|"
                             r"solicito|pido|reassess|reevaluar|reevaluo|alta|hospitalizar|hospitalizo|"
                             r"ingresar|ingreso|trasladar|traslado|admit|discharge|transfer)\b", sentence) or (
-                            bare and bare != sentence and _orders_now(bare)):
+                            bare and bare != sentence and _orders_now(bare)) or instruction:
                         keep(sentence, "conditional")
                     continue
         # Safety-netting written without "if" lists what should bring the patient
@@ -3566,6 +4181,9 @@ def parse_family_actions(text) -> dict:
             index += 1
         reasoning_head = False
         discharged = False
+        # A discharge home in this sentence: the medicines listed after it with a regimen for
+        # home are its prescriptions (post hoc, blind set of cycle 8).
+        home_discharge = False
         # Each item of this sentence and what it produced, for a route written
         # once after a list of doses (_share_trailing_route).
         members = []
@@ -3645,6 +4263,23 @@ def parse_family_actions(text) -> dict:
                 keep(piece.strip(), "advice")
                 inherited = None
                 continue
+            # What is given before the patient leaves is no prescription: "Alta a domicilio, salbutamol
+            # 4 puff ahora antes de irse", "tonight ceftriaxone 1 g IV q24h" (post hoc, adversarial
+            # review of cycle 8).
+            if home_discharge and _HOME_REGIMEN.search(piece) and (_names_a_drug(piece) or _UNMODELED_ORDER.search(piece)) \
+                    and not re.search(r"\b(?:now|ahora|ya|stat|tonight|esta\s+noche|here|aqui|antes\s+de\s+(?:irse|salir|"
+                                      r"que\s+se\s+vaya)|before\s+(?:he|she|they)?\s*(?:leaves?|goes|going|discharge)|"
+                                      r"iv|ev|im|io|intravenous\w*|endovenos\w*|intramuscular\w*)\b", piece):
+                # "Ok para alta, control en APS en 48 h, prednisona 40 mg x 5 días, salbutamol 2
+                # puff c/6 h": what goes home with the patient is a prescription, recorded and
+                # never given here. The steroid was asked its route, and the question held the
+                # discharge (post hoc, blind set of cycle 8; "alta con..." was read so since
+                # cycle 6, KD-06).
+                keep(re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip()), "not_modelled")
+                details[-1].update({"kind": "prescription", "prescription": True})
+                members[-1][1] = []
+                inherited = None
+                continue
             if _NEGATED_FINDING.match(piece):
                 # A finding, not a negation: what follows it is read ("sin acceso
                 # venoso: EZ-IO tibial"), and it negates nothing after it.
@@ -3708,10 +4343,38 @@ def parse_family_actions(text) -> dict:
                     members[-1][1] = ran
                 inherited = None
                 continue
+            timing = _BLOOD_TIMING.fullmatch(item)
+            previous_blood = next((action for action in (members[-2][1] if len(members) > 1 else [])
+                                   if action.get("type") == "blood" and action.get("units")), None)
+            if timing and previous_blood is not None:
+                # "Transfundir 2 U GR, pasar en 2 hrs c/u": the time the units run in, written
+                # as a clause of its own, was quoted back and held the transfusion (post hoc,
+                # blind set of cycle 8). Each unit's time adds up when it is per unit.
+                minutes = float(timing["value"].replace(",", ".")) * (
+                    60 if timing["unit"].startswith(("h", "hora", "hour")) else 1)
+                if timing["each"]:
+                    minutes *= previous_blood["units"]
+                previous_blood["administration_duration_min"] = minutes
+                members[-1][1] = members[-2][1]
+                continue
+            if len(members) > 1 and any(action.get("type") == "epinephrine_im" or str(action.get("route") or "").upper()
+                                        in {"IM", "SC"} for action in members[-2][1]) \
+                    and _INJECTION_SITE.fullmatch(item):
+                # "Give IM epi, anterolateral thigh": where the injection goes, quoted back as an
+                # order of its own that held the rest (TD-31, cycle 8).
+                members[-1][1] = members[-2][1]
+                continue
             if len(members) > 1 and any(action.get("type") == "hemorrhage_control" for action in members[-2][1]) \
                     and _WHERE_THE_MEASURE_GOES.fullmatch(item):
                 # It stays with the measure, and so does the next one: "deep and tight".
                 members[-1][1] = members[-2][1]
+                continue
+            if not anothers and _MTP_STOP.search(item) and not _MTP_STOP_NOT_NOW.search(sentence):
+                # "Deactivate MTP", "stand down the MTP", "suspender PTM": recorded as the
+                # protocol stood down, never as an activation or nothing at all (TD-32, cycle 8).
+                keep(item, "not_modelled")
+                members[-1][1] = []
+                inherited = None
                 continue
             activation = None if anothers else massive_transfusion_activation(piece)
             product = None if anothers else unmodelled_blood_product(piece, here, own=bool(own))
@@ -3764,6 +4427,27 @@ def parse_family_actions(text) -> dict:
                 inherited = None if activation is not None else here
                 kept_blood = len(details) - 1 if details and not ran else None
                 continue
+            attached = None if anothers else _ATTACHED_PLAN.search(piece)
+            # "Alta con adrenalina autoinyectable" is the autoinjector the patient goes home with (post
+            # hoc, adversarial review of cycle 8); given now, "autoinyectable" is read as before.
+            if (attached and (_UNMODELED_ORDER.search(piece[attached.end():])
+                              or re.search(r"\bauto-?(?:inyect|inject)able\b", piece[attached.end():]))
+                    and not _UNMODELED_ORDER.search(piece[:attached.start()])):
+                head_actions, _ = _parse_piece(piece[:attached.start()], here)
+                if any(action.get("type") == "disposition" and action.get("destination") == "home"
+                       for action in head_actions):
+                    # "Discharge home with an EpiPen prescription": the discharge runs, and
+                    # what the patient goes home with is its prescription. The prescription
+                    # took the whole clause and the discharge was lost without a word (found
+                    # with KD-05, cycle 8).
+                    keep(piece[attached.end():].strip(" ,"), "not_modelled")
+                    details[-1].update({"kind": "prescription", "prescription": True})
+                    members[-1][1] = head_actions
+                    actions.extend(head_actions)
+                    discharged = True
+                    last_order = sentence
+                    inherited = None
+                    continue
             if _UNMODELED_ORDER.search(piece) or _unmodelled_dextrose(piece):
                 # Recognised and not something this version executes: recorded as
                 # the resident's indication, with its administration and effect
@@ -3850,6 +4534,7 @@ def parse_family_actions(text) -> dict:
             discharged = discharged or any(action.get("type") == "disposition" for action in parsed)
             if any(action.get("type") == "disposition" and action.get("destination") == "home"
                    for action in parsed):
+                home_discharge = True
                 # The plan written into the discharge order itself is the same
                 # advice as the plan listed after it: "discharge him with
                 # orthopedic follow-up" and "lo doy de alta con control en
@@ -3897,8 +4582,41 @@ def parse_family_actions(text) -> dict:
             actions.append(action)
         future.extend(deferred.get("recognized_future_actions", []))
         details.extend(deferred.get("future_details", []))
-    return {"raw_text": raw, "actions": actions, "recognized_future_actions": future,
+    return {"raw_text": raw, "actions": _quoted_as_written(actions, raw), "recognized_future_actions": future,
             "future_details": details}
+
+
+def _quoted_as_written(actions, raw):
+    """An unreadable order is quoted as the resident wrote it, not as the reader normalised it.
+
+    "Pasó tranexámico" was quoted back as "administrar tranexamico" (TD-28, cycle 8). The
+    words the reader kept are found again in what was written: each matches its written word
+    once accents and case are set aside, or is the infinitive the reader read an imperative
+    as. Where no written span matches well enough, the quote stays as it was.
+    """
+    written = [(match, _normalize(match.group(0)).strip(".,;:!?()\"'¿¡")) for match in re.finditer(r"\S+", raw)]
+    for action in actions:
+        fragment = action.get("unrecognized_text") if isinstance(action, dict) else None
+        if not fragment:
+            continue
+        # The reader's own joined tokens ("type_and_screen", "grupo_y_pruebas") are words the
+        # resident wrote apart; unsplit, a question quoted the token (post hoc, adversarial review of
+        # cycle 8).
+        words = [word.strip(".,;:!?()\"'") for word in fragment.replace("_", " ").split()]
+        best = None
+        for start in range(0, len(written) - len(words) + 1):
+            window = written[start:start + len(words)]
+            same = [word == key or _ES_IMPERATIVE_FORMS.get(key) == word for word, (_, key) in zip(words, window)]
+            if same[0] and same[-1] and sum(same) >= max(1, round(0.6 * len(words))) and (
+                    best is None or sum(same) > best[0]):
+                best = (sum(same), window[0][0].start(), window[-1][0].end())
+        if best is None:
+            continue
+        quoted = " ".join(raw[best[1]:best[2]].split()).rstrip(".,;:")[:80]
+        if quoted and quoted != fragment:
+            action["message"] = action["message"].replace(f'"{fragment}"', f'"{quoted}"', 1)
+            action["unrecognized_text"] = quoted
+    return actions
 
 
 # A route written once after a list of doses belongs to every dose of the list:

@@ -47,7 +47,7 @@ leer las respuestas (§88).** Candidatos:
 |---|---|---|
 | ENGLISH VALIDATION BASELINE | `ec1c77f` | Registrado en `validation/baselines.json` (ciclo 5) |
 | DEVELOPMENT HARDENED BASELINE V1 | `72a4a53` | Referencia de desarrollo (ciclo 6), no de validación |
-| DEVELOPMENT HARDENED BASELINE V2 | candidato del ciclo 7 | Referencia de desarrollo (ciclo 7), no de validación |
+| DEVELOPMENT HARDENED BASELINE V2 | `9d2cd9e` | Referencia de desarrollo (ciclo 7), no de validación; registrada en `validation/BASELINES.md` |
 
 Ninguno se llama «validado».
 

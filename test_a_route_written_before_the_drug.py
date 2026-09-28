@@ -96,10 +96,17 @@ def test_every_word_that_opens_the_order_is_a_route_the_reader_already_knows():
 
 @pytest.mark.parametrize("text", [
     "Oral intake is poor", "IV access now", "Neb treatments helped before", "IM injection site is clean",
-    "Oral paracetamol 1 g was given at home", "In the meantime paracetamol 1 g PO",
+    "Oral paracetamol 1 g was given at home",
 ])
 def test_a_route_word_that_opens_no_order_gives_nothing(text):
     assert not [a for a in actions(text) if a.get("agent") or a.get("dose_mg") is not None]
+
+
+def test_in_the_meantime_opens_an_order_with_its_own_route_never_the_nasal_one():
+    # "In" there is a preposition, never the nasal route, as before. Since cycle 8 "in the
+    # meantime" opens the order it precedes, which is read with the route written after it;
+    # it used to be read as nothing (post hoc, blind set of cycle 8).
+    assert read("In the meantime paracetamol 1 g PO") == [("antipyretic", "paracetamol", 1000.0, "PO")]
 
 
 def test_the_nasal_route_is_still_read_only_after_the_dose():

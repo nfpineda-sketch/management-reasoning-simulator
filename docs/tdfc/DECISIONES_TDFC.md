@@ -2,9 +2,23 @@
 
 Ciclo 5 del AI Advisor · instrucción docente 59C · 2026-09-28.
 
-**Estado: BORRADOR PARA DECISIÓN DOCENTE. NADA ESTÁ ACTIVO.**
+**Estado al ciclo 8 (2026-09-28): APLICADO en el banco, salvo lo que espera
+decisión.** Este documento conserva el borrador tal como se presentó; lo que
+sigue lo actualiza.
 
-- **Ninguna fila está en el banco.** TD1, F1, C1, C3 y C4 siguen con la regla de
+- **TDFC-1 a 6 y 8 se aprobaron conceptualmente en el ciclo 7 (§28)** «según las
+  recomendaciones actuales», y el ciclo 8 las escribió en el banco con el modelo
+  de C14 (C-2026-09-28-17). **C4 es NO** en todo el entorno desde el ciclo 7.
+- **Lo que no está en el banco:** las filas de `acs_54m_inferior` esperan DF-20,
+  como recomendaba TDFC-5; ese caso, los casos generados y PS001 conservan la
+  transición.
+- **La tabla aplicada** está en `TDFC_TABLA_FINAL.md`, con los conteos y las dudas
+  residuales de las filas «claras».
+
+**El borrador original decía:** «BORRADOR PARA DECISIÓN DOCENTE. NADA ESTÁ
+ACTIVO.»
+
+- **Ninguna fila estaba en el banco.** TD1, F1, C1, C3 y C4 seguían con la regla de
   transición: observables en todo encuentro.
 - **Las filas caso por caso** están en `BORRADOR_TDFC.md`. La matriz de cobertura
   del banco está en `MATRIZ_OPORTUNIDADES.md`.

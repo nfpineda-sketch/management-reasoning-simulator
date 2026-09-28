@@ -16,6 +16,8 @@ TEST_LABELS = {
     "crossmatch": "Blood group and crossmatch",
     # The same for a pregnancy test (TD-22, 2026-09-28).
     "pregnancy_test": "Pregnancy test",
+    # And for a urine culture (cycle 8).
+    "urine_culture": "Urine culture",
 }
 FIELDS = {
     "cortisol_ug_dl": "Cortisol (µg/dL)", "tsh_miu_l": "TSH (mIU/L)",

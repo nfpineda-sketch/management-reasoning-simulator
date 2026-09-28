@@ -229,8 +229,8 @@
    },
    {
     "name": "DEVELOPMENT HARDENED BASELINE V2",
-    "commit": "cycle 7 candidate, if it meets the definition of done",
-    "status": "development reference (cycle 7), not a validation baseline"
+    "commit": "9d2cd9e0d208b2878c5810e1a264a8b8d85be2e0",
+    "status": "development reference (cycle 7), not a validation baseline; recorded in validation/BASELINES.md"
    }
   ],
   "rule": "Never the cycle's HEAD chosen automatically, and never chosen after the responses are read."

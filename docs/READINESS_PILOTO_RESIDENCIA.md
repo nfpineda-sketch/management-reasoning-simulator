@@ -1,8 +1,20 @@
-# Readiness del piloto con residentes (ciclo 7)
+# Readiness del piloto con residentes (ciclo 8)
 
 Instrucción docente del 2026-09-28, ciclo 7 (§96, §98.16 y §99). Actualiza la
 versión del ciclo 6 después de TD-21, TD-26, C7-06, C4, C14, DF-24 y
 PostgreSQL.
+
+**Ciclo 8 (2026-09-28).** Las tres respuestas no cambian. Cambia lo que queda:
+
+- **Corregidos:** TD-29 («cuando/when» ya guarda el plan), TD-30, la
+  adrenalina IM de TD-31, TD-32 y KD-05 (`docs/CICLO8_LECTOR.md`).
+- **TDFC aplicado:** TD1, F1, C1 y C3 declarados caso por caso, como C14. La
+  transición sólo queda donde falta una decisión.
+- **Hallado y no corregido, igual que antes del ciclo:**
+  - «Reevaluar en 1 h» corre a los 0 minutos (TD-34);
+  - «Aspirin 300 mg given by EMS» da la dosis de nuevo (TD-36).
+
+  Los dos se suman a la condición 5.
 
 **Esto es readiness técnica, no validez metodológica.**
 
@@ -38,7 +50,12 @@ PostgreSQL.
    - Staging no se tocó, como se instruyó.
 5. **Decir a los residentes cómo escribir mejor:**
    - una orden por línea, con su verbo;
-   - «si…» para una orden condicional; «cuando…» todavía corre ahora (TD-29).
+   - «si…» o «cuando…» para una orden condicional: desde el ciclo 8 las dos
+     la guardan como plan;
+   - el tiempo de una reevaluación en minutos («reevaluar en 60 min»): «en
+     1 h» todavía reevalúa sin que pase el tiempo (TD-34);
+   - lo recibido en ruta con quien lo dio delante («el SAMU dio aspirina 300
+     mg»): «Aspirin 300 mg given by EMS» se da de nuevo (TD-36).
 
 ## Bloqueos del ciclo 6, reevaluados (§96)
 
@@ -54,16 +71,17 @@ PostgreSQL.
 
 | Clase | Área | Qué | Referencia |
 |---|---|---|---|
-| HIGH | Lector | «When», «cuando» y «once» no hacen condicional una orden que no es sangre: corre ahora, a la vista en la sala | TD-29 |
+| HIGH | Lector | «Reevaluar en 1 h» o «Reassess in 1 h» reevalúa a los 0 minutos, sin aviso; «1 hora» pregunta los minutos | TD-34 |
+| HIGH | Lector | Una dosis escrita antes de quien la dio se da de nuevo («Epinephrine 0.5 mg IM given by EMS»); con el equipo como sujeto se pregunta | TD-36 |
 | HIGH | Fricción del lector | Mucho se retiene con una pregunta. Es honesto, pero cuesta turnos. En TD-26 las retenciones bajaron a la mitad | TD-14 |
 | HIGH | Caso clínico | `acs_54m_inferior`: el VD contradicho | TD-01 · DF-20 |
 | HIGH | Motor · trauma | Tras reponer con cristaloide, transfundir dispara la sobrecarga | TD-33 |
-| MEDIUM | Lector | Órdenes sin verbo que no se leen («surgery consult», «Endoscopía urgente», «2 large-bore IVs») | TD-30 |
-| MEDIUM | Flujo docente | Con la transición, cada encuentro deja objetivos TD1, F1, C1 y C3 por valorar; TDFC pasó intacto al ciclo 8 | DF-12, TDFC |
+| MEDIUM | Lector | En una lista sin verbo, un examen abreviado o un nombre comercial que el lector no conoce se pierde sin aviso («CBC coags», «protonix 80 IV») | TD-35 · KD-02 |
+| MEDIUM | Flujo docente | TDFC aplicado en el ciclo 8: TD1, F1, C1 y C3 sólo se valoran donde el caso ofrece la oportunidad. `acs_54m_inferior`, los casos generados y PS001 conservan la transición | DF-20, DF-12 |
 | MEDIUM | Integridad | I-F18 y los demás de TD-18 quedaron fuera de DF-24 | TD-18 |
 | MEDIUM | Consistencia clínica | Las filas 4a, 4b, 6, 7 y 8 de DF-23 | CLINICAL REVIEW |
 | MEDIUM | Escala | La cola docente es lineal: 3 s con 1000 encuentros pendientes | TD-09 |
-| LOW | Idioma y observabilidad | Avisos en inglés; el commit por turno | TD-23, TD-10 |
+| LOW | Idioma y observabilidad | La razón de C14 en inglés en el portal docente; el commit por turno. Los avisos en inglés (TD-23) se corrigieron en el ciclo 8 | TD-07, TD-10 |
 
 ## Qué cambió desde el ciclo 6
 
