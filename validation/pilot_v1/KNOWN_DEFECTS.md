@@ -62,3 +62,15 @@ Sirve para que un resultado del piloto se lea como **falla conocida** o como
   - La vía nasal se lee donde el lector ya la lee: después de la dosis
     («naloxone 2 mg IN»), o escrita «intranasal».
   - La orden se retiene; nunca se da por otra vía.
+
+**Clases halladas por la auditoría interna del ciclo 5, no registradas a
+propósito (DF-22):**
+
+- La auditoría nocturna encontró con frases escritas por una IA 9 clases
+  CRITICAL y 14 HIGH del lector (`docs/AUDITORIA_TRACE_CICLO5.md`). Ejemplos:
+  «Dx: orden» con dos puntos, y «X, si no responde, Y».
+- **No están en esta lista**, para que el piloto mida su frecuencia real sin
+  sesgo. Un error del piloto de una de esas clases se adjudica como **falla
+  nueva**, no como `known_defect`.
+- Después, al priorizar, se anota que la auditoría ya lo había visto
+  (`docs/PRIORIZACION_POST_PILOTO.md`).

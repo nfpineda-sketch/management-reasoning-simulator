@@ -44,10 +44,18 @@ la corrección detrás de cada declaración nueva.
 **El código del motor es el mismo en `3745b0f` y en `ec1c77f`.** Sólo cambian
 el generador de un documento y el documento.
 
-**Cómo comprobar que se usa este baseline:** `git checkout ec1c77f0339a`, o
-que `git diff ec1c77f0339a6e3087337d2a621b2e630d3549a5 -- '*.py'` salga
-vacío. Los commits posteriores del ciclo 5 son sólo de documentación y del
-registro de baselines.
+**Cómo comprobar que se usa este baseline:** `git checkout ec1c77f0339a`.
+
+**Commits posteriores del ciclo 5:**
+
+- documentación y registro de baselines;
+- la corrección nocturna 59Z (`3f0524c`), en `app.py`: un encuentro nuevo ya
+  no hereda el cierre del anterior;
+- el catálogo de hipoglicemia regenerado.
+
+Ninguno toca el lector ni el motor: `git diff ec1c77f0339a -- family_parser.py
+shared_order_language.py family_engine.py` sale vacío. Aun así, una medición
+se corre en el commit del baseline, no en uno posterior.
 
 ## Qué registra cada corrida
 
