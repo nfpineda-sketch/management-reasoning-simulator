@@ -11,11 +11,51 @@ del Ciclo 2 queda como antecedente: por decisión docente no se construyen las
 
 | Componente | Estado |
 |---|---|
-| Plantilla Word, ES y EN | **IMPLEMENTED y TESTED.** Hay 12 documentos del piloto en `validation/plantillas_v1/` y un generador. |
-| Ingesta DOCX → texto → entradas → página real → salida estructurada → reporte | **IMPLEMENTED y TESTED** (`validation_corpus.py`, `tools_validation_corpus.py`, 25 tests). |
-| Reference standard: anotación ciega, adjudicación y clases de error | Diseñado y con soporte en la herramienta. **Sin datos.** |
-| Piloto | **PROPUESTO** (§4). No se envió nada ni se contactó a nadie (§97). |
+| Plantilla Word, ES y EN | **IMPLEMENTED y TESTED.** Plantilla VC2 desde el ciclo 4, con la instrucción breve del §13 del ciclo 4. |
+| Ingesta DOCX → texto → entradas → página real → salida estructurada → reporte | **IMPLEMENTED y TESTED** (`validation_corpus.py`, `tools_validation_corpus.py`, `test_validation_corpus.py`). |
+| Reference standard: anotación ciega, adjudicación y clases de error | Guías, plantilla y flujo listos en `validation/pilot_v1/annotation/`. **Sin datos.** |
+| Piloto | **APROBADO CON MODIFICACIONES** (DF-15, 2026-09-28) y **PREPARADO**: `validation/pilot_v1/`. No se envió nada ni se contactó a nadie. |
 | Datos de médicos | **Ninguno.** Todo texto usado en los tests es sintético y escrito para ellos. |
+
+## Ciclo 4 (2026-09-28): el piloto aprobado
+
+**El paquete está en `validation/pilot_v1/`; empiece por su `README.md`.** La
+§4 de abajo describe la propuesta del ciclo 3 y queda como antecedente. Lo que
+cambió:
+
+- **Asignación.** Tres pares; los dos médicos de cada par comparten dos casos,
+  y cada caso llega a tres médicos. Cada médico tiene un solo caso sin shock y
+  nunca las dos hemorragias juntas.
+- **Plantilla VC2.** Instrucción breve, alineada con la guía del residente, en
+  texto libre y con la frase docente literal. Los 18 documentos están
+  personalizados con el código del médico. **DOCX STRUCTURALLY VERIFIED**, no
+  verificados visualmente en Word.
+- **Sorteo development/sealed.** Definido y no ejecutado:
+  `validation/pilot_v1/SPLIT_PROCEDURE.md` y el comando `split`.
+  - Se sortea por médico, estratificado por par.
+  - La semilla sale de los bytes de los archivos devueltos y del commit del
+    baseline, y nunca de su texto.
+- **Anotación `VC2-ANNOTATION-1`.**
+  - Seguimiento, regreso y repetición son ítems propios (`FOLLOWUP`, `RETURN`,
+    `REPEAT`).
+  - Una indicación de regreso no es contingencia (VC-3).
+  - `ingest` escribe también la hoja del segundo anotador: un 20 % fijo de cada
+    documento.
+- **Taxonomía (§40).** Las ubicaciones pasan a ser `parsing`, `execution`,
+  `trace`, `clarification` y `other`. Se agregan dos columnas, que nunca
+  entran en una medida:
+  - `impact` (CRITICAL/HIGH/MEDIUM/LOW, §60);
+  - `known_defect` (§73).
+- **Bug corregido en la herramienta.**
+  - **Qué pasaba.** La vista del motor emparejaba los textos y los tipos de los
+    planes, que la traza guarda en dos listas ordenadas por separado. Una
+    indicación de regreso podía aparecer como plan condicional y contarse como
+    contingencia.
+  - **Corrección.** La traza guarda ahora cada plan con su tipo, en orden
+    (`tools_order_reading.compact_entry`), y la repetición de DF-16b se muestra
+    como tal.
+- **Retiradas.** Las plantillas VC1 (`validation/plantillas_v1/`) se retiraron;
+  la herramienta todavía lee documentos VC1.
 
 ## 1. Fase 1 y Fase 2
 
@@ -221,7 +261,9 @@ documentos y ocho entradas tomaron 35 s en total.
   casos donde la conducta inicial depende del ritmo (bradicardias) quedan fuera
   del piloto.
 
-## 4. Piloto propuesto (§96)
+## 4. Piloto propuesto (§96) · antecedente del ciclo 3
+
+> Reemplazado por el piloto aprobado del ciclo 4 (`validation/pilot_v1/`).
 
 Optimizado para **bajo costo humano, variabilidad útil e independencia del
 desarrollo**.
@@ -343,12 +385,11 @@ nombre. No se pide nombre ni correo en el documento.
 | `reassessment` | Escribió qué o cuándo reevaluar. Por decisión docente D1, el control después del alta cuenta como reevaluación. |
 | `rationale` | Explicó por qué: hipótesis, prioridad o motivo. |
 | `expectation` | Dijo qué espera que ocurra. |
-| `contingency` | Dijo qué haría si la evolución no es la esperada. Las indicaciones de regreso al alta van en `disposition_followup`, por coherencia con DF-10 (**decisión docente pendiente**: VC-3). |
-| `disposition_followup` | Destino, indicaciones al alta, control o signos de alarma. |
+| `contingency` | Dijo qué haría si la evolución no es la esperada, con una condición explícita que cambia el plan. Una indicación de regreso no lo es por sí sola: es un ítem `RETURN` (VC-3, decidido el 2026-09-28). |
 | `clinically_sufficient` | Un clínico podría ejecutarlo sin preguntar nada. **Obligatoria si hay ítems.** |
 | `ambiguous` y `acceptable_readings` | Admite más de una lectura clínica razonable, y cuáles. |
 | `context_dependent` | Solo tiene sentido con lo ocurrido antes («súbala»). |
-| `annotator`, `annotation_version`, `note` | Código del anotador y versión (`VC1-ANNOTATION-1`). |
+| `annotator`, `annotation_version`, `note` | Código del anotador y versión (`VC2-ANNOTATION-1` desde el ciclo 4; hasta entonces `VC1-ANNOTATION-1`, con la columna `disposition_followup`). |
 
 **Etiquetas de ítem.** Son palabras clínicas, no tipos del motor:
 
@@ -360,7 +401,9 @@ nombre. No se pide nombre ni correo en el documento.
 - `MON` monitorización;
 - `CONSULT` interconsulta;
 - `DISP` destino;
-- `FOLLOWUP` indicaciones al alta o control;
+- `FOLLOWUP` control o seguimiento;
+- `RETURN` indicación de regreso (desde el ciclo 4);
+- `REPEAT` instrucción de repetición (desde el ciclo 4);
 - `REEVAL` reevaluación como acción;
 - `HX` pregunta de historia;
 - `EX` examen físico;
@@ -377,7 +420,8 @@ nombre. No se pide nombre ni correo en el documento.
 
 - **Contenido:** la anotación y el motor lado a lado.
   - Estado de ejecución y lectura del motor: acciones con sus parámetros,
-    `ASKED:` y `CONDITIONAL PLAN:`.
+    `ASKED:` y cada plan no ejecutado con su tipo (`PLAN (conditional):`,
+    `PLAN (repeat):`, `PLAN (advice):`…).
   - Aclaraciones pedidas y retenciones de razonamiento.
   - Slots del Trace con procedencia `stated`.
   - Avisos automáticos: un slot que no cita al médico, una orden registrada
@@ -401,8 +445,9 @@ nombre. No se pide nombre ni correo en el documento.
 | AMBIGUOUS INPUT | La entrada admite varias lecturas razonables y el motor no tomó una de ellas; no se fuerza una sola respuesta. |
 | ANNOTATION DISAGREEMENT | Los anotadores discrepan y no se resolvió. |
 
-**Locus:** `parsing`, `execution`, `reasoning_extraction`, `annotation` o
-`ambiguous_human_input`.
+**Ubicación (locus, §40 del ciclo 4):** `parsing`, `execution`, `trace`,
+`clarification` u `other`. Ni la entrada ambigua ni el desacuerdo entre
+anotadores llevan ubicación. Guía completa: `validation/pilot_v1/annotation/`.
 
 ## 6. Métricas (§68)
 

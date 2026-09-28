@@ -1,0 +1,186 @@
+{
+ "pilot_id": "VALIDATION_PILOT_V1",
+ "template_version": "VC2",
+ "documents": [
+  {
+   "participant": "EM01",
+   "pair": "P1",
+   "case": "C01",
+   "language": "es",
+   "file": "EM01_C01_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "a79f21dca1323b0ea2b257ce2ae71df45fb9483a23beb4a8961eda156480c5a9",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM01",
+   "pair": "P1",
+   "case": "C06",
+   "language": "es",
+   "file": "EM01_C06_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "42a5c88a00b6fccebf3db690118e022a18be0a77c0af663e93be1e4373b9d001",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM01",
+   "pair": "P1",
+   "case": "C04",
+   "language": "es",
+   "file": "EM01_C04_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "1be620ba23fc96003e494279db7b5b33803e32fcfe49e15a32a448873b86419a",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM02",
+   "pair": "P1",
+   "case": "C01",
+   "language": "es",
+   "file": "EM02_C01_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "59adbc36bfd483a75f1421fae4620ab02ca87caf2bc5aaee4b88b127748ef685",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM02",
+   "pair": "P1",
+   "case": "C06",
+   "language": "es",
+   "file": "EM02_C06_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "6d6efa6e63ec88f820ba93148579f1611b18befd40ef34c6f283a3b5b310aa85",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM02",
+   "pair": "P1",
+   "case": "C02",
+   "language": "es",
+   "file": "EM02_C02_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "38e879b867b220488e02b14e5bfecf28633f836b7540096e37465e7a67a45c38",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM03",
+   "pair": "P2",
+   "case": "C02",
+   "language": "es",
+   "file": "EM03_C02_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "cecce364046b66f92496edbf77b22a916fdae016b9e7af50a8ba62566081487d",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM03",
+   "pair": "P2",
+   "case": "C05",
+   "language": "es",
+   "file": "EM03_C05_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "71e523a81ff44a5e6e378a5f43cffa024453b6202aef0895f7b5ecf21d1816dc",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM03",
+   "pair": "P2",
+   "case": "C06",
+   "language": "es",
+   "file": "EM03_C06_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "933a43c5ad42dfca16b32831657a70064e0da501c4bc3c3984c0e1fedc1bf649",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM04",
+   "pair": "P2",
+   "case": "C02",
+   "language": "es",
+   "file": "EM04_C02_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "6a15e0eb0515854355ff9e3ff9b9ca7ba6c64ea83c75bda00903bce33b72dc91",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM04",
+   "pair": "P2",
+   "case": "C05",
+   "language": "es",
+   "file": "EM04_C05_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "173d557e237ed7e31eb900473ed7d5174a13de010ccf2caec9f595d6bec3e1b8",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM04",
+   "pair": "P2",
+   "case": "C03",
+   "language": "es",
+   "file": "EM04_C03_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "34c1e9a665ecff2c4800f027f840bb8aa017a44549102ae0e417dfff59f54bf2",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM05",
+   "pair": "P3",
+   "case": "C03",
+   "language": "es",
+   "file": "EM05_C03_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "dcad3a7edd7e30f9fe83a3a242744e311ed02a82575261d85834eb96e94956d8",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM05",
+   "pair": "P3",
+   "case": "C04",
+   "language": "es",
+   "file": "EM05_C04_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "f4873ec403ee03106c8a3e94d2470f3c13086c70835040561c4a56b4cf4287b5",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM05",
+   "pair": "P3",
+   "case": "C01",
+   "language": "es",
+   "file": "EM05_C01_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "3fc795beaf75332f5db8d4b557f7778cc76458017919190fb39c2db6a86de389",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM06",
+   "pair": "P3",
+   "case": "C03",
+   "language": "es",
+   "file": "EM06_C03_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "eff9d33121a81bbabf726fce3d4debc1905f2ed3e0fba3a945cf065d5005ee40",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM06",
+   "pair": "P3",
+   "case": "C04",
+   "language": "es",
+   "file": "EM06_C04_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "610bba0603a258fb87125e55eecbfd51b10cd14b3fdd3cc150a84b1ccb71e56d",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  },
+  {
+   "participant": "EM06",
+   "pair": "P3",
+   "case": "C05",
+   "language": "es",
+   "file": "EM06_C05_es.docx",
+   "template_version": "VC2-ES",
+   "sha256": "0ebb2a15ad627daf74206391dec1237ce259d9c35f999d2234e8a59c7423adb1",
+   "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
+  }
+ ]
+}

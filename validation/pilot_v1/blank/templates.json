@@ -1,6 +1,6 @@
 {
  "corpus_version": "VALIDATION_CORPUS_V1",
- "template_version": "VC1",
+ "template_version": "VC2",
  "note": "The case codes stand for bank cases (validation_corpus.PILOT_CASES); the documents never name them. Spanish case text comes from case_text/es: confirm its faculty approval before any document is sent.",
  "documents": [
   {
@@ -8,8 +8,8 @@
    "case": "C01",
    "language": "es",
    "participant": null,
-   "template_version": "VC1-ES",
-   "sha256": "fed45e5ab7433f390fe235a5e9ab4bca1238d586ae66628b826eaf87082d0010",
+   "template_version": "VC2-ES",
+   "sha256": "cc463b08b4f4b987cb9c58d751ddeeaea3ce20c9149d2085dbdf209c1074eeee",
    "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
   },
   {
@@ -17,8 +17,8 @@
    "case": "C01",
    "language": "en",
    "participant": null,
-   "template_version": "VC1-EN",
-   "sha256": "fb252f78d9a21dbfc9673a303e6d14f0a4c4c57d668cbb5a5ee1a35d2eb5e8cb",
+   "template_version": "VC2-EN",
+   "sha256": "e5a39f6ff59264ae3dfa7ebdbd878fbbdf71e20778435f6aa015e3cad4abcc8e",
    "case_text": "bank case (English, canonical)"
   },
   {
@@ -26,8 +26,8 @@
    "case": "C02",
    "language": "es",
    "participant": null,
-   "template_version": "VC1-ES",
-   "sha256": "601934badd1eadf414d3c739eee5bae2e46dac237809b1c146a4941f5ae07768",
+   "template_version": "VC2-ES",
+   "sha256": "3301473d5e449f2d5d4bb8b9873c6e73ea0290fb56a27fc16cf1f2d4dad188fa",
    "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
   },
   {
@@ -35,8 +35,8 @@
    "case": "C02",
    "language": "en",
    "participant": null,
-   "template_version": "VC1-EN",
-   "sha256": "468f91a58f9a969be08e95f42f1b515c9c09c11c87f49a0b69cdefe4f102ab00",
+   "template_version": "VC2-EN",
+   "sha256": "b1b634f2d0154bf42cc61c256901072de5175aa4b0b408834d5689e09c042513",
    "case_text": "bank case (English, canonical)"
   },
   {
@@ -44,8 +44,8 @@
    "case": "C03",
    "language": "es",
    "participant": null,
-   "template_version": "VC1-ES",
-   "sha256": "b1d8d81329c103bc6d3047dc5a8f9fc022109acfcd0c5e4c1f0a2fa6cb8c49b6",
+   "template_version": "VC2-ES",
+   "sha256": "5465a5efd9baad3ee2bdf700189ce89358b58f0d61158e9806ddcf930e886ad0",
    "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
   },
   {
@@ -53,8 +53,8 @@
    "case": "C03",
    "language": "en",
    "participant": null,
-   "template_version": "VC1-EN",
-   "sha256": "fe7f701b4df7300e0c51c32f078f555f146f81652c09bb372fc9447a87d75b6c",
+   "template_version": "VC2-EN",
+   "sha256": "737b084eaf2b52c1a8fa7f75eeb36986d8984206d1e95ed0cf35d1fc6b7adb64",
    "case_text": "bank case (English, canonical)"
   },
   {
@@ -62,8 +62,8 @@
    "case": "C04",
    "language": "es",
    "participant": null,
-   "template_version": "VC1-ES",
-   "sha256": "cbf5e2ebb45850e9b2dad3af778e836b50952a29873e822ec6a2f322c8465a3d",
+   "template_version": "VC2-ES",
+   "sha256": "acbb74daa161eba7de90735ac0bdb8377a93759c518878eb8f7d3babbdb4e657",
    "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
   },
   {
@@ -71,8 +71,8 @@
    "case": "C04",
    "language": "en",
    "participant": null,
-   "template_version": "VC1-EN",
-   "sha256": "ebb79075c50706b92f16b1d18c05a38af7b15745dd0e4edf058a2a45584d1c0d",
+   "template_version": "VC2-EN",
+   "sha256": "eaaf8eab2e646343bf76c352e82689217ae394f1fc60047d87cae1556c7fbccc",
    "case_text": "bank case (English, canonical)"
   },
   {
@@ -80,8 +80,8 @@
    "case": "C05",
    "language": "es",
    "participant": null,
-   "template_version": "VC1-ES",
-   "sha256": "397349e53d5cf7ff98a1c07bb509bf45d2e1ec592e87e14359bb293c8ab727d5",
+   "template_version": "VC2-ES",
+   "sha256": "0b6d21555d27de5ff9d757bb15289c95fbf9d1c358e78e8b7738487746759239",
    "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
   },
   {
@@ -89,8 +89,8 @@
    "case": "C05",
    "language": "en",
    "participant": null,
-   "template_version": "VC1-EN",
-   "sha256": "4cb73496edb3e6bc2119671466be59cd8ef10a0ebe232a3339c3c7560b358d5a",
+   "template_version": "VC2-EN",
+   "sha256": "96cb863b08a60fbdab841abb8a560a7fe4f60fdd99e94e60ac5dfb5c33bbc40c",
    "case_text": "bank case (English, canonical)"
   },
   {
@@ -98,8 +98,8 @@
    "case": "C06",
    "language": "es",
    "participant": null,
-   "template_version": "VC1-ES",
-   "sha256": "82ac6e394cd4ed140562430b8ef3befda0433e8a111e013723985a2b3a8565fa",
+   "template_version": "VC2-ES",
+   "sha256": "87566925282599592c5bb0650546f4386e992f01631c07fc66afe13302b7638a",
    "case_text": "case_text/es translation; its faculty approval lives in the deployment's database and was not checked when this sheet was made"
   },
   {
@@ -107,8 +107,8 @@
    "case": "C06",
    "language": "en",
    "participant": null,
-   "template_version": "VC1-EN",
-   "sha256": "513a28fa893ac89706b6686d1911bb827cfacbaee0493aa417786f3ceac00884",
+   "template_version": "VC2-EN",
+   "sha256": "e2b833c52acd82394e7befaeef1a5956e5e208ad1728e64b1085688e7d7ad13a",
    "case_text": "bank case (English, canonical)"
   }
  ]

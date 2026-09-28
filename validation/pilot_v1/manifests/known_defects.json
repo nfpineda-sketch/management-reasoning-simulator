@@ -1,0 +1,203 @@
+{
+ "pilot_id": "VALIDATION_PILOT_V1",
+ "baseline": "validation/pilot_v1/PILOT_BASELINE.md",
+ "purpose": "Known failures present in the pilot baseline, so that a pilot result can be told apart as KNOWN or NEW (§73). Nothing is hidden to improve a measure. The adjudicator writes the id in the 'known_defect' column when an error matches one of these.",
+ "severity_scale": "CRITICAL · HIGH · MEDIUM · LOW, the pilot's impact scale (§60); for ordering work, never a score",
+ "defects": [
+  {
+   "id": "KD-01",
+   "class": "An English order that puts the route before the drug and has no verb",
+   "example": "IV morphine 4 mg · Nebulized albuterol 2.5 mg · Oral paracetamol 1 g · IV fluids 1 L",
+   "what_happens": "Read as an order not recognized; the clarification holds the other orders of the submission until it is rephrased. With a verb ('Give nebulized albuterol') it is read.",
+   "severity": "MEDIUM",
+   "location": "parsing",
+   "known_cause": "A verbless order must start with the drug or the fluid; a leading route word is not skipped.",
+   "why_not_fixed": "Not related to DF-16a/b (criterion 1 of §71); found by the held-out check of cycle 4.",
+   "pilot_relevance": "Low in the Spanish phase (Spanish writes the route after the drug); likely frequent in the English phase.",
+   "next_step": "Cheap fix before the English documents are collected (cycle 5 proposal).",
+   "registered": "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 4"
+  },
+  {
+   "id": "KD-02",
+   "class": "A drug named without a verb and without a dose",
+   "example": "Morfina ev · Salbutamol nbz · 'Morfina ev y paracetamol 1 g' (the morphine is dropped)",
+   "what_happens": "Not an order, by the deliberate rule 'a bare drug name is only an order with a command or a dose'; inside a list it is dropped without a word; followed by a repeat, the whole sentence is kept as a repeat instruction.",
+   "severity": "MEDIUM",
+   "location": "parsing",
+   "known_cause": "Deliberate conservative rule in family_parser: a verbless drug mention may be narrative ('recibió morfina ev').",
+   "why_not_fixed": "A design decision (ask for the dose, or ignore) and not a DF-16 defect.",
+   "pilot_relevance": "Possible in chart shorthand; the pilot will show how often.",
+   "next_step": "Measure its frequency; then a faculty decision on whether a bare drug with a route should ask for its dose.",
+   "registered": "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 4"
+  },
+  {
+   "id": "KD-03",
+   "class": "Text written while a clarification is pending is taken as its answer",
+   "example": "A route clarification pending for salbutamol, then 'Hidrocortisona 200 mg ev': salbutamol gets 'IV' and the hydrocortisone is not ordered",
+   "what_happens": "The new order is not executed and its route goes to the held order.",
+   "severity": "MEDIUM",
+   "location": "clarification",
+   "known_cause": "The page reads the next submission as the answer to the pending question.",
+   "why_not_fixed": "Live interaction; recommended for phase 2 (DF-16d).",
+   "pilot_relevance": "None in phase 1: the harness cancels a held order before the next entry (resolve_until_clear).",
+   "next_step": "Phase 2 (live encounters).",
+   "registered": "docs/COLA_DECISIONES_AI_ADVISOR.md, DF-16d"
+  },
+  {
+   "id": "KD-04",
+   "class": "'si' meaning 'whether' read as a condition",
+   "example": "Reevaluar en 15 minutos si puede hablar frases completas",
+   "what_happens": "The reassessment is kept as a conditional plan and does not run.",
+   "severity": "LOW",
+   "location": "parsing",
+   "known_cause": "Every 'si' opens a condition; an indirect question after a reassessment verb is not told apart.",
+   "why_not_fixed": "Independent of DF-16a/b (DF-16e); to be documented first (faculty, 2026-09-28).",
+   "pilot_relevance": "Possibly frequent in Spanish reassessment wording ('reevalúo si mejora…'); it would lower reassessment capture.",
+   "next_step": "Tag it in adjudication; if frequent, a small class fix (cycle 5 proposal).",
+   "registered": "docs/COLA_DECISIONES_AI_ADVISOR.md, DF-16e"
+  },
+  {
+   "id": "KD-05",
+   "class": "'OK to discharge' is not read as a discharge",
+   "example": "OK to discharge with cardiology follow-up",
+   "what_happens": "Nothing is read.",
+   "severity": "MEDIUM",
+   "location": "parsing",
+   "known_cause": "The discharge verbs do not include the 'OK to' form.",
+   "why_not_fixed": "Independent of DF-16a/b (DF-16f).",
+   "pilot_relevance": "English phase.",
+   "next_step": "Class fix with the English discharge forms.",
+   "registered": "DF-10 and DF-16f"
+  },
+  {
+   "id": "KD-06",
+   "class": "A home prescription joined to the discharge with 'con'/'with' is lost",
+   "example": "Alta con paracetamol 1 g cada 8 horas · Discharge home with ibuprofen 400 mg every 8 hours",
+   "what_happens": "The discharge runs; the prescription is not recorded. As a separate list item it is recorded.",
+   "severity": "MEDIUM",
+   "location": "parsing",
+   "known_cause": "Only what reads as advice is kept from a discharge's 'with' clause (DF-10).",
+   "why_not_fixed": "Independent of DF-16a/b (DF-16g).",
+   "pilot_relevance": "Likely in C05 (renal colic with discharge).",
+   "next_step": "Keep a prescription from the discharge clause as a prescription.",
+   "registered": "DF-16g"
+  },
+  {
+   "id": "KD-07",
+   "class": "'Hora' as an appointment is not read as follow-up",
+   "example": "Alta con hora en policlínico de urología",
+   "what_happens": "The discharge runs; the follow-up is not recorded.",
+   "severity": "LOW",
+   "location": "parsing",
+   "known_cause": "'hora' is not in the follow-up vocabulary.",
+   "why_not_fixed": "Independent of DF-16a/b (DF-16h).",
+   "pilot_relevance": "Possible in C05.",
+   "next_step": "Vocabulary addition when a class fix touches follow-up.",
+   "registered": "DF-16h"
+  },
+  {
+   "id": "KD-08",
+   "class": "Four lines of the held-order message have no Spanish",
+   "example": "I recognised… · Still to state… · In your own words… · What you already wrote is kept.",
+   "what_happens": "Shown in English on the Spanish page.",
+   "severity": "LOW",
+   "location": "other",
+   "known_cause": "Missing entries in language.py.",
+   "why_not_fixed": "Independent (DF-16i).",
+   "pilot_relevance": "None: the pilot does not show the page to physicians.",
+   "next_step": "Add the translations.",
+   "registered": "DF-16i"
+  },
+  {
+   "id": "KD-09",
+   "class": "An 'as needed' repeat keeps no condition",
+   "example": "Give morphine 2 mg IV, repeat every 10 minutes as needed up to 3 doses",
+   "what_happens": "The repeat keeps its interval and count; 'as needed' / 'según necesidad' is not stored as its condition ('SOS' and 'PRN' are). The text is kept word for word.",
+   "severity": "LOW",
+   "location": "trace",
+   "known_cause": "The repeat's condition words do not include 'as needed'.",
+   "why_not_fixed": "Whether an 'as needed' is a condition is an annotation question (VC-3 logic); low value before data.",
+   "pilot_relevance": "Low.",
+   "next_step": "Decide with the annotation guide; align the reader.",
+   "registered": "cycle 4 held-out check"
+  },
+  {
+   "id": "KD-10",
+   "class": "A delayed repeat of a study written alone runs now",
+   "example": "Repeat the troponin in 3 hours",
+   "what_happens": "The troponin is requested now. 'Troponina ahora y repetir en 3 horas' runs the troponin and records the repeat.",
+   "severity": "LOW",
+   "location": "parsing",
+   "known_cause": "A standalone repeat with only a delay keeps the earlier 'given again now' reading, deliberately, to limit DF-16b's scope.",
+   "why_not_fixed": "Behaviour unchanged by DF-16b; changing it needs its own review.",
+   "pilot_relevance": "Low.",
+   "next_step": "Review with the timed reassessment design.",
+   "registered": "cycle 4 held-out check"
+  },
+  {
+   "id": "KD-11",
+   "class": "A monitoring instruction is quoted as the working model",
+   "example": "Vigilar diuresis y estado mental",
+   "what_happens": "The Management Trace records the instruction as what the resident thinks is going on.",
+   "severity": "MEDIUM",
+   "location": "trace",
+   "known_cause": "The working-model fallback takes a clause that is not recognised as an order.",
+   "why_not_fixed": "Found in cycle 4 probes; same family as DF-7, not DF-16.",
+   "pilot_relevance": "Possible; it would show as an unfaithful slot.",
+   "next_step": "Class fix in the DF-7 family.",
+   "registered": "docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 4"
+  },
+  {
+   "id": "KD-12",
+   "class": "A finding outside the closed vocabulary is not read as the working model",
+   "example": "Hyperkalemia with peaked T waves · Hiperkalemia con T picudas · Still wheezing, …",
+   "what_happens": "No working model is recorded; the gate asks for it.",
+   "severity": "LOW",
+   "location": "trace",
+   "known_cause": "The findings and appraisal vocabulary is a closed list.",
+   "why_not_fixed": "DF-11, low priority.",
+   "pilot_relevance": "It would lower rationale capture.",
+   "next_step": "Let the pilot say which findings matter.",
+   "registered": "DF-11"
+  },
+  {
+   "id": "KD-13",
+   "class": "Causal and clause-boundary residues in the reasoning",
+   "example": "'since' (EN) and 'por' (ES) are not read as a reason · 'to reduce the congestion and I will recheck' keeps 'and I will' in the expectation",
+   "what_happens": "A reason is missed, or an expectation carries extra words.",
+   "severity": "LOW",
+   "location": "trace",
+   "known_cause": "Both words are ambiguous (temporal 'since', non-causal 'por'); the effect pattern does not stop at 'and I will'.",
+   "why_not_fixed": "DF-11, low priority.",
+   "pilot_relevance": "Low.",
+   "next_step": "Measure.",
+   "registered": "DF-11"
+  },
+  {
+   "id": "KD-14",
+   "class": "Spelling corrected inside quoted reasoning",
+   "example": "rythm → rhythm · urianalysis → urinalysis",
+   "what_happens": "The quote changes spelling, not meaning.",
+   "severity": "LOW",
+   "location": "trace",
+   "known_cause": "Normalization before quoting; pinned by regressions v0814 and v0816.",
+   "why_not_fixed": "DF-11; the regressions fix the current behaviour.",
+   "pilot_relevance": "Would show as a not word-for-word quote.",
+   "next_step": "Decide whether quotes keep the original spelling.",
+   "registered": "DF-11"
+  }
+ ],
+ "known_behaviour_by_design": [
+  {
+   "id": "KB-01",
+   "class": "Oxygen without an absolute flow is held for a clarification, by design",
+   "example": "O2 por mascarilla para saturar sobre 94 %",
+   "note": "Not a defect: the pilot measures whether clinicians find the question unnecessary (DF-16, 'qué no es un defecto')."
+  }
+ ],
+ "fixed_in_cycle_4": [
+  "DF-16a (lists of orders)",
+  "DF-16b (order + repeat + condition)",
+  "DF-16c (plural route and a route shared by a list of doses)"
+ ]
+}

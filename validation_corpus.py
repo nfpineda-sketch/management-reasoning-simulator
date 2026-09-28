@@ -31,6 +31,7 @@ import csv
 import hashlib
 import io
 import json
+import math
 import re
 import unicodedata
 import zipfile
@@ -41,19 +42,28 @@ from xml.sax.saxutils import escape
 ROOT = Path(__file__).resolve().parent
 
 CORPUS_VERSION = "VALIDATION_CORPUS_V1"
-TEMPLATE_VERSION = "VC1"
-ANNOTATION_VERSION = "VC1-ANNOTATION-1"
+# VC2 (cycle 4, 2026-09-28): the faculty's shorter instruction, aligned with the
+# resident's own guide (what is going on, what you do, what you expect, what
+# you will check), in free text; VC1 documents are still read.
+TEMPLATE_VERSION = "VC2"
+# VC2-ANNOTATION-1: repeat instructions and return precautions are items of
+# their own, and a return precaution is not a contingency (VC-3, 2026-09-28).
+ANNOTATION_VERSION = "VC2-ANNOTATION-1"
 SOURCE_TYPE = "physician_free_text_docx"
 SUBSETS = {"development": "DEVELOPMENT_SUBSET_V1", "sealed": "SEALED_SUBSET_V1"}
 RETIRED = "retired_from_validation"
 LANGUAGES = ("es", "en")
 CLASSES = ("CORRECT", "PARTIAL_ENGINE_ERROR", "ENGINE_ERROR", "AMBIGUOUS_INPUT", "ANNOTATION_DISAGREEMENT")
-LOCI = ("parsing", "execution", "reasoning_extraction", "annotation", "ambiguous_human_input")
+#: Where an engine error sits, the faculty's second dimension (cycle 4, §40). An
+#: ambiguous input or an annotation disagreement is not the engine's, and has none.
+LOCI = ("parsing", "execution", "trace", "clarification", "other")
+#: How much an error matters, to order the work (§60). Never a score.
+IMPACTS = ("CRITICAL", "HIGH", "MEDIUM", "LOW")
 PARTICIPANT = re.compile(r"^EM\d{2,3}$")
 CASE_CODE = re.compile(r"^C\d{2}$")
 
-#: The pilot's cases: a PROPOSAL for the faculty, not a decision. The document
-#: shows only the code, because the bank's identifiers name the diagnosis.
+#: The pilot's six cases, approved by the faculty on 2026-09-28 (DF-15). The
+#: document shows only the code, because the bank's identifiers name the diagnosis.
 PILOT_CASES = {
     "C01": "asthma_24f",
     "C02": "pneumonia_46f",
@@ -65,8 +75,8 @@ PILOT_CASES = {
 
 #: What an annotator may tag an intended item with. Clinical words, not the
 #: engine's action types: the annotation describes what the physician meant.
-ITEM_KINDS = ("MED", "FLUID", "O2", "PROC", "STUDY", "MON", "CONSULT", "DISP", "FOLLOWUP",
-              "REEVAL", "HX", "EX", "OTHER")
+ITEM_KINDS = ("MED", "FLUID", "O2", "PROC", "STUDY", "MON", "CONSULT", "DISP", "FOLLOWUP", "RETURN",
+              "REPEAT", "REEVAL", "HX", "EX", "OTHER")
 INFORMATION_KINDS = frozenset({"HX", "EX"})
 
 
@@ -87,23 +97,18 @@ TEXT = {
         "version": "Versión del documento",
         "instructions_title": "Instrucciones",
         "instructions": (
-            "Imagine que está atendiendo a este paciente en un servicio de urgencia. Escriba en texto "
-            "libre qué haría a continuación, utilizando el lenguaje clínico que usaría naturalmente. "
-            "Puede incluir varias indicaciones o decisiones en una misma entrada. No existe un formato "
-            "correcto.",
-            "Puede escribir en el orden en que haría las cosas, en uno o varios párrafos. Según "
-            "corresponda, puede incluir lo que preguntaría o examinaría, los exámenes, los tratamientos "
-            "con sus dosis y vías, los procedimientos, cuándo y cómo volvería a evaluar al paciente, qué "
-            "espera que ocurra, qué haría si la evolución no es la esperada, el destino del paciente y "
-            "las indicaciones al alta. No es necesario incluir todo: escriba lo que usted escribiría. Si "
-            "quiere explicar por qué hace algo, puede hacerlo.",
-            "Este documento no muestra resultados de exámenes ni la evolución del paciente. Si pediría "
-            "algo, escríbalo; si su conducta dependería del resultado, puede decir qué haría según lo "
-            "que encuentre.",
+            "Imagine que recibe a este paciente en un servicio de urgencia. Escriba en el cuadro, en "
+            "texto libre, cómo lo manejaría, en uno o varios párrafos.",
+            "Cuando corresponda, deje ver qué cree que está pasando y en qué se basa; qué hará, con dosis, "
+            "vías o parámetros; qué espera que ocurra o qué quiere aclarar; y qué va a reevaluar, cuándo "
+            "y qué lo haría cambiar de conducta. Nada de esto es obligatorio ni tiene un orden.",
+            "El documento no muestra resultados ni la evolución del paciente: si pediría algo, escríbalo; "
+            "si su conducta depende del resultado, puede decir qué haría según lo que encuentre.",
             "No escriba su nombre ni otros datos personales. No necesita consultar referencias.",
         ),
-        "reminder": ("Escriba exactamente como lo haría naturalmente. No existe un formato correcto y no "
-                     "intente adaptar su lenguaje a un sistema informático."),
+        # Faculty wording, verbatim (cycle 4, 2026-09-28, §13).
+        "reminder": ("Escriba naturalmente, como lo haría al manejar el paciente. No existe un formato "
+                     "correcto y no intente adaptar su lenguaje a un sistema informático."),
         "patient": "El paciente",
         "monitor": "Monitor al llegar",
         "monitor_line": "FC {hr}/min · SpO₂ {spo2} % · PA {bp} mmHg · FR {rr}/min",
@@ -125,22 +130,19 @@ TEXT = {
         "version": "Document version",
         "instructions_title": "Instructions",
         "instructions": (
-            "Imagine you are looking after this patient in an emergency department. Write in free text "
-            "what you would do next, using the clinical language you would naturally use. You may "
-            "include several orders or decisions in the same entry. There is no correct format.",
-            "You may write in the order you would do things, in one paragraph or several. As it fits, "
-            "you may include what you would ask or examine, investigations, treatments with their doses "
-            "and routes, procedures, when and how you would reassess the patient, what you expect to "
-            "happen, what you would do if things do not go as expected, where the patient goes and the "
-            "advice on discharge. You do not need to include everything: write what you would write. If "
-            "you want to explain why you do something, you may.",
-            "This document does not show test results or how the patient evolves. If you would ask for "
-            "something, write it; if what you do would depend on the result, you may say what you would "
-            "do depending on what you find.",
+            "Imagine you are receiving this patient in an emergency department. In the box, write in free "
+            "text how you would manage them, in one paragraph or several.",
+            "Where it fits, let it show what you think is going on and what makes you think so; what you "
+            "will do, with doses, routes or settings; what you expect to happen or what you want to "
+            "clarify; and what you will reassess, when, and what would make you change course. None of "
+            "this is required, and there is no set order.",
+            "The document shows no results and not how the patient evolves: if you would order something, "
+            "write it; if what you do depends on the result, you may say what you would do depending on "
+            "what you find.",
             "Do not write your name or any other personal details. You do not need to look anything up.",
         ),
-        "reminder": ("Write exactly as you naturally would. There is no correct format, and do not try "
-                     "to adapt your language to a computer system."),
+        "reminder": ("Write naturally, as you would when managing the patient. There is no correct format, "
+                     "and do not try to adapt your language to a computer system."),
         "patient": "The patient",
         "monitor": "Monitor on arrival",
         "monitor_line": "HR {hr}/min · SpO₂ {spo2}% · BP {bp} mmHg · RR {rr}/min",
@@ -558,6 +560,56 @@ def check_outside(path, subset):
     return resolved
 
 
+# --------------------------------------------------------------------------- the development/sealed draw
+
+SPLIT_RULE = (
+    "The seed is the SHA-256 of these lines: the pilot's identifier, the baseline commit, then one line "
+    "per returned file with its name and SHA-256, in name order. For each participant pair, in the pilot "
+    "manifest's order, the pair's hexadecimal digit of the seed decides: even sends the first physician "
+    "listed to development and the second to sealed, odd the reverse. All of a physician's documents "
+    "follow the physician.")
+_RETURNED = re.compile(r"^(EM\d{2,3})_(C\d{2})_(es|en)\.docx$")
+
+
+def draw_split(pilot, received, baseline_commit):
+    """Which subset each physician's documents go to, drawn once they are back (§18, §41).
+
+    ``pilot`` is the pilot manifest (its pairs and its assignment); ``received``
+    maps each returned file's name to the SHA-256 of its bytes. The draw never
+    reads a document's text, so nobody can see how hard an answer was before it
+    is placed; its seed does not exist before the documents do; and anyone with
+    the same files and the same commit draws the same split.
+    """
+    if not re.fullmatch(r"[0-9a-f]{40}", str(baseline_commit or "")):
+        raise CorpusError(f"The baseline is a full commit SHA, not {baseline_commit!r}.")
+    assigned = {(row["participant"], row["case"], row["language"]) for row in pilot["assignment"]}
+    documents = []
+    for name, digest in sorted(received.items()):
+        match = _RETURNED.match(name)
+        if not match or tuple(match.groups()) not in assigned:
+            raise CorpusError(f"{name} is not a document this pilot assigned (EM01_C01_es.docx, as sent).")
+        if not re.fullmatch(r"[0-9a-f]{64}", str(digest)):
+            raise CorpusError(f"{name}: {digest!r} is not a SHA-256.")
+        documents.append({"file": name, "participant": match[1], "case": match[2], "language": match[3],
+                          "sha256": digest})
+    lines = [f"pilot {pilot['pilot_id']}", f"baseline {baseline_commit}"]
+    lines += [f"{item['file']} {item['sha256']}" for item in documents]
+    seed = hashlib.sha256("\n".join(lines).encode("utf-8")).hexdigest()
+    pairs, subset_of = [], {}
+    for index, pair in enumerate(pilot["pairs"]):
+        first, second = pair["participants"]
+        digit = int(seed[index], 16)
+        development, sealed = (first, second) if digit % 2 == 0 else (second, first)
+        subset_of.update({development: "development", sealed: "sealed"})
+        pairs.append({"pair": pair["pair"], "digit": seed[index], "development": development, "sealed": sealed})
+    for item in documents:
+        item["subset"] = subset_of[item["participant"]]
+    returned = {item["file"] for item in documents}
+    missing = sorted(file_name(*key[:2], key[2]) for key in assigned if file_name(*key[:2], key[2]) not in returned)
+    return {"pilot_id": pilot["pilot_id"], "baseline_commit": baseline_commit, "rule": SPLIT_RULE,
+            "seed_lines": lines, "seed": seed, "pairs": pairs, "documents": documents, "missing": missing}
+
+
 def load_manifest(corpus_dir):
     """The custodian's manifest, checked: codes only, one subset per participant."""
     path = Path(corpus_dir) / "manifest.json"
@@ -661,15 +713,22 @@ def entries_of(corpus, *, include_retired=False):
 
 # --------------------------------------------------------------------------- sheets
 
+# Disposition, follow-up, return precautions and repeat instructions are
+# intended items (DISP, FOLLOWUP, RETURN, REPEAT): an entry says them, it does
+# not merely have them. A return precaution is the discharge's safety plan and
+# only a condition that changes the plan makes a contingency (VC-3, 2026-09-28).
 ANNOTATION_COLUMNS = (
-    "entry_id", "case", "language", "text",
-    "intended_items", "reassessment", "rationale", "expectation", "contingency", "disposition_followup",
+    "entry_id", "participant", "case", "language", "text",
+    "intended_items", "reassessment", "rationale", "expectation", "contingency",
     "clinically_sufficient", "ambiguous", "acceptable_readings", "context_dependent",
     "annotator", "annotation_version", "note")
 ENGINE_COLUMNS = ("engine_status", "engine_read", "clarification_asked", "reasoning_gate", "stated_slots",
-                  "conditional_plans", "auto_flags")
+                  "plans_not_executed", "auto_flags")
+# The impact and a known defect's identifier are for ordering the work and for
+# telling a known failure from a new one (§60, §73); neither enters a measure.
 REVIEW_COLUMNS = ("n_recognized", "n_complete", "n_partial", "extra_or_wrong_execution",
-                  "proposed_classification", "classification", "locus", "reviewer", "review_note")
+                  "proposed_classification", "classification", "locus", "impact", "known_defect",
+                  "reviewer", "review_note")
 _YES = {"y", "yes", "s", "si", "sí", "1", "true", "x"}
 _NO = {"n", "no", "0", "false", ""}
 
@@ -697,9 +756,27 @@ def read_csv(path):
 
 def annotation_rows(corpus):
     """The blind sheet: the physician's text and empty columns, nothing from the engine."""
-    return [{"entry_id": entry["entry_id"], "case": document["case"], "language": document["language"],
-             "text": entry["text"], "annotation_version": ANNOTATION_VERSION}
+    return [{"entry_id": entry["entry_id"], "participant": document["participant"], "case": document["case"],
+             "language": document["language"], "text": entry["text"], "annotation_version": ANNOTATION_VERSION}
             for document, entry in entries_of(corpus)]
+
+
+def double_annotation_sample(corpus, fraction=.2):
+    """The entries a second clinician annotates blind: a fifth of each document, at least one (VC-2).
+
+    Chosen by the SHA-256 of each entry's identifier, so the sample is fixed
+    before anyone reads an entry, spreads over every physician and case, and
+    is the same for whoever draws it.
+    """
+    chosen = []
+    for document in corpus["documents"]:
+        entries = [entry for entry in document["entries"] if entry["status"] != RETIRED]
+        if not entries:
+            continue
+        ranked = sorted(entries, key=lambda entry: hashlib.sha256(
+            f"second annotation {entry['entry_id']}".encode("utf-8")).hexdigest())
+        chosen += [entry["entry_id"] for entry in ranked[:max(1, math.ceil(len(entries) * fraction))]]
+    return chosen
 
 
 def yes(value):
@@ -714,7 +791,7 @@ def yes(value):
 #: What an annotator writes for an entry with no clinical intent at all (a
 #: heading such as "Plan:"): annotated, and with nothing to recognise.
 NOTHING = {"-", "—", "–", "none", "ninguno", "ninguna", "nada"}
-_FLAGS = ("reassessment", "rationale", "expectation", "contingency", "disposition_followup",
+_FLAGS = ("reassessment", "rationale", "expectation", "contingency",
           "clinically_sufficient", "ambiguous", "context_dependent")
 
 
@@ -834,8 +911,14 @@ def engine_view(record):
         for slot, text in (item.get("slots") or {}).items():
             if (item.get("provenance") or {}).get(slot) == "stated":
                 stated[slot] = text
-    conditional = [plan for item in trace for plan, detail in zip(item.get("future") or [], item.get("future_details") or [])
-                   if str(detail).startswith("conditional")]
+    # Each plan with its own kind, in the order the reader kept them. Pairing the
+    # separately sorted texts and kinds put a return advice under "conditional"
+    # whenever two plans of different kinds sorted apart (fixed 2026-09-28).
+    plans = [(str(kind), str(text)) for item in trace for kind, text in item.get("plans") or []]
+    conditional = [text for kind, text in plans if kind == "conditional"]
+    # A repeat with an explicit condition changes the plan, like a conditional one (DF-16b).
+    from family_parser import repeat_structure
+    conditional_repeats = [text for kind, text in plans if kind == "repeat" and repeat_structure(text).get("condition")]
     # A reassessment the physician scheduled; "monitor" becomes one at minute 0,
     # which is watching now, not a reassessment written for later.
     reassessment_action = any(dict(signature).get("type") == "reassessment"
@@ -848,17 +931,18 @@ def engine_view(record):
     for item in trace:
         read += [_action_text(signature) for signature in item.get("actions") or []]
         read += [f"DONE: {label}" for label in item.get("summaries") or []]
-    read += [f"CONDITIONAL PLAN: {plan}" for plan in conditional]
+    read += [f"PLAN ({kind.replace('_', ' ')}): {text}" for kind, text in plans]
     return {
         "played": bool(record.get("played")), "statuses": statuses, "executed": "executed" in statuses,
         "asked": asked, "reasoning_gate": record.get("held") == "pending_reasoning",
-        "harness_completed": harness, "stated": stated, "conditional": conditional, "read": read,
+        "harness_completed": harness, "stated": stated, "conditional": conditional, "plans": plans, "read": read,
         "no_trace": not trace,
         "captured": {
             "reassessment": "reassessment_target" in stated or (reassessment_action and not harness),
             "rationale": any(slot in stated for slot in _SLOTS_RATIONALE),
             "expectation": "expected_effect" in stated,
-            "contingency": any(slot in stated for slot in ("contingency", "threshold")) or bool(conditional),
+            "contingency": (any(slot in stated for slot in ("contingency", "threshold")) or bool(conditional)
+                            or bool(conditional_repeats)),
         },
     }
 
@@ -901,7 +985,7 @@ def adjudication_rows(corpus, engine, annotations, second=None):
                     "clarification_asked": "Y" if view["asked"] else "N",
                     "reasoning_gate": "Y" if view["reasoning_gate"] else "N",
                     "stated_slots": " | ".join(f"{slot}: {text}" for slot, text in sorted(view["stated"].items())),
-                    "conditional_plans": " | ".join(view["conditional"]),
+                    "plans_not_executed": " | ".join(f"{kind}: {text}" for kind, text in view["plans"]),
                     "auto_flags": " | ".join(flags)})
         if entry["entry_id"] in disagreements:
             row["auto_flags"] = " | ".join(filter(None, [row["auto_flags"], "annotators disagree on "
@@ -927,18 +1011,20 @@ def propose(annotation, view, review, *, disagreement=False, faithful=True):
                           for key in ("reassessment", "rationale", "expectation", "contingency"))
     unnecessary = view["asked"] and annotation["clinically_sufficient"] and not annotation["ambiguous"]
     loci = []
-    if review["n_recognized"] < n or review["n_partial"] > 0 or unnecessary:
+    if review["n_recognized"] < n or review["n_partial"] > 0:
         loci.append("parsing")
     if review["extra_or_wrong"]:
         loci.append("execution")
     if captures_missed or not faithful:
-        loci.append("reasoning_extraction")
+        loci.append("trace")
+    if unnecessary:
+        loci.append("clarification")
     all_right = (review["n_recognized"] == n and review["n_complete"] == n and not review["extra_or_wrong"]
                  and not unnecessary and not captures_missed and faithful)
     if disagreement:
-        return "ANNOTATION_DISAGREEMENT", ["annotation"]
+        return "ANNOTATION_DISAGREEMENT", []
     if annotation["ambiguous"]:
-        return ("CORRECT", []) if all_right else ("AMBIGUOUS_INPUT", ["ambiguous_human_input"])
+        return ("CORRECT", []) if all_right else ("AMBIGUOUS_INPUT", [])
     if all_right:
         return "CORRECT", []
     if review["extra_or_wrong"] or (n and review["n_recognized"] == 0):
@@ -955,6 +1041,15 @@ def review_of(row):
     review["extra_or_wrong"] = yes(row.get("extra_or_wrong_execution"))
     if review["n_complete"] + review["n_partial"] > review["n_recognized"]:
         raise CorpusError(f"{entry_id}: complete and partial add up to more than was recognised.")
+    impact = str(row.get("impact") or "").strip().upper()
+    if impact and impact not in IMPACTS:
+        raise CorpusError(f"{entry_id}: impact {impact!r} is not one of {IMPACTS}.")
+    loci = [part.strip().lower() for part in re.split(r"[;,]", str(row.get("locus") or "")) if part.strip()]
+    unknown = [part for part in loci if part not in LOCI]
+    if unknown:
+        raise CorpusError(f"{entry_id}: locus {unknown} is not one of {LOCI}.")
+    review["impact"] = impact or None
+    review["known_defect"] = str(row.get("known_defect") or "").strip() or None
     return review
 
 
@@ -1052,6 +1147,7 @@ def metrics(corpus, engine, rows, second=None):
                 "execution": ", ".join(str(status) for status in view["statuses"]) or "—",
                 "management_trace": " | ".join(f"{slot}: {text}" for slot, text in sorted(view["stated"].items())) or "—",
                 "classification": final, "locus": str(row.get("locus") or "").strip() or "; ".join(loci),
+                "impact": review["impact"], "known_defect": review["known_defect"],
                 "note": row.get("review_note", "")})
     report = {}
     for language, group in groups.items():

@@ -1,0 +1,485 @@
+{
+ "status": "DOCX STRUCTURALLY VERIFIED",
+ "not_claimed": "NOT visually verified in Microsoft Word: the faculty opens each document in Word before sending it.",
+ "verified_on": "2026-09-28",
+ "tools": {
+  "python_docx": "1.2.0, an independent OOXML implementation, in a temporary environment (not a project dependency)",
+  "reader": "validation_corpus.read_document and validation_corpus.ingest, the pipeline the pilot will use"
+ },
+ "checks": [
+  "valid .docx archive",
+  "opens with python-docx; the header table and the response box are found",
+  "header fields: participant code, response language, case code, document version VC2-ES / VC2-EN",
+  "the instructions, word for word, including the faculty's sentence (§13)",
+  "the initial context exactly as the simulator opens the case: presentation, handover, monitor, chart",
+  "no spoiler: no final diagnosis (the case's own and its words), no bank identifier, no diagnostic keywords",
+  "no internal word: parser, keyword, working model, expected effect, contingency, Management Trace, rubric, critical event, objective codes, simulator/engine",
+  "can be filled as a user types (python-docx: paragraphs and a line break inside one), saved and reopened",
+  "the saved file reads back with the typed text in the order written; the author name in its properties is warned about and never read",
+  "the 18 filled documents go through the real ingest: entries in typed order, stable identifiers, the same result twice"
+ ],
+ "summary": {
+  "documents_checked": 30,
+  "personalized": 18,
+  "blank": 12,
+  "problems": [],
+  "ingest": {
+   "documents": 18,
+   "entries_in_typed_order": true,
+   "stable_entry_ids": true,
+   "same_result_twice": true
+  }
+ },
+ "documents": {
+  "blank/EMxx_C01_en.docx": {
+   "sha256": "e5a39f6ff59264ae3dfa7ebdbd878fbbdf71e20778435f6aa015e3cad4abcc8e",
+   "fields_read": {
+    "participant": "",
+    "language": "English",
+    "case": "C01",
+    "version": "VC2-EN"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Acute severe asthma exacerbation",
+   "issues": []
+  },
+  "blank/EMxx_C01_es.docx": {
+   "sha256": "cc463b08b4f4b987cb9c58d751ddeeaea3ce20c9149d2085dbdf209c1074eeee",
+   "fields_read": {
+    "participant": "",
+    "language": "Español",
+    "case": "C01",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Acute severe asthma exacerbation",
+   "issues": []
+  },
+  "blank/EMxx_C02_en.docx": {
+   "sha256": "b1b634f2d0154bf42cc61c256901072de5175aa4b0b408834d5689e09c042513",
+   "fields_read": {
+    "participant": "",
+    "language": "English",
+    "case": "C02",
+    "version": "VC2-EN"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Community-acquired pneumonia with hypoxemia and impaired perfusion",
+   "issues": []
+  },
+  "blank/EMxx_C02_es.docx": {
+   "sha256": "3301473d5e449f2d5d4bb8b9873c6e73ea0290fb56a27fc16cf1f2d4dad188fa",
+   "fields_read": {
+    "participant": "",
+    "language": "Español",
+    "case": "C02",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Community-acquired pneumonia with hypoxemia and impaired perfusion",
+   "issues": []
+  },
+  "blank/EMxx_C03_en.docx": {
+   "sha256": "737b084eaf2b52c1a8fa7f75eeb36986d8984206d1e95ed0cf35d1fc6b7adb64",
+   "fields_read": {
+    "participant": "",
+    "language": "English",
+    "case": "C03",
+    "version": "VC2-EN"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Upper gastrointestinal bleeding with hemorrhagic hypoperfusion",
+   "issues": []
+  },
+  "blank/EMxx_C03_es.docx": {
+   "sha256": "5465a5efd9baad3ee2bdf700189ce89358b58f0d61158e9806ddcf930e886ad0",
+   "fields_read": {
+    "participant": "",
+    "language": "Español",
+    "case": "C03",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Upper gastrointestinal bleeding with hemorrhagic hypoperfusion",
+   "issues": []
+  },
+  "blank/EMxx_C04_en.docx": {
+   "sha256": "eaaf8eab2e646343bf76c352e82689217ae394f1fc60047d87cae1556c7fbccc",
+   "fields_read": {
+    "participant": "",
+    "language": "English",
+    "case": "C04",
+    "version": "VC2-EN"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Anaphylaxis with upper-airway involvement, bronchospasm and distributive shock",
+   "issues": []
+  },
+  "blank/EMxx_C04_es.docx": {
+   "sha256": "acbb74daa161eba7de90735ac0bdb8377a93759c518878eb8f7d3babbdb4e657",
+   "fields_read": {
+    "participant": "",
+    "language": "Español",
+    "case": "C04",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Anaphylaxis with upper-airway involvement, bronchospasm and distributive shock",
+   "issues": []
+  },
+  "blank/EMxx_C05_en.docx": {
+   "sha256": "96cb863b08a60fbdab841abb8a560a7fe4f60fdd99e94e60ac5dfb5c33bbc40c",
+   "fields_read": {
+    "participant": "",
+    "language": "English",
+    "case": "C05",
+    "version": "VC2-EN"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Uncomplicated ureteric colic from a distal calculus",
+   "issues": []
+  },
+  "blank/EMxx_C05_es.docx": {
+   "sha256": "0b6d21555d27de5ff9d757bb15289c95fbf9d1c358e78e8b7738487746759239",
+   "fields_read": {
+    "participant": "",
+    "language": "Español",
+    "case": "C05",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Uncomplicated ureteric colic from a distal calculus",
+   "issues": []
+  },
+  "blank/EMxx_C06_en.docx": {
+   "sha256": "e2b833c52acd82394e7befaeef1a5956e5e208ad1728e64b1085688e7d7ad13a",
+   "fields_read": {
+    "participant": "",
+    "language": "English",
+    "case": "C06",
+    "version": "VC2-EN"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Exsanguinating external haemorrhage from a penetrating thigh injury",
+   "issues": []
+  },
+  "blank/EMxx_C06_es.docx": {
+   "sha256": "87566925282599592c5bb0650546f4386e992f01631c07fc66afe13302b7638a",
+   "fields_read": {
+    "participant": "",
+    "language": "Español",
+    "case": "C06",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Exsanguinating external haemorrhage from a penetrating thigh injury",
+   "issues": []
+  },
+  "documents/EM01/EM01_C01_es.docx": {
+   "sha256": "a79f21dca1323b0ea2b257ce2ae71df45fb9483a23beb4a8961eda156480c5a9",
+   "fields_read": {
+    "participant": "EM01",
+    "language": "Español",
+    "case": "C01",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Acute severe asthma exacerbation",
+   "issues": []
+  },
+  "documents/EM01/EM01_C04_es.docx": {
+   "sha256": "1be620ba23fc96003e494279db7b5b33803e32fcfe49e15a32a448873b86419a",
+   "fields_read": {
+    "participant": "EM01",
+    "language": "Español",
+    "case": "C04",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Anaphylaxis with upper-airway involvement, bronchospasm and distributive shock",
+   "issues": []
+  },
+  "documents/EM01/EM01_C06_es.docx": {
+   "sha256": "42a5c88a00b6fccebf3db690118e022a18be0a77c0af663e93be1e4373b9d001",
+   "fields_read": {
+    "participant": "EM01",
+    "language": "Español",
+    "case": "C06",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Exsanguinating external haemorrhage from a penetrating thigh injury",
+   "issues": []
+  },
+  "documents/EM02/EM02_C01_es.docx": {
+   "sha256": "59adbc36bfd483a75f1421fae4620ab02ca87caf2bc5aaee4b88b127748ef685",
+   "fields_read": {
+    "participant": "EM02",
+    "language": "Español",
+    "case": "C01",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Acute severe asthma exacerbation",
+   "issues": []
+  },
+  "documents/EM02/EM02_C02_es.docx": {
+   "sha256": "38e879b867b220488e02b14e5bfecf28633f836b7540096e37465e7a67a45c38",
+   "fields_read": {
+    "participant": "EM02",
+    "language": "Español",
+    "case": "C02",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Community-acquired pneumonia with hypoxemia and impaired perfusion",
+   "issues": []
+  },
+  "documents/EM02/EM02_C06_es.docx": {
+   "sha256": "6d6efa6e63ec88f820ba93148579f1611b18befd40ef34c6f283a3b5b310aa85",
+   "fields_read": {
+    "participant": "EM02",
+    "language": "Español",
+    "case": "C06",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Exsanguinating external haemorrhage from a penetrating thigh injury",
+   "issues": []
+  },
+  "documents/EM03/EM03_C02_es.docx": {
+   "sha256": "cecce364046b66f92496edbf77b22a916fdae016b9e7af50a8ba62566081487d",
+   "fields_read": {
+    "participant": "EM03",
+    "language": "Español",
+    "case": "C02",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Community-acquired pneumonia with hypoxemia and impaired perfusion",
+   "issues": []
+  },
+  "documents/EM03/EM03_C05_es.docx": {
+   "sha256": "71e523a81ff44a5e6e378a5f43cffa024453b6202aef0895f7b5ecf21d1816dc",
+   "fields_read": {
+    "participant": "EM03",
+    "language": "Español",
+    "case": "C05",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Uncomplicated ureteric colic from a distal calculus",
+   "issues": []
+  },
+  "documents/EM03/EM03_C06_es.docx": {
+   "sha256": "933a43c5ad42dfca16b32831657a70064e0da501c4bc3c3984c0e1fedc1bf649",
+   "fields_read": {
+    "participant": "EM03",
+    "language": "Español",
+    "case": "C06",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Exsanguinating external haemorrhage from a penetrating thigh injury",
+   "issues": []
+  },
+  "documents/EM04/EM04_C02_es.docx": {
+   "sha256": "6a15e0eb0515854355ff9e3ff9b9ca7ba6c64ea83c75bda00903bce33b72dc91",
+   "fields_read": {
+    "participant": "EM04",
+    "language": "Español",
+    "case": "C02",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Community-acquired pneumonia with hypoxemia and impaired perfusion",
+   "issues": []
+  },
+  "documents/EM04/EM04_C03_es.docx": {
+   "sha256": "34c1e9a665ecff2c4800f027f840bb8aa017a44549102ae0e417dfff59f54bf2",
+   "fields_read": {
+    "participant": "EM04",
+    "language": "Español",
+    "case": "C03",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Upper gastrointestinal bleeding with hemorrhagic hypoperfusion",
+   "issues": []
+  },
+  "documents/EM04/EM04_C05_es.docx": {
+   "sha256": "173d557e237ed7e31eb900473ed7d5174a13de010ccf2caec9f595d6bec3e1b8",
+   "fields_read": {
+    "participant": "EM04",
+    "language": "Español",
+    "case": "C05",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Uncomplicated ureteric colic from a distal calculus",
+   "issues": []
+  },
+  "documents/EM05/EM05_C01_es.docx": {
+   "sha256": "3fc795beaf75332f5db8d4b557f7778cc76458017919190fb39c2db6a86de389",
+   "fields_read": {
+    "participant": "EM05",
+    "language": "Español",
+    "case": "C01",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Acute severe asthma exacerbation",
+   "issues": []
+  },
+  "documents/EM05/EM05_C03_es.docx": {
+   "sha256": "dcad3a7edd7e30f9fe83a3a242744e311ed02a82575261d85834eb96e94956d8",
+   "fields_read": {
+    "participant": "EM05",
+    "language": "Español",
+    "case": "C03",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Upper gastrointestinal bleeding with hemorrhagic hypoperfusion",
+   "issues": []
+  },
+  "documents/EM05/EM05_C04_es.docx": {
+   "sha256": "f4873ec403ee03106c8a3e94d2470f3c13086c70835040561c4a56b4cf4287b5",
+   "fields_read": {
+    "participant": "EM05",
+    "language": "Español",
+    "case": "C04",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Anaphylaxis with upper-airway involvement, bronchospasm and distributive shock",
+   "issues": []
+  },
+  "documents/EM06/EM06_C03_es.docx": {
+   "sha256": "eff9d33121a81bbabf726fce3d4debc1905f2ed3e0fba3a945cf065d5005ee40",
+   "fields_read": {
+    "participant": "EM06",
+    "language": "Español",
+    "case": "C03",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Upper gastrointestinal bleeding with hemorrhagic hypoperfusion",
+   "issues": []
+  },
+  "documents/EM06/EM06_C04_es.docx": {
+   "sha256": "610bba0603a258fb87125e55eecbfd51b10cd14b3fdd3cc150a84b1ccb71e56d",
+   "fields_read": {
+    "participant": "EM06",
+    "language": "Español",
+    "case": "C04",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Anaphylaxis with upper-airway involvement, bronchospasm and distributive shock",
+   "issues": []
+  },
+  "documents/EM06/EM06_C05_es.docx": {
+   "sha256": "0ebb2a15ad627daf74206391dec1237ce259d9c35f999d2234e8a59c7423adb1",
+   "fields_read": {
+    "participant": "EM06",
+    "language": "Español",
+    "case": "C05",
+    "version": "VC2-ES"
+   },
+   "python_docx_opened": true,
+   "python_docx_filled_saved_reopened": true,
+   "reads_back_typed_text_in_order": true,
+   "author_name_warned_not_read": true,
+   "final_diagnosis_checked_absent": "Uncomplicated ureteric colic from a distal calculus",
+   "issues": []
+  }
+ }
+}

@@ -151,7 +151,7 @@ generalización (DF-6 modificado por el docente).
 
 `docs/VALIDATION_CORPUS_FASE1.md`:
 
-- plantilla Word ES/EN: 12 documentos del piloto en `validation/plantillas_v1/`;
+- plantilla Word ES/EN: 12 documentos del piloto en `validation/plantillas_v1/` (retirados en el ciclo 4; los reemplaza `validation/pilot_v1/`);
 - ingesta DOCX determinista por la página real;
 - anotación ciega, adjudicación, clases y métricas;
 - 25 tests;

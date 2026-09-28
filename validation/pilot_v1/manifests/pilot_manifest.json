@@ -1,0 +1,214 @@
+{
+ "pilot_id": "VALIDATION_PILOT_V1",
+ "corpus_version": "VALIDATION_CORPUS_V1",
+ "template_version": "VC2",
+ "annotation_version": "VC2-ANNOTATION-1",
+ "decision": "DF-15, approved with modifications by the faculty on 2026-09-28 (cycle 4)",
+ "status": "PREPARED, NOT SENT. Nobody has been contacted; no document has been distributed.",
+ "language": "es",
+ "note_language": "Spanish documents from physicians who write naturally in Spanish. English documents, later, only from physicians who write naturally in English; nothing is translated.",
+ "cases": {
+  "C01": "asthma_24f",
+  "C02": "pneumonia_46f",
+  "C03": "gi_bleed_57m",
+  "C04": "anaphylaxis_29f",
+  "C05": "renal_colic_34m",
+  "C06": "trauma_limb_hemorrhage_27m"
+ },
+ "case_labels": {
+  "C01": "asma grave",
+  "C02": "neumonía con hipotensión",
+  "C03": "hemorragia digestiva",
+  "C04": "anafilaxia",
+  "C05": "cólico renal con alta",
+  "C06": "trauma con hemorragia de extremidad"
+ },
+ "pairs": [
+  {
+   "pair": "P1",
+   "participants": [
+    "EM01",
+    "EM02"
+   ],
+   "shared_cases": [
+    "C01",
+    "C06"
+   ]
+  },
+  {
+   "pair": "P2",
+   "participants": [
+    "EM03",
+    "EM04"
+   ],
+   "shared_cases": [
+    "C02",
+    "C05"
+   ]
+  },
+  {
+   "pair": "P3",
+   "participants": [
+    "EM05",
+    "EM06"
+   ],
+   "shared_cases": [
+    "C03",
+    "C04"
+   ]
+  }
+ ],
+ "assignment": [
+  {
+   "participant": "EM01",
+   "pair": "P1",
+   "case": "C01",
+   "language": "es",
+   "file": "EM01_C01_es.docx"
+  },
+  {
+   "participant": "EM01",
+   "pair": "P1",
+   "case": "C06",
+   "language": "es",
+   "file": "EM01_C06_es.docx"
+  },
+  {
+   "participant": "EM01",
+   "pair": "P1",
+   "case": "C04",
+   "language": "es",
+   "file": "EM01_C04_es.docx"
+  },
+  {
+   "participant": "EM02",
+   "pair": "P1",
+   "case": "C01",
+   "language": "es",
+   "file": "EM02_C01_es.docx"
+  },
+  {
+   "participant": "EM02",
+   "pair": "P1",
+   "case": "C06",
+   "language": "es",
+   "file": "EM02_C06_es.docx"
+  },
+  {
+   "participant": "EM02",
+   "pair": "P1",
+   "case": "C02",
+   "language": "es",
+   "file": "EM02_C02_es.docx"
+  },
+  {
+   "participant": "EM03",
+   "pair": "P2",
+   "case": "C02",
+   "language": "es",
+   "file": "EM03_C02_es.docx"
+  },
+  {
+   "participant": "EM03",
+   "pair": "P2",
+   "case": "C05",
+   "language": "es",
+   "file": "EM03_C05_es.docx"
+  },
+  {
+   "participant": "EM03",
+   "pair": "P2",
+   "case": "C06",
+   "language": "es",
+   "file": "EM03_C06_es.docx"
+  },
+  {
+   "participant": "EM04",
+   "pair": "P2",
+   "case": "C02",
+   "language": "es",
+   "file": "EM04_C02_es.docx"
+  },
+  {
+   "participant": "EM04",
+   "pair": "P2",
+   "case": "C05",
+   "language": "es",
+   "file": "EM04_C05_es.docx"
+  },
+  {
+   "participant": "EM04",
+   "pair": "P2",
+   "case": "C03",
+   "language": "es",
+   "file": "EM04_C03_es.docx"
+  },
+  {
+   "participant": "EM05",
+   "pair": "P3",
+   "case": "C03",
+   "language": "es",
+   "file": "EM05_C03_es.docx"
+  },
+  {
+   "participant": "EM05",
+   "pair": "P3",
+   "case": "C04",
+   "language": "es",
+   "file": "EM05_C04_es.docx"
+  },
+  {
+   "participant": "EM05",
+   "pair": "P3",
+   "case": "C01",
+   "language": "es",
+   "file": "EM05_C01_es.docx"
+  },
+  {
+   "participant": "EM06",
+   "pair": "P3",
+   "case": "C03",
+   "language": "es",
+   "file": "EM06_C03_es.docx"
+  },
+  {
+   "participant": "EM06",
+   "pair": "P3",
+   "case": "C04",
+   "language": "es",
+   "file": "EM06_C04_es.docx"
+  },
+  {
+   "participant": "EM06",
+   "pair": "P3",
+   "case": "C05",
+   "language": "es",
+   "file": "EM06_C05_es.docx"
+  }
+ ],
+ "split": {
+  "procedure": "validation/pilot_v1/SPLIT_PROCEDURE.md",
+  "when": "once every document is back (or at the declared cutoff), before any is opened",
+  "unit": "the physician: all of a physician's documents go to one subset",
+  "stratified_by": "participant pair, whose two members share two cases"
+ },
+ "baseline": "validation/pilot_v1/PILOT_BASELINE.md",
+ "known_defects": "validation/pilot_v1/manifests/known_defects.json",
+ "design": {
+  "each_case": "3 independent documents",
+  "each_physician": "exactly one case without shock (C01 or C05) and two in shock; never both haemorrhages (C03 and C06)",
+  "pairs": "the two members of a pair share two cases, so each subset of the split holds all six cases",
+  "represented": {
+   "discharge": [
+    "C05"
+   ],
+   "procedure_or_intervention": [
+    "C06",
+    "C03"
+   ],
+   "multiple_orders_and_reassessment": [
+    "all six"
+   ]
+  }
+ }
+}

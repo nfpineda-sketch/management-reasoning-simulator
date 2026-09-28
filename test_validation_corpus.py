@@ -35,10 +35,11 @@ def _xml_text(data):
 def test_the_template_asks_for_natural_language_and_teaches_nothing_internal(language):
     data, source = vc.template(language, "C01")
     text = _xml_text(data)
-    reminder = {"es": ("Escriba exactamente como lo haría naturalmente. No existe un formato correcto y no "
-                       "intente adaptar su lenguaje a un sistema informático."),
-                "en": ("Write exactly as you naturally would. There is no correct format, and do not try to "
-                       "adapt your language to a computer system.")}[language]
+    # The faculty's sentence, word for word (cycle 4, §13).
+    reminder = {"es": ("Escriba naturalmente, como lo haría al manejar el paciente. No existe un formato correcto "
+                       "y no intente adaptar su lenguaje a un sistema informático."),
+                "en": ("Write naturally, as you would when managing the patient. There is no correct format, and "
+                       "do not try to adapt your language to a computer system.")}[language]
     assert reminder in text
     for internal in ("working model", "expected effect", "contingency", "modelo de trabajo", "efecto esperado",
                      "contingencia", "parser", "Management Trace", "reassessment target", "prioridad de manejo"):
@@ -75,8 +76,8 @@ def test_a_participant_is_a_code():
         vc.template("es", "asthma_24f")
 
 
-def test_the_committed_pilot_templates_are_what_the_generator_writes():
-    folder = ROOT / "validation" / "plantillas_v1"
+def test_the_committed_blank_templates_are_what_the_generator_writes():
+    folder = ROOT / "validation" / "pilot_v1" / "blank"
     listed = json.loads((folder / "templates.json").read_text(encoding="utf-8"))
     assert len(listed["documents"]) == 2 * len(vc.PILOT_CASES)
     for item in listed["documents"]:
@@ -89,7 +90,7 @@ def test_the_committed_pilot_templates_are_what_the_generator_writes():
 
 def test_a_blank_template_reads_back_with_its_fields_and_no_entries(tmp_path):
     read = vc.read_document(_document(tmp_path, "blank.docx"))
-    assert read["fields"] == {"participant": "EM90", "language": "Español", "case": "C01", "version": "VC1-ES"}
+    assert read["fields"] == {"participant": "EM90", "language": "Español", "case": "C01", "version": "VC2-ES"}
     assert read["boxes"] == [{"box": 1, "label": "Su manejo", "entries": []}]
     assert read["warnings"] == []
 
@@ -201,7 +202,7 @@ def test_ingest_gives_stable_identifiers_and_provenance(tmp_path):
     assert corpus["subset_version"] == "DEVELOPMENT_SUBSET_V1" and corpus["source_type"] == vc.SOURCE_TYPE
     [document] = corpus["documents"]
     assert document["bank_case"] == "asthma_24f" and document["collected_on"] == "2026-10-01"
-    assert document["template_version"] == "VC1-ES" and len(document["sha256"]) == 64
+    assert document["template_version"] == "VC2-ES" and len(document["sha256"]) == 64
     assert [entry["entry_id"] for entry in document["entries"]] == ["EM90-C01-es-b1-e01", "EM90-C01-es-b1-e02"]
     # The same documents, the same file: nothing depends on the clock.
     assert vc.ingest(folder, "development") == corpus
@@ -290,10 +291,11 @@ def test_two_blind_annotations_are_compared_field_by_field():
 
 # --- the engine's reading and the measures ------------------------------------------------------
 
-def _trace(text, status="executed", actions=(), slots=None, provenance=None, future=(), details=()):
+def _trace(text, status="executed", actions=(), slots=None, provenance=None, plans=()):
     return {"input": text, "status": status, "actions": [list(a) for a in actions],
-            "slots": slots or {}, "provenance": provenance or {}, "future": list(future),
-            "future_details": list(details), "summaries": []}
+            "slots": slots or {}, "provenance": provenance or {},
+            "future": sorted(plan for _, plan in plans), "future_details": sorted(f"{kind}/None" for kind, _ in plans),
+            "plans": [list(plan) for plan in plans], "summaries": []}
 
 
 def test_trace_entries_are_matched_to_what_produced_them_in_order():
@@ -322,13 +324,46 @@ def test_what_the_engine_did_is_read_from_the_trace_and_the_harness_is_named():
         actions=[(("message", "Specify one absolute target oxygen flow"), ("type", "clarification"))])]})
     assert held["asked"] and held["read"] == ["ASKED: Specify one absolute target oxygen flow"]
     conditional = vc.engine_view({"played": True, "trace": [_trace(
-        "Si no mejora, adrenalina", "clarification_required", future=["si no mejora, adrenalina"],
-        details=["conditional/None"])]})
+        "Si no mejora, adrenalina", "clarification_required", plans=[("conditional", "si no mejora, adrenalina")])]})
     assert conditional["captured"]["contingency"]
 
 
+def test_each_plan_keeps_its_own_kind():
+    # The trace keeps the texts and the kinds in two separately sorted lists;
+    # paired, a return advice sorted under "conditional" and counted as a
+    # contingency (found 2026-09-28).
+    view = vc.engine_view({"played": True, "trace": [_trace(
+        "Alta, volver si fiebre, y si vomita ondansetrón", plans=[
+            ("advice", "volver si fiebre"), ("conditional", "si vomita ondansetron")])]})
+    assert view["conditional"] == ["si vomita ondansetron"]
+    assert view["read"] == ["PLAN (advice): volver si fiebre", "PLAN (conditional): si vomita ondansetron"]
+    advice_only = vc.engine_view({"played": True, "trace": [_trace(
+        "Alta, volver si fiebre", plans=[("advice", "volver si fiebre")])]})
+    # A return precaution is the discharge's safety plan, not a contingency (VC-3).
+    assert not advice_only["captured"]["contingency"]
+
+
+def test_the_stored_trace_keeps_each_plan_with_its_kind_in_order():
+    from tools_order_reading import compact_entry
+    entry = compact_entry({"learner_input": "x", "recognized_future_actions": ["volver si fiebre", "amoxicilina"],
+                           "future_details": [{"kind": "advice", "text": "volver si fiebre"},
+                                              {"kind": "prescription", "text": "amoxicilina"}]})
+    assert entry["plans"] == [["advice", "volver si fiebre"], ["prescription", "amoxicilina"]]
+
+
+def test_a_repeat_with_a_condition_is_a_contingency_and_a_schedule_is_not():
+    conditioned = vc.engine_view({"played": True, "trace": [_trace(
+        "Salbutamol 5 mg nbz, repetir cada 20 minutos si persiste", plans=[
+            ("repeat", "repetir cada 20 minutos si persiste")])]})
+    scheduled = vc.engine_view({"played": True, "trace": [_trace(
+        "Salbutamol 5 mg nbz, repetir cada 20 minutos por 3 veces", plans=[
+            ("repeat", "repetir cada 20 minutos por 3 veces")])]})
+    assert conditioned["captured"]["contingency"] and not scheduled["captured"]["contingency"]
+    assert scheduled["read"] == ["PLAN (repeat): repetir cada 20 minutos por 3 veces"]
+
+
 def _annotation(n=1, **flags):
-    base = {key: False for key in ("reassessment", "rationale", "expectation", "contingency", "disposition_followup",
+    base = {key: False for key in ("reassessment", "rationale", "expectation", "contingency",
                                    "clinically_sufficient", "ambiguous", "context_dependent")}
     base.update(flags)
     return {"items": [("MED", "x")] * n, **base}
@@ -349,17 +384,17 @@ def test_the_proposed_class_follows_the_reviewers_counts():
     assert vc.propose(_annotation(2, **sufficient), _view(), _review(1, 1)) == ("PARTIAL_ENGINE_ERROR", ["parsing"])
     assert vc.propose(_annotation(2, **sufficient), _view(), _review(0, 0)) == ("ENGINE_ERROR", ["parsing"])
     assert vc.propose(_annotation(1, **sufficient), _view(), _review(1, 1, extra=True)) == ("ENGINE_ERROR", ["execution"])
-    # A clear order the engine asked about is a reading error even when it was understood.
+    # A clear order the engine asked about is an unnecessary clarification even when it was understood.
     assert vc.propose(_annotation(1, **sufficient), _view(asked=True), _review(1, 1)) == (
-        "PARTIAL_ENGINE_ERROR", ["parsing"])
-    # A stated expectation the trace did not keep is the reasoning extraction's error.
+        "PARTIAL_ENGINE_ERROR", ["clarification"])
+    # A stated expectation the trace did not keep is the Management Trace's error.
     assert vc.propose(_annotation(1, expectation=True, **sufficient), _view(), _review(1, 1)) == (
-        "PARTIAL_ENGINE_ERROR", ["reasoning_extraction"])
-    # Genuinely ambiguous input is not forced into an engine error (§70).
-    assert vc.propose(_annotation(1, ambiguous=True), _view(asked=True), _review(0, 0)) == (
-        "AMBIGUOUS_INPUT", ["ambiguous_human_input"])
+        "PARTIAL_ENGINE_ERROR", ["trace"])
+    # Genuinely ambiguous input is not forced into an engine error, and has no engine location (§40).
+    assert vc.propose(_annotation(1, ambiguous=True), _view(asked=True), _review(0, 0)) == ("AMBIGUOUS_INPUT", [])
     assert vc.propose(_annotation(1, **sufficient), _view(), _review(1, 1), disagreement=True) == (
-        "ANNOTATION_DISAGREEMENT", ["annotation"])
+        "ANNOTATION_DISAGREEMENT", [])
+    assert set(vc.LOCI) == {"parsing", "execution", "trace", "clarification", "other"}
 
 
 def test_the_measures_are_counts_over_what_was_annotated_and_adjudicated():
@@ -414,6 +449,33 @@ def test_the_measures_are_counts_over_what_was_annotated_and_adjudicated():
     assert second["classification"] == "ENGINE_ERROR"
 
 
+def test_impact_and_known_defect_order_the_work_and_are_checked():
+    corpus = {"documents": [{"case": "C01", "bank_case": "asthma_24f", "language": "es",
+                             "entries": [{"entry_id": "e1", "text": "Ceftriaxona 2 g ev", "status": "development"}]}]}
+    engine = {"e1": {"played": True, "trace": [_trace("Ceftriaxona 2 g ev")]}}
+    row = {"entry_id": "e1", "intended_items": "MED: ceftriaxona 2 g ev", "clinically_sufficient": "Y",
+           "n_recognized": "0", "n_complete": "0", "n_partial": "0", "impact": "high", "known_defect": "KD-02",
+           "locus": "PARSING"}
+    [traced] = vc.metrics(corpus, engine, [row])["traceability"]
+    assert (traced["impact"], traced["known_defect"], traced["locus"]) == ("HIGH", "KD-02", "PARSING")
+    with pytest.raises(vc.CorpusError, match="impact"):
+        vc.metrics(corpus, engine, [{**row, "impact": "severe"}])
+    with pytest.raises(vc.CorpusError, match="locus"):
+        vc.metrics(corpus, engine, [{**row, "locus": "reasoning_extraction"}])
+
+
+def test_a_fifth_of_each_document_goes_to_the_second_annotator():
+    corpus = {"documents": [
+        {"entries": [{"entry_id": f"EM90-C01-es-b1-e{i:02d}", "status": "development"} for i in range(1, 11)]},
+        {"entries": [{"entry_id": "EM91-C02-es-b1-e01", "status": "development"},
+                     {"entry_id": "EM91-C02-es-b1-e02", "status": vc.RETIRED}]}]}
+    chosen = vc.double_annotation_sample(corpus)
+    assert len([entry for entry in chosen if entry.startswith("EM90")]) == 2
+    # At least one per document, never a retired entry, and the same for whoever draws it.
+    assert [entry for entry in chosen if entry.startswith("EM91")] == ["EM91-C02-es-b1-e01"]
+    assert vc.double_annotation_sample(corpus) == chosen
+
+
 def test_a_reviewers_class_must_be_one_of_the_five():
     corpus = {"documents": [{"case": "C01", "bank_case": "asthma_24f", "language": "es",
                              "entries": [{"entry_id": "e1", "text": "Ceftriaxona 2 g ev", "status": "development"}]}]}
@@ -442,3 +504,70 @@ def test_each_entry_is_read_by_the_real_page_and_a_held_one_does_not_swallow_the
     assert any(dict(map(tuple, signature)).get("agent") == "hydrocortisone"
                for item in steroid["trace"] for signature in item["actions"])
     assert engine["engine"]["simulator_version"]
+
+
+# --- the development/sealed draw (§18, §41) -------------------------------------------------
+
+def _pilot():
+    return json.loads((ROOT / "validation" / "pilot_v1" / "manifests" / "pilot_manifest.json").read_text())
+
+
+def _returned(tmp_path, files):
+    folder = tmp_path / "returned"
+    folder.mkdir(parents=True, exist_ok=True)
+    for name in files:
+        # Bytes that stand for a returned document; the draw never reads a text.
+        (folder / name).write_bytes(f"synthetic bytes of {name}".encode())
+    return folder
+
+
+BASELINE = "0123456789abcdef0123456789abcdef01234567"
+
+
+def test_the_draw_splits_every_pair_and_keeps_a_physician_whole():
+    pilot = _pilot()
+    received = {row["file"]: vc.hashlib.sha256(row["file"].encode()).hexdigest() for row in pilot["assignment"]}
+    drawn = vc.draw_split(pilot, received, BASELINE)
+    assert vc.draw_split(pilot, dict(reversed(list(received.items()))), BASELINE) == drawn
+    assert drawn["missing"] == [] and len(drawn["documents"]) == 18
+    subsets = {}
+    for item in drawn["documents"]:
+        subsets.setdefault(item["participant"], set()).add(item["subset"])
+    assert all(len(found) == 1 for found in subsets.values())
+    for pair in drawn["pairs"]:
+        assert {subsets[pair["development"]].pop(), subsets[pair["sealed"]].pop()} == {"development", "sealed"}
+    # Every case is in both subsets, because the two members of a pair share two cases.
+    for subset in vc.SUBSETS:
+        assert {item["case"] for item in drawn["documents"] if item["subset"] == subset} == set(pilot["cases"])
+    # The seed is recomputable from what split.json keeps.
+    assert vc.hashlib.sha256("\n".join(drawn["seed_lines"]).encode()).hexdigest() == drawn["seed"]
+
+
+def test_the_draw_refuses_what_it_cannot_audit():
+    pilot = _pilot()
+    good = {"EM01_C01_es.docx": "a" * 64}
+    with pytest.raises(vc.CorpusError, match="full commit"):
+        vc.draw_split(pilot, good, "main")
+    with pytest.raises(vc.CorpusError, match="not a document this pilot assigned"):
+        vc.draw_split(pilot, {"EM01_C02_es.docx": "a" * 64}, BASELINE)
+    drawn = vc.draw_split(pilot, good, BASELINE)
+    assert len(drawn["missing"]) == 17 and "EM06_C05_es.docx" in drawn["missing"]
+
+
+def test_split_lays_out_a_corpus_that_ingest_reads_and_never_draws_twice(tmp_path):
+    import tools_validation_corpus as tool
+    pilot_path = ROOT / "validation" / "pilot_v1" / "manifests" / "pilot_manifest.json"
+    files = [row["file"] for row in _pilot()["assignment"]][:6]
+    returned = _returned(tmp_path, files)
+    with pytest.raises(vc.CorpusError, match="outside the repository"):
+        tool.split(pilot_path, returned, BASELINE, ROOT / "local-data" / "corpus", "2026-10-15")
+    corpus = tmp_path / "corpus"
+    drawn = tool.split(pilot_path, returned, BASELINE, corpus, "2026-10-15")
+    manifest = json.loads((corpus / "manifest.json").read_text())
+    assert [row["subset"] for row in manifest["documents"]] == [item["subset"] for item in drawn["documents"]]
+    assert all((corpus / row["subset"] / row["file"]).exists() for row in manifest["documents"])
+    vc.load_manifest(corpus)  # one subset per participant, codes only
+    assert tool.split(pilot_path, returned, BASELINE, corpus, "2026-10-15")["seed"] == drawn["seed"]
+    (returned / files[0]).write_bytes(b"changed")
+    with pytest.raises(SystemExit, match="drawn once"):
+        tool.split(pilot_path, returned, BASELINE, corpus, "2026-10-15")

@@ -107,6 +107,10 @@ def compact_entry(entry):
                          for item in entry.get("recognized_future_actions") or []),
         "future_details": sorted(f"{d.get('kind')}/{d.get('category')}"
                                  for d in entry.get("future_details") or [] if isinstance(d, dict)),
+        # Each plan with its kind, in the reader's order: the two sorted lists
+        # above cannot be paired (the validation corpus did, 2026-09-28).
+        "plans": [[str(d.get("kind")), str(d.get("text") or "")]
+                  for d in entry.get("future_details") or [] if isinstance(d, dict)],
         "gate_required": gate.get("required"), "gate_status": gate.get("status"),
         "gate_missing": sorted(gate.get("missing") or []),
         "clarification": (json.dumps(clarification, ensure_ascii=False)[:300] if clarification else None),
