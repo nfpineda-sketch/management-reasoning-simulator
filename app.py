@@ -5297,8 +5297,8 @@ def try_resolve_pending_action(text):
         from family_parser import _normalize, _NEGATION, _opens_with_an_order
         body = _normalize(text)
         held = _understood_order_labels(pending.get("parsed") or {})
-        unsure = _UNSURE_REPLY.match(body)
-        if resolution is None and unsure and not _UNSURE_THEN_ORDER.search(body[unsure.end():]):
+        unsure = resolution is None and _UNSURE_REPLY.match(body)
+        if unsure and not _UNSURE_THEN_ORDER.search(body[unsure.end():]):
             # "No se" answers nothing, and it is no new order either: the order
             # stays held and the question stands. Read as a negated directive,
             # it used to discard the held order without a word -- a bag-mask
