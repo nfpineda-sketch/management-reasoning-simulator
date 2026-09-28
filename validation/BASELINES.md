@@ -13,7 +13,41 @@ validación.
 | Baseline | Idioma | Commit | Motor | Lista de defectos | Detalle |
 |---|---|---|---|---|---|
 | **SPANISH PILOT BASELINE** | es | `939978a5147ab859a6dc3566ef4e1a98611a5093` | `0.24.13-clinical-encounter` | versión 1 | `validation/pilot_v1/PILOT_BASELINE.md` |
-| **ENGLISH VALIDATION BASELINE** | en | *se registra cuando la suite completa pase en el commit con KD-01* | `0.24.13-clinical-encounter` | versión 2 | esta página |
+| **ENGLISH VALIDATION BASELINE** | en | `ec1c77f0339a6e3087337d2a621b2e630d3549a5` | `0.24.13-clinical-encounter` | versión 2 | esta página, sección siguiente |
+
+## ENGLISH VALIDATION BASELINE: `ec1c77f`
+
+**Qué trae, frente al baseline español:**
+
+- **KD-01 corregido por clase:** la vía escrita antes del fármaco.
+- **C14 declarado en 30 casos.**
+- **La herramienta del piloto** con baselines, versión de defectos y
+  etiquetas validadas.
+
+**Suite completa en este commit** (4 shards):
+
+| Medida | Resultado |
+|---|---|
+| Pruebas | **4956 pasan, 77 omitidas, 2 xfail, 0 fallas** |
+| Regresiones | 56 de 56 |
+| Corpus de ensayo (20 ES + 20 EN, semilla 3000) | idéntico al ciclo 4 decisión por decisión: 96/96 órdenes por idioma |
+
+**Cómo llegó a ser este commit.** La primera corrida completa, sobre
+`3745b0f`, encontró una sola falla: el catálogo publicado de hipoglicemia no
+listaba las correcciones nuevas. `ec1c77f` lo regenera, y su generador nombra
+la corrección detrás de cada declaración nueva.
+
+- Una segunda corrida se descartó: el disco temporal se llenó a mitad de
+  camino.
+- La tercera, limpia, es la de arriba.
+
+**El código del motor es el mismo en `3745b0f` y en `ec1c77f`.** Sólo cambian
+el generador de un documento y el documento.
+
+**Cómo comprobar que se usa este baseline:** `git checkout ec1c77f0339a`, o
+que `git diff ec1c77f0339a6e3087337d2a621b2e630d3549a5 -- '*.py'` salga
+vacío. Los commits posteriores del ciclo 5 son sólo de documentación y del
+registro de baselines.
 
 ## Qué registra cada corrida
 

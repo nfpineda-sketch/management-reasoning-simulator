@@ -27,7 +27,7 @@ Sirve para que un resultado del piloto se lea como **falla conocida** o como
 - DF-16b: orden + repetición + condición;
 - DF-16c: vía en plural y vía compartida por una lista de dosis.
 
-**Corregido en el ciclo 5, a partir del ENGLISH VALIDATION BASELINE:**
+**Corregido en el ciclo 5, a partir del ENGLISH VALIDATION BASELINE (`ec1c77f`):**
 
 - KD-01: la vía escrita antes del fármaco, incluida la misma confusión dentro
   de una lista («Aspirin 300 mg, IV morphine 4 mg» daba la aspirina IV).

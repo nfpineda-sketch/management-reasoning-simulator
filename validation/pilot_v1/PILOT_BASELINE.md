@@ -65,3 +65,12 @@ médicos (§56, §57).
   antes de usarlas para cambiar el motor (§57). Nunca se modifica el baseline
   para que una respuesta pase.
 - **Los commits posteriores del ciclo 4 son sólo de documentación.**
+
+## Después del ciclo 5 (2026-09-28)
+
+- **Este baseline no cambia.** Las respuestas en español se miden primero
+  contra `939978a`.
+- **El ENGLISH VALIDATION BASELINE es `ec1c77f`.** Trae KD-01 corregido y C14
+  declarado (`validation/BASELINES.md`).
+- **Un error de vía antes del fármaco leído aquí es KD-01**: en este baseline
+  está presente.

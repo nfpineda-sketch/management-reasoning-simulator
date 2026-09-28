@@ -5,18 +5,18 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-28, al cerrar el ciclo 4 (sección «Cierre del ciclo
-  4»). Las decisiones docentes que lo abrieron están en «Decisiones del
-  2026-09-28».
+- **Actualizado:** 2026-09-28, al cerrar el ciclo 5 (sección «Cierre del ciclo
+  5»). Las decisiones docentes que lo abrieron están en «Decisiones del
+  2026-09-28 (apertura del ciclo 5)».
 
 ## Pendientes de decisión
 
 | ID | Clase | Tema | Estado |
 |---|---|---|---|
-| DF-13 | HIGH VALUE · CLINICAL REVIEW | Activar C14 caso por caso | **A–H listas para responder** (`docs/C14_DECISIONES_A_H.md`) · nada activado |
-| DF-15 | HIGH VALUE · METHODOLOGICAL REVIEW | Piloto del validation corpus, Fase 1 | **Paquete listo, no enviado** (`validation/pilot_v1/`) · baseline congelado |
-| DF-16 | HIGH (2) · MEDIUM (2) · LOW | Defectos del lector encontrados en el ciclo 3 | **a, b y c corregidos** · el resto, en el manifiesto de defectos conocidos del piloto |
-| DF-19 | HIGH VALUE · LOW EFFORT | Arreglos baratos antes de la fase en inglés del piloto | **Propuesto para el ciclo 5** (KD-01; KD-04 si el piloto lo muestra frecuente) |
+| DF-20 | HIGH VALUE · CLINICAL REVIEW | `acs_54m_inferior`: VD del caso frente al POCUS | **Auditado, sin cambiar:** recomendación A · C14 del caso sigue NOT REVIEWED |
+| DF-15 | HIGH VALUE · METHODOLOGICAL REVIEW | Piloto del validation corpus, Fase 1 | **Listo, no enviado** · tooling READY · baselines ES `939978a` y EN `ec1c77f` |
+| DF-16 | MEDIUM · LOW | Defectos del lector que quedan | KD-02 a KD-15 en el manifiesto (versión 2) · KD-15 nuevo, sin corregir |
+| DF-21 | CLINICAL REVIEW (futuro) | Oportunidades de TD1, F1, C1, C3 y C4 | **Borrador y decisiones agrupadas** del ciclo 5 · nada escrito en el banco |
 | DF-14 | METHODOLOGICAL REVIEW | Vínculos PARTIAL inactivos de R1-03, R1-04 y R2-01 | **Confirmado: siguen inactivos** · documentados para revisión posterior |
 | DF-12 | STRUCTURAL | Regla de transición para objetivos NOT REVIEWED | **Aprobada como transitoria**, no permanente |
 | DF-17 | METHODOLOGICAL REVIEW | *Faculty override*: registrar que una oportunidad no ocurrió | **DEFERRED:** se diseña después del piloto C14 |
@@ -25,6 +25,45 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 | DF-9 | METHODOLOGICAL REVIEW | −3, doble efecto de safety y varios eventos por una conducta | Registrado · sin decisión ahora |
 | DF-11 | LOW PRIORITY | Residuos menores de la lectura | Registrado |
 | DF-5 | — | C15 | Deshabilitada, sin acción |
+
+## Cierre del ciclo 5 (2026-09-28)
+
+- **C14 activado donde se aprobó (DF-13, cerrado).**
+  - 30 casos declaran C14: **14 YES y 16 NO**, cada uno con quién lo revisó,
+    cuándo, su grupo de decisión y la versión C14-REVIEW-1. Un NO lleva su
+    razón.
+  - La tabla derivada está en `docs/C14_TABLA_FINAL.md`, y una prueba la ata
+    al banco.
+  - La regla de transición se retiró sólo para C14 y sólo en esos 30 casos.
+  - 15 pruebas nuevas cubren §21, §22 y §36–§39.
+- **`acs_54m_inferior` auditado (DF-20), sin cambios.**
+  - Clasificación B: inconsistencia de datos del caso.
+  - Recomendación A: el VD comprometido es el diseño.
+  - Decisión pendiente.
+- **KD-01 corregido por clase y verificado (DF-19, cerrado).**
+  - La vía escrita antes del fármaco, también dentro de una lista.
+  - 53 pruebas nuevas.
+  - Corpus de ensayo idéntico en ES y EN.
+- **Baselines.**
+  - **SPANISH PILOT BASELINE `939978a`**, sin cambio.
+  - **ENGLISH VALIDATION BASELINE `ec1c77f`:** 4956 pasan, 77 omitidas,
+    2 xfail y 0 fallas; 56 de 56 regresiones.
+  - Los reportes nombran el baseline y la versión de defectos conocidos: la
+    lista es la versión 2, con KD-15 y KB-02 nuevos.
+- **Piloto: tooling READY**, con una prueba de punta a punta sobre documentos
+  sintéticos. Las etiquetas de defecto conocido ahora se validan contra la
+  lista.
+- **Una regresión del ciclo, corregida.** El catálogo publicado de
+  hipoglicemia quedó desactualizado por las entradas nuevas del registro de
+  correcciones. Se regeneró, y su generador nombra la corrección detrás de
+  cada declaración nueva.
+- **Sin cambios:**
+  - D1–D5 y la escala;
+  - eventos críticos, −3, puntaje ajustado y radar;
+  - confirmación docente;
+  - mappings (9 PARTIAL inactivos);
+  - C2 y C15 deshabilitadas.
+- **Nada se contactó, envió, fusionó ni publicó.** El ciclo 6 no se inició.
 
 ## Decisiones del 2026-09-28 (apertura del ciclo 5)
 
@@ -202,6 +241,8 @@ aprobación.
 
 | ID | Tema | Estado |
 |---|---|---|
+| DF-13 | C14 caso por caso (decisiones A–H) | **Aplicado en el ciclo 5:** 14 YES y 16 NO con procedencia; `acs_54m_inferior` pasa a DF-20 |
+| DF-19 | KD-01, la vía antes del fármaco | **Corregido y verificado en el ciclo 5**; es el ENGLISH VALIDATION BASELINE `ec1c77f` |
 | DF-1 | Observation opportunities (D-1 a D-6) | **Implementado y testeado.** C14 no activado: pasa a DF-13 |
 | DF-2 | R1-03, R1-04 y R2-01 con contribución DIRECT/PARTIAL | **Implementado y testeado.** PARTIAL inactivos en DF-14 |
 | DF-6 | Validation corpus | **Diseño cambiado por el docente** (Fase 1 en Word) · herramienta implementada · piloto en DF-15 |
@@ -215,62 +256,64 @@ aprobación.
 
 ## Pendientes
 
-### [HIGH VALUE · CLINICAL REVIEW] DF-13 · Activar C14 caso por caso
+### [HIGH VALUE · CLINICAL REVIEW] DF-20 · `acs_54m_inferior`: VD comprometido en el caso, VD normal en su POCUS
 
 **PROBLEM**
 
-C14 sigue observable en todo encuentro por la regla de transición (DF-12).
-Ningún caso del banco declara todavía su oportunidad.
+- **El caso y el motor modelan un IAM inferior con compromiso del VD.** Lo
+  sostienen:
+  - la declaración coronaria;
+  - el comentario del caso;
+  - las decisiones docentes del 2026-09-19 y del 2026-09-21 (4, 7 y 10);
+  - el guion «bueno» de la tanda 20.
+- **Su POCUS dice VD normal**, con «RV free wall contracts normally», y una
+  VCI de 1.8 cm con 50 % de colapso.
+- **En un mismo encuentro el residente ve SDST en V4R y un VD normal.** Si
+  confía en el POCUS y da nitroglicerina a 20 mcg/min, la PA cae de 100/64 a
+  67/45 en 10 minutos.
 
 **EVIDENCE**
 
-- **Borrador del ciclo 3:** `docs/BORRADOR_C14_OBSERVATION_OPPORTUNITIES.md`,
-  con 31 casos: 6 YES, 6 NO y 19 UNCERTAIN.
-- **Ciclo 4:** `docs/C14_DECISIONES_A_H.md` convierte las 19 dudas en ocho
-  decisiones clínicas A–H, en el formato del §32. Cada una trae casos
-  afectados, recomendación y consecuencias si se aprueba o se rechaza.
-  `c14_review.derive` deriva las filas de las respuestas y no escribe nada.
-- **Lo que reveló revisar el borrador contra los casos y el motor:**
-  - los dos TEP traen una TVP proximal en el POCUS que el borrador omitía;
-  - la pielonefritis séptica pertenece también a la pregunta de volumen;
-  - el POCUS del bloqueo completo no refleja la captura;
-  - el evento del neumotórax en el asma nombra su diagnóstico;
-  - `acs_54m_inferior` declara compromiso del VD y su POCUS dice VD normal.
-    Es una inconsistencia de datos para decidir; no se cambió.
-- **Si se aprueban las ocho recomendaciones:** 14 SÍ, 16 NO y 1 UNCERTAIN. El
-  UNCERTAIN es `acs_54m_inferior`, por esa inconsistencia.
+- **Auditoría:** `docs/AUDITORIA_ACS_54M_INFERIOR.md`. Clasificación **B**:
+  inconsistencia de datos del caso, visible en el juego. El POCUS es un
+  borrador nunca revisado, y su propia nota dejó la pregunta abierta.
+- **Impacto medido en copias descartables** (2,540 pruebas de SCA, POCUS y
+  texto del caso):
+  - con A falla 1 prueba, el texto en español;
+  - con B fallan 2, las decisiones del VD.
+- **Encuentros históricos:** ninguna opción los toca; el caso se congela con
+  el encuentro.
+- **Fuera del piloto de validación:** sus seis casos no incluyen SCA.
 
 **RECOMMENDATION**
 
-1. Responder A–H: «A approve / B approve / C modify: … ».
-2. Aprobar, modificar o rechazar la tabla de filas que resulte, con los casos
-   claros.
-3. El AI Advisor escribe en el bloque `objectives` sólo lo aprobado, con quién
-   lo revisó y cuándo, y retira C14 de la regla de transición caso a caso.
+**Opción A.** Corregir el VD y la VCI del POCUS al compromiso del VD, con la
+redacción que usted apruebe. Después:
+
+- nueva traducción del pasaje en español;
+- su decisión C14 (YES o NO) para el caso.
 
 **ALTERNATIVES**
 
-- Activar sólo las 12 filas YES/NO ya claras y dejar las UNCERTAIN en
-  transición.
-- Mantener la transición completa.
+- **B:** quitar el compromiso del VD.
+- **C:** mantener ambas, declarando el punto docente.
+- **D:** dejarlo sin revisar.
 
 **COST / EFFORT**
 
-- **Docente:** minutos por caso.
-- **AI Advisor:** una sesión corta para escribir y verificar.
+- **Docente:** aprobar dos líneas de texto y una fila C14.
+- **AI Advisor:** una sesión corta.
 
 **RISK**
 
-- Un YES sin oportunidad real haría evaluable algo que el caso no ofrece.
-- Un NO erróneo quitaría una oportunidad.
-- Ambos riesgos se acotan a encuentros nuevos: la declaración se congela.
+- Mientras no se decida, el caso sigue mostrando datos contradictorios.
+- C14 conserva la regla de transición en ese caso.
 
 **DECISION NEEDED**
 
-- Respuestas a A–H.
-- Aprobación de las filas.
-- Si se corrige el VD de `acs_54m_inferior`: es un dato clínico del caso y
-  requiere autorización.
+1. ¿Cuál representación es la correcta: A, B, C o D?
+2. Si A, el texto del VD y de la VCI.
+3. C14 YES o NO para el caso.
 
 ---
 
@@ -423,53 +466,20 @@ consideran una aclaración innecesaria.
 
 ---
 
-### [HIGH VALUE · LOW EFFORT] DF-19 · Arreglos baratos antes de la fase en inglés
+### DF-19 · KD-01 · CERRADO en el ciclo 5
 
-**PROBLEM**
-
-La comprobación con frases escritas después del fix (ciclo 4) encontró una
-forma inglesa común que el lector no reconoce: la vía antes del fármaco y sin
-verbo.
-
-- **Ejemplos:** «IV morphine 4 mg», «Nebulized albuterol 2.5 mg», «Oral
-  paracetamol 1 g», «IV fluids 1 L».
-- **Qué pasa:** la orden vuelve como no reconocida y retiene el envío.
-- **Por qué no se corrigió:** no está relacionada con DF-16, así que no cumple
-  el criterio 1 del §71. Quedó documentada como KD-01.
-
-**EVIDENCE**
-
-- **Español:** la vía va después del fármaco y sí se lee, así que el piloto en
-  español casi no la verá.
-- **Inglés:** en la fase en inglés será probablemente frecuente.
-
-**RECOMMENDATION**
-
-- **Antes de recolectar documentos en inglés:** corregir la clase KD-01 con
-  frases nuevas y medir antes y después. Es barato: la vía inicial no se salta
-  hoy.
-- **Si el piloto en español muestra frecuente «reevaluar … si …»** (KD-04), un
-  arreglo de clase pequeño.
-- **Ambos arreglos**, con el orden que fija el piloto: desarrollo sólo con
-  development y nuevo baseline.
-
-**ALTERNATIVES**
-
-- Esperar a que el corpus inglés muestre el defecto. Costaría documentos
-  independientes para descubrir algo ya conocido.
-
-**COST / EFFORT**
-
-Bajo: un ciclo corto, sin IA.
-
-**RISK**
-
-- Bajo con pruebas de frases nuevas y el corpus de ensayo.
-- Cambia el lector, así que exige un nuevo baseline para la fase en inglés.
-
-**DECISION NEEDED**
-
-Autorizar KD-01 en el ciclo 5, o esperar el piloto.
+- **Qué se hizo:** la corrección por clase de la vía escrita antes del fármaco,
+  incluida la misma confusión dentro de una lista.
+- **Pruebas:**
+  - 53 pruebas nuevas;
+  - corpus de ensayo idéntico en ES y EN;
+  - 56 de 56 regresiones;
+  - suite completa verde en `ec1c77f`.
+- **Detalle:** `docs/MEDICION_RECONOCIMIENTO_ORDENES.md`, sección del ciclo 5.
+- **Lo que queda aparte:**
+  - KD-15, el fluido nombrado en palabras (otra causa);
+  - KB-02, «IN» antes del fármaco (por diseño);
+  - KD-04, si el piloto lo muestra frecuente.
 
 ---
 
@@ -520,7 +530,8 @@ Evidencia más débil presentada como contribución.
 **Qué se implementó** (§56, el mecanismo más conservador y reversible):
 
 - Un objetivo sin declaración en un caso conserva la regla anterior, rotulada
-  `transition_fallback`: TD1, F1, C1, C3, C4 y C14 en todo encuentro, y un
+  `transition_fallback`: TD1, F1, C1, C3 y C4 en todo encuentro (C14 ya sólo en
+  `acs_54m_inferior`, el único caso sin revisar), y un
   Decision Challenge sólo en el encuentro generado para él.
 - NOT REVIEWED nunca es NO.
 - Los registros legados reciben la misma regla y nunca las declaraciones

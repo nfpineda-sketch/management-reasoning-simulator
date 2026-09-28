@@ -10,6 +10,16 @@
    "known_defects_version": 1,
    "record": "validation/pilot_v1/PILOT_BASELINE.md",
    "use": "The Spanish physicians' documents are measured against this commit first, before any change to the engine."
+  },
+  {
+   "name": "ENGLISH VALIDATION BASELINE",
+   "language": "en",
+   "commit": "ec1c77f0339a6e3087337d2a621b2e630d3549a5",
+   "simulator_version": "0.24.13-clinical-encounter",
+   "registered_on": "2026-09-28",
+   "known_defects_version": 2,
+   "record": "validation/BASELINES.md",
+   "use": "The English physicians' documents are measured against this commit first. It carries the KD-01 fix and the C14 declarations of cycle 5; the full suite passed on it (4956 passed, 77 skipped, 2 xfail, 0 failed) and 56/56 regressions."
   }
  ]
 }
