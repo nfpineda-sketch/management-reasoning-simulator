@@ -1040,3 +1040,26 @@ decisión: la entrada, el estado de ejecución, las acciones y los planes.
     del Management Trace guardado.
 - **Archivos de prueba del lector:** 1037 pasan y 2 xfail.
 - **Registro:** `corrections_registry` C-2026-09-28-04 y C-2026-09-28-09.
+
+## Ciclo 7 · TD-26 y C7-06: hemoderivados, hemorragia, IO y embarazo (2026-09-28)
+
+El detalle completo, con el rediseño de la lectura de glóbulos rojos, está en
+`docs/TD26_HEMODERIVADOS_Y_C7_06.md`. Como en el ciclo 6, todas las frases son
+**INTERNAL DEVELOPMENT DATA**: nada aquí estima cuántas órdenes reales de un
+residente se leen bien.
+
+| Medición | Frases | Lector anterior (HEAD del ciclo 6) | Lector final del ciclo 7 |
+|---|---|---|---|
+| Conjunto independiente (se usó para desarrollar) | 74 | 32 correctas · 39 retenidas · 3 perdidas | 51 · 19 · **0 perdidas · 0 falsas** |
+| Conjunto ciego, medido una vez | 70 | 23 · 45 · 1 perdida · 1 falsa | **Ciego:** 35 · 30 · 1 perdida · 2 falsas. **Post hoc:** 44 · 20 · 0 · 0 |
+| Revisión adversarial | 656 | — | Los 12 grupos de fallas (203 entradas) pasan |
+| Todo texto de orden que guarda el repositorio | 12 144 | — | 70 se leen distinto fuera de las pruebas del ciclo; todas revisadas |
+
+- **Las «perdidas» que quedan en el puntaje automático** (4 y 6) son errores
+  de etiqueta: pedían registrar como hemoderivado no modelado unos glóbulos
+  rojos que corren en el número escrito.
+- **Jugabilidad.** Las órdenes retenidas con una pregunta bajan a la mitad en
+  los dos conjuntos: de 39 a 19 y de 45 a 20.
+- **Lo que queda** está en «Límites documentados» del documento de TD-26 y en
+  `docs/REGISTRO_DEUDA_TECNICA.md` (TD-14, TD-29 a TD-31). Nada de eso es una
+  pérdida sin aviso de un hemoderivado indicado con claridad.

@@ -5,31 +5,115 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-28, al abrir el ciclo 7 (sección «Decisiones del
-  2026-09-28 (apertura del ciclo 7)»). El cierre del ciclo 6, su apertura y
-  los ciclos anteriores siguen más abajo.
+- **Actualizado:** 2026-09-28, al cerrar el ciclo 7 (sección «Cierre del
+  ciclo 7»). La apertura del ciclo 7, el ciclo 6 y los anteriores siguen más
+  abajo.
 
 ## Pendientes de decisión
 
-| ID | Clase | Tema | Estado al cierre del ciclo 6 |
+| ID | Clase | Tema | Estado al cierre del ciclo 7 |
 |---|---|---|---|
-| TD-21 | **BLOCKING BEFORE RESIDENCY PILOT** · CLINICAL REVIEW | Trauma: transfundir una hemorragia activa dispara la sobrecarga transfusional | **Verificado, sin cambiar.** Recomendación: excluir la hemorragia activa de la regla |
-| TD-26 | **BLOCKING BEFORE RESIDENCY PILOT** | Pérdidas sin aviso que quedan en el lector, sobre todo hemoderivados | **Medido a ciegas, sin corregir.** Pide autorizar una corrección por clase |
-| DF-21 · C4 | **BLOCKING BEFORE RESIDENCY PILOT** · METHODOLOGICAL | C4 = NO está decidido y no escrito: la transición lo deja valorable en todo encuentro | Pide autorizar que C4 = NO se escriba antes que el resto de TD/F/C |
-| DF-15 | HIGH VALUE · METHODOLOGICAL REVIEW | Piloto del validation corpus, Fase 1 | **Listo, no enviado** · se mide contra el SPANISH PILOT BASELINE `939978a` |
-| DF-22 | HIGH VALUE | Clases del lector | **Corregidas las 9 CRITICAL** (C-2026-09-28-04) · residuos en TD-14 y TD-26 |
-| DF-24 | METHODOLOGICAL REVIEW | Integridad longitudinal | **L-F01 y L-F04 aplicadas** · el resto, en `DF24_DECISIONS_FOR_NICOLAS.md` (respuesta en una línea) |
-| DF-21 | METHODOLOGICAL · CLINICAL REVIEW | TD1, F1, C1, C3: TDFC-1 a 6 y 8 | **En `docs/tdfc/TDFC_DECISIONS_FOR_NICOLAS.md`** · nada escrito en el banco |
-| DF-23 | CLINICAL REVIEW | Inconsistencias clínicas | **2 aplicadas** (C-2026-09-28-08) · 9 decisiones en `AUDITORIA_DF23_CICLO6.md` |
-| DF-20 | CLINICAL REVIEW | `acs_54m_inferior` | **Sin cambio de datos ni de fisiología** · C14 NO recomendado · sigue NOT REVIEWED |
-| TD-22 | HIGH VALUE | La prueba de embarazo retiene el envío | Cumple 6/6; no se aplicó (regla §64) |
-| DF-25 | METHODOLOGICAL (futuro) | Brechas del banco | **Priorizadas:** R1-07, R2-02, R1-03, R1-04, R2-01 y C4 · sin implementar |
-| DF-16 | MEDIUM · LOW | Defectos del lector que quedan | Manifiesto versión 2, sin cambio · TD-14 al día |
-| DF-14 | METHODOLOGICAL REVIEW | Vínculos PARTIAL inactivos | Siguen inactivos |
-| DF-12 | STRUCTURAL | Regla de transición para objetivos NOT REVIEWED | Transitoria; retirada sólo para C14 en 30 casos |
-| DF-17 | METHODOLOGICAL REVIEW | *Faculty override* de una oportunidad | DEFERRED |
-| DF-4 | CLINICAL + METHODOLOGICAL REVIEW | C2 y los casos trauma | C2 deshabilitada |
+| Piloto formativo | NEEDS NICOLÁS | Autorizar un piloto formativo controlado con residentes | **TECHNICALLY READY, WITH CONDITIONS** (`READINESS_PILOTO_RESIDENCIA.md`) |
+| DF-20 | NEEDS NICOLÁS · CLINICAL REVIEW | `acs_54m_inferior`: el VD del caso frente al de su POCUS | C14 NO aplicado (C-2026-09-28-11). **La contradicción de datos sigue:** A/B/C/D |
+| DF-23 · 4a | NEEDS NICOLÁS · CLINICAL REVIEW | `acs_70f_left_main`: «No B-lines» frente a la congestión | Texto propuesto EN/ES en `AUDITORIA_DF23_CICLO6.md`. Basta una línea |
+| TD-33 | NEEDS NICOLÁS · CLINICAL REVIEW | Residuo de TD-21: tras reponer con cristaloide, transfundir en trauma dispara la sobrecarga | Recomendado: en esa regla, sólo la sangre repone el déficit (una línea) |
+| DF-23 · 4b, 6, 7, 8 | CLINICAL REVIEW | Inconsistencias clínicas | Sin cambio (§31) |
+| Baseline inglés | NEEDS NICOLÁS · METHODOLOGICAL | Qué commit mide los documentos ingleses | Candidatos documentados; se elige **antes** de leer respuestas |
+| DF-15 | WAITING FOR EXTERNAL DATA | Piloto del validation corpus, español e inglés | Listo, no enviado; nada llegó en el ciclo 7 |
+| TDFC-1 a 6 y 8 | DECIDED + DEFERRED | TD1, F1, C1 y C3 | Aprobados conceptualmente; P3 pasa **intacto** al ciclo 8 |
+| TD-29 | HIGH · DEFERRED | «When», «cuando» y «once» no hacen condicional una orden que no es sangre | Documentado; propuesto para el ciclo 8 |
+| TD-14 · TD-30 · TD-32 | HIGH · MEDIUM · LOW | Lo que queda del lector | Documentado; el piloto lo mide |
+| DC3 (mitad de la dosis) | CLINICAL REVIEW | Una dosis «IO» sin instalar la IO | Con el alcance de la decisión 8 (DC4) |
+| Biblioteca POCUS | FUTURE ARCHITECTURE | Videos reales, adquisición y reconocimiento en la imagen | `ARQUITECTURA_POCUS_OBJETIVO.md`. No es deuda ni bug |
+| DF-25 · DF-14 · DF-12 · DF-17 · DF-4 | — | Brechas del banco · PARTIAL · transición · *override* · C2 | Sin cambio |
 | DF-18 · DF-9 · DF-11 · DF-5 | — | Multisource · −3 · residuos menores · C15 | Registrados, sin acción |
+
+## Cierre del ciclo 7 (2026-09-28)
+
+El ciclo cumplió lo autorizado en P0–P2. P3 (TDFC) pasó intacto al ciclo 8.
+Detalle en los documentos citados; el reporte final resume.
+
+### DECIDED + IMPLEMENTED
+
+| Ítem | Qué quedó | Registro |
+|---|---|---|
+| TD-21 | Principio D: sin sobrecarga falsa mientras la hemorragia está activa; la regla vuelve con el sangrado controlado y la pérdida repuesta. La HDA no cambia | C-2026-09-28-12 · `TD21_SOBRECARGA_TRANSFUSIONAL.md` |
+| TD-26 (C7-01) | Hemoderivados por clase, estándar A–J completo. En los conjuntos medidos, **0 pérdidas reales y 0 ejecuciones falsas** con el lector final | C-2026-09-28-13 · `TD26_HEMODERIVADOS_Y_C7_06.md` |
+| C7-06 y TD-22 | Medidas de hemorragia, acceso IO y prueba de embarazo, EN/ES | C-2026-09-28-14 |
+| C4 (H4) | C4 = NO en los 31 casos, en los generados y en PS001; es prospectivo | C-2026-09-28-10 |
+| C14 (H3) | `acs_54m_inferior` NO. C14 queda en **14 YES, 17 NO y 0 NOT REVIEWED** | C-2026-09-28-11 |
+| DF-24 | I-F02 A, L-F02 A (sólo qué revisión alimenta el radar), anulada A y retiro A (un aviso) | C-2026-09-28-15 |
+| DF-24 · L-F07 B | Las 9 composiciones heredan el C14 NO de su origen | C-2026-09-28-16 |
+| DF-23 · fila 3 | La prueba de embarazo, con C7-06 | C-2026-09-28-14 |
+| C7-09 | Una corrida que mezcla ES y EN falla con claridad. El piloto inglés (EM07–EM12) está preparado y no enviado; su baseline no se eligió | `test_validation_language_separation.py` |
+| C7-05 | PostgreSQL 16 local y descartable, verificado sobre el candidato final. El clúster se borró | TD-24 cerrado |
+| C7-10 · ACEP | `ACEP_POCUS_FRAMEWORK.md` y la arquitectura POCUS futura, en `2899a01`. Los 6 casos REVIEW NEEDED no cambian | — |
+
+### DECIDED + DEFERRED
+
+- **TDFC-1 a 6 y 8 (C7-11), intacto al ciclo 8.** Es P3 y va todo o nada. No
+  se cumplió su condición: aparecieron hallazgos HIGH del propio ciclo hasta
+  el barrido final, y después del congelamiento no quedó capacidad
+  significativa. Nada TD/F/C se escribió en el banco.
+  - **Nota para el ciclo 8.** La proyección «aprobado» de
+    `tdfc/MATRIZ_OPORTUNIDADES.md` usa las recomendaciones del borrador y da C3
+    13/18. El TDFC-6 aprobado da C3 10/21: YES en 46f, 83m y 61m; NO en 33f,
+    24f y 63m. Hay que regenerarla antes de implementar.
+- **Fuera de DF-24:** I-F18 (TD-18) y la meta cambiada tras confirmar.
+- **Otros defectos del lector (§8):** D5W, el antibiótico unido a un traslado y
+  el resto de TD-14.
+- **La mitad de dosis de DC3:** con la decisión 8.
+
+### NEEDS NICOLÁS
+
+1. Autorizar, o no, el piloto formativo controlado con sus condiciones.
+2. DF-20: A, B, C o D.
+3. DF-23, fila 4a: «4a: aplicar el texto propuesto» (u otro).
+4. TD-33: «sólo la sangre repone el déficit de la regla de sobrecarga en
+   trauma» (recomendado) u otra cosa.
+5. El baseline del piloto inglés, antes de leer respuestas.
+6. La propuesta del ciclo 8 (en el reporte final).
+7. Cuando pueda: DF-23, filas 4b, 6, 7 y 8.
+
+### WAITING FOR EXTERNAL DATA
+
+- **Los documentos de los médicos, en español y en inglés.** Nada llegó ni se
+  envió en el ciclo 7. SEALED no se tocó.
+- **La fidelidad externa del lector:** ordena TD-14, TD-29, TD-30 y TD-32.
+
+### FUTURE ARCHITECTURE
+
+- **La biblioteca POCUS de videos reales** (`ARQUITECTURA_POCUS_OBJETIVO.md`).
+  Hoy el POCUS es un informe escrito: su evidencia es una contribución PARCIAL.
+- **La evidencia C4:** vendrá de simulación procedural u observación en el
+  lugar de trabajo.
+
+### Hallazgos nuevos del ciclo (§73)
+
+- **Corregidos (CRITICAL/HIGH, dentro del alcance o regresiones del ciclo).**
+  Los 16 CRITICAL de la revisión adversarial y lo que halló el barrido final:
+  - «suspender/stop transfusión de …» corría las unidades;
+  - un verbo que detiene borraba la medida que acompañaba;
+  - un balance volvía a pasar el suero;
+  - una proporción entre productos se perdía.
+
+  Detalle en `TD26_HEMODERIVADOS_Y_C7_06.md`.
+- **Documentados:**
+  - TD-33 (HIGH, NEEDS NICOLÁS): un residuo de TD-21 que halló la prueba de la
+    rúbrica sobre el lector final;
+  - TD-29 (HIGH): la condición «cuando»;
+  - TD-30 (MEDIUM): órdenes sin verbo;
+  - TD-31 (MEDIUM): la adrenalina IM sin dosis y las medidas combinadas;
+  - TD-32 (LOW): residuos de TD-26.
+- **Proceso.** `1c4194b` y `c61daf6` se subieron con una prueba fallando (el
+  catálogo de hipoglicemia desactualizado). Se regeneró.
+
+### Baselines
+
+- **SPANISH PILOT BASELINE `939978a`:** intacto. `validation/pilot_v1` y los 18
+  DOCX no cambiaron.
+- **DEVELOPMENT HARDENED BASELINE V1 (`72a4a53`) y V2:** en
+  `validation/BASELINES.md`. Ninguno es un «validated engine».
 
 ## Decisiones del 2026-09-28 (apertura del ciclo 7)
 

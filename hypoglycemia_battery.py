@@ -419,7 +419,8 @@ UNOBSERVED_FAILED = (
     "Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2).",
     "El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance "
     "que dejó la decisión 8 (DC4).",
-    "La vía intraósea como alternativa: el motor la trata como la vía fallida (DC3).",
+    "La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); "
+    "una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente).",
 )
 UNOBSERVED_COMPOSITION = (
     "Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.",

@@ -13,6 +13,17 @@ this build" -- and the difference matters to whoever reads the record:
   condition, not executed now (DF-16b, 2026-09-28).
 * ``advice``: what the patient was told, such as when to come back.
 
+Two ``not_modelled`` categories are not medicines, and are said as what they
+are (TD-26, 2026-09-28; charter §112, §114):
+
+* ``blood_product``: plasma, platelets, cryoprecipitate or whole blood. The
+  order stands in the record as the resident's; its physiologic effect is not
+  modelled. Nothing says the engine gave its effect, and nothing says the
+  resident did not give it.
+* ``massive_transfusion``: the activation of the massive transfusion protocol.
+  Activating it gives no product by itself; the units given are the ones
+  ordered, and none is invented.
+
 Nothing here marks anything as given, and nothing invents a response.
 """
 from __future__ import annotations
@@ -24,6 +35,31 @@ LABELS = {
     "repeat": "repeat instruction; not executed now",
     "advice": "advice to the patient",
 }
+
+# The same kind said for what is not a medicine (TD-26).
+CATEGORY_LABELS = {
+    "blood_product": "blood product ordered; physiologic effect not modelled",
+    "massive_transfusion": "massive transfusion protocol activated; the activation gives no blood product by itself",
+}
+_CATEGORY_MESSAGES = {
+    "blood_product": ("Blood product ordered and recorded as your decision: {items}. Its physiologic effect is not "
+                      "modelled in this simulator: the order stands in the record, and the patient's course does "
+                      "not include its effect."),
+    "massive_transfusion": ("Massive transfusion protocol activation recorded: {items}. Activating it gives no blood "
+                            "product by itself; the units given are the ones ordered."),
+}
+_CATEGORY_HELD = {
+    "blood_product": "Also in this order, a blood product whose physiologic effect is not modelled: {items}.",
+    "massive_transfusion": "Also in this order, the massive transfusion protocol's activation: {items}.",
+}
+
+
+def _kind_of(detail):
+    """The kind a detail is said as: its category when that is not a medicine."""
+    if detail.get("kind") == "not_modelled" and detail.get("category") in CATEGORY_LABELS:
+        return detail["category"]
+    return detail.get("kind")
+
 
 _MESSAGES = {
     "not_modelled": ("Indicated and recorded as your decision: {items}. Its administration and effect "
@@ -48,11 +84,12 @@ def messages(parsed):
     """The page's sentences for what was recognised and not executed, by kind."""
     grouped = {}
     for detail in details_of(parsed):
-        grouped.setdefault(detail.get("kind"), []).append(str(detail.get("text") or "").strip())
+        grouped.setdefault(_kind_of(detail), []).append(str(detail.get("text") or "").strip())
     lines = []
-    for kind in ("not_modelled", "prescription", "conditional", "repeat", "advice"):
+    for kind in ("massive_transfusion", "blood_product", "not_modelled", "prescription", "conditional", "repeat",
+                 "advice"):
         if grouped.get(kind):
-            lines.append(_MESSAGES[kind].format(items="; ".join(grouped[kind])))
+            lines.append({**_MESSAGES, **_CATEGORY_MESSAGES}[kind].format(items="; ".join(grouped[kind])))
     unclassified = grouped.get(None) or []
     return lines, unclassified
 
@@ -74,9 +111,10 @@ def held_messages(parsed):
     """What a held order also carries, by kind, without saying it was recorded or given."""
     grouped = {}
     for detail in details_of(parsed):
-        grouped.setdefault(detail.get("kind"), []).append(str(detail.get("text") or "").strip())
-    lines = [_HELD[kind].format(items="; ".join(grouped[kind]))
-             for kind in ("not_modelled", "prescription", "conditional", "repeat", "advice") if grouped.get(kind)]
+        grouped.setdefault(_kind_of(detail), []).append(str(detail.get("text") or "").strip())
+    lines = [{**_HELD, **_CATEGORY_HELD}[kind].format(items="; ".join(grouped[kind]))
+             for kind in ("massive_transfusion", "blood_product", "not_modelled", "prescription", "conditional",
+                          "repeat", "advice") if grouped.get(kind)]
     if grouped.get(None):
         lines.append("Also recognized but not executable in this build: " + ", ".join(grouped[None]) + ".")
     return lines
@@ -84,7 +122,7 @@ def held_messages(parsed):
 
 def trace_labels(event):
     """Each item with what it is, for the learner's Management Trace."""
-    return [(str(detail.get("text") or ""), LABELS.get(detail.get("kind")))
+    return [(str(detail.get("text") or ""), {**LABELS, **CATEGORY_LABELS}.get(_kind_of(detail)))
             for detail in details_of(event)]
 
 

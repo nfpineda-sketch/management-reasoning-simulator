@@ -72,6 +72,14 @@ def _proposed_for(proposal, domain):
     return {}
 
 
+def superseded_by_draft(review, history):
+    """The confirmed revision still in force under a newer draft, or None."""
+    if not review or review.get("status") != "draft":
+        return None
+    return next((row for row in (history or []) if row.get("status") == "confirmed"
+                 and row.get("sequence", 0) < review.get("sequence", 0)), None)
+
+
 def _key(record, *parts):
     return "_".join(("rubric", record["id"][:16], *(str(p) for p in parts)))
 
@@ -201,6 +209,13 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
     check = rubric_presentation.record_check(proposal, record)
     prose = rubric_presentation.model_prose(record)
     _render_flags(check)
+    # A draft saved after a confirmation withdraws nothing (DF-24, decided
+    # 2026-09-28: warn now, no withdrawn state): the resident, the profile and
+    # the radar keep reading the confirmed revision until another is confirmed.
+    standing = superseded_by_draft(review, history)
+    if standing:
+        st.warning(_t("This draft does not replace confirmed revision {v0}: the resident, the profile and the "
+                      "radar keep showing that revision until you confirm another.", v0=standing["sequence"]))
     saved_scores = (review or {}).get("scores", {})
     saved_reasons = (review or {}).get("reasons", {})
     saved_changes = (review or {}).get("changes", {})

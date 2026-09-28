@@ -104,6 +104,9 @@ def split(pilot_path, returned, baseline, corpus, collected_on):
     """
     import shutil
     pilot = json.loads(Path(pilot_path).read_text(encoding="utf-8"))
+    # One language per corpus (§37 of cycle 7): the pilot declares it, and the
+    # corpus manifest carries it and its own version.
+    language = vc.corpus_language(pilot)
     returned = Path(returned)
     received = {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
                 for path in sorted(returned.glob("*.docx")) if not path.name.startswith("~$")}
@@ -120,7 +123,7 @@ def split(pilot_path, returned, baseline, corpus, collected_on):
     for item in drawn["documents"]:
         shutil.copyfile(returned / item["file"], corpus / item["subset"] / item["file"])
     _write_json(record, {**drawn, "drawn_on": date.today().isoformat()})
-    manifest = {"corpus_version": vc.CORPUS_VERSION, "pilot_id": pilot["pilot_id"],
+    manifest = {"corpus_version": vc.CORPUS_VERSIONS[language], "language": language, "pilot_id": pilot["pilot_id"],
                 "baseline_commit": drawn["baseline_commit"], "cases": pilot["cases"],
                 "documents": [{"file": item["file"], "participant": item["participant"], "case": item["case"],
                                "language": item["language"], "collected_on": collected_on,

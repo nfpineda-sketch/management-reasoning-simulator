@@ -81,6 +81,9 @@ MESSAGES = {
  "No pude relacionar esa pregunta con la historia registrada. Reformúlala o usa los temas de la anamnesis.",
  "Peripheral intravenous access already in place; not repeated":
  "Vía venosa periférica ya instalada; no se repite",
+ # The engine's question when the units were not written, or two counts were (TD-26).
+ "Confirm the number of packed red-cell units (1–4 per order).":
+ "Confirma el número de unidades de glóbulos rojos (1 a 4 por orden).",
  'You have not recorded a destination. Do you want to continue or finish?':
  'No has registrado un destino. ¿Quieres continuar o finalizar?',
  'How is this encounter ending?':
@@ -140,6 +143,9 @@ MESSAGES = {
  "This intervention requires a generated encounter with an explicit response rule.":
  "Esta intervención requiere un encuentro generado con una regla de respuesta explícita.",
  "Specify one supported study per order.": "Indica un solo examen soportado por orden.",
+ # A bleeding measure named by none (C7-06, 2026-09-28).
+ "Specify a tourniquet, direct pressure or wound packing.":
+     "Indica cuál medida: torniquete, compresión directa o taponamiento de la herida.",
  "The requested study was not recognized.": "El examen solicitado no se reconoció.",
  "Specify which recorded drug or fluid to repeat.":
  "Indica cuál de los fármacos o fluidos registrados se repite.",
@@ -247,7 +253,9 @@ _DESTINATIONS_ES = {"ICU": "UCI", "ward": "sala", "intermediate care": "intermed
 #: How an external bleed is controlled, and the words a site is written with.
 _HAEMOSTASIS_ES = {"Tourniquet": "Torniquete aplicado", "Direct pressure": "Compresión directa aplicada",
                    "Pressure": "Compresión aplicada", "Packing": "Taponamiento aplicado",
-                   "Wound packing": "Taponamiento de la herida aplicado", "Pressure dressing": "Vendaje compresivo aplicado"}
+                   "Wound packing": "Taponamiento de la herida aplicado", "Pressure dressing": "Vendaje compresivo aplicado",
+                   "Hemostatic dressing": "Apósito hemostático aplicado"}
+_IO_SITES_ES = {"humeral": "humeral", "tibial": "tibial", "sternal": "esternal", "femoral": "femoral"}
 _SITE_WORDS_ES = {"left": "izquierdo", "right": "derecho", "thigh": "muslo", "leg": "pierna", "arm": "brazo",
                   "forearm": "antebrazo", "groin": "ingle", "scalp": "cuero cabelludo", "neck": "cuello",
                   "wound": "herida", "limb": "extremidad", "upper": "superior", "lower": "inferior", "axilla": "axila",
@@ -390,12 +398,12 @@ _RULES = (
  (r"\bVentilator settings: ", "Parámetros del ventilador: "),
  (r"\bIntubation completed; invasive ventilation started\b", "Intubación realizada; ventilación invasiva iniciada"),
  (r"\bBag-mask assisted ventilation started\b", "Ventilación asistida con bolsa-mascarilla iniciada"),
- (r"\b(Tourniquet|Direct pressure|Pressure|Packing|Wound packing|Pressure dressing) applied to the ([\w -]+?): "
-  r"the external bleeding is controlled",
+ (r"\b(Tourniquet|Direct pressure|Pressure|Packing|Wound packing|Pressure dressing|Hemostatic dressing) applied to "
+  r"the ([\w -]+?): the external bleeding is controlled",
   lambda m: _HAEMOSTASIS_ES.get(m.group(1), m.group(1)) + " en " + _site_es(m.group(2))
   + ": el sangrado externo está controlado"),
- (r"\b(Tourniquet|Direct pressure|Pressure|Packing|Wound packing|Pressure dressing) applied to the ([\w -]+?): "
-  r"there is no external source bleeding here",
+ (r"\b(Tourniquet|Direct pressure|Pressure|Packing|Wound packing|Pressure dressing|Hemostatic dressing) applied to "
+  r"the ([\w -]+?): there is no external source bleeding here",
   lambda m: _HAEMOSTASIS_ES.get(m.group(1), m.group(1)) + " en " + _site_es(m.group(2))
   + ": aquí no hay una fuente de sangrado externo"),
  (r"\bDischarge home already requested; not repeated\b", "Alta a domicilio ya indicada; no se repite"),
@@ -427,6 +435,15 @@ _RULES = (
              "nil by mouth": "régimen cero ya registrado; no se repite"}[m.group(1)]),
  (r"\bperipheral intravenous access placed\b", "acceso venoso periférico instalado"),
  (r"\bperipheral intravenous access replaced\b", "acceso venoso periférico reemplazado"),
+ # An intraosseous line, with its site (C7-06, 2026-09-28).
+ (r"\bintraosseous access(?: \((humeral|tibial|sternal|femoral)\))? (placed|removed|already in place; not repeated)\b",
+  lambda m: "acceso intraóseo" + (f" ({_IO_SITES_ES[m.group(1)]})" if m.group(1) else "") + " "
+  + {"placed": "instalado", "removed": "retirado",
+     "already in place; not repeated": "ya instalado; no se repite"}[m.group(2)]),
+ (r"The line is recorded as intraosseous\. This simulator gives an intravenous and an intraosseous dose the same "
+  r"effect, so nothing else changes\.",
+  "La vía queda registrada como intraósea. Este simulador da el mismo efecto a una dosis endovenosa y a una "
+  "intraósea, así que nada más cambia."),
  (r"\b(cath lab|" + "|".join(_SERVICES_ES) + r") already contacted \(not repeated\)",
   lambda m: ("hemodinamia" if m.group(1) == "cath lab" else _SERVICES_ES[m.group(1)]) + " ya contactado (no se repite)"),
  (r"\bcontacting (cath lab|" + "|".join(_SERVICES_ES) + r") \(no intervention yet\)",
@@ -443,6 +460,18 @@ _RULES = (
  (r"\*\*Reassessment:\*\* (.*?) in (\d+) minutes", r"**Reevaluación:** \1 en \2 minutos"),
  (r"\*\*Reassessment:\*\* (.*?) in \[time\] minutes", r"**Reevaluación:** \1 en [tiempo] minutos"),
  # What an order recognised and did not execute (unexecuted_items), the resident's words quoted.
+ (r"Blood product ordered and recorded as your decision: (.+?)\. Its physiologic effect is not modelled in this "
+  r"simulator: the order stands in the record, and the patient's course does not include its effect\.",
+  "Hemoderivado indicado y registrado como tu decisión: \u00ab\\1\u00bb. Su efecto fisiológico no está modelado en "
+  "este simulador: la indicación queda en el registro, y la evolución del paciente no incluye su efecto."),
+ (r"Massive transfusion protocol activation recorded: (.+?)\. Activating it gives no blood product by itself; the "
+  r"units given are the ones ordered\.",
+  "Activación del protocolo de transfusión masiva registrada: \u00ab\\1\u00bb. Activarlo no administra ningún "
+  "hemoderivado por sí solo; las unidades administradas son las que se indican."),
+ (r"Also in this order, a blood product whose physiologic effect is not modelled: (.+?)\.(?=\n|$)",
+  "También en esta orden, un hemoderivado cuyo efecto fisiológico no está modelado: \u00ab\\1\u00bb."),
+ (r"Also in this order, the massive transfusion protocol's activation: (.+?)\.(?=\n|$)",
+  "También en esta orden, la activación del protocolo de transfusión masiva: \u00ab\\1\u00bb."),
  (r"Indicated and recorded as your decision: (.+?)\. Its administration and effect are not modelled in this "
   r"simulator, so nothing was given and nothing changed\.",
   "Indicado y registrado como tu decisión: \u00ab\\1\u00bb. Su administración y su efecto no están modelados en "
@@ -626,6 +655,7 @@ _RULES = (
  (r"\bCT pulmonary angiography\b", "AngioTAC de tórax"),
  (r"\bHead CT\b", "Tomografía de cerebro"), (r"\bAbdominal CT\b", "Tomografía de abdomen"),
  (r"\bBlood group and crossmatch\b", "Grupo y pruebas cruzadas"),
+ (r"\bPregnancy test\b", "Prueba de embarazo"),
  (r"\bRight-sided ECG \(V3R-V4R\)", "ECG con derivaciones derechas (V3R-V4R)"),
  (r"\bPosterior ECG \(V7-V9\)", "ECG con derivaciones posteriores (V7-V9)"),
  (r"\bGlucose (\d+) mg/dL", r"Glucosa \1 mg/dL"),
@@ -767,6 +797,10 @@ _RULES = (
   r"Estudio solicitado; no modelado en esta versión del simulador: \1. La solicitud queda "
   r"registrada con su hora; no habrá resultado y no se inventa ninguno."),
  (r"Not available in this service: (.+?)\. ", r"No disponible en este servicio: \1. "),
+ (r"Specify which blood product to give and how many units\.",
+  "Indica qué hemoderivado quieres administrar y cuántas unidades."),
+ (r"Write each blood product with its own number of units\.",
+  "Escribe cada hemoderivado con su propio número de unidades."),
  (r"Specify whether to transfuse these units now, with the number of units, or to request a "
   r"crossmatch to have them reserved\.",
   "Indica si quieres transfundir estas unidades ahora, con el número de unidades, o pedir "

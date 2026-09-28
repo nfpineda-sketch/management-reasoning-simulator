@@ -2,6 +2,26 @@
 
 Ciclo 6 · 2026-09-28 · rama `clinical-encounter-v0.13`.
 
+> **Estado al cierre del ciclo 7 (2026-09-28): DECIDED + IMPLEMENTED.**
+>
+> | Ítem | Decisión | Estado | Registro |
+> |---|---|---|---|
+> | I-F02 | A | Hecho | C-2026-09-28-15 |
+> | L-F02 | A | Hecho | C-2026-09-28-15 |
+> | Anulada | A | Hecho | C-2026-09-28-15 |
+> | Retiro | A, un aviso sin estado «retirada» | Hecho | C-2026-09-28-15 |
+> | L-F07 | B | Hecho | C-2026-09-28-16 |
+> | I-F18 | Fuera de DF-24 | Sigue en TD-18 | — |
+> | Meta cambiada tras confirmar | Fuera de DF-24 | Sin cambio | — |
+> | L-F07 D (revisar PS001) | Para la revisión de TD/F/C | — | — |
+>
+> - **L-F02 sólo cambia qué revisión alimenta el radar.** No cambia el
+>   scoring, D1–D5 ni el promedio.
+> - **Pruebas:** `test_df24_approved_integrity_changes.py`.
+> - **PostgreSQL:** la misma suite pasa en PostgreSQL 16.
+>
+> Lo que sigue es el documento de decisión tal como se presentó.
+
 **Qué es.** Las siete decisiones de DF-24 que siguen pendientes. Cada una se
 responde en una línea; la plantilla está al final.
 

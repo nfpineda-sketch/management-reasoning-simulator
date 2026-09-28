@@ -57,6 +57,9 @@ _SUPPORT_ORDERS = {
                          "Urine is collected and measured from now on; the catheter does not make any."),
     "gastric_tube": ("nasogastric tube", "placed", 4, "What it is for belongs to the indication."),
 }
+# What an intraosseous line adds where a working line was already assumed.
+IO_NOTE = ("The line is recorded as intraosseous. This simulator gives an intravenous and an "
+           "intraosseous dose the same effect, so nothing else changes.")
 _MEDICINES = {
     "antibiotics": ({"IV", "IO", "PO"}, .01, 20000),
     "bronchodilator": ({"nebulized", "inhaled"}, .01, 20),
@@ -1142,6 +1145,9 @@ def _order(state, a):
     elif kind == "hemorrhage_control":
         import trauma_hemorrhage
         measure, site = a["measure"], a.get("site", "wound")
+        # A dressing is recorded by the name the resident used and applied as the
+        # measure it is; the record never says a measure nobody named (C7-06).
+        named = str(a.get("named") or measure)
         # A tourniquet stops an arterial limb source; pressure and packing hold
         # a compressible one. The engine prices what the measure can do, and
         # the case declares which source it is being applied to.
@@ -1149,9 +1155,9 @@ def _order(state, a):
         if source in trauma_hemorrhage.sources(state):
             achieved = 1.0 if measure == "tourniquet" else .75
             trauma_hemorrhage.control(f, source, achieved)
-            label = f"{measure.capitalize()} applied to the {site}: the external bleeding is controlled"
+            label = f"{named.capitalize()} applied to the {site}: the external bleeding is controlled"
         else:
-            label = f"{measure.capitalize()} applied to the {site}: there is no external source bleeding here"
+            label = f"{named.capitalize()} applied to the {site}: there is no external source bleeding here"
         tr["hemorrhage_control"] = measure
         duration = 2
     elif kind == "pelvic_binder":
@@ -1231,6 +1237,33 @@ def _order(state, a):
         else:
             tr.update({kind + "_rate": reported_rate if rate else 0, kind + "_units": reported_units})
         label = f"{kind.capitalize()} {a['operation']}" + (f" at {reported_rate:g} {reported_units}" if rate else "")
+    elif kind == "vascular_access" and a.get("access") == "intraosseous":
+        # An intraosseous line is recorded as the resident placed it, never as an
+        # intravenous one (C7-06, 2026-09-28). The engine gives an IV or an IO
+        # dose the same effect: it has no separate IO physiology, and a working
+        # line was already assumed. What the IO changes is a line that had
+        # failed: from now on, what is given reaches the circulation.
+        site = str(a.get("site") or "").strip()
+        name = "intraosseous access" + (f" ({site})" if site else "")
+        if a.get("operation") == "stop":
+            f["io_access"] = False
+            label = f"{name} removed"
+        elif f.get("io_access") and not f.get("iv_access_failed"):
+            label = f"{name} already in place; not repeated"
+        else:
+            f["io_access"] = True
+            label = f"{name} placed"
+            if f.get("iv_access_failed"):
+                f["iv_access_failed"] = False
+                f.setdefault("procedure_events", []).append(
+                    {"type": "procedure", "label": glucose_rescue.NEW_ACCESS_TEXT,
+                     "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
+            else:
+                f.setdefault("procedure_events", []).append(
+                    {"type": "procedure", "label": IO_NOTE,
+                     "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
+        tr.setdefault("support_orders", {})["intraosseous_access"] = bool(f.get("io_access"))
+        duration = 0 if label.endswith("not repeated") else _SUPPORT_ORDERS["vascular_access"][2]
     elif kind in _SUPPORT_ORDERS:
         name, done, minutes, note = _SUPPORT_ORDERS[kind]
         field = {"urinary_catheter": "urinary_catheter", "vascular_access": "iv_access",
@@ -1561,6 +1594,11 @@ def _order(state, a):
         summary["repeated"] = True
     if kind == "disposition" and repeated:
         summary["repeated"] = True
+    # What the resident placed or applied, as they named it: an intraosseous line
+    # is never written back as an intravenous one, nor a dressing as pressure (C7-06).
+    for key in {"vascular_access": ("access", "site"), "hemorrhage_control": ("measure", "named", "site")}.get(kind, ()):
+        if a.get(key) is not None:
+            summary[key] = a[key]
     for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "rate_basis", "rate_ml_h", "service", "destination", "duration_h", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
         if key in a:
             summary[key] = a[key]
@@ -2613,6 +2651,23 @@ def advance_clinical_time(state, minutes, *, label=""):
     return {"elapsed_min": minutes, "action_summaries": summaries, "label": str(label)}
 
 
+def recorded_only(parsed):
+    """The result of an order that names only what is recorded and not run, or None.
+
+    A medicine or a blood product whose effect is not modelled, or the massive
+    transfusion protocol's activation, written alone, is the resident's decision:
+    recorded, with no minute passing and nothing given (TD-26, 2026-09-28). It was
+    answered "Please specify a question...", held, and left out of the executed
+    record the faculty reads.
+    """
+    import unexecuted_items
+    if (isinstance(parsed, dict) and not parsed.get("clarification") and not parsed.get("actions")
+            and unexecuted_items.indicated(parsed)):
+        return {"executed": True, "clarification": None, "action_summaries": [], "reassess_delay": None,
+                "elapsed_min": 0, "recorded_only": True}
+    return None
+
+
 def execute_family_bundle(state, parsed):
     """Execute a fully validated bundle atomically; all clocks are simulated minutes."""
     if state.get("engine_family") == "generated":
@@ -2624,10 +2679,15 @@ def execute_family_bundle(state, parsed):
     if state.get("engine_family") not in FAMILIES:
         return _failure("This encounter does not have a supported clinical trajectory.")
     import clinical_time
+    arrested = (state.get("family_state", {}).get("vf_at") is not None
+                or state.get("family_state", {}).get("arrest_at") is not None)
+    recorded = None if arrested else recorded_only(parsed)
+    if recorded:
+        return recorded
     actions, error = _validate(state, parsed)
     if error:
         return _failure(error)
-    if state.get("family_state", {}).get("vf_at") is not None or state.get("family_state", {}).get("arrest_at") is not None:
+    if arrested:
         # Arrest management is outside this build: do not run ordinary physiology as
         # though there were a circulation.
         return {"executed": False, "terminal_locked": True, "clarification": None,

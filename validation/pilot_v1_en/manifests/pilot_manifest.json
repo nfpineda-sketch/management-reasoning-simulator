@@ -1,0 +1,259 @@
+{
+ "pilot_id": "VALIDATION_PILOT_V1_EN",
+ "corpus_version": "VALIDATION_CORPUS_V1_EN",
+ "language": "en",
+ "template_version": "VC2",
+ "annotation_version": "VC2-ANNOTATION-1",
+ "decision": "Cycle 7, 2026-09-28 (§33-§37, §87, §88): the English validation is a separate corpus, prepared and not sent.",
+ "status": "PREPARED, NOT SENT. Nobody has been contacted; no document has been distributed.",
+ "note_language": "Natural free-text English from clinicians who write in English. Nothing is translated from Spanish, and Spanish and English are never read in one run (validation_corpus.corpus_language).",
+ "mirrors": {
+  "pilot": "VALIDATION_PILOT_V1",
+  "participants": {
+   "EM01": "EM07",
+   "EM02": "EM08",
+   "EM03": "EM09",
+   "EM04": "EM10",
+   "EM05": "EM11",
+   "EM06": "EM12"
+  },
+  "what_is_the_same": [
+   "case content",
+   "instructions",
+   "assignment logic",
+   "pairs and split rule"
+  ],
+  "what_differs": "the response language"
+ },
+ "cases": {
+  "C01": "asthma_24f",
+  "C02": "pneumonia_46f",
+  "C03": "gi_bleed_57m",
+  "C04": "anaphylaxis_29f",
+  "C05": "renal_colic_34m",
+  "C06": "trauma_limb_hemorrhage_27m"
+ },
+ "case_labels": {
+  "C01": "severe asthma",
+  "C02": "pneumonia with hypotension",
+  "C03": "upper gastrointestinal bleed",
+  "C04": "anaphylaxis",
+  "C05": "renal colic with discharge",
+  "C06": "trauma with limb haemorrhage"
+ },
+ "pairs": [
+  {
+   "pair": "P1",
+   "participants": [
+    "EM07",
+    "EM08"
+   ],
+   "shared_cases": [
+    "C01",
+    "C06"
+   ]
+  },
+  {
+   "pair": "P2",
+   "participants": [
+    "EM09",
+    "EM10"
+   ],
+   "shared_cases": [
+    "C02",
+    "C05"
+   ]
+  },
+  {
+   "pair": "P3",
+   "participants": [
+    "EM11",
+    "EM12"
+   ],
+   "shared_cases": [
+    "C03",
+    "C04"
+   ]
+  }
+ ],
+ "assignment": [
+  {
+   "participant": "EM07",
+   "pair": "P1",
+   "case": "C01",
+   "language": "en",
+   "file": "EM07_C01_en.docx"
+  },
+  {
+   "participant": "EM07",
+   "pair": "P1",
+   "case": "C06",
+   "language": "en",
+   "file": "EM07_C06_en.docx"
+  },
+  {
+   "participant": "EM07",
+   "pair": "P1",
+   "case": "C04",
+   "language": "en",
+   "file": "EM07_C04_en.docx"
+  },
+  {
+   "participant": "EM08",
+   "pair": "P1",
+   "case": "C01",
+   "language": "en",
+   "file": "EM08_C01_en.docx"
+  },
+  {
+   "participant": "EM08",
+   "pair": "P1",
+   "case": "C06",
+   "language": "en",
+   "file": "EM08_C06_en.docx"
+  },
+  {
+   "participant": "EM08",
+   "pair": "P1",
+   "case": "C02",
+   "language": "en",
+   "file": "EM08_C02_en.docx"
+  },
+  {
+   "participant": "EM09",
+   "pair": "P2",
+   "case": "C02",
+   "language": "en",
+   "file": "EM09_C02_en.docx"
+  },
+  {
+   "participant": "EM09",
+   "pair": "P2",
+   "case": "C05",
+   "language": "en",
+   "file": "EM09_C05_en.docx"
+  },
+  {
+   "participant": "EM09",
+   "pair": "P2",
+   "case": "C06",
+   "language": "en",
+   "file": "EM09_C06_en.docx"
+  },
+  {
+   "participant": "EM10",
+   "pair": "P2",
+   "case": "C02",
+   "language": "en",
+   "file": "EM10_C02_en.docx"
+  },
+  {
+   "participant": "EM10",
+   "pair": "P2",
+   "case": "C05",
+   "language": "en",
+   "file": "EM10_C05_en.docx"
+  },
+  {
+   "participant": "EM10",
+   "pair": "P2",
+   "case": "C03",
+   "language": "en",
+   "file": "EM10_C03_en.docx"
+  },
+  {
+   "participant": "EM11",
+   "pair": "P3",
+   "case": "C03",
+   "language": "en",
+   "file": "EM11_C03_en.docx"
+  },
+  {
+   "participant": "EM11",
+   "pair": "P3",
+   "case": "C04",
+   "language": "en",
+   "file": "EM11_C04_en.docx"
+  },
+  {
+   "participant": "EM11",
+   "pair": "P3",
+   "case": "C01",
+   "language": "en",
+   "file": "EM11_C01_en.docx"
+  },
+  {
+   "participant": "EM12",
+   "pair": "P3",
+   "case": "C03",
+   "language": "en",
+   "file": "EM12_C03_en.docx"
+  },
+  {
+   "participant": "EM12",
+   "pair": "P3",
+   "case": "C04",
+   "language": "en",
+   "file": "EM12_C04_en.docx"
+  },
+  {
+   "participant": "EM12",
+   "pair": "P3",
+   "case": "C05",
+   "language": "en",
+   "file": "EM12_C05_en.docx"
+  }
+ ],
+ "split": {
+  "procedure": "validation/pilot_v1/SPLIT_PROCEDURE.md, with pilot VALIDATION_PILOT_V1_EN and this corpus's own baseline",
+  "when": "once every document is back (or at the declared cutoff), before any is opened",
+  "unit": "the physician: all of a physician's documents go to one subset",
+  "stratified_by": "participant pair, whose two members share two cases"
+ },
+ "documents": {
+  "status": "ENGLISH DOCX AVAILABLE EXTERNALLY / NOT PRESENT IN REPOSITORY",
+  "before_use": "Check each English document against its Spanish counterpart: same case content, same instructions, same assignment logic, different response language. They can be checked byte for byte against what tools_validation_corpus.py templates --pilot writes from this manifest."
+ },
+ "baseline": {
+  "status": "TO BE CHOSEN BY THE FACULTY BEFORE ANY ENGLISH RESPONSE IS RECEIVED OR READ (§88)",
+  "candidates": [
+   {
+    "name": "ENGLISH VALIDATION BASELINE",
+    "commit": "ec1c77f0339a6e3087337d2a621b2e630d3549a5",
+    "status": "registered in validation/baselines.json (cycle 5)"
+   },
+   {
+    "name": "DEVELOPMENT HARDENED BASELINE V1",
+    "commit": "72a4a53",
+    "status": "development reference (cycle 6), not a validation baseline"
+   },
+   {
+    "name": "DEVELOPMENT HARDENED BASELINE V2",
+    "commit": "cycle 7 candidate, if it meets the definition of done",
+    "status": "development reference (cycle 7), not a validation baseline"
+   }
+  ],
+  "rule": "Never the cycle's HEAD chosen automatically, and never chosen after the responses are read."
+ },
+ "known_defects": {
+  "status": "the version in force when the baseline is chosen",
+  "file": "validation/pilot_v1/manifests/known_defects.json"
+ },
+ "design": {
+  "each_case": "3 independent documents",
+  "each_physician": "exactly one case without shock (C01 or C05) and two in shock; never both haemorrhages (C03 and C06)",
+  "pairs": "the two members of a pair share two cases, so each subset of the split holds all six cases",
+  "represented": {
+   "discharge": [
+    "C05"
+   ],
+   "procedure_or_intervention": [
+    "C06",
+    "C03"
+   ],
+   "multiple_orders_and_reassessment": [
+    "all six"
+   ]
+  }
+ }
+}

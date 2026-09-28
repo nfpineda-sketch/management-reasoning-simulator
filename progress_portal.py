@@ -353,6 +353,10 @@ def _render_target_settings(context, progress):
             _saved(context, "Program target saved and added to the audit history.")
 
 
+VOID_REASON_NOTICE = ("The resident reads this reason on their progress page, beside the original judgment "
+                      "and the notes. Write it for them to read.")
+
+
 def _render_observation_correction(context, progress, user_id, goals):
     observations = {
         row["id"]: (goal["objective_id"], row)
@@ -371,6 +375,8 @@ def _render_observation_correction(context, progress, user_id, goals):
         )
         st.write(observations[selected][1].get("notes", ""))
         with st.form("void_assessment_" + user_id + "_" + selected):
+            # The resident reads the reason (DF-24, decided 2026-09-28: A).
+            st.caption(_t(VOID_REASON_NOTICE))
             reason = st.text_area(_t("Reason for voiding assessment"), max_chars=4000)
             submitted = st.form_submit_button(_t("Void assessment"))
         if submitted:

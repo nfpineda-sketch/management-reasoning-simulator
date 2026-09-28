@@ -49,8 +49,10 @@ def test_the_scale_and_the_brief_s_instructions_are_unchanged():
     from objectives import AUTONOMY_LEVELS
     assert AUTONOMY_LEVELS == ("guided", "prompted", "independent")
     # 1.6 (2026-09-27) changed which objectives a brief lists (observation
-    # opportunities, and R1-03, R1-04 and R2-01); the instructions below did not.
-    assert faculty_analysis.PROMPT_VERSION == "1.6"
+    # opportunities, and R1-03, R1-04 and R2-01), and 1.7 (2026-09-28, TD-26) how a
+    # blood product and the massive transfusion protocol are said; the
+    # instructions below did not change.
+    assert faculty_analysis.PROMPT_VERSION == "1.7"
     prompt = faculty_analysis.SYSTEM_PROMPT if hasattr(faculty_analysis, "SYSTEM_PROMPT") else ""
     source = (ROOT / "faculty_analysis.py").read_text(encoding="utf-8")
     for rule in ("A neutral request to complete a category, a format clarification",

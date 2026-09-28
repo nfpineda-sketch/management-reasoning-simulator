@@ -620,3 +620,72 @@ Para repetir: `cd probes && PYTHONDONTWRITEBYTECODE=1 python3 -B p1_coronary.py 
 - Los directorios vacíos `/tmp/reclassify-*` que dejó esa prueba se borraron.
 - No se creó ninguna base SQLite fuera de los directorios temporales de pytest, que se borraron con las copias.
 - En `df23/` quedan este documento, las sondas y sus salidas, y los registros de las corridas (`baseline_subset.txt`, `fixA_subset.txt`, `fixB_subset.txt`, `fixB_subset2.txt`, `full_copy_base.txt`, `full_copy_AB.txt`), las listas de archivos del repositorio (`repo_files_before.txt`, `repo_files_after.txt`) y `probes/p4_err.txt`, que muestra que la historia corrió por la vía sin proveedor (`category=not_configured`).
+
+---
+
+## Ciclo 7 (2026-09-28): C7-08, DF-23 conservador
+
+Decisión docente del ciclo 7, §31: fila 3 con C7-06; fila 4a sólo si es
+inequívoca; filas 8, 7, 4b y 6 siguen siendo decisiones clínicas.
+
+### Fila 3 · la prueba de embarazo: hecha con C7-06
+
+La prueba de embarazo se registra como estudio pedido con su resultado no
+modelado, y no retiene la angio-TC ni ninguna otra orden. Detalle en
+`docs/TD26_HEMODERIVADOS_Y_C7_06.md`, TD-22.
+
+### Fila 4a · el pulmón del POCUS de `acs_70f_left_main`: propuesta, no aplicada
+
+**La contradicción.** El POCUS dice «No B-lines; A-line pattern bilaterally».
+Ese texto no se redactó para el caso: es el valor por defecto `_B_LINES_NONE`
+(`clinical_cases.py`). Tres fuentes del mismo caso dicen congestión:
+
+- el examen: «Mildly increased effort; scattered basal crackles»;
+- la radiografía: «Mild pulmonary congestion without focal consolidation»;
+- el rasgo clave: «Ongoing rest pain with hypoperfusion and congestion».
+
+**Texto propuesto** (su extensión es la del examen del propio caso):
+
+| | Hoy | Propuesto |
+|---|---|---|
+| EN | No B-lines; A-line pattern bilaterally | Scattered B-lines at both bases; no diffuse B-line pattern |
+| ES | Sin líneas B; patrón de líneas A bilateral | Líneas B dispersas en ambas bases; sin patrón difuso de líneas B |
+
+**Qué señal corrige.**
+
+- Hoy el POCUS sugiere un pulmón seco, que tolera volumen, justo donde la fila
+  C14 del caso (YES) pide limitar el volumen.
+- Con el texto propuesto, el POCUS dice lo mismo que el examen y la
+  radiografía, y refuerza la fila C14 en vez de contradecirla.
+
+**Qué no cambia.**
+
+- El desafío de decisión, la fila C14, la fisiología y los eventos críticos.
+- El VI («Globally reduced…») es la fila 4b y sigue como decisión clínica.
+- El pulmón seguiría fijo en el tiempo: el motor no mueve el pulmón en SCA.
+
+**Por qué no se aplicó en este ciclo.**
+
+- La auditoría del ciclo 6 dejó la extensión exacta como elección clínica
+  (5/6 condiciones: faltaba la redacción aprobada). Proponer el texto no es
+  aprobarlo.
+- Cambiar el inglés invalida el texto español aprobado del caso completo
+  (`case_text`: una aprobación vale para una versión exacta de los pasajes).
+  Hasta una nueva aprobación, el caso se mostraría en inglés a quien juega en
+  español.
+
+**Estado: NEEDS NICOLÁS.** Basta una línea: «4a: aplicar el texto propuesto»
+(u otro). Con esa respuesta se aplica en una sesión corta:
+
+1. cambiar el valor en `POCUS["acs"][5]`;
+2. `tools_case_text.py extract` y el borrador español de arriba;
+3. una prueba que fije la coherencia pulmón–examen–radiografía;
+4. una entrada en el registro de correcciones.
+
+La aprobación del texto español la registra quien lo revise, en la página de
+revisión. Nunca se registra en nombre de nadie.
+
+### Filas 8, 7, 4b y 6
+
+Siguen como decisiones clínicas, sin cambios (§31). No se limpió variabilidad
+plausible.

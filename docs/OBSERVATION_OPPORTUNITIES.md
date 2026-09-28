@@ -136,6 +136,10 @@ Después solo se lee esa copia:
 - **TD1, F1, C1 y C3 siguen sin revisar en todos los casos** (TDFC aprobado
   conceptualmente, sin escribir). En los casos generados y en PS001, C14 y
   TD/F/C conservan la transición (DF-12, L-F07 B).
+- **Las 9 composiciones del catálogo de hipoglicemia heredan el C14 NO de su
+  caso de origen** (L-F07 B, ciclo 7, C-2026-09-28-16). Cada una lleva la
+  misma razón y la firma de su revisión, con `inherited_from`. Sólo se agrega
+  C14. Se juegan en el sandbox docente, que no se valora.
 - **Las pruebas** están en `test_c14_opportunities.py`:
   - YES es evaluable y NO no lo es;
   - NOT REVIEWED conserva sólo la transición;

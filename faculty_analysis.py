@@ -35,19 +35,23 @@ SCHEMA_VERSION = "faculty_brief_v1"
 # offered (observation_opportunities), and R1-03, R1-04 and R2-01 are
 # objectives. A declared opportunity travels with its objective, as guidance
 # for what to look for, never as proof it happened.
-PROMPT_VERSION = "1.6"
-SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", PROMPT_VERSION)
+# 1.7 (2026-09-28, TD-26): indicated_not_modelled also carries the blood products
+# the engine records and does not run, and the massive transfusion protocol's
+# activation. A blood product was ordered and stands as ordered; only its
+# effect is not modelled, and it is never described as not given.
+PROMPT_VERSION = "1.7"
+SUPPORTED_PROMPT_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", PROMPT_VERSION)
 # Briefs from 1.0 to 1.3 carry the faculty-reported context they were written
 # under, one of these, and keep validating against it. From 1.4 the stored
 # value is always "unknown": nobody pre-declares an autonomy level any more.
 ASSISTANCE_CONTEXTS = ("unknown", *AUTONOMY_LEVELS)
-DECLARED_CONTEXT_PROMPTS = ("1.4", "1.5", "1.6")
+DECLARED_CONTEXT_PROMPTS = ("1.4", "1.5", "1.6", "1.7")
 # Preserve the six-objective legacy envelope for already saved faculty drafts.
 SUPPORTED_OBJECTIVES = ("TD1", "F1", "C1", "C3", "C4", "C14")
 # Prompt versions that ask for the record's own objective list rather than the
 # fixed six. A stored brief must be read with the list it was written against,
 # so a later prompt revision cannot make an earlier brief unreadable.
-DYNAMIC_OBJECTIVE_PROMPTS = ("1.2", "1.3", "1.4", "1.5", "1.6")
+DYNAMIC_OBJECTIVE_PROMPTS = ("1.2", "1.3", "1.4", "1.5", "1.6", "1.7")
 # The prompt version each later objective joined the list with. A brief written
 # before is read without it: an R1-03 brief of prompt 1.5 did not address R1-03.
 _OBJECTIVE_SINCE = {"R1-03": "1.6", "R1-04": "1.6", "R2-01": "1.6"}
@@ -538,7 +542,12 @@ never simply the assistance context.
   model, and prescriptions for home. Each is the learner's decision and may be discussed as a
   decision (what was chosen, what it replaced, what was omitted), but nothing was administered
   and no effect or response occurred: never describe one as given or as having worked. A
-  prescription for home is a prescription, not a dose given in the encounter.
+  prescription for home is a prescription, not a dose given in the encounter. It also lists
+  blood products other than packed red cells (plasma, platelets, cryoprecipitate, whole blood)
+  and the activation of the massive transfusion protocol. A blood product was ordered and stands
+  as ordered; only its physiologic effect is not modelled: never describe it as not given, as
+  omitted or as having had an effect. The protocol's activation gives no blood product by
+  itself; the units given are the executed ones.
 - reasoning_prompted shows the reasoning categories the application asked for
   after an order was held, and reasoning_provenance which answers were stated,
   carried from an earlier decision, shared with the plan of an earlier decision (an

@@ -271,12 +271,16 @@ _CATEGORY_NAMES = {
     "antiemetic": ("an antiemetic", "un antiemético"),
     "h2_blocker": ("an H2 blocker", "un bloqueador H2"),
     "adrenaline_autoinjector": ("an adrenaline auto-injector", "un autoinyector de adrenalina"),
+    # Not medicines (TD-26, 2026-09-28): said as what they are.
+    "blood_product": ("a blood product", "un hemoderivado"),
+    "massive_transfusion": ("the massive transfusion protocol's activation",
+                            "la activación del protocolo de transfusión masiva"),
     "other": ("a medicine", "un medicamento"),
 }
 
 
 def _indicated_fact(rows):
-    def line(language):
+    def line(language, rows):
         index = 0 if language == "en" else 1
         parts = []
         for r in rows:
@@ -286,8 +290,19 @@ def _indicated_fact(rows):
                     if r["prescription"] else "")
             parts.append(f"{name} (\u201c{r['text']}\u201d){what} {when}{_where(r)}")
         return "; ".join(parts)
-    return _say("Indicated by the resident, with no administration or effect modelled: " + line("en") + ".",
-                "Indicado por el residente, sin administración ni efecto modelados: " + line("es") + ".")
+    # A blood product and the protocol's activation are orders whose effect is
+    # not modelled; "no administration" would say the resident did not give it
+    # (TD-26; charter §112).
+    ordered = [r for r in rows if r["category"] in {"blood_product", "massive_transfusion"}]
+    indicated = [r for r in rows if r not in ordered]
+    en, es = [], []
+    if indicated:
+        en.append("Indicated by the resident, with no administration or effect modelled: " + line("en", indicated) + ".")
+        es.append("Indicado por el residente, sin administración ni efecto modelados: " + line("es", indicated) + ".")
+    if ordered:
+        en.append("Ordered by the resident, with its physiologic effect not modelled: " + line("en", ordered) + ".")
+        es.append("Indicado por el residente, con su efecto fisiológico no modelado: " + line("es", ordered) + ".")
+    return _say(" ".join(en), " ".join(es))
 
 
 def _within(row, window):
@@ -482,6 +497,32 @@ def _reading(en, es):
     return _say("Needs reading: " + en, "Requiere lectura: " + es)
 
 
+def _with_blood_products(f, window, result):
+    """A "met" that no executed blood explains, read beside a blood product or an MTP activation the resident ordered.
+
+    Plasma, platelets, cryoprecipitate and whole blood are recorded, not run
+    (TD-26, 2026-09-28). The definitions name executed blood, so an order of one
+    of them inside the window is the faculty's reading, never a silent "met":
+    the engine's limit is not the resident's omission (charter §112, §115).
+    """
+    if result.get("status") != "met":
+        return result
+    # The protocol's activation too: it gives no blood by itself, and the faculty
+    # reads it beside the orders (adversarial review of cycle 7).
+    products = [r for r in f["indicated"] if r["category"] in {"blood_product", "massive_transfusion"}
+                and _within(r, window)]
+    if not products:
+        return result
+    return _result("reading", result["facts"] + [_indicated_fact(products)],
+                   list(result.get("refs") or []) + [r["ref"] for r in products], _reading(
+                       "the definition names executed blood; here a blood product was ordered, or the massive "
+                       "transfusion protocol activated, inside the window, and this simulator records it without "
+                       "modelling its effect.",
+                       "la definición nombra sangre ejecutada; aquí se indicó un hemoderivado, o se activó el protocolo "
+                       "de transfusión masiva, dentro de la ventana, y este simulador lo registra sin modelar su "
+                       "efecto."))
+
+
 # --- the events, one by one -------------------------------------------------
 def _screen_event(event, f):
     identifier = event["event_id"]
@@ -499,7 +540,7 @@ def _screen_event(event, f):
                          reading=_reading("whether the gas or the recorded effort showed ventilatory failure.",
                                           "si los gases o el esfuerzo registrado mostraban falla ventilatoria."))
     if identifier == "gi_no_resuscitation":
-        return _omission(f, event, ("blood", "fluid"))
+        return _with_blood_products(f, window, _omission(f, event, ("blood", "fluid")))
     if identifier == "hypo_no_glucose":
         return _omission(f, event, ("dextrose", "dextrose_infusion", "glucagon", "oral_carbohydrate"))
     if identifier == "hypo_no_thiamine":
@@ -789,10 +830,10 @@ def _screen_event(event, f):
                 f"{volume:g} mL of crystalloid executed inside the window; the trigger needs more than 2000 mL.",
                 f"{volume:g} mL de cristaloide ejecutados dentro de la ventana; el gatillo exige más de 2000 mL.")],
                 [r["ref"] for r in fluids])
-        return _result("met", [_say(
+        return _with_blood_products(f, window, _result("met", [_say(
             f"{volume:g} mL of crystalloid and no blood executed between {window[0]} and {window[1]} min.",
             f"{volume:g} mL de cristaloide y nada de sangre entre los {window[0]} y los {window[1]} min.")],
-            [r["ref"] for r in fluids])
+            [r["ref"] for r in fluids]))
     if identifier == "trauma_undrained_hemothorax":
         tubes = [r for r in _of(f["executed"], ("chest_decompression",), window)
                  if str((r.get("action") or {}).get("device") or "") != "needle"]

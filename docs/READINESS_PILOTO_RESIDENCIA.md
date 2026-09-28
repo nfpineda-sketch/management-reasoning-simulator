@@ -1,9 +1,8 @@
-# Readiness del piloto con residentes (ciclo 6)
+# Readiness del piloto con residentes (ciclo 7)
 
-Instrucción docente del 2026-09-28, ciclo 6 (§54, §87 y §88). Actualiza la
-lista «¿Qué impediría hoy un piloto real de residencia?» de la auditoría
-nocturna del ciclo 5 (`AUDITORIA_NOCTURNA_CICLO5.md`, sección 13), después de
-DF-22 y 59O-03.
+Instrucción docente del 2026-09-28, ciclo 7 (§96, §98.16 y §99). Actualiza la
+versión del ciclo 6 después de TD-21, TD-26, C7-06, C4, C14, DF-24 y
+PostgreSQL.
 
 **Esto es readiness técnica, no validez metodológica.**
 
@@ -12,76 +11,76 @@ DF-22 y 59O-03.
   como instrumento de evaluación.
 - Las cifras de los conjuntos ciegos son INTERNAL DEVELOPMENT DATA.
 
-## Dos pilotos distintos
+## Tres respuestas
 
-| | VALIDATION PILOT | REAL RESIDENCY PILOT |
+| Pregunta | Respuesta | Por qué |
 |---|---|---|
-| Qué es | Médicos que escriben offline, en Word, para evaluar el motor | Residentes que usan el simulador |
-| Qué mide | Si el motor entiende, ejecuta y registra lo que un médico escribió | El uso real: flujo, fricción, carga docente. No mide validez |
-| Estado | **PILOT TOOLING READY** desde el ciclo 5 (`validation/pilot_v1/READINESS.md`). Puede empezar antes | **WITH CONDITIONS** (abajo) |
-| Contra qué commit | SPANISH PILOT BASELINE `939978a`, inmutable | DEVELOPMENT HARDENED BASELINE V1 (`validation/BASELINES.md`) |
-| Qué falta | Lo del docente: revisar los 18 documentos, reclutar y enviar | Las condiciones de abajo |
+| **A. EXTERNAL VALIDATION PILOT READY?** | **SÍ (tooling listo).** Falta lo del docente | Español: 18 documentos, anotación, split y SPANISH PILOT BASELINE `939978a` intacto. Inglés: separado (EM07–EM12), preparado y no enviado; su baseline se elige antes de leer respuestas. Falta revisar los documentos, reclutar y enviar |
+| **B. CONTROLLED FORMATIVE RESIDENCY PILOT READY?** | **TECHNICALLY READY, WITH CONDITIONS** (abajo) | Los cuatro bloqueos técnicos del ciclo 6 están resueltos: TD-26, TD-21, C4 y PostgreSQL. Lo que queda es metodológico, o son condiciones de uso |
+| **C. VALIDATED ASSESSMENT INSTRUMENT?** | **NO / NOT YET ESTABLISHED** | Sin datos externos medidos. El sistema produce evidencia observacional, no certificación ni competencia |
 
-El piloto con residentes pide más seguridad de ejecución y de Trace que el de
-validación: un residente ve la simulación responder a lo que el motor ejecutó.
+## Condiciones para el piloto formativo controlado
 
-## TECHNICALLY READY FOR CONTROLLED PILOT?
+1. **Uso formativo.** Ningún juicio sale del Trace solo, y cada rúbrica la
+   confirma un docente. Vale hasta que el piloto de validación mida el lector
+   con texto externo (DF-15).
+2. **Casos con datos que se contradicen:** decidir o dejar fuera del piloto.
+   - `acs_54m_inferior`: su C14 ya es NO, pero el VD sigue contradicho entre el
+     caso y el POCUS (DF-20).
+   - `acs_70f_left_main`: «No B-lines» frente a la congestión (DF-23, fila 4a).
+3. **Trauma:** avisar al docente, o decidir TD-33 antes de empezar.
+   - Tras reponer con cristaloide, transfundir muestra una sobrecarga que no
+     corresponde.
+   - No es un evento crítico ni toca el puntaje.
+4. **Una prueba de humo en la base real antes de empezar:** crear una cuenta,
+   jugar un encuentro, confirmar una rúbrica y ver el perfil.
+   - PostgreSQL se verificó en un clúster local descartable.
+   - Staging no se tocó, como se instruyó.
+5. **Decir a los residentes cómo escribir mejor:**
+   - una orden por línea, con su verbo;
+   - «si…» para una orden condicional; «cuando…» todavía corre ahora (TD-29).
 
-**WITH CONDITIONS.**
+## Bloqueos del ciclo 6, reevaluados (§96)
 
-1. **Uso formativo.**
-   - Ninguna decisión evaluativa sale del Trace solo.
-   - Cada rúbrica la confirma un docente.
-   - Esto vale hasta que el piloto de validación mida el lector con texto
-     externo (DF-15).
-2. **Trauma.** Decidir TD-21 (sobrecarga transfusional con hemorragia
-   activa), o dejar fuera los dos casos de trauma.
-3. **Hemoderivados.** Corregir por clase las pérdidas sin aviso de TD-26
-   («2 U de GR O negativo», el protocolo de transfusión masiva), con su
-   aprobación. Mientras tanto, dejar fuera los casos que piden transfundir.
-4. **C4.** Escribir C4 = NO en el banco (decidido en TDFC-7) antes de que los
-   encuentros de residentes generen evidencia. Hoy la transición lo deja
-   valorable en todo encuentro.
-5. **PostgreSQL.** Verificar en la base de staging que el perfil (L-F04) y la
-   historia de un encuentro (L-F01) se leen igual que en SQLite (TD-24).
+| Bloqueo del ciclo 6 | Estado | Tipo |
+|---|---|---|
+| TD-26: pérdidas sin aviso de hemoderivados | **Resuelto por clase.** En los conjuntos medidos quedan 0 pérdidas reales y 0 ejecuciones falsas. Quedan residuos LOW (TD-32) | Era técnico |
+| TD-21: sobrecarga falsa al transfundir una hemorragia activa | **Resuelto** con el principio D (C-2026-09-28-12) | Era técnico |
+| C4: valorable por la transición | **Resuelto:** C4 = NO en todo el entorno (C-2026-09-28-10) | Era técnico |
+| PostgreSQL no probado | **Verificado** sobre el candidato final, en un clúster local descartable, y borrado. Staging no se tocó | Era técnico |
+| La fidelidad del lector con texto externo no está medida | **Sigue sin medirse** | **METHODOLOGICAL LIMITATION.** No impide un piloto formativo controlado; sí impide afirmaciones de alto impacto (HIGH-STAKES ASSESSMENT CLAIMS) |
 
-## ¿Qué impediría hoy un piloto real con residentes?
+## Lo que queda (ninguno es BLOCKER técnico)
 
 | Clase | Área | Qué | Referencia |
 |---|---|---|---|
-| **BLOCKER** | Fidelidad del Trace | Quedan pérdidas sin aviso, sobre todo de hemoderivados: la orden no corre, nada lo dice y el Trace muestra al residente sin hacerla. Con el código final: 5 de 108 y 4 de 32 positivas ciegas | TD-26 · condición 3 |
-| **BLOCKER** | Consistencia clínica | Transfundir una hemorragia activa dispara la sobrecarga transfusional | TD-21 · condición 2 |
-| **BLOCKER** para un uso evaluativo | Estado de validación | La fidelidad del lector con texto externo no está medida | DF-15 · condición 1 |
-| HIGH | Evidencia | C4 sigue valorable por la transición, aunque C4 = NO está decidido | DF-21 · condición 4 |
-| HIGH | Infraestructura | PostgreSQL no se probó en el ciclo 6 | TD-24 · condición 5 |
-| HIGH | Fricción del lector | Mucho de lo escrito se retiene con una pregunta: 63 de 108 positivas ciegas. Es honesto, pero cuesta turnos | TD-14 · medir en el piloto |
-| HIGH | Flujo docente | Con la transición, cada encuentro deja 6 a 8 objetivos por valorar | DF-12, DF-21 |
-| MEDIUM | Integridad longitudinal | I-F02, L-F02, I-F18 y L-F07 | DF-24, en una línea |
-| MEDIUM | Consistencia clínica | Las filas 3 a 11 de DF-23; `acs_54m_inferior` sigue NOT REVIEWED | CLINICAL REVIEW |
+| HIGH | Lector | «When», «cuando» y «once» no hacen condicional una orden que no es sangre: corre ahora, a la vista en la sala | TD-29 |
+| HIGH | Fricción del lector | Mucho se retiene con una pregunta. Es honesto, pero cuesta turnos. En TD-26 las retenciones bajaron a la mitad | TD-14 |
+| HIGH | Caso clínico | `acs_54m_inferior`: el VD contradicho | TD-01 · DF-20 |
+| HIGH | Motor · trauma | Tras reponer con cristaloide, transfundir dispara la sobrecarga | TD-33 |
+| MEDIUM | Lector | Órdenes sin verbo que no se leen («surgery consult», «Endoscopía urgente», «2 large-bore IVs») | TD-30 |
+| MEDIUM | Flujo docente | Con la transición, cada encuentro deja objetivos TD1, F1, C1 y C3 por valorar; TDFC pasó intacto al ciclo 8 | DF-12, TDFC |
+| MEDIUM | Integridad | I-F18 y los demás de TD-18 quedaron fuera de DF-24 | TD-18 |
+| MEDIUM | Consistencia clínica | Las filas 4a, 4b, 6, 7 y 8 de DF-23 | CLINICAL REVIEW |
 | MEDIUM | Escala | La cola docente es lineal: 3 s con 1000 encuentros pendientes | TD-09 |
-| MEDIUM | Privacidad | `get_progress` con token de residente trae la evidencia esperada del caso (no se muestra) | I-F25 |
-| LOW | Idioma | Avisos que quedan en inglés en la interfaz en español | TD-23 |
-| LOW | Observabilidad y pruebas | El commit por turno; un nombre de prueba engañoso | TD-10, TD-25 |
+| LOW | Idioma y observabilidad | Avisos en inglés; el commit por turno | TD-23, TD-10 |
 
-## Qué cambió desde el ciclo 5
+## Qué cambió desde el ciclo 6
 
-| En el ciclo 5 | Ahora |
+| En el ciclo 6 | Ahora |
 |---|---|
-| **BLOCKER:** las clases CRITICAL del lector | **Corregidas por clase** (DF-22, C-2026-09-28-04). Lo que midieron los conjuntos ciegos queda en TD-26 (BLOCKER) y TD-14 (HIGH) |
-| HIGH: «Urgent intervention executed» cuando nada corrió (59O-03) | **Corregido.** Casos A–F de punta a punta, EN/ES (C-2026-09-28-05) |
-| HIGH: preguntas atadas a órdenes mal leídas (59O-06) | **En parte.** El hallazgo tras una orden ya no crea una orden fantasma (C09). Queda la tasa de SG ante una insulina (H11) |
-| — | **Nuevo, corregido:** lo que hizo el equipo prehospitalario ya no corre como orden del residente; un suero escrito con su vía («por VVP») ya no se pierde |
-| — | **Nuevo, corregido:** las regresiones de las propias correcciones que halló la revisión adversarial del diff («Hold NS, O2 4 L NC» retiraba el oxígeno), y los antiagregantes que la activación de hemodinamia volvía interconsultas (C-2026-09-28-09) |
-| HIGH: `acs_54m_inferior` y el POCUS de las oclusiones | De Winter corregido (C-2026-09-28-08). `acs_54m_inferior` sin cambio, NOT REVIEWED |
-| MEDIUM: temas de historia vivos (L-F01) y cronología del perfil (L-F04) | **Corregidos** (C-2026-09-28-06 y 07) |
+| **BLOCKER:** pérdidas sin aviso de hemoderivados | **Corregidas por clase** (C-2026-09-28-13). También las medidas de hemorragia, la IO y la prueba de embarazo (C-2026-09-28-14) |
+| **BLOCKER:** sobrecarga falsa en trauma | **Corregida** (C-2026-09-28-12) |
+| HIGH: C4 valorable | **C4 = NO** (C-2026-09-28-10); C14: 14 YES, 17 NO y 0 sin revisar (C-2026-09-28-11) |
+| HIGH: PostgreSQL no probado | **Verificado** en local (TD-24 cerrado) |
+| MEDIUM: I-F02, L-F02 y L-F07 | **Corregidos** (C-2026-09-28-15 y 16) |
 
 ## Lo que este documento no afirma
 
 - **No afirma una evaluación validada.** Tampoco que el simulador pruebe
   competencia, prediga el desempeño clínico o sea comparable entre programas.
-  Son objetivos de investigación, no hechos actuales.
 - **No reemplaza al piloto de validación.** La primera medición humana se hace
   contra el SPANISH PILOT BASELINE.
-- **La regla cuando lleguen datos humanos (§89) es MEASURE FIRST:** BASELINE →
+- **La regla cuando lleguen datos humanos es MEASURE FIRST:** BASELINE →
   MEASUREMENT → ANNOTATION → ADJUDICATION → ERROR CLASSIFICATION →
   PRIORITIZATION → APPROVED FIX.

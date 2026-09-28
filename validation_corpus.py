@@ -42,6 +42,11 @@ from xml.sax.saxutils import escape
 ROOT = Path(__file__).resolve().parent
 
 CORPUS_VERSION = "VALIDATION_CORPUS_V1"
+#: One corpus per language (faculty, 2026-09-28, cycle 7, §33, §37 and §87). The
+#: English validation is a separate corpus: its own version, participant codes,
+#: assignment, baseline, known defects and split. A manifest declares its language
+#: explicitly, and it is never detected from what the physicians wrote.
+CORPUS_VERSIONS = {"es": CORPUS_VERSION, "en": "VALIDATION_CORPUS_V1_EN"}
 #: The registered engine baselines (never replaced, only added) and the list of
 #: known defects a result's errors are tagged against (faculty, 2026-09-28, §51).
 BASELINES = ROOT / "validation" / "baselines.json"
@@ -634,15 +639,52 @@ def draw_split(pilot, received, baseline_commit):
             "seed_lines": lines, "seed": seed, "pairs": pairs, "documents": documents, "missing": missing}
 
 
+def corpus_language(manifest):
+    """The one language a corpus or pilot manifest declares, or a CorpusError.
+
+    Spanish and English are separate corpora, never one run (§37 of cycle 7).
+    The manifest declares its language explicitly (``"language": "es"`` or
+    ``"en"``, §87), its corpus version must be that language's, and every
+    document or assignment row it lists must be in it. Nothing is detected from
+    the text.
+    """
+    version = manifest.get("corpus_version")
+    by_version = {value: key for key, value in CORPUS_VERSIONS.items()}.get(version)
+    declared = manifest.get("language")
+    problems = []
+    if version is not None and by_version is None:
+        problems.append(f"corpus_version is {version!r}, not one of {sorted(CORPUS_VERSIONS.values())}.")
+    if declared is not None and declared not in LANGUAGES:
+        problems.append(f"language {declared!r} is not es or en.")
+    elif declared and by_version and declared != by_version:
+        problems.append(f"the manifest says language {declared!r}, and {version} is the {by_version!r} corpus.")
+    language = declared
+    if declared is None:
+        # Declared, never inferred (§87 of cycle 7): LANGUAGE = ES or LANGUAGE = EN.
+        problems.append('the manifest must declare its language explicitly: "language": "es" or "en".')
+    rows = [row for key in ("documents", "assignment") if isinstance(manifest.get(key), list)
+            for row in manifest[key] if isinstance(row, dict)]
+    mixed = sorted({str(row.get("language")) for row in rows if row.get("language") not in (None, language)})
+    if language and mixed:
+        problems.append(f"{language!r} corpus lists documents in {mixed}: Spanish and English are separate "
+                        "corpora, each with its own version, participants, assignment, baseline and split, and "
+                        "are never read in one run.")
+    if problems:
+        raise CorpusError("The manifest mixes or misnames its language:\n- " + "\n- ".join(problems))
+    return language
+
+
 def load_manifest(corpus_dir):
-    """The custodian's manifest, checked: codes only, one subset per participant."""
+    """The custodian's manifest, checked: codes only, one subset per participant, one language."""
     path = Path(corpus_dir) / "manifest.json"
     if not path.exists():
         raise CorpusError(f"No manifest.json in {corpus_dir}.")
     manifest = json.loads(path.read_text(encoding="utf-8"))
     problems = []
-    if manifest.get("corpus_version") != CORPUS_VERSION:
-        problems.append(f"corpus_version is {manifest.get('corpus_version')!r}, not {CORPUS_VERSION!r}.")
+    try:
+        corpus_language(manifest)
+    except CorpusError as error:
+        problems.extend(str(error).split("\n- ")[1:])
     cases = manifest.get("cases") or {}
     for code in cases:
         if not CASE_CODE.match(code):

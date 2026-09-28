@@ -67,3 +67,35 @@ falta reconstruir el modelo hemorrágico.
 **Consistencia con el POCUS.** El REVIEW de `AUDITORIA_DF23_CICLO6.md` §5 queda
 resuelto: el POCUS repetido del caso de extremidad («No B-lines») ya no
 contradice una sobrecarga, porque ya no hay una sobrecarga falsa.
+
+## Residuo hallado al cierre del ciclo 7 (TD-33, NEEDS NICOLÁS)
+
+La prueba de la rúbrica sobre el lector final mostró un caso que el principio D
+no cubre tal como se implementó. En `trauma_limb_hemorrhage_27m`:
+
+| Secuencia | Sobrecarga al transfundir 2 U |
+|---|---|
+| Torniquete, 3 L de SF y luego 2 U de GR | **Sí** |
+| Torniquete, 1 L de SF y luego 2 U | No |
+| Torniquete y luego 2 U | No |
+| Sin control, 3 L de SF y luego 2 U | No |
+
+**Por qué.**
+
+- En la regla implementada, la pérdida se da por repuesta también con
+  cristaloide.
+- La familia trauma no diluye la hemoglobina con el cristaloide, así que la Hb
+  sigue ≥ 10.
+- Tras el error docente típico (cristaloide en vez de sangre), transfundir
+  muestra «the haemoglobin was already adequate».
+
+No es un evento crítico ni toca el puntaje. Es un texto y una fisiología de
+sobrecarga que enseñan algo dudoso.
+
+**La decisión.** «Déficit hemorrágico» del principio D, ¿es de volumen o de
+glóbulos rojos?
+
+- **Recomendación del AI Advisor:** para la regla de sobrecarga en trauma, sólo
+  la sangre repone el déficit. Es un cambio de una línea en
+  `trauma_hemorrhage.active`, con sus pruebas.
+- **No se aplicó.** Es una decisión clínica nueva (§73).

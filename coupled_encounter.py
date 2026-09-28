@@ -463,6 +463,10 @@ def execute(state,parsed):
     try:
         case=state['encounter_spec']['clinical_case'];validate_declarative_case(case)
         if state.get('hidden',{}).get('terminal_collapse'):return _failure('The patient has no pulse. This build does not execute resuscitation actions.')
+        # Only what is recorded and not run: the resident's decision, and no minute passes (TD-26).
+        from family_engine import recorded_only
+        recorded=recorded_only(parsed)
+        if recorded:return recorded
         actions,error=_validate(state,parsed)
         if error:return _failure(error)
         selected=[]

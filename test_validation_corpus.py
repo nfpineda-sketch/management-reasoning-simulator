@@ -188,7 +188,7 @@ def _corpus(tmp_path, documents, retired=()):
         _document(folder / subset, name, language, case, participant, boxes)
         rows.append({"file": name, "participant": participant, "case": case, "language": language,
                      "collected_on": "2026-10-01", "subset": subset})
-    manifest = {"corpus_version": vc.CORPUS_VERSION, "cases": vc.PILOT_CASES, "documents": rows,
+    manifest = {"corpus_version": vc.CORPUS_VERSION, "language": "es", "cases": vc.PILOT_CASES, "documents": rows,
                 "retired_entries": list(retired)}
     (folder / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     return folder

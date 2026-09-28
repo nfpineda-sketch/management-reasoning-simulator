@@ -1366,6 +1366,130 @@ CORRECTIONS = (
                   "test_transfusion_overload.py::test_the_suspension_is_one_switch_that_goes_back_to_the_haemoglobin_alone"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-28-13",
+        "date": "2026-09-28",
+        "title": "TD-26: cada hemoderivado se lee como se escribió; ninguno se pierde en silencio ni se vuelve otro",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión docente TD-26 (ciclo 7, estándar A–J). Los glóbulos rojos corren en las unidades escritas "
+                   "(1 a 4 por orden, la regla del motor), también como los escribe la ficha: «2 U GR O negativo», "
+                   "«O-neg», «packed cells», «no cruzados». El plasma, las plaquetas, el crioprecipitado y la sangre "
+                   "total se registran como indicados, con su efecto fisiológico no modelado, y nunca se vuelven "
+                   "glóbulos rojos. La activación del protocolo de transfusión masiva se registra y no da nada por sí "
+                   "sola. Lo ambiguo se pregunta: una transfusión sin producto, un conteo compartido, unidades por "
+                   "reservar, dos órdenes en una frase, lo que espera algo. Lo que no es una orden ahora no transfunde "
+                   "nada: un resultado, lo recibido antes o en ruta, un rechazo, una pregunta, un plan, un umbral, "
+                   "una detención; lo que el motor no hace se devuelve citado. Un envío con sólo lo registrado queda "
+                   "como decisión sin que pase un minuto. En «cristaloide en vez de sangre» y «HDA sin reanimación», "
+                   "un hemoderivado indicado en la ventana lleva el resultado a lectura docente; la definición, el −3, "
+                   "los puntajes y D1–D5 no cambian. Detalle y ANTES/DESPUÉS en docs/TD26_HEMODERIVADOS_Y_C7_06.md."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE7,
+        "affects": {"modules": ["family_parser", "family_engine", "generated_engine", "coupled_encounter",
+                                "unexecuted_items", "rubric_screening", "faculty_analysis", "rubric_analysis",
+                                "language", "report_language", "family_reports"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_blood_products_and_bleeding_orders.py::test_red_cells_are_run_in_the_units_written",
+                  "test_blood_products_and_bleeding_orders.py::test_an_unmodelled_product_is_recorded_as_ordered_and_never_becomes_red_cells",
+                  "test_blood_products_and_bleeding_orders.py::test_the_protocol_s_activation_is_recorded_and_gives_nothing_by_itself",
+                  "test_blood_products_and_bleeding_orders.py::test_a_transfusion_that_names_no_product_is_asked_about",
+                  "test_blood_products_and_bleeding_orders.py::test_nothing_the_resident_did_not_order_runs_red_cells",
+                  "test_blood_products_and_bleeding_orders.py::test_red_cells_written_as_the_chart_writes_them_run_in_those_units",
+                  "test_blood_products_and_bleeding_orders.py::test_two_red_cell_orders_in_one_sentence_are_one_whose_count_is_asked",
+                  "test_blood_products_and_bleeding_orders.py::test_a_transfusion_stopped_kept_or_not_given_never_runs_and_is_quoted_back",
+                  "test_blood_products_and_bleeding_orders.py::test_one_ratio_or_one_count_for_several_products_is_asked",
+                  "test_blood_products_and_bleeding_orders.py::test_an_order_of_only_what_is_recorded_is_the_resident_s_decision_and_takes_no_minute",
+                  "test_blood_products_and_bleeding_orders.py::test_crystalloid_with_ordered_plasma_is_the_faculty_s_reading_not_a_silent_met"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-14",
+        "date": "2026-09-28",
+        "title": "C7-06 y TD-22: medidas de control de hemorragia, acceso intraóseo y prueba de embarazo, por clase y EN/ES",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("C7-06 y TD-22 (ciclo 7, estándar A–J). Cada medida de control de hemorragia («pack the wound», "
+                   "«hold pressure», «presión directa sobre la herida», «torniquete», «empaquetar») es su propia orden, "
+                   "en el orden escrito, y ninguna se vuelve otra; «control de hemorragia» sin medida pregunta cuál; "
+                   "retirar una medida, un taponamiento cardíaco, lo que otro hace o un packing quirúrgico no aplican "
+                   "ninguna, y detener el sangrado con una medida es esa medida. El acceso intraóseo se registra como "
+                   "tal, con su sitio, y nunca como vía venosa; retirarlo o describirlo no lo instala, y una dosis "
+                   "«IO» es la vía de esa dosis. La prueba de embarazo se registra como pedida, sin resultado "
+                   "inventado, y no retiene nada. Se leen además las formas naturales del conjunto independiente: el "
+                   "plural del equipo, «de una vez», un hallazgo antes de la orden o negado. Sin cambios de "
+                   "fisiología, puntajes ni eventos críticos."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE7,
+        "affects": {"modules": ["family_parser", "family_engine", "unexecuted_items", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_blood_products_and_bleeding_orders.py::test_each_bleeding_measure_is_its_own_order",
+                  "test_blood_products_and_bleeding_orders.py::test_a_measure_named_by_none_is_asked_about_and_never_chosen",
+                  "test_blood_products_and_bleeding_orders.py::test_what_only_mentions_a_bleeding_measure_applies_none",
+                  "test_blood_products_and_bleeding_orders.py::test_stopping_the_bleeding_with_a_measure_is_the_measure",
+                  "test_blood_products_and_bleeding_orders.py::test_a_measure_stopped_is_never_applied",
+                  "test_blood_products_and_bleeding_orders.py::test_a_measure_removed_or_converted_is_quoted_back_never_applied",
+                  "test_blood_products_and_bleeding_orders.py::test_an_intraosseous_line_is_its_own_access",
+                  "test_blood_products_and_bleeding_orders.py::test_an_intraosseous_line_removed_or_described_is_never_placed",
+                  "test_blood_products_and_bleeding_orders.py::test_io_after_a_dose_is_that_dose_s_route_never_a_line",
+                  "test_blood_products_and_bleeding_orders.py::test_a_pregnancy_test_holds_nothing_and_no_result_is_invented",
+                  "test_blood_products_and_bleeding_orders.py::test_the_pregnancy_test_is_read_in_its_natural_forms",
+                  "test_blood_products_and_bleeding_orders.py::test_the_forms_of_the_independent_set_are_read",
+                  "test_blood_products_and_bleeding_orders.py::test_what_the_new_readings_must_not_turn_into_an_order"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-15",
+        "date": "2026-09-28",
+        "title": "DF-24: quién confirmó, qué revisión alimenta el radar, la razón de la anulación y el aviso del borrador",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Decisiones docentes DF-24 del ciclo 7 (I-F02 A, L-F02 A, anulada A, retiro A). La exportación del "
+                   "perfil dice quién confirmó la rúbrica, como ya lo decía el PDF, sin cambiar ningún número. De un "
+                   "mismo encuentro alimenta el radar su revisión confirmada de mayor número, como ya la elegían el "
+                   "documento y la pantalla docente: un reloj atrasado ponía una revisión superada; con relojes "
+                   "ordinarios nada cambia. El formulario de anulación advierte que la persona residente lee la razón, "
+                   "y lo que ve de una observación anulada no cambia. Un borrador sobre una confirmación avisa que no "
+                   "retira nada, sin estado «retirada». Ningún puntaje, dominio, promedio ni el método del radar "
+                   "cambia."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE7,
+        "affects": {"modules": ["rubric_store", "progress_portal", "rubric_portal", "report_language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_df24_approved_integrity_changes.py::test_the_export_says_who_confirmed_the_rubric_as_the_pdf_does",
+                  "test_df24_approved_integrity_changes.py::test_who_confirmed_changes_no_number",
+                  "test_df24_approved_integrity_changes.py::test_a_late_clock_no_longer_puts_a_superseded_revision_in_the_radar",
+                  "test_df24_approved_integrity_changes.py::test_two_confirmations_in_the_same_second_take_the_higher_number",
+                  "test_df24_approved_integrity_changes.py::test_with_ordinary_clocks_nothing_changes",
+                  "test_df24_approved_integrity_changes.py::test_the_void_form_says_the_resident_reads_the_reason",
+                  "test_df24_approved_integrity_changes.py::test_what_the_resident_sees_of_a_voided_observation_is_unchanged",
+                  "test_df24_approved_integrity_changes.py::test_a_draft_after_a_confirmation_is_said_to_withdraw_nothing",
+                  "test_df24_approved_integrity_changes.py::test_no_warning_when_nothing_confirmed_stands_under_the_draft"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-16",
+        "date": "2026-09-28",
+        "title": "L-F07 B: las 9 composiciones del catálogo de hipoglicemia heredan el C14 NO de su caso de origen",
+        "scope": {"level": "variant", "variants": [
+            "hypoglycemia_cfg_alcohol_fasting_failed_moderate", "hypoglycemia_cfg_alcohol_fasting_working_moderate",
+            "hypoglycemia_cfg_alcohol_fasting_working_severe", "hypoglycemia_cfg_insulin_failed_moderate",
+            "hypoglycemia_cfg_insulin_failed_severe", "hypoglycemia_cfg_insulin_working_moderate",
+            "hypoglycemia_cfg_sulfonylurea_failed_moderate", "hypoglycemia_cfg_sulfonylurea_failed_severe",
+            "hypoglycemia_cfg_sulfonylurea_working_moderate"]},
+        "kind": "policy",
+        "reason": ("DF-24, L-F07 B (ciclo 7). Sin declaración, C14 quedaba valorable por la transición en las 9 "
+                   "composiciones, aunque los 3 casos del banco de los que derivan dicen NO. Cada composición lleva "
+                   "ahora la fila C14 de su caso de origen: NO, la misma razón y la firma de su revisión, con "
+                   "inherited_from. Sólo se agrega C14. Los casos generados y los encuentros sin caso autorado, como "
+                   "PS001, conservan la transición (DF-12); revisar PS001 (D) queda para la revisión de TD/F/C. Las "
+                   "composiciones se juegan sólo en el sandbox docente, que no se valora: nada que hoy se valore "
+                   "cambia."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE7,
+        "affects": {"modules": ["case_assessment_bank"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_df24_approved_integrity_changes.py::test_each_composition_carries_the_c14_row_of_the_bank_case_it_derives_from",
+                  "test_df24_approved_integrity_changes.py::test_a_new_composition_encounter_reads_c14_as_declared_no",
+                  "test_df24_approved_integrity_changes.py::test_generated_cases_and_encounters_without_a_case_keep_the_transition"],
+        "preservation": None,
+    },
 )
 
 

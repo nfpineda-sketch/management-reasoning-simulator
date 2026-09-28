@@ -113,9 +113,9 @@ Comparación con el registro del 2026-09-25 (commit d184845), antes de que exist
 
 | Variante | Caso | Declaración | Lanzamiento | Guiones distintos |
 |---|---|---|---|---|
-| `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01) | idéntico | ninguno de 20 |
-| `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01) | idéntico | ninguno de 20 |
-| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01) | idéntico | ninguno de 20 |
+| `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10) | idéntico | ninguno de 20 |
+| `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10) | idéntico | ninguno de 20 |
+| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01, C-2026-09-28-10) | idéntico | ninguno de 20 |
 
 Cada diferencia está declarada en el registro de correcciones; la prueba `test_hypoglycemia_preservation` acepta esas y ninguna otra.
 
@@ -178,6 +178,13 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-28-07 | L-F04: la trayectoria del perfil sigue a los encuentros, no a las confirmaciones | general | policy | none | — |
 | C-2026-09-28-08 | DF-23: la acinesia de de Winter se sostiene con la arteria cerrada; bradycardia_bb_54f llega somnolienta | variante acs_52m_de_winter, bradycardia_bb_54f | clinical_decision_applied | clinical | — |
 | C-2026-09-28-09 | Regresiones de las correcciones del ciclo 6 halladas por la revisión adversarial del diff, corregidas | general | technical_defect | clinical | — |
+| C-2026-09-28-10 | C4 = NO en todo el entorno de observación: los 31 casos, los casos generados y PS001 | general | clinical_decision_applied | clinical | opportunities 1.0 → 1.1 |
+| C-2026-09-28-11 | C14 NO en acs_54m_inferior: los 31 casos del banco quedan revisados para C14 | variante acs_54m_inferior | clinical_decision_applied | clinical | — |
+| C-2026-09-28-12 | TD-21: transfundir una hemorragia activa en trauma ya no dispara una sobrecarga falsa | familia trauma | clinical_decision_applied | clinical | — |
+| C-2026-09-28-13 | TD-26: cada hemoderivado se lee como se escribió; ninguno se pierde en silencio ni se vuelve otro | general | clinical_decision_applied | clinical | — |
+| C-2026-09-28-14 | C7-06 y TD-22: medidas de control de hemorragia, acceso intraóseo y prueba de embarazo, por clase y EN/ES | general | technical_defect | clinical | — |
+| C-2026-09-28-15 | DF-24: quién confirmó, qué revisión alimenta el radar, la razón de la anulación y el aviso del borrador | general | policy | clinical | — |
+| C-2026-09-28-16 | L-F07 B: las 9 composiciones del catálogo de hipoglicemia heredan el C14 NO de su caso de origen | variante hypoglycemia_cfg_alcohol_fasting_failed_moderate, hypoglycemia_cfg_alcohol_fasting_working_moderate, hypoglycemia_cfg_alcohol_fasting_working_severe, hypoglycemia_cfg_insulin_failed_moderate, hypoglycemia_cfg_insulin_failed_severe, hypoglycemia_cfg_insulin_working_moderate, hypoglycemia_cfg_sulfonylurea_failed_moderate, hypoglycemia_cfg_sulfonylurea_failed_severe, hypoglycemia_cfg_sulfonylurea_working_moderate | policy | clinical | — |
 
 ## La batería, configuración por configuración
 
@@ -257,7 +264,7 @@ Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | ✅ | cae 0.91 mg/dL/min tras el rebote | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 5.3 mg/dL en 20 minutos sin glucógeno (los parámetros dicen 5.3) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa: el motor la trata como la vía fallida (DC3).
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente).
 
 ### `hypoglycemia_cfg_insulin_working_moderate`
 
@@ -305,7 +312,7 @@ Insulina · Vía fallida · Severa: glucosa bajo el umbral de convulsión del mo
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | — | sin rebote en esta configuración | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 17.6 mg/dL en 20 minutos con glucógeno (los parámetros dicen 17.6) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa: el motor la trata como la vía fallida (DC3). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ### `hypoglycemia_cfg_insulin_failed_moderate`
 
@@ -331,7 +338,7 @@ Insulina · Vía fallida · Moderada: glucosa en la banda somnolienta del motor.
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | — | sin rebote en esta configuración | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 17.6 mg/dL en 20 minutos con glucógeno (los parámetros dicen 17.6) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa: el motor la trata como la vía fallida (DC3). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ### `hypoglycemia_cfg_sulfonylurea_working_moderate`
 
@@ -385,7 +392,7 @@ Sulfonilurea · Vía fallida · Severa: glucosa bajo el umbral de convulsión de
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | ✅ | cae 1.45 mg/dL/min tras el rebote | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 17.6 mg/dL en 20 minutos con glucógeno (los parámetros dicen 17.6) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa: el motor la trata como la vía fallida (DC3). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ### `hypoglycemia_cfg_sulfonylurea_failed_moderate`
 
@@ -414,7 +421,7 @@ Sulfonilurea · Vía fallida · Moderada: glucosa en la banda somnolienta del mo
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | ✅ | cae 1.45 mg/dL/min tras el rebote | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 17.6 mg/dL en 20 minutos con glucógeno (los parámetros dicen 17.6) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa: el motor la trata como la vía fallida (DC3). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ### `hypoglycemia_cfg_alcohol_fasting_working_severe`
 
@@ -488,7 +495,7 @@ Alcohol y ayuno · Vía fallida · Moderada: glucosa en la banda somnolienta del
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | ✅ | cae 0.91 mg/dL/min tras el rebote | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 5.3 mg/dL en 20 minutos sin glucógeno (los parámetros dicen 5.3) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa: el motor la trata como la vía fallida (DC3). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ## Revisarlas en desarrollo
 

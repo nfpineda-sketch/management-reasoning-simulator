@@ -132,8 +132,9 @@ def test_the_rest_of_the_submission_runs_beside_an_infusion_that_is_not_modelled
     assert parsed["recognized_future_actions"] == ["suero glucosado al 5% a 100 ml/h"]
 
 
+# "Coloco una vía intraósea" left this list on 2026-09-28: the intraosseous line is
+# its own access (C7-06; test_blood_products_and_bleeding_orders.py).
 GAPS = [
-    ("Coloco una vía intraósea", "vascular_access", "no hay acción de acceso intraóseo (DC3)"),
     ("Reviso la vía venosa", "examination", "revisar la vía no es una acción ni un examen (DC2)"),
 ]
 

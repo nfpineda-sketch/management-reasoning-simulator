@@ -30,9 +30,12 @@ SCHEMA_VERSION = "rubric_assessment_v1"
 # 1.2 (2026-09-25, faculty decisions of that day): the screening carries the
 # medicines indicated and not modelled, as decisions with no administration.
 # The shape of a proposal is the one 1.1 introduced.
-PROMPT_VERSION = "1.2"
+# 1.3 (2026-09-28, TD-26): the indicated items also carry the blood products the
+# engine records and does not run, and the massive transfusion protocol's
+# activation; a blood product is never read as not given.
+PROMPT_VERSION = "1.3"
 LEGACY_PROMPT_VERSION = "1.0"
-VERDICT_PROMPT_VERSIONS = ("1.1", PROMPT_VERSION)
+VERDICT_PROMPT_VERSIONS = ("1.1", "1.2", PROMPT_VERSION)
 SUPPORTED_PROMPT_VERSIONS = (LEGACY_PROMPT_VERSION, *VERDICT_PROMPT_VERSIONS)
 MAX_OUTPUT_TOKENS = 14_000
 OPPORTUNITIES = ("observed", "no_opportunity", "insufficient_record", "simulator_limitation")
@@ -125,7 +128,11 @@ SCREENING_RULE = (
     "what the learner meant and it is never a score. indicated_not_modelled lists medicines the "
     "learner indicated that the simulator does not model, and prescriptions for home: each is a "
     "decision you may assess (what was chosen, what it replaced, what was omitted), but nothing "
-    "was administered and no effect occurred; never count one as an executed treatment. An urgent "
+    "was administered and no effect occurred; never count one as an executed treatment. It also "
+    "lists blood products other than packed red cells and the massive transfusion protocol's "
+    "activation: a blood product was ordered and stands as ordered, with only its physiologic "
+    "effect not modelled, so never read it as not given or as omitted; the activation gives no "
+    "product by itself. An urgent "
     "intervention runs without being held: a category stated only afterwards is marked "
     "'retrospective' and is later insight, never reasoning shown when the decision was taken. "
     "close_kind is how the learner said the encounter ended: a clinical close, an interruption "

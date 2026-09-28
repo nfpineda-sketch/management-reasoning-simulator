@@ -41,6 +41,13 @@ El catálogo, las doce combinaciones y los resultados de la batería están en
   su aviso habla del catéter del antebrazo. Además, el lector no reconoce «coloco una vía intraósea».
 - **Recomendación:** que una orden intraósea cuente como un acceso nuevo. Requiere una acción del lector
   y una regla del motor, así que es una capacidad a decidir, no algo que corregí.
+- **Ciclo 7 (2026-09-28, C7-06, decisión docente §82): resuelta la mitad del acceso.** El lector reconoce
+  la vía intraósea («coloco una vía intraósea», «humeral IO», «acceso intraóseo tibial») y el motor la
+  registra como intraósea, nunca como venosa. Instalarla cuenta como vía nueva: lo que se da después
+  llega a la circulación.
+- **Queda pendiente la mitad de la dosis.** Una dosis escrita «IO» sin instalar antes la vía intraósea
+  pasa todavía como por la vía fallida (15 %), con el aviso del antebrazo. Cambiarlo toca el alcance de
+  la decisión 8 (P10, DC4), que sigue en revisión docente.
 
 ### DC4 · Alcance de la vía fallida: sólo la glucosa en bolo
 
@@ -174,7 +181,6 @@ el paciente necesita ayuda de otro.
 Pruebas de fallas esperadas en `test_hypoglycemia_reader.py`. Cuando una empiece a funcionar, la prueba lo
 avisa.
 
-- «Coloco una vía intraósea» (DC3).
 - «Reviso la vía venosa»: no es una acción ni un examen (DC2).
 
 Una pregunta de lectura, sin prueba de falla esperada: «suero glucosado» **sin** concentración se lee como la

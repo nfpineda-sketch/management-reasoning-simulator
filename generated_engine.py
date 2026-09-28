@@ -610,6 +610,10 @@ def execute_generated_bundle(state, parsed):
         return _failure("The generated trajectory could not be validated: " + str(error))
     if state.get("hidden", {}).get("terminal_collapse"):
         return _failure("The patient has no pulse. This encounter has reached its terminal state; resuscitation actions are not executable in this build.")
+    from family_engine import recorded_only
+    recorded = recorded_only(parsed)
+    if recorded:
+        return recorded
     actions, error = _validate_orders(state, parsed)
     if error:
         return _failure(error)

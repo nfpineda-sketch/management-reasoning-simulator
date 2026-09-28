@@ -411,8 +411,15 @@ class RubricStore:
         (``encounter_at``), a later confirmation of an earlier encounter no
         longer becomes the "latest", and the change from the previous encounter
         is the change between encounters. When each review was confirmed is kept
-        (``created_at``) as audit metadata. Which revision of one encounter
-        counts is unchanged (L-F02 is a separate decision).
+        (``created_at``) as audit metadata.
+
+        Which revision of one encounter counts is its confirmed revision with the
+        highest number (L-F02, decided 2026-09-28), as the resident's document
+        and the faculty screen already chose: a server clock running late no
+        longer makes a superseded revision feed the radar. Nothing about the
+        scores, the domains or their averaging changes. Who confirmed it
+        (``reviewer``) travels with it, so the resident's export says it as the
+        PDF does (I-F02).
         """
         with self.accounts._transaction() as connection:
             actor = self.accounts._actor(connection, token)
@@ -423,14 +430,20 @@ class RubricStore:
             else:
                 raise AccountError("Your account does not have permission for this action.")
             rows = self._execute(connection, """SELECT r.*, a.challenge_id, a.updated_at,
-                a.created_at AS encounter_at
+                a.created_at AS encounter_at, u.username AS reviewer
                 FROM mrs_rubric_reviews r JOIN mrs_attempts a ON a.id = r.attempt_id
+                LEFT JOIN mrs_users u ON u.id = r.reviewer_user_id
                 WHERE a.user_id = ? AND r.status = 'confirmed'
                 ORDER BY r.created_at ASC, r.sequence ASC""", (target,)).fetchall()
-            # One encounter contributes once: the latest confirmed revision of
-            # it, not every revision a reviewer saved on the way there.
+            # One encounter contributes once: its confirmed revision with the
+            # highest number, not every revision a reviewer saved on the way
+            # there, and not whichever a clock happened to stamp last (L-F02).
+            # The rows keep their confirmation order, which settles encounters
+            # played in the same second as before (L-F04).
             latest = {}
             for row in rows or []:
+                if row["attempt_id"] in latest and latest[row["attempt_id"]]["sequence"] > row["sequence"]:
+                    continue
                 try:
                     review = json.loads(row["review_json"])
                 except (TypeError, ValueError):
@@ -438,7 +451,7 @@ class RubricStore:
                 latest[row["attempt_id"]] = {
                     **review, "review_id": row["id"], "attempt_id": row["attempt_id"],
                     "challenge_id": row["challenge_id"], "created_at": row["created_at"],
-                    "encounter_at": row["encounter_at"],
+                    "encounter_at": row["encounter_at"], "reviewer": row["reviewer"] or "",
                     "sequence": row["sequence"], "totals": totals_of(review)}
             return sorted(latest.values(),
                           key=lambda item: (item["encounter_at"], item["created_at"], item["sequence"]))

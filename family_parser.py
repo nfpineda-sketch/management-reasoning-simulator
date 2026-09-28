@@ -97,8 +97,163 @@ CROSSMATCH = (r"crossmatch|cross[- ]match|type_and_screen|type and (?:screen|cro
               r"tipificacion(?: sanguinea)?|clasificacion (?:sanguinea|abo)|"
               r"reserv(?:a|ar|o|e)\w*\s+(?:de\s+)?(?:\d+\s+)?(?:(?:unidades?|u)\s+(?:de\s+)?)?"
               r"(?:sangre|globulos rojos|hematies|gr\b)")
-_TRANSFUSING = re.compile(r"\b(?:transfund\w*|transfus\w*|pas(?:ar|o|e|a)|administr\w*|d(?:ar|oy|e)|give|"
+# "de" is the preposition of "4 U de GR", never the verb: read as "dé", it turned
+# "pruebas cruzadas por 4 U de GR" into a transfusion of four units (TD-26).
+_TRANSFUSING = re.compile(r"\b(?:transfund\w*|transfus\w*|pas(?:ar|o|e|a)|administr\w*|d(?:ar|oy|ale)|give|"
                           r"start|inici\w*|instal\w*|infund\w*)\b")
+
+# Blood products as they are ordered at the bedside (TD-26, faculty decision of
+# 2026-09-28). The engine runs packed red cells and models no other product.
+# "2 U de GR O negativo", "O-neg", "packed cells" and the massive transfusion
+# protocol were quoted back as unreadable, or lost without a word beside another
+# order, and the Trace showed the resident not transfusing (cycle 6 blind sets).
+_RED_CELL_NAMES = (r"p?rbcs?|packed\s+(?:red\s+)?(?:blood\s+)?cells|red\s+(?:blood\s+)?cells|globulos\s+rojos|"
+                   r"concentrad[oa]s?\s+(?:de\s+)?(?:hematies|eritrocitos)|concentrad[oa]s?\s+eritrocitari[oa]s?|"
+                   r"hematies|eritrocitos|paquetes?\s+globular(?:es)?|ugr")
+# "Blood" and "sangre" name red cells, and not in "blood pressure", "blood bank",
+# "blood glucose", "blood cultures", "estimated blood loss" or "banco de sangre":
+# "Insulin 4 units SC for blood glucose 300" ran four units of red cells, and
+# "Transfuse 2 units FFP with blood pressure checks" asked how many (adversarial
+# review of cycle 7).
+_BLOOD_WORD = (r"blood(?!\s+(?:pressure|bank|glucose|sugar|cultures?|gas\w*|loss|count|tests?|work|draw|typ\w*|group\w*|"
+               r"products?|warmer|smear|levels?|alcohol|ph|volume|flow|vessels?|clots?|stream|results?|in\b))|"
+               r"(?<!banco de )(?<!perdida de )(?<!perdidas de )"
+               r"sangre(?!\s+(?:en|oculta|total|completa|perdida|venosa|arterial|capilar))")
+_RED_CELL_WORDS = _RED_CELL_NAMES + "|" + _BLOOD_WORD
+# "GR" is how red cells are written on a Chilean chart; "gr" after a dose is a
+# gram. Red cells after a count of units, with what qualifies blood, beside
+# another product ("GR/PFC"), or opening a chart line with its count ("GR 2 U",
+# "GR: 2 U", "GR x 2"). "Ceftriaxona 2 gr/24h" is two grams a day, never red cells
+# (adversarial review of cycle 7).
+_OTHER_PRODUCT_SHORT = r"pfc|ffp|plasma|plaquetas|platelets|crio\w*|cryo\w*"
+_GR_AS_RED_CELLS = re.compile(
+    r"\b(?:u|unidad(?:es)?|units?)\s*(?:de\s+|of\s+)?gre?\b"
+    r"|\bgre?\s*/\s*(?:" + _OTHER_PRODUCT_SHORT + r")\b|\b(?:" + _OTHER_PRODUCT_SHORT + r")\s*/\s*gre?\b"
+    r"|^gre?\s*(?::\s*)?(?:x\s*)?\d+\s*(?:u\b|unidad(?:es)?\b|units?\b|$)"
+    r"|\bgre?\s+(?:(?:o|0)\s*(?:rh\s*)?-?\s*(?:neg\w*|pos\w*)|isogrupo|isorh|sin\s+cruzar|no\s+cruzad\w*|"
+    r"sin\s+esperar|"
+    r"cruzad\w*|irradiad\w*|leucorreducid\w*|filtrad\w*)")
+# Emergency-release red cells named by what they are, not by the product: "2
+# units O-neg", "2 U O negativo", "O positivo", "uncrossmatched", "emergency release".
+_RED_CELL_QUALIFIER = re.compile(
+    r"\b(?:o|0)\s*(?:rh\s*)?-?\s*(?:neg|negativ[oae]s?|negative|pos|positiv[oae]s?|positive)\b|"
+    r"\b(?:o|0)\s+rh\s*\(\s*[-+]\s*\)|\buncross(?:ed|matched)\b|"
+    # "1 unidad O- a pasar ya": the sign written for the group (post hoc, blind set of cycle 7).
+    r"(?<=\s)(?:o|0)\s*(?:rh\s*)?-(?=\s|$|[,.;])|"
+    r"\bemergency[- ]release\b|\btype[- ]specific\b|\bsin\s+cruzar\b|\bno\s+cruzad[oa]s?\b")
+# "2 PRBC now" and "Hang 4 PRBC" count the units by the product's name.
+_BLOOD_UNIT_COUNT = re.compile(
+    r"(?<![\w.])(\d+)\s*(?:u|units?|unidad(?:es)?|ugr|bolsas?|bags?|concentrad[oa]s?|paquetes?|p?rbcs?)\b"
+    r"|\b(una|un|uno|one|dos|two|tres|three|cuatro|four|cinco|five|seis|six)\s+"
+    r"(?:u|units?|unidad(?:es)?|bolsas?|bags?|concentrad[oa]s?|paquetes?|p?rbcs?)\b")
+_UNIT_WORDS = {"una": 1, "un": 1, "uno": 1, "one": 1, "dos": 2, "two": 2, "tres": 3, "three": 3, "cuatro": 4,
+               "four": 4, "cinco": 5, "five": 5, "seis": 6, "six": 6}
+# One ratio or one count for several blood products: "1:1", "1:1:1", "4 U de cada
+# uno", "4 units each", "c/u". A time ("14:05") is not a ratio.
+_SHARED_BLOOD_COUNT = re.compile(r"(?<![\d:.])[1-4]\s*:\s*[1-4](?:\s*:\s*[1-4])?(?![\d:])|"
+                                 r"\b(?:each|apiece|c/u|cada\s+un[oa]|de\s+cada\s+(?:un[oa]|producto))\b")
+# Whole blood is not red cells: "low-titer O whole blood" ran as packed cells.
+_WHOLE_BLOOD = r"whole\s+blood|ltowb|sangre\s+(?:total|completa)"
+# The products the engine does not model. Each is recorded as ordered, with its
+# physiologic effect not modelled, and never becomes red cells (TD-26, B). The
+# names that can only be a product stand alone; "plasma" and "platelets" are
+# also laboratory words, and are a product only when given or counted.
+_PRODUCT_NAMES = (r"ffp|pfc|fresh\s+frozen\s+plasma|plasma\s+fresco(?:\s+congelado)?|thawed\s+plasma|"
+                  r"cryo(?:precipitate)?s?|crioprecipitados?|" + _WHOLE_BLOOD +
+                  r"|aferesis\s+de\s+plaquetas|pool\s+de\s+plaquetas|platelet\s+(?:pool|apheresis|transfusion)")
+_PRODUCT_WORDS = r"plasma|platelets?|plaquetas|crio"
+_GIVING_A_PRODUCT = re.compile(r"\b(?:transfund\w*|transfus\w*|give|giving|administ\w*|infund\w*|infuse|"
+                               r"start|pas(?:ar|o|e|a|en)|d(?:ar|oy|ale)|inici\w*|hang|run)\b")
+# Units asked to be ready, reserved or on their way are not a transfusion now:
+# whether to give them or keep them reserved is the resident's to say (TD-26).
+_RESERVING = re.compile(r"\b(?:reserv\w*|disponibles?|available|ready|listas?|listos?|standby|on\s+hold|hold|"
+                        r"prepar(?:ar|o|e|a|en|ad[oa]s?)|prepare|preparing|a\s+disposicion|en\s+espera|"
+                        r"on\s+the\s+way|en\s+camino|coming|cruz(?:ar|a|o|en|amos|ad[oa]s?)|crossmatched|"
+                        r"typed\s+and\s+crossed)\b")
+# "No cruzados", "sin cruzar" and "uncrossmatched" say the units are given now,
+# without waiting for the crossmatch: the opposite of a reservation. Read as one,
+# "pasar 2 UGR O negativo no cruzados ya" was asked whether to reserve them (A–J
+# of cycle 7, independent set).
+_NOT_WAITING_FOR_THE_CROSSMATCH = re.compile(
+    r"\b(?:no\s+cruzad[oa]s?|sin\s+cruzar|uncross(?:ed|matched)|"
+    r"(?:sin|no)\s+esperar\s+(?:(?:el|la|las|los|a)\s+)?(?:pruebas?\s+cruzadas?|pruebas?\s+de\s+compatibilidad|"
+    r"cruzar|grupo_y_pruebas(?:\s+cruzadas)?|grupo|banco)|"
+    r"(?:without|not)\s+waiting\s+(?:on|for)\s+(?:the\s+)?(?:type_and_screen|type\s+and\s+cross|crossmatch\w*|"
+    r"cross\w*))")
+# Units fetched are asked about as units asked for are ("pido 2 unidades de
+# globulos rojos", 2026-09-24): "traigan 2 U de GR O negativo", "que suban 2 U"
+# and "bring 2 units O-neg" ran as a transfusion once the chart-line reading
+# read them.
+_FETCHING = re.compile(r"^(?:que\s+)?(?:bring|fetch|get|send(?:\s+up)?|traig\w*|trae(?:r|n)?|sub(?:an|ir|e)|"
+                       r"consig(?:an|a)|conseguir)\b")
+
+
+def _held_back(text, verb=None):
+    """Whether red cells are asked to be ready, crossmatched or fetched, rather than given now (TD-26)."""
+    text = _NOT_WAITING_FOR_THE_CROSSMATCH.sub(" ", str(text or "")).strip()
+    if re.search(r"\btransf(?:und|us)\w*", text) or verb in {"transfuse", "transfundir", "transfundo"}:
+        return False
+    if verb in {"aumentar"} or _FETCHING.match(text):
+        return True
+    crossmatched = re.search(r"\b(?:cruz(?:ar|a|o|en|amos|ad[oa]s?)|crossmatched|typed\s+and\s+crossed)\b", text)
+    keeping = _RESERVING.search(re.sub(r"\b(?:cruz(?:ar|a|o|en|amos|ad[oa]s?)|crossmatched|typed\s+and\s+crossed)\b",
+                                       " ", text))
+    if keeping:
+        return True
+    # "Give 2 units of crossmatched PRBC": the crossmatch describes the units a
+    # giving verb gives; without one, "2 U GR cruzadas" asks for the crossmatch.
+    return bool(crossmatched) and not (_TRANSFUSING.search(text) or _TRANSFUSING.search(str(verb or "")))
+_PRODUCT_COUNT = re.compile(r"(?<![\w.])\d+\s*(?:u|units?|unidad(?:es)?|bolsas?|bags?|pools?|aferesis|apheresis|"
+                            r"doses?|dosis|ml/kg)\b|\b(?:una|one|dos|two|tres|three|cuatro|four|diez|ten)\s+"
+                            r"(?:u|units?|unidad(?:es)?|bolsas?|bags?|pools?|aferesis|apheresis|doses?|dosis)\b")
+# The massive transfusion protocol: its activation is recorded, and gives no
+# product by itself (TD-26, C; charter §114). "Activo" opens it as often as a
+# verb does, and is not a verb anywhere else here.
+_MASSIVE_TRANSFUSION_NAMES = (r"massive\s+transfusion(?:\s+protocol)?|(?:protocolo\s+de\s+)?transfusion\s+masiva|"
+                              r"major\s+ha?emorrhage\s+protocol|protocolo\s+de\s+hemorragia\s+masiva|mtp|ptm")
+_MASSIVE_TRANSFUSION = re.compile(r"\b(?:" + _MASSIVE_TRANSFUSION_NAMES + r")\b")
+_ACTIVATING = re.compile(r"\b(?:activate|activating|activation|activaci[oó]n|call|trigger|initiate|start|declare|"
+                         r"order|request|"
+                         r"activ(?:ar|o|a|e|amos|emos|en|an)|llam(?:ar|o|a|e|amos|emos|en|an)|"
+                         r"inici(?:ar|o|a|e|amos|emos|en|an)|solicit(?:ar|o|a|e|amos|emos|en|an)|"
+                         r"pid(?:o|e|an|amos)|pedir|pedimos|gatill\w*|dispar(?:ar|o|a|e|amos|emos|en|an))\b")
+# A count written on its own after the product it counts (A–J of cycle 7).
+_A_COUNT_ALONE = re.compile(
+    r"(?:(?:unas|unos|about|around|some|aprox\.?|aproximadamente)\s+)?"
+    r"(?:\d+|una|un|uno|one|dos|two|tres|three|cuatro|four|cinco|five|seis|six|diez|ten)\s*"
+    r"(?:u|units?|unidad(?:es)?|bolsas?|bags?|pools?|dosis|doses)"
+    r"(?:\s+(?:del|de|of|from)\s+(?:(?:the|el|la)\s+)?(?:pool|banco|bank|aferesis|apheresis))?"
+    r"(?:\s+(?:ahora|ya|now|stat|more|mas))?\s*[.!]?")
+# Where a bleeding measure goes, written after it (A–J of cycle 7).
+_WHERE_THE_MEASURE_GOES = re.compile(
+    r"(?:(?:right|just|justo|bien|lo\s+mas|as|very|muy)\s+)*"
+    r"(?:above|below|proximal|distal|over|on\s+top|arriba|encima|debajo|sobre|por\s+(?:encima|arriba|debajo)|"
+    r"tight|apretad[oa]|high|high_and_tight|alt[oa]|deep|deeply|profund[oa]|firm(?:ly)?|firme)"
+    r"(?:\s+(?:de|del|of|the|la|el|to|a|al|that|this|ese|esa|his|her|as|possible|posible))*"
+    r"(?:\s+(?:wound|herida|knee|rodilla|elbow|codo|injury|lesion|bleed\w*|sangrado|site|sitio|laceration|"
+    r"laceracion|thigh|muslo|arm|brazo|leg|pierna|groin|ingle|axilla|axila))?"
+    r"(?:\s+(?:posible|possible|now|ya|ahora))?\s*[.!]?"
+    # The tourniquet's time, written down with it: "note the time", "anotar hora".
+    r"|(?:note|mark|record|write\s+down|anotar|anote|anoten|registrar|registre|marcar|marque)\s+"
+    r"(?:the\s+|la\s+)?(?:time|hora)(?:\s+(?:de\s+)?(?:colocacion|placement|on))?\s*[.!]?")
+# The protocol's cooler is how its activation is followed at the bedside: "get
+# the cooler up here", "que suba la nevera" (A–J of cycle 7, independent set).
+_BLOOD_COOLER = re.compile(r"(?:\b(?:get|bring|send|traigan|traer|trae|traiga|suba|suban|subir|pidan|pedir|pide|call\s+for)\s+"
+                           r"(?:(?:the|la|el|una?|mtp|ptm)\s+)?(?:cooler|nevera|hielera|conservadora)\b"
+                           r"|^(?:the\s+|la\s+|el\s+)?(?:cooler|nevera|hielera)\s+(?:up|here|now|ya|aqui|al\s+box))")
+# A red-cell order spoken with the verb of the bag: "hang packed cells now" and
+# "hang a unit of PRBC" were lost without a word beside another order (A–J).
+# "De" is a preposition here, never the verb.
+_GIVING_BLOOD = re.compile(r"\b(?:hang|hung|run|push|squeeze|pump|give|start|transfus\w*|transfund\w*|cuelg\w*|"
+                           r"colg\w*|pong\w*|pon(?:er|go|ga)|instal\w*|coloqu\w*|coloc\w*|pas(?:ar|en|e|a)|"
+                           r"administr\w*|d(?:ar|en|ale|enle)|infund\w*|inici\w*)\b")
+# What may follow the protocol's name in its activation: "now", the products
+# and units it is activated with, or a ratio. Anything else is a sentence about
+# it ("MTP is likely", "transfusión masiva probable"), which is reasoning.
+_AFTER_THE_PROTOCOL = re.compile(r"(?:now|ahora|ya|stat|immediately|inmediatamente|activad[oa]|activated|activation|"
+                                 r"(?:with|con|and|y|plus|mas|\+)\b|\(?\d+\s*:\s*\d+)")
+_GENERIC_BLOOD_PRODUCTS = re.compile(r"\b(?:blood\s+products?|hemoderivados?|productos?\s+sangu[ií]neos?|"
+                                     r"componentes?\s+sangu[ií]neos?)\b")
 
 _DIAGNOSTICS = {
     # How a head CT is asked for here, found missing on 2026-09-24: "TC de
@@ -112,6 +267,16 @@ _DIAGNOSTICS = {
     # yet: it is recorded as asked for and answered with nothing invented. A
     # reservation of units is this request too, and never a transfusion.
     "crossmatch": CROSSMATCH,
+    # Recorded as asked for, and modelled in no case (TD-22, cycle 7): no result
+    # is invented. Unread, it held every other order of the submission, the CT
+    # pulmonary angiogram of a young woman too.
+    "pregnancy_test": r"(?:(?:urine|serum|quantitative|qualitative)\s+)?pregnancy\s+test|upt|"
+                      r"(?:prueba|test|examen)\s+de\s+embarazo(?:\s+(?:en\s+orina|en\s+sangre|urinari[oa]|seric[oa]|"
+                      r"cualitativ[oa]|cuantitativ[oa]))?|test\s*pack|"
+                      r"(?:(?:serum|urine|quantitative|qualitative)\s+)?(?:beta[- ]?|b[- ]?|\u03b2[- ]?)?hcg"
+                      r"(?:\s+(?:cuantitativa|cualitativa|en\s+orina|en\s+sangre|serica|urinaria|"
+                      r"quantitative|qualitative))?|"
+                      r"subunidad\s+beta(?:\s+(?:de\s+)?(?:la\s+)?hcg)?",
     "cortisol": r"cortisol",
     "thyroid_function": r"thyroid function|thyroid tests|tsh|perfil tiroideo|funcion tiroidea",
     "ketones": r"ketones|beta[- ]hydroxybutyrate|cetonas|cetonemia|beta[- ]hidroxibutirato",
@@ -425,6 +590,27 @@ _ES_IMPERATIVES = {
                  "envia envie enviar envio", "intubar": "intuba intube", "ventilar": "ventila ventile ventilo",
     "reevaluar": "reevalua reevalue",
 }
+# The same orders said to the team, in the plural: "pasen", "pongan", "tomen",
+# "hagan un test pack". Unread, such an order was lost without a word, and after
+# a finding the negation took it (A–J of cycle 7, independent set). "Suban",
+# "bajen", "manden", "envíen" and "dejen" are left out: each also fetches, sends
+# or leaves, and red cells fetched are asked about.
+_ES_TEAM_IMPERATIVES = {
+    "iniciar": "inicien comiencen empiecen conecten", "administrar": "administren pasen carguen",
+    "dar": "den", "poner": "pongan", "colocar": "coloquen instalen", "aplicar": "apliquen",
+    "infundir": "infundan", "indicar": "indiquen", "pedir": "pidan", "solicitar": "soliciten",
+    "medir": "midan", "controlar": "controlen", "obtener": "obtengan tomen", "realizar": "realicen",
+    "hacer": "hagan", "suspender": "suspendan", "detener": "detengan", "retirar": "retiren",
+    "sacar": "saquen", "aumentar": "aumenten", "disminuir": "disminuyan", "titular": "titulen",
+    "continuar": "continuen", "mantener": "mantengan", "ajustar": "ajusten", "cambiar": "cambien",
+    "transfundir": "transfundan", "nebulizar": "nebulicen", "consultar": "consulten",
+    "interconsultar": "interconsulten", "llamar": "llamen avisen", "activar": "activen",
+    "monitorizar": "monitoricen monitoreen", "hospitalizar": "hospitalicen", "ingresar": "ingresen",
+    "induce": "induzcan", "sedate": "seden", "trasladar": "trasladen deriven", "intubar": "intuben",
+    "ventilar": "ventilen", "reevaluar": "reevaluen",
+}
+for _verb, _forms in _ES_TEAM_IMPERATIVES.items():
+    _ES_IMPERATIVES[_verb] += " " + _forms
 _ES_IMPERATIVE_FORMS = {form: verb for verb, forms in _ES_IMPERATIVES.items() for form in forms.split()}
 # Spanish attaches the pronoun to the imperative: "pasale", "ponle", "subele",
 # "ingresalo", "darle". The written accent ("pásale") is already gone by
@@ -535,7 +721,8 @@ _ES_INTENTION = re.compile(
 _OPENING_TIME_WORD = re.compile(
     r"(^|[.;:\n]\s*|,\s*|\b(?:y|e|and|then|luego)\s+)"
     r"(?:ahora(?:\s+mismo)?|now|right\s+now|primero|first(?:ly)?|inmediatamente|immediately|"
-    r"de\s+inmediato|stat|urgente(?:mente)?|urgently)\s*,?\s+(?=\w)")
+    # "Y de una vez pasen 2 GR", "al tiro": how "now" is said in Chile (A–J of cycle 7).
+    r"de\s+inmediato|de\s+una\s+vez|al\s+tiro|altiro|ya\s+mismo|stat|urgente(?:mente)?|urgently)\s*,?\s+(?=\w)")
 
 
 # A running crystalloid is stopped in more ways than "stop" and "suspender":
@@ -618,7 +805,28 @@ _SOMEONE_ELSE = re.compile(
 _ARTICLE_BEFORE = re.compile(r"\b(?:el|la|los|las|un|una|del|al|de|su|sus|mi|este|esta)$")
 
 
+# "Antes de seguir hagan un test pack rápido": the step named first, then the
+# team's order, with no comma between them. The order verb opens a clause only at
+# its start, so the pregnancy test was lost without a word beside the adrenaline
+# (TD-22, A–J of cycle 7, independent set).
+_BEFORE_THEN_TEAM_ORDER = re.compile(
+    r"(^|[.;\n][^\S\n]*)(antes\s+de(?:[^\S\n]+[^\s.;,:]+){1,5}?)[^\S\n]+(?=(?:"
+    + "|".join(sorted({form for forms in _ES_TEAM_IMPERATIVES.values() for form in forms.split()},
+                      key=len, reverse=True)) + r")\b)")
+
+
+def _correcting_with(text):
+    """ "Corrijan con suero glucosado": correcting with a treatment is giving it.
+
+    Unread, the glucose was lost beside the venous gases written after it (A–J of
+    cycle 7, independent set).
+    """
+    return re.sub(r"\b(?:corrig\w*|corrij\w*)\s+con\b", "administrar", text)
+
+
 def _reason_then_order(text):
+    text = _BEFORE_THEN_TEAM_ORDER.sub(lambda match: match[1] + match[2] + ", ", text)
+
     def replace(match):
         reason = match[2]
         if _SOMEONE_ELSE.search(reason) or _ARTICLE_BEFORE.search(reason) or len(reason.split()) > 9:
@@ -728,8 +936,14 @@ def _unmodelled_dextrose(piece):
     return percent < 10 or bool(_INFUSION_CONTEXT.search(text))
 
 
-# The medicine an unmodelled indication names, and whether it is for home.
+# The medicine an unmodelled indication names, and whether it is for home. The
+# massive transfusion protocol and the blood products the engine does not run
+# are read first: "plasma" is never "a medicine" (TD-26).
 _UNMODELLED_CLASSES = (
+    # A product ordered "per MTP" is the product; the activation is recorded on
+    # its own (adversarial review of cycle 7).
+    ("blood_product", _PRODUCT_NAMES + "|" + _PRODUCT_WORDS),
+    ("massive_transfusion", _MASSIVE_TRANSFUSION_NAMES),
     ("adrenaline_autoinjector", r"auto-?inyector|auto-?injector|epi-?pen"),
     ("antihistamine", r"clorfenamina|clorfeniramina|chlorphenamine|chlorpheniramine|difenhidramina|diphenhydramine|"
                       r"antihistaminic[oa]s?|antihistamines?|cetirizina|cetirizine|loratadina|loratadine|"
@@ -754,6 +968,458 @@ def unmodelled_detail(text):
     return {"category": category, "agent": agent, "prescription": prescription}
 
 
+# The bleeding measures, each as the resident names it. What the engine performs
+# is one of three measures; a dressing is recorded by its own name and applied
+# as the measure it is (C7-06). "Hemorrhage control" without a measure, or "stop
+# the bleeding", names no measure, and the engine asks which one.
+_HAEMORRHAGE_MEASURES = (
+    ("tourniquet", None, r"torniquetes?|tourniquets?"),
+    ("packing", None, r"empaquetamiento|empaquet(?:ar|o|a|e|amos|en)|packing|"
+                      # "Empaquen la herida" is "empacar", as it is said in Chile (A–J).
+                      r"(?:empac(?:ar|o|a|amos|an)|empaqu(?:e|en|emos))\s+(?:(?:bien\s+)?(?:la|el|esa|ese|esta|este)\s+)?"
+                      r"(?:herida|sitio|lesion|zona|cavidad|laceracion)|"
+                      r"(?:empac(?:ar|o|a|amos|an)|empaqu(?:e|en|emos))\s+con\s+gasa|"
+                      r"pack(?:ed)?\s+(?:(?:the|this|that|his|her)\s+)?(?:wound|laceration|bleeding|site|groin|axilla|"
+                      r"neck|defect|cavity|it)|"
+                      # "Taponamiento" is packing only with the wound it packs, or as the
+                      # thing done: "FAST para descartar taponamiento" packed a wound
+                      # (adversarial review of cycle 7).
+                      r"taponamiento\s+(?:de\s+(?:la\s+)?(?:herida|sitio|lesion|laceracion|zona)|con\s+gasas?|"
+                      r"compresivo)|"
+                      r"(?:hacer|haga|hagan|hago|realizar|realice|realicen|realizo)\s+(?:un\s+)?taponamiento"
+                      r"(?!\s+(?:cardiaco|pericardico|cardiac|pericardial|con\s+balon))|"
+                      r"tapon(?:ar|o|a|e|amos)\s+(?:(?:la|el)\s+)?(?:herida|sangrado|laceracion|sitio|zona)"),
+    ("direct pressure", "pressure dressing", r"(?:vendaje|aposito)\s+compresivo|pressure\s+dressing"),
+    ("direct pressure", "hemostatic dressing", r"(?:vendaje|aposito|gasa)\s+hemostatic[oa]|h[ae]mostatic\s+(?:dressing|gauze)"),
+    ("direct pressure", None, r"(?:compresion|presion)\s+(?:directa|manual|externa|firme)|direct\s+pressure|"
+                              r"(?:firm|manual|constant|steady)\s+pressure(?!\s+(?:support|control|ventilation|mode))|"
+                              r"(?:hold|holding|apply|applying)\s+(?:(?:firm|direct|manual|constant|steady)\s+)?"
+                              r"pressure(?!\s+(?:support|control|ventilation|mode|target|goal|above|below|over\s+\d|"
+                              r"meds|medications?|medicines?|drugs?|agents?|pressors?|at\s+\d|of\s+\d|\d))|"
+                              r"(?<!blood )(?<!arterial )pressure\s+(?:on|over|to)\s+(?:the\s+)?(?:wound|bleeding|site|"
+                              r"laceration|groin|axilla|neck|leg|arm|thigh|scalp)(?!\s+(?:is\s+)?\d)|"
+                              r"presion\s+(?:sobre|en)\s+(?:(?:la|el)\s+)?(?:herida|sangrado|sitio|punto|zona|lesion|"
+                              r"laceracion)|"
+                              r"(?:hacer|hago|haga|haz|ejercer|ejerzo|ejerza)\s+(?:una\s+)?presion|"
+                              r"presion\s+(?:por|durante)\s+\d+\s*min\w*|pressure\s+for\s+\d+\s*min\w*|"
+                              r"compri(?:mir|mo|ma|me|mimos)\s+(?:(?:la|el)\s+)?(?:herida|sangrado|sitio|punto|zona|"
+                              r"lesion)|"
+                              # Kept pressure, where it is kept: "mantengan presión encima", "keep
+                              # pressure on it". Never alone: "para mantener presión" is the blood
+                              # pressure (A–J of cycle 7).
+                              r"manten(?:er|go|ga|gan|gamos)?\s+(?:la\s+)?presion(?:\s+(?:directa|firme|manual|"
+                              r"constante))?\s+(?:encima|arriba|sobre\s+(?:(?:la|el)\s+)?(?:herida|gasa|sitio|zona|"
+                              r"punto|lesion)|en\s+(?:(?:la|el)\s+)?(?:herida|sitio|zona|punto)|con\s+(?:la\s+)?(?:mano|"
+                              r"gasa))|"
+                              r"(?:keep|keeping|maintain|maintaining)\s+(?:(?:firm|direct|manual|constant|steady)\s+)?"
+                              r"pressure\s+(?:on|over)\s+(?:it|top|the\s+(?:wound|bleed\w*|site|gauze|dressing|"
+                              r"packing))"),
+)
+_UNNAMED_MEASURE = re.compile(
+    r"\b(?:control\s+de\s+(?:la\s+)?hemorragia|control\s+del\s+sangrado|h[ae]morrhage\s+control|"
+    r"bleeding\s+control)\b"
+    # The same, said to the team: "somebody control that bleeding now", "que
+    # alguien controle ese sangrado ya" were answered with nothing to go on (A–J).
+    # Only with whoever is told to do it, or the bleeding pointed at: "control
+    # the bleeding" is also the goal a reasoning line states ("they do the
+    # endoscopy and control the bleeding"), and it held a consult.
+    r"|(?:(?:somebody|someone|alguien|que\s+alguien)\s+(?:control|controle|controlen|controla|stop|detenga|detengan|"
+    r"pare|paren)\s+(?:(?:that|the|this|his|her|ese|esa|el|la|este|esta)\s+)?|"
+    r"(?:control|controlar|controle|controlen|controla|stop|detener|deten|detenga|detengan|parar|pare|paren)\s+"
+    r"(?:that|this|ese|esa|este|esta)\s+)(?:bleed\w*|h[ae]morrhag\w*|sangrado|sangramiento|hemorragia)\b")
+
+
+# An intraosseous line, by its site, by what it is or by placing it: "humeral IO",
+# "IO access", "EZ-IO", "acceso intraóseo tibial", "coloco una vía intraósea",
+# "place an IO". A bare "IO" or "vía IO" names a route: written after a dose it is
+# that dose's route, and it is never read as a line placed (C7-06).
+_IO_ACCESS = re.compile(
+    r"\b(?:(?:humeral|tibial|sternal|femoral|proximal\s+(?:humeral|tibial)|distal\s+(?:femoral|tibial))\s+"
+    r"(?:io|intraosseous)|"
+    r"(?:io|intraosseous)\s+(?:access|line|needle|catheter|cannula|device|drill|"
+    r"in\s+the\s+(?:(?:left|right|proximal|distal)\s+)*(?:humerus|tibia|sternum|femur)|"
+    r"(?:(?:left|right|proximal|distal)\s+)*(?:humeral|tibial|sternal|femoral))|"
+    r"ez[- ]?io|"
+    r"(?:acceso|aguja|cateter|puncion|linea)\s+(?:intraose[ao]s?|io)|"
+    r"(?:vias?\s+)?(?:intraose[ao]s?|io)\s+(?:humeral|tibial|esternal|femoral|"
+    r"en\s+(?:(?:el|la)\s+)?(?:humero|tibia|esternon|femur))|"
+    r"(?:place|placing|insert|inserting|drill|establish|get|obtain|start)\s+(?:an?\s+)?"
+    r"(?:(?:humeral|tibial|left|right)\s+)*(?:io|intraosseous)|"
+    r"(?:instal\w*|canaliz\w*|coloc\w*|pon(?:er|go|e|ga)|dej(?:ar|o)|obten\w*)\s+(?:(?:una?|la|el)\s+)?"
+    r"(?:(?:via|linea|acceso)\s+)?(?:io|intraose[ao]s?))\b")
+_IO_STATUS = re.compile(
+    r"\b(?:is|are|was|were|esta|estan|fue|failed|fallo|fallid[oa]|infiltrad\w*|infiltrated|working|funciona\w*|"
+    r"in\s+place|en\s+su\s+lugar|dislodged|desplazad\w*|salid[oa]|not\s+working|no\s+funciona|through\s+it|"
+    r"por\s+ella|from\s+ems|del\s+samu)\b")
+_BARE_IO = re.compile(r"(?:(?:una?|la|el|an?)\s+)?(?:(?:via|linea)\s+)?(?:io|intraosseous|intraose[ao])\s*[.!]?")
+_PLACING_IO = re.compile(r"(?:(?:an?|una?|la|el)\s+)?(?:(?:via|linea)\s+)?(?:(?:humeral|tibial)\s+)?"
+                         r"(?:io|intraosseous|intraose[ao])\b")
+
+
+# A device removed, loosened or replaced is not applied: "Remove the tourniquet"
+# and "Convert tourniquet to pressure dressing" applied it (adversarial review of
+# cycle 7; partly as before). Removing it is not modelled, and is quoted back.
+_REMOVING_A_MEASURE = re.compile(
+    r"\b(?:remove|removing|take\s+off|loosen\w*|release|convert\w*|replace|replac\w*|retir\w*|quit\w*|sac(?:ar|a|o|en)|"
+    r"afloj\w*|solt\w*|cambi\w*|reemplaz\w*|convertir|deflate|desinfl\w*)\b")
+
+
+# A measure named by what it is, whatever is done with it.
+_MEASURE_NAMED = re.compile(r"\b(?:torniquetes?|tourniquets?|packing|empaquetamiento|(?:vendaje|aposito)\s+"
+                            r"(?:compresivo|hemostatico)|(?:pressure|hemostatic|haemostatic)\s+dressing|"
+                            r"(?:direct|manual)\s+pressure|(?:presion|compresion)\s+(?:directa|manual))\b")
+# What a stopping verb stops here: the bleeding, never a measure. "Detener
+# sangrado: presión directa", "stop the bleeding with direct pressure" and "detén
+# el sangrado con un torniquete" were quoted back once a stopping verb was read as
+# the measure removed (post hoc, cycle 7).
+_STOPPING_THE_BLEEDING = re.compile(
+    r"\b(?:stop|detener|deten|detenga|detengan|detengo|suspender|parar|pare|paren|frenar|frena|frene|cohibir)\s+"
+    r"(?:(?:the|that|this|his|her|el|la|ese|esa|este|esta)\s+)?"
+    r"(?:bleed\w*|h[ae]morrhag\w*|sangrado|sangramiento|hemorragia)\b")
+
+
+def _haemorrhage_measures(text, verb=None):
+    """[(measure, name the resident used or None)] in the order written; [(None, None)] for no measure named."""
+    text = str(text or "")
+    if _REMOVING_A_MEASURE.search(text) or (
+            verb in {"retirar", "retiro", "sacar", "saco", "stop", "discontinue", "suspender", "suspendo", "detener"}
+            and not _STOPPING_THE_BLEEDING.search(text)
+            # A measure with a verb of its own is not what a stop lent to the list
+            # stops: "stop the bleeding and hold pressure" (post hoc, cycle 7).
+            and not re.match(r"(?:hold|apply|pack|keep|maintain|compress|empaquet\w*|empac\w*|comprim\w*|"
+                             r"hac(?:er|e)|haga|hagan|hago|ejerc\w*|ejerz\w*|manten\w*|tapon\w*)\b", text.strip())):
+        return []
+    found = []
+    for measure, named, pattern in _HAEMORRHAGE_MEASURES:
+        for match in re.finditer(r"\b(?:" + pattern + r")\b", text):
+            if not any(start <= match.start() < end for _, _, start, end in found):
+                # "Nurse is holding pressure", "was holding pressure": what is being
+                # or was done, not an order (adversarial review of cycle 7).
+                if re.search(r"\b(?:is|are|was|were|esta|estan|estaba|estaban|been|held|hice|hicimos|hizo|tried|"
+                             r"intente|intentamos|applied|aplique|aplicamos)\s+$", text[:match.start()]):
+                    continue
+                found.append((measure, named, match.start(), match.end()))
+    if any(measure == "packing" for measure, _, _, _ in found) and re.search(
+            r"\b(?:preperitoneal|pelvic|pelvico|abdominal|surg\w*|cirug\w*|quirurg\w*|operating|theatre|theater|"
+            r"pabellon|quirofano|damage\s+control)\b|\bin\s+(?:the\s+)?or\b", text):
+        # Packing done by surgery in the operating room is not a bedside measure.
+        found = [item for item in found if item[0] != "packing"]
+    if len(found) > 1 and re.search(r"\b(?:or|o|u)\b", text):
+        # "Tourniquet or direct pressure": an alternative, asked about (A–J).
+        return [(None, None)]
+    # "Empaquetar la herida y comprimir": a bare "compress" beside nothing else.
+    if not found and re.fullmatch(r"\s*(?:comprimir|comprimo|comprima|comprime|compress|compression)\s*[.!]?", text):
+        found.append(("direct pressure", None, 0, len(text)))
+    # Only as the order itself: "endoscopía para control del sangrado" asks for
+    # an endoscopy, and whoever stops the bleeding there is not a measure here.
+    if not found and _UNNAMED_MEASURE.match(text.strip()) and not re.search(
+            r"\b(?:endoscop\w*|gastro\w*|cirug\w*|surg\w*|angio\w*|emboliz\w*|interventional|radiolog\w*|"
+            r"quirofano|pabellon|operating|theatre|theater)\b", text):
+        return [(None, None)]
+    if any(measure == "packing" for measure, _, _, _ in found):
+        # "Packing con gasa hemostática": the gauze is what the wound is packed with.
+        found = [item for item in found if item[1] != "hemostatic dressing"]
+    ordered, seen = [], set()
+    for measure, named, _, _ in sorted(found, key=lambda item: item[2]):
+        if (measure, named) not in seen:
+            seen.add((measure, named))
+            ordered.append((measure, named))
+    return ordered
+
+
+def red_cells_named(body, verb=None):
+    """Whether a clause names packed red cells, the one blood product the engine runs."""
+    body = str(body or "")
+    if re.search(r"\b(?:" + _WHOLE_BLOOD + r")\b", body) or _GENERIC_BLOOD_PRODUCTS.search(body):
+        return False
+    if re.search(r"\b(?:" + _RED_CELL_WORDS + r")\b", body) or _GR_AS_RED_CELLS.search(body):
+        return True
+    # "2 GR" or "3 GR ahora" on its own line names no medicine a gram could be of.
+    if re.fullmatch(r"(?:\d+|una?|uno|dos|tres|cuatro)\s*gre?\b(?:\s+(?:ahora|ya|now|stat|urgente|(?:o|0)\s*"
+                    r"(?:rh\s*)?-?\s*(?:neg\w*|pos\w*)))*\s*[.!]?", body.strip()):
+        return True
+    transfusing = verb in {"transfuse", "transfundir", "transfundo"} or bool(re.search(r"\btransf(?:und|us)\w*", body))
+    if transfusing and re.search(r"\bgre?\b(?!\s*/)", body):
+        return True
+    # "Transfundo 1 más", "transfundir 2 ahora": a transfusion counted, and nothing else named.
+    if transfusing and re.fullmatch(r"\d\s*(?:u\b|units?|unidad(?:es)?)?\s*(?:mas|more|adicional(?:es)?|extra|ahora|ya|"
+                                    r"now|stat)?\s*[.!]?", body.strip()):
+        return True
+    # "Transfundir 1 U más": a transfusion counted in units, with no product named, is red cells.
+    if transfusing and _BLOOD_UNIT_COUNT.search(body) and not re.search(
+            r"\b(?:" + _PRODUCT_NAMES + "|" + _PRODUCT_WORDS + r")\b", body):
+        return True
+    return bool(_RED_CELL_QUALIFIER.search(body)) and (transfusing or bool(_BLOOD_UNIT_COUNT.search(body)))
+
+
+def blood_units(body):
+    """The number of units written, once, in figures or as a word; None when absent or ambiguous."""
+    body = str(body or "")
+    found = [float(match[1]) if match[1] else float(_UNIT_WORDS[match[2]])
+             for match in _BLOOD_UNIT_COUNT.finditer(body)]
+    if not found:
+        # Read only once the clause is red cells: "transfundir 3 GR" is three
+        # units, "hang a unit of PRBC" is one and "transfundir 2 ahora" two; the
+        # engine asked for the count the resident had written (A–J of cycle 7).
+        # "2 gr/24h" is a dose, and never gets here as red cells.
+        found = [float(_UNIT_WORDS.get(count, count)) for count in re.findall(
+            r"(?<![\w.])(\d+|una?|uno|dos|tres|cuatro|one|two|three|four)\s*gre?\b(?!\s*/)", body)]
+        found += [1.0 for _ in re.finditer(r"\ban?\s+(?:single\s+)?unit\b", body)]
+        found += [float(count) for count in re.findall(r"\bx\s*(\d+)\b", body)]
+        if not found:
+            bare = re.match(r"(\d)\s*(?:mas|more|adicional(?:es)?|extra|ahora|ya|now|stat)?\s*[.!]?$", body.strip())
+            found = [float(bare[1])] if bare else []
+    return found[0] if len(found) == 1 else None
+
+
+# A red-cell order written as a chart line opens with its units, the product or
+# what qualifies it, and says nothing else but when, where it runs and how fast:
+# "2 U GR O negativo", "GR 2 U", "O-neg 2 units", "2 UGR", "2 PRBC now". With a
+# red-cell word and a count anywhere in the clause enough, a result ("Hb 6.2 tras
+# 2 U GR"), a transfusion elsewhere ("SAMU: 1 U GR O negativo en ruta"), a refusal
+# ("rechaza transfusión de 2 U GR"), a question, a consent, an estimated loss and
+# insulin written beside "blood glucose" each ran a transfusion nobody ordered
+# (adversarial review of cycle 7). What opens as red cells and says more is asked
+# about; what says it happened, or is only thought about, orders nothing.
+_RED_CELL_OPENING = re.compile(
+    r"(?:(?:\d+|una?|uno|one|two|three|four|five|six|dos|tres|cuatro|cinco|seis|single|an?)\s*(?:x\s*)?"
+    r"(?:u\b\.?|units?\b|unidad(?:es)?\b|bolsas?\b|bags?\b|concentrad[oa]s?\b|paquetes?\b|p?rbcs?\b|ugr\b|"
+    r"gre?\b|(?:" + _RED_CELL_NAMES + r")\b)"
+    r"|(?:" + _RED_CELL_NAMES + r"|gre?|" + _BLOOD_WORD + r")\b"
+    r"|(?:o|0)\s*(?:rh\s*)?-?\s*(?:neg|negativ|positiv|pos)\w*"
+    r"|(?:uncross(?:ed|matched)|emergency[- ]release|type[- ]specific)\b)")
+_RED_CELL_LINE_PART = re.compile(
+    r"\b(?:" + _RED_CELL_NAMES + r"|gre?|sangre|blood|(?:blood\s+)?transfusi(?:on|ones))\b|"
+    r"(?<![\w.])\d+(?:[.,]\d+)?(?![\w.])|\bx\s*\d+\b|\b(?:una?|uno|one|two|three|four|five|six|dos|tres|cuatro|cinco|"
+    r"seis|single|x)\b|"
+    r"\b(?:u|units?|unidad(?:es)?|bolsas?|bags?|concentrad[oa]s?|paquetes?|each|cada\s+una)\b\.?|c/u|"
+    r"/\s*(?:h|hr|hora|hour)\b|\b(?:por|per)\s+(?:hora|hour)\b|"
+    r"\b(?:de|of|del|the|las|los|la|el|more|mas|adicional(?:es)?|extra)\b|"
+    r"\b(?:o|0)\s*(?:rh\s*)?-?\s*(?:neg|negativ[oae]s?|negative|pos|positiv[oae]s?|positive)\b|"
+    r"\b(?:o|0)\s+rh\s*\(\s*[-+]\s*\)|(?<=\s)(?:o|0)\s*(?:rh\s*)?-(?=\s|$)|"
+    # How it runs, and beside what: "to run now", "a pasar", "running together",
+    # "juntas", "while the crossmatch is pending" (post hoc, blind set of cycle 7).
+    r"\b(?:to\s+run|to\s+go|a\s+pasar|running(?:\s+together)?|together|juntas|juntos)\b|"
+    r"\b(?:while|mientras)\b.*$|"
+    r"\b(?:isogrupo|isorh|uncross(?:ed|matched)|emergency[- ]release|type[- ]specific|sin\s+cruzar|"
+    r"no\s+cruzad[oa]s?|irradiad[oa]s?|irradiated|leucorreducid[oa]s?|leuko-?reduced|filtrad[oa]s?)\b|"
+    r"\b(?:now|ya|ahora|stat|urgente|urgent(?:ly)?|inmediatamente|immediately|de\s+inmediato|right\s+now|asap|"
+    r"back\s+to\s+back|seguidas?)\b|"
+    r"\b(?:ev|iv|io|intravenos[oa]s?|intravenous|intraose[oa]s?|intraosseous|por\s+via\s+(?:periferica|venosa|"
+    r"intraosea))\b|"
+    r"\b(?:a\s+chorro|wide\s+open|rapid[oa]?|rapidly|fast|a\s+presion|under\s+pressure|"
+    r"(?:with\s+(?:a\s+)?|con\s+)?(?:pressure\s+bag|manguito\s+de\s+presion|calentador|blood\s+warmer|"
+    r"rapid\s+infuser))\b|"
+    r"[():\-,.;!+/]")
+# What says the units were given, elsewhere or before, or are only thought about.
+_RED_CELL_HISTORY = re.compile(
+    r"\b(?:given|received|transfused|administered|infused|recibid[oa]s?|recibi[oó]|pasad[oa]s?|transfundid[oa]s?|"
+    r"administrad[oa]s?|already|previously|previ[oa]s?|prior|antecedentes?|history|s/p|status\s+post|"
+    r"en\s+ruta|en\s+route|en\s+la\s+ambulancia|prehospital\w*|en\s+el\s+traslado|origen|outside|"
+    r"otro\s+centro|lleva|llevaba|ha\s+recibido|hasta\s+ahora|so\s+far|total|balance|ingresos|intake|last|"
+    r"ultim[oa]s?|semana\s+pasada|hace\s+\d|ago|mensual\w*|monthly|cronic\w*|chronic\w*|reacci[oó]n|reaction|"
+    r"alergi\w*|allerg\w*|rechaz\w*|refus\w*|declin\w*|consent\w*|consentimiento|firm\w*|estimad\w*|"
+    r"estimated|perdid\w*|loss|lost|needs?|need(?:ed|ing)|necesit\w*|requier\w*|requires?|requirio|threshold|"
+    r"umbral|quedan)\b")
+# What makes them a plan or an alternative, which is asked about, never run.
+_RED_CELL_PLAN = re.compile(
+    r"\b(?:cuando|when|once|en\s+cuanto|as\s+soon\s+as|apenas|until|hasta\s+que|after|despues|tras|post|"
+    r"si|if|luego|then|later|mas\s+tarde|in\s+\d+\s*(?:min\w*|h|hours?)|en\s+\d+\s*(?:min\w*|h|horas?))\b")
+# The verb of the bag itself, which is no order verb elsewhere: "hang packed
+# cells now", "run 2 units", "cuelguen 2 U de GR" (A–J of cycle 7).
+_BAG_VERB = re.compile(r"(?:hang|run|push|squeeze(?:\s+in)?|pump(?:\s+in)?|cuelg\w*|colg(?:ar|ue|uen|uemos)|"
+                       # "Go to blood", "pasar a sangre": switching to blood is giving it.
+                       r"(?:go|switch|move)\s+(?:over\s+)?to|(?:cambi(?:ar|a|o|en|emos)|pasemos)\s+a)\s+"
+                       r"(?=(?:blood|sangre|p?rbcs?|globulos|gr\b|red\s+cells|packed)|\S+\s+(?:u|units?|unidad))|"
+                       r"(?:blood\s+)?transfusi[oó]n\s+(?:de|of)\s+(?=\S)|(?:blood\s+)?transfusion\s+(?=\d)|"
+                       r"(?:hang|run|push|squeeze(?:\s+in)?|pump(?:\s+in)?|cuelg\w*|colg(?:ar|ue|uen|uemos))\s+")
+# The verbs whose object the red cells are when they give them.
+_GIVES_RED_CELLS = {"give", "start", "administer", "infuse", "transfuse", "order", "want", "apply", "put",
+                    "administrar", "administro", "administre", "dar", "doy", "dale", "iniciar", "inicio", "inicie",
+                    "infundir", "transfundir", "transfundo", "poner", "pongo", "colocar", "coloco", "indicar",
+                    "indico"}
+
+
+def red_cell_line(body, strict=True, verb=None):
+    """How a clause that opens with red cells reads: "order", "ask", "history", or None when red cells do not open it."""
+    body = re.sub(r"^(?:(?:her|him|them|le|les|al\s+paciente|a\s+la\s+paciente|the\s+patient|the|la|las|los|"
+                  r"el|una?(?!\s+(?:u\b|units?|unidad|bolsa|bag|paquete|concentrad|gre?\b))|another|otra|otras|otro|"
+                  r"a(?=\s+(?:sangre|globulos|gr\b)))\s+)+(?=\S)", "",
+                  str(body or "").strip())
+    if not (_RED_CELL_OPENING.match(body) and red_cells_named(body, verb)) and not re.match(
+            r"(?:\d+|una?|uno|one|two|three|four|dos|tres|cuatro|an?)\s*(?:u|units?|unidad(?:es)?)\b", body) and not (
+            verb in {"transfuse", "transfundir", "transfundo"} and re.match(r"\d\b", body)):
+        return None
+    if _RED_CELL_HISTORY.search(body):
+        return "history"
+    if _RED_CELL_PLAN.search(body):
+        return "ask"
+    if not strict:
+        return "order"
+    return "order" if not _RED_CELL_LINE_PART.sub(" ", body).strip() else "ask"
+
+
+def _stops(verb):
+    return _operation(verb) == "stop" or verb in {"disconnect", "desconectar", "desconecta", "desconecto"}
+
+
+def _red_cell_reading(text, body, verb, someone_elses, own=True):
+    """(actions, verb) for red cells given now, asked about or not ordered; None when the clause is not their order."""
+    lent_stop = not own and _stops(verb)
+    if not own and verb not in _GIVES_RED_CELLS:
+        # A verb the list lent is not this line's: "vía intraósea en tibia, GR O
+        # negativo" lost the red cells to "place" (A–J of cycle 7).
+        verb = None
+    if lent_stop and re.match(r"(?:the|this|that|la|las|los|el|esta|este|esa|ese|dicha|dicho)\s", body):
+        # What a stop lent to the list names is what it stops: "stop the
+        # norepinephrine and the blood", "suspender el SF y los GR" (post hoc,
+        # cycle 7). Quoted back, never run.
+        return None
+    switching = re.match(r"(?:over\s+)?(?:to|a)\s+(?=blood|sangre|p?rbcs?|globulos|gr\b|red\s+cells|packed)", body)
+    if switching and own and verb in {"switch", "change", "cambiar"}:
+        # "Switch to blood", "cambiar a sangre": switching to blood is giving it.
+        verb, body = "give", body[switching.end():]
+    # The verb of the bag is the clause's own, whatever the list lent it: "stop
+    # the saline and go to blood" gave blood, never a stop.
+    bag = _BAG_VERB.match(body)
+    if bag:
+        noun = "transfusi" in bag.group(0)
+        if noun and (lent_stop or (own and verb and verb not in _GIVES_RED_CELLS and verb not in _DIAG_VERBS)):
+            # "Transfusión de …" has no verb of its own: it is what the clause's verb
+            # does. "Suspender transfusión de las 2 U GR", "stop transfusion of 2
+            # units", "mantener transfusión de 2 U GR" and "suspender SF y
+            # transfusión de 2 U GR" each ran the units they stopped or kept (post
+            # hoc, cycle 7). They are quoted back, as before.
+            return None
+        verb, body = ("transfuse" if noun else "give"), body[bag.end():]
+    if not red_cells_named(body, verb):
+        return None
+    line = red_cell_line(body, strict=not verb, verb=verb)
+    if line is None:
+        # Units asked to be kept, crossmatched or brought are asked about ("Tener
+        # 4 U de GR disponibles", "Hold 2 units of PRBC", "Keep 2 units O-neg in
+        # the room"). Otherwise red cells that do not open the clause are not its
+        # object: "calcium gluconate 3 g IV after every 4 units of PRBC" is the
+        # calcium.
+        if (not someone_elses and _BLOOD_UNIT_COUNT.search(body) and not _RED_CELL_HISTORY.search(body)
+                and (verb is None or verb not in _DIAG_VERBS)
+                # "Reservar 2 unidades de GR", "grupo y pruebas cruzadas por 4 U":
+                # the blood bank's request, read as the crossmatch it is below.
+                and not re.search(r"\b(?:" + CROSSMATCH + r")\b", body)
+                and (_RESERVING.search(body) or _FETCHING.match(body) or re.match(
+                    r"(?:keep|tener|tengan|ten|dejar|dejen|deja|hold|cruz\w*|prepar\w*|reserv\w*)\b", body))):
+            return [_clarification("Specify whether to transfuse these units now, with the number "
+                                   "of units, or to request a crossmatch to have them reserved.")], verb
+        return None
+    if someone_elses or _NOT_THE_RESIDENTS_ORDER.search(body):
+        return [], None
+    if "?" in text or "\u00bf" in text or re.match(r"(?:should|shall|do|does|would|could|can|debo|deberia|"
+                                                     r"deberiamos|hay\s+que)\b", text):
+        # "¿Transfundo 2 U GR?", "Should I give 2 units O-neg?": a question.
+        return [], None
+    if line == "history":
+        return [], None
+    if verb and verb not in _GIVES_RED_CELLS:
+        # "Pido 2 unidades de GR" asks the bank (below). A verb that gives no red
+        # cells starts none, and the clause is read as whatever else it says, or
+        # quoted back as before: returned as nothing, "stop the PRBC", "aplicar 2 U
+        # GR" and "place 2 units of PRBC" were lost without a word (post hoc, cycle 7).
+        return None
+    if line == "ask" or _held_back(body, verb):
+        return [_clarification("Specify whether to transfuse these units now, with the number "
+                               "of units, or to request a crossmatch to have them reserved.")], verb
+    return [{"type": "blood", "units": blood_units(body)}], verb
+
+
+# What makes a product named in a clause something other than an order of it
+# now: not needed, withheld, asked about, stopped, a threshold, chosen instead of
+# something else, already given elsewhere, or being thawed or prepared. "FFP not
+# needed", "Should we give FFP?", "Suspender PFC", "Give PCC 50 U/kg instead of
+# plasma", "2 U PFC recibidas en ruta" and "Thaw 4 units FFP" were each recorded
+# as a blood product ordered (adversarial review of cycle 7).
+_NOT_A_PRODUCT_ORDER = re.compile(
+    r"\b(?:not\s+(?:needed|indicated|required|necessary|the\s+priority)|no\s+(?:indicad[oa]s?|necesari[oa]s?|"
+    r"requerid[oa]s?)|unnecessary|innecesari[oa]s?|withhold|hold\s+(?:off|the)|evitar|avoid|contraindicad\w*|"
+    r"contraindicated|(?:has\s+)?no\s+role|instead\s+of|en\s+vez\s+de|en\s+lugar\s+de|rather\s+than|"
+    r"stop|suspend\w*|deten\w*|discontinu\w*|threshold|umbral|"
+    r"recibid[oa]s?|received|given|transfundid[oa]s?|transfused|administrad[oa]s?|en\s+ruta|en\s+route|"
+    r"prehospital\w*|thaw\w*|descongel\w*|prepar\w*)\b|\?|\u00bf")
+# A product's name used as the laboratory word it also is: "plasma lactate in 2
+# h", "whole blood glucose 38", "platelets in 24 h", "plaquetas al día 5",
+# "plasma K 2.9", "platelet count", "pérdida de sangre total".
+_PRODUCT_AS_A_LAB = re.compile(
+    r"\b(?:plasma|platelets?|plaquetas|whole\s+blood|sangre\s+total)\s+(?:lactate|lactato|glucose|glucosa|glicemia|"
+    r"k|potassium|potasio|sodium|sodio|levels?|niveles?|count|conteo|recuento|free|libre|osmolal\w*|"
+    r"(?:in|en)\s+\d|al\s+dia|daily|diari\w*|q\d|cada|control|monitoring|monitoreo)\b"
+    r"|\b(?:perdida|loss|lost)\s+(?:de\s+)?(?:(?:sangre|blood)\b)|\bplatelet\s+count\b"
+    r"|\b(?:glucosa|glicemia|glucose|lactato|lactate|potasio|potassium|sodio|sodium|hemoglobina|hb|niveles?|levels?)"
+    r"\s+(?:en\s+|in\s+)?(?:sangre\s+total|whole\s+blood|plasma)\b")
+_GIVES_A_PRODUCT = {"transfuse", "transfundir", "transfundo", "give", "administer", "infuse", "start",
+                    "administrar", "administro", "administre", "dar", "doy", "dale", "infundir", "iniciar",
+                    "inicio", "inicie", "poner", "pongo", "colocar", "coloco", "indicar", "indico", "order", "want"}
+
+
+def unmodelled_blood_product(piece, verb=None, own=True):
+    """The product a clause orders that the engine does not model, or None.
+
+    Plasma, platelets, cryoprecipitate and whole blood are recorded as ordered,
+    with their effect not modelled, and never become red cells (TD-26, B). A name
+    that is also a laboratory word ("plasma", "platelets") is a product only when
+    the clause gives or counts it, or the list transfuses: "plaquetas 45.000" is a
+    result, and "Dar SF 1 L, plaquetas, INR" asks for a count. ``own`` is False
+    when ``verb`` was lent by the list.
+    """
+    text = str(piece or "")
+    if _RESERVING.search(text) and not (re.search(r"\btransf(?:und|us)\w*", text)
+                                        or verb in {"transfuse", "transfundir", "transfundo"}):
+        # A reservation, or units asked to be ready, gives nothing.
+        return None
+    if _NOT_A_PRODUCT_ORDER.search(text) or _PRODUCT_AS_A_LAB.search(text):
+        return None
+    named = re.search(r"\b(?:" + _PRODUCT_NAMES + r")\b", text)
+    if named:
+        return named.group(0)
+    word = re.search(r"\b(?:" + _PRODUCT_WORDS + r")\b", text)
+    giving = verb in {"transfuse", "transfundir", "transfundo"} or (own and verb in _GIVES_A_PRODUCT)
+    if word and (giving or _GIVING_A_PRODUCT.match(text) or _PRODUCT_COUNT.search(text)):
+        return word.group(0)
+    return None
+
+
+def massive_transfusion_activation(piece):
+    """What is written after the massive transfusion protocol's activation, or None when not activated here.
+
+    The activation is recorded and gives no product by itself (TD-26, C): the
+    units given are the ones ordered. Only an activation is one: the protocol
+    named first, or after a word that activates it. "May need massive
+    transfusion", "MTP is likely", "call the blood bank for possible MTP", "MTP
+    activated by the surgeon", "PTM ya activado" and the first MTP joint of an
+    X-ray are not the resident activating it now (adversarial review of cycle 7).
+    """
+    text = str(piece or "").strip(" .,:;")
+    named = _MASSIVE_TRANSFUSION.search(text)
+    if not named:
+        return None
+    before = text[:named.start()]
+    starts = re.fullmatch(r"(?:(?:please|por\s+favor|now|ahora|then|luego|and|y|(?:i|we)|(?:voy|vamos)\s+a|"
+                          r"(?:the|an?|el|la|un)|protocolo\s+de|activaci[oó]n\s+del?|activation\s+of)\s+)*", before)
+    if not starts and not (_ACTIVATING.search(before) and not re.search(
+            r"\b(?:if|si|may|might|could|would|should|probably|likely|consider\w*|thinking|pensando|podr\w*|"
+            r"necesit\w*|need\w*|prepar\w*|anticip\w*|habr\w*|hubier\w*|hubies\w*|deber\w*|had|"
+            r"possible|posible|potential|potencial|eventual\w*|probable|standby|stand\s+by|"
+            r"first|1st|primer\w*|second|segund\w*|x-?ray|radiograf\w*|rx|joint|articula\w*|toe|dedo|hallux)\b",
+            before)):
+        return None
+    if re.search(r"\b(?:already|was\s+activated|had\s+been|ya\s+(?:se\s+)?activ\w*|ya\s+esta\s+activ\w*|"
+                 r"fue\s+activad\w*|se\s+activo|activated\s+(?:at|by)|activad[oa]\s+(?:a\s+las|por))\b", text):
+        return None
+    after = text[named.end():]
+    rest = after.strip(" ,.:;")
+    if rest and not (_AFTER_THE_PROTOCOL.match(rest) or re.match(r"\s*:", after)):
+        return None
+    return rest
+
+
 # What a patient takes, named by drug or by class, after "toma" or "usa".
 _TAKES_MEDICATION = re.compile(
     r"\b(?:glibenclamida|glipizida|gliclazida|glimepirida|sulfonilureas?|metformina|insulinas?|"
@@ -766,6 +1432,23 @@ _TAKES_MEDICATION = re.compile(
     r"(?:sus|mis|los|unos|algunos)\s+(?:remedios|medicamentos|pastillas|farmacos)|"
     r"remedios|medicamentos|pastillas)\b")
 
+_A_QUESTION_TO_THE_PATIENT = re.compile(
+    r"(?:\u00bf\s*)?(?:how|what|when|where|why|who|which|do\s+you|does\s+(?:it|he|she|the|this)|did\s+(?:you|it|he|she)|"
+    r"are\s+you|is\s+(?:it|there|she|he|this)|have\s+you|has\s+(?:she|he|it)|any|como|que|cuando|donde|"
+    r"por\s+que|tiene|tienes|siente|sientes|le\s+duele|te\s+duele|ha\s+tenido|has\s+tenido|hay\s+algo)\b")
+# The purpose of a crossmatch is not a transfusion now: "grupo y pruebas cruzadas
+# para transfundir 2 U GR" ran the units and lost the crossmatch (adversarial
+# review of cycle 7).
+_TO_TRANSFUSE = re.compile(r"\b(?:para|for|to|in\s+order\s+to)\s+(?:(?:poder|be\s+able\s+to)\s+)?"
+                           r"(?:transfund\w*|transfus\w*|pas(?:ar|arlas?|arlos?)|give|dar(?:las?|los?)?|"
+                           r"administr\w*)\b.*$")
+# A study written as the whole order, with what may come around it: "UPT", "a
+# quick UPT", "run a troponin", "beta-hCG stat". "Run a quick UPT" was lost
+# without a word beside the adrenaline (TD-22, A–J of cycle 7).
+_A_STUDY_ALONE = (r"\s*(?:(?:run|draw|send\s+off)\s+(?:(?:a|an|the|un|una|el|la)\s+)?"
+                  r"(?:(?:quick|stat|urgent|rapid|rapido|rapida|urgente)\s+)?|"
+                  r"(?:(?:a|an|the|un|una|el|la)\s+)?(?:quick|stat|urgent|rapid|rapido|rapida|urgente)\s+)?(?:{})"
+                  r"(?:\s+(?:ahora|ya|now|stat|urgente|rapido|rapida|too|also|tambien))*\s*\??")
 _DIAG_VERBS = {
     "want", "order", "request", "obtain", "check", "measure", "send", "get", "perform", "do",
     "solicitar", "solicito", "solicite", "pedir", "pido", "medir", "mido", "controlar",
@@ -830,6 +1513,22 @@ _CONDITIONAL = re.compile(
     r"\b(?:if|unless|consider|considering|might|could|would|perhaps|maybe|si|salvo que|considerar|considero|podria|quizas|tal vez)\b"
 )
 _NEGATION = re.compile(r"^(?:please\s+)?(?:do not|don't|dont|never|avoid|no|not|sin|evitar|evito)\b")
+# What the resident finds, said with "no" or "sin": "sin acceso venoso visible",
+# "no IV access", "no veo venas", "no tiene PA registrable", "sin pulso radial".
+# It negates no order: read as a negation, it took the orders after it with it,
+# and "sin acceso venoso visible, puyen una EZ-IO tibial ya" and "no tiene PA
+# registrable, activemos el protocolo de transfusion masiva" were lost without a
+# word (A–J of cycle 7, independent set).
+_NEGATED_FINDING = re.compile(
+    r"^(?:no|sin|without)\s+(?:"
+    r"(?:(?:iv|intravenous|venous|peripheral|vascular|good|any|adequate)\s+)*access|"
+    r"acceso(?:\s+(?:venoso|vascular|periferico|intravenoso))?|"
+    r"(?:vias?|lineas?)\s+(?:venosas?|perifericas?|intravenosas?)|venas|veins|vvps?|ivs?|piv|"
+    r"peripheral\s+ivs?|"
+    r"(?:(?:radial|femoral|carotid|palpable|peripheral)\s+)?pulses?|"
+    r"pulsos?(?:\s+(?:radial(?:es)?|femoral(?:es)?|perifericos?|palpables?))?|"
+    # "No response:" and "sin mejoría" are the contingency of a plan, never a finding here.
+    r"veo|encuentro|logro|consigo|hay|tiene|tengo|palpo|siento)\b")
 # A repeat written after the order it repeats: "salbutamol 5 mg nbz, repetir
 # cada 20 minutos si persiste el broncoespasmo", "epinephrine 0.5 mg IM, repeat
 # in 5 minutes if no improvement". The order is given now; the repeat is a plan
@@ -1180,7 +1879,7 @@ def _is_reasoning(body):
 # units of description — mmHg, %, mmol/L, bpm, minutes — are deliberately absent.
 _ADMINISTERED_QUANTITY = re.compile(
     r"\d(?:[.,]\d+)?\s*(?:ml|cc|mcg|ug|mg|gr?|units?|unidades?|ui|iu|joules?|j\b|"
-    r"l(?:t|ts|iters?|itres?|itros?)?\b)", re.I)
+    r"l(?:t|ts|iters?|itres?|itros?)?\b)(?!\s*/\s*(?:dl|l)\b)", re.I)
 # What is left of a clause once its numbers, units, routes and particles are
 # removed: a bare "500 mL" is an answer to a question, not an order.
 _QUANTITY_ONLY = re.compile(
@@ -1645,6 +2344,10 @@ def _parse_piece_core(piece, inherited=None):
         return [{"type": "reassessment", "delay_min": delay if delay is not None else 0}], verb if verb in _DIAG_VERBS else "monitor"
     if re.search(r"\b(?:saturation|saturacion|spo2|sats|oxygen levels)\b", body) and not re.search(_FLOW, body) and verb in {"increase", "decrease", "set", "aumentar", "disminuir", "ajustar"}:
         return [_clarification("An oxygen saturation target is not a device or flow order. Specify the oxygen device and flow to administer.")], verb
+    # "Activate MTP and transfuse": a transfusion with nothing named is asked
+    # about -- which product, how many units -- and never read as nothing (TD-26).
+    if not body and verb in {"transfuse", "transfundir", "transfundo"}:
+        return [_clarification("Specify which blood product to give and how many units.")], verb
     # A bare "hospitalizalo" or "dale de alta" is a real disposition order with a
     # question attached, not nothing at all (2026-09-21).
     if not body and verb not in {"reassess", "re-assess", "reevaluate", "reevaluar", "reevaluo", "revalorar",
@@ -1724,26 +2427,67 @@ def _parse_piece_core(piece, inherited=None):
     someone_elses = not verb and bool(_NOT_THE_RESIDENTS_ORDER.search(body))
 
     # The x of xABCDE. A tourniquet, direct pressure and packing are the three
-    # measures this engine performs, and each names where it is applied.
-    bleeding = re.search(
-        r"\b(?:torniquete|tourniquet|"
-        r"(?:compresi[oó]n|presi[oó]n)\s+(?:directa|manual|externa)|direct\s+pressure|"
-        r"empaquetamiento|packing|taponamiento|"
-        r"(?:vendaje|ap[oó]sito)\s+(?:compresivo|hemost[aá]tico)|"
-        r"(?:h[ae]mostatic|pressure)\s+dressing|control\s+de\s+(?:la\s+)?hemorragia|"
-        r"h[ae]morrhage\s+control|bleeding\s+control)\b", body)
-    if bleeding and not someone_elses:
-        measure = ("tourniquet" if re.search(r"torniquete|tourniquet", body)
-                   else "packing" if re.search(r"empaquet|packing|taponamiento", body)
-                   else "direct pressure")
+    # measures this engine performs, and each names where it is applied. Each
+    # measure written is its own order, in the order written, and none becomes
+    # another: "direct pressure with packing" ran as packing alone. "Pack the
+    # wound", "hold pressure" and "presión sobre la herida" were lost without a
+    # word, and "descartar taponamiento cardíaco" packed a wound (C7-06).
+    measures = _haemorrhage_measures(text, verb)
+    if not measures and not someone_elses and _MEASURE_NAMED.search(text) and (
+            _REMOVING_A_MEASURE.match(text) or _stops(verb)) and not _STOPPING_THE_BLEEDING.search(text):
+        # "Remove the tourniquet", "loosen the tourniquet to check for bleeding",
+        # "convert tourniquet to pressure dressing": the engine neither removes nor
+        # converts a measure, and each was lost without a word once it no longer
+        # applied the measure it removed (post hoc, cycle 7). Quoted back.
+        return [_unreadable(piece)], verb
+    if measures and not someone_elses:
         site = ("limb" if re.search(r"\b(?:extremidad|pierna|brazo|muslo|antebrazo|limb|leg|arm|thigh|"
                                     r"forearm|miembro)\b", body)
                 else "wound")
-        return [{"type": "hemorrhage_control", "measure": measure, "site": site}], verb or "apply"
+        return [{"type": "hemorrhage_control", "measure": measure, "site": site,
+                 **({"named": named} if named else {})} for measure, named in measures], verb or "apply"
 
     if not someone_elses and re.search(r"\b(?:faja\s+p[eé]lvica|cintur[oó]n\s+p[eé]lvico|pelvic\s+binder|"
                                        r"binder\s+p[eé]lvico|sabana\s+p[eé]lvica|pelvic\s+(?:sheet|wrap))\b", body):
         return [{"type": "pelvic_binder"}], verb or "apply"
+
+    # An intraosseous line is its own access, recorded as the resident placed it
+    # and never as an intravenous one: "humeral IO" was lost without a word, and
+    # "place a tibial IO" was quoted back as unreadable (C7-06). A clause that
+    # also gives a medicine or a fluid is that order, given by the IO route.
+    placing = verb in {"place", "insert", "put", "get", "start", "obtain", "colocar", "coloco", "poner", "pongo",
+                       "obtener"} and bool(_PLACING_IO.match(body))
+    if not someone_elses and (_IO_ACCESS.search(text) or placing
+                              or re.search(r"\b(?:io|intraosseous|intraose[ao])\b", body)) and (
+            _operation(verb) == "stop" or re.match(r"(?:remove|pull|take\s+out|discontinue|retir\w*|sac\w*|quit\w*)\b",
+                                                   text)):
+        # "Remove the humeral IO", "retirar la vía intraósea": a removal, recorded as one (adversarial review).
+        return [{"type": "vascular_access", "operation": "stop", "access": "intraosseous"}], verb or "remove"
+    if (_IO_ACCESS.search(text) or placing) and _IO_STATUS.search(text):
+        # "The humeral IO is infiltrated", "IO access failed, place a second
+        # peripheral IV": what the line is doing, never a line placed.
+        return [], None
+    # What the line is for is not given through it: "place humeral IO for fluids"
+    # lost the line to a fluid with no volume (post hoc, cycle 7).
+    purpose = re.sub(r"\s+(?:for|para)\s+(?:(?:the|los|las|el|la)\s+)?(?:fluids?|volumen|volume|fluidos|"
+                     r"resuscitation|reanimacion|blood|sangre|drugs|medications|farmacos|medicamentos)"
+                     r"(?:\s+(?:and|y)\s+(?:fluids?|volumen|volume|fluidos|blood|sangre|drugs|farmacos))?\s*[.!]?$",
+                     "", body)
+    if not someone_elses and (_IO_ACCESS.search(text) or placing) and not _names_a_drug(purpose) and not re.search(
+            r"(?<![\w.])\d+(?:\.\d+)?\s*(?:mg|mcg|ug|g|ml|cc|l|u|units?|unidades?)\b|"
+            r"\b(?:saline|ns|sf|ringer|lr|crystalloid|cristaloides?|suero|fluids?|bolus|bolo)\b", purpose):
+        site = ("humeral" if re.search(r"\b(?:humer\w*|shoulder|hombro)\b", body)
+                else "tibial" if re.search(r"\b(?:tibi\w*|shin)\b", body)
+                else "sternal" if re.search(r"\b(?:stern\w*|esternal)\b", body)
+                else "femoral" if re.search(r"\b(?:femoral|femur|femoris)\b", body) else None)
+        return [{"type": "vascular_access", "operation": "start", "access": "intraosseous",
+                 **({"site": site} if site else {})}], verb or "place"
+
+    # Red cells, read before anything else can take their count: given now, asked
+    # about, or not ordered at all (TD-26; adversarial review of cycle 7).
+    red = _red_cell_reading(text, body, verb, someone_elses, own=bool(command))
+    if red is not None:
+        return red
 
     txa = _TXA_WORD.search(body)
     # Like any other medicine, without a verb it is an order only where it opens
@@ -1798,6 +2542,22 @@ def _parse_piece_core(piece, inherited=None):
 
     other_region = re.search(r"\b(?:abdomen|abdominal|pelvis|pelvic|spine|columna|craneo|skull|"
                              r"extremidad|extremity|limb|rodilla|knee|cadera|hip)\b", body)
+    # Two studies in the order they are to be done: "prueba de embarazo antes del
+    # angioTAC", "pregnancy test before CT". Neither was read (TD-22, adversarial
+    # review of cycle 7).
+    ordered = re.split(r"\s+(?:antes\s+del?|before(?:\s+the)?|previo\s+al?|y\s+luego|and\s+then)\s+", body)
+    if not verb and len(ordered) == 2:
+        named = [next((name for name, pattern in _DIAGNOSTICS.items()
+                       if re.fullmatch(_A_STUDY_ALONE.format(pattern), part)), None) for part in ordered]
+        if all(named):
+            return [{"type": "diagnostic", "diagnostic": name} for name in named], "order"
+        if named[0] and re.search(r"\b(?:ct|tc|tac|scan|x-?ray|rx|radiograf\w*|angio\w*|eco\w*|ultrasound|mri|rm|"
+                                  r"resonancia|imaging|imagen)\b", ordered[1]):
+            # "Pregnancy test before CT": the test, and the study not named enough
+            # to request, asked about.
+            return [{"type": "diagnostic", "diagnostic": named[0]},
+                    _clarification("The requested study was not recognized. Specify one supported study per order.")
+                    ], "order"
     diagnostics = []
     for diagnostic, pattern in _DIAGNOSTICS.items():
         match = re.search(r"\b(?:" + pattern + r")\b", body)
@@ -1806,9 +2566,10 @@ def _parse_piece_core(piece, inherited=None):
         # A crossmatch is asked for without a study verb as often as with one
         # ("reservar 2 unidades", "grupo y pruebas cruzadas"). Only a verb that
         # gives the blood makes the sentence a transfusion instead.
-        crossmatch = diagnostic == "crossmatch" and match and not _TRANSFUSING.search(body)
+        crossmatch = diagnostic == "crossmatch" and match and not _TRANSFUSING.search(_TO_TRANSFUSE.sub(" ", text))
         if match and (verb in _DIAG_VERBS or crossmatch
-                      or re.fullmatch(r"\s*(?:" + pattern + r")(?:\s+(?:ahora|ya|now|stat|urgente))?\s*\??", body)):
+                      or re.fullmatch(r"\s*(?:" + pattern + r")(?:\s+(?:ahora|ya|now|stat|urgente))?\s*\??", body)
+                      or (not verb and re.fullmatch(_A_STUDY_ALONE.format(pattern), body))):
             diagnostics.append((match.start(), {"type": "diagnostic", "diagnostic": diagnostic}))
     if diagnostics:
         return [action for _, action in sorted(diagnostics, key=lambda x: x[0])], verb or "order"
@@ -1838,8 +2599,7 @@ def _parse_piece_core(piece, inherited=None):
         # "Pido 2 unidades de globulos rojos" asks the blood bank for units, and
         # whether to give them now or to have them reserved is the resident's to
         # say: "the study was not recognized" named neither (2026-09-24).
-        if re.search(r"\b(?:unidades?|units?|u)\b", body) and re.search(
-                r"\b(?:prbcs?|packed red (?:blood )?cells|blood|sangre|globulos rojos|hematies)\b", body):
+        if (re.search(r"\b(?:unidades?|units?|u)\b", body) or _BLOOD_UNIT_COUNT.search(body)) and red_cells_named(body):
             return [_clarification("Specify whether to transfuse these units now, with the number "
                                    "of units, or to request a crossmatch to have them reserved.")], verb
         # "Send her home" and "get IV access": English verbs that also ask for a
@@ -1905,11 +2665,16 @@ def _parse_piece_core(piece, inherited=None):
         # Transcutaneous pacing written as a chart line, with its settings:
         # "marcapaso transcutaneo a 70 lpm con 60 mA" was read as nothing, so the
         # alternative after "si no responde" was never a plan (DF-22, C01).
+        # Red cells as a chart line: "2 U GR O negativo", "O negativo 2 unidades",
+        # "GR 2 U", "2 UGR" (TD-26). "Blood pressure 80/50" or "sangre en las
+        # deposiciones" names no count and nothing that qualifies blood, and
+        # stays what it is.
+        blood_start = not someone_elses and red_cell_line(body) in {"order", "ask"}
         pacing_start = bool(re.match(r"(?:" + _PACING + r")", body)
                             and re.search(r"\d\s*(?:ma|miliamp\w*|milliamp\w*|lpm|bpm|(?:latidos?\s*)?(?:por|/)\s*min)\b",
                                           body))
         if not (re.match(shorthand + r"\b", body) or medication_start or quantity_start or bolus_start
-                or ampoule_start or therapy_start or pacing_start
+                or ampoule_start or therapy_start or pacing_start or blood_start
                 or re.match(side_first + shorthand + r"\b", body)
                 or re.match(route_first + shorthand + r"\b", body)
                 or re.match(r"(?:alta|discharge|hospitaliza|ingresa|traslada|admit|transfer)", body)):
@@ -2043,6 +2808,11 @@ def _parse_piece_core(piece, inherited=None):
     if re.search(r"\b(?:needle\s+decompress\w*|needle\s+thoracostomy|finger\s+thoracostomy|chest\s+tube|"
                  r"thoracostomy|tube\s+thoracostomy|descompresi[oó]n\s+con\s+aguja|punci[oó]n\s+(?:pleural|descompresiva)|"
                  r"tubo\s+(?:pleural|de\s+t[oó]rax)|pleurotom[ií]a)\b", body):
+        if re.search(r"\b(?:already|ya\s+(?:esta\s+)?(?:instalad|puest|colocad)\w*|in\s+place|en\s+su\s+lugar|"
+                     r"(?:placed|inserted|instalad[oa]|colocad[oa])\s+(?:by|at|earlier|por|antes))\b", body):
+            # "Chest tube already in", "tubo pleural ya instalado": what is there,
+            # never a tube placed now (post hoc, blind set of cycle 7).
+            return [], None
         side = "left" if re.search(r"\b(?:left|izquierd\w*)\b", body) else "right"
         tube = bool(re.search(r"\b(?:chest\s+tube|thoracostomy|tubo|pleurotom[ií]a)\b", body))
         return [{"type": "chest_decompression", "side": side, "device": "chest tube" if tube else "needle"}], verb or "perform"
@@ -2213,9 +2983,10 @@ def _parse_piece_core(piece, inherited=None):
         return [infusion_order], verb
     if re.search(_OXYGEN_MENTION, body):
         return [_oxygen_order(body, verb)], verb
-    if re.search(r"\b(?:prbcs?|packed red (?:blood )?cells|blood|sangre|globulos rojos|concentrad[oa]s? de hematies|hematies)\b", body):
-        units, _ = _amount(body, r"units?|unidades?|u")
-        return [{"type": "blood", "units": units}], verb
+    # "Blood products" and "hemoderivados" name no product: which one, and how
+    # many units, is asked, never answered with red cells (TD-26, D).
+    if _GENERIC_BLOOD_PRODUCTS.search(body) and not unmodelled_blood_product(body, verb):
+        return [_clarification("Specify which blood product to give and how many units.")], verb
     if re.search(r"\b(?:saline|normal saline|ns|sf|sf|ringer|lactated ringers?|lr|crystalloid|cristaloides?|salino|(?:suero\s+)?fisiologic[oa]|solucion fisiologica|sueros?|fluid|fluids|volumen)\b", body):
         if _operation(verb) == "stop":
             # "Stop the normal saline" ends a running infusion; it is not a new bolus.
@@ -2300,7 +3071,9 @@ def _parse_piece_core(piece, inherited=None):
         # A bare drug name is only an order with an explicit command or dose. A
         # glucose written as its solution ("D50 50 mL IV", "dextrosa al 50% 50 mL")
         # carries its dose; until 2026-09-25 it was dropped without a word.
-        if (verb or re.search(r"\d\s*(?:mcg|ug|mg|g|units?|ui)\b", body)
+        # "Glucosa 40 mg/dL" is a result, and a concentration is never a dose: it
+        # gave 40 mg of dextrose (adversarial review of cycle 7; as before).
+        if (verb or re.search(r"\d\s*(?:mcg|ug|mg|g|units?|ui)\b(?!\s*/\s*(?:dl|l)\b)", body)
                 or (kind == "dextrose" and (_dextrose_from_solution(body)
                                             or re.search(r"\bampollas?\b|\bamps?\b|\d\s*%", body)))):
             if _operation(verb) == "continue":
@@ -2407,7 +3180,11 @@ _COLON_KEEPS = re.compile(
     r"avoid|evitar|evito|contraindicad\w*|contraindicat\w*|"
     r"medicamentos?|medications?|meds|farmacos|remedios|tratamiento\s+habitual|home|usual|habituales?|"
     r"alta|discharge|egreso|domicilio|"
-    r"antecedentes?|history|historia|pmh|alergi\w*|allerg\w*|alergic\w*)\b"
+    r"antecedentes?|history|historia|pmh|alergi\w*|allerg\w*|alergic\w*|"
+    # What the ambulance did, or what has gone in so far: "SAMU: 1 U GR O
+    # negativo en ruta", "Balance: 2 U GR, 2 L SF" (adversarial review of cycle 7).
+    r"samu|ems|prehospital\w*|pre-?hospital\w*|en\s+ruta|en\s+route|ambulancia|ambulance|traslado|"
+    r"balance|ingresos|egresos|intake|output|total|so\s+far|hasta\s+ahora)\b"
     r"|\b(?:post|pos|pre)[-\s]?(?:intubac\w*|intubat\w*|op\w*|procedim\w*|procedur\w*|sedac\w*|sedat\w*|"
     r"reperfus\w*|pci|icp|parto|partum|cardiover\w*|rsi|isr|alta|discharge|transfus\w*|trasfus\w*|tac|ct)\b"
     r"|\b(?:a\s+los|at|after|tras|en|in|dentro\s+de|despues\s+de|cada|every)\s+\d"
@@ -2451,6 +3228,9 @@ def _label_before_colon(head):
     "Norepinephrine: 0.1 mcg/kg/min" keep reading as the one order they are.
     """
     if _COLON_KEEPS.search(head) or _WITHHOLD_HEAD.fullmatch(head) or _COMMAND.match(head):
+        return False
+    if re.fullmatch(r"(?:" + _RED_CELL_NAMES + r"|gre?|(?:o|0)\s*(?:rh\s*)?-?\s*(?:neg|pos)\w*)", head):
+        # "GR: 2 U" is the red cells and their count (adversarial review of cycle 7).
         return False
     if _CONTINGENCY_ALONE.search(head) and not _HEAD_FILLER.sub(
             " ", _CONTINGENCY_ALONE.sub(" ", head)).strip(" ,."):
@@ -2498,7 +3278,7 @@ def parse_family_actions(text) -> dict:
     raw = str(text or "")
     normalized = _spanish_imperatives(
         _spanish_proclitics(_reason_then_order(_declared_intention(_opening_time_word(
-            _fluid_stop_verbs(_through_the_line(_normalize(raw))))))))
+            _fluid_stop_verbs(_through_the_line(_correcting_with(_normalize(raw)))))))))
     # A resident who says to wait for a result before treating has said
     # something about sequence that the engine must not optimise away (faculty
     # specification 2026-09-23, section 5). The two halves are parsed
@@ -2532,13 +3312,25 @@ def parse_family_actions(text) -> dict:
     # The last sentence that ordered something: what a repeat written on its
     # own after it ("salbutamol 5 mg nbz; repetir cada 20 min") repeats.
     last_order = None
-    queue = re.split(r"[;\n]+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
+    # Where the massive transfusion protocol's activation was recorded: its cooler,
+    # asked for after it, belongs to that record (A–J of cycle 7).
+    protocol_kept = None
+    # A question ends its sentence: "Is she pregnant? Check a urine pregnancy
+    # test" was read as one question, and the test was lost (adversarial review).
+    queue = re.split(r"[;\n]+|(?<=\?)\s+|(?<!\d)\.(?!\d)|(?<=\d)\.(?!\d)", normalized)
     # Several sentences are a list too: "Monitor; vía venosa; oxígeno…".
     several_sentences = sum(1 for sentence in queue if sentence.strip()) > 1
     while queue:
         flush_trailing_advice()
         sentence = queue.pop(0).strip()
         if not sentence:
+            continue
+        if sentence.endswith("?") and (_A_QUESTION_TO_THE_PATIENT.match(sentence) or sentence.startswith("\u00bf")
+                                       or re.match(r"(?:is|are|was|were|should|would|could|will|do|does|did|vale|sera|"
+                                                   r"seria|debo|deberia|deberiamos|podemos|puedo|hay\s+que)\b",
+                                                   sentence)):
+            # "Do you have any pain?": asked of the patient, and never an order,
+            # now that a question ends its sentence.
             continue
         # "Dx: order" -- the label or reason is the resident's reasoning, which
         # the reasoning capture reads; the order after the colon is a clause of
@@ -2549,6 +3341,29 @@ def parse_family_actions(text) -> dict:
             if head and rest and _label_before_colon(head):
                 queue.insert(0, rest)
                 continue
+        # A balance of what the patient received orders nothing: "Balance: 2 U GR,
+        # 2 L SF" and "Ingresos: 2 U GR y 1 L de SF" ran the saline again (post hoc,
+        # cycle 7; the red cells were already read as history). An order verb in
+        # it is still read: "So far no response, give 1 L NS".
+        summary = re.match(r"(?:balance(?:\s+hidrico)?|ingresos|egresos|intake|output|so\s+far|hasta\s+ahora|"
+                           r"acumulado)\b\s*[:,-]?\s*", sentence)
+        if summary and not any(_COMMAND.match(part.strip())
+                               for part in re.split(r",|;|\b(?:y|and|then|luego)\b", sentence[summary.end():])):
+            continue
+        # Two blood products given one ratio or one shared count: "GR y plasma 1:1,
+        # 4 U de cada uno" and "Plasma y GR 1:1" were lost without a word, and
+        # "PRBC and FFP 1:1, 4 units each" half read (post hoc, cycle 7). Which
+        # count belongs to which product is the resident's to say (TD-26, D), as for
+        # "GR/PFC 2 U c/u". What happened, a plan, the protocol's activation and
+        # someone else's account are read as before.
+        if (_SHARED_BLOOD_COUNT.search(sentence) and re.search(r"\b(?:" + _RED_CELL_WORDS + r"|gre?)\b", sentence)
+                and re.search(r"\b(?:" + _PRODUCT_NAMES + "|" + _PRODUCT_WORDS + r")\b", sentence)
+                and _MASSIVE_TRANSFUSION.search(sentence) is None
+                and not (_RED_CELL_HISTORY.search(sentence) or _RED_CELL_PLAN.search(sentence)
+                         or _CONDITIONAL.search(sentence) or _NOT_THE_RESIDENTS_ORDER.search(sentence)
+                         or re.match(r"(?:samu|ems|prehospital\w*|en\s+ruta|ambulancia|traslado)\b", sentence))):
+            actions.append(_clarification("Write each blood product with its own number of units."))
+            continue
         # A priority/expected-response statement is a description of reasoning.
         # Only a later clause that opens with an order verb is read as an order.
         if _NON_ORDER.match(sentence):
@@ -2682,9 +3497,7 @@ def parse_family_actions(text) -> dict:
                             r"\b(?:give|dar|doy|administrar|administro|start|iniciar|inicio|order|solicitar|"
                             r"solicito|pido|reassess|reevaluar|reevaluo|alta|hospitalizar|hospitalizo|"
                             r"ingresar|ingreso|trasladar|traslado|admit|discharge|transfer)\b", sentence) or (
-                            bare and bare != sentence and any(
-                                action.get("type") not in {"clarification", "reassessment"}
-                                for action in parse_family_actions(bare)["actions"])):
+                            bare and bare != sentence and _orders_now(bare)):
                         keep(sentence, "conditional")
                     continue
         # Safety-netting written without "if" lists what should bring the patient
@@ -2704,6 +3517,7 @@ def parse_family_actions(text) -> dict:
         # Do not split the clinical device name "bag and mask", nor the blood
         # bank's two-word requests: "grupo" alone is not a study (2026-09-24).
         sentence = re.sub(r"\bbag and mask\b", "bag-mask", sentence)
+        sentence = re.sub(r"\bhigh and tight\b", "high_and_tight", sentence)
         sentence = re.sub(r"\bgrupo y (?=pruebas cruzadas|rh\b|factor)", "grupo_y_pruebas ", sentence)
         sentence = re.sub(r"\btype and (?=screen|cross)", "type_and_", sentence)
         sentence = re.sub(r"\btype_and_(?:screen|cross(?:match)?)\b", "type_and_screen", sentence)
@@ -2755,11 +3569,22 @@ def parse_family_actions(text) -> dict:
         # Each item of this sentence and what it produced, for a route written
         # once after a list of doses (_share_trailing_route).
         members = []
+        # The blood product this sentence just recorded, which a count written
+        # after it completes.
+        kept_blood = None
+        opened = len(actions)
         # The prehospital team's account, once a clause of this sentence gave
-        # one (_PREHOSPITAL_ACCOUNT), and where the last item ended.
-        account = False
+        # one (_PREHOSPITAL_ACCOUNT), and where the last item ended. A label
+        # naming the ambulance is one from the start: "En ruta: 1 U GR O negativo
+        # y TXA 1 g", "Prehospital: tourniquet, 1 unit whole blood" (adversarial
+        # review of cycle 7).
+        account = bool(re.match(r"(?:samu|ems|prehospital\w*|pre-?hospital\w*|en\s+ruta|en\s+route|ambulancia|"
+                                r"ambulance|paramedic\w*|paramedico\w*)\s*:", sentence))
         told = None
         cursor = 0
+        # "Once blood arrives, 2 units O-neg", "en cuanto llegue, 2 U GR": the
+        # red cells after such a clause wait for it, and are asked about.
+        waiting = False
         for piece in grouped:
             if told is not None and told[0] and not any(
                     action.get("type") not in {"clarification", "reassessment"} for action in actions[told[1]:]):
@@ -2770,17 +3595,41 @@ def parse_family_actions(text) -> dict:
             joined_by_and = found >= 0 and bool(re.fullmatch(r"[\s,]*(?:and|y|e)\s*", sentence[cursor:found]))
             if found >= 0:
                 cursor = found + len(piece)
+            # A bullet before an order is no part of it: "ortostatismo+ - iniciar 3
+            # UGR ahora" (post hoc, blind set of cycle 7).
+            piece = re.sub(r"^[\-–—•]+\s*", "", piece)
             members.append([piece, []])
             if not piece:
                 continue
+            dash = re.search(r"\s[-–—]\s+", piece)
+            if dash and not _COMMAND.match(piece) and _COMMAND.match(piece[dash.end():]):
+                heard = parse_family_actions(piece[:dash.start()])
+                if not heard["actions"] and not heard["future_details"]:
+                    # "Shock - transfundir 4 GR stat": what leads the dash is the
+                    # reason, and the order after it is read (post hoc, blind set).
+                    piece = members[-1][0] = piece[dash.end():]
+            if re.match(r"(?:when|once|cuando|en\s+cuanto|as\s+soon\s+as|apenas|una\s+vez\s+que|after|despues\s+de|"
+                        r"tras)\b", piece.strip()):
+                waiting = True
             if _WEIGHT_STATEMENT.match(piece):
                 # "pesa 62 kg" is what the resident knows about the patient, and
                 # weight_based_doses reads it; it is not an order.
                 continue
-            if _STATUS_FINDING.match(piece) and not _COMMAND.match(piece):
-                # A finding lends no verb and takes none (C09).
-                inherited = None
-                continue
+            finding = _STATUS_FINDING.match(piece)
+            if finding and not _COMMAND.match(piece):
+                # "HR 132 - give 2 units PRBC now", "FC 128: pasar 2 U de GR": the
+                # finding leads an order of its own, and the whole clause was taken
+                # for the finding, so the order was lost without a word beside
+                # another one (A–J of cycle 7, independent set). What follows the
+                # finding is read when it opens with an order verb; "satura 86%
+                # con la naricera" is still the finding alone.
+                led = re.sub(r"^[\s%\-–—:;>]+", "", piece[finding.end():])
+                if led and _COMMAND.match(led):
+                    piece = members[-1][0] = led
+                else:
+                    # A finding lends no verb and takes none (C09).
+                    inherited = None
+                    continue
             if _ED_OBSERVATION.search(piece) and not _ELSEWHERE.search(piece):
                 # Observation in the emergency department is a destination with a
                 # duration. Ordering it is not completing it (decision 4).
@@ -2796,6 +3645,15 @@ def parse_family_actions(text) -> dict:
                 keep(piece.strip(), "advice")
                 inherited = None
                 continue
+            if _NEGATED_FINDING.match(piece):
+                # A finding, not a negation: what follows it is read ("sin acceso
+                # venoso: EZ-IO tibial"), and it negates nothing after it.
+                parts = re.split(r"\s*(?::|\s[-–—]\s|->)\s*", piece, maxsplit=1)
+                if len(parts) == 2 and parts[1].strip():
+                    piece = members[-1][0] = parts[1].strip()
+                else:
+                    inherited = None
+                    continue
             if _NEGATION.match(piece):
                 negated = True
                 inherited = None
@@ -2808,6 +3666,103 @@ def parse_family_actions(text) -> dict:
             if _NON_ORDER.match(piece):
                 reasoning_head = True
                 inherited = None
+                continue
+            # The massive transfusion protocol and the blood products the engine
+            # does not run: recorded as ordered, with their effect not modelled,
+            # and the other orders run (TD-26, 2026-09-28). The red cells written
+            # with them are still an order of their own; nothing becomes red
+            # cells, and no unit or ratio is invented.
+            own = _COMMAND.match(piece.strip())
+            here = own["verb"] if own else inherited
+            anothers = account or bool(_NOT_THE_RESIDENTS_ORDER.search(piece))
+            item = re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip())
+            if (not anothers and len(members) > 1 and re.fullmatch(
+                    r"(?:activate(?:\s+it)?|activar(?:lo)?|activalo|activenlo|activemos(?:lo)?|lo\s+activ(?:o|amos))"
+                    r"(?:\s+(?:now|ya|ahora))?\s*[.!]?", item)
+                    and _MASSIVE_TRANSFUSION.search(members[-2][0])
+                    and not re.search(r"\b(?:no|not|sin|without|never|nunca|ya|already|activad[oa]|activated)\b|n't\b",
+                                      members[-2][0])):
+                # "Meets MTP criteria, activate": the protocol just named is the one
+                # activated. Its activation was lost without a word (post hoc, cycle 7).
+                piece = members[-1][0] = item = "activate mtp"
+                own, here = _COMMAND.match(piece), "activate"
+            # What completes the order just written: the count of the product
+            # ("pasar crioprecipitado ahora, unas 10 unidades del pool"), the
+            # protocol's cooler ("activate the MTP, get the cooler up here"), where
+            # the measure goes ("tourniquet on that leg, right above the wound").
+            # Each was quoted back as an order of its own and held the rest (A–J of
+            # cycle 7, independent set).
+            if not anothers and kept_blood is not None and kept_blood == len(details) - 1 and \
+                    _A_COUNT_ALONE.fullmatch(item):
+                details[kept_blood]["text"] = future[kept_blood] = future[kept_blood] + ", " + item
+                continue
+            if not anothers and _BLOOD_COOLER.search(item) and not (
+                    red_cells_named(item) or unmodelled_blood_product(item, here)
+                    or massive_transfusion_activation(item) is not None):
+                if protocol_kept is not None:
+                    details[protocol_kept]["text"] = future[protocol_kept] = future[protocol_kept] + ", " + item
+                    members[-1][1] = []
+                else:
+                    ran = [_clarification("Specify which blood product to give and how many units.")]
+                    actions.extend(ran)
+                    members[-1][1] = ran
+                inherited = None
+                continue
+            if len(members) > 1 and any(action.get("type") == "hemorrhage_control" for action in members[-2][1]) \
+                    and _WHERE_THE_MEASURE_GOES.fullmatch(item):
+                # It stays with the measure, and so does the next one: "deep and tight".
+                members[-1][1] = members[-2][1]
+                continue
+            activation = None if anothers else massive_transfusion_activation(piece)
+            product = None if anothers else unmodelled_blood_product(piece, here, own=bool(own))
+            if activation is not None or product:
+                written = re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip())
+                if activation is not None:
+                    # The activation as written, then what it was written with.
+                    cut = written.rfind(activation) if activation else -1
+                    keep(written[:cut].strip(" ,:") if cut > 0 else written, "not_modelled")
+                    protocol_kept = len(details) - 1
+                    rest = re.sub(r"^(?:(?:activad[oa]|activated|activation|now|ahora|ya|stat|immediately|"
+                                  r"inmediatamente|with|con|and|y|plus|mas|\+)\b[\s:,]*|[:,]\s*)+", "",
+                                  activation.strip())
+                    segments = [part for part in re.split(r"\s*(?:,|\+|\band\b|\by\b|\bwith\b|\bcon\b|\bplus\b|"
+                                                          r"\bmas\b)\s*", rest) if part.strip()] if rest else []
+                    lent = "transfuse"
+                else:
+                    segments = [part for part in re.split(
+                        r"\s+(?:con|with|mas|plus|junto\s+con|along\s+with)\s+", written) if part.strip()]
+                    lent = here
+                ran = []
+                for segment in segments:
+                    # Each product keeps what it is: plasma recorded, red cells run
+                    # in the units written, anything else read as the order it is.
+                    # "Transfuse 2 units FFP with TXA 1 g IV" and "Activate MTP with
+                    # TXA 1 g IV" recorded the tranexamic acid as a medicine not
+                    # modelled, and it was never given (adversarial review of cycle 7).
+                    other = unmodelled_blood_product(segment, lent, own=activation is None and bool(own)) \
+                        or (re.search(r"\b(?:" + _PRODUCT_NAMES + "|" + _PRODUCT_WORDS + r")\b", segment)
+                            and activation is not None)
+                    red = red_cells_named(segment, lent) or (activation is not None
+                                                             and bool(_RED_CELL_QUALIFIER.search(segment)))
+                    if red and other:
+                        # "GR/PFC 2 U c/u": which product the count belongs to is
+                        # the resident's to say (TD-26, D).
+                        ran = [_clarification("Write each blood product with its own number of units.")]
+                        break
+                    if other:
+                        keep(segment if len(segments) > 1 or activation is not None else written, "not_modelled")
+                    elif red:
+                        ran.append({"type": "blood", "units": blood_units(segment)})
+                    else:
+                        read, _ = _parse_piece(segment, None)
+                        ran.extend(read)
+                actions.extend(ran)
+                members[-1][1] = ran
+                last_order = sentence
+                # What follows an activation is read on its own: "Activate MTP, 4
+                # units O-neg" asked which specialist to call (adversarial review).
+                inherited = None if activation is not None else here
+                kept_blood = len(details) - 1 if details and not ran else None
                 continue
             if _UNMODELED_ORDER.search(piece) or _unmodelled_dextrose(piece):
                 # Recognised and not something this version executes: recorded as
@@ -2826,8 +3781,33 @@ def parse_family_actions(text) -> dict:
                     (_QUANTITY.search(piece) and not _DETERMINER_START.match(piece.strip()))
                     or _PATIENT_STATEMENT.match(piece.strip())):
                 inherited = None
-            parsed, inherited = _parse_piece(piece, inherited)
+            # A bleeding measure or an intraosseous line written with what is given
+            # beside it: "Tourniquet with TXA 1 g IV", "Humeral IO with 2 units
+            # O-neg". One was read and the other lost without a word (adversarial
+            # review of cycle 7). "Pack the wound with hemostatic gauze" is one measure.
+            joined = [part for part in re.split(r"\s+(?:with|plus|mas|junto\s+con|along\s+with|con)\s+", item)
+                      if part.strip()]
+            if len(joined) > 1 and not anothers and (_haemorrhage_measures(joined[0]) or _IO_ACCESS.search(joined[0])) \
+                    and any(_TXA_WORD.search(part) or _names_a_drug(part) or red_cells_named(part)
+                            or re.search(r"\b(?:saline|ns|sf|ringer|lr|crystalloid|cristaloides?|suero|fluids?)\b", part)
+                            for part in joined[1:]):
+                parsed = []
+                for number, part in enumerate(joined):
+                    parsed.extend(_parse_piece(part, inherited if number == 0 else None)[0])
+                inherited = None
+            else:
+                parsed, inherited = _parse_piece(piece, inherited)
+            if waiting and any(action.get("type") == "blood" for action in parsed):
+                # "Once blood arrives, 2 units O-neg", "After the CT, transfuse 2
+                # units PRBC": red cells that wait for something are asked about,
+                # never run now (adversarial review of cycle 7).
+                parsed = [_clarification("Specify whether to transfuse these units now, with the number "
+                                         "of units, or to request a crossmatch to have them reserved.")]
             item = re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip())
+            if not parsed and len(grouped) == 1 and _BARE_IO.fullmatch(item):
+                # "Vía intraósea" written as the whole order is the line; after a
+                # dose ("ceftriaxona 2 g, IO") it is that dose's route (C7-06).
+                parsed = [{"type": "vascular_access", "operation": "start", "access": "intraosseous"}]
             if (re.match(r"(?:i|we)\s+(?!will\b|want\s+to\b|am\s+going\b)", item) and parsed
                     and all(action.get("type") == "clarification" and action.get("unrecognized_text")
                             for action in parsed)
@@ -2851,6 +3831,19 @@ def parse_family_actions(text) -> dict:
                 support = _verbless_support(item)
                 if support is not None:
                     parsed, inherited = [support], None
+            previous = members[-2][1] if len(members) > 1 else None
+            if (previous and len(previous) == 1 and previous[0].get("type") == "blood"
+                    and previous[0].get("units") is None):
+                # "Go to blood, 2 units of O-neg", "pasa a GR O Rh negativo, 2
+                # unidades": one transfusion and its count, never two orders --
+                # the count answered later would have given the units twice (TD-26).
+                count = re.fullmatch(r"(?:(\d+)|(una|un|uno|one|dos|two|tres|three|cuatro|four))\s*"
+                                     r"(?:u|units?|unidad(?:es)?|bolsas?|bags?)\.?", item)
+                if len(parsed) == 1 and parsed[0].get("type") == "blood" and parsed[0].get("units") is not None:
+                    previous[0]["units"], parsed = parsed[0]["units"], []
+                elif count and all(action.get("type") == "clarification" for action in parsed):
+                    previous[0]["units"] = float(count[1]) if count[1] else float(_UNIT_WORDS[count[2]])
+                    parsed = []
             members[-1][1] = parsed
             if any(action.get("type") not in {"clarification", "reassessment"} for action in parsed):
                 last_order = sentence
@@ -2881,6 +3874,14 @@ def parse_family_actions(text) -> dict:
                 inherited = None
                 continue
             actions.extend(parsed)
+        # Two red-cell orders in one sentence are one order whose count is asked:
+        # "2 U GR ahora y 2 U GR en 1 hora" and "Transfuse PRBC 2 units, O-neg 2
+        # units" ran four units at once (adversarial review of cycle 7).
+        bloods = [index for index in range(opened, len(actions)) if actions[index].get("type") == "blood"]
+        if len(bloods) > 1:
+            actions[bloods[0]] = {"type": "blood", "units": None}
+            for index in reversed(bloods[1:]):
+                del actions[index]
         _share_trailing_route(members, sentence)
     flush_trailing_advice()
     actions = _one_sample_each(actions)

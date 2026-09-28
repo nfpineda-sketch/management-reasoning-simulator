@@ -1698,6 +1698,17 @@ C14_DECLARATIONS = {
 for _case_id, _declaration in C14_DECLARATIONS.items():
     CASES[_case_id].setdefault("objectives", {})["C14"] = _declaration
 
+# L-F07 B (DF-24, decided 2026-09-28): each hypoglycaemia composition awaiting review
+# carries the C14 row of the bank case it is derived from, with that review's signature
+# and where it came from, so none contradicts its origin the day it joins the bank.
+# Generated cases and encounters with no authored case (PS001) keep the transition
+# (DF-12). The compositions are played only in the faculty sandbox today.
+for _candidate_id, _candidate in CANDIDATES.items():
+    _origin = _hypoglycemia_catalog.configuration(_candidate_id)["derived_from"]
+    _row = CASES[_origin]["objectives"]["C14"]
+    _candidate.setdefault("objectives", {})["C14"] = {
+        **_row, "reviewed": {**_row["reviewed"], "inherited_from": _origin, "inherited_by": "DF-24 L-F07 B"}}
+
 
 # --- C4 · Procedural sedation and analgesia: NO in every bank case (cycle 7) ------------------
 # Decided by the faculty in TDFC-7 (and TDFC-8 for the colic's analgesia), written on

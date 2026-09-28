@@ -338,6 +338,15 @@ def action_phrase(action, language="en"):
                 else _amount(action.get("dose_mg"), "mg") if action.get("dose_mg") is not None
                 else _amount(action.get("dose"), str(action.get("units") or "")).strip())
         phrase = " ".join(bit for bit in (agent, dose, route) if bit)
+    elif kind == "vascular_access" and action.get("access") == "intraosseous":
+        # An intraosseous line is written as one, never as the peripheral IV
+        # the support order names by default (C7-06, 2026-09-28).
+        site = str(action.get("site") or "").strip()
+        if spanish:
+            site = {"sternal": "esternal"}.get(site, site)
+            phrase = "acceso intraóseo" + (f" {site}" if site else "")
+        else:
+            phrase = (f"{site} " if site else "") + "intraosseous access"
     elif kind in _SUPPORT_NAMES:
         phrase = _SUPPORT_NAMES_ES[kind] if spanish else _SUPPORT_NAMES[kind]
     else:

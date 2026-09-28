@@ -14,6 +14,8 @@ TEST_LABELS = {
     # Recognised and not modelled in any case yet (faculty, 2026-09-24): a
     # request is recorded, never answered with an invented result.
     "crossmatch": "Blood group and crossmatch",
+    # The same for a pregnancy test (TD-22, 2026-09-28).
+    "pregnancy_test": "Pregnancy test",
 }
 FIELDS = {
     "cortisol_ug_dl": "Cortisol (µg/dL)", "tsh_miu_l": "TSH (mIU/L)",
