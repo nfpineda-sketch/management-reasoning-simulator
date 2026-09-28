@@ -15,9 +15,10 @@ validación.
 | **SPANISH PILOT BASELINE** | es | `939978a5147ab859a6dc3566ef4e1a98611a5093` | `0.24.13-clinical-encounter` | versión 1 | `validation/pilot_v1/PILOT_BASELINE.md` |
 | **ENGLISH VALIDATION BASELINE** | en | `ec1c77f0339a6e3087337d2a621b2e630d3549a5` | `0.24.13-clinical-encounter` | versión 2 | esta página, sección siguiente |
 
-El **DEVELOPMENT HARDENED BASELINE V1** del ciclo 6 (`72a4a53`) es una
-referencia de desarrollo, no de validación. Está en su propia sección, más abajo,
-y no en el registro que leen las herramientas.
+Los **DEVELOPMENT HARDENED BASELINES V1** del ciclo 6 (`72a4a53`) **y V2** del
+ciclo 7 (`9d2cd9e`) son referencias de desarrollo, no de validación. Están en
+sus propias secciones, más abajo, y no en el registro que leen las
+herramientas.
 
 ## ENGLISH VALIDATION BASELINE: `ec1c77f`
 
@@ -109,6 +110,50 @@ nombra por el commit; la herramienta no la nombra como baseline.
 - las dos correcciones de DF-23.
 
 Los defectos conocidos se etiquetan contra la misma lista (versión 2).
+
+## DEVELOPMENT HARDENED BASELINE V2 (ciclo 7)
+
+Instrucción docente del 2026-09-28, ciclo 7 (§71 y §120).
+
+**Es una referencia de desarrollo, no una versión validada.**
+
+- **Qué no hace:**
+  - No reemplaza al SPANISH PILOT BASELINE ni al V1.
+  - No es un baseline de validación: no está en `validation/baselines.json`.
+  - No es el baseline del piloto inglés, que el docente elige antes de leer
+    respuestas.
+- **Para qué sirve:** comparar SPANISH PILOT BASELINE, V1 y V2 sobre el mismo
+  subconjunto de desarrollo cuando lleguen datos externos (§116). La
+  herramienta del piloto registra el commit de cada corrida. Basta correrla en
+  cada commit: no hace falta tooling nuevo.
+
+| Campo | Valor |
+|---|---|
+| **COMMIT SHA** | `9d2cd9e0d208b2878c5810e1a264a8b8d85be2e0` |
+| **DATE** | 2026-09-28 |
+| **TEST COUNT** | **5510 pasan, 77 omitidas, 1 xfail, 0 fallas** (suite completa en 4 shards sobre este commit) y **56 de 56 regresiones** |
+| **KNOWN DEFECTS VERSION** | 2 (`validation/pilot_v1/manifests/known_defects.json`, sin cambios en el ciclo 7) |
+| **POSTGRESQL STATUS** | **Verificado** en PostgreSQL 16 local y descartable, sin datos reales, sobre el código de persistencia de este commit: 168 pruebas pasan (115 bases creadas en PostgreSQL). Las 3 que leen el archivo SQLite no aplican; su equivalente (la migración conserva las filas) se comprobó a mano. El clúster se borró. Staging no se tocó (§9) |
+| **C14 STATUS** | 31/31 casos revisados: **14 YES, 17 NO, 0 NOT REVIEWED**. `acs_54m_inferior` NO (C-2026-09-28-11). Las 9 composiciones de hipoglicemia heredan el NO de su origen (C-2026-09-28-16) |
+| **C4 STATUS** | **NO** en todo el entorno de observación: 31 casos, generados y PS001. Es prospectivo (C-2026-09-28-10) |
+| **TD-21 STATUS** | **Resuelto con el principio D** (C-2026-09-28-12). Tiene un residuo documentado que pide una decisión clínica (TD-33) |
+| **TD-26 STATUS** | **Completo por clase**, con el estándar A–J (C-2026-09-28-13 y 14). En los conjuntos medidos, 0 pérdidas reales y 0 ejecuciones falsas. Residuos LOW en TD-32 y clases generales en TD-29 y TD-30 |
+
+**Frente al V1** (`72a4a53`), este commit trae:
+
+- TD-21 y TD-26;
+- C7-06 y TD-22;
+- C4 y C14 completos;
+- DF-24;
+- la separación ES/EN;
+- DF-23, fila 3.
+
+**El lector está congelado en este commit (§120).** Lo que se halle después se
+registra en `docs/REGISTRO_DEUDA_TECNICA.md` y no se corrige hasta un ciclo
+aprobado.
+
+**Cómo usarlo:** `git checkout 9d2cd9e0d208`. Una corrida sobre este commit la
+nombra por el commit; la herramienta no la nombra como baseline.
 
 ## Qué registra cada corrida
 
