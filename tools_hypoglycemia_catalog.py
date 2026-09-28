@@ -54,6 +54,15 @@ def _preservation():
     return rows
 
 
+def _new_version(variant_id):
+    """A changed declaration, named by the corrections that declare it: the coverage change of 2026-09-25
+    and the C14 declarations of 2026-09-28 are different reasons."""
+    ids = [entry["id"] for entry in corrections_registry.CORRECTIONS
+           if (entry.get("preservation") or {}).get("declaration") == "new_version"
+           and variant_id in (entry["preservation"].get("variants") or [entry["preservation"].get("variant")])]
+    return "nueva versión (" + ", ".join(ids) + ")"
+
+
 def build():
     report = battery.run()
     out = [
@@ -149,7 +158,7 @@ def build():
             "| Variante | Caso | Declaración | Lanzamiento | Guiones distintos |", "|---|---|---|---|---|"]
     for variant_id, fields, scripts, same_declaration, same_launch in _preservation():
         out.append(f"| `{variant_id}` | {'idéntico' if not fields else ', '.join(f'`{f}`' for f in fields)} | "
-                   f"{'idéntica' if same_declaration else 'nueva versión (cobertura 1.1)'} | "
+                   f"{'idéntica' if same_declaration else _new_version(variant_id)} | "
                    f"{'idéntico' if same_launch else 'distinto'} | "
                    f"{', '.join(f'`{s}`' for s in scripts) or f'ninguno de {len(preservation.SCRIPTS)}'} |")
     out += ["", "Cada diferencia está declarada en el registro de correcciones; la prueba "

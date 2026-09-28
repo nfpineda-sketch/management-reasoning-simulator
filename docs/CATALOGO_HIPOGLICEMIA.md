@@ -113,9 +113,9 @@ Comparación con el registro del 2026-09-25 (commit d184845), antes de que exist
 
 | Variante | Caso | Declaración | Lanzamiento | Guiones distintos |
 |---|---|---|---|---|
-| `hypoglycemia_28m` | `/patient/body` | idéntica | idéntico | ninguno de 20 |
-| `hypoglycemia_76f` | `/patient/body` | idéntica | idéntico | ninguno de 20 |
-| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (cobertura 1.1) | idéntico | ninguno de 20 |
+| `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01) | idéntico | ninguno de 20 |
+| `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01) | idéntico | ninguno de 20 |
+| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01) | idéntico | ninguno de 20 |
 
 Cada diferencia está declarada en el registro de correcciones; la prueba `test_hypoglycemia_preservation` acepta esas y ninguna otra.
 
@@ -169,6 +169,8 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-27-10 | Los descriptores de la rúbrica en español, sólo después de la aprobación docente de cada dominio | general | policy | cosmetic | — |
 | C-2026-09-27-11 | Revisión docente de la traducción de la rúbrica: redacción, orientación frente a indicación, ayuda y autonomía, D4 frente a D5 | general | policy | cosmetic | — |
 | C-2026-09-27-12 | El idioma del encuentro se fija al iniciarlo y el selector queda bloqueado mientras está en curso | general | policy | cosmetic | — |
+| C-2026-09-28-01 | C14 declarado caso por caso en el banco: 14 con oportunidad, 16 sin ella y acs_54m_inferior sin revisar | general | clinical_decision_applied | clinical | — |
+| C-2026-09-28-02 | KD-01: una vía escrita antes del fármaco, sin verbo, es la vía de ese fármaco | general | technical_defect | clinical | — |
 
 ## La batería, configuración por configuración
 
