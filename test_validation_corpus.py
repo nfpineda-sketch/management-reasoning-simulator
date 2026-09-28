@@ -487,8 +487,12 @@ def test_a_reviewers_class_must_be_one_of_the_five():
 
 # --- through the real page --------------------------------------------------------------------
 
-def test_each_entry_is_read_by_the_real_page_and_a_held_one_does_not_swallow_the_next(tmp_path):
+def test_each_entry_is_read_by_the_real_page_and_a_held_one_does_not_swallow_the_next(tmp_path, monkeypatch):
     import tools_validation_corpus as tool
+    # play() sets the offline mode for its whole process, as a command should;
+    # here monkeypatch takes it back when the test ends, so no later file of the
+    # run inherits it (C-2026-09-26-20).
+    monkeypatch.setenv("MRS_OFFLINE_CASES", "1")
     folder = _corpus(tmp_path, [("development", "EM90", "C01", "es", [[
         "Oxígeno por mascarilla", "Hidrocortisona 200 mg ev"]])])
     corpus = vc.ingest(folder, "development")

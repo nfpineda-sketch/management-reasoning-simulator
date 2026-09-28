@@ -245,12 +245,13 @@ def test_the_page_says_what_a_repeat_is_in_both_languages():
                                                       "repeat instruction; not executed now")]
 
 
-def test_input_execution_and_trace_through_the_real_page(tmp_path):
+def test_input_execution_and_trace_through_the_real_page(tmp_path, monkeypatch):
     """The two classes played by app.py, read back from the stored Management Trace."""
-    import os
     import tools_order_reading
     import tools_tanda20
-    os.environ["MRS_OFFLINE_CASES"] = "1"
+    # Through monkeypatch, so the offline mode ends with this test: set on
+    # os.environ it reached every later file of the run (C-2026-09-26-20).
+    monkeypatch.setenv("MRS_OFFLINE_CASES", "1")
     first = "Monitor, vía venosa periférica y O2 por naricera a 4 L/min"
     second = "Salbutamol 2.5 mg + bromuro de ipratropio 250 mcg nbz, repetir cada 20 minutos si persiste el broncoespasmo"
     script = {"number": 1, "case_id": "asthma_24f", "family": "asthma", "category": "test", "challenge": "R3-01",
