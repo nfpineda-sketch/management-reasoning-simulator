@@ -47,6 +47,9 @@ INSTRUCTION_2026_09_27D = ("Instrucción docente del 2026-09-27 (el idioma del e
 INSTRUCTION_2026_09_28 = ("Instrucción docente del 2026-09-28 (ciclo 5 del AI Advisor: activar C14 en los casos "
                           "donde la revisión A–H lo resolvió, dejar acs_54m_inferior sin revisar y corregir KD-01 "
                           "por clase)")
+INSTRUCTION_2026_09_28_NIGHT = ("Instrucción docente del 2026-09-28, extensión nocturna del ciclo 5 (59Z y 59BT: "
+                                "corregir sólo bugs inequívocos de aislamiento o de persistencia, pequeños, "
+                                "reversibles y probados)")
 
 CORRECTIONS = (
     {
@@ -1099,6 +1102,30 @@ CORRECTIONS = (
                   "test_a_route_written_before_the_drug.py::test_it_is_the_same_order_as_the_drug_written_first",
                   "test_a_route_written_before_the_drug.py::test_the_route_before_a_drug_reaches_no_other_order",
                   "test_a_route_written_before_the_drug.py::test_input_execution_and_trace_through_the_real_page"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-03",
+        "date": "2026-09-28",
+        "title": "Un encuentro nuevo empieza sin el cierre del encuentro anterior",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Auditoría nocturna del ciclo 5 (59Z, aislamiento entre encuentros). Volver al panel reiniciaba el "
+                   "encuentro pero no cómo había terminado el anterior: un aviso de cierre abierto («How is this "
+                   "encounter ending?») abría el encuentro siguiente en el minuto 0 ofreciendo «Finish now», y el "
+                   "registro de cierre anterior («clinical_close», minuto 2) se guardaba en el encuentro siguiente y "
+                   "quedaba en él si se abandonaba, donde lo leen el brief docente y el tamizaje de la rúbrica. Ahora "
+                   "reset_session() los quita, como ya quitaba el idioma del encuentro. Un encuentro retomado conserva "
+                   "su propio aviso y uno cerrado su propio registro. Los registros ya guardados no se reescriben."),
+        "authorised_by": INSTRUCTION_2026_09_28_NIGHT,
+        "affects": {"modules": ["app"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_a_new_encounter_starts_without_the_last_close.py::"
+                  "test_a_close_warning_left_open_does_not_open_the_next_encounter",
+                  "test_a_new_encounter_starts_without_the_last_close.py::"
+                  "test_the_last_close_record_is_not_the_next_encounter_s",
+                  "test_a_new_encounter_starts_without_the_last_close.py::"
+                  "test_a_resumed_encounter_keeps_its_own_close_warning"],
         "preservation": None,
     },
 )

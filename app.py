@@ -547,6 +547,10 @@ def reset_session():
     st.session_state.encounter_ended = False
     # A new encounter records its own language when it closes (document_language).
     st.session_state.pop("encounter_language", None)
+    # And its own close: the last encounter's warning and close record stay with
+    # that encounter, never open or describe the next one (59Z, 2026-09-28).
+    st.session_state.pop("close_pending", None)
+    st.session_state.pop("encounter_close", None)
     st.session_state.encounter_closed_trace = None
     st.session_state.encounter_closed_events = None
     st.session_state.encounter_closed_state = None
