@@ -78,13 +78,51 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   - **Split development/sealed:** no se sortea antes de que vuelvan los
     documentos; el ciclo 4 define el procedimiento, reproducible y auditable.
 
+## Cierre del ciclo 4 (2026-09-28)
+
+- **PILOT BASELINE: `939978a5147ab859a6dc3566ef4e1a98611a5093`**, motor
+  `0.24.13-clinical-encounter`.
+  - **Suite completa:** 4877 pasan, 77 omitidas, 2 xfail y 0 fallas.
+  - **Regresiones:** 56 de 56.
+  - **Corpus de ensayo:** 96/96 órdenes en ES y EN, idéntico al ciclo 3
+    decisión por decisión.
+  - **Detalle:** `validation/pilot_v1/PILOT_BASELINE.md`.
+- **DF-16a y DF-16b, corregidos por clase**, EN/ES, con la traza verificada.
+  DF-16c quedó corregido con la vía compartida. Los restos están en el
+  manifiesto de defectos conocidos (KD-01 a KD-14).
+- **DF-13, C14:** ocho decisiones A–H listas para responder. **C14 no está
+  activado**; la regla de transición sigue y es temporal (DF-12).
+- **DF-15, piloto: listo para distribuir y no enviado.**
+  - `validation/pilot_v1/`: 18 documentos VC2, **DOCX STRUCTURALLY VERIFIED**
+    (no en Word);
+  - el mensaje para los médicos, la matriz y el sorteo definido;
+  - la anotación y la adjudicación, y el manifiesto de defectos conocidos.
+- **Herramienta del validation corpus**, sin un segundo parser:
+  - bug corregido: los planes se emparejaban con el tipo equivocado;
+  - comando `split`;
+  - hoja del segundo anotador;
+  - taxonomía del §40;
+  - columnas de impacto y de defecto conocido.
+- **La primera corrida completa encontró 5 fallas dependientes del orden.** Las
+  causó la prueba nueva de DF-16 por la página real, que dejaba la variable de
+  modo offline en el proceso. Se reprodujo y se corrigió en las pruebas; el
+  código de la aplicación no cambió.
+- **Sin cambios:**
+  - D1–D5 y la escala 0–3;
+  - los eventos críticos y el −3, el puntaje ajustado y el spider;
+  - la confirmación docente;
+  - los mappings (los 9 PARTIAL siguen inactivos);
+  - C2 y C15, deshabilitadas.
+- **Nada se contactó, envió, fusionó ni publicó.** El ciclo 5 no se inició.
+
 ## Decidido e implementado
 
-| ID | Tema | Estado al cerrar el ciclo 3 |
+| ID | Tema | Estado |
 |---|---|---|
 | DF-1 | Observation opportunities (D-1 a D-6) | **Implementado y testeado.** C14 no activado: pasa a DF-13 |
 | DF-2 | R1-03, R1-04 y R2-01 con contribución DIRECT/PARTIAL | **Implementado y testeado.** PARTIAL inactivos en DF-14 |
 | DF-6 | Validation corpus | **Diseño cambiado por el docente** (Fase 1 en Word) · herramienta implementada · piloto en DF-15 |
+| DF-16a/b/c | Listas de órdenes, orden + repetición + condición, vía compartida | **Implementado y testeado** (ciclo 4) |
 | DF-10 | Seguimiento pegado al alta, EN/ES | **Implementado y testeado** |
 | DOC-1 | §51 del charter | **Cerrado:** termina en «…del desempeño del residente.» |
 | DF-7 | Fidelidad del razonamiento en el Management Trace | Cerrado en el ciclo 2 |

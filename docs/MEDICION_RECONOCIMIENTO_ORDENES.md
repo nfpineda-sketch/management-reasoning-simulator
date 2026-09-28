@@ -600,6 +600,13 @@ orden. El corpus completo tardó 376 s (ES) y 379 s (EN).
 - **Archivos de prueba del lector y de la traza:** los 69 existentes pasan
   (1788 pasan y 2 xfail, con las 50 pruebas nuevas de la primera versión).
 - **Regresiones:** 56 de 56 pasan.
+- **Suite completa (4 shards).**
+  - **Primera corrida:** 5 fallas dependientes del orden. La prueba nueva por la
+    página real dejaba `MRS_OFFLINE_CASES` en el entorno del proceso. Se
+    reprodujo y se corrigió con `monkeypatch`.
+  - **Segunda corrida, commit `939978a`:** 4877 pasan, 77 omitidas, 2 xfail y
+    0 fallas.
+  - **Ese commit es el baseline del piloto:** `validation/pilot_v1/PILOT_BASELINE.md`.
 
 ### Encontrado y no corregido (registrado)
 
