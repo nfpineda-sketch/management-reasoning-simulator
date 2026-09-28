@@ -48,11 +48,17 @@ def present_categories(parsed):
 
 
 def awaiting_explanation(trace):
-    """The latest urgent entry that left categories unstated and has no retrospective yet."""
+    """The latest urgent entry that ran, left categories unstated and has no retrospective yet.
+
+    An entry the engine did not run -- held for a clarification, refused as
+    invalid -- was no decision taken: there is nothing to explain afterwards
+    (59O-03, 2026-09-28).
+    """
     for index in range(len(trace or []) - 1, -1, -1):
         entry = trace[index]
         gate = entry.get("reasoning_gate") or {}
-        if (gate.get("status") == "urgent_unheld" and not entry.get("retrospective")
+        if (gate.get("status") == "urgent_unheld" and entry.get("execution_status") == "executed"
+                and not entry.get("retrospective")
                 and any(field in UNSTATED_CORE for field in gate.get("noted") or ())):
             return index
     return None

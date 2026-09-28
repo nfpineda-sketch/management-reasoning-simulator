@@ -70,9 +70,13 @@ def test_session_adapter_selects_only_frozen_evidence_and_locked_original_reflec
     # authored_case_id (2026-09-26) is metadata beside the frozen evidence, so
     # "The history you took" can look up what the case authors; it is excluded
     # from the analysis source, so fingerprints of saved analyses do not move.
-    assert adapted == {**sample_payload(), "encounter_events": [], "authored_case_id": ""}
+    # The names of the history topics the frozen case offered (L-F01, cycle 6)
+    # travel the same way; a session that froze no case says they are unavailable.
+    assert adapted == {**sample_payload(), "encounter_events": [], "authored_case_id": "",
+                       "history_topics": [], "history_topics_source": "unavailable"}
     from management_trace_analysis import build_analysis_source
-    assert "authored_case_id" not in build_analysis_source(adapted)
+    for key in ("authored_case_id", "history_topics", "history_topics_source"):
+        assert key not in build_analysis_source(adapted)
     adapted["trace"][0]["learner_input"] = "Changed copy"
     assert session == original
 

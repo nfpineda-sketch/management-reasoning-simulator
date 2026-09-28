@@ -324,8 +324,9 @@ def _prompted(event):
         "categories_asked_for": [str(item) for item in asked if isinstance(item, str)][:8],
         "answered_via": str(gate.get("answered_via") or ""),
         # An urgent intervention ran without being held (decision 12): what was
-        # stated with it, and what was explained afterwards and when.
-        "urgent_unheld": gate.get("status") == "urgent_unheld",
+        # stated with it, and what was explained afterwards and when. An entry
+        # the engine did not run is not one (59O-03, 2026-09-28).
+        "urgent_unheld": gate.get("status") == "urgent_unheld" and event.get("execution_status") == "executed",
         "retrospective_fields": [str(f) for f in retrospective.get("fields") or [] if isinstance(f, str)][:6],
         "retrospective_written_at_min": retrospective.get("written_at_min"),
     }

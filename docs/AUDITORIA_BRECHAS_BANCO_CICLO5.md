@@ -228,3 +228,145 @@ Las columnas «fuerte / moderado / débil» son estimación de auditoría y requ
   - `tools_case_text.problems()`: completitud del español.
 - **Extracción.** Se hizo en modo de solo lectura (`audit_gaps/extract.py` → `bank.json`), sin bytecode y sin escribir en el repositorio.
 - **Fuera de alcance.** Los casos generados, que son la vía por defecto de las personas residentes, no están en las fuentes y no se auditan aquí.
+
+
+## 6 · Priorización de brechas (ciclo 6): R1-07, R2-02, R1-03, R1-04, R2-01 y C4
+
+2026-09-28. **Sólo priorización:** no se implementa nada, no se crea ningún caso
+y no se toca el motor.
+
+**Una brecha no es un backlog automático.** Registrarla no obliga a crear ni a
+modificar casos. Una brecha puede pedir cualquiera de estas cosas:
+
+- declarar en un caso existente lo que ese caso ya trae;
+- modificar un caso existente;
+- un caso nuevo de simulación;
+- o reconocer que el simulador no es la fuente adecuada, y que la evidencia
+  debe venir de la simulación procedural o de la observación en el lugar de
+  trabajo.
+
+**Clases (59F):**
+
+- **A:** un caso existente puede cubrirla con un ajuste mínimo.
+- **B:** un caso nuevo podría ser útil.
+- **C:** se observa mejor por otra fuente.
+- **D:** no es prioridad actual.
+
+| Orden | Objetivo | La brecha, en una línea | Clase | Ruta |
+|---|---|---|---|---|
+| 1 | R1-07 | Su elemento, una impresión de entrega que contrastar, es explícito en 1 de sus 9 casos (`acs_54m_inferior`, en espera de DF-20); otros 5 casos lo traen fuera de sus familias | A | Declarar en un caso existente |
+| 2 | R2-01 | Ningún caso del banco lo ofrece: sólo el escenario PS001, con 3 perfiles. Su contenido ya está en 13 casos | A | Declarar en un caso existente |
+| 3 | R1-04 | Ningún caso del banco lo ofrece: sólo PS001. Reevaluar la respuesta está en los 31 casos (D4), pero no todo D4 es R1-04 | A | Declarar en un caso existente, con selección |
+| 4 | R2-02 | 8 casos, 6 de SCA (75 % de los sorteos); las 4 oclusiones siguen el mismo camino de manejo | A | Declarar en un caso existente fuera de su grupo, y ajustar el sorteo (ingeniería, no clínico) |
+| 5 | R1-03 | Ningún caso del banco lo ofrece: sólo PS001 (FA con sepsis). 15 casos traen taquicardia sinusal compensatoria (FC ≥ 110) | A si esa taquicardia basta; B si se exige una taquiarritmia primaria | Declarar en un caso existente, o caso nuevo de simulación |
+| 6 | C4 | Ningún caso ofrece sedación o analgesia procedural observable; C4 = NO está decidido | C | Simulación procedural u observación en el lugar de trabajo: hoy el simulador no es la fuente adecuada |
+
+**Por qué este orden.**
+
+1. Primero, lo que afecta hoy la validez de un objetivo habilitado y se resuelve
+   declarando.
+2. Luego, la amplitud.
+3. Luego, lo que depende antes de una definición suya.
+4. C4 ya está decidido.
+
+Las demás brechas (G4 a G17) conservan la clase de la sección 2.
+
+### R1-07 · Encuadre por la impresión de entrega
+
+- **Brecha.** La oportunidad que define R1-07 («a supplied handover
+  impression…») falta en unos 8 de cada 9 sorteos. Sus familias son `acs` e
+  `hypoglycemia` (`cognitive_catalog.py:129`), y sólo `acs_54m_inferior` trae
+  una impresión explícita.
+- **Casos que ya la traen** (`clinical_cases.py:1471-1478`):
+  - `pneumonia_83m`, con una derivación que sugiere «deshidratación»;
+  - `asthma_49m`, `anaphylaxis_63m_betablocked` y `bradycardia_ccb_68m`, con
+    notas de entrega;
+  - `pulmonary_embolism_33f`;
+  - `acs_54m_inferior`, con «indigestion?».
+- **Ruta.** Declarar R1-07 por caso, con el mismo bloque que C14. Eso permite
+  observarlo de forma incidental en cualquier encuentro de ese caso, sin mover
+  casos de familia (`observation_opportunities.py:182-188`).
+- **Antes, decidir:**
+  - si cuenta el encuadre implícito de `hypoglycemia_28m` y
+    `hypoglycemia_54m_thiamine`;
+  - si cuenta el de `pulmonary_embolism_33f`, que viene del propio caso
+    («anxiety») y no de una entrega;
+  - `acs_54m_inferior`, sólo después de DF-20.
+- **Alternativa.** Si prefiere que el elemento esté dentro de las familias de
+  R1-07, la ruta es modificar un caso existente: agregar una impresión de
+  entrega a un caso de `acs` o de `hypoglycemia`.
+
+### R2-01 · Presión, flujo y perfusión
+
+- **Brecha.** R2-01 no tiene familias. Sus encuentros vienen sólo del escenario
+  PS001, con 3 perfiles (`encounter_generator.py:28` y `34`).
+- **Contenido ya presente.** Son 13 casos:
+  - 8 con PAS ≥ 90 y perfusión alterada, por ejemplo `gi_bleed_72f` (98/62,
+    llene 4 s, lactato 3,4), `pneumonia_83m` (96/60, lactato 3,1),
+    `acs_70f_left_main` (104/66, lactato 3,1) y
+    `obstructive_pyelonephritis_58f` (94/54, lactato 4,2);
+  - 5 donde la frecuencia limita el flujo: las 4 bradicardias y
+    `anaphylaxis_63m_betablocked`.
+- **Ruta.** Declarar por caso donde la discordancia sea real, y
+  `acs_54m_inferior` sólo después de DF-20. Eso abre la observación incidental;
+  que el sorteo sirva R2-01 desde el banco es otra decisión.
+
+### R1-04 · Efecto esperado y reevaluación
+
+- **Brecha.** Igual que R2-01: sólo PS001.
+- **Contenido ya presente.** Los 31 casos piden reevaluar la respuesta (D4).
+  Declararlos todos por eso sería un YES por categoría, que el umbral de C14 no
+  acepta.
+- **Ruta.** Declarar sólo donde una intervención tiene un efecto esperable que
+  el motor muestra y que decide el paso siguiente:
+  - glucosa, en las hipoglicemias;
+  - naloxona, en los opioides;
+  - atropina y marcapaso, en el bloqueo AV;
+  - VMNI y nitrato, en los edemas;
+  - volumen y sangre, en la sepsis y la HDA.
+
+### R2-02 · Confirmación
+
+- **Brecha.** Sus familias son `acs` y `pulmonary_embolism`
+  (`cognitive_catalog.py:94`). El sorteo es uniforme por caso
+  (`cognitive_generator.py:59`), así que 6 de cada 8 encuentros son SCA, y las 4
+  oclusiones comparten el manejo.
+- **Ruta.**
+  - Declarar R2-02 en casos fuera de su grupo que ya traen explicaciones en
+    competencia: `pneumonia_83m`, el cólico frente a la pielonefritis y las
+    bradicardias tóxicas.
+  - Ajustar el sorteo: primero la familia y luego la variante, o las 4
+    oclusiones como un solo cupo. Es ingeniería, y no crea ni cambia casos.
+
+### R1-03 · Contribución de la taquicardia
+
+- **Brecha.** Sólo PS001, un cuadro séptico con FA. El banco no tiene una
+  taquiarritmia primaria: la FA aparece sólo como antecedente, en 2 casos.
+- **Su pregunta, antes que nada.** ¿La taquicardia sinusal compensatoria
+  satisface R1-03, «a tachycardia whose contribution… can be explained and
+  tested against the response»?
+  - **Si sí:** clase A. Declarar en casos donde la respuesta al tratamiento pone
+    a prueba la explicación, por ejemplo HDA, neumonías o TEP.
+  - **Si se exige una taquiarritmia primaria** (FA rápida, TSV, TV): clase B,
+    un caso nuevo de simulación (G9).
+- **Ese caso nuevo no resolvería C4 por sí solo.** La cardioversión con
+  sedación chocaría con el mismo límite del motor que llevó a C4 = NO.
+
+### C4 · Sedación y analgesia procedural
+
+- **Decidido: C4 = NO** (TDFC-7). Si TDFC-8 también es NO, ningún caso del banco
+  ofrece C4.
+- **La brecha queda registrada:**
+  - el banco no trae un contexto de sedación procedural;
+  - el motor sólo cobra la caída de presión de la sedación
+    (`family_engine.py:149-150`), sin profundidad, depresión respiratoria ni
+    dolor del procedimiento.
+- **No se crean casos ni se cambia el motor** para fabricar una oportunidad de
+  C4.
+- **Fuente adecuada:** la simulación procedural (sedación con monitorización y
+  rescate) o la observación en el lugar de trabajo.
+- **Mientras nada se escriba en el banco,** la transición sigue ofreciendo C4
+  en todo encuentro (`observation_opportunities.py:70`).
+- **Pregunta para más adelante,** que no reabre C4 = NO. Cuando se retire la
+  transición, ¿C4 sigue habilitada sin fuente en el banco
+  (`objectives.py:92-98`), o pasa a no habilitada, como C2 y C15?

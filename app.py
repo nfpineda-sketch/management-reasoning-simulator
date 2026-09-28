@@ -5263,6 +5263,15 @@ def detect_amiodarone(text):
 
 
 
+# A reply that says the resident does not know, in either language: no answer
+# and no new order.
+_UNSURE_REPLY = re.compile(
+    r"^(?:(?:mm+|hmm+|eh+|uh+|um+)[\s,.]*)?(?:"
+    r"no\s+(?:lo\s+)?se\b|no\s+estoy\s+segur[oa]|no\s+tengo\s+(?:idea|claro)|ni\s+idea|no\s+sabria|"
+    r"no\s+idea|not\s+sure|unsure|(?:i\s+)?(?:don'?t|do\s+not|dunno)\s+know|i\s+am\s+not\s+sure|i'?m\s+not\s+sure"
+    r")\b")
+
+
 def try_resolve_pending_action(text):
     pending = st.session_state.get("pending_action")
     if not pending:
@@ -5281,8 +5290,23 @@ def try_resolve_pending_action(text):
                           + " + ".join(held) + ". None of it was administered.")
             return None
         from family_parser import _COMMAND, _normalize, _NEGATION
-        if (resolution and resolution.get("parsed")) or (resolution is None and (_COMMAND.match(_normalize(text)) or _NEGATION.match(_normalize(text)))):
+        body = _normalize(text)
+        held = _understood_order_labels(pending.get("parsed") or {})
+        if resolution is None and _UNSURE_REPLY.match(body):
+            # "No se" answers nothing, and it is no new order either: the order
+            # stays held and the question stands. Read as a negated directive,
+            # it used to discard the held order without a word -- a bag-mask
+            # ventilation and its naloxone vanished (clarification safety,
+            # 2026-09-28).
+            return {"clarification": "The held order is still waiting: " + (" + ".join(held) or "the order above")
+                                     + ". Answer the question above, or say cancel. Nothing has been administered."}
+        if (resolution and resolution.get("parsed")) or (resolution is None and (_COMMAND.match(body) or _NEGATION.match(body))):
             st.session_state.pending_action = None
+            if resolution is None and held:
+                # A new directive replaces the held order, and what that costs is
+                # said, as for any other order written instead of an answer.
+                add_event("order_cancelled", "The held order was discarded to run this one: "
+                          + " + ".join(held) + ". None of it was administered.")
         return resolution
 
     if pending.get("type") == "fluid":
@@ -10704,11 +10728,7 @@ with st.container(key="encounter-console"):
                 parsed["reasoning_gate"] = {"required": True, "status": "urgent_unheld", "missing": [],
                                             "noted": noted, "present": present_categories(parsed)}
                 gate_status = "urgent_unheld"
-                if [field for field in noted if field in REASONING_GATE_BLOCKING]:
-                    add_event("prototype", "Urgent intervention executed without waiting for the reasoning. "
-                              "Not stated: " + ", ".join(REASONING_GATE_FIELD_LABELS[field].rstrip("?").lower()
-                                                         for field in noted if field in REASONING_GATE_BLOCKING)
-                              + ". You can explain it afterwards; it is recorded as a retrospective explanation.")
+                # What was not stated is said once the engine has run it (below).
             else:
                 parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
                                             "noted": reasoning_gate_noted(parsed)}
@@ -10729,10 +10749,24 @@ with st.container(key="encounter-console"):
             trace_input, parsed, result, trace_state_before, trace_state_after
         )
 
+        ran = bool(result.get("executed")) and not result.get("clarification")
+        # An urgent intervention is said to have run only once the engine ran
+        # it -- in this turn, or when the answer to a question about the same
+        # order completes it. A bundle the engine refused ran nothing, and the
+        # page used to say it had and offer to explain it (59O-03, 2026-09-28).
+        urgent_unstated = [field for field in (parsed.get("reasoning_gate") or {}).get("noted") or []
+                    if field in REASONING_GATE_BLOCKING]
+        if ran and gate_status == "urgent_unheld" and urgent_unstated:
+            add_event("prototype", "Urgent intervention executed without waiting for the reasoning. "
+                      "Not stated: " + ", ".join(REASONING_GATE_FIELD_LABELS[field].rstrip("?").lower()
+                                                 for field in urgent_unstated)
+                      + ". You can explain it afterwards; it is recorded as a retrospective explanation.")
         if gate_status == "overridden":
             add_event(
                 "prototype",
                 "Facilitator override accepted. The held order was executed with incomplete prospective reasoning."
+                if ran else
+                "Facilitator override accepted, but the order did not run: see the message below."
             )
 
         if parsed["recognized_future_actions"] and not result.get("terminal_locked"):

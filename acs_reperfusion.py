@@ -73,6 +73,32 @@ WALL_MOTION = (
     (.58, "shows moderately reduced contraction", "show moderately reduced contraction"),
     (0.0, "is akinetic", "are akinetic"),
 )
+# The grades of WALL_MOTION, mildest first, as a case may name its arrival scan.
+GRADES = ("normal", "mildly reduced", "moderately reduced", "akinetic")
+
+
+def grade_index(lv):
+    """0 (contracts normally) to 3 (akinetic), on the thresholds of WALL_MOTION."""
+    for index, (threshold, _, _) in enumerate(WALL_MOTION):
+        if lv >= threshold:
+            return index
+    return len(WALL_MOTION) - 1
+
+
+def authored_grade_index(spec):
+    """The grade a case's own arrival scan names; by default the band of ARRIVAL_LV.
+
+    DF-23, 2026-09-28: de Winter's arrival scan reads "Akinesis of the anterior
+    wall and apex", and the model, which starts every occlusion at 0.82
+    ("mildly reduced"), took over at the first repeat scan: with the artery
+    still closed the wall seemed to recover, then failed again. A case that
+    names its grade keeps its own words until the model reaches that grade or
+    the artery opens. A case that names none keeps today's reading.
+    """
+    named = (spec or {}).get("arrival_wall_grade")
+    return GRADES.index(named) if named in GRADES else grade_index(ARRIVAL_LV)
+
+
 TERRITORY_WALL = {"inferior": "inferior wall", "anterior": "anterior wall and apex",
                   "lateral": "lateral wall", "posterior": "posterior wall",
                   "left_main": "anterior and lateral walls", "subendocardial": "left ventricle diffusely"}

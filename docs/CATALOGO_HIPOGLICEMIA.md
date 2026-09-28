@@ -172,6 +172,11 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-28-01 | C14 declarado caso por caso en el banco: 14 con oportunidad, 16 sin ella y acs_54m_inferior sin revisar | general | clinical_decision_applied | clinical | — |
 | C-2026-09-28-02 | KD-01: una vía escrita antes del fármaco, sin verbo, es la vía de ese fármaco | general | technical_defect | clinical | — |
 | C-2026-09-28-03 | Un encuentro nuevo empieza sin el cierre del encuentro anterior | general | technical_defect | none | — |
+| C-2026-09-28-04 | DF-22: nueve clases de oración que perdían, invertían o retenían una orden de primera línea | general | technical_defect | clinical | — |
+| C-2026-09-28-05 | Lo que la página dice de una orden sigue a lo que el motor ejecutó; una aclaración no pierde la orden retenida | general | technical_defect | none | — |
+| C-2026-09-28-06 | L-F01: un encuentro antiguo se lee con los temas de historia de su propio caso | general | technical_defect | none | — |
+| C-2026-09-28-07 | L-F04: la trayectoria del perfil sigue a los encuentros, no a las confirmaciones | general | policy | none | — |
+| C-2026-09-28-08 | DF-23: la acinesia de de Winter se sostiene con la arteria cerrada; bradycardia_bb_54f llega somnolienta | variante acs_52m_de_winter, bradycardia_bb_54f | clinical_decision_applied | clinical | — |
 
 ## La batería, configuración por configuración
 

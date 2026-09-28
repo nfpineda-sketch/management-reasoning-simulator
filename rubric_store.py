@@ -400,11 +400,19 @@ class RubricStore:
             return review, proposal
 
     def progress(self, token, user_id=None):
-        """Every confirmed review of one resident, oldest first.
+        """Every confirmed review of one resident, in the order the encounters happened.
 
         Staff may read any resident's; a resident may read only their own, and
         only what a faculty member confirmed. A draft is somebody's work in
         progress and is never part of a profile.
+
+        The trajectory follows the encounters, not the confirmations (L-F04,
+        decided 2026-09-28): ordered by when each encounter was played
+        (``encounter_at``), a later confirmation of an earlier encounter no
+        longer becomes the "latest", and the change from the previous encounter
+        is the change between encounters. When each review was confirmed is kept
+        (``created_at``) as audit metadata. Which revision of one encounter
+        counts is unchanged (L-F02 is a separate decision).
         """
         with self.accounts._transaction() as connection:
             actor = self.accounts._actor(connection, token)
@@ -414,7 +422,8 @@ class RubricStore:
                 target = actor["id"]
             else:
                 raise AccountError("Your account does not have permission for this action.")
-            rows = self._execute(connection, """SELECT r.*, a.challenge_id, a.updated_at
+            rows = self._execute(connection, """SELECT r.*, a.challenge_id, a.updated_at,
+                a.created_at AS encounter_at
                 FROM mrs_rubric_reviews r JOIN mrs_attempts a ON a.id = r.attempt_id
                 WHERE a.user_id = ? AND r.status = 'confirmed'
                 ORDER BY r.created_at ASC, r.sequence ASC""", (target,)).fetchall()
@@ -429,9 +438,10 @@ class RubricStore:
                 latest[row["attempt_id"]] = {
                     **review, "review_id": row["id"], "attempt_id": row["attempt_id"],
                     "challenge_id": row["challenge_id"], "created_at": row["created_at"],
+                    "encounter_at": row["encounter_at"],
                     "sequence": row["sequence"], "totals": totals_of(review)}
             return sorted(latest.values(),
-                          key=lambda item: (item["created_at"], item["sequence"]))
+                          key=lambda item: (item["encounter_at"], item["created_at"], item["sequence"]))
 
     def history(self, token, attempt_id):
         """Every review revision, newest first. Nothing is ever overwritten."""

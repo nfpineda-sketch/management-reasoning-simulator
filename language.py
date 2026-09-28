@@ -454,6 +454,13 @@ _RULES = (
  (r"Recorded as a repeat instruction, not executed now: (.+?)\.$",
   "Registrado como instrucción de repetición, no ejecutada ahora: \u00ab\\1\u00bb."),
  (r"Recorded as advice to the patient: (.+?)\.$", "Registrado como indicación al paciente: \u00ab\\1\u00bb."),
+ # Whole sentences before the word-by-word rule below, which would otherwise
+ # leave them half translated ("None of it was administrado").
+ (r"None of it was administered\.", "No se administró nada de ella."),
+ (r"The held order is still waiting:", "La orden retenida sigue esperando:"),
+ (r"the order above", "la orden de arriba"),
+ (r"Answer the question above, or say cancel\.", "Responde la pregunta de arriba o escribe «cancelar»."),
+ (r"Nothing has been administered\.", "No se ha administrado nada."),
  (r"\badministered\b", "administrado"),
  (r"\bstarted at\b", "iniciado a"), (r"\badjusted to\b", "ajustado a"),
  (r"\b(\w+) infusion stopped\b", r"infusión de \1 suspendida"),
@@ -503,6 +510,11 @@ _RULES = (
  (r"Replace it with a supported intervention, dose/settings and route, or say cancel\.",
   "Reemplázala por una intervención soportada, con dosis o parámetros y vía, o di cancelar."),
  (r"This order was not recognized:", "Esta orden no se reconoció:"),
+ # A clause joined to what the prehospital team did (DF-22, C08, 2026-09-28).
+ (r'"([^"]+)" is written with what the prehospital team did, so it was not given\.',
+  r'«\1» está escrito junto a lo que hizo el equipo prehospitalario, así que no se administró.'),
+ (r"If it is your order now, write it as your order, or say cancel\.",
+  "Si ahora es tu orden, escríbela como orden tuya, o di cancelar."),
  (r"These orders were not recognized:", "Estas órdenes no se reconocieron:"),
  (r"Replace each with a supported intervention, dose/settings and route, or say cancel\.",
   "Reemplaza cada una por una intervención soportada, con dosis o parámetros y vía, o di cancelar."),
@@ -522,7 +534,6 @@ _RULES = (
  (r"Stop (\w+) explicitly if you mean to replace it\.",
   r"Suspende \1 explícitamente si tu intención es reemplazarlo."),
  (r"The held order was discarded to run this one:", "La orden retenida se descartó para ejecutar esta:"),
- (r"None of it was administered\.", "No se administró nada de ella."),
  (r"Before execution, please add:", "Antes de ejecutarla, agrega:"),
  (r"Use your own words, or complete the guided sentence starters on screen\.",
   "Usa tus propias palabras, o completa los inicios de frase en pantalla."),

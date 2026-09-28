@@ -735,7 +735,12 @@ def _validate(state, parsed):
                 return None, (f"{a['volume_ml']:g} mL at {a['rate_ml_h']:g} mL/h would run for "
                               f"{a['administration_duration_min'] / 60:.1f} h; this simulator runs a fluid order over "
                               "at most 120 min. Restate it as a bolus or a shorter infusion.")
-            if kind not in set(_MEDICINES) | {"fluid", "blood", "anticoagulation"} or not _number(a["administration_duration_min"], 1/60, 120):
+            # Tranexamic acid is given over ten minutes by standard; the duration
+            # written with it held the whole urgent bundle, tourniquet included
+            # (DF-22, C08, 2026-09-28). It is recorded as written and changes no
+            # physiology: the engine models the drug as given.
+            if (kind not in set(_MEDICINES) | {"fluid", "blood", "anticoagulation", "tranexamic_acid"}
+                    or not _number(a["administration_duration_min"], 1/60, 120)):
                 return None, "Specify a positive supported delivery duration for a fluid, blood or fixed-dose medication."
         normalized.append(a)
         remember_validated_support(validation_state, a)
@@ -959,7 +964,8 @@ def _order(state, a):
         from weight_based_doses import fallback_weight
         a = {**a, "volume_ml": round(a["volume_ml_per_kg"] * fallback_weight(state, a))}
     # Generated cases schedule timed delivery in generated_delivery; only bank cases queue here.
-    timed = a.get("administration_duration_min") is not None and state.get("engine_family") != "generated"
+    timed = (a.get("administration_duration_min") is not None and state.get("engine_family") != "generated"
+             and kind != "tranexamic_acid")
     duration = 1
     label = kind.replace("_", " ").capitalize()
     if kind == "airway_preparation":
@@ -1146,10 +1152,13 @@ def _order(state, a):
         duration = 3
     elif kind == "tranexamic_acid":
         f["txa_at"] = f["elapsed"]
-        tr.setdefault("administered_medications", []).append(
-            {"agent": "tranexamic acid", "dose_g": a["dose_g"], "route": a["route"],
-             "time_min": int(state.get("sim_time", 0))})
-        label = f"Tranexamic acid {a['dose_g']:g} g {a['route']} administered"
+        record = {"agent": "tranexamic acid", "dose_g": a["dose_g"], "route": a["route"],
+                  "time_min": int(state.get("sim_time", 0))}
+        if a.get("administration_duration_min") is not None:
+            record["administration_duration_min"] = a["administration_duration_min"]
+        tr.setdefault("administered_medications", []).append(record)
+        label = f"Tranexamic acid {a['dose_g']:g} g {a['route']} administered" + (
+            f" over {a['administration_duration_min']:g} min" if a.get("administration_duration_min") else "")
         duration = 2
     elif kind == "epinephrine_im":
         # The muscle holds it and gives it back over minutes. Which is the
@@ -2409,8 +2418,12 @@ def _diagnostic(state, diagnostic, duration):
                                       else f"Absent on the {side}, with a lung point; present on the other side")
         spec = acs_reperfusion.coronary(state) if state["engine_family"] == "acs" else None
         # The arrival scan is the authored one; the model takes over once the
-        # infarct has had minutes to evolve.
-        if spec is not None and spec.get("omi") and "lv" in result and f.get("ischemic_min", 0):
+        # infarct has had minutes to evolve -- never to a milder grade than the
+        # case wrote while the artery is still closed (DF-23, de Winter).
+        if spec is not None and spec.get("omi") and "lv" in result and f.get("ischemic_min", 0) and (
+                acs_reperfusion.is_open(f)
+                or acs_reperfusion.grade_index(f.get("lv_function", acs_reperfusion.ARRIVAL_LV))
+                >= acs_reperfusion.authored_grade_index(spec)):
             result["lv"] = acs_reperfusion.wall_motion(f, spec)
         if "ivc" in result and (f.get("niv") or f.get("invasive")):
             result["ivc"] = (result["ivc"].split(";")[0]

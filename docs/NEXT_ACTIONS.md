@@ -1,58 +1,56 @@
 # Próximas acciones (una página)
 
-Al cierre del ciclo 5 y su extensión nocturna, 2026-09-28. El detalle está en
-`COLA_DECISIONES_AI_ADVISOR.md`.
+Al cierre del ciclo 6, 2026-09-28. El detalle está en
+`COLA_DECISIONES_AI_ADVISOR.md` (sección «Cierre del ciclo 6»).
 
-## Lo que usted necesita hacer
+## DONE
 
-1. **Decidir `acs_54m_inferior` (DF-20).** ¿VD comprometido (recomendado: A),
-   VD normal (B), ambos (C) o intención indeterminable (D)? Si elige A, falta
-   aprobar el texto del VD y de la VCI. Documento:
-   `AUDITORIA_ACS_54M_INFERIOR.md`.
-2. **Dos respuestas sobre el lector (DF-22).** La auditoría nocturna encontró
-   9 clases de oración que pierden una orden de primera línea.
-   - ¿El piloto las mide sin registrarlas antes como defectos conocidos?
-     (recomendado: sí)
-   - ¿Se corrige antes de un piloto con residentes el aviso «Urgent
-     intervention executed» que aparece cuando nada corrió? (recomendado: sí)
-3. **Piloto de validación v1: su parte** (`validation/pilot_v1/README.md`):
-   - revisar los 18 documentos en Word;
-   - reclutar a los 6 médicos y enviar;
-   - cuando vuelvan, guardarlos sin abrir, fuera del repositorio.
-4. **Cuando pueda, en este orden:**
-   - DF-23: inconsistencias clínicas; primero el POCUS de de Winter, que es
-     C14 YES;
-   - DF-24: correcciones longitudinales;
-   - DF-21: TD/F/C, 8 decisiones;
-   - DF-25: brechas del banco.
+- **DF-22:** las 9 clases CRITICAL del lector, corregidas por clase en EN/ES,
+  con 153 pruebas y tres conjuntos ciegos. Residuos en TD-14 y TD-26.
+- **59O-03:** el aviso de ejecución sale sólo de lo que corrió. Una orden
+  retenida ya no se pierde con «no sé».
+- **L-F01 y L-F04:** el encuentro se lee con su propio caso; el perfil sigue
+  la fecha del encuentro.
+- **DF-23:** de Winter y `bradycardia_bb_54f`, corregidos.
+  `acs_54m_inferior`, sin cambio.
+- **DEVELOPMENT HARDENED BASELINE V1** registrado (`validation/BASELINES.md`).
+  El baseline español del piloto no se tocó.
 
-   Ninguna bloquea el piloto.
+## NEEDS NICOLÁS
 
-## Lo que el AI Advisor puede hacer sin usted
+1. **Antes de un piloto con residentes** (`READINESS_PILOTO_RESIDENCIA.md`:
+   WITH CONDITIONS):
+   - TD-21: trauma y sobrecarga transfusional (recomendado: excluir la
+     hemorragia activa de la regla);
+   - TD-26: autorizar la corrección de los hemoderivados que se pierden sin
+     aviso;
+   - escribir C4 = NO en el banco;
+   - uso formativo, con confirmación docente;
+   - acceso a staging para probar PostgreSQL.
+2. **El piloto de validación** (`validation/pilot_v1/README.md`):
+   - revisar los 18 documentos;
+   - reclutar a los 6 médicos y enviar.
+3. **Tres respuestas de una línea:**
+   - DF-24: «I-F02 A · L-F02 A · I-F18 B · L-F07 B (D después) · anulada A ·
+     retiro A · meta A».
+   - TDFC: «1 approve / 2 approve / 3 approve / 4 approve / 5 approve (54m
+     tras DF-20) / 6 approve / 8 approve».
+   - `acs_54m_inferior`: C14 NO (recomendado) o YES.
+4. **Cuando pueda:** las filas 3 a 11 de DF-23, en
+   `AUDITORIA_DF23_CICLO6.md`.
 
-- Aplicar DF-20, DF-23 o DF-24 cuando usted decida: el dato o el código, la
-  traducción y las pruebas.
-- Correr el sorteo y la ingesta cuando vuelvan los documentos: son comandos
-  deterministas.
-- Anotar no: la anotación de referencia es clínica.
+## WAITING FOR EXTERNAL DATA
 
-## Lo que estamos esperando
+- **Los documentos de los médicos del piloto.** Se miden primero contra el
+  SPANISH PILOT BASELINE (`939978a`) y después contra el HARDENED BASELINE V1.
+- **La fidelidad externa del lector.** De ella depende el orden de TD-14.
 
-- Los documentos de los médicos del piloto.
-- Sus decisiones sobre DF-20 y DF-22.
+## DEFERRED
 
-## Lo que está bloqueado
-
-- **Medir la fidelidad externa del lector.** Espera los documentos.
-- **Retirar la transición de TD1, F1, C1, C3 y C4.** Espera DF-21.
-- **C14 en `acs_54m_inferior`.** Espera DF-20.
-
-## Lo que no debe tocarse todavía
-
-- **El SPANISH PILOT BASELINE (`939978a`) y el ENGLISH VALIDATION BASELINE
-  (`ec1c77f`).** Se mide ahí.
-- **Los 18 documentos del piloto.** Son PILOT MATERIAL V1.
-- **Puntajes, D1–D5, eventos críticos, −3 y radar.**
-- **C2, C15 y los 9 vínculos PARTIAL inactivos.**
-- **El lector, por errores que no vengan del piloto.** Tampoco por los de la
-  auditoría nocturna (59I). Se prioriza con `PRIORIZACION_POST_PILOTO.md`.
+- **Nada TD/F/C en el banco** hasta sus respuestas (DF-21).
+- **Las brechas del banco (DF-25)**, priorizadas y sin implementar.
+- **Optimizar la cola docente (TD-09)**, antes de cohortes de más de ~20
+  residentes.
+- **C2, C15, los vínculos PARTIAL, el *faculty override* y −3**, sin cambio.
+- **El lector**, salvo lo que se mida en el piloto: primero medir y después
+  corregir (§89).

@@ -21,6 +21,8 @@ The faculty's rule, recorded the same day: the patient is present and answers,
 so information available on asking was available. A resident who never asked
 was not deprived of it; they omitted to obtain it.
 """
+from copy import deepcopy
+
 import pytest
 
 import history_review
@@ -28,9 +30,27 @@ from case_assessment import ASKING_RULE, events as defined_events, verify
 from faculty_analysis import case_id_of
 
 
+def frozen_case(case_id):
+    """The case as a real record carries it: frozen with the encounter at launch.
+
+    Since L-F01 (2026-09-28) the topics a case offered are read from this copy,
+    never from the bank as it stands today, so a record without it is legacy
+    and offers nothing (test_an_old_encounter_keeps_its_own_history).
+    """
+    from clinical_cases import variant_by_id
+    try:
+        return {"id": case_id, "history": deepcopy(variant_by_id(case_id)["history"])}
+    except (KeyError, ValueError, TypeError):
+        return None
+
+
 def record(events, case_id="hypoglycemia_76f"):
-    return {"payload": {"session": {
+    item = {"payload": {"session": {
         "encounter": {"authored_case_id": case_id}, "events": list(events)}}}
+    case = frozen_case(case_id)
+    if case:
+        item["encounter"] = {"spec": {"clinical_case": case}}
+    return item
 
 
 def asked(question, answer="An answer.", minute=0):
@@ -243,7 +263,7 @@ def learner_document(events, case_id="hypoglycemia_76f"):
         "precomparison_decision_review": fixture["reflections"],
         "review_prompts": fixture["reflection_prompts"],
         "encounter_closed_events": list(events),
-        "encounter_closed_state": {"encounter_spec": {"clinical_case": {"id": case_id}}},
+        "encounter_closed_state": {"encounter_spec": {"clinical_case": frozen_case(case_id) or {"id": case_id}}},
     }
     payload = analysis_payload_from_session(session)
     report["source_hash"] = source_fingerprint(payload)
@@ -279,6 +299,8 @@ def brief(events, *, compact, case_id="hypoglycemia_76f"):
     report, record = brief_example()
     record["payload"].setdefault("session", {})["events"] = list(events)
     record["payload"]["session"].setdefault("encounter", {})["authored_case_id"] = case_id
+    if frozen_case(case_id):
+        record.setdefault("encounter", {})["spec"] = {"clinical_case": frozen_case(case_id)}
     return text_of(render_faculty_brief_pdf(report, record, compact=compact))
 
 
@@ -312,6 +334,7 @@ def test_the_analysis_source_carries_the_history_and_the_rule():
     item["payload"].setdefault("session", {})["events"] = asked(
         "¿Qué medicamentos toma?", "Tomo glimepirida.")
     item["payload"]["session"].setdefault("encounter", {})["authored_case_id"] = "hypoglycemia_76f"
+    item.setdefault("encounter", {})["spec"] = {"clinical_case": frozen_case("hypoglycemia_76f")}
     source = build_analysis_source(item)
     assert source["history_obtained"] == [
         {"minute": 0, "asked": "¿Qué medicamentos toma?", "answered": "Tomo glimepirida."}]
@@ -328,6 +351,7 @@ def test_the_rubric_source_carries_what_asking_would_have_told_them():
     item["is_sandbox"] = False
     item["payload"].setdefault("session", {})["events"] = []
     item["payload"]["session"].setdefault("encounter", {})["authored_case_id"] = "hypoglycemia_76f"
+    item.setdefault("encounter", {})["spec"] = {"clinical_case": frozen_case("hypoglycemia_76f")}
     source = build_rubric_source(item)
     event = next(row for row in source["defined_critical_events"]
                  if row["event_id"] == "hypo_unsafe_discharge")

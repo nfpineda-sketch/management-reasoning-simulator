@@ -123,24 +123,66 @@ def topics_named(exchanges, topics=None):
     return named
 
 
-def _case_topics(case_id):
-    if not case_id:
-        return ()
-    try:
-        from clinical_cases import variant_by_id
-        return tuple(variant_by_id(case_id).get("history", {}))
-    except (ImportError, KeyError, ValueError, TypeError):
-        return ()
+def frozen_topics(record):
+    """(topics, source): the history topics this encounter's own case offered.
+
+    L-F01, approved on 2026-09-28: an encounter is read with what belonged to
+    it, never with the bank as it stands today. The topics used to come from the
+    live bank, so a topic added to a case later showed an old encounter as
+    "never asked", a topic removed hid what had been asked, and the critical
+    event screening that turns on those questions changed with them.
+
+    They are read from the case frozen with the encounter: the account store's
+    encounter column, written once at launch, then the session's own state.
+    ``source`` says which reading this is:
+
+    * ``frozen`` -- the encounter carries its case;
+    * ``generated`` -- a generated case declared nothing before it was played;
+    * ``unavailable`` -- a legacy encounter that carries no case: what its case
+      offered then cannot be known, and today's bank is not read in its place.
+    """
+    record = record if isinstance(record, dict) else {}
+    specs = []
+    encounter = record.get("encounter")
+    if isinstance(encounter, dict):
+        specs.append(encounter.get("spec"))
+    payload = record.get("payload")
+    session = payload.get("session") if isinstance(payload, dict) else None
+    if isinstance(session, dict):
+        for key in ("encounter_closed_state", "state"):
+            state = session.get(key)
+            if isinstance(state, dict):
+                specs.append(state.get("encounter_spec"))
+    for spec in specs:
+        case = spec.get("clinical_case") if isinstance(spec, dict) else None
+        if not isinstance(case, dict):
+            continue
+        import evaluation_basis
+        if evaluation_basis._is_generated(case.get("id"), spec):
+            return (), "generated"
+        history = case.get("history")
+        if isinstance(history, dict):
+            return tuple(history), "frozen"
+    # An analysis payload carries the topic names read from the frozen case
+    # when it was built, never the case itself (management_trace_store).
+    if isinstance(payload, dict) and isinstance(payload.get("history_topics"), list):
+        source = payload.get("history_topics_source")
+        if source in {"frozen", "generated", "unavailable"}:
+            return tuple(str(topic) for topic in payload["history_topics"]), source
+    return (), "unavailable"
 
 
 def review(record, case_id=""):
     """What was asked, what the case offered, and what nobody asked about.
 
     ``not_named`` is an omission of the learner's, not a limitation of the
-    record, and every surface that shows it says so.
+    record, and every surface that shows it says so. Only an encounter that
+    carries its case can say what it offered; ``topics_source`` says which one
+    this is (``frozen_topics``). ``case_id`` is kept for the callers that pass
+    it; the topics never come from it.
     """
     exchanges = obtained(record)
-    offered = _case_topics(case_id)
+    offered, source = frozen_topics(record)
     named = topics_named(exchanges, offered) if offered else topics_named(exchanges)
     return {
         "exchanges": exchanges,
@@ -150,6 +192,7 @@ def review(record, case_id=""):
         "named": sorted(named),
         "not_named": [{"topic": topic, "label": HISTORY_TOPIC_LABELS.get(topic, topic)}
                       for topic in offered if topic not in named],
+        "topics_source": source,
     }
 
 
@@ -163,6 +206,8 @@ def unasked_for_events(record, case_id):
     summary = review(record, case_id)
     named = set(summary["named"])
     labels = {row["topic"]: row["label"] for row in summary["offered"]}
+    labels = {topic: labels.get(topic) or HISTORY_TOPIC_LABELS.get(topic, topic)
+              for topic in set(labels) | set(HISTORY_TOPIC_LABELS)}
     rows = []
     for event in evaluation_basis.resolve(record, case_id or None)["events"] if case_id else ():
         for topic, tells in event.get("information_on_asking", ()):

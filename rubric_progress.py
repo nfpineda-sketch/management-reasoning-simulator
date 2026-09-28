@@ -48,9 +48,16 @@ def _scores(review):
 
 
 def confirmed(reviews):
-    """Only what a faculty member completed, oldest first."""
+    """Only what a faculty member completed, in the order the encounters happened.
+
+    L-F04 (decided 2026-09-28): the trajectory is the encounters', so a review
+    is placed by when its encounter was played (``encounter_at``) and only then
+    by when it was confirmed. A review that does not say when its encounter was
+    played keeps its place by confirmation, as before.
+    """
     kept = [review for review in reviews or [] if (review or {}).get("status") == "confirmed"]
-    return sorted(kept, key=lambda review: (review.get("created_at") or 0,
+    return sorted(kept, key=lambda review: (review.get("encounter_at") or review.get("created_at") or 0,
+                                            review.get("created_at") or 0,
                                             review.get("sequence") or 0))
 
 
@@ -78,6 +85,7 @@ def results(reviews, version=None):
             "attempt_id": review.get("attempt_id"),
             "challenge_id": review.get("challenge_id"),
             "case_id": review.get("case_id"),
+            "encounter_at": review.get("encounter_at"),
             "confirmed_at": review.get("created_at"),
             "rubric_version": _version(review),
             "included": _version(review) == version,

@@ -50,6 +50,9 @@ INSTRUCTION_2026_09_28 = ("Instrucción docente del 2026-09-28 (ciclo 5 del AI A
 INSTRUCTION_2026_09_28_NIGHT = ("Instrucción docente del 2026-09-28, extensión nocturna del ciclo 5 (59Z y 59BT: "
                                 "corregir sólo bugs inequívocos de aislamiento o de persistencia, pequeños, "
                                 "reversibles y probados)")
+INSTRUCTION_2026_09_28_CYCLE6 = ("Instrucción docente del 2026-09-28, ciclo 6 del AI Advisor (DF-22 por clase, 59O-03 y "
+                                 "seguridad de la aclaración, L-F01, L-F04 y sólo las correcciones de DF-23 que "
+                                 "cumplen las seis condiciones)")
 
 CORRECTIONS = (
     {
@@ -1126,6 +1129,121 @@ CORRECTIONS = (
                   "test_the_last_close_record_is_not_the_next_encounter_s",
                   "test_a_new_encounter_starts_without_the_last_close.py::"
                   "test_a_resumed_encounter_keeps_its_own_close_warning"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-04",
+        "date": "2026-09-28",
+        "title": "DF-22: nueve clases de oración que perdían, invertían o retenían una orden de primera línea",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Auditoría del Trace del ciclo 5 (C01–C09), corregida por clase y no por frase: «X, si no responde, "
+                   "Y» da X ahora y deja Y como plan (también con una condición entre la orden y su repetición); "
+                   "«Diagnóstico: orden» ejecuta lo que sigue a los dos puntos salvo tras una condición, un tiempo, "
+                   "una alternativa o algo pendiente, que se leen como antes; «Ahora X y luego repetir» da X y deja "
+                   "la repetición como su plan; «Suspende A y cambia a B» suspende A e inicia B, y las formas de "
+                   "suspender un cristaloide (hold, D/C, cierra, corta) ya no se pierden; el destino con «con/on» "
+                   "tratamiento hace ambos y una receta del alta queda como receta; «Activo hemodinamia» activa; «Por "
+                   "<razón> instalo…» ejecuta; el ácido tranexámico con su duración ya no retiene el paquete urgente; "
+                   "un hallazgo tras la orden no es otra orden. Medido con frases de desarrollo y con tres conjuntos "
+                   "ciegos internos. Lo que esos conjuntos hallaron en las correcciones mismas se corrigió después "
+                   "de medir: el ácido tranexámico en la historia, en un pensamiento o en una retención; lo unido "
+                   "con «y/and» a lo que hizo el equipo prehospitalario se pregunta y no se ejecuta; un rótulo con un "
+                   "umbral, un estado a alcanzar o un resultado («Con angioTAC positivo:») es una condición; y la vía "
+                   "por la que pasa un suero («SF 500 mL por VVP», «via the PIV») es su vía, no una vía nueva que "
+                   "perdía el bolo. Los defectos que quedan están en KNOWN_DEFECTS y en el registro de deuda técnica. "
+                   "Presente en el baseline español del piloto, que no se toca."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE6,
+        "affects": {"modules": ["family_parser", "family_engine", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_critical_clinical_language_regressions.py::test_the_reader_reads_the_order_that_runs_now",
+                  "test_critical_clinical_language_regressions.py::test_a_near_miss_runs_nothing_it_should_not",
+                  "test_critical_clinical_language_regressions.py::test_the_engine_runs_it",
+                  "test_critical_clinical_language_regressions.py::"
+                  "test_the_question_about_a_clause_joined_to_the_prehospital_account_reads_in_spanish",
+                  "test_critical_clinical_language_regressions.py::test_the_stored_management_trace_records_what_was_written"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-05",
+        "date": "2026-09-28",
+        "title": "Lo que la página dice de una orden sigue a lo que el motor ejecutó; una aclaración no pierde la orden retenida",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("59O-03: la página anunciaba «Urgent intervention executed…» y ofrecía explicarla después antes de "
+                   "ejecutar nada, aunque el motor rechazara el paquete; ahora el aviso y la oferta salen sólo de una "
+                   "ejecución real, también cuando la respuesta a una aclaración la completa, y el análisis docente "
+                   "marca «urgent_unheld» sólo si corrió. El aviso de la anulación docente dice si la orden no corrió. "
+                   "Seguridad de la aclaración: «no sé» o «I don't know» ante una orden retenida la dejaba "
+                   "desaparecer en español; ahora la mantiene y repite la pregunta, y una orden nueva que reemplaza a "
+                   "la retenida lo dice. La traducción de esos avisos ya no queda a medias."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE6,
+        "affects": {"modules": ["app", "urgent_interventions", "faculty_analysis", "language"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_what_the_page_says_follows_what_ran.py::test_a_an_urgent_order_that_runs_is_announced_and_offered_for_explanation",
+                  "test_what_the_page_says_follows_what_ran.py::test_c_an_unreadable_item_holds_the_urgent_bundle_and_claims_nothing",
+                  "test_what_the_page_says_follows_what_ran.py::test_d_f_e_a_question_keeps_the_urgent_bundle_until_it_runs",
+                  "test_what_the_page_says_follows_what_ran.py::test_only_an_urgent_entry_that_ran_awaits_an_explanation"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-06",
+        "date": "2026-09-28",
+        "title": "L-F01: un encuentro antiguo se lee con los temas de historia de su propio caso",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Los temas de historia que un caso ofrecía se leían del banco vivo: un cambio del banco cambiaba el "
+                   "«disponible y no preguntado» de encuentros antiguos y el tamizaje de eventos críticos que depende de "
+                   "una pregunta. Ahora se leen del caso congelado con el encuentro (columna del encuentro, estado de la "
+                   "sesión, o los nombres de los temas que lleva el payload de análisis, nunca el caso). Un encuentro "
+                   "sin copia es legacy: sus temas quedan «no disponibles» y no se toman del banco de hoy. Las huellas "
+                   "de los análisis guardados no cambian."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE6,
+        "affects": {"modules": ["history_review", "management_trace_store"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_an_old_encounter_keeps_its_own_history.py::test_version_a_stays_a_after_the_bank_changes_to_b",
+                  "test_an_old_encounter_keeps_its_own_history.py::test_the_critical_event_screening_keeps_the_question_that_was_asked",
+                  "test_an_old_encounter_keeps_its_own_history.py::test_a_legacy_encounter_without_its_case_is_unavailable_not_today_s_bank",
+                  "test_an_old_encounter_keeps_its_own_history.py::test_carrying_the_topic_names_changes_no_saved_analysis_fingerprint"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-07",
+        "date": "2026-09-28",
+        "title": "L-F04: la trayectoria del perfil sigue a los encuentros, no a las confirmaciones",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("El perfil ordenaba las rúbricas confirmadas por la hora de confirmación: confirmar tarde un encuentro "
+                   "anterior lo volvía el «último» y un residente que pasó de 1 a 3 veía «−2». Ahora se ordena por la "
+                   "hora del encuentro y la hora de confirmación queda como metadato. Los promedios no dependen del "
+                   "orden y no cambian; qué revisión de un encuentro cuenta (L-F02) no se toca."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE6,
+        "affects": {"modules": ["rubric_store", "rubric_progress"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_the_profile_follows_the_encounters.py::test_confirming_an_earlier_encounter_later_does_not_make_it_the_latest",
+                  "test_the_profile_follows_the_encounters.py::test_the_means_are_the_same_whatever_the_order_of_confirmation"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-28-08",
+        "date": "2026-09-28",
+        "title": "DF-23: la acinesia de de Winter se sostiene con la arteria cerrada; bradycardia_bb_54f llega somnolienta",
+        "scope": {"level": "variant", "family": "acs", "variants": ["acs_52m_de_winter", "bradycardia_bb_54f"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("Las dos únicas correcciones de la auditoría DF-23 que cumplen las seis condiciones. De Winter llega "
+                   "con «Akinesis of the anterior wall and apex» y el modelo, que parte toda oclusión en «mildly "
+                   "reduced», tomaba el POCUS repetido con la arteria cerrada: una reperfusión espontánea que no "
+                   "ocurrió. El caso declara su grado de llegada y su texto se mantiene hasta que el modelo lo alcanza "
+                   "o se abre la arteria; la fisiología no cambia y los demás casos tampoco. bradycardia_bb_54f dice "
+                   "cuatro veces que llega somnolienta y su estado de llegada quedaba en «Alert»: ahora llega "
+                   "somnolienta y ya no «empeora» sola a los 5 minutos. Los encuentros guardados conservan su caso "
+                   "congelado y sus informes."),
+        "authorised_by": INSTRUCTION_2026_09_28_CYCLE6,
+        "affects": {"modules": ["acs_reperfusion", "family_engine", "clinical_cases"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_the_case_says_what_the_patient_shows.py::test_the_de_winter_akinesis_stands_while_the_artery_is_closed",
+                  "test_the_case_says_what_the_patient_shows.py::test_nothing_else_changes_in_de_winter_nor_in_the_other_occlusions",
+                  "test_the_case_says_what_the_patient_shows.py::test_the_beta_blocker_overdose_arrives_drowsy_and_does_not_worsen_on_its_own"],
         "preservation": None,
     },
 )

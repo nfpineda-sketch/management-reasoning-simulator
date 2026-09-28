@@ -668,7 +668,10 @@ FAMILIES["acs"]["variants"].append(_case(
     ["Which parts of the ECG did you compare, and in which leads?", "What would waiting for ST elevation have cost?"],
     ["aspirin", "consult", "reperfusion_referral"], ecg="de_winter",
     coronary={"omi": True, "active_occlusion": True, "territory": "anterior", "rv_involvement": False,
-              "pci_capable": True, "symptom_onset_min": 40},
+              "pci_capable": True, "symptom_onset_min": 40,
+              # Its arrival scan names akinesis: it stands until the model reaches
+              # it or the artery opens (DF-23, 2026-09-28).
+              "arrival_wall_grade": "akinetic"},
     visual=_visual(skin="mild pallor", sweating="marked")))
 
 _o = _observable(138, 84, 76, 97, 18, crt=2, temperature=36.6, glucose=112, pain_score=0)
@@ -1283,7 +1286,10 @@ FAMILIES["bradycardia"]["variants"].append(_case(
                  "escape_rate": 32, "target_rate": 70}))
 
 
-_o = _observable(80, 48, 40, 97, 16, crt=4, extremities="Cool", temperature=36.4,
+# Found drowsy, "drowsy but rousable", "opens eyes to voice": she arrives drowsy.
+# Left at the default "Alert", the room showed her conversing on arrival and then
+# worsening at five minutes when nothing had changed (DF-23, 2026-09-28).
+_o = _observable(80, 48, 40, 97, 16, crt=4, extremities="Cool", mental="Drowsy", temperature=36.4,
                  glucose=96, perfusion="impaired")
 FAMILIES["bradycardia"]["variants"].append(_case(
     "bradycardia_bb_54f", "bradycardia", 54, "female", ["hypertension", "migraine"],

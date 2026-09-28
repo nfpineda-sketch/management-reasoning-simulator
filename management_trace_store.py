@@ -28,6 +28,11 @@ def analysis_payload_from_session(session):
     """
     session = session if isinstance(session, dict) else {}
     from faculty_analysis import case_id_of
+    import history_review
+    # The names of the history topics the encounter's own case offered, read
+    # from the case frozen with it: the names, never the case (L-F01,
+    # 2026-09-28). Metadata beside the evidence, like the case identifier.
+    topics, topics_source = history_review.frozen_topics({"payload": {"session": session}})
     return {
         "encounter_ended": session.get("encounter_ended") is True,
         "reflection_locked": session.get("expert_comparison_unlocked") is True,
@@ -36,6 +41,8 @@ def analysis_payload_from_session(session):
         "reflection_prompts": deepcopy(session.get("review_prompts") or []),
         "encounter_events": deepcopy(session.get("encounter_closed_events") or []),
         "authored_case_id": case_id_of({"payload": {"session": session}}),
+        "history_topics": list(topics),
+        "history_topics_source": topics_source,
     }
 
 

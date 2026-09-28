@@ -5,31 +5,179 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-28, al cerrar el ciclo 5 y su extensión nocturna
-  (secciones «Cierre del ciclo 5» y «Extensión nocturna del ciclo 5»). Las
-  decisiones docentes que lo abrieron están en «Decisiones del 2026-09-28
-  (apertura del ciclo 5)».
+- **Actualizado:** 2026-09-28, al cerrar el ciclo 6 (sección «Cierre del
+  ciclo 6», con la cola final en cinco clases). La apertura del ciclo 6, el
+  cierre del ciclo 5 y su extensión nocturna siguen más abajo.
 
 ## Pendientes de decisión
 
-| ID | Clase | Tema | Estado |
+| ID | Clase | Tema | Estado al cierre del ciclo 6 |
 |---|---|---|---|
-| DF-20 | HIGH VALUE · CLINICAL REVIEW | `acs_54m_inferior`: VD del caso frente al POCUS | **Auditado, sin cambiar:** recomendación A · C14 del caso sigue NOT REVIEWED |
-| DF-22 | HIGH VALUE · METHODOLOGICAL REVIEW | Clases del lector y de la página halladas por la auditoría nocturna | **Documentado, sin corregir (59I):** 9 CRITICAL, 14 HIGH · ninguna es regresión |
-| DF-15 | HIGH VALUE · METHODOLOGICAL REVIEW | Piloto del validation corpus, Fase 1 | **Listo, no enviado** · tooling READY · baselines ES `939978a` y EN `ec1c77f` |
-| DF-23 | CLINICAL REVIEW | Inconsistencias clínicas fuera de `acs_54m_inferior` | **Verificadas en el motor, sin cambiar:** POCUS de las 4 oclusiones, `bradycardia_bb_54f`, FA con ritmo sinusal, embarazo |
-| DF-24 | METHODOLOGICAL REVIEW | Integridad longitudinal: correcciones propuestas | **Documentado:** temas de historia vivos, «última» rúbrica, cronología del perfil, anulación y retiro |
-| DF-21 | CLINICAL REVIEW (futuro) | Oportunidades de TD1, F1, C1, C3 y C4 | **Borrador en `docs/tdfc/`:** 73 YES, 60 NO, 22 dudosas en 8 decisiones · nada escrito en el banco |
-| DF-25 | CLINICAL + METHODOLOGICAL REVIEW (futuro) | Banco de casos: asignación de desafíos y brechas | **Auditado:** 18 brechas, 8 de clase A (declarar por caso o ajustar el sorteo) |
-| DF-16 | MEDIUM · LOW | Defectos del lector que quedan | KD-02 a KD-15 en el manifiesto (versión 2) · KD-15 nuevo, sin corregir |
-| DF-14 | METHODOLOGICAL REVIEW | Vínculos PARTIAL inactivos de R1-03, R1-04 y R2-01 | **Confirmado: siguen inactivos** · documentados para revisión posterior |
-| DF-12 | STRUCTURAL | Regla de transición para objetivos NOT REVIEWED | **Aprobada como transitoria**, no permanente |
-| DF-17 | METHODOLOGICAL REVIEW | *Faculty override*: registrar que una oportunidad no ocurrió | **DEFERRED:** se diseña después del piloto C14 |
-| DF-4 | CLINICAL + METHODOLOGICAL REVIEW | C2 y los casos trauma | C2 deshabilitada · se revisa cuando haya un banco de trauma más amplio |
-| DF-18 | LOW PRIORITY | Evidencia de fuentes externas (multisource) | Registrado · sin acción |
-| DF-9 | METHODOLOGICAL REVIEW | −3, doble efecto de safety y varios eventos por una conducta | Registrado · sin decisión ahora |
-| DF-11 | LOW PRIORITY | Residuos menores de la lectura | Registrado |
-| DF-5 | — | C15 | Deshabilitada, sin acción |
+| TD-21 | **BLOCKING BEFORE RESIDENCY PILOT** · CLINICAL REVIEW | Trauma: transfundir una hemorragia activa dispara la sobrecarga transfusional | **Verificado, sin cambiar.** Recomendación: excluir la hemorragia activa de la regla |
+| TD-26 | **BLOCKING BEFORE RESIDENCY PILOT** | Pérdidas sin aviso que quedan en el lector, sobre todo hemoderivados | **Medido a ciegas, sin corregir.** Pide autorizar una corrección por clase |
+| DF-21 · C4 | **BLOCKING BEFORE RESIDENCY PILOT** · METHODOLOGICAL | C4 = NO está decidido y no escrito: la transición lo deja valorable en todo encuentro | Pide autorizar que C4 = NO se escriba antes que el resto de TD/F/C |
+| DF-15 | HIGH VALUE · METHODOLOGICAL REVIEW | Piloto del validation corpus, Fase 1 | **Listo, no enviado** · se mide contra el SPANISH PILOT BASELINE `939978a` |
+| DF-22 | HIGH VALUE | Clases del lector | **Corregidas las 9 CRITICAL** (C-2026-09-28-04) · residuos en TD-14 y TD-26 |
+| DF-24 | METHODOLOGICAL REVIEW | Integridad longitudinal | **L-F01 y L-F04 aplicadas** · el resto, en `DF24_DECISIONS_FOR_NICOLAS.md` (respuesta en una línea) |
+| DF-21 | METHODOLOGICAL · CLINICAL REVIEW | TD1, F1, C1, C3: TDFC-1 a 6 y 8 | **En `docs/tdfc/TDFC_DECISIONS_FOR_NICOLAS.md`** · nada escrito en el banco |
+| DF-23 | CLINICAL REVIEW | Inconsistencias clínicas | **2 aplicadas** (C-2026-09-28-08) · 9 decisiones en `AUDITORIA_DF23_CICLO6.md` |
+| DF-20 | CLINICAL REVIEW | `acs_54m_inferior` | **Sin cambio de datos ni de fisiología** · C14 NO recomendado · sigue NOT REVIEWED |
+| TD-22 | HIGH VALUE | La prueba de embarazo retiene el envío | Cumple 6/6; no se aplicó (regla §64) |
+| DF-25 | METHODOLOGICAL (futuro) | Brechas del banco | **Priorizadas:** R1-07, R2-02, R1-03, R1-04, R2-01 y C4 · sin implementar |
+| DF-16 | MEDIUM · LOW | Defectos del lector que quedan | Manifiesto versión 2, sin cambio · TD-14 al día |
+| DF-14 | METHODOLOGICAL REVIEW | Vínculos PARTIAL inactivos | Siguen inactivos |
+| DF-12 | STRUCTURAL | Regla de transición para objetivos NOT REVIEWED | Transitoria; retirada sólo para C14 en 30 casos |
+| DF-17 | METHODOLOGICAL REVIEW | *Faculty override* de una oportunidad | DEFERRED |
+| DF-4 | CLINICAL + METHODOLOGICAL REVIEW | C2 y los casos trauma | C2 deshabilitada |
+| DF-18 · DF-9 · DF-11 · DF-5 | — | Multisource · −3 · residuos menores · C15 | Registrados, sin acción |
+
+## Cierre del ciclo 6 (2026-09-28)
+
+**Hecho.**
+
+- **DF-22 · las nueve clases CRITICAL del lector, corregidas por clase**
+  (C-2026-09-28-04).
+  - C01 a C09 en inglés y español: el lector, el motor y el Management Trace.
+  - Suite nueva `CRITICAL_CLINICAL_LANGUAGE_REGRESSIONS`: 153 pruebas, 4 de
+    ellas por la página real.
+  - Tres conjuntos ciegos (258 frases que nadie del desarrollo vio), medidos
+    **una vez**. Encontraron regresiones de las propias correcciones; se
+    corrigieron después, y esos números son post hoc.
+  - Con el código final, **ninguna de las 118 negativas ejecuta nada de más en
+    el motor**. En las positivas, la mayoría de lo que no corre se retiene con
+    una pregunta; quedan pérdidas sin aviso, sobre todo de hemoderivados
+    (TD-26).
+  - Corpus de ensayo: 238 decisiones idénticas al ciclo 5.
+  - Detalle: `MEDICION_RECONOCIMIENTO_ORDENES.md`.
+- **59O-03, completo** (C-2026-09-28-05). El aviso de ejecución urgente y la
+  oferta de explicarla salen sólo de una ejecución real. Casos A–F de punta a
+  punta en inglés y español.
+- **Seguridad de la aclaración.**
+  - «No sé» ya no hace desaparecer una orden retenida: la mantiene y repite la
+    pregunta.
+  - Lo unido a lo que hizo el equipo prehospitalario se pregunta, no se
+    ejecuta.
+- **L-F01, completo** (C-2026-09-28-06). Un encuentro se lee con los temas de
+  historia de su caso congelado. Lo legacy sin caso queda UNAVAILABLE. A → B →
+  reabrir da A.
+- **L-F04, completo** (C-2026-09-28-07). La trayectoria sigue la fecha del
+  encuentro; la de confirmación queda como metadato.
+- **DF-23: dos correcciones que cumplen las seis condiciones**
+  (C-2026-09-28-08).
+  - De Winter conserva su acinesia con la arteria cerrada.
+  - `bradycardia_bb_54f` llega somnolienta.
+  - El resto queda para decisión.
+- **Sin cambio:**
+  - **`acs_54m_inferior`:** sin cambio de datos ni fisiología; sigue NOT
+    REVIEWED.
+  - **C14:** 14 YES y 16 NO.
+  - **TD/F/C:** nada escrito en el banco.
+- **Documentos de decisión:** `DF24_DECISIONS_FOR_NICOLAS.md` y
+  `docs/tdfc/TDFC_DECISIONS_FOR_NICOLAS.md`.
+- **Readiness del piloto con residentes:** `READINESS_PILOTO_RESIDENCIA.md`.
+  Respuesta: **WITH CONDITIONS**.
+- **Baselines.**
+  - El SPANISH PILOT BASELINE `939978a` no se tocó.
+  - Se registró el **DEVELOPMENT HARDENED BASELINE V1**
+    (`validation/BASELINES.md`). No es una versión validada.
+- **Nada se contactó, envió, fusionó ni publicó.** El ciclo 7 no se inició.
+
+### Cola de decisiones al cierre del ciclo 6
+
+**BLOCKING BEFORE RESIDENCY PILOT**
+
+1. **TD-21 · Sobrecarga transfusional en trauma.**
+   - El problema: con una hemorragia activa, la familia trauma no baja la
+     hemoglobina y la regla de sobrecarga mira Hb ≥ 10. Enseña que la sangre
+     daña en los dos casos de trauma.
+   - Recomendación: excluir la hemorragia activa de la regla.
+   - Evidencia: `AUDITORIA_DF23_CICLO6.md` §7.1.
+2. **TD-26 · Hemoderivados que se pierden sin aviso.**
+   - Ejemplos: «2 U de GR O negativo», «O-neg», el protocolo de transfusión
+     masiva.
+   - Recomendación: autorizar una corrección por clase, medida como DF-22.
+3. **C4 = NO, escrito en el banco antes que el resto de TD/F/C.**
+   - Está decidido (TDFC-7), pero la transición deja C4 valorable en todo
+     encuentro.
+   - Recomendación: escribirlo solo.
+4. **El uso del piloto con residentes.**
+   - La fidelidad del lector con texto externo no está medida.
+   - Recomendación: formativo, con confirmación docente de cada rúbrica, hasta
+     que el piloto de validación la mida.
+5. **PostgreSQL (TD-24).**
+   - L-F01 y L-F04 se probaron en SQLite.
+   - Falta verificarlos en la base de staging, con su acceso.
+
+**HIGH VALUE / NOT BLOCKING**
+
+- **Enviar el piloto de validación v1 (DF-15):** revisar los 18 documentos,
+  reclutar a los 6 médicos y enviar.
+- **DF-24, en una línea:** «I-F02 A · L-F02 A · I-F18 B · L-F07 B (D después)
+  · anulada A · retiro A · meta A».
+- **TD-22:** registrar la prueba de embarazo como «no modelada». Cumple 6/6.
+- **TD-23:** los avisos que quedan en inglés dentro de la interfaz en español.
+
+**METHODOLOGICAL**
+
+- **TDFC-1 a 6 y 8, en una línea:** «1 approve / 2 approve / 3 approve /
+  4 approve / 5 approve (54m tras DF-20) / 6 approve / 8 approve».
+- **Brechas del banco (DF-25):** R1-07, R2-02, R1-03, R1-04, R2-01 y C4, en
+  ese orden. Una brecha no es trabajo automático.
+- **DF-12, DF-14, DF-17 y DF-9:** sin cambio.
+- **Regla para cuando lleguen datos humanos (§89):** MEASURE FIRST.
+  BASELINE → MEASUREMENT → ANNOTATION → ADJUDICATION → ERROR CLASSIFICATION →
+  PRIORITIZATION → APPROVED FIX.
+
+**CLINICAL REVIEW**
+
+- **`acs_54m_inferior` (DF-20):**
+  - confirmar C14 **NO** (recomendado) o YES;
+  - decidir si se agrega una nota docente sobre el VD.
+- **DF-23, filas 3 a 11:**
+  - embarazo: qué responde cada caso;
+  - grado del VI y líneas B en `acs_70f_left_main`;
+  - «Reduced → mildly reduced» en inferior y posterior;
+  - la pared tras reperfundir;
+  - FA en `anaphylaxis_63m_betablocked`;
+  - foto de llegada de `bradycardia_bb_54f`;
+  - menores.
+- **TD-04:** confirmar el POCUS de los casos C14 YES; todo el POCUS del banco
+  sigue marcado como borrador.
+
+**WAITING FOR EXTERNAL DATA**
+
+- **Los documentos del piloto de validación.** Se miden primero contra el
+  SPANISH PILOT BASELINE y después contra el DEVELOPMENT HARDENED BASELINE V1.
+- **La fidelidad externa del lector.** Con ella se priorizan TD-14 y el resto
+  del manifiesto de defectos conocidos.
+
+## Decisiones del 2026-09-28 (apertura del ciclo 6)
+
+El docente aprobó el cierre del ciclo 5 y ordenó el ciclo 6: **endurecimiento,
+consistencia clínica e integridad longitudinal**. El Management Trace sigue
+siendo la fuente de verdad: lo que el residente escribió, el motor lo entiende,
+la ejecución lo refleja y el Trace lo registra con fidelidad.
+
+| Tema | Decisión |
+|---|---|
+| **DF-22** · las 9 clases CRITICAL del lector | **APROBADO para implementar**, por clase y no por frase: BEFORE, causa, corrección, frases nuevas independientes, controles negativos, ejecución, Trace, EN, ES y sin regresión. Suite nueva `CRITICAL_CLINICAL_LANGUAGE_REGRESSIONS`. Las 90 frases de la auditoría no son la meta |
+| **59O-03** · aviso falso de ejecución | **APROBADO.** El aviso de ejecución sale del estado real de ejecución, nunca del reconocimiento, del intento ni del lenguaje urgente. Casos A–F de punta a punta, EN/ES |
+| **Seguridad de la aclaración** | Auditar el camino entrada ambigua → pregunta → respuesta → ejecución. Una aclaración no cambia en silencio la intención clínica; si no se resuelve con seguridad, se retiene. Sólo se corrigen defectos inequívocos; si cambia semántica clínica, se documenta |
+| **SPANISH PILOT BASELINE `939978a`** | **Inmutable.** No se cambian sus métricas, su manifiesto de defectos conocidos ni los 18 documentos. La primera medición humana se hace contra él |
+| **HEAD ≠ baseline de validación** | El HEAD de desarrollo quedará por delante del baseline español, a propósito. No se mezclan métricas |
+| **DEVELOPMENT HARDENED BASELINE V1** | Se registra si todo queda verde. No reemplaza al baseline español ni se llama «validado» |
+| **DF-20** · `acs_54m_inferior` | **Recomendación anterior modificada.** No se cambia todavía el tamaño ni la contractilidad del VD, la VCI ni la fisiología. Nueva pregunta: ¿hay de verdad una contradicción, o un IAM inferior con compromiso hemodinámico del VD puede coexistir con un POCUS cualitativo no diagnóstico? Para C14: ¿el POCUS crea una oportunidad significativa de guiar el manejo? El caso sigue NOT REVIEWED salvo evidencia inequívoca. «Sin cambios» es un resultado aceptable |
+| **DF-23** · POCUS coronario y otras inconsistencias | **Auditoría focalizada aprobada.** Se corrige sólo lo inequívoco: una sola interpretación defendible, diseño claro, sin cambiar el Decision Challenge ni la metodología, con BEFORE/AFTER y pruebas. Con dos interpretaciones razonables, se documenta y no se elige |
+| **C14** | Siguen 14 YES y 16 NO. No se cambian salvo que DF-23 demuestre que una inconsistencia invalida una oportunidad, y antes se documenta |
+| **DF-24 · L-F01** | **APROBADO.** Un encuentro histórico se interpreta con lo que le perteneció, no con el banco actual. Sin inventar pasado: lo legacy queda LEGACY / UNKNOWN |
+| **DF-24 · L-F04** | **DECIDIDO.** La trayectoria se ordena por la fecha y hora del encuentro. La fecha de confirmación se conserva como metadato de auditoría |
+| **DF-24 · resto** (I-F02, L-F02, I-F18, L-F07 y las tres decisiones de corrección) | **No se implementan.** Documento de decisión `docs/DF24_DECISIONS_FOR_NICOLAS.md` |
+| **TDFC-7 / C4** | **DECIDIDO: C4 = NO** en los casos propuestos. El motor no modela el componente procedural relevante; ordenar un procedimiento no es una oportunidad de C4. Se registra como brecha, sin cambiar el motor |
+| **TDFC-1 a 6 y 8** | **No se implementan.** Documento corto de decisión `docs/tdfc/TDFC_DECISIONS_FOR_NICOLAS.md`. Nada TD/F/C se escribe en el banco |
+| **Brechas del banco** | Se conserva la auditoría. Se priorizan R1-07, R2-02, R1-03, R1-04, R2-01 y C4 sin implementar; una brecha no es backlog automático |
+| **TD-09** · cola docente a escala | **No se optimiza** en el ciclo 6 |
+| **PostgreSQL** | Probarlo sólo con infraestructura ya disponible y sin gasto; si no, NOT TESTED |
+| **Sin cambios** | D1–D5, escala 0–3, eventos críticos, −3, puntaje ajustado, radar, confirmación docente y DIRECT/PARTIAL. Sin puntajes nuevos ni funciones nuevas |
 
 ## Cierre del ciclo 5 (2026-09-28)
 
