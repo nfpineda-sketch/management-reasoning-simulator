@@ -15,6 +15,10 @@ validación.
 | **SPANISH PILOT BASELINE** | es | `939978a5147ab859a6dc3566ef4e1a98611a5093` | `0.24.13-clinical-encounter` | versión 1 | `validation/pilot_v1/PILOT_BASELINE.md` |
 | **ENGLISH VALIDATION BASELINE** | en | `ec1c77f0339a6e3087337d2a621b2e630d3549a5` | `0.24.13-clinical-encounter` | versión 2 | esta página, sección siguiente |
 
+El **DEVELOPMENT HARDENED BASELINE V1** del ciclo 6 (`72a4a53`) es una
+referencia de desarrollo, no de validación. Está en su propia sección, más abajo,
+y no en el registro que leen las herramientas.
+
 ## ENGLISH VALIDATION BASELINE: `ec1c77f`
 
 **Qué trae, frente al baseline español:**
@@ -56,6 +60,55 @@ el generador de un documento y el documento.
 Ninguno toca el lector ni el motor: `git diff ec1c77f0339a -- family_parser.py
 shared_order_language.py family_engine.py` sale vacío. Aun así, una medición
 se corre en el commit del baseline, no en uno posterior.
+
+## DEVELOPMENT HARDENED BASELINE V1 (ciclo 6)
+
+Instrucción docente del 2026-09-28, ciclo 6 (§29 y §42).
+
+**Es una referencia de desarrollo, no una versión validada.**
+
+- **Qué no hace:**
+  - No reemplaza al SPANISH PILOT BASELINE.
+  - No es un baseline de validación: no está en `validation/baselines.json`,
+    cuyas entradas tienen idioma.
+  - No se mide ningún documento del piloto contra él antes que contra su
+    baseline.
+- **Para qué sirve:** comparar después PILOT BASELINE con HARDENED ENGINE sin
+  contaminar la medición original.
+
+| Campo | Valor |
+|---|---|
+| **COMMIT SHA** | `72a4a5307fa5ae401044ca7f47780f9a221645b3` |
+| **DATE** | 2026-09-28 |
+| **TEST COUNT** | **5197 pasan, 77 omitidas, 2 xfail, 0 fallas** (suite completa en 4 shards sobre este commit) y **56 de 56 regresiones** |
+| **KNOWN DEFECTS VERSION** | 2 (`validation/pilot_v1/manifests/known_defects.json`, sin cambios en el ciclo 6) |
+| **DF-22 STATUS** | **Completo para las nueve clases** (C01–C09, C-2026-09-28-04), en EN y ES, con 192 pruebas. Tres conjuntos ciegos y una revisión adversarial del diff; las regresiones que ésta halló en las propias correcciones están corregidas (C-2026-09-28-09), y cada lectura que difiere del ciclo 5 se revisó. Con el código final, ninguna de las 118 negativas ciegas ejecuta nada de más en el motor. Quedan pérdidas sin aviso, sobre todo de hemoderivados (TD-26), y vocabulario que se retiene con una pregunta (TD-14) |
+| **59O-03 STATUS** | **Completo** (C-2026-09-28-05): casos A–F de punta a punta, EN/ES |
+| **L-F01 STATUS** | **Completo** (C-2026-09-28-06): A → B → reabrir da A; lo legacy sin caso queda UNAVAILABLE |
+| **L-F04 STATUS** | **Completo** (C-2026-09-28-07): orden por la fecha del encuentro, confirmación como metadato. Probado en SQLite; **PostgreSQL NOT TESTED** (TD-24) |
+
+**Cómo usarlo:** `git checkout 72a4a5307fa5`. Una corrida sobre este commit la
+nombra por el commit; la herramienta no la nombra como baseline.
+
+**Cómo llegó a ser este commit.**
+
+- **La primera suite completa del ciclo, sobre `39bac97`, quedó verde** (5154
+  pasan).
+- **Después, una revisión adversarial del diff halló regresiones de las propias
+  correcciones.** Se corrigieron en `3df039e` (C-2026-09-28-09).
+- **La suite sobre `3df039e` encontró una falla.** Una prueba que ejecuta
+  funciones de la página sin sus constantes chocó con una lectura adelantada.
+  `72a4a53` la corrige sin cambiar la conducta.
+- **La suite sobre `72a4a53` es la de arriba.**
+
+**Frente al SPANISH PILOT BASELINE**, este commit trae:
+
+- DF-22 y sus correcciones;
+- 59O-03 y la seguridad de la aclaración;
+- L-F01 y L-F04;
+- las dos correcciones de DF-23.
+
+Los defectos conocidos se etiquetan contra la misma lista (versión 2).
 
 ## Qué registra cada corrida
 
