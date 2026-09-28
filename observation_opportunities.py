@@ -46,6 +46,12 @@ That rule takes nothing from an unreviewed case and adds nothing to it, and it
 is withdrawn one case at a time as declarations are reviewed. It is the most
 conservative and reversible of the transitions considered.
 
+It is TRANSITIONAL, not the architecture (faculty, 2026-09-28): the target is
+that only opportunities explicitly reviewed for a case are evaluable. C14 is
+withdrawn first, then TD/F/C objective by objective, each only after its
+clinical review; when every case of an objective is reviewed, the objective
+leaves ``TRANSITION_OBJECTIVES``.
+
 An opportunity is never a demonstration. ``yes`` only makes an objective
 assessable: an observation exists when a faculty member assesses the
 recorded performance (``progress_store.assess``), and never before.

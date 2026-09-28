@@ -5,23 +5,76 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-27, al cerrar el ciclo 3.
+- **Actualizado:** 2026-09-28, al abrir el ciclo 4 con las decisiones docentes
+  de ese día (sección «Decisiones del 2026-09-28»).
 
 ## Pendientes de decisión
 
 | ID | Clase | Tema | Estado |
 |---|---|---|---|
-| DF-13 | HIGH VALUE · CLINICAL REVIEW | Activar C14 caso por caso | Borrador de 31 filas entregado · **8 preguntas (A–H)** |
-| DF-15 | HIGH VALUE · METHODOLOGICAL REVIEW | Piloto del validation corpus, Fase 1 | Herramienta lista · **piloto por aprobar (VC-1 a VC-4)** |
-| DF-16 | HIGH (2) · MEDIUM (2) · LOW | Defectos del lector encontrados en el ciclo 3 | Registrados · **sin corregir** |
-| DF-14 | METHODOLOGICAL REVIEW | Vínculos PARTIAL inactivos de R1-03, R1-04 y R2-01 | Documentados · **revisión** |
-| DF-12 | STRUCTURAL | Regla de transición para objetivos NOT REVIEWED | **Implementada**, reversible · confirmar |
-| DF-17 | METHODOLOGICAL REVIEW | *Faculty override*: registrar que una oportunidad no ocurrió | No implementado · **abierto** |
-| DF-4 | CLINICAL + METHODOLOGICAL REVIEW | C2 y los casos trauma | C2 sigue deshabilitada · **amplitud pendiente** |
+| DF-13 | HIGH VALUE · CLINICAL REVIEW | Activar C14 caso por caso | **No activar todavía** · el ciclo 4 prepara A–H para una decisión rápida |
+| DF-15 | HIGH VALUE · METHODOLOGICAL REVIEW | Piloto del validation corpus, Fase 1 | **Aprobado con modificaciones** · el ciclo 4 lo deja listo para distribuir |
+| DF-16 | HIGH (2) · MEDIUM (2) · LOW | Defectos del lector encontrados en el ciclo 3 | **a y b autorizados** para el ciclo 4 · el resto se documenta |
+| DF-14 | METHODOLOGICAL REVIEW | Vínculos PARTIAL inactivos de R1-03, R1-04 y R2-01 | **Confirmado: siguen inactivos** · documentados para revisión posterior |
+| DF-12 | STRUCTURAL | Regla de transición para objetivos NOT REVIEWED | **Aprobada como transitoria**, no permanente |
+| DF-17 | METHODOLOGICAL REVIEW | *Faculty override*: registrar que una oportunidad no ocurrió | **DEFERRED:** se diseña después del piloto C14 |
+| DF-4 | CLINICAL + METHODOLOGICAL REVIEW | C2 y los casos trauma | C2 deshabilitada · se revisa cuando haya un banco de trauma más amplio |
 | DF-18 | LOW PRIORITY | Evidencia de fuentes externas (multisource) | Registrado · sin acción |
 | DF-9 | METHODOLOGICAL REVIEW | −3, doble efecto de safety y varios eventos por una conducta | Registrado · sin decisión ahora |
 | DF-11 | LOW PRIORITY | Residuos menores de la lectura | Registrado |
 | DF-5 | — | C15 | Deshabilitada, sin acción |
+
+## Decisiones del 2026-09-28 (apertura del ciclo 4)
+
+- **DF-12 · aprobada como regla TRANSITORIA.**
+  - Mientras un caso u objetivo siga NOT REVIEWED, conserva el comportamiento
+    previo para no perder oportunidades antes de la revisión clínica.
+  - **No es la arquitectura final.** El estado objetivo es: CASO → OPORTUNIDADES
+    REVISADAS EXPLÍCITAMENTE → SOLO LAS OPORTUNIDADES REALES SON EVALUABLES.
+  - El fallback se retira progresivamente: C14 primero y después TD/F/C, a
+    medida que se aprueben sus oportunidades. No se retiran otros fallbacks sin
+    revisión clínica.
+- **DF-14 · confirmado.**
+  - Los 9 vínculos PARTIAL siguen inactivos y documentados para revisión
+    posterior.
+  - PARTIAL IS NOT A DEFECT: los PARTIAL activos y defendibles siguen activos.
+  - Se prioriza lo significativo, interpretable y trazable sobre la cobertura
+    máxima.
+- **DF-16 · a y b autorizados para el ciclo 4**, por clase, EN/ES, con frases
+  nuevas y BEFORE/AFTER.
+  - Los residuos MEDIUM/LOW se corrigen solo si son deterministas, pequeños, de
+    bajo riesgo y del mismo mecanismo: vía compartida, listas de órdenes,
+    variantes comunes.
+  - Los independientes («si» = «whether», texto tomado como respuesta,
+    traducciones, «OK to discharge») se documentan primero. Si alguno resulta de
+    alto valor y barato, se propone para el ciclo 5.
+- **DF-13 · C14 no se activa todavía**, ni siquiera los 6 YES y 6 NO claros.
+  - El ciclo 4 prepara las decisiones A–H agrupadas y puede mejorar el borrador.
+  - C14 es el primer objetivo con el flujo: BORRADOR DEL AI ADVISOR → REVISIÓN
+    CLÍNICA HUMANA → METADATA APROBADA.
+- **DF-17 · DEFERRED / DESIGN AFTER C14 PILOT.**
+  - Debe seguir siendo posible que el docente indique que la oportunidad
+    declarada no ocurrió, o que reconozca una observación incidental.
+  - No se agrega interfaz ni lógica.
+- **DF-4 · C2 sigue deshabilitada.** No se fija un número artificial de casos;
+  se revisa con un banco de trauma más amplio. No se trabaja en C2 en el ciclo 4.
+- **DF-15 · piloto aprobado con modificaciones.**
+  - 6 médicos de urgencia × 3 casos, unos 18 documentos. Cada idioma, escrito
+    por quien lo escribe naturalmente; no se traduce.
+  - Los seis casos propuestos.
+  - Instrucción breve, alineada con la guía del residente: interpretación,
+    acción, expectativa y reevaluación, en texto libre y sin cajas obligatorias.
+  - **VC-1:** aprobado. Dejar listos los 18 documentos; el docente recluta y
+    distribuye.
+  - **VC-2:** anotación primaria por un clínico, 20 % doble por un segundo
+    clínico, y desacuerdo por un tercero o por consenso explícito.
+  - **VC-3:** las indicaciones de regreso son FOLLOW-UP / DISPOSITION SAFETY
+    PLAN. Cuentan como contingencia solo si traen una condición explícita que
+    modifica el plan.
+  - **VC-4:** revisar de nuevo los textos en español y verificar los DOCX
+    estructuralmente. La verificación visual en Word la hace el docente.
+  - **Split development/sealed:** no se sortea antes de que vuelvan los
+    documentos; el ciclo 4 define el procedimiento, reproducible y auditable.
 
 ## Decidido e implementado
 

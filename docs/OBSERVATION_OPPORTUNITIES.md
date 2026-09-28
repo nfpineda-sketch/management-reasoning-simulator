@@ -110,6 +110,26 @@ Después solo se lee esa copia:
 - **Se retira caso por caso.** Cuando el docente aprueba la declaración de un
   caso, ese caso deja de usar la transición.
 
+**La transición es TRANSITORIA** (decisión docente del 2026-09-28, DF-12). No
+es la arquitectura final ni debe convertirse en una regla permanente.
+
+- **Estado objetivo:** CASO → OPORTUNIDADES REVISADAS EXPLÍCITAMENTE → SOLO LAS
+  OPORTUNIDADES REALES SON EVALUABLES.
+- **Qué es la regla:** NOT REVIEWED → LEGACY FALLBACK es solo la estrategia
+  para no perder oportunidades antes de que exista revisión clínica.
+- **Orden de retiro:**
+  - primero C14, el primer objetivo con el flujo BORRADOR → REVISIÓN CLÍNICA →
+    METADATA APROBADA (DF-13);
+  - después TD/F/C, objetivo por objetivo, a medida que se aprueben sus
+    oportunidades.
+- **Lo que no se hace:** no se retira ningún otro fallback de TD/F/C sin
+  revisión clínica.
+- **Cómo se retira en el código.** Hay dos caminos:
+  - un caso con declaración aprobada deja de pasar por `transition_fallback`
+    para ese objetivo;
+  - cuando todos los casos de un objetivo estén revisados, el objetivo sale de
+    `TRANSITION_OBJECTIVES`, y un caso no declarado deja entonces de ofrecerlo.
+
 **Qué ven el docente y el brief.**
 
 - El portal muestra al docente la nota de oportunidad (de dónde viene) y, si el
