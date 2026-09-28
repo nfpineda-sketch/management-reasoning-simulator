@@ -87,6 +87,8 @@ Auditar y documentar (59A–59BU). Índice y detalle:
   - La falla fue el catálogo publicado de hipoglicemia, que lista las
     correcciones.
   - Se regeneró (`b8eb421`), y sus pruebas pasan.
+- **Suite completa final (`8c5d5a3`, con la documentación de la noche):**
+  **4961 pasan, 0 fallas**, 77 omitidas y 2 xfail; 56 de 56 regresiones.
 - **Lo más importante, sin corregir:**
   - **DF-22.** El lector pierde órdenes de primera línea por la forma de la
     oración, y la página dice «Urgent intervention executed» cuando nada
