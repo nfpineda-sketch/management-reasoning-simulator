@@ -438,7 +438,9 @@ def test_full_app_multiobjective_faculty_assessment_and_resident_progress(cohort
     if any(item.label == "Finish now" for item in learner.button):
         click(learner, "Finish now")
     assert learner.session_state.encounter_ended
-    assert any(item.label == "Learning focus for this encounter" for item in learner.expander)
+    # §154AB (faculty, 2026-09-29): the resident reads the focus once a faculty member reviews it.
+    assert not any(item.label == "Learning focus for this encounter" for item in learner.expander)
+    assert any("after a faculty member reviews it" in str(item.value) for item in learner.caption)
     assert not any(widget.label == "Navigation" for widget in learner.sidebar.radio)
     assert not any("Objective" in item.value.columns for item in learner.dataframe)
     assert store.get_attempt(resident, attempt_id)["payload"] == payload
