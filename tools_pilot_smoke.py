@@ -1,7 +1,9 @@
 """A local smoke test of the formative pilot's path (post-V3, 2026-09-29).
 
 It never touches a configured database or real data: it makes its own SQLite file
-in a temporary directory, its own accounts (no real names), and plays encounters
+in a temporary directory -- or, for the backup drill (tools_backup_drill.py), writes
+into an empty throwaway database it is handed and refuses one that holds accounts --
+its own accounts (no real names), and plays encounters
 through the real application (Streamlit's AppTest) as a resident and as a faculty
 member. Every attempt to build an AI provider client is recorded and refused, so
 the report says whether anything would call a provider without an explicit request.
@@ -67,11 +69,11 @@ def _refuse_providers():
                 pass
 
 
-def _environment(configuration, database):
+def _environment(configuration, url):
     for name in ("MRS_OFFLINE_CASES", "MRS_PAID_GENERATION", "MRS_FREE_GENERATION", "MRS_REPLAY_CASE",
                  "MRS_AI_LANGUAGE_INTERPRETATION"):
         os.environ.pop(name, None)
-    os.environ.update({"MRS_AUTH_MODE": "accounts", "MRS_DATABASE_URL": f"sqlite:///{database}",
+    os.environ.update({"MRS_AUTH_MODE": "accounts", "MRS_DATABASE_URL": url,
                        "MRS_ALLOW_LOCAL_SQLITE": "true", "OPENAI_API_KEY": FAKE_KEY})
     if configuration == "pilot":
         os.environ["MRS_OFFLINE_CASES"] = "1"
@@ -232,14 +234,30 @@ def _permissions(store, people, attempt_id):
     return found
 
 
-def run(configuration, timeout=120):
+def empty_database(url):
+    """Whether ``url`` holds no account yet: the only kind of database this tool writes into."""
+    from account_store import AccountStore
+    store = AccountStore(url, allow_sqlite=str(url).startswith("sqlite:"))
+    with store._transaction() as connection:
+        return store._execute(connection, "SELECT COUNT(*) AS n FROM mrs_users").fetchone()["n"] == 0
+
+
+def run(configuration, timeout=120, url=None):
+    """Play the pilot's path. ``url``: an empty, throwaway database to leave the rows in (the backup drill).
+
+    Without it, a temporary SQLite file is made and deleted, as before.
+    """
     from account_store import AccountStore
     CALLS.clear()
     with tempfile.TemporaryDirectory(prefix="mrs-smoke-") as directory:
-        database = Path(directory) / "smoke.sqlite3"
-        _environment(configuration, database)
+        if url is None:
+            url = f"sqlite:///{Path(directory) / 'smoke.sqlite3'}"
+        elif not empty_database(url):
+            raise SystemExit("That database already holds accounts; this tool writes only into an empty, "
+                             "throwaway one.")
+        _environment(configuration, url)
         _refuse_providers()
-        store = AccountStore(f"sqlite:///{database}", allow_sqlite=True)
+        store = AccountStore(url, allow_sqlite=url.startswith("sqlite:"))
         people = _accounts(store)
         report = {"configuration": configuration, "encounters": {}}
         for language, username in (("en", "smoke_resident_en"), ("es", "smoke_resident_es")):
