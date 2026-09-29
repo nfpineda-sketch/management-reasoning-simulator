@@ -2325,6 +2325,105 @@ _RESIDENT_AS_SUBJECT = re.compile(
     r"vamos\s+a|voy\s+a|nos\s+vamos\s+a|pongo|doy|pido|suspendo|transfundo|mido|repito|hago)\b")
 
 
+# What the patient received before the resident's care, told as such, is history and never a new
+# order (TD-36, cycle 9). A dose written before who gave it was given again ("Epinephrine 0.5 mg IM
+# given by EMS", "NS 1 L given en route", "Adrenalina 0,5 mg IM dada por SAMU") or asked about as the
+# resident's order ("Aspirin 300 mg given by EMS" asked for its route and held the epinephrine written
+# beside it), and what the patient "already received" was lost. It is recorded as prior treatment,
+# with what the resident wrote of it -- what, dose, route, who and when -- and nothing is given now.
+# The resident's own verb makes it their order: "continue the NS started by EMS", "repeat the
+# epinephrine given en route"; so does "now".
+_PRIOR_SOURCE = re.compile(
+    r"\b(?:(?:by|per|from)\s+(?:the\s+)?(?:ems|medics?|paramedics?|ambulance(?:\s+crew)?|fire(?:\s+department)?|"
+    r"(?:outside|referring|transferring|other)\s+(?:hospital|facility|er|ed)|triage)|in\s+the\s+(?:ambulance|field)|"
+    r"en\s+route|pre-?hospital(?:ly)?|before\s+arrival|prior\s+to\s+arrival|at\s+(?:the\s+)?(?:outside|referring)\s+"
+    r"(?:hospital|facility)|at\s+triage|por\s+(?:el\s+|la\s+|los\s+|las\s+)?(?:samu|sapu|ambulancia|paramedic\w*|"
+    r"bomberos|equipo\s+prehospitalario|reanimador\w*)|en\s+(?:el\s+|la\s+)?(?:samu|sapu|ambulancia|traslado|ruta|"
+    r"consultorio|cesfam|hospital\s+de\s+origen|centro\s+de\s+origen|triage|triaje)|prehospitalari\w*|"
+    r"antes\s+de\s+(?:llegar|su\s+llegada|el\s+ingreso|ingresar)|"
+    # Where it was given, before the emergency department: "given at OSH", "given at urgent care",
+    # "given at work", "dada en su centro de salud" were given again (adversarial review of cycle 9).
+    r"at\s+(?:the\s+|an?\s+|his\s+|her\s+|their\s+)?(?:osh|outside\s+(?:hospital|facility|clinic|er|ed)|"
+    r"urgent\s+care(?:\s+(?:center|centre|clinic))?|walk-?in(?:\s+clinic)?|clinic|(?:gp|pcp|doctor|physician)(?:'?s)?"
+    r"(?:\s+(?:office|surgery|clinic))?|work|home|school|(?:the\s+)?scene|(?:nursing|care)\s+home|pharmacy)|"
+    r"en\s+(?:su\s+|el\s+|la\s+|un\s+|una\s+)?(?:centro\s+de\s+salud|centro\s+medico|cap|ambulatorio|"
+    r"atencion\s+primaria|aps|sar|clinica|mutua|domicilio|casa|trabajo|colegio|escuela|farmacia|"
+    r"otro\s+(?:hospital|centro)|urgencias\s+de\s+otro\s+hospital|origen))\b")
+# How long ago it was given: "given 20 min ago", "hace 20 minutos" (adversarial review of cycle 9).
+# Not when the clause names another dose, the resident's new one: "adrenalina 0,5 mg IM (última
+# dosis hace 20 min)" is an order.
+_GIVEN_AGO = re.compile(
+    r"\b(?:\d+(?:[.,]\d+)?|an?|one|two|three|half\s+an)\s*(?:min\w*|h|hrs?|hours?)\s+ago\b|"
+    r"\bhace\s+(?:(?:\d+(?:[.,]\d+)?|una?|dos|tres|media|unos?|unas|pocos|pocas)\s*(?:min\w*|h|hrs?|horas?)|un\s+rato)\b")
+_ANOTHER_DOSE = re.compile(r"\b(?:last|previous|prior|first|1st|anterior|ultima|primera|previa|otra)\b")
+_PRIOR_PARTICIPLE = re.compile(
+    r"\b(?:given|administered|received|started|placed|applied|pushed|dad[oa]s?|administrad[oa]s?|recibid[oa]s?|"
+    r"puest[oa]s?|colocad[oa]s?|iniciad[oa]s?|pasad[oa]s?|aplicad[oa]s?)\b")
+_ALREADY_RECEIVED = re.compile(
+    r"\b(?:already|ya)\s+(?:(?:has\s+|have\s+|had\s+|se\s+le\s+|le\s+|la\s+|lo\s+)?(?:received|got|given|had|"
+    r"been\s+given|recibio|recibi[oó]|dio|dieron|administro|administraron|pusieron|puso|pasaron|paso|administrad[oa]s?|"
+    r"dad[oa]s?|puest[oa]s?|colocad[oa]s?))\b|\b(?:received|recibio)\b.*\b(?:before|antes)\b")
+_GIVEN_AT_A_TIME = re.compile(
+    r"\b(?:given|administered|pushed|received|dad[oa]|administrad[oa]|recibid[oa])\s+(?:at|a\s+las)\s+\d{1,2}[:h.]\d{2}\b")
+_PRIOR_DENIED = re.compile(r"\b(?:not|no|never|nunca|sin|without|none|nada|ninguna?)\b|n't\b")
+_PRIOR_NOW = re.compile(r"\b(?:now|ahora|stat|immediately|inmediatamente|here|aqui|again|otra\s+vez|nuevamente|de\s+nuevo)\b")
+_A_TREATMENT = re.compile(
+    r"\b(?:epi|epinephrine|epinefrina|adrenalin[ae]|ns|sf|lr|rl|saline|salino|suero|ringers?|fluids?|fluidos?|"
+    r"cristaloides?|crystalloids?|bolus|bolo|oxygen|oxigeno|o2|tourniquet|torniquete|narcan|d50|ntg|nitro\w*|"
+    r"benadryl|diphenhydramine|difenhidramina|clorfenamina|zofran|ondansetron\w*)\b")
+
+
+def _prior_treatment(piece):
+    """What a clause tells of a treatment received before the resident's care, or None (TD-36)."""
+    text = piece.strip()
+    if (not text or _COMMAND.match(text) or _RESIDENT_AS_SUBJECT.match(text) or _PRIOR_NOW.search(text)
+            or _PRIOR_DENIED.search(text) or "?" in text):
+        return None
+    if not (_names_a_drug(text) or _UNMODELED_ORDER.search(text) or _TXA_WORD.search(text)
+            or _A_TREATMENT.search(text) or re.search(r"\b(?:" + _RED_CELL_WORDS + r"|" + _PRODUCT_NAMES + r")\b", text)):
+        return None
+    source = _PRIOR_SOURCE.search(text)
+    team = _PREHOSPITAL_ACCOUNT.match(text) if _TOLD_IN_THE_PAST.search(text) else None
+    if not ((source and (_PRIOR_PARTICIPLE.search(text) or _TOLD_IN_THE_PAST.search(text)
+                         or re.search(r"\b(?:pre-?hospital\w*|prehospitalari\w*|before\s+arrival|prior\s+to\s+arrival|"
+                                      r"antes\s+de\s+(?:llegar|su\s+llegada|ingresar|el\s+ingreso)|en\s+route|en\s+ruta)\b",
+                                      text)))
+            or team or _ALREADY_RECEIVED.search(text) or _GIVEN_AT_A_TIME.search(text)
+            or (_GIVEN_AGO.search(text) and not _ANOTHER_DOSE.search(text))):
+        return None
+    reported = {}
+    what = _PRIOR_SOURCE.sub(" ", text)
+    what = re.sub(r"\b(?:already|ya|previously|previamente)\b|" + _PRIOR_PARTICIPLE.pattern + r"|" + _TOLD_IN_THE_PAST.pattern
+                  + r"|\b(?:at|a\s+las)\s+\d{1,2}[:h.]\d{2}\b|" + _GIVEN_AGO.pattern, " ", what)
+    what = re.sub(r"^\s*(?:(?:the|el|la|los|las)\s+)?(?:medics?|paramedic\w*|paramedico\w*|ems|samu|ambulance\s+crew|"
+                  r"equipo\s+prehospitalario|patient|paciente|pt)\b", " ", what)
+    what = " ".join(what.split())
+    if what:
+        try:
+            read, _ = _parse_piece(what, None)
+        except RecursionError:
+            read = []
+        for action in read:
+            if action.get("type") in {"clarification", "reassessment"}:
+                continue
+            reported = {key: action[key] for key in ("type", "agent", "dose_mg", "dose_g", "dose", "units", "route",
+                                                      "volume_ml", "fluid_type", "measure") if action.get(key) is not None}
+            # A kind alone says nothing the text does not ("epinephrine" is no infusion rate).
+            if set(reported) <= {"type"}:
+                reported = {}
+            break
+    timing = _GIVEN_AT_A_TIME.search(text)
+    prior = {"source": (source.group(0) if source else team.group(0) if team else None)}
+    if reported:
+        prior["reported"] = reported
+    ago = _GIVEN_AGO.search(text)
+    if timing:
+        prior["reported_time"] = timing.group(0).split()[-1]
+    elif ago:
+        prior["reported_time"] = ago.group(0)
+    return prior
+
+
 def _part_of_an_account(piece):
     fragment = " ".join(str(piece).split())[:80]
     return {**_clarification(
@@ -2679,8 +2778,8 @@ def _parse_piece_core(piece, inherited=None):
         # L/min" became a check of the saturation (DF-16a, 2026-09-28).
         vital = None
     if observational and vital:
-        delay, _ = _amount(body, r"minutes?|mins?|minutos?")
-        if re.search(r"\b(?:hours?|horas?|seconds?|segundos?)\b", body):
+        delay = _interval_minutes(body)
+        if delay is None and _UNREAD_INTERVAL.search(body):
             return [_clarification("Specify the reassessment interval in minutes.")], verb
         return [{"type": "reassessment", "delay_min": delay if delay is not None else 0}], verb if verb in _DIAG_VERBS else "monitor"
     if re.search(r"\b(?:saturation|saturacion|spo2|sats|oxygen levels)\b", body) and not re.search(_FLOW, body) and verb in {"increase", "decrease", "set", "aumentar", "disminuir", "ajustar"}:
@@ -2732,8 +2831,8 @@ def _parse_piece_core(piece, inherited=None):
         return [{"type": "repeat_order", "target": target, "agent": agent, "fluid_type": fluid_type, "amount": value, "amount_unit": unit, "route": _route(body)}], verb
     reassess = verb in {"reassess", "re-assess", "reevaluate", "reevaluar", "reevaluo", "revalorar"}
     if reassess:
-        delay, _ = _amount(body, r"minutes?|mins?|minutos?")
-        if re.search(r"\b(?:hours?|horas?|seconds?|segundos?)\b", body):
+        delay = _interval_minutes(body)
+        if delay is None and _UNREAD_INTERVAL.search(body):
             return [_clarification("Specify the reassessment interval in minutes.")], verb
         return [{"type": "reassessment", "delay_min": delay if delay is not None else 0}], verb
 
@@ -3939,6 +4038,44 @@ _CLEARANCE_BY_SERVICE = re.compile(
     r"(?:equipo\s+de\s+|servicio\s+de\s+)?(?:" + _SERVICE_NAMES + r"|ortho\w*|surg\w*|gi|medicine|neuro\w*)\b")
 
 
+# How long a reassessment waits, in minutes, whether written in minutes or in hours (TD-34, cycle 9).
+# "Reassess in 1 h", "reevaluar en 2 h" and "in 1 hr" ran at 0 minutes, without a word, and "in 1
+# hour" or "en 1,5 horas" asked for the minutes. One value, the minutes, goes to the engine, the
+# clock and the record. "h" is an hour only after a number: "Hb", "pH" and "HGT" are not hours.
+_INTERVAL = re.compile(
+    r"(?<![\w.,])(?P<value>\d+(?:[.,]\d+)?|one|an|a|half\s+an|una|un|media)\s*"
+    r"(?P<unit>h|hs|hrs?|hours?|horas?|min|mins|minutes?|minutos?)\b"
+    # "Una hora y media" reaches here as "una hora, media": the list reader parts it at "y".
+    r"(?:(?:\s*,)?\s*(?:(?:y|and)\s+)?(?:(?P<half>media|a\s+half)\b|(?P<more>\d+)\s*(?:min|mins|minutes?|minutos?)\b)"
+    r"|\s*(?P<more_bare>\d+)\s*(?:min|mins|minutes?|minutos?)\b)?")
+_INTERVAL_WORDS = {"one": 1.0, "an": 1.0, "a": 1.0, "una": 1.0, "un": 1.0, "media": 0.5, "half an": 0.5}
+# An interval written that is not read as one: asked for, never taken as "now".
+_UNREAD_INTERVAL = re.compile(r"\b(?:hours?|horas?|seconds?|segundos?)\b|(?<![\w.,])\d+(?:[.,]\d+)?\s*(?:h|hs|hrs?)\b")
+
+
+def _interval_minutes(body):
+    """The one interval written in ``body``, in minutes, or None."""
+    # "1 h 30" and "1h30" are an hour and a half; they read as 60 (adversarial review of cycle 9).
+    body = re.sub(r"(?<![\w.,])(\d+)\s*(h|hrs?|horas?|hours?)\s*([0-5]\d)\b(?!\s*(?:[.,]\d|%|mg|mcg|ug|g|ml|l|kg|u|ui|"
+                  r"units?|unidades|min|mins|minutes?|minutos?|h|hrs?|horas?|hours?)\b)", r"\1 \2 \3 min", body)
+    found = list(_INTERVAL.finditer(body))
+    if len(found) != 1:
+        return None
+    match = found[0]
+    written = re.sub(r"\s+", " ", match["value"])
+    value = _INTERVAL_WORDS.get(written)
+    if value is None:
+        value = float(written.replace(",", "."))
+    hours = match["unit"].startswith(("h", "hora", "hour"))
+    minutes = value * 60 if hours else value
+    if match["half"] and hours:
+        minutes += 30
+    extra = match["more"] or match["more_bare"]
+    if extra and hours:
+        minutes += float(extra)
+    return minutes
+
+
 def _ok_to_discharge(text):
     def say(match):
         sentence = text[match.start():].split(".")[0]
@@ -3958,19 +4095,165 @@ def _ok_to_discharge(text):
             return match.group(0)
         if _CLEARANCE_DENIED.match(tail) or _SOMEONE_ELSES_CLEARANCE.search(whole) or _CLEARANCE_BY_SERVICE.match(own):
             return match.group(0)
-        # A condition on the patient's course is read as the discharge's condition, a plan
-        # ("OK for d/c home once afebrile"); any other time or condition in the sentence puts the
-        # clearance off, except in what the discharge sends the patient home with.
-        if not re.match(r"\s*\b" + _WHEN_CONDITION, clause_tail) and (
-                _CLEARANCE_PUT_OFF.search(own) or _CLEARANCE_CONDITION.search(clause_tail[len(own):])
-                or any(_CLEARANCE_PUT_OFF.search(segment) for segment in segments[1:]
-                       if not _CLEARANCE_PLAN.match(segment) and not _names_a_drug(segment))):
-            return match.group(0)
+        # A clearance put off by a time or a condition is a discharge for later: it is read as the
+        # discharge it is, and the reader keeps it as a plan (TD-39, cycle 9). Left as written, it
+        # was lost without a word ("OK to discharge in 2 hours", cycle 8).
         spanish = bool(re.search(r"alta|casa|irse|egreso|domicilio", match["what"]))
         home = bool(re.search(r"home|casa|domicilio", match["what"])) or match["what"].startswith(("go", "irse", "ir "))
         return match["lead"] + ("alta" + (" a domicilio" if home else "") if spanish
                                 else "discharge" + (" home" if home else ""))
     return _OK_TO_DISCHARGE.sub(say, text)
+
+
+# A discharge written for later is a plan, recorded and not carried out now (TD-39, cycle 9): with
+# its own time ("Discharge home in 2 hours", "Alta en 2 horas", "alta mañana", "at 18:00"), with
+# what it waits for ("Alta tras 6 horas de observación", "Discharge after repeat troponin"), after
+# the observation, reassessment or study it follows ("Observe 6 h then discharge home", "Observar 4
+# horas y luego alta"), or with a time written after it ("Alta, mañana", "discharge home, pending
+# repeat lactate"). Each ran now -- in V2, in 939978a and in cycle 8 -- and a discharge is the
+# trigger of the critical events defined on it. The criteria are the ones a clearance has had since
+# cycle 8 (KD-05), now for every discharge. What the discharge sends the patient home with keeps its
+# own times ("Alta con control en 48 horas" discharges now), and a reason already reached is no wait
+# ("Alta tras mejoría clínica" discharges now, as the TD-29 rule reads what was seen).
+_PUT_OFF_MORE = re.compile(
+    r"\b(?:(?:in|en|dentro\s+de)\s+(?:(?:about|around|approximately|aproximadamente|unas?|unos?)\s+)?"
+    r"(?:one|two|three|four|five|six|eight|twelve|half\s+an|an|a|una|un|dos|tres|cuatro|cinco|seis|ocho|doce|media)"
+    r"\s+(?:h|hrs?|hours?|horas?|min\w*)|at\s+\d{1,2}(?::\d{2}|\s*(?:am|pm|o'?clock|h|hrs)\b)|"
+    # A clock written in four digits: "Discharge at 1800" ran now (adversarial review of cycle 9).
+    r"at\s+" + r"(?:[01]\d|2[0-3])[0-5]\d" + r"|a\s+las?\s+(?:[01]\d|2[0-3])[0-5]\d|"
+    r"a\s+las?\s+\d{1,2}(?::\d{2})?|next\s+day|al\s+dia\s+siguiente|overnight)\b")
+_REACHED_BEFORE = re.compile(
+    r"\b(?:after|following|post|tras|despues\s+de|luego\s+de)\s+(?:(?:la|el|su|the|her|his|a|an|una|un|clear|"
+    r"clinical|marked|significant|good|buena|franca|clara|evidente)\s+)*"
+    r"(?:mejor\w*|improv\w*|resol\w*|respuesta|response|alivio|relief|recuperac\w*|recover\w*|estabiliz\w*|"
+    r"stabiliz\w*)\w*")
+# What a discharge waits for when it follows it with "then": an observation, a wait, a
+# reassessment, a study, or a time.
+_WAITED_FOR = re.compile(
+    r"\b(?:observ\w*|obs|watch\w*|wait\w*|esper\w*|vigil\w*|monitor\w*|repeat\w*|repet\w*|recheck\w*|re-?check\w*|"
+    r"control\w*|serial\w*|seriad\w*|trop\w*|reassess\w*|re-?assess\w*|reevalu\w*|re-?evalu\w*|revalor\w*)\b"
+    r"|\b\d+(?:[.,]\d+)?\s*(?:h|hrs?|hours?|horas?)\b")
+_SEQUENCE_WORD = r"(?:then|luego|despues|afterwards|posteriormente|finalmente|finally)"
+_WAITED_WITH_TIME = re.compile(r"\b\d+(?:[.,]\d+)?\s*(?:h|hrs?|hours?|horas?|min\w*)\b|\bobserv\w*")
+# A clause of its own that puts off the discharge next to it: "after 6 h of observation", "pending
+# repeat lactate", "mañana".
+_PUT_OFF_CLAUSE = re.compile(
+    r"(?:after|following|post|once|pending|tras|despues\s+de|luego\s+de|posterior\s+a|previ[ao]|una\s+vez|"
+    r"en\s+cuanto|pendientes?|tomorrow|tonight|later|manana|mas\s+tarde|esta\s+(?:tarde|noche)|"
+    r"this\s+(?:afternoon|evening)|in\s+the\s+(?:am|morning|afternoon|evening)|en\s+la\s+(?:tarde|noche|manana)|"
+    r"(?:in|en|dentro\s+de)\s+(?:(?:a\s+few|unas?|pocas|algunas|about|around)\s+)?"
+    r"(?:\d+(?:[.,]\d+)?(?:\s*-\s*\d+)?|one|two|three|four|five|six|eight|twelve|an|a|una|un|dos|tres|cuatro|"
+    r"cinco|seis|ocho|doce|media)\s*(?:h|hrs?|hours?|horas?|min\w*)|at\s+\d{1,2}(?::\d{2}|\s*(?:am|pm|h|hrs)\b)|"
+    r"at\s+(?:[01]\d|2[0-3])[0-5]\d|a\s+las?\s+(?:[01]\d|2[0-3])[0-5]\d|a\s+las?\s+\d{1,2})\b")
+_NOT_NEEDED = re.compile(r"\b(?:no|not|sin|without|unnecessary|innecesari\w*)\b")
+# A plan whose order is a discharge: "alta si sigue asintomática", "discharge if asymptomatic". Not
+# "alta" as "high" ("si la presión sigue alta") and not a discharge from a wound.
+_A_DISCHARGE_IN_A_PLAN = re.compile(
+    r"\bde\s+alta\b|(?:^|[,;:>]\s*|\b(?:y|e|luego|despues|entonces|then|and|dar(?:le|la|lo)?|doy|damos|das)\s+)alta\b"
+    r"(?!\s+(?:dosis|flujo|frecuencia|concentracion|presion|intensidad|prioridad|sospecha|probabilidad)\b)"
+    r"|\balta\s+(?:a\s+)?(?:domicilio|(?:a\s+)?(?:la\s+|su\s+)?casa|medica|hospitalaria)\b"
+    r"|\bdischarge(?:d)?\b|\bsend\s+(?:\w+\s+)?home\b|\bgo\s+home\b|\ba\s+(?:la\s+|su\s+)?casa\b|\ba\s+domicilio\b")
+_NOT_A_DISPOSITION = re.compile(
+    r"\b(?:wound|herida|vaginal|nipple|pezon|purulent\w*|secrec\w*|bloody|sanguinolent\w*|drainage|drenaje)\b")
+
+
+# "Now" in the discharge's own words says when it runs: "Alta ahora tras 6 h de observación" is a
+# discharge now, after an observation that is over (adversarial review of cycle 9). A condition
+# written with it still makes it a plan.
+_DISCHARGE_NOW = re.compile(r"\b(?:now|right\s+now|ahora(?:\s+mismo)?|immediately|inmediatamente|de\s+inmediato|"
+                            r"right\s+away)\b")
+_A_CONDITION_WORD = re.compile(r"\b(?:if|unless|pending|si|salvo|pendientes?|hasta)\b")
+# A clause before the discharge that reports a value measured tells a step that is over: "Tras 3
+# nebulizaciones PEF 80%, alta con prednisona 5 días" discharges now, as it did before cycle 9
+# (adversarial review of cycle 9). A threshold is a condition ("Tras 3 nebulizaciones, PEF > 70%,
+# alta"), and a wait of stated length is still a wait: "Tras 6 h de observación sin incidencias, alta
+# a domicilio" is a plan, as "Alta tras 6 horas de observación" is.
+_TEMPORAL_LEAD = re.compile(r"(?:after|following|post|tras|despues\s+de|luego\s+de|posterior\s+a)\b")
+_OUTCOME_REPORTED = re.compile(
+    r"\b(?:pef|fem|peak\s+flow|flujo\s+(?:espiratorio\s+)?maximo|fev1|spo2|sato2|sat|sats|saturacion|saturation|"
+    r"satura|saturando|hr|fc|pa|ta|bp|pas|sbp|glucose|glucosa|glucemia|glicemia|hgt|lactate|lactato)\s*"
+    r"(?:de\s+|del\s+|of\s+|:|=|en\s+)?\d")
+_STATED_WAIT = re.compile(r"\b\d+(?:[.,]\d+)?\s*(?:h|hs|hrs?|hours?|horas?|min|mins|minutes?|minutos?)\b")
+_A_THRESHOLD = re.compile(r"[<>≥≤]|\b(?:above|over|below|under|at\s+least|more\s+than|less\s+than|greater\s+than|"
+                          r"mayor|menor|sobre|bajo|al\s+menos|mas\s+de|menos\s+de|superior|inferior)\b")
+# A time at the very end of what the discharge sends the patient home with is the discharge's own
+# when nothing there has a time of its own: "Discharge home with EpiPen in 2 hours" and "Alta a
+# domicilio con EpiPen en 2 horas" ran now (adversarial review of cycle 9). A follow-up, a return,
+# a dose or a start keeps its time: "Alta con control en 2 horas" discharges now.
+_TRAILING_TIME = re.compile(
+    r"\b(?:(?:in|en|dentro\s+de)\s+(?:(?:about|around|approximately|aproximadamente|unas?|unos?)\s+)?"
+    r"(?:\d+(?:[.,]\d+)?(?:\s*-\s*\d+)?|one|two|three|four|five|six|eight|twelve|half\s+an|an|a|una|un|dos|tres|"
+    r"cuatro|cinco|seis|ocho|doce|media)\s*(?:h|hs|hrs?|hours?|horas?|min|mins|minutes?|minutos?)|"
+    r"at\s+(?:\d{1,2}:\d{2}|\d{1,2}\s*(?:am|pm)|(?:[01]\d|2[0-3])[0-5]\d)|"
+    r"a\s+las?\s+(?:\d{1,2}(?::\d{2})?|(?:[01]\d|2[0-3])[0-5]\d)(?:\s*(?:h|hrs|horas))?)\s*[.!]?\s*$")
+_ITS_OWN_TIME = re.compile(
+    r"\b(?:control\w*|seguimiento|citaci\w*|cita|follow[- ]?up|f/u|appointment|clinic|policlinic\w*|review|revision|"
+    r"recheck\w*|re-?check\w*|reeval\w*|re-?eval\w*|reassess\w*|return\w*|regres\w*|volver|vuelva|reconsult\w*|"
+    r"come\s+back|consult\w*|acud\w*|dose|doses|dosis|toma|start\w*|begin\w*|inici\w*|comenz\w*|empez\w*|"
+    r"every|cada|q\d|repeat\w*|repet\w*|referral|derivaci\w*|interconsulta)\b")
+
+
+def _reached_outcome(written):
+    """Whether a clause led by "after"/"tras" reports a value measured, not what is awaited."""
+    return bool(_TEMPORAL_LEAD.match(written) and _OUTCOME_REPORTED.search(written)
+                and not _A_THRESHOLD.search(written) and not _STATED_WAIT.search(written)
+                and not (_CLEARANCE_CONDITION.search(written) or _A_CONDITION_WORD.search(written)))
+
+
+def _discharge_plan(sentence, pieces, spans, position):
+    """The plan a put-off discharge is, or None when it runs now (TD-39, cycle 9).
+
+    ``pieces[position]`` is a discharge the reader was about to carry out, and ``spans`` places
+    each piece in ``sentence``. The plan starts at what the discharge waits for when that is
+    written before it, and takes the clause after it that puts it off. Returns the index of the
+    first piece of the plan, the indices of the pieces after it that the plan takes, and its text.
+    """
+    piece, span = pieces[position], spans[position]
+    own = re.split(r"\b(?:with|con)\b(?!\s+tal\b)", piece)[0]
+    reached = _REACHED_BEFORE.sub(" ", own)
+    first, taken, tail = position, [], ""
+    sent_with = piece[len(own):]
+    # "Now" answers the wait written in the discharge's own words or before it; a wait or a
+    # condition written after it ("OK to discharge now, pending repeat lactate") still makes a plan.
+    now = bool(_DISCHARGE_NOW.search(reached)
+               and not (_CLEARANCE_CONDITION.search(piece) or _A_CONDITION_WORD.search(piece)))
+    deferred = bool((not now and (_CLEARANCE_PUT_OFF.search(reached) or _PUT_OFF_MORE.search(reached)))
+                    or _CLEARANCE_CONDITION.search(sent_with)
+                    or (_TRAILING_TIME.search(sent_with) and not _ITS_OWN_TIME.search(sent_with)))
+    before = next((index for index in range(position - 1, -1, -1) if pieces[index].strip()), None)
+    if before is not None and span and spans[before] and not now:
+        written = pieces[before].strip()
+        gap = sentence[spans[before][1]:span[0]]
+        joined = re.fullmatch(r"[\s,]*(?:(?:and|y|e)\s+)?" + _SEQUENCE_WORD + r"?\s*", gap)
+        then = joined and (re.search(r"\b" + _SEQUENCE_WORD + r"\b", gap) or re.match(_SEQUENCE_WORD + r"\b", piece.strip()))
+        # A wait of stated length joined by "and" comes first too: "Reevaluar en 30 min y alta",
+        # "Observe 6 h and discharge". "Monitor and discharge home" discharges now, as before.
+        waited = then or (joined and re.search(r"\b(?:and|y|e)\b", gap) and _WAITED_WITH_TIME.search(written))
+        if (waited and _WAITED_FOR.search(written)) or (_PUT_OFF_CLAUSE.match(written) and not _COMMAND.match(written)
+                                                        and not _REACHED_BEFORE.match(written)
+                                                        and not _reached_outcome(written)):
+            deferred, first = True, before
+    if span:
+        rest = sentence[span[1]:]
+        for number, segment in enumerate(re.finditer(r"[^,;:]+", rest)):
+            text = re.sub(r"^[\s\-–—]*(?:(?:and|y|e|then|luego)\s+)?", "", segment.group(0)).strip()
+            if (not text or _COMMAND.match(text) or _CLEARANCE_PLAN.match(text) or _names_a_drug(text)
+                    or _NOT_NEEDED.search(text)):
+                continue
+            if _PUT_OFF_CLAUSE.match(text) or (number and (_CLEARANCE_PUT_OFF.search(text) or _PUT_OFF_MORE.search(text))):
+                deferred, tail = True, text
+                start, end = span[1] + segment.start(), span[1] + segment.end()
+                taken = [index for index in range(position + 1, len(pieces))
+                         if spans[index] and spans[index][0] >= start and spans[index][1] <= end]
+                break
+    if not deferred:
+        return None
+    if span and spans[first]:
+        text = sentence[spans[first][0]:span[1]]
+    else:
+        text = " ".join(part.strip() for part in pieces[first:position + 1] if part.strip())
+    text = text.strip(" ,")
+    return first, taken, (text + ", " + tail) if tail else text
 
 
 def parse_family_actions(text) -> dict:
@@ -4006,6 +4289,31 @@ def parse_family_actions(text) -> dict:
                         **(unmodelled_detail(text) if kind == "not_modelled" else {})})
         if kind == "not_modelled" and details[-1].get("prescription"):
             details[-1]["kind"] = "prescription"
+        # A discharge on a condition is a disposition plan, as a discharge for later is: the record
+        # tells it from a discharge carried out (TD-39, cycle 9).
+        if kind == "conditional" and "category" not in structure and _A_DISCHARGE_IN_A_PLAN.search(text) \
+                and not _NOT_A_DISPOSITION.search(text):
+            details[-1].update({"category": "disposition_plan", "destination": "home"})
+
+    def plan_discharge(sentence, grouped, spans, position):
+        # A discharge written for later is kept as a plan and not carried out (TD-39, cycle 9).
+        plan = _discharge_plan(sentence, grouped, spans, position)
+        if plan is None:
+            return False
+        first, taken, text = plan
+        # What it waits for, written before it, is part of the plan: what the reader could not read
+        # there is no longer asked about ("observe 6 h then discharge home"); an order it read stays.
+        for index in range(first, position):
+            read = members[index][1] if index < len(members) else []
+            if read and all(action.get("type") == "clarification" and action.get("unrecognized_text")
+                            for action in read):
+                for action in read:
+                    if any(kept is action for kept in actions):
+                        actions.remove(action)
+                members[index][1] = []
+        keep(text, "conditional", category="disposition_plan", destination="home")
+        taken_after.update(taken)
+        return True
 
     # Advice that closes a sentence is recorded after what the sentence says
     # before it, so the plan keeps the resident's order: "discharge with
@@ -4334,7 +4642,11 @@ def parse_family_actions(text) -> dict:
             piece = pieces[index]
             command = _COMMAND.match(piece)
             if command and (command["verb"] in {"reassess", "re-assess", "reevaluate", "reevaluar", "reevaluo", "revalorar"} or (command["verb"] in {"monitor", "assess", "check", "recheck", "measure", "medir", "mido", "controlar", "control", "vigilar", "monitorizar"} and re.search(r"\b(?:blood pressure|heart rate|respiratory rate|oxygen saturation|o2 saturation|spo2|saturacion|presion arterial|perfusion|mental status)\b", piece)) or re.match(r"continue monitoring\b", piece)):
-                while index + 1 < len(pieces) and not (_COMMAND.match(pieces[index + 1]) or _NON_ORDER.match(pieces[index + 1]) or _NEGATION.match(pieces[index + 1])):
+                # A discharge written after the reassessment is no part of what is reassessed:
+                # "Reevaluar en 30 min y luego alta" lost the discharge without a word, where
+                # "then discharge home" is read (TD-39, cycle 9).
+                while index + 1 < len(pieces) and not (_COMMAND.match(pieces[index + 1]) or _NON_ORDER.match(pieces[index + 1]) or _NEGATION.match(pieces[index + 1])
+                                                       or re.search(_DISCHARGE, pieces[index + 1]) or _OK_DISCHARGE_TAIL.match(pieces[index + 1])):
                     # A named study in a check/monitor list remains a separate
                     # requested investigation rather than disappearing into vitals.
                     if command["verb"] not in {"reassess", "re-assess", "reevaluate", "reevaluar", "reevaluo", "revalorar"} and any(re.search(r"\b(?:" + pattern + r")\b", pieces[index + 1]) for pattern in _DIAGNOSTICS.values()):
@@ -4346,8 +4658,26 @@ def parse_family_actions(text) -> dict:
         reasoning_head = False
         discharged = False
         # A discharge home in this sentence: the medicines listed after it with a regimen for
-        # home are its prescriptions (post hoc, blind set of cycle 8).
+        # home are its prescriptions (post hoc, blind set of cycle 8). A discharge kept as a plan
+        # counts: what it sends the patient home with is still a prescription (TD-39, cycle 9).
         home_discharge = False
+        # Where each piece stands in the sentence, and the pieces a discharge plan took (TD-39).
+        spans, scan = [], 0
+        for written in grouped:
+            # A piece the list reader joined ("reassess BP, HR") is found part by part.
+            parts = [part for part in written.split(", ") if part.strip()] or [written]
+            at = sentence.find(parts[0], scan) if parts[0] else -1
+            if at < 0:
+                spans.append(None)
+                continue
+            end = at + len(parts[0])
+            for part in parts[1:]:
+                found_part = sentence.find(part, end)
+                if found_part >= 0:
+                    end = found_part + len(part)
+            spans.append((at, end))
+            scan = end
+        taken_after = set()
         # Each item of this sentence and what it produced, for a route written
         # once after a list of doses (_share_trailing_route).
         members = []
@@ -4367,7 +4697,7 @@ def parse_family_actions(text) -> dict:
         # "Once blood arrives, 2 units O-neg", "en cuanto llegue, 2 U GR": the
         # red cells after such a clause wait for it, and are asked about.
         waiting = False
-        for piece in grouped:
+        for position, piece in enumerate(grouped):
             if told is not None and told[0] and not any(
                     action.get("type") not in {"clarification", "reassessment"} for action in actions[told[1]:]):
                 account = True
@@ -4381,7 +4711,14 @@ def parse_family_actions(text) -> dict:
             # UGR ahora" (post hoc, blind set of cycle 7).
             piece = re.sub(r"^[\-–—•]+\s*", "", piece)
             members.append([piece, []])
-            if not piece:
+            if not piece or position in taken_after:
+                # A clause a discharge plan took is part of that plan (TD-39).
+                continue
+            prior = _prior_treatment(piece)
+            if prior is not None:
+                # Received before the resident's care, as told: history, not an order (TD-36).
+                keep(re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip()), "prior_treatment", **prior)
+                inherited = None
                 continue
             dash = re.search(r"\s[-–—]\s+", piece)
             if dash and not _COMMAND.match(piece) and _COMMAND.match(piece[dash.end():]):
@@ -4412,7 +4749,10 @@ def parse_family_actions(text) -> dict:
                     # A finding lends no verb and takes none (C09).
                     inherited = None
                     continue
-            if _ED_OBSERVATION.search(piece) and not _ELSEWHERE.search(piece):
+            observed = _ED_OBSERVATION.search(piece)
+            # "Alta tras 6 horas en observación": the observation is what the discharge written
+            # before it waits for, and the two are one plan (TD-39, cycle 9).
+            if observed and not _ELSEWHERE.search(piece) and not re.search(_DISCHARGE, piece[:observed.start()]):
                 # Observation in the emergency department is a destination with a
                 # duration. Ordering it is not completing it (decision 4).
                 hours = _OBSERVATION_HOURS.search(piece)
@@ -4609,12 +4949,19 @@ def parse_family_actions(text) -> dict:
                               or re.search(r"\bauto-?(?:inyect|inject)able\b", piece[attached.end():]))
                     and not _UNMODELED_ORDER.search(piece[:attached.start()])):
                 head_actions, _ = _parse_piece(piece[:attached.start()], here)
+                home_head = any(action.get("type") == "disposition" and action.get("destination") == "home"
+                                for action in head_actions)
+                # "Discharge home in 2 hours with an EpiPen", "Observe 6 h then discharge home with
+                # EpiPen": the discharge and what it sends the patient home with are one plan (TD-39).
+                if home_head and not anothers and plan_discharge(sentence, grouped, spans, position):
+                    discharged = home_discharge = True
+                    members[-1][1] = []
+                    inherited = None
+                    continue
                 # "Observe 6 h then discharge home with EpiPen": a discharge after something else is left as
                 # it was read before (second adversarial review of cycle 8; it ran now).
                 if not re.search(r"\b(?:then|luego|despues|after|tras|once|una\s+vez|cuando|when)\b",
-                                 piece[:attached.start()]) and any(
-                        action.get("type") == "disposition" and action.get("destination") == "home"
-                        for action in head_actions):
+                                 piece[:attached.start()]) and home_head:
                     # "Discharge home with an EpiPen prescription": the discharge runs, and
                     # what the patient goes home with is its prescription. The prescription
                     # took the whole clause and the discharge was lost without a word (found
@@ -4659,6 +5006,11 @@ def parse_family_actions(text) -> dict:
                     parsed.extend(_parse_piece(part, inherited if number == 0 else None)[0])
                 inherited = None
             else:
+                if inherited and not _COMMAND.match(item) and (re.search(_DISCHARGE, item)
+                                                               or _OK_DISCHARGE_TAIL.match(item)):
+                    # A discharge written without a verb takes none from the order before it:
+                    # "Reevaluar en 30 min y luego alta" is no second reassessment (TD-39, cycle 9).
+                    inherited = None
                 parsed, inherited = _parse_piece(piece, inherited)
             if waiting and any(action.get("type") == "blood" for action in parsed):
                 # "Once blood arrives, 2 units O-neg", "After the CT, transfuse 2
@@ -4707,6 +5059,17 @@ def parse_family_actions(text) -> dict:
                 elif count and all(action.get("type") == "clarification" for action in parsed):
                     previous[0]["units"] = float(count[1]) if count[1] else float(_UNIT_WORDS[count[2]])
                     parsed = []
+            if (not anothers and any(action.get("type") == "disposition" and action.get("destination") == "home"
+                                     for action in parsed)
+                    and plan_discharge(sentence, grouped, spans, position)):
+                # A discharge for later is a plan: nothing else it was read with runs in its place.
+                parsed = [action for action in parsed
+                          if not (action.get("type") == "disposition" and action.get("destination") == "home")]
+                discharged = home_discharge = True
+                inherited = None
+                if not parsed:
+                    members[-1][1] = []
+                    continue
             members[-1][1] = parsed
             previous_piece = members[-2] if len(members) > 1 else None
             if (not parsed and previous_piece and previous_piece[1] and _ALREADY_HAPPENED.fullmatch(item)
@@ -4772,6 +5135,7 @@ def parse_family_actions(text) -> dict:
             actions.append(action)
         future.extend(deferred.get("recognized_future_actions", []))
         details.extend(deferred.get("future_details", []))
+    future, details = _plans_as_written(future, details, raw)
     return {"raw_text": raw, "actions": _quoted_as_written(actions, raw), "recognized_future_actions": future,
             "future_details": details}
 
@@ -4784,29 +5148,62 @@ def _quoted_as_written(actions, raw):
     once accents and case are set aside, or is the infinitive the reader read an imperative
     as. Where no written span matches well enough, the quote stays as it was.
     """
-    written = [(match, _normalize(match.group(0)).strip(".,;:!?()\"'¿¡")) for match in re.finditer(r"\S+", raw)]
+    written = _written_words(raw)
     for action in actions:
         fragment = action.get("unrecognized_text") if isinstance(action, dict) else None
         if not fragment:
             continue
-        # The reader's own joined tokens ("type_and_screen", "grupo_y_pruebas") are words the
-        # resident wrote apart; unsplit, a question quoted the token (post hoc, adversarial review of
-        # cycle 8).
-        words = [word.strip(".,;:!?()\"'") for word in fragment.replace("_", " ").split()]
-        best = None
-        for start in range(0, len(written) - len(words) + 1):
-            window = written[start:start + len(words)]
-            same = [word == key or _ES_IMPERATIVE_FORMS.get(key) == word for word, (_, key) in zip(words, window)]
-            if same[0] and same[-1] and sum(same) >= max(1, round(0.6 * len(words))) and (
-                    best is None or sum(same) > best[0]):
-                best = (sum(same), window[0][0].start(), window[-1][0].end())
-        if best is None:
-            continue
-        quoted = " ".join(raw[best[1]:best[2]].split()).rstrip(".,;:")[:80]
+        quoted = _as_written(fragment, raw, written)
+        quoted = quoted[:80] if quoted else quoted
         if quoted and quoted != fragment:
             action["message"] = action["message"].replace(f'"{fragment}"', f'"{quoted}"', 1)
             action["unrecognized_text"] = quoted
     return actions
+
+
+def _written_words(raw):
+    return [(match, _normalize(match.group(0)).strip(".,;:!?()\"'¿¡")) for match in re.finditer(r"\S+", raw)]
+
+
+def _as_written(fragment, raw, written=None):
+    """The span of ``raw`` the reader's ``fragment`` came from, as the resident wrote it, or None."""
+    written = _written_words(raw) if written is None else written
+    # The reader's own joined tokens ("type_and_screen", "grupo_y_pruebas") are words the
+    # resident wrote apart; unsplit, a question quoted the token (post hoc, adversarial review of
+    # cycle 8).
+    words = [word.strip(".,;:!?()\"'") for word in fragment.replace("_", " ").split()]
+    if not words:
+        return None
+    best = None
+    for start in range(0, len(written) - len(words) + 1):
+        window = written[start:start + len(words)]
+        same = [word == key or _ES_IMPERATIVE_FORMS.get(key) == word for word, (_, key) in zip(words, window)]
+        if same[0] and same[-1] and sum(same) >= max(1, round(0.6 * len(words))) and (
+                best is None or sum(same) > best[0]):
+            best = (sum(same), window[0][0].start(), window[-1][0].end())
+    if best is None:
+        return None
+    return " ".join(raw[best[1]:best[2]].split()).rstrip(".,;:") or None
+
+
+def _plans_as_written(future, details, raw):
+    """A disposition plan is recorded in the resident's words, not the reader's (TD-39, cycle 9).
+
+    "Dejar en observación 6 horas y luego alta" was kept as "indicar en observacion 6 horas y
+    luego alta": the words the reader normalised are found again in what was written.
+    """
+    written = _written_words(raw)
+    for index, detail in enumerate(details):
+        # And so is a treatment received before the resident's care (TD-36).
+        if (detail.get("category") != "disposition_plan" and detail.get("kind") != "prior_treatment") \
+                or not detail.get("text"):
+            continue
+        quoted = _as_written(detail["text"], raw, written)
+        if quoted and quoted != detail["text"]:
+            if index < len(future) and future[index] == detail["text"]:
+                future[index] = quoted
+            detail["text"] = quoted
+    return future, details
 
 
 # A route written once after a list of doses belongs to every dose of the list:

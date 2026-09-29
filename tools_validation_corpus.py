@@ -7,6 +7,10 @@ wrote, one paragraph at a time, through the same page a resident uses
 database, no provider key, the seed pinned). Nothing here contacts anyone or
 sends anything: the documents come and go through the faculty (§97).
 
+    python tools_validation_corpus.py inventory --pilot PILOT.json --raw RAW_DIR --received-on YYYY-MM-DD --out DIR
+                                              [--decisions decisions.json]
+    python tools_validation_corpus.py metadata --file RETURNED.docx
+    python tools_validation_corpus.py deidentify --raw RAW.docx --out WORKING.docx
     python tools_validation_corpus.py templates --out DIR [--language es|en|both] [--case C01 ...]
     python tools_validation_corpus.py templates --pilot PILOT.json --out DIR
     python tools_validation_corpus.py split --pilot PILOT.json --returned DIR --baseline SHA --corpus DIR
@@ -14,6 +18,15 @@ sends anything: the documents come and go through the faculty (§97).
     python tools_validation_corpus.py run --out OUT [--seed 3000]
     python tools_validation_corpus.py adjudicate --out OUT [--second annotation_B.csv]
     python tools_validation_corpus.py report --out OUT [--second annotation_B.csv]
+
+``inventory`` takes the raw returned documents as they came (cycle 9): each
+file's SHA-256, codes, document properties (by name, never by value), whether
+its response boxes are filled, duplicates, version conflicts, and a readiness
+report per language; it writes ``raw_manifest.json``, ``readiness.json`` and
+``readiness.md`` outside this repository and never alters a raw file.
+``metadata`` says which personal properties one document carries;
+``deidentify`` writes a working copy with those properties cleared and the text
+byte for byte the raw file's own.
 
 ``split`` draws development and sealed once every document is back, from the
 files' bytes and never their text (§18, §41), and lays out the corpus folder
@@ -33,6 +46,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import date
@@ -124,7 +138,7 @@ def split(pilot_path, returned, baseline, corpus, collected_on):
         shutil.copyfile(returned / item["file"], corpus / item["subset"] / item["file"])
     _write_json(record, {**drawn, "drawn_on": date.today().isoformat()})
     manifest = {"corpus_version": vc.CORPUS_VERSIONS[language], "language": language, "pilot_id": pilot["pilot_id"],
-                "baseline_commit": drawn["baseline_commit"], "cases": pilot["cases"],
+                "baseline_commit": drawn["baseline_commit"], "split_seed": drawn["seed"], "cases": pilot["cases"],
                 "documents": [{"file": item["file"], "participant": item["participant"], "case": item["case"],
                                "language": item["language"], "collected_on": collected_on,
                                "subset": item["subset"], "sha256": item["sha256"]}
@@ -132,6 +146,30 @@ def split(pilot_path, returned, baseline, corpus, collected_on):
                 "retired_entries": []}
     _write_json(corpus / "manifest.json", manifest)
     return drawn
+
+
+# --- the raw returned documents (cycle 9) -------------------------------------------------
+
+def inventory(pilot_path, raw, received_on, out, decisions_path=None):
+    """The raw manifest and the readiness report of one language's returned documents."""
+    pilot = json.loads(Path(pilot_path).read_text(encoding="utf-8"))
+    decisions = json.loads(Path(decisions_path).read_text(encoding="utf-8")) if decisions_path else None
+    taken = vc.raw_inventory(raw, pilot, received_on=received_on, decisions=decisions)
+    ready = vc.readiness(taken, pilot)
+    out = vc.check_outside(out, "sealed")
+    out.mkdir(parents=True, exist_ok=True)
+    manifest = out / "raw_manifest.json"
+    if manifest.exists():
+        before = json.loads(manifest.read_text(encoding="utf-8"))
+        if {r["original_filename"]: r["sha256"] for r in before["records"]} != {
+                r["original_filename"]: r["sha256"] for r in taken["records"]}:
+            raise SystemExit(f"{manifest} already records other files: a raw manifest is never rewritten. "
+                             "Take the new inventory into a new folder and record it as an amendment "
+                             "(docs/VALIDACION_EXTERNA_PREPARACION.md).")
+    _write_json(manifest, taken)
+    _write_json(out / "readiness.json", ready)
+    (out / "readiness.md").write_text(vc.readiness_markdown(ready), encoding="utf-8")
+    return ready
 
 
 # --- the engine --------------------------------------------------------------------------
@@ -224,8 +262,16 @@ def play(corpus, out, seed=3000):
               + ((", stopped" if corpus["subset"] == "sealed" else f", stopped: {stop}") if stop else ""),
               flush=True)
     return {"corpus_version": corpus["corpus_version"], "subset": corpus["subset"],
-            "engine": engine_version(), "seed": seed, "run_on": date.today().isoformat(),
-            "documents": documents, "entries": records}
+            "engine": engine_version(), "configuration": engine_configuration(), "seed": seed,
+            "run_on": date.today().isoformat(), "documents": documents, "entries": records}
+
+
+def engine_configuration():
+    """How the engine was set to run: the simulator's own settings, never a secret (cycle 9, §132)."""
+    return {"offline_cases": os.environ.get("MRS_OFFLINE_CASES") == "1",
+            "provider_key_present": bool({"OPENAI_API_KEY", "ANTHROPIC_API_KEY"} & set(os.environ)),
+            "settings": {key: value for key, value in sorted(os.environ.items())
+                         if key.startswith("MRS_") and not re.search(r"KEY|TOKEN|SECRET|PASSWORD", key)}}
 
 
 # --- files ---------------------------------------------------------------------------------
@@ -282,7 +328,21 @@ def _provenance(corpus, engine, rows):
             # errors are tagged against (faculty, 2026-09-28, §51): None for both
             # when the engine was not a registered baseline.
             **vc.baseline_of(engine["engine"]),
-            "documents": len(corpus["documents"]), "retired_entries": len(corpus.get("retired_entries") or [])}
+            # The corpus, the draw and the configuration a rerun must match to give the same reading, and
+            # the lists of known defects in force at the analysis (cycle 9, §132).
+            "corpus_id": corpus.get("pilot_id"),
+            "split": {"seed": corpus.get("split_seed"), "baseline_commit": corpus.get("baseline_commit")},
+            "engine_configuration": engine.get("configuration"),
+            "known_defect_lists": {"pilot_list_version": vc.known_defects_version(),
+                                   "v3_state_version": vc.known_defects_state_version()},
+            "documents": len(corpus["documents"]), "retired_entries": len(corpus.get("retired_entries") or []),
+            # Who annotated and adjudicated, when, and whether blind to the engine (cycle 9, §98).
+            "annotation_provenance": vc.annotation_provenance(Path(OUT_OF.get("out", ".")) / "annotation_provenance.json",
+                                                              rows)}
+
+
+#: The output folder the report is written for, so the provenance can read its record.
+OUT_OF = {}
 
 
 _TITLES = (("order_recognition_rate", "ORDER RECOGNITION RATE"),
@@ -305,6 +365,9 @@ def markdown(report):
              "Counts, not inferences: a pilot's numbers do not carry intervals or tests.", "",
              "## Provenance", "", "```json", json.dumps(report["provenance"], indent=1, ensure_ascii=False), "```", ""]
     for language, values in sorted(report["metrics"].items()):
+        if language == "all" and len(report["metrics"]) <= 2:
+            # One corpus is one language (cycle 7, §37): "all" would repeat it under another name.
+            continue
         lines += [f"## {'All languages' if language == 'all' else language.upper()}", "",
                   f"Entries {values['entries']} · not annotated {values['not_annotated']} · "
                   f"no clinical content {values['no_clinical_content']} · not adjudicated {values['not_adjudicated']} · "
@@ -316,20 +379,24 @@ def markdown(report):
             rate = "—" if value["rate"] is None else f"{value['rate']:.1%}"
             lines.append(f"| {title} | {value['n']} / {value['of']} | {rate} | {value.get('spurious', '')} |")
         lines += ["", "Classes: " + " · ".join(f"{name} {count}" for name, count in values["classes"].items()), ""]
+        if values.get("error_flags"):
+            lines += ["Counted apart (an entry can carry several; none is hidden in a class): " + " · ".join(
+                f"{name.replace('_', ' ')} {value['n']} / {value['of']}" for name, value in values["error_flags"].items()), ""]
     lines += [f"Proposals the reviewer changed: {report['overridden_proposals']}", ""]
     if report.get("traceability"):
-        lines += ["## Traceability of every entry not classified CORRECT", "",
+        lines += ["## Traceability of every entry not classified CORRECT or carrying a flag", "",
                   "| Case | Free text | Reference intent | Engine interpretation | Execution | Management Trace | "
-                  "Classification | Locus | Impact | Known defect |", "|---|---|---|---|---|---|---|---|---|---|"]
+                  "Classification | Flags | Locus | Impact | Known defect |", "|---|---|---|---|---|---|---|---|---|---|---|"]
         for row in report["traceability"]:
             cells = [row["case"], row["free_text"], row["reference_intent"], row["engine_interpretation"],
-                     row["execution"], row["management_trace"], row["classification"], row["locus"],
-                     row.get("impact") or "", row.get("known_defect") or ""]
+                     row["execution"], row["management_trace"], row["classification"],
+                     ", ".join(row.get("flags") or []), row["locus"], row.get("impact") or "", row.get("known_defect") or ""]
             lines.append("| " + " | ".join(str(cell).replace("|", "/").replace("\n", " ") for cell in cells) + " |")
     return "\n".join(lines) + "\n"
 
 
 def report(out, second=None):
+    OUT_OF["out"] = out
     corpus, engine = _load(out, "entries.json"), _load(out, "engine_output.json")
     rows = vc.read_csv(Path(out) / "adjudication.csv")
     measured = vc.metrics(corpus, engine["entries"], rows, vc.read_csv(second) if second else None)
@@ -354,6 +421,17 @@ def aggregates(result):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
+    take_raw = commands.add_parser("inventory", help="checksum, properties and readiness of the raw documents")
+    take_raw.add_argument("--pilot", required=True, help="the language's pilot manifest")
+    take_raw.add_argument("--raw", required=True, help="the folder with the raw returned documents, outside this repository")
+    take_raw.add_argument("--received-on", required=True, help="the date the inventory is taken, YYYY-MM-DD")
+    take_raw.add_argument("--out", required=True, help="where raw_manifest.json and readiness go, outside this repository")
+    take_raw.add_argument("--decisions", help="a person's decisions: {file: {decision, reason, by, on}}")
+    look = commands.add_parser("metadata", help="which personal properties a document carries (never their value)")
+    look.add_argument("--file", required=True)
+    clean = commands.add_parser("deidentify", help="a working copy with the document's properties cleared")
+    clean.add_argument("--raw", required=True)
+    clean.add_argument("--out", required=True)
     make = commands.add_parser("templates", help="write the blank Word documents")
     make.add_argument("--out", required=True)
     make.add_argument("--language", choices=("es", "en", "both"), default="both")
@@ -381,6 +459,16 @@ def main(argv=None):
             command.add_argument("--second", help="a second, blind annotation of some entries")
     args = parser.parse_args(argv)
 
+    if args.command == "inventory":
+        ready = inventory(args.pilot, args.raw, args.received_on, args.out, args.decisions)
+        print(vc.readiness_markdown(ready), end="")
+        return 0 if ready["ready_for_split"] else 1
+    if args.command == "metadata":
+        print(json.dumps(vc.inspect_metadata(args.file), indent=1, ensure_ascii=False))
+        return 0
+    if args.command == "deidentify":
+        print(json.dumps(vc.deidentified_copy(args.raw, args.out), indent=1))
+        return 0
     if args.command == "templates" and args.pilot:
         for item in pilot_documents(args.pilot, args.out):
             print(f"{item['participant']}/{item['file']}  {item['sha256'][:12]}  {item['case_text']}")
@@ -406,6 +494,10 @@ def main(argv=None):
         second = set(vc.double_annotation_sample(corpus))
         vc.write_csv(out / "annotation_second.csv", vc.ANNOTATION_COLUMNS,
                      [row for row in rows if row["entry_id"] in second])
+        # Who annotated each sheet, when, and whether blind: codes, never names (cycle 9, §98).
+        provenance = out / "annotation_provenance.json"
+        if not provenance.exists():
+            _write_json(provenance, vc.annotation_provenance_template())
         warnings = [w for d in corpus["documents"] for w in d["warnings"]]
         print(f"{len(corpus['documents'])} documents, "
               f"{sum(1 for _ in vc.entries_of(corpus))} entries, {len(warnings)} warnings.")

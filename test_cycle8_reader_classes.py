@@ -14,6 +14,8 @@ holds (docs/MEDICION_RECONOCIMIENTO_ORDENES.md, cycle 8).
   time of each unit.
 - KD-05: "OK to discharge" and "ok para alta" are a discharge.
 """
+import re
+
 import pytest
 
 import language
@@ -365,7 +367,9 @@ def test_the_order_now_runs_and_its_repeat_on_a_condition_is_the_plan(text, now)
 ])
 def test_a_condition_the_class_missed_is_a_plan(text):
     assert not read(text), read(text)
-    assert kept(text) == [("conditional", None)]
+    # A discharge on a condition says it is a disposition plan (TD-39, cycle 9).
+    discharge = re.search(r"\b(?:alta|discharge|d/c)\b", text, re.I)
+    assert kept(text) == [("conditional", "disposition_plan" if discharge else None)]
 
 
 def test_the_account_of_the_ambulance_stays_one_plan():
@@ -570,7 +574,9 @@ def test_what_the_patient_does_and_what_follows_it_is_told_not_a_condition(text,
 ])
 def test_a_destination_on_the_patient_s_course_is_a_plan(text):
     assert not read(text)
-    assert kept(text) == [("conditional", None)]
+    # A discharge is said as a disposition plan, not only as a conditional one (TD-39, cycle 9).
+    discharge = re.search(r"\b(?:alta|discharge|d/c)\b", text, re.I)
+    assert kept(text) == [("conditional", "disposition_plan" if discharge else None)]
 
 
 @pytest.mark.parametrize("text", [

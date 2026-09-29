@@ -15,10 +15,10 @@ each new encounter (``evaluation_basis.freeze``).
   implementation to cycle 8. The recommendation for TDFC-6 differs from the
   draft: YES in the two pneumonias and pulmonary_embolism_61m, NO in the other
   three.
-* acs_54m_inferior keeps every TD/F/C row unwritten until DF-20 (its right
-  ventricle) is decided, as the recommendation for TDFC-5 says. Until then the
-  transition rule applies to it, as to generated cases and to encounters with no
-  authored case (DF-12).
+* acs_54m_inferior kept every TD/F/C row unwritten until DF-20 (its right
+  ventricle) was decided, as the recommendation for TDFC-5 said. The faculty
+  closed DF-20 on 2026-09-29 with no change to the case (cycle 9), and its rows,
+  the ones the approved decisions derive, are declared. No case is pending.
 
 This module holds the draft and derives the state each row takes. It writes
 nothing to the bank: ``tdfc_declarations`` holds the rows, and the tests check
@@ -111,8 +111,9 @@ DECISIONS = {
 # environment); TDFC-1 to 6 and 8 approved conceptually as recommended on 2026-09-28 (cycle 7, §28).
 APPROVED = {key: "approve" for key in DECISIONS}
 
-# Cases whose TD/F/C rows are not written yet, and why. They keep the transition rule.
-PENDING = {"acs_54m_inferior": "Waits for DF-20, the decision on its right ventricle (recommendation of TDFC-5)."}
+# Cases whose TD/F/C rows are not written yet, and why. They keep the transition rule. None since
+# DF-20 was closed (cycle 9, 2026-09-29).
+PENDING = {}
 
 
 def covering(case_id, objective_id):

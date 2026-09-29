@@ -12,6 +12,10 @@ this build" -- and the difference matters to whoever reads the record:
 * ``repeat``: a repeat of an order given now, with its interval, count and
   condition, not executed now (DF-16b, 2026-09-28).
 * ``advice``: what the patient was told, such as when to come back.
+* ``prior_treatment``: what the patient received before the resident's care,
+  as reported ("Aspirin 300 mg given by EMS", "Ya recibió adrenalina 0,5 mg
+  IM"). History, never the resident's order and never a dose given now
+  (TD-36, cycle 9).
 
 Two ``not_modelled`` categories are not medicines, and are said as what they
 are (TD-26, 2026-09-28; charter §112, §114):
@@ -27,6 +31,13 @@ are (TD-26, 2026-09-28; charter §112, §114):
   Recorded as the resident's decision; it takes back no unit already given
   (TD-32, cycle 8).
 
+A ``conditional`` whose order is a discharge is said as what it is:
+
+* ``disposition_plan``: a discharge for later or on a condition ("Discharge home
+  in 2 hours", "Observar 4 horas y luego alta", "Alta si sigue asintomática").
+  It is recorded as the resident's plan and not carried out now; the patient
+  stays in the emergency department (TD-39, cycle 9).
+
 Nothing here marks anything as given, and nothing invents a response.
 """
 from __future__ import annotations
@@ -37,6 +48,7 @@ LABELS = {
     "conditional": "conditional plan; not executed now",
     "repeat": "repeat instruction; not executed now",
     "advice": "advice to the patient",
+    "prior_treatment": "received before your care, as reported; not given here",
 }
 
 # The same kind said for what is not a medicine (TD-26).
@@ -44,6 +56,7 @@ CATEGORY_LABELS = {
     "blood_product": "blood product ordered; physiologic effect not modelled",
     "massive_transfusion": "massive transfusion protocol activated; the activation gives no blood product by itself",
     "massive_transfusion_stop": "massive transfusion protocol stood down; no unit already given is taken back",
+    "disposition_plan": "disposition plan; not carried out now",
 }
 _CATEGORY_MESSAGES = {
     "blood_product": ("Blood product ordered and recorded as your decision: {items}. Its physiologic effect is not "
@@ -53,17 +66,20 @@ _CATEGORY_MESSAGES = {
                             "product by itself; the units given are the ones ordered."),
     "massive_transfusion_stop": ("Massive transfusion protocol stood down and recorded as your decision: {items}. "
                                  "No unit already given is taken back."),
+    "disposition_plan": ("Recorded as a disposition plan, not carried out now: {items}. The patient stays in the "
+                         "emergency department; a plan is not carried out on its own."),
 }
 _CATEGORY_HELD = {
     "blood_product": "Also in this order, a blood product whose physiologic effect is not modelled: {items}.",
     "massive_transfusion": "Also in this order, the massive transfusion protocol's activation: {items}.",
     "massive_transfusion_stop": "Also in this order, the massive transfusion protocol stood down: {items}.",
+    "disposition_plan": "Also in this order, a disposition plan: {items}.",
 }
 
 
 def _kind_of(detail):
     """The kind a detail is said as: its category when that is not a medicine."""
-    if detail.get("kind") == "not_modelled" and detail.get("category") in CATEGORY_LABELS:
+    if detail.get("kind") in ("not_modelled", "conditional") and detail.get("category") in CATEGORY_LABELS:
         return detail["category"]
     return detail.get("kind")
 
@@ -75,6 +91,8 @@ _MESSAGES = {
     "conditional": "Recorded as a conditional plan, not executed now: {items}.",
     "repeat": "Recorded as a repeat instruction, not executed now: {items}.",
     "advice": "Recorded as advice to the patient: {items}.",
+    "prior_treatment": ("Recorded as treatment received before your care, as reported: {items}. It is part of "
+                        "the history, not your order: nothing was given now."),
 }
 
 
@@ -93,8 +111,8 @@ def messages(parsed):
     for detail in details_of(parsed):
         grouped.setdefault(_kind_of(detail), []).append(str(detail.get("text") or "").strip())
     lines = []
-    for kind in ("massive_transfusion", "massive_transfusion_stop", "blood_product", "not_modelled", "prescription", "conditional", "repeat",
-                 "advice"):
+    for kind in ("prior_treatment", "massive_transfusion", "massive_transfusion_stop", "blood_product", "not_modelled",
+                 "prescription", "conditional", "disposition_plan", "repeat", "advice"):
         if grouped.get(kind):
             lines.append({**_MESSAGES, **_CATEGORY_MESSAGES}[kind].format(items="; ".join(grouped[kind])))
     unclassified = grouped.get(None) or []
@@ -111,6 +129,7 @@ _HELD = {
     "conditional": "Also in this order, a conditional plan: {items}.",
     "repeat": "Also in this order, a repeat instruction: {items}.",
     "advice": "Also in this order, advice to the patient: {items}.",
+    "prior_treatment": "Also in this order, treatment received before your care: {items}.",
 }
 
 
@@ -120,8 +139,8 @@ def held_messages(parsed):
     for detail in details_of(parsed):
         grouped.setdefault(_kind_of(detail), []).append(str(detail.get("text") or "").strip())
     lines = [{**_HELD, **_CATEGORY_HELD}[kind].format(items="; ".join(grouped[kind]))
-             for kind in ("massive_transfusion", "massive_transfusion_stop", "blood_product", "not_modelled", "prescription", "conditional",
-                          "repeat", "advice") if grouped.get(kind)]
+             for kind in ("prior_treatment", "massive_transfusion", "massive_transfusion_stop", "blood_product", "not_modelled",
+                          "prescription", "conditional", "disposition_plan", "repeat", "advice") if grouped.get(kind)]
     if grouped.get(None):
         lines.append("Also recognized but not executable in this build: " + ", ".join(grouped[None]) + ".")
     return lines

@@ -50,9 +50,9 @@ It is TRANSITIONAL, not the architecture (faculty, 2026-09-28): the target is
 that only opportunities explicitly reviewed for a case are evaluable. C14 is
 withdrawn first, then TD/F/C objective by objective, each only after its
 clinical review; when every case of an objective is reviewed, the objective
-leaves ``TRANSITION_OBJECTIVES``. Since cycle 8 every bank case but
-acs_54m_inferior declares TD1, F1, C1 and C3 (tdfc_declarations); that case,
-generated cases, encounters with no authored case and encounters frozen before
+leaves ``TRANSITION_OBJECTIVES``. Since cycle 9 every bank case declares TD1,
+F1, C1 and C3 (tdfc_declarations; acs_54m_inferior once DF-20 was closed).
+Generated cases, encounters with no authored case and encounters frozen before
 keep the transition, so the four stay listed.
 
 The observation environment (faculty, 2026-09-28, cycle 7). Some limits are

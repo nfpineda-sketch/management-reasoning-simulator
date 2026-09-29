@@ -101,10 +101,12 @@ def test_an_appropriate_transfusion_during_an_active_haemorrhage_is_not_an_overl
 
 def test_once_the_bleeding_is_controlled_and_the_loss_replaced_more_blood_overloads_again(engine):
     import trauma_hemorrhage
+    # The loss is replaced with blood: since TD-33 (faculty, 2026-09-29) only blood replaces it
+    # for this rule, and 1 L of saline after 2 units no longer did.
     state, _ = course(engine, "trauma", LIMB, [
-        TOURNIQUET, "Transfuse 2 units packed red blood cells over 20 minutes.",
-        "Give 1 L normal saline over 30 minutes.", "Reassess in 30 minutes."])
-    assert transfusion_overload(state) == 0
+        TOURNIQUET, "Transfuse 3 units packed red blood cells over 30 minutes.", "Reassess in 30 minutes."])
+    # 700 mL were lost, 2.33 units: only what the third unit gives beyond the loss counts.
+    assert transfusion_overload(state) < 1
     assert not trauma_hemorrhage.active(state["family_state"], state)
     execute_family_bundle(state, parse_family_actions(
         "Transfuse 4 units packed red blood cells over 60 minutes. Reassess in 60 minutes."))

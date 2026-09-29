@@ -553,9 +553,17 @@ _RULES = _WALL_MOTION_RULES + (
   "Receta para el domicilio registrada: \u00ab\\1\u00bb. Es una receta, no una dosis administrada aquí."),
  (r"Recorded as a conditional plan, not executed now: (.+?)\.$",
   "Registrado como plan condicional, no ejecutado ahora: \u00ab\\1\u00bb."),
+ (r"Recorded as a disposition plan, not carried out now: (.+?)\. The patient stays in the emergency department; a "
+  r"plan is not carried out on its own\.",
+  "Registrado como plan de destino, no realizado ahora: \u00ab\\1\u00bb. El paciente sigue en urgencias; un plan no "
+  "se realiza por sí solo."),
  (r"Recorded as a repeat instruction, not executed now: (.+?)\.$",
   "Registrado como instrucción de repetición, no ejecutada ahora: \u00ab\\1\u00bb."),
  (r"Recorded as advice to the patient: (.+?)\.$", "Registrado como indicación al paciente: \u00ab\\1\u00bb."),
+ (r"Recorded as treatment received before your care, as reported: (.+?)\. It is part of the history, not your "
+  r"order: nothing was given now\.",
+  "Registrado como tratamiento recibido antes de tu atención, según lo informado: \u00ab\\1\u00bb. Es parte de la "
+  "historia, no tu orden: no se administró nada ahora."),
  # Whole sentences before the word-by-word rule below, which would otherwise
  # leave them half translated ("None of it was administrado").
  (r"None of it was administered\.", "No se administró nada de ella."),
@@ -649,10 +657,14 @@ _RULES = _WALL_MOTION_RULES + (
   "También en esta orden, una receta para el domicilio: «\\1»."),
  (r"Also in this order, a conditional plan: (.+?)\.(?=\n|$)",
   "También en esta orden, un plan condicional: «\\1»."),
+ (r"Also in this order, a disposition plan: (.+?)\.(?=\n|$)",
+  "También en esta orden, un plan de destino: «\\1»."),
  (r"Also in this order, a repeat instruction: (.+?)\.(?=\n|$)",
   "También en esta orden, una instrucción de repetición: «\\1»."),
  (r"Also in this order, advice to the patient: (.+?)\.(?=\n|$)",
   "También en esta orden, una indicación al paciente: «\\1»."),
+ (r"Also in this order, treatment received before your care: (.+?)\.(?=\n|$)",
+  "También en esta orden, un tratamiento recibido antes de tu atención: «\\1»."),
  # --- investigations -------------------------------------------------------
  # The additional-lead ECGs (acs_reperfusion.additional_leads), whole.
  (r"\bRight-sided leads V3R and V4R, recorded alongside the standard twelve\.",

@@ -5,33 +5,74 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-29, al cerrar el ciclo 8 (secciones «Cierre del
-  ciclo 8» y «Apertura del ciclo 8»). Los ciclos 7, 6 y anteriores siguen más
+- **Actualizado:** 2026-09-29, al cerrar el ciclo 9 (secciones «Cierre del
+  ciclo 9» y «Apertura del ciclo 9»). Los ciclos 8, 7 y anteriores siguen más
   abajo.
 
 ## Pendientes de decisión
 
-| ID | Clase | Tema | Estado al cierre del ciclo 8 |
+| ID | Clase | Tema | Estado al cierre del ciclo 9 |
 |---|---|---|---|
-| Piloto formativo | NEEDS NICOLÁS | Autorizar un piloto formativo controlado con residentes | **TECHNICALLY READY, WITH CONDITIONS** (`READINESS_PILOTO_RESIDENCIA.md`). La condición 5 suma TD-34, TD-36 y TD-39. Falta la prueba de humo en la base real |
-| DF-20 | NEEDS NICOLÁS · CLINICAL REVIEW | `acs_54m_inferior`: el VD del caso frente al de su POCUS | Sin cambio: A/B/C/D. Sus filas de TDFC esperan esta decisión |
-| DF-23 · 4a | NEEDS NICOLÁS · CLINICAL REVIEW | `acs_70f_left_main`: «No B-lines» frente a la congestión | Sin cambio. Basta una línea |
-| TD-33 | NEEDS NICOLÁS · CLINICAL REVIEW | Residuo de TD-21: tras reponer con cristaloide, transfundir en trauma dispara la sobrecarga | Sin cambio. Recomendado: en esa regla, sólo la sangre repone el déficit (una línea) |
-| DF-23 · 4b, 6, 7, 8 | CLINICAL REVIEW | Inconsistencias clínicas | Sin cambio (§31) |
-| Baseline inglés | NEEDS NICOLÁS · METHODOLOGICAL | Qué commit mide los documentos ingleses | Candidatos documentados; el V2 ya nombra su commit (`9d2cd9e`). KD-05 sigue en ambos. Se elige **antes** de leer respuestas |
+| Baseline inglés | NEEDS NICOLÁS · METHODOLOGICAL | Qué commit mide los documentos ingleses | **Recomendado: V3.** Se elige antes de leer cualquier respuesta inglesa (`validation/BASELINES.md`) |
+| Piloto formativo | NEEDS NICOLÁS | Autorizar un piloto formativo controlado con residentes | A (motor) = YES; B (fidelidad externa) = NOT YET MEASURED. Falta la prueba de humo en la base real (`READINESS_PILOTO_RESIDENCIA.md`) |
+| Español de `acs_70f_left_main` | NEEDS NICOLÁS · CLINICAL REVIEW | Su POCUS cambió (fila 4a) | Si su texto en español estaba aprobado en la base desplegada, vuelve a esperar su revisión |
+| DF-23 · 4b, 6, 7, 8 | CLINICAL REVIEW | Inconsistencias clínicas | Sin cambio (§19) |
 | KD-02 · TD-35 | NEEDS NICOLÁS | Lo que una lista nombra sin verbo y el lector no conoce | ¿Preguntarlo? Hoy se pierde sin aviso mientras lo demás corre |
 | KD-15 | NEEDS NICOLÁS | Un fluido nombrado en palabras sin verbo («IV fluids 1 L») | Sin cambio |
+| KD-31 | NEEDS NICOLÁS · METHODOLOGICAL | El tamizaje de eventos críticos no cita un tratamiento previo registrado | Nuevo. El docente lo ve en el Trace; ningún evento se acepta solo |
 | Medidas combinadas | CLINICAL REVIEW | Resto de TD-31: «direct pressure with packing» suma el efecto de dos medidas | Sin cambio |
 | DC3 (mitad de la dosis) | CLINICAL REVIEW | Una dosis «IO» sin instalar la IO | Sin cambio |
 | TDFC · dudas | NEEDS NICOLÁS · CLINICAL REVIEW | Las cuatro dudas residuales de las filas claras | Aplicadas como estaban; cada una se cambia en una línea (`tdfc/TDFC_TABLA_FINAL.md`) |
 | TDFC · composiciones | NEEDS NICOLÁS | ¿Las composiciones de hipoglicemia heredan TD/F/C de su origen, como C14 (L-F07 B)? | Hoy conservan la transición |
-| DF-15 | WAITING FOR EXTERNAL DATA | Piloto del validation corpus, español e inglés | Listo, no enviado; nada llegó en el ciclo 8 |
-| TD-39 | HIGH · DEFERRED | Un alta con plazo o tras una observación corre ahora | Anterior al ciclo; también en `939978a`. Propuesto para el ciclo 9 |
-| TD-14 · TD-34 · TD-35 · TD-36 · TD-37 · TD-40 | HIGH · MEDIUM | Lo que queda del lector | Documentado; el piloto lo mide |
-| TD-38 | LOW | El aviso genérico tras un envío que sólo trae un plan | Documentado |
+| DF-15 | WAITING FOR EXTERNAL DATA | Piloto del validation corpus, español e inglés | Ingesta lista y ensayada sin respuestas reales; nada llegó ni se abrió |
+| TD-14 (KD-28) · KD-16 a KD-31 | HIGH (fricción) · MEDIUM · LOW | Lo que queda del lector y de la sala al congelar V3 | Estado de V3 (`validation/KNOWN_DEFECTS_V3.md`); el piloto lo mide |
 | Biblioteca POCUS | FUTURE ARCHITECTURE | Videos reales, adquisición y reconocimiento en la imagen | `ARQUITECTURA_POCUS_OBJETIVO.md`. No es deuda ni bug |
 | DF-25 · DF-14 · DF-12 · DF-17 · DF-4 | — | Brechas del banco · PARTIAL · transición · *override* · C2 | Sin cambio |
 | DF-18 · DF-9 · DF-11 · DF-5 | — | Multisource · −3 · residuos menores · C15 | Registrados, sin acción |
+
+**Cerrados en el ciclo 9:** DF-20 (sin cambios), DF-23 · 4a (aplicada), TD-33
+(aplicado) y TD-39, TD-34 y TD-36 (corregidos).
+
+## Apertura del ciclo 9 (2026-09-29)
+
+**La instrucción, al aprobar el cierre del ciclo 8:**
+
+- «Apruebo el cierre del Ciclo 8. Ya estoy recolectando el EXTERNAL VALIDATION
+  CORPUS con médicos de urgencia. Habrá DOS CORPUS INDEPENDIENTES: SPANISH
+  EXTERNAL VALIDATION CORPUS y ENGLISH EXTERNAL VALIDATION CORPUS».
+- La estrategia cambia a: PRE-VALIDATION HARDENING → FREEZE → EXTERNAL
+  MEASUREMENT → ERROR ANALYSIS → DATA-DRIVEN DEVELOPMENT.
+
+**Decisiones registradas (no se vuelven a pedir):**
+
+| Decisión | Qué dice | § |
+|---|---|---|
+| DF-20 | **CERRADO, sin cambios:** un compromiso fisiológico del VD puede coexistir con un POCUS cualitativo de urgencias normal o no diagnóstico. No cambian el tamaño ni la función del VD, la VCI ni el modelo hemodinámico; C14 sigue NO. Las filas TDFC de `acs_54m_inferior` dejan de esperar y usan la decisión TDFC ya aprobada | §16, §17, §46, §47 |
+| TD-33 | **Aprobado:** para la regla de sobrecarga transfusional en trauma, sólo la sangre repone el déficit hemorrágico; cambio mínimo | §14, §15, §45 |
+| DF-23 · 4a | **Autorizado si es claro:** aplicar el texto propuesto en el ciclo 7 si la única contradicción es «No B-lines» frente a la congestión y no cambia el desafío, el objetivo, los eventos críticos ni TDFC; si no, diferir. 4b, 6, 7 y 8 siguen en la cola | §18, §19, §49 |
+| Baseline español | **SPANISH EXTERNAL VALIDATION BASELINE = `939978a`.** «No pedir nuevamente esta decisión.» Los defectos hallados después se etiquetan en el análisis; el baseline no cambia | §23, §66, §116 |
+| Baseline inglés | El AI Advisor **recomienda** V2 o V3 al cierre, antes de leer cualquier respuesta inglesa | §24, §65, §115 |
+| Principio de saturación | El desarrollo interno con lenguaje sintético llegó a un punto de saturación temporal; la expansión del lector se guía por lenguaje humano independiente | §21 (charter, addendum A3, §116–§117) |
+| TD-29, TD-30, TD-40, TD-14 | No se amplían en el ciclo 9, salvo una regresión de TD-39/34/36 | §20 |
+
+**Alcance autorizado (§40):** TD-39, TD-34, TD-36 y TD-33; DF-20 cerrado y las
+filas TDFC de `acs_54m_inferior` con la tabla regenerada; DF-23 4a si es claro;
+las herramientas de ingesta externa sin leer respuestas reales; el congelamiento
+V3 si cumple §111; la documentación; la recomendación del baseline inglés; y,
+después de V3, la fase de roles e interfaz (§154A–§154GL) en commits aparte.
+
+**Reglas que siguen:**
+
+- no abrir, buscar ni usar respuestas externas hasta «BEGIN EXTERNAL VALIDATION
+  INGESTION»; si aparecen, informar su presencia sin leerlas;
+- no guardar respuestas crudas ni nombres de médicos en el repositorio;
+- no usar IA para respuestas externas, anotación de referencia, verdad clínica
+  ni traducción de respuestas;
+- sin cambios en D1–D5, 0–3, −3, eventos críticos, puntaje ajustado, radar,
+  confirmación docente, DIRECT/PARTIAL, C4, casos nuevos ni biblioteca POCUS;
+- sin otro conjunto ciego interno; después de V3, el lector no se toca;
+- sin PR, merge a `main` ni release; push sólo a `clinical-encounter-v0.13`;
+- un solo reporte al final, y STOP: no se inicia el ciclo 10.
 
 ## Cierre del ciclo 8 (2026-09-29)
 
@@ -894,6 +935,10 @@ aprobación.
 
 ### [HIGH VALUE · CLINICAL REVIEW] DF-20 · `acs_54m_inferior`: VD comprometido en el caso, VD normal en su POCUS
 
+> **CERRADO en el ciclo 9 (2026-09-29): sin cambios en el caso** (§16, §17). Un compromiso fisiológico del VD
+> puede coexistir con un POCUS cualitativo de urgencias normal o no diagnóstico; C14 sigue NO y las filas TDFC
+> quedaron declaradas (C-2026-09-29-05). Lo que sigue es el registro de la decisión.
+
 **PROBLEM**
 
 - **El caso y el motor modelan un IAM inferior con compromiso del VD.** Lo
@@ -1102,6 +1147,9 @@ escribió, y el Trace le atribuye la omisión.
 ---
 
 ### [CLINICAL REVIEW] DF-23 · Inconsistencias clínicas fuera de `acs_54m_inferior`
+
+> **Ciclo 9 (2026-09-29):** la fila 4a (`acs_70f_left_main`, «No B-lines» frente a la congestión) se aplicó
+> con el texto propuesto (C-2026-09-29-06). Las filas 4b, 6, 7 y 8 siguen pendientes.
 
 **PROBLEM**
 

@@ -82,7 +82,8 @@ DECISIONES = {
 }
 RECOMENDADO = {clave: "approve" for clave in DECISIONES}
 # Casos cuyas filas TD/F/C esperan una decisión y conservan la transición (tdfc_review.PENDING).
-PENDIENTES = {"acs_54m_inferior": "DF-20"}
+# Ninguno desde que DF-20 se cerró (ciclo 9, 2026-09-29).
+PENDIENTES = {}
 TODO_RECHAZADO = {clave: "reject" for clave in DECISIONES}
 
 
@@ -349,7 +350,8 @@ def escribir(borrador, familias, c14, fuentes, tdfc=None):
         "# Matriz de oportunidades del banco · caso × objetivo",
         "",
         "Ciclo 5 del AI Advisor · instrucción docente 59D · 2026-09-28. Actualizada en el ciclo 7 (C14 revisado",
-        "en los 31 casos y C4 declarado NO en todos) y en el ciclo 8 (TD1, F1, C1 y C3 declarados en 30 casos).",
+        "en los 31 casos y C4 declarado NO en todos), en el ciclo 8 (TD1, F1, C1 y C3 declarados en 30 casos) y",
+        "en el ciclo 9 (`acs_54m_inferior` declarado al cerrarse DF-20: los 31 casos).",
         "",
         "**Generado por `generar_matriz.py`; no se edita a mano.**",
         "",
@@ -360,7 +362,8 @@ def escribir(borrador, familias, c14, fuentes, tdfc=None):
         "  conceptualmente en el ciclo 7). C4 y C14 son lo que el banco declara (`case_assessment_bank.C4_DECLARATIONS`",
         "  y `C14_DECLARATIONS`). Los Decision Challenges salen de `curriculum.CHALLENGES`: un desafío es TARGET",
         "  en los casos de sus `families`.",
-        "- **`acs_54m_inferior`** no declara TD1, F1, C1 ni C3: espera DF-20 y conserva la transición (NR).",
+        "- **`acs_54m_inferior`** declara TD1, F1, C1 y C3 desde el ciclo 9: DF-20 se cerró sin cambios en el",
+        "  caso (2026-09-29), y sus oportunidades no descansan en el POCUS.",
         "",
         "## Leyenda",
         "",
@@ -400,8 +403,8 @@ def escribir(borrador, familias, c14, fuentes, tdfc=None):
         "## Lo que dejan las respuestas (YES / NO / UNCERTAIN, sobre 31 casos)",
         "",
         "Derivado con la misma lógica que `c14_review.derive`: una celda dudosa toma el resultado de su",
-        "decisión. «Aprobado» es lo que el docente aprobó (ciclo 7, §28); el banco lo declara en 30 casos,",
-        "porque las filas de `acs_54m_inferior` esperan DF-20.",
+        "decisión. «Aprobado» es lo que el docente aprobó (ciclo 7, §28); el banco lo declara en los 31 casos",
+        "desde el ciclo 9.",
         "",
         _tabla(("Objetivo", "Borrador", "Aprobado (TDFC-1 a 8)", "Si se hubieran rechazado las 8"),
                proyecciones),

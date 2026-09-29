@@ -960,8 +960,12 @@ ES = {
         '¿En qué coincidió tu razonamiento con este modelo?',
     'advice to the patient':
         'indicación al paciente',
+    'received before your care, as reported; not given here':
+        'recibido antes de tu atención, según lo informado; no se administró aquí',
     'conditional plan; not executed now':
         'plan condicional; no se ejecutó ahora',
+    'disposition plan; not carried out now':
+        'plan de destino; no se realizó ahora',
     'repeat instruction; not executed now':
         'instrucción de repetición; no se ejecutó ahora',
     'indicated; administration and effect not modelled':

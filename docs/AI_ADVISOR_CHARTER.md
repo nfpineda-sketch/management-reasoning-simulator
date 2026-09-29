@@ -3736,3 +3736,37 @@ que:
 - D. el Trace atribuye una omisión falsa;
 - E. la fisiología responde a una intervención que no ocurrió;
 - F. una intervención apropiada genera falsamente una penalidad de seguridad.
+
+## Addendum A3 · v1 · 2026-09-29 · Saturación del desarrollo sintético y medición externa
+
+Instrucción docente del 2026-09-29, ciclo 9 (§21, §22, §75, §112). Formaliza un
+principio del AI Advisor; no cambia la rúbrica ni el puntaje.
+
+### §116 · Principio de saturación
+
+- **El desarrollo interno del lector con lenguaje sintético llegó a un punto de
+  saturación temporal** (*internal synthetic language development has reached a
+  temporary saturation point*).
+- **Desde aquí, la expansión del lector se guía sobre todo por lenguaje humano
+  independiente:** las respuestas de médicos externos, medidas contra un
+  baseline congelado antes de leerlas.
+- **No significa que el lector esté completo.** Significa que el valor marginal
+  de más frases inventadas internamente es hoy menor que el de la medición
+  externa.
+
+### §117 · Lo que sigue de §116
+
+- **Congelar antes de medir.** Tras las correcciones de alto riesgo conocidas se
+  congela un baseline de desarrollo (V3). Después, el lector no se toca en ese
+  ciclo: un hallazgo MEDIUM o LOW es deuda técnica, no «one more quick fix».
+- **Sin otro conjunto ciego interno** para seguir ajustando el lector. La
+  próxima fuente ciega es lenguaje humano externo. Se permiten pruebas de
+  regresión y la reproducción de un error externo revelado legítimamente en el
+  subconjunto DEVELOPMENT.
+- **Lo interno sigue sirviendo, como corpus de regresión.** Los conjuntos
+  ciegos, adversariales e independientes de los ciclos anteriores no se borran,
+  pero no se presentan como evidencia de generalización externa.
+- **Arreglar el motor, no entrenar a la persona residente.** Cuando el lenguaje
+  natural es razonable y el defecto está corregido, no se enseña una sintaxis
+  especial («say X, not Y»); sólo se comunican las limitaciones inevitables del
+  simulador.

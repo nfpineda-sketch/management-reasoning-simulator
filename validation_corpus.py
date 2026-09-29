@@ -35,6 +35,7 @@ import math
 import re
 import unicodedata
 import zipfile
+from datetime import date
 from pathlib import Path
 from xml.etree import ElementTree
 from xml.sax.saxutils import escape
@@ -51,6 +52,9 @@ CORPUS_VERSIONS = {"es": CORPUS_VERSION, "en": "VALIDATION_CORPUS_V1_EN"}
 #: known defects a result's errors are tagged against (faculty, 2026-09-28, §51).
 BASELINES = ROOT / "validation" / "baselines.json"
 KNOWN_DEFECTS = ROOT / "validation" / "pilot_v1" / "manifests" / "known_defects.json"
+# The known-defect state of DEVELOPMENT PRE-VALIDATION BASELINE V3 (cycle 9, §114), in a file of its
+# own: the pilot's list is never rewritten.
+KNOWN_DEFECTS_V3 = ROOT / "validation" / "known_defects_v3.json"
 # VC2 (cycle 4, 2026-09-28): the faculty's shorter instruction, aligned with the
 # resident's own guide (what is going on, what you do, what you expect, what
 # you will check), in free text; VC1 documents are still read.
@@ -569,6 +573,344 @@ def check_outside(path, subset):
     return resolved
 
 
+# --------------------------------------------------------------------------- the raw returned documents
+
+# Cycle 9 (2026-09-29, §26-§29, §51-§60, §95-§97). What comes back from a physician is the raw
+# source: it is never edited, its SHA-256 proves it did not change, and it stays outside this
+# repository. Before the split only its structure is looked at -- the file, its properties, its
+# codes, its checksum and whether its response boxes are filled -- never what it says. A working
+# copy clears the document's properties and nothing else: the free text is never touched. Every
+# problem is flagged for a person to decide; nothing is chosen, excluded or merged automatically.
+RAW_INVENTORY_VERSION = "RAW-INVENTORY-1"
+_CORE = {"cp": "http://schemas.openxmlformats.org/package/2006/metadata/core-properties",
+         "dc": "http://purl.org/dc/elements/1.1/"}
+#: Who saved the file: always cleared in a working copy.
+_CORE_PERSONAL = {"creator": ("dc", "creator"), "lastModifiedBy": ("cp", "lastModifiedBy")}
+#: What the file says about itself, where a name can be written: cleared too.
+_CORE_DESCRIPTIVE = {"title": ("dc", "title"), "subject": ("dc", "subject"), "description": ("dc", "description"),
+                     "keywords": ("cp", "keywords"), "category": ("cp", "category"),
+                     "contentStatus": ("cp", "contentStatus")}
+_APP = "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
+_APP_PERSONAL = ("Company", "Manager")
+_CUSTOM = "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties"
+_RETURNED_LOOSE = re.compile(r"^(EM\d{2,3})_(C\d{2})_(es|en)(.*)\.docx$", re.I)
+#: What a problem does to the split: these wait for a person's decision (§58, §59, §97).
+BLOCKING = ("UNREADABLE", "UNEXPECTED_FILE", "UNEXPECTED_NAME", "WRONG_LANGUAGE", "WRONG_PARTICIPANT",
+            "WRONG_CASE", "DOCUMENT_SAYS_OTHER", "VERSION_CONFLICT", "EMPTY", "UNEXPECTED_STRUCTURE")
+#: What a person may decide about a document, with a reason; nothing is replaced silently (§97).
+DECISIONS = ("EXCLUDED", "WITHDRAWN", "INVALID", "KEEP")
+
+
+def _safe_xml(data):
+    if b"<!DOCTYPE" in data or b"<!ENTITY" in data:
+        raise CorpusError("A document part declares a DOCTYPE or entities, which Word never writes.")
+    return ElementTree.fromstring(data)
+
+
+def inspect_metadata(source):
+    """Which personal properties a .docx carries, by name, never by value (§28, §54, §95).
+
+    Deterministic, local, without a model: the properties Word keeps (docProps/core.xml,
+    app.xml, custom.xml), whether comments or tracked changes name their author, and how
+    many there are. The result says whether a de-identified working copy is needed; the
+    comments and tracked changes are content, so they are only flagged for a person.
+    """
+    try:
+        with zipfile.ZipFile(source if not isinstance(source, bytes) else io.BytesIO(source)) as archive:
+            names = set(archive.namelist())
+            read = {name: archive.read(name) for name in ("docProps/core.xml", "docProps/app.xml",
+                                                           "docProps/custom.xml", "word/comments.xml",
+                                                           "word/people.xml", "word/document.xml") if name in names}
+    except zipfile.BadZipFile as error:
+        raise CorpusError(f"Not a Word document: {error}") from None
+    present = {}
+    if "docProps/core.xml" in read:
+        core = _safe_xml(read["docProps/core.xml"])
+        for name, (prefix, tag) in {**_CORE_PERSONAL, **_CORE_DESCRIPTIVE}.items():
+            element = core.find(f"{{{_CORE[prefix]}}}{tag}")
+            present[name] = bool(element is not None and (element.text or "").strip())
+    if "docProps/app.xml" in read:
+        app = _safe_xml(read["docProps/app.xml"])
+        for name in _APP_PERSONAL:
+            element = app.find(f"{{{_APP}}}{name}")
+            present[name] = bool(element is not None and (element.text or "").strip())
+    custom = 0
+    if "docProps/custom.xml" in read:
+        # A property whose value was cleared names nobody.
+        custom = sum(1 for element in _safe_xml(read["docProps/custom.xml"]).iter(f"{{{_CUSTOM}}}property")
+                     if any((child.text or "").strip() for child in element))
+    author = f"{{{_W}}}author"
+    comments = authored_comments = 0
+    if "word/comments.xml" in read:
+        found = list(_safe_xml(read["word/comments.xml"]).iter(_q("comment")))
+        comments = len(found)
+        authored_comments = sum(1 for element in found if (element.get(author) or "").strip())
+    revisions = authored_revisions = 0
+    if "word/document.xml" in read:
+        found = [element for element in _safe_xml(read["word/document.xml"]).iter()
+                 if element.tag in (_q("ins"), _q("del"), _q("moveFrom"), _q("moveTo"))]
+        revisions = len(found)
+        authored_revisions = sum(1 for element in found if (element.get(author) or "").strip())
+    personal = sorted(name for name in (*_CORE_PERSONAL, *_APP_PERSONAL) if present.get(name))
+    descriptive = sorted(name for name in _CORE_DESCRIPTIVE if present.get(name))
+    human_review = []
+    if comments:
+        human_review.append(f"{comments} comment(s) in the document"
+                            + (", naming their author" if authored_comments else "")
+                            + ": a person reads them before the document is used; they are never read as entries.")
+    if revisions:
+        human_review.append(f"{revisions} tracked change(s)" + (", naming their author" if authored_revisions else "")
+                            + ": the reader takes the visible text; a person checks the changes.")
+    if "word/people.xml" in read:
+        human_review.append("The document lists the people who edited it (word/people.xml).")
+    needs_copy = bool(personal or descriptive or custom)
+    return {"personal_properties": personal, "descriptive_properties": descriptive, "custom_properties": custom,
+            "comments": comments, "comments_with_author": authored_comments, "tracked_changes": revisions,
+            "tracked_changes_with_author": authored_revisions, "human_review": human_review,
+            "working_copy_needed": needs_copy,
+            "status": "WORKING_COPY_NEEDED" if needs_copy else "NO_PERSONAL_PROPERTIES"}
+
+
+def _cleared(data, namespace_elements):
+    """The part's XML with the text of the named elements removed, the rest as it was."""
+    text = data.decode("utf-8")
+    cleared = []
+    for label, (uri, tag) in namespace_elements.items():
+        pattern = re.compile(r"(<(?:[\w.-]+:)?" + re.escape(tag) + r"\b(?:\s[^>]*)?>)([^<]*)(</(?:[\w.-]+:)?"
+                             + re.escape(tag) + r">)")
+        def empty(match):
+            return match.group(1) + match.group(3)
+        if any(match.group(2).strip() for match in pattern.finditer(text)):
+            cleared.append(label)
+            text = pattern.sub(empty, text)
+    return text.encode("utf-8"), cleared
+
+
+def deidentified_copy(raw_path, out_path):
+    """A working copy with the document's properties cleared and its text untouched (§28, §55).
+
+    The raw file is only read. Every part but docProps/ is copied byte for byte, so the
+    physician's text -- word/document.xml -- is the raw file's own; comments and tracked
+    changes are content and stay for a person to review. Returns what was cleared, by
+    name, and both checksums.
+    """
+    raw_path, out_path = Path(raw_path), Path(out_path)
+    if raw_path.resolve() == out_path.resolve():
+        raise CorpusError("The working copy is a new file: the raw document is never written.")
+    if out_path.exists():
+        raise CorpusError(f"{out_path} already exists: a working copy is written once.")
+    before = _sha256(raw_path)
+    cleared = []
+    core_targets = {name: (_CORE[prefix], tag) for name, (prefix, tag) in {**_CORE_PERSONAL, **_CORE_DESCRIPTIVE}.items()}
+    with zipfile.ZipFile(raw_path) as source, zipfile.ZipFile(out_path, "w") as copy:
+        for info in source.infolist():
+            data = source.read(info.filename)
+            if info.filename == "docProps/core.xml":
+                _safe_xml(data)
+                data, names = _cleared(data, core_targets)
+                cleared += names
+            elif info.filename == "docProps/app.xml":
+                _safe_xml(data)
+                data, names = _cleared(data, {name: (_APP, name) for name in _APP_PERSONAL})
+                cleared += names
+            elif info.filename == "docProps/custom.xml":
+                _safe_xml(data)
+                data, names = _cleared(data, {f"custom:{tag}": (_CUSTOM, tag) for tag in
+                                              ("lpwstr", "lpstr", "bstr", "i4", "r8", "bool", "filetime")})
+                cleared += ["custom properties"] if names else []
+            copy.writestr(info, data)
+    with zipfile.ZipFile(raw_path) as source, zipfile.ZipFile(out_path) as copy:
+        unchanged = all(source.read(name) == copy.read(name) for name in source.namelist()
+                        if not name.startswith("docProps/"))
+    if not unchanged or _sha256(raw_path) != before:
+        out_path.unlink()
+        raise CorpusError("The working copy would not keep the document's text as written; nothing was written.")
+    return {"raw_sha256": before, "working_sha256": _sha256(out_path), "cleared": sorted(set(cleared)),
+            "text_parts_unchanged": True}
+
+
+def document_structure(source):
+    """Whether a returned document is complete, from its boxes, without keeping what it says (§58, §130).
+
+    The response boxes are counted and whether each holds an entry; the codes the
+    document declares are compared with its name. No entry text leaves this function.
+    """
+    read = read_document(source)
+    fields = read["fields"]
+    boxes = read["boxes"]
+    filled = sum(1 for box in boxes if box["entries"])
+    status = ("UNEXPECTED_STRUCTURE" if not boxes else "EMPTY" if not filled
+              else "PARTIAL" if filled < len(boxes) else "COMPLETE")
+    return {"status": status, "boxes": len(boxes), "boxes_filled": filled,
+            "entries": sum(len(box["entries"]) for box in boxes), "outside_boxes": len(read["outside"]),
+            "declared": {"participant": fields.get("participant") or None, "case": fields.get("case") or None,
+                         "language": _LANGUAGE_VALUES.get(_folded(fields.get("language"))),
+                         "template_version": fields.get("version") or None},
+            "reader_warnings": [warning for warning in read["warnings"] if "author name" not in warning]}
+
+
+def raw_inventory(raw_dir, pilot, *, received_on, decisions=None):
+    """Every file in the raw folder: its codes, SHA-256, properties, completeness and problems.
+
+    ``pilot`` is the language's pilot manifest (its assignment); ``received_on`` is the date
+    the inventory is taken, written as given so the same files give the same inventory;
+    ``decisions`` maps a file name to a person's decision about it (``DECISIONS``) with its
+    reason. The folder must be outside this repository: raw physician documents never enter it.
+    """
+    language = corpus_language(pilot)
+    date.fromisoformat(received_on)
+    raw_dir = check_outside(raw_dir, "sealed")
+    decisions = decisions or {}
+    for name, decision in decisions.items():
+        if decision.get("decision") not in DECISIONS or not str(decision.get("reason") or "").strip():
+            raise CorpusError(f"{name}: a decision is one of {DECISIONS}, with its reason.")
+    assigned = {(row["participant"], row["case"], row["language"]) for row in pilot["assignment"]}
+    participants = {row["participant"] for row in pilot["assignment"]}
+    records = []
+    for path in sorted(item for item in Path(raw_dir).iterdir() if item.is_file() and not item.name.startswith(("~$", "."))):
+        record = {"corpus_version": CORPUS_VERSIONS[language], "language": language, "pilot_id": pilot["pilot_id"],
+                  "original_filename": path.name, "sha256": _sha256(path), "ingestion_date": received_on,
+                  "raw_status": "RAW", "participant": None, "case": None, "file_language": None,
+                  "problems": [], "metadata": None, "structure": None}
+        loose = _RETURNED_LOOSE.match(path.name)
+        if path.suffix.lower() != ".docx":
+            record["problems"].append("UNEXPECTED_FILE")
+        elif not loose:
+            record["problems"].append("UNEXPECTED_NAME")
+        else:
+            participant, case, file_language, extra = loose.groups()
+            record.update(participant=participant.upper(), case=case.upper(), file_language=file_language.lower())
+            if extra or not _RETURNED.match(path.name):
+                record["problems"].append("UNEXPECTED_NAME")
+            if record["file_language"] != language:
+                record["problems"].append("WRONG_LANGUAGE")
+            elif record["participant"] not in participants:
+                record["problems"].append("WRONG_PARTICIPANT")
+            elif (record["participant"], record["case"], language) not in assigned:
+                record["problems"].append("WRONG_CASE")
+        if path.suffix.lower() == ".docx":
+            try:
+                record["metadata"] = inspect_metadata(path)
+                record["structure"] = document_structure(path)
+            except CorpusError:
+                record["problems"].append("UNREADABLE")
+        structure = record["structure"]
+        if structure:
+            if structure["status"] in ("EMPTY", "UNEXPECTED_STRUCTURE"):
+                record["problems"].append(structure["status"])
+            elif structure["status"] == "PARTIAL":
+                record["problems"].append("PARTIAL")
+            declared = structure["declared"]
+            for key, found in (("participant", declared["participant"]), ("case", declared["case"]),
+                               ("file_language", declared["language"])):
+                if found and record[key] and found.upper() != record[key].upper():
+                    record["problems"].append("DOCUMENT_SAYS_OTHER")
+                    break
+        record["working_status"] = ("WORKING_COPY_NEEDED" if record["metadata"] and record["metadata"]["working_copy_needed"]
+                                    else "RAW_IS_WORKING" if record["metadata"] else "NONE")
+        record["metadata_review_status"] = ("HUMAN_REVIEW" if record["metadata"] and record["metadata"]["human_review"]
+                                            else record["metadata"]["status"] if record["metadata"] else "NOT_READ")
+        records.append(record)
+    # The same bytes twice count once; the same document in two versions waits for a person (§59).
+    by_digest = {}
+    for record in records:
+        by_digest.setdefault(record["sha256"], []).append(record)
+    for group in by_digest.values():
+        # The file with the name as sent is the one kept; any other copy is the duplicate.
+        group.sort(key=lambda record: (not _RETURNED.match(record["original_filename"]), record["original_filename"]))
+        for record in group[1:]:
+            record["problems"].append("DUPLICATE")
+            record["duplicate_of"] = group[0]["original_filename"]
+    by_key = {}
+    for record in records:
+        if record["participant"] and "DUPLICATE" not in record["problems"]:
+            by_key.setdefault((record["participant"], record["case"], record["file_language"]), []).append(record)
+    for group in by_key.values():
+        if len({record["sha256"] for record in group}) > 1:
+            for record in group:
+                record["problems"].append("VERSION_CONFLICT")
+                record["conflicts_with"] = sorted(other["original_filename"] for other in group if other is not record)
+    for record in records:
+        decision = decisions.get(record["original_filename"])
+        if decision:
+            record["decision"] = {"decision": decision["decision"], "reason": decision["reason"],
+                                  "by": decision.get("by"), "on": decision.get("on")}
+    return {"inventory_version": RAW_INVENTORY_VERSION, "pilot_id": pilot["pilot_id"], "language": language,
+            "corpus_version": CORPUS_VERSIONS[language], "received_on": received_on, "records": records}
+
+
+def readiness(inventory, pilot):
+    """Whether a language's corpus can be split, and what stands in the way (§60).
+
+    Expected, received, missing, duplicates, conflicts, the documents a working copy must
+    clear and those a person must look at. Ready means no problem is left without a
+    person's decision; a missing document does not block, it is listed.
+    """
+    language = inventory["language"]
+    if corpus_language(pilot) != language:
+        raise CorpusError("The inventory and the pilot are different languages: each corpus is read on its own.")
+    expected = sorted(file_name(row["participant"], row["case"], row["language"])
+                      for row in pilot["assignment"] if row["language"] == language)
+    records = inventory["records"]
+    decided = {record["original_filename"]: record["decision"]["decision"] for record in records if record.get("decision")}
+    kept = {record["original_filename"] for record in records if decided.get(record["original_filename"]) == "KEEP"}
+    set_aside = {name for name, decision in decided.items() if decision in ("EXCLUDED", "WITHDRAWN", "INVALID")}
+    received = sorted(record["original_filename"] for record in records
+                      if record["original_filename"] in expected and "DUPLICATE" not in record["problems"]
+                      and record["original_filename"] not in set_aside)
+    open_problems = []
+    for record in records:
+        name = record["original_filename"]
+        if name in set_aside or "DUPLICATE" in record["problems"]:
+            continue
+        blocking = [problem for problem in record["problems"] if problem in BLOCKING]
+        if name in kept:
+            blocking = [problem for problem in blocking if problem != "VERSION_CONFLICT"]
+        if "VERSION_CONFLICT" in record["problems"] and name not in kept and any(
+                other in kept for other in record.get("conflicts_with", ())):
+            continue
+        if blocking:
+            open_problems.append({"file": name, "problems": blocking})
+    by_problem = {}
+    for record in records:
+        for problem in record["problems"]:
+            by_problem.setdefault(problem, []).append(record["original_filename"])
+    return {
+        "language": language, "corpus_version": inventory["corpus_version"], "pilot_id": inventory["pilot_id"],
+        "expected": len(expected), "received": len(received), "missing": sorted(set(expected) - set(received) - set_aside),
+        "duplicates": sorted(by_problem.get("DUPLICATE", [])), "conflicts": sorted(by_problem.get("VERSION_CONFLICT", [])),
+        "partial": sorted(by_problem.get("PARTIAL", [])), "empty": sorted(by_problem.get("EMPTY", [])),
+        "unexpected": sorted(set(by_problem.get("UNEXPECTED_NAME", []) + by_problem.get("UNEXPECTED_FILE", [])
+                                 + by_problem.get("UNEXPECTED_STRUCTURE", []) + by_problem.get("UNREADABLE", []))),
+        "wrong": sorted(set(by_problem.get("WRONG_LANGUAGE", []) + by_problem.get("WRONG_PARTICIPANT", [])
+                            + by_problem.get("WRONG_CASE", []) + by_problem.get("DOCUMENT_SAYS_OTHER", []))),
+        "working_copy_needed": sorted(record["original_filename"] for record in records
+                                      if record["working_status"] == "WORKING_COPY_NEEDED"),
+        "human_review": sorted(record["original_filename"] for record in records
+                               if record["metadata_review_status"] == "HUMAN_REVIEW"),
+        "decisions": {name: decision for name, decision in sorted(decided.items())},
+        "open_problems": open_problems, "ready_for_split": not open_problems}
+
+
+def readiness_markdown(report):
+    """The readiness report for a person: codes, counts and file names, never what a document says."""
+    lines = [f"# Readiness · {report['pilot_id']} · {report['language'].upper()} · {report['corpus_version']}", "",
+             f"- Expected: {report['expected']} · received: {report['received']} · missing: {len(report['missing'])}",
+             f"- Ready for the split: **{'YES' if report['ready_for_split'] else 'NO'}**", ""]
+    for label, key in (("Missing", "missing"), ("Duplicates (counted once)", "duplicates"),
+                       ("Version conflicts (a person decides)", "conflicts"), ("Empty", "empty"),
+                       ("Partial", "partial"), ("Unexpected", "unexpected"), ("Wrong code or language", "wrong"),
+                       ("Working copy needed (document properties)", "working_copy_needed"),
+                       ("For a person to look at (comments, tracked changes)", "human_review")):
+        lines.append(f"- {label}: " + (", ".join(report[key]) if report[key] else "none"))
+    if report["decisions"]:
+        lines.append("- Decisions recorded: " + ", ".join(f"{name}: {decision}"
+                                                         for name, decision in report["decisions"].items()))
+    for item in report["open_problems"]:
+        lines.append(f"- Open: {item['file']}: {', '.join(item['problems'])}")
+    return "\n".join(lines) + "\n"
+
+
 def baseline_of(engine):
     """The registered baseline a run's engine was, its known-defects list, or None for both.
 
@@ -587,6 +929,11 @@ def baseline_of(engine):
 def known_defects_version():
     """The version of the known-defects list as it stands in this checkout."""
     return json.loads(KNOWN_DEFECTS.read_text(encoding="utf-8"))["version"]
+
+
+def known_defects_state_version():
+    """The version of the known-defect state of V3 as it stands in this checkout (§114 of cycle 9)."""
+    return json.loads(KNOWN_DEFECTS_V3.read_text(encoding="utf-8"))["version"]
 
 
 # --------------------------------------------------------------------------- the development/sealed draw
@@ -765,8 +1112,9 @@ def ingest(corpus_dir, subset):
     if problems:
         raise CorpusError("Some documents cannot be read as they stand:\n- " + "\n- ".join(problems))
     return {"corpus_version": manifest["corpus_version"], "subset": subset, "subset_version": SUBSETS[subset],
-            "source_type": SOURCE_TYPE, "documents": documents,
-            "retired_entries": sorted(retired)}
+            "source_type": SOURCE_TYPE, "pilot_id": manifest.get("pilot_id"),
+            "split_seed": manifest.get("split_seed"), "baseline_commit": manifest.get("baseline_commit"),
+            "documents": documents, "retired_entries": sorted(retired)}
 
 
 def entries_of(corpus, *, include_retired=False):
@@ -825,6 +1173,39 @@ def annotation_rows(corpus):
     return [{"entry_id": entry["entry_id"], "participant": document["participant"], "case": document["case"],
              "language": document["language"], "text": entry["text"], "annotation_version": ANNOTATION_VERSION}
             for document, entry in entries_of(corpus)]
+
+
+def annotation_provenance_template():
+    """The record of who annotated each sheet, when, and whether blind to the engine (cycle 9, §98).
+
+    Codes, never names. The sheets' columns and version do not change: the record sits beside
+    them, filled by whoever coordinates the annotation, and the report carries it.
+    """
+    sheet = {"annotator": "", "annotated_on": "", "blinded_to_engine_output": None}
+    return {"annotation_version": ANNOTATION_VERSION,
+            "sheets": {"annotation.csv": {**sheet, "second_annotation": False},
+                       "annotation_second.csv": {**sheet, "second_annotation": True}},
+            "adjudication": {"reviewer": "", "adjudicated_on": ""},
+            "note": "Annotator and reviewer codes only, never names. Blinded: the engine output was not seen before "
+                    "the sheet was finished (annotation_guide.md)."}
+
+
+def annotation_provenance(path, rows=()):
+    """The record as filled, with what the adjudication sheet shows; None where nothing was recorded."""
+    path = Path(path)
+    record = json.loads(path.read_text(encoding="utf-8")) if path.exists() else annotation_provenance_template()
+    sheets = {}
+    for name, sheet in (record.get("sheets") or {}).items():
+        blinded = sheet.get("blinded_to_engine_output")
+        sheets[name] = {"annotator": sheet.get("annotator") or None, "annotated_on": sheet.get("annotated_on") or None,
+                        "blinded_to_engine_output": blinded if isinstance(blinded, bool) else None,
+                        "second_annotation": bool(sheet.get("second_annotation"))}
+    adjudicated = sum(1 for row in rows if str(row.get("n_recognized") or "").strip())
+    adjudication = record.get("adjudication") or {}
+    return {"recorded": path.exists(), "annotation_version": record.get("annotation_version"), "sheets": sheets,
+            "adjudication": {"reviewer": adjudication.get("reviewer") or None,
+                             "adjudicated_on": adjudication.get("adjudicated_on") or None,
+                             "adjudicated_entries": adjudicated}}
 
 
 def double_annotation_sample(corpus, fraction=.2):
@@ -997,7 +1378,9 @@ def engine_view(record):
     for item in trace:
         read += [_action_text(signature) for signature in item.get("actions") or []]
         read += [f"DONE: {label}" for label in item.get("summaries") or []]
-    read += [f"PLAN ({kind.replace('_', ' ')}): {text}" for kind, text in plans]
+    # What the patient received before the physician's care is history, never a plan (TD-36, cycle 9).
+    read += [f"HISTORY (prior treatment): {text}" if kind == "prior_treatment"
+             else f"PLAN ({kind.replace('_', ' ')}): {text}" for kind, text in plans]
     return {
         "played": bool(record.get("played")), "statuses": statuses, "executed": "executed" in statuses,
         "asked": asked, "reasoning_gate": record.get("held") == "pending_reasoning",
@@ -1121,15 +1504,24 @@ def review_of(row):
     unknown = [tag for tag in tags if tag not in known_defect_ids()]
     if unknown:
         raise CorpusError(f"{entry_id}: known defect {unknown} is not in the list of known defects "
-                          "(validation/pilot_v1/KNOWN_DEFECTS.md).")
+                          "(validation/pilot_v1/KNOWN_DEFECTS.md) nor in the state of V3 "
+                          "(validation/KNOWN_DEFECTS_V3.md).")
     review["known_defect"] = "; ".join(tags) or None
     return review
 
 
 def known_defect_ids():
-    """Every identifier an adjudicator may tag: the known defects and the behaviours by design."""
+    """Every identifier an adjudicator may tag: the known defects and the behaviours by design.
+
+    Those of the pilot's list and those of the state of V3, including what V3 fixed and the frozen
+    baselines still carry (TD-39, TD-34, TD-36, TD-33). A tag says the defect was known when the
+    analysis was made; it never takes the error out of a metric (§67 of cycle 9).
+    """
     known = json.loads(KNOWN_DEFECTS.read_text(encoding="utf-8"))
-    return {item["id"] for item in [*known["defects"], *known["known_behaviour_by_design"]]}
+    ids = {item["id"] for item in [*known["defects"], *known["known_behaviour_by_design"]]}
+    state = json.loads(KNOWN_DEFECTS_V3.read_text(encoding="utf-8"))
+    return ids | {item["id"] for item in [*state["defects"], *state["fixed_before_v3"],
+                                          *state["known_behaviour_by_design"]]}
 
 
 def _rate(numerator, denominator):
@@ -1164,7 +1556,7 @@ def metrics(corpus, engine, rows, second=None):
                 "faithful_slots": 0, "multi": 0, "multi_success": 0,
                 "capture": {key: {"annotated": 0, "captured": 0, "spurious": 0}
                             for key in ("reassessment", "rationale", "expectation", "contingency")},
-                "classes": {name: 0 for name in CLASSES}})
+                "classes": {name: 0 for name in CLASSES}, "flags": {name: 0 for name in ERROR_FLAGS}})
             group["entries"] += 1
             group["gate_holds"] += view["reasoning_gate"]
             group["stated_slots"] += len(slots)
@@ -1205,6 +1597,7 @@ def metrics(corpus, engine, rows, second=None):
         if final not in CLASSES:
             raise CorpusError(f"{entry_id}: classification {final!r} is not one of {CLASSES}.")
         overridden += final != proposed
+        flags = error_flags(annotation, view, review, loci, row.get("locus"))
         for language in (document["language"], "all"):
             group = groups[language]
             group["adjudicated_entries"] += 1
@@ -1217,7 +1610,9 @@ def metrics(corpus, engine, rows, second=None):
                 group["multi"] += 1
                 group["multi_success"] += review["n_recognized"] == n and not review["extra_or_wrong"]
             group["classes"][final] += 1
-        if final != "CORRECT":
+            for name in flags:
+                group["flags"][name] += 1
+        if final != "CORRECT" or flags:
             traceability.append({
                 "entry_id": entry_id, "case": document["case"], "bank_case": document["bank_case"],
                 "language": document["language"], "free_text": entry["text"],
@@ -1226,7 +1621,7 @@ def metrics(corpus, engine, rows, second=None):
                 "execution": ", ".join(str(status) for status in view["statuses"]) or "—",
                 "management_trace": " | ".join(f"{slot}: {text}" for slot, text in sorted(view["stated"].items())) or "—",
                 "classification": final, "locus": str(row.get("locus") or "").strip() or "; ".join(loci),
-                "impact": review["impact"], "known_defect": review["known_defect"],
+                "flags": sorted(flags), "impact": review["impact"], "known_defect": review["known_defect"],
                 "note": row.get("review_note", "")})
     report = {}
     for language, group in groups.items():
@@ -1247,5 +1642,41 @@ def metrics(corpus, engine, rows, second=None):
             **{f"{key}_capture_rate": {**_rate(counts["captured"], counts["annotated"]), "spurious": counts["spurious"]}
                for key, counts in group["capture"].items()},
             "classes": group["classes"],
+            # Counted apart from the classes, over the adjudicated entries, so that an important
+            # failure is never hidden inside a class count (cycle 9, §34, §68, §138-§140).
+            "error_flags": {name: _rate(count, group["adjudicated_entries"]) for name, count in group["flags"].items()},
         }
     return {"metrics": report, "traceability": traceability, "overridden_proposals": overridden}
+
+
+#: What the external report counts apart from the five classes (cycle 9, §34, §68): each is a
+#: flag on an adjudicated entry, read from the columns the workflow already has; an entry can
+#: carry several, and a class never hides one.
+ERROR_FLAGS = ("SILENT_LOSS", "FALSE_EXECUTION", "TRACE_DISTORTION", "APPROPRIATE_CLARIFICATION")
+
+
+def error_flags(annotation, view, review, loci, reviewer_locus=None):
+    """The flags of one adjudicated entry.
+
+    * SILENT_LOSS: a clear intent (clinically sufficient, not ambiguous) lost in part or whole
+      with no question from the engine -- nothing happened and nothing said why.
+    * FALSE_EXECUTION: the engine executed something the physician did not order (the
+      reviewer's ``extra_or_wrong_execution``).
+    * TRACE_DISTORTION: the record says something the physician did not express -- a capture
+      missed or a slot that does not quote them (locus ``trace``, proposed or the reviewer's).
+    * APPROPRIATE_CLARIFICATION: the engine asked, and the entry was ambiguous or not
+      executable as written.
+    """
+    n = len(annotation["items"])
+    written = [part.strip().lower() for part in re.split(r"[;,]", str(reviewer_locus or "")) if part.strip()]
+    flags = []
+    if (n and annotation["clinically_sufficient"] and not annotation["ambiguous"]
+            and review["n_recognized"] < n and not view["asked"]):
+        flags.append("SILENT_LOSS")
+    if review["extra_or_wrong"]:
+        flags.append("FALSE_EXECUTION")
+    if "trace" in loci or "trace" in written:
+        flags.append("TRACE_DISTORTION")
+    if view["asked"] and (annotation["ambiguous"] or not annotation["clinically_sufficient"]):
+        flags.append("APPROPRIATE_CLARIFICATION")
+    return flags

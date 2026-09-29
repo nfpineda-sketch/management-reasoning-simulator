@@ -68,7 +68,7 @@ escritos para esta guía; ninguno viene de un médico del piloto.
 | `RETURN` | una indicación de regreso | `RETURN: volver si fiebre` |
 | `REPEAT` | repetir una orden, con intervalo, número y condición | `REPEAT: salbutamol cada 20 min x3 si persiste` |
 | `REEVAL` | una reevaluación: qué y cuándo | `REEVAL: FR y saturación en 15 min` |
-| `HX` | una pregunta de historia | `HX: alergias` |
+| `HX` | una pregunta de historia, o lo que se informa como antecedente | `HX: alergias` · `HX: recibió aspirina 300 mg (SAMU)` |
 | `EX` | un examen físico | `EX: auscultación pulmonar` |
 | `OTHER` | otra intención | `OTHER: …` |
 
@@ -103,6 +103,29 @@ una contingencia.
   («cada 20 min x3») y «SOS / PRN / según necesidad» no son una condición
   explícita: N.
 
+## Ahora, después, antes: siete ejemplos (ciclo 9)
+
+Aclaración del 2026-09-29, **sin etiquetas ni columnas nuevas**: la hoja sigue
+siendo `VC2-ANNOTATION-1`. La pregunta sigue siendo «¿qué quiso hacer o decir
+el médico?». El momento se escribe en el ítem tal como está escrito, y el
+motor no se mira.
+
+| Qué escribió | Cómo se anota |
+|---|---|
+| **Acción ahora.** «Adrenalina 0,5 mg IM ahora» | `MED: adrenalina 0,5 mg IM ahora` |
+| **Plan condicional.** «Noradrenalina si PAM < 65 tras 2 L» | `MED: noradrenalina si PAM < 65 tras 2 L` · `contingency: S` |
+| **Tratamiento previo.** «Aspirina 300 mg dada por SAMU» | `HX: recibió aspirina 300 mg (SAMU)`: es un antecedente que el médico informa, no una orden suya. Si además ordena algo, ese ítem va aparte. |
+| **Reevaluación.** «Reevaluar en 1 h» | `REEVAL: reevaluar en 1 h` · `reassessment: S` |
+| **Destino ahora.** «Alta a domicilio» | `DISP: alta a domicilio` |
+| **Destino planificado.** «Alta en 2 horas», «observar 6 h y luego alta» | `DISP: alta en 2 horas` · `DISP: alta tras observar 6 h`: el momento queda en el ítem. Con una condición («alta si sigue asintomática»), además `contingency: S`. |
+| **Acción que el simulador no modela.** «Ondansetrón 4 mg ev» | `MED: ondansetrón 4 mg ev`: la intención se anota igual; que el simulador la modele o no es asunto del motor, no de la anotación. |
+| **Entrada ambigua.** «Evaluar y alta» | Los ítems que se lean con certeza; `ambiguous: S` y las lecturas posibles en `acceptable_readings`. No se obliga a una sola intención. |
+
+- **`HX` cubre la historia en ambos sentidos:** lo que el médico pregunta y lo
+  que informa como antecedente, como un tratamiento recibido antes de llegar.
+- **La corrección clínica no es la etiqueta.** Una orden discutible pero clara
+  se anota como está escrita.
+
 ## Las marcas (S/N)
 
 Una marca en blanco se lee como N.
@@ -120,6 +143,14 @@ Una marca en blanco se lee como N.
   Escriba las lecturas en `acceptable_readings`.
 - **`context_dependent`.** La entrada necesita las anteriores para entenderse
   («repetir», «lo mismo»).
+
+## Quién, cuándo y a ciegas (ciclo 9)
+
+`ingest` deja junto a las hojas `annotation_provenance.json`. Quien coordina la
+anotación anota ahí, por hoja, el **código** del anotador (nunca un nombre), la
+fecha y si anotó sin haber visto la salida del motor (`true` / `false`); y, para
+la adjudicación, el código del revisor y la fecha. El informe lo lleva en su
+procedencia. Lo que no se anotó queda como no registrado, nunca como «a ciegas».
 
 ## Doble anotación (VC-2)
 

@@ -1741,8 +1741,8 @@ for _case_id, _declaration in C4_DECLARATIONS.items():
 # --- TD1, F1, C1 and C3 (cycle 8): the faculty's TDFC decisions --------------------------------
 # TDFC-1 to 6 and 8 approved conceptually as recommended on 2026-09-28 (cycle 7, §28); the rows
 # are the ones tdfc_review.final_states derives, written with their provenance in
-# tdfc_declarations. acs_54m_inferior keeps the transition until DF-20 (tdfc_review.PENDING), as
-# generated cases and encounters with no authored case do (DF-12). New encounters only: an
+# tdfc_declarations. acs_54m_inferior's rows followed the closing of DF-20 (cycle 9); generated
+# cases and encounters with no authored case keep the transition (DF-12). New encounters only: an
 # encounter started before keeps the declaration it was frozen with.
 import tdfc_declarations as _tdfc_declarations
 

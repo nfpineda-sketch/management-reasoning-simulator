@@ -1,7 +1,8 @@
 # TDFC · Tabla final: TD1, F1, C1 y C3 en los 31 casos del banco
 
-Ciclo 8 · 2026-09-28. **Generada por `tdfc_review.final_table_markdown()` desde el banco; no se edita a
-mano** (`test_tdfc_opportunities.py` comprueba que coincide).
+Ciclo 8 · 2026-09-28; completada en el ciclo 9 · 2026-09-29. **Generada por
+`tdfc_review.final_table_markdown()` desde el banco; no se edita a mano** (`test_tdfc_opportunities.py`
+comprueba que coincide).
 
 - **Qué es.** Las oportunidades de observación de TD1, F1, C1 y C3 que declara cada caso, con su
   procedencia. Se congelan con cada encuentro nuevo (`evaluation_basis.freeze`); un encuentro anterior
@@ -13,12 +14,15 @@ mano** (`test_tdfc_opportunities.py` comprueba que coincide).
 - **Qué no es.** Una oportunidad YES observa **un componente** de la EPA, nunca la EPA completa (§30),
   y no es evidencia de que ocurrió: el desempeño, la propuesta y la confirmación docente deciden. NO
   quiere decir no evaluable, nunca una falla. C4 queda fuera en todo el entorno (§93).
-- **`acs_54m_inferior`** no tiene filas: espera DF-20 y conserva la transición, como los casos generados
-  y los encuentros sin caso autorado (DF-12).
+- **`acs_54m_inferior`** tiene sus filas desde el ciclo 9. DF-20 se cerró sin cambios en el caso
+  (2026-09-29): un compromiso fisiológico del VD puede coexistir con un POCUS cualitativo de urgencias
+  normal o no diagnóstico. Sus filas son las que ya derivaban las decisiones aprobadas (TD1, F1 y C1
+  YES por la fisiología, el monitor y el ECG; C1 por TDFC-5; C3 NO), y ninguna descansa en el POCUS.
+  Su C14 sigue NO. Los casos generados y los encuentros sin caso autorado conservan la transición
+  (DF-12).
 
-**Totales (30 casos declarados):** TD1 25 YES / 5 NO · F1 25 / 5 ·
-C1 18 / 12 · C3 10 / 20. Con las filas de `acs_54m_inferior`, cuando se
-decida DF-20, serían los totales aprobados: 26/5, 26/5, 19/12 y 10/21.
+**Totales (31 casos declarados), los aprobados:** TD1 26 YES / 5 NO · F1 26 / 5 · C1 19 / 12 ·
+C3 10 / 21.
 
 **Dudas residuales de las filas claras**, que el borrador pidió mirar (se mantienen; cada una se cambia
 en una línea si usted lo decide):
@@ -33,10 +37,10 @@ en una línea si usted lo decide):
 
 | CASE ID | OBJ. | OPPORTUNITY | RATIONALE (YES) / REASON (NO) | OBSERVABLE COMPONENT | EXPECTED TRACE EVIDENCE | OUTSIDE THE ENCOUNTER | SOURCE |
 |---|---|---|---|---|---|---|---|
-| `acs_54m_inferior` | TD1 | NOT REVIEWED | Not written: waits for DF-20, the decision on this case's right ventricle (recommendation of TDFC-5). Its TD/F/C objectives keep the transition rule until then. | — | — | — | none yet |
-| `acs_54m_inferior` | F1 | NOT REVIEWED | Not written: waits for DF-20, the decision on this case's right ventricle (recommendation of TDFC-5). Its TD/F/C objectives keep the transition rule until then. | — | — | — | none yet |
-| `acs_54m_inferior` | C1 | NOT REVIEWED | Not written: waits for DF-20, the decision on this case's right ventricle (recommendation of TDFC-5). Its TD/F/C objectives keep the transition rule until then. | — | — | — | none yet |
-| `acs_54m_inferior` | C3 | NOT REVIEWED | Not written: waits for DF-20, the decision on this case's right ventricle (recommendation of TDFC-5). Its TD/F/C objectives keep the transition rule until then. | — | — | — | none yet |
+| `acs_54m_inferior` | TD1 | YES | Borderline perfusion (SBP 100 with HR 58, cold extremities, capillary refill 3 s, marked diaphoresis) in an inferior infarct whose pressure depends on right-ventricular preload; the engine brings a complete AV block at about 45 min of occlusion, before the artery can be opened. | Recognising the incipient hypoperfusion and the bradyarrhythmia, and starting support and monitoring. | names the borderline perfusion and the preload-dependent right ventricle; monitors; names the complete block as unstable and acts on it; sets when to reassess | Real help activation, teamwork and hands-on basic life support; the real clinical context. | clear row; TDFC-REVIEW-1 |
+| `acs_54m_inferior` | F1 | YES | The pressure depends on preload: a nitrate lowers it sharply and volume restores it (docs/AUDITORIA_ACS_54M_INFERIOR.md), and the complete block is a critical arrhythmia to manage. The opportunity rests on the physiology, the monitor and the ECG, not on the bedside ultrasound. | Prioritising prudent volume over the nitrate and treating the block, assessing the response. | withholds the nitrate because of the preload dependence; gives a bounded bolus and reassesses the pressure; atropine and, if it fails, pacing with output and capture confirmed | Assisting a real resuscitation team; procedural skills such as vascular or intraosseous access; cardiac arrest and paediatrics; the real clinical context. | clear row; TDFC-REVIEW-1 |
+| `acs_54m_inferior` | C1 | YES | Not in shock on arrival. By design the complete block and the right-ventricular drift lower the pressure while reperfusion is awaited (HR 42 around minute 50), even with immediate activation: the artery opens 90 min after the cath lab is activated. It does not depend on showing the right ventricle on ultrasound. | Integrating rhythm, right-ventricular preload and the pending reperfusion, and revising the plan by the response. | relates the fall in pressure to the block and the right ventricle; adjusts volume, atropine or pacing; keeps the reperfusion and says what it watches until the cath lab | Real team leadership; the full breadth of critical illness; procedural skills; the real clinical context. | decision TDFC-5; TDFC-REVIEW-1 |
+| `acs_54m_inferior` | C3 | NO | SpO2 96 % and clear lungs: an inferior infarct with right-ventricular involvement barely congests in the engine, and there is no oxygen or ventilation decision. | — | — | — | clear row; TDFC-REVIEW-1 |
 | `acs_66f_nonst` | TD1 | NO | Haemodynamically stable: without physiological instability, what TD1 observes cannot show. Recognising the ECG pattern that needs immediate reperfusion is observed by the case's rubric (D1) and belongs to C5, which is not enabled (TDFC-1). | — | — | — | decision TDFC-1; TDFC-REVIEW-1 |
 | `acs_66f_nonst` | F1 | NO | Normotensive, well perfused and not hypoxaemic: antiplatelet treatment and a monitored assessment are not resuscitation. | — | — | — | clear row; TDFC-REVIEW-1 |
 | `acs_66f_nonst` | C1 | NO | No shock, respiratory failure or sepsis: a non-occlusive acute coronary syndrome with a deferrable angiography, which is C5 content (not enabled). | — | — | — | clear row; TDFC-REVIEW-1 |

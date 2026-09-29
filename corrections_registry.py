@@ -56,6 +56,9 @@ INSTRUCTION_2026_09_28_CYCLE7 = ("Instrucción docente del 2026-09-28, ciclo 7 d
 INSTRUCTION_2026_09_28_CYCLE8 = ("Instrucción docente del 2026-09-28 al cerrar el ciclo 7 (dejar al AI Advisor trabajando en "
                                  "el ciclo 8, con tareas que no requieran mucha aprobación; lo que la requiera, al informe "
                                  "final), sobre la aprobación conceptual de TDFC-1 a 6 y 8 del ciclo 7 (§28)")
+INSTRUCTION_2026_09_29_CYCLE9 = ("Instrucción docente del 2026-09-29, ciclo 9 del AI Advisor (endurecimiento previo a la "
+                                 "validación externa: TD-39, TD-34, TD-36 y TD-33; DF-20 cerrado sin cambios y las filas "
+                                 "TDFC de acs_54m_inferior; la fila 4a de DF-23 si es inequívoca)")
 INSTRUCTION_2026_09_28_CYCLE6 = ("Instrucción docente del 2026-09-28, ciclo 6 del AI Advisor (DF-22 por clase, 59O-03 y "
                                  "seguridad de la aclaración, L-F01, L-F04 y sólo las correcciones de DF-23 que "
                                  "cumplen las seis condiciones)")
@@ -1559,13 +1562,13 @@ CORRECTIONS = (
                                 "faculty_analysis", "progress_portal", "report_language"], "versions": {}},
         "clinical_relevance": "clinical",
         "tests": ["test_tdfc_opportunities.py::test_the_bank_declares_exactly_the_rows_the_approved_decisions_derive",
-                  "test_tdfc_opportunities.py::test_the_counts_are_the_recommendation_s_with_the_pending_case_apart",
+                  "test_tdfc_opportunities.py::test_the_counts_are_the_totals_the_faculty_approved",
                   "test_tdfc_opportunities.py::test_tdfc_6_is_the_recommendation_not_the_draft",
                   "test_tdfc_opportunities.py::test_a_yes_names_its_component_and_what_stays_outside_and_a_no_its_reason",
                   "test_tdfc_opportunities.py::test_each_row_says_which_decision_settled_it_and_on_what_basis",
                   "test_tdfc_opportunities.py::test_a_new_encounter_freezes_the_rows_and_reads_them_as_declared",
                   "test_tdfc_opportunities.py::test_an_encounter_frozen_before_keeps_the_transition_it_started_with",
-                  "test_tdfc_opportunities.py::test_the_pending_case_generated_cases_and_encounters_without_a_case_keep_the_transition",
+                  "test_tdfc_opportunities.py::test_generated_cases_and_encounters_without_a_case_keep_the_transition",
                   "test_tdfc_opportunities.py::test_c4_stays_out_whatever_the_case",
                   "test_observation_opportunities.py::"
                   "test_c14_c4_and_td_f_c_are_declared_and_only_the_pending_case_keeps_the_transition"],
@@ -1833,6 +1836,171 @@ CORRECTIONS = (
                   "test_cycle8_minor_debt.py::test_the_urgent_and_override_notices_are_said_in_spanish",
                   "test_cycle8_minor_debt.py::test_a_long_run_of_spaces_is_read_at_once",
                   "test_cycle8_minor_debt.py::test_a_question_quotes_the_order_as_it_was_written"],
+    },
+    {
+        "id": "C-2026-09-29-01",
+        "date": "2026-09-29",
+        "title": "TD-39: un alta para más tarde es un plan de destino, registrado y no realizado ahora",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Un alta con su propio plazo («Discharge home in 2 hours», «Alta en 2 horas», «alta mañana»), tras "
+                   "una observación o un resultado («Observe 6 h then discharge home», «Observar 4 horas y luego "
+                   "alta», «Discharge after repeat troponin», «Alta tras 6 horas de observación») o con un plazo "
+                   "escrito después («Alta, mañana») se daba ahora, en el V2, en 939978a y en el ciclo 8, y cerraba el "
+                   "encuentro con el alta que dispara los eventos críticos definidos sobre ella. Ahora es un plan de "
+                   "destino: se registra con las palabras del residente, no se realiza y el Trace lo distingue de un "
+                   "alta realizada. El alta condicional se dice igual. «OK to discharge…» aplazado, que se perdía sin "
+                   "aviso, es el mismo plan. Lo pedido para ahora en la misma oración corre; la observación de D4 que el "
+                   "alta espera corre; una reevaluación seguida de «y luego alta» ya no se traga el alta ni le presta "
+                   "su verbo. El alta inmediata, negada, preguntada o de otro servicio no cambia."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE9,
+        "affects": {"modules": ["family_parser", "unexecuted_items", "language", "report_language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle9_prevalidation_hardening.py::test_an_immediate_discharge_still_runs",
+                  "test_cycle9_prevalidation_hardening.py::test_a_discharge_for_later_is_a_disposition_plan_not_a_discharge_now",
+                  "test_cycle9_prevalidation_hardening.py::test_a_denied_asked_or_someone_else_s_discharge_runs_nothing",
+                  "test_cycle9_prevalidation_hardening.py::test_what_is_ordered_for_now_runs_beside_the_plan",
+                  "test_cycle9_prevalidation_hardening.py::test_the_plan_keeps_the_resident_s_words",
+                  "test_cycle9_prevalidation_hardening.py::test_a_planned_discharge_does_not_close_the_encounter_and_the_trace_says_it_is_a_plan",
+                  "test_cycle9_prevalidation_hardening.py::test_an_immediate_discharge_still_closes_it",
+                  "test_cycle9_prevalidation_hardening.py::test_a_planned_discharge_is_no_executed_discharge_for_the_critical_events"],
+    },
+    {
+        "id": "C-2026-09-29-02",
+        "date": "2026-09-29",
+        "title": "TD-34: una reevaluación en horas espera sus minutos: «Reassess in 1 h» son 60, nunca 0",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«Reevaluar en 1 h», «Reassess in 1 hr» o «en 2 h» corrían a los 0 minutos, sin aviso: el tiempo no "
+                   "avanzaba y el residente veía al paciente como si no hubiera pasado nada. «1 hour» o «1,5 horas» "
+                   "preguntaban los minutos. Ahora el intervalo se lee en minutos u horas (h, hr, hrs, hora, hour, "
+                   "media hora, una hora y media, 1 h 30 min) y un solo valor, los minutos, va al motor, al reloj y al "
+                   "Trace. La «h» es hora sólo después de un número; un intervalo que no se lee se pregunta, nunca se "
+                   "toma como «ahora». El motor sigue aceptando de 0 a 120 minutos."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE9,
+        "affects": {"modules": ["family_parser"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle9_prevalidation_hardening.py::test_the_interval_is_its_minutes",
+                  "test_cycle9_prevalidation_hardening.py::test_an_interval_it_cannot_read_is_asked_never_taken_as_now",
+                  "test_cycle9_prevalidation_hardening.py::test_one_hour_is_sixty_minutes_on_the_clock_and_in_the_record"],
+    },
+    {
+        "id": "C-2026-09-29-03",
+        "date": "2026-09-29",
+        "title": "TD-36: un tratamiento recibido antes de la atención del residente es historia, no una orden",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Una dosis escrita antes de quien la dio se daba de nuevo («Epinephrine 0.5 mg IM given by EMS», «NS 1 L "
+                   "given en route», «Adrenalina 0,5 mg IM dada por SAMU») o se preguntaba como orden del residente "
+                   "(«Aspirin 300 mg given by EMS» retenía la adrenalina escrita al lado); lo que el paciente «ya "
+                   "recibió» se perdía, y la difenhidramina del SAMU quedaba como decisión del residente. Ahora es "
+                   "tratamiento previo, según lo informado: se registra con qué, dosis, vía, quién y cuándo, nunca se "
+                   "administra ni es orden del residente, para cualquier fármaco, fluido, hemoderivado o medida. El "
+                   "verbo propio del residente («give», «repeat», «continue») o «now» lo hacen su orden."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE9,
+        "affects": {"modules": ["family_parser", "unexecuted_items", "language", "report_language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle9_prevalidation_hardening.py::test_a_treatment_received_before_is_history_never_given_again",
+                  "test_cycle9_prevalidation_hardening.py::test_the_resident_s_order_beside_it_runs",
+                  "test_cycle9_prevalidation_hardening.py::test_the_resident_s_own_order_is_still_theirs",
+                  "test_cycle9_prevalidation_hardening.py::test_what_was_received_is_recorded_with_its_dose_route_and_source",
+                  "test_cycle9_prevalidation_hardening.py::test_it_is_never_given_nor_the_resident_s_decision"],
+    },
+    {
+        "id": "C-2026-09-29-04",
+        "date": "2026-09-29",
+        "title": "TD-33: para la regla de sobrecarga en trauma, sólo la sangre repone el déficit hemorrágico",
+        "scope": {"level": "family", "family": "trauma"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Residuo de TD-21: con el sangrado controlado y la pérdida «repuesta» con cristaloide (torniquete + 3 L "
+                   "de SF), transfundir 2 U disparaba la sobrecarga, porque la regla contaba el cristaloide como "
+                   "reposición del déficit. Decisión docente del ciclo 9 (TD-33 aprobado): para esa regla sólo la "
+                   "sangre repone el déficit. El cristaloide conserva sus efectos hemodinámicos en la fisiología; la "
+                   "sobretransfusión real después de reponer el déficit con sangre se sigue detectando. No cambian la "
+                   "fisiología general de fluidos, la hemoglobina, los eventos críticos, el −3 ni la rúbrica."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE9,
+        "affects": {"modules": ["trauma_hemorrhage"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle9_prevalidation_hardening.py::test_crystalloid_before_blood_no_longer_makes_appropriate_blood_an_overload",
+                  "test_cycle9_prevalidation_hardening.py::test_a_real_overtransfusion_after_the_loss_is_replaced_is_still_one",
+                  "test_cycle9_prevalidation_hardening.py::test_the_crystalloid_keeps_its_haemodynamic_effect",
+                  "test_transfusion_overload.py::test_once_the_bleeding_is_controlled_and_the_loss_replaced_more_blood_overloads_again"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-05",
+        "date": "2026-09-29",
+        "title": "DF-20 cerrado sin cambios: acs_54m_inferior declara TD1, F1, C1 y C3",
+        "scope": {"level": "variant", "family": "acs", "variants": ["acs_54m_inferior"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("DF-20 se cierra sin cambiar la fisiología del caso: un compromiso fisiológico del VD puede coexistir con "
+                   "un POCUS cualitativo de urgencias normal o no diagnóstico; el tamaño y la función del VD, la VCI y el "
+                   "modelo hemodinámico no cambian y su C14 sigue NO. Sus filas TDFC dejan de esperar y son las que ya "
+                   "derivaban las decisiones aprobadas (TD1, F1 y C1 YES, esta por TDFC-5; C3 NO), escritas sobre la "
+                   "fisiología, el monitor y el ECG, nunca sobre el POCUS. La tabla final y la matriz se regeneraron; "
+                   "los totales son los aprobados (26/5, 26/5, 19/12 y 10/21). Un encuentro anterior conserva la "
+                   "transición con que se congeló."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE9,
+        "affects": {"modules": ["tdfc_declarations", "tdfc_review", "case_assessment_bank"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle9_prevalidation_hardening.py::test_acs_54m_inferior_declares_the_rows_the_approved_decisions_derived",
+                  "test_cycle9_prevalidation_hardening.py::test_none_of_its_rows_rests_on_the_pocus",
+                  "test_cycle9_prevalidation_hardening.py::test_a_new_encounter_freezes_its_rows_as_declared",
+                  "test_tdfc_opportunities.py::test_the_counts_are_the_totals_the_faculty_approved",
+                  "test_tdfc_opportunities.py::test_the_published_final_table_is_the_bank_s"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-06",
+        "date": "2026-09-29",
+        "title": "DF-23 fila 4a: el pulmón del POCUS de acs_70f_left_main dice lo que dicen su examen y su radiografía",
+        "scope": {"level": "variant", "family": "acs", "variants": ["acs_70f_left_main"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("El POCUS decía «No B-lines; A-line pattern bilaterally», el valor por defecto, frente a crépitos "
+                   "basales en el examen, congestión leve en la radiografía y «hypoperfusion and congestion» como rasgo "
+                   "clave. Se aplica el texto propuesto en el ciclo 7: «Scattered B-lines at both bases; no diffuse "
+                   "B-line pattern», con su borrador en español «Líneas B dispersas en ambas bases; sin patrón difuso de "
+                   "líneas B». No cambian el desafío de decisión, el objetivo de manejo, la fila C14, TDFC, los eventos "
+                   "críticos ni la fisiología; las filas 4b, 6, 7 y 8 siguen en la cola. El español del caso vuelve a "
+                   "esperar la revisión docente donde estaba aprobado: no se registra ninguna aprobación."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE9,
+        "affects": {"modules": ["clinical_cases", "case_text"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle9_prevalidation_hardening.py::test_the_left_main_case_s_pocus_lungs_agree_with_its_examination_and_film",
+                  "test_cycle9_prevalidation_hardening.py::test_its_spanish_draft_says_the_same_and_waits_for_review"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-07",
+        "date": "2026-09-29",
+        "title": "Revisión adversarial del ciclo 9: lo que halló en TD-39, TD-34 y TD-36, corregido dentro de su clase",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Una revisión independiente con 130 frases preregistradas no halló ninguna fila peor que el ciclo 8; "
+                   "sus 54 frases posteriores hallaron tres regresiones y fallas de la misma clase, corregidas según "
+                   "§90. Regresiones: «Alta ahora tras 6 h de observación» (el «ahora» explícito vuelve a dar el alta "
+                   "ahora; una espera o condición escrita después, «OK to discharge now, pending repeat lactate», "
+                   "sigue siendo un plan) y «Tras 3 nebulizaciones PEF 80%, alta con prednisona» (un valor medido sin umbral ni espera "
+                   "declarada es un paso cumplido). «Tras 6 h de observación sin incidencias, alta» sigue como plan: una "
+                   "espera de duración declarada es una espera. Altas falsas de TD-39: un reloj de cuatro cifras («at "
+                   "1800») y un plazo al final de lo que el alta manda a casa («con EpiPen en 2 horas»), salvo que ese "
+                   "plazo sea de un control, una dosis o un inicio. Readministración de TD-36 (adrenalina y "
+                   "corticoides): dónde se dio antes de urgencias («given at OSH», «dada en su centro de salud», «at "
+                   "work») y hace cuánto («given 20 min ago», «hace 20 minutos») la hacen tratamiento previo; una orden "
+                   "que nombra otra dosis («última dosis hace 20 min») sigue siendo del residente. TD-34: «1 h 30» y "
+                   "«1h30» son 90 minutos, no 60. Lo demás que halló (vocabulario «d/c», «repeat», «20'», órdenes "
+                   "retenidas por un fragmento) es previo al ciclo 9 y queda como deuda."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE9,
+        "affects": {"modules": ["family_parser"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle9_prevalidation_hardening.py::test_the_forms_the_review_found_are_plans_too",
+                  "test_cycle9_prevalidation_hardening.py::test_a_discharge_now_the_review_found_still_runs",
+                  "test_cycle9_prevalidation_hardening.py::test_the_interval_is_its_minutes",
+                  "test_cycle9_prevalidation_hardening.py::test_where_and_how_long_ago_it_was_given_make_it_history_too",
+                  "test_cycle9_prevalidation_hardening.py::test_an_order_that_names_an_earlier_dose_is_still_the_resident_s",
+                  "test_cycle9_prevalidation_hardening.py::test_how_long_ago_is_kept_as_its_time",
+                  "test_cycle9_prevalidation_hardening.py::test_the_review_s_epinephrine_given_elsewhere_is_not_given_again_and_its_timed_discharge_waits"],
+        "preservation": None,
     },
 )
 

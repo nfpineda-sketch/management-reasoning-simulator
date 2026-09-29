@@ -799,8 +799,8 @@
    "es": "Presente bilateralmente; sin neumotórax"
   },
   "/investigations/pocus/result/lungs": {
-   "en": "No B-lines; A-line pattern bilaterally",
-   "es": "Sin líneas B; patrón de líneas A bilateral"
+   "en": "Scattered B-lines at both bases; no diffuse B-line pattern",
+   "es": "Líneas B dispersas en ambas bases; sin patrón difuso de líneas B"
   },
   "/investigations/pocus/result/lung_consolidation": {
    "en": "No consolidation or pleural effusion",

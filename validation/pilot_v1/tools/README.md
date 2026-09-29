@@ -35,6 +35,18 @@ python tools_validation_corpus.py templates --out DIR --language es --case C01 -
 Las carpetas `CORPUS` y `SALIDA` van **fuera del repositorio**. Development
 puede ir en `local-data/`; sealed, nunca.
 
+0. **Inventario RAW** (ciclo 9; `docs/VALIDACION_EXTERNA_PREPARACION.md`): el
+   SHA-256 de cada archivo tal como llegó, sus propiedades de Word (por nombre,
+   nunca por valor), si sus cajas están llenas, duplicados y conflictos, y un
+   informe de preparación por idioma. No abre el contenido clínico ni altera un
+   archivo. Las copias de trabajo limpian sólo las propiedades:
+
+   ```
+   python tools_validation_corpus.py inventory --pilot validation/pilot_v1/manifests/pilot_manifest.json --raw ES/raw --received-on AAAA-MM-DD --out ES/admin
+   python tools_validation_corpus.py deidentify --raw ES/raw/EM01_C01_es.docx --out ES/working/EM01_C01_es.docx
+   ```
+
+   El sorteo usa la carpeta de trabajo (`--returned ES/working`).
 1. **Sorteo** (`../SPLIT_PROCEDURE.md`):
 
    ```

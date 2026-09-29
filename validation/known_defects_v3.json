@@ -1,0 +1,487 @@
+{
+ "state_id": "KNOWN-DEFECTS-V3",
+ "version": 3,
+ "baseline": "DEVELOPMENT PRE-VALIDATION BASELINE V3",
+ "registered_on": "2026-09-29",
+ "record": "validation/BASELINES.md",
+ "purpose": "The known-defect state of the engine frozen as DEVELOPMENT PRE-VALIDATION BASELINE V3 (cycle 9, §114): every CRITICAL, HIGH, MEDIUM or LOW defect known and not fixed at the freeze, so that an external error can be read later against what was already known. It never removes an error from a metric and never corrects a result retrospectively (§67).",
+ "history": "The pilot's list (validation/pilot_v1/manifests/known_defects.json, version 2) is not rewritten: it stays the list of the SPANISH PILOT BASELINE and of the ENGLISH VALIDATION BASELINE. This file is the state of V3. An adjudicator may tag an error with any identifier of either file; the tag says the defect was known when the analysis was made, not that it was absent from the baseline measured.",
+ "severity_scale": "CRITICAL · HIGH · MEDIUM · LOW, the pilot's impact scale (§60); for ordering work, never a score",
+ "unresolved_critical": [],
+ "unresolved_high": [
+  "KD-28 (TD-14): reader friction, registered HIGH for its breadth; it holds with a question and executes nothing. The false executions still known are MEDIUM (KD-29: a condition written with 'we', split by 'and' or on 'SatO2' runs now)."
+ ],
+ "from_the_pilot_list": [
+  {
+   "id": "KD-01",
+   "in_v3": "fixed",
+   "fixed_by": "ENGLISH VALIDATION BASELINE (cycle 5)"
+  },
+  {
+   "id": "KD-02",
+   "in_v3": "present",
+   "note": "Verified in cycle 9: 'Morfina ev y paracetamol 1 g' drops the morphine. Its vocabulary class is TD-35 (KD-26)."
+  },
+  {
+   "id": "KD-03",
+   "in_v3": "present",
+   "note": "Not re-verified in cycle 9; no correction recorded."
+  },
+  {
+   "id": "KD-04",
+   "in_v3": "present",
+   "note": "Verified in cycle 9."
+  },
+  {
+   "id": "KD-05",
+   "in_v3": "fixed",
+   "fixed_by": "cycle 8, C-2026-09-28-23 (after V2); a clearance for later is a disposition plan since cycle 9 (C-2026-09-29-01)"
+  },
+  {
+   "id": "KD-06",
+   "in_v3": "fixed",
+   "fixed_by": "cycle 6, C-2026-09-28-04 (class C05)"
+  },
+  {
+   "id": "KD-07",
+   "in_v3": "present",
+   "note": "Verified in cycle 9."
+  },
+  {
+   "id": "KD-08",
+   "in_v3": "present",
+   "note": "Not re-verified in cycle 9; no correction recorded."
+  },
+  {
+   "id": "KD-09",
+   "in_v3": "present",
+   "note": "Verified in cycle 9: the repeat keeps its count, not 'as needed'."
+  },
+  {
+   "id": "KD-10",
+   "in_v3": "present",
+   "note": "Verified in cycle 9."
+  },
+  {
+   "id": "KD-11",
+   "in_v3": "present",
+   "note": "Not re-verified in cycle 9; no correction recorded."
+  },
+  {
+   "id": "KD-12",
+   "in_v3": "present",
+   "note": "Not re-verified in cycle 9; no correction recorded."
+  },
+  {
+   "id": "KD-13",
+   "in_v3": "present",
+   "note": "Not re-verified in cycle 9; no correction recorded."
+  },
+  {
+   "id": "KD-14",
+   "in_v3": "present",
+   "note": "Not re-verified in cycle 9; no correction recorded."
+  },
+  {
+   "id": "KD-15",
+   "in_v3": "present",
+   "note": "Verified in cycle 9."
+  }
+ ],
+ "fixed_before_v3": [
+  {
+   "id": "TD-39",
+   "severity": "HIGH",
+   "class": "A discharge for later (its own time, after an observation or a result, on a condition) ran now",
+   "example": "Alta en 2 horas · Discharge home in 2 hours · Observe 6 h then discharge home",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE",
+    "DEVELOPMENT HARDENED BASELINE V1",
+    "DEVELOPMENT HARDENED BASELINE V2"
+   ],
+   "fixed_in": "DEVELOPMENT PRE-VALIDATION BASELINE V3",
+   "fix": "C-2026-09-29-01, C-2026-09-29-07",
+   "tagging": "In a run of a frozen baseline, an immediate discharge from a discharge written for later is this defect: known at the time of analysis, present in the frozen baseline (§67)."
+  },
+  {
+   "id": "TD-34",
+   "severity": "HIGH",
+   "class": "A reassessment in abbreviated hours ran at 0 minutes",
+   "example": "Reevaluar en 1 h · Reassess in 1 hr",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE",
+    "DEVELOPMENT HARDENED BASELINE V1",
+    "DEVELOPMENT HARDENED BASELINE V2"
+   ],
+   "fixed_in": "DEVELOPMENT PRE-VALIDATION BASELINE V3",
+   "fix": "C-2026-09-29-02, C-2026-09-29-07",
+   "tagging": "As TD-39 (§67)."
+  },
+  {
+   "id": "TD-36",
+   "severity": "HIGH",
+   "class": "A treatment received before the resident's care, told as such, was given again or asked about as the resident's order",
+   "example": "Epinephrine 0.5 mg IM given by EMS · Aspirina 300 mg dada por SAMU",
+   "present_in": [
+    "SPANISH PILOT BASELINE",
+    "ENGLISH VALIDATION BASELINE",
+    "DEVELOPMENT HARDENED BASELINE V1",
+    "DEVELOPMENT HARDENED BASELINE V2"
+   ],
+   "fixed_in": "DEVELOPMENT PRE-VALIDATION BASELINE V3",
+   "fix": "C-2026-09-29-03, C-2026-09-29-07",
+   "tagging": "As TD-39 (§67)."
+  },
+  {
+   "id": "TD-33",
+   "severity": "HIGH",
+   "class": "Trauma: after a loss replaced with crystalloid, blood set off the transfusion overload rule",
+   "example": "Tourniquet + 3 L NS, then 2 U: overload",
+   "present_in": [
+    "DEVELOPMENT HARDENED BASELINE V2"
+   ],
+   "fixed_in": "DEVELOPMENT PRE-VALIDATION BASELINE V3",
+   "fix": "C-2026-09-29-04",
+   "tagging": "Engine physiology, not the reader; the rule it amends (TD-21, principle D) exists from V2 on."
+  }
+ ],
+ "defects": [
+  {
+   "id": "KD-16",
+   "class": "'d/c' and 'dc' are not read as a discharge",
+   "example": "d/c home · Dc home w/ EpiPen x2 · D/C home 4 hrs post epi if no rebound",
+   "what_happens": "Nothing is read (the generic notice), or the line is kept as a home prescription and the discharge is lost without a word; with a time or a condition it is a plain conditional, not a disposition plan. 'd/c NS' still stops the fluid.",
+   "severity": "MEDIUM",
+   "location": "family_parser (discharge vocabulary)",
+   "known_cause": "'d/c' is the fluid-stop verb; as a discharge it is read only in 'OK to d/c'.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "Silent loss of a discharge in English shorthand; the pilot measures it.",
+   "next_step": "Class of discharge shorthand, with the fluid 'd/c' as its negative control.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Adversarial review of cycle 9: D01, D02, D05, D14, D15, D18, D34, H09",
+   "also_seen_in": "C8, V2"
+  },
+  {
+   "id": "KD-17",
+   "class": "A discharge written as an intention, a possibility or in the past is neither run nor recorded",
+   "example": "Plan to discharge home in 2 hours · Planeo alta mañana · Will discharge home tomorrow · Posible alta en unas horas · Discharged home w/ EpiPen · Dada de alta a domicilio",
+   "what_happens": "Nothing is recorded; the generic notice asks for an order ('Discharged home w/ EpiPen' keeps only the EpiPen prescription). 'Vamos a dar de alta en 2 horas' is a disposition plan.",
+   "severity": "MEDIUM",
+   "location": "family_parser (discharge vocabulary)",
+   "known_cause": "The intention and past forms were not part of TD-39's class.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "A plan lost without record; the pilot measures it.",
+   "next_step": "With KD-16, as disposition plans.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Cycle 9 probes; adversarial review of cycle 9: D06, D13, D25",
+   "also_seen_in": "C8, V2"
+  },
+  {
+   "id": "KD-18",
+   "class": "An observation or a control written without 'dejar en' is not read",
+   "example": "Observe 6 h · Observar 4 horas · Control en 1 hora · Control en 30 min · Discharge home, recheck in ED in 24 h",
+   "what_happens": "Nothing runs; the generic notice (or, for a recheck, a question about an unrecognised study). 'Dejar en observación 6 horas' is the ED observation of D4.",
+   "severity": "MEDIUM",
+   "location": "family_parser (observation and control)",
+   "known_cause": "Only the D4 form of an observation is an order.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "Silent loss of an observation; the pilot measures it.",
+   "next_step": "With TD-14, by class.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Cycle 9 probes; adversarial review of cycle 9: H11",
+   "also_seen_in": "C8, V2"
+  },
+  {
+   "id": "KD-19",
+   "class": "After a reassessment, what follows in the same sentence is absorbed",
+   "example": "Reassess in 30 min, 2 L NS · Reassess in 30 min, discharge if improved",
+   "what_happens": "The verbless fluid after the reassessment is lost without a word; a reassessment followed by a conditional discharge becomes one conditional plan and the reassessment does not run.",
+   "severity": "MEDIUM",
+   "location": "family_parser (reassessment grouping)",
+   "known_cause": "The reassessment groups the pieces after it.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "A fluid lost without a word, or a reassessment that does not run.",
+   "next_step": "Reassessment grouping, by class.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Cycle 9 probes",
+   "also_seen_in": "C8, V2"
+  },
+  {
+   "id": "KD-20",
+   "class": "Interval forms outside hours and minutes",
+   "example": "Reevaluar en 20' · Reassess in 90' · Reevaluar a las 14 h · reevaluar a la hora",
+   "what_happens": "Minutes written with an apostrophe run at 0 without a word; a clock time after 'a las' is read as an interval in hours (840 minutes), which the engine asks about (0–120); 'a la hora' is asked.",
+   "severity": "MEDIUM",
+   "location": "family_parser (_interval_minutes)",
+   "known_cause": "TD-34 read hours and minutes; the apostrophe and clock times were not part of it.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "A reassessment at the wrong time, silently for the apostrophe.",
+   "next_step": "With TD-34's interval reader, if the external data show these forms.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Adversarial review of cycle 9: R20, R23, R26, H18",
+   "also_seen_in": "C8 (0 minutes for all)"
+  },
+  {
+   "id": "KD-21",
+   "class": "Repeating or continuing a treatment given before the resident's care",
+   "example": "Repeat the epinephrine given by EMS · Ya recibió adrenalina, repetir adrenalina 0,5 mg IM · Continue NS started by EMS at 125 mL/h",
+   "what_happens": "The repeat is held with a question ('No matching administered treatment' or 'Specify which recorded drug or fluid to repeat'), even with drug, dose and route written and after the prior dose is recorded; the continuation is read as a bolus that asks its volume. Visible, but it delays epinephrine.",
+   "severity": "MEDIUM",
+   "location": "family_parser / family_engine (repeat of a recorded treatment)",
+   "known_cause": "A repeat refers to a treatment given in the encounter; a prior treatment is history.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "A time-critical order held by a question.",
+   "next_step": "A repeat of a prior treatment as a new order with its own dose.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Adversarial review of cycle 9: H27, S1–S3, P15, P16, P17, P35, P36",
+   "also_seen_in": "C8"
+  },
+  {
+   "id": "KD-22",
+   "class": "The second treatment of a prehospital account",
+   "example": "EMS gave epi 0.5 IM and diphenhydramine 50 mg IV · El SAMU le puso adrenalina 0,5 IM y metilprednisolona 125 mg IV · Prehospital: epi 0.3 IM + benadryl 25 IV",
+   "what_happens": "The first treatment is recorded as prior treatment. A modelled second one is not given but is held with a question instead of recorded; a not-modelled one is recorded as the resident's decision (a Trace distortion); after a header and '+', it is dropped.",
+   "severity": "MEDIUM",
+   "location": "family_parser (prehospital account)",
+   "known_cause": "The account is split at 'and'/'y'/'+' before the source is read.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "Nothing is given again; the record of the second drug is wrong or missing.",
+   "next_step": "The account's list read as one account.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Adversarial review of cycle 9: P03, P13, H21–H24",
+   "also_seen_in": "C8 (the first one was given again)"
+  },
+  {
+   "id": "KD-23",
+   "class": "Prior-treatment wording outside the recogniser",
+   "example": "s/p epi 0.3 IM by EMS · Epi IM x1 PTA · El 112 le puso adrenalina y Urbason · Recibio adrenalina IM por el 061 · Trae vía periférica canalizada por SAMU · Methylpred 125 mg given at OSH",
+   "what_happens": "Nothing is given and nothing is recorded (the generic notice), or an unknown word is asked about.",
+   "severity": "LOW",
+   "location": "family_parser (_prior_treatment)",
+   "known_cause": "Abbreviations, emergency numbers and a line already placed are outside the class.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "History not recorded; nothing is given again.",
+   "next_step": "With the external data.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Adversarial review of cycle 9: P02, P04, P08, P26, P29, P33",
+   "also_seen_in": "C8"
+  },
+  {
+   "id": "KD-24",
+   "class": "One unrecognised fragment holds every order written with it",
+   "example": "Epi 0.5 mg IM now, already drawn up · Epi 0.5 mg IM, EMS report reviewed · Epi 0.5 mg IM now, symptoms began 30 min before arrival",
+   "what_happens": "The engine asks about the fragment and holds the other orders of the submission, epinephrine included, until it is answered.",
+   "severity": "MEDIUM",
+   "location": "family_engine (held submission)",
+   "known_cause": "A clarification holds the submission by design (59O-03).",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "A time-critical order delayed by a question.",
+   "next_step": "Prose fragments read as prose, by class.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Adversarial review of cycle 9: H29, H31, H32, D36, P14",
+   "also_seen_in": "C8"
+  },
+  {
+   "id": "KD-25",
+   "class": "A submission that only brings a plan or history adds the generic notice (TD-38)",
+   "example": "Alta en 2 horas · Epinephrine 0.5 mg IM given by EMS",
+   "what_happens": "The room says what was recorded and why, and then adds 'Please specify a question, investigation, treatment, or reassessment.'",
+   "severity": "LOW",
+   "location": "family_engine / room",
+   "known_cause": "The generic notice follows any submission that runs nothing.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "Visible and harmless; the record is right.",
+   "next_step": "Show it as recorded, without the notice, when the room is touched.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "TD-38 (cycle 8); every plan-only entry of cycle 9",
+   "also_seen_in": "C8"
+  },
+  {
+   "id": "KD-26",
+   "class": "Abbreviated tests and trade names in a verbless list are lost (TD-35)",
+   "example": "CBC coags lactate now · hemograma, TP/TTPA, BUN/crea · protonix 80 IV",
+   "what_happens": "The rest of the list runs; what the reader does not know is lost without a word.",
+   "severity": "MEDIUM",
+   "location": "family_parser (vocabulary)",
+   "known_cause": "KD-02's rule with TD-14's vocabulary.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "Silent loss; the pilot measures it.",
+   "next_step": "With KD-02 (decision: ask?) and TD-14.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "TD-35: blind set of cycle 8",
+   "also_seen_in": "V2"
+  },
+  {
+   "id": "KD-27",
+   "class": "A discharge prescription written as a list (TD-37)",
+   "example": "Discharge prescription: prednisone 40 mg daily x 5 days, cetirizine 10 mg daily",
+   "what_happens": "The discharge runs; the prednisone is lost and the cetirizine is recorded as a not-modelled drug, not as a prescription.",
+   "severity": "MEDIUM",
+   "location": "family_parser (discharge prescriptions)",
+   "known_cause": "The list after 'prescription:' is read as orders.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "A prescription lost.",
+   "next_step": "With the discharge prescriptions.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "TD-37 (cycle 8); verified in cycle 9",
+   "also_seen_in": "V2"
+  },
+  {
+   "id": "KD-28",
+   "class": "Vocabulary and forms outside the reader, mostly held with a question (TD-14)",
+   "example": "amp of D50 · epi drip · Narcan · Page GI · STEMI code · floor/pabellón · D5W · glucosalino · run/hang/push · coags · protonix · q15min · titulando a PAM > 65",
+   "what_happens": "Mostly held with a question (63 of 108 and 19 of 32 in the blind sets of cycle 6): honest, visible, but it costs turns. What of it is lost without a word is KD-26.",
+   "severity": "HIGH",
+   "location": "family_parser",
+   "known_cause": "Vocabulary and forms outside the reader's classes; see docs/REGISTRO_DEUDA_TECNICA.md, TD-14.",
+   "why_not_fixed": "Registered HIGH for its breadth (friction), not for false executions. §20 of the cycle 9 instruction leaves TD-14 to the external data.",
+   "pilot_relevance": "Friction the pilot measures; a question never executes anything.",
+   "next_step": "By class, ordered by the external measurement.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "TD-14; docs/MEDICION_RECONOCIMIENTO_ORDENES.md (cycle 6), docs/AUDITORIA_TRACE_CICLO5.md (H01–H14)",
+   "also_seen_in": "V2"
+  },
+  {
+   "id": "KD-29",
+   "class": "Residues of the cycle 8 classes (TD-40)",
+   "example": "EDA urgente para ligadura de várices · IC urgente a cirugía ya · Cuando la SatO2 baje de 92%, iniciar O2 por naricera · Once she has had 30 mL/kg and MAP remains < 65, start norepinephrine · OK to send home · Alta ok · Return to OR if rebleeds",
+   "what_happens": "Some orders are lost without a word; a condition with 'we', split by 'and', or on 'SatO2' runs now (the oxygen of the blind set 2, its only false execution); some discharge wordings are not read.",
+   "severity": "MEDIUM",
+   "location": "family_parser",
+   "known_cause": "See docs/REGISTRO_DEUDA_TECNICA.md, TD-40, and docs/CICLO8_LECTOR.md.",
+   "why_not_fixed": "§20 of the cycle 9 instruction: TD-40 waits for the external data.",
+   "pilot_relevance": "The pilot measures it.",
+   "next_step": "By class, with A–J, after the external measurement.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Second adversarial review and blind set 2 of cycle 8",
+   "also_seen_in": "V2"
+  },
+  {
+   "id": "KD-30",
+   "class": "A home instruction after the discharge is read as an order now",
+   "example": "Discharge home, start prednisone tomorrow · Adrenalina autoinyectable para casa",
+   "what_happens": "The discharge is held by a question about the steroid's dose; an auto-injector 'para casa' without a discharge is read as an epinephrine infusion that asks its rate. Nothing runs by itself.",
+   "severity": "LOW",
+   "location": "family_parser (home instructions)",
+   "known_cause": "Only 'with/con' and a comma list after the discharge are home prescriptions.",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "A visible question.",
+   "next_step": "With the discharge prescriptions.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Adversarial review of cycle 9: H04; cycle 9 probes",
+   "also_seen_in": "C8"
+  },
+  {
+   "id": "KD-31",
+   "class": "The critical-event screening does not cite a recorded prior treatment",
+   "example": "Aspirin 300 mg given by EMS (ACS) · Epinephrine 0.5 mg IM given at OSH (anaphylaxis)",
+   "what_happens": "The prior treatment is recorded as history and never given, but the screening's facts for 'no antiplatelet' or 'no epinephrine' do not mention it: the omission is still proposed (for aspirin as a reading) and the faculty member sees the history only in the Trace. No event is ever accepted automatically.",
+   "severity": "MEDIUM",
+   "location": "rubric_screening",
+   "known_cause": "The screening reads executed actions; a prior treatment is not one, by design (TD-36 records history, it does not model prehospital care).",
+   "why_not_fixed": "Found or confirmed in cycle 9 outside the classes it fixed; §90 of the cycle 9 instruction defers MEDIUM and LOW findings, and the reader is frozen at V3 (§112).",
+   "pilot_relevance": "Faculty confirmation reads it; the proposal can be wrong beside a prehospital dose.",
+   "next_step": "Cite the recorded prior treatment in the facts, as the withheld orders are, with a faculty decision.",
+   "registered": "2026-09-29 (cycle 9)",
+   "present_in": [
+    "DEVELOPMENT PRE-VALIDATION BASELINE V3"
+   ],
+   "fixed_in": null,
+   "fix": null,
+   "evidence": "Cycle 9 review of the screening (rubric_screening._omission)"
+  }
+ ],
+ "known_behaviour_by_design": [
+  {
+   "id": "KB-04",
+   "class": "A discharge after a wait of stated length is a plan, even when the wait is described as uneventful",
+   "example": "Tras 6 h de observación sin incidencias, alta a domicilio · After 6 h of uneventful observation, discharge home",
+   "why": "In a simulation the stated wait has usually not passed; a plan is visible and can be carried out with one more line, a discharge run too early cannot be undone. 'Now/ahora' in the discharge, or a value measured without a threshold before it ('Tras 3 nebulizaciones PEF 80%, alta'), make it a discharge now.",
+   "registered": "2026-09-29 (cycle 9, C-2026-09-29-07)"
+  },
+  {
+   "id": "KB-05",
+   "class": "A time at the end of what a discharge sends home belongs to the discharge",
+   "example": "Discharge home with EpiPen in 2 hours · Alta a domicilio con EpiPen en 2 horas",
+   "why": "It is a plan unless that part names something with its own time (a follow-up, a control, a return, a dose, a start, 'every/cada'): 'Alta con control en 2 horas' discharges now.",
+   "registered": "2026-09-29 (cycle 9, C-2026-09-29-07)"
+  }
+ ]
+}

@@ -4,7 +4,8 @@ The faculty approved TDFC-1 to 6 and 8 conceptually as recommended on 2026-09-28
 instruction, §28) and deferred the implementation to cycle 8; the model is C14's (§92):
 draft -> decision -> declaration per case -> provenance -> frozen with the encounter. A YES
 names the component it lets the faculty observe and what stays outside (§30); C4 stays out
-(§93); acs_54m_inferior waits for DF-20 (the recommendation of TDFC-5).
+(§93). acs_54m_inferior waited for DF-20 (the recommendation of TDFC-5); the faculty closed DF-20
+with no change on 2026-09-29 (cycle 9) and its rows are declared.
 """
 import pytest
 
@@ -31,12 +32,12 @@ def test_the_bank_declares_exactly_the_rows_the_approved_decisions_derive():
         assert {objective: declared[objective]["opportunity"] for objective in TD_F_C} == rows, case_id
 
 
-def test_the_counts_are_the_recommendation_s_with_the_pending_case_apart():
-    assert tdfc_review.counts() == {"TD1": (25, 5), "F1": (25, 5), "C1": (18, 12), "C3": (10, 20)}
-    # With acs_54m_inferior's rows once DF-20 is decided, they are the totals the faculty approved:
-    # TD1 26/5, F1 26/5, C1 19/12, C3 10/21 (docs/tdfc/TDFC_DECISIONS_FOR_NICOLAS.md).
-    assert tdfc_review.counts(tdfc_review.derive(tdfc_review.APPROVED)) == {
-        "TD1": (26, 5), "F1": (26, 5), "C1": (19, 12), "C3": (10, 21)}
+def test_the_counts_are_the_totals_the_faculty_approved():
+    # With acs_54m_inferior's rows, since DF-20 was closed (cycle 9): TD1 26/5, F1 26/5, C1 19/12,
+    # C3 10/21 (docs/tdfc/TDFC_DECISIONS_FOR_NICOLAS.md).
+    assert tdfc_review.PENDING == {}
+    assert tdfc_review.counts() == {"TD1": (26, 5), "F1": (26, 5), "C1": (19, 12), "C3": (10, 21)}
+    assert tdfc_review.counts(tdfc_review.derive(tdfc_review.APPROVED)) == tdfc_review.counts()
 
 
 def test_tdfc_6_is_the_recommendation_not_the_draft():
@@ -95,11 +96,10 @@ def test_an_encounter_frozen_before_keeps_the_transition_it_started_with():
 
 
 @pytest.mark.parametrize("basis", [
-    lambda: evaluation_basis.freeze("acs_54m_inferior"),
     lambda: evaluation_basis.freeze("AI-FIXTURE-1", spec={"case_family": "generated"}),
     lambda: evaluation_basis.freeze(""),
 ])
-def test_the_pending_case_generated_cases_and_encounters_without_a_case_keep_the_transition(basis):
+def test_generated_cases_and_encounters_without_a_case_keep_the_transition(basis):
     view = opportunities.summary(record(basis()))
     for objective in TD_F_C:
         assert (view[objective]["state"], view[objective]["rule"]) == ("not_reviewed", "transition_fallback")

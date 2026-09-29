@@ -106,10 +106,14 @@ def bleeding_ml_per_min(f, state):
     return total
 
 
-def deficit_fraction(f):
-    """How much of the circulating volume is missing, after replacement."""
+def deficit_fraction(f, blood_only=False):
+    """How much of the circulating volume is missing, after replacement.
+
+    ``blood_only`` counts only the blood given as replacement: the question the transfusion
+    overload rule asks (TD-33). The physiology counts the crystalloid as well.
+    """
     replaced = (float(f.get("blood_delivered_units", 0)) * BLOOD_REPLACEMENT_ML_PER_UNIT
-                + float(f.get("fluid_delivered_ml", 0)) * CRYSTALLOID_REPLACEMENT_FRACTION)
+                + (0.0 if blood_only else float(f.get("fluid_delivered_ml", 0)) * CRYSTALLOID_REPLACEMENT_FRACTION))
     missing = max(0.0, float(f.get("blood_lost_ml", 0.0)) - replaced)
     return min(1.0, missing / BLOOD_VOLUME_ML)
 
@@ -122,9 +126,13 @@ def active(f, state):
     does not lower the haemoglobin with the loss, so the haemoglobin says nothing about the
     deficit. Before the first minute has run, the arrival deficit counts as already lost. No
     threshold is added: the case's declared sources are what make the haemorrhage significant.
+
+    TD-33 (faculty, 2026-09-29): only blood replaces the haemorrhagic deficit for this rule.
+    Crystalloid keeps its haemodynamic effect in the physiology, but it no longer makes the loss
+    count as replaced: after a tourniquet and 3 L of saline, 2 units were read as an overload.
     """
     lost = float(f.get("blood_lost_ml", float(spec(state).get("arrival_deficit", 0.0)) * BLOOD_VOLUME_ML))
-    return bleeding_ml_per_min(f, state) > 0 or deficit_fraction({**f, "blood_lost_ml": lost}) > 0
+    return bleeding_ml_per_min(f, state) > 0 or deficit_fraction({**f, "blood_lost_ml": lost}, blood_only=True) > 0
 
 
 def step(f, state):

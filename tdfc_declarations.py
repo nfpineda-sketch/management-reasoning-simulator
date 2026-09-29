@@ -16,8 +16,12 @@ stays outside the encounter: an opportunity YES is never the full EPA observed
 (§30, §92). A NO row says why not: not evaluable, never a failure. The expected
 evidence guides and is not a whitelist.
 
-acs_54m_inferior has no row here until DF-20 (tdfc_review.PENDING). C4 is NO for
-the whole observation environment (case_assessment_bank.C4_DECLARATIONS).
+acs_54m_inferior's rows waited for DF-20. The faculty closed it on 2026-09-29 with no
+change to the case (cycle 9): a physiologic right-ventricular involvement can coexist with
+a qualitative emergency POCUS that is normal or non-diagnostic, so its opportunities rest on
+the physiology, the monitor and the ECG, never on the ultrasound. Its rows are the ones the
+approved decisions already derived (TD1, F1 and C1 YES, C3 NO), released by that closure.
+C4 is NO for the whole observation environment (case_assessment_bank.C4_DECLARATIONS).
 Nothing here changes a case, an event, a domain or a score, and an encounter
 started before keeps the declaration it was frozen with.
 """
@@ -27,9 +31,20 @@ _BASIS = ("Cycle 7 instruction §28 (2026-09-28): TDFC-1 to 6 and 8 approved con
           "in docs/tdfc/TDFC_DECISIONS_FOR_NICOLAS.md; written in cycle 8.")
 
 
-def _review(group):
-    return {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "faculty_decision",
-            "decision_group": group, "version": "TDFC-REVIEW-1", "basis": _BASIS}
+def _review(group, released=None):
+    reviewed = {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "faculty_decision",
+                "decision_group": group, "version": "TDFC-REVIEW-1", "basis": _BASIS}
+    if released:
+        reviewed["released"] = released
+    return reviewed
+
+
+# What released acs_54m_inferior's rows: the closing of DF-20 (cycle 9).
+_DF20_CLOSED = {"by": "Nicolás Pineda", "on": "2026-09-29", "decision": "DF-20 closed, no change to the case",
+                "basis": ("Cycle 9 instruction §16, §17, §46 and §47 (2026-09-29): physiologic right-ventricular "
+                          "involvement can coexist with a qualitative emergency POCUS that is normal or "
+                          "non-diagnostic; the rows the approved TDFC decisions derived are applied, and the "
+                          "opportunities do not rest on the POCUS.")}
 
 
 # What stays outside any encounter of this simulator, objective by objective (objectives.py
@@ -45,14 +60,15 @@ OUTSIDE = {
 }
 
 
-def _yes(objective, group, rationale, component, evidence, also_outside=None):
+def _yes(objective, group, rationale, component, evidence, also_outside=None, released=None):
     outside = OUTSIDE[objective] + (" " + also_outside if also_outside else "")
     return {"opportunity": "yes", "rationale": rationale, "observable_component": component,
-            "expected_evidence": tuple(evidence), "outside_the_encounter": outside, "reviewed": _review(group)}
+            "expected_evidence": tuple(evidence), "outside_the_encounter": outside,
+            "reviewed": _review(group, released)}
 
 
-def _no(group, reason):
-    return {"opportunity": "no", "reason": reason, "reviewed": _review(group)}
+def _no(group, reason, released=None):
+    return {"opportunity": "no", "reason": reason, "reviewed": _review(group, released)}
 
 
 # --- the decided rows' shared wording -------------------------------------------------------
@@ -71,6 +87,41 @@ _HYPO_F1 = ("Prioritising and starting the correction of a reversible cause of i
 _TDFC6_OUTSIDE = "Intubation itself, in a normal or an anatomically difficult airway."
 
 DECLARATIONS = {
+    # Released by the closing of DF-20 (cycle 9). The right-ventricular involvement is the case's
+    # physiology, read from the monitor, the ECG and the response to preload; no row rests on the POCUS.
+    "acs_54m_inferior": {
+        "TD1": _yes("TD1", "clear",
+                    "Borderline perfusion (SBP 100 with HR 58, cold extremities, capillary refill 3 s, marked "
+                    "diaphoresis) in an inferior infarct whose pressure depends on right-ventricular preload; the "
+                    "engine brings a complete AV block at about 45 min of occlusion, before the artery can be opened.",
+                    "Recognising the incipient hypoperfusion and the bradyarrhythmia, and starting support and "
+                    "monitoring.",
+                    ("names the borderline perfusion and the preload-dependent right ventricle", "monitors",
+                     "names the complete block as unstable and acts on it", "sets when to reassess"),
+                    released=_DF20_CLOSED),
+        "F1": _yes("F1", "clear",
+                   "The pressure depends on preload: a nitrate lowers it sharply and volume restores it "
+                   "(docs/AUDITORIA_ACS_54M_INFERIOR.md), and the complete block is a critical arrhythmia to manage. "
+                   "The opportunity rests on the physiology, the monitor and the ECG, not on the bedside ultrasound.",
+                   "Prioritising prudent volume over the nitrate and treating the block, assessing the response.",
+                   ("withholds the nitrate because of the preload dependence", "gives a bounded bolus and reassesses "
+                    "the pressure", "atropine and, if it fails, pacing with output and capture confirmed"),
+                   released=_DF20_CLOSED),
+        "C1": _yes("C1", "TDFC-5",
+                   "Not in shock on arrival. By design the complete block and the right-ventricular drift lower the "
+                   "pressure while reperfusion is awaited (HR 42 around minute 50), even with immediate activation: "
+                   "the artery opens 90 min after the cath lab is activated. It does not depend on showing the right "
+                   "ventricle on ultrasound.",
+                   "Integrating rhythm, right-ventricular preload and the pending reperfusion, and revising the plan "
+                   "by the response.",
+                   ("relates the fall in pressure to the block and the right ventricle",
+                    "adjusts volume, atropine or pacing", "keeps the reperfusion and says what it watches until the "
+                    "cath lab"),
+                   released=_DF20_CLOSED),
+        "C3": _no("clear", "SpO2 96 % and clear lungs: an inferior infarct with right-ventricular involvement barely "
+                           "congests in the engine, and there is no oxygen or ventilation decision.",
+                  released=_DF20_CLOSED),
+    },
     "acs_66f_nonst": {
         "TD1": _no("TDFC-1", _TDFC1),
         "F1": _no("clear", "Normotensive, well perfused and not hypoxaemic: antiplatelet treatment and a monitored "

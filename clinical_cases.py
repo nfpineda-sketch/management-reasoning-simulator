@@ -123,9 +123,13 @@ POCUS = {
         # Wellens: the artery is open at this moment, so the wall still moves.
         _pocus(lv="Normal wall motion in every segment at rest",
                ivc="1.5 cm; >50% inspiratory collapse"),
-        # Diffuse subendocardial ischaemia of a left main or three-vessel lesion.
+        # Diffuse subendocardial ischaemia of a left main or three-vessel lesion. The lungs say
+        # what the examination and the film of this case say (scattered basal crackles, mild
+        # congestion): the default "No B-lines" contradicted them (DF-23 row 4a, applied in
+        # cycle 9 on the faculty's authorisation of 2026-09-29).
         _pocus(lv="Globally reduced contraction without a single focal defect",
-               ivc="1.9 cm; about 50% inspiratory collapse"),
+               ivc="1.9 cm; about 50% inspiratory collapse",
+               lungs="Scattered B-lines at both bases; no diffuse B-line pattern"),
     ),
     "pulmonary_embolism": (
         _pocus(lv="Preserved contraction",
