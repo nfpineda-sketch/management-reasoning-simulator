@@ -469,6 +469,20 @@ _RULES = _WALL_MOTION_RULES + (
   r"the ([\w -]+?): the external bleeding is controlled",
   lambda m: _HAEMOSTASIS_ES.get(m.group(1), m.group(1)) + " en " + _site_es(m.group(2))
   + ": el sangrado externo está controlado"),
+ # What a measure did, reduced or stopped (TD-31, 2026-09-29). The line above is kept
+ # for the records written before, which said «controlled» for both.
+ (r"\b(Tourniquet|Direct pressure|Pressure|Packing|Wound packing|Pressure dressing|Hemostatic dressing) applied to "
+  r"the ([\w -]+?): the external bleeding (is (?:reduced|reducido), not stopped|"
+  r"is stopped; until now it was only (?:reduced|reducido)|is stopped|"
+  r"stays (?:reduced|reducido), not stopped; this adds no control to what is already applied|was already stopped)",
+  # «reduced» alone is said by an earlier word rule; the sentence is read either way.
+  lambda m: _HAEMOSTASIS_ES.get(m.group(1), m.group(1)) + " en " + _site_es(m.group(2)) + ": " + {
+      "is reduced, not stopped": "el sangrado externo disminuye, pero no se detiene",
+      "is stopped": "el sangrado externo se detiene",
+      "is stopped; until now it was only reduced": "el sangrado externo se detiene; hasta ahora sólo disminuía",
+      "stays reduced, not stopped; this adds no control to what is already applied":
+          "el sangrado externo sigue disminuido, sin detenerse; esto no agrega control a lo ya aplicado",
+      "was already stopped": "el sangrado externo ya estaba detenido"}[m.group(3).replace("reducido", "reduced")]),
  (r"\b(Tourniquet|Direct pressure|Pressure|Packing|Wound packing|Pressure dressing|Hemostatic dressing) applied to "
   r"the ([\w -]+?): there is no external source bleeding here",
   lambda m: _HAEMOSTASIS_ES.get(m.group(1), m.group(1)) + " en " + _site_es(m.group(2))

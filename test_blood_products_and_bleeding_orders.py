@@ -310,8 +310,11 @@ def test_the_intraosseous_line_replaces_a_line_that_failed(engine):
 
 def test_each_bleeding_measure_acts_and_is_said_as_written(engine):
     _, _, result = run(engine, "trauma", "trauma_limb_hemorrhage_27m", "Pack the wound and hold pressure")
-    assert labels(result)[:2] == ["Packing applied to the wound: the external bleeding is controlled",
-                                  "Direct pressure applied to the wound: the external bleeding is controlled"]
+    # Two measures written, two recorded -- and one intervention: the second adds no
+    # control to the first, and neither stops an arterial source (TD-31, 2026-09-29).
+    assert labels(result)[:2] == ["Packing applied to the wound: the external bleeding is reduced, not stopped",
+                                  "Direct pressure applied to the wound: the external bleeding stays reduced, not "
+                                  "stopped; this adds no control to what is already applied"]
 
 
 def test_a_measure_named_by_none_is_asked_before_anything_runs(engine):

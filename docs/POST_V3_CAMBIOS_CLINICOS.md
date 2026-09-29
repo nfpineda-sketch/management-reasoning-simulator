@@ -10,6 +10,7 @@ de estos cambios tiene todavía revisión clínica externa.
 | 1 | TEP: D revisada (shock obstructivo, reloj consecutivo, noradrenalina) | C-2026-09-29-10 | `test_pe_obstruction.py`, `test_generated_pe.py`, `test_pe_thrombolysis_screening.py` |
 | 2 | DC1: conciencia anclada a la llegada | C-2026-09-29-11 | `test_arrival_consciousness.py`, `test_hypoglycemia_battery.py` |
 | 3 | POCUS de la HDA según el llenado efectivo | C-2026-09-29-12 | `test_gi_bleed_pocus.py` |
+| 4 | TD-31: la hemostasia no es una suma; reducido frente a detenido | C-2026-09-29-13 | `test_hemostasis_is_not_a_sum.py` |
 
 ## 1 · TEP
 
@@ -51,7 +52,7 @@ VCI y VI de `gi_bleed_57m` (y `gi_bleed_72f` donde se indica), medidos con el mo
 | Llegada | 88/54 · 124 | 0,9 cm, colapso casi completo · VI pequeño, hiperdinámico, casi obliterado | igual (lo escrito) |
 | 1 U de GR | 101/61 · 117 | igual que al llegar (300 mL < 500) | 1,1 cm, >50 % · VI pequeño hiperdinámico **sin obliteración** |
 | 2 U de GR | 115/69 · 109 | 1,5 cm, ~50 % · VI **casi obliterado** | 1,5 cm, ~50 % · **cavidad normal con contracción hiperdinámica** |
-| 2 U + endoscopía, recuperación en curso | 113/98 → 93 | 1,5 cm · VI casi obliterado | 1,5 cm · cavidad normal con **contracción normal** |
+| 2 U + endoscopía, recuperación en curso | PAS 113 · FC 98 → 93 | 1,5 cm · VI casi obliterado | 1,5 cm · cavidad normal con **contracción normal** |
 | 1 L de cristaloide, a los 15 min | 91/56 · 122 | **1,5 cm, ~50 %** | 0,9 cm, colapso casi completo (el litro apenas quedó en los vasos) |
 | 1 L de cristaloide, una hora después | **80/50** · 128 | **1,5 cm, ~50 %** | **0,7 cm, colapso completo** · obliteración completa |
 | Noradrenalina sola | 102/64 · 125 | igual que al llegar | igual que al llegar (el vasopresor no llena) |
@@ -70,3 +71,29 @@ VCI y VI de `gi_bleed_57m` (y `gi_bleed_72f` donde se indica), medidos con el mo
 - **Presión positiva:** se conserva el diámetro y la variación respiratoria se declara no evaluable.
 - **Alcance:** sólo la familia `gi_bleed`; neumonía y las demás conservan su regla. Los textos nuevos
   tienen su español (`language.py`).
+
+## 4 · TD-31: la hemostasia no es una suma
+
+`trauma_limb_hemorrhage_27m` (fuente arterial del muslo, 145 mL/min a severidad completa). Control y
+sangrado tras cada orden, con el motor real.
+
+| Órdenes | Antes (V3) | Ahora |
+|---|---|---|
+| Compresión directa | 0,75 · 36 mL/min · «controlled» | 0,75 · 36 mL/min · «reduced, not stopped» |
+| Compresión, luego «Maintain direct pressure» | **1,0 · 0 mL/min** | 0,75 · 36 mL/min · «stays reduced…; adds no control» |
+| Compresión, luego «Hold firm pressure» | **1,0 · 0 mL/min** | 0,75 · 36 mL/min |
+| «Pack the wound and hold pressure» (una orden) | **1,0 · 0 mL/min** | 0,75 · 36 mL/min: una sola intervención |
+| Taponamiento, luego compresión (dos órdenes) | **1,0 · 0 mL/min** | 0,75 · 36 mL/min |
+| Compresión, luego torniquete | 1,0 · 0 · «controlled» | 1,0 · 0 · «stopped; until now it was only reduced» |
+| Torniquete, luego compresión | 1,0 · 0 · «controlled» | 1,0 · 0 · «was already stopped» |
+
+- **Regla.** Una fuente conserva la mejor medida aplicada, nunca la suma. Magnitudes sin cambio y
+  **provisionales**: compresión y taponamiento 0,75, torniquete 1,0 (C7-06). Sólo una técnica más eficaz
+  sube el control.
+- **Registro.** La sala y la traza dicen si el sangrado disminuye o se detiene, y cuándo una medida no
+  agrega control; en español: «disminuye, pero no se detiene», «se detiene», «ya estaba detenido». Un
+  registro anterior conserva «controlled» / «controlado».
+- **Puntaje sin cambio.** El tamizaje de `trauma_no_hemorrhage_control` lee la acción ejecutada, no el
+  nivel: compresión sola, taponamiento con compresión y torniquete dan el mismo resultado que antes.
+- **El lector no cambia**: «Pack the wound and hold pressure» sigue siendo dos medidas escritas; el motor
+  las cuenta como una intervención.

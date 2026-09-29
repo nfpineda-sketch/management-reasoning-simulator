@@ -46,6 +46,13 @@ RESIDUAL_AFTER_CONTROL = {
     "abdominal": 1.0,     # nothing in this department controls it
 }
 
+#: How much of an external source each measure controls: the magnitudes of C7-06,
+#: kept provisionally (faculty, 2026-09-29). Measures are never added up: a source
+#: holds the best control applied to it, so repeating, maintaining or rewording
+#: pressure, or packing with pressure, never adds up to a tourniquet (TD-31). Only a
+#: more effective technique raises it.
+MEASURE_CONTROL = {"tourniquet": 1.0, "direct pressure": .75, "packing": .75}
+
 #: Tranexamic acid, given early. A modest, whole-patient reduction, not a
 #: haemostat: it never turns an uncontrolled source into a controlled one.
 TXA_REDUCTION = .12
@@ -89,10 +96,22 @@ def controlled(f, source):
 
 
 def control(f, source, fraction=1.0):
-    """Record that a control measure was applied to a source."""
+    """Record that a control measure was applied to a source: the best one counts, never a sum."""
     achieved = f.setdefault("hemorrhage_control", {})
-    achieved[source] = min(1.0, achieved.get(source, 0.0) + float(fraction))
+    achieved[source] = min(1.0, max(achieved.get(source, 0.0), float(fraction)))
     f.setdefault("hemorrhage_control_at", {}).setdefault(source, f.get("elapsed", 0))
+
+
+def external_outcome(before, after):
+    """What a measure did to the external source, as the record says it: reduced or stopped (TD-31)."""
+    stops = after >= 1.0 and RESIDUAL_AFTER_CONTROL["external"] == 0.0
+    if after <= before:
+        return ("the external bleeding was already stopped" if stops else
+                "the external bleeding stays reduced, not stopped; this adds no control to what is already applied")
+    if stops:
+        return ("the external bleeding is stopped; until now it was only reduced" if before > 0
+                else "the external bleeding is stopped")
+    return "the external bleeding is reduced, not stopped"
 
 
 def bleeding_ml_per_min(f, state):

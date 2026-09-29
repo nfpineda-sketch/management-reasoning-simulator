@@ -1312,12 +1312,15 @@ def _order(state, a):
         named = str(a.get("named") or measure)
         # A tourniquet stops an arterial limb source; pressure and packing hold
         # a compressible one. The engine prices what the measure can do, and
-        # the case declares which source it is being applied to.
+        # the case declares which source it is being applied to. The best measure
+        # counts, never a sum of them, and the record says whether the bleeding
+        # was reduced or stopped (TD-31, 2026-09-29).
         source = "external"
         if source in trauma_hemorrhage.sources(state):
-            achieved = 1.0 if measure == "tourniquet" else .75
-            trauma_hemorrhage.control(f, source, achieved)
-            label = f"{named.capitalize()} applied to the {site}: the external bleeding is controlled"
+            before = trauma_hemorrhage.controlled(f, source)
+            trauma_hemorrhage.control(f, source, trauma_hemorrhage.MEASURE_CONTROL.get(measure, .75))
+            outcome = trauma_hemorrhage.external_outcome(before, trauma_hemorrhage.controlled(f, source))
+            label = f"{named.capitalize()} applied to the {site}: {outcome}"
         else:
             label = f"{named.capitalize()} applied to the {site}: there is no external source bleeding here"
         tr["hemorrhage_control"] = measure

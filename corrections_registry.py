@@ -2149,6 +2149,34 @@ CORRECTIONS = (
                   "test_gi_bleed_pocus.py::test_every_recomputed_finding_is_said_in_spanish"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-29-13",
+        "date": "2026-09-29",
+        "title": "TD-31: las medidas sobre una fuente externa no se suman; el registro dice si el sangrado disminuye o se detiene",
+        "scope": {"level": "family", "family": "trauma"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Resto de TD-31. Cada medida sumaba su control (0,75) hasta el tope: mantener o reformular la "
+                   "compresión, o taponar con compresión, llegaba al nivel del torniquete y el sangrado arterial se "
+                   "detenía (0 mL/min); y la sala decía «controlled» tanto para una compresión como para un "
+                   "torniquete. Ahora una fuente conserva la mejor medida aplicada, nunca una suma: la compresión "
+                   "repetida, mantenida o reformulada no agrega control y el taponamiento con compresión es una sola "
+                   "intervención (36 mL/min en trauma_limb_hemorrhage_27m); sólo una técnica más eficaz lo sube (el "
+                   "torniquete detiene la fuente). Magnitudes sin cambio y provisionales (compresión y taponamiento "
+                   "0,75; torniquete 1,0). El registro dice «reduced, not stopped», «stopped» o que la medida no "
+                   "agrega control, en inglés y en español; un registro anterior conserva sus palabras. El tamizaje "
+                   "lee la acción, nunca el nivel: trauma_no_hemorrhage_control da lo mismo que antes."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["trauma_hemorrhage", "family_engine", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_hemostasis_is_not_a_sum.py::test_pressure_held_again_adds_no_control",
+                  "test_hemostasis_is_not_a_sum.py::test_packing_with_pressure_is_one_intervention_written_together_or_apart",
+                  "test_hemostasis_is_not_a_sum.py::test_a_more_effective_technique_still_raises_the_control",
+                  "test_hemostasis_is_not_a_sum.py::test_a_tourniquet_alone_stops_it_and_pressure_after_it_changes_nothing",
+                  "test_hemostasis_is_not_a_sum.py::test_the_record_says_reduced_or_stopped_in_both_languages",
+                  "test_hemostasis_is_not_a_sum.py::test_the_scoring_reads_the_action_never_the_level",
+                  "test_blood_products_and_bleeding_orders.py::test_each_bleeding_measure_acts_and_is_said_as_written"],
+        "preservation": None,
+    },
 )
 
 
