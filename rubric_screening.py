@@ -197,6 +197,17 @@ def facts(record, case_id=""):
                 indicated.append({"category": item.get("category") or "other", "text": item.get("text", ""),
                                   "prescription": item.get("kind") == "prescription",
                                   "minute": minute, "ref": ref, "decision": decision})
+    # What the resident reported the patient received before their care (TD-36): history,
+    # never an order of this encounter nor an administration (KD-31, 2026-09-29).
+    prior = []
+    for position, event in enumerate(trace):
+        for detail in event.get("future_details") or []:
+            if isinstance(detail, dict) and detail.get("kind") == "prior_treatment" \
+                    and str(detail.get("text") or "")[:200] not in {row["text"] for row in prior}:
+                prior.append({"text": str(detail.get("text") or "")[:200],
+                              "reported": dict(detail.get("reported") or {}),
+                              "source": detail.get("source"), "reported_time": detail.get("reported_time"),
+                              "written_at": _number(event.get("decision_time_min")), "ref": f"trace:{position}"})
     narratives = []
     for position, event in enumerate(trace):
         for action in event.get("action_summaries") or []:
@@ -213,7 +224,7 @@ def facts(record, case_id=""):
     return {"executed": executed, "withheld": withheld, "requested": requested,
             "reported": reported, "narratives": narratives, "closed_at": closed,
             "any_executed": any_executed, "asked_topics": asked, "trace": trace,
-            "indicated": indicated}
+            "indicated": indicated, "prior": prior}
 
 
 _ANTICOAGULANT = re.compile(r"\b(?:heparin\w*|enoxaparin\w*|anticoag\w*|hbpm|fondaparinux|rivaroxab\w*|"
@@ -405,6 +416,48 @@ def _result(status, facts_list, refs=(), reading=None):
 
 # --- the two shapes most events take ---------------------------------------
 def _omission(f, event, absent, *, decisive=True, reading=None, extra_refs=()):
+    """A critical omission, with any treatment of the same kind reported as received before."""
+    return _with_prior_treatment(f, absent, _executed_omission(
+        f, event, absent, decisive=decisive, reading=reading, extra_refs=extra_refs))
+
+
+def _with_prior_treatment(f, absent, result):
+    """KD-31 (faculty, 2026-09-29): a treatment the resident reported as received before their
+    care is cited as context -- with its source and time when the reader recorded them, never as
+    the resident's order or an administration. The event, its weight and its result stay as
+    they are; whether it changes the reading is the faculty's call, and the row says so."""
+    rows = [row for row in f.get("prior", ()) if str(row["reported"].get("type") or "") in absent]
+    if not rows:
+        return result
+
+    def told(row, language):
+        # Only what the reader recorded; a time it did not separate is left in the quoted text.
+        source, time, written = row.get("source"), row.get("reported_time"), row.get("written_at")
+        if language == "en":
+            return (f"\u201c{row['text']}\u201d (source recorded: {source or 'none'}; "
+                    f"{'time recorded: ' + str(time) if time else 'no time recorded apart from the text'}; "
+                    f"{'written at ' + _minutes(written) + ' min' if written is not None else 'minute not recorded'}, "
+                    f"{row['ref']})")
+        return (f"\u201c{row['text']}\u201d (fuente registrada: {source or 'ninguna'}; "
+                f"{'hora registrada: ' + str(time) if time else 'sin hora registrada aparte del texto'}; "
+                f"{'escrito a los ' + _minutes(written) + ' min' if written is not None else 'minuto no registrado'}, "
+                f"{row['ref']})")
+    result = dict(result)
+    result["facts"] = list(result["facts"]) + [_say(
+        "Reported by the resident as received before their care (history, not an order or an "
+        "administration of this encounter): " + "; ".join(told(row, "en") for row in rows)
+        + ". The event's definition is unchanged; whether this changes the reading is the faculty's call.",
+        "Informado por el residente como recibido antes de su atención (historia, no una orden ni una "
+        "administración de este encuentro): " + "; ".join(told(row, "es") for row in rows)
+        + ". La definición del evento no cambia; si esto cambia la lectura lo decide el docente.")]
+    result["refs"] = sorted(set(result["refs"]) | {row["ref"] for row in rows})
+    result["prior_treatment"] = [{key: row[key] for key in ("text", "reported", "source", "reported_time",
+                                                            "written_at", "ref")} for row in rows]
+    result["faculty_interpretation"] = True
+    return result
+
+
+def _executed_omission(f, event, absent, *, decisive=True, reading=None, extra_refs=()):
     """A critical omission: something that had to be executed in the window."""
     window = event["window_min"]
     if not f["any_executed"]:
