@@ -98,9 +98,44 @@ def render_my_progress(context):
         evidence_views.render_safety(reviews, labels, on_open=_open_encounter, prefix="_mine")
 
 
+def reviewed_attempts(goals, reviews):
+    """The encounters a faculty member has reviewed: a confirmed rubric or a confirmed observation."""
+    done = {review["attempt_id"] for review in reviews}
+    for goal in goals:
+        for item in goal.get("observations", []):
+            if not item.get("voided"):
+                done.add(item["attempt_id"])
+    return done
+
+
+def learning_focus_visible(context, attempt_id):
+    """Whether this viewer may read an encounter's learning focus (§154AB, faculty 2026-09-29).
+
+    Faculty and admins always. A resident once a faculty member has reviewed the
+    encounter, by the same rule the resident's own pages publish by; before that,
+    and whenever the review cannot be read, not. With no accounts there is nobody
+    to keep it from.
+    """
+    if not context:
+        return True
+    if (context.get("user") or {}).get("role") in {"faculty", "admin"}:
+        return True
+    if not attempt_id:
+        return False
+    try:
+        from progress_store import ProgressStore
+        from rubric_store import RubricStore
+        goals = ProgressStore(context["store"]).get_progress(context["token"])["objectives"]
+        reviews = RubricStore(context["store"]).progress(context["token"])
+    except AccountError:
+        return False
+    return attempt_id in reviewed_attempts(goals, reviews)
+
+
 def encounter_rows(encounters, goals, reviews):
     """One row per completed encounter: review state and what was confirmed, never its target (§154AB)."""
     confirmed = {review["attempt_id"]: review for review in reviews}
+    reviewed = reviewed_attempts(goals, reviews)
     observed = {}
     for goal in goals:
         for item in goal.get("observations", []):
@@ -111,7 +146,7 @@ def encounter_rows(encounters, goals, reviews):
         review = confirmed.get(record["id"])
         found = observed.get(record["id"], [])
         rows.append({"record": record, "review": review, "observations": found,
-                     "reviewed": bool(review or found)})
+                     "reviewed": record["id"] in reviewed})
     return rows
 
 

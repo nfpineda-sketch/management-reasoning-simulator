@@ -740,6 +740,12 @@ def render_learning_focus(context):
     spec = closed_state.get("encounter_spec") or state.get("encounter_spec") or {}
     challenge = CHALLENGES.get(assignment.get("challenge_id") or spec.get("challenge_id"))
     if challenge:
+        import resident_pages
+        if not resident_pages.learning_focus_visible(context, st.session_state.get("_attempt_id")):
+            # §154AB (faculty, 2026-09-29): a resident reads the focus once a faculty
+            # member has reviewed the encounter, never at the close.
+            st.caption(_t("Your learning focus for this encounter is shared after a faculty member reviews it."))
+            return
         with st.expander(_t("Learning focus for this encounter"), expanded=True):
             st.write(challenge["title"])
             if challenge.get("bias_name"):

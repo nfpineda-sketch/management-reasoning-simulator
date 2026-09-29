@@ -179,6 +179,15 @@ def account_export(context, encounters=None):
     reviews = store.progress(context["token"], user["id"])
     summary = rubric_progress.aggregate(reviews)
     by_attempt = {row.get("attempt_id"): row for row in reviews}
+    # An encounter's target travels in the copy once a faculty member has reviewed
+    # it, as it reads on the page (§154AB, 2026-09-29).
+    import resident_pages
+    from progress_store import ProgressStore
+    try:
+        goals = ProgressStore(context["store"]).get_progress(context["token"])["objectives"]
+    except AccountError:
+        goals = []
+    reviewed = resident_pages.reviewed_attempts(goals, reviews)
     import resident_profile
     try:
         profile = resident_profile.ProfileStore(context["store"]).get(context["token"])
@@ -195,7 +204,7 @@ def account_export(context, encounters=None):
         "encounters": [{
             "attempt_id": record["id"],
             "completed_at": _date(record["updated_at"]),
-            "challenge_id": record["challenge_id"],
+            "challenge_id": record["challenge_id"] if record["id"] in reviewed else None,
             "case": _case_label(record),
             "management_trace": ((record.get("payload") or {}).get("session") or {})
                                 .get("management_trace", []),

@@ -1890,6 +1890,8 @@ ES = {
         'Último revisor',
     'Learning focus':
         'Foco de aprendizaje',
+    'Your learning focus for this encounter is shared after a faculty member reviews it.':
+        'El foco de aprendizaje de este encuentro se comparte cuando un docente lo haya revisado.',
     'Learning focus for this encounter':
         'Foco de aprendizaje de este encuentro',
     'Load saved generation failures':

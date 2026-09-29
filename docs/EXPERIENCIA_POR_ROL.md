@@ -65,6 +65,13 @@ Los permisos están en `docs/MATRIZ_PERMISOS_ROLES.md`.
 2. **El foco de aprendizaje se muestra al cerrar el encuentro,** antes de la
    revisión docente (decisión anterior). §154AB pide no mostrar el objetivo antes
    de la revisión: queda a su decisión.
+   **Decidido e implementado el 2026-09-29:** el residente lee el foco de un
+   encuentro cuando un docente lo revisó (rúbrica confirmada u observación
+   confirmada, la regla con que ya se publican sus páginas); antes ve «Your
+   learning focus for this encounter is shared after a faculty member reviews it».
+   Vale para el cierre, la revisión guardada y la copia de su registro
+   (`challenge_id` vacío hasta la revisión). El docente y el administrador lo ven
+   siempre. Sin cuentas (modo local) no hay a quién ocultarlo.
 3. **«Espera revisión» en la cohorte** usa el estado existente (§154N): un
    encuentro espera mientras su rúbrica no está confirmada o un objetivo elegible
    no tiene observación, así que puede seguir esperando tras confirmar la rúbrica.
