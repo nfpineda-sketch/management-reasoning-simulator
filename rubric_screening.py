@@ -662,6 +662,33 @@ def _screen_event(event, f):
         if not lysis:
             return _action(f, event, ("thrombolysis",))
         first = min(row["minute"] for row in lysis)
+        # Since 2026-09-29 each thrombolytic carries the engine's own record of why
+        # it was or was not indicated at its minute. The first dose decides, and a
+        # record without that field is read by the rule of its own time below.
+        records = [row["action"].get("thrombolysis_indication") for row in lysis if row["minute"] == first
+                   and isinstance(row["action"].get("thrombolysis_indication"), dict)]
+        if records:
+            record = records[0]
+            basis = record.get("basis")
+            at = _minutes(record.get("minute", first))
+            refs = [r["ref"] for r in lysis]
+            if basis == "obstructive_shock":
+                return _result("excluded", [_executed_fact(lysis, window), _say(
+                    f"The engine recorded obstructive shock when the thrombolytic was given at {at} min: a systolic "
+                    "below 90 mmHg, or a vasopressor it needed, with a sign of hypoperfusion.",
+                    f"El motor registró shock obstructivo cuando se dio el trombolítico a los {at} min: presión "
+                    "sistólica bajo 90 mmHg, o un vasopresor que la necesitaba, con un signo de hipoperfusión.")], refs)
+            if basis == "persistent_hypotension":
+                return _result("excluded", [_executed_fact(lysis, window), _say(
+                    f"The engine recorded sustained hypotension (15 consecutive minutes) when the thrombolytic was "
+                    f"given at {at} min.",
+                    f"El motor registró hipotensión sostenida (15 minutos consecutivos) cuando se dio el trombolítico "
+                    f"a los {at} min.")], refs)
+            return _result("met", [_executed_fact(lysis, window), _say(
+                f"The engine recorded no hemodynamic indication when the thrombolytic was given at {at} min: neither "
+                "obstructive shock nor sustained hypotension.",
+                f"El motor no registró indicación hemodinámica cuando se dio el trombolítico a los {at} min: ni "
+                "shock obstructivo ni hipotensión sostenida.")], refs)
         sustained = [n for n in f["narratives"] if n["minute"] is not None and n["minute"] <= first
                      and re.search(r"sustained hypotension", n["text"], re.I)]
         if sustained:

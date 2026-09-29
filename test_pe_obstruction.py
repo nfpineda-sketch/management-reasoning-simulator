@@ -55,42 +55,132 @@ def test_the_insult_recovers_slowly(engine):
     assert state["family_state"]["rv_strain"] < .2
 
 
-def test_sustained_hypotension_is_announced_and_is_the_indication(engine):
+def test_fifteen_consecutive_low_minutes_are_announced_as_sustained_hypotension(engine):
     state, labels = course(engine, [OXYGEN])
     assert state["family_state"]["sustained_hypotension_min"] >= pe.SUSTAINED_HYPOTENSION_MIN
     assert pe.indicated(state["family_state"])
-    assert f"below {pe.HYPOTENSION_SBP} mmHg for {pe.SUSTAINED_HYPOTENSION_MIN} minutes" in labels
+    assert (f"below {pe.HYPOTENSION_SBP} mmHg for {pe.SUSTAINED_HYPOTENSION_MIN} consecutive minutes"
+            in labels)
 
 
-def test_thrombolysis_after_sustained_hypotension_dissolves_the_obstruction(engine):
+def test_thrombolysis_in_obstructive_shock_dissolves_the_obstruction(engine):
     state, labels = course(engine, [OXYGEN, LYSE, "Reassess in 40 minutes."])
-    assert "given for sustained hypotension" in labels
+    assert "given in obstructive shock" in labels
     assert state["family_state"]["circulation"] < .8
     # From 86/54 at arrival, without a vasopressor.
     assert state["observable"]["sbp"] > 98 and state["observable"]["hr"] < 130
 
 
-def test_thrombolysis_before_the_hypotension_is_sustained_does_nothing(engine):
-    state, labels = course(engine, [LYSE, "Reassess in 40 minutes."])
-    assert "before the hypotension was sustained" in labels
-    assert state["family_state"]["lysis_indicated"] is False
-    assert state["family_state"]["circulation"] > 1.0 and state["observable"]["sbp"] < 90
+@pytest.mark.parametrize("minute", [0, 5, 10, 14])
+def test_arrival_in_obstructive_shock_needs_no_further_wait(engine, minute):
+    """61m arrives hypotensive with cool extremities, a refill of 5 s and a lactate of 4.8 (2026-09-29)."""
+    orders = ([f"Reassess in {minute} minutes."] if minute else []) + [LYSE, "Reassess in 45 minutes."]
+    state, labels = course(engine, orders)
+    f = state["family_state"]
+    assert f["lysis_indicated"] is True and f["lysis_basis"] == "obstructive_shock"
+    assert f["obstructive_shock_from_min"] == 0
+    assert "given in obstructive shock" in labels and "before the hypotension" not in labels
+    assert state["observable"]["sbp"] > 95 and f["circulation"] < .8
 
 
 def test_a_normotensive_submassive_embolism_has_no_indication(engine):
     state, labels = course(engine, [LYSE], "pulmonary_embolism_33f")
-    assert "before the hypotension was sustained" in labels
+    assert "without the hemodynamic indication" in labels and "no hypotension from the embolism" in labels
     assert not pe.indicated(state["family_state"])
     assert state["family_state"]["circulation"] > 1.0
 
 
-def test_a_pressure_held_up_by_a_vasopressor_still_counts(engine):
+def test_a_pressure_held_up_by_a_vasopressor_it_needs_still_counts(engine):
     state, labels = course(engine, [
         "Start oxygen 15 L/min non-rebreather. Start norepinephrine 0.1 mcg/kg/min. Reassess in 20 minutes.",
         LYSE, "Reassess in 40 minutes."])
     assert state["observable"]["sbp"] > 105
-    assert "given for sustained hypotension" in labels
+    assert "given in obstructive shock" in labels
+    [record] = state["family_state"]["lysis_doses"]
+    assert record["data"]["vasopressor_needed"] is True and record["data"]["sbp"] < pe.HYPOTENSION_SBP
     assert state["family_state"]["circulation"] < .8
+
+
+def test_starting_norepinephrine_creates_no_indication(engine):
+    """33f is not hypotensive: a vasopressor she does not need never starts the clock (2026-09-29)."""
+    state, labels = course(engine, ["Start norepinephrine 0.1 mcg/kg/min. Reassess in 20 minutes.", LYSE,
+                                    "Reassess in 30 minutes."], "pulmonary_embolism_33f")
+    f = state["family_state"]
+    assert f["sustained_hypotension_min"] == 0 and not f.get("lysis_indication_met")
+    assert "sustained hypotension" not in labels
+    assert f["lysis_indicated"] is False
+    assert "on a vasopressor the pressure does not need" in labels
+
+
+@pytest.mark.parametrize("drop", ["sedation_bp_drop", "morphine_preload_drop"])
+def test_a_drug_induced_drop_keeps_its_effect_and_is_not_the_embolism_s_shock(engine, drop):
+    from family_engine import _surface
+    state, _ = course(engine, ["Reassess in 1 minutes."], "pulmonary_embolism_33f")
+    state["family_state"][drop] = 40.0
+    _surface(state)
+    assert state["observable"]["sbp"] < pe.HYPOTENSION_SBP            # the patient does get hypotensive
+    assert state["family_state"]["pe_attributable"]["low"] is False  # but not from the embolism
+    assert not pe.indicated(state["family_state"])
+
+
+def test_bleeding_after_a_thrombolytic_is_not_the_embolism_s_shock(engine):
+    state, labels = course(engine, [LYSE, "Reassess in 50 minutes."], "pulmonary_embolism_33f")
+    f = state["family_state"]
+    assert "Bleeding from the surgical site" in labels and f["pe_bleed_circulation"] > 0
+    assert f["pe_attributable"]["sbp"] > state["observable"]["sbp"] + 1
+
+
+def test_the_clock_counts_only_consecutive_minutes():
+    low = pe.assessment(85, 2.2, 1.2, False)
+    recovered = pe.assessment(95, 2.2, 1.2, False)
+    f = {"elapsed": 0}
+    for _ in range(pe.SUSTAINED_HYPOTENSION_MIN - 1):
+        pe.track_hypotension(f, low)
+    assert pe.basis(f, low) is None                      # a hypotension without hypoperfusion waits
+    pe.track_hypotension(f, recovered)
+    assert f["sustained_hypotension_min"] == 0            # a real recovery starts the count again
+    for _ in range(pe.SUSTAINED_HYPOTENSION_MIN - 1):
+        pe.track_hypotension(f, low)
+    assert pe.basis(f, low) is None
+    pe.track_hypotension(f, low)
+    assert pe.basis(f, low) == "persistent_hypotension"
+    assert pe.basis(f, recovered) is None                 # every order is judged on its own minute
+    assert pe.criteria_met_before(f)                      # the history stays, as history
+
+
+def test_one_sign_of_hypoperfusion_makes_a_hypotension_obstructive_shock_at_once():
+    for crt, lactate, altered, sign in ((3.5, 1.2, False, "peripheral_hypoperfusion"),
+                                        (2.2, 2.1, False, "lactate"),
+                                        (2.2, 1.2, True, "altered_consciousness")):
+        current = pe.assessment(88, crt, lactate, altered)
+        assert current["signs"] == [sign]
+        assert pe.basis({"elapsed": 0}, current) == "obstructive_shock"
+    mild = pe.assessment(88, 3.4, 2.0, False)          # cool with a refill under 3.5 s, lactate at 2.0
+    assert mild["signs"] == [] and pe.basis({"elapsed": 0}, mild) is None
+
+
+def test_a_persisting_shock_does_not_make_a_second_dose_indicated(engine):
+    # The second dose comes at minute 5, before the first has begun to act: the shock persists.
+    once = "Give alteplase 100 mg IV."
+    state, labels = course(engine, [once, once, "Reassess in 30 minutes."])
+    f = state["family_state"]
+    first, second = f["lysis_doses"]
+    assert first["basis"] == "obstructive_shock" and f["lysis_at"] == first["minute"]
+    assert second["basis"] is None and second["repeat_of_minute"] == first["minute"]
+    assert second["criteria_present"] == "obstructive_shock"
+    assert "A second systemic thrombolytic dose is recorded" in labels
+    assert f["circulation"] < .8                          # the first dose keeps working
+
+
+def test_each_thrombolytic_summary_carries_its_basis_minute_and_data(engine):
+    state = encounter(engine, "pulmonary_embolism", "pulmonary_embolism_61m")["state"]
+    result = execute_family_bundle(state, parse_family_actions(LYSE))
+    [summary] = [s for s in result["action_summaries"] if s.get("type") == "thrombolysis"]
+    record = summary["thrombolysis_indication"]
+    assert record["version"] == pe.INDICATION_VERSION and record["minute"] == 0
+    assert record["basis"] == "obstructive_shock" and summary["indication_basis"] == "obstructive_shock"
+    assert record["data"]["engine_internal"] is True
+    assert set(record["data"]["signs"]) == {"peripheral_hypoperfusion", "lactate"}
 
 
 def test_anticoagulation_alone_does_not_relieve_the_obstruction(engine):
@@ -100,10 +190,12 @@ def test_anticoagulation_alone_does_not_relieve_the_obstruction(engine):
     assert state["observable"]["sbp"] < 90
 
 
-def test_the_indication_does_not_expire_once_met(engine):
+def test_a_needed_vasopressor_keeps_the_criterion_and_the_history_is_kept(engine):
     state, _ = course(engine, [OXYGEN, "Start norepinephrine 0.2 mcg/kg/min. Reassess in 30 minutes."])
+    f = state["family_state"]
     assert state["observable"]["sbp"] > pe.HYPOTENSION_SBP
-    assert pe.indicated(state["family_state"])
+    assert pe.indicated(f)                                  # the embolism still leaves it below 90
+    assert f["obstructive_shock_from_min"] == 0 and f["persistent_hypotension_from_min"] >= 14
 
 
 TUBE = "Give ketamine 100 mg IV and intubate VC/AC FiO2 100% PEEP 5. Reassess in 10 minutes."

@@ -342,6 +342,7 @@ def tick(state):
     # A declared occlusion runs the same reperfusion pathway as a bank case.
     import acs_reperfusion,generated_airway,generated_pe,generated_glucose,generated_opioid,generated_bleeding,generated_congestion
     generated_pe.remember_hemoglobin(f)
+    if generated_pe.spec(state) is not None:generated_pe.remember_arrival(state)
     declared={acs_reperfusion:acs_reperfusion.coronary(state) is not None,
               generated_airway:generated_airway.spec(state) is not None,
               generated_pe:generated_pe.spec(state) is not None,

@@ -48,8 +48,11 @@ def issues(case):
             "code": "PULMONARY_OBSTRUCTION_UNDECLARED", "path": "case.engine.pulmonary_obstruction",
             "message": ("The case reports right heart strain or a pulmonary filling defect, so it must declare "
                         "engine.pulmonary_obstruction. The engine then runs the pathway: thrombolysis is the "
-                        f"treatment only after {pe_obstruction.SUSTAINED_HYPOTENSION_MIN} minutes of systolic below "
-                        f"{pe_obstruction.HYPOTENSION_SBP}, volume faster than "
+                        "treatment in obstructive shock (systolic below "
+                        f"{pe_obstruction.HYPOTENSION_SBP}, or a vasopressor started on a lower pressure, with a sign "
+                        "of hypoperfusion) or after "
+                        f"{pe_obstruction.SUSTAINED_HYPOTENSION_MIN} consecutive minutes of systolic below "
+                        f"{pe_obstruction.HYPOTENSION_SBP} without one, volume faster than "
                         f"{pe_obstruction.TOLERATED_ML_PER_MIN:g} mL/min distends the ventricle, and positive "
                         "pressure costs an obstructed circulation."),
             "details": {},

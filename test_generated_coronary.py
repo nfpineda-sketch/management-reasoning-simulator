@@ -166,7 +166,7 @@ def test_the_instructions_carry_the_numbers_from_the_modules():
     import asthma_ventilation, glucose_rescue, opioid_reversal, pe_obstruction
     from family_engine import GI_BLEED
     for value in (f"{asthma_ventilation.PLATEAU_LIMIT_CMH2O:g} cmH2O",
-                  f"{pe_obstruction.SUSTAINED_HYPOTENSION_MIN} minutes of systolic below {pe_obstruction.HYPOTENSION_SBP}",
+                  f"{pe_obstruction.SUSTAINED_HYPOTENSION_MIN} consecutive minutes of systolic below {pe_obstruction.HYPOTENSION_SBP}",
                   f"{glucose_rescue.SEIZURE_AFTER_MIN} minutes below {glucose_rescue.SEIZURE_GLUCOSE} mg/dL",
                   f"{opioid_reversal.ARREST_AFTER_MIN} minutes of unsupported apnoeic breathing",
                   f"{GI_BLEED['endoscopy_after_consult_min']} minutes after the call"):

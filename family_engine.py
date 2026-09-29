@@ -775,6 +775,38 @@ def _validate(state, parsed):
     return normalized, None
 
 
+def _pe_attributable(state, strain_circulation=None):
+    """What the embolism itself does to the pressure and the perfusion, before rounding (2026-09-29).
+
+    The same arithmetic the surface uses, on the embolism's own terms: the
+    obstruction, the distended ventricle and positive pressure count; a
+    vasopressor's or an inotrope's support, drug-induced drops (sedation, opioid,
+    nitrate) and bleeding after a thrombolytic do not. Those keep their effect on
+    the patient the resident sees; they are never read as the embolism's shock.
+    """
+    f = state["family_state"]
+    base = f["baseline"]
+    if strain_circulation is None:
+        strain_circulation, _ = pe_obstruction.surface_penalty(
+            f, state.get("treatments", {}).get("ventilator_peep_cmh2o"))
+    circulation = f["circulation"] - f.get("pe_bleed_circulation", 0.0)
+    sbp = float(base.get("sbp", 110)) - (circulation - 1) * 45 - strain_circulation * 45
+    crt = float(base.get("crt") or 2) + (circulation - 1) * 4
+    lactate = float(f.get("lactate", 1.5)) + (circulation - 1) * 2
+    altered = (str(base.get("mental_status", "Alert")) != "Alert"
+               or sbp < pe_obstruction.ALTERED_BY_PRESSURE_SBP)
+    running = float(f.get("norepinephrine") or 0) > 0 or _epinephrine_equivalent(f) > 0
+    return pe_obstruction.assessment(sbp, crt, lactate, altered, vasopressor_running=running)
+
+
+def _pe_assessment(state):
+    """This minute's embolism state for either engine: the bank's arithmetic or the generated adapter's."""
+    if state.get("engine_family") == "pulmonary_embolism":
+        return _pe_attributable(state)
+    import generated_pe
+    return generated_pe.assessment(state)
+
+
 def _initialize(state):
     if state.get("family_state", {}).get("version") == FAMILY_ENGINE_VERSION:
         return
@@ -820,6 +852,11 @@ def _initialize(state):
     state.setdefault("diagnostics", {})
     state.setdefault("diagnostic_history", [])
     state.setdefault("hidden", {})
+    if state.get("engine_family") == "pulmonary_embolism":
+        # An obstructive shock present at arrival counts from minute 0 (2026-09-29).
+        state["family_state"]["pe_attributable"] = _pe_attributable(state, 0.0)
+        pe_obstruction.track_hypotension(state["family_state"], state["family_state"]["pe_attributable"])
+        state["family_state"]["sustained_hypotension_min"] = 0.0
 
 
 _TIMED_FIELD = {"fluid": "volume_ml", "blood": "units", "dextrose": "dose_g", "anticoagulation": "dose"}
@@ -1423,7 +1460,9 @@ def _order(state, a):
         duration = 3
     elif kind == "thrombolysis" and (state.get("engine_family") == "pulmonary_embolism"
                                      or __import__("generated_pe").spec(state) is not None):
-        note = pe_obstruction.give_thrombolysis(f, f["elapsed"], state.get("observable", {}))
+        note, indication = pe_obstruction.give_thrombolysis(
+            f, f["elapsed"], _pe_assessment(state), state.get("observable", {}))
+        a["thrombolysis_indication"] = indication
         tr["administered_medications"].append({"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"],
                                                "time_min": int(state.get("sim_time", 0))})
         f.setdefault("procedure_events", []).append(
@@ -1609,6 +1648,13 @@ def _order(state, a):
         summary["repeated"] = True
     if kind == "disposition" and repeated:
         summary["repeated"] = True
+    if kind == "thrombolysis" and isinstance(a.get("thrombolysis_indication"), dict):
+        # Why the engine judged this dose as it did, with its minute and data
+        # (2026-09-29): read by the screening, never by the reader.
+        record = deepcopy(a["thrombolysis_indication"])
+        summary["thrombolysis_indication"] = record
+        summary["indication_basis"] = record.get("basis") or "none"
+        summary["indication_version"] = record.get("version")
     # What the resident placed or applied, as they named it: an intraosseous line
     # is never written back as an intravenous one, nor a dressing as pressure (C7-06).
     for key in {"vascular_access": ("access", "site"), "hemorrhage_control": ("measure", "named", "site")}.get(kind, ()):
@@ -2285,6 +2331,7 @@ def _surface(state):
         # coefficients the family already uses for the obstruction itself.
         strain_circulation, strain_lung = pe_obstruction.surface_penalty(
             f, state.get("treatments", {}).get("ventilator_peep_cmh2o"))
+        f["pe_attributable"] = _pe_attributable(state, strain_circulation)
         sbp -= strain_circulation * 45
         dbp -= strain_circulation * 25
         hr += strain_circulation * 25

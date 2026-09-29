@@ -18,8 +18,8 @@ FAST_FLUID = {"type": "fluid", "volume_ml": 1000, "fluid_type": "normal saline",
               "administration_duration_min": 10}
 
 
-def pe_case(bleeding_risk=None, rv=STRAIN, declare=True, history=None):
-    state = patient()
+def pe_case(bleeding_risk=None, rv=STRAIN, declare=True, history=None, **hidden):
+    state = patient(**hidden)
     case = state["encounter_spec"]["clinical_case"]
     case["investigations"].setdefault("pocus", {"duration_min": 2, "result": {}})
     case["investigations"]["pocus"]["result"]["rv"] = rv
@@ -94,23 +94,44 @@ def test_slow_volume_is_neither_treatment_nor_insult():
     assert gpe.generated_effects(state)[0] == 0
 
 
-def test_a_vasopressor_keeps_the_hypotension_clock_running():
-    state = pe_case()
-    run(state, {"type": "norepinephrine", "operation": "start", "rate": .1, "units": "mcg/kg/min"})
-    minutes(state, pe.SUSTAINED_HYPOTENSION_MIN + 2)
-    assert pe.indicated(state["family_state"])
+NOREPINEPHRINE = {"type": "norepinephrine", "operation": "start", "rate": .1, "units": "mcg/kg/min"}
 
 
-def test_thrombolysis_after_the_indication_dissolves_the_obstruction():
+def test_starting_a_vasopressor_creates_no_indication():
+    """The generated patient arrives at 90 mmHg: a vasopressor it does not need never counts (2026-09-29)."""
     state = pe_case()
-    run(state, {"type": "norepinephrine", "operation": "start", "rate": .1, "units": "mcg/kg/min"})
+    run(state, NOREPINEPHRINE)
     minutes(state, pe.SUSTAINED_HYPOTENSION_MIN + 2)
+    f = state["family_state"]
+    assert f["pe_vasopressor_needed"] is False and f["sustained_hypotension_min"] == 0
+    assert not pe.indicated(f) and not pe.criteria_met_before(f)
+
+
+# A failing ventricle with little tone: the core settles this patient at about 86 mmHg, refill 5 s.
+SHOCK = {"cardiac_function": .3, "vasomotor_tone": .2}
+
+
+def test_a_vasopressor_started_on_a_low_pressure_is_needed():
+    state = pe_case(**SHOCK)
+    minutes(state, 3)
+    assert state["observable"]["sbp"] < pe.HYPOTENSION_SBP
+    run(state, NOREPINEPHRINE)
+    minutes(state, 3)
+    f = state["family_state"]
+    assert f["pe_vasopressor_needed"] is True and f["pe_attributable"]["low"] is True
+
+
+def test_thrombolysis_in_obstructive_shock_dissolves_the_obstruction():
+    """A hypotension with a refill of 5 s is obstructive shock at once, without a further wait."""
+    state = pe_case(**SHOCK)
+    minutes(state, 3)
+    assert state["family_state"]["pe_attributable"]["low"] and state["family_state"]["pe_attributable"]["signs"]
     result = run(state, LYSE)
-    notes = [s["label"] for s in result["action_summaries"]]
-    assert state["family_state"]["lysis_indicated"] is True
+    notes = " | ".join(s["label"] for s in result["action_summaries"])
+    assert state["family_state"]["lysis_indicated"] is True and state["family_state"]["lysis_basis"] == "obstructive_shock"
+    assert "given in obstructive shock" in notes
     minutes(state, 50)
-    sbp, *_ = gpe.generated_effects(state)
-    assert gpe.relief(state["family_state"]) > .2 and sbp > 5
+    assert gpe.relief(state["family_state"]) > .2
 
 
 def test_thrombolysis_before_the_indication_does_nothing():

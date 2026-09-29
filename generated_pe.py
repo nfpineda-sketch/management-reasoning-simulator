@@ -35,6 +35,57 @@ def bleeding_risk(state):
     return declaration.get("bleeding_risk")
 
 
+def _vasopressor_running(state):
+    treatments = state.get("coupled_state", {}).get("treatments", {}) or {}
+    return bool(treatments.get("norepinephrine")) or float(state["family_state"].get("norepinephrine") or 0) > 0
+
+
+def remember_arrival(state):
+    """The pressure the case arrived with, before anything supported it."""
+    f = state["family_state"]
+    f.setdefault("pe_unsupported_sbp", float(state.get("observable", {}).get("sbp") or 0))
+
+
+def _track_support(state):
+    """Whether a running vasopressor was needed: it counts only if started on a low pressure."""
+    f = state["family_state"]
+    sbp = float(state.get("observable", {}).get("sbp") or 0)
+    if not _vasopressor_running(state):
+        f["pe_unsupported_sbp"] = sbp
+        f.pop("pe_vasopressor_needed", None)
+    elif "pe_vasopressor_needed" not in f:
+        f["pe_vasopressor_needed"] = float(f.get("pe_unsupported_sbp", sbp)) < pe_obstruction.HYPOTENSION_SBP
+
+
+def assessment(state):
+    """This minute's embolism state in a generated case (2026-09-29).
+
+    The generated pressure comes from a shared core that cannot separate a
+    vasopressor's lift or a drug-induced drop from what the obstruction does. So a
+    vasopressor counts only when it was started on a systolic below the threshold
+    (starting one never creates the indication), sedation never counts as altered
+    consciousness, and other drug effects inside the core are not separated: a
+    documented approximation, where the bank engine computes the embolism's share
+    exactly.
+    """
+    f = state["family_state"]
+    observable = state.get("observable", {})
+    running = _vasopressor_running(state)
+    needed = None
+    if running:
+        needed = f.get("pe_vasopressor_needed")
+        if needed is None:
+            needed = float(f.get("pe_unsupported_sbp", observable.get("sbp") or 0)) < pe_obstruction.HYPOTENSION_SBP
+    values = state.get("generated_state", {}).get("values", {}) or {}
+    lactate = values.get("lactate_mmol_l")
+    lactate = float(lactate if lactate is not None else f.get("lactate") or 0)
+    hidden = state.get("coupled_state", {}).get("hidden", {}) or {}
+    sedated = float(hidden.get("procedural_sedation_effect") or 0) > 0
+    altered = str(observable.get("mental_status") or "Alert") != "Alert" and not sedated
+    return pe_obstruction.assessment(float(observable.get("sbp") or 0), float(observable.get("crt") or 2), lactate,
+                                     altered, vasopressor_running=running, vasopressor_needed=needed)
+
+
 def step(state, fluid_ml_this_minute):
     """One minute of the obstructed ventricle. Returns an event text or None."""
     if spec(state) is None:
@@ -43,6 +94,8 @@ def step(state, fluid_ml_this_minute):
     # generated declaration carries it under its own key.
     case = state["encounter_spec"]["clinical_case"]
     case["engine"].setdefault("lysis_bleeding_risk", bleeding_risk(state))
+    _track_support(state)
+    state["family_state"]["pe_attributable"] = assessment(state)
     return pe_obstruction.step(state, fluid_ml_this_minute)
 
 
