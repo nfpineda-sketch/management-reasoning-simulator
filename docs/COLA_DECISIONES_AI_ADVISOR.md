@@ -48,7 +48,7 @@ nada de esto tiene todavía revisión clínica externa. Detalle clínico:
 | Roles · Fase 2 | TD-44 → notas privadas → descarga selectiva e inactivos → AI Longitudinal Review a pedido | Roles | **ORDEN REGISTRADO**; nada implementado | Presupuesto y decisiones de acceso | `docs/EXPERIENCIA_POR_ROL.md` | Cada paso con pruebas de permisos |
 | TDFC · cuatro dudas residuales | Declaraciones aplicadas como estaban | 4 filas | **PROVISIONAL, no validado** | Revisión docente | `tdfc/TDFC_TABLA_FINAL.md` | Cada fila confirmada o cambiada |
 | TD-04 | POCUS de los casos C14 YES | Caso a caso | **CASO A CASO** | Revisión docente | — | Cada caso confirmado |
-| Piloto formativo | Ver «Readiness» en `docs/READINESS_PILOTO_FORMATIVO.md` | Residentes, con supervisión docente | Ver el documento | Configuración de despliegue y autorización | ídem | Autorización docente explícita |
+| Piloto formativo | Piloto limitado, formativo, con supervisión docente | 31 casos del banco; sin composiciones, casos por IA ni PS001/PS002 | **TÉCNICAMENTE LISTO; BLOQUEADO para empezar** hasta la prueba de humo en el entorno desplegado, su configuración (`MRS_OFFLINE_CASES=1`: 0 llamadas a la IA medidas) y la autorización | Despliegue y autorización docente | `docs/READINESS_PILOTO_FORMATIVO.md`; `tools_pilot_smoke.py` | Humo verde en el despliegue y autorización explícita |
 | Fuera de alcance | DF-15, DF-25, DF-14, DF-12, DF-17, DF-4, DF-18, DF-9, DF-11, DF-5, biblioteca POCUS | — | **Sin cambio** | — | — | — |
 
 ## Pendientes al cierre del ciclo 9 (histórico)

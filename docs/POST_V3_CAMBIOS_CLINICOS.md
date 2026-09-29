@@ -150,7 +150,7 @@ registra). Medido en `hypoglycemia_54m_thiamine` (vía fallida) y `hypoglycemia_
 
 | Decisión | Estado | Registro · commit | Pruebas |
 |---|---|---|---|
-| Foco de aprendizaje oculto hasta la revisión docente (§154AB) | Implementado | C-2026-09-29-16 · `23afbb7`, `fc10159` | `test_learning_focus_waits_for_review.py` |
+| Foco de aprendizaje oculto hasta la revisión docente (§154AB) | Implementado | C-2026-09-29-16 · `23afbb7`, `fc10159`, `e6c7af1` | `test_learning_focus_waits_for_review.py` |
 | TD-41: ninguna página ni PDF traduce al abrirse; sólo el pedido del lector | Implementado | C-2026-09-29-17 · `c765d8f` | `test_translations_are_asked_for.py` |
 | KD-31: el tamizaje cita el tratamiento previo como contexto | Implementado | C-2026-09-29-18 · `fa1d910` | `test_prior_treatment_in_screening.py` |
 | DC9: propuestas TD/F/C de las composiciones, pendientes | Implementado como propuesta; **la revisión sigue pendiente** | C-2026-09-29-19 · `2824270` | `test_tdfc_composition_proposals.py` |
@@ -158,11 +158,14 @@ registra). Medido en `hypoglycemia_54m_thiamine` (vía fallida) y `hypoglycemia_
 | Deuda del lector TD-45 | Registrada; el lector no cambió | `8f705ff` | `test_reader_gaps_registered.py` |
 | Fase 2 de roles | Sólo el orden | `237cceb` | — |
 | Imágenes pendientes (V34 · 75f, bb_54f) | Registradas; nada generado ni aprobado | `237cceb` | — |
+| Piloto formativo: prueba de humo y readiness | Técnicamente listo; bloqueado por pasos de despliegue y autorización | `docs/READINESS_PILOTO_FORMATIVO.md` | `tools_pilot_smoke.py` |
+| Panel docente: las líneas TDFC ya no rompen el traductor (hallado por la prueba de humo; falla desde el ciclo 8) | Corregido | `d0cbeb8` | `test_screen_strings_name_their_values.py` |
 
 ## Lo que no cambió
 
-Las evaluaciones confirmadas, D1–D5, los eventos críticos y sus pesos, el −3, la referencia TDFC aprobada
-(salvo la adaptación del tamizaje del TEP), la variabilidad plausible ya cerrada, el lector (congelado) y
-el baseline español `939978a`. Las cuatro dudas residuales de TDFC siguen provisionales; TD-04 sigue caso
-a caso; DC6–DC9 (DC9 salvo la propuesta) y «suero glucosado» siguen diferidos.
+No cambiaron las evaluaciones confirmadas, D1–D5, los eventos críticos y sus pesos, el −3 ni la referencia
+TDFC aprobada; la única excepción autorizada es la adaptación del tamizaje del TEP, que lee el motivo real
+de la reperfusión. Tampoco la variabilidad plausible ya cerrada, el lector (congelado) ni el baseline
+español `939978a`. Las cuatro dudas residuales de TDFC siguen provisionales; TD-04 sigue caso a caso;
+DC6–DC8, la revisión de DC9 y «suero glucosado» siguen diferidos.
 
