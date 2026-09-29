@@ -16,7 +16,7 @@ documento.
   | Piloto | `VALIDATION_PILOT_V1` | `VALIDATION_PILOT_V1_EN` |
   | Participantes | EM01–EM06 | EM07–EM12 |
   | Asignación | `validation/pilot_v1/assignment_matrix.csv` | `assignment_matrix.csv` (aquí) |
-  | Baseline | SPANISH PILOT BASELINE `939978a` | **por elegir** (abajo) |
+  | Baseline | SPANISH PILOT BASELINE `939978a` | **ENGLISH EXTERNAL VALIDATION BASELINE = V3 `3d942ee`** (elegido el 2026-09-29, abajo) |
 
 - **Escritura natural en inglés.** Médicos que escriben en inglés, en texto
   libre. Nada se traduce desde respuestas en español.
@@ -48,8 +48,15 @@ leer las respuestas (§88).** Candidatos:
 | ENGLISH VALIDATION BASELINE | `ec1c77f` | Registrado en `validation/baselines.json` (ciclo 5) |
 | DEVELOPMENT HARDENED BASELINE V1 | `72a4a53` | Referencia de desarrollo (ciclo 6), no de validación |
 | DEVELOPMENT HARDENED BASELINE V2 | `9d2cd9e` | Referencia de desarrollo (ciclo 7), no de validación; registrada en `validation/BASELINES.md` |
+| DEVELOPMENT PRE-VALIDATION BASELINE V3 | `3d942ee` | Referencia de desarrollo (ciclo 9), recomendada en `validation/BASELINES.md` |
 
 Ninguno se llama «validado».
+
+**Decisión del 2026-09-29, antes de recibir o leer ninguna respuesta inglesa:** el
+corpus inglés se mide primero contra **V3 `3d942ee`**, registrado como ENGLISH
+EXTERNAL VALIDATION BASELINE en `validation/baselines.json`, con la lista de
+defectos versión 3 (`validation/known_defects_v3.json`). `ec1c77f` sigue
+registrado. Detalle y distinción de versiones: `validation/BASELINES.md`.
 
 ## Cómo se procesa, con las mismas herramientas
 

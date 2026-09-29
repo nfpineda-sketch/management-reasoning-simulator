@@ -20,6 +20,16 @@
    "known_defects_version": 2,
    "record": "validation/BASELINES.md",
    "use": "The English physicians' documents are measured against this commit first. It carries the KD-01 fix and the C14 declarations of cycle 5; the full suite passed on it (4956 passed, 77 skipped, 2 xfail, 0 failed) and 56/56 regressions."
+  },
+  {
+   "name": "ENGLISH EXTERNAL VALIDATION BASELINE",
+   "language": "en",
+   "commit": "3d942eedf1d5922a8fed7df2e218bb3d7012c227",
+   "simulator_version": "0.24.13-clinical-encounter",
+   "registered_on": "2026-09-29",
+   "known_defects_version": 3,
+   "record": "validation/BASELINES.md",
+   "use": "Faculty decision of 2026-09-29, taken before any English response was received or read: the English physicians' documents are measured against this commit first. It is the DEVELOPMENT PRE-VALIDATION BASELINE V3 of cycle 9 ('Cycle 9: V3 freeze commit'; full suite 6134 passed, 77 skipped, 1 xfail, 0 failed; 56/56 regressions). ENGLISH VALIDATION BASELINE (ec1c77f) stays registered and still names a run made at its commit; it is no longer the first measurement of the English corpus. Later commits of the branch are later engine versions, not this baseline."
   }
  ]
 }

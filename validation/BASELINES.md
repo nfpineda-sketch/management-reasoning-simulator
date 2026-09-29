@@ -14,6 +14,7 @@ validación.
 |---|---|---|---|---|---|
 | **SPANISH PILOT BASELINE** | es | `939978a5147ab859a6dc3566ef4e1a98611a5093` | `0.24.13-clinical-encounter` | versión 1 | `validation/pilot_v1/PILOT_BASELINE.md` |
 | **ENGLISH VALIDATION BASELINE** | en | `ec1c77f0339a6e3087337d2a621b2e630d3549a5` | `0.24.13-clinical-encounter` | versión 2 | esta página, sección siguiente |
+| **ENGLISH EXTERNAL VALIDATION BASELINE** | en | `3d942eedf1d5922a8fed7df2e218bb3d7012c227` | `0.24.13-clinical-encounter` | versión 3 (`validation/known_defects_v3.json`) | sección «Decisión del baseline inglés (2026-09-29)» |
 
 Los **DEVELOPMENT HARDENED BASELINES V1** del ciclo 6 (`72a4a53`) **y V2** del
 ciclo 7 (`9d2cd9e`), y la **DEVELOPMENT PRE-VALIDATION BASELINE V3** del ciclo 9
@@ -219,6 +220,35 @@ cualquier respuesta inglesa.
 | **¿Se vio algún contenido de respuesta?** | **No.** Ninguna respuesta, española ni inglesa, se abrió, leyó, buscó ni procesó; V3 se desarrolló sin exposición a ellas (§115) |
 | **Consecuencias para la comparabilidad** | Las mediciones primarias usan motores distintos (español `939978a`, inglés V3): una diferencia entre idiomas mezcla idioma y motor, y el informe lo dice primero (§25, §105). Como análisis secundario y descriptivo, sólo en DEVELOPMENT, ambos corpus pueden leerse con los mismos commits (`939978a`, V1, V2, V3). Las formas de TD-39, TD-34 y TD-36 que V3 corrige pueden fallar en el español (se etiquetan, §67) y no en el inglés; en ambos quedan sus residuos conocidos (KD-16 a KD-24, `validation/KNOWN_DEFECTS_V3.md`) |
 | **Cómo se adopta** | Una entrada nueva en `validation/baselines.json` (nombre, idioma `en`, commit de V3, `known_defects_version` 3), antes de leer. `ec1c77f` sigue registrado: un baseline nunca se reemplaza |
+
+## Decisión del baseline inglés (2026-09-29)
+
+Instrucción docente del 2026-09-29, posterior a V3 (ampliación no clínica, punto 1).
+Se tomó **antes de recibir o leer cualquier respuesta inglesa**; en el entorno no
+hay ninguna.
+
+- **El corpus inglés se mide primero contra V3, `3d942eedf1d5922a8fed7df2e218bb3d7012c227`.**
+  Se verificó que ese commit es «Cycle 9: V3 freeze commit (DEVELOPMENT
+  PRE-VALIDATION BASELINE V3)» (`git log -1 3d942ee`).
+- **Se agregó como entrada nueva** en `validation/baselines.json`: ENGLISH EXTERNAL
+  VALIDATION BASELINE, idioma `en`, lista de defectos versión 3. `ec1c77f` sigue
+  registrado y sigue nombrando una corrida hecha en su commit: un baseline nunca se
+  reemplaza. Las secciones anteriores de esta página quedan como estaban.
+- **El manifiesto del piloto inglés** (`validation/pilot_v1_en/manifests/pilot_manifest.json`)
+  nombra ahora el baseline elegido, y conserva los candidatos y el estado previo
+  (`status_until_2026_09_29`).
+
+**Tres versiones distintas, que no se confunden:**
+
+| Versión | Qué es | Dónde consta |
+|---|---|---|
+| **Baseline histórico** | V3 `3d942ee`: el motor contra el que se mide primero el corpus inglés. No cambia nunca | `validation/baselines.json`; esta página |
+| **Versión posterior del motor** | Los commits de la rama después de V3 (roles, TEP, DC1, POCUS HDA, TD-31, hipoglicemia DC2–DC5 con `glucose_rescue` 2.0, acs_70f, foco de aprendizaje, TD-41, KD-31). Es desarrollo: **no es un baseline**, y una corrida en uno de esos commits se nombra por su commit | `git log 3d942ee..`; `corrections_registry.py`; `docs/POST_V3_CAMBIOS_CLINICOS.md` |
+| **Versión de cada encuentro del piloto formativo** | La que cada encuentro congela al empezar: `assignment.code_version` y `evaluation_basis.code_version` (el commit desplegado, o `MRS_CODE_VERSION`), más las versiones de las que depende su evaluación (`evaluation_basis.versions`: cobertura, rúbrica, motor de familias, ejecución, oportunidades y, en hipoglicemia, `glucose_rescue`) | El registro de cada encuentro |
+
+Un encuentro del piloto formativo **no** es una medición de validación externa: se
+juega con el motor desplegado, que es una versión posterior del motor, y conserva
+las reglas con que empezó.
 
 ## Qué registra cada corrida
 

@@ -57,6 +57,16 @@ def test_the_report_records_corpus_language_engine_baseline_and_defects_list():
     assert (provenance["engine_baseline"], provenance["known_defects_version"]) == ("SPANISH PILOT BASELINE", 1)
 
 
+def test_the_english_baseline_is_v3_added_beside_the_one_it_follows():
+    """Faculty, 2026-09-29: English is measured first against V3; ec1c77f stays registered."""
+    english = {item["name"]: item for item in registry() if item["language"] == "en"}
+    v3 = english["ENGLISH EXTERNAL VALIDATION BASELINE"]
+    assert (v3["commit"], v3["known_defects_version"]) == ("3d942eedf1d5922a8fed7df2e218bb3d7012c227", 3)
+    assert english["ENGLISH VALIDATION BASELINE"]["commit"] == "ec1c77f0339a6e3087337d2a621b2e630d3549a5"
+    assert vc.baseline_of({"commit": v3["commit"], "uncommitted_changes": False}) == {
+        "engine_baseline": "ENGLISH EXTERNAL VALIDATION BASELINE", "known_defects_version": 3}
+
+
 def test_the_known_defects_say_which_baselines_they_are_present_in():
     known = json.loads(vc.KNOWN_DEFECTS.read_text(encoding="utf-8"))
     assert known["version"] == vc.known_defects_version() == max(item["version"] for item in known["versions"])

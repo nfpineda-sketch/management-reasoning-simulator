@@ -215,7 +215,12 @@
   "before_use": "Check each English document against its Spanish counterpart: same case content, same instructions, same assignment logic, different response language. They can be checked byte for byte against what tools_validation_corpus.py templates --pilot writes from this manifest."
  },
  "baseline": {
-  "status": "TO BE CHOSEN BY THE FACULTY BEFORE ANY ENGLISH RESPONSE IS RECEIVED OR READ (§88)",
+  "status": "CHOSEN BY THE FACULTY ON 2026-09-29, BEFORE ANY ENGLISH RESPONSE WAS RECEIVED OR READ (§88)",
+  "name": "ENGLISH EXTERNAL VALIDATION BASELINE",
+  "commit": "3d942eedf1d5922a8fed7df2e218bb3d7012c227",
+  "known_defects_version": 3,
+  "registered_in": "validation/baselines.json",
+  "status_until_2026_09_29": "TO BE CHOSEN BY THE FACULTY BEFORE ANY ENGLISH RESPONSE IS RECEIVED OR READ (§88)",
   "candidates": [
    {
     "name": "ENGLISH VALIDATION BASELINE",
@@ -231,13 +236,22 @@
     "name": "DEVELOPMENT HARDENED BASELINE V2",
     "commit": "9d2cd9e0d208b2878c5810e1a264a8b8d85be2e0",
     "status": "development reference (cycle 7), not a validation baseline; recorded in validation/BASELINES.md"
+   },
+   {
+    "name": "DEVELOPMENT PRE-VALIDATION BASELINE V3",
+    "commit": "3d942eedf1d5922a8fed7df2e218bb3d7012c227",
+    "status": "development reference (cycle 9), recommended in validation/BASELINES.md; chosen on 2026-09-29 and registered as ENGLISH EXTERNAL VALIDATION BASELINE"
    }
   ],
   "rule": "Never the cycle's HEAD chosen automatically, and never chosen after the responses are read."
  },
  "known_defects": {
   "status": "the version in force when the baseline is chosen",
-  "file": "validation/pilot_v1/manifests/known_defects.json"
+  "file": "validation/pilot_v1/manifests/known_defects.json",
+  "in_force_for_the_chosen_baseline": {
+   "version": 3,
+   "file": "validation/known_defects_v3.json"
+  }
  },
  "design": {
   "each_case": "3 independent documents",

@@ -79,15 +79,20 @@ def test_the_english_pilot_mirrors_the_spanish_one_with_its_own_codes():
     assert not {r["participant"] for r in english["assignment"]} & {r["participant"] for r in spanish["assignment"]}
 
 
-def test_the_english_pilot_is_prepared_not_sent_and_names_no_baseline_yet():
+def test_the_english_pilot_is_prepared_not_sent_and_names_the_baseline_the_faculty_chose():
     english = _manifest(ENGLISH)
     assert english["status"].startswith("PREPARED, NOT SENT")
     assert english["documents"]["status"] == "ENGLISH DOCX AVAILABLE EXTERNALLY / NOT PRESENT IN REPOSITORY"
     assert not list((ENGLISH.parent.parent).glob("**/*.docx"))
     baseline = english["baseline"]
-    assert baseline["status"].startswith("TO BE CHOSEN BY THE FACULTY BEFORE ANY ENGLISH RESPONSE")
-    assert "commit" not in baseline
+    # Chosen on 2026-09-29, before any English response (§88): V3, never the branch's HEAD.
+    assert baseline["status"].startswith("CHOSEN BY THE FACULTY ON 2026-09-29, BEFORE ANY ENGLISH RESPONSE")
+    assert baseline["commit"] == "3d942eedf1d5922a8fed7df2e218bb3d7012c227"
+    assert baseline["status_until_2026_09_29"].startswith("TO BE CHOSEN BY THE FACULTY BEFORE ANY ENGLISH RESPONSE")
     assert [c["name"] for c in baseline["candidates"]][0] == "ENGLISH VALIDATION BASELINE"
+    registered = json.loads((ROOT / "validation" / "baselines.json").read_text(encoding="utf-8"))["baselines"]
+    [entry] = [item for item in registered if item["name"] == baseline["name"]]
+    assert (entry["commit"], entry["language"], entry["known_defects_version"]) == (baseline["commit"], "en", 3)
 
 
 def test_the_split_writes_the_pilot_s_language_into_the_corpus(tmp_path):
