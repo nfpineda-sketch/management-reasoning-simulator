@@ -31,4 +31,5 @@ def test_the_arrival_scan_names_the_grade_the_model_keeps():
 def test_the_spanish_says_the_same_grade():
     rows = json.loads(Path("case_text/es/acs.json").read_text(encoding="utf-8"))["acs_70f_left_main"]
     row = rows["/investigations/pocus/result/lv"]
-    assert row["en"] == ARRIVAL and "levemente" in row["es"] and "moderad" not in row["es"]
+    # The Spanish the faculty approved on 2026-09-29, for exactly this English.
+    assert row == {"en": ARRIVAL, "es": "Contracción globalmente levemente disminuida sin un defecto focal único"}

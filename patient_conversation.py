@@ -7,6 +7,18 @@ import unicodedata
 LOGGER = logging.getLogger(__name__)
 NO_MATCH = "I couldn't match that question to the recorded history. Please rephrase it or use History topics."
 NOT_DOCUMENTED = "This information is not documented in the case."
+# DF-23 row 8 (faculty, 2026-09-29): pregnancy, the last menstrual period (LMP, FUM) and
+# menstruation are a topic of their own. They never fall into symptom onset -- "when was
+# your last period?" used to be answered with when the symptoms began. A case that authored
+# nothing on it answers "Not documented.": no last period, pregnancy status, contraceptive
+# adherence or test result is ever invented, and no provider is asked.
+PREGNANCY_TOPIC = "pregnancy"
+PREGNANCY_NOT_DOCUMENTED = "Not documented."
+_PREGNANCY_QUESTION = (
+    r'\b(pregnan\w*|embaraz\w*|gestac\w*|gestant\w*|lmp|fum|menstru\w*|menses|amenorr\w*|'
+    r'(?:last|your|her|missed|late|next|monthly) periods?|periods? (?:late|missed)|'
+    r'(?:ultim[ao]|su|tu|la) regla|periodo menstrual|ultimo periodo)\b'
+)
 
 
 def _normalized(text):
@@ -24,6 +36,11 @@ _OPENING_QUESTION = (
     r'como puedo ayud\w*|en que puedo ayud\w*|que le pasa|que te pasa|que siente|que sientes|'
     r'que lo trae|que le trae|que te trae|que ocurrio|como se siente|como te sientes)\b'
 )
+
+
+def asks_about_pregnancy(question):
+    """Whether a question asks about pregnancy, the last menstrual period or menstruation."""
+    return _matches(_PREGNANCY_QUESTION, ' '.join(_normalized(question).split()))
 
 
 def _authored_question_ids(q, facts, history):
@@ -173,6 +190,10 @@ def answer_from_sources(question, facts, api_key='', model='gpt-5-mini', client=
     """Return only supplied source sentences; the provider may select IDs only."""
     if not str(question).strip():
         return 'Ask the patient a question.'
+    if asks_about_pregnancy(question):
+        # Only what the case authored on it, word for word, or "Not documented.".
+        authored = [str(fact) for fact in ((history or {}).get(PREGNANCY_TOPIC) or []) if str(fact).strip()]
+        return ' '.join(authored) or PREGNANCY_NOT_DOCUMENTED
     if not facts:
         return NOT_DOCUMENTED
     ids = local_question_ids(question, facts, history=history)

@@ -121,7 +121,10 @@ def consciousness(glucose):
 # stopped, and nothing is repeated to make up for what did not arrive.
 FAILED_ACCESS_SHARE = .15
 ARRIVAL_LINE_SITE = "left forearm"
-ARRIVAL_ACCESS_TEXT = "A peripheral intravenous cannula is already in place in the left forearm."
+# The arrival line says that a line exists, never who placed it: most of these stories have
+# no paramedics (faculty, 2026-09-29). The wording before that decision stays readable.
+ARRIVAL_ACCESS_TEXT = "Peripheral IV in place in the left forearm."
+LEGACY_ARRIVAL_ACCESS_TEXT = "A peripheral intravenous cannula is already in place in the left forearm."
 FAILED_ACCESS_TEXT = "As it goes in, the skin around the forearm cannula swells."
 NEW_LINE_TEXT = "A new peripheral cannula is placed in the right forearm."
 IO_PLACED_TEXT = "An intraosseous needle is placed."

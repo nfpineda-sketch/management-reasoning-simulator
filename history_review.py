@@ -111,14 +111,20 @@ def topics_named(exchanges, topics=None):
     asked = " \n".join(item["asked"] for item in exchanges).lower()
     if not asked.strip():
         return set()
+    # A question about pregnancy or the last period is never a question about onset
+    # (DF-23 row 8, 2026-09-29), however it is phrased ("when did your last period start?").
+    from patient_conversation import asks_about_pregnancy
+    not_pregnancy = " \n".join(item["asked"] for item in exchanges
+                               if not asks_about_pregnancy(item["asked"])).lower()
     named = set()
     for topic in (topics if topics is not None else TOPIC_PATTERNS):
+        text = not_pregnancy if topic == "onset" else asked
         label = HISTORY_TOPIC_LABELS.get(topic, "")
-        if label and label.lower() in asked:
+        if label and label.lower() in text:
             named.add(topic)
             continue
         pattern = TOPIC_PATTERNS.get(topic)
-        if pattern and re.search(pattern, asked, re.I):
+        if pattern and re.search(pattern, text, re.I):
             named.add(topic)
     return named
 

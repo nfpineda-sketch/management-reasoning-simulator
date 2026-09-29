@@ -81,6 +81,9 @@ MESSAGES = {
  "No pude relacionar esa pregunta con la historia registrada. Reformúlala o usa los temas de la anamnesis.",
  "Peripheral intravenous access already in place; not repeated":
  "Vía venosa periférica ya instalada; no se repite",
+ # A pregnancy or last-period question on a case that documents none (DF-23 row 8).
+ "Not documented.":
+ "No documentado.",
  # The engine's question when the units were not written, or two counts were (TD-26).
  "Confirm the number of packed red-cell units (1–4 per order).":
  "Confirma el número de unidades de glóbulos rojos (1 a 4 por orden).",
@@ -970,6 +973,9 @@ _RULES = _WALL_MOTION_RULES + (
  # The line as a property of the access (DC2 to DC5, 2026-09-29): what the bedside shows.
  (r"A peripheral intravenous cannula is already in place in the left forearm\.",
   "Ya tiene instalada una cánula venosa periférica en el antebrazo izquierdo."),
+ # The neutral arrival line (faculty, 2026-09-29): that a line exists, not who placed it.
+ (r"Peripheral IV in place in the left forearm\.",
+  "Vía venosa periférica instalada en el antebrazo izquierdo."),
  (r"As it goes in, the skin around the forearm cannula swells\.",
   "Mientras pasa, la piel alrededor de la cánula del antebrazo se hincha."),
  (r"A new peripheral cannula is placed in the right forearm\.",
@@ -1083,6 +1089,16 @@ def narrating(case):
         _CASE.reset(token)
 
 
+#: Whole sentences the engine adds to a case's narrative block (the arrival line of the
+#: hypoglycaemia configurations). They follow the case: Spanish where its narrative is
+#: approved, English where it is not, so the block reads in one language.
+ENGINE_SENTENCES = {"es": {
+    "Peripheral IV in place in the left forearm.": "Vía venosa periférica instalada en el antebrazo izquierdo.",
+    "A peripheral intravenous cannula is already in place in the left forearm.":
+        "Ya tiene instalada una cánula venosa periférica en el antebrazo izquierdo.",
+}}
+
+
 def narrative(text, language=None, case=None):
     """The approved translation of the case's own passages within this text; the rest untouched."""
     language = language or current()
@@ -1092,7 +1108,10 @@ def narrative(text, language=None, case=None):
     if not installed:
         return text
     pattern, table = installed
-    return pattern.sub(lambda match: table[match.group(0)], str(text))
+    said = pattern.sub(lambda match: table[match.group(0)], str(text))
+    for english, translated in ENGINE_SENTENCES.get(language, {}).items():
+        said = said.replace(english, translated)
+    return said
 
 
 #: The examination findings the engine composes from the observations
