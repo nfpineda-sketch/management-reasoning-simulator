@@ -208,6 +208,29 @@ GI_BLEED = {
     "recovery_hr_relief": 20.0,
 }
 
+# The POCUS of a bleeding patient (faculty decision 2026-09-29). The IVC and the LV
+# cavity read the filling the engine models -- the replacement given, the bleeding
+# that goes on, the crystalloid that has already left the vessels -- never the
+# volume ordered nor a pressure a vasopressor holds up. One scale from empty to
+# full; each case enters it at the finding it authored and moves one position for
+# each STEP of circulation it gains or loses (a teaching parameter). The cavity and
+# the contraction are separate: filling ends the obliteration, and the contraction
+# stays hyperdynamic until the recovery that eases the tachycardia is under way.
+GI_BLEED_POCUS = {
+    "ivc": ("0.7 cm; complete inspiratory collapse",
+            "0.9 cm; near-complete inspiratory collapse",
+            "1.1 cm; >50% inspiratory collapse",
+            "1.5 cm; about 50% inspiratory collapse",
+            "2.0 cm; <50% inspiratory collapse"),
+    "lv": ("Small cavity with {contraction}; complete obliteration of the cavity in systole",
+           "Small cavity with {contraction}; near-obliteration of the cavity in systole",
+           "Small cavity with {contraction}; no obliteration in systole",
+           "Cavity of normal size with {contraction}",
+           "Cavity of normal size with {contraction}"),
+    "step": .30,                      # circulation per position on the scale
+    "contraction_recovered": .5,      # hemostasis relief at which the contraction is normal
+}
+
 # Unfractionated heparin is cleared: a bolus given in error stops mattering, and
 # stopping an infusion is a real decision (faculty decision 2026-09-19).
 ANTICOAGULANT_TAU_MIN = 60.0
@@ -1812,6 +1835,24 @@ def _gi_bleeding_fraction(f):
     return GI_BLEED["bleeding_with_ppi"] if f.get("ppi") else 1.0
 
 
+def _gi_bleed_pocus(result, f):
+    """The IVC and LV of a bleeding patient from the filling the engine models, or None."""
+    scale = GI_BLEED_POCUS["ivc"]
+    authored = str(result.get("ivc") or "")
+    if authored not in scale:
+        return None
+    arrival = scale.index(authored)
+    steps = math.floor((1 - f["circulation"]) / GI_BLEED_POCUS["step"] + .5)
+    position = int(_clamp(arrival + steps, 0, len(scale) - 1))
+    recovered = f.get("hemostasis_relief", 0.0) >= GI_BLEED_POCUS["contraction_recovered"]
+    found = {"ivc": scale[position]}
+    if "lv" in result and (position != arrival or recovered):
+        # At the arrival position and still hyperdynamic, the case's own words stand.
+        contraction = "normal contraction" if recovered else "hyperdynamic contraction"
+        found["lv"] = GI_BLEED_POCUS["lv"][position].format(contraction=contraction)
+    return found
+
+
 def _endoscopy_minute(state):
     """Perform or defer the endoscopy once gastroenterology has had time to come."""
     f, g = state["family_state"], GI_BLEED
@@ -2638,7 +2679,10 @@ def _diagnostic(state, diagnostic, duration):
         # Every bank case now documents the IVC, so this finally runs. It reports
         # what is seen after volume, not what the resident should conclude.
         volume = f["fluid_delivered_ml"] + f["blood_delivered_units"] * 300
-        if "ivc" in result and state["engine_family"] in {"pneumonia", "gi_bleed"}:
+        bleeding_scan = _gi_bleed_pocus(result, f) if state["engine_family"] == "gi_bleed" else None
+        if bleeding_scan is not None:
+            result.update(bleeding_scan)
+        elif "ivc" in result and state["engine_family"] in {"pneumonia", "gi_bleed"}:
             if volume >= 1500:
                 result["ivc"] = "2.0 cm; <50% inspiratory collapse"
             elif volume >= 500:

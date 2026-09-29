@@ -2118,6 +2118,37 @@ CORRECTIONS = (
         "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_54m_thiamine"],
                          "scripts": ["admission", "double_ampoule", "early_discharge", "ed_observation", "examinations", "existing_line_dextrose", "failed_line_then_new_line", "glucagon_im", "glucagon_iv_existing_line", "infusion_after_ampoule", "infusion_existing_line", "intraosseous_dextrose", "new_line_then_dextrose", "octreotide_iv_existing_line", "octreotide_sc", "oral_after_recovery", "thiamine_then_dextrose", "untreated"]},
     },
+    {
+        "id": "C-2026-09-29-12",
+        "date": "2026-09-29",
+        "title": "POCUS de la HDA: la VCI y el VI leen el llenado que el motor modela, no el volumen acumulado",
+        "scope": {"level": "variant", "variants": ["gi_bleed_57m", "gi_bleed_72f"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("DF-23 fila 11 (VCI y VI en la HDA). La VCI se leía del volumen acumulado (≥ 500 mL: 1,5 cm; ≥ "
+                   "1500 mL: 2,0 cm) y el VI nunca cambiaba: tras 1 L de cristaloide y una hora la paciente estaba "
+                   "peor que al llegar (80/50) con una VCI «1,5 cm», y tras 2 U el VI seguía «casi obliterado». Ahora "
+                   "ambos leen la circulación de la familia, que ya integra la reposición, el sangrado que sigue y el "
+                   "cristaloide que dejó los vasos, y que un vasopresor no cambia: una escala de vacío a lleno en la "
+                   "que cada caso entra por su hallazgo escrito y se mueve una posición por cada 0,30 de circulación "
+                   "(parámetro docente). La cavidad y la contracción van separadas: llenar termina la obliteración y "
+                   "la contracción sigue hiperdinámica hasta que la recuperación que alivia la taquicardia está en "
+                   "curso (alivio ≥ 0,5). Con presión positiva se conserva el diámetro y la variación respiratoria no "
+                   "se evalúa. Las otras familias conservan su regla. Textos nuevos con su español."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["family_engine", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_gi_bleed_pocus.py::test_the_arrival_scan_is_the_one_the_case_wrote",
+                  "test_gi_bleed_pocus.py::test_blood_fills_the_cava_and_ends_the_obliteration_without_calming_the_heart",
+                  "test_gi_bleed_pocus.py::"
+                  "test_the_contraction_settles_only_once_the_bleeding_is_controlled_and_the_patient_recovers",
+                  "test_gi_bleed_pocus.py::test_crystalloid_that_leaves_the_vessels_leaves_the_cava_empty_again",
+                  "test_gi_bleed_pocus.py::test_bleeding_that_goes_on_empties_the_cava",
+                  "test_gi_bleed_pocus.py::test_a_vasopressor_raises_the_pressure_without_filling_anything",
+                  "test_gi_bleed_pocus.py::test_positive_pressure_keeps_the_diameter_and_withholds_the_respiratory_variation",
+                  "test_gi_bleed_pocus.py::test_other_families_keep_their_own_rule",
+                  "test_gi_bleed_pocus.py::test_every_recomputed_finding_is_said_in_spanish"],
+        "preservation": None,
+    },
 )
 
 
