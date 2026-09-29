@@ -18,6 +18,7 @@ from screen_language import t as _t
 
 SELECTED = "_cohort_resident"
 FILTERS = ("All", "R1", "R2", "R3", "Needs review")
+EVIDENCE_VIEWS = ("Decision challenges", "Royal College", "ACGME", "Safety", "Portfolio")
 
 
 def roster(context, attempts):
@@ -45,7 +46,7 @@ def roster(context, attempts):
                        if a["id"] not in confirmed or (pending.get(a["id"]) or {}).get("pending_objectives"))
         summary = rubric_progress.aggregate(reviews)
         people.append({**person, "completed": len(completed), "confirmed_reviews": len(confirmed),
-                       "awaiting": awaiting, "summary": summary,
+                       "awaiting": awaiting, "summary": summary, "latest": reviews[-1] if reviews else None,
                        "critical_events": summary["critical_events"],
                        "badge": resident_profile.badge(store, token, person["id"], person.get("training_year"))})
     return people
@@ -58,24 +59,38 @@ def _initials(username):
 
 
 def _chart(person, language, size):
+    """The shape the profile draws: the average of the confirmed encounters, or the only one.
+
+    The average needs two encounters (``average_series``); with one, the profile
+    draws that encounter's own shape, and so does the card. Seen empty on the
+    first visual review (cycle 9).
+    """
     import rubric_progress
     import rubric_radar
     average = rubric_progress.average_series(person["summary"], language, colour=rubric_radar.SERIES_COLOURS[1])
+    if average:
+        series = [average]
+    elif person.get("latest"):
+        # In the average's colour: on a card, one colour always means this resident's confirmed shape.
+        series = [{**rubric_radar.series_from_review(person["latest"], language=language),
+                   "colour": rubric_radar.SERIES_COLOURS[1], "opacity": 0.09}]
+    else:
+        series = []
     badge = person["badge"] or {"image": None, "initials": _initials(person["username"]),
                                 "year": person.get("training_year")}
-    return rubric_radar.svg([average] if average else [], size=size, language=language,
+    return rubric_radar.svg(series, size=size, language=language,
                             title=_t("D1–D5 profile of {v0}", v0=person["username"]), badge=badge)
 
 
 def _status_line(person):
-    parts = [_t("{v0} completed", v0=person["completed"]),
-             _t("{v0} confirmed rubric reviews", v0=person["confirmed_reviews"])]
-    line = " · ".join(parts)
+    """Two short lines, so a narrow card does not wrap them into four."""
+    line = _t("{v0} completed · {v1} confirmed review(s)", v0=person["completed"], v1=person["confirmed_reviews"])
+    second = []
     if person["awaiting"]:
-        line += " · " + _t("⚑ {v0} awaiting review", v0=person["awaiting"])
+        second.append(_t("⚑ {v0} awaiting review", v0=person["awaiting"]))
     if not person.get("active", True):
-        line += " · " + _t("inactive account")
-    return line
+        second.append(_t("inactive account"))
+    return line + ("\n" + " · ".join(second) if second else "")
 
 
 def _visible(people, search, choice):
@@ -126,7 +141,7 @@ def render_cohort(context, attempts):
                 with column.container(border=True):
                     st.markdown(f'<div class="mrs-card-chart">{_chart(person, lang, 180)}</div>'
                                 f'<p class="mrs-card-name">{escape(person["username"])}</p>'
-                                f'<p class="mrs-card-status">{escape(_status_line(person))}</p>'
+                                f'<p class="mrs-card-status">{escape(_status_line(person)).replace(chr(10), "<br>")}</p>'
                                 + _CARD_STYLE, unsafe_allow_html=True)
                     if st.button(_t("Open"), key="_cohort_open_" + person["id"]):
                         st.session_state[SELECTED] = person["id"]
@@ -136,9 +151,21 @@ def render_cohort(context, attempts):
     return None
 
 
+def _confirmed_observations(context, person):
+    """The observations faculty recorded for this resident and did not void (§154L)."""
+    from progress_store import ProgressStore
+    from evidence_views import recorded
+    try:
+        goals = ProgressStore(context["store"]).get_progress(context["token"], person["id"])["objectives"]
+    except AccountError:
+        return None
+    return sum(len(recorded(goal)) for goal in goals)
+
+
 def _render_resident_header(context, person, lang):
     """The top of one resident's record: identity, shape, and what the record holds (§154L)."""
     summary = person["summary"]
+    observations = _confirmed_observations(context, person)
     left, right = st.columns([2, 3])
     with left:
         st.markdown(f'<div class="mrs-card-chart">{_chart(person, lang, 240)}</div>' + _CARD_STYLE,
@@ -150,6 +177,8 @@ def _render_resident_header(context, person, lang):
             _t("Completed encounters: **{v0}** · Confirmed rubric reviews: **{v1}** · Awaiting review: **{v2}** · "
                "Confirmed critical safety events: **{v3}**", v0=person["completed"], v1=person["confirmed_reviews"],
                v2=person["awaiting"], v3=person["critical_events"]))
+        if observations is not None:
+            st.caption(_t("Faculty-confirmed objective observations: {v0}", v0=observations))
         domains = summary.get("domains") or {}
         if any(item["encounters"] for item in domains.values()):
             st.caption(_t("Faculty-confirmed encounters per domain: ") + " · ".join(
@@ -159,6 +188,42 @@ def _render_resident_header(context, person, lang):
         if st.button(_t("Back to all residents"), key="_cohort_back"):
             st.session_state.pop(SELECTED, None)
             st.rerun()
+
+
+def render_resident_evidence(context, user_id, attempts):
+    """The opened resident's evidence by framework and their portfolio: what the resident reads (§154K, §154AL)."""
+    import evidence_views
+    import portfolio
+    from progress_store import ProgressStore
+    from rubric_store import RubricStore
+    selection = "_faculty_encounter_" + context["user"]["id"]
+
+    def open_encounter(attempt_id):
+        # The encounter record above opens on it, with its Trace and review (§154Y).
+        st.session_state[selection] = attempt_id
+
+    with st.expander(_t("Evidence by framework and portfolio"), expanded=False):
+        st.caption(_t("The views the resident reads, from the same faculty-confirmed evidence. Nothing here is "
+                      "a level, a percentage or a completion."))
+        part = st.radio(_t("View"), EVIDENCE_VIEWS, horizontal=True, format_func=_t, key="_cohort_evidence_view")
+        try:
+            goals = ProgressStore(context["store"]).get_progress(context["token"], user_id)["objectives"]
+            reviews = RubricStore(context["store"]).progress(context["token"], user_id)
+        except AccountError as error:
+            st.error(str(error))
+            return
+        labels = evidence_views.encounter_labels(
+            [a for a in attempts if a["user_id"] == user_id and not a["is_sandbox"]])
+        if part == "Decision challenges":
+            evidence_views.render_challenges(goals, labels, on_open=open_encounter, prefix="_cohort")
+        elif part == "Royal College":
+            evidence_views.render_royal_college(goals, labels, on_open=open_encounter, prefix="_cohort")
+        elif part == "ACGME":
+            evidence_views.render_acgme(goals)
+        elif part == "Safety":
+            evidence_views.render_safety(reviews, labels, on_open=open_encounter, prefix="_cohort")
+        else:
+            portfolio.render_portfolio(context, user_id, heading=False, key="faculty")
 
 
 _CARD_STYLE = """

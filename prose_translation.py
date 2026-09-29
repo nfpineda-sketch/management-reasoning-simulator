@@ -203,3 +203,14 @@ def translator(context, secret=secret):
     def run(texts, language="es"):
         return ensure(texts, language, store=store, api_key=api_key, model=model)
     return run
+
+
+def stored_only(context):
+    """The stored translations and nothing more: for a bulk export that must never buy one.
+
+    The complete portfolio (cycle 9, §154DO) is built from what is already
+    saved; a passage never translated stays in English, as the documents say.
+    """
+    def no_provider(name, default=""):
+        return "" if name == "OPENAI_API_KEY" else secret(name, default)
+    return translator(context, secret=no_provider)

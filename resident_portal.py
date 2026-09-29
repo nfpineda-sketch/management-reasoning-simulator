@@ -59,17 +59,22 @@ def _case_label(record):
     return _t("Clinical encounter")
 
 
-def _trace_pdf(context, record, language=None):
+def _trace_pdf(context, record, language=None, *, owner=None, translate=None):
     """The learner's own document, re-rendered from the analysis already saved.
 
     Rendered against the frozen evidence the analysis was written from and saved
     against (``analysis_payload_from_session``), as the encounter's own page does.
     Until 2026-09-26 it was handed the whole saved record, which that check
     refuses, so "My progress" said no reading was saved beside a valid one.
+
+    ``owner`` is the resident the document is about, when a faculty member opens
+    it from that resident's portfolio: the same document, never a second
+    version for staff (cycle 9, §154AH).
     """
     from management_trace_store import ManagementTraceStore, analysis_payload_from_session
     from management_trace_report import render_management_trace_pdf
     import prose_translation
+    owner = owner or context["user"]
     store = ManagementTraceStore(context["store"])
     report = store.get_latest(context["token"], record["id"])
     if report is None:
@@ -77,77 +82,30 @@ def _trace_pdf(context, record, language=None):
     session = (record.get("payload") or {}).get("session") or {}
     return render_management_trace_pdf(
         report, analysis_payload_from_session(session), case_label=_case_label(record),
-        learner_label=str(context["user"]["username"]),
+        learner_label=str(owner["username"]),
         review_completed=bool(session.get("review_completed")),
         adaptation_plan=session.get("adaptation_plan"), language=language,
-        translate=prose_translation.translator(context))
+        translate=translate or prose_translation.translator(context))
 
 
-def _rubric_pdf(context, record, language="en"):
+def _rubric_pdf(context, record, language="en", *, owner=None, translate=None):
     """The confirmed assessment, as the document, or None while it is a draft."""
     from rubric_report import RubricReportError, render_rubric_report_pdf
     from rubric_store import RubricStore
     import resident_profile
+    owner = owner or context["user"]
     review, proposal = RubricStore(context["store"]).released(context["token"], record["id"])
     if review is None:
         return None, None
     badge = resident_profile.badge(context["store"], context["token"],
-                                   context["user"]["id"],
-                                   context["user"].get("training_year"))
+                                   owner["id"], owner.get("training_year"))
     try:
         import prose_translation
         return render_rubric_report_pdf(review, proposal, record, audience="learner",
                                         badge=badge, language=language,
-                                        translate=prose_translation.translator(context)), review
+                                        translate=translate or prose_translation.translator(context)), review
     except (RubricReportError, ValueError):
         return None, review
-
-
-def render_my_encounters(context):
-    """Every encounter this person completed, with its documents."""
-    try:
-        encounters = own_encounters(context)
-    except AccountError as error:
-        st.caption(str(error))
-        return []
-    st.markdown("**" + _t('Your completed encounters') + "**")
-    if not encounters:
-        st.caption(_t("No completed encounter is saved yet. Your first one will appear here "
-                   "with its Management Trace."))
-        return []
-    st.caption(_t("Your own record. A rubric assessment appears here once a faculty member has "
-               "reviewed and completed it; until then it is still theirs."))
-    for record in encounters:
-        with st.expander(f"{_date(record['updated_at'])} · {record['challenge_id']} · "
-                         f"{_case_label(record)}"):
-            # In the language the encounter was played in, unless chosen otherwise.
-            import document_language
-            written_in = document_language.choose(
-                f"documents_language_{record['id']}", (record.get("payload") or {}).get("session"))
-            try:
-                pdf = _trace_pdf(context, record, written_in)
-            except (AccountError, ValueError):
-                pdf = None
-            if pdf:
-                st.download_button(_t("Download your Management Trace (PDF)"), pdf,
-                                   file_name=f"management_trace_{record['id'][:12]}.pdf",
-                                   mime="application/pdf", key=f"trace_{record['id']}")
-            else:
-                st.caption(_t("No AI reading of this encounter was saved, so the Management "
-                           "Trace cannot be rebuilt. The encounter record itself is intact."))
-            try:
-                assessment, review = _rubric_pdf(context, record, written_in)
-            except (AccountError, ValueError):
-                assessment, review = None, None
-            if assessment and review:
-                from rubric import headline
-                st.markdown(f"**{headline(review['totals'])}**")
-                st.download_button(_t("Download your rubric assessment (PDF)"), assessment,
-                                   file_name=f"rubric_{record['id'][:12]}.pdf",
-                                   mime="application/pdf", key=f"rubric_{record['id']}")
-            else:
-                st.caption(_t("No confirmed rubric assessment yet."))
-    return encounters
 
 
 def adaptation_thread(context, encounters=None):
@@ -193,12 +151,13 @@ def render_adaptation_thread(context, encounters=None):
     st.caption(_t("Written after each encounter, in your own words, and set beside the encounter "
                "that followed it. Nothing here is scored."))
     for row in rows:
-        st.markdown(f"**{row['when']} · {row['challenge_id']}**")
+        # The date, not the challenge: an encounter's target is not named before
+        # a faculty member has reviewed it (cycle 9, §154AB).
+        st.markdown(f"**{row['when']}**")
         for field, value in row["plan"].items():
             st.markdown(f"> {value}")
         if row["next_attempt_id"]:
-            st.caption(_t("Next encounter: {when} · {challenge}", when=row['next_when'],
-                          challenge=row['next_challenge']))
+            st.caption(_t("Next encounter: {when}", when=row['next_when']))
         else:
             st.caption(_t("This is your most recent encounter; the next one is still ahead."))
     return rows

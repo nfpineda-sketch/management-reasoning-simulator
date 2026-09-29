@@ -256,6 +256,20 @@ class DirectiveStore:
                 (user_id,)).fetchone()
             return _row(row) if row else None
 
+    def assigned(self, token):
+        """What a resident may know of the case waiting for them: that it exists, and since when.
+
+        Blind by design (cycle 9, §154E): the challenge, the case, the reason and
+        who chose it stay on the staff side. Only the date reaches the page, and
+        it is the caller's own: nobody reads another person's assignment here.
+        """
+        with self.accounts._transaction() as connection:
+            actor = self.accounts._actor(connection, token)
+            row = self._execute(connection, """SELECT created_at FROM mrs_encounter_directives
+                WHERE user_id = ? AND state = 'waiting' ORDER BY created_at DESC""",
+                (actor["id"],)).fetchone()
+            return {"assigned_at": row["created_at"]} if row else None
+
     def use(self, token, directive_id, attempt_id):
         """The launch that consumed it. Only the resident's own launch uses it."""
         with self.accounts._transaction(write=True) as connection:

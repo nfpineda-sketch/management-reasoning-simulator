@@ -198,7 +198,7 @@ def runtime_functions(fake_st):
                  # Separate panes with their own tests; what these tests watch
                  # is which objective labels reach a learner.
                  "_render_rubric_profile": lambda context, user_id=None: None,
-                 "_render_own_record": lambda context: None,
+                 "_render_resident_page": lambda context, view: None,
                  "_render_setup": lambda context: False,
                  "_awaiting_review": lambda context: {},
                  "_render_directives": lambda context: None,
@@ -231,7 +231,8 @@ class ObjectiveVisibilityTests(unittest.TestCase):
         st = FakeStreamlit()
         runtime_functions(st)["render_dashboard"](self.context(), {}, lambda: None)
         self.assertEqual(st.selectors, [])
-        self.assertEqual(st.navigation, [("Navigation", ["Clinical encounters", "My progress"])])
+        self.assertEqual(st.navigation, [("Navigation", ["Clinical encounters", "My progress",
+                                                         "My encounters", "My portfolio"])])
         rendered = json.dumps(st.rendered)
         for key, challenge in CHALLENGES.items():
             self.assertNotIn(key, rendered)

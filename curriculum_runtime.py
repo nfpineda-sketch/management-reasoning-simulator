@@ -17,7 +17,7 @@ from case_text_portal import render_case_text_review
 from rubric_text_portal import render_rubric_text_review
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
-from faculty_cohort import render_cohort
+from faculty_cohort import render_cohort, render_resident_evidence
 from screen_language import rows as _rows, t as _t
 
 RUNTIME_VERSION = "0.24.13"
@@ -461,15 +461,13 @@ def render_dashboard(context, initial_state, reset_session):
         return
     if user["role"] == "resident":
         view = st.sidebar.radio(
-            _t("Navigation"), ("Clinical encounters", "My progress"), format_func=_t,
-            key="_resident_dashboard_view",
+            _t("Navigation"), ("Clinical encounters", "My progress", "My encounters", "My portfolio"),
+            format_func=_t, key="_resident_dashboard_view",
         )
-        if view == "My progress":
+        if view != "Clinical encounters":
             # Render only the selected page. Hidden tabs/expanders would still
             # send objective labels and feedback with the encounter launch UI.
-            render_progress_dashboard(context, title="My progress")
-            _render_rubric_profile(context)
-            _render_own_record(context)
+            _render_resident_page(context, view)
             return
     attempts = store.list_attempts(token)
     own = [a for a in attempts if a["user_id"] == user["id"]]
@@ -479,9 +477,19 @@ def render_dashboard(context, initial_state, reset_session):
         # Who are my residents, and who needs my attention, before any tool (cycle 9, §154G).
         focused = render_cohort(context, attempts)
     if user["role"] == "resident":
-        st.subheader(_t("Your next clinical encounter"))
+        import resident_pages
+        waiting = resident_pages.assigned_encounter(context)
+        if waiting:
+            # Blind (cycle 9, §154E): that a case waits and since when; never
+            # which challenge, which case, why or by whom.
+            from evidence_views import day
+            st.subheader(_t("Assigned to me"))
+            st.write(_t("New clinical encounter · assigned {v0}", v0=day(waiting["assigned_at"])))
+        else:
+            st.subheader(_t("Your next clinical encounter"))
         st.caption(_t('Training year {v0} · {v1} completed encounter reviews', v0=user['training_year'], v1=len(completed)))
         st.write(_t("Manage the patient, explain your reasoning, and reassess as the encounter evolves. Your learning focus will be discussed after the encounter."))
+        st.caption(_t("Your progress, your encounters and your portfolio are in the sidebar."))
     elif not focused:
         st.subheader(_t("Faculty sandbox"))
         st.caption(_t('These encounters are excluded from resident progress. {v0} challenges are available.', v0=len(CHALLENGES)))
@@ -510,8 +518,10 @@ def render_dashboard(context, initial_state, reset_session):
                 for key, challenge in CHALLENGES.items()
             ]), hide_index=True)
             st.caption(_t("These are formative teaching opportunities. The catalog does not diagnose a learner's cognitive bias or establish competence."))
-    st.caption(_t("You may enter your reasoning and orders in English or Spanish. The patient's information and the feedback are shown in the language set in the sidebar."))
-    st.caption(_t("Your encounter and reflection are saved to your account. Faculty in this pilot program can review them."))
+    if not focused:
+        # About running an encounter: not said over a resident's record opened from the cohort.
+        st.caption(_t("You may enter your reasoning and orders in English or Spanish. The patient's information and the feedback are shown in the language set in the sidebar."))
+        st.caption(_t("Your encounter and reflection are saved to your account. Faculty in this pilot program can review them."))
     retained = st.session_state.get('_case_generation_failure')
     if retained and retained.get('owner') == user['id'] and not retained.get('report_id'):
         try:
@@ -610,6 +620,9 @@ def render_dashboard(context, initial_state, reset_session):
                     st.json((record.get("payload") or {}).get("evidence", {}), expanded=False)
                     st.download_button(_t("Download faculty record"), json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
         _render_rubric_profile(context, render_progress_dashboard(context))
+        if focused:
+            # The same evidence views and portfolio the resident reads (§154K, §154AL).
+            render_resident_evidence(context, focused, attempts)
 
 
 def _awaiting_review(context):
@@ -680,22 +693,17 @@ def _training_year(context, user_id=None):
     return None
 
 
-def _render_own_record(context):
-    """The resident's own encounters, plans and record, on their own page.
+def _render_resident_page(context, view):
+    """My progress, My encounters or My portfolio: one page at a time (cycle 9, §154S–§154AG).
 
-    Their work used to disappear the moment they finished it: the Management
-    Trace was downloadable during the encounter and never again (2026-09-23).
+    The resident's work used to disappear the moment they finished it: the
+    Management Trace was downloadable during the encounter and never again
+    (2026-09-23). Their record now has three pages of its own.
     """
-    import resident_portal
-    with st.expander(_t("Your photograph and initials")):
-        # The expander already carries the title; repeating it inside printed
-        # it twice on the page (seen in the resident's first sign-in).
-        resident_portal.render_photo_and_initials(context, heading=False)
-    encounters = resident_portal.render_my_encounters(context)
-    with st.expander(_t("What you said you would do differently")):
-        resident_portal.render_adaptation_thread(context, encounters)
-    with st.expander(_t("Download your complete record")):
-        resident_portal.render_account_export(context, encounters)
+    import resident_pages
+    {"My progress": resident_pages.render_my_progress,
+     "My encounters": resident_pages.render_my_encounters,
+     "My portfolio": resident_pages.render_my_portfolio}[view](context)
 
 
 def _render_rubric_profile(context, user_id=None):

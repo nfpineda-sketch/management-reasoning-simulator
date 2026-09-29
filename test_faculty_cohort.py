@@ -98,6 +98,27 @@ def test_an_inactive_resident_keeps_a_card_that_says_so(program):
     assert "inactive account" in page_text(at)
 
 
+def test_a_card_with_one_confirmed_review_draws_that_encounter_s_shape(program):
+    # The average needs two encounters; with one, the card draws the one, as the profile does.
+    import rubric
+    from rubric_store import RubricStore
+    from test_management_trace_store import session_payload
+    store, _, faculty, people = program
+    context = {"store": store, "token": faculty, "user": store.get_user(faculty)}
+    empty = next(p for p in faculty_cohort.roster(context, store.list_attempts(faculty))
+                 if p["username"] == "resident-two")
+    assert "<path" not in faculty_cohort._chart(empty, "en", 180)
+    token = people["resident-two"]["token"]
+    attempt = store.create_attempt(token, "R1-03", {"presentation": "Synthetic encounter"})
+    store.save_attempt(token, attempt, session_payload(), status="completed")
+    RubricStore(store).save_review(faculty, attempt, scores={d: 2 for d in rubric.DOMAIN_IDS},
+                                   status="confirmed")
+    person = next(p for p in faculty_cohort.roster(context, store.list_attempts(faculty))
+                  if p["username"] == "resident-two")
+    assert person["summary"]["encounters"] == 1
+    assert "<path" in faculty_cohort._chart(person, "en", 180)
+
+
 def test_a_resident_never_sees_the_cohort(program):
     store, _, _, people = program
     at = open_app(people["resident-one"]["token"])

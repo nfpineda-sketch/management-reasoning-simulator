@@ -2155,8 +2155,7 @@ ES = {
     'Training year {v0} · {v1} completed encounter reviews':
         'Año de formación {v0} · {v1} revisiones de encuentro completadas',
     ' (inactive)': ' (inactiva)',
-    '{v0} completed': '{v0} completados',
-    '{v0} confirmed rubric reviews': '{v0} revisiones de rúbrica confirmadas',
+    '{v0} completed · {v1} confirmed review(s)': '{v0} completados · {v1} revisión(es) confirmada(s)',
     "Faculty-confirmed evidence only. There is no overall score and no ranking: each card is one resident's own record, in training-year and name order.": 'Sólo evidencia confirmada por docentes. No hay puntaje global ni ranking: cada tarjeta es el registro de un residente, en orden de año de formación y nombre.',
     'Search residents': 'Buscar residentes',
     'D1–D5 profile of {v0}': 'Perfil D1–D5 de {v0}',
@@ -2177,6 +2176,129 @@ ES = {
     'Needs review': 'Esperan revisión',
     'Open': 'Abrir',
     'R{v0}': 'R{v0}',
+    # Cycle 9 role phase: the resident's pages, the evidence views, the portfolio and the account list.
+    'Next encounter: {when}': 'Encuentro siguiente: {when}',
+    'Deactivating is not deleting: the account can no longer sign in, and its encounters, Traces, rubrics, evidence and portfolio are kept.':
+        'Desactivar no es borrar: la cuenta ya no puede iniciar sesión, y se conservan sus encuentros, Traces, rúbricas, evidencia y portafolio.',
+    'Inactive': 'Inactiva',
+    'Account': 'Cuenta',
+    'Year': 'Año',
+    'resident': 'residente',
+    'faculty': 'docente',
+    'admin': 'administrador',
+    'My encounters': 'Mis encuentros',
+    'My portfolio': 'Mi portafolio',
+    'Your progress, your encounters and your portfolio are in the sidebar.':
+        'Tu progreso, tus encuentros y tu portafolio están en la barra lateral.',
+    'Assigned to me': 'Asignado a mí',
+    'New clinical encounter · assigned {v0}': 'Nuevo encuentro clínico · asignado el {v0}',
+    'Overview': 'Resumen',
+    'Decision challenges': 'Decision Challenges',
+    'Royal College': 'Royal College',
+    'ACGME': 'ACGME',
+    'Safety': 'Seguridad',
+    'Portfolio': 'Portafolio',
+    'View': 'Vista',
+    'Evidence by framework and portfolio': 'Evidencia por marco y portafolio',
+    'The views the resident reads, from the same faculty-confirmed evidence. Nothing here is a level, a percentage or a completion.':
+        'Las vistas que lee el residente, a partir de la misma evidencia confirmada por docentes. Nada aquí es un nivel, un porcentaje ni un logro completado.',
+    'Faculty-confirmed objective observations: {v0}': 'Observaciones de objetivos confirmadas por docentes: {v0}',
+    'The observation target represents the amount of evidence the program aims to collect. It is not a competency score or percentage.':
+        'La meta de observación representa la cantidad de evidencia que el programa busca reunir. No es un puntaje de competencia ni un porcentaje.',
+    'The Decision Challenges with faculty-confirmed evidence. Read-only: faculty record and correct observations; nothing here can be edited.':
+        'Los Decision Challenges con evidencia confirmada por docentes. Sólo lectura: los docentes registran y corrigen las observaciones; aquí no se puede editar nada.',
+    'Royal College EPAs as observational evidence of simulated components. No EPA is completed, no percentage is shown and no entrustment is inferred here.':
+        'Las EPA del Royal College como evidencia observacional de componentes simulados. Aquí ninguna EPA se da por completada, no se muestra ningún porcentaje y no se infiere confianza (entrustment).',
+    "Evidence related to ACGME Milestones subcompetencies. No Milestone level is assigned or inferred: a contribution is evidence for the program's Clinical Competency Committee to weigh.":
+        'Evidencia relacionada con subcompetencias de los ACGME Milestones. No se asigna ni se infiere ningún nivel de Milestone: una contribución es evidencia para que la sopese el Clinical Competency Committee del programa.',
+    'A partial contribution observes part of a subcompetency; what remains outside is named with each objective. It is not a lesser result.':
+        'Una contribución parcial observa una parte de una subcompetencia; lo que queda fuera se nombra con cada objetivo. No es un resultado menor.',
+    'Where the record still holds little, not where performance is weak. Fewer than {v0} faculty-confirmed observations is listed here; that is a display rule, not a standard.':
+        'Dónde el registro todavía reúne poco, no dónde el desempeño es débil. Aquí se lista lo que tiene menos de {v0} observaciones confirmadas por docentes; es una regla de presentación, no un estándar.',
+    'Critical safety events a faculty member confirmed. They are shown apart from the management reasoning profile and never change its shape; AI candidates and unconfirmed events are not listed.':
+        'Eventos críticos de seguridad que un docente confirmó. Se muestran aparte del perfil de razonamiento de manejo y nunca cambian su forma; no se listan candidatos de IA ni eventos sin confirmar.',
+    'Open this encounter and its Management Trace': 'Abrir este encuentro y su Management Trace',
+    'Evidence · {v0}': 'Evidencia · {v0}',
+    'No Decision Challenge has faculty-confirmed evidence yet.': 'Ningún Decision Challenge tiene todavía evidencia confirmada por docentes.',
+    '{v0} faculty-confirmed observation(s) ({v1} satisfactory) · {v2} encounter(s) · last observed {v3}':
+        '{v0} observación(es) confirmada(s) por docentes ({v1} satisfactoria(s)) · {v2} encuentro(s) · última observación {v3}',
+    '{v0} faculty-confirmed observation(s) across {v1} encounter(s).':
+        '{v0} observación(es) confirmada(s) por docentes en {v1} encuentro(s).',
+    'No objective followed here is linked to an ACGME subcompetency.':
+        'Ningún objetivo que se sigue aquí está vinculado a una subcompetencia ACGME.',
+    'No area is in this range yet.': 'Todavía ningún área está en este rango.',
+    'Not observed yet: {v0}': 'Aún sin observar: {v0}',
+    'No confirmed critical safety event.': 'Ningún evento crítico de seguridad confirmado.',
+    'Confirmed {v0} by {v1}': 'Confirmado el {v0} por {v1}',
+    'faculty-confirmed observation(s)': 'observación(es) confirmada(s) por docentes',
+    'faculty-confirmed encounter(s)': 'encuentro(s) confirmado(s) por docentes',
+    'Not enabled: current encounters are not established as offering enough opportunities to observe this objective.':
+        'No habilitado: no está establecido que los encuentros actuales ofrezcan suficientes oportunidades para observar este objetivo.',
+    'Local observation target: {v0}': 'Meta local de observación: {v0}',
+    'Components observed: {v0}': 'Componentes observados: {v0}',
+    'What remains outside this simulator: {v0}': 'Lo que queda fuera de este simulador: {v0}',
+    'Observed in: {v0}': 'Observado en: {v0}',
+    'CanMEDS milestones related through the Decision Challenges': 'Hitos CanMEDS relacionados a través de los Decision Challenges',
+    'Encounters': 'Encuentros',
+    'Through': 'A través de',
+    'Observations': 'Observaciones',
+    'Direct': 'Directas',
+    'Partial': 'Parciales',
+    'Observed by faculty on {v0}': 'Observado por un docente el {v0}',
+    'Observations: faculty-confirmed observations of the objectives linked to the code. Direct and Partial: the contribution recorded with each observation.':
+        'Observaciones: observaciones confirmadas por docentes de los objetivos vinculados al código. Directas y Parciales: la contribución registrada con cada observación.',
+    '{v0} observation(s) were recorded before contributions existed and show none; none is inferred for them.':
+        '{v0} observación(es) se registraron antes de que existieran las contribuciones y no muestran ninguna; no se infiere ninguna para ellas.',
+    'Source: {v0}': 'Fuente: {v0}',
+    'Source': 'Fuente',
+    'Title': 'Título',
+    'Date': 'Fecha',
+    'Areas with limited evidence': 'Áreas con evidencia limitada',
+    'Observed clinical context: {v0}': 'Contexto clínico observado: {v0}',
+    'Faculty feedback: {v0}': 'Retroalimentación docente: {v0}',
+    "A copy of finalized documents from a pilot simulator: each encounter's Management Trace and every rubric assessment a faculty member confirmed. It is not a certificate, a transcript, or evidence that a workplace EPA was achieved. The rubric is a pilot instrument and its scores are not ACGME Milestone levels, Canadian stages or EPA supervision levels. Drafts, AI proposals and pending assessments are not included.":
+        'Una copia de documentos finalizados de un simulador piloto: la Management Trace de cada encuentro y cada evaluación con rúbrica que un docente confirmó. No es un certificado, un certificado de notas ni evidencia de que se haya logrado una EPA en el lugar de trabajo. La rúbrica es un instrumento piloto y sus puntajes no son niveles de ACGME Milestones, etapas canadienses ni niveles de supervisión de EPA. No se incluyen borradores, propuestas de IA ni evaluaciones pendientes.',
+    "Finalized documents only: each encounter's Management Trace and every rubric assessment a faculty member confirmed. Drafts, AI proposals and pending assessments are never part of it.":
+        'Sólo documentos finalizados: la Management Trace de cada encuentro y cada evaluación con rúbrica que un docente confirmó. Los borradores, las propuestas de IA y las evaluaciones pendientes nunca forman parte de él.',
+    "One ZIP with every finalized document, in folders Management_Traces/ and Rubrics/, and a manifest naming each document's encounter, date, reviewer and revision. Built from what is saved: no AI call is made.":
+        'Un ZIP con cada documento finalizado, en las carpetas Management_Traces/ y Rubrics/, y un manifiesto que nombra el encuentro, la fecha, el revisor y la revisión de cada documento. Se arma con lo guardado: no se hace ninguna llamada de IA.',
+    'Prepare the documents': 'Preparar los documentos',
+    'Each document is in the language its encounter was played in.': 'Cada documento está en el idioma en que se jugó su encuentro.',
+    'This encounter has no finalized document yet.': 'Este encuentro todavía no tiene documentos finalizados.',
+    'Download the Management Trace (PDF)': 'Descargar la Management Trace (PDF)',
+    'Download the confirmed rubric assessment (PDF)': 'Descargar la evaluación con rúbrica confirmada (PDF)',
+    'No completed encounter yet. Each one you complete adds its documents here.':
+        'Todavía no hay encuentros completados. Cada uno que completes agrega aquí sus documentos.',
+    'Prepare the complete portfolio': 'Preparar el portafolio completo',
+    'Download the complete portfolio (ZIP)': 'Descargar el portafolio completo (ZIP)',
+    '{v0} document(s).': '{v0} documento(s).',
+    'Clinical context': 'Contexto clínico',
+    'Complete portfolio': 'Portafolio completo',
+    'Confirmed (revision {v0})': 'Confirmada (revisión {v0})',
+    'Not confirmed yet': 'Aún sin confirmar',
+    'Available': 'Disponible',
+    'Not saved': 'No guardada',
+    'Your profile is based on faculty-confirmed observations from completed encounters. More observations make the profile more informative.':
+        'Tu perfil se basa en observaciones confirmadas por docentes de encuentros completados. Más observaciones hacen que el perfil sea más informativo.',
+    'Several kinds of evidence, never one score. Everything here is read-only and comes from what a faculty member observed and confirmed.':
+        'Varios tipos de evidencia, nunca un único puntaje. Todo aquí es de sólo lectura y proviene de lo que un docente observó y confirmó.',
+    'The primary record of what you decided and why. Read it before any score.':
+        'El registro principal de lo que decidiste y por qué. Léelo antes que cualquier puntaje.',
+    'Objective record': 'Registro por objetivo',
+    'No faculty feedback on this encounter yet.': 'Todavía no hay retroalimentación docente sobre este encuentro.',
+    'Confirmed {v0} by {v1} (revision {v2}). Its document is with the Management Trace above.':
+        'Confirmada el {v0} por {v1} (revisión {v2}). Su documento está junto a la Management Trace, arriba.',
+    'No observation has been recorded for this encounter yet.': 'Todavía no se ha registrado ninguna observación para este encuentro.',
+    'No confirmed critical safety event in this encounter.': 'Ningún evento crítico de seguridad confirmado en este encuentro.',
+    'Faculty review': 'Revisión docente',
+    'Confirmed observations': 'Observaciones confirmadas',
+    '1 · Management Trace': '1 · Management Trace',
+    '2 · Faculty feedback': '2 · Retroalimentación docente',
+    '3 · Management reasoning rubric': '3 · Rúbrica de razonamiento de manejo',
+    '4 · Confirmed observations': '4 · Observaciones confirmadas',
+    '5 · Safety events': '5 · Eventos de seguridad',
+    'Awaiting faculty review': 'Espera revisión docente',
+    'Reviewed': 'Revisado',
     'Waiting: {v0} · {v1} · {v2} · by {v3} · {v4}':
         'En espera: {v0} · {v1} · {v2} · por {v3} · {v4}',
     '{v0}: {v1} → {v2} · by {v3} · {v4}':

@@ -17,7 +17,7 @@ from urllib.parse import urlsplit
 import streamlit as st
 
 from account_store import AccountError, AccountLocked, AccountStore
-from screen_language import t as _t
+from screen_language import rows as _rows, t as _t
 
 
 _TOKEN_KEY = "_account_token"
@@ -264,9 +264,18 @@ def _render_admin_controls(context: dict[str, Any]) -> None:
         if not users:
             return
         users_by_id = {user["id"]: user for user in users}
+        # Active and inactive told apart at a glance (cycle 9, §154AQ).
+        # Status second: the sidebar is narrow, and it is the column this table is for.
+        st.dataframe(_rows([{"Account": user["username"],
+                             "Status": _t("Active") if user.get("active") else _t("Inactive"),
+                             "Role": _t(user["role"]), "Year": str(user.get("training_year") or "—")}
+                            for user in users]), hide_index=True)
+        st.caption(_t("Deactivating is not deleting: the account can no longer sign in, and its encounters, "
+                      "Traces, rubrics, evidence and portfolio are kept."))
         selected_id = st.selectbox(
             _t("Manage an account"), list(users_by_id),
-            format_func=lambda user_id: str(users_by_id[user_id]["username"]),
+            format_func=lambda user_id: str(users_by_id[user_id]["username"])
+            + ("" if users_by_id[user_id].get("active") else _t(" (inactive)")),
             key="_managed_account_id",
         )
         selected = users_by_id[selected_id]

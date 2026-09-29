@@ -59,7 +59,7 @@ def click(at, label):
 def resident_navigation(at, view=None):
     navigation = next(widget for widget in at.sidebar.radio if widget.label == "Navigation")
     assert navigation.key == "_resident_dashboard_view"
-    assert navigation.options == ["Clinical encounters", "My progress"]
+    assert navigation.options == ["Clinical encounters", "My progress", "My encounters", "My portfolio"]
     if view is not None:
         navigation.set_value(view).run()
         assert not at.exception
