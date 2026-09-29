@@ -67,8 +67,8 @@ citados.
   que se leen distinto fuera de las pruebas del ciclo se revisaron.
 - **G · Conjuntos del ciclo 7:** sin cambios, salvo un desacuerdo de etiqueta.
 - **H · Suite completa y regresiones:** 5900 pruebas pasan, 77 se omiten, 1 falla como se espera y 0 fallan; 56/56 regresiones.
-- **I · Ensayo de los 20 escenarios:** __REHEARSAL_C__
-- **J · Conjunto ciego 2, medido una vez con el lector final:** __H2_C__
+- **I · Ensayo de los 20 escenarios:** español e inglés, 20/20 guiones y 96/96 órdenes, 0 retenciones no anticipadas, 0 llamadas de IA; las 238 decisiones, iguales a las del ciclo 6.
+- **J · Conjunto ciego 2, medido una vez con el lector final:** 33/50 (V2: 16/50), con 1 ejecución falsa (V2: 4) y ninguna frase peor que en el V2. Sobre las 42 limpias, 29 (V2: 13). Lo que falla está en TD-40 y TD-14.
 
 ### DECIDED + DEFERRED
 

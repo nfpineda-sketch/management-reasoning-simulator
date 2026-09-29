@@ -1079,7 +1079,7 @@ congelado (`9d2cd9e`).
 | Revisiones adversariales | ~390 + 301 | — | 6 CRITICAL, 10 HIGH y 7 MEDIUM del propio ciclo, corregidos; cada frase marcada queda igual que en V2 o mejor. Segunda revisión (301 frases): 73 filas peores que el V2, corregidas; quedan 2 ambiguas y 1 defecto anterior al ciclo (TD-39) |
 | Todo texto de orden que guarda el repositorio | 13 221 | — | 96 se leen distinto fuera de las pruebas del ciclo; todas revisadas |
 | Conjuntos del ciclo 7 | 149 | — | Totales iguales a V2, salvo un desacuerdo de etiqueta (H-ES-20) |
-| Conjunto ciego 2, medido una vez con el lector final | 50 | __H2V2__ | __H2NEW__ |
+| Conjunto ciego 2, medido una vez con el lector final | 50 | 16 correctas · 11 perdidas · 14 retenidas · 4 falsas · 5 preguntas equivocadas | **33** · 6 perdidas · 10 retenidas · 1 falsa · 0 preguntas equivocadas. Limpias (42): **29** (V2: 13). Ninguna se lee peor que en el V2 |
 
 - **Las perdidas y retenidas que quedan en el ciego 1 son de otras clases:**
   exámenes y fármacos abreviados («CBC coags», «protonix», «TP/TTPA»), el
@@ -1092,4 +1092,18 @@ congelado (`9d2cd9e`).
 
 ### Corpus de ensayo
 
-__REHEARSALM__
+Los 20 guiones por idioma (semilla 3000), rejugados por la página real con el
+lector final del ciclo 8, se compararon con las grabaciones del ciclo 6,
+decisión por decisión. Se compararon la entrada, el estado, las acciones, los
+planes, las preguntas, la puerta del razonamiento, los datos citados, la
+procedencia, los resúmenes y el minuto.
+
+| Medida | Ciclo 6 | Ciclo 8 |
+|---|---|---|
+| Decisiones comparadas | 238 | 238 |
+| Órdenes ejecutadas (ES / EN) | 96 / 96 | 96 / 96 |
+| Retenciones no anticipadas, mensajes sin leer, lecturas vacías | 0 | 0 |
+| Decisiones con otro valor en algún campo comparado | — | **0** |
+| Minuto de cierre distinto | — | **0** |
+| Llamadas de IA | 0 | 0 |
+| Diferencia ES/EN conocida (procedencia de un campo, guion 5) | 1 | 1, la misma |

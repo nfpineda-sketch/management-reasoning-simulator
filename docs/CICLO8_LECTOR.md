@@ -160,13 +160,39 @@ su familia. «OK» quiere decir que todo eso se cumple.
 | **F · Comparación con V2 sobre todo texto del repositorio** | 13 221 textos (pruebas, herramientas, conjuntos y corpus anteriores) | 96 se leen distinto fuera de las pruebas del ciclo, y todas se revisaron: son mejoras de clase o citas textuales (TD-28). Apareció una regresión (un relato prehospitalario con «iban a iniciar»), que se corrigió. La segunda ronda sumó dos, correctas: «Una vez estable: TAC de abdomen» queda como plan |
 | **G · Conjuntos del ciclo 7** | 149 frases de hemoderivados, re-puntuadas | Totales iguales a V2, salvo H-ES-20 («vendaje compresivo apenas disminuya el sangrado»): el lector lo guarda como plan y la etiqueta del ciclo 7 lo pedía ahora. Es un desacuerdo de etiqueta; se mantiene la lectura gramatical |
 | **H · Suite completa y 56 regresiones** | Cuatro particiones, más las regresiones | Con el lector final: **5900 pasan**, 77 se omiten, 1 falla como se espera (xfail) y **0 fallan**. **56/56 regresiones** |
-| **I · Ensayo de los 20 escenarios ES/EN** | Por la página real, semilla 3000, 0 llamadas de IA | __REHEARSAL__ |
-| **J · Conjunto ciego 2, medido una vez con el lector final** | 50 frases, reservadas hasta el final | __H2__ |
+| **I · Ensayo de los 20 escenarios ES/EN** | Por la página real, semilla 3000, 0 llamadas de IA | Español e inglés: **20/20 guiones**, **96/96 órdenes ejecutadas**, 0 retenciones no anticipadas, 0 mensajes sin leer, 0 lecturas vacías, 0 llamadas de IA. Las **238 decisiones son iguales a las del ciclo 6** en todos los campos comparados; la única diferencia ES/EN es la conocida (guion 5) |
+| **J · Conjunto ciego 2, medido una vez con el lector final** | 50 frases, reservadas hasta el final | **Lector final: 33/50** (V2: 16/50). Perdidas 6 (V2: 11), retenidas con una pregunta 10 (V2: 14), ejecuciones falsas 1 (V2: 4), preguntas equivocadas 0 (V2: 5). Sobre las 42 limpias: **29** (V2: 13); sobre las 8 marcadas: 4 (V2: 3). **Ninguna frase se lee peor que en el V2** |
 
 **El error del puntaje automático.** Contaba como pregunta equivocada que una
 infusión de adrenalina escrita sin velocidad pidiera su velocidad, que es lo
 correcto. Se corrigió después del ciego 1 y antes del ciego 2, en el puntaje del
 lector nuevo y en el del V2. Por eso el ciego 1 medido dice 41 y no 42.
+
+## Lo que falla en el ciego 2
+
+Analizado después de medirlo, sin cambiar el lector. Las 17 frases que no
+salen bien también fallan en el V2. Están en TD-40 y TD-14:
+
+- **De las clases del ciclo:**
+  - TD-29: «SatO2» no es un parámetro conocido. Por eso «Cuando la SatO2 baje
+    de 92%, iniciar O2 por naricera» da el oxígeno ahora; es la única ejecución
+    falsa del ciego 2.
+  - TD-30: «two sets of blood cultures» y «Evaluación por cardiólogo de turno»
+    se pierden.
+  - TD-31: «Adrenalina 1 mg/ml, 0,5 mg IM en el muslo, ahora» se lee como
+    infusión y pregunta. Un «, now» suelto tras el sitio de la inyección
+    también se pregunta.
+  - TD-32: «pasar c/u en 1 hora», como cláusula propia, se pregunta.
+  - KD-05: «OK to send home», «OK for home», «Ok para irse a domicilio» y
+    «Alta ok» no se leen. «Tras 6 h en observación», que ya ocurrió, se lee
+    como una observación ordenada.
+- **De otras clases:**
+  - vocabulario: «cefazolina», «0.9% saline», «wide open», «ECG de 12
+    derivaciones»;
+  - un hallazgo citado como orden («Hb 6.9»);
+  - la titulación de una infusión;
+  - «puff»;
+  - el relato de lo que dio enfermería (TD-14, TD-35 y TD-36).
 
 ## Límites documentados
 
