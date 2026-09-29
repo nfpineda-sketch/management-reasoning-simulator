@@ -4,8 +4,9 @@ Ciclo 5 del AI Advisor (59BQ), 2026-09-28, con la extensión nocturna.
 **Actualizado al cierre del ciclo 9** (2026-09-29): TD-39, TD-34, TD-36 y TD-33
 pasan a «Corregido en el ciclo 9», y TD-01 se cierra con DF-20. Lo conocido y no
 corregido al congelar V3 entra con su identificador del estado de V3 (KD-16 a
-KD-31, `validation/KNOWN_DEFECTS_V3.md`). Los cierres de los ciclos 8, 7 y 6
-siguen más abajo.
+KD-31, `validation/KNOWN_DEFECTS_V3.md`). Lo que dejó la fase de roles y
+pantallas, posterior a V3, entra como TD-41 a TD-44 (`docs/EXPERIENCIA_POR_ROL.md`).
+Los cierres de los ciclos 8, 7 y 6 siguen más abajo.
 
 **Qué es:** la consolidación de lo registrado en defectos conocidos (KD), el
 Decision File (DF), las auditorías y las limitaciones conocidas, para que nada
@@ -56,6 +57,7 @@ un defecto que el piloto puede medir.
 | TD-05 | Pruebas | `test_generation_reload.py` muta módulos globales al importarse | Posible contaminación entre pruebas si el `reload` falla | auditoría nocturna, anexo 59R | ciclo 5 | No | Cuando se toque ese archivo |
 | TD-08 | Datos clínicos | **Oclusiones coronarias, lo que queda tras el ciclo 6.** De Winter se corrigió (C-2026-09-28-08). El pulmón del POCUS del tronco se corrigió en el ciclo 9 (DF-23 4a, C-2026-09-29-06). Quedan ambiguos: el grado de «reduced» en `acs_70f_left_main` y `acs_54m_inferior`; y la pared que vuelve a «contract normally» a las 2–3 h de reperfundir mientras el evento dice «recovers only partly» | Textos que no dicen lo mismo que el resto del caso | `docs/AUDITORIA_DF23_CICLO6.md` §1 y §5 | ciclo 5 | No (sin SCA) | Decisión docente (cola de decisiones, CLINICAL REVIEW) |
 | TD-09 | Desempeño | La cola docente resuelve la elegibilidad objetivo por objetivo, verificando otra vez la huella 17 veces por encuentro: 3,2 s con 1000 encuentros pendientes y 14,5 s con 5000 | Página docente lenta con cohortes grandes | auditoría nocturna, sección 3 (perfilado) | ciclo 5 | No | Antes de cohortes de más de ~20 residentes (DF-24) |
+| TD-41 | Pantallas · costo | Con clave configurada y un documento en español, la revisión del encuentro del residente y los PDF docentes se construyen al cargar la página y piden la traducción de lo que falta: una llamada que nadie pidió explícitamente (§154FT). «My progress» ya no lo hace: sus documentos se preparan a pedido | Gasto de traducción sin un pedido explícito | `docs/EXPERIENCIA_POR_ROL.md` (hallazgos previos) | anterior al ciclo 9 | No | Decisión docente; construirlos a pedido, como el portafolio |
 
 ## LOW
 
@@ -69,6 +71,9 @@ un defecto que el piloto puede medir.
 | TD-19 | Clínica menor | `bradycardia_bb_54f` corregida (llega somnolienta, C-2026-09-28-08). Quedan: `anaphylaxis_63m_betablocked` con pulso irregular y monitor sinusal (dos arreglos posibles); embarazo no redactado en 4 mujeres, y la pregunta por la última regla responde con el inicio de los síntomas | `docs/AUDITORIA_DF23_CICLO6.md` §2–§4 | No | Decisión docente |
 | KD-23 | Lector | Formas de tratamiento previo fuera del reconocedor: «s/p», «PTA», «El 112 le puso…», «por el 061», la vía puesta por el SAMU; no se da ni se registra nada | revisión adversarial del ciclo 9 | No | Con los datos externos |
 | KD-30 | Lector | Una indicación para casa tras el alta se lee como orden ahora y la retiene con una pregunta («Discharge home, start prednisone tomorrow»); «Adrenalina autoinyectable para casa» sin alta pregunta la velocidad de una infusión | revisión adversarial y sondas del ciclo 9 | No | Con las recetas del alta |
+| TD-42 | Pantallas | El selector «Encounter record» del docente rotula por minuto: dos encuentros del mismo desafío terminados en el mismo minuto se confundirían (la clase que se corrigió en las páginas nuevas del ciclo 9) | revisión visual del ciclo 9 | No | Cuando se toque la vista docente |
+| TD-43 | Pantallas | Pendientes de la revisión visual: la página docente es larga (la evidencia por marco queda al final); los rótulos del radar de las tarjetas son pequeños; la columna «Through» es larga; un ZIP del portafolio ya preparado no se rehace en la misma sesión si después se confirma otro documento (su manifiesto lleva la hora); la clave `Working model` está duplicada en el catálogo de pantallas | `docs/EXPERIENCIA_POR_ROL.md` | No | Con el piloto formativo |
+| TD-44 | Cuentas | Activar o desactivar una cuenta no registra quién ni cuándo (§154EI): requiere una tabla nueva en el store de cuentas (Fase 2) | `docs/EXPERIENCIA_POR_ROL.md` | No | Antes de que varias personas administren cuentas |
 | TD-38 (KD-25) | Sala | Un envío que sólo trae un plan (una orden condicional o una indicación al paciente) no ejecuta ni retiene nada: la sala dice «Recorded as a conditional plan, not executed now: …» y el Trace lo registra, pero después agrega el aviso genérico «Please specify a question, investigation, treatment, or reassessment.», como ya pasaba con «si» | ciclo 8 (`docs/CICLO8_LECTOR.md`) | No | Mostrarlo como registrado, sin el aviso, cuando se toque la sala |
 
 ## Corregido en el ciclo 9
