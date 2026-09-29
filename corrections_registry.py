@@ -2002,6 +2002,49 @@ CORRECTIONS = (
                   "test_cycle9_prevalidation_hardening.py::test_the_review_s_epinephrine_given_elsewhere_is_not_given_again_and_its_timed_discharge_waits"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-29-08",
+        "date": "2026-09-29",
+        "title": "Segunda revisión del ciclo 9: lo que halló en las correcciones de la primera, corregido",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Una revisión pequeña e independiente de las correcciones de C-2026-09-29-07 (70 frases "
+                   "preregistradas) halló 0 CRITICAL y 8 HIGH. Frente al lector anterior a esas correcciones, cinco eran "
+                   "regresiones suyas y se corrigen: «immediately after completing 6 h of observation» es una espera, "
+                   "no «ahora»; una condición escrita después del «ahora» («siempre que tolere la vía oral», «provided "
+                   "she stays asymptomatic») sigue haciendo un plan; una espera escrita en palabras («Tras una hora de "
+                   "observación con SatO2 97%») es una espera; lo que el alta manda a casa («con prednisona hasta "
+                   "completar 5 días») no es condición del alta; y una orden y el relato de otra dosis a cada lado de un "
+                   "guion («Top up aspirin to 300 mg - 81 mg given at urgent care») no son un solo relato: se pregunta, "
+                   "como antes. Una más, anterior al ciclo y de la clase de TD-39, también: lo visto entre una espera y "
+                   "el alta pertenece a la espera («After four hours of observation, BP 118/72, discharge home»). Lo "
+                   "MEDIUM y LOW que halló queda como deuda (KD-20 a KD-24)."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE9,
+        "affects": {"modules": ["family_parser"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_cycle9_prevalidation_hardening.py::test_the_forms_the_review_found_are_plans_too",
+                  "test_cycle9_prevalidation_hardening.py::test_a_discharge_now_the_review_found_still_runs",
+                  "test_cycle9_prevalidation_hardening.py::test_an_order_and_an_account_of_another_dose_are_not_one_account"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-09",
+        "date": "2026-09-29",
+        "title": "La prueba de la sala y el banco de imágenes pasaba o fallaba según el caso sorteado",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("La suite completa del ciclo 9 halló test_image_bank_portal::test_a_residents_encounter_room_uses_the_"
+                   "bank fallando una vez de cada tres, sin cambios. La sala abre un caso al azar; si su apariencia es "
+                   "una que el generador de imágenes no dibuja con fiabilidad (mascarilla con reservorio, o sudor marcado "
+                   "en piel oscura, decisión docente 6), el banco responde UNRENDERABLE antes de mirar la configuración, "
+                   "y la prueba sólo aceptaba CONFIG o NOT_ALLOWED. La respuesta es la correcta: la prueba la acepta. "
+                   "El código de la aplicación no cambia."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE9,
+        "affects": {"modules": ["test_image_bank_portal"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_image_bank_portal.py::test_a_residents_encounter_room_uses_the_bank"],
+        "preservation": None,
+    },
 )
 
 

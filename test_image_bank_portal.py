@@ -91,4 +91,7 @@ def test_a_residents_encounter_room_uses_the_bank(cohort):
     # No key in this test: a photograph is shown only if the bank already has it.
     assert status["state"] in ("ready", "unavailable")
     if status["state"] == "unavailable":
-        assert status["code"] in ("CONFIG", "NOT_ALLOWED")
+        # Not configured or not allowed; or, whichever case the room drew, an appearance the
+        # generator is known not to draw, which is never requested (image_broker.known_to_fail).
+        # Expecting only the first two made the test pass or fail with the case drawn (cycle 9).
+        assert status["code"] in ("CONFIG", "NOT_ALLOWED", "UNRENDERABLE")

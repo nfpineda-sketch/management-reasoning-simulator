@@ -2373,11 +2373,19 @@ _A_TREATMENT = re.compile(
     r"benadryl|diphenhydramine|difenhidramina|clorfenamina|zofran|ondansetron\w*)\b")
 
 
+_A_DOSE_WRITTEN = re.compile(r"\d+(?:[.,]\d+)?\s*(?:mg|mcg|ug|g|ml|l|u|ui|units?|unidades)\b")
+
+
 def _prior_treatment(piece):
     """What a clause tells of a treatment received before the resident's care, or None (TD-36)."""
     text = piece.strip()
     if (not text or _COMMAND.match(text) or _RESIDENT_AS_SUBJECT.match(text) or _PRIOR_NOW.search(text)
             or _PRIOR_DENIED.search(text) or "?" in text):
+        return None
+    # "Top up aspirin to 300 mg - 81 mg given at urgent care": a dose on each side of a dash or a
+    # parenthesis is the resident's order and an account of another dose (second review of cycle 9).
+    parts = [part for part in re.split(r"\s[-–—]\s|[()]", text) if part.strip()]
+    if len(parts) > 1 and sum(bool(_A_DOSE_WRITTEN.search(part)) for part in parts) > 1:
         return None
     if not (_names_a_drug(text) or _UNMODELED_ORDER.search(text) or _TXA_WORD.search(text)
             or _A_TREATMENT.search(text) or re.search(r"\b(?:" + _RED_CELL_WORDS + r"|" + _PRODUCT_NAMES + r")\b", text)):
@@ -4160,8 +4168,8 @@ _NOT_A_DISPOSITION = re.compile(
 # "Now" in the discharge's own words says when it runs: "Alta ahora tras 6 h de observación" is a
 # discharge now, after an observation that is over (adversarial review of cycle 9). A condition
 # written with it still makes it a plan.
-_DISCHARGE_NOW = re.compile(r"\b(?:now|right\s+now|ahora(?:\s+mismo)?|immediately|inmediatamente|de\s+inmediato|"
-                            r"right\s+away)\b")
+# "Immediately after completing 6 h of observation" is a wait, not "now" (second review of cycle 9).
+_DISCHARGE_NOW = re.compile(r"\b(?:now|right\s+now|ahora(?:\s+mismo)?)\b")
 _A_CONDITION_WORD = re.compile(r"\b(?:if|unless|pending|si|salvo|pendientes?|hasta)\b")
 # A clause before the discharge that reports a value measured tells a step that is over: "Tras 3
 # nebulizaciones PEF 80%, alta con prednisona 5 días" discharges now, as it did before cycle 9
@@ -4173,7 +4181,15 @@ _OUTCOME_REPORTED = re.compile(
     r"\b(?:pef|fem|peak\s+flow|flujo\s+(?:espiratorio\s+)?maximo|fev1|spo2|sato2|sat|sats|saturacion|saturation|"
     r"satura|saturando|hr|fc|pa|ta|bp|pas|sbp|glucose|glucosa|glucemia|glicemia|hgt|lactate|lactato)\s*"
     r"(?:de\s+|del\s+|of\s+|:|=|en\s+)?\d")
-_STATED_WAIT = re.compile(r"\b\d+(?:[.,]\d+)?\s*(?:h|hs|hrs?|hours?|horas?|min|mins|minutes?|minutos?)\b")
+_STATED_WAIT = re.compile(
+    r"\b(?:\d+(?:[.,]\d+)?|one|two|three|four|five|six|eight|twelve|half\s+an|an|a|una|un|dos|tres|cuatro|cinco|seis|"
+    r"ocho|doce|media)\s*(?:h|hs|hrs?|hours?|horas?|min|mins|minutes?|minutos?)\b|\bobserv\w*|\bobs\b")
+# A piece that only reports what was seen: a value or the patient's state.
+_A_FINDING_ONLY = re.compile(
+    r"(?:(?:pef|fem|peak\s+flow|fev1|spo2|sato2|sat|sats|saturacion|saturation|hr|fc|pa|ta|bp|pas|sbp|rr|fr|"
+    r"glucose|glucosa|glucemia|glicemia|hgt|lactate|lactato|temp\w*|t)\s*(?:de\s+|of\s+|:|=)?\s*[<>]?\s*\d"
+    r"|(?:asymptomatic|asintomatic[oa]s?|stable|estable|sin\s+\w+|without\s+\w+|no\s+(?:stridor|wheez\w*|"
+    r"symptoms|recurrence|rebound)))[^,;:]*$")
 _A_THRESHOLD = re.compile(r"[<>≥≤]|\b(?:above|over|below|under|at\s+least|more\s+than|less\s+than|greater\s+than|"
                           r"mayor|menor|sobre|bajo|al\s+menos|mas\s+de|menos\s+de|superior|inferior)\b")
 # A time at the very end of what the discharge sends the patient home with is the discharge's own
@@ -4216,11 +4232,26 @@ def _discharge_plan(sentence, pieces, spans, position):
     # "Now" answers the wait written in the discharge's own words or before it; a wait or a
     # condition written after it ("OK to discharge now, pending repeat lactate") still makes a plan.
     now = bool(_DISCHARGE_NOW.search(reached)
-               and not (_CLEARANCE_CONDITION.search(piece) or _A_CONDITION_WORD.search(piece)))
+               and not (_CLEARANCE_CONDITION.search(own) or _A_CONDITION_WORD.search(own)
+                        or _CLEARANCE_CONDITION.search(sent_with)))
     deferred = bool((not now and (_CLEARANCE_PUT_OFF.search(reached) or _PUT_OFF_MORE.search(reached)))
                     or _CLEARANCE_CONDITION.search(sent_with)
                     or (_TRAILING_TIME.search(sent_with) and not _ITS_OWN_TIME.search(sent_with)))
     before = next((index for index in range(position - 1, -1, -1) if pieces[index].strip()), None)
+    # What was seen between a wait and the discharge is part of the wait: "After four hours of
+    # observation, BP 118/72, discharge home" (second review of cycle 9).
+    lead = before
+    while (lead is not None and lead > 0 and _A_FINDING_ONLY.match(pieces[lead].strip())
+           and not _COMMAND.match(pieces[lead].strip()) and not _names_a_drug(pieces[lead])):
+        earlier = next((index for index in range(lead - 1, -1, -1) if pieces[index].strip()), None)
+        if earlier is None or not spans[earlier] or not _PUT_OFF_CLAUSE.match(pieces[earlier].strip()):
+            break
+        lead = earlier
+    if lead is not None and lead != before and span and spans[lead]:
+        written = sentence[spans[lead][0]:spans[before][1]].strip()
+        if not _COMMAND.match(written) and not _REACHED_BEFORE.match(written) and not _reached_outcome(written):
+            deferred, first = True, lead
+        before = None
     if before is not None and span and spans[before] and not now:
         written = pieces[before].strip()
         gap = sentence[spans[before][1]:span[0]]
@@ -4240,7 +4271,8 @@ def _discharge_plan(sentence, pieces, spans, position):
             if (not text or _COMMAND.match(text) or _CLEARANCE_PLAN.match(text) or _names_a_drug(text)
                     or _NOT_NEEDED.search(text)):
                 continue
-            if _PUT_OFF_CLAUSE.match(text) or (number and (_CLEARANCE_PUT_OFF.search(text) or _PUT_OFF_MORE.search(text))):
+            if (_PUT_OFF_CLAUSE.match(text) or _CLEARANCE_CONDITION.match(text)
+                    or (number and (_CLEARANCE_PUT_OFF.search(text) or _PUT_OFF_MORE.search(text)))):
                 deferred, tail = True, text
                 start, end = span[1] + segment.start(), span[1] + segment.end()
                 taken = [index for index in range(position + 1, len(pieces))

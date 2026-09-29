@@ -107,6 +107,13 @@ def test_a_denied_asked_or_someone_else_s_discharge_runs_nothing(text):
     "Alta ahora si tolera VO", "Discharge now if asymptomatic",
     # "now" answers the wait written with the discharge, never one written after it
     "OK to discharge now, pending repeat lactate", "Alta ahora, pendiente de la segunda troponina",
+    # the second review: "immediately after" is a wait; a condition after "now"; a wait in words;
+    # what was seen between the wait and the discharge
+    "Discharge immediately after completing 6 h of observation",
+    "Alta inmediatamente después de completar 6 horas de observación",
+    "Alta ahora tras 6 h de observación, siempre que tolere la vía oral",
+    "Discharge now after 6 h obs, provided she stays asymptomatic", "Alta a domicilio, siempre que tolere VO",
+    "Tras una hora de observación con SatO2 97%, alta", "After four hours of observation, BP 118/72, discharge home",
 ])
 def test_the_forms_the_review_found_are_plans_too(text):
     assert not discharges(text), read(text)
@@ -123,6 +130,9 @@ def test_the_forms_the_review_found_are_plans_too(text):
     "Alta a domicilio con prednisona 40 mg cada 24 horas", "Discharge home with instructions to return in 24 h if worse",
     "Alta ahora, control mañana en APS", "Discharge home now with return precautions if worse",
     "Asintomática tras 4 h en observación, alta a domicilio", "Tras 6 h de observación, alta ahora",
+    # what the discharge sends home keeps its own words; a value seen after a treatment is a result
+    "Alta ahora tras 6 h de observación con prednisona hasta completar 5 días", "Discharge immediately",
+    "Alta inmediata a domicilio", "After 2 L NS, BP 118/72, discharge home", "Tras 3 nebulizaciones, PEF 80%, alta a domicilio",
 ])
 def test_a_discharge_now_the_review_found_still_runs(text):
     assert discharges(text), read(text)
@@ -247,6 +257,15 @@ def test_where_and_how_long_ago_it_was_given_make_it_history_too(text):
 ])
 def test_an_order_that_names_an_earlier_dose_is_still_the_resident_s(text):
     assert read(text) and ("prior_treatment", None) not in kept(text)
+
+
+def test_an_order_and_an_account_of_another_dose_are_not_one_account():
+    # A dose on each side of a dash: the resident's order is asked about as before, never history.
+    parsed = parse_family_actions("Top up aspirin to 300 mg - 81 mg given at urgent care")
+    assert ("prior_treatment", None) not in kept("Top up aspirin to 300 mg - 81 mg given at urgent care")
+    assert [action["type"] for action in parsed["actions"]] == ["clarification"]
+    # One dose and who gave it, in parentheses, is still one account.
+    assert kept("Aspirin 300 mg (given by EMS)") == [("prior_treatment", None)]
 
 
 def test_how_long_ago_is_kept_as_its_time():

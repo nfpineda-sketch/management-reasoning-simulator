@@ -195,6 +195,15 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-28-22 | TD-32: los residuos de hemoderivados ya no se pierden ni se leen como un pedido | general | technical_defect | clinical | — |
 | C-2026-09-28-23 | KD-05: «OK to discharge» y «ok para alta» son un alta; el alta conserva su receta | general | technical_defect | clinical | — |
 | C-2026-09-28-24 | Deuda menor del ciclo 8: TD-23, TD-25, TD-27 y TD-28 | general | technical_defect | none | — |
+| C-2026-09-29-01 | TD-39: un alta para más tarde es un plan de destino, registrado y no realizado ahora | general | technical_defect | clinical | — |
+| C-2026-09-29-02 | TD-34: una reevaluación en horas espera sus minutos: «Reassess in 1 h» son 60, nunca 0 | general | technical_defect | clinical | — |
+| C-2026-09-29-03 | TD-36: un tratamiento recibido antes de la atención del residente es historia, no una orden | general | technical_defect | clinical | — |
+| C-2026-09-29-04 | TD-33: para la regla de sobrecarga en trauma, sólo la sangre repone el déficit hemorrágico | familia trauma | clinical_decision_applied | clinical | — |
+| C-2026-09-29-05 | DF-20 cerrado sin cambios: acs_54m_inferior declara TD1, F1, C1 y C3 | variante acs_54m_inferior | clinical_decision_applied | clinical | — |
+| C-2026-09-29-06 | DF-23 fila 4a: el pulmón del POCUS de acs_70f_left_main dice lo que dicen su examen y su radiografía | variante acs_70f_left_main | clinical_decision_applied | clinical | — |
+| C-2026-09-29-07 | Revisión adversarial del ciclo 9: lo que halló en TD-39, TD-34 y TD-36, corregido dentro de su clase | general | technical_defect | clinical | — |
+| C-2026-09-29-08 | Segunda revisión del ciclo 9: lo que halló en las correcciones de la primera, corregido | general | technical_defect | clinical | — |
+| C-2026-09-29-09 | La prueba de la sala y el banco de imágenes pasaba o fallaba según el caso sorteado | general | technical_defect | none | — |
 
 ## La batería, configuración por configuración
 
