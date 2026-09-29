@@ -58,6 +58,19 @@ def _initials(username):
     return letters.upper()
 
 
+def _chart_html(person, language, size):
+    """The card's drawing, never wider than its own box.
+
+    A fixed 240 px shrank the drawing, and its axis labels read at 6.5 to 7.7 px
+    (TD-43). At its own width they keep the 10.5 px they are drawn at; a
+    narrower column still shrinks the whole drawing.
+    """
+    import rubric_radar
+    width = rubric_radar.geometry([], size=size, language=language)["width"]
+    return (f'<div class="mrs-card-chart" style="max-width:{width:.0f}px">'
+            f'{_chart(person, language, size)}</div>')
+
+
 def _chart(person, language, size):
     """The shape the profile draws: the average of the confirmed encounters, or the only one.
 
@@ -140,7 +153,7 @@ def render_cohort(context, attempts):
             columns = st.columns(3)
             for column, person in zip(columns, group[start:start + 3]):
                 with column.container(border=True):
-                    st.markdown(f'<div class="mrs-card-chart">{_chart(person, lang, 180)}</div>'
+                    st.markdown(_chart_html(person, lang, 180) +
                                 f'<p class="mrs-card-name">{escape(person["username"])}</p>'
                                 f'<p class="mrs-card-status">{escape(_status_line(person)).replace(chr(10), "<br>")}</p>'
                                 + _CARD_STYLE, unsafe_allow_html=True)
@@ -169,7 +182,7 @@ def _render_resident_header(context, person, lang):
     observations = _confirmed_observations(context, person)
     left, right = st.columns([2, 3])
     with left:
-        st.markdown(f'<div class="mrs-card-chart">{_chart(person, lang, 240)}</div>' + _CARD_STYLE,
+        st.markdown(_chart_html(person, lang, 240) + _CARD_STYLE,
                     unsafe_allow_html=True)
     with right:
         st.subheader(person["username"] + ("" if person.get("active", True) else _t(" (inactive)")))
@@ -229,7 +242,8 @@ def render_resident_evidence(context, user_id, attempts):
 
 _CARD_STYLE = """
 <style>
-  .mrs-card-chart svg { display: block; width: 100%; max-width: 240px; height: auto; margin: 0 auto; }
+  .mrs-card-chart { margin: 0 auto; }
+  .mrs-card-chart svg { display: block; width: 100%; height: auto; }
   .mrs-card-name { font-weight: 600; text-align: center; margin: .2rem 0 0; }
   .mrs-card-status { font-size: .8rem; text-align: center; margin: .1rem 0 .3rem; }
 </style>

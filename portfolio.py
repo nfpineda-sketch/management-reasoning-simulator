@@ -187,7 +187,7 @@ def _prepare(context, record, owner, key, language):
                             widget_key=key + "_translate", forget=(key,))
 
 
-def render_encounter_documents(context, record, owner, key, *, has_documents=None):
+def render_encounter_documents(context, record, owner, key, *, has_documents=None, review=None):
     """The individual downloads of one encounter (§154AH), offered only when there is one."""
     if has_documents is None:
         trace, review = available(context, record)
@@ -195,12 +195,15 @@ def render_encounter_documents(context, record, owner, key, *, has_documents=Non
     if not has_documents:
         st.caption(_t("This encounter has no finalized document yet."))
         return
+    # The confirmed revision is part of the key (TD-43, cycle 10): documents prepared before
+    # a new rubric was confirmed are not offered as if they were current.
+    revision = (review or {}).get("review_id") or "none"
     # In the language the encounter was played in, unless its reader chooses the other one
     # (faculty, 2026-09-26). Its own key: the faculty's review area has a choice of its own.
     import document_language
     written_in = document_language.choose(f"_portfolio_language_{key}_{record['id']}",
                                           (record.get("payload") or {}).get("session"))
-    _prepare(context, record, owner, f"_documents_{key}_{record['id']}_{written_in}", written_in)
+    _prepare(context, record, owner, f"_documents_{key}_{record['id']}_{written_in}_{revision}", written_in)
 
 
 def render_portfolio(context, user_id=None, *, heading=True, key="mine"):
@@ -230,13 +233,22 @@ def render_portfolio(context, user_id=None, *, heading=True, key="mine"):
     chosen = st.selectbox(_t("Encounter"), list(labels), format_func=labels.get, key=f"_portfolio_{key}_encounter")
     row = next(row for row in rows if row["record"]["id"] == chosen)
     render_encounter_documents(context, row["record"], owner, key,
-                               has_documents=bool(row["trace"] or row["review"]))
+                               has_documents=bool(row["trace"] or row["review"]), review=row["review"])
     st.markdown("**" + _t("Complete portfolio") + "**")
     st.caption(_t("One ZIP with every finalized document, in folders Management_Traces/ and Rubrics/, and a "
                   "manifest naming each document's encounter, date, reviewer and revision. Built from what is "
                   "saved: no AI call is made."))
     st.caption(_t("Each document is in the language its encounter was played in."))
-    zipped = f"_portfolio_{key}_{owner['id']}_zip"
+    # What the ZIP holds is part of its key (TD-43, cycle 10): once another document is confirmed,
+    # the ZIP prepared before it is dropped and prepared again on request, never offered as current.
+    holds = hashlib.sha256(json.dumps([[row["record"]["id"], bool(row["trace"]),
+                                        (row["review"] or {}).get("review_id")] for row in rows]).encode()
+                           ).hexdigest()[:16]
+    prefix = f"_portfolio_{key}_{owner['id']}_zip"
+    zipped = f"{prefix}_{holds}"
+    for stale in [name for name in list(st.session_state) if str(name).startswith(prefix + "_")
+                  and not str(name).startswith(zipped)]:
+        st.session_state.pop(stale, None)
     if st.session_state.get(zipped) is None and st.button(_t("Prepare the complete portfolio"),
                                                           key=zipped + "_prepare"):
         try:

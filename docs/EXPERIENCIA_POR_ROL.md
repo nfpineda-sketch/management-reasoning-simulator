@@ -98,9 +98,11 @@ bloquea la exposición antes de seguir con este orden.
 4. **Selector «Encounter record» del docente:** su etiqueta tiene resolución de
    minuto; dos encuentros del mismo desafío terminados en el mismo minuto se
    confundirían (el mismo defecto que se corrigió en las páginas nuevas). Improbable.
+   **Corregido en el ciclo 10** (TD-42, C-2026-09-29-26): los que se leen igual llevan «· #n».
 5. **Faculty lee a todos los residentes del programa,** no sólo a los «asignados»
    (§154CA): arquitectura de un solo programa.
-6. **Catálogo de pantallas:** la clave `Working model` está duplicada.
+6. **Catálogo de pantallas:** la clave `Working model` estaba duplicada. **Corregido en el ciclo 10**
+   (C-2026-09-29-26), con una prueba que impide otra.
 
 ## Revisión visual (§154CQ, §154EM)
 
@@ -120,9 +122,10 @@ del Admin, administración de cuentas, cohorte y Royal College a 1000 px.
 | Fecha repetida en la vista de seguridad; avisos sobre «cómo correr un encuentro» sobre el registro de un residente | Corregidos |
 | Tipos mezclados en la columna «Year» (advertencia de Arrow) | Corregido |
 | Estado de la tarjeta en cuatro renglones a 1000 px | Dos líneas cortas |
-| Página docente larga: la evidencia por marco queda al final | Sin resolver (prioridad al flujo de revisión, §154DV) |
-| Rótulos del radar pequeños en la tarjeta | Sin resolver (el radar grande está en la vista del residente) |
-| Columna «Through» larga | Sin resolver (la tabla se desplaza) |
+| Página docente larga: la evidencia por marco queda al final | Ciclo 10: la evidencia se abre, cerrada, bajo la ficha del residente; no agrega un clic al flujo de revisión (§154DV) |
+| Rótulos del radar pequeños en la tarjeta | Ciclo 10: el radar se dibuja a lo más a su propio ancho; a 240 px fijos sus rótulos se leían a 6,5–7,7 px |
+| Columna «Through» larga | Ciclo 10: ancho medio; la lista completa se ve sobre la celda |
+| Un ZIP del portafolio ya preparado se seguía ofreciendo después de confirmar otro documento | Ciclo 10: deja de ofrecerse cuando cambia lo que el portafolio contiene |
 
 ## Pruebas
 

@@ -267,7 +267,10 @@ def _framework_table(rows):
         "Code": row["code"], "Title": row["label"], "Observations": len(row["observations"]),
         "Direct": row["direct"], "Partial": row["partial"], "Encounters": len(row["encounters"]),
         "Through": ", ".join(row["objectives"]),
-    } for row in rows]), hide_index=True)
+    } for row in rows]), hide_index=True,
+        # A code reached through many objectives made the table wider than the screen (TD-43):
+        # the column keeps a medium width, and the whole list shows on hovering the cell.
+        column_config={_t("Through"): st.column_config.TextColumn(width="medium")})
     st.caption(_t("Observations: faculty-confirmed observations of the objectives linked to the code. Direct and "
                   "Partial: the contribution recorded with each observation."))
     unstated = sum(row["not_recorded"] for row in rows)

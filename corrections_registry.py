@@ -2461,6 +2461,39 @@ CORRECTIONS = (
                   "test_account_changes_are_audited.py::test_the_administrator_sees_the_history_and_the_resident_page_never_shows_it"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-29-26",
+        "date": "2026-09-29",
+        "title": ("TD-42, TD-43 y TD-38: las pantallas del piloto distinguen encuentros parecidos, no ofrecen un ZIP "
+                  "vencido y no preguntan después de un plan"),
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Ciclo 10, C10-07. TD-42: el selector «Encounter record» del docente numera («· #n», por hora de "
+                   "actualización e id) los encuentros que se leen igual. TD-43: un ZIP del portafolio ya preparado "
+                   "deja de ofrecerse cuando cambia lo que el portafolio contiene, y cada documento en caché lleva la "
+                   "revisión confirmada; la clave duplicada «Working model» sale del catálogo de pantallas y una "
+                   "prueba impide otra; el radar de las tarjetas se dibuja a lo más a su propio ancho (a 240 px sus "
+                   "rótulos se leían a 6,5–7,7 px); la columna «Through» queda de ancho medio; la evidencia por marco "
+                   "se abre bajo la ficha del residente y no al final de la página. TD-38: un envío que sólo trae "
+                   "planes (condicional, repetición, indicación al paciente o tratamiento previo) se dice como "
+                   "registrado y el Trace lo guarda como no ejecutado, sin la pregunta genérica y sin minutos. El "
+                   "lector no cambia: reconoce lo mismo. Los encuentros guardados quedan como están."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE10,
+        "affects": {"modules": ["curriculum_runtime", "portfolio", "report_language", "faculty_cohort",
+                                "evidence_views", "unexecuted_items", "app"],
+                    "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_pilot_screens_cycle10.py::test_two_encounters_of_the_same_minute_read_apart_in_the_faculty_selector",
+                  "test_pilot_screens_cycle10.py::test_a_prepared_zip_is_dropped_when_another_document_is_confirmed",
+                  "test_pilot_screens_cycle10.py::test_a_card_draws_its_radar_at_its_own_width_so_the_labels_keep_their_size",
+                  "test_pilot_screens_cycle10.py::test_the_through_column_keeps_a_medium_width",
+                  "test_pilot_screens_cycle10.py::test_the_resident_s_evidence_opens_under_their_header_not_after_every_record",
+                  "test_screen_catalog_has_no_duplicate_keys.py::test_no_catalog_dictionary_repeats_a_key",
+                  "test_plans_alone_are_recorded.py::test_a_plan_alone_is_said_as_recorded_and_nothing_asks_after_it",
+                  "test_plans_alone_are_recorded.py::test_an_order_to_run_now_beside_a_plan_is_still_read_and_run",
+                  "test_plans_alone_are_recorded.py::test_only_plans_are_told_apart_from_everything_else"],
+        "preservation": None,
+    },
 )
 
 

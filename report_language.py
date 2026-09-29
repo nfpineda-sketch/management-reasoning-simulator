@@ -514,8 +514,6 @@ ES = {
         'Qué llevarse de aquí',
     'What you did. Why you acted. What happened next.':
         'Lo que hizo. Por qué actuó. Qué pasó después.',
-    'Working model':
-        'Modelo de trabajo',
     'Written by the model from what you wrote after the encounter. It is retrospective and does not establish what you understood while deciding.':
         'Escrito por el modelo a partir de lo que usted escribió después del encuentro. Es retrospectivo y no establece qué comprendía mientras decidía.',
     'Written by you after the comparison. It is your own text and is not part of the AI analysis above.':

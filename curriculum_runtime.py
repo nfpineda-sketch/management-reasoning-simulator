@@ -365,6 +365,27 @@ def _date(value):
     return datetime.fromtimestamp(float(value), tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
 
+def faculty_encounter_labels(attempts):
+    """One distinct label per encounter in the faculty selector (TD-42, cycle 10).
+
+    Resident, challenge, status and minute; two encounters that still read alike get a
+    number, as the resident's pages do since cycle 9 (evidence_views.encounter_labels).
+    """
+    ordered = sorted(attempts, key=lambda a: (a["updated_at"], a["id"]))
+    labels = {a["id"]: " · ".join((a["username"], a["challenge_id"], a["status"], _date(a["updated_at"])))
+              for a in ordered}
+    alike = {}
+    for label in labels.values():
+        alike[label] = alike.get(label, 0) + 1
+    seen = {}
+    for attempt in ordered:
+        label = labels[attempt["id"]]
+        if alike[label] > 1:
+            seen[label] = seen.get(label, 0) + 1
+            labels[attempt["id"]] = f"{label} · #{seen[label]}"
+    return labels
+
+
 NO_RESIDENT_IN_SCOPE = ("No resident has been assigned to you for choosing cases. An administrator can "
                         "authorize it.")
 
@@ -480,6 +501,10 @@ def render_dashboard(context, initial_state, reset_session):
     if user["role"] != "resident":
         # Who are my residents, and who needs my attention, before any tool (cycle 9, §154G).
         focused = render_cohort(context, attempts)
+        if focused and user["role"] in {"faculty", "admin"}:
+            # The same evidence views and portfolio the resident reads (§154K, §154AL), under the
+            # resident's header: at the end of the page they sat below every encounter record (TD-43).
+            render_resident_evidence(context, focused, attempts)
     if user["role"] == "resident":
         import resident_pages
         waiting = resident_pages.assigned_encounter(context)
@@ -615,8 +640,9 @@ def render_dashboard(context, initial_state, reset_session):
                 if st.session_state.get(selection_key) not in attempt_ids:
                     st.session_state[selection_key] = next(
                         (a["id"] for a in resident_attempts if a["status"] == "completed"), attempt_ids[0])
+                labels = faculty_encounter_labels(resident_attempts)
                 selected = st.selectbox(_t("Encounter record"), attempt_ids, key=selection_key,
-                    format_func=lambda key: next(a["username"] + " · " + a["challenge_id"] + " · " + a["status"] + " · " + _date(a["updated_at"]) for a in resident_attempts if a["id"] == key))
+                                        format_func=lambda key: labels[key])
                 record = store.get_attempt(token, selected)
                 render_faculty_analysis(context, record)
                 render_attempt_assessment(context, record)
@@ -624,9 +650,6 @@ def render_dashboard(context, initial_state, reset_session):
                     st.json((record.get("payload") or {}).get("evidence", {}), expanded=False)
                     st.download_button(_t("Download faculty record"), json.dumps(record, indent=2), file_name="faculty_encounter_record.json", mime="application/json")
         _render_rubric_profile(context, render_progress_dashboard(context))
-        if focused:
-            # The same evidence views and portfolio the resident reads (§154K, §154AL).
-            render_resident_evidence(context, focused, attempts)
 
 
 def _awaiting_review(context):

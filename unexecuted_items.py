@@ -96,6 +96,28 @@ _MESSAGES = {
 }
 
 
+# What an order may carry and still have nothing to run now (TD-38, cycle 10).
+_ONLY_RECORDED = ("conditional", "repeat", "advice", "prior_treatment")
+
+
+def plans_only(parsed):
+    """True when an order carries nothing to run now: only plans, each said by its kind.
+
+    A conditional order, a repeat, advice to the patient or treatment received
+    before the resident's care, written alone. The room says each one as
+    recorded; nothing runs, nothing is held and no minute passes. The engine's
+    generic "Please specify a question, investigation, treatment, or
+    reassessment." used to follow, as if nothing had been read (TD-38). A
+    medicine indicated alone stays the engine's recorded decision
+    (``family_engine.recorded_only``).
+    """
+    if not isinstance(parsed, dict) or parsed.get("clarification") or parsed.get("actions"):
+        return False
+    details = [d for d in parsed.get("future_details") or [] if isinstance(d, dict)]
+    return (bool(parsed.get("recognized_future_actions")) and bool(details)
+            and all(d.get("kind") in _ONLY_RECORDED for d in details))
+
+
 def details_of(parsed_or_event):
     """The classified items, or the bare texts of an older record as unclassified."""
     details = [d for d in (parsed_or_event or {}).get("future_details") or [] if isinstance(d, dict)]

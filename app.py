@@ -8973,6 +8973,12 @@ def execute_bundle(parsed):
         from family_engine import execute_family_bundle
         from pending_family_orders import hold_incomplete_bundle
         import weight_based_doses
+        import unexecuted_items
+        if unexecuted_items.plans_only(parsed):
+            # Only plans, each said as recorded: nothing runs, nothing is held and no minute
+            # passes. The engine's generic question used to follow them (TD-38, cycle 10).
+            return {"executed": False, "clarification": None, "action_summaries": [],
+                    "reassess_delay": None, "elapsed_min": 0, "plans_only": True}
         waiting = weight_based_doses.resolve(parsed, state)
         if waiting:
             # Asking the weight is the reader's question, not a clinical minute:
