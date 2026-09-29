@@ -2520,6 +2520,34 @@ CORRECTIONS = (
                   "test_hypoglycemia_lines.py::test_glucagon_through_the_failed_line_keeps_its_modelled_effect_and_says_why"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-29-28",
+        "date": "2026-09-29",
+        "title": ("TD-10, TD-03, TD-09 y TD-05: el commit en cada turno del Trace, los vínculos de marco congelados con "
+                  "la observación, la cola docente más rápida y las pruebas de recarga aisladas"),
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Ciclo 10, C10-10. TD-10: cada turno del Management Trace, decisión o actividad, guarda el commit "
+                   "del código que lo atendió (code_version), además del que inició el encuentro. TD-03: una "
+                   "observación nueva guarda los vínculos de marco que su objetivo tenía al confirmarse, y la "
+                   "evidencia por marco la cuenta bajo esos; una registrada antes sigue leyendo los de hoy. TD-09: la "
+                   "cola docente resuelve todos los objetivos de un encuentro con una sola lectura de su base "
+                   "congelada (de 2,9 a 0,3 ms por encuentro). TD-05: ya no aplicaba; cada prueba que muta módulos "
+                   "corre en un intérprete aparte, y una prueba estática lo mantiene. Nada cambia en lo que le pasa "
+                   "al paciente ni en cómo se juzga un encuentro."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE10,
+        "affects": {"modules": ["app", "progress_store", "evidence_views"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_trace_turns_carry_the_code.py::test_an_order_and_an_examination_each_carry_the_code_that_answered_them",
+                  "test_framework_links_are_frozen.py::test_a_code_the_mapping_dropped_still_holds_the_observation_confirmed_under_it",
+                  "test_framework_links_are_frozen.py::test_an_observation_recorded_before_the_links_were_frozen_reads_todays_links",
+                  "test_framework_links_are_frozen.py::test_an_observation_confirmed_with_no_link_to_the_framework_counts_under_none",
+                  "test_framework_links_are_frozen.py::test_an_observation_recorded_today_carries_its_objectives_links",
+                  "test_faculty_queue_reads_the_basis_once.py::test_the_faculty_queue_reads_each_encounters_basis_once",
+                  "test_reload_tests_run_isolated.py::test_the_reload_tests_touch_modules_only_in_their_own_interpreter",
+                  "test_reload_tests_run_isolated.py::test_the_check_would_have_caught_a_mutation_in_the_file_itself"],
+        "preservation": None,
+    },
 )
 
 

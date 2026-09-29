@@ -819,11 +819,14 @@ def record_information_activity(activity, request, response, started, result, be
     judgement. Nothing here calls a delay an error; whether it was the right use
     of those minutes is read from what was known at the time.
     """
+    from curriculum_runtime import code_version
     from family_engine import pending_results
 
     elapsed = int(result.get("elapsed_min", 0) or 0)
     st.session_state.management_trace.append({
         "trace_schema": "management_trace_v1",
+        # The code that answered this turn (TD-10): a deployment can change mid-encounter.
+        "code_version": code_version(),
         "activity_kind": str(activity),
         "decision_time_min": started,
         "response_time_min": started + elapsed,
@@ -846,6 +849,7 @@ def record_information_activity(activity, request, response, started, result, be
 
 def record_management_trace(learner_input, parsed, result, state_before, state_after):
     """Append one structured decision-response event to the Management Trace."""
+    from curriculum_runtime import code_version
     status = "executed" if result.get("executed") else "not_executed"
     if result.get("clarification"):
         status = "clarification_required"
@@ -854,6 +858,9 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
 
     event = {
         "trace_schema": "management_trace_v1",
+        # The code that read and ran this turn (TD-10, cycle 10): the encounter records the commit
+        # it started with, and a deployment can change before it ends.
+        "code_version": code_version(),
         "decision_time_min": state_before.get("sim_time_min", 0),
         "response_time_min": state_after.get("sim_time_min", 0),
         "elapsed_minutes": int(result.get("elapsed_min", 0) or 0),

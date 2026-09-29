@@ -120,34 +120,46 @@ def _contribution(item, framework, code):
     return "direct" if "direct" in kinds else "partial" if "partial" in kinds else None
 
 
+def _framework_links(links, framework):
+    return [link for link in links or [] if isinstance(link, dict) and link.get("framework") == framework
+            and link.get("code")]
+
+
 def framework_rows(goals, framework):
     """Evidence related to one framework's subcompetencies or milestones, with no level (§154X).
 
-    An observation is related to a code when its objective is linked to that
-    code. The contribution recorded with the observation, DIRECT or PARTIAL, is
-    counted when one was recorded; an observation recorded before contributions
-    existed shows none, and none is inferred for it. One observation counts
-    once per code, however many links lead there.
+    An observation is related to a code when its objective was linked to that
+    code when it was confirmed: the links frozen with it (TD-03, cycle 10), or,
+    for one recorded before they were frozen, the objective's links today. The
+    codes the objective reaches today are listed even with nothing observed. The
+    contribution recorded with the observation, DIRECT or PARTIAL, is counted
+    when one was recorded; an observation recorded before contributions existed
+    shows none, and none is inferred for it. One observation counts once per
+    code, however many links lead there.
     """
     rows = {}
+
+    def row_of(link, goal):
+        row = rows.setdefault(link["code"], {
+            "code": link["code"], "label": link.get("label") or "", "objectives": [],
+            "observations": [], "direct": 0, "partial": 0, "not_recorded": 0, "sources": []})
+        if goal["objective_id"] not in row["objectives"]:
+            row["objectives"].append(goal["objective_id"])
+        source = link.get("source_version") or link.get("source_id") or ""
+        if source and source not in row["sources"]:
+            row["sources"].append(source)
+        return row
+
     for goal in goals:
-        links = [link for link in goal.get("competency_mapping") or []
-                 if isinstance(link, dict) and link.get("framework") == framework and link.get("code")]
-        observed = recorded(goal)
-        for link in links:
-            row = rows.setdefault(link["code"], {
-                "code": link["code"], "label": link.get("label") or "", "objectives": [],
-                "observations": [], "direct": 0, "partial": 0, "not_recorded": 0, "sources": []})
-            if goal["objective_id"] not in row["objectives"]:
-                row["objectives"].append(goal["objective_id"])
-            source = link.get("source_version") or link.get("source_id") or ""
-            if source and source not in row["sources"]:
-                row["sources"].append(source)
-            seen = {item["id"] for item in row["observations"]}
-            for item in observed:
-                if item["id"] in seen:
+        today = _framework_links(goal.get("competency_mapping"), framework)
+        for link in today:
+            row_of(link, goal)
+        for item in recorded(goal):
+            frozen = (item.get("provenance") or {}).get("links")
+            for link in _framework_links(frozen, framework) if isinstance(frozen, list) else today:
+                row = row_of(link, goal)
+                if any(seen["id"] == item["id"] for seen in row["observations"]):
                     continue
-                seen.add(item["id"])
                 row["observations"].append(item)
                 kind = _contribution(item, framework, link["code"])
                 row["direct" if kind == "direct" else "partial" if kind == "partial" else "not_recorded"] += 1

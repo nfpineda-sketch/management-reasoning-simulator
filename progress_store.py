@@ -449,12 +449,20 @@ class ProgressStore:
             from competency_mapping import MAPPING_VERSION
             contributions = [link for link in definition.get("competency_mapping", []) or []
                              if isinstance(link, dict) and link.get("contribution")]
+            # Every framework link the objective has at this confirmation, frozen with the
+            # observation (TD-03, cycle 10): a mapping changed later does not move what this
+            # observation was evidence for. One recorded before has none and reads today's links.
+            links = [{key: link[key] for key in ("framework", "code", "label", "source_id", "source_version",
+                                                 "contribution") if link.get(key) is not None}
+                     for link in definition.get("competency_mapping", []) or []
+                     if isinstance(link, dict) and link.get("framework") and link.get("code")]
             provenance = {
                 "schema": "mrs.observation_provenance.v1",
                 "evidence_source": "management_reasoning_simulator",
                 "opportunity": opportunity,
                 "mapping_version": MAPPING_VERSION,
                 "contributions": contributions or None,
+                "links": links,
             }
             self._execute(connection, """INSERT INTO mrs_progress_observations
                 (id, attempt_id, user_id, objective_id, assessor_id, satisfactory, depth,
@@ -559,7 +567,7 @@ class ProgressStore:
         have no observation recorded, and which of those have a draft. Nothing
         here is a count of achievement.
         """
-        from competency_mapping import objective_is_eligible
+        from observation_opportunities import summary
         with self.accounts._transaction() as connection:
             actor = self.accounts._actor(connection, token, STAFF)
             sql = """SELECT a.*, u.username, u.role AS owner_role FROM mrs_attempts a
@@ -578,8 +586,11 @@ class ProgressStore:
                     (row["id"],)).fetchall()}
                 drafted = {r["objective_id"] for r in self._execute(connection, """SELECT DISTINCT objective_id
                     FROM mrs_progress_drafts WHERE attempt_id = ?""", (row["id"],)).fetchall()}
+                # Every objective's opportunity from one reading of the frozen basis: one check of its
+                # fingerprint per encounter, not one per objective (TD-09, cycle 10).
+                offered = summary(record)
                 eligible = [key for key, value in OBJECTIVES.items()
-                            if value["supported"] and objective_is_eligible(key, record)]
+                            if value["supported"] and offered[key]["eligible"]]
                 pending = [key for key in eligible if key not in assessed]
                 waiting.append({"attempt_id": row["id"], "user_id": row["user_id"],
                                 "username": row["username"], "challenge_id": row["challenge_id"],
