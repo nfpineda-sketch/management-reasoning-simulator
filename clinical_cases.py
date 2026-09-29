@@ -1083,6 +1083,10 @@ FAMILIES["anaphylaxis"]["variants"].append(_case(
 _o = _observable(76, 42, 64, 89, 26, wob="Increased", crt=4,
                  extremities="Warm", mental="Drowsy", temperature=36.4, glucose=132,
                  perfusion="impaired")
+# DF-23 row 7 (faculty, 2026-09-29, A): the monitor and the ECG show the atrial fibrillation
+# the history documents (apixaban, the irregular rhythm his wife reports, the irregular
+# pulse on examination). The rate stays 64: the beta blockade is the finding.
+_o["rhythm"] = "AF"
 FAMILIES["anaphylaxis"]["variants"].append(_case(
     "anaphylaxis_63m_betablocked", "anaphylaxis", 63, "male",
     ["hypertension", "atrial fibrillation"],
