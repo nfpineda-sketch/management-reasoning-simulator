@@ -5,9 +5,41 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-29, después de V3 (sección «Estado posterior a V3»,
-  la vigente). La tabla del cierre del ciclo 9 y los ciclos anteriores siguen
-  más abajo, como estaban.
+- **Actualizado:** 2026-09-29, al abrir el ciclo 10 (sección «Ciclo 10», la
+  vigente). El estado posterior a V3, la tabla del cierre del ciclo 9 y los
+  ciclos anteriores siguen más abajo, como estaban.
+
+## Ciclo 10 (2026-09-29) — abierto
+
+**Aprobación docente, 2026-09-29:** «apruebo todo, incluir todo lo propuesto», sobre la propuesta del ciclo 10
+(formato §18 A–K). Entra todo, **también C10-09**, que la propuesta condicionaba a un «B» explícito: DC4-F queda
+**aprobada en la opción B mínima** (el glucagón y el octreótido dados por la cánula infiltrada se absorben desde el
+tejido como una dosis subcutánea; el motor ya les da ese perfil, así que ninguna trayectoria cambia y cambia sólo
+el registro técnico).
+
+**Objetivo:** dejar el piloto formativo listo para desplegarlo, operarlo y respaldarlo con datos reales, y reunir las
+decisiones abiertas en un solo paquete, sin tocar el lector, los baselines ni la validación externa.
+
+| ID | Tarea | Estado |
+|---|---|---|
+| C10-00 | Apertura y conciliación de registros (TD-19, resto de TD-31, TD-41; prueba que cruza TD y correcciones) | En curso |
+| C10-01 | Diagnóstico de los 10 scripts de regresión heredados (sin cambios) | Pendiente |
+| C10-02 | Paquete único de decisiones y revisiones docentes | Pendiente |
+| C10-03 | Integridad del store: TD-18 sin I-F18 | Pendiente |
+| C10-04 | Fase 2, paso 1: auditoría de activar y desactivar cuentas (TD-44) | Pendiente |
+| C10-05 | Respaldo y restauración probados en SQLite y PostgreSQL | Pendiente |
+| C10-06 | Runbook, preflight y guías del piloto | Pendiente |
+| C10-07 | Pantallas del piloto: TD-42, TD-43, TD-38 | Pendiente |
+| C10-08 | Español de las frases del motor (resto de DF-23 fila 11) y TD-07; nada activo sin aprobación | Pendiente |
+| C10-09 | DC4-F, opción B mínima (aprobada) | Pendiente |
+| C10-10 | Deuda menor: TD-05, TD-10, TD-03 y, si queda tiempo, TD-09 | Pendiente |
+| C10-11 | Cierre: suite completa, regresiones, prueba de humo, docs, commit, push y reporte | Pendiente |
+
+**Fuera del ciclo:** el lector (TD-45, KD-02·TD-35, KD-15, «suero glucosado», TD-14, TD-37, TD-40); la validación
+externa (nada se abre, lee ni procesa, y la ingesta no se prepara); V3 y los baselines; todo cambio clínico sin
+decisión; aprobar DC9, TD-04, las dudas de TDFC, el español, las guías o fotos; llamadas a proveedores de IA,
+imágenes, videos y AI Longitudinal Review; los pasos 2 a 4 de la Fase 2; despliegue, PR, merge y release; datos
+reales y nombres de médicos.
 
 ## Estado posterior a V3 (2026-09-29) — ciclo cerrado
 
