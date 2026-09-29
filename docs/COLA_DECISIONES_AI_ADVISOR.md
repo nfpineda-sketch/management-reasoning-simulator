@@ -5,11 +5,11 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-29, al abrir el ciclo 10 (sección «Ciclo 10», la
+- **Actualizado:** 2026-09-29, al cerrar el ciclo 10 (sección «Ciclo 10», la
   vigente). El estado posterior a V3, la tabla del cierre del ciclo 9 y los
   ciclos anteriores siguen más abajo, como estaban.
 
-## Ciclo 10 (2026-09-29) — abierto
+## Ciclo 10 (2026-09-29) — cerrado
 
 **Aprobación docente, 2026-09-29:** «apruebo todo, incluir todo lo propuesto», sobre la propuesta del ciclo 10
 (formato §18 A–K). Entra todo, **también C10-09**, que la propuesta condicionaba a un «B» explícito: DC4-F queda

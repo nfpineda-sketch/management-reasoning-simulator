@@ -22,6 +22,13 @@ El piloto nunca se inicia automáticamente.
 
 **Cómo cumplir A y B (ciclo 10):** `docs/RUNBOOK_PILOTO.md` — configuración, `tools_pilot_preflight.py` (dice si un despliegue está configurado como el piloto, sin imprimir secretos), prueba de humo automática y manual, respaldo y restauración probados (`docs/RESPALDO_Y_RESTAURACION.md`). Guías: `docs/GUIA_RESIDENTE_PILOTO.md` y `docs/GUIA_DOCENTE_PILOTO.md`, pendientes de su revisión.
 
+**Al cerrar el ciclo 10 (2026-09-29):** la respuesta no cambia. Se agregaron integridad del store (TD-18 sin
+I-F18), autor y hora de cada cambio de cuenta, respaldo y restauración probados en SQLite y PostgreSQL, el
+runbook con su preflight, las guías, las pantallas del piloto (TD-42, TD-43, TD-38), DC4-F (opción B mínima) y
+la deuda menor (TD-03, TD-05, TD-09, TD-10). La prueba de humo automática pasó en `ce0e176`, sin llamadas al
+proveedor. Lo que espera al docente está en `docs/PAQUETE_DECISIONES_CICLO10.md` (P-01 a P-12; revisiones R-1 a
+R-5, entre ellas los borradores en español de R-4, que no se muestran hasta su aprobación).
+
 **No es una validación.** La fidelidad del lector con texto externo sigue sin medirse (B = NOT YET MEASURED);
 todo juicio lo confirma un docente.
 
