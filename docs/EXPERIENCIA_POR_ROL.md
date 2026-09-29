@@ -62,6 +62,11 @@ Los permisos están en `docs/MATRIZ_PERMISOS_ROLES.md`.
    construyen al cargar la página y piden la traducción de lo no traducido.
    «My progress» ya no lo hace: sus documentos se preparan a pedido. No se cambió
    el resto (§154FT).
+   **Resuelto el 2026-09-29 (TD-41):** ninguna página, revisión ni PDF pide una
+   traducción al abrirse o generarse; usan las guardadas, dicen lo que queda en
+   inglés y ofrecen «Translate the AI reasoning into Spanish», que traduce una vez
+   sólo lo que falta y lo guarda. Si el original cambió, la traducción se marca
+   desactualizada hasta que se vuelva a pedir.
 2. **El foco de aprendizaje se muestra al cerrar el encuentro,** antes de la
    revisión docente (decisión anterior). §154AB pide no mostrar el objetivo antes
    de la revisión: queda a su decisión.

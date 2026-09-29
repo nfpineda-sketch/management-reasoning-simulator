@@ -85,7 +85,7 @@ def _trace_pdf(context, record, language=None, *, owner=None, translate=None):
         learner_label=str(owner["username"]),
         review_completed=bool(session.get("review_completed")),
         adaptation_plan=session.get("adaptation_plan"), language=language,
-        translate=translate or prose_translation.translator(context))
+        translate=translate or prose_translation.stored_only(context))
 
 
 def _rubric_pdf(context, record, language="en", *, owner=None, translate=None):
@@ -103,7 +103,7 @@ def _rubric_pdf(context, record, language="en", *, owner=None, translate=None):
         import prose_translation
         return render_rubric_report_pdf(review, proposal, record, audience="learner",
                                         badge=badge, language=language,
-                                        translate=translate or prose_translation.translator(context)), review
+                                        translate=translate or prose_translation.stored_only(context)), review
     except (RubricReportError, ValueError):
         return None, review
 

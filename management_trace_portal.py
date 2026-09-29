@@ -237,17 +237,25 @@ def render_management_trace_analysis(payload, *, api_key="", model="gpt-5-mini",
     import document_language
     written_in = document_language.choose(
         cache_key + "_language", {document_language.FIELD: encounter_language})
+    import prose_translation
+    # Opening this review reads stored translations only; its reader asks for the rest
+    # (TD-41, 2026-09-29).
+    document_key = f"trace:{identity}:{fingerprint}:{written_in}"
     pdf_key = cache_key + "_pdf_" + hashlib.sha256(json.dumps(
-        [report, adaptation_plan, bool(review_completed), case_label, RENDERER_VERSION, written_in],
+        [report, adaptation_plan, bool(review_completed), case_label, RENDERER_VERSION, written_in,
+         prose_translation.generation(document_key)],
         sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     if pdf_key not in st.session_state:
-        import prose_translation
+        translation = prose_translation.for_page(context, document_key)
         st.session_state[pdf_key] = render_management_trace_pdf(
             report, payload, case_label=case_label,
             review_completed=review_completed, adaptation_plan=adaptation_plan,
-            language=written_in, translate=prose_translation.translator(context),
+            language=written_in, translate=translation,
         )
+        st.session_state[cache_key + "_translation_" + pdf_key[-64:]] = translation.status
     st.download_button(_t("Download Management Trace PDF"), st.session_state[pdf_key],
                        file_name="management_trace_v0.17.0.pdf", mime="application/pdf",
                        type="primary", key=cache_key + "_download")
+    prose_translation.offer(st.session_state.get(cache_key + "_translation_" + pdf_key[-64:]), document_key,
+                            widget_key=cache_key + "_translate")
     return report

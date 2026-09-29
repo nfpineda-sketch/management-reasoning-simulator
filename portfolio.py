@@ -155,15 +155,25 @@ def complete_zip(context, user_id=None):
 
 
 def _prepare(context, record, owner, key, language):
-    """The documents of one encounter, built when asked for and kept for this session."""
+    """The documents of one encounter, built when asked for and kept for this session.
+
+    Preparing them reads stored translations only; their reader asks for the rest
+    (TD-41, 2026-09-29).
+    """
+    import prose_translation
+    document_key = f"portfolio:{record['id']}:{language}"
     stored = st.session_state.get(key)
-    if stored is None and st.button(_t("Prepare the documents"), key=key + "_prepare"):
+    asked_again = document_key in st.session_state.get(prose_translation.ASKED, set())
+    if stored is None and (asked_again or st.button(_t("Prepare the documents"), key=key + "_prepare")):
+        translation = prose_translation.for_page(context, document_key)
         try:
-            stored = [(name, data) for name, data, _ in documents(context, record, owner, language=language)]
+            stored = [(name, data) for name, data, _ in documents(context, record, owner, language=language,
+                                                                  translate=translation)]
         except (AccountError, ValueError) as error:
             st.caption(str(error))
             return
         st.session_state[key] = stored
+        st.session_state[key + "_translation"] = translation.status
     if stored is None:
         return
     if not stored:
@@ -173,6 +183,8 @@ def _prepare(context, record, owner, key, language):
                  else _t("Download the confirmed rubric assessment (PDF)"))
         st.download_button(label, data, file_name=name.split("/")[-1], mime="application/pdf",
                            key=key + "_" + name)
+    prose_translation.offer(st.session_state.get(key + "_translation"), document_key,
+                            widget_key=key + "_translate", forget=(key,))
 
 
 def render_encounter_documents(context, record, owner, key, *, has_documents=None):

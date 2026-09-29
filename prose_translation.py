@@ -90,6 +90,37 @@ class ProseTranslations:
                         found[row["source_text"]] = row["translated_text"]
         return found
 
+    def _documents_ready(self):
+        if not self.accounts.schema_ready("prose_translation_documents"):
+            with self.accounts._transaction(write=True) as connection:
+                self._execute(connection, """CREATE TABLE IF NOT EXISTS mrs_prose_translation_documents (
+                    document_key TEXT NOT NULL,
+                    language TEXT NOT NULL,
+                    source_digest TEXT NOT NULL,
+                    complete INTEGER NOT NULL,
+                    requested_at BIGINT NOT NULL,
+                    PRIMARY KEY (document_key, language)
+                )""")
+            self.accounts.mark_schema_ready("prose_translation_documents")
+
+    def document(self, document_key, language):
+        """The English a document's translation was last asked for, as a digest, or None."""
+        self._documents_ready()
+        with self.accounts._transaction() as connection:
+            row = self._execute(connection, """SELECT source_digest, complete, requested_at
+                FROM mrs_prose_translation_documents WHERE document_key = ? AND language = ?""",
+                                (str(document_key), language)).fetchone()
+        return dict(row) if row else None
+
+    def mark_document(self, document_key, language, source_digest, complete):
+        self._documents_ready()
+        with self.accounts._transaction(write=True) as connection:
+            self._execute(connection, "DELETE FROM mrs_prose_translation_documents WHERE document_key = ? "
+                                      "AND language = ?", (str(document_key), language))
+            self._execute(connection, """INSERT INTO mrs_prose_translation_documents
+                (document_key, language, source_digest, complete, requested_at) VALUES (?, ?, ?, ?, ?)""",
+                          (str(document_key), language, source_digest, int(bool(complete)), int(time.time())))
+
     def save(self, pairs, language, model):
         now = int(time.time())
         with self.accounts._transaction(write=True) as connection:
@@ -214,3 +245,114 @@ def stored_only(context):
     def no_provider(name, default=""):
         return "" if name == "OPENAI_API_KEY" else secret(name, default)
     return translator(context, secret=no_provider)
+
+
+# --- a page never buys a translation on its own (TD-41, faculty 2026-09-29) --------------
+# Opening or reloading a page, opening an encounter's review, or consulting or
+# generating a PDF reads what is stored and nothing more. A document whose model prose
+# is not all stored says so, in its English original, and its reader may ask for the
+# rest: that request, and only that, calls the provider, once, and what comes back is
+# kept for every later document. A document whose English changed since its translation
+# was asked for is said to be out of date, and is not translated again until asked.
+ASKED = "_prose_translation_asked"
+GENERATIONS = "_prose_translation_generations"
+STATUS_NOTES = {
+    "outdated": ("The Spanish translation of the AI reasoning is out of date: its English original changed "
+                 "since it was translated. The changed passages are shown in English until it is asked for again."),
+    "partial": "Part of the AI reasoning has no stored Spanish translation yet and is shown in its English original.",
+    "english": "The AI reasoning has no stored Spanish translation yet and is shown in its English original.",
+}
+REQUEST_LABEL = "Translate the AI reasoning into Spanish"
+
+
+def _source_digest(texts, language):
+    return hashlib.sha256(json.dumps([PROMPT_VERSION, language, sorted(texts)], ensure_ascii=False)
+                          .encode("utf-8")).hexdigest()
+
+
+class PageTranslation:
+    """What a page hands its document: the stored translations, unless its reader asked.
+
+    Once the document is written, ``status`` is ``complete``, ``partial`` (some passages
+    were never translated), ``outdated`` (the English changed since a translation of this
+    document was asked for) or ``english`` (none stored); it stays None for an English
+    document, which asks for nothing.
+    """
+
+    def __init__(self, context, document_key, *, asked=False, secret=secret):
+        self.store = ProseTranslations(context["store"]) if context and context.get("store") else None
+        self.document_key = str(document_key)
+        self.asked = bool(asked)
+        self.secret = secret
+        self.status = None
+
+    def __call__(self, texts, language="es"):
+        texts = [text for text in dict.fromkeys(texts) if isinstance(text, str) and text.strip()]
+        if language != "es" or not texts:
+            return {}
+        if self.asked:
+            known = ensure(texts, language, store=self.store, api_key=self.secret("OPENAI_API_KEY", ""),
+                           model=self.secret("MRS_TRANSLATION_MODEL", "") or DEFAULT_MODEL)
+        else:
+            known = self.store.known(texts, language) if self.store is not None else {}
+        digest = _source_digest(texts, language)
+        previous = self.store.document(self.document_key, language) if self.store is not None else None
+        if self.asked and self.store is not None:
+            self.store.mark_document(self.document_key, language, digest, all(text in known for text in texts))
+        if all(text in known for text in texts):
+            self.status = "complete"
+        elif previous and previous["source_digest"] != digest:
+            self.status = "outdated"
+        else:
+            self.status = "partial" if known else "english"
+        return known
+
+
+def _session():
+    import streamlit as st
+    return st.session_state
+
+
+def for_page(context, document_key, *, secret=secret):
+    """The translation for one document on a page: stored only, unless its reader just asked."""
+    asked = False
+    try:
+        pending = _session().setdefault(ASKED, set())
+        asked = str(document_key) in pending
+        pending.discard(str(document_key))
+    except Exception:
+        asked = False
+    return PageTranslation(context, document_key, asked=asked, secret=secret)
+
+
+def generation(document_key):
+    """Part of a page's cache key, so that a request rebuilds that document once."""
+    try:
+        return int(_session().get(GENERATIONS, {}).get(str(document_key), 0))
+    except Exception:
+        return 0
+
+
+def ask(document_key, forget=()):
+    """Record the reader's request; the next build of this document may call the provider."""
+    state = _session()
+    state.setdefault(ASKED, set()).add(str(document_key))
+    generations = state.setdefault(GENERATIONS, {})
+    generations[str(document_key)] = generations.get(str(document_key), 0) + 1
+    for key in forget:
+        state.pop(key, None)
+
+
+def offer(status, document_key, *, widget_key, forget=(), secret=secret):
+    """Where a document's AI reasoning is not all in Spanish, say so, and let its reader ask."""
+    if status not in STATUS_NOTES:
+        return False
+    import streamlit as st
+    from screen_language import t as _t
+    st.caption(_t(STATUS_NOTES[status]))
+    if not str(secret("OPENAI_API_KEY", "") or "").strip():
+        return False
+    if st.button(_t(REQUEST_LABEL), key=widget_key):
+        ask(document_key, forget)
+        st.rerun()
+    return True

@@ -188,15 +188,19 @@ def _pdf_download(context, report, record, *, compact, assessment=None, language
     # The assessment revision is part of the key: a saved change must not be
     # served from a cached document that predates it.
     stamp = (assessment or {}).get("traceability")
+    import prose_translation
+    # Consulting or generating this PDF reads stored translations only (TD-41, 2026-09-29).
+    document_key = f"brief:{report['brief_id']}:{mode}:{language or ''}"
     pdf_key = ("faculty_pdf_v4", context["user"]["id"], report["brief_id"], mode, app_url,
-               repr(stamp) if stamp else "", language or "")
+               repr(stamp) if stamp else "", language or "", prose_translation.generation(document_key))
     cache_key = repr(pdf_key)
     if cache_key not in st.session_state:
         try:
-            import prose_translation
+            translation = prose_translation.for_page(context, document_key, secret=_secret)
             st.session_state[cache_key] = render_faculty_brief_pdf(
                 report, record, compact=compact, app_url=app_url, assessment=assessment,
-                language=language, translate=prose_translation.translator(context, _secret))
+                language=language, translate=translation)
+            st.session_state[cache_key + "_translation"] = translation.status
         except (ValueError, LayoutError):
             if compact:
                 st.warning(_t("This report could not be fitted into the concise PDF. Open the full analysis below; you can still review and record assessments."))
@@ -207,6 +211,8 @@ def _pdf_download(context, report, record, *, compact, assessment=None, language
     st.download_button(label, st.session_state[cache_key],
                        file_name="faculty_assessment_" + record["id"][:12] + "_" + mode + ".pdf",
                        mime="application/pdf", key="download_faculty_" + mode + "_" + record["id"])
+    prose_translation.offer(st.session_state.get(cache_key + "_translation"), document_key,
+                            widget_key="translate_faculty_" + mode + "_" + record["id"], secret=_secret)
 
 
 def _training_year(context, record):
@@ -252,16 +258,21 @@ def _rubric_pdf_download(context, review, proposal, record, language="en"):
     badge = resident_profile.badge(context["store"], context["token"],
                                    record.get("user_id"), _training_year(context, record))
     review_key = review or {}
+    import prose_translation
+    document_key = f"rubric:{record['id']}:{language or ''}"
     cache_key = repr(("rubric_pdf_v2", context["user"]["id"], record["id"],
                       review_key.get("sequence"), review_key.get("status"),
                       (proposal or {}).get("proposal_id"), summary["encounters"],
-                      bool(badge), (badge or {}).get("initials"), language))
+                      bool(badge), (badge or {}).get("initials"), language,
+                      prose_translation.generation(document_key)))
     if cache_key not in st.session_state:
         try:
-            import prose_translation
+            # Generating this PDF reads stored translations only (TD-41, 2026-09-29).
+            translation = prose_translation.for_page(context, document_key, secret=_secret)
             st.session_state[cache_key] = render_rubric_report_pdf(
                 review, proposal, record, average=average, badge=badge, language=language,
-                translate=prose_translation.translator(context, _secret))
+                translate=translation)
+            st.session_state[cache_key + "_translation"] = translation.status
         except (RubricReportError, ValueError, LayoutError):
             st.caption(_t("The rubric document could not be prepared. The assessment above is "
                        "unchanged and remains available."))
@@ -270,6 +281,8 @@ def _rubric_pdf_download(context, review, proposal, record, language="en"):
         _t("Download rubric assessment (PDF)"), st.session_state[cache_key],
         file_name="rubric_assessment_" + record["id"][:12] + ".pdf",
         mime="application/pdf", key="download_rubric_" + record["id"])
+    prose_translation.offer(st.session_state.get(cache_key + "_translation"), document_key,
+                            widget_key="translate_rubric_" + record["id"], secret=_secret)
     st.caption(_t("Faculty document. It is not released to the resident until you have reviewed "
                "and completed it.") if review_key.get("status") != "confirmed" else
                _t("Confirmed. The resident's profile now includes this encounter."))

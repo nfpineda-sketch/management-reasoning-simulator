@@ -1890,6 +1890,14 @@ ES = {
         'Último revisor',
     'Learning focus':
         'Foco de aprendizaje',
+    'The Spanish translation of the AI reasoning is out of date: its English original changed since it was translated. The changed passages are shown in English until it is asked for again.':
+        'La traducción al español del razonamiento de la IA está desactualizada: su original en inglés cambió desde que se tradujo. Los pasajes que cambiaron se muestran en inglés hasta que se vuelva a pedir.',
+    'Part of the AI reasoning has no stored Spanish translation yet and is shown in its English original.':
+        'Parte del razonamiento de la IA todavía no tiene una traducción al español guardada y se muestra en su original en inglés.',
+    'The AI reasoning has no stored Spanish translation yet and is shown in its English original.':
+        'El razonamiento de la IA todavía no tiene una traducción al español guardada y se muestra en su original en inglés.',
+    'Translate the AI reasoning into Spanish':
+        'Traducir al español el razonamiento de la IA',
     'Your learning focus for this encounter is shared after a faculty member reviews it.':
         'El foco de aprendizaje de este encuentro se comparte cuando un docente lo haya revisado.',
     'Learning focus for this encounter':
