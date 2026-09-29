@@ -22,9 +22,9 @@ decisiones abiertas en un solo paquete, sin tocar el lector, los baselines ni la
 
 | ID | Tarea | Estado |
 |---|---|---|
-| C10-00 | Apertura y conciliación de registros (TD-19, resto de TD-31, TD-41; prueba que cruza TD y correcciones) | En curso |
-| C10-01 | Diagnóstico de los 10 scripts de regresión heredados (sin cambios) | Pendiente |
-| C10-02 | Paquete único de decisiones y revisiones docentes | Pendiente |
+| C10-00 | Apertura y conciliación de registros (TD-19, resto de TD-31, TD-41; prueba que cruza TD y correcciones) | **Hecho** (`test_debt_register_cites_its_corrections.py`) |
+| C10-01 | Diagnóstico de los 10 scripts de regresión heredados (sin cambios) | **Hecho**: ninguno está en `ACTIVE_REGRESSIONS` (56/56 activos pasan); a decisión en P-11 |
+| C10-02 | Paquete único de decisiones y revisiones docentes | **Hecho**: `docs/PAQUETE_DECISIONES_CICLO10.md` (P-01 a P-11, R-1 a R-5), hojas en `docs/revision/` |
 | C10-03 | Integridad del store: TD-18 sin I-F18 | Pendiente |
 | C10-04 | Fase 2, paso 1: auditoría de activar y desactivar cuentas (TD-44) | Pendiente |
 | C10-05 | Respaldo y restauración probados en SQLite y PostgreSQL | Pendiente |
