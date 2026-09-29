@@ -2,6 +2,19 @@
 
 Agrupadas en un solo lugar, como pediste. Ninguna bloqueó el trabajo técnico, y ninguna se tomó por ti.
 
+## Pendientes al 2026-09-29 (instrucción docente posterior a V3)
+
+**Regla:** donde no hay una foto aprobada y congruente con el estado de llegada, la sala muestra la
+vista neutral y el examen escrito. **No se generó ni se aprobó ninguna foto** en esta tanda.
+
+| Caso | Qué muestra hoy la sala (comprobado el 2026-09-29) | Qué queda pendiente | Criterio de cierre |
+|---|---|---|---|
+| `pulmonary_edema_75f` · V34 | El contrato de llegada (`c7cbae84…`) coincide con la foto de estado de V34 aprobada el 2026-09-26 («soluciona esos dos, aprueba»); la sala la muestra. DC1 no cambia la llegada: la conciencia escrita al llegar es la que muestra el motor | Sigue **pendiente**, como pidió: su revisión clínica frente a la llegada (DF-23, conciencia «Awake and oriented» con SpO2 84 %) | Su decisión: mantenerla o volver a la vista neutral |
+| `bradycardia_bb_54f` | El contrato de llegada (`87a5874f…`, somnoliento desde el ciclo 6) no tiene foto aprobada: la de V08 aprobada el 2026-09-27 es de otro contrato (`bf64fccc…`). **La sala muestra la vista neutral** | La foto de llegada (DF-23, fila 2): vista neutral o foto nueva | Su decisión; una foto nueva sería una generación con presupuesto y dos revisiones humanas |
+
+La generación de fotos en la sala sigue la regla de pago de la aplicación (`MRS_PAID_GENERATION`, decisión
+B1): para el piloto formativo debe quedar apagada (ver `docs/READINESS_PILOTO_FORMATIVO.md`).
+
 ## Respuestas del 2026-09-26 (tarde)
 
 Respondiste «Aprobado» a todas, y aprobaste las 7 fotos del piloto («Apruébalas, se ven bien»). Así quedó
