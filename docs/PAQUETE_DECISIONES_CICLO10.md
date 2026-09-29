@@ -154,6 +154,22 @@ C10-09).
     activos.
 - **Recomendación: B.** Desde ahora el informe diría «56/56 activos y 10 retirados», no «56 de 66».
 
+### P-12 · Las guías de TD1, F1, C1, C3 y C4 en el portal docente en español (resto de TD-07)
+
+- **Hechos:**
+  - Al registrar una observación, el portal docente en español muestra en inglés la razón, el componente y
+    la evidencia esperada que el caso declara para el objetivo.
+  - C10-08 dejó el borrador de las de C14 (67 textos, revisión R-4).
+  - Las de TD1, F1, C1, C3 y C4 son 392 textos distintos (unos 30.000 caracteres). Son guía para el docente;
+    el residente no las ve.
+- **Opciones:**
+  - **A.** Traducirlas como borrador, en una hoja como R-4, para su revisión.
+  - **B.** Dejarlas en inglés.
+  - **C.** Traducir sólo las de los objetivos que usted indique.
+- **Recomendación: B por ahora.** Revisar 392 textos es mucho trabajo docente para una guía que sólo lee el
+  docente; el inglés es la declaración que el motor y la rúbrica leen, y una traducción paralela puede
+  divergir de ella. Si el piloto muestra que estorba, A o C.
+
 ## Revisiones con firma
 
 | ID | Qué | Dónde | Filas |
@@ -161,11 +177,11 @@ C10-09).
 | R-1 | DC9: las filas propuestas de las nueve composiciones. Las alertas señalan dónde el texto copiado habla del caso de origen, por ejemplo una glucosa de llegada que la composición no tiene | `docs/revision/DC9_COMPOSICIONES.md` | 36 (14 alertas) |
 | R-2 | TD-04: el POCUS de llegada de los 14 casos C14 YES, en inglés y con su borrador en español | `docs/revision/TD04_POCUS_C14.md` | 14 |
 | R-3 | Las cuatro dudas residuales de TDFC, abajo, tal como están | este documento | 4 |
-| R-4 | El español de las frases del motor (C10-08) | se agrega al terminar C10-08 | — |
+| R-4 | Borradores en español (C10-08): las frases del motor que hoy se leen en inglés o mezcladas, y la razón, el componente y la evidencia esperada de C14 (TD-07). Ninguno se muestra antes de su aprobación | `docs/revision/ES_BORRADORES.md` | 18 frases + 31 casos de C14 |
 | R-5 | Las guías del piloto (C10-06), para aprobar o corregir antes de entregarlas | `docs/GUIA_RESIDENTE_PILOTO.md`, `docs/GUIA_DOCENTE_PILOTO.md` | 2 |
 
-Las hojas R-1 y R-2 salen del código (`tools_review_sheets.py`) y una prueba exige que estén al día. Ninguna
-aprueba nada.
+Las hojas R-1, R-2 y R-4 salen del código (`tools_review_sheets.py`) y una prueba exige que estén al día.
+Ninguna aprueba nada.
 
 **R-3 · Dudas residuales de TDFC** (`docs/tdfc/TDFC_TABLA_FINAL.md`; se mantienen hasta que usted las cambie):
 

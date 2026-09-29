@@ -218,6 +218,9 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-29-21 | DF-23 fila 7 (A): anaphylaxis_63m_betablocked muestra fibrilación auricular en el monitor y el ECG | variante anaphylaxis_63m_betablocked | clinical_decision_applied | clinical | — |
 | C-2026-09-29-22 | DF-23 fila 8 (A modificada): embarazo, FUM y menstruación son un tema propio; sin dato, «No documentado» | general | clinical_decision_applied | clinical | — |
 | C-2026-09-29-23 | Hipoglicemia: la vía de llegada se nombra sin decir quién la instaló | familia hypoglycemia | text | cosmetic | — |
+| C-2026-09-29-24 | TD-18 sin I-F18: el encuentro y su directiva en una transacción, errores registrados, claves únicas y filas ilegibles | general | technical_defect | none | — |
+| C-2026-09-29-25 | TD-44: activar, desactivar o cambiar el rol o el año de una cuenta queda con su autor y su hora | general | technical_defect | none | — |
+| C-2026-09-29-26 | TD-42, TD-43 y TD-38: las pantallas del piloto distinguen encuentros parecidos, no ofrecen un ZIP vencido y no preguntan después de un plan | general | technical_defect | none | — |
 
 ## La batería, configuración por configuración
 

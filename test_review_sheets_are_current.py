@@ -15,6 +15,8 @@ def test_every_row_waits_for_a_signature_and_nothing_is_approved():
     written = sheets.sheets()
     assert written[sheets.DC9_SHEET].count(sheets.REVIEW_LINE) == 36
     assert written[sheets.TD04_SHEET].count(sheets.REVIEW_LINE) == 14
+    # R-4: one signature for the engine's sentences and one per bank case for C14.
+    assert written[sheets.SPANISH_SHEET].count(sheets.REVIEW_LINE) == 1 + 31
     for text in written.values():
         assert "no aprueba" in text
 

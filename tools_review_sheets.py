@@ -1,12 +1,14 @@
 """Faculty review sheets written from the code, never by hand (cycle 10, C10-02).
 
-``python3 tools_review_sheets.py`` writes two sheets under ``docs/revision/``:
+``python3 tools_review_sheets.py`` writes three sheets under ``docs/revision/``:
 
 - ``DC9_COMPOSICIONES.md``: the 36 TD1/F1/C1/C3 rows proposed for the nine hypoglycaemia
   compositions (DC9), each with the case it was copied from and the facts in which the
   composition differs from that case;
 - ``TD04_POCUS_C14.md``: the authored arrival POCUS of the 14 bank cases whose C14 is YES
-  (TD-04), with its Spanish draft and the C14 declaration that rests on it.
+  (TD-04), with its Spanish draft and the C14 declaration that rests on it;
+- ``ES_BORRADORES.md``: the Spanish drafts of the engine's sentences a Spanish reader still sees
+  in English and of the C14 declarations (packet R-4, cycle 10, C10-08), none of them shown.
 
 A sheet approves nothing and changes nothing: every row is for a faculty member to confirm or
 change, with a signature. The flags only point at facts a reviewer should look at; they never
@@ -16,12 +18,14 @@ not written again.
 import json
 import re
 import sys
+import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "docs" / "revision"
 DC9_SHEET = OUT / "DC9_COMPOSICIONES.md"
 TD04_SHEET = OUT / "TD04_POCUS_C14.md"
+SPANISH_SHEET = OUT / "ES_BORRADORES.md"
 
 ROWS = ("TD1", "F1", "C1", "C3")
 REVIEW_LINE = "**Revisión docente:** ☐ Confirmo tal como está · ☐ Cambio: ____________ · Firma y fecha: ________"
@@ -165,8 +169,76 @@ def td04_sheet():
     return "\n".join(lines).rstrip() + "\n"
 
 
+FIELD_ES = {"rationale": "Por qué sí", "reason": "Por qué no", "observable_component": "Componente observable",
+            "expected_evidence": "Evidencia esperada", "outside_the_encounter": "Fuera del encuentro"}
+
+
+def spanish_sheet():
+    """R-4: the Spanish drafts of the engine's sentences and of C14, none of them shown (C10-08)."""
+    import spanish_drafts
+    import tools_engine_spanish
+    engine = list(spanish_drafts.ENGINE)
+    harvest = spanish_drafts.HARVEST
+    texts = spanish_drafts.c14_texts()
+    by_case = {}
+    for english, places in texts.items():
+        for case_id, field in places:
+            by_case.setdefault(case_id, []).append((field, english))
+    lines = [
+        "# R-4 · Borradores en español: frases del motor y C14",
+        "",
+        "Generado por `tools_review_sheets.py` desde `spanish_drafts.py`. **No se edita a mano** y **no aprueba",
+        "nada**: ningún borrador se muestra a un residente ni a un docente hasta que usted lo apruebe, y activarlo",
+        "después es un cambio aparte, registrado y con pruebas (`test_spanish_drafts.py`). La columna «Borrador» es",
+        "una propuesta para que usted la confirme o la cambie.",
+        "",
+        f"**Frases del motor (resto de DF-23 fila 11):** {len(engine)} · **Textos de C14 (TD-07):** {len(texts)} "
+        f"en {len(by_case)} casos",
+        "",
+        "## 1 · Frases del motor que hoy se leen en inglés",
+        "",
+        *textwrap.wrap(
+            f"Encontradas jugando la sala sin proveedor el {harvest['date']}: los 20 guiones del ensayo y una sonda "
+            f"de los 11 casos que no cubren (`tools_engine_spanish.py`), {harvest['runs']} corridas y "
+            f"{harvest['entries']} entradas. {harvest['templates']} plantillas se leen con inglés: "
+            f"{harvest['engine']} son frases del motor; {harvest['narrative_mixed']} son el POCUS del relato de un "
+            f"caso, que antes de su aprobación se lee mezclado palabra por palabra (TD-46), y "
+            f"{harvest['narrative_quoted']} son el examen neurológico que cita el relato del caso, que se traduce al "
+            "aprobarlo. La tabla suma las frases que el motor compone para el panel de examen y que la cosecha no "
+            "alcanzó. El relato de cada caso tiene su propia aprobación, caso por caso, en el tablero docente. Los "
+            "números se escriben `{n}`.", width=108),
+        "",
+    ]
+    if engine:
+        lines += ["| # | Dónde | Texto del motor | Cómo se lee hoy en español | Borrador | Nota |",
+                  "|---|---|---|---|---|---|"]
+        for number, row in enumerate(engine, 1):
+            place = "panel de examen" if row["kind"] == "examination" else "entrada de la sala"
+            found = "visto al jugar" if row["seen"] else "encontrado en el código"
+            where = f"{place} · {', '.join(row['cases'][:3])} ({found})"
+            now = tools_engine_spanish.template(tools_engine_spanish.presented(row["example"], kind=row["kind"]))
+            lines.append(f"| {number} | {_cell(where)} | {_cell(row['english'])} | {_cell(now)} | "
+                         f"{_cell(row['spanish'])} | {_cell(row['note'])} |")
+        lines += ["", REVIEW_LINE, ""]
+    else:
+        lines += ["Ninguna.", ""]
+    lines += [
+        "## 2 · C14: razón, componente y evidencia esperada (TD-07)",
+        "",
+        "Lo que el portal docente en español muestra hoy en inglés al registrar una observación de C14. Los de",
+        "TD1, F1, C1, C3 y C4 no están aquí: son la decisión P-12 del paquete.",
+        "",
+    ]
+    for case_id in sorted(by_case):
+        lines += [f"### `{case_id}`", "", "| Campo | Texto del caso | Borrador |", "|---|---|---|"]
+        for field, english in by_case[case_id]:
+            lines.append(f"| {FIELD_ES[field]} | {_cell(english)} | {_cell(spanish_drafts.C14[english])} |")
+        lines += ["", REVIEW_LINE, ""]
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def sheets():
-    return {DC9_SHEET: dc9_sheet(), TD04_SHEET: td04_sheet()}
+    return {DC9_SHEET: dc9_sheet(), TD04_SHEET: td04_sheet(), SPANISH_SHEET: spanish_sheet()}
 
 
 def main(argv=None):
