@@ -1670,10 +1670,10 @@ ES = {
         'Anula una evaluación solo para corregir su registro. El juicio original y el motivo quedan en el historial de auditoría. Una observación satisfactoria anulada deja de contribuir al conteo.',
     'Void assessment':
         'Anular evaluación',
-    'Component this encounter can show: {text}':
-        'Componente que este encuentro puede mostrar: {text}',
-    'Outside this encounter: {text}':
-        'Fuera de este encuentro: {text}',
+    'Component this encounter can show: {component}':
+        'Componente que este encuentro puede mostrar: {component}',
+    'Outside this encounter: {outside}':
+        'Fuera de este encuentro: {outside}',
     'The resident reads this reason on their progress page, beside the original judgment and the notes. Write it for them to read.':
         'La persona residente lee este motivo en su página de progreso, junto al juicio original y las notas. Escríbelo para que lo lea.',
     'This draft does not replace confirmed revision {v0}: the resident, the profile and the radar keep showing that revision until you confirm another.':

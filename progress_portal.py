@@ -195,9 +195,9 @@ def render_attempt_assessment(context, record):
                           items="; ".join(opportunity["expected_evidence"])))
         if opportunity.get("observable_component"):
             # A YES observes one component of the EPA, never all of it (TDFC, cycle 8).
-            st.caption(_t("Component this encounter can show: {text}", text=opportunity["observable_component"]))
+            st.caption(_t("Component this encounter can show: {component}", component=opportunity["observable_component"]))
         if opportunity.get("outside_the_encounter"):
-            st.caption(_t("Outside this encounter: {text}", text=opportunity["outside_the_encounter"]))
+            st.caption(_t("Outside this encounter: {outside}", outside=opportunity["outside_the_encounter"]))
         if objective.get("observable_behaviors"):
             with st.expander(_t("Competency evidence to review")):
                 for behavior in objective["observable_behaviors"]:
