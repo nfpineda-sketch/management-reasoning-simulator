@@ -31,9 +31,10 @@ UNIQUE_KEYS = {
                                             None),
     "mrs_image_displays_sequence_unique": ("mrs_image_displays", ("attempt_id", "sequence"), None),
     "mrs_image_ledger_sequence_unique": ("mrs_image_ledger", ("seq",), None),
-    # The one that existed before cycle 10, under its original name.
+    # The two that existed before cycle 10, under their original names.
     "mrs_progress_current_observation": ("mrs_progress_observations", ("attempt_id", "objective_id"),
                                          "voided_at IS NULL"),
+    "mrs_active_resident_attempt": ("mrs_attempts", ("user_id",), "status = 'active' AND is_sandbox = 0"),
 }
 
 

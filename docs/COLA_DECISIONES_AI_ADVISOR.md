@@ -26,7 +26,7 @@ decisiones abiertas en un solo paquete, sin tocar el lector, los baselines ni la
 | C10-01 | Diagnóstico de los 10 scripts de regresión heredados (sin cambios) | **Hecho**: ninguno está en `ACTIVE_REGRESSIONS` (56/56 activos pasan); a decisión en P-11 |
 | C10-02 | Paquete único de decisiones y revisiones docentes | **Hecho**: `docs/PAQUETE_DECISIONES_CICLO10.md` (P-01 a P-11, R-1 a R-5), hojas en `docs/revision/` |
 | C10-03 | Integridad del store: TD-18 sin I-F18 | **Hecho** (C-2026-09-29-24): I-F09 una transacción, I-F10 errores registrados por clase, I-F06 e I-F19 claves únicas sin bloquear una base con repeticiones (`check_database.py --integrity`), I-F20 filas ilegibles señaladas; PostgreSQL en C10-05 |
-| C10-04 | Fase 2, paso 1: auditoría de activar y desactivar cuentas (TD-44) | Pendiente |
+| C10-04 | Fase 2, paso 1: auditoría de activar y desactivar cuentas (TD-44) | **Hecho** (C-2026-09-29-25): estado, rol y año con autor y hora; sólo el administrador lo lee; PostgreSQL en C10-05 |
 | C10-05 | Respaldo y restauración probados en SQLite y PostgreSQL | Pendiente |
 | C10-06 | Runbook, preflight y guías del piloto | Pendiente |
 | C10-07 | Pantallas del piloto: TD-42, TD-43, TD-38 | Pendiente |

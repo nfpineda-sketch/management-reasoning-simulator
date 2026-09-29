@@ -309,14 +309,27 @@ class AccountStore:
                 user_id TEXT NOT NULL REFERENCES mrs_users(id),
                 diagnostic_json TEXT NOT NULL, created_at BIGINT NOT NULL
             )""",
+            # Who changed an account's status, role or year, and when (TD-44, §154EI;
+            # cycle 10). Append-only: a row is never updated or deleted, and only an
+            # administrator reads it.
+            """CREATE TABLE IF NOT EXISTS mrs_account_changes (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL REFERENCES mrs_users(id),
+                actor_id TEXT NOT NULL REFERENCES mrs_users(id),
+                changes_json TEXT NOT NULL,
+                created_at BIGINT NOT NULL
+            )""",
             "CREATE INDEX IF NOT EXISTS mrs_sessions_user ON mrs_sessions(user_id)",
             "CREATE INDEX IF NOT EXISTS mrs_attempts_user ON mrs_attempts(user_id, updated_at)",
-            """CREATE UNIQUE INDEX IF NOT EXISTS mrs_active_resident_attempt
-                ON mrs_attempts(user_id) WHERE status = 'active' AND is_sandbox = 0""",
+            "CREATE INDEX IF NOT EXISTS mrs_account_changes_user ON mrs_account_changes(user_id, created_at)",
+            # mrs_active_resident_attempt: created by store_integrity.enforce below, so that an
+            # older database holding two active encounters of one resident still opens (cycle 10).
         ]
         with self._transaction(write=True) as connection:
             for statement in statements:
                 self._execute(connection, statement)
+            import store_integrity
+            store_integrity.enforce(self._execute, connection, "mrs_active_resident_attempt")
             if self._sqlite:
                 columns = {row["name"] for row in self._execute(connection, "PRAGMA table_info(mrs_attempts)").fetchall()}
             else:
@@ -468,7 +481,7 @@ class AccountStore:
     def update_user(self, token: str, user_id: str, role: str | None = None,
                     training_year: int | None = None, active: bool | None = None):
         with self._transaction(write=True) as connection:
-            self._actor(connection, token, {"admin"})
+            actor = self._actor(connection, token, {"admin"})
             row = self._execute(connection, "SELECT * FROM mrs_users WHERE id = ?", (user_id,)).fetchone()
             if row is None:
                 raise AccountError("The account was not found.")
@@ -486,8 +499,28 @@ class AccountStore:
                     raise AccountError("Keep at least one active administrator.")
             self._execute(connection, "UPDATE mrs_users SET role = ?, training_year = ?, active = ? WHERE id = ?",
                 (new_role, new_year, int(new_active), user_id))
-            if (new_role, new_year, new_active) != (row["role"], row["training_year"], bool(row["active"])):
+            before = {"active": bool(row["active"]), "role": row["role"], "training_year": row["training_year"]}
+            after = {"active": new_active, "role": new_role, "training_year": new_year}
+            changes = {field: [before[field], after[field]] for field in before if before[field] != after[field]}
+            if changes:
                 self._execute(connection, "DELETE FROM mrs_sessions WHERE user_id = ?", (user_id,))
+                # Written in the same transaction as the change itself (TD-44).
+                self._execute(connection, """INSERT INTO mrs_account_changes
+                    (id, user_id, actor_id, changes_json, created_at) VALUES (?, ?, ?, ?, ?)""",
+                    (uuid.uuid4().hex, user_id, actor["id"], json.dumps(changes, sort_keys=True), int(time.time())))
+
+    def account_changes(self, token: str, limit: int = 200) -> list[dict]:
+        """Who changed which account's status, role or year, and when; newest first. Administrators only."""
+        limit = max(1, min(int(limit), 1000))
+        with self._transaction() as connection:
+            self._actor(connection, token, {"admin"})
+            rows = self._execute(connection, f"""SELECT c.id, c.changes_json, c.created_at,
+                u.username AS account, a.username AS changed_by
+                FROM mrs_account_changes c JOIN mrs_users u ON u.id = c.user_id
+                JOIN mrs_users a ON a.id = c.actor_id
+                ORDER BY c.created_at DESC, c.id DESC LIMIT {limit}""").fetchall()
+            return [{"id": row["id"], "account": row["account"], "changed_by": row["changed_by"],
+                     "at": row["created_at"], "changes": json.loads(row["changes_json"])} for row in rows or []]
 
     def change_password(self, token: str, current_password: str, new_password: str) -> str:
         """Change one's own password, revoke every session, and issue a fresh one."""

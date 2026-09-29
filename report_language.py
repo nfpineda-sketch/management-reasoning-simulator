@@ -2192,6 +2192,11 @@ ES = {
     'Deactivating is not deleting: the account can no longer sign in, and its encounters, Traces, rubrics, evidence and portfolio are kept.':
         'Desactivar no es borrar: la cuenta ya no puede iniciar sesión, y se conservan sus encuentros, Traces, rúbricas, evidencia y portafolio.',
     'Inactive': 'Inactiva',
+    'Account change history': 'Historial de cambios de cuentas',
+    'No account has been changed yet.': 'Todavía no se ha cambiado ninguna cuenta.',
+    'Change': 'Cambio',
+    'Changed by': 'Cambiado por',
+    'When': 'Cuándo',
     'Account': 'Cuenta',
     'Year': 'Año',
     'resident': 'residente',

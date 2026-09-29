@@ -50,7 +50,7 @@ Los permisos están en `docs/MATRIZ_PERMISOS_ROLES.md`.
 | Notas privadas docentes (§154AE) | No existe la capa; requiere persistencia nueva. |
 | Descarga selectiva del portafolio (§154AJ) | La individual y la completa cubren lo prioritario. |
 | «Ver» el PDF dentro de la app (§154AH) | `st.pdf` necesita un componente que no está instalado; el PDF se descarga. |
-| Registro de auditoría de activar/desactivar (§154EI) | Requiere una tabla nueva en el store de cuentas: Fase 2. |
+| Registro de auditoría de activar/desactivar (§154EI) | **Hecho** en el ciclo 10 (Fase 2, paso 1; C-2026-09-29-25). |
 | Historial de asignaciones por residente (§154DT) | `DirectiveStore.history` existe; falta una vista. |
 | Portafolio de una cuenta inactiva (§154DM) | Una cuenta inactiva no inicia sesión; pedir otra cosa es una decisión aparte. |
 | Reflexión posterior al encuentro (§154AM) | Hoja de ruta. |
@@ -62,7 +62,7 @@ anterior está cerrado, salvo que el docente diga otra cosa.
 
 | Orden | Ítem | Estado | Dependencia | Criterio de cierre |
 |---|---|---|---|---|
-| 1 | Auditoría de activar y desactivar cuentas (TD-44, §154EI): quién y cuándo | Pendiente | Tabla nueva en el store de cuentas, con migración probada en SQLite y PostgreSQL | Cada cambio de estado queda con autor y hora, visible para el administrador; pruebas de permisos |
+| 1 | Auditoría de activar y desactivar cuentas (TD-44, §154EI): quién y cuándo | **Hecho** en el ciclo 10 (C-2026-09-29-25): también rol y año; «Account change history», sólo para el administrador | Tabla nueva en el store de cuentas, con migración probada en SQLite y PostgreSQL | Cada cambio de estado queda con autor y hora, visible para el administrador; pruebas de permisos |
 | 2 | Notas privadas docentes (§154AE) | Pendiente | La auditoría (1); decidir quién las lee (sólo su autor o todo el cuerpo docente) | Notas que ningún residente ve por ninguna ruta (páginas, copia del registro, PDF); pruebas de permisos |
 | 3 | Descarga selectiva del portafolio (§154AJ) y portafolio de una cuenta inactiva (§154DM) | Pendiente | Decidir quién pide el portafolio de una cuenta inactiva (el administrador, no la cuenta) | Selección por encuentro; una cuenta inactiva no inicia sesión y su portafolio sólo lo entrega el rol decidido |
 | 4 | AI Longitudinal Review a pedido (P3, `docs/AI_LONGITUDINAL_REVIEW_SPEC.md`) | Pendiente | Presupuesto (§154FS) y los pasos anteriores | Sólo a pedido explícito, nunca al abrir una página (la regla de TD-41); sin puntaje global, ranking ni asignación automática |

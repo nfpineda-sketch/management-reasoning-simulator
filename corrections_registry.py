@@ -2440,6 +2440,27 @@ CORRECTIONS = (
                   "test_store_integrity.py::test_a_corrupt_column_is_said_on_its_row_and_the_page_still_reads"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-29-25",
+        "date": "2026-09-29",
+        "title": "TD-44: activar, desactivar o cambiar el rol o el año de una cuenta queda con su autor y su hora",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Ciclo 10, C10-04: el paso 1 de la Fase 2 de roles, en el orden que registró el docente. Cada cambio "
+                   "de estado, rol o año se escribe en mrs_account_changes, en la misma transacción que el cambio, con "
+                   "quién lo hizo y cuándo; guardar sin cambiar nada no escribe nada. Sólo un administrador lo lee, en "
+                   "«Account change history». La tabla es nueva y sólo se agrega: una base anterior la crea al abrir. "
+                   "El índice de un único encuentro activo por residente pasa por store_integrity, como los demás."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE10,
+        "affects": {"modules": ["account_store", "account_portal", "store_integrity", "report_language"],
+                    "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_account_changes_are_audited.py::test_deactivating_and_reactivating_is_written_with_its_author_and_time",
+                  "test_account_changes_are_audited.py::test_role_and_year_changes_are_written_and_a_save_without_change_is_not",
+                  "test_account_changes_are_audited.py::test_only_an_administrator_reads_the_history",
+                  "test_account_changes_are_audited.py::test_the_administrator_sees_the_history_and_the_resident_page_never_shows_it"],
+        "preservation": None,
+    },
 )
 
 

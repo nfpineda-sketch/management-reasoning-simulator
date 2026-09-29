@@ -8,6 +8,7 @@ for every rerun and administrative mutations also require authorization there.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import logging
 import os
 from pathlib import Path
@@ -272,6 +273,7 @@ def _render_admin_controls(context: dict[str, Any]) -> None:
                             for user in users]), hide_index=True)
         st.caption(_t("Deactivating is not deleting: the account can no longer sign in, and its encounters, "
                       "Traces, rubrics, evidence and portfolio are kept."))
+        _render_account_changes(store, token)
         selected_id = st.selectbox(
             _t("Manage an account"), list(users_by_id),
             format_func=lambda user_id: str(users_by_id[user_id]["username"])
@@ -305,6 +307,36 @@ def _render_admin_controls(context: dict[str, Any]) -> None:
                 else:
                     st.session_state["_account_admin_notice"] = "Account updated. The user must sign in again."
                 st.rerun()
+
+
+def _describe_account_change(changes: dict) -> str:
+    """One change of status, role or year, in the reader's language."""
+    parts = []
+    for field, (before, after) in sorted(changes.items()):
+        if field == "active":
+            parts.append(_t("Status") + ": " + _t("Active" if before else "Inactive") + " → "
+                         + _t("Active" if after else "Inactive"))
+        elif field == "role":
+            parts.append(_t("Role") + ": " + _t(str(before)) + " → " + _t(str(after)))
+        elif field == "training_year":
+            parts.append(_t("Year") + ": " + str(before or "—") + " → " + str(after or "—"))
+    return "; ".join(parts)
+
+
+def _render_account_changes(store: AccountStore, token: str) -> None:
+    """Who changed which account, and when (TD-44, §154EI; cycle 10). Administrators only."""
+    with st.expander(_t("Account change history")):
+        try:
+            changes = store.account_changes(token)
+        except AccountError:
+            changes = []
+        if not changes:
+            st.caption(_t("No account has been changed yet."))
+            return
+        st.dataframe(_rows([{"When": datetime.fromtimestamp(float(item["at"]), tz=timezone.utc)
+                             .strftime("%Y-%m-%d %H:%M UTC"),
+                             "Account": item["account"], "Change": _describe_account_change(item["changes"]),
+                             "Changed by": item["changed_by"]} for item in changes]), hide_index=True)
 
 
 def _render_password_change(context: dict[str, Any]) -> None:

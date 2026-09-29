@@ -74,7 +74,6 @@ un defecto que el piloto puede medir.
 | KD-30 | Lector | Una indicación para casa tras el alta se lee como orden ahora y la retiene con una pregunta («Discharge home, start prednisone tomorrow»); «Adrenalina autoinyectable para casa» sin alta pregunta la velocidad de una infusión | revisión adversarial y sondas del ciclo 9 | No | Con las recetas del alta |
 | TD-42 | Pantallas | El selector «Encounter record» del docente rotula por minuto: dos encuentros del mismo desafío terminados en el mismo minuto se confundirían (la clase que se corrigió en las páginas nuevas del ciclo 9) | revisión visual del ciclo 9 | No | Cuando se toque la vista docente |
 | TD-43 | Pantallas | Pendientes de la revisión visual: la página docente es larga (la evidencia por marco queda al final); los rótulos del radar de las tarjetas son pequeños; la columna «Through» es larga; un ZIP del portafolio ya preparado no se rehace en la misma sesión si después se confirma otro documento (su manifiesto lleva la hora); la clave `Working model` está duplicada en el catálogo de pantallas | `docs/EXPERIENCIA_POR_ROL.md` | No | Con el piloto formativo |
-| TD-44 | Cuentas | Activar o desactivar una cuenta no registra quién ni cuándo (§154EI): requiere una tabla nueva en el store de cuentas (Fase 2) | `docs/EXPERIENCIA_POR_ROL.md` | No | Antes de que varias personas administren cuentas |
 | TD-38 (KD-25) | Sala | Un envío que sólo trae un plan (una orden condicional o una indicación al paciente) no ejecuta ni retiene nada: la sala dice «Recorded as a conditional plan, not executed now: …» y el Trace lo registra, pero después agrega el aviso genérico «Please specify a question, investigation, treatment, or reassessment.», como ya pasaba con «si» | ciclo 8 (`docs/CICLO8_LECTOR.md`) | No | Mostrarlo como registrado, sin el aviso, cuando se toque la sala |
 
 ## Corregido en el ciclo 10 (2026-09-29)
@@ -82,6 +81,7 @@ un defecto que el piloto puede medir.
 | ID | Qué | Registro |
 |---|---|---|
 | TD-18 (parte) | I-F09, I-F06, I-F19/20 e I-F10; I-F18 sigue fuera (DF-24) | C-2026-09-29-24 |
+| TD-44 | Activar, desactivar o cambiar el rol o el año de una cuenta queda con autor y hora; sólo el administrador lo lee (paso 1 de la Fase 2) | C-2026-09-29-25 |
 
 ## Corregido después de V3 (2026-09-29)
 
