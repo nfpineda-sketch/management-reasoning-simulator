@@ -12,6 +12,7 @@ de estos cambios tiene todavía revisión clínica externa.
 | 3 | POCUS de la HDA según el llenado efectivo | C-2026-09-29-12 | `test_gi_bleed_pocus.py` |
 | 4 | TD-31: la hemostasia no es una suma; reducido frente a detenido | C-2026-09-29-13 | `test_hemostasis_is_not_a_sum.py` |
 | 5 | Hipoglicemia DC2–DC5: la vía como propiedad del acceso (`glucose_rescue` 2.0) | C-2026-09-29-14 | `test_hypoglycemia_lines.py`, `test_hypoglycemia_battery.py` |
+| 6 | `acs_70f_left_main`: el VI de llegada dice el grado leve, EN/ES | C-2026-09-29-15 | `test_acs_left_main_arrival.py` |
 
 ## 1 · TEP
 
@@ -129,3 +130,39 @@ registra). Medido en `hypoglycemia_54m_thiamine` (vía fallida) y `hypoglycemia_
   de 1.0, incluida la IO que reparaba la vía.
 - **Pendiente:** DC4-F (farmacología de una fracción de glucagón u octreótido). El lector no cambió; sus
   brechas quedan en la deuda del lector.
+
+## 6 · `acs_70f_left_main`: el grado del VI al llegar
+
+| | Antes (V3) | Ahora |
+|---|---|---|
+| POCUS de llegada (EN) | «Globally reduced contraction…» sin grado | «Globally mildly reduced contraction without a single focal defect» |
+| Español | «Contracción globalmente disminuida…» | «Contracción globalmente levemente disminuida sin un defecto focal único» |
+| Hallazgo docente | sin grado | «Globally mildly reduced contraction on POCUS» |
+| Controles del modelo | «Contraction is globally mildly reduced» | igual |
+
+- **Leve, no moderado:** es el grado que el modelo ya mantenía. `lv_function` 0,82 es una posición docente
+  del modelo, **nunca** una fracción de eyección de 82 %. El eje de congestión no se tocó.
+- **La traducción del caso vuelve a revisión docente** antes de usarse en la sala, porque cambió un pasaje
+  aprobado.
+- `bradycardia_bb_54f` conserva la vista neutral; no se generó ni aprobó ninguna foto.
+
+## 7 · Decisiones no clínicas de la ampliación
+
+| Decisión | Estado | Registro · commit | Pruebas |
+|---|---|---|---|
+| Foco de aprendizaje oculto hasta la revisión docente (§154AB) | Implementado | C-2026-09-29-16 · `23afbb7`, `fc10159` | `test_learning_focus_waits_for_review.py` |
+| TD-41: ninguna página ni PDF traduce al abrirse; sólo el pedido del lector | Implementado | C-2026-09-29-17 · `c765d8f` | `test_translations_are_asked_for.py` |
+| KD-31: el tamizaje cita el tratamiento previo como contexto | Implementado | C-2026-09-29-18 · `fa1d910` | `test_prior_treatment_in_screening.py` |
+| DC9: propuestas TD/F/C de las composiciones, pendientes | Implementado como propuesta; **la revisión sigue pendiente** | C-2026-09-29-19 · `2824270` | `test_tdfc_composition_proposals.py` |
+| Baseline inglés = V3 `3d942ee` | Registrado (entrada nueva) | `adf0def` | `test_validation_baselines.py`, `test_validation_language_separation.py` |
+| Deuda del lector TD-45 | Registrada; el lector no cambió | `8f705ff` | `test_reader_gaps_registered.py` |
+| Fase 2 de roles | Sólo el orden | `237cceb` | — |
+| Imágenes pendientes (V34 · 75f, bb_54f) | Registradas; nada generado ni aprobado | `237cceb` | — |
+
+## Lo que no cambió
+
+Las evaluaciones confirmadas, D1–D5, los eventos críticos y sus pesos, el −3, la referencia TDFC aprobada
+(salvo la adaptación del tamizaje del TEP), la variabilidad plausible ya cerrada, el lector (congelado) y
+el baseline español `939978a`. Las cuatro dudas residuales de TDFC siguen provisionales; TD-04 sigue caso
+a caso; DC6–DC9 (DC9 salvo la propuesta) y «suero glucosado» siguen diferidos.
+

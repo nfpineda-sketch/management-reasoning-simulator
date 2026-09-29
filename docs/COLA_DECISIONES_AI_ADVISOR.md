@@ -5,11 +5,53 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-29, al cerrar el ciclo 9 (secciones «Cierre del
-  ciclo 9» y «Apertura del ciclo 9»). Los ciclos 8, 7 y anteriores siguen más
-  abajo.
+- **Actualizado:** 2026-09-29, después de V3 (sección «Estado posterior a V3»,
+  la vigente). La tabla del cierre del ciclo 9 y los ciclos anteriores siguen
+  más abajo, como estaban.
 
-## Pendientes de decisión
+## Estado posterior a V3 (2026-09-29)
+
+Instrucción docente del 2026-09-29 que cierra las decisiones clínicas analizadas
+después de V3 y su ampliación no clínica. **Implementado no es validado:**
+nada de esto tiene todavía revisión clínica externa. Detalle clínico:
+`docs/POST_V3_CAMBIOS_CLINICOS.md`.
+
+| ID | Decisión | Alcance | Estado | Dependencia | Evidencia | Criterio de cierre |
+|---|---|---|---|---|---|---|
+| TEP · D revisada | Un shock obstructivo atribuible al TEP indica la reperfusión sin espera; la hipotensión sin hipoperfusión exige 15 min consecutivos; la noradrenalina sola no crea indicación | Familia TEP, banco y generados; encuentros nuevos | **IMPLEMENTADO** | — | C-2026-09-29-10; `test_pe_obstruction.py`, `test_pe_thrombolysis_screening.py` | Revisión clínica externa |
+| TEP · 61m | La lisis en 61m es indicada desde la llegada por shock obstructivo | `pulmonary_embolism_61m` | **IMPLEMENTADO y verificado** en el motor (98/61 a los 45 min) | — | `docs/PULMONARY_EMBOLISM_MAGNITUDES.md` | Revisión clínica externa |
+| TEP · noradrenalina innecesaria | Ya no produce una «hipotensión sostenida» falsa ni vuelve indicada la lisis (33f) | Familia TEP | **IMPLEMENTADO** | — | ídem | Revisión clínica externa |
+| TEP · farmacología de la lisis no indicada | Hoy una lisis no indicada no disuelve nada | Familia TEP | **DIFERIDO** | Decisión clínica con fuente | `docs/PULMONARY_EMBOLISM_MAGNITUDES.md` («Qué quedó aparte») | Decisión docente registrada |
+| TEP · repetición de dosis | Una segunda dosis se registra como repetición sin efecto propio | Familia TEP | **DIFERIDO** | Decisión de seguridad y efecto | ídem | Decisión docente registrada |
+| D3 / C1 / TDFC · «sustained hypotension» | Redacción de las declaraciones aprobadas | Declaraciones de TEP | **PENDIENTE**; no se tocó (la referencia aprobada no cambia) | Decisión de redacción | ídem | Nueva redacción aprobada, sólo para encuentros nuevos |
+| DC1 | La conciencia escrita al llegar es la que muestra el motor; se deteriora sólo si la fisiología empeora | Motor de familias; encuentros nuevos | **IMPLEMENTADO** | — | C-2026-09-29-11; `test_arrival_consciousness.py` | Revisión clínica externa |
+| DC2 | La cánula de llegada existe y se puede examinar | Hipoglicemia, 12 configuraciones | **IMPLEMENTADO** | — | C-2026-09-29-14; `test_hypoglycemia_lines.py` | Revisión clínica externa |
+| DC3 | Una dosis IO válida instala su aguja y llega entera | Hipoglicemia | **IMPLEMENTADO** (el lector no cambió: «IO, then D50» sigue retenido, TD-45f) | — | ídem | Revisión clínica externa |
+| DC4 | La falla es de la vía: llega el 15 % de lo que corre por la cánula infiltrada | Hipoglicemia | **IMPLEMENTADO** (variante de b; el 15 % es abstracción docente) | — | ídem | Revisión clínica externa |
+| DC4-F | Glucagón y octreótido por la cánula infiltrada | Hipoglicemia | **PENDIENTE** (nueva) | Fuente farmacológica | `docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md` | Elegir (a), (b) o (c), con fuente |
+| DC5 | Una infusión que corría pasa a la vía siguiente | Hipoglicemia | **IMPLEMENTADO** | — | C-2026-09-29-14 | Revisión clínica externa |
+| DC6 | Peso de la tiamina en D3 | Hipoglicemia | **DIFERIDO** | Decisión docente | ídem | Peso decidido |
+| DC7 | Reevaluar evaluaciones confirmadas de la 54m | Evaluaciones ya confirmadas | **DIFERIDO**; nada confirmado se tocó | Decisión docente y pantalla de reevaluación | ídem | Decisión registrada |
+| DC8 | Ventana de la oportunidad de D4 | Hipoglicemia | **DIFERIDO** | Decisión docente | ídem | Ventana decidida |
+| DC9 | Filas TD/F/C de las composiciones: las del origen como propuesta pendiente | 9 composiciones | **PROPUESTA IMPLEMENTADA; revisión PENDIENTE**; no expuestas | Revisión docente de 36 filas | C-2026-09-29-19; `test_tdfc_composition_proposals.py` | Cada fila revisada con firma |
+| «Suero glucosado» sin concentración | ¿10 % o preguntar? | Lector | **DIFERIDO** (lector congelado) | Ciclo del lector | `docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md` G | Decisión y ciclo aprobado |
+| DF-23 · fila 11 | Primer minuto, TEP antes de 15 min, VCI y VI en la HDA, traducción de las frases del modelo | Varios | **Tres partes IMPLEMENTADAS** (DC1, D revisada, POCUS de la HDA C-2026-09-29-12); **la traducción de las frases del modelo sigue PENDIENTE** | — | POST_V3 §2–§3 | Frases del modelo con su español aprobado |
+| DF-23 · 4b | Grado del VI de `acs_70f_left_main` | 1 caso | **IMPLEMENTADO** (leve; C-2026-09-29-15) | — | `test_acs_left_main_arrival.py` | Revisión del español (abajo) |
+| DF-23 · 6, 7, 8 | Pared tras reperfundir; FA en `anaphylaxis_63m_betablocked`; embarazo por caso | Casos SCA, anafilaxia, TEP | **PENDIENTE** | Decisión clínica | `docs/AUDITORIA_DF23_CICLO6.md` | Pregunta concreta en el informe final |
+| `acs_70f_left_main` · español | Su pasaje cambió; vuelve a revisión | 1 caso | **PENDIENTE** de revisión docente | — | C-2026-09-29-15 | Traducción aprobada de nuevo |
+| Imágenes · V34 (`pulmonary_edema_75f`) y `bradycardia_bb_54f` | Foto de llegada | 2 casos | **PENDIENTE**; nada generado ni aprobado; 75f muestra V34 (aprobada, mismo contrato), 54f la vista neutral | Decisión docente | `docs/IMAGENES_DECISIONES_CLINICAS.md` | Decisión registrada |
+| KD-31 | El tamizaje cita el tratamiento previo como contexto | Tamizaje | **IMPLEMENTADO** | — | C-2026-09-29-18; `test_prior_treatment_in_screening.py` | Revisión docente del uso |
+| §154AB · foco de aprendizaje | Oculto al residente hasta la revisión docente | Páginas del residente | **IMPLEMENTADO** | — | C-2026-09-29-16 | — |
+| TD-41 · traducciones | Sólo el pedido del lector traduce; nada al abrir | Páginas y PDF | **IMPLEMENTADO** | — | C-2026-09-29-17 | — |
+| Baseline inglés | V3 `3d942ee` | Validación externa inglesa | **DECIDIDO y REGISTRADO** (entrada nueva) | — | `validation/BASELINES.md` | — |
+| TD-45 · deuda del lector | Brechas con ejemplos reproducibles (incluye KD-02, KD-15) | Lector congelado | **REGISTRADO**; el lector no cambió | Ciclo del lector aprobado | `test_reader_gaps_registered.py` | Cada brecha corregida con su prueba y registro |
+| Roles · Fase 2 | TD-44 → notas privadas → descarga selectiva e inactivos → AI Longitudinal Review a pedido | Roles | **ORDEN REGISTRADO**; nada implementado | Presupuesto y decisiones de acceso | `docs/EXPERIENCIA_POR_ROL.md` | Cada paso con pruebas de permisos |
+| TDFC · cuatro dudas residuales | Declaraciones aplicadas como estaban | 4 filas | **PROVISIONAL, no validado** | Revisión docente | `tdfc/TDFC_TABLA_FINAL.md` | Cada fila confirmada o cambiada |
+| TD-04 | POCUS de los casos C14 YES | Caso a caso | **CASO A CASO** | Revisión docente | — | Cada caso confirmado |
+| Piloto formativo | Ver «Readiness» en `docs/READINESS_PILOTO_FORMATIVO.md` | Residentes, con supervisión docente | Ver el documento | Configuración de despliegue y autorización | ídem | Autorización docente explícita |
+| Fuera de alcance | DF-15, DF-25, DF-14, DF-12, DF-17, DF-4, DF-18, DF-9, DF-11, DF-5, biblioteca POCUS | — | **Sin cambio** | — | — | — |
+
+## Pendientes al cierre del ciclo 9 (histórico)
 
 | ID | Clase | Tema | Estado al cierre del ciclo 9 |
 |---|---|---|---|
