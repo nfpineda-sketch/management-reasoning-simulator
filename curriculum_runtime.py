@@ -17,6 +17,7 @@ from case_text_portal import render_case_text_review
 from rubric_text_portal import render_rubric_text_review
 from progress_portal import render_progress_dashboard, render_attempt_assessment
 from faculty_portal import render_faculty_analysis
+from faculty_cohort import render_cohort
 from screen_language import rows as _rows, t as _t
 
 RUNTIME_VERSION = "0.24.13"
@@ -473,12 +474,15 @@ def render_dashboard(context, initial_state, reset_session):
     attempts = store.list_attempts(token)
     own = [a for a in attempts if a["user_id"] == user["id"]]
     completed = [a for a in own if a["status"] == "completed" and not a["is_sandbox"]]
-    faculty_choice = review_choice = None
+    faculty_choice = review_choice = focused = None
+    if user["role"] != "resident":
+        # Who are my residents, and who needs my attention, before any tool (cycle 9, §154G).
+        focused = render_cohort(context, attempts)
     if user["role"] == "resident":
         st.subheader(_t("Your next clinical encounter"))
         st.caption(_t('Training year {v0} · {v1} completed encounter reviews', v0=user['training_year'], v1=len(completed)))
         st.write(_t("Manage the patient, explain your reasoning, and reassess as the encounter evolves. Your learning focus will be discussed after the encounter."))
-    else:
+    elif not focused:
         st.subheader(_t("Faculty sandbox"))
         st.caption(_t('These encounters are excluded from resident progress. {v0} challenges are available.', v0=len(CHALLENGES)))
         faculty_choice = st.selectbox(_t("Management challenge"), list(CHALLENGES), format_func=lambda key: key + " · " + CHALLENGES[key]["title"])
@@ -535,7 +539,8 @@ def render_dashboard(context, initial_state, reset_session):
             json.dumps(failure['data'], ensure_ascii=False, indent=2),
             file_name='case_preparation_diagnostic.json', mime='application/json')
     active = next((a for a in own if a["status"] == "active"), None)
-    if st.button(_t("Resume encounter") if active else _t("Begin Encounter"), type="primary"):
+    # A resident's record opened from the cohort is not the place to start a sandbox run.
+    if not focused and st.button(_t("Resume encounter") if active else _t("Begin Encounter"), type="primary"):
         from generated_case import GeneratedCaseError
         try:
             if active:
@@ -570,8 +575,10 @@ def render_dashboard(context, initial_state, reset_session):
                     st.rerun()
     if user["role"] in {"faculty", "admin"}:
         requested = st.query_params.get("faculty_attempt", "")
-        with st.expander(_t("Resident activity and recorded evidence"), expanded=bool(requested)):
-            resident_attempts = [a for a in attempts if not a["is_sandbox"]]
+        with st.expander(_t("Resident activity and recorded evidence"), expanded=bool(requested or focused)):
+            # A resident opened from the cohort narrows the list; a document link still finds its encounter.
+            resident_attempts = [a for a in attempts if not a["is_sandbox"]
+                                 and (not focused or requested or a["user_id"] == focused)]
             st.caption(_t("Single-program pilot. These are activity records and evidence prompts for faculty review, not competency scores."))
             _render_directives(context)
             waiting = _awaiting_review(context)
@@ -706,9 +713,11 @@ def _render_rubric_profile(context, user_id=None):
                    "or EPA supervision levels, and they neither feed nor replace the objective "
                    "record above. Only assessments a faculty member has confirmed appear here."))
         from rubric_portal import render_rubric_profile
+        import language
         # The year is read here and passed in: the rubric must not import the
-        # objective record, and the page is what knows both.
-        render_rubric_profile(context, user_id,
+        # objective record, and the page is what knows both. The chart speaks the
+        # page's language; it was always English (cycle 9 role audit).
+        render_rubric_profile(context, user_id, language=language.current(),
                               training_year=_training_year(context, user_id))
 
 

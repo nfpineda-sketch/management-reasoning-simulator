@@ -14,7 +14,8 @@ import report_language
 
 ROOT = Path(__file__).resolve().parent
 SCREENS = ("resident_portal.py", "management_trace_portal.py", "faculty_portal.py", "rubric_portal.py",
-           "progress_portal.py", "image_bank_portal.py", "account_portal.py", "curriculum_runtime.py")
+           "progress_portal.py", "image_bank_portal.py", "account_portal.py", "curriculum_runtime.py",
+           "faculty_cohort.py")
 
 
 def screen_strings(name):
