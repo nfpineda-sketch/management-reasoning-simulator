@@ -11,11 +11,13 @@ from contextlib import contextmanager
 import hashlib
 import hmac
 import json
+import logging
 from pathlib import Path
 import re
 import secrets
 import sqlite3
 import time
+import traceback
 from typing import Any
 import uuid
 
@@ -37,6 +39,7 @@ class AccountLocked(AccountError):
 
 
 PASSWORD_ROUNDS = 600_000
+_LOG = logging.getLogger(__name__)
 ROLES = frozenset({"resident", "faculty", "admin"})
 ATTEMPT_STATUSES = frozenset({"active", "completed", "abandoned"})
 _SCHEMA_LOCK = 731093218
@@ -249,10 +252,14 @@ class AccountStore:
             if connection is not None:
                 connection.rollback()
             raise
-        except Exception:
+        except Exception as error:
             if connection is not None:
                 connection.rollback()
-            # Driver exceptions can contain hostnames, usernames or SQL data.
+            # Driver exceptions can contain hostnames, usernames or SQL data, so the page
+            # gets a generic message. The server log gets the error's class and where it
+            # was raised -- never its message -- so that a programming error is not
+            # mistaken for an outage and leaves a trace (I-F10, cycle 10).
+            _LOG.error("Account store transaction failed: %s at %s", type(error).__name__, _raised_at(error))
             raise AccountError("The account database is temporarily unavailable. Please try again.") from None
         finally:
             if connection is not None:
@@ -514,7 +521,14 @@ class AccountStore:
             return [{"id": row["id"], "user_id": row["user_id"], "created_at": row["created_at"],
                      "diagnostic": json.loads(row["diagnostic_json"])} for row in rows]
 
-    def create_attempt(self, token: str, challenge_id: str, encounter: dict, is_sandbox: bool = False) -> str:
+    def create_attempt(self, token: str, challenge_id: str, encounter: dict, is_sandbox: bool = False,
+                       then=None) -> str:
+        """Create the encounter record; ``then(connection, actor, attempt_id)`` runs in the same transaction.
+
+        A faculty directive is consumed there (I-F09, cycle 10): an encounter never exists
+        without its directive used, nor a directive used without its encounter. ``then``
+        runs only when a new record is written, not when a resident's active one is returned.
+        """
         if not isinstance(challenge_id, str) or not re.fullmatch(r"R[123]-\d{2}", challenge_id):
             raise AccountError("The assigned challenge is invalid.")
         encoded = _json(encounter, max_bytes=1_000_000)
@@ -536,6 +550,8 @@ class AccountStore:
                 (id, user_id, challenge_id, encounter_json, payload_json, status, is_sandbox, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?)""",
                 (attempt_id, actor["id"], challenge_id, encoded, "{}", int(is_sandbox), now, now))
+            if then is not None:
+                then(connection, actor, attempt_id)
             return attempt_id
 
     @staticmethod
@@ -596,3 +612,9 @@ class AccountStore:
                 parameters += (actor["id"],)
             row = self._execute(connection, query, parameters).fetchone()
             return self._attempt(row) if row is not None else None
+
+
+def _raised_at(error):
+    """Where an error was raised, as file and line: enough to find it, nothing it carried."""
+    frames = traceback.extract_tb(error.__traceback__)
+    return f"{Path(frames[-1].filename).name}:{frames[-1].lineno}" if frames else "unknown"

@@ -12,6 +12,7 @@ import time
 import uuid
 
 from account_store import AccountError
+import store_integrity
 from competency_mapping import objective_is_eligible, objective_evidence_is_eligible
 from objectives import AUTONOMY_LEVELS, DEPTH_LEVELS, OBJECTIVES, evidence_items
 
@@ -96,8 +97,7 @@ class ProgressStore:
                 voided_at BIGINT, voided_by TEXT REFERENCES mrs_users(id), void_reason TEXT,
                 provenance_json TEXT
             )""",
-            """CREATE UNIQUE INDEX IF NOT EXISTS mrs_progress_current_observation
-                ON mrs_progress_observations(attempt_id, objective_id) WHERE voided_at IS NULL""",
+            # mrs_progress_current_observation: created by store_integrity.enforce below (I-F19).
             """CREATE INDEX IF NOT EXISTS mrs_progress_user_objective
                 ON mrs_progress_observations(user_id, objective_id)""",
             """CREATE TABLE IF NOT EXISTS mrs_progress_confirmations (
@@ -170,6 +170,8 @@ class ProgressStore:
                     (objective_id, target, revision, updated_by, updated_at)
                     VALUES (?, ?, 0, NULL, ?) ON CONFLICT(objective_id) DO NOTHING""",
                     (objective_id, definition["target"], int(time.time())))
+            for index in ("mrs_progress_drafts_sequence_unique", "mrs_progress_current_observation"):
+                store_integrity.enforce(self._execute, connection, index)
         self.accounts.mark_schema_ready("progress_store")
 
     def _resident(self, connection, actor, user_id=None):
@@ -262,11 +264,23 @@ class ProgressStore:
         result = dict(row)
         result["satisfactory"] = bool(result["satisfactory"])
         result["voided"] = result["voided_at"] is not None
-        result["evidence"] = json.loads(result.pop("evidence_json"))
-        result["evidence_refs"] = [item["ref"] for item in result["evidence"]]
-        provenance = result.pop("provenance_json", None)
+        # Row by row (I-F20, cycle 10): a corrupt value is this row's problem, said on
+        # the row, and no longer the whole page's. The judgement columns stay as saved.
+        evidence, evidence_readable = store_integrity.decode(
+            result.pop("evidence_json"), [], table="mrs_progress_observations", row_id=result["id"],
+            column="evidence_json")
+        result["evidence"] = evidence if isinstance(evidence, list) else []
+        result["evidence_refs"] = [item["ref"] for item in result["evidence"]
+                                   if isinstance(item, dict) and "ref" in item]
         # None for an observation recorded before provenance existed (legacy).
-        result["provenance"] = json.loads(provenance) if provenance else None
+        provenance, provenance_readable = store_integrity.decode(
+            result.pop("provenance_json", None), None, table="mrs_progress_observations", row_id=result["id"],
+            column="provenance_json")
+        result["provenance"] = provenance if isinstance(provenance, dict) else None
+        unreadable = [name for name, readable in (("evidence", evidence_readable and isinstance(evidence, list)),
+                                                  ("provenance", provenance_readable)) if not readable]
+        if unreadable:
+            result["unreadable"] = unreadable
         return result
 
     def list_residents(self, token):

@@ -1664,6 +1664,8 @@ ES = {
         'Este encuentro ya tiene una evaluación para ese objetivo; no se agregó un duplicado.',
     'This observation was voided and contributes no credit.':
         'Esta observación fue anulada y no aporta crédito.',
+    'Part of this observation could not be read; its judgement is shown as saved.':
+        'Parte de esta observación no se pudo leer; su juicio se muestra como se guardó.',
     'To record this objective, complete:':
         'Para registrar este objetivo, completa:',
     'Void an assessment only to correct its record. The original judgment and the reason remain in the audit history. A voided satisfactory observation no longer contributes to the count.':

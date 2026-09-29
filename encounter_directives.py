@@ -274,12 +274,22 @@ class DirectiveStore:
         """The launch that consumed it. Only the resident's own launch uses it."""
         with self.accounts._transaction(write=True) as connection:
             actor = self.accounts._actor(connection, token)
-            updated = self._execute(connection, """UPDATE mrs_encounter_directives
-                SET state = 'used', attempt_id = ?, closed_at = ?
-                WHERE id = ? AND user_id = ? AND state = 'waiting'""",
-                (attempt_id, int(time.time()), directive_id, actor["id"]))
-            if getattr(updated, "rowcount", 1) == 0:
-                raise AccountError("That directive is no longer waiting.")
+            self._use(connection, actor, directive_id, attempt_id)
+
+    def consumer(self, directive_id):
+        """The step ``create_attempt`` runs in its own transaction to consume this directive (I-F09).
+
+        If the directive is no longer waiting, the step fails and the encounter is not written.
+        """
+        return lambda connection, actor, attempt_id: self._use(connection, actor, directive_id, attempt_id)
+
+    def _use(self, connection, actor, directive_id, attempt_id):
+        updated = self._execute(connection, """UPDATE mrs_encounter_directives
+            SET state = 'used', attempt_id = ?, closed_at = ?
+            WHERE id = ? AND user_id = ? AND state = 'waiting'""",
+            (attempt_id, int(time.time()), directive_id, actor["id"]))
+        if getattr(updated, "rowcount", 1) == 0:
+            raise AccountError("That directive is no longer waiting.")
 
     def history(self, token, user_id):
         with self.accounts._transaction() as connection:

@@ -61,6 +61,8 @@ INSTRUCTION_2026_09_29_CYCLE9 = ("Instrucción docente del 2026-09-29, ciclo 9 d
                                  "TDFC de acs_54m_inferior; la fila 4a de DF-23 si es inequívoca)")
 INSTRUCTION_2026_09_29_CLOSING = ("Instrucción docente del 2026-09-29 que cierra el ciclo posterior a V3 (DF-23 filas 6, 7 "
                                   "y 8; el español de acs_70f_left_main; la vía de llegada neutra en hipoglicemia)")
+INSTRUCTION_2026_09_29_CYCLE10 = ("Instrucción docente del 2026-09-29 que aprueba la propuesta del ciclo 10 («apruebo "
+                                  "todo, incluir todo lo propuesto»), con DC4-F en la opción B mínima")
 INSTRUCTION_2026_09_29_POST_V3 = ("Instrucción docente del 2026-09-29 posterior a V3 (cerrar e implementar las decisiones "
                                   "clínicas analizadas: TEP con D revisada, DC1, POCUS de la HDA, TD-31, DC2–DC5 de "
                                   "hipoglicemia y el texto de acs_70f_left_main; y las decisiones no clínicas de su "
@@ -2409,6 +2411,33 @@ CORRECTIONS = (
         "clinical_relevance": "cosmetic",
         "tests": ["test_arrival_line_is_neutral.py::test_the_arrival_line_names_the_line_and_nobody",
                   "test_arrival_line_is_neutral.py::test_the_line_follows_the_case_narrative_language"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-24",
+        "date": "2026-09-29",
+        "title": "TD-18 sin I-F18: el encuentro y su directiva en una transacción, errores registrados, claves únicas y filas ilegibles",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Ciclo 10, C10-03. I-F09: crear el encuentro y consumir la directiva docente eran dos transacciones; "
+                   "ahora son una, y si la directiva ya no espera no se escribe el encuentro. I-F10: todo error de la base "
+                   "se mostraba como «temporarily unavailable» sin dejar rastro; ahora el registro del servidor guarda su "
+                   "clase y su lugar, nunca su mensaje. I-F06: los números de secuencia de rúbricas, borradores, fotos "
+                   "mostradas y el libro de presupuesto de imágenes tienen índice único. I-F19: una observación vigente "
+                   "duplicada por una versión anterior ya no deja la base de progreso inaccesible: se abre sin ese índice y "
+                   "check_database.py --integrity lista la repetición. I-F20: una columna JSON corrupta se lee fila por "
+                   "fila y la fila lo dice. I-F18 sigue fuera (DF-24)."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE10,
+        "affects": {"modules": ["account_store", "encounter_directives", "curriculum_runtime", "store_integrity",
+                                "rubric_store", "progress_store", "image_bank", "progress_portal", "check_database"],
+                    "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_store_integrity.py::test_the_launch_writes_the_encounter_and_uses_the_directive_together",
+                  "test_store_integrity.py::test_a_directive_no_longer_waiting_writes_no_encounter",
+                  "test_store_integrity.py::test_a_failure_is_logged_by_class_and_place_never_by_its_message",
+                  "test_store_integrity.py::test_every_unique_key_is_an_index_of_a_new_database",
+                  "test_store_integrity.py::test_an_old_repeat_no_longer_locks_the_store_and_is_reported",
+                  "test_store_integrity.py::test_a_corrupt_column_is_said_on_its_row_and_the_page_still_reads"],
         "preservation": None,
     },
 )

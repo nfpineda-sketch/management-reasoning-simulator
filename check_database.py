@@ -122,6 +122,46 @@ def describe_admin_hash(value):
     return describe_password_hash(str(value).strip("\r\n"))
 
 
+def report_integrity(url):
+    """List the keys the stores keep unique that some rows already repeat (I-F06, I-F19; cycle 10).
+
+    The application still opens such a database, without that one index, so that a readable
+    history is never locked away; a person decides which copy stands. Only table names, key
+    columns, encounter identifiers and counts are printed -- no names, no notes, no evidence.
+    """
+    sqlite = str(url).startswith("sqlite:")
+    if not sqlite:
+        complaint = describe(url)
+        if complaint:
+            print("The database URL is not usable:", complaint)
+            return 1
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from account_store import AccountError, AccountStore
+    import store_integrity
+    store = AccountStore(url, allow_sqlite=sqlite)
+    repeated = 0
+    for index, (table, columns, where) in store_integrity.UNIQUE_KEYS.items():
+        try:
+            with store._transaction() as connection:
+                found = store_integrity.repeats(store._execute, connection, index)
+        except AccountError:
+            print(f"{table}: not checked (the table is not there yet, or could not be read).")
+            continue
+        scope = f" where {where}" if where else ""
+        if not found:
+            print(f"{table} ({', '.join(columns)}{scope}): no repeats.")
+            continue
+        repeated += len(found)
+        print(f"{table} ({', '.join(columns)}{scope}): {len(found)} repeated key(s); its unique index is missing.")
+        for row in found[:10]:
+            print("   " + ", ".join(f"{column}={row[column]}" for column in columns) + f" · {row['copies']} copies")
+        if len(found) > 10:
+            print(f"   ... and {len(found) - 10} more.")
+    print("Nothing repeats." if not repeated else
+          "Resolve each repeat by hand (keep one row, or renumber), then restart the app to create the index.")
+    return 0 if not repeated else 2
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -131,7 +171,11 @@ def main(argv=None):
                         help="check MRS_ADMIN_PASSWORD_HASH instead of the database URL")
     parser.add_argument("--account", metavar="USERNAME",
                         help="report whether this account exists, is active, and is throttled")
+    parser.add_argument("--integrity", action="store_true",
+                        help="list keys that should be unique and are repeated (I-F06, I-F19)")
     arguments = parser.parse_args(argv)
+    if arguments.integrity:
+        return report_integrity(os.environ.get("MRS_DATABASE_URL", ""))
     if arguments.account:
         return report_account(os.environ.get("MRS_DATABASE_URL", ""), arguments.account)
     if arguments.admin_hash:

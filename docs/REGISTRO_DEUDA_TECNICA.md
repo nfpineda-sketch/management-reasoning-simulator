@@ -68,7 +68,7 @@ un defecto que el piloto puede medir.
 | TD-07 | Idioma | La razón y la evidencia esperada de C14 se muestran en inglés en el portal docente en español | auditoría nocturna, sección 5 | No | Con revisión docente de la traducción |
 | TD-10 | Observabilidad | El Trace no guarda el commit por turno, sólo al iniciar el encuentro | auditoría nocturna, anexo 59AP | No | Campo corto, cuando se toque el Trace |
 | TD-11 | Lenguaje de docs | «validated trajectory» significa «probada», no validación clínica | README | No | En textos nuevos |
-| TD-18 | Integridad | Migración: la foto de una confirmación absorbe observaciones posteriores (I-F18); directiva y encuentro en dos transacciones (I-F09); `sequence` sin restricción única (I-F06); duplicados previos o un JSON corrupto tiran la vista (I-F19/20); errores sin registro (I-F10) | auditoría nocturna, sección 1 | No | DF-24 dejó fuera I-F18 (ciclo 7); el resto, sin decisión |
+| TD-18 | Integridad | **Corregido en el ciclo 10 (C-2026-09-29-24):** directiva y encuentro en una transacción (I-F09); `sequence` con restricción única (I-F06); una observación vigente duplicada o un JSON corrupto ya no tiran la vista, y `check_database.py --integrity` lista las repeticiones (I-F19/20); los errores quedan registrados por su clase (I-F10). **Queda:** la foto de una confirmación absorbe observaciones posteriores al migrar (I-F18) | auditoría nocturna, sección 1 | No | DF-24 dejó fuera I-F18 (ciclo 7) |
 | TD-19 | Clínica menor | `bradycardia_bb_54f` corregida (llega somnolienta, C-2026-09-28-08). Después de V3 se resolvieron la FA de `anaphylaxis_63m_betablocked` (C-2026-09-29-21) y la pregunta por embarazo, FUM o menstruación, que es un tema propio y responde «No documentado» si el caso no lo escribió (C-2026-09-29-22). **Queda:** qué dice cada caso sobre embarazo o FUM en `asthma_24f`, `anaphylaxis_29f`, `pulmonary_embolism_33f` y `pneumonia_46f` (hoy «No documentado») | `docs/AUDITORIA_DF23_CICLO6.md` §2–§4 | No | Decisión docente (paquete del ciclo 10) |
 | KD-23 | Lector | Formas de tratamiento previo fuera del reconocedor: «s/p», «PTA», «El 112 le puso…», «por el 061», la vía puesta por el SAMU; no se da ni se registra nada | revisión adversarial del ciclo 9 | No | Con los datos externos |
 | KD-30 | Lector | Una indicación para casa tras el alta se lee como orden ahora y la retiene con una pregunta («Discharge home, start prednisone tomorrow»); «Adrenalina autoinyectable para casa» sin alta pregunta la velocidad de una infusión | revisión adversarial y sondas del ciclo 9 | No | Con las recetas del alta |
@@ -76,6 +76,12 @@ un defecto que el piloto puede medir.
 | TD-43 | Pantallas | Pendientes de la revisión visual: la página docente es larga (la evidencia por marco queda al final); los rótulos del radar de las tarjetas son pequeños; la columna «Through» es larga; un ZIP del portafolio ya preparado no se rehace en la misma sesión si después se confirma otro documento (su manifiesto lleva la hora); la clave `Working model` está duplicada en el catálogo de pantallas | `docs/EXPERIENCIA_POR_ROL.md` | No | Con el piloto formativo |
 | TD-44 | Cuentas | Activar o desactivar una cuenta no registra quién ni cuándo (§154EI): requiere una tabla nueva en el store de cuentas (Fase 2) | `docs/EXPERIENCIA_POR_ROL.md` | No | Antes de que varias personas administren cuentas |
 | TD-38 (KD-25) | Sala | Un envío que sólo trae un plan (una orden condicional o una indicación al paciente) no ejecuta ni retiene nada: la sala dice «Recorded as a conditional plan, not executed now: …» y el Trace lo registra, pero después agrega el aviso genérico «Please specify a question, investigation, treatment, or reassessment.», como ya pasaba con «si» | ciclo 8 (`docs/CICLO8_LECTOR.md`) | No | Mostrarlo como registrado, sin el aviso, cuando se toque la sala |
+
+## Corregido en el ciclo 10 (2026-09-29)
+
+| ID | Qué | Registro |
+|---|---|---|
+| TD-18 (parte) | I-F09, I-F06, I-F19/20 e I-F10; I-F18 sigue fuera (DF-24) | C-2026-09-29-24 |
 
 ## Corregido después de V3 (2026-09-29)
 

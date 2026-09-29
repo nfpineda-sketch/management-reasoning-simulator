@@ -95,6 +95,9 @@ def _render_history(goal):
             if observation.get("voided"):
                 st.caption(_t("This observation was voided and contributes no credit."))
                 st.write(observation.get("void_reason", ""))
+            if observation.get("unreadable"):
+                # I-F20 (cycle 10): a corrupt column is said on its own row; the judgement stands as saved.
+                st.caption(_t("Part of this observation could not be read; its judgement is shown as saved."))
             for item in observation.get("evidence", []):
                 st.caption(item.get("label", item.get("ref", _t("Recorded evidence"))))
                 st.json(item.get("details", {}), expanded=False)

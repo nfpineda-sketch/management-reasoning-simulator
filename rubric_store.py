@@ -20,6 +20,7 @@ import time
 import uuid
 
 from account_store import AccountError
+import store_integrity
 from faculty_analysis import FacultyAnalysisError, source_fingerprint
 from rubric import (DOMAIN_IDS, NOT_ASSESSABLE, RubricError, VERSION as RUBRIC_VERSION,
                     headline, score as compute_score, valid_score)
@@ -221,6 +222,8 @@ class RubricStore:
         with self.accounts._transaction(write=True) as connection:
             for statement in statements:
                 self._execute(connection, statement)
+            for index in ("mrs_rubric_proposals_sequence_unique", "mrs_rubric_reviews_sequence_unique"):
+                store_integrity.enforce(self._execute, connection, index)
         self.accounts.mark_schema_ready("rubric_store")
 
     def _next(self, connection, table, attempt_id):

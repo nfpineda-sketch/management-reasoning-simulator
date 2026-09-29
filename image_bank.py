@@ -36,6 +36,7 @@ from collections import OrderedDict
 from io import BytesIO
 
 from account_store import AccountError
+import store_integrity
 
 BANK_VERSION = "1.0"
 STAFF = frozenset({"faculty", "admin"})
@@ -318,6 +319,8 @@ class ImageBank:
         with self.accounts._transaction(write=True) as connection:
             for statement in statements:
                 self._execute(connection, statement)
+            for index in ("mrs_image_displays_sequence_unique", "mrs_image_ledger_sequence_unique"):
+                store_integrity.enforce(self._execute, connection, index)
             # Keys follow contract_key: a saved photograph of "mild sweat" is found
             # again under the key it is now drawn for (faculty decision 7).
             for row in self._execute(connection,

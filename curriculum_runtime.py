@@ -218,10 +218,14 @@ def start_encounter(context, initial_state, reset_session, faculty_choice=None, 
         # person had already met (faculty instruction of 2026-09-25, point 10).
         encounter["assignment"]["purpose"] = "practice"
         encounter["assignment"]["exposure"] = prior_exposure(own, encounter["evaluation_basis"])
-        attempt_id = store.create_attempt(token, assignment["challenge_id"], encounter, user["role"] != "resident")
+        consume = {}
         if directive is not None:
+            # Written and consumed in one transaction (I-F09, cycle 10): no encounter
+            # without its directive used, no directive used without its encounter.
             from encounter_directives import DirectiveStore
-            DirectiveStore(store).use(token, directive["id"], attempt_id)
+            consume = {"then": DirectiveStore(store).consumer(directive["id"])}
+        attempt_id = store.create_attempt(token, assignment["challenge_id"], encounter, user["role"] != "resident",
+                                          **consume)
         record = store.get_attempt(token, attempt_id)
         restore_attempt(context, record, reset_session)
         st.session_state.attempt_number = 1 + sum(a["status"] == "completed" for a in own)
