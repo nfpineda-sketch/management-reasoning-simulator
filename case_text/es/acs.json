@@ -779,8 +779,8 @@
    "es": "Alerta, con orientación conservada."
   },
   "/investigations/pocus/result/lv": {
-   "en": "Globally reduced contraction without a single focal defect",
-   "es": "Contracción globalmente disminuida sin un defecto focal único"
+   "en": "Globally mildly reduced contraction without a single focal defect",
+   "es": "Contracción globalmente levemente disminuida sin un defecto focal único"
   },
   "/investigations/pocus/result/rv": {
    "en": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",

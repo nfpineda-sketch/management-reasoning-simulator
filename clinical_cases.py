@@ -127,7 +127,10 @@ POCUS = {
         # what the examination and the film of this case say (scattered basal crackles, mild
         # congestion): the default "No B-lines" contradicted them (DF-23 row 4a, applied in
         # cycle 9 on the faculty's authorisation of 2026-09-29).
-        _pocus(lv="Globally reduced contraction without a single focal defect",
+        # Its grade is the model's own at arrival (mildly reduced, lv_function 0.82, a
+        # teaching position and never an ejection fraction), so the arrival scan and the
+        # repeat scans read the same (faculty, 2026-09-29).
+        _pocus(lv="Globally mildly reduced contraction without a single focal defect",
                ivc="1.9 cm; about 50% inspiratory collapse",
                lungs="Scattered B-lines at both bases; no diffuse B-line pattern"),
     ),
@@ -743,7 +746,7 @@ FAMILIES["acs"]["variants"].append(_case(
     "Left main or severe three-vessel ischemia with diffuse ST depression and ST elevation in aVR",
     ["Ongoing rest pain with hypoperfusion and congestion",
      "Diffuse ST depression with ST elevation in aVR, which points to the proximal lesion rather than one wall",
-     "Globally reduced contraction on POCUS"],
+     "Globally mildly reduced contraction on POCUS"],
     "Recognize a proximal lesion behind a diffuse ECG pattern and arrange immediate invasive assessment.",
     ["What did the elevation in aVR add to the diffuse depression?", "How did the perfusion findings change your urgency?"],
     ["aspirin", "consult", "reperfusion_referral"], ecg="diffuse_st_depression_avr",

@@ -2226,6 +2226,27 @@ CORRECTIONS = (
         "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_76f", "hypoglycemia_54m_thiamine"],
                          "scripts": ["admission", "double_ampoule", "early_discharge", "ed_observation", "examinations", "existing_line_dextrose", "failed_line_then_new_line", "glucagon_im", "glucagon_iv_existing_line", "infusion_after_ampoule", "infusion_existing_line", "intraosseous_dextrose", "new_line_then_dextrose", "octreotide_iv_existing_line", "octreotide_sc", "oral_after_recovery", "thiamine_then_dextrose", "untreated"]},
     },
+    {
+        "id": "C-2026-09-29-15",
+        "date": "2026-09-29",
+        "title": "acs_70f_left_main: el VI de llegada dice el grado leve que el modelo mantiene",
+        "scope": {"level": "variant", "variants": ["acs_70f_left_main"]},
+        "kind": "text",
+        "reason": ("El POCUS de llegada decía «Globally reduced contraction» sin grado, y los controles del modelo "
+                   "dicen «Contraction is globally mildly reduced»: el grado era leve desde la llegada (lv_function "
+                   "0,82, una posición docente del modelo y nunca una fracción de eyección de 82 %). La llegada dice "
+                   "ahora «Globally mildly reduced contraction without a single focal defect» y su español "
+                   "«Contracción globalmente levemente disminuida sin un defecto focal único»; el hallazgo docente, "
+                   "«Globally mildly reduced contraction on POCUS». Leve, no moderado: el grado del modelo no se "
+                   "recalibra por la congestión ni la hipoperfusión, y el eje de congestión no se toca. Como cambió "
+                   "un pasaje, la traducción del caso vuelve a revisión docente antes de usarse en la sala."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["clinical_cases", "case_text"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_acs_left_main_arrival.py::test_the_arrival_scan_names_the_grade_the_model_keeps",
+                  "test_acs_left_main_arrival.py::test_the_spanish_says_the_same_grade"],
+        "preservation": None,
+    },
 )
 
 
