@@ -168,3 +168,19 @@ def test_only_a_resident_is_asked_for_a_training_year(configuration):
     assert not any(item.label == "Resident year" for item in admin.selectbox)
     widget(admin, "selectbox", "Role").set_value("resident").run()
     assert any(item.label == "Resident year" for item in admin.selectbox)
+
+
+def test_a_faculty_member_never_sees_account_administration(configuration):
+    # Governing accounts is the administrator's; the store refuses it to faculty as well
+    # (test_role_permissions.py). Cycle 9, §154CD.
+    admin = portal(configuration)
+    sign_in(admin, "admin", ADMIN_PASSWORD)
+    widget(admin, "selectbox", "Invite role").set_value("faculty")
+    widget(admin, "button", "Create invitation").click().run()
+    assert not admin.exception
+    invitation = admin.code[0].value
+    teacher = portal(configuration)
+    register(teacher, "faculty.one", invitation)
+    assert any(item.value == "Authenticated: faculty.one" for item in teacher.success)
+    assert not any(item.label == "Account administration" for item in teacher.expander)
+    assert not any(getattr(item, "label", "") in {"Create invitation", "Save account"} for item in teacher.button)

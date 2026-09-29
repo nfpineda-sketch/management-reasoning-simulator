@@ -411,7 +411,9 @@ def render_progress_dashboard(context, title="Objective progress"):
             return None
         learners = progress.list_residents(context["token"])
         if learners:
-            labels = {learner["id"]: learner["username"] for learner in learners}
+            # An inactive resident keeps their record, and says so (cycle 9, §154AP).
+            labels = {learner["id"]: learner["username"] + ("" if learner.get("active", True) else _t(" (inactive)"))
+                      for learner in learners}
             selected_user = st.selectbox(_t("Resident progress"), list(labels), format_func=labels.get,
                                          key="progress_resident")
             goals = progress.get_progress(context["token"], selected_user)["objectives"]

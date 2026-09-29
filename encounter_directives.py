@@ -113,11 +113,15 @@ class DirectiveStore:
             (actor["id"],)).fetchall()}
 
     def residents_in_scope(self, token):
-        """The residents whose next case this account may choose."""
+        """The residents whose next case this account may choose.
+
+        An inactive account is not offered: deactivating keeps the resident's record and ends new
+        work, including a case chosen for them (cycle 9, §154AP, §154DJ).
+        """
         with self.accounts._transaction() as connection:
             actor = self.accounts._actor(connection, token, STAFF)
             scope = self._scope(connection, actor)
-            rows = self._execute(connection, "SELECT * FROM mrs_users WHERE role = 'resident' "
+            rows = self._execute(connection, "SELECT * FROM mrs_users WHERE role = 'resident' AND active = 1 "
                                  "ORDER BY username").fetchall()
             return [self.accounts._public_user(row) for row in rows
                     if scope is None or row["id"] in scope]
@@ -197,10 +201,12 @@ class DirectiveStore:
             raise AccountError("That case is not one this challenge offers.")
         with self.accounts._transaction(write=True) as connection:
             actor = self.accounts._actor(connection, token, STAFF)
-            row = self._execute(connection, "SELECT id, role FROM mrs_users WHERE id = ?",
+            row = self._execute(connection, "SELECT id, role, active FROM mrs_users WHERE id = ?",
                                 (user_id,)).fetchone()
             if row is None or row["role"] != "resident":
                 raise AccountError("Choose a resident.")
+            if not row["active"]:
+                raise AccountError("This resident's account is inactive: no new case can be chosen for it.")
             if not self._authorized(connection, actor, user_id):
                 raise AccountError(NOT_AUTHORIZED)
             now = int(time.time())

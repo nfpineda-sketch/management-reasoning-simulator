@@ -2154,6 +2154,7 @@ ES = {
         'Estos encuentros se excluyen del progreso del residente. Hay {v0} desafíos disponibles.',
     'Training year {v0} · {v1} completed encounter reviews':
         'Año de formación {v0} · {v1} revisiones de encuentro completadas',
+    ' (inactive)': ' (inactiva)',
     'Waiting: {v0} · {v1} · {v2} · by {v3} · {v4}':
         'En espera: {v0} · {v1} · {v2} · por {v3} · {v4}',
     '{v0}: {v1} → {v2} · by {v3} · {v4}':
