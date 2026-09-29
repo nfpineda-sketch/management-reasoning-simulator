@@ -59,6 +59,10 @@ INSTRUCTION_2026_09_28_CYCLE8 = ("Instrucción docente del 2026-09-28 al cerrar 
 INSTRUCTION_2026_09_29_CYCLE9 = ("Instrucción docente del 2026-09-29, ciclo 9 del AI Advisor (endurecimiento previo a la "
                                  "validación externa: TD-39, TD-34, TD-36 y TD-33; DF-20 cerrado sin cambios y las filas "
                                  "TDFC de acs_54m_inferior; la fila 4a de DF-23 si es inequívoca)")
+INSTRUCTION_2026_09_29_POST_V3 = ("Instrucción docente del 2026-09-29 posterior a V3 (cerrar e implementar las decisiones "
+                                  "clínicas analizadas: TEP con D revisada, DC1, POCUS de la HDA, TD-31, DC2–DC5 de "
+                                  "hipoglicemia y el texto de acs_70f_left_main; y las decisiones no clínicas de su "
+                                  "ampliación)")
 INSTRUCTION_2026_09_28_CYCLE6 = ("Instrucción docente del 2026-09-28, ciclo 6 del AI Advisor (DF-22 por clase, 59O-03 y "
                                  "seguridad de la aclaración, L-F01, L-F04 y sólo las correcciones de DF-23 que "
                                  "cumplen las seis condiciones)")
@@ -2044,6 +2048,75 @@ CORRECTIONS = (
         "clinical_relevance": "none",
         "tests": ["test_image_bank_portal.py::test_a_residents_encounter_room_uses_the_bank"],
         "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-10",
+        "date": "2026-09-29",
+        "title": "TEP: el shock obstructivo atribuible indica la trombólisis de inmediato; la noradrenalina sola nunca",
+        "scope": {"level": "family", "family": "pulmonary_embolism"},
+        "kind": "clinical_decision_applied",
+        "reason": ("D revisada. Un shock obstructivo atribuible al TEP (PAS < 90, o un vasopresor que la necesita "
+                   "para sostener 90, con al menos un signo de hipoperfusión: conciencia alterada, periferia con llene "
+                   "de 3,5 s o más, lactato interno > 2 mmol/L) cumple el criterio desde la llegada o cuando aparece. "
+                   "Sin hipoperfusión, la hipotensión cuenta 15 minutos completos y consecutivos; una recuperación "
+                   "real reinicia la cuenta. Iniciar noradrenalina no crea la indicación. La presión se atribuye antes "
+                   "de redondear y separa las caídas por fármacos y el sangrado tras la lisis. Cada orden se juzga con "
+                   "el estado de su minuto; una segunda dosis queda registrada como repetición. Cada trombolítico "
+                   "lleva su motivo estructurado (versión 2) y el tamizaje de pe_unindicated_thrombolysis lo lee; un "
+                   "registro anterior se lee con la regla de su tiempo. Quedan aparte la farmacología de la lisis no "
+                   "indicada, la seguridad de repetir dosis y la redacción de D3, C1 y TDFC. "
+                   "docs/PULMONARY_EMBOLISM_MAGNITUDES.md."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["pe_obstruction", "family_engine", "generated_pe", "coupled_encounter",
+                                "rubric_screening", "management_trace_analysis", "language", "generated_case",
+                                "generated_pe_consistency"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_pe_obstruction.py::test_one_sign_of_hypoperfusion_makes_a_hypotension_obstructive_shock_at_once",
+                  "test_pe_obstruction.py::test_the_clock_counts_only_consecutive_minutes",
+                  "test_pe_obstruction.py::test_starting_norepinephrine_creates_no_indication",
+                  "test_pe_obstruction.py::test_a_pressure_held_up_by_a_vasopressor_it_needs_still_counts",
+                  "test_pe_obstruction.py::test_a_drug_induced_drop_keeps_its_effect_and_is_not_the_embolism_s_shock",
+                  "test_pe_obstruction.py::test_bleeding_after_a_thrombolytic_is_not_the_embolism_s_shock",
+                  "test_pe_obstruction.py::test_a_persisting_shock_does_not_make_a_second_dose_indicated",
+                  "test_pe_obstruction.py::test_each_thrombolytic_summary_carries_its_basis_minute_and_data",
+                  "test_generated_pe.py::test_starting_a_vasopressor_creates_no_indication",
+                  "test_generated_pe.py::test_thrombolysis_in_obstructive_shock_dissolves_the_obstruction",
+                  "test_pe_thrombolysis_screening.py::test_a_vasopressor_she_did_not_need_no_longer_hides_the_event",
+                  "test_pe_thrombolysis_screening.py::test_a_recorded_basis_excludes_the_event",
+                  "test_pe_thrombolysis_screening.py::test_an_old_record_keeps_the_rule_of_its_own_time"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-11",
+        "date": "2026-09-29",
+        "title": "DC1: la conciencia escrita al llegar es la que el motor muestra, sin volver a leerla",
+        "scope": {"level": "variant", "variants": ["bradycardia_ccb_68m", "pulmonary_edema_58m", "pulmonary_edema_75f",
+                                                   "hypoglycemia_28m", "hypoglycemia_54m_thiamine"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("Cinco casos llegaban con una conciencia escrita mejor que la que el umbral del motor da a sus "
+                   "valores, y al minuto 1 el motor la reescribía sin cambio fisiológico (Alert a Drowsy con PAS 74 o "
+                   "SpO₂ 81-84; Drowsy a Obtunded con glucosa 32-34). Ahora el encuentro fija al empezar sólo los "
+                   "umbrales que su llegada ya cruzaba, entre el valor de llegada y el umbral siguiente que se "
+                   "mantiene; compara antes de redondear y deja un nivel peor que el de llegada sólo pasado un margen "
+                   "(PAS 2, SpO₂ 1, glucosa 1 mg/dL). Mejorar más allá de la llegada usa el umbral de siempre. Se "
+                   "conservan el deterioro real, la convulsión y el estado postictal, la sedación, la intubación y la "
+                   "recuperación; una glucosa mejor ya no muestra un paciente peor. Los otros 26 casos no llevan ancla "
+                   "y leen igual que antes; un encuentro empezado antes conserva su regla."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["family_engine", "hypoglycemia_battery"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_arrival_consciousness.py::test_the_first_minutes_show_the_consciousness_written_at_arrival",
+                  "test_arrival_consciousness.py::test_only_the_arrivals_that_needed_it_carry_an_anchor",
+                  "test_arrival_consciousness.py::test_a_value_hovering_at_a_threshold_does_not_flicker",
+                  "test_arrival_consciousness.py::test_a_real_fall_in_pressure_still_takes_consciousness_down",
+                  "test_arrival_consciousness.py::test_a_better_glucose_never_shows_a_worse_patient",
+                  "test_arrival_consciousness.py::test_a_seizure_and_its_post_ictal_state_are_untouched",
+                  "test_arrival_consciousness.py::test_an_encounter_started_before_the_rule_keeps_the_rule_it_began_with",
+                  "test_hypoglycemia_battery.py::test_the_arrival_consciousness_is_what_the_engine_shows_at_minute_one"],
+        # The two anchored hypoglycaemia cases: the arrival reads as written, and the
+        # engine state carries the anchor, so every script that runs the engine changes.
+        "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_54m_thiamine"],
+                         "scripts": ["admission", "double_ampoule", "early_discharge", "ed_observation", "examinations", "existing_line_dextrose", "failed_line_then_new_line", "glucagon_im", "glucagon_iv_existing_line", "infusion_after_ampoule", "infusion_existing_line", "intraosseous_dextrose", "new_line_then_dextrose", "octreotide_iv_existing_line", "octreotide_sc", "oral_after_recovery", "thiamine_then_dextrose", "untreated"]},
     },
 )
 

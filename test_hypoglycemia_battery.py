@@ -54,16 +54,13 @@ def test_the_scope_of_the_failed_line_is_a_pending_decision_and_the_engine_keeps
     assert glucose_rescue.treatment_gain(running) == pytest.approx(100 / 60 * glucose_rescue.INFUSION_G_PER_ML * 4)
 
 
-def test_a_pending_clinical_decision_is_reported_and_nothing_is_changed_to_pass_it(report):
-    """The arrival state against the engine's threshold (DC1): named, classified, left as it is."""
-    flagged = {e["configuration_id"] for e in report["configurations"] if "DC1" in e["summary"]["pending_decisions"]}
-    assert flagged == {"hypoglycemia_28m", "hypoglycemia_54m_thiamine", "hypoglycemia_cfg_insulin_failed_severe",
-                       "hypoglycemia_cfg_alcohol_fasting_working_severe"}
+def test_the_arrival_consciousness_is_what_the_engine_shows_at_minute_one(report):
+    """DC1, decided 2026-09-29: the consciousness written at arrival is the reference."""
     for entry in report["configurations"]:
-        for result in entry["checks"]:
-            if result["id"] == "T12" and result["status"] == "failed":
-                assert result["classification"] == "pending_clinical_decision"
-                assert result["decision"] == "DC1"
+        result = {r["id"]: r for r in entry["checks"]}["T12"]
+        assert result["status"] == "passed", (entry["configuration_id"], result)
+        assert "DC1" not in entry["summary"]["pending_decisions"]
+    assert "DC1" not in battery.PENDING
     # The bank cases still arrive as they were authored.
     from clinical_cases import variant_by_id
     assert variant_by_id("hypoglycemia_28m")["observable"]["mental_status"] == "Drowsy"

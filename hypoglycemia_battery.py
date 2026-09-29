@@ -31,6 +31,7 @@ a structured action proves nothing about the words that should produce it.
 from copy import deepcopy
 
 import catalog_trajectories as trajectories
+import family_engine
 import glucose_rescue
 import hypoglycemia_catalog as catalog
 from hypoglycemia_preservation import (DEXTROSE_IV, DOUBLE_DEXTROSE_IV, GLUCAGON_IM, GLUCOSE, HOME, INFUSION,
@@ -44,7 +45,6 @@ TRAJECTORY_KINDS = {"adequate": "Manejo adecuado", "delay": "Demora", "error": "
 # Pending clinical decisions a technical check can run into (the document
 # docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md explains each).
 PENDING = {
-    "DC1": "Estado de conciencia de llegada frente al umbral del motor",
     "DC4": "Alcance de la vía fallida: la decisión 8 la aplicó sólo a la glucosa en bolo",
 }
 
@@ -166,13 +166,14 @@ def _result(status, observed, **extra):
 
 
 def _check_arrival(configuration, runs):
+    # The first turn of the adequate script only measures the glucose: what the
+    # engine shows after it is its own reading of the arrival (DC1, 2026-09-29).
     run = runs["adequate"]
-    authored = run["timeline"][0]["mental"]
-    engine = glucose_rescue.consciousness(run["timeline"][0]["glucose"])
-    ok = authored == engine
+    authored, first = run["timeline"][0], run["timeline"][1]
+    ok = authored["mental"] == first["mental"]
     return _result("passed" if ok else "failed",
-                   f"llega '{authored}'; con {run['timeline'][0]['glucose']:g} mg/dL el motor muestra '{engine}' "
-                   "desde el primer minuto")
+                   f"llega '{authored['mental']}' con {authored['glucose']:g} mg/dL; sin tratamiento, al minuto "
+                   f"{first['t']} el motor muestra '{first['mental']}' con {first['glucose']:.1f} mg/dL")
 
 
 def _check_raise(configuration, runs):
@@ -261,7 +262,7 @@ def _check_thiamine_neutral(configuration, runs):
     with_ = [step["mental"] for step in runs["adequate"]["timeline"][:5]]
     without = [step["mental"] for step in runs["adequate_without_thiamine"]["timeline"][:5]]
     alone = runs["error_thiamine_instead_of_glucose"]
-    unchanged = alone["timeline"][-1]["mental"] == glucose_rescue.consciousness(alone["timeline"][-1]["glucose"])
+    unchanged = alone["timeline"][-1]["mental"] == family_engine.glucose_consciousness(_f(alone))
     ok = with_ == without and unchanged and "Alert" in without
     return _result("passed" if ok else "failed",
                    f"con tiamina {with_[-1]}, sin tiamina {without[-1]}; la tiamina sola no cambia la conciencia")
@@ -387,7 +388,7 @@ CHECKS = (
     {"id": "T11", "kind": "technical", "trajectory": "adequate", "check": _check_thiamine_neutral,
      "applies": _thiamine, "es": "La tiamina no despierta al paciente ni su ausencia lo deteriora (decisión 8)"},
     {"id": "T12", "kind": "technical", "trajectory": "adequate", "check": _check_arrival,
-     "on_failure": "DC1", "es": "El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1"},
+     "es": "El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1)"},
     # reference: current parameters, pending clinical review
     {"id": "R1", "kind": "reference", "trajectory": "adequate", "check": _check_alert_after_ampoule,
      "parameters": ("P3", "P4"), "es": "Alerta a los 10 minutos de una ampolla efectiva"},

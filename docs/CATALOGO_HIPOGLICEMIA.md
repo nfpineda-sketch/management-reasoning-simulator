@@ -15,7 +15,7 @@ Tres estados que no se mezclan:
 
 | Combinaciones | Del banco | En revisión | Compatibles | Probadas | Defectos técnicos | Con decisión clínica pendiente |
 |---|---|---|---|---|---|---|
-| 12 | 3 | 9 | 12 | 12 | 0 | 8 |
+| 12 | 3 | 9 | 12 | 12 | 0 | 6 |
 
 ## Ejes
 
@@ -88,16 +88,16 @@ La batería los usa como referencia, nunca como criterio para juzgar a un reside
 
 | Configuración | Origen | Mecanismo · acceso · gravedad | Glucosa y conciencia al llegar | Condiciones | Compatible | Probado | Referencias | Pendiente |
 |---|---|---|---|---|---|---|---|---|
-| `hypoglycemia_28m` | banco | Insulina · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor | 34 mg/dL, Drowsy | — | sí | sí (6/7 técnicas; 1 en decisión pendiente) | 6/6 | DC1 |
+| `hypoglycemia_28m` | banco | Insulina · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor | 34 mg/dL, Drowsy | — | sí | sí (7/7 técnicas) | 6/6 | — |
 | `hypoglycemia_76f` | banco | Sulfonilurea · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor | 38 mg/dL, Obtunded | `sulfonylurea_effect`, `endogenous_insulin` | sí | sí (8/8 técnicas) | 9/9 | — |
-| `hypoglycemia_54m_thiamine` | banco | Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 32 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient`, `iv_access_failed` | sí | sí (10/12 técnicas; 2 en decisión pendiente) | 6/6 | DC1, DC4 |
+| `hypoglycemia_54m_thiamine` | banco | Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 32 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient`, `iv_access_failed` | sí | sí (11/12 técnicas; 1 en decisión pendiente) | 6/6 | DC4 |
 | `hypoglycemia_cfg_insulin_working_moderate` | en revisión | Insulina · Vía funcionante · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | — | sí | sí (7/7 técnicas) | 5/5 | — |
-| `hypoglycemia_cfg_insulin_failed_severe` | en revisión | Insulina · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 34 mg/dL, Drowsy | `iv_access_failed` | sí | sí (9/11 técnicas; 2 en decisión pendiente) | 5/5 | DC1, DC4 |
+| `hypoglycemia_cfg_insulin_failed_severe` | en revisión | Insulina · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 34 mg/dL, Drowsy | `iv_access_failed` | sí | sí (10/11 técnicas; 1 en decisión pendiente) | 5/5 | DC4 |
 | `hypoglycemia_cfg_insulin_failed_moderate` | en revisión | Insulina · Vía fallida · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `iv_access_failed` | sí | sí (10/11 técnicas; 1 en decisión pendiente) | 5/5 | DC4 |
 | `hypoglycemia_cfg_sulfonylurea_working_moderate` | en revisión | Sulfonilurea · Vía funcionante · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `sulfonylurea_effect`, `endogenous_insulin` | sí | sí (8/8 técnicas) | 8/8 | — |
 | `hypoglycemia_cfg_sulfonylurea_failed_severe` | en revisión | Sulfonilurea · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 38 mg/dL, Obtunded | `sulfonylurea_effect`, `endogenous_insulin`, `iv_access_failed` | sí | sí (11/12 técnicas; 1 en decisión pendiente) | 8/8 | DC4 |
 | `hypoglycemia_cfg_sulfonylurea_failed_moderate` | en revisión | Sulfonilurea · Vía fallida · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `sulfonylurea_effect`, `endogenous_insulin`, `iv_access_failed` | sí | sí (11/12 técnicas; 1 en decisión pendiente) | 8/8 | DC4 |
-| `hypoglycemia_cfg_alcohol_fasting_working_severe` | en revisión | Alcohol y ayuno · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor | 32 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient` | sí | sí (7/8 técnicas; 1 en decisión pendiente) | 7/7 | DC1 |
+| `hypoglycemia_cfg_alcohol_fasting_working_severe` | en revisión | Alcohol y ayuno · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor | 32 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient` | sí | sí (8/8 técnicas) | 7/7 | — |
 | `hypoglycemia_cfg_alcohol_fasting_working_moderate` | en revisión | Alcohol y ayuno · Vía funcionante · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient` | sí | sí (8/8 técnicas) | 6/6 | — |
 | `hypoglycemia_cfg_alcohol_fasting_failed_moderate` | en revisión | Alcohol y ayuno · Vía fallida · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient`, `iv_access_failed` | sí | sí (11/12 técnicas; 1 en decisión pendiente) | 6/6 | DC4 |
 
@@ -113,9 +113,9 @@ Comparación con el registro del 2026-09-25 (commit d184845), antes de que exist
 
 | Variante | Caso | Declaración | Lanzamiento | Guiones distintos |
 |---|---|---|---|---|
-| `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | ninguno de 20 |
+| `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `failed_line_then_new_line` |
 | `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | ninguno de 20 |
-| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | ninguno de 20 |
+| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `failed_line_then_new_line` |
 
 Cada diferencia está declarada en el registro de correcciones; la prueba `test_hypoglycemia_preservation` acepta esas y ninguna otra.
 
@@ -204,6 +204,8 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-29-07 | Revisión adversarial del ciclo 9: lo que halló en TD-39, TD-34 y TD-36, corregido dentro de su clase | general | technical_defect | clinical | — |
 | C-2026-09-29-08 | Segunda revisión del ciclo 9: lo que halló en las correcciones de la primera, corregido | general | technical_defect | clinical | — |
 | C-2026-09-29-09 | La prueba de la sala y el banco de imágenes pasaba o fallaba según el caso sorteado | general | technical_defect | none | — |
+| C-2026-09-29-10 | TEP: el shock obstructivo atribuible indica la trombólisis de inmediato; la noradrenalina sola nunca | familia pulmonary_embolism | clinical_decision_applied | clinical | — |
+| C-2026-09-29-11 | DC1: la conciencia escrita al llegar es la que el motor muestra, sin volver a leerla | variante bradycardia_ccb_68m, pulmonary_edema_58m, pulmonary_edema_75f, hypoglycemia_28m, hypoglycemia_54m_thiamine | clinical_decision_applied | clinical | — |
 
 ## La batería, configuración por configuración
 
@@ -221,7 +223,7 @@ Insulina · Vía funcionante · Severa: glucosa bajo el umbral de convulsión de
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 133 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | sin rebote sin secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.08 mg/dL/min sin mantención | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ❌ (decisión clínica pendiente DC1) | llega 'Drowsy'; con 34 mg/dL el motor muestra 'Obtunded' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 34 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 33.9 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 133 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | convulsión al minuto 20 | P1, P2 |
@@ -245,7 +247,7 @@ Sulfonilurea · Vía funcionante · Severa: glucosa bajo el umbral de convulsió
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.60 mg/dL/min sin mantención | — |
 | T10 | El octreótido detiene la caída de la sulfonilurea | ✅ | cae 0.08 mg/dL/min con octreótido activo | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ✅ | llega 'Obtunded'; con 38 mg/dL el motor muestra 'Obtunded' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Obtunded' con 38 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Obtunded' con 37.4 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 131 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | convulsión al minuto 20 | P1, P2 |
@@ -275,7 +277,7 @@ Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.08 mg/dL/min sin mantención | — |
 | T11 | La tiamina no despierta al paciente ni su ausencia lo deteriora (decisión 8) | ✅ | con tiamina Alert, sin tiamina Alert; la tiamina sola no cambia la conciencia | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ❌ (decisión clínica pendiente DC1) | llega 'Drowsy'; con 32 mg/dL el motor muestra 'Obtunded' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 32 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 31.9 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 124 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | convulsión al minuto 20 | P1, P2 |
@@ -297,7 +299,7 @@ Insulina · Vía funcionante · Moderada: glucosa en la banda somnolienta del mo
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 151 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | sin rebote sin secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.08 mg/dL/min sin mantención | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ✅ | llega 'Drowsy'; con 52 mg/dL el motor muestra 'Drowsy' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 52 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 51.9 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 151 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | sin convulsión en 25 minutos | P1, P2 |
@@ -323,7 +325,7 @@ Insulina · Vía fallida · Severa: glucosa bajo el umbral de convulsión del mo
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 133 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | sin rebote sin secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.08 mg/dL/min sin mantención | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ❌ (decisión clínica pendiente DC1) | llega 'Drowsy'; con 34 mg/dL el motor muestra 'Obtunded' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 34 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 33.9 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 133 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | convulsión al minuto 20 | P1, P2 |
@@ -349,7 +351,7 @@ Insulina · Vía fallida · Moderada: glucosa en la banda somnolienta del motor.
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 151 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | sin rebote sin secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.08 mg/dL/min sin mantención | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ✅ | llega 'Drowsy'; con 52 mg/dL el motor muestra 'Drowsy' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 52 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 51.9 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 151 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | sin convulsión en 25 minutos | P1, P2 |
@@ -372,7 +374,7 @@ Sulfonilurea · Vía funcionante · Moderada: glucosa en la banda somnolienta de
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.60 mg/dL/min sin mantención | — |
 | T10 | El octreótido detiene la caída de la sulfonilurea | ✅ | cae 0.08 mg/dL/min con octreótido activo | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ✅ | llega 'Drowsy'; con 52 mg/dL el motor muestra 'Drowsy' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 52 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 51.4 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 145 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | sin convulsión en 25 minutos | P1, P2 |
@@ -401,7 +403,7 @@ Sulfonilurea · Vía fallida · Severa: glucosa bajo el umbral de convulsión de
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.60 mg/dL/min sin mantención | — |
 | T10 | El octreótido detiene la caída de la sulfonilurea | ✅ | cae 0.08 mg/dL/min con octreótido activo | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ✅ | llega 'Obtunded'; con 38 mg/dL el motor muestra 'Obtunded' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Obtunded' con 38 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Obtunded' con 37.4 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 131 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | convulsión al minuto 20 | P1, P2 |
@@ -430,7 +432,7 @@ Sulfonilurea · Vía fallida · Moderada: glucosa en la banda somnolienta del mo
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.60 mg/dL/min sin mantención | — |
 | T10 | El octreótido detiene la caída de la sulfonilurea | ✅ | cae 0.08 mg/dL/min con octreótido activo | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ✅ | llega 'Drowsy'; con 52 mg/dL el motor muestra 'Drowsy' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 52 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 51.4 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 145 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | sin convulsión en 25 minutos | P1, P2 |
@@ -455,7 +457,7 @@ Alcohol y ayuno · Vía funcionante · Severa: glucosa bajo el umbral de convuls
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.08 mg/dL/min sin mantención | — |
 | T11 | La tiamina no despierta al paciente ni su ausencia lo deteriora (decisión 8) | ✅ | con tiamina Alert, sin tiamina Alert; la tiamina sola no cambia la conciencia | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ❌ (decisión clínica pendiente DC1) | llega 'Drowsy'; con 32 mg/dL el motor muestra 'Obtunded' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 32 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 31.9 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 124 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | convulsión al minuto 20 | P1, P2 |
@@ -479,7 +481,7 @@ Alcohol y ayuno · Vía funcionante · Moderada: glucosa en la banda somnolienta
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.08 mg/dL/min sin mantención | — |
 | T11 | La tiamina no despierta al paciente ni su ausencia lo deteriora (decisión 8) | ✅ | con tiamina Alert, sin tiamina Alert; la tiamina sola no cambia la conciencia | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ✅ | llega 'Drowsy'; con 52 mg/dL el motor muestra 'Drowsy' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 52 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 51.9 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 144 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | sin convulsión en 25 minutos | P1, P2 |
@@ -506,7 +508,7 @@ Alcohol y ayuno · Vía fallida · Moderada: glucosa en la banda somnolienta del
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
 | T9 | Sin mantención la glucosa vuelve a caer sólo con efecto de sulfonilurea | ✅ | cae 0.08 mg/dL/min sin mantención | — |
 | T11 | La tiamina no despierta al paciente ni su ausencia lo deteriora (decisión 8) | ✅ | con tiamina Alert, sin tiamina Alert; la tiamina sola no cambia la conciencia | — |
-| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 | ✅ | llega 'Drowsy'; con 52 mg/dL el motor muestra 'Drowsy' desde el primer minuto | — |
+| T12 | El estado de conciencia autorado al llegar es el que el motor muestra al minuto 1 (DC1) | ✅ | llega 'Drowsy' con 52 mg/dL; sin tratamiento, al minuto 1 el motor muestra 'Drowsy' con 51.9 mg/dL | — |
 | R1 | Alerta a los 10 minutos de una ampolla efectiva | ✅ | Alert a los 10 minutos de la ampolla | P3, P4 |
 | R2 | Con la mantención de su mecanismo no vuelve a bajar de 70 | ✅ | mínimo 144 mg/dL en las dos horas siguientes | P1, P6, P7, P9 |
 | R3 | Severa: convulsión a los 20 minutos bajo 40; moderada: sin convulsión en 25 | ✅ | sin convulsión en 25 minutos | P1, P2 |

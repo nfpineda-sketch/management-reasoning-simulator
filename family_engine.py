@@ -290,6 +290,92 @@ def _mental_after_recovery(f, base_mental, mental):
     return ceiling if _MENTAL_LADDER.index(mental) < _MENTAL_LADDER.index(ceiling) else mental
 
 
+# DC1 (faculty, 2026-09-29): the consciousness written at arrival is the reference.
+# Recomputing without a physiological change must not alter it, and a real change
+# still moves it. The engine's thresholds, as (value below which, level), highest first.
+_PRESSURE_LEVELS = ((80.0, 1), (65.0, 2))      # systolic: drowsy, obtunded
+_OXYGEN_LEVELS = ((87.0, 1), (80.0, 2))        # saturation: drowsy, obtunded
+_LEVEL_OF = {"Alert": 0, "Drowsy": 1, "Obtunded": 2, "Unresponsive": 3}
+_NAME_OF = {0: "Alert", 1: "Drowsy", 2: "Obtunded", 3: "Unresponsive"}
+# Leaving a level again takes this much above its threshold, so a value that
+# hovers at a threshold does not make the patient flicker between two states.
+_RECOVERY_MARGIN = {"sbp": 2.0, "spo2": 1.0, "glucose": 1.0}
+
+
+def _anchored_levels(levels, arrival, authored):
+    """Move only the thresholds the arrival value already crosses beyond the level written for it.
+
+    The ones that move are spaced between the arrival value and the next threshold
+    that stays (or a tenth below the arrival value when none does), so the arrival
+    reads as written and a real fall past it still counts. The rest keep their
+    place: a severe value keeps its meaning.
+    """
+    moving = [i for i, (threshold, level) in enumerate(levels) if level > authored and arrival < threshold]
+    if not moving:
+        return levels
+    staying = [threshold for i, (threshold, _) in enumerate(levels) if i > moving[-1]]
+    floor = staying[0] if staying else arrival * .9
+    moved = list(levels)
+    for rank, index in enumerate(moving, start=1):
+        moved[index] = (arrival - (arrival - floor) * rank / (len(moving) + 1), levels[index][1])
+    return tuple(moved)
+
+
+def _level_with_margin(value, levels, previous, margin, arrival=0):
+    """The level a value reaches: entered at its threshold, left only past it by the margin.
+
+    The margin holds only a level worse than the arrival one: getting better than the
+    patient arrived takes the plain threshold, as it does in every other encounter.
+    """
+    found = 0
+    for threshold, level in levels:
+        held = arrival < level <= previous
+        if value < threshold + (margin if held else 0.0):
+            found = max(found, level)
+    return found
+
+
+def _arrival_anchors(f):
+    """Fix, when the encounter starts, the thresholds its written arrival needs moved (DC1)."""
+    base = f["baseline"]
+    authored = _LEVEL_OF.get(str(base.get("mental_status", "Alert")))
+    anchor = glucose = None
+    if authored is not None:
+        pressure = _anchored_levels(_PRESSURE_LEVELS, float(base.get("sbp", 110)), authored)
+        oxygen = _anchored_levels(_OXYGEN_LEVELS, float(base.get("spo2", 96)), authored)
+        if pressure != _PRESSURE_LEVELS or oxygen != _OXYGEN_LEVELS:
+            anchor = {"arrival": authored, "sbp": [list(pair) for pair in pressure],
+                      "spo2": [list(pair) for pair in oxygen]}
+        levels = tuple((float(threshold), index + 1) for index, (threshold, _) in
+                       enumerate(glucose_rescue.CONSCIOUSNESS_BY_GLUCOSE))
+        moved = _anchored_levels(levels, float(f["glucose"]), authored)
+        if moved != levels:
+            glucose = {"arrival": authored, "levels": [list(pair) for pair in moved]}
+    # Only an arrival that needs an anchor carries one: every other encounter reads
+    # exactly as before, and so does one begun before this rule.
+    if anchor:
+        f["consciousness_anchor"] = anchor
+    if glucose:
+        f["glucose_anchor"] = glucose
+
+
+def glucose_consciousness(f):
+    """What this encounter's glucose alone shows, read without moving its state (for checks)."""
+    return _glucose_consciousness(dict(f))
+
+
+def _glucose_consciousness(f):
+    """The consciousness a glucose gives, anchored to the one written at arrival (DC1)."""
+    if not f.get("glucose_anchor"):
+        return glucose_rescue.consciousness(f["glucose"])
+    anchor = f["glucose_anchor"]
+    levels = tuple(tuple(pair) for pair in anchor["levels"])
+    level = _level_with_margin(float(f["glucose"]), levels, f.get("glucose_level", anchor["arrival"]),
+                               _RECOVERY_MARGIN["glucose"], anchor["arrival"])
+    f["glucose_level"] = level
+    return _NAME_OF[level]
+
+
 def _listed(items):
     """"a", "a and b", "a, b and c" — so a message names only what is missing."""
     items = list(items)
@@ -852,6 +938,7 @@ def _initialize(state):
     state.setdefault("diagnostics", {})
     state.setdefault("diagnostic_history", [])
     state.setdefault("hidden", {})
+    _arrival_anchors(state["family_state"])
     if state.get("engine_family") == "pulmonary_embolism":
         # An obstructive shock present at arrival counts from minute 0 (2026-09-29).
         state["family_state"]["pe_attributable"] = _pe_attributable(state, 0.0)
@@ -2266,7 +2353,7 @@ def _surface(state):
             mental = "Drowsy"
 
     elif family == "hypoglycemia":
-        mental = glucose_rescue.consciousness(f["glucose"])
+        mental = _glucose_consciousness(f)
         if f["glucose"] >= 70:
             hr = max(72, float(base.get("hr", 100)) - 18)
         if glucose_rescue.post_ictal(f):
@@ -2384,10 +2471,28 @@ def _surface(state):
         perfusion = str(base.get("peripheral_perfusion", perfusion))
     else:
         extremities = "Warm" if crt < 3 else "Cool" if crt < 5.5 else "Cold"
+    raw_spo2, raw_sbp = spo2, sbp
     spo2 = int(round(_clamp(spo2, 55, 99)))
     sbp = int(round(_clamp(sbp, 50, 240)))
     dbp = int(round(_clamp(dbp, 25, min(140, sbp - 15))))
-    if spo2 < 80 or sbp < 65:
+    anchor = f.get("consciousness_anchor")
+    if anchor:
+        # DC1: this patient arrived better than the engine's thresholds say. The
+        # thresholds the arrival already crossed move below it; the comparison is
+        # made before rounding and a level is left only past its margin.
+        previous = f.get("anchored_level", 0)
+        level = max(_level_with_margin(raw_sbp, [tuple(p) for p in anchor["sbp"]], previous, _RECOVERY_MARGIN["sbp"],
+                                       anchor["arrival"]),
+                    _level_with_margin(raw_spo2, [tuple(p) for p in anchor["spo2"]], previous, _RECOVERY_MARGIN["spo2"],
+                                       anchor["arrival"]))
+        f["anchored_level"] = level
+        if level >= 2:
+            mental = "Obtunded"
+        elif level == 1 and mental == "Alert":
+            mental = "Drowsy"
+        elif family not in {"hypoglycemia", "opioid"}:
+            mental = _mental_after_recovery(f, str(base.get("mental_status", "Alert")), mental)
+    elif spo2 < 80 or sbp < 65:
         mental = "Obtunded"
     elif (spo2 < 87 or sbp < 80) and mental == "Alert":
         mental = "Drowsy"

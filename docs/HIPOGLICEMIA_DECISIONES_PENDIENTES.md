@@ -25,6 +25,16 @@ El catálogo, las doce combinaciones y los resultados de la batería están en
   autorado mientras la glucosa no cambie de banda (cambia la lógica del motor).
 - **Recomendación:** (c), porque conserva lo autorado y elimina el salto. Cambia el comportamiento del
   banco, así que requiere tu decisión.
+- **Decidida el 2026-09-29 e implementada (C-2026-09-29-11), variante de (c).** La conciencia escrita al
+  llegar es la referencia. Al empezar, el encuentro mueve sólo los umbrales que su llegada ya cruzaba: el
+  de *Obtunded* baja a 29,5 mg/dL en 28m (34 al llegar) y a 28,5 en 54m (32), a medio camino del umbral
+  siguiente, que se mantiene (25). El resto del banco y de la familia no cambia; mejorar más allá de la
+  llegada usa el umbral de siempre (alerta con 70). Un nivel peor que el de llegada se deja sólo 1 mg/dL
+  por encima de su umbral, para que la glucosa que ronda un umbral no haga parpadear el estado. La
+  convulsión y el estado postictal no cambian; sin tratamiento, la glucosa sigue cayendo y el paciente
+  pasa a *Obtunded* bajo el umbral nuevo. La misma regla, con presión y saturación, corrige
+  `bradycardia_ccb_68m`, `pulmonary_edema_58m` y `pulmonary_edema_75f`. T12 pasa en las 12
+  configuraciones. Pruebas: `test_arrival_consciousness.py`.
 
 ### DC2 · La vía fallida no se ve antes de usarla
 
