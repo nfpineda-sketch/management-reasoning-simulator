@@ -209,6 +209,11 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-29-12 | POCUS de la HDA: la VCI y el VI leen el llenado que el motor modela, no el volumen acumulado | variante gi_bleed_57m, gi_bleed_72f | clinical_decision_applied | clinical | — |
 | C-2026-09-29-13 | TD-31: las medidas sobre una fuente externa no se suman; el registro dice si el sangrado disminuye o se detiene | familia trauma | clinical_decision_applied | clinical | — |
 | C-2026-09-29-14 | Hipoglicemia DC2–DC5: la falla es de la vía, no de la glucosa en bolo | familia hypoglycemia | clinical_decision_applied | clinical | glucose_rescue 1.0 → 2.0 |
+| C-2026-09-29-15 | acs_70f_left_main: el VI de llegada dice el grado leve que el modelo mantiene | variante acs_70f_left_main | text | clinical | — |
+| C-2026-09-29-16 | §154AB: el residente lee el foco de aprendizaje de un encuentro después de la revisión docente | general | policy | none | — |
+| C-2026-09-29-17 | TD-41: abrir una página o un PDF lee las traducciones guardadas; sólo el pedido del lector traduce | general | policy | none | — |
+| C-2026-09-29-18 | KD-31: el tamizaje cita como contexto el tratamiento informado como recibido antes | general | policy | clinical | — |
+| C-2026-09-29-19 | DC9: las filas TD/F/C de las composiciones son las de su origen, como propuesta pendiente | variante hypoglycemia_cfg_alcohol_fasting_failed_moderate, hypoglycemia_cfg_alcohol_fasting_working_moderate, hypoglycemia_cfg_alcohol_fasting_working_severe, hypoglycemia_cfg_insulin_failed_moderate, hypoglycemia_cfg_insulin_failed_severe, hypoglycemia_cfg_insulin_working_moderate, hypoglycemia_cfg_sulfonylurea_failed_moderate, hypoglycemia_cfg_sulfonylurea_failed_severe, hypoglycemia_cfg_sulfonylurea_working_moderate | policy | clinical | — |
 
 ## La batería, configuración por configuración
 

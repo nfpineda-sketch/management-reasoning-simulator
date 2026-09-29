@@ -2247,6 +2247,91 @@ CORRECTIONS = (
                   "test_acs_left_main_arrival.py::test_the_spanish_says_the_same_grade"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-29-16",
+        "date": "2026-09-29",
+        "title": "§154AB: el residente lee el foco de aprendizaje de un encuentro después de la revisión docente",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Antes, el foco (el desafío) se mostraba al residente al cerrar el encuentro, antes de la revisión. "
+                   "Ahora lo lee cuando un docente revisó el encuentro (rúbrica u observación confirmada, la regla con "
+                   "que ya se publican sus páginas); antes ve que se comparte tras la revisión. Vale para el cierre, la "
+                   "revisión guardada y la copia de su registro (challenge_id vacío hasta la revisión). El docente y el "
+                   "administrador lo ven siempre. No cambia ninguna evaluación ni el encuentro."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["resident_pages", "curriculum_runtime", "resident_portal"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_learning_focus_waits_for_review.py::test_the_resident_reads_it_only_after_review_and_faculty_always",
+                  "test_learning_focus_waits_for_review.py::test_the_copy_of_the_record_names_the_target_only_once_reviewed",
+                  "test_learning_focus_waits_for_review.py::test_the_close_screen_keeps_it_from_the_resident_and_shows_it_to_faculty"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-17",
+        "date": "2026-09-29",
+        "title": "TD-41: abrir una página o un PDF lee las traducciones guardadas; sólo el pedido del lector traduce",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Con clave configurada, la revisión del encuentro y los PDF docentes pedían al proveedor la traducción "
+                   "de lo no traducido al cargar la página. Ahora abrir, recargar, revisar o generar un PDF lee sólo lo "
+                   "guardado para ese contenido e idioma; lo que falta se muestra en inglés, el documento lo dice y su "
+                   "lector puede pedirlo: ese pedido traduce una vez sólo lo que falta y lo guarda. Si el original "
+                   "cambió, la traducción queda desactualizada hasta un nuevo pedido; nunca se regenera sola. El original "
+                   "inglés sigue siendo el registro."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["prose_translation", "management_trace_portal", "faculty_portal", "resident_portal",
+                                "portfolio"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_translations_are_asked_for.py::test_a_page_reads_what_is_stored_and_buys_nothing",
+                  "test_translations_are_asked_for.py::test_the_reader_s_request_buys_only_what_is_missing_once_and_it_is_kept",
+                  "test_translations_are_asked_for.py::test_an_english_original_that_changed_is_out_of_date_until_asked_again",
+                  "test_translations_are_asked_for.py::test_preparing_a_resident_s_documents_in_spanish_buys_nothing"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-18",
+        "date": "2026-09-29",
+        "title": "KD-31: el tamizaje cita como contexto el tratamiento informado como recibido antes",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Junto a una omisión del mismo tipo (antiagregante, adrenalina), el tamizaje cita lo que el residente "
+                   "informó como recibido antes de su atención (TD-36): historia, no su orden ni una administración de "
+                   "este encuentro, con la fuente, la hora y el minuto que registró el lector; una hora que el lector no "
+                   "separó queda en la cita y no se inventa. La definición, el peso y el resultado del evento no cambian; "
+                   "la fila dice que la lectura es del docente (faculty_interpretation). Una revisión ya guardada "
+                   "conserva el tamizaje con que se guardó."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["rubric_screening"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_prior_treatment_in_screening.py::test_a_reported_prior_treatment_is_quoted_and_the_result_does_not_move",
+                  "test_prior_treatment_in_screening.py::test_no_time_is_invented_and_the_written_one_stays_in_the_quote",
+                  "test_prior_treatment_in_screening.py::test_a_prior_treatment_of_another_kind_or_a_record_without_any_changes_nothing"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-19",
+        "date": "2026-09-29",
+        "title": "DC9: las filas TD/F/C de las composiciones son las de su origen, como propuesta pendiente",
+        "scope": {"level": "variant", "variants": [
+            "hypoglycemia_cfg_alcohol_fasting_failed_moderate", "hypoglycemia_cfg_alcohol_fasting_working_moderate",
+            "hypoglycemia_cfg_alcohol_fasting_working_severe", "hypoglycemia_cfg_insulin_failed_moderate",
+            "hypoglycemia_cfg_insulin_failed_severe", "hypoglycemia_cfg_insulin_working_moderate",
+            "hypoglycemia_cfg_sulfonylurea_failed_moderate", "hypoglycemia_cfg_sulfonylurea_failed_severe",
+            "hypoglycemia_cfg_sulfonylurea_working_moderate"]},
+        "kind": "policy",
+        "reason": ("Cada composición de hipoglicemia recibe las filas TD1, F1, C1 y C3 de su caso de origen como "
+                   "propuesta inicial trazable, marcada PENDING FACULTY REVIEW (DC9), con el origen y su revisión. Una "
+                   "propuesta no es una declaración: no entra en los objetivos de la composición (su evaluación sigue en "
+                   "la transición), la referencia TDFC aprobada no cambia y una composición con propuestas pendientes no "
+                   "se ofrece a ningún residente (sólo se abre en el sandbox docente)."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["tdfc_declarations"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_tdfc_composition_proposals.py::test_every_composition_has_its_origin_s_rows_as_a_pending_proposal",
+                  "test_tdfc_composition_proposals.py::test_a_proposal_is_never_a_declaration_and_the_reference_is_untouched",
+                  "test_tdfc_composition_proposals.py::test_no_composition_is_exposable_or_reachable_by_a_resident_path"],
+        "preservation": None,
+    },
 )
 
 
