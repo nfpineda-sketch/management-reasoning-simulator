@@ -29,9 +29,21 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 | Biblioteca POCUS | FUTURE ARCHITECTURE | Videos reales, adquisición y reconocimiento en la imagen | `ARQUITECTURA_POCUS_OBJETIVO.md`. No es deuda ni bug |
 | DF-25 · DF-14 · DF-12 · DF-17 · DF-4 | — | Brechas del banco · PARTIAL · transición · *override* · C2 | Sin cambio |
 | DF-18 · DF-9 · DF-11 · DF-5 | — | Multisource · −3 · residuos menores · C15 | Registrados, sin acción |
+| Roles · foco de aprendizaje | NEEDS NICOLÁS · METHODOLOGICAL | El foco de aprendizaje (el desafío) se muestra al residente al cerrar el encuentro, antes de la revisión docente; §154AB pide no mostrar el objetivo antes de la revisión | Sin cambio. `docs/EXPERIENCIA_POR_ROL.md` |
+| Roles · Fase 2 | NEEDS NICOLÁS | AI Longitudinal Review (especificada), notas privadas docentes, auditoría de activar/desactivar, descarga selectiva del portafolio, portafolio de cuentas inactivas | Diferidos con su razón. `docs/EXPERIENCIA_POR_ROL.md` |
+| Roles · traducción automática | NEEDS NICOLÁS | Con clave y documento en español, la revisión del encuentro y los PDF docentes piden traducción al cargar la página (previo al ciclo 9; §154FT) | «My progress» ya no lo hace; el resto sin cambio |
 
 **Cerrados en el ciclo 9:** DF-20 (sin cambios), DF-23 · 4a (aplicada), TD-33
 (aplicado) y TD-39, TD-34 y TD-36 (corregidos).
+
+**Fase de roles y pantallas, posterior a V3 (§154A–§154GL):** en commits propios,
+sin tocar el motor ni la metodología. Permisos en los stores
+(`docs/MATRIZ_PERMISOS_ROLES.md`), cohorte docente con tarjetas, vista del
+residente, inicio del residente con la asignación ciega, «My progress» en seis
+vistas, «My encounters», portafolio con ZIP sin llamadas de IA, estado de las
+cuentas para el Admin, y la AI Longitudinal Review especificada y diferida
+(`docs/AI_LONGITUDINAL_REVIEW_SPEC.md`). Resumen, diferidos y revisión visual en
+`docs/EXPERIENCIA_POR_ROL.md`.
 
 ## Cierre del ciclo 9 (2026-09-29)
 

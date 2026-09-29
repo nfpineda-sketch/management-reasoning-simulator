@@ -20,7 +20,7 @@ aconseja. Los tres miran la misma evidencia: cambian los permisos, no los datos
 
 | Capacidad | Resident | Faculty | Admin | Dónde se verifica |
 |---|---|---|---|---|
-| Correr un encuentro asignado (ciego) | SÍ | NO (sus encuentros son sandbox, fuera del progreso) | NO (ídem) | `AccountStore.create_attempt` |
+| Correr un encuentro asignado (ciego) | SÍ: ve «Asignado a mí» y la fecha, nunca el desafío, el caso, la razón ni quién lo asignó | NO (sus encuentros son sandbox, fuera del progreso) | NO (ídem) | `AccountStore.create_attempt`, `DirectiveStore.assigned` |
 | Ver su propio perfil | SÍ | — | — | `RubricStore.progress`, `ProgressStore.get_progress` |
 | Ver perfiles de residentes | SÓLO EL PROPIO | TODOS LOS RESIDENTES DEL PROGRAMA | TODOS | `_actor` + filtro por dueño en cada store |
 | Ver evidencia confirmada | LA PROPIA | SÍ | SÍ | `RubricStore.released`, `ProgressStore` |
@@ -29,8 +29,8 @@ aconseja. Los tres miran la misma evidencia: cambian los permisos, no los datos
 | Confirmar la rúbrica | NO | SÍ | SÍ | `RubricStore.save_review` (STAFF) |
 | Asignar un Clinical Challenge ciego | NO | SÍ, **con autorización del Admin para ese residente** | SÍ | `DirectiveStore.direct` (Admin o Faculty autorizado) |
 | Autorizar a un docente a asignar | NO | NO | SÍ | `DirectiveStore.grant` |
-| Ver o descargar el portafolio | EL PROPIO | SÍ | SÍ | stores de cada documento (Trace, rúbrica, registro) |
-| Activar o desactivar cuentas | NO | NO | SÍ | `AccountStore.update_user` (admin) |
+| Ver o descargar el portafolio (documentos individuales y ZIP completo) | EL PROPIO | SÍ, de cualquier residente del programa | SÍ | `portfolio.owner_of` + stores de cada documento (Trace, rúbrica confirmada, registro) |
+| Activar o desactivar cuentas | NO | NO | SÍ (tabla de estado ACTIVA/INACTIVA en «Account administration») | `AccountStore.update_user` (admin) |
 | Invitar, listar o cambiar rol/año | NO | NO | SÍ | `AccountStore.create_invite/list_users/update_user` |
 | Metas de observación del programa | NO | NO (sólo lectura) | SÍ | `ProgressStore.set_target` |
 | Generar el AI Longitudinal Review | NO | NO | SÍ (especificado, no implementado) | `docs/AI_LONGITUDINAL_REVIEW_SPEC.md` |
@@ -64,6 +64,14 @@ autorización por residente es asignarle un caso. No se amplió ningún permiso.
 - Sólo lectura del residente: `test_progress_portal.py`, `test_rubric_store.py`,
   `test_faculty_portal.py`, `test_faculty_analysis_store.py`.
 - Ceguera del caso asignado: `test_a_resident_s_next_case_chosen_by_faculty.py`.
+- Páginas del residente, vistas de evidencia y portafolio (ciclo 9, `test_resident_pages.py`):
+  - el inicio anuncia la asignación sin describirla; `DirectiveStore.assigned` sólo
+    devuelve la fecha, y sólo la propia;
+  - nadie obtiene el portafolio de otro residente nombrándolo (`owner_of` rechaza);
+    Faculty sí, y los documentos son los del residente;
+  - el portafolio no incluye rúbricas en borrador y no llama al proveedor de IA;
+  - «Mis encuentros» no nombra el desafío de un encuentro sin revisión.
+- Cohorte docente (`test_faculty_cohort.py`): el residente nunca la ve.
 - Gobierno de cuentas (nuevas en el ciclo 9, `test_role_permissions.py`):
   - Faculty es rechazado por el store al invitar, listar, cambiar un rol o un año,
     y desactivar o reactivar;
@@ -76,7 +84,8 @@ autorización por residente es asignarle un caso. No se amplió ningún permiso.
 
 - `DirectiveStore.waiting()` entrega al proceso del residente la razón y el caso
   del docente, porque el lanzamiento los necesita en el servidor. Nada los
-  muestra; ninguna pantalla nueva del residente debe mostrarlos.
+  muestra: la pantalla del residente usa `DirectiveStore.assigned()`, que sólo
+  devuelve la fecha.
 - `ImageBank.exposures(user_id)` y `usage()` no piden token. Sólo se llaman por
   dentro, con el propio identificador.
 - Los paneles de revisión del banco de imágenes y de textos en español se

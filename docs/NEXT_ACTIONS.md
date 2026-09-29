@@ -23,7 +23,11 @@ Al cierre del ciclo 9, 2026-09-29. El detalle está en
    - KD-02 y TD-35: ¿preguntar lo que una lista nombra sin verbo?;
    - KD-15, la regla de medidas combinadas (resto de TD-31) y DC3;
    - las dudas residuales de TDFC y si las composiciones heredan TD/F/C;
-   - KD-31: si el tamizaje debe citar un tratamiento previo registrado.
+   - KD-31: si el tamizaje debe citar un tratamiento previo registrado;
+   - pantallas por rol (`EXPERIENCIA_POR_ROL.md`): si el foco de aprendizaje se
+     sigue mostrando al cerrar el encuentro, antes de la revisión docente; qué
+     entra en la Fase 2 (AI Longitudinal Review especificada, notas privadas,
+     auditoría de cuentas); y las traducciones que aún se piden al cargar una página.
 
 ## Lo que el AI Advisor hará cuando lleguen los documentos
 
