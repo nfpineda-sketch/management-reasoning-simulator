@@ -4,8 +4,8 @@ Ciclo 9 · 2026-09-29 · §67 y §114 de la instrucción docente. El dato está 
 `validation/known_defects_v3.json`; esta página lo resume.
 
 **Qué es.** El estado de defectos conocidos del motor congelado como
-**DEVELOPMENT PRE-VALIDATION BASELINE V3**: todo lo conocido y no corregido al
-congelarlo, para leer después un error externo contra lo que ya se sabía.
+**DEVELOPMENT PRE-VALIDATION BASELINE V3** (`3d942eedf1d5`): todo lo conocido y no
+corregido al congelarlo, para leer después un error externo contra lo que ya se sabía.
 
 **Qué no es.** No reescribe la lista del piloto
 (`validation/pilot_v1/manifests/known_defects.json`, versión 2), que sigue

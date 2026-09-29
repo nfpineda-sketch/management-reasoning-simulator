@@ -33,6 +33,85 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 **Cerrados en el ciclo 9:** DF-20 (sin cambios), DF-23 · 4a (aplicada), TD-33
 (aplicado) y TD-39, TD-34 y TD-36 (corregidos).
 
+## Cierre del ciclo 9 (2026-09-29)
+
+El ciclo cumplió el alcance registrado en su apertura. El motor quedó congelado
+como **DEVELOPMENT PRE-VALIDATION BASELINE V3** (`3d942ee`,
+`validation/BASELINES.md`). Ninguna respuesta externa se abrió, leyó ni
+procesó. El detalle está en los documentos citados.
+
+### DECIDED + IMPLEMENTED
+
+| Ítem | Qué quedó | Registro |
+|---|---|---|
+| TD-39 | Un alta para más tarde (con su plazo, tras una observación o un resultado, o con una condición) es un **plan de destino**: se registra con las palabras del residente, no cierra el encuentro, no es un alta ejecutada para los eventos críticos, y el Trace dice «plan de destino; no se realizó ahora». El alta inmediata, negada, preguntada o de otro servicio no cambia | C-2026-09-29-01, -07 |
+| TD-34 | Una reevaluación en horas espera sus minutos: 1 h = 60 en el lector, el motor, el reloj y el Trace (una sola fuente, `delay_min`). Lo que no se lee se pregunta, nunca se toma como «ahora» | C-2026-09-29-02, -07 |
+| TD-36 | Lo recibido antes de la atención del residente es **historia**: se registra con qué, dosis, vía, quién y cuándo, y nunca se da de nuevo ni es orden del residente | C-2026-09-29-03, -07 |
+| TD-33 | En la regla de sobrecarga transfusional en trauma, sólo la sangre repone el déficit; el cristaloide conserva su efecto hemodinámico y la sobretransfusión real se sigue detectando | C-2026-09-29-04 |
+| DF-20 | **CERRADO, sin cambios** en el caso. Las filas TDFC de `acs_54m_inferior` quedaron declaradas (TD1, F1, C1 YES; C3 NO), ninguna sobre el POCUS. TDFC completo en 31 casos: TD1 26/5, F1 26/5, C1 19/12, C3 10/21; tabla y matriz regeneradas | C-2026-09-29-05 |
+| DF-23 · 4a | Aplicado: «Scattered B-lines at both bases; no diffuse B-line pattern», con su borrador en español. No cambian el desafío, el objetivo, los eventos críticos ni TDFC | C-2026-09-29-06 |
+| Ingesta externa | Inventario RAW con SHA-256, metadatos por nombre, copia de trabajo que sólo limpia propiedades, frontera de respuesta, vacíos y parciales, duplicados y conflictos, decisiones de una persona, preparación por idioma, procedencia de la anotación y de cada corrida (§132), y las marcas SILENT_LOSS, FALSE_EXECUTION, TRACE_DISTORTION y APPROPRIATE_CLARIFICATION | `VALIDACION_EXTERNA_PREPARACION.md` |
+| Defectos conocidos de V3 | Estado propio (versión 3), sin reescribir la lista del piloto; TD-39, TD-34 y TD-36 se pueden etiquetar en una corrida de `939978a` como conocidos al analizar (§67) | `validation/KNOWN_DEFECTS_V3.md` |
+| Principio de saturación | Charter, addendum A3 (§116–§117) | — |
+
+### Validación de las correcciones
+
+- **Pruebas focalizadas y controles negativos:** las pruebas del ciclo (`test_cycle9_prevalidation_hardening.py`, 198 casos, EN/ES) cubren altas inmediatas, planes, negadas, preguntadas y de otro servicio; intervalos; tratamiento previo y sus controles; la ejecución, el cierre del encuentro, el Trace y la entrada de los eventos críticos. Los 75 archivos de prueba del lector: 2887 pasan.
+- **Revisión adversarial independiente** (sin leer el código del lector):
+  - 130 frases preregistradas: ninguna fila peor que el ciclo 8; 0 CRITICAL y
+    1 HIGH, anterior al ciclo y corregido después («Discharge at 1800»);
+  - 54 frases posteriores: 3 filas peores que el ciclo 8 (dos corregidas; la
+    tercera queda como plan por diseño, KB-04) y fallas de la misma clase,
+    corregidas según §90 (C-2026-09-29-07);
+  - lo demás que halló es anterior al ciclo y quedó como deuda (KD-16 a KD-31).
+- **Revisión pequeña de las correcciones del triage:** 70 frases preregistradas,
+  0 CRITICAL y 8 HIGH. Siete de las ocho se corrigieron (C-2026-09-29-08):
+  seis eran regresiones de las correcciones del triage (DN01–DN04, DA01 y
+  OR19) y una, anterior al ciclo, es de la clase de TD-39 (DA02). La octava
+  (OR16) registra una historia verdadera y pierde el «repetir», que es KD-21.
+  También se corrigió una regresión MEDIUM (DN08). Al volver a correr todas
+  las frases de las dos revisiones y los controles, cambiaron exactamente esas
+  8 filas.
+- **Comparación con el lector anterior:** cada frase se leyó con el lector del
+  ciclo 8 y con el V2; los 16 cambios frente a lo revisado son las correcciones
+  buscadas.
+- **Suite completa y regresiones sobre V3:** 6134 pasan, 77 omitidas, 1 xfail, 0 fallas sobre `3d942ee`; 56/56 regresiones.
+
+### DECIDED + DEFERRED
+
+- **Todo lo MEDIUM y LOW hallado** queda como deuda técnica con su
+  identificador del estado de V3 (§90, §112). El lector no se toca después de
+  V3.
+- **TD-14, TD-29, TD-30 y TD-40** esperan los datos externos (§20).
+
+### NEEDS NICOLÁS
+
+1. **El baseline inglés,** antes de leer respuestas: recomendado **V3**
+   (`validation/BASELINES.md`, «Recomendación del baseline inglés»).
+2. **Autorizar, o no, el piloto formativo controlado:** A = YES, B = NOT YET
+   MEASURED.
+3. **El español de `acs_70f_left_main`,** si estaba aprobado en la base
+   desplegada: volver a revisarlo.
+4. **Sin cambio:** DF-23 (4b, 6, 7, 8), KD-02 y TD-35, KD-15, la regla de
+   medidas combinadas, DC3, las dudas de TDFC y las composiciones.
+5. **Nuevo, cuando pueda:** KD-31, si el tamizaje debe citar un tratamiento
+   previo registrado.
+
+### WAITING FOR EXTERNAL DATA
+
+- Los documentos de los médicos, español e inglés, como dos corpus. Nada llegó
+  ni se abrió en el ciclo 9. SEALED no se tocó.
+
+### Baselines
+
+- **SPANISH PILOT BASELINE `939978a`:** intacto (fijo, §116). No cambiaron sus
+  18 DOCX, sus manifiestos ni `PILOT_BASELINE.md`; la guía de anotación y el
+  README de herramientas del piloto ganaron texto de proceso, sin etiquetas
+  nuevas.
+- **ENGLISH VALIDATION BASELINE `ec1c77f`, V1 y V2:** intactos.
+- **V3 `3d942ee`:** registrado en `validation/BASELINES.md`, no en
+  `validation/baselines.json` hasta que el docente lo elija.
+
 ## Apertura del ciclo 9 (2026-09-29)
 
 **La instrucción, al aprobar el cierre del ciclo 8:**

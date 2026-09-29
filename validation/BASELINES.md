@@ -16,9 +16,11 @@ validación.
 | **ENGLISH VALIDATION BASELINE** | en | `ec1c77f0339a6e3087337d2a621b2e630d3549a5` | `0.24.13-clinical-encounter` | versión 2 | esta página, sección siguiente |
 
 Los **DEVELOPMENT HARDENED BASELINES V1** del ciclo 6 (`72a4a53`) **y V2** del
-ciclo 7 (`9d2cd9e`) son referencias de desarrollo, no de validación. Están en
+ciclo 7 (`9d2cd9e`), y la **DEVELOPMENT PRE-VALIDATION BASELINE V3** del ciclo 9
+(`3d942ee`), son referencias de desarrollo, no de validación. Están en
 sus propias secciones, más abajo, y no en el registro que leen las
-herramientas.
+herramientas. V3 es el baseline recomendado para el corpus inglés: si el docente
+lo elige, se agrega al registro como entrada nueva, antes de leer.
 
 ## ENGLISH VALIDATION BASELINE: `ec1c77f`
 
@@ -154,6 +156,69 @@ aprobado.
 
 **Cómo usarlo:** `git checkout 9d2cd9e0d208`. Una corrida sobre este commit la
 nombra por el commit; la herramienta no la nombra como baseline.
+
+## DEVELOPMENT PRE-VALIDATION BASELINE V3 (ciclo 9)
+
+Instrucción docente del 2026-09-29, ciclo 9 (§22, §74, §111–§116).
+
+**Es el motor congelado antes de la medición externa, no una versión
+validada.** No se llama «validated», «production» ni «final».
+
+- **Qué no hace:**
+  - No reemplaza al SPANISH PILOT BASELINE `939978a`, que sigue midiendo el
+    corpus español (§66, §116).
+  - No está en `validation/baselines.json`. Se agrega ahí, como entrada nueva,
+    sólo si el docente lo elige como baseline inglés (abajo).
+- **Para qué sirve:**
+  - es el baseline recomendado para el corpus inglés;
+  - permite comparar, sólo en DEVELOPMENT, `939978a`, V1, V2 y V3 (§23).
+- **Congelado de verdad (§112):** después de V3, el lector no se toca en el
+  ciclo 9. Lo nuevo MEDIUM o LOW es deuda técnica (`validation/KNOWN_DEFECTS_V3.md`).
+
+| Campo | Valor |
+|---|---|
+| **COMMIT SHA** | `3d942eedf1d5922a8fed7df2e218bb3d7012c227` (el **FINAL V3 FREEZE COMMIT**) |
+| **DATE** | 2026-09-29 |
+| **TEST COUNT** | **6134 pasan, 77 omitidas, 1 xfail, 0 fallas** (suite completa en 4 shards sobre este commit) y **56 de 56 regresiones** |
+| **KNOWN DEFECTS VERSION** | **3**, el estado propio de V3 (`validation/known_defects_v3.json`). La lista del piloto sigue en su versión 2, sin cambios |
+| **TD-39 STATUS** | **Corregido por clase:** un alta para más tarde es un plan de destino, registrado, que no cierra el encuentro; el Trace la distingue del alta realizada (C-2026-09-29-01, -07) |
+| **TD-34 STATUS** | **Corregido:** 1 h = 60 min en el lector, el motor, el reloj y el Trace (C-2026-09-29-02, -07) |
+| **TD-36 STATUS** | **Corregido por clase:** lo recibido antes de la atención es historia, con qué, dosis, vía, quién y cuándo; nunca se da de nuevo (C-2026-09-29-03, -07) |
+| **TD-33 STATUS** | **Corregido:** en trauma, sólo la sangre repone el déficit de la regla de sobrecarga (C-2026-09-29-04) |
+| **DF-20 STATUS** | **CLOSED / NO CHANGE** (C-2026-09-29-05) |
+| **TDFC STATUS** | **Completo en los 31 casos:** TD1 26 YES / 5 NO, F1 26/5, C1 19/12, C3 10/21. Ningún caso pendiente; tabla final y matriz regeneradas |
+| **DF-23 4a** | **Aplicado** (C-2026-09-29-06). 4b, 6, 7 y 8 siguen en la cola |
+| **EXTERNAL INGESTION** | Lista y ensayada sin respuestas reales (`docs/VALIDACION_EXTERNA_PREPARACION.md`) |
+| **EXTERNAL DATA SEEN** | **Ninguno.** Nada se abrió, leyó ni procesó |
+
+**Frente al V2** (`9d2cd9e`), este commit trae:
+
+- el ciclo 8: TD-29 a TD-32, KD-05 y TDFC en 30 casos;
+- el ciclo 9: TD-39, TD-34, TD-36, TD-33, DF-20 y las filas TDFC de
+  `acs_54m_inferior`, la fila 4a de DF-23, las herramientas de ingesta externa
+  y el estado de defectos conocidos de V3.
+
+**Cómo llegó a ser este commit.** `72a7c01` fue un commit intermedio que pidió el entorno, anunciado como no congelado. La suite completa sobre el árbol de trabajo encontró dos fallas: el catálogo publicado de hipoglicemia no nombraba las correcciones nuevas del registro, y una prueba de la sala pasaba o fallaba según el caso sorteado (C-2026-09-29-09). `3d942ee` corrige ambas y cierra lo que halló la revisión pequeña de las correcciones (C-2026-09-29-08). La suite completa y las 56 regresiones de arriba corrieron sobre `3d942ee`, con el árbol limpio.
+
+**Cómo usarlo:** `git checkout 3d942eedf1d5`. Una corrida sobre este commit la
+nombra por el commit; la herramienta la nombra como baseline sólo si se agrega
+a `validation/baselines.json`.
+
+## Recomendación del baseline inglés (ciclo 9, §24, §65, §115)
+
+**Recomendado: ENGLISH EXTERNAL VALIDATION BASELINE = V3 (`3d942ee`).** Es
+una recomendación; la decisión es del docente y se toma antes de leer
+cualquier respuesta inglesa.
+
+| Punto | Respuesta |
+|---|---|
+| **Por qué V3** | 1) Se congeló sin exposición a ninguna respuesta externa. 2) El V2 contiene TD-39, TD-34 y TD-36 (verificado en el ciclo 9): medir el inglés en el V2 gastaría el corpus en redescubrir tres HIGH ya corregidos, y un alta falsa cierra el encuentro del documento, lo que puede alterar la lectura de las entradas siguientes del mismo documento. 3) V3 es el lector que se desarrollará después: un error externo hallado en V3 apunta a lo que hay que corregir (DATA-DRIVEN DEVELOPMENT). 4) Que el español y el inglés tengan baselines distintos es aceptable si ambos se congelaron antes de ver sus respuestas (§25) |
+| **Por qué no el V2** | No aporta comparabilidad con el español: ni el V2 ni V3 son `939978a`. Su única ventaja, llevar más tiempo congelado, no compensa los tres HIGH que lleva |
+| **Fecha de congelamiento** | 2026-09-29 |
+| **¿Había empezado la recolección inglesa?** | Según el mensaje del docente del 2026-09-29, la recolección externa está en curso; el AI Advisor no sabe si la inglesa ya empezó. En el entorno no hubo ningún documento inglés devuelto |
+| **¿Se vio algún contenido de respuesta?** | **No.** Ninguna respuesta, española ni inglesa, se abrió, leyó, buscó ni procesó; V3 se desarrolló sin exposición a ellas (§115) |
+| **Consecuencias para la comparabilidad** | Las mediciones primarias usan motores distintos (español `939978a`, inglés V3): una diferencia entre idiomas mezcla idioma y motor, y el informe lo dice primero (§25, §105). Como análisis secundario y descriptivo, sólo en DEVELOPMENT, ambos corpus pueden leerse con los mismos commits (`939978a`, V1, V2, V3). Las formas de TD-39, TD-34 y TD-36 que V3 corrige pueden fallar en el español (se etiquetan, §67) y no en el inglés; en ambos quedan sus residuos conocidos (KD-16 a KD-24, `validation/KNOWN_DEFECTS_V3.md`) |
+| **Cómo se adopta** | Una entrada nueva en `validation/baselines.json` (nombre, idioma `en`, commit de V3, `known_defects_version` 3), antes de leer. `ec1c77f` sigue registrado: un baseline nunca se reemplaza |
 
 ## Qué registra cada corrida
 

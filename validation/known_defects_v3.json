@@ -2,6 +2,7 @@
  "state_id": "KNOWN-DEFECTS-V3",
  "version": 3,
  "baseline": "DEVELOPMENT PRE-VALIDATION BASELINE V3",
+ "commit": "3d942eedf1d5922a8fed7df2e218bb3d7012c227",
  "registered_on": "2026-09-29",
  "record": "validation/BASELINES.md",
  "purpose": "The known-defect state of the engine frozen as DEVELOPMENT PRE-VALIDATION BASELINE V3 (cycle 9, §114): every CRITICAL, HIGH, MEDIUM or LOW defect known and not fixed at the freeze, so that an external error can be read later against what was already known. It never removes an error from a metric and never corrects a result retrospectively (§67).",
