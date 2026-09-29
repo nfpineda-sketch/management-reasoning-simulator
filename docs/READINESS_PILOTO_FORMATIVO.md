@@ -25,7 +25,7 @@ El piloto nunca se inicia automáticamente.
 **Al cerrar el ciclo 10 (2026-09-29):** la respuesta no cambia. Se agregaron integridad del store (TD-18 sin
 I-F18), autor y hora de cada cambio de cuenta, respaldo y restauración probados en SQLite y PostgreSQL, el
 runbook con su preflight, las guías, las pantallas del piloto (TD-42, TD-43, TD-38), DC4-F (opción B mínima) y
-la deuda menor (TD-03, TD-05, TD-09, TD-10). La prueba de humo automática pasó en `ce0e176`, sin llamadas al
+la deuda menor (TD-03, TD-05, TD-09, TD-10). La prueba de humo automática pasó en `351dcab`, sin llamadas al
 proveedor. Lo que espera al docente está en `docs/PAQUETE_DECISIONES_CICLO10.md` (P-01 a P-12; revisiones R-1 a
 R-5, entre ellas los borradores en español de R-4, que no se muestran hasta su aprobación).
 
