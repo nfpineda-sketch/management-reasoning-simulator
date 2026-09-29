@@ -2450,12 +2450,15 @@ CORRECTIONS = (
                    "de estado, rol o año se escribe en mrs_account_changes, en la misma transacción que el cambio, con "
                    "quién lo hizo y cuándo; guardar sin cambiar nada no escribe nada. Sólo un administrador lo lee, en "
                    "«Account change history». La tabla es nueva y sólo se agrega: una base anterior la crea al abrir. "
-                   "El índice de un único encuentro activo por residente pasa por store_integrity, como los demás."),
+                   "El índice de un único encuentro activo por residente pasa por store_integrity, como los demás. "
+                   "Al cerrar el ciclo (C10-11), la suite completa listó una vez dos cambios del mismo segundo al "
+                   "revés: el id de cada cambio empieza ahora por el nanosegundo, y el orden no depende del azar."),
         "authorised_by": INSTRUCTION_2026_09_29_CYCLE10,
         "affects": {"modules": ["account_store", "account_portal", "store_integrity", "report_language"],
                     "versions": {}},
         "clinical_relevance": "none",
         "tests": ["test_account_changes_are_audited.py::test_deactivating_and_reactivating_is_written_with_its_author_and_time",
+                  "test_account_changes_are_audited.py::test_changes_within_one_second_still_list_newest_first",
                   "test_account_changes_are_audited.py::test_role_and_year_changes_are_written_and_a_save_without_change_is_not",
                   "test_account_changes_are_audited.py::test_only_an_administrator_reads_the_history",
                   "test_account_changes_are_audited.py::test_the_administrator_sees_the_history_and_the_resident_page_never_shows_it"],

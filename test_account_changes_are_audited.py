@@ -37,6 +37,20 @@ def people(tmp_path, monkeypatch):
     return accounts, users
 
 
+def test_changes_within_one_second_still_list_newest_first(people, monkeypatch):
+    """The full suite of cycle 10 once listed them the other way: the tie was broken by a random id."""
+    import account_store
+    accounts, users = people
+    admin, resident = users["admin_test"]["token"], users["resident_test"]["id"]
+    frozen = int(time.time())
+    monkeypatch.setattr(account_store.time, "time", lambda: float(frozen))
+    for year in (2, 3, 1, 2, 3):
+        accounts.update_user(admin, resident, training_year=year)
+    changes = [item["changes"]["training_year"] for item in accounts.account_changes(admin)]
+    assert changes == [[2, 3], [1, 2], [3, 1], [2, 3], [1, 2]]
+    assert {item["at"] for item in accounts.account_changes(admin)} == {frozen}
+
+
 def test_deactivating_and_reactivating_is_written_with_its_author_and_time(people):
     accounts, users = people
     admin = users["admin_test"]["token"]

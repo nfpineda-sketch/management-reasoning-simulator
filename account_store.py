@@ -504,10 +504,13 @@ class AccountStore:
             changes = {field: [before[field], after[field]] for field in before if before[field] != after[field]}
             if changes:
                 self._execute(connection, "DELETE FROM mrs_sessions WHERE user_id = ?", (user_id,))
-                # Written in the same transaction as the change itself (TD-44).
+                # Written in the same transaction as the change itself (TD-44). The id begins with the
+                # nanosecond, zero-padded: two changes within one second still list newest first
+                # (ORDER BY created_at, id), where a random id put them in either order.
                 self._execute(connection, """INSERT INTO mrs_account_changes
                     (id, user_id, actor_id, changes_json, created_at) VALUES (?, ?, ?, ?, ?)""",
-                    (uuid.uuid4().hex, user_id, actor["id"], json.dumps(changes, sort_keys=True), int(time.time())))
+                    (f"{time.time_ns():020d}{uuid.uuid4().hex[:12]}", user_id, actor["id"],
+                     json.dumps(changes, sort_keys=True), int(time.time())))
 
     def account_changes(self, token: str, limit: int = 200) -> list[dict]:
         """Who changed which account's status, role or year, and when; newest first. Administrators only."""
