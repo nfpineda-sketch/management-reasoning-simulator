@@ -96,9 +96,6 @@ cualquiera de ellas es una decisión nueva (pregunta abajo).
   casos SCA queda aturdida, a lo sumo levemente disminuida (fila 6); una pregunta por embarazo o FUM responde
   «No documentado» si el caso no lo escribió, y la prueba de embarazo queda solicitada sin resultado (fila 8).
 - **Casos con una limitación que el docente debe conocer** (se juegan igual):
-  - `hypoglycemia_54m_thiamine` y las configuraciones con vía fallida: el
-    glucagón o el octreótido por la cánula infiltrada actúan como modelados
-    (DC4-F).
   - `bradycardia_bb_54f`: vista neutral; `pulmonary_edema_75f`: la foto V34
     (ambas pendientes).
 - **Idiomas:**

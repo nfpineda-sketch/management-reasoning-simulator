@@ -2494,6 +2494,32 @@ CORRECTIONS = (
                   "test_plans_alone_are_recorded.py::test_only_plans_are_told_apart_from_everything_else"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-29-27",
+        "date": "2026-09-29",
+        "title": ("DC4-F (opción B mínima): el glucagón y el octreótido por la cánula fallida actúan como una dosis "
+                  "subcutánea"),
+        "scope": {"level": "family", "family": "hypoglycemia"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Ciclo 10, C10-09. Lo que el glucagón o el octreótido dejan en el tejido por la cánula que no está en "
+                   "la vena se absorbe desde ahí como una dosis subcutánea, una vía válida de ambos; la dosis actúa como "
+                   "la misma dosis dada por vía subcutánea. En este motor el inicio y el efecto de ambos no dependen de "
+                   "la vía, así que ninguna trayectoria cambia: lo que cambia es el registro técnico, que decía «as "
+                   "modelled; pending faculty decision (DC4-F)» y ahora dice «absorbed from the tissue as a "
+                   "subcutaneous dose (DC4-F)»; por una vía que funciona dice «as modelled». La fracción registrada "
+                   "como llegada directa a la circulación sigue siendo el 15 %. Sólo encuentros nuevos: los registros "
+                   "guardados conservan su texto."),
+        "authorised_by": INSTRUCTION_2026_09_29_CYCLE10,
+        "affects": {"modules": ["glucose_rescue", "family_engine", "hypoglycemia_battery", "hypoglycemia_catalog"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_dc4f_failed_line_as_subcutaneous.py::test_six_configurations_run_through_a_failed_line",
+                  "test_dc4f_failed_line_as_subcutaneous.py::"
+                  "test_a_dose_through_the_failed_line_acts_as_the_same_dose_given_subcutaneously",
+                  "test_dc4f_failed_line_as_subcutaneous.py::test_through_a_working_line_the_record_says_as_modelled",
+                  "test_hypoglycemia_lines.py::test_glucagon_through_the_failed_line_keeps_its_modelled_effect_and_says_why"],
+        "preservation": None,
+    },
 )
 
 

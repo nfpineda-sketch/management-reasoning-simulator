@@ -132,8 +132,9 @@ registra). Medido en `hypoglycemia_54m_thiamine` (vía fallida) y `hypoglycemia_
   cánula de llegada, y en la configuración funcionante una vía nueva se instala.
 - **Compatibilidad:** un encuentro empezado con 1.0 (sin cánula de llegada en su estado) conserva la regla
   de 1.0, incluida la IO que reparaba la vía.
-- **Pendiente:** DC4-F (farmacología de una fracción de glucagón u octreótido). El lector no cambió; sus
-  brechas quedan en la deuda del lector.
+- **DC4-F:** decidida en el ciclo 10 (opción B mínima, C-2026-09-29-27): por la cánula fallida el glucagón y el
+  octreótido actúan como una dosis subcutánea; ninguna trayectoria cambió, sólo el texto del registro técnico.
+  El lector no cambió; sus brechas quedan en la deuda del lector.
 
 ## 6 · `acs_70f_left_main`: el grado del VI al llegar
 

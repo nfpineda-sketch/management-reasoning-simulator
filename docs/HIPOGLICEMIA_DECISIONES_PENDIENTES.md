@@ -107,13 +107,24 @@ El catálogo, las doce combinaciones y los resultados de la batería están en
   por la cánula que no está en la vena llega el 15 % de lo que corre por ella -- bolo, infusión y
   medicamentos endovenosos --; lo IM, SC, IN y oral no pasa por ella. El 15 % se mantiene como
   abstracción, y es una fracción de lo que llega a la circulación, no del efecto de cada fármaco: la
-  glucosa actúa en proporción a lo que llega; **el glucagón y el octreótido conservan su efecto modelado**
-  (no se inventó un umbral ni se cambió su farmacodinamia) y su registro técnico dice que cuánto hace una
-  fracción de dosis es una decisión pendiente (**DC4-F**, abajo). La tiamina sólo se registra con su
+  glucosa actúa en proporción a lo que llega; **el glucagón y el octreótido actúan como una dosis
+  subcutánea** (**DC4-F**, abajo, opción B decidida el 2026-09-29). La tiamina sólo se registra con su
   acceso, sin efecto neurológico ni cambio de peso. No hay relato de «se detiene». T5 pasa en las 6
   configuraciones con vía fallida (la infusión aporta 3 mg/dL en 30 minutos en vez de 20).
 
-### DC4-F · Una fracción de glucagón o de octreótido (nueva, pendiente)
+### DC4-F · Una fracción de glucagón o de octreótido
+
+- **Decidida el 2026-09-29 (opción B mínima, al aprobar el ciclo 10) e implementada (C-2026-09-29-27).**
+  Lo que el glucagón o el octreótido dejan en el tejido por la cánula infiltrada se absorbe desde ahí como
+  una dosis subcutánea, una vía válida de ambos, y la dosis actúa como la misma dosis dada por vía
+  subcutánea. En este motor el inicio y el efecto de ambos no dependen de la vía (glucagón: 10 minutos para
+  cualquier vía), así que **ninguna trayectoria cambió**: lo que cambió es el registro técnico, que decía
+  «as modelled; pending faculty decision (DC4-F)» y ahora dice «absorbed from the tissue as a subcutaneous
+  dose (DC4-F)». La fracción registrada como llegada directa a la circulación sigue siendo el 15 %.
+  `test_dc4f_failed_line_as_subcutaneous.py` lo comprueba en las 6 configuraciones con vía fallida.
+  Distinguir el inicio subcutáneo del endovenoso en el motor sería otra decisión, con su fuente.
+
+Lo que sigue es la pregunta tal como se planteó:
 
 - **Qué hace hoy el motor.** Por la cánula fallida el registro técnico guarda que llegó el 15 % a la
   circulación, pero el efecto de ambos sigue el modelado de la dosis entera.
@@ -210,7 +221,7 @@ de Wernicke, que ya no existe.
 | P7 | Glucosado 10 %: 100 mL/h = 0,67 mg/dL/min | 2026-09-20 | Mantención con sulfonilurea (R2, R6, R9) |
 | P8 | Con secreción propia, sobre 200 mg/dL: a los 30 min cae 0,8 mg/dL/min extra hasta bajar de 100 | 2026-09-20 | Sobrecorrección (R7) |
 | P9 | Octreótido de 25 a 500 mcg: inicio 15 min, dura 360 min, detiene toda la caída de la sulfonilurea | 2026-09-20 | Alternativa a la infusión |
-| P10 | Vía fallida: llega el 15 % de lo que pasa por la vía infiltrada (bolo e infusión de glucosa); una vía nueva o una IO es su propio acceso y no repara la infiltrada (DC2–DC5, 2026-09-29, `glucose_rescue` 2.0). Antes: 15 % sólo del bolo EV/IO, y una vía nueva la arreglaba | El 15 % se mantiene como abstracción docente (DC4, 2026-09-29); su magnitud sigue sin fuente. **Glucagón y octreótido por la vía infiltrada: sin decidir (DC4-F)** | DC2–DC5 |
+| P10 | Vía fallida: llega el 15 % de lo que pasa por la vía infiltrada (bolo e infusión de glucosa); una vía nueva o una IO es su propio acceso y no repara la infiltrada (DC2–DC5, 2026-09-29, `glucose_rescue` 2.0). Antes: 15 % sólo del bolo EV/IO, y una vía nueva la arreglaba | El 15 % se mantiene como abstracción docente (DC4, 2026-09-29); su magnitud sigue sin fuente. Glucagón y octreótido por la vía infiltrada: como una dosis subcutánea (DC4-F, B, 2026-09-29) | DC2–DC5 |
 | P11 | Tras un alta, glucosa <60 → vuelve a los 20 min | Principio: decisiones 1 y 2 (2026-09-21). **60 mg/dL y 20 min: sin revisión** | Alta insegura (R5) |
 | P12 | La tiamina no despierta ni su ausencia deteriora | Decisión 8 (2026-09-21); sin magnitudes | T11 |
 

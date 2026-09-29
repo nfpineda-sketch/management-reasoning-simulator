@@ -7,8 +7,8 @@ respuesta todo sigue como está, y lo que su respuesta cambie se implementa desp
 **Cómo responder:** una línea por decisión, por ejemplo `P-01 A · P-02 A · P-04 B`. «Acepto las
 recomendaciones» aplica la recomendada en todas, salvo P-07 (75f) y P-08, que necesitan su juicio o su texto.
 
-**Ya decidido, fuera del paquete:** DC4-F, opción B mínima (aprobada al abrir el ciclo 10; se implementa en
-C10-09).
+**Ya decidido, fuera del paquete:** DC4-F, opción B mínima (aprobada al abrir el ciclo 10; implementada en
+C10-09, C-2026-09-29-27).
 
 ## Decisiones
 

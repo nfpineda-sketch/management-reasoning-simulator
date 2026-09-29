@@ -127,12 +127,12 @@ def test_what_does_not_run_through_a_line_does_not_depend_on_it(engine, order):
 
 
 def test_glucagon_through_the_failed_line_keeps_its_modelled_effect_and_says_why(engine):
-    """How much a part of a glucagon dose does is a pharmacological decision not made (DC4-F)."""
+    """DC4-F, option B (2026-09-29): absorbed from the tissue as a subcutaneous dose, whose effect is the modelled one."""
     failed, summaries = course(engine, FAILED, ["Give glucagon 1 mg IV. Reassess in 20 minutes."])
     replaced, _ = course(engine, FAILED, ["Place a new peripheral IV.", "Give glucagon 1 mg IV. Reassess in 20 minutes."])
     delivery = order_summary(summaries, "glucagon")["delivery"]
     assert delivery["share_to_circulation"] == glucose_rescue.FAILED_ACCESS_SHARE
-    assert "pending faculty decision" in delivery["effect"]
+    assert delivery["effect"] == "absorbed from the tissue as a subcutaneous dose (DC4-F)"
     assert failed["family_state"]["glucagon_at"] is not None
     assert failed["treatments"]["administered_medications"][-1]["access"] == "arrival_line"
     assert replaced["treatments"]["administered_medications"][-1]["share_to_circulation"] == 1.0

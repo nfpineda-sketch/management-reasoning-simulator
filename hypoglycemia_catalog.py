@@ -292,12 +292,12 @@ SIMPLIFICATIONS = (
      "es": ("Vía fallida: de lo que corre por la cánula que no está en la vena llega el 15 % a la circulación -- el "
             "bolo, la infusión al 10 % y los medicamentos endovenosos -- hasta que se instala una vía nueva; lo "
             "intramuscular, subcutáneo, intranasal u oral no pasa por ella, y una aguja intraósea es un acceso propio. "
-            "La glucosa actúa en proporción a lo que llega; el glucagón y el octreótido conservan su efecto modelado "
-            "(DC4-F pendiente)."),
+            "La glucosa actúa en proporción a lo que llega; el glucagón y el octreótido se absorben del tejido como "
+            "una dosis subcutánea (DC4-F, opción B)."),
      "review": "pending",
      "review_es": ("El alcance lo decidió la facultad el 2026-09-29 (DC4) y el 15 % se mantiene como abstracción; la "
-                   "magnitud no tiene revisión registrada, y cuánto hace una fracción de glucagón o de octreótido es "
-                   "una decisión farmacológica pendiente (DC4-F).")},
+                   "magnitud no tiene revisión registrada. El glucagón y el octreótido por la vía fallida actúan como "
+                   "una dosis subcutánea: DC4-F, opción B mínima, decidida el 2026-09-29.")},
     {"id": "P11", "parameter": "family_engine._discharge_alarm, DISCHARGE_RETURN_DELAY_MIN",
      "es": "Tras un alta, una glucosa bajo 60 hace que el paciente vuelva 20 minutos después.",
      "review": "pending",

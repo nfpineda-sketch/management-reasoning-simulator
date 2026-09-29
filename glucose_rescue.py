@@ -110,9 +110,11 @@ def consciousness(glucose):
 # and nothing given intramuscularly, subcutaneously, intranasally or by mouth
 # goes through it. The 15% is an abstraction, kept. It is a share of what
 # reaches the circulation, not of what each drug does: glucose acts in proportion
-# to the grams that arrive; how much glucagon or octreotide does from part of a
-# dose (and from the rest, left in the tissue) is a pharmacological decision not
-# yet made, so their effect is the one modelled and the record says so.
+# to the grams that arrive. DC4-F (faculty, 2026-09-29, option B, minimal): what
+# glucagon or octreotide leaves in the tissue is absorbed from it as a
+# subcutaneous dose, a route both drugs have, so the dose acts as the same dose
+# given subcutaneously. Neither drug's onset or effect depends on its route in
+# this engine, so no trajectory changed; the record says why (``effect_rule``).
 # DC3: an intraosseous needle is an access of its own. A valid intraosseous dose
 # places one as part of its execution, with its minute and no invented site; it
 # never repairs the cannula.
@@ -134,9 +136,16 @@ PLACES = {"arrival_line": "cannula in the left forearm", "new_line": "new cannul
           "io": "intraosseous needle"}
 # What each drug does with the part of a dose that arrives (the technical record).
 EFFECT_RULES = {"dextrose": "proportional", "dextrose_infusion": "proportional",
-                "glucagon": "as modelled; pending faculty decision (DC4-F)",
-                "octreotide": "as modelled; pending faculty decision (DC4-F)",
+                "glucagon": "as modelled", "octreotide": "as modelled",
                 "thiamine": "no modelled effect"}
+# Through the cannula that is not in the vein (DC4-F, option B).
+FAILED_LINE_EFFECT = {"glucagon": "absorbed from the tissue as a subcutaneous dose (DC4-F)",
+                      "octreotide": "absorbed from the tissue as a subcutaneous dose (DC4-F)"}
+
+
+def effect_rule(kind, failed):
+    """What the technical record says a dose does, given whether its line is the failed cannula."""
+    return (FAILED_LINE_EFFECT.get(kind) if failed else None) or EFFECT_RULES.get(kind, "as modelled")
 # What records written under 1.0 said; kept so that they are still read.
 LEGACY_FAILED_ACCESS_TEXT = ("The dextrose does not run: the forearm swells around the cannula and the infusion "
                              "slows to a stop. What was ordered is not what reached the patient.")

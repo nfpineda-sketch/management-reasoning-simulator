@@ -1173,7 +1173,7 @@ def _line_for(state, a):
     failed = glucose_rescue.failed_place(f, place)
     a["delivery"] = {"access": place,
                      "share_to_circulation": glucose_rescue.FAILED_ACCESS_SHARE if failed else 1.0,
-                     "effect": glucose_rescue.EFFECT_RULES.get(kind, "as modelled")}
+                     "effect": glucose_rescue.effect_rule(kind, failed)}
     if failed:
         f["failed_line_used"] = True
         if not f.get("failed_access_reported"):

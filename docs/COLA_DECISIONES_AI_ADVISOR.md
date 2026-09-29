@@ -31,7 +31,7 @@ decisiones abiertas en un solo paquete, sin tocar el lector, los baselines ni la
 | C10-06 | Runbook, preflight y guías del piloto | **Hecho**: `docs/RUNBOOK_PILOTO.md`, `tools_pilot_preflight.py` (sin imprimir secretos; 7 pruebas), guías del residente y del docente (revisión R-5 del paquete) |
 | C10-07 | Pantallas del piloto: TD-42, TD-43, TD-38 | **Hecho** (C-2026-09-29-26): encuentros parecidos numerados; ZIP vencido retirado; clave duplicada fuera; radar de las tarjetas a su ancho; «Through» de ancho medio; evidencia bajo la ficha (sin clic extra, §154DV); un plan solo se dice registrado, sin pregunta genérica. El lector no cambia |
 | C10-08 | Español de las frases del motor (resto de DF-23 fila 11) y TD-07; nada activo sin aprobación | **Hecho**: cosecha sin proveedor de la sala (`tools_engine_spanish.py`, 31 corridas); 18 frases del motor y 67 textos de C14 como borradores inactivos (`spanish_drafts.py`), revisión R-4 en `docs/revision/ES_BORRADORES.md`; P-12 (el resto de TD-07) y TD-46 (el POCUS mezclado de un relato sin aprobar) al paquete y a la deuda |
-| C10-09 | DC4-F, opción B mínima (aprobada) | Pendiente |
+| C10-09 | DC4-F, opción B mínima (aprobada) | **Hecho** (C-2026-09-29-27): por la cánula fallida el glucagón y el octreótido actúan como una dosis subcutánea; ninguna trayectoria cambia (el motor no distingue su inicio por vía) y el registro técnico lo dice; probado en las 6 configuraciones con vía fallida |
 | C10-10 | Deuda menor: TD-05, TD-10, TD-03 y, si queda tiempo, TD-09 | Pendiente |
 | C10-11 | Cierre: suite completa, regresiones, prueba de humo, docs, commit, push y reporte | Pendiente |
 
@@ -62,7 +62,7 @@ nada de esto tiene todavía revisión clínica externa. Detalle clínico:
 | DC2 | La cánula de llegada existe y se puede examinar | Hipoglicemia, 12 configuraciones | **IMPLEMENTADO** | — | C-2026-09-29-14; `test_hypoglycemia_lines.py` | Revisión clínica externa |
 | DC3 | Una dosis IO válida instala su aguja y llega entera | Hipoglicemia | **IMPLEMENTADO** (el lector no cambió: «IO, then D50» sigue retenido, TD-45f) | — | ídem | Revisión clínica externa |
 | DC4 | La falla es de la vía: llega el 15 % de lo que corre por la cánula infiltrada | Hipoglicemia | **IMPLEMENTADO** (variante de b; el 15 % es abstracción docente) | — | ídem | Revisión clínica externa |
-| DC4-F | Glucagón y octreótido por la cánula infiltrada | Hipoglicemia | **PENDIENTE** (nueva) | Fuente farmacológica | `docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md` | Elegir (a), (b) o (c), con fuente |
+| DC4-F | Glucagón y octreótido por la cánula infiltrada | Hipoglicemia | **DECIDIDA (B mínima) e IMPLEMENTADA** (C-2026-09-29-27): actúan como una dosis subcutánea | — | `docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md`; `test_dc4f_failed_line_as_subcutaneous.py` | — |
 | DC5 | Una infusión que corría pasa a la vía siguiente | Hipoglicemia | **IMPLEMENTADO** | — | C-2026-09-29-14 | Revisión clínica externa |
 | DC6 | Peso de la tiamina en D3 | Hipoglicemia | **DIFERIDO** | Decisión docente | ídem | Peso decidido |
 | DC7 | Reevaluar evaluaciones confirmadas de la 54m | Evaluaciones ya confirmadas | **DIFERIDO**; nada confirmado se tocó | Decisión docente y pantalla de reevaluación | ídem | Decisión registrada |

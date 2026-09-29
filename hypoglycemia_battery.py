@@ -454,9 +454,9 @@ UNOBSERVED_ALWAYS = (
 UNOBSERVED_FAILED = (
     "El examen del sitio (región «Vascular access» del control Examinar) no se juega aquí: la batería da "
     "acciones y no examina; lo comprueba test_hypoglycemia_lines.py (DC2).",
-    "El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: el registro técnico guarda que "
-    "sólo el 15 % llegó a la circulación y su efecto sigue el modelado, porque cuánto hace una fracción de dosis "
-    "es una decisión farmacológica pendiente (DC4-F).",
+    "El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: se absorben del tejido como una "
+    "dosis subcutánea (DC4-F, opción B, 2026-09-29) y en este motor su efecto no depende de la vía; lo comprueba "
+    "test_dc4f_failed_line_as_subcutaneous.py en las seis configuraciones con vía fallida.",
 )
 UNOBSERVED_COMPOSITION = (
     "Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.",
