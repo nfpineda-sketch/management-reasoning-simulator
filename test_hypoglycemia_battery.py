@@ -42,16 +42,24 @@ def test_the_ampoule_through_a_failed_line_does_not_arrive(report):
             assert results[check]["status"] == "passed", (entry["configuration_id"], results[check])
 
 
-def test_the_scope_of_the_failed_line_is_a_pending_decision_and_the_engine_keeps_it(report):
-    """Faculty decision 8 held back only the dextrose bolus; widening it is the faculty's call (DC4)."""
+def test_the_failed_line_holds_back_everything_that_runs_through_it(report):
+    """DC4, decided 2026-09-29: the failure belongs to the line, not to the bolus."""
     for entry in _failed_line_configurations(report):
-        result = {r["id"]: r for r in entry["checks"]}["T5"]
-        assert result["status"] == "failed", entry["configuration_id"]
-        assert result["classification"] == "pending_clinical_decision" and result["decision"] == "DC4"
-        assert "DC4" in entry["summary"]["pending_decisions"]
-    # Nothing was changed to make it pass: through the failed line, the 10% infusion still arrives whole.
-    running = {"iv_access_failed": True, "dextrose_infusion_ml_h": 100.0, "elapsed": 0}
-    assert glucose_rescue.treatment_gain(running) == pytest.approx(100 / 60 * glucose_rescue.INFUSION_G_PER_ML * 4)
+        results = {r["id"]: r for r in entry["checks"]}
+        for check in ("T5", "T14", "T15"):
+            assert results[check]["status"] == "passed", (entry["configuration_id"], results[check])
+        assert entry["summary"]["pending_decisions"] == []
+    assert battery.PENDING == {}
+    # Through the failed arrival cannula, a 10% infusion reaches the circulation in part...
+    running = {"iv_access_failed": True, "dextrose_infusion_ml_h": 100.0, "elapsed": 0,
+               "arrival_line": {"in_vein": False}, "dextrose_infusion_access": "arrival_line"}
+    full = 100 / 60 * glucose_rescue.INFUSION_G_PER_ML * 4
+    assert glucose_rescue.treatment_gain(running) == pytest.approx(full * glucose_rescue.FAILED_ACCESS_SHARE)
+    # ...and whole once it runs through a line that works.
+    assert glucose_rescue.treatment_gain({**running, "dextrose_infusion_access": "new_line"}) == pytest.approx(full)
+    # An encounter begun under 1.0 keeps 1.0's rule: the infusion arrived whole.
+    legacy = {"iv_access_failed": True, "dextrose_infusion_ml_h": 100.0, "elapsed": 0}
+    assert glucose_rescue.treatment_gain(legacy) == pytest.approx(full)
 
 
 def test_the_arrival_consciousness_is_what_the_engine_shows_at_minute_one(report):
@@ -83,7 +91,11 @@ def test_every_configuration_says_what_was_not_observed(report):
         assert any("Lenguaje libre" in line for line in entry["unobserved"])
         configuration = catalog.configuration(entry["configuration_id"])
         if configuration["conditions"]["iv_access_failed"]:
-            assert any("intraósea" in line for line in entry["unobserved"])
+            # The intraosseous dose is played now (T14); the examination and the
+            # pharmacology of a partial glucagon or octreotide dose are not.
+            assert not any("intraósea" in line for line in entry["unobserved"])
+            assert any("Vascular access" in line for line in entry["unobserved"])
+            assert any("DC4-F" in line for line in entry["unobserved"])
         if configuration["origin"] != "bank":
             assert any("superficie" in line for line in entry["unobserved"])
 

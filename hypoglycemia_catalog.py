@@ -106,9 +106,10 @@ CONDITIONS = {
     "iv_access_failed": {
         "engine": "iv_access_failed", "values": (True, False), "status": "implemented",
         "decision_relevant": True,
-        "implemented_by": "glucose_rescue.delivered_share; family_engine (vascular_access)",
-        "es": ("La vía con que llega no está en la vena: de la glucosa en bolo que se da por ella llega el 15 % "
-               "(el alcance de la decisión 8; DC4)"),
+        "implemented_by": ("glucose_rescue (la vía, versión 2.0: delivered_share, infusion_share, move_infusion, "
+                           "access_finding); family_engine (_line_for, vascular_access)"),
+        "es": ("La cánula con que llega no está en la vena: de lo que corre por ella llega el 15 % a la circulación "
+               "(bolo, infusión y medicamentos endovenosos; DC4, 2026-09-29)"),
     },
     "diabetes": {
         "engine": None, "values": ("type_1", "type_2", "none"), "status": "implemented",
@@ -287,13 +288,16 @@ SIMPLIFICATIONS = (
     {"id": "P9", "parameter": "glucose_rescue.OCTREOTIDE_*",
      "es": "Octreótido de 25 a 500 mcg: inicio a los 15 min, dura 360 min y detiene por completo la caída de la sulfonilurea.",
      "review": "reviewed", "review_es": _MAGNITUDES_2026_09_20},
-    {"id": "P10", "parameter": "glucose_rescue.FAILED_ACCESS_SHARE, delivered_share",
-     "es": ("Vía fallida: de la glucosa en bolo por vía endovenosa o intraósea llega el 15 % hasta que se instala una "
-            "vía nueva; la infusión al 10 %, el glucagón, el octreótido y la tiamina endovenosos pasan enteros por "
-            "ella (el alcance de la decisión 8)."),
+    {"id": "P10", "parameter": "glucose_rescue.FAILED_ACCESS_SHARE, delivered_share, infusion_share",
+     "es": ("Vía fallida: de lo que corre por la cánula que no está en la vena llega el 15 % a la circulación -- el "
+            "bolo, la infusión al 10 % y los medicamentos endovenosos -- hasta que se instala una vía nueva; lo "
+            "intramuscular, subcutáneo, intranasal u oral no pasa por ella, y una aguja intraósea es un acceso propio. "
+            "La glucosa actúa en proporción a lo que llega; el glucagón y el octreótido conservan su efecto modelado "
+            "(DC4-F pendiente)."),
      "review": "pending",
-     "review_es": ("El 15 % y el alcance se implementaron con la decisión 8 (docs/DECISIONES_3_4_8_MAGNITUDES.md); "
-                   "la magnitud no tiene revisión registrada y el alcance es la decisión pendiente DC4.")},
+     "review_es": ("El alcance lo decidió la facultad el 2026-09-29 (DC4) y el 15 % se mantiene como abstracción; la "
+                   "magnitud no tiene revisión registrada, y cuánto hace una fracción de glucagón o de octreótido es "
+                   "una decisión farmacológica pendiente (DC4-F).")},
     {"id": "P11", "parameter": "family_engine._discharge_alarm, DISCHARGE_RETURN_DELAY_MIN",
      "es": "Tras un alta, una glucosa bajo 60 hace que el paciente vuelva 20 minutos después.",
      "review": "pending",
@@ -430,8 +434,10 @@ _TEMPLATES = {
             {"condition": "diabetes", "es": "Sin diabetes: su páncreas responde a una sobrecorrección."},
             {"condition": "thiamine_deficient", "es": "Déficit probable de tiamina en este paciente (supuesto de "
                                                        "esta configuración, no una regla del alcohol)."},
-            {"condition": "iv_access_failed", "es": "La vía con que llega no está en la vena; no se ve antes de "
-                                                     "usarla (pendiente de decisión docente)."},
+            {"condition": "iv_access_failed", "es": "La cánula con que llega no está en la vena. Se declara al "
+                                                     "llegar sin decir que falla, igual que en las configuraciones "
+                                                     "con vía funcionante; el examen del sitio y una respuesta que "
+                                                     "no alcanza la muestran (DC2, 2026-09-29)."},
         ],
         "narrative": {
             "patient": {"age": 54, "sex": "male", "comorbidities": ["alcohol use disorder", "poor oral intake"]},
@@ -585,8 +591,10 @@ def _compose(mechanism, access, severity):
                                     if item["condition"] != "iv_access_failed"]
     if access == "failed":
         configuration["assumptions"].append(
-            {"condition": "iv_access_failed", "es": "La vía con que llega no está en la vena; no se ve antes de "
-                                                     "usarla (pendiente de decisión docente)."})
+            {"condition": "iv_access_failed", "es": "La cánula con que llega no está en la vena. Se declara al "
+                                                     "llegar sin decir que falla, igual que en las configuraciones "
+                                                     "con vía funcionante; el examen del sitio y una respuesta que "
+                                                     "no alcanza la muestran (DC2, 2026-09-29)."})
     if severity != template["axes"]["severity"]:
         if severity == "moderate":
             configuration["conditions"]["arrival_glucose"] = MODERATE_ARRIVAL_GLUCOSE
@@ -739,7 +747,9 @@ def fingerprint_components(configuration):
     history = configuration["narrative"]["history"]
     cues = {"medications": history["medications"], "medical": history["medical"], "risks": history["risks"],
             "oral_intake": history["focused"].get("oral_intake"),
-            "failed_line": [glucose_rescue.FAILED_ACCESS_TEXT, glucose_rescue.NEW_ACCESS_TEXT]
+            "failed_line": [glucose_rescue.ARRIVAL_ACCESS_TEXT, glucose_rescue.FAILED_ACCESS_TEXT,
+                            glucose_rescue.NEW_LINE_TEXT, glucose_rescue.IO_PLACED_TEXT,
+                            glucose_rescue.IO_IMPLIED_TEXT, glucose_rescue.INFUSION_MOVED_TEXT]
             if configuration["conditions"]["iv_access_failed"] else None}
     return {"conditions": {"axes": configuration["axes"], "conditions": configuration["conditions"],
                            "assumptions": configuration["assumptions"]},

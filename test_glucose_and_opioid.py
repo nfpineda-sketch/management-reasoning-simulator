@@ -124,14 +124,17 @@ def test_the_dose_that_does_not_reach_the_patient_does_not_treat_them(engine):
     state, labels = course(engine, "hypoglycemia", "hypoglycemia_54m_thiamine", [DEXTROSE, "Reassess in 20 minutes."])
     assert state["family_state"]["glucose"] < 70
     assert state["observable"]["mental_status"] != "Alert"
-    assert "forearm swells around the cannula" in labels
+    # What the bedside shows, not a verdict (DC2, 2026-09-29).
+    assert "the skin around the forearm cannula swells" in labels
 
 
 def test_replacing_the_line_is_what_changes_the_course(engine):
     state, labels = course(engine, "hypoglycemia", "hypoglycemia_54m_thiamine",
                            [DEXTROSE, "Place a peripheral IV line. Reassess in 5 minutes.",
                             DEXTROSE, "Reassess in 20 minutes."])
-    assert "The new line runs freely" in labels
+    # Said the same whether the old line ran or not (DC2, 2026-09-29).
+    assert "A new peripheral cannula is placed in the right forearm." in labels
+    assert "The new line runs freely" not in labels and "replaced" not in labels
     assert state["family_state"]["glucose"] > 110
     # And the emergency is resolved without thiamine having been ordered at all.
     assert state["observable"]["mental_status"] == "Alert"

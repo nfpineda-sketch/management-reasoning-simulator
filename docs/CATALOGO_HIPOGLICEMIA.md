@@ -1,7 +1,7 @@
 # Catálogo de hipoglicemia
 
 > Generado por `tools_hypoglycemia_catalog.py` desde `hypoglycemia_catalog.py`, `hypoglycemia_battery.py` y `corrections_registry.py`. No se edita a mano.
-> Catálogo 1.0.0 · batería 1.0 · mecanismo de glucosa 1.0 · declaraciones de evaluación 1.1.
+> Catálogo 1.0.0 · batería 1.0 · mecanismo de glucosa 2.0 · declaraciones de evaluación 1.1.
 
 Autorización docente del 2026-09-25, etapas 0–2. Las tres variantes del banco se expresan mediante el catálogo y el catálogo compone las otras nueve combinaciones de sus tres ejes. **Las nueve composiciones no se ofrecen a residentes**: sólo un docente o un administrador las abre, en el sandbox, para revisarlas.
 
@@ -15,7 +15,7 @@ Tres estados que no se mezclan:
 
 | Combinaciones | Del banco | En revisión | Compatibles | Probadas | Defectos técnicos | Con decisión clínica pendiente |
 |---|---|---|---|---|---|---|
-| 12 | 3 | 9 | 12 | 12 | 0 | 6 |
+| 12 | 3 | 9 | 12 | 12 | 0 | 0 |
 
 ## Ejes
 
@@ -32,7 +32,7 @@ Tres estados que no se mezclan:
 | `endogenous_insulin` | Secreción propia de insulina: una sobrecorrección sobre 200 mg/dL provoca un rebote | glucose_rescue.step (rebote tras sobrecorrección) | sí |
 | `glycogen_depleted` | Reservas de glucógeno agotadas: el glucagón moviliza poco | glucose_rescue.treatment_gain (glucagón al 30 %) | sí |
 | `thiamine_deficient` | Déficit probable de tiamina: segundo objetivo del manejo | sin efecto fisiológico (decisión docente 8, 2026-09-21); oportunidad de evaluación | sí |
-| `iv_access_failed` | La vía con que llega no está en la vena: de la glucosa en bolo que se da por ella llega el 15 % (el alcance de la decisión 8; DC4) | glucose_rescue.delivered_share; family_engine (vascular_access) | sí |
+| `iv_access_failed` | La cánula con que llega no está en la vena: de lo que corre por ella llega el 15 % a la circulación (bolo, infusión y medicamentos endovenosos; DC4, 2026-09-29) | glucose_rescue (la vía, versión 2.0: delivered_share, infusion_share, move_infusion, access_finding); family_engine (_line_for, vascular_access) | sí |
 | `diabetes` | Diabetes declarada en la historia | relato (historia y comorbilidades) | no |
 | `arrival_glucose` | Glucosa al llegar (mg/dL) | family_engine._initialize (glucosa basal) | no |
 | `arrival_mental_status` | Estado de conciencia autorado al llegar | estado observable autorado al llegar | no |
@@ -80,7 +80,7 @@ La batería los usa como referencia, nunca como criterio para juzgar a un reside
 | P7 | `glucose_rescue.INFUSION_G_PER_ML` | Glucosado al 10 %: 100 mL/h suman 0,67 mg/dL/min. | Magnitud revisada. Revisada por la facultad el 2026-09-20 como magnitud docente (docs/HYPOGLYCEMIA_MAGNITUDES.md). |
 | P8 | `glucose_rescue.REBOUND_*` | Con secreción propia, una glucosa sobre 200 provoca a los 30 min una caída extra de 0,8 mg/dL/min hasta bajar de 100. | Magnitud revisada. Revisada por la facultad el 2026-09-20 como magnitud docente (docs/HYPOGLYCEMIA_MAGNITUDES.md). |
 | P9 | `glucose_rescue.OCTREOTIDE_*` | Octreótido de 25 a 500 mcg: inicio a los 15 min, dura 360 min y detiene por completo la caída de la sulfonilurea. | Magnitud revisada. Revisada por la facultad el 2026-09-20 como magnitud docente (docs/HYPOGLYCEMIA_MAGNITUDES.md). |
-| P10 | `glucose_rescue.FAILED_ACCESS_SHARE, delivered_share` | Vía fallida: de la glucosa en bolo por vía endovenosa o intraósea llega el 15 % hasta que se instala una vía nueva; la infusión al 10 %, el glucagón, el octreótido y la tiamina endovenosos pasan enteros por ella (el alcance de la decisión 8). | Pendiente de revisión. El 15 % y el alcance se implementaron con la decisión 8 (docs/DECISIONES_3_4_8_MAGNITUDES.md); la magnitud no tiene revisión registrada y el alcance es la decisión pendiente DC4. |
+| P10 | `glucose_rescue.FAILED_ACCESS_SHARE, delivered_share, infusion_share` | Vía fallida: de lo que corre por la cánula que no está en la vena llega el 15 % a la circulación -- el bolo, la infusión al 10 % y los medicamentos endovenosos -- hasta que se instala una vía nueva; lo intramuscular, subcutáneo, intranasal u oral no pasa por ella, y una aguja intraósea es un acceso propio. La glucosa actúa en proporción a lo que llega; el glucagón y el octreótido conservan su efecto modelado (DC4-F pendiente). | Pendiente de revisión. El alcance lo decidió la facultad el 2026-09-29 (DC4) y el 15 % se mantiene como abstracción; la magnitud no tiene revisión registrada, y cuánto hace una fracción de glucagón o de octreótido es una decisión farmacológica pendiente (DC4-F). |
 | P11 | `family_engine._discharge_alarm, DISCHARGE_RETURN_DELAY_MIN` | Tras un alta, una glucosa bajo 60 hace que el paciente vuelva 20 minutos después. | Pendiente de revisión. El principio es de las decisiones docentes 1 y 2 del 2026-09-21 (un alta con el problema en curso trae de vuelta al paciente); el umbral de 60 mg/dL y los 20 minutos no tienen revisión registrada. |
 | P12 | `decisión docente 8 (2026-09-21)` | La tiamina no despierta al paciente ni su ausencia lo deteriora. | Decisión docente, sin magnitud. Decisión docente 8 (2026-09-21); no tiene magnitudes propias. |
 
@@ -90,22 +90,22 @@ La batería los usa como referencia, nunca como criterio para juzgar a un reside
 |---|---|---|---|---|---|---|---|---|
 | `hypoglycemia_28m` | banco | Insulina · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor | 34 mg/dL, Drowsy | — | sí | sí (7/7 técnicas) | 6/6 | — |
 | `hypoglycemia_76f` | banco | Sulfonilurea · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor | 38 mg/dL, Obtunded | `sulfonylurea_effect`, `endogenous_insulin` | sí | sí (8/8 técnicas) | 9/9 | — |
-| `hypoglycemia_54m_thiamine` | banco | Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 32 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient`, `iv_access_failed` | sí | sí (11/12 técnicas; 1 en decisión pendiente) | 6/6 | DC4 |
+| `hypoglycemia_54m_thiamine` | banco | Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 32 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient`, `iv_access_failed` | sí | sí (14/14 técnicas) | 6/6 | — |
 | `hypoglycemia_cfg_insulin_working_moderate` | en revisión | Insulina · Vía funcionante · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | — | sí | sí (7/7 técnicas) | 5/5 | — |
-| `hypoglycemia_cfg_insulin_failed_severe` | en revisión | Insulina · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 34 mg/dL, Drowsy | `iv_access_failed` | sí | sí (10/11 técnicas; 1 en decisión pendiente) | 5/5 | DC4 |
-| `hypoglycemia_cfg_insulin_failed_moderate` | en revisión | Insulina · Vía fallida · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `iv_access_failed` | sí | sí (10/11 técnicas; 1 en decisión pendiente) | 5/5 | DC4 |
+| `hypoglycemia_cfg_insulin_failed_severe` | en revisión | Insulina · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 34 mg/dL, Drowsy | `iv_access_failed` | sí | sí (13/13 técnicas) | 5/5 | — |
+| `hypoglycemia_cfg_insulin_failed_moderate` | en revisión | Insulina · Vía fallida · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `iv_access_failed` | sí | sí (13/13 técnicas) | 5/5 | — |
 | `hypoglycemia_cfg_sulfonylurea_working_moderate` | en revisión | Sulfonilurea · Vía funcionante · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `sulfonylurea_effect`, `endogenous_insulin` | sí | sí (8/8 técnicas) | 8/8 | — |
-| `hypoglycemia_cfg_sulfonylurea_failed_severe` | en revisión | Sulfonilurea · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 38 mg/dL, Obtunded | `sulfonylurea_effect`, `endogenous_insulin`, `iv_access_failed` | sí | sí (11/12 técnicas; 1 en decisión pendiente) | 8/8 | DC4 |
-| `hypoglycemia_cfg_sulfonylurea_failed_moderate` | en revisión | Sulfonilurea · Vía fallida · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `sulfonylurea_effect`, `endogenous_insulin`, `iv_access_failed` | sí | sí (11/12 técnicas; 1 en decisión pendiente) | 8/8 | DC4 |
+| `hypoglycemia_cfg_sulfonylurea_failed_severe` | en revisión | Sulfonilurea · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor | 38 mg/dL, Obtunded | `sulfonylurea_effect`, `endogenous_insulin`, `iv_access_failed` | sí | sí (14/14 técnicas) | 8/8 | — |
+| `hypoglycemia_cfg_sulfonylurea_failed_moderate` | en revisión | Sulfonilurea · Vía fallida · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `sulfonylurea_effect`, `endogenous_insulin`, `iv_access_failed` | sí | sí (14/14 técnicas) | 8/8 | — |
 | `hypoglycemia_cfg_alcohol_fasting_working_severe` | en revisión | Alcohol y ayuno · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor | 32 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient` | sí | sí (8/8 técnicas) | 7/7 | — |
 | `hypoglycemia_cfg_alcohol_fasting_working_moderate` | en revisión | Alcohol y ayuno · Vía funcionante · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient` | sí | sí (8/8 técnicas) | 6/6 | — |
-| `hypoglycemia_cfg_alcohol_fasting_failed_moderate` | en revisión | Alcohol y ayuno · Vía fallida · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient`, `iv_access_failed` | sí | sí (11/12 técnicas; 1 en decisión pendiente) | 6/6 | DC4 |
+| `hypoglycemia_cfg_alcohol_fasting_failed_moderate` | en revisión | Alcohol y ayuno · Vía fallida · Moderada: glucosa en la banda somnolienta del motor | 52 mg/dL, Drowsy | `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient`, `iv_access_failed` | sí | sí (14/14 técnicas) | 6/6 | — |
 
 ## Correspondencia de las tres variantes del banco
 
 - `hypoglycemia_28m` → Insulina · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor. Condiciones: —. Supuestos de la configuración: Diabetes tipo 1, confirmada por su información de emergencia. Reservas de glucógeno no agotadas: estaba bien al empezar el turno y sólo omitió el almuerzo. Sin déficit de tiamina: ninguna exposición al alcohol ni ayuno.
 - `hypoglycemia_76f` → Sulfonilurea · Vía funcionante · Severa: glucosa bajo el umbral de convulsión del motor. Condiciones: `sulfonylurea_effect`, `endogenous_insulin`. Supuestos de la configuración: Diabetes tipo 2 tratada con glimepirida. Reservas de glucógeno no agotadas pese a dos días de ingesta escasa (supuesto de esta configuración). La enfermedad renal crónica está en el relato y no en el motor: la recurrencia la modela sólo el efecto de la sulfonilurea.
-- `hypoglycemia_54m_thiamine` → Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor. Condiciones: `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient`, `iv_access_failed`. Supuestos de la configuración: Sin diabetes: su páncreas responde a una sobrecorrección. Déficit probable de tiamina en este paciente (supuesto de esta configuración, no una regla del alcohol). La vía con que llega no está en la vena; no se ve antes de usarla (pendiente de decisión docente).
+- `hypoglycemia_54m_thiamine` → Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor. Condiciones: `endogenous_insulin`, `glycogen_depleted`, `thiamine_deficient`, `iv_access_failed`. Supuestos de la configuración: Sin diabetes: su páncreas responde a una sobrecorrección. Déficit probable de tiamina en este paciente (supuesto de esta configuración, no una regla del alcohol). La cánula con que llega no está en la vena. Se declara al llegar sin decir que falla, igual que en las configuraciones con vía funcionante; el examen del sitio y una respuesta que no alcanza la muestran (DC2, 2026-09-29).
 
 ## Preservación técnica
 
@@ -114,7 +114,7 @@ Comparación con el registro del 2026-09-25 (commit d184845), antes de que exist
 | Variante | Caso | Declaración | Lanzamiento | Guiones distintos |
 |---|---|---|---|---|
 | `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `failed_line_then_new_line` |
-| `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | ninguno de 20 |
+| `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `failed_line_then_new_line` |
 | `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `failed_line_then_new_line` |
 
 Cada diferencia está declarada en el registro de correcciones; la prueba `test_hypoglycemia_preservation` acepta esas y ninguna otra.
@@ -206,6 +206,9 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-29-09 | La prueba de la sala y el banco de imágenes pasaba o fallaba según el caso sorteado | general | technical_defect | none | — |
 | C-2026-09-29-10 | TEP: el shock obstructivo atribuible indica la trombólisis de inmediato; la noradrenalina sola nunca | familia pulmonary_embolism | clinical_decision_applied | clinical | — |
 | C-2026-09-29-11 | DC1: la conciencia escrita al llegar es la que el motor muestra, sin volver a leerla | variante bradycardia_ccb_68m, pulmonary_edema_58m, pulmonary_edema_75f, hypoglycemia_28m, hypoglycemia_54m_thiamine | clinical_decision_applied | clinical | — |
+| C-2026-09-29-12 | POCUS de la HDA: la VCI y el VI leen el llenado que el motor modela, no el volumen acumulado | variante gi_bleed_57m, gi_bleed_72f | clinical_decision_applied | clinical | — |
+| C-2026-09-29-13 | TD-31: las medidas sobre una fuente externa no se suman; el registro dice si el sangrado disminuye o se detiene | familia trauma | clinical_decision_applied | clinical | — |
+| C-2026-09-29-14 | Hipoglicemia DC2–DC5: la falla es de la vía, no de la glucosa en bolo | familia hypoglycemia | clinical_decision_applied | clinical | glucose_rescue 1.0 → 2.0 |
 
 ## La batería, configuración por configuración
 
@@ -218,7 +221,7 @@ Insulina · Vía funcionante · Severa: glucosa bajo el umbral de convulsión de
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 34 → 133 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 133 mg/dL a los 10 minutos | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 133 mg/dL a los 10 minutos | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 133 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | sin rebote sin secreción propia | — |
@@ -241,7 +244,7 @@ Sulfonilurea · Vía funcionante · Severa: glucosa bajo el umbral de convulsió
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 37 → 131 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 132 mg/dL a los 10 minutos | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 132 mg/dL a los 10 minutos | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 131 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
@@ -262,16 +265,18 @@ Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector 
 
 ### `hypoglycemia_54m_thiamine`
 
-Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: la misma corrección sin tiamina (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación); Error: tiamina sin glucosa (error frecuente).
+Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: la misma corrección sin tiamina (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Alternativa: la ampolla por vía intraósea, sin instalarla antes (manejo adecuado); Recuperación: la infusión que corría por la vía fallida pasa a la vía nueva (recuperación); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación); Error: tiamina sin glucosa (error frecuente).
 
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 32 → 131 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 131 mg/dL a los 10 minutos | — |
-| T3 | La primera dosis por la vía fallida se informa como no llegada | ✅ | el motor dice que la glucosa no pasa | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 131 mg/dL a los 10 minutos | — |
+| T3 | La primera dosis por la vía fallida se ve en el sitio, sin un veredicto (DC2) | ✅ | la piel alrededor de la cánula se hincha al pasarla | — |
 | T4 | Por la vía fallida llega sólo la fracción del modelo | ✅ | sube 14.2 mg/dL; el 15% de la ampolla son 15 | — |
-| T5 | Una infusión por la vía fallida tampoco llega (el aviso de la vía dice que la infusión se detiene) | ❌ (decisión clínica pendiente DC4) | en 30 minutos aporta 20.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
+| T5 | Una infusión por la vía fallida también llega sólo en parte (DC4) | ✅ | en 30 minutos aporta 3.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
 | T6 | Tras reconocer la vía fallida, la vía nueva corrige la glucosa | ✅ | 145 mg/dL tras la vía nueva | — |
+| T14 | Una dosis intraósea instala su aguja, llega entera y no repara la cánula (DC3) | ✅ | 131 mg/dL; aguja intraósea sí; la cánula sigue fallida | — |
+| T15 | Una infusión que corría por la vía fallida pasa a la vía nueva (DC5) | ✅ | la infusión pasa a la vía nueva; 15 mg/dL sobre el control | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 131 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
@@ -285,7 +290,7 @@ Alcohol y ayuno · Vía fallida · Severa: glucosa bajo el umbral de convulsión
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | ✅ | cae 0.91 mg/dL/min tras el rebote | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 5.3 mg/dL en 20 minutos sin glucógeno (los parámetros dicen 5.3) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente).
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. El examen del sitio (región «Vascular access» del control Examinar) no se juega aquí: la batería da acciones y no examina; lo comprueba test_hypoglycemia_lines.py (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: el registro técnico guarda que sólo el 15 % llegó a la circulación y su efecto sigue el modelado, porque cuánto hace una fracción de dosis es una decisión farmacológica pendiente (DC4-F).
 
 ### `hypoglycemia_cfg_insulin_working_moderate`
 
@@ -294,7 +299,7 @@ Insulina · Vía funcionante · Moderada: glucosa en la banda somnolienta del mo
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 52 → 151 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 151 mg/dL a los 10 minutos | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 151 mg/dL a los 10 minutos | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 151 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | sin rebote sin secreción propia | — |
@@ -311,16 +316,18 @@ Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector 
 
 ### `hypoglycemia_cfg_insulin_failed_severe`
 
-Insulina · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación).
+Insulina · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Alternativa: la ampolla por vía intraósea, sin instalarla antes (manejo adecuado); Recuperación: la infusión que corría por la vía fallida pasa a la vía nueva (recuperación); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación).
 
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 34 → 133 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 133 mg/dL a los 10 minutos | — |
-| T3 | La primera dosis por la vía fallida se informa como no llegada | ✅ | el motor dice que la glucosa no pasa | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 133 mg/dL a los 10 minutos | — |
+| T3 | La primera dosis por la vía fallida se ve en el sitio, sin un veredicto (DC2) | ✅ | la piel alrededor de la cánula se hincha al pasarla | — |
 | T4 | Por la vía fallida llega sólo la fracción del modelo | ✅ | sube 14.2 mg/dL; el 15% de la ampolla son 15 | — |
-| T5 | Una infusión por la vía fallida tampoco llega (el aviso de la vía dice que la infusión se detiene) | ❌ (decisión clínica pendiente DC4) | en 30 minutos aporta 20.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
+| T5 | Una infusión por la vía fallida también llega sólo en parte (DC4) | ✅ | en 30 minutos aporta 3.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
 | T6 | Tras reconocer la vía fallida, la vía nueva corrige la glucosa | ✅ | 147 mg/dL tras la vía nueva | — |
+| T14 | Una dosis intraósea instala su aguja, llega entera y no repara la cánula (DC3) | ✅ | 133 mg/dL; aguja intraósea sí; la cánula sigue fallida | — |
+| T15 | Una infusión que corría por la vía fallida pasa a la vía nueva (DC5) | ✅ | la infusión pasa a la vía nueva; 15 mg/dL sobre el control | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 133 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | sin rebote sin secreción propia | — |
@@ -333,20 +340,22 @@ Insulina · Vía fallida · Severa: glucosa bajo el umbral de convulsión del mo
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | — | sin rebote en esta configuración | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 17.6 mg/dL en 20 minutos con glucógeno (los parámetros dicen 17.6) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. El examen del sitio (región «Vascular access» del control Examinar) no se juega aquí: la batería da acciones y no examina; lo comprueba test_hypoglycemia_lines.py (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: el registro técnico guarda que sólo el 15 % llegó a la circulación y su efecto sigue el modelado, porque cuánto hace una fracción de dosis es una decisión farmacológica pendiente (DC4-F). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ### `hypoglycemia_cfg_insulin_failed_moderate`
 
-Insulina · Vía fallida · Moderada: glucosa en la banda somnolienta del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación).
+Insulina · Vía fallida · Moderada: glucosa en la banda somnolienta del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Alternativa: la ampolla por vía intraósea, sin instalarla antes (manejo adecuado); Recuperación: la infusión que corría por la vía fallida pasa a la vía nueva (recuperación); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación).
 
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 52 → 151 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 151 mg/dL a los 10 minutos | — |
-| T3 | La primera dosis por la vía fallida se informa como no llegada | ✅ | el motor dice que la glucosa no pasa | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 151 mg/dL a los 10 minutos | — |
+| T3 | La primera dosis por la vía fallida se ve en el sitio, sin un veredicto (DC2) | ✅ | la piel alrededor de la cánula se hincha al pasarla | — |
 | T4 | Por la vía fallida llega sólo la fracción del modelo | ✅ | sube 14.2 mg/dL; el 15% de la ampolla son 15 | — |
-| T5 | Una infusión por la vía fallida tampoco llega (el aviso de la vía dice que la infusión se detiene) | ❌ (decisión clínica pendiente DC4) | en 30 minutos aporta 20.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
+| T5 | Una infusión por la vía fallida también llega sólo en parte (DC4) | ✅ | en 30 minutos aporta 3.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
 | T6 | Tras reconocer la vía fallida, la vía nueva corrige la glucosa | ✅ | 165 mg/dL tras la vía nueva | — |
+| T14 | Una dosis intraósea instala su aguja, llega entera y no repara la cánula (DC3) | ✅ | 151 mg/dL; aguja intraósea sí; la cánula sigue fallida | — |
+| T15 | Una infusión que corría por la vía fallida pasa a la vía nueva (DC5) | ✅ | la infusión pasa a la vía nueva; 15 mg/dL sobre el control | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 151 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | sin rebote sin secreción propia | — |
@@ -359,7 +368,7 @@ Insulina · Vía fallida · Moderada: glucosa en la banda somnolienta del motor.
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | — | sin rebote en esta configuración | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 17.6 mg/dL en 20 minutos con glucógeno (los parámetros dicen 17.6) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. El examen del sitio (región «Vascular access» del control Examinar) no se juega aquí: la batería da acciones y no examina; lo comprueba test_hypoglycemia_lines.py (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: el registro técnico guarda que sólo el 15 % llegó a la circulación y su efecto sigue el modelado, porque cuánto hace una fracción de dosis es una decisión farmacológica pendiente (DC4-F). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ### `hypoglycemia_cfg_sulfonylurea_working_moderate`
 
@@ -368,7 +377,7 @@ Sulfonilurea · Vía funcionante · Moderada: glucosa en la banda somnolienta de
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 51 → 145 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 146 mg/dL a los 10 minutos | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 146 mg/dL a los 10 minutos | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 145 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
@@ -388,16 +397,18 @@ Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector 
 
 ### `hypoglycemia_cfg_sulfonylurea_failed_severe`
 
-Sulfonilurea · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: octreótido en vez de infusión (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Error: alta tras la primera ampolla (error frecuente); Recuperación: al volver, ampolla, infusión y hospitalización (recuperación); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación).
+Sulfonilurea · Vía fallida · Severa: glucosa bajo el umbral de convulsión del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: octreótido en vez de infusión (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Alternativa: la ampolla por vía intraósea, sin instalarla antes (manejo adecuado); Recuperación: la infusión que corría por la vía fallida pasa a la vía nueva (recuperación); Error: alta tras la primera ampolla (error frecuente); Recuperación: al volver, ampolla, infusión y hospitalización (recuperación); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación).
 
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 37 → 131 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 132 mg/dL a los 10 minutos | — |
-| T3 | La primera dosis por la vía fallida se informa como no llegada | ✅ | el motor dice que la glucosa no pasa | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 132 mg/dL a los 10 minutos | — |
+| T3 | La primera dosis por la vía fallida se ve en el sitio, sin un veredicto (DC2) | ✅ | la piel alrededor de la cánula se hincha al pasarla | — |
 | T4 | Por la vía fallida llega sólo la fracción del modelo | ✅ | sube 9.0 mg/dL; el 15% de la ampolla son 15 | — |
-| T5 | Una infusión por la vía fallida tampoco llega (el aviso de la vía dice que la infusión se detiene) | ❌ (decisión clínica pendiente DC4) | en 30 minutos aporta 20.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
+| T5 | Una infusión por la vía fallida también llega sólo en parte (DC4) | ✅ | en 30 minutos aporta 3.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
 | T6 | Tras reconocer la vía fallida, la vía nueva corrige la glucosa | ✅ | 140 mg/dL tras la vía nueva | — |
+| T14 | Una dosis intraósea instala su aguja, llega entera y no repara la cánula (DC3) | ✅ | 131 mg/dL; aguja intraósea sí; la cánula sigue fallida | — |
+| T15 | Una infusión que corría por la vía fallida pasa a la vía nueva (DC5) | ✅ | la infusión pasa a la vía nueva; 14 mg/dL sobre el control | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 131 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
@@ -413,20 +424,22 @@ Sulfonilurea · Vía fallida · Severa: glucosa bajo el umbral de convulsión de
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | ✅ | cae 1.45 mg/dL/min tras el rebote | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 17.6 mg/dL en 20 minutos con glucógeno (los parámetros dicen 17.6) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. El examen del sitio (región «Vascular access» del control Examinar) no se juega aquí: la batería da acciones y no examina; lo comprueba test_hypoglycemia_lines.py (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: el registro técnico guarda que sólo el 15 % llegó a la circulación y su efecto sigue el modelado, porque cuánto hace una fracción de dosis es una decisión farmacológica pendiente (DC4-F). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ### `hypoglycemia_cfg_sulfonylurea_failed_moderate`
 
-Sulfonilurea · Vía fallida · Moderada: glucosa en la banda somnolienta del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: octreótido en vez de infusión (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Error: alta tras la primera ampolla (error frecuente); Recuperación: al volver, ampolla, infusión y hospitalización (recuperación); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación).
+Sulfonilurea · Vía fallida · Moderada: glucosa en la banda somnolienta del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: octreótido en vez de infusión (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Alternativa: la ampolla por vía intraósea, sin instalarla antes (manejo adecuado); Recuperación: la infusión que corría por la vía fallida pasa a la vía nueva (recuperación); Error: alta tras la primera ampolla (error frecuente); Recuperación: al volver, ampolla, infusión y hospitalización (recuperación); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación).
 
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 51 → 145 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 146 mg/dL a los 10 minutos | — |
-| T3 | La primera dosis por la vía fallida se informa como no llegada | ✅ | el motor dice que la glucosa no pasa | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 146 mg/dL a los 10 minutos | — |
+| T3 | La primera dosis por la vía fallida se ve en el sitio, sin un veredicto (DC2) | ✅ | la piel alrededor de la cánula se hincha al pasarla | — |
 | T4 | Por la vía fallida llega sólo la fracción del modelo | ✅ | sube 9.0 mg/dL; el 15% de la ampolla son 15 | — |
-| T5 | Una infusión por la vía fallida tampoco llega (el aviso de la vía dice que la infusión se detiene) | ❌ (decisión clínica pendiente DC4) | en 30 minutos aporta 20.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
+| T5 | Una infusión por la vía fallida también llega sólo en parte (DC4) | ✅ | en 30 minutos aporta 3.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
 | T6 | Tras reconocer la vía fallida, la vía nueva corrige la glucosa | ✅ | 154 mg/dL tras la vía nueva | — |
+| T14 | Una dosis intraósea instala su aguja, llega entera y no repara la cánula (DC3) | ✅ | 145 mg/dL; aguja intraósea sí; la cánula sigue fallida | — |
+| T15 | Una infusión que corría por la vía fallida pasa a la vía nueva (DC5) | ✅ | la infusión pasa a la vía nueva; 14 mg/dL sobre el control | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 145 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
@@ -442,7 +455,7 @@ Sulfonilurea · Vía fallida · Moderada: glucosa en la banda somnolienta del mo
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | ✅ | cae 1.45 mg/dL/min tras el rebote | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 17.6 mg/dL en 20 minutos con glucógeno (los parámetros dicen 17.6) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. El examen del sitio (región «Vascular access» del control Examinar) no se juega aquí: la batería da acciones y no examina; lo comprueba test_hypoglycemia_lines.py (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: el registro técnico guarda que sólo el 15 % llegó a la circulación y su efecto sigue el modelado, porque cuánto hace una fracción de dosis es una decisión farmacológica pendiente (DC4-F). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ### `hypoglycemia_cfg_alcohol_fasting_working_severe`
 
@@ -451,7 +464,7 @@ Alcohol y ayuno · Vía funcionante · Severa: glucosa bajo el umbral de convuls
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 32 → 131 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 131 mg/dL a los 10 minutos | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 131 mg/dL a los 10 minutos | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 131 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
@@ -475,7 +488,7 @@ Alcohol y ayuno · Vía funcionante · Moderada: glucosa en la banda somnolienta
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 52 → 151 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 151 mg/dL a los 10 minutos | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 151 mg/dL a los 10 minutos | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 151 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
@@ -493,16 +506,18 @@ Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector 
 
 ### `hypoglycemia_cfg_alcohol_fasting_failed_moderate`
 
-Alcohol y ayuno · Vía fallida · Moderada: glucosa en la banda somnolienta del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: la misma corrección sin tiamina (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación); Error: tiamina sin glucosa (error frecuente).
+Alcohol y ayuno · Vía fallida · Moderada: glucosa en la banda somnolienta del motor. Guiones: Glucosa capilar, ampolla por una vía que llega, mantención y destino (manejo adecuado); Alternativa: vía nueva antes de la primera dosis (manejo adecuado); Alternativa: la misma corrección sin tiamina (manejo adecuado); Alternativa: glucagón intramuscular sin usar la vía fallida (manejo adecuado); 25 minutos sin nada que suba la glucosa, luego el manejo adecuado (demora); Error: ampolla por la vía con que llegó, sin revisarla (error frecuente); Recuperación: tras la ampolla que no llegó, vía nueva y ampolla (recuperación); Error: infusión por la vía fallida (error frecuente); Alternativa: la ampolla por vía intraósea, sin instalarla antes (manejo adecuado); Recuperación: la infusión que corría por la vía fallida pasa a la vía nueva (recuperación); Error: doble ampolla (error frecuente); Glucagón intramuscular como única medida (error frecuente); Control: sin tratamiento, leído a los 20 y a los 30 minutos, para medir efectos (demora); Error: carbohidrato oral a un paciente que no está alerta (error frecuente); Recuperación: tras la vía oral rechazada, la ampolla por una vía que llega (recuperación); Error: tiamina sin glucosa (error frecuente).
 
 | | Comprobación | Resultado | Observado | Parámetros |
 |---|---|---|---|---|
 | T1 | Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL | ✅ | 52 → 151 mg/dL tras la ampolla por una vía que llega | — |
-| T2 | Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida) | ✅ | 151 mg/dL a los 10 minutos | — |
-| T3 | La primera dosis por la vía fallida se informa como no llegada | ✅ | el motor dice que la glucosa no pasa | — |
+| T2 | Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2) | ✅ | 151 mg/dL a los 10 minutos | — |
+| T3 | La primera dosis por la vía fallida se ve en el sitio, sin un veredicto (DC2) | ✅ | la piel alrededor de la cánula se hincha al pasarla | — |
 | T4 | Por la vía fallida llega sólo la fracción del modelo | ✅ | sube 14.2 mg/dL; el 15% de la ampolla son 15 | — |
-| T5 | Una infusión por la vía fallida tampoco llega (el aviso de la vía dice que la infusión se detiene) | ❌ (decisión clínica pendiente DC4) | en 30 minutos aporta 20.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
+| T5 | Una infusión por la vía fallida también llega sólo en parte (DC4) | ✅ | en 30 minutos aporta 3.0 mg/dL; entera aportaría 20 y por la vía fallida 3 | — |
 | T6 | Tras reconocer la vía fallida, la vía nueva corrige la glucosa | ✅ | 165 mg/dL tras la vía nueva | — |
+| T14 | Una dosis intraósea instala su aguja, llega entera y no repara la cánula (DC3) | ✅ | 151 mg/dL; aguja intraósea sí; la cánula sigue fallida | — |
+| T15 | Una infusión que corría por la vía fallida pasa a la vía nueva (DC5) | ✅ | la infusión pasa a la vía nueva; 15 mg/dL sobre el control | — |
 | T7 | La vía oral se rechaza a un paciente que no está alerta | ✅ | rechazado | — |
 | T13 | Una orden rechazada no deja nada a medias: la siguiente, correcta, se ejecuta completa | ✅ | tras el rechazo, 151 mg/dL y Alert | — |
 | T8 | El rebote de una sobrecorrección ocurre sólo con secreción propia de insulina | ✅ | rebote con secreción propia | — |
@@ -516,7 +531,7 @@ Alcohol y ayuno · Vía fallida · Moderada: glucosa en la banda somnolienta del
 | R7 | La sobrecorrección se paga con una caída de 0,8 mg/dL/min | ✅ | cae 0.91 mg/dL/min tras el rebote | P8 |
 | R8 | El glucagón moviliza poco sin glucógeno y bastante con él | ✅ | efecto de 5.3 mg/dL en 20 minutos sin glucógeno (los parámetros dicen 5.3) | P5 |
 
-Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance que dejó la decisión 8 (DC4). La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
+Sin observar: Lenguaje libre: la batería usa acciones estructuradas; el lector se comprueba aparte. Tratamientos prehospitalarios, restricción de terapias y otras capacidades pendientes (no existen en el motor). Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas. El examen del sitio (región «Vascular access» del control Examinar) no se juega aquí: la batería da acciones y no examina; lo comprueba test_hypoglycemia_lines.py (DC2). El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: el registro técnico guarda que sólo el 15 % llegó a la circulación y su efecto sigue el modelado, porque cuánto hace una fracción de dosis es una decisión farmacológica pendiente (DC4-F). Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.
 
 ## Revisarlas en desarrollo
 

@@ -11,6 +11,7 @@ de estos cambios tiene todavía revisión clínica externa.
 | 2 | DC1: conciencia anclada a la llegada | C-2026-09-29-11 | `test_arrival_consciousness.py`, `test_hypoglycemia_battery.py` |
 | 3 | POCUS de la HDA según el llenado efectivo | C-2026-09-29-12 | `test_gi_bleed_pocus.py` |
 | 4 | TD-31: la hemostasia no es una suma; reducido frente a detenido | C-2026-09-29-13 | `test_hemostasis_is_not_a_sum.py` |
+| 5 | Hipoglicemia DC2–DC5: la vía como propiedad del acceso (`glucose_rescue` 2.0) | C-2026-09-29-14 | `test_hypoglycemia_lines.py`, `test_hypoglycemia_battery.py` |
 
 ## 1 · TEP
 
@@ -97,3 +98,34 @@ sangrado tras cada orden, con el motor real.
   nivel: compresión sola, taponamiento con compresión y torniquete dan el mismo resultado que antes.
 - **El lector no cambia**: «Pack the wound and hold pressure» sigue siendo dos medidas escritas; el motor
   las cuenta como una intervención.
+
+## 5 · Hipoglicemia DC2–DC5: la vía como propiedad del acceso
+
+Un solo mecanismo en `glucose_rescue` (versión **2.0**; la evaluación congelada de cada encuentro la
+registra). Medido en `hypoglycemia_54m_thiamine` (vía fallida) y `hypoglycemia_28m` (vía funcionante).
+
+| Situación | Antes (1.0) | Ahora (2.0) |
+|---|---|---|
+| Llegada | nada dice que haya una vía | las 12 configuraciones: «A peripheral intravenous cannula is already in place in the left forearm.» |
+| Examinar antes de tratar | no había región para la vía | región **Vascular access**: fallida «the skin around its tip is slightly swollen and cool»; funcionante «the site is clean» |
+| 25 g de D50 IV por la cánula fallida | 32 → 47 mg/dL · aviso «does not run… slows to a stop. What was ordered is not what reached the patient.» | 32 → 47 mg/dL · observación «As it goes in, the skin around the forearm cannula swells.» (una vez) · 15 % sólo en el registro técnico |
+| D10 a 100 mL/h por la cánula fallida, 30 min | +20 mg/dL (llegaba entera) | **+3 mg/dL**; convulsión a los 20 min como sin tratamiento |
+| Vía nueva en la configuración **fallida** | «peripheral intravenous access **replaced**» + «The new line runs freely. What is given now reaches the circulation.» | «peripheral intravenous access placed» + «A new peripheral cannula is placed in the right forearm.» |
+| Vía nueva en la configuración **funcionante** | «already in place; not repeated» (0 min) | igual que en la fallida: instalada, 3 min |
+| Infusión corriendo y luego vía nueva | seguía igual (entera) | pasa a la vía nueva con acceso, velocidad y minuto |
+| 25 g de D50 **IO** sin aguja | 15 % (como por la cánula fallida) · 32 → 46 | aguja instalada por la orden (minuto, sin sitio, +3 min) · entera · 32 → 131 |
+| Aguja IO ordenada | «reparaba» la cánula: lo IV llegaba entero | acceso propio: lo IV sigue al 15 % por la cánula |
+| Glucagón IV por la cánula fallida | efecto modelado | efecto modelado; registro técnico 15 % y «pending faculty decision (DC4-F)» |
+| Tiamina IV por la cánula fallida | registrada | registrada con su acceso y fracción; sin efecto |
+| Glucagón IM, octreótido SC | independientes | independientes (sin registro de acceso) |
+| Glucagón IO, octreótido IO | rechazados | rechazados (la vía no se amplía) |
+
+- **Batería:** las 12 configuraciones pasan todas sus comprobaciones técnicas (antes T5 fallaba en las 6
+  fallidas como decisión pendiente DC4); T14 (dosis IO) y T15 (traslado de la infusión) son nuevas. Las
+  referencias R1–R9 no cambiaron.
+- **Preservación dorada:** los tres casos del banco declaran sus guiones: todo encuentro lleva ahora su
+  cánula de llegada, y en la configuración funcionante una vía nueva se instala.
+- **Compatibilidad:** un encuentro empezado con 1.0 (sin cánula de llegada en su estado) conserva la regla
+  de 1.0, incluida la IO que reparaba la vía.
+- **Pendiente:** DC4-F (farmacología de una fracción de glucagón u octreótido). El lector no cambió; sus
+  brechas quedan en la deuda del lector.

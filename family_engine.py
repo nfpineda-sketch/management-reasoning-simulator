@@ -962,6 +962,11 @@ def _initialize(state):
     state.setdefault("diagnostic_history", [])
     state.setdefault("hidden", {})
     _arrival_anchors(state["family_state"])
+    if state.get("engine_family") == "hypoglycemia":
+        # DC2 (2026-09-29): every catalogued patient arrives with a cannula already in
+        # place, working or not; whether it is in the vein is the configuration's fact.
+        state["family_state"]["arrival_line"] = {"site": glucose_rescue.ARRIVAL_LINE_SITE,
+                                                 "in_vein": not state["family_state"]["iv_access_failed"]}
     if state.get("engine_family") == "pulmonary_embolism":
         # An obstructive shock present at arrival counts from minute 0 (2026-09-29).
         state["family_state"]["pe_attributable"] = _pe_attributable(state, 0.0)
@@ -1125,6 +1130,56 @@ def _stop_fluid(state):
     return remaining
 
 
+def _procedure_note(f, text, minute):
+    f.setdefault("procedure_events", []).append(
+        {"type": "procedure", "label": text, "time_min": int(minute), "duration_min": 0})
+
+
+def _line_for(state, a):
+    """The line a hypoglycaemia order runs through (DC2 to DC5, 2026-09-29).
+
+    Writes on ``a`` what the technical record keeps -- the access and the share that
+    reached the circulation -- and returns the minutes an intraosseous needle this
+    order needed took to place.
+    """
+    f, kind, route = state["family_state"], a["type"], a.get("route")
+    if a.get("operation") in {"stop", "continue"} or not (kind in _MEDICINES or kind == "dextrose_infusion"):
+        return 0
+    now = int(state.get("sim_time", 0))
+    minutes = 0
+    if route == "IO" and not f.get("io_access"):
+        # DC3: a valid intraosseous dose needs a needle in the bone. It is placed as
+        # part of executing this order -- with its minute, no invented site and no
+        # order of its own -- and it never repairs the cannula.
+        f.update(io_access=True, io_access_at=now, io_site=None)
+        a["io_established"] = {"minute": now, "placed_by": "this order", "site": None}
+        _procedure_note(f, glucose_rescue.IO_IMPLIED_TEXT.format(minute=now), now)
+        minutes = _SUPPORT_ORDERS["vascular_access"][2]
+        moved = glucose_rescue.move_infusion(f, "io", now)
+        if moved:
+            _procedure_note(f, moved, now)
+    if kind == "dextrose_infusion":
+        running = float(f.get("dextrose_infusion_ml_h") or 0)
+        place = (f.get("dextrose_infusion_access") or "arrival_line") if running else glucose_rescue.newest_access(f)
+    elif route == "IO":
+        place = "io"
+    elif route == "IV":
+        place = glucose_rescue.iv_place(f)
+    else:
+        return minutes      # intramuscular, subcutaneous, intranasal, oral: no line
+    failed = glucose_rescue.failed_place(f, place)
+    a["delivery"] = {"access": place,
+                     "share_to_circulation": glucose_rescue.FAILED_ACCESS_SHARE if failed else 1.0,
+                     "effect": glucose_rescue.EFFECT_RULES.get(kind, "as modelled")}
+    if failed:
+        f["failed_line_used"] = True
+        if not f.get("failed_access_reported"):
+            # What the bedside shows, once; the examination keeps showing it.
+            f["failed_access_reported"] = True
+            _procedure_note(f, glucose_rescue.FAILED_ACCESS_TEXT, now + 1)
+    return minutes
+
+
 def _order(state, a):
     reviewed = None
     f = state["family_state"]
@@ -1146,6 +1201,7 @@ def _order(state, a):
              and kind != "tranexamic_acid" and a.get("operation") != "stop")
     duration = 1
     label = kind.replace("_", " ").capitalize()
+    access_minutes = _line_for(state, a) if glucose_rescue.line_model(f) else 0
     if kind == "airway_preparation":
         tr["airway_prepared"] = True
         label = "Airway equipment prepared; intubation has not occurred"
@@ -1188,10 +1244,11 @@ def _order(state, a):
         duration = int(30 * a["units"])
         label = f"Packed red cells {a['units']:g} unit{'' if a['units'] == 1 else 's'} started"
     elif kind == "dextrose":
-        if f.get("iv_access_failed") and a.get("route") in {"IV", "IO"} and not f.get("failed_access_reported"):
+        if (not glucose_rescue.line_model(f) and f.get("iv_access_failed") and a.get("route") in {"IV", "IO"}
+                and not f.get("failed_access_reported")):
             f["failed_access_reported"] = True
             f.setdefault("procedure_events", []).append(
-                {"type": "procedure", "label": glucose_rescue.FAILED_ACCESS_TEXT,
+                {"type": "procedure", "label": glucose_rescue.LEGACY_FAILED_ACCESS_TEXT,
                  "time_min": int(state.get("sim_time", 0)) + 1, "duration_min": 0})
         if not timed:
             _medicine_effect(state, a, a["dose_g"])
@@ -1413,15 +1470,25 @@ def _order(state, a):
         if a.get("operation") == "stop":
             f["io_access"] = False
             label = f"{name} removed"
-        elif f.get("io_access") and not f.get("iv_access_failed"):
+        elif f.get("io_access") and (glucose_rescue.line_model(f) or not f.get("iv_access_failed")):
             label = f"{name} already in place; not repeated"
+        elif glucose_rescue.line_model(f):
+            # DC3 (2026-09-29): a needle in the bone is an access of its own; the
+            # cannula stays as it is, and a running infusion follows it (DC5).
+            now = int(state.get("sim_time", 0))
+            f.update(io_access=True, io_access_at=now, io_site=site or None)
+            label = f"{name} placed"
+            _procedure_note(f, glucose_rescue.IO_PLACED_TEXT, now)
+            moved = glucose_rescue.move_infusion(f, "io", now)
+            if moved:
+                _procedure_note(f, moved, now)
         else:
             f["io_access"] = True
             label = f"{name} placed"
             if f.get("iv_access_failed"):
                 f["iv_access_failed"] = False
                 f.setdefault("procedure_events", []).append(
-                    {"type": "procedure", "label": glucose_rescue.NEW_ACCESS_TEXT,
+                    {"type": "procedure", "label": glucose_rescue.LEGACY_NEW_ACCESS_TEXT,
                      "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
             else:
                 f.setdefault("procedure_events", []).append(
@@ -1429,6 +1496,24 @@ def _order(state, a):
                      "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
         tr.setdefault("support_orders", {})["intraosseous_access"] = bool(f.get("io_access"))
         duration = 0 if label.endswith("not repeated") else _SUPPORT_ORDERS["vascular_access"][2]
+    elif kind == "vascular_access" and glucose_rescue.line_model(f) and a.get("operation") != "stop":
+        # DC2 (2026-09-29): a new cannula is placed, said and timed the same whether
+        # the one the patient arrived with runs or not; intravenous orders go through
+        # it from now on, and a running infusion follows it (DC5).
+        name, done, minutes, _ = _SUPPORT_ORDERS["vascular_access"]
+        now = int(state.get("sim_time", 0))
+        if f.get("new_line_at") is None:
+            f.update(new_line_at=now, iv_access=True, iv_access_failed=False)
+            label = f"{name} {done}"
+            _procedure_note(f, glucose_rescue.NEW_LINE_TEXT, now)
+            moved = glucose_rescue.move_infusion(f, "new_line", now)
+            if moved:
+                _procedure_note(f, moved, now)
+            duration = minutes
+        else:
+            label = f"{name} already in place; not repeated"
+            duration = 0
+        tr.setdefault("support_orders", {})["vascular_access"] = True
     elif kind in _SUPPORT_ORDERS:
         name, done, minutes, note = _SUPPORT_ORDERS[kind]
         field = {"urinary_catheter": "urinary_catheter", "vascular_access": "iv_access",
@@ -1459,7 +1544,7 @@ def _order(state, a):
             f["iv_access_failed"] = False
             label = "peripheral intravenous access replaced"
             f.setdefault("procedure_events", []).append(
-                {"type": "procedure", "label": glucose_rescue.NEW_ACCESS_TEXT,
+                {"type": "procedure", "label": glucose_rescue.LEGACY_NEW_ACCESS_TEXT,
                  "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
         tr.setdefault("support_orders", {})[kind] = bool(f.get(field))
         duration = 0 if already else minutes
@@ -1560,6 +1645,8 @@ def _order(state, a):
         duration = 3
     elif kind == "dextrose_infusion":
         rate = 0.0 if a["operation"] == "stop" else float(a["rate_ml_h"])
+        if rate and a.get("delivery"):
+            f["dextrose_infusion_access"] = a["delivery"]["access"]
         f["dextrose_infusion_ml_h"] = rate
         tr["dextrose_infusion"] = ({"rate_ml_h": rate, "concentration_percent": a.get("concentration_percent", 10)}
                                    if rate else None)
@@ -1776,12 +1863,22 @@ def _order(state, a):
     for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route", "volume_ml", "fluid_type", "rate_basis", "rate_ml_h", "service", "destination", "duration_h", "device", "flow_lpm", "rate", "rate_mcg_min", "operation", "energy_j", "synchronized", "mode", "ipap_cmh2o", "epap_cmh2o", "fio2_percent", "ventilator_mode", "peep_cmh2o"):
         if key in a:
             summary[key] = a[key]
+    for key in ("delivery", "io_established"):
+        # The line an order ran through and what reached the circulation (DC2 to DC5,
+        # 2026-09-29): technical record, read by the faculty, never said in the room.
+        if a.get(key) is not None:
+            summary[key] = deepcopy(a[key])
+    if access_minutes:
+        summary["duration_min"] = int(summary.get("duration_min", 0)) + access_minutes
     if ((kind in _MEDICINES or kind == "anticoagulation") and a.get("operation") != "continue"
             and not locals().get("withheld")):
         # A continuation gave nothing, so it is not an administration.
         record = {key: deepcopy(summary[key]) for key in ("agent", "dose_mg", "dose_g", "dose", "units", "route") if key in summary}
         record.setdefault("agent", kind)
         record["time_min"] = int(state.get("sim_time", 0))
+        if a.get("delivery") is not None:
+            record["access"] = a["delivery"]["access"]
+            record["share_to_circulation"] = a["delivery"]["share_to_circulation"]
         tr["administered_medications"].append(record)
     if kind in {"oxygen", "niv", "norepinephrine", "nitroglycerin", "dobutamine", "ventilator_adjustment"}:
         tr.setdefault("active_orders", {})[kind] = deepcopy(a)
@@ -3065,6 +3162,14 @@ def current_findings(state):
                 f"Breath sounds absent over the {side} hemithorax, which is hyper-resonant; wheeze on the other side.")
     elif family == "pulmonary_edema" and f:
         findings["Respiratory"] = "Bilateral crackles remain, with reduced respiratory effort." if f["lung"] < .7 else "Bilateral inspiratory crackles with increased respiratory effort."
+    elif family == "hypoglycemia" and (glucose_rescue.line_model(f) or not f):
+        # Discovery (DC2, 2026-09-29): the lines are there to be examined, outside
+        # the reader, and they look how they look -- a verdict is the resident's.
+        # Before the first order the engine has not started, and the cannula the
+        # patient arrived with is already there to look at.
+        lines = f or {"arrival_line": {"site": glucose_rescue.ARRIVAL_LINE_SITE, "in_vein": not bool(
+            _case(state).get("engine", {}).get("iv_access_failed"))}}
+        findings["Vascular access"] = glucose_rescue.access_finding(lines)
     elif family == "opioid":
         findings["Respiratory"] = f"Respiratory rate {o.get('respiratory_rate')} /min; " + ("assisted ventilation is in progress." if f.get("bag_mask") or f.get("invasive") else "breaths remain shallow." if o.get("respiratory_rate", 12) < 10 else "spontaneous breaths have greater depth.")
     return findings

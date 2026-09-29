@@ -93,8 +93,11 @@ def test_a_line_that_is_not_in_the_vein_delivers_almost_nothing():
 
 
 def test_the_failed_line_is_visible_and_not_hidden():
-    assert "forearm swells" in glucose_rescue.FAILED_ACCESS_TEXT
-    assert "reaches the circulation" in glucose_rescue.NEW_ACCESS_TEXT
+    # What the bedside shows, never a verdict (DC2, 2026-09-29): the site swells, and a
+    # new line is said the same whether the old one ran or not.
+    assert "swells" in glucose_rescue.FAILED_ACCESS_TEXT
+    for text in (glucose_rescue.FAILED_ACCESS_TEXT, glucose_rescue.NEW_LINE_TEXT, glucose_rescue.ARRIVAL_ACCESS_TEXT):
+        assert not any(word in text for word in ("fail", "not in the vein", "reaches the circulation", "%"))
 
 
 def test_glucagon_depends_on_a_liver_that_has_something_to_mobilise():

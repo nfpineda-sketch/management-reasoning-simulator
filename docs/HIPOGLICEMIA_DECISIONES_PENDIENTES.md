@@ -44,6 +44,16 @@ El catálogo, las doce combinaciones y los resultados de la batería están en
   quien empieza con glucagón endovenoso o una infusión por esa vía tampoco (DC4).
 - **Recomendación:** decir al llegar que trae una vía periférica puesta por los paramédicos, sin decir
   que está fallida, para que usarla sea una decisión. La falla seguiría revelándose al usarla.
+- **Decidida el 2026-09-29 e implementada (C-2026-09-29-14).** Las 12 configuraciones (6 con vía fallida
+  y 6 con vía funcionante, 3 del banco y 9 composiciones) reciben al llegar la misma frase: «A peripheral
+  intravenous cannula is already in place in the left forearm.» No nombra a los paramédicos porque los
+  relatos de 28m (traído desde el trabajo) y 76f (traída por su hijo) no los tienen; en la 54m viene del
+  registro paramédico. Una vía nueva se instala y se dice igual en ambas configuraciones («peripheral
+  intravenous access placed» y una frase neutra del sitio); nada dice «replaced» ni «What is given now
+  reaches». La falla se descubre en la cabecera: al primer uso, «As it goes in, the skin around the
+  forearm cannula swells»; en el control **Examinar**, la región **Vascular access** (disponible desde la
+  llegada, fuera del lector) describe el sitio y la vía por la que corre una infusión; y la glucosa que no
+  sube. El 15 % queda en el registro técnico, nunca en la sala.
 
 ### DC3 · La vía intraósea
 
@@ -58,6 +68,13 @@ El catálogo, las doce combinaciones y los resultados de la batería están en
 - **Queda pendiente la mitad de la dosis.** Una dosis escrita «IO» sin instalar antes la vía intraósea
   pasa todavía como por la vía fallida (15 %), con el aviso del antebrazo. Cambiarlo toca el alcance de
   la decisión 8 (P10, DC4), que sigue en revisión docente.
+- **Decidida el 2026-09-29 e implementada (C-2026-09-29-14).** Una dosis intraósea válida (glucosa o
+  tiamina) instala su aguja como parte de su ejecución: con su minuto, sin sitio inventado ni una orden de
+  instalación que nadie escribió, y con los minutos de instalar sumados a la orden. Llega entera. La
+  aguja es un acceso propio y **no repara la cánula**: lo endovenoso sigue pasando por la cánula fallida
+  hasta que se instala una vía nueva. Las vías no soportadas no se amplían (glucagón u octreótido IO se
+  siguen rechazando). Lo que el lector no interpreta sigue sin interpretarse: «IO, then D50» se pierde y la
+  infusión escrita «IO» pierde la vía (deuda del lector registrada).
 
 ### DC4 · Alcance de la vía fallida: sólo la glucosa en bolo
 
@@ -84,11 +101,36 @@ El catálogo, las doce combinaciones y los resultados de la batería están en
   - (c) Aplicarla sólo a la infusión, que es lo que el aviso nombra.
 - **Recomendación:** (b), porque hace coherente el aviso con lo que pasa y la falla se descubre por
   cualquier camino. Requiere tu decisión.
+- **Decidida el 2026-09-29 e implementada (C-2026-09-29-14), variante de (b).** La falla es de la vía:
+  por la cánula que no está en la vena llega el 15 % de lo que corre por ella -- bolo, infusión y
+  medicamentos endovenosos --; lo IM, SC, IN y oral no pasa por ella. El 15 % se mantiene como
+  abstracción, y es una fracción de lo que llega a la circulación, no del efecto de cada fármaco: la
+  glucosa actúa en proporción a lo que llega; **el glucagón y el octreótido conservan su efecto modelado**
+  (no se inventó un umbral ni se cambió su farmacodinamia) y su registro técnico dice que cuánto hace una
+  fracción de dosis es una decisión pendiente (**DC4-F**, abajo). La tiamina sólo se registra con su
+  acceso, sin efecto neurológico ni cambio de peso. No hay relato de «se detiene». T5 pasa en las 6
+  configuraciones con vía fallida (la infusión aporta 3 mg/dL en 30 minutos en vez de 20).
+
+### DC4-F · Una fracción de glucagón o de octreótido (nueva, pendiente)
+
+- **Qué hace hoy el motor.** Por la cánula fallida el registro técnico guarda que llegó el 15 % a la
+  circulación, pero el efecto de ambos sigue el modelado de la dosis entera.
+- **Por qué no lo decidí.** El 15 % de la dosis no es el 15 % del efecto: el glucagón tiene una
+  dosis-respuesta empinada y lo que queda en el tejido se absorbe como una dosis subcutánea, que es una
+  vía válida de ambos. Cambiarlo exige una base farmacológica documentada.
+- **Pregunta concreta:** ¿el glucagón y el octreótido dados por una cánula infiltrada deben (a) actuar como
+  hoy, (b) actuar como una dosis subcutánea con su inicio más lento, o (c) perder parte de su efecto? Si
+  (b) o (c), con qué fuente.
 
 ### DC5 · Si se amplía la vía fallida: la vía nueva y lo que ya corría
 
 - **Sólo si en DC4 elige (b) o (c).** Al instalar una vía nueva, ¿la infusión que corría por la fallida
   pasa a llegar entera sin que nadie la reinstale, o reinstalarla debe ser una orden aparte?
+- **Decidida el 2026-09-29 e implementada (C-2026-09-29-14).** Una infusión que corre por la cánula de
+  llegada pasa a la vía siguiente que se instala (nueva o intraósea, ordenada o implícita), registrando
+  acceso, velocidad y minuto («The dextrose 10% infusion at 100 mL/h runs through the new cannula in the
+  right forearm from minute 10.»). Una infusión detenida no se reinicia y nada se repite para compensar lo
+  que no llegó. Para no delatar la falla, el traslado ocurre igual en la configuración funcionante.
 
 ---
 

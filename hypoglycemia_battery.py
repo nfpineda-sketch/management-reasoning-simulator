@@ -37,6 +37,9 @@ import hypoglycemia_catalog as catalog
 from hypoglycemia_preservation import (DEXTROSE_IV, DOUBLE_DEXTROSE_IV, GLUCAGON_IM, GLUCOSE, HOME, INFUSION,
                                        LINE, OBSERVATION, OCTREOTIDE_SC, ORAL, THIAMINE_IV, WARD, wait)
 
+DEXTROSE_IO = {"type": "dextrose", "dose_g": 25.0, "route": "IO"}
+PLACED = "peripheral intravenous access placed"
+
 FAMILY = catalog.FAMILY
 BATTERY_VERSION = "1.0"
 TRAJECTORY_KINDS = {"adequate": "Manejo adecuado", "delay": "Demora", "error": "Error frecuente",
@@ -45,7 +48,8 @@ TRAJECTORY_KINDS = {"adequate": "Manejo adecuado", "delay": "Demora", "error": "
 # Pending clinical decisions a technical check can run into (the document
 # docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md explains each).
 PENDING = {
-    "DC4": "Alcance de la vía fallida: la decisión 8 la aplicó sólo a la glucosa en bolo",
+    # DC1 and DC4 were decided on 2026-09-29. What is left open about the line is
+    # pharmacological and no check here fails on it (see UNOBSERVED_FAILED).
 }
 
 
@@ -135,6 +139,10 @@ def scripts(configuration):
             [[DEXTROSE_IV, wait(10)], [GLUCOSE], [LINE, DEXTROSE_IV, wait(10)], [GLUCOSE]])
         add("error_infusion_through_failed_line", "error", "Error: infusión por la vía fallida",
             [[INFUSION, wait(30)], [GLUCOSE]])
+        add("adequate_io_dose", "adequate", "Alternativa: la ampolla por vía intraósea, sin instalarla antes",
+            [[DEXTROSE_IO, wait(10)], [GLUCOSE]])
+        add("recovery_infusion_moved", "recovery", "Recuperación: la infusión que corría por la vía fallida pasa a "
+            "la vía nueva", [[INFUSION, wait(10)], [LINE, wait(20)], [GLUCOSE]])
     if mechanism == "sulfonylurea":
         add("error_early_discharge", "error", "Error: alta tras la primera ampolla",
             [[*_dose(configuration), wait(15)], [GLUCOSE], [HOME, wait(60)], [wait(60)], [wait(60)]])
@@ -184,11 +192,12 @@ def _check_raise(configuration, runs):
 
 
 def _check_new_line(configuration, runs):
+    # DC2: the new line is placed and said the same whether the old one runs or not.
     run = runs["adequate_new_line_first"]
     labels = _labels(run)
-    ok = run["timeline"][1]["glucose"] >= 70
-    if configuration["conditions"]["iv_access_failed"]:
-        ok = ok and glucose_rescue.NEW_ACCESS_TEXT in labels
+    ok = run["timeline"][1]["glucose"] >= 70 and PLACED in labels
+    ok = ok and not any(text in labels for text in (glucose_rescue.LEGACY_NEW_ACCESS_TEXT,
+                                                    "peripheral intravenous access replaced"))
     return _result("passed" if ok else "failed", f"{run['timeline'][1]['glucose']:.0f} mg/dL a los 10 minutos")
 
 
@@ -196,7 +205,7 @@ def _check_failed_line_reported(configuration, runs):
     labels = _labels(runs["error_failed_line_used"])
     ok = glucose_rescue.FAILED_ACCESS_TEXT in labels
     return _result("passed" if ok else "failed",
-                   "el motor dice que la glucosa no pasa" if ok else "ningún aviso de la vía fallida")
+                   "la piel alrededor de la cánula se hincha al pasarla" if ok else "nada se ve en el sitio")
 
 
 def _check_failed_line_share(configuration, runs):
@@ -220,8 +229,31 @@ def _check_failed_infusion(configuration, runs):
 
 def _check_recovery_line(configuration, runs):
     run = runs["recovery_failed_line"]
-    ok = _glucose_at(run, 4) >= 70 and glucose_rescue.NEW_ACCESS_TEXT in _labels(run)
+    ok = _glucose_at(run, 4) >= 70 and PLACED in _labels(run)
     return _result("passed" if ok else "failed", f"{_glucose_at(run, 4):.0f} mg/dL tras la vía nueva")
+
+
+def _check_io_dose(configuration, runs):
+    # DC3: the dose places its own needle, arrives whole, and the cannula stays as it was.
+    run = runs["adequate_io_dose"]
+    f = _f(run)
+    ok = (_glucose_at(run, 2) >= 70 and f.get("io_access") and f.get("iv_access_failed")
+          and any(glucose_rescue.IO_IMPLIED_TEXT.split("{")[0] in label for label in _labels(run)))
+    return _result("passed" if ok else "failed",
+                   f"{_glucose_at(run, 2):.0f} mg/dL; aguja intraósea {'sí' if f.get('io_access') else 'no'}; "
+                   f"la cánula {'sigue fallida' if f.get('iv_access_failed') else 'quedó reparada'}")
+
+
+def _check_infusion_moved(configuration, runs):
+    # DC5: a running infusion follows the new line; nothing restarts or repeats.
+    run = runs["recovery_infusion_moved"]
+    f = _f(run)
+    moved = f.get("dextrose_infusion_access") == "new_line" and any(
+        "runs through the new cannula" in label for label in _labels(run))
+    rise = _glucose_at(run, 3) - _glucose_at(runs["control_untreated"], 2)
+    ok = moved and rise > 10
+    return _result("passed" if ok else "failed",
+                   f"la infusión {'pasa' if moved else 'no pasa'} a la vía nueva; {rise:.0f} mg/dL sobre el control")
 
 
 def _check_oral_refused(configuration, runs):
@@ -365,16 +397,19 @@ CHECKS = (
     {"id": "T1", "kind": "technical", "trajectory": "adequate", "check": _check_raise,
      "es": "Una ampolla por una vía que llega sube la glucosa sobre 70 mg/dL"},
     {"id": "T2", "kind": "technical", "trajectory": "adequate", "check": _check_new_line,
-     "es": "Con una vía nueva lo que se da llega (y el motor lo dice si reemplaza una fallida)"},
+     "es": "Con una vía nueva lo que se da llega, y la vía nueva se dice igual con o sin falla (DC2)"},
     {"id": "T3", "kind": "technical", "trajectory": "error", "check": _check_failed_line_reported,
-     "applies": _failed, "es": "La primera dosis por la vía fallida se informa como no llegada"},
+     "applies": _failed, "es": "La primera dosis por la vía fallida se ve en el sitio, sin un veredicto (DC2)"},
     {"id": "T4", "kind": "technical", "trajectory": "error", "check": _check_failed_line_share,
      "applies": _failed, "es": "Por la vía fallida llega sólo la fracción del modelo"},
     {"id": "T5", "kind": "technical", "trajectory": "error", "check": _check_failed_infusion,
-     "applies": _failed, "on_failure": "DC4",
-     "es": "Una infusión por la vía fallida tampoco llega (el aviso de la vía dice que la infusión se detiene)"},
+     "applies": _failed, "es": "Una infusión por la vía fallida también llega sólo en parte (DC4)"},
     {"id": "T6", "kind": "technical", "trajectory": "recovery", "check": _check_recovery_line,
      "applies": _failed, "es": "Tras reconocer la vía fallida, la vía nueva corrige la glucosa"},
+    {"id": "T14", "kind": "technical", "trajectory": "adequate", "check": _check_io_dose,
+     "applies": _failed, "es": "Una dosis intraósea instala su aguja, llega entera y no repara la cánula (DC3)"},
+    {"id": "T15", "kind": "technical", "trajectory": "recovery", "check": _check_infusion_moved,
+     "applies": _failed, "es": "Una infusión que corría por la vía fallida pasa a la vía nueva (DC5)"},
     {"id": "T7", "kind": "technical", "trajectory": "error", "check": _check_oral_refused,
      "es": "La vía oral se rechaza a un paciente que no está alerta"},
     {"id": "T13", "kind": "technical", "trajectory": "recovery", "check": _check_recovery_after_refusal,
@@ -417,11 +452,11 @@ UNOBSERVED_ALWAYS = (
     "Lo que ocurre después del horizonte del encuentro: la batería mira hasta tres horas.",
 )
 UNOBSERVED_FAILED = (
-    "Si la vía fallida se ve antes de usarla: hoy sólo se revela al dar glucosa en bolo por ella (DC2).",
-    "El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: llegan enteros, el alcance "
-    "que dejó la decisión 8 (DC4).",
-    "La vía intraósea como alternativa no se juega aquí. Instalarla cuenta como vía nueva (C7-06, 2026-09-28); "
-    "una dosis intraósea escrita sin instalarla pasa todavía como por la vía fallida (resto de DC3, pendiente).",
+    "El examen del sitio (región «Vascular access» del control Examinar) no se juega aquí: la batería da "
+    "acciones y no examina; lo comprueba test_hypoglycemia_lines.py (DC2).",
+    "El glucagón y el octreótido endovenosos por la vía fallida no se juegan aquí: el registro técnico guarda que "
+    "sólo el 15 % llegó a la circulación y su efecto sigue el modelado, porque cuánto hace una fracción de dosis "
+    "es una decisión farmacológica pendiente (DC4-F).",
 )
 UNOBSERVED_COMPOSITION = (
     "Variación de superficie: la composición conserva el paciente y el relato de su caso de origen.",

@@ -294,7 +294,7 @@ def test_the_intraosseous_line_is_recorded_as_one_and_changes_nothing_else(engin
     assert state["family_state"]["io_access"] is True
 
 
-def test_the_intraosseous_line_replaces_a_line_that_failed(engine):
+def test_the_intraosseous_line_is_its_own_access_and_repairs_nothing(engine):
     import glucose_rescue
     from family_engine import _case, _initialize
     state = encounter(engine, "hypoglycemia", "hypoglycemia_28m")["state"]
@@ -304,8 +304,12 @@ def test_the_intraosseous_line_replaces_a_line_that_failed(engine):
     _initialize(state)
     assert state["family_state"]["iv_access_failed"] is True
     result = execute_family_bundle(state, parse_family_actions("Coloco una vía intraósea"))
-    assert result["executed"] and state["family_state"]["iv_access_failed"] is False
-    assert glucose_rescue.NEW_ACCESS_TEXT in labels(result)
+    # DC3 (2026-09-29): the needle is an access of its own; the cannula stays as it was.
+    assert result["executed"] and state["family_state"]["io_access"] is True
+    assert state["family_state"]["iv_access_failed"] is True
+    assert glucose_rescue.IO_PLACED_TEXT in labels(result)
+    assert glucose_rescue.delivered_share(state["family_state"], "IO") == 1.0
+    assert glucose_rescue.delivered_share(state["family_state"], "IV") == glucose_rescue.FAILED_ACCESS_SHARE
 
 
 def test_each_bleeding_measure_acts_and_is_said_as_written(engine):

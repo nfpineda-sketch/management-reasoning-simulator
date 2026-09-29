@@ -72,4 +72,10 @@ def handover(state, *, prefix="\n\n"):
         # Who is telling the story changes how much of it to trust, and the
         # resident cannot see who is standing there.
         lines.append(f"History from: {item['source']}.")
+    engine = _case(state).get("engine")
+    if isinstance(engine, dict) and engine.get("family") == "hypoglycemia":
+        # DC2 (faculty, 2026-09-29): the cannula the patient arrives with is declared
+        # in every catalogued configuration, working or not, and never its state.
+        import glucose_rescue
+        lines.append(glucose_rescue.ARRIVAL_ACCESS_TEXT)
     return prefix + " ".join(lines)

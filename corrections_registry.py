@@ -2177,6 +2177,55 @@ CORRECTIONS = (
                   "test_blood_products_and_bleeding_orders.py::test_each_bleeding_measure_acts_and_is_said_as_written"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-09-29-14",
+        "date": "2026-09-29",
+        "title": "Hipoglicemia DC2–DC5: la falla es de la vía, no de la glucosa en bolo",
+        "scope": {"level": "family", "family": "hypoglycemia"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Un solo mecanismo (glucose_rescue 2.0). DC2: las 12 configuraciones declaran al llegar la misma "
+                   "cánula en el antebrazo izquierdo, sin decir si funciona (28m y 76f no traen paramédicos en su "
+                   "relato, así que no se nombra quién la puso); una vía nueva se instala y se dice igual con o sin "
+                   "falla; nada dice «replaced» ni «What is given now reaches»; la falla se descubre en el sitio (una "
+                   "observación al primer uso y la región «Vascular access» del control Examinar, disponible desde "
+                   "la llegada) y en una respuesta que no alcanza; el 15 % queda en el registro técnico. DC4: por la "
+                   "cánula fallida llega el 15 % de lo que corre por ella -- bolo, infusión y medicamentos "
+                   "endovenosos --; lo IM, SC, IN y oral no pasa por ella. La glucosa actúa en proporción; el "
+                   "glucagón y el octreótido conservan su efecto modelado y el registro dice que es una decisión "
+                   "farmacológica pendiente (DC4-F); la tiamina sólo se registra, sin efecto ni cambio de peso. DC3: "
+                   "una dosis intraósea válida instala su aguja con su minuto, sin sitio inventado ni orden propia, "
+                   "llega entera y no repara la cánula; las vías no soportadas (glucagón u octreótido IO) siguen "
+                   "rechazadas. DC5: una infusión que corre por la cánula de llegada pasa a la vía siguiente con su "
+                   "acceso, velocidad y minuto; una detenida no se reinicia y nada se repite para compensar. Un "
+                   "encuentro empezado con 1.0 conserva su regla. El lector no cambia."),
+        "authorised_by": INSTRUCTION_2026_09_29_POST_V3,
+        "affects": {"modules": ["glucose_rescue", "family_engine", "arrival_brief", "hypoglycemia_battery",
+                                "hypoglycemia_catalog", "language"],
+                    "versions": {"glucose_rescue": {"from": "1.0", "to": "2.0"}}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_hypoglycemia_lines.py::test_every_configuration_declares_the_same_cannula_and_never_its_state",
+                  "test_hypoglycemia_lines.py::test_a_new_line_is_placed_and_said_the_same_whether_the_old_one_runs",
+                  "test_hypoglycemia_lines.py::test_the_share_that_arrives_stays_in_the_technical_record",
+                  "test_hypoglycemia_lines.py::test_the_site_can_be_examined_before_anything_is_given",
+                  "test_hypoglycemia_lines.py::test_using_the_failed_line_shows_at_the_site_once_and_stays_on_examination",
+                  "test_hypoglycemia_lines.py::test_the_infusion_through_the_failed_line_arrives_only_in_part",
+                  "test_hypoglycemia_lines.py::test_what_does_not_run_through_a_line_does_not_depend_on_it",
+                  "test_hypoglycemia_lines.py::test_glucagon_through_the_failed_line_keeps_its_modelled_effect_and_says_why",
+                  "test_hypoglycemia_lines.py::test_thiamine_is_recorded_as_given_where_it_went_and_does_nothing_else",
+                  "test_hypoglycemia_lines.py::"
+                  "test_a_valid_intraosseous_dose_places_its_needle_with_its_minute_and_no_invented_site",
+                  "test_hypoglycemia_lines.py::test_the_needle_never_repairs_the_cannula",
+                  "test_hypoglycemia_lines.py::test_a_route_the_drug_does_not_have_is_not_widened",
+                  "test_hypoglycemia_lines.py::test_a_running_infusion_moves_to_the_new_line_with_its_access_rate_and_minute",
+                  "test_hypoglycemia_lines.py::test_a_stopped_infusion_stays_stopped",
+                  "test_hypoglycemia_lines.py::test_an_encounter_begun_under_1_0_keeps_its_rule",
+                  "test_hypoglycemia_battery.py::test_the_failed_line_holds_back_everything_that_runs_through_it",
+                  "test_blood_products_and_bleeding_orders.py::test_the_intraosseous_line_is_its_own_access_and_repairs_nothing"],
+        # Every catalogued encounter now carries its arrival cannula, and a new line is
+        # placed in a working configuration too: every script that runs the engine changes.
+        "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_76f", "hypoglycemia_54m_thiamine"],
+                         "scripts": ["admission", "double_ampoule", "early_discharge", "ed_observation", "examinations", "existing_line_dextrose", "failed_line_then_new_line", "glucagon_im", "glucagon_iv_existing_line", "infusion_after_ampoule", "infusion_existing_line", "intraosseous_dextrose", "new_line_then_dextrose", "octreotide_iv_existing_line", "octreotide_sc", "oral_after_recovery", "thiamine_then_dextrose", "untreated"]},
+    },
 )
 
 

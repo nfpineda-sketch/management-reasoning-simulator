@@ -22,7 +22,7 @@ def test_a_new_encounter_carries_its_own_frozen_declarations():
     assert basis["declaration"] == json.loads(json.dumps(CASES["hypoglycemia_54m_thiamine"]))
     assert basis["versions"]["coverage"] == "1.1" and basis["versions"]["rubric"]
     assert basis["versions"]["catalog"]["configuration_id"] == "hypoglycemia_54m_thiamine"
-    assert basis["versions"]["engine"]["glucose_rescue"] == glucose_rescue.VERSION == "1.0"
+    assert basis["versions"]["engine"]["glucose_rescue"] == glucose_rescue.VERSION == "2.0"
     resolved = evaluation_basis.resolve(_record("hypoglycemia_54m_thiamine", basis))
     assert resolved["status"] == "frozen" and resolved["limitation"] is None
     assert resolved["declaration"] == CASES["hypoglycemia_54m_thiamine"]  # tuples restored
