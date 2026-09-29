@@ -28,7 +28,7 @@ decisiones abiertas en un solo paquete, sin tocar el lector, los baselines ni la
 | C10-03 | Integridad del store: TD-18 sin I-F18 | **Hecho** (C-2026-09-29-24): I-F09 una transacción, I-F10 errores registrados por clase, I-F06 e I-F19 claves únicas sin bloquear una base con repeticiones (`check_database.py --integrity`), I-F20 filas ilegibles señaladas; PostgreSQL en C10-05 |
 | C10-04 | Fase 2, paso 1: auditoría de activar y desactivar cuentas (TD-44) | **Hecho** (C-2026-09-29-25): estado, rol y año con autor y hora; sólo el administrador lo lee; PostgreSQL en C10-05 |
 | C10-05 | Respaldo y restauración probados en SQLite y PostgreSQL | **Hecho**: `docs/RESPALDO_Y_RESTAURACION.md`; simulacro idéntico en SQLite y PostgreSQL 16 (33 tablas, 691 filas, encuentros releídos, nada cambia al abrir); `tools_backup_drill.py --compare` para una restauración real; C10-03 y C10-04 pasan en PostgreSQL |
-| C10-06 | Runbook, preflight y guías del piloto | Pendiente |
+| C10-06 | Runbook, preflight y guías del piloto | **Hecho**: `docs/RUNBOOK_PILOTO.md`, `tools_pilot_preflight.py` (sin imprimir secretos; 7 pruebas), guías del residente y del docente (revisión R-5 del paquete) |
 | C10-07 | Pantallas del piloto: TD-42, TD-43, TD-38 | Pendiente |
 | C10-08 | Español de las frases del motor (resto de DF-23 fila 11) y TD-07; nada activo sin aprobación | Pendiente |
 | C10-09 | DC4-F, opción B mínima (aprobada) | Pendiente |

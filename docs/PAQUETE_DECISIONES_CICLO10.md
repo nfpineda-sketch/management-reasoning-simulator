@@ -162,7 +162,7 @@ C10-09).
 | R-2 | TD-04: el POCUS de llegada de los 14 casos C14 YES, en inglés y con su borrador en español | `docs/revision/TD04_POCUS_C14.md` | 14 |
 | R-3 | Las cuatro dudas residuales de TDFC, abajo, tal como están | este documento | 4 |
 | R-4 | El español de las frases del motor (C10-08) | se agrega al terminar C10-08 | — |
-| R-5 | Las guías del piloto (C10-06) | se agrega al terminar C10-06 | — |
+| R-5 | Las guías del piloto (C10-06), para aprobar o corregir antes de entregarlas | `docs/GUIA_RESIDENTE_PILOTO.md`, `docs/GUIA_DOCENTE_PILOTO.md` | 2 |
 
 Las hojas R-1 y R-2 salen del código (`tools_review_sheets.py`) y una prueba exige que estén al día. Ninguna
 aprueba nada.

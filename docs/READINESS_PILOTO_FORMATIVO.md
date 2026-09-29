@@ -20,6 +20,8 @@ iniciarlo se requiere:
 
 El piloto nunca se inicia automáticamente.
 
+**Cómo cumplir A y B (ciclo 10):** `docs/RUNBOOK_PILOTO.md` — configuración, `tools_pilot_preflight.py` (dice si un despliegue está configurado como el piloto, sin imprimir secretos), prueba de humo automática y manual, respaldo y restauración probados (`docs/RESPALDO_Y_RESTAURACION.md`). Guías: `docs/GUIA_RESIDENTE_PILOTO.md` y `docs/GUIA_DOCENTE_PILOTO.md`, pendientes de su revisión.
+
 **No es una validación.** La fidelidad del lector con texto externo sigue sin medirse (B = NOT YET MEASURED);
 todo juicio lo confirma un docente.
 
