@@ -5,28 +5,35 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-28, al abrir el ciclo 8 (sección «Apertura del
-  ciclo 8»). El cierre y la apertura del ciclo 7, el ciclo 6 y los anteriores
-  siguen más abajo.
+- **Actualizado:** 2026-09-29, al cerrar el ciclo 8 (secciones «Cierre del
+  ciclo 8» y «Apertura del ciclo 8»). Los ciclos 7, 6 y anteriores siguen más
+  abajo.
 
 ## Pendientes de decisión
 
-| ID | Clase | Tema | Estado al cierre del ciclo 7 |
+| ID | Clase | Tema | Estado al cierre del ciclo 8 |
 |---|---|---|---|
-| Piloto formativo | NEEDS NICOLÁS | Autorizar un piloto formativo controlado con residentes | **TECHNICALLY READY, WITH CONDITIONS** (`READINESS_PILOTO_RESIDENCIA.md`) |
-| DF-20 | NEEDS NICOLÁS · CLINICAL REVIEW | `acs_54m_inferior`: el VD del caso frente al de su POCUS | C14 NO aplicado (C-2026-09-28-11). **La contradicción de datos sigue:** A/B/C/D |
-| DF-23 · 4a | NEEDS NICOLÁS · CLINICAL REVIEW | `acs_70f_left_main`: «No B-lines» frente a la congestión | Texto propuesto EN/ES en `AUDITORIA_DF23_CICLO6.md`. Basta una línea |
-| TD-33 | NEEDS NICOLÁS · CLINICAL REVIEW | Residuo de TD-21: tras reponer con cristaloide, transfundir en trauma dispara la sobrecarga | Recomendado: en esa regla, sólo la sangre repone el déficit (una línea) |
+| Piloto formativo | NEEDS NICOLÁS | Autorizar un piloto formativo controlado con residentes | **TECHNICALLY READY, WITH CONDITIONS** (`READINESS_PILOTO_RESIDENCIA.md`). La condición 5 suma TD-34, TD-36 y TD-39. Falta la prueba de humo en la base real |
+| DF-20 | NEEDS NICOLÁS · CLINICAL REVIEW | `acs_54m_inferior`: el VD del caso frente al de su POCUS | Sin cambio: A/B/C/D. Sus filas de TDFC esperan esta decisión |
+| DF-23 · 4a | NEEDS NICOLÁS · CLINICAL REVIEW | `acs_70f_left_main`: «No B-lines» frente a la congestión | Sin cambio. Basta una línea |
+| TD-33 | NEEDS NICOLÁS · CLINICAL REVIEW | Residuo de TD-21: tras reponer con cristaloide, transfundir en trauma dispara la sobrecarga | Sin cambio. Recomendado: en esa regla, sólo la sangre repone el déficit (una línea) |
 | DF-23 · 4b, 6, 7, 8 | CLINICAL REVIEW | Inconsistencias clínicas | Sin cambio (§31) |
-| Baseline inglés | NEEDS NICOLÁS · METHODOLOGICAL | Qué commit mide los documentos ingleses | Candidatos documentados; se elige **antes** de leer respuestas |
-| DF-15 | WAITING FOR EXTERNAL DATA | Piloto del validation corpus, español e inglés | Listo, no enviado; nada llegó en el ciclo 7 |
-| TDFC-1 a 6 y 8 | DECIDED + DEFERRED | TD1, F1, C1 y C3 | Aprobados conceptualmente; P3 pasa **intacto** al ciclo 8 |
-| TD-29 | HIGH · DEFERRED | «When», «cuando» y «once» no hacen condicional una orden que no es sangre | Documentado; propuesto para el ciclo 8 |
-| TD-14 · TD-30 · TD-32 | HIGH · MEDIUM · LOW | Lo que queda del lector | Documentado; el piloto lo mide |
-| DC3 (mitad de la dosis) | CLINICAL REVIEW | Una dosis «IO» sin instalar la IO | Con el alcance de la decisión 8 (DC4) |
+| Baseline inglés | NEEDS NICOLÁS · METHODOLOGICAL | Qué commit mide los documentos ingleses | Candidatos documentados; el V2 ya nombra su commit (`9d2cd9e`). KD-05 sigue en ambos. Se elige **antes** de leer respuestas |
+| KD-02 · TD-35 | NEEDS NICOLÁS | Lo que una lista nombra sin verbo y el lector no conoce | ¿Preguntarlo? Hoy se pierde sin aviso mientras lo demás corre |
+| KD-15 | NEEDS NICOLÁS | Un fluido nombrado en palabras sin verbo («IV fluids 1 L») | Sin cambio |
+| Medidas combinadas | CLINICAL REVIEW | Resto de TD-31: «direct pressure with packing» suma el efecto de dos medidas | Sin cambio |
+| DC3 (mitad de la dosis) | CLINICAL REVIEW | Una dosis «IO» sin instalar la IO | Sin cambio |
+| TDFC · dudas | NEEDS NICOLÁS · CLINICAL REVIEW | Las cuatro dudas residuales de las filas claras | Aplicadas como estaban; cada una se cambia en una línea (`tdfc/TDFC_TABLA_FINAL.md`) |
+| TDFC · composiciones | NEEDS NICOLÁS | ¿Las composiciones de hipoglicemia heredan TD/F/C de su origen, como C14 (L-F07 B)? | Hoy conservan la transición |
+| DF-15 | WAITING FOR EXTERNAL DATA | Piloto del validation corpus, español e inglés | Listo, no enviado; nada llegó en el ciclo 8 |
+| TD-39 | HIGH · DEFERRED | Un alta con plazo o tras una observación corre ahora | Anterior al ciclo; también en `939978a`. Propuesto para el ciclo 9 |
+| TD-14 · TD-34 · TD-35 · TD-36 · TD-37 · TD-40 | HIGH · MEDIUM | Lo que queda del lector | Documentado; el piloto lo mide |
+| TD-38 | LOW | El aviso genérico tras un envío que sólo trae un plan | Documentado |
 | Biblioteca POCUS | FUTURE ARCHITECTURE | Videos reales, adquisición y reconocimiento en la imagen | `ARQUITECTURA_POCUS_OBJETIVO.md`. No es deuda ni bug |
 | DF-25 · DF-14 · DF-12 · DF-17 · DF-4 | — | Brechas del banco · PARTIAL · transición · *override* · C2 | Sin cambio |
 | DF-18 · DF-9 · DF-11 · DF-5 | — | Multisource · −3 · residuos menores · C15 | Registrados, sin acción |
+
+__CIERRE8__
 
 ## Apertura del ciclo 8 (2026-09-28)
 

@@ -530,3 +530,135 @@ def test_a_urine_culture_is_recorded_with_no_result(engine):
     assert any(label.startswith("Study requested; not modelled in this version of the simulator: Urine culture")
                for label in labels), labels
     assert language.say("Urine culture", "es") == "Urocultivo"
+
+
+# --- post hoc: what the second adversarial review of cycle 8 found ----------------------------------
+
+@pytest.mark.parametrize("text, expected", [
+    ("Epinephrine 0.5 mg IM once since she is hypotensive", ["epinephrine_im"]),
+    ("Give epi 0.5 mg IM once as she is hypotensive", ["epinephrine_im"]),
+    ("Epinephrine 0.5 mg IM once now since she is hypotensive", ["epinephrine_im"]),
+    ("Ceftriaxone 2 g IV once since she's febrile", ["antibiotics"]),
+    ("Give NS 1 L bolus once since she is tachycardic", ["fluid"]),
+    ("Dexamethasone 10 mg IV once as the patient is unstable", ["steroid"]),
+])
+def test_once_before_a_reason_is_one_dose_given_now(text, expected):
+    assert kinds(text) == expected
+    assert not kept(text)
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("O2 NC 2 L, when she walks her sats drop", ["oxygen"]),
+    ("O2 NC 2 L ahora, cuando camina la sat baja", ["oxygen"]),
+    ("Taquipneica, cuando habla la sat baja, iniciar O2 NC 3 L", ["oxygen"]),
+    ("When she moves her leg the pain gets worse, morphine 4 mg IV", ["opioid_analgesia"]),
+    ("When he sleeps his sats drop to 85%, put him on 2 L NC", ["oxygen"]),
+    ("Start O2 2 L NC since when she sleeps her sats drop below 88%", ["oxygen"]),
+    ("NS 500 mL IV now, when SBP < 90 she gets dizzy", ["fluid"]),
+    ("SF 500 ml ev ahora, cuando se para la PA baja", ["fluid"]),
+    ("O2 2 L NC now, when O2 is removed her sats drop", ["oxygen"]),
+])
+def test_what_the_patient_does_and_what_follows_it_is_told_not_a_condition(text, expected):
+    assert kinds(text) == expected
+    assert not kept(text)
+
+
+@pytest.mark.parametrize("text", [
+    "Discharge home once she ambulates with SpO2 > 92% on room air", "When she walks 50 m without desaturating, discharge home",
+    "Alta cuando esté afebril", "Alta una vez controlado el dolor", "Trasladar a sala una vez estabilizado",
+    "Alta cuando camine sin desaturar", "Discharge home once able to tolerate PO", "Discharge home once tolerating PO",
+])
+def test_a_destination_on_the_patient_s_course_is_a_plan(text):
+    assert not read(text)
+    assert kept(text) == [("conditional", None)]
+
+
+@pytest.mark.parametrize("text", [
+    "OK to dc home in 4 h", "Ok para alta en 2 horas", "Ok para alta en la tarde", "OK para alta post observación de 4 horas",
+    "OK para alta previa observación de 6 horas", "OK to discharge home, pending repeat lactate", "Ok para alta, mañana",
+    "OK to dc home, tomorrow AM", "OK to discharge home as long as he tolerates PO", "Ok para alta siempre que tolere VO",
+    "Ok para alta con tal que tolere VO", "OK to discharge home assuming the repeat peak flow is > 70%",
+    "OK para alta por urología", "OK para alta desde urología",
+])
+def test_a_clearance_put_off_or_given_by_another_service_discharges_no_one_now(text):
+    assert "disposition" not in kinds(text)
+
+
+@pytest.mark.parametrize("text", [
+    "OK to dc pt home", "OK to discharge the patient home", "OK to discharge today", "OK to d/c home - no need for admission",
+    "OK para alta: no requiere hospitalización", "OK to discharge but needs follow-up with PCP",
+    "OK para alta pero con control en 48 h", "OK to dc home with PCP follow-up in AM",
+    "OK para alta con control mañana en policlínico", "OK to discharge home per our discussion",
+    "OK para alta con indicaciones y control en APS si persiste dolor",
+])
+def test_a_clearance_with_the_plan_it_sends_home_is_a_discharge_now(text):
+    assert kinds(text) == ["disposition"]
+
+
+def test_a_crossmatch_s_state_is_only_what_is_written_with_it():
+    for text in ("Pruebas cruzadas 4 U mientras hemograma pendiente", "Type and cross 4 units while Hb pending"):
+        assert read(text) == [{"type": "diagnostic", "diagnostic": "crossmatch"}]
+    assert kinds("NS 1 L IV, type and cross 2 units - sent") == ["fluid"]
+
+
+@pytest.mark.parametrize("text", ["Insulina 10 U. GR 2 U", "Insulin 10 U. PRBC 2 U", "Regular insulin 10 U. PRBC 2 units now",
+                                  "Insulina cristalina 10 U. GR 2 U O neg"])
+def test_another_drug_s_units_are_not_given_to_the_red_cells(text):
+    assert read(text) == [{"type": "blood", "units": 2.0}]
+
+
+@pytest.mark.parametrize("text", ["Can't stop MTP yet, still bleeding", "Aún no suspender PTM", "Todavía no desactivar el PTM",
+                                  "Too early to stop the MTP", "Stop MTP after this cooler"])
+def test_a_stand_down_denied_or_put_off_is_not_recorded(text):
+    assert ("not_modelled", "massive_transfusion_stop") not in kept(text)
+
+
+def test_a_denied_stand_down_holds_nothing_beside_it():
+    assert kinds("Torniquete, 2 U. GR O neg, can't stop MTP yet") == ["hemorrhage_control", "blood"]
+    assert kept("Suspender PTM una vez controlado el sangrado") == [("conditional", None)]
+
+
+@pytest.mark.parametrize("text", ["Surgery consult after CT", "Surgery consult once CT done", "IC a cirugía, ya la vio",
+                                  "Urgent endoscopy for varices, done yesterday"])
+def test_a_consult_after_something_else_or_already_done_is_not_called(text):
+    assert "consult" not in kinds(text)
+
+
+@pytest.mark.parametrize("text, service", [
+    ("IC a cirugía ya", "surgery"), ("IC a urología ya que está séptica", "urology"),
+    ("Surgery consult for recs on management", "surgery"), ("Cards consult for the following: troponin leak", "cardiology"),
+])
+def test_a_consult_now_or_for_recommendations_is_called(text, service):
+    assert read(text) == [{"type": "consult", "service": service}]
+
+
+def test_an_autoinjector_for_when_it_is_needed_goes_home_with_the_patient():
+    text = "Alta a domicilio, adrenalina autoinyectable 0,3 mg IM SOS"
+    assert kinds(text) == ["disposition"]
+    assert ("prescription", "adrenaline_autoinjector") in kept(text)
+    assert kinds("Alta a domicilio, adrenalina 0,5 mg IM ahora") == ["disposition", "epinephrine_im"]
+
+
+@pytest.mark.parametrize("text", ["Torniquete ya puesto", "Suspender PTM, torniquete ya puesto"])
+def test_a_tourniquet_already_on_is_not_placed_again(text):
+    assert "hemorrhage_control" not in kinds(text)
+
+
+def test_the_time_of_each_unit_written_before_the_time():
+    assert read("Transfundir 2 U GR c/u en 1 h") == [{"type": "blood", "units": 2.0, "administration_duration_min": 120.0}]
+
+
+def test_the_place_to_return_to_and_the_patient_s_own_doctor_are_advice():
+    assert kept("Volver a SAR si presenta fiebre") == [("advice", None)]
+    assert kept("Consultar a su médico si fiebre") == [("advice", None)]
+    assert ("advice", None) not in kept("Reconsultar a cirugía si persiste el sangrado")
+
+
+def test_one_dose_given_now_and_a_put_off_clearance_in_the_room(engine):
+    state = encounter(engine, "anaphylaxis", "anaphylaxis_29f")["state"]
+    result = execute_family_bundle(state, parse_family_actions(
+        "Epinephrine 0.5 mg IM once since she is hypotensive. OK to dc home in 4 h"))
+    labels = [str(summary.get("label") or "") for summary in result["action_summaries"]]
+    assert result["executed"]
+    assert any(label.startswith("Epinephrine 0.5 mg IM administered") for label in labels), labels
+    assert not any(label.startswith("Discharge home") for label in labels), labels

@@ -12,9 +12,11 @@ PostgreSQL.
   transición sólo queda donde falta una decisión.
 - **Hallado y no corregido, igual que antes del ciclo:**
   - «Reevaluar en 1 h» corre a los 0 minutos (TD-34);
-  - «Aspirin 300 mg given by EMS» da la dosis de nuevo (TD-36).
+  - «Aspirin 300 mg given by EMS» da la dosis de nuevo (TD-36);
+  - «Alta en 2 horas» o «Alta tras 6 horas de observación» dan el alta ahora
+    (TD-39; también en `939978a`).
 
-  Los dos se suman a la condición 5.
+  Los tres se suman a la condición 5.
 
 **Esto es readiness técnica, no validez metodológica.**
 
@@ -55,7 +57,9 @@ PostgreSQL.
    - el tiempo de una reevaluación en minutos («reevaluar en 60 min»): «en
      1 h» todavía reevalúa sin que pase el tiempo (TD-34);
    - lo recibido en ruta con quien lo dio delante («el SAMU dio aspirina 300
-     mg»): «Aspirin 300 mg given by EMS» se da de nuevo (TD-36).
+     mg»): «Aspirin 300 mg given by EMS» se da de nuevo (TD-36);
+   - el alta cuando corresponda darla: «alta en 2 horas» o «alta tras la
+     observación» la dan ahora (TD-39).
 
 ## Bloqueos del ciclo 6, reevaluados (§96)
 
@@ -73,10 +77,12 @@ PostgreSQL.
 |---|---|---|---|
 | HIGH | Lector | «Reevaluar en 1 h» o «Reassess in 1 h» reevalúa a los 0 minutos, sin aviso; «1 hora» pregunta los minutos | TD-34 |
 | HIGH | Lector | Una dosis escrita antes de quien la dio se da de nuevo («Epinephrine 0.5 mg IM given by EMS»); con el equipo como sujeto se pregunta | TD-36 |
+| HIGH | Lector | Un alta con plazo o tras una observación corre ahora («Alta en 2 horas», «Observe 6 h then discharge home»); igual en `939978a` | TD-39 |
 | HIGH | Fricción del lector | Mucho se retiene con una pregunta. Es honesto, pero cuesta turnos. En TD-26 las retenciones bajaron a la mitad | TD-14 |
 | HIGH | Caso clínico | `acs_54m_inferior`: el VD contradicho | TD-01 · DF-20 |
 | HIGH | Motor · trauma | Tras reponer con cristaloide, transfundir dispara la sobrecarga | TD-33 |
 | MEDIUM | Lector | En una lista sin verbo, un examen abreviado o un nombre comercial que el lector no conoce se pierde sin aviso («CBC coags», «protonix 80 IV») | TD-35 · KD-02 |
+| MEDIUM | Lector | Residuos de las clases del ciclo 8, iguales en el V2 (endoscopía con su propósito, «IC urgente a cirugía ya», condiciones en inglés con «we» o «and») | TD-40 |
 | MEDIUM | Flujo docente | TDFC aplicado en el ciclo 8: TD1, F1, C1 y C3 sólo se valoran donde el caso ofrece la oportunidad. `acs_54m_inferior`, los casos generados y PS001 conservan la transición | DF-20, DF-12 |
 | MEDIUM | Integridad | I-F18 y los demás de TD-18 quedaron fuera de DF-24 | TD-18 |
 | MEDIUM | Consistencia clínica | Las filas 4a, 4b, 6, 7 y 8 de DF-23 | CLINICAL REVIEW |

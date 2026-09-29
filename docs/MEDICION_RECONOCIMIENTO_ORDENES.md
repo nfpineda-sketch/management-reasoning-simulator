@@ -1076,8 +1076,8 @@ congelado (`9d2cd9e`).
 |---|---|---|---|
 | Conjunto independiente (se usó para desarrollar) | 80 | 31 correctas · 25 perdidas · 9 ejecuciones falsas | **79** · 0 perdidas · 0 falsas |
 | Conjunto ciego 1, medido una vez | 70 | 29 (30 con el puntaje corregido) | **Medido:** 41 · 10 perdidas · 18 retenidas · 0 falsas. **Post hoc:** 52 · 3 perdidas · 15 retenidas · 0 falsas |
-| Revisión adversarial | ~390 | — | 6 CRITICAL, 10 HIGH y 7 MEDIUM del propio ciclo, corregidos; cada frase marcada queda igual que en V2 o mejor. __ADV2M__ |
-| Todo texto de orden que guarda el repositorio | 13 029 | — | 95 se leen distinto fuera de las pruebas del ciclo; todas revisadas |
+| Revisiones adversariales | ~390 + 301 | — | 6 CRITICAL, 10 HIGH y 7 MEDIUM del propio ciclo, corregidos; cada frase marcada queda igual que en V2 o mejor. Segunda revisión (301 frases): 73 filas peores que el V2, corregidas; quedan 2 ambiguas y 1 defecto anterior al ciclo (TD-39) |
+| Todo texto de orden que guarda el repositorio | 13 221 | — | 96 se leen distinto fuera de las pruebas del ciclo; todas revisadas |
 | Conjuntos del ciclo 7 | 149 | — | Totales iguales a V2, salvo un desacuerdo de etiqueta (H-ES-20) |
 | Conjunto ciego 2, medido una vez con el lector final | 50 | __H2V2__ | __H2NEW__ |
 
@@ -1088,7 +1088,7 @@ congelado (`9d2cd9e`).
 - **El puntaje automático tenía un error:** contaba como pregunta equivocada
   que una infusión escrita sin velocidad pidiera su velocidad. Se corrigió
   entre el ciego 1 y el ciego 2, igual en los dos lectores.
-- **El ciego 2 no quedó intacto del todo:** __H2LEAKM__
+- **El ciego 2 no quedó intacto del todo:** Antes de medirlo, una búsqueda accidental sobre el directorio de trabajo mostró el texto de 5 de sus 50 frases (H2-C29-EN-03, H2-C31-EN-01, H2-C31-EN-03, H2-C31-EN-04 y H2-C31-EN-05). Ninguna regla se ajustó sobre ellas. Otras 3 (H2-C30-EN-03, H2-C31-ES-02 y H2-C32-ES-02) contienen entera una frase de 20 caracteres o más de las revisiones adversariales o de las pruebas del ciclo; se comprobó sólo por identificador, sin mostrar el texto, y otra vez tras la segunda ronda, sin casos nuevos. El resultado se da entero, sobre las 42 limpias y sobre las 8 marcadas.
 
 ### Corpus de ensayo
 

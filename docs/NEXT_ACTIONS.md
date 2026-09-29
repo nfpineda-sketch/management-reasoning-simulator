@@ -15,8 +15,8 @@ Al cierre del ciclo 8, 2026-09-28. El detalle está en
      sobrecarga» (recomendado);
    - una prueba de humo en la base real;
    - decir a los residentes que escriban en minutos el tiempo de una
-     reevaluación (TD-34), y lo recibido en ruta con quien lo dio delante
-     (TD-36).
+     reevaluación (TD-34), lo recibido en ruta con quien lo dio delante
+     (TD-36) y el alta cuando corresponda darla (TD-39).
 2. **Piloto de validación español:** revisar los 18 documentos, reclutar a los
    6 médicos y enviar. Se mide contra `939978a`.
 3. **Piloto inglés:**
@@ -39,8 +39,11 @@ Al cierre del ciclo 8, 2026-09-28. El detalle está en
 
 - **TD-34:** «h» y «hr» como horas en una reevaluación. Se preguntan los
   minutos, como hoy con «hora». Es una línea, con A–J.
+- **TD-39:** un alta con plazo o tras una observación, como plan. Es anterior
+  al ciclo y está también en `939978a`.
 - **Los residuos del lector según su medición:**
   - TD-14 y TD-35: vocabulario y listas sin verbo;
+  - TD-40: lo que dejó la segunda revisión adversarial del ciclo 8;
   - TD-36: un relato leído como orden («X given by EMS» se da de nuevo);
   - TD-37: la receta del alta en lista.
 - **TD-38:** que la sala muestre un plan registrado sin el aviso genérico.

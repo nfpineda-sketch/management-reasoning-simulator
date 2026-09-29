@@ -87,6 +87,49 @@ Y dentro de las clases, lo que el V2 ya fallaba y la revisión encontró:
 - **Receta del alta:** «Ok para alta con adrenalina autoinyectable» ahora
   registra la receta.
 
+## Correcciones tras la segunda revisión adversarial (post hoc)
+
+Un segundo revisor independiente atacó esas correcciones con 301 frases EN/ES,
+por el lector y por el motor, en las ocho familias. Halló 73 filas peores que
+el V2, de unas nueve causas, y otras donde el V2 y el lector fallaban igual
+dentro de las clases. Todo se corrigió post hoc, rotulado en el registro
+(C-2026-09-28-19, -20, -22 y -23):
+
+| Qué pasaba | Ejemplos | Ahora |
+|---|---|---|
+| **«Once» como «una dosis», ante una razón, hacía un plan** | «Epinephrine 0.5 mg IM once since she is hypotensive», «Ceftriaxone 2 g IV once since she's febrile» | Corre ahora, como en V2. «Once» es condición sólo con el valor o el estado del paciente justo después |
+| **Una autorización con plazo, observación o condición daba el alta ahora** | «OK to dc home in 4 h», «OK para alta post observación de 6 horas», «OK to discharge home, pending repeat lactate», «Ok para alta siempre que tolere VO», «OK para alta por urología» | Nada, como en V2. Lo que el alta manda a la casa conserva sus tiempos: «Ok para alta, control en APS en 48 h, prednisona 40 mg x 5 días» da el alta |
+| **Lo que el paciente hace, seguido de lo que se vio, hacía un plan** | «O2 NC 2 L, when she walks her sats drop», «SF 500 ml ev ahora, cuando se para la PA baja», «NS 500 mL IV now, when SBP < 90 she gets dizzy» | La orden corre, como en V2 |
+| El estado de otro examen se tomaba como el de las pruebas cruzadas | «Pruebas cruzadas 4 U mientras hemograma pendiente»; «type and cross 2 units - sent» retenía el bolo | Sólo cuenta el estado escrito con ellas, y no se pregunta |
+| Las unidades de otro fármaco pasaban a los glóbulos rojos | «Insulina 10 U. GR 2 U» | Se transfunde, como en V2 |
+| Una suspensión del PTM negada o pospuesta se registraba | «Can't stop MTP yet», «Aún no suspender PTM», «Stop MTP after this cooler» | No se registra; con su condición es un plan |
+| Una interconsulta pospuesta o ya hecha corría | «Surgery consult after CT», «IC a cirugía, ya la vio», «Urgent endoscopy for varices, done yesterday» | No se pide |
+| Un torniquete «ya puesto» se ponía de nuevo | «Suspender PTM, torniquete ya puesto» | No se pone |
+
+Dentro de las clases, lo que el V2 ya fallaba y ahora se lee:
+
+- **Planes:** «Alta cuando esté afebril», «Alta una vez controlado el dolor»,
+  «Discharge home once tolerating PO», «once she ambulates with SpO2 > 92%».
+- **Interconsultas:** «IC a cirugía ya» y «consult for recs» la piden.
+- **Altas:** «OK to dc pt home», «OK to d/c home - no need for admission» y
+  «OK para alta pero con control en 48 h» dan el alta; «adrenalina
+  autoinyectable 0,3 mg IM SOS» tras el alta es su receta.
+- **Otros:** «c/u en 1 h» suma el tiempo de cada unidad; «Volver a SAR si…» y
+  «Consultar a su médico si…» son indicación al paciente.
+
+**Qué queda:**
+
+- «Observe 6 h then discharge home» y «Alta en 2 horas» dan el alta ahora. Es
+  anterior al ciclo y está también en `939978a` (TD-39, HIGH).
+- Dos lecturas ambiguas se mantienen: «When rechecked FSBG < 60, D50 50 mL IV
+  now» queda como plan (el V2 daba la glucosa), y «EDA hoy por gastro, sin
+  sangrado activo» llama a gastroenterología.
+- Lo que el V2 también falla está en TD-40.
+
+**Rendimiento.** Una nota larga con cientos de «when» tardaba 8 s en leerse.
+Las ventanas nuevas quedaron acotadas, como las demás, y ahora baja de medio
+segundo (TD-27).
+
 ## Qué no cambió
 
 - Los eventos críticos, el −3, los puntajes, D1–D5 y el radar.
@@ -113,8 +156,8 @@ su familia. «OK» quiere decir que todo eso se cumple.
 | **B · Conjunto ciego 1, medido una vez** | 70 frases que el lector no había visto; md5 registrado al recibirlo y al medir | V2: 29/70. **Lector medido: 41/70**: 10 perdidas, 18 retenidas con una pregunta, 1 pregunta mal contada (error del puntaje automático, abajo) y 0 ejecuciones falsas |
 | **C · Cambios post hoc, rotulados** | Tras el ciego 1, las formas que halló dentro de las clases. Tras la revisión adversarial, las correcciones de la sección anterior | Ciego 1 post hoc: **52/70** (V2 con el mismo puntaje: 30/70). Quedan 3 perdidas y 15 retenidas, todas de otras clases (TD-14, TD-35) |
 | **D · Controles negativos** | En los conjuntos: relatos, «cuando puedas», lo ya hecho, lo de otro, preguntas, autorizaciones negadas | 0 ejecuciones falsas en el independiente y en el ciego 1 post hoc |
-| **E · Revisión adversarial** | Un revisor independiente escribió unas 390 frases para romper las reglas nuevas | 6 CRITICAL, 10 HIGH y 7 MEDIUM, todas regresiones del ciclo, corregidas. Cada frase marcada se lee hoy igual que en V2 o mejor. __ADV2__ |
-| **F · Comparación con V2 sobre todo texto del repositorio** | 13 029 textos (pruebas, herramientas, conjuntos y corpus anteriores) | 95 se leen distinto fuera de las pruebas del ciclo, y todas se revisaron: son mejoras de clase o citas textuales (TD-28). Apareció una regresión (un relato prehospitalario con «iban a iniciar»), que se corrigió |
+| **E · Revisión adversarial** | Un revisor independiente escribió unas 390 frases para romper las reglas nuevas | 6 CRITICAL, 10 HIGH y 7 MEDIUM, todas regresiones del ciclo, corregidas. Cada frase marcada se lee hoy igual que en V2 o mejor. Una **segunda revisión**, sobre esas correcciones (301 frases), halló 73 filas peores que el V2: tras corregirlas, 63 se leen como el V2 y 7 mejor; 2 quedan ambiguas y 1 es un defecto anterior al ciclo (TD-39, TD-40). Las 436 filas de la primera revisión se leen igual que antes de la segunda ronda, salvo una que ahora queda como plan |
+| **F · Comparación con V2 sobre todo texto del repositorio** | 13 221 textos (pruebas, herramientas, conjuntos y corpus anteriores) | 96 se leen distinto fuera de las pruebas del ciclo, y todas se revisaron: son mejoras de clase o citas textuales (TD-28). Apareció una regresión (un relato prehospitalario con «iban a iniciar»), que se corrigió. La segunda ronda sumó dos, correctas: «Una vez estable: TAC de abdomen» queda como plan |
 | **G · Conjuntos del ciclo 7** | 149 frases de hemoderivados, re-puntuadas | Totales iguales a V2, salvo H-ES-20 («vendaje compresivo apenas disminuya el sangrado»): el lector lo guarda como plan y la etiqueta del ciclo 7 lo pedía ahora. Es un desacuerdo de etiqueta; se mantiene la lectura gramatical |
 | **H · Suite completa y 56 regresiones** | Cuatro particiones, más las regresiones | __SUITE__ |
 | **I · Ensayo de los 20 escenarios ES/EN** | Por la página real, semilla 3000, 0 llamadas de IA | __REHEARSAL__ |
@@ -133,20 +176,25 @@ lector nuevo y en el del V2. Por eso el ciego 1 medido dice 41 y no 42.
 - **El ciego 1 ya no es ciego después de medirlo.** Sus formas guiaron cambios
   post hoc, y 23 de sus frases comparten texto con pruebas del ciclo. Por eso su
   resultado post hoc se da aparte del medido.
-- **El ciego 2 no quedó intacto del todo.** __H2LEAK__
+- **El ciego 2 no quedó intacto del todo.** Antes de medirlo, una búsqueda accidental sobre el directorio de trabajo mostró el texto de 5 de sus 50 frases (H2-C29-EN-03, H2-C31-EN-01, H2-C31-EN-03, H2-C31-EN-04 y H2-C31-EN-05). Ninguna regla se ajustó sobre ellas. Otras 3 (H2-C30-EN-03, H2-C31-ES-02 y H2-C32-ES-02) contienen entera una frase de 20 caracteres o más de las revisiones adversariales o de las pruebas del ciclo; se comprobó sólo por identificador, sin mostrar el texto, y otra vez tras la segunda ronda, sin casos nuevos. El resultado se da entero, sobre las 42 limpias y sobre las 8 marcadas.
 - **La gramática decide casos ambiguos, y puede errar.**
   - En español, «cuando» con indicativo («cuando la PA baja a 80/50, SF 500
     ml») se lee como descripción y la orden corre, como en V2. La condición
     se escribe en subjuntivo («cuando baje»).
   - En inglés no hay esa marca. Cuentan como descripción la primera persona,
-    el pasado y una acción del paciente seguida de un hallazgo con número. «When
-    BP drops, give NS» sigue siendo plan.
+    el pasado, y una acción del paciente seguida de lo que se vio («when she
+    walks her sats drop», «when he talks his sats drop to 88%»). Con un umbral
+    es condición («once she ambulates with SpO2 > 92%»). «When BP drops, give
+    NS» sigue siendo plan.
+  - «Once» ante una razón o «now» es «una vez», una dosis.
 - **Lo que queda fuera de las clases** está en `REGISTRO_DEUDA_TECNICA.md`:
   - TD-14: vocabulario;
   - TD-34: «reevaluar en 1 h» corre a los 0 minutos;
   - TD-35: exámenes abreviados en una lista que se pierden;
   - TD-36: un estado leído como orden;
   - TD-37: la receta del alta en lista;
-  - TD-38: el aviso de un envío que sólo trae un plan.
+  - TD-38: el aviso de un envío que sólo trae un plan;
+  - TD-39: un alta con plazo o tras una observación corre ahora;
+  - TD-40: lo que la segunda revisión dejó, igual que en el V2.
 - **KD-05 sigue presente en los dos baselines registrados.** El piloto se mide
   contra ellos.

@@ -1620,7 +1620,14 @@ CORRECTIONS = (
                    "orden de su repetición condicionada; y la condición reconoce un umbral con cualquier nombre "
                    "(«when FSBG < 60») y el curso que la clase no nombraba («cuando se agote», «when afebrile»). "
                    "Nada que no sea un plan deja de ejecutarse: la comparación con V2 sobre todo texto del "
-                   "repositorio se revisó frase por frase (docs/CICLO8_LECTOR.md)."),
+                   "repositorio se revisó frase por frase (docs/CICLO8_LECTOR.md). "
+                   "Post hoc, tras la segunda revisión adversarial: «once» ante una razón o «now» es una dosis "
+                   "(«Epinephrine 0.5 mg IM once since she is hypotensive» quedaba como plan); lo que el paciente hace "
+                   "seguido de lo que se vio es relato («when she walks her sats drop», «cuando camina la sat baja», "
+                   "«when SBP < 90 she gets dizzy»); un umbral hace condición aunque haya una actividad («once she "
+                   "ambulates with SpO2 > 92%»); el curso que faltaba («afebril», «una vez controlado», «once tolerating "
+                   "PO», «cuando camine»); y el lugar al que volver o el médico del paciente son indicación («Volver a "
+                   "SAR si…», «Consultar a su médico si…»)."),
         "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
         "affects": {"modules": ["family_parser"], "versions": {}},
         "clinical_relevance": "clinical",
@@ -1634,7 +1641,12 @@ CORRECTIONS = (
                   "test_cycle8_reader_classes.py::test_a_when_in_what_the_resident_saw_is_no_condition",
                   "test_cycle8_reader_classes.py::test_the_order_now_runs_and_its_repeat_on_a_condition_is_the_plan",
                   "test_cycle8_reader_classes.py::test_a_condition_the_class_missed_is_a_plan",
-                  "test_cycle8_reader_classes.py::test_the_account_of_the_ambulance_stays_one_plan"],
+                  "test_cycle8_reader_classes.py::test_the_account_of_the_ambulance_stays_one_plan",
+                  "test_cycle8_reader_classes.py::test_once_before_a_reason_is_one_dose_given_now",
+                  "test_cycle8_reader_classes.py::test_what_the_patient_does_and_what_follows_it_is_told_not_a_condition",
+                  "test_cycle8_reader_classes.py::test_a_destination_on_the_patient_s_course_is_a_plan",
+                  "test_cycle8_reader_classes.py::test_the_place_to_return_to_and_the_patient_s_own_doctor_are_advice",
+                  "test_cycle8_reader_classes.py::test_one_dose_given_now_and_a_put_off_clearance_in_the_room"],
     },
     {
         "id": "C-2026-09-28-20",
@@ -1657,7 +1669,11 @@ CORRECTIONS = (
                    "aunque algo más esté «ya»; la escrita sin verbo con su estado, su negación o su fecha no se "
                    "pide; tras un alta, una derivación es el plan del paciente; «IC con FE…» es insuficiencia "
                    "cardiaca; «blood cx» son cultivos; los servicios no clínicos se leen como antes; y la "
-                   "endoscopía escrita sin verbo pide su urgencia, nunca la de los antecedentes."),
+                   "endoscopía escrita sin verbo pide su urgencia, nunca la de los antecedentes. "
+                   "Post hoc, tras la segunda revisión adversarial: la interconsulta sin verbo «después del TAC» o "
+                   "contada como hecha en la cláusula siguiente («IC a cirugía, ya la vio», «urgent endoscopy for "
+                   "varices, done yesterday») no se pide; «IC a cirugía ya» es ahora, «ya que» es «porque» y «consult "
+                   "for recs» la pide."),
         "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
         "affects": {"modules": ["family_parser", "family_reports", "language"], "versions": {}},
         "clinical_relevance": "clinical",
@@ -1677,7 +1693,9 @@ CORRECTIONS = (
                   "test_cycle8_reader_classes.py::test_a_referral_after_a_discharge_is_the_patient_s_plan",
                   "test_cycle8_reader_classes.py::test_heart_failure_and_a_non_clinical_consult_hold_nothing",
                   "test_cycle8_reader_classes.py::test_blood_cultures_written_cx_are_not_surgery",
-                  "test_cycle8_reader_classes.py::test_an_endoscopy_done_calls_no_one"],
+                  "test_cycle8_reader_classes.py::test_an_endoscopy_done_calls_no_one",
+                  "test_cycle8_reader_classes.py::test_a_consult_after_something_else_or_already_done_is_not_called",
+                  "test_cycle8_reader_classes.py::test_a_consult_now_or_for_recommendations_is_called"],
     },
     {
         "id": "C-2026-09-28-21",
@@ -1722,7 +1740,13 @@ CORRECTIONS = (
                    "escrita como el tiempo de otra cosa no se registra; «to be ready for the OR» es el propósito de "
                    "las pruebas cruzadas, no su estado; el control escrito en horas no es el tiempo del "
                    "tratamiento («con control de PA en 1 h»); y unas unidades que suman más de lo que el "
-                   "simulador pasa se preguntan con un mensaje propio, como ya un fluido."),
+                   "simulador pasa se preguntan con un mensaje propio, como ya un fluido. "
+                   "Post hoc, tras la segunda revisión adversarial: las unidades de otro fármaco no son glóbulos rojos "
+                   "(«Insulina 10 U. GR 2 U» perdía la transfusión); una suspensión del PTM negada o pospuesta no se "
+                   "registra («Can't stop MTP yet», «Suspender PTM una vez controlado el sangrado» es un plan); el "
+                   "estado de las pruebas cruzadas es sólo el escrito junto a ellas («… mientras hemograma pendiente» "
+                   "las pide) y no se pregunta como orden ilegible; «c/u» escrito antes del tiempo; y un torniquete «ya "
+                   "puesto» no se pone de nuevo."),
         "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
         "affects": {"modules": ["family_parser", "family_engine", "unexecuted_items", "rubric_screening", "language",
                                 "report_language"], "versions": {}},
@@ -1737,7 +1761,13 @@ CORRECTIONS = (
                   "test_cycle8_reader_classes.py::test_a_crossmatch_with_its_purpose_is_asked_for",
                   "test_cycle8_reader_classes.py::test_when_the_patient_is_checked_is_not_how_long_the_order_runs",
                   "test_cycle8_reader_classes.py::test_units_run_one_after_another_longer_than_the_simulator_runs_are_asked",
-                  "test_cycle8_reader_classes.py::test_a_volume_over_hours_is_asked_as_a_fluid_rate_is"],
+                  "test_cycle8_reader_classes.py::test_a_volume_over_hours_is_asked_as_a_fluid_rate_is",
+                  "test_cycle8_reader_classes.py::test_another_drug_s_units_are_not_given_to_the_red_cells",
+                  "test_cycle8_reader_classes.py::test_a_stand_down_denied_or_put_off_is_not_recorded",
+                  "test_cycle8_reader_classes.py::test_a_denied_stand_down_holds_nothing_beside_it",
+                  "test_cycle8_reader_classes.py::test_a_crossmatch_s_state_is_only_what_is_written_with_it",
+                  "test_cycle8_reader_classes.py::test_the_time_of_each_unit_written_before_the_time",
+                  "test_cycle8_reader_classes.py::test_a_tourniquet_already_on_is_not_placed_again"],
     },
     {
         "id": "C-2026-09-28-23",
@@ -1758,7 +1788,13 @@ CORRECTIONS = (
                    "surgery, OK to discharge»); «alta dosis» no es un alta; lo que se da antes de que el paciente "
                    "se vaya no es receta; y la adrenalina autoinyectable con el alta es su receta. "
                    "El defecto sigue presente en las dos líneas base registradas; el manifiesto no cambia hasta "
-                   "que se elija una nueva."),
+                   "que se elija una nueva. "
+                   "Post hoc, tras la segunda revisión adversarial, que halló altas ahora donde V2 no hacía nada: una "
+                   "hora, una observación, una condición o el servicio que autoriza, en cualquier parte de la oración, "
+                   "posponen el alta («OK to dc home in 4 h», «OK para alta post observación de 6 horas», «OK to "
+                   "discharge home, pending repeat lactate», «siempre que tolere VO», «OK para alta por urología»); la "
+                   "hora del control, la receta y las indicaciones no la posponen; «no need for admission», «but needs "
+                   "follow-up» y «pt home» son alta; y el autoinyector «SOS» tras un alta es su receta."),
         "authorised_by": INSTRUCTION_2026_09_28_CYCLE8,
         "affects": {"modules": ["family_parser"], "versions": {}},
         "clinical_relevance": "clinical",
@@ -1770,7 +1806,10 @@ CORRECTIONS = (
                   "test_cycle8_reader_classes.py::test_a_clearance_that_is_not_a_discharge_now",
                   "test_cycle8_reader_classes.py::test_a_dose_given_before_the_patient_leaves_is_no_prescription",
                   "test_cycle8_reader_classes.py::test_a_consult_and_a_repeated_check_are_not_advice",
-                  "test_cycle8_reader_classes.py::test_the_autoinjector_goes_home_and_one_given_now_is_given"],
+                  "test_cycle8_reader_classes.py::test_the_autoinjector_goes_home_and_one_given_now_is_given",
+                  "test_cycle8_reader_classes.py::test_a_clearance_put_off_or_given_by_another_service_discharges_no_one_now",
+                  "test_cycle8_reader_classes.py::test_a_clearance_with_the_plan_it_sends_home_is_a_discharge_now",
+                  "test_cycle8_reader_classes.py::test_an_autoinjector_for_when_it_is_needed_goes_home_with_the_patient"],
     },
     {
         "id": "C-2026-09-28-24",
