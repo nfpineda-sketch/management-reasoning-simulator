@@ -33,7 +33,100 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 | DF-25 · DF-14 · DF-12 · DF-17 · DF-4 | — | Brechas del banco · PARTIAL · transición · *override* · C2 | Sin cambio |
 | DF-18 · DF-9 · DF-11 · DF-5 | — | Multisource · −3 · residuos menores · C15 | Registrados, sin acción |
 
-__CIERRE8__
+## Cierre del ciclo 8 (2026-09-29)
+
+El ciclo cumplió el alcance registrado en su apertura. Lo que pide una
+decisión quedó fuera y va al reporte final. El detalle está en los documentos
+citados.
+
+### DECIDED + IMPLEMENTED
+
+| Ítem | Qué quedó | Registro |
+|---|---|---|
+| TDFC | TD1, F1, C1 y C3 declarados caso por caso en 30 casos, con el modelo de C14 (TD1 25 YES / 5 NO, F1 25/5, C1 18/12, C3 10/20). TDFC-6 sigue la recomendación. `acs_54m_inferior` espera DF-20 y conserva la transición | C-2026-09-28-17 · `tdfc/TDFC_TABLA_FINAL.md` |
+| TD-29 | «Cuando/when/once…» hacen de una orden un plan cuando nombran el estado del paciente. Una descripción de lo que el residente vio no es condición, y «once» ante una razón es una dosis | C-2026-09-28-19 · `CICLO8_LECTOR.md` |
+| TD-30 | Interconsultas sin verbo, la endoscopía pedida, hemocultivos y urocultivo, vías por su número o calibre, «RL» | C-2026-09-28-20 |
+| TD-31 (1.ª mitad) | La adrenalina IM sin dosis pregunta su dosis en mg. «Epi» sólo con dosis o vía, nunca la de otro o de antes | C-2026-09-28-21 |
+| TD-32 | «2 U. GR», la desactivación del PTM registrada, las plaquetas según recuento, el estado de las pruebas cruzadas y el tiempo por unidad | C-2026-09-28-22 |
+| KD-05 | «OK to discharge» y «ok para alta» son un alta, y el alta conserva su receta. Con plazo, observación, condición o de otro servicio, no es alta ahora. Sigue presente en los dos baselines registrados | C-2026-09-28-23 |
+| TD-06 | El registro nombra DF-7, DF-10 y DF-16a/b/c | C-2026-09-27-13/14, C-2026-09-28-18 |
+| TD-23, TD-25, TD-27, TD-28 | El español de la movilidad parietal y de los avisos, el nombre de la prueba, los espacios y la cita textual | C-2026-09-28-24 |
+| Baseline inglés (dato) | El candidato V2 del piloto inglés nombra su commit registrado, `9d2cd9e` | `validation/pilot_v1_en/` |
+
+### Validación A–J del lector
+
+- **A · Conjunto independiente:** 79/80. El V2, 31/80.
+- **B · Conjunto ciego 1, medido una vez:** 41/70. El V2, 29/70.
+- **C · Post hoc, rotulado:** 52/70. El V2, 30/70.
+- **D · Controles negativos:** 0 ejecuciones falsas.
+- **E · Dos revisiones adversariales:**
+  - la primera, unas 390 frases: 6 CRITICAL, 10 HIGH y 7 MEDIUM, corregidos;
+  - la segunda, 301 frases: 73 filas peores que el V2. Se corrigieron;
+    quedan 2 ambiguas y 1 defecto anterior al ciclo (TD-39).
+- **F · Comparación con el V2 sobre el repositorio:** 13 221 textos. Los 96
+  que se leen distinto fuera de las pruebas del ciclo se revisaron.
+- **G · Conjuntos del ciclo 7:** sin cambios, salvo un desacuerdo de etiqueta.
+- **H · Suite completa y regresiones:** 5900 pruebas pasan, 77 se omiten, 1 falla como se espera y 0 fallan; 56/56 regresiones.
+- **I · Ensayo de los 20 escenarios:** __REHEARSAL_C__
+- **J · Conjunto ciego 2, medido una vez con el lector final:** __H2_C__
+
+### DECIDED + DEFERRED
+
+- Nada del alcance quedó a medias.
+- Lo hallado fuera de las clases quedó registrado: TD-34 a TD-40.
+
+### NEEDS NICOLÁS
+
+1. **El piloto formativo controlado:** autorizarlo o no. Está TECHNICALLY
+   READY, WITH CONDITIONS; antes, la prueba de humo en la base real.
+2. **DF-20** (A/B/C/D): `acs_54m_inferior`. Sus filas de TDFC la esperan.
+3. **DF-23:**
+   - la fila 4a, que es una línea;
+   - cuando pueda, las filas 4b, 6, 7 y 8.
+4. **TD-33:** que sólo la sangre reponga el déficit en la regla de sobrecarga.
+   Es lo recomendado.
+5. **El baseline inglés:** elegirlo antes de leer respuestas. KD-05 sigue en
+   ambos candidatos.
+6. **KD-02 y TD-35:** ¿preguntar lo que una lista nombra sin verbo y el lector
+   no conoce?
+7. **KD-15:** el fluido nombrado en palabras sin verbo.
+8. **La regla de medidas combinadas** (resto de TD-31).
+9. **DC3:** la dosis «IO» sin instalar la IO.
+10. **TDFC:**
+    - las cuatro dudas residuales de las filas claras;
+    - si las composiciones de hipoglicemia heredan TD/F/C de su origen.
+
+### WAITING FOR EXTERNAL DATA
+
+- **Los documentos de los médicos, en español y en inglés.** Nada llegó ni se
+  envió en el ciclo 8. SEALED no se tocó.
+- **La fidelidad externa del lector.** Ordena TD-14 y TD-34 a TD-40.
+
+### FUTURE ARCHITECTURE
+
+- Sin cambio: la biblioteca POCUS de videos reales y la evidencia C4.
+
+### Hallazgos nuevos del ciclo (§73)
+
+Todos son anteriores al ciclo; el ciclo los encontró.
+
+| ID | Clase | Qué |
+|---|---|---|
+| TD-34 | HIGH | «Reevaluar en 1 h» corre a los 0 minutos |
+| TD-36 | HIGH | Una dosis escrita antes de quien la dio se da de nuevo |
+| TD-39 | HIGH | Un alta con plazo o tras una observación corre ahora; también en `939978a` |
+| TD-35 | MEDIUM | Exámenes abreviados y nombres comerciales en una lista sin verbo se pierden |
+| TD-37 | MEDIUM | La receta del alta escrita en lista |
+| TD-40 | MEDIUM | Lo que dejó la segunda revisión adversarial, igual que en el V2 |
+| TD-38 | LOW | El aviso genérico tras un envío que sólo trae un plan |
+
+### Baselines
+
+- **SPANISH PILOT BASELINE `939978a`:** intacto. No cambiaron
+  `validation/pilot_v1`, sus 18 DOCX ni el manifiesto de defectos conocidos
+  (versión 2).
+- **DEVELOPMENT HARDENED BASELINES V1 (`72a4a53`) y V2 (`9d2cd9e`):**
+  intactos. El lector del ciclo 8 se midió contra el V2.
 
 ## Apertura del ciclo 8 (2026-09-28)
 
