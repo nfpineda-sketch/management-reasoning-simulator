@@ -21,8 +21,8 @@ import streamlit as st
 from account_store import AccountError
 from screen_language import rows as _rows, t as _t
 
-PROGRESS_VIEWS = ("Overview", "Management reasoning", "Decision challenges", "Royal College", "ACGME",
-                  "Safety")
+PROGRESS_VIEWS = ("Overview", "Management reasoning", "Decision challenges", "Royal College EPAs",
+                  "ACGME Milestones", "Safety")
 ENCOUNTER_KEY = "_my_encounter"
 PROFILE_NOTE = ("Your profile is based on faculty-confirmed observations from completed encounters. "
                 "More observations make the profile more informative.")
@@ -90,9 +90,9 @@ def render_my_progress(context):
                               training_year=context["user"].get("training_year"))
     elif part == "Decision challenges":
         evidence_views.render_challenges(goals, labels, on_open=_open_encounter, prefix="_mine")
-    elif part == "Royal College":
+    elif part == "Royal College EPAs":
         evidence_views.render_royal_college(goals, labels, on_open=_open_encounter, prefix="_mine")
-    elif part == "ACGME":
+    elif part == "ACGME Milestones":
         evidence_views.render_acgme(goals)
     else:
         evidence_views.render_safety(reviews, labels, on_open=_open_encounter, prefix="_mine")
@@ -147,7 +147,7 @@ def render_my_encounters(context):
     row = next(item for item in rows if item["record"]["id"] == chosen)
     owner = portfolio.owner_of(context)
     # 1. The primary evidence first, never below a score (§154AC).
-    st.markdown("**" + _t("1 · Management Trace") + "**")
+    st.markdown("**1 · " + _t("Management Trace") + "**")
     st.caption(_t("The primary record of what you decided and why. Read it before any score."))
     portfolio.render_encounter_documents(context, row["record"], owner, "mine")
     # 2. What a faculty member wrote for you. Faculty private notes are never shown here (§154AD).

@@ -18,7 +18,7 @@ from screen_language import t as _t
 
 SELECTED = "_cohort_resident"
 FILTERS = ("All", "R1", "R2", "R3", "Needs review")
-EVIDENCE_VIEWS = ("Decision challenges", "Royal College", "ACGME", "Safety", "Portfolio")
+EVIDENCE_VIEWS = ("Decision challenges", "Royal College EPAs", "ACGME Milestones", "Safety", "Portfolio")
 
 
 def roster(context, attempts):
@@ -134,7 +134,8 @@ def render_cohort(context, attempts):
         return None
     for year in sorted({p.get("training_year") or 0 for p in shown}):
         group = sorted((p for p in shown if (p.get("training_year") or 0) == year), key=lambda p: p["username"])
-        st.markdown("**" + (_t("R{v0}", v0=year) if year else _t("Training year not recorded")) + "**")
+        # R1, R2, R3: a code, written the same in Spanish.
+        st.markdown("**" + (f"R{year}" if year else _t("Training year not recorded")) + "**")
         for start in range(0, len(group), 3):
             columns = st.columns(3)
             for column, person in zip(columns, group[start:start + 3]):
@@ -216,9 +217,9 @@ def render_resident_evidence(context, user_id, attempts):
             [a for a in attempts if a["user_id"] == user_id and not a["is_sandbox"]])
         if part == "Decision challenges":
             evidence_views.render_challenges(goals, labels, on_open=open_encounter, prefix="_cohort")
-        elif part == "Royal College":
+        elif part == "Royal College EPAs":
             evidence_views.render_royal_college(goals, labels, on_open=open_encounter, prefix="_cohort")
-        elif part == "ACGME":
+        elif part == "ACGME Milestones":
             evidence_views.render_acgme(goals)
         elif part == "Safety":
             evidence_views.render_safety(reviews, labels, on_open=open_encounter, prefix="_cohort")

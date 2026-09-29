@@ -2175,7 +2175,6 @@ ES = {
     'All': 'Todos',
     'Needs review': 'Esperan revisión',
     'Open': 'Abrir',
-    'R{v0}': 'R{v0}',
     # Cycle 9 role phase: the resident's pages, the evidence views, the portfolio and the account list.
     'Next encounter: {when}': 'Encuentro siguiente: {when}',
     'Deactivating is not deleting: the account can no longer sign in, and its encounters, Traces, rubrics, evidence and portfolio are kept.':
@@ -2194,8 +2193,9 @@ ES = {
     'New clinical encounter · assigned {v0}': 'Nuevo encuentro clínico · asignado el {v0}',
     'Overview': 'Resumen',
     'Decision challenges': 'Decision Challenges',
-    'Royal College': 'Royal College',
-    'ACGME': 'ACGME',
+    'Royal College EPAs': 'EPA del Royal College',
+    'Royal College': 'Royal College de Canadá',
+    'ACGME Milestones': 'Milestones ACGME',
     'Safety': 'Seguridad',
     'Portfolio': 'Portafolio',
     'View': 'Vista',
@@ -2292,7 +2292,6 @@ ES = {
     'No confirmed critical safety event in this encounter.': 'Ningún evento crítico de seguridad confirmado en este encuentro.',
     'Faculty review': 'Revisión docente',
     'Confirmed observations': 'Observaciones confirmadas',
-    '1 · Management Trace': '1 · Management Trace',
     '2 · Faculty feedback': '2 · Retroalimentación docente',
     '3 · Management reasoning rubric': '3 · Rúbrica de razonamiento de manejo',
     '4 · Confirmed observations': '4 · Observaciones confirmadas',

@@ -133,18 +133,19 @@ def test_my_progress_keeps_each_kind_of_evidence_apart(program):
     show(at, "_my_progress_view", "Decision challenges")
     text = text_of(at)
     assert "R1-03 · Relate tachycardia" in text and "1 faculty-confirmed observation(s) (1 satisfactory)" in text
-    show(at, "_my_progress_view", "Royal College")
+    show(at, "_my_progress_view", "Royal College EPAs")
     text = text_of(at)
     assert "TD1 · Recognize instability" in text and "Local observation target: 10" in text
     assert "What remains outside this simulator" in text
-    show(at, "_my_progress_view", "ACGME")
+    show(at, "_my_progress_view", "ACGME Milestones")
     table = at.dataframe[0].value
     pc4 = table[table["Code"] == "PC4"].iloc[0]
     assert (pc4["Direct"], pc4["Partial"]) == (1, 0)
     assert "No Milestone level is assigned or inferred" in text_of(at)
     show(at, "_my_progress_view", "Safety")
     assert "acs_provocation_test" in text_of(at)
-    for view in ("Overview", "Management reasoning", "Decision challenges", "Royal College", "ACGME", "Safety"):
+    for view in ("Overview", "Management reasoning", "Decision challenges", "Royal College EPAs",
+                 "ACGME Milestones", "Safety"):
         show(at, "_my_progress_view", view)
         assert not re.search(RANKING, text_of(at).lower()), view
         # Read-only: no control that records, confirms or edits evidence.
@@ -332,7 +333,7 @@ def test_faculty_open_the_same_evidence_and_portfolio_from_a_card(program):
     assert not at.exception
     assert "Faculty-confirmed objective observations: 2" in text_of(at)
     assert any(item.label == "Evidence by framework and portfolio" for item in at.expander)
-    show(at, "_cohort_evidence_view", "ACGME")
+    show(at, "_cohort_evidence_view", "ACGME Milestones")
     assert "No Milestone level is assigned or inferred" in text_of(at)
     show(at, "_cohort_evidence_view", "Portfolio")
     assert any(b.label == "Prepare the complete portfolio" for b in at.button)
