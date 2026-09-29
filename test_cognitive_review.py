@@ -30,7 +30,7 @@ def decision():
                           "reassessment_target": "Respiratory rate, oxygenation, and alertness in 5 minutes"}}
 
 
-@pytest.mark.parametrize("context", [None, {"user": {"role": "resident"}}])
+@pytest.mark.parametrize("context", [None, {"user": {"role": "faculty"}}])
 def test_cognitive_focus_is_absent_before_end_and_visible_after_end(context):
     challenge = BIAS_CHALLENGES["R1-05"]
     state = {"encounter_spec": {"challenge_id": "R1-05"}}
@@ -45,6 +45,17 @@ def test_cognitive_focus_is_absent_before_end_and_visible_after_end(context):
     assert "Cognitive focus: " + challenge["bias_name"] in st.rendered
     assert challenge["objective"] in st.rendered
     assert all(question in st.rendered for question in challenge["debrief_questions"])
+
+
+def test_a_resident_reads_the_cognitive_focus_only_after_faculty_review():
+    """§154AB (faculty, 2026-09-29): not at the end (test_learning_focus_waits_for_review)."""
+    challenge = BIAS_CHALLENGES["R1-05"]
+    st = FakeStreamlit({"encounter_ended": True, "state": {"encounter_spec": {"challenge_id": "R1-05"}},
+                        "encounter_assignment": {"challenge_id": "R1-05"}})
+    runtime_functions(st)["render_learning_focus"]({"user": {"role": "resident"}})
+    assert challenge["title"] not in st.rendered
+    assert "Cognitive focus: " + challenge["bias_name"] not in st.rendered
+    assert any("after a faculty member reviews it" in str(text) for text in st.rendered)
 
 
 def test_shared_review_uses_frozen_encounter_and_not_an_old_account_assignment():

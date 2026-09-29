@@ -243,11 +243,18 @@ class ObjectiveVisibilityTests(unittest.TestCase):
         st = FakeStreamlit({"encounter_ended": False, "encounter_assignment": {"challenge_id": "R1-03"}})
         render = runtime_functions(st)["render_learning_focus"]
         render(self.context())
+        render(self.context("faculty"))
         self.assertEqual(st.rendered, [])
         st.session_state["encounter_ended"] = True
-        render(self.context())
+        render(self.context("faculty"))
         self.assertIn(CHALLENGES["R1-03"]["title"], st.rendered)
         self.assertIn(CHALLENGES["R1-03"]["objective"], st.rendered)
+        # §154AB (faculty, 2026-09-29): the resident reads it once a faculty member has
+        # reviewed the encounter, not at its end (test_learning_focus_waits_for_review).
+        resident = FakeStreamlit({"encounter_ended": True, "encounter_assignment": {"challenge_id": "R1-03"}})
+        runtime_functions(resident)["render_learning_focus"](self.context())
+        self.assertNotIn(CHALLENGES["R1-03"]["title"], resident.rendered)
+        self.assertTrue(any("after a faculty member reviews it" in str(text) for text in resident.rendered))
 
     def test_authorized_faculty_dashboard_has_sandbox_selector(self):
         st = FakeStreamlit()
