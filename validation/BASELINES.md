@@ -250,6 +250,19 @@ Un encuentro del piloto formativo **no** es una medición de validación externa
 juega con el motor desplegado, que es una versión posterior del motor, y conserva
 las reglas con que empezó.
 
+## Confirmación formal al cerrar el ciclo posterior a V3 (2026-09-29)
+
+Decisión docente registrada antes de recibir o leer cualquier respuesta externa:
+
+| Medición | Baseline | Commit |
+|---|---|---|
+| **SPANISH EXTERNAL VALIDATION BASELINE** | registrado como SPANISH PILOT BASELINE | `939978a5147ab859a6dc3566ef4e1a98611a5093` |
+| **ENGLISH EXTERNAL VALIDATION BASELINE** | V3, confirmado | `3d942eedf1d5922a8fed7df2e218bb3d7012c227` |
+
+- **Ninguno cambia después de leer respuestas externas.**
+- **V3 sigue congelado.** Todo commit posterior a `3d942ee` es **POST-V3 DEVELOPMENT**: no reescribe V3 ni el
+  baseline histórico, y el HEAD de la rama nunca se presenta como el motor de la medición externa.
+
 ## Qué registra cada corrida
 
 Una corrida de validación deja en su reporte (`report.json` y `report.md`,

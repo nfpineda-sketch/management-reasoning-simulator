@@ -59,6 +59,8 @@ INSTRUCTION_2026_09_28_CYCLE8 = ("Instrucción docente del 2026-09-28 al cerrar 
 INSTRUCTION_2026_09_29_CYCLE9 = ("Instrucción docente del 2026-09-29, ciclo 9 del AI Advisor (endurecimiento previo a la "
                                  "validación externa: TD-39, TD-34, TD-36 y TD-33; DF-20 cerrado sin cambios y las filas "
                                  "TDFC de acs_54m_inferior; la fila 4a de DF-23 si es inequívoca)")
+INSTRUCTION_2026_09_29_CLOSING = ("Instrucción docente del 2026-09-29 que cierra el ciclo posterior a V3 (DF-23 filas 6, 7 "
+                                  "y 8; el español de acs_70f_left_main; la vía de llegada neutra en hipoglicemia)")
 INSTRUCTION_2026_09_29_POST_V3 = ("Instrucción docente del 2026-09-29 posterior a V3 (cerrar e implementar las decisiones "
                                   "clínicas analizadas: TEP con D revisada, DC1, POCUS de la HDA, TD-31, DC2–DC5 de "
                                   "hipoglicemia y el texto de acs_70f_left_main; y las decisiones no clínicas de su "
@@ -2330,6 +2332,82 @@ CORRECTIONS = (
         "tests": ["test_tdfc_composition_proposals.py::test_every_composition_has_its_origin_s_rows_as_a_pending_proposal",
                   "test_tdfc_composition_proposals.py::test_a_proposal_is_never_a_declaration_and_the_reference_is_untouched",
                   "test_tdfc_composition_proposals.py::test_no_composition_is_exposable_or_reachable_by_a_resident_path"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-20",
+        "date": "2026-09-29",
+        "title": "DF-23 fila 6 (B): la pared reperfundida queda aturdida; a lo sumo levemente disminuida",
+        "scope": {"level": "family", "family": "acs"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Tras reperfundir, lv_function volvía hasta 0,85, el umbral de «contracts normally», y a las 4-5 h el "
+                   "POCUS describía la pared como normal mientras el evento decía «recovers only partly». Decisión B: la "
+                   "circulación mejora como en el modelo, pero una pared isquémica y reperfundida queda aturdida durante "
+                   "el encuentro y se describe, como máximo, levemente disminuida. Sólo cambian las palabras: lv_function, "
+                   "la circulación, las presiones y los tiempos son los mismos (probado con y sin la regla). C14, TDFC y "
+                   "los eventos críticos no cambian. Un encuentro empezado antes no tiene la marca y conserva su lectura."),
+        "authorised_by": INSTRUCTION_2026_09_29_CLOSING,
+        "affects": {"modules": ["acs_reperfusion", "family_engine"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_reperfused_wall_stays_stunned.py::test_the_reperfused_wall_is_at_best_mildly_reduced_and_nothing_else_moves",
+                  "test_reperfused_wall_stays_stunned.py::test_a_worse_wall_is_described_as_it_is_and_a_closed_artery_is_untouched",
+                  "test_reperfused_wall_stays_stunned.py::test_the_stunned_wall_is_said_in_spanish"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-21",
+        "date": "2026-09-29",
+        "title": "DF-23 fila 7 (A): anaphylaxis_63m_betablocked muestra fibrilación auricular en el monitor y el ECG",
+        "scope": {"level": "variant", "variants": ["anaphylaxis_63m_betablocked"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("El caso documenta FA (apixabán, el ritmo irregular que describe la esposa, pulso irregular al examen) "
+                   "pero el monitor y el ECG decían ritmo sinusal, porque el ritmo se derivaba de la FC. Ahora muestran FA "
+                   "con FC 64. El bloqueo beta, la respuesta a la adrenalina y la respuesta al glucagón son las mismas "
+                   "(probado contra la etiqueta sinusal). C14, TDFC y los eventos críticos no cambian."),
+        "authorised_by": INSTRUCTION_2026_09_29_CLOSING,
+        "affects": {"modules": ["clinical_cases"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_betablocked_anaphylaxis_rhythm.py::test_the_monitor_and_the_ecg_show_atrial_fibrillation_at_64",
+                  "test_betablocked_anaphylaxis_rhythm.py::test_the_physiology_is_the_one_the_sinus_label_had"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-22",
+        "date": "2026-09-29",
+        "title": "DF-23 fila 8 (A modificada): embarazo, FUM y menstruación son un tema propio; sin dato, «No documentado»",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("«¿Cuándo fue su última regla?» caía en la rama genérica de «cuándo» y se respondía con el inicio de los "
+                   "síntomas. Las preguntas sobre embarazo, FUM/LMP, última regla o menstruación son ahora un tema propio "
+                   "que nunca cae en el inicio: sin dato escrito por el caso se responde «Not documented.» («No "
+                   "documentado.»), sin inventar FUM, estado de embarazo, adherencia anticonceptiva ni resultado, y sin "
+                   "consultar al proveedor. La revisión de la historia no cuenta esas preguntas como inicio. "
+                   "pulmonary_embolism_33f no recibe historia inventada; la prueba de embarazo sigue solicitada y sin "
+                   "resultado modelado (TD-22, sin cambio). No se modela la β-hCG."),
+        "authorised_by": INSTRUCTION_2026_09_29_CLOSING,
+        "affects": {"modules": ["patient_conversation", "history_review", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_pregnancy_history_topic.py::test_an_undocumented_pregnancy_question_answers_not_documented_and_never_onset",
+                  "test_pregnancy_history_topic.py::test_an_authored_pregnancy_topic_is_said_as_written",
+                  "test_pregnancy_history_topic.py::test_the_history_review_never_counts_a_period_question_as_onset",
+                  "test_pregnancy_history_topic.py::test_a_pregnancy_test_is_ordered_with_no_result_modelled"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-29-23",
+        "date": "2026-09-29",
+        "title": "Hipoglicemia: la vía de llegada se nombra sin decir quién la instaló",
+        "scope": {"level": "family", "family": "hypoglycemia"},
+        "kind": "text",
+        "reason": ("La mayoría de los relatos no tiene paramédicos. La línea de llegada dice ahora «Peripheral IV in place "
+                   "in the left forearm.» («Vía venosa periférica instalada en el antebrazo izquierdo.»): lo que importa es "
+                   "que existe una vía, no quién la instaló. En la sala en español sigue al relato del caso: español donde "
+                   "su traducción está aprobada, inglés donde no. La redacción anterior sigue legible en los registros."),
+        "authorised_by": INSTRUCTION_2026_09_29_CLOSING,
+        "affects": {"modules": ["glucose_rescue", "language"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_arrival_line_is_neutral.py::test_the_arrival_line_names_the_line_and_nobody",
+                  "test_arrival_line_is_neutral.py::test_the_line_follows_the_case_narrative_language"],
         "preservation": None,
     },
 )

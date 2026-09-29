@@ -13,6 +13,10 @@ de estos cambios tiene todavía revisión clínica externa.
 | 4 | TD-31: la hemostasia no es una suma; reducido frente a detenido | C-2026-09-29-13 | `test_hemostasis_is_not_a_sum.py` |
 | 5 | Hipoglicemia DC2–DC5: la vía como propiedad del acceso (`glucose_rescue` 2.0) | C-2026-09-29-14 | `test_hypoglycemia_lines.py`, `test_hypoglycemia_battery.py` |
 | 6 | `acs_70f_left_main`: el VI de llegada dice el grado leve, EN/ES | C-2026-09-29-15 | `test_acs_left_main_arrival.py` |
+| 7 | DF-23 fila 6 (B): la pared reperfundida queda aturdida, a lo sumo levemente disminuida | C-2026-09-29-20 | `test_reperfused_wall_stays_stunned.py` |
+| 8 | DF-23 fila 7 (A): FA en monitor y ECG de `anaphylaxis_63m_betablocked`, FC 64 | C-2026-09-29-21 | `test_betablocked_anaphylaxis_rhythm.py` |
+| 9 | DF-23 fila 8 (A modificada): embarazo/FUM como tema propio; sin dato, «No documentado» | C-2026-09-29-22 | `test_pregnancy_history_topic.py` |
+| 10 | Hipoglicemia: vía de llegada neutra, EN/ES | C-2026-09-29-23 | `test_arrival_line_is_neutral.py` |
 
 ## 1 · TEP
 
@@ -161,11 +165,27 @@ registra). Medido en `hypoglycemia_54m_thiamine` (vía fallida) y `hypoglycemia_
 | Piloto formativo: prueba de humo y readiness | Técnicamente listo; bloqueado por pasos de despliegue y autorización | `docs/READINESS_PILOTO_FORMATIVO.md` | `tools_pilot_smoke.py` |
 | Panel docente: las líneas TDFC ya no rompen el traductor (hallado por la prueba de humo; falla desde el ciclo 8) | Corregido | `d0cbeb8` | `test_screen_strings_name_their_values.py` |
 
+## 8 · Cierre del ciclo (2026-09-29)
+
+| Decisión | Antes | Ahora |
+|---|---|---|
+| **DF-23 fila 6 (B)** | `acs_54m_inferior` a los 315 min de activar la sala: «The inferior wall contracts normally»; `acs_70f_left_main`: «Contraction is globally normal» | «The inferior wall shows mildly reduced contraction»; «Contraction is globally mildly reduced». `lv_function` (0,85), circulación, PA, FC, SpO2 y minutos de reperfusión idénticos con y sin la regla |
+| **DF-23 fila 7 (A)** | Monitor y ECG: «Sinus rhythm» a 64 (el ritmo se derivaba de la FC) | «AF» a 64 en el monitor y el ECG. PA, FC, SpO2, FR, conciencia y llene tras adrenalina IM y glucagón IV: idénticos a la etiqueta sinusal |
+| **DF-23 fila 8 (A modificada)** | «¿Cuándo fue su última regla?» y «When was your last menstrual period?» respondían con el inicio de los síntomas; «Are you pregnant?» no encontraba tema | Tema propio en EN/ES (embarazo, FUM, LMP, última regla, menstruación): lo que el caso escribió o «Not documented.» / «No documentado.»; nunca inicio, nunca el proveedor. La revisión de la historia no lo cuenta como inicio. «period of time» no es menstruación |
+| **`pulmonary_embolism_33f`** | — | Sin historia de embarazo inventada: «No documentado». La prueba de embarazo sigue solicitada y sin resultado (TD-22) |
+| **Español de `acs_70f_left_main`** | Pendiente de revisión | Aprobada la frase exacta «Contracción globalmente levemente disminuida sin un defecto focal único.» para «Globally mildly reduced contraction without a single focal defect.», fijada por prueba |
+| **Vía de llegada (hipoglicemia)** | «A peripheral intravenous cannula is already in place in the left forearm.» | «Peripheral IV in place in the left forearm.» / «Vía venosa periférica instalada en el antebrazo izquierdo.»; sigue el idioma del relato aprobado del caso |
+| **IA en el primer piloto** | — | Durante el encuentro: apagada. Después del encuentro: no autorizada, función por función |
+
+Se mantienen sin cambio: TD-45 (ocho brechas, el lector no se reabre), DC9 (propuesto, pendiente de revisión
+humana, no expuesto), las cuatro dudas residuales de TDFC, TD-04 (pendiente de revisión clínica humana; ninguna
+imagen ni video) y el foco de aprendizaje tras la revisión docente.
+
 ## Lo que no cambió
 
-No cambiaron las evaluaciones confirmadas, D1–D5, los eventos críticos y sus pesos, el −3 ni la referencia
-TDFC aprobada; la única excepción autorizada es la adaptación del tamizaje del TEP, que lee el motivo real
-de la reperfusión. Tampoco la variabilidad plausible ya cerrada, el lector (congelado) ni el baseline
+No cambiaron las evaluaciones confirmadas, D1–D5, los eventos críticos y sus pesos, el −3, C14 ni la
+referencia TDFC aprobada; la única excepción autorizada es la adaptación del tamizaje del TEP, que lee el
+motivo real de la reperfusión. Tampoco la variabilidad plausible ya cerrada, el lector (congelado) ni el baseline
 español `939978a`. Las cuatro dudas residuales de TDFC siguen provisionales; TD-04 sigue caso a caso;
 DC6–DC8, la revisión de DC9 y «suero glucosado» siguen diferidos.
 

@@ -9,22 +9,28 @@ bloqueado, y por qué.
 
 ## Respuesta
 
-**TÉCNICAMENTE LISTO EN LA VERSIÓN ACTUAL; BLOQUEADO PARA EMPEZAR** por tres
-pasos que esta sesión no puede ni debe dar:
+**TECHNICALLY READY WITH CONDITIONS** (confirmado por el docente al cerrar el ciclo, 2026-09-29). Antes de
+iniciarlo se requiere:
 
-1. **La prueba de humo en el entorno real desplegado.** La de abajo corrió en
-   la versión real (el commit), en una base local desechable. El despliegue no
-   es accesible desde aquí y desplegar no está autorizado. La herramienta
-   `tools_pilot_smoke.py` crea su propia base temporal, así que puede correrse
-   en el servidor del despliegue sin tocar sus datos.
-2. **La configuración del despliegue:** la del piloto (abajo). Con la
-   configuración por defecto y una clave del proveedor, abrir un encuentro
-   pide una foto al proveedor sin que nadie lo pida.
-3. **La autorización docente**, con las aprobaciones humanas pendientes de la
-   última sección.
+- **A.** desplegar el candidato y la configuración aprobados;
+- **B.** la prueba de humo contra el entorno desplegado (la de abajo corrió en la versión real, en una base
+  local desechable; `tools_pilot_smoke.py` crea su propia base temporal y puede correr en el servidor sin
+  tocar sus datos);
+- **C.** la autorización explícita del docente.
 
-**No es una validación.** La fidelidad del lector con texto externo sigue sin
-medirse (B = NOT YET MEASURED); todo juicio lo confirma un docente.
+El piloto nunca se inicia automáticamente.
+
+**No es una validación.** La fidelidad del lector con texto externo sigue sin medirse (B = NOT YET MEASURED);
+todo juicio lo confirma un docente.
+
+## La IA en el primer piloto (decisión docente, 2026-09-29)
+
+- **CLINICAL ENCOUNTER AI = OFF.** Ninguna llamada automática durante el encuentro y ninguna foto nueva
+  generada al abrir el caso: banco de casos, fotos aprobadas y reutilizables, y el motor determinista. La
+  configuración `MRS_OFFLINE_CASES=1` lo cumple: 0 llamadas medidas.
+- **La IA posterior al encuentro no está autorizada:** propuesta de rúbrica, análisis del Trace, AI
+  Longitudinal Review y traducción se deciden por separado, y ninguna se habilita automáticamente.
+- **Objetivo del primer piloto:** reproducibilidad, trazabilidad y control.
 
 ## Prueba de humo (2026-09-29)
 
@@ -83,12 +89,11 @@ cualquiera de ellas es una decisión nueva (pregunta abajo).
     exponen);
   - los casos escritos por IA (la configuración del piloto no los genera);
   - PS001/PS002 (motor antiguo, inaccesible).
+- **Cerradas al final del ciclo (2026-09-29):** `anaphylaxis_63m_betablocked` muestra FA en el monitor y el
+  ECG, coherente con su historia y su examen (DF-23 fila 7): **sigue incluido**; la pared reperfundida de los
+  casos SCA queda aturdida, a lo sumo levemente disminuida (fila 6); una pregunta por embarazo o FUM responde
+  «No documentado» si el caso no lo escribió, y la prueba de embarazo queda solicitada sin resultado (fila 8).
 - **Casos con una limitación que el docente debe conocer** (se juegan igual):
-  - `anaphylaxis_63m_betablocked`: el monitor y el ECG muestran FA y el examen
-    dice pulso regular (DF-23, fila 7, sin decidir).
-  - Casos SCA: el texto de la pared tras reperfundir (DF-23, fila 6).
-  - Casos de mujeres en edad fértil, empezando por `pulmonary_embolism_33f`:
-    qué responde una prueba de embarazo (DF-23, fila 8).
   - `hypoglycemia_54m_thiamine` y las configuraciones con vía fallida: el
     glucagón o el octreótido por la cánula infiltrada actúan como modelados
     (DC4-F).
@@ -100,7 +105,8 @@ cualquiera de ellas es una decisión nueva (pregunta abajo).
   - el relato de cada caso en español sólo si un docente aprobó su traducción
     en la base desplegada. El paquete del repositorio no trae ninguna
     aprobación; en una base nueva el relato se ve en inglés.
-  - `acs_70f_left_main` necesita una aprobación nueva: su pasaje cambió.
+  - `acs_70f_left_main`: su frase nueva en español está aprobada (2026-09-29); la sala la usa cuando la
+    versión del caso está aprobada en la base desplegada.
 - **Versión:**
   - cada encuentro congela al empezar su `code_version` (el commit desplegado
     o `MRS_CODE_VERSION`) y las versiones de su evaluación
@@ -118,12 +124,6 @@ cualquiera de ellas es una decisión nueva (pregunta abajo).
 
 ## Aprobaciones humanas que faltan
 
-- Autorizar el piloto y su configuración.
-- Correr la prueba de humo en el entorno desplegado.
-- Si el relato en español se usará: aprobar la traducción de los casos en la
-  base desplegada, y de nuevo la de `acs_70f_left_main`.
-- Decidir si `anaphylaxis_63m_betablocked` entra con su inconsistencia (DF-23
-  fila 7) o espera la decisión.
-- Decidir si se habilita alguna función de IA a pedido (propuesta de rúbrica,
-  análisis del Trace, traducción a pedido). La configuración recomendada no
-  habilita ninguna.
+- Las condiciones A, B y C de arriba.
+- Si el relato en español se usará: aprobar la versión de cada caso en la base desplegada (tablero docente).
+- Cualquier función de IA, durante o después del encuentro: una decisión por función.

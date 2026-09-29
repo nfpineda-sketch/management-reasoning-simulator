@@ -214,6 +214,10 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-29-17 | TD-41: abrir una página o un PDF lee las traducciones guardadas; sólo el pedido del lector traduce | general | policy | none | — |
 | C-2026-09-29-18 | KD-31: el tamizaje cita como contexto el tratamiento informado como recibido antes | general | policy | clinical | — |
 | C-2026-09-29-19 | DC9: las filas TD/F/C de las composiciones son las de su origen, como propuesta pendiente | variante hypoglycemia_cfg_alcohol_fasting_failed_moderate, hypoglycemia_cfg_alcohol_fasting_working_moderate, hypoglycemia_cfg_alcohol_fasting_working_severe, hypoglycemia_cfg_insulin_failed_moderate, hypoglycemia_cfg_insulin_failed_severe, hypoglycemia_cfg_insulin_working_moderate, hypoglycemia_cfg_sulfonylurea_failed_moderate, hypoglycemia_cfg_sulfonylurea_failed_severe, hypoglycemia_cfg_sulfonylurea_working_moderate | policy | clinical | — |
+| C-2026-09-29-20 | DF-23 fila 6 (B): la pared reperfundida queda aturdida; a lo sumo levemente disminuida | familia acs | clinical_decision_applied | clinical | — |
+| C-2026-09-29-21 | DF-23 fila 7 (A): anaphylaxis_63m_betablocked muestra fibrilación auricular en el monitor y el ECG | variante anaphylaxis_63m_betablocked | clinical_decision_applied | clinical | — |
+| C-2026-09-29-22 | DF-23 fila 8 (A modificada): embarazo, FUM y menstruación son un tema propio; sin dato, «No documentado» | general | clinical_decision_applied | clinical | — |
+| C-2026-09-29-23 | Hipoglicemia: la vía de llegada se nombra sin decir quién la instaló | familia hypoglycemia | text | cosmetic | — |
 
 ## La batería, configuración por configuración
 

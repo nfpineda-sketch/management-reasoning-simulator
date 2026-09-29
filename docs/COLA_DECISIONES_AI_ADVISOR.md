@@ -9,7 +9,9 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   la vigente). La tabla del cierre del ciclo 9 y los ciclos anteriores siguen
   más abajo, como estaban.
 
-## Estado posterior a V3 (2026-09-29)
+## Estado posterior a V3 (2026-09-29) — ciclo cerrado
+
+**El ciclo posterior a V3 se cerró formalmente el 2026-09-29** con las decisiones del mensaje de cierre (DF-23 filas 6, 7 y 8; el español de `acs_70f_left_main`; la vía de llegada neutra; la IA del primer piloto; los baselines). No se abrió otro ciclo. Ninguna decisión abierta sale de esta tabla por no haber entrado en el ciclo.
 
 Instrucción docente del 2026-09-29 que cierra las decisiones clínicas analizadas
 después de V3 y su ampliación no clínica. **Implementado no es validado:**
@@ -33,22 +35,34 @@ nada de esto tiene todavía revisión clínica externa. Detalle clínico:
 | DC6 | Peso de la tiamina en D3 | Hipoglicemia | **DIFERIDO** | Decisión docente | ídem | Peso decidido |
 | DC7 | Reevaluar evaluaciones confirmadas de la 54m | Evaluaciones ya confirmadas | **DIFERIDO**; nada confirmado se tocó | Decisión docente y pantalla de reevaluación | ídem | Decisión registrada |
 | DC8 | Ventana de la oportunidad de D4 | Hipoglicemia | **DIFERIDO** | Decisión docente | ídem | Ventana decidida |
-| DC9 | Filas TD/F/C de las composiciones: las del origen como propuesta pendiente | 9 composiciones | **PROPUESTA IMPLEMENTADA; revisión PENDIENTE**; no expuestas | Revisión docente de 36 filas | C-2026-09-29-19; `test_tdfc_composition_proposals.py` | Cada fila revisada con firma |
+| DC9 | Filas TD/F/C de las composiciones: las del origen como propuesta pendiente | 9 composiciones, 36 filas | **PROPOSED · PENDING HUMAN REVIEW · NOT EXPOSED TO RESIDENTS**; nada se aprueba automáticamente; la referencia TDFC confirmada no cambia | Revisión docente de 36 filas | C-2026-09-29-19; `test_tdfc_composition_proposals.py` | Cada fila revisada con firma |
 | «Suero glucosado» sin concentración | ¿10 % o preguntar? | Lector | **DIFERIDO** (lector congelado) | Ciclo del lector | `docs/HIPOGLICEMIA_DECISIONES_PENDIENTES.md` G | Decisión y ciclo aprobado |
 | DF-23 · fila 11 | Primer minuto, TEP antes de 15 min, VCI y VI en la HDA, traducción de las frases del modelo | Varios | **Tres partes IMPLEMENTADAS** (DC1, D revisada, POCUS de la HDA C-2026-09-29-12); **la traducción de las frases del modelo sigue PENDIENTE** | — | POST_V3 §2–§3 | Frases del modelo con su español aprobado |
 | DF-23 · 4b | Grado del VI de `acs_70f_left_main` | 1 caso | **IMPLEMENTADO** (leve; C-2026-09-29-15) | — | `test_acs_left_main_arrival.py` | Revisión del español (abajo) |
-| DF-23 · 6, 7, 8 | Pared tras reperfundir; FA en `anaphylaxis_63m_betablocked`; embarazo por caso | Casos SCA, anafilaxia, TEP | **PENDIENTE** | Decisión clínica | `docs/AUDITORIA_DF23_CICLO6.md` | Pregunta concreta en el informe final |
-| `acs_70f_left_main` · español | Su pasaje cambió; vuelve a revisión | 1 caso | **PENDIENTE** de revisión docente | — | C-2026-09-29-15 | Traducción aprobada de nuevo |
-| Imágenes · V34 (`pulmonary_edema_75f`) y `bradycardia_bb_54f` | Foto de llegada | 2 casos | **PENDIENTE**; nada generado ni aprobado; 75f muestra V34 (aprobada, mismo contrato), 54f la vista neutral | Decisión docente | `docs/IMAGENES_DECISIONES_CLINICAS.md` | Decisión registrada |
+| DF-23 · fila 6 | **B:** la pared reperfundida queda aturdida; a lo sumo «mildly reduced» dentro del encuentro | Familia SCA | **IMPLEMENTADO** (sólo la descripción; lv_function, circulación y tiempos iguales) | — | C-2026-09-29-20; `test_reperfused_wall_stays_stunned.py` | Revisión clínica externa |
+| DF-23 · fila 7 | **A:** FA en monitor y ECG de `anaphylaxis_63m_betablocked`, FC 64 | 1 caso | **IMPLEMENTADO**; fisiología idéntica; el caso sigue en el piloto | — | C-2026-09-29-21; `test_betablocked_anaphylaxis_rhythm.py` | Revisión clínica externa |
+| DF-23 · fila 8 | **A modificada:** embarazo/FUM/LMP/menstruación como tema propio, nunca inicio de síntomas; sin dato, «Not documented.» / «No documentado.»; sin β-hCG | Historia de todos los casos | **IMPLEMENTADO**; TD-22 sin cambio | — | C-2026-09-29-22; `test_pregnancy_history_topic.py` | Revisión clínica externa |
+| `pulmonary_embolism_33f` · embarazo | Sin historia inventada: «No documentado» hasta decidir qué contiene el caso; prueba de embarazo solicitada y sin resultado modelado | 1 caso | **IMPLEMENTADO** (comportamiento por defecto) | Decisión docente sobre el contenido del caso | ídem | Decisión registrada sobre embarazo/FUM del caso |
+| `acs_70f_left_main` · español | Aprobada: «Contracción globalmente levemente disminuida sin un defecto focal único.» = «Globally mildly reduced contraction without a single focal defect.» | 1 caso | **APROBADO** (2026-09-29) y fijado por prueba; `lv_function` 0,82 y el shock sin cambio | La sala usa el español de un caso cuando su versión está aprobada en la base desplegada (tablero docente) | `test_acs_left_main_arrival.py` | Aprobación de la versión del caso en la base desplegada |
+| Hipoglicemia · vía de llegada | Neutra: «Peripheral IV in place in the left forearm.» / «Vía venosa periférica instalada en el antebrazo izquierdo.»; sin inventar paramédicos | 12 configuraciones | **IMPLEMENTADO** | — | C-2026-09-29-23; `test_arrival_line_is_neutral.py` | — |
+| Imágenes · V34 (`pulmonary_edema_75f`) y `bradycardia_bb_54f` (DF-23 fila 2) | Foto de llegada | 2 casos | **PENDIENTE**; nada generado ni aprobado; 75f muestra V34 (aprobada, mismo contrato), 54f la vista neutral | Decisión docente | `docs/IMAGENES_DECISIONES_CLINICAS.md` | Decisión registrada |
 | KD-31 | El tamizaje cita el tratamiento previo como contexto | Tamizaje | **IMPLEMENTADO** | — | C-2026-09-29-18; `test_prior_treatment_in_screening.py` | Revisión docente del uso |
 | §154AB · foco de aprendizaje | Oculto al residente hasta la revisión docente | Páginas del residente | **IMPLEMENTADO** | — | C-2026-09-29-16 | — |
 | TD-41 · traducciones | Sólo el pedido del lector traduce; nada al abrir | Páginas y PDF | **IMPLEMENTADO** | — | C-2026-09-29-17 | — |
-| Baseline inglés | V3 `3d942ee` | Validación externa inglesa | **DECIDIDO y REGISTRADO** (entrada nueva) | — | `validation/BASELINES.md` | — |
-| TD-45 · deuda del lector | Brechas con ejemplos reproducibles (incluye KD-02, KD-15) | Lector congelado | **REGISTRADO**; el lector no cambió | Ciclo del lector aprobado | `test_reader_gaps_registered.py` | Cada brecha corregida con su prueba y registro |
+| Baseline inglés | V3 `3d942ee` | Validación externa inglesa | **DECIDIDO, REGISTRADO y CONFIRMADO** | — | `validation/BASELINES.md` | — |
+| TD-45 · deuda del lector | Las ocho brechas se mantienen documentadas; el lector no se reabre | Lector congelado | **REGISTRADO**; se comprobará cuáles aparecen en el lenguaje médico externo | Validación externa | `test_reader_gaps_registered.py` | Medición externa y ciclo del lector aprobado |
+| KD-02 · TD-35 | Lo que una lista nombra sin verbo y el lector no conoce se pierde sin aviso | Lector congelado | **PENDIENTE** | Validación externa | TD-45a; `validation/KNOWN_DEFECTS_V3.md` | Decisión tras medir el lenguaje externo |
+| KD-15 | Un fluido nombrado sin verbo («IV fluids 1 L») se retiene | Lector congelado | **PENDIENTE** | Validación externa | TD-45b | Decisión tras medir el lenguaje externo |
 | Roles · Fase 2 | TD-44 → notas privadas → descarga selectiva e inactivos → AI Longitudinal Review a pedido | Roles | **ORDEN REGISTRADO**; nada implementado | Presupuesto y decisiones de acceso | `docs/EXPERIENCIA_POR_ROL.md` | Cada paso con pruebas de permisos |
 | TDFC · cuatro dudas residuales | Declaraciones aplicadas como estaban | 4 filas | **PROVISIONAL, no validado** | Revisión docente | `tdfc/TDFC_TABLA_FINAL.md` | Cada fila confirmada o cambiada |
-| TD-04 | POCUS de los casos C14 YES | Caso a caso | **CASO A CASO** | Revisión docente | — | Cada caso confirmado |
-| Piloto formativo | Piloto limitado, formativo, con supervisión docente | 31 casos del banco; sin composiciones, casos por IA ni PS001/PS002 | **TÉCNICAMENTE LISTO; BLOQUEADO para empezar** hasta la prueba de humo en el entorno desplegado, su configuración (`MRS_OFFLINE_CASES=1`: 0 llamadas a la IA medidas) y la autorización | Despliegue y autorización docente | `docs/READINESS_PILOTO_FORMATIVO.md`; `tools_pilot_smoke.py` | Humo verde en el despliegue y autorización explícita |
+| TD-04 · POCUS del banco | POCUS de los 14 casos C14 YES | 14 casos | **PENDING HUMAN CLINICAL REVIEW**; no se aprueba automáticamente; no se generan imágenes ni videos | Revisión docente | — | Cada caso confirmado |
+| Piloto formativo | Piloto limitado, formativo, con supervisión docente | 31 casos del banco; sin composiciones, casos por IA ni PS001/PS002 | **TECHNICALLY READY WITH CONDITIONS** | A. desplegar el candidato y la configuración aprobados; B. prueba de humo en el entorno desplegado; C. autorización docente explícita | `docs/READINESS_PILOTO_FORMATIVO.md`; `tools_pilot_smoke.py` | A, B y C cumplidas; nunca se inicia automáticamente |
+| IA durante el encuentro (primer piloto) | **CLINICAL ENCOUNTER AI = OFF**: sin llamadas automáticas; sin generar una foto nueva al abrir el caso; banco de casos, fotos aprobadas y motor determinista | Piloto | **DECIDIDO** (`MRS_OFFLINE_CASES=1`: 0 llamadas medidas) | — | Prueba de humo | Otra decisión docente para habilitar algo |
+| IA posterior al encuentro | Propuesta de rúbrica, análisis del Trace, AI Longitudinal Review y traducción, **cada una por separado** | Piloto | **NO AUTORIZADA**; ninguna se habilita automáticamente | Decisión docente, una por una | — | Decisión por función |
+| Foco de aprendizaje | El residente lo ve después de la revisión docente; el docente, durante la revisión | Páginas | **CONFIRMADO** (2026-09-29) | — | C-2026-09-29-16 | — |
+| Baselines de validación externa | ES = `939978a` (SPANISH PILOT BASELINE); EN = V3 `3d942ee` | Validación externa | **CONFIRMADOS FORMALMENTE** (2026-09-29); no cambian después de leer respuestas | — | `validation/BASELINES.md` | — |
+| V3 | `3d942ee` congelado; todo lo posterior es desarrollo posterior a V3 | Motor | **CONGELADO**; el HEAD no es el motor de la medición externa | — | `validation/BASELINES.md` | — |
+| Validación externa | Validación del lenguaje de médicos externos | ES y EN | **ESPERANDO** «BEGIN EXTERNAL VALIDATION INGESTION»; nada se abre, lee ni procesa | Instrucción explícita | `docs/VALIDACION_EXTERNA_PREPARACION.md` | Instrucción recibida |
 | Fuera de alcance | DF-15, DF-25, DF-14, DF-12, DF-17, DF-4, DF-18, DF-9, DF-11, DF-5, biblioteca POCUS | — | **Sin cambio** | — | — | — |
 
 ## Pendientes al cierre del ciclo 9 (histórico)

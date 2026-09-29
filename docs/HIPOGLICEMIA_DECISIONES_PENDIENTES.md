@@ -48,7 +48,9 @@ El catálogo, las doce combinaciones y los resultados de la batería están en
   y 6 con vía funcionante, 3 del banco y 9 composiciones) reciben al llegar la misma frase: «A peripheral
   intravenous cannula is already in place in the left forearm.» No nombra a los paramédicos porque los
   relatos de 28m (traído desde el trabajo) y 76f (traída por su hijo) no los tienen; en la 54m viene del
-  registro paramédico. Una vía nueva se instala y se dice igual en ambas configuraciones («peripheral
+  registro paramédico. **Redacción cerrada el mismo día (C-2026-09-29-23):** la frase es ahora «Peripheral IV in
+  place in the left forearm.» («Vía venosa periférica instalada en el antebrazo izquierdo.»): dice que existe una vía,
+  nunca quién la instaló. Una vía nueva se instala y se dice igual en ambas configuraciones («peripheral
   intravenous access placed» y una frase neutra del sitio); nada dice «replaced» ni «What is given now
   reaches». La falla se descubre en la cabecera: al primer uso, «As it goes in, the skin around the
   forearm cannula swells»; en el control **Examinar**, la región **Vascular access** (disponible desde la
