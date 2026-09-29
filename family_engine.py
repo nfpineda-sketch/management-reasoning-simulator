@@ -967,6 +967,9 @@ def _initialize(state):
         # place, working or not; whether it is in the vein is the configuration's fact.
         state["family_state"]["arrival_line"] = {"site": glucose_rescue.ARRIVAL_LINE_SITE,
                                                  "in_vein": not state["family_state"]["iv_access_failed"]}
+    if state.get("engine_family") == "acs":
+        # DF-23 row 6 (2026-09-29): a reperfused wall stays stunned in this encounter's words.
+        state["family_state"][acs_reperfusion.STUNNED_WALL] = True
     if state.get("engine_family") == "pulmonary_embolism":
         # An obstructive shock present at arrival counts from minute 0 (2026-09-29).
         state["family_state"]["pe_attributable"] = _pe_attributable(state, 0.0)

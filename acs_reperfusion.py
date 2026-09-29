@@ -372,16 +372,30 @@ def troponin(f, baseline, onset_min=0, spec=None):
 
 GLOBAL_MOTION = ((.85, "normal"), (.70, "mildly reduced"), (.58, "moderately reduced"), (0.0, "severely reduced"))
 
+# DF-23 row 6 (faculty, 2026-09-29, B): a wall that was ischaemic and has been reperfused
+# stays stunned for the whole encounter. It may recover, but it is never described better
+# than mildly reduced. Only the words change: lv_function, the circulation it brings back
+# and the timing are the model's as before. Encounters started before carry no STUNNED_WALL
+# key and keep the reading of their time.
+STUNNED_WALL = "reperfused_wall_stunned"
+STUNNED_BEST_GRADE = 1            # "mildly reduced", in WALL_MOTION and in GLOBAL_MOTION
+
+
+def _described_grade(f, table):
+    index = next(i for i, row in enumerate(table) if f.get("lv_function", 1.0) >= row[0])
+    if f.get(STUNNED_WALL) and is_open(f):
+        index = max(index, STUNNED_BEST_GRADE)
+    return table[index]
+
 
 def wall_motion(f, spec):
     territory = spec.get("territory")
     if territory in {"subendocardial", "left_main"}:
-        grade = next(text for threshold, text in GLOBAL_MOTION if f.get("lv_function", 1.0) >= threshold)
+        _, grade = _described_grade(f, GLOBAL_MOTION)
         return f"Contraction is globally {grade}, without a single focal defect"
     wall = TERRITORY_WALL.get(territory, "affected wall")
     plural = wall.endswith("walls") or " and " in wall
-    singular_clause, plural_clause = next((one, many) for threshold, one, many in WALL_MOTION
-                                          if f.get("lv_function", 1.0) >= threshold)
+    _, singular_clause, plural_clause = _described_grade(f, WALL_MOTION)
     grade = plural_clause if plural else singular_clause
     return f"The {wall} {grade}; the other walls contract normally"
 
