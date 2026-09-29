@@ -21,6 +21,10 @@ from test_curriculum_trajectories import execute_turn, initialize, load_engine
 
 VARIANTS = [(family, case["id"]) for family, bank in FAMILIES.items()
             for case in bank["variants"]]
+# DF-23 row 7 (faculty, 2026-09-29): this patient's own rhythm is atrial fibrillation,
+# rate-controlled by the beta-blocker -- authored in the case from arrival, never an AF
+# state the encounter enters. Every other bank patient stays out of AF.
+AUTHORED_AF = {"anaphylaxis_63m_betablocked"}
 ORDERS = {
     "pneumonia": "Give ceftriaxone 2 g IV; start oxygen via nasal cannula 4 L/min",
     "pulmonary_edema": "Start CPAP 8 FiO2 40%; start nitroglycerin 30 mcg/min",
@@ -74,7 +78,10 @@ def test_real_patient_variants_execute_their_management_without_af_state(engine,
     assert all(action["type"] not in {"cardioversion", "diltiazem", "amiodarone"}
                for action in parsed["actions"])
     assert session.state["treatments"]["cardioversions"] == 0
-    assert "AF" not in after["observable"]["rhythm"]
+    if variant_id in AUTHORED_AF:
+        assert before["observable"]["rhythm"] == after["observable"]["rhythm"] == "AF"
+    else:
+        assert "AF" not in after["observable"]["rhythm"]
     assert session.state["encounter_spec"] == frozen["encounter_spec"]
     assert generated["state"] == frozen
     assert "encounter_spec" not in after and "challenge_id" not in after

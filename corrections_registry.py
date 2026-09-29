@@ -2368,7 +2368,8 @@ CORRECTIONS = (
         "affects": {"modules": ["clinical_cases"], "versions": {}},
         "clinical_relevance": "clinical",
         "tests": ["test_betablocked_anaphylaxis_rhythm.py::test_the_monitor_and_the_ecg_show_atrial_fibrillation_at_64",
-                  "test_betablocked_anaphylaxis_rhythm.py::test_the_physiology_is_the_one_the_sinus_label_had"],
+                  "test_betablocked_anaphylaxis_rhythm.py::test_the_physiology_is_the_one_the_sinus_label_had",
+                  "test_cognitive_encounters.py::test_real_patient_variants_execute_their_management_without_af_state"],
         "preservation": None,
     },
     {

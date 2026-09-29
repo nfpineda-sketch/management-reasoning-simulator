@@ -181,6 +181,15 @@ Se mantienen sin cambio: TD-45 (ocho brechas, el lector no se reabre), DC9 (prop
 humana, no expuesto), las cuatro dudas residuales de TDFC, TD-04 (pendiente de revisión clínica humana; ninguna
 imagen ni video) y el foco de aprendizaje tras la revisión docente.
 
+**Suite completa al cerrar.** La primera corrida sobre `85de8bb` dio 6334 passed, 77 skipped, 1 xfailed y
+**1 failed**: `test_cognitive_encounters.py::test_real_patient_variants_execute_their_management_without_af_state`
+con `anaphylaxis_63m_betablocked`. **Clasificación: REGRESSION de este cierre** (ni legado ni entorno): la prueba
+suponía que ningún paciente del banco muestra «AF», y la fila 7 aprobada lo cambia para ese paciente. Se comprobó
+que la etiqueta no toca la fisiología antigua de FA: un encuentro de familia vuelve de `execute_bundle` antes de la
+regla de cardioversión, y `family_engine` no importa `clinical_physiology`. La prueba admite «AF» sólo en ese caso,
+exige que esté desde la llegada y no cambie, y sigue exigiendo que ningún otro paciente entre en FA; queda en las
+pruebas de C-2026-09-29-21. El resultado sobre el HEAD final está en el reporte de cierre.
+
 ## Lo que no cambió
 
 No cambiaron las evaluaciones confirmadas, D1–D5, los eventos críticos y sus pesos, el −3, C14 ni la
