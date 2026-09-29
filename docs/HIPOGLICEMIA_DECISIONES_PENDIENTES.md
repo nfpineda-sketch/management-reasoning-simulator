@@ -173,6 +173,19 @@ El catálogo, las doce combinaciones y los resultados de la batería están en
 Se derivan del bloque de su mecanismo, más los bloques de vía fallida, tiamina y gravedad moderada
 (`hypoglycemia_catalog.declaration_inputs`). Sus textos no han sido revisados por nadie.
 
+**Implementado el 2026-09-29 (instrucción docente posterior a V3), no validado:** las filas TD1, F1, C1 y
+C3 de cada composición son, como **propuesta inicial trazable**, las de su caso de origen
+(`tdfc_declarations.composition_proposals()`), marcadas `PENDING FACULTY REVIEW (DC9)`, con el origen y la
+revisión del origen. Una propuesta **no es una declaración**: no entra en los `objectives` de la
+composición (su evaluación sigue en la transición, DF-12), la referencia TDFC aprobada
+(`tdfc_declarations.DECLARATIONS`) no cambia, y una composición con propuestas pendientes no se ofrece a
+ningún residente (`composition_exposable` = no; sólo se abre en el sandbox docente, para revisarla).
+Pruebas: `test_tdfc_composition_proposals.py`.
+
+- **Sigue pendiente:** la revisión docente de las 36 filas propuestas y de los demás textos de las
+  declaraciones de las composiciones. **Criterio de cierre:** cada fila revisada (confirmada o cambiada)
+  con firma; sólo entonces una composición puede exponerse.
+
 ---
 
 ## C. Parámetros del motor (referencia técnica)
@@ -195,7 +208,7 @@ de Wernicke, que ya no existe.
 | P7 | Glucosado 10 %: 100 mL/h = 0,67 mg/dL/min | 2026-09-20 | Mantención con sulfonilurea (R2, R6, R9) |
 | P8 | Con secreción propia, sobre 200 mg/dL: a los 30 min cae 0,8 mg/dL/min extra hasta bajar de 100 | 2026-09-20 | Sobrecorrección (R7) |
 | P9 | Octreótido de 25 a 500 mcg: inicio 15 min, dura 360 min, detiene toda la caída de la sulfonilurea | 2026-09-20 | Alternativa a la infusión |
-| P10 | Vía fallida: llega el 15 % de la glucosa en bolo EV/IO; lo demás pasa entero; una vía nueva la arregla | **Sin revisión**: el 15 % y el alcance (DC4) | DC2–DC5 |
+| P10 | Vía fallida: llega el 15 % de lo que pasa por la vía infiltrada (bolo e infusión de glucosa); una vía nueva o una IO es su propio acceso y no repara la infiltrada (DC2–DC5, 2026-09-29, `glucose_rescue` 2.0). Antes: 15 % sólo del bolo EV/IO, y una vía nueva la arreglaba | El 15 % se mantiene como abstracción docente (DC4, 2026-09-29); su magnitud sigue sin fuente. **Glucagón y octreótido por la vía infiltrada: sin decidir (DC4-F)** | DC2–DC5 |
 | P11 | Tras un alta, glucosa <60 → vuelve a los 20 min | Principio: decisiones 1 y 2 (2026-09-21). **60 mg/dL y 20 min: sin revisión** | Alta insegura (R5) |
 | P12 | La tiamina no despierta ni su ausencia deteriora | Decisión 8 (2026-09-21); sin magnitudes | T11 |
 

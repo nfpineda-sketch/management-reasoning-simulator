@@ -672,3 +672,36 @@ DECLARATIONS = {
                            "declaration makes oxygen or ventilation a decision."),
     },
 }
+
+
+# --- DC9 (faculty, 2026-09-29): the nine hypoglycaemia compositions ------------------------------
+# Each composition awaiting review gets its origin's TD1, F1, C1 and C3 rows as a traceable initial
+# PROPOSAL, pending the faculty's review. A proposal is not a declaration: it never enters a case's
+# ``objectives``, so an encounter of a composition keeps the transition (DF-12) it has today, and
+# DECLARATIONS -- the approved reference -- is not touched. A composition whose proposal is pending is
+# not exposed to residents: it opens only in the faculty sandbox, for review (curriculum_runtime).
+COMPOSITION_PROPOSAL_STATUS = "PENDING FACULTY REVIEW (DC9)"
+COMPOSITION_PROPOSAL_BASIS = ("Faculty instruction of 2026-09-29 (post-V3, DC9): the origin case's declarations are the "
+                              "initial proposal for each composition, marked pending until reviewed; compositions with "
+                              "unreviewed declarations are not exposed.")
+
+
+def composition_proposals():
+    """{composition id: {objective: the origin's row, marked as a pending proposal}}."""
+    from copy import deepcopy
+    import hypoglycemia_catalog
+    proposals = {}
+    for configuration in hypoglycemia_catalog.review_candidates():
+        origin = configuration["derived_from"]
+        proposals[configuration["id"]] = {
+            objective: {**deepcopy(row), "status": COMPOSITION_PROPOSAL_STATUS, "reviewed": None,
+                        "proposal": {"proposed_from": origin, "origin_review": deepcopy(row["reviewed"]),
+                                     "basis": COMPOSITION_PROPOSAL_BASIS}}
+            for objective, row in DECLARATIONS[origin].items()}
+    return proposals
+
+
+def composition_exposable(case_id):
+    """Whether a composition may be offered to residents: never while a proposal of it is pending."""
+    rows = composition_proposals().get(case_id)
+    return rows is None or all(row.get("status") != COMPOSITION_PROPOSAL_STATUS for row in rows.values())
