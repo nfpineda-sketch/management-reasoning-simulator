@@ -700,8 +700,10 @@ CASES.update(_embolism(
     "as the explanation: the threat has to be recognised against that anchor.",
     ["Names the hypoxaemia and the tachycardia as a threat",
      "does not accept the offered explanation without objective evidence"],
-    "Anticoagulation, oxygen and the specialist pathway are executable; without sustained "
-    "hypotension, thrombolysis is not the treatment this patient needs.",
+    # P-06 (faculty, 2026-09-30): the criterion as the engine applies it (pe_obstruction), for new encounters.
+    "Anticoagulation, oxygen and the specialist pathway are executable; without obstructive shock "
+    "attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), "
+    "thrombolysis is not the treatment this patient needs.",
     ["Anticoagulates or states why it is withheld", "addresses the oxygenation"],
     ["Awaiting the confirming study with anticoagulation stated as pending it",
      "oxygen titrated rather than given at a fixed flow"],
@@ -709,15 +711,19 @@ CASES.update(_embolism(
     ["Decides the destination on the observed haemodynamics",
      "states what would change the plan"],
     [_event("pe_unindicated_thrombolysis", "dangerous_action",
-            "Systemic thrombolysis is given without sustained hypotension, in a patient with a "
-            "recent operation.",
-            "A thrombolytic is executed while the record shows no sustained hypotension and the "
-            "history carries a recent surgical site.",
+            "Systemic thrombolysis is given without obstructive shock attributable to the PE, or sustained "
+            "hypotension (SBP < 90 mmHg for 15 consecutive minutes), in a patient with a recent operation.",
+            "A thrombolytic is executed while the record shows neither obstructive shock attributable to "
+            "the PE nor sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), and the history "
+            "carries a recent surgical site.",
             ["Arrival and subsequent observables"], (0, 180),
             ["Anticoagulation", "arranging a reperfusion-capable team without giving the drug",
-             "thrombolysis after sustained hypotension is recorded"],
-            "An executed thrombolysis action with the record showing no sustained hypotension.",
-            ["The record shows sustained hypotension within the engine's own criterion"],
+             "thrombolysis once obstructive shock attributable to the PE, or sustained hypotension "
+             "(SBP < 90 mmHg for 15 consecutive minutes), is recorded"],
+            "An executed thrombolysis action with the record showing neither obstructive shock "
+            "attributable to the PE nor sustained hypotension.",
+            ["The record shows obstructive shock attributable to the PE, or sustained hypotension, within "
+             "the engine's own criterion"],
             ["D3"],
             [("medical_history", "the operation twelve days ago"),
              ("bleeding", "whether the surgical site has bled")])]))
@@ -727,11 +733,13 @@ CASES.update(_embolism(
     "Obstructive shock: the pressure, the rate and the perfusion all demand action before the "
     "confirming study returns.",
     ["Names the shock and its obstructive cause", "acts before the angiogram returns"],
-    "Anticoagulation, oxygen, the reperfusion-capable team and, in sustained hypotension, "
-    "thrombolysis are all executable.",
+    "Anticoagulation, oxygen, the reperfusion-capable team and, in obstructive shock attributable to "
+    "the PE or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), thrombolysis are all "
+    "executable.",
     ["Anticoagulates or states why it is withheld",
      "involves a reperfusion-capable team rapidly"],
-    ["Thrombolysis with the sustained hypotension stated",
+    ["Thrombolysis with its basis stated: obstructive shock attributable to the PE, or sustained "
+     "hypotension (SBP < 90 mmHg for 15 consecutive minutes)",
      "cautious volume with a stated limit"],
     "Transport, the level of care and who performs the reperfusion are the continuity "
     "decisions, and they depend on the pressure.",

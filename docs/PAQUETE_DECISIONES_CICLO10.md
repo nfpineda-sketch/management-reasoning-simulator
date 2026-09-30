@@ -10,6 +10,14 @@ recomendaciones» aplica la recomendada en todas, salvo P-07 (75f) y P-08, que n
 **Ya decidido, fuera del paquete:** DC4-F, opción B mínima (aprobada al abrir el ciclo 10; implementada en
 C10-09, C-2026-09-29-27).
 
+**Respuesta docente del 2026-09-30:** P-01 A · P-02 A · P-03 A · P-04 B conceptual, sin implementar hasta
+verificar la evidencia · P-05 B provisional, sin implementar hasta verificarla · P-06 B · P-07 54f A, 75f sin
+decidir (revisión visual de V34) · P-08 A por ahora · P-09 B · P-10 A como regla técnica de permisos · P-11 B ·
+P-12 B por ahora · R-1 diferida · R-2 revisión caso por caso antes del piloto · R-3: T-1 primero, T-2 a T-4
+provisionales · R-4: primero las 18 frases del motor · R-5 espera. El detalle y lo que se hizo con cada una están
+en `docs/COLA_DECISIONES_AI_ADVISOR.md`, sección «Respuesta al paquete del ciclo 10». El texto de abajo queda
+como se presentó.
+
 ## Decisiones
 
 ### P-01 · DC6 · Peso de la tiamina en D3 (hipoglicemia)

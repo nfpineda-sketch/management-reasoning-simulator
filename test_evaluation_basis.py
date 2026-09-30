@@ -60,7 +60,10 @@ def test_the_legacy_snapshot_is_the_code_before_the_change_for_every_other_case(
     rubric = {case_id: {key: value for key, value in CASES[case_id].items() if key != "objectives"}
               for case_id in CASES}
     changed = [case_id for case_id in CASES if json.loads(json.dumps(rubric[case_id])) != legacy[case_id]]
-    assert changed == ["hypoglycemia_54m_thiamine"]
+    # Each deliberate difference since the snapshot has its registry entry: the 54m's new version
+    # (C-2026-09-25-05; DC6 in C-2026-09-30-01) and the lysis criterion as the engine applies it in the
+    # two pulmonary embolism cases (P-06, C-2026-09-30-02). A legacy record keeps reading the snapshot.
+    assert changed == ["hypoglycemia_54m_thiamine", "pulmonary_embolism_33f", "pulmonary_embolism_61m"]
     assert not any("objectives" in declaration for declaration in legacy.values())
 
 

@@ -136,6 +136,90 @@ ENGINE = (
              "language, no en el panel"},
 )
 
+#: R-4 (faculty, 2026-09-30): the 18 engine sentences are reviewed first, one by one. For each, the AI
+#: Advisor's reading for that review: the clinical moment it describes, a recommendation and the
+#: ambiguity a Spanish reader could meet. A proposal like the drafts themselves: nothing here is shown.
+ENGINE_REVIEW = {
+    "Circulatory arrest from uncontrolled haemorrhage. The bleeding had not been stopped, and no volume "
+    "replaces a source that is still open.": (
+        "Final del trauma cuando el sangrado nunca se controló (entrada de la sala)",
+        "Cambiar: «ningún volumen compensa un foco de sangrado que sigue activo»",
+        "«Fuente» no es la palabra habitual para el origen de un sangrado; «foco» sí"),
+    "Bilateral inspiratory crackles with increased respiratory effort.": (
+        "Edema pulmonar (75f) al examinar, antes de tratar",
+        "Aprobar",
+        "Ninguna; «crépitos» es el uso local"),
+    "Bilateral crackles remain, with reduced respiratory effort.": (
+        "Edema pulmonar que mejora con el tratamiento",
+        "Aprobar, o precisar que el esfuerzo bajó por mejoría",
+        "«Menor esfuerzo» también puede leerse como agotamiento; el inglés tiene la misma ambigüedad"),
+    "New bibasal inspiratory crackles since the transfusion, with increased effort and no wheeze.": (
+        "Sobrecarga circulatoria por transfusión, en cualquier familia",
+        "Aprobar",
+        "Ninguna"),
+    "Improved air entry with residual expiratory wheeze.": (
+        "Asma que mejora con broncodilatadores",
+        "Aprobar",
+        "Ninguna; «entrada de aire» es de uso clínico común"),
+    "Reduced bilateral air entry with prolonged expiration and wheeze.": (
+        "Crisis asmática al llegar o sin respuesta",
+        "Aprobar",
+        "Ninguna"),
+    "Breath sounds absent over the right hemithorax, which is hyper-resonant; wheeze on the other side.": (
+        "Asma complicada con neumotórax (derecho o izquierdo)",
+        "Aprobar",
+        "«En el otro lado» es claro; «en el hemitórax contralateral» sería más formal"),
+    "Breath sounds returning on the right after decompression; improved air entry with residual expiratory "
+    "wheeze.": (
+        "Neumotórax del asma después de la descompresión",
+        "Cambiar: «Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; …»",
+        "«Vuelve el murmullo» se entiende, pero «reaparece» es la forma habitual"),
+    "Respiratory rate {n} /min; assisted ventilation is in progress.": (
+        "Intoxicación por opioides durante la ventilación con bolsa y mascarilla",
+        "Cambiar: «Frecuencia respiratoria {n}/min; con ventilación asistida en curso»",
+        "No dice si la frecuencia es la espontánea o la asistida; el inglés tampoco. «Se está dando» es "
+        "coloquial"),
+    "Respiratory rate {n} /min; breaths remain shallow.": (
+        "Intoxicación por opioides con hipoventilación persistente",
+        "Aprobar",
+        "Ninguna"),
+    "Respiratory rate {n} /min; spontaneous breaths have greater depth.": (
+        "Intoxicación por opioides que responde a la naloxona",
+        "Aprobar",
+        "Ninguna; «más profundas» se lee respecto del examen anterior"),
+    "Peripheral cannula in the left forearm; the skin around its tip is slightly swollen and cool.": (
+        "Hipoglicemia (54m): la vía de llegada infiltrada antes de usarla, la pista que el residente puede "
+        "notar",
+        "Cambiar: «…la piel alrededor del extremo del catéter está levemente aumentada de volumen y fría», "
+        "y lo mismo en language para que el panel y la sala digan lo mismo",
+        "«Hinchada» (aquí y en la 14) y «aumento de volumen» (en la 13) nombran el mismo signo con palabras "
+        "distintas"),
+    "Peripheral cannula in the left forearm; the site is clean, without swelling or tenderness.": (
+        "Hipoglicemia: la vía que funciona",
+        "Cambiar: «…sin aumento de volumen ni dolor a la palpación»",
+        "«Tenderness» es dolor a la palpación, no dolor espontáneo"),
+    "Peripheral cannula in the left forearm; the forearm around it is swollen, pale, cool and tender.": (
+        "Hipoglicemia: la vía fallida después de pasar la glucosa (extravasación)",
+        "Cambiar: «…aumentado de volumen, pálido, frío y doloroso a la palpación»",
+        "La misma de las filas 12 y 13"),
+    "A second peripheral cannula in the right forearm; the site is clean.": (
+        "Hipoglicemia: la vía nueva que instaló el residente",
+        "Aprobar",
+        "Ninguna"),
+    "An intraosseous needle in place (humeral).": (
+        "Hipoglicemia: acceso intraóseo (también tibial, esternal o femoral)",
+        "Aprobar",
+        "Ninguna; «instalada» es el uso local, y «colocada» también serviría"),
+    "An intraosseous needle in place; no site was recorded.": (
+        "Hipoglicemia: acceso intraóseo sin sitio registrado",
+        "Aprobar",
+        "Ninguna"),
+    "Dextrose {n}% runs at {n} mL/h through the cannula in the left forearm.": (
+        "Hipoglicemia: la infusión de glucosa en curso",
+        "Cambiar: «Suero glucosado al {n} % a {n} mL/h por la cánula del antebrazo izquierdo»",
+        "En un caso de hipoglicemia, «la glucosa» se confunde con la glicemia del paciente"),
+}
+
 #: The C14 declarations of the bank (``case_assessment_bank``), English -> Spanish draft.
 C14 = {
     # acs_54m_inferior

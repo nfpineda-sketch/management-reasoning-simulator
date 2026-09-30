@@ -607,7 +607,8 @@ DECLARATIONS = {
                    "Obstructive shock: deciding reperfusion without waiting for the CT angiography (20 min), limiting "
                    "volume, anticoagulating and deciding the transfer by the pressure.",
                    "Integrating reperfusion, support and transfer, and revising by the pressure.",
-                   ("recognises the sustained hypotension", "decides thrombolysis or the reperfusion team",
+                   ("recognises obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 "
+                    "consecutive minutes)", "decides thrombolysis or the reperfusion team",
                     "adjusts the support and defines the transfer")),
         "C3": _yes("C3", "TDFC-6",
                    "An obstructive shock with marked effort: avoiding, deferring or preparing intubation is a real "

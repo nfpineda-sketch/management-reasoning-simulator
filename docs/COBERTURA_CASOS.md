@@ -897,8 +897,8 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 - **D2** · ventana 0–20 min. A bedside glucose, the history of the exposure and the neurological examination are all available.
   - Esperado: Requests or reads the bedside glucose; relates the mental state to the glucose.
   - Alternativas aceptables: Treating on the history and confirming with the glucose in the same turn.
-- **D3** · ventana 0–30 min. Dextrose is executable; glucagon mobilises little in a patient whose glycogen is spent. The line the patient arrives with is not in the vein: a dextrose bolus given through it does not reach the patient until a new line is placed. Thiamine is executable and belongs to the plan as a second objective: its omission alone does not make the correction of the glucose inadequate, and it is never a reason to delay it.
-  - Esperado: Gives dextrose; gets it into the patient by a route that works; adds thiamine, as a second objective.
+- **D3** · ventana 0–30 min. Dextrose is executable; glucagon mobilises little in a patient whose glycogen is spent. The line the patient arrives with is not in the vein: a dextrose bolus given through it does not reach the patient until a new line is placed. Thiamine is executable and belongs to the plan as a second objective, a complementary measure of D3: when the correction of the glucose, which comes first, was adequate, its omission alone does not lower D3 below 2, and it is never a reason to delay the glucose; given appropriately, it can contribute to D3 = 3 when the rest of the management also justifies it.
+  - Esperado: Gives dextrose; gets it into the patient by a route that works; adds thiamine, as a complementary measure towards D3 = 3.
   - Alternativas aceptables: Glucagon by another route, knowing that little glycogen is left; thiamine before, with or after the dextrose.
 - **D4** · ventana 5–60 min. The glucose does not rise as expected after an intravenous dextrose bolus: the line is not in the vein, and the engine reports it when a bolus is given through it. What this case asks is to check the delivery, not only the number.
   - Esperado: Rechecks the glucose after the dose; recognises that the dose did not reach the patient and restores a route that does.
@@ -1191,7 +1191,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 - **D2** · ventana 0–45 min. The POCUS, the CT pulmonary angiogram, the D-dimer with its age-adjusted limit, the blood gas and the calf examination are all available, and the case's own alternative explanation has to be addressed rather than assumed.
   - Esperado: Obtains objective evidence rather than accepting the offered explanation; examines or investigates for the source.
   - Alternativas aceptables: POCUS as the first objective evidence when the patient cannot be moved; treating on clinical grounds with the confirmation stated as pending.
-- **D3** · ventana 0–60 min. Anticoagulation, oxygen and the specialist pathway are executable; without sustained hypotension, thrombolysis is not the treatment this patient needs.
+- **D3** · ventana 0–60 min. Anticoagulation, oxygen and the specialist pathway are executable; without obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), thrombolysis is not the treatment this patient needs.
   - Esperado: Anticoagulates or states why it is withheld; addresses the oxygenation.
   - Alternativas aceptables: Awaiting the confirming study with anticoagulation stated as pending it; oxygen titrated rather than given at a fixed flow.
 - **D4** · ventana 10–90 min. The engine moves the saturation, the rate and the pressure in response, and the right ventricle is where deterioration shows first.
@@ -1220,14 +1220,14 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Evidencia necesaria: The absence of an executed anticoagulation action in the window.
   - Exclusiones: The encounter closed before the confirming study was reported.
   - Dominios sobre los que pesa: D3.
-- `pe_unindicated_thrombolysis` — **Acción peligrosa.** Systemic thrombolysis is given without sustained hypotension, in a patient with a recent operation.
-  - Se activa cuando: A thrombolytic is executed while the record shows no sustained hypotension and the history carries a recent surgical site.
+- `pe_unindicated_thrombolysis` — **Acción peligrosa.** Systemic thrombolysis is given without obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), in a patient with a recent operation.
+  - Se activa cuando: A thrombolytic is executed while the record shows neither obstructive shock attributable to the PE nor sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), and the history carries a recent surgical site.
   - Información que debía estar en el registro: Arrival and subsequent observables.
   - Ventana y oportunidad: 0–180 min.
   - Disponible preguntando, se haya preguntado o no: **Previous health** (the operation twelve days ago); **Bleeding symptoms** (whether the surgical site has bled).
-  - Alternativas aceptables: Anticoagulation; arranging a reperfusion-capable team without giving the drug; thrombolysis after sustained hypotension is recorded.
-  - Evidencia necesaria: An executed thrombolysis action with the record showing no sustained hypotension.
-  - Exclusiones: The record shows sustained hypotension within the engine's own criterion.
+  - Alternativas aceptables: Anticoagulation; arranging a reperfusion-capable team without giving the drug; thrombolysis once obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), is recorded.
+  - Evidencia necesaria: An executed thrombolysis action with the record showing neither obstructive shock attributable to the PE nor sustained hypotension.
+  - Exclusiones: The record shows obstructive shock attributable to the PE, or sustained hypotension, within the engine's own criterion.
   - Dominios sobre los que pesa: D3.
 
 ### `pulmonary_embolism_61m`
@@ -1238,9 +1238,9 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 - **D2** · ventana 0–45 min. The POCUS, the CT pulmonary angiogram, the D-dimer with its age-adjusted limit, the blood gas and the calf examination are all available, and the case's own alternative explanation has to be addressed rather than assumed.
   - Esperado: Obtains objective evidence rather than accepting the offered explanation; examines or investigates for the source.
   - Alternativas aceptables: POCUS as the first objective evidence when the patient cannot be moved; treating on clinical grounds with the confirmation stated as pending.
-- **D3** · ventana 0–60 min. Anticoagulation, oxygen, the reperfusion-capable team and, in sustained hypotension, thrombolysis are all executable.
+- **D3** · ventana 0–60 min. Anticoagulation, oxygen, the reperfusion-capable team and, in obstructive shock attributable to the PE or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), thrombolysis are all executable.
   - Esperado: Anticoagulates or states why it is withheld; involves a reperfusion-capable team rapidly.
-  - Alternativas aceptables: Thrombolysis with the sustained hypotension stated; cautious volume with a stated limit.
+  - Alternativas aceptables: Thrombolysis with its basis stated: obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes); cautious volume with a stated limit.
 - **D4** · ventana 10–90 min. The engine moves the saturation, the rate and the pressure in response, and the right ventricle is where deterioration shows first.
   - Esperado: States a reassessment interval; checks the oxygenation and the haemodynamics.
   - Alternativas aceptables: Reassessing by POCUS rather than by the vitals.

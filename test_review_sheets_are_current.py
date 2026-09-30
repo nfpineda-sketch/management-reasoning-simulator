@@ -17,6 +17,10 @@ def test_every_row_waits_for_a_signature_and_nothing_is_approved():
     assert written[sheets.TD04_SHEET].count(sheets.REVIEW_LINE) == 14
     # R-4: one signature for the engine's sentences and one per bank case for C14.
     assert written[sheets.SPANISH_SHEET].count(sheets.REVIEW_LINE) == 1 + 31
+    # R-2 (2026-09-30): each C14 YES case waits for its own decision; the 18 sentences come first in R-4.
+    assert written[sheets.R2_SHEET].count(sheets.R2_REVIEW_LINE) == 14
+    assert written[sheets.R4_ENGINE_SHEET].count(sheets.REVIEW_LINE) == 1
+    assert written[sheets.R4_ENGINE_SHEET].count("☐ Apruebo · ☐ Cambio") == 18
     for text in written.values():
         assert "no aprueba" in text
 

@@ -5,9 +5,83 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-29, al cerrar el ciclo 10 (sección «Ciclo 10», la
-  vigente). El estado posterior a V3, la tabla del cierre del ciclo 9 y los
-  ciclos anteriores siguen más abajo, como estaban.
+- **Actualizado:** 2026-09-30, con la respuesta docente al paquete del ciclo 10
+  (sección «Respuesta al paquete del ciclo 10», la vigente). El ciclo 10, el
+  estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos
+  anteriores siguen más abajo, como estaban.
+
+## Respuesta al paquete del ciclo 10 (2026-09-30)
+
+**Instrucción docente del 2026-09-30** sobre `docs/PAQUETE_DECISIONES_CICLO10.md`: implementar sólo las decisiones
+aprobadas explícitamente (P-01, P-06, P-10 y P-11, y la documentación de P-02, P-03, P-08, P-09, P-12 y R-1);
+verificar P-04 y P-05 sin implementarlos; preparar el material de P-07 (75f), R-2, T-1 y R-4; esperar en R-5. **No
+es un ciclo nuevo** (no es el ciclo 11): sin funciones, casos, arreglos del lector, corpus sintéticos, arquitectura
+de POCUS, puntajes ni analíticas nuevas. Sin respuestas externas, sin tocar el lector, el corpus de validación, V3
+ni los baselines (`939978a`, `3d942ee`), sin despliegue ni piloto.
+
+| ID | Decisión docente | Qué se hace |
+|---|---|---|
+| P-01 · DC6 | **A.** La tiamina es una medida complementaria de D3. Su omisión aislada **no baja D3 de 2** si la corrección prioritaria de la hipoglicemia fue adecuada; su administración apropiada **puede contribuir a D3 = 3** cuando el resto del desempeño también lo justifica. Principio: reconocer la tiamina sin penalizar la prioridad correcta de la glucosa. Sólo prospectivo; ninguna evaluación histórica se reinterpreta | Implementar en la declaración de D3 |
+| P-02 · DC7 | **A.** No reevaluar de oficio encuentros históricos confirmados; se conservan la evaluación original y su versión y base. Si un encuentro lo necesitara: un mecanismo explícito con motivo, persona, fecha y procedencia, que conserve la original. Sin pantalla nueva para un caso hipotético | Registrar |
+| P-03 · DC8 | **A.** 5–60 min y **sólo D4**; no se agrega a D2. Reconocer que la respuesta esperada no ocurrió y adaptarse a una vía fallida es evidencia de reevaluación y adaptación; la misma conducta no se cuenta dos veces | Registrar (es lo vigente) |
+| P-04 | **Dirección conceptual B, sin implementar.** El fármaco no deja de actuar porque la indicación fue errónea: una lisis no indicada puede reducir la obstrucción y causar daño y sangrado; la mala decisión se refleja en D3, C1, el evento de seguridad y el balance riesgo/beneficio, no en una farmacología artificial. Antes, verificar la evidencia | Verificar y volver con una recomendación |
+| P-05 | **B provisional, sin implementar.** Hipótesis: segunda dosis → sin beneficio de reperfusión adicional automático + riesgo de sangrado adicional; sin suponer, sin evidencia, «exactamente un sangrado completo más» | Verificar y volver con una recomendación |
+| P-06 | **B.** Redacción prospectiva «Obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes).» (en español: «Shock obstructivo atribuible al TEP, o hipotensión sostenida (PAS < 90 mmHg durante 15 minutos consecutivos).») en D3, C1 y TDFC. Sin tocar las notas que el tamizaje lee en encuentros antiguos ni el motor | Implementar |
+| P-07 · 54f | **A.** Vista neutral hasta que exista una imagen clínicamente apropiada, revisada por personas y aprobada; no se genera ninguna ahora | Registrar |
+| P-07 · 75f | **Sin decidir:** el docente revisará V34 | Preparar V34 y su contexto |
+| P-08 | **A por ahora.** «No documentado» en `asthma_24f`, `anaphylaxis_29f`, `pulmonary_embolism_33f` y `pneumonia_46f` cuando no hay información escrita; no se inventan FUM, embarazo, adherencia anticonceptiva ni resultado; la prueba de embarazo queda pedida y sin resultado modelado. TD-22 no se reabre | Registrar |
+| P-09 | **B**, para cuando se implemente (Fase 2): las leen los docentes autorizados y el administrador, nunca un residente; cada nota conserva autor y fecha y hora; no modifican la rúbrica, el radar, Objective Progress, la evidencia ni los eventos de seguridad; no son unidades de evidencia | Registrar |
+| P-10 | **A como regla técnica de permisos.** Con la cuenta del residente inactiva, el docente sigue inspeccionando el registro histórico con sus permisos normales; el portafolio completo para entregar al exusuario lo prepara y descarga **sólo el administrador**; nada del historial se borra ni cambia | Implementar, con pruebas |
+| P-11 | **B.** Los 10 scripts, retirados con su motivo y conservados; cada script queda activo o retirado con motivo; los informes dicen «56/56 activas pasan · 10 retiradas», no «56/66» | Implementar |
+| P-12 | **B por ahora.** Las 392 guías siguen en inglés (sólo las leen docentes; mucho trabajo de revisión; riesgo de divergencia; poco valor para el primer piloto). Si el piloto muestra que afecta la usabilidad: A o C | Registrar |
+| R-1 · DC9 | **Diferida.** Las 36 filas siguen propuestas, pendientes de revisión humana y sin exponerse; las nueve composiciones no se habilitan | Registrar |
+| R-2 · TD-04 | **Revisión humana prioritaria antes del piloto**, caso por caso, no en bloque | Preparar la hoja de los 14 |
+| R-3 | **No se firman las cuatro en bloque.** T-1 primero; T-2, T-3 y T-4 siguen provisionalmente como están, sin firma final | Preparar el brief de T-1 |
+| R-4 | Primero las 18 frases del motor que ve el residente; ninguna se activa. Los 67 textos de C14 después | Preparar la hoja de las 18 |
+| TD-46 | Sigue abierto. No mostrar traducciones híbridas si hay una forma segura de dejar el texto entero en inglés hasta que se apruebe su traducción; sin traducciones nuevas automáticas; se puede proponer un arreglo de presentación «todo en inglés hasta aprobar» que no cambie contenido clínico | Proponer, no implementar |
+| R-5 | Pendiente de revisión humana; la firma, después de resolver P-07 (75f), sobre las guías finales | Esperar |
+| IA del primer piloto | Sin IA automática durante el encuentro: determinista y con casos offline, sin generación automática de imágenes, sin modificación de casos por IA y sin interpretación automática por IA | Sin cambios |
+| Validación externa | No tocar el lector, el corpus de validación, V3 ni los baselines; no abrir respuestas externas; esperar «BEGIN EXTERNAL VALIDATION INGESTION» | Sin cambios |
+
+### Resultado (2026-09-30)
+
+**Implementado, sólo en encuentros nuevos donde corresponde:**
+
+- **P-01**, C-2026-09-30-01: la declaración de D3 de las configuraciones con déficit de tiamina.
+- **P-06**, C-2026-09-30-02: la redacción en D3 y el evento de la 33f, y en D3 y la fila C1 de TDFC de la 61m. El
+  motor, sus notas y el tamizaje no cambian; la instantánea 1.0 sigue igual para los registros antiguos.
+- **P-10**, C-2026-09-30-03: el ZIP completo de una cuenta inactiva, sólo para el administrador; el docente sigue
+  inspeccionando.
+- **P-11**, C-2026-09-30-04: `RETIRED_REGRESSIONS` con su motivo y una prueba de «activo o retirado».
+
+**Registrado:** P-02, P-03, P-08, P-09, P-12 y R-1.
+
+**Preparado:**
+
+| Qué | Dónde |
+|---|---|
+| P-04 y P-05 | `docs/VERIFICACION_P04_P05.md` |
+| P-07 (75f) | `docs/revision/P07_75F_V34.md` |
+| R-2 | `docs/revision/R2_POCUS_C14.md`: 12 CONFIRM, 2 DISCUSS |
+| T-1 | `docs/revision/T1_ANAPHYLAXIS_29F_C3.md`: recomienda un YES acotado, o NO |
+| R-4 | `docs/revision/R4_FRASES_MOTOR.md`: 11 aprobar, 7 cambiar |
+| TD-46 | Una propuesta de presentación, en el registro de deuda |
+
+**Nuevo en el registro de deuda, sin corregir:** TD-47, el estridor que sigue después de intubar en la 29f.
+
+**Verificación:**
+
+- Pruebas focalizadas primero.
+- **Regresiones:** 56/56 activas pasan; 10 retiradas, que no se corren.
+- **Suite completa en 4 grupos, sobre el candidato:** TOTAL 6531 = **6448 passed / 82 skipped / 1 xfailed / 0
+  failed**.
+  - Las 82 omisiones son las mismas del cierre del ciclo 10: 55 por el dolor de llegada, según lo que describe
+    cada caso; 18 por el encuentro de demostración, que no está en esta copia; y 9 de PostgreSQL sin base.
+  - La xfailed: la brecha conocida del lector «Reviso la vía venosa».
+- La única falla de la corrida focalizada fue una lista esperada de diferencias con la instantánea 1.0. Era
+  consecuencia directa de P-06, y la lista se actualizó con su referencia.
+
+**Sin cambios:** lector, `validation/`, V3 y los baselines. No hubo llamadas al proveedor, despliegue ni piloto.
 
 ## Ciclo 10 (2026-09-29) — cerrado
 

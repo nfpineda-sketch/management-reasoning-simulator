@@ -62,9 +62,38 @@ ACTIVE_REGRESSIONS = [
 ]
 
 
-for regression in ACTIVE_REGRESSIONS:
-    completed = subprocess.run([sys.executable, regression], check=False)
-    if completed.returncode:
-        raise SystemExit(completed.returncode)
+# Retired (faculty decision P-11 B, 2026-09-30; diagnosis C10-01): kept in the repository and never run.
+# Each fails on code or texts that no longer exist, and none adds coverage: what it protected is held by
+# an active script. Every regression_*.py is either active or retired with its reason
+# (test_regression_scripts_are_active_or_retired.py).
+_OLD_LABEL = ("Asserts an old version label of app.py (\"MVP v0.6.0.x\" / \"v0.7.x\") and stops there. Without "
+              "that line, six of these seven scripts fail on code fragments that no longer exist and one passes "
+              "(C10-01). Superseded by the active scripts.")
+_OLD_TEXT = "Asserts code texts of app.py that no longer exist. Superseded by the active scripts."
+RETIRED_REGRESSIONS = {
+    "regression_v06015_recovery.py": ("Tests the legacy PS001 engine's recovery: expects a capillary refill of 4 s "
+                                      "where the engine now gives 5 s. Its active sibling, regression_v06015.py, "
+                                      "passes."),
+    "regression_v06027_long_path_pressor_and_labs.py": _OLD_TEXT,
+    "regression_v06029_reflect_compare_longitudinal.py": _OLD_TEXT,
+    "regression_v06030_diagnostic_information_layer.py": _OLD_LABEL,
+    "regression_v06031_decision_state_and_norepi.py": _OLD_LABEL,
+    "regression_v06032_norepi_stabilization.py": _OLD_LABEL,
+    "regression_v06033_trace_reasoning_display.py": _OLD_LABEL,
+    "regression_v06037_reflect_compare_target_aware.py": _OLD_LABEL,
+    "regression_v070_multisurface.py": _OLD_LABEL,
+    "regression_v071_clinical_query_respiratory_support.py": _OLD_LABEL,
+}
 
-print(f"PASS: {len(ACTIVE_REGRESSIONS)} active regression scripts")
+
+def main():
+    for regression in ACTIVE_REGRESSIONS:
+        completed = subprocess.run([sys.executable, regression], check=False)
+        if completed.returncode:
+            raise SystemExit(completed.returncode)
+    print(f"PASS: {len(ACTIVE_REGRESSIONS)}/{len(ACTIVE_REGRESSIONS)} active regression scripts; "
+          f"{len(RETIRED_REGRESSIONS)} retired (kept, not run: RETIRED_REGRESSIONS)")
+
+
+if __name__ == "__main__":
+    main()

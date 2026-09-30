@@ -1,6 +1,6 @@
 """Faculty review sheets written from the code, never by hand (cycle 10, C10-02).
 
-``python3 tools_review_sheets.py`` writes three sheets under ``docs/revision/``:
+``python3 tools_review_sheets.py`` writes five sheets under ``docs/revision/``:
 
 - ``DC9_COMPOSICIONES.md``: the 36 TD1/F1/C1/C3 rows proposed for the nine hypoglycaemia
   compositions (DC9), each with the case it was copied from and the facts in which the
@@ -8,7 +8,12 @@
 - ``TD04_POCUS_C14.md``: the authored arrival POCUS of the 14 bank cases whose C14 is YES
   (TD-04), with its Spanish draft and the C14 declaration that rests on it;
 - ``ES_BORRADORES.md``: the Spanish drafts of the engine's sentences a Spanish reader still sees
-  in English and of the C14 declarations (packet R-4, cycle 10, C10-08), none of them shown.
+  in English and of the C14 declarations (packet R-4, cycle 10, C10-08), none of them shown;
+- ``R2_POCUS_C14.md``: the case-by-case clinical review of the arrival POCUS of the 14 C14 YES
+  cases that the faculty asked for before the pilot (R-2, 2026-09-30), with the AI Advisor's draft
+  notes from ``pocus_review_notes``;
+- ``R4_FRASES_MOTOR.md``: the 18 engine sentences a resident reads, first in the faculty's review of
+  the Spanish drafts (R-4, 2026-09-30), with their context, a recommendation and the ambiguity.
 
 A sheet approves nothing and changes nothing: every row is for a faculty member to confirm or
 change, with a signature. The flags only point at facts a reviewer should look at; they never
@@ -26,9 +31,13 @@ OUT = ROOT / "docs" / "revision"
 DC9_SHEET = OUT / "DC9_COMPOSICIONES.md"
 TD04_SHEET = OUT / "TD04_POCUS_C14.md"
 SPANISH_SHEET = OUT / "ES_BORRADORES.md"
+R2_SHEET = OUT / "R2_POCUS_C14.md"
+R4_ENGINE_SHEET = OUT / "R4_FRASES_MOTOR.md"
 
 ROWS = ("TD1", "F1", "C1", "C3")
 REVIEW_LINE = "**Revisión docente:** ☐ Confirmo tal como está · ☐ Cambio: ____________ · Firma y fecha: ________"
+R2_REVIEW_LINE = ("**Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · "
+                  "Firma y fecha: ________")
 AXIS_ES = {"mechanism": "mecanismo", "iv_access": "vía de llegada", "severity": "gravedad"}
 VALUE_ES = {"insulin": "insulina", "sulfonylurea": "sulfonilurea", "alcohol_fasting": "alcohol y ayuno",
             "working": "funciona", "failed": "fallida", "severe": "grave", "moderate": "moderada"}
@@ -237,15 +246,128 @@ def spanish_sheet():
     return "\n".join(lines).rstrip() + "\n"
 
 
+# The arrival findings a case shares with most of the bank, summarised in the R-2 sheet rather than listed.
+_POCUS_UNREMARKABLE = {
+    "rv": "Smaller than the LV; no septal flattening (no D-sign); no McConnell sign",
+    "pericardium": "No pericardial effusion",
+    "lung_sliding": "Present bilaterally; no pneumothorax",
+    "lungs": "No B-lines; A-line pattern bilaterally",
+    "lung_consolidation": "No consolidation or pleural effusion",
+    "aorta_root": "Not dilated",
+    "aorta_descending": "Not dilated in the visible segment",
+    "aorta_abdominal": "Normal calibre from the diaphragm to the iliac bifurcation",
+    "dvt_femoral": "Compressible bilaterally",
+    "dvt_popliteal": "Compressible bilaterally",
+}
+_EFAST_UNREMARKABLE = ("No ", "Sliding present", "Seashore sign")
+
+
+def _state(case):
+    o = case.get("observable") or {}
+    return (f"{case.get('presentation', '')} PA {o.get('sbp')}/{o.get('dbp')} · FC {o.get('hr')} · SpO2 "
+            f"{o.get('spo2')} % · FR {o.get('respiratory_rate')} · trabajo respiratorio "
+            f"{o.get('work_of_breathing')} · {o.get('mental_status')} · llene {o.get('crt')} s, "
+            f"{o.get('extremities')}")
+
+
+def _findings(case):
+    pocus = (case.get("investigations", {}).get("pocus") or {}).get("result") or {}
+    shown = [f"{field}: {pocus[field]}" for field in POCUS_ORDER if field in pocus
+             and (field in ("lv", "ivc") or pocus[field] != _POCUS_UNREMARKABLE.get(field))]
+    quiet = [field for field in POCUS_ORDER if field in pocus and field not in ("lv", "ivc")
+             and pocus[field] == _POCUS_UNREMARKABLE.get(field)]
+    text = "; ".join(shown) + (f". Sin hallazgos en: {', '.join(quiet)}" if quiet else "")
+    efast = (case.get("investigations", {}).get("efast") or {}).get("result")
+    if efast:
+        positive = [f"{window}: {value}" for window, value in efast.items()
+                    if not str(value).startswith(_EFAST_UNREMARKABLE)]
+        text += (". E-FAST: " + "; ".join(positive) if positive
+                 else ". E-FAST: las cinco ventanas sin líquido libre, sin derrame pericárdico y con deslizamiento")
+    return text
+
+
+def r2_sheet():
+    """R-2 (faculty, 2026-09-30): the arrival POCUS of each C14 YES case, for a clinical review case by case."""
+    import case_assessment_bank
+    import pocus_review_notes
+    from clinical_cases import variant_by_id
+    cases = sorted(case_id for case_id, spec in case_assessment_bank.CASES.items()
+                   if (spec.get("objectives") or {}).get("C14", {}).get("opportunity") == "yes")
+    notes = pocus_review_notes.NOTES
+    lines = [
+        "# R-2 · Revisión clínica del POCUS de llegada de los 14 casos C14 YES",
+        "",
+        "Generado por `tools_review_sheets.py` desde el banco de casos y las notas de `pocus_review_notes.py`.",
+        "**No se edita a mano** y **no aprueba nada**: ningún caso cambia, no hay imágenes ni videos, y el código",
+        "sigue marcando todo el POCUS como borrador (`POCUS_DRAFT_PENDING_FACULTY_REVIEW`). Los datos del caso",
+        "(estado, hallazgos, C14) salen del código; la aplicación, la interpretación, el manejo, la alineación ACEP,",
+        "el posible problema y la recomendación son un borrador del AI Advisor para su revisión. El texto completo",
+        "de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.",
+        "",
+        "| # | Caso | Aplicación | Recomendación |",
+        "|---|---|---|---|",
+    ]
+    for number, case_id in enumerate(cases, 1):
+        note = notes[case_id]
+        lines.append(f"| {number} | `{case_id}` | {_cell(note['application'])} | **{note['recommendation']}** |")
+    lines.append("")
+    for number, case_id in enumerate(cases, 1):
+        note, case = notes[case_id], variant_by_id(case_id)
+        c14 = case_assessment_bank.CASES[case_id]["objectives"]["C14"]
+        lines += [
+            f"## {number} · `{case_id}` · {note['recommendation']}",
+            "",
+            f"- **Estado clínico:** {_cell(_state(case))}",
+            f"- **Aplicación POCUS:** {_cell(note['application'])}",
+            f"- **Hallazgo actual:** {_cell(_findings(case))}",
+            f"- **Qué debe interpretar el residente:** {_cell(note['interpret'])}",
+            f"- **Cómo debe guiar el manejo:** {_cell(note['management'])}",
+            f"- **Componente observable de C14:** {_cell(c14.get('observable_component', ''))} · Evidencia "
+            f"esperada: {'; '.join(_cell(e) for e in c14.get('expected_evidence') or ())}",
+            f"- **ACEP · alineación y límite:** {_cell(note['acep'])}",
+            f"- **Posible problema clínico:** {_cell(note['issue'])}",
+            f"- **Recomendación:** **{note['recommendation']}**",
+            "",
+            R2_REVIEW_LINE,
+            "",
+        ]
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def r4_engine_sheet():
+    """R-4 (faculty, 2026-09-30): the 18 engine sentences a resident reads, first, one line each."""
+    import spanish_drafts
+    lines = [
+        "# R-4 · Las 18 frases del motor que lee el residente",
+        "",
+        "Generado por `tools_review_sheets.py` desde `spanish_drafts.py`. **No se edita a mano** y **no aprueba",
+        "nada**: ninguna frase se activa hasta su aprobación, y activarla después es un cambio aparte, registrado y",
+        "con pruebas. La recomendación y la ambigüedad son del AI Advisor, para su revisión. Los 67 textos de C14",
+        "vienen después, en `ES_BORRADORES.md`. Los números se escriben `{n}`.",
+        "",
+        "| # | Caso | Inglés original | Borrador en español | Contexto clínico | Recomendación | Ambigüedad posible "
+        "| Su decisión |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for number, row in enumerate(spanish_drafts.ENGINE, 1):
+        context, recommendation, ambiguity = spanish_drafts.ENGINE_REVIEW[row["english"]]
+        lines.append(f"| {number} | {_cell(', '.join(row['cases']))} | {_cell(row['english'])} | "
+                     f"{_cell(row['spanish'])} | {_cell(context)} | {_cell(recommendation)} | {_cell(ambiguity)} | "
+                     "☐ Apruebo · ☐ Cambio |")
+    lines += ["", REVIEW_LINE, ""]
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def sheets():
-    return {DC9_SHEET: dc9_sheet(), TD04_SHEET: td04_sheet(), SPANISH_SHEET: spanish_sheet()}
+    return {DC9_SHEET: dc9_sheet(), TD04_SHEET: td04_sheet(), SPANISH_SHEET: spanish_sheet(), R2_SHEET: r2_sheet(),
+            R4_ENGINE_SHEET: r4_engine_sheet()}
 
 
 def main(argv=None):
     OUT.mkdir(parents=True, exist_ok=True)
     for path, text in sheets().items():
         path.write_text(text, encoding="utf-8")
-        print(f"{path.relative_to(ROOT)}: {text.count(REVIEW_LINE)} rows to review")
+        print(f"{path.relative_to(ROOT)}: {text.count(REVIEW_LINE) + text.count(R2_REVIEW_LINE)} rows to review")
     return 0
 
 

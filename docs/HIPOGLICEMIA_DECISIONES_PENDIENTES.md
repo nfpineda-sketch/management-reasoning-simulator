@@ -153,9 +153,11 @@ Lo que sigue es la pregunta tal como se planteó:
 
 - **Qué dice la versión 1.1.** Es una expectativa secundaria de D3: «su omisión aislada no hace inadecuada la
   corrección de la glucosa y nunca es razón para demorarla».
-- **Decidir:** su peso exacto.
-- **Recomendación:** tratarla como «medida complementaria» del nivel 3 de D3, de modo que su omisión sola
-  no baje D3 de 2.
+- **Decidido el 2026-09-30 (P-01 A) e implementado (C-2026-09-30-01):** es una medida
+  complementaria de D3. Si la corrección prioritaria de la glucosa fue adecuada, su omisión aislada no baja
+  D3 de 2; dada apropiadamente, puede contribuir a D3 = 3 cuando el resto del desempeño lo justifica. Se
+  reconoce la tiamina sin penalizar la prioridad correcta de la glucosa. Sólo encuentros nuevos: ninguna
+  evaluación histórica se reinterpreta.
 
 ### DC7 · `hypo_no_thiamine`: clasificación, efecto y lo ya evaluado
 
@@ -172,14 +174,19 @@ Lo que sigue es la pregunta tal como se planteó:
     *legacy*);
   - la tanda de 20 no incluye la 54m (sólo 28m y 76f), así que ninguna evaluación de la tanda se ve
     afectada.
-- **Decidir:** si alguna evaluación ya confirmada de la 54m debe reevaluarse. Existe la función de
-  reevaluación explícita, que pide motivo y persona y conserva la original; todavía no tiene pantalla.
+- **Decidido el 2026-09-30 (P-02 A):** no se reevalúa de oficio ningún encuentro histórico confirmado; se
+  conservan la evaluación original y su versión y base. Si un encuentro lo necesitara, se usa un mecanismo
+  explícito con motivo, persona, fecha y procedencia, que conserve la original
+  (`evaluation_basis.reevaluation` ya guarda los cuatro). No se construye una pantalla para un caso
+  hipotético.
 
 ### DC8 · La vía fallida como oportunidad de D4
 
 - **Hoy.** Ventana 5–60 min. Esperado: recontrolar la glucosa tras la dosis, reconocer que no llegó y
   restituir una vía que sirva. Alternativa aceptada: instalar una vía nueva antes de la primera dosis.
-- **Decidir:** la ventana, y si también debe aparecer en D2 (interpretar que la glucosa no subió).
+- **Decidido el 2026-09-30 (P-03 A):** 5–60 min y sólo D4; no se agrega a D2. Reconocer que la respuesta
+  esperada no ocurrió y adaptarse a una vía fallida es evidencia de reevaluación y adaptación, y la misma
+  conducta no se cuenta dos veces. Es lo que ya rige: no hay cambio de código.
 
 ### DC9 · Las declaraciones de las nueve composiciones
 
@@ -195,6 +202,8 @@ composición (su evaluación sigue en la transición, DF-12), la referencia TDFC
 ningún residente (`composition_exposable` = no; sólo se abre en el sandbox docente, para revisarla).
 Pruebas: `test_tdfc_composition_proposals.py`.
 
+- **Diferida el 2026-09-30 (R-1):** las 36 filas siguen propuestas, pendientes de revisión humana y sin
+  exponerse a residentes; las nueve composiciones no se habilitan. No afecta al piloto.
 - **Sigue pendiente:** la revisión docente de las 36 filas propuestas y de los demás textos de las
   declaraciones de las composiciones. **Criterio de cierre:** cada fila revisada (confirmada o cambiada)
   con firma; sólo entonces una composición puede exponerse.

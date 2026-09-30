@@ -29,6 +29,25 @@ la deuda menor (TD-03, TD-05, TD-09, TD-10). La prueba de humo automática pasó
 proveedor. Lo que espera al docente está en `docs/PAQUETE_DECISIONES_CICLO10.md` (P-01 a P-12; revisiones R-1 a
 R-5, entre ellas los borradores en español de R-4, que no se muestran hasta su aprobación).
 
+**Respuesta docente al paquete (2026-09-30):** la respuesta sigue siendo la misma. Quedan implementados:
+
+- P-01: la tiamina como medida complementaria de D3;
+- P-06: el criterio de lisis del motor escrito en D3, C1 y TDFC;
+- P-10: el portafolio completo de una cuenta inactiva, sólo para el administrador;
+- P-11: 56/56 regresiones activas y 10 retiradas con su motivo.
+
+Todo aplica sólo a encuentros nuevos donde corresponde; el detalle está en `docs/COLA_DECISIONES_AI_ADVISOR.md`.
+
+**Antes de iniciar el piloto quedan cuatro revisiones humanas:**
+
+- **R-2:** el POCUS de los 14 casos C14 YES, caso por caso (`docs/revision/R2_POCUS_C14.md`).
+- **P-07:** la foto V34 de la 75f (`docs/revision/P07_75F_V34.md`).
+- **R-5:** las guías finales, después de P-07.
+- **R-3:** T-1 (`docs/revision/T1_ANAPHYLAXIS_29F_C3.md`).
+
+**P-04 y P-05 esperan su aprobación** sobre la evidencia verificada (`docs/VERIFICACION_P04_P05.md`). El piloto
+corre sin IA automática en el encuentro: determinista y con casos offline.
+
 **No es una validación.** La fidelidad del lector con texto externo sigue sin medirse (B = NOT YET MEASURED);
 todo juicio lo confirma un docente.
 

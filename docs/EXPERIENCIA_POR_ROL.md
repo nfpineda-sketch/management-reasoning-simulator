@@ -47,12 +47,12 @@ Los permisos están en `docs/MATRIZ_PERMISOS_ROLES.md`.
 | Ítem | Por qué |
 |---|---|
 | AI Longitudinal Review (P3) | §154FS: presupuesto primero para P1/P2; especificación completa. |
-| Notas privadas docentes (§154AE) | No existe la capa; requiere persistencia nueva. |
+| Notas privadas docentes (§154AE) | No existe la capa; requiere persistencia nueva. **Decidido el 2026-09-30 (P-09 B), para cuando se implemente:** las leen los docentes autorizados y el administrador, nunca un residente; cada nota conserva autor y fecha y hora; no modifican la rúbrica, el radar, Objective Progress, la evidencia ni los eventos de seguridad, y no son unidades de evidencia. |
 | Descarga selectiva del portafolio (§154AJ) | La individual y la completa cubren lo prioritario. |
 | «Ver» el PDF dentro de la app (§154AH) | `st.pdf` necesita un componente que no está instalado; el PDF se descarga. |
 | Registro de auditoría de activar/desactivar (§154EI) | **Hecho** en el ciclo 10 (Fase 2, paso 1; C-2026-09-29-25). |
 | Historial de asignaciones por residente (§154DT) | `DirectiveStore.history` existe; falta una vista. |
-| Portafolio de una cuenta inactiva (§154DM) | Una cuenta inactiva no inicia sesión; pedir otra cosa es una decisión aparte. |
+| Portafolio de una cuenta inactiva (§154DM) | **Hecho el 2026-09-30 (P-10 A como regla técnica de permisos, C-2026-09-30-03):** el docente sigue inspeccionando el registro histórico y los documentos de cada encuentro; el portafolio completo (ZIP) para entregarlo al exusuario lo prepara y descarga sólo el administrador. Nada se borra ni cambia. |
 | Reflexión posterior al encuentro (§154AM) | Hoja de ruta. |
 
 ### Fase 2: orden registrado (instrucción docente del 2026-09-29)
@@ -63,8 +63,8 @@ anterior está cerrado, salvo que el docente diga otra cosa.
 | Orden | Ítem | Estado | Dependencia | Criterio de cierre |
 |---|---|---|---|---|
 | 1 | Auditoría de activar y desactivar cuentas (TD-44, §154EI): quién y cuándo | **Hecho** en el ciclo 10 (C-2026-09-29-25): también rol y año; «Account change history», sólo para el administrador | Tabla nueva en el store de cuentas, con migración probada en SQLite y PostgreSQL | Cada cambio de estado queda con autor y hora, visible para el administrador; pruebas de permisos |
-| 2 | Notas privadas docentes (§154AE) | Pendiente | La auditoría (1); decidir quién las lee (sólo su autor o todo el cuerpo docente) | Notas que ningún residente ve por ninguna ruta (páginas, copia del registro, PDF); pruebas de permisos |
-| 3 | Descarga selectiva del portafolio (§154AJ) y portafolio de una cuenta inactiva (§154DM) | Pendiente | Decidir quién pide el portafolio de una cuenta inactiva (el administrador, no la cuenta) | Selección por encuentro; una cuenta inactiva no inicia sesión y su portafolio sólo lo entrega el rol decidido |
+| 2 | Notas privadas docentes (§154AE) | Pendiente; **quién las lee, decidido (P-09 B, 2026-09-30)** | La auditoría (1) | Notas que ningún residente ve por ninguna ruta (páginas, copia del registro, PDF); pruebas de permisos |
+| 3 | Descarga selectiva del portafolio (§154AJ) y portafolio de una cuenta inactiva (§154DM) | La cuenta inactiva, **hecha** (P-10, C-2026-09-30-03); la descarga selectiva, pendiente | — | Selección por encuentro; una cuenta inactiva no inicia sesión y su portafolio sólo lo entrega el rol decidido |
 | 4 | AI Longitudinal Review a pedido (P3, `docs/AI_LONGITUDINAL_REVIEW_SPEC.md`) | Pendiente | Presupuesto (§154FS) y los pasos anteriores | Sólo a pedido explícito, nunca al abrir una página (la regla de TD-41); sin puntaje global, ranking ni asignación automática |
 
 Si la prueba de humo encuentra una vulnerabilidad de acceso, se informa y se

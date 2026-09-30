@@ -540,10 +540,15 @@ _ASSESSMENT = {
         "events": (),
     },
 }
+# DC6 (faculty, 2026-09-30, P-01 A): a complementary measure of D3. Recognised
+# without penalising the right priority of the glucose; new encounters only, since
+# each encounter judges against the declaration frozen at its start.
 _THIAMINE_SECONDARY = {
-    "d3_text": (" Thiamine is executable and belongs to the plan as a second objective: its omission alone "
-                "does not make the correction of the glucose inadequate, and it is never a reason to delay it."),
-    "d3_expected": "adds thiamine, as a second objective",
+    "d3_text": (" Thiamine is executable and belongs to the plan as a second objective, a complementary measure "
+                "of D3: when the correction of the glucose, which comes first, was adequate, its omission alone "
+                "does not lower D3 below 2, and it is never a reason to delay the glucose; given appropriately, it "
+                "can contribute to D3 = 3 when the rest of the management also justifies it."),
+    "d3_expected": "adds thiamine, as a complementary measure towards D3 = 3",
     "d3_alternative": "thiamine before, with or after the dextrose",
     "d3_action": "thiamine",
 }

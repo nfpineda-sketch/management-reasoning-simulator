@@ -63,6 +63,9 @@ INSTRUCTION_2026_09_29_CLOSING = ("Instrucción docente del 2026-09-29 que cierr
                                   "y 8; el español de acs_70f_left_main; la vía de llegada neutra en hipoglicemia)")
 INSTRUCTION_2026_09_29_CYCLE10 = ("Instrucción docente del 2026-09-29 que aprueba la propuesta del ciclo 10 («apruebo "
                                   "todo, incluir todo lo propuesto»), con DC4-F en la opción B mínima")
+INSTRUCTION_2026_09_30_PACKET10 = ("Instrucción docente del 2026-09-30 que responde al paquete de decisiones del "
+                                   "ciclo 10 (P-01 A, P-06 B, P-10 A como regla técnica de permisos y P-11 B; sin "
+                                   "abrir un ciclo nuevo)")
 INSTRUCTION_2026_09_29_POST_V3 = ("Instrucción docente del 2026-09-29 posterior a V3 (cerrar e implementar las decisiones "
                                   "clínicas analizadas: TEP con D revisada, DC1, POCUS de la HDA, TD-31, DC2–DC5 de "
                                   "hipoglicemia y el texto de acs_70f_left_main; y las decisiones no clínicas de su "
@@ -2549,6 +2552,101 @@ CORRECTIONS = (
                   "test_faculty_queue_reads_the_basis_once.py::test_the_faculty_queue_reads_each_encounters_basis_once",
                   "test_reload_tests_run_isolated.py::test_the_reload_tests_touch_modules_only_in_their_own_interpreter",
                   "test_reload_tests_run_isolated.py::test_the_check_would_have_caught_a_mutation_in_the_file_itself"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-01",
+        "date": "2026-09-30",
+        "title": ("DC6 (P-01 A): la tiamina es una medida complementaria de D3; su omisión aislada no baja D3 de 2 y "
+                  "darla puede contribuir a D3 = 3"),
+        "scope": {"level": "family", "family": "hypoglycemia",
+                  "applies_to": "configuraciones con déficit de tiamina; en el banco, hypoglycemia_54m_thiamine"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión docente P-01 A (DC6). Desde la cobertura 1.1 la tiamina era un segundo objetivo de D3 "
+                   "sin peso definido. Ahora la declaración de D3 lo dice: es una medida complementaria; si la "
+                   "corrección de la glucosa, que va primero, fue adecuada, su omisión aislada no baja D3 de 2 y "
+                   "nunca justifica demorar la glucosa; dada apropiadamente, puede contribuir a D3 = 3 cuando el "
+                   "resto del manejo también lo justifica. Reconoce la tiamina sin penalizar la prioridad correcta "
+                   "de la glucosa. Sólo encuentros nuevos: cada encuentro se juzga con la declaración congelada al "
+                   "iniciarlo, y ninguna evaluación confirmada se relee (P-02 A)."),
+        "authorised_by": INSTRUCTION_2026_09_30_PACKET10,
+        "affects": {"modules": ["hypoglycemia_catalog"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_dc6_thiamine_complementary.py::"
+                  "test_thiamine_is_a_complementary_measure_of_d3_wherever_the_deficit_is_declared",
+                  "test_dc6_thiamine_complementary.py::"
+                  "test_an_encounter_launched_before_the_change_keeps_the_wording_it_was_launched_with",
+                  "test_hypoglycemia_catalog.py::test_thiamine_is_a_second_objective_and_not_a_critical_event"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-02",
+        "date": "2026-09-30",
+        "title": ("P-06: las declaraciones del TEP dicen el criterio de trombólisis que aplica el motor (shock "
+                  "obstructivo atribuible al TEP, o hipotensión sostenida de 15 minutos consecutivos)"),
+        "scope": {"level": "family", "family": "pulmonary_embolism",
+                  "applies_to": ("pulmonary_embolism_33f (D3 y pe_unindicated_thrombolysis) y "
+                                 "pulmonary_embolism_61m (D3 y la fila C1 de TDFC)")},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión docente P-06 B. Las declaraciones decían sólo «sustained hypotension», mientras el "
+                   "motor indica la lisis también por un shock obstructivo atribuible al TEP desde la llegada. La "
+                   "redacción nueva, «obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 "
+                   "mmHg for 15 consecutive minutes)» (en español: «shock obstructivo atribuible al TEP, o "
+                   "hipotensión sostenida (PAS < 90 mmHg durante 15 minutos consecutivos)»), va en D3 y el evento "
+                   "crítico de la 33f, en D3 de la 61m y en su fila C1 de TDFC. El motor, sus notas y el tamizaje no "
+                   "cambian: el tamizaje de los encuentros anteriores al 2026-09-29 lee esas notas. Sólo encuentros "
+                   "nuevos: la declaración y TDFC se congelan con cada encuentro, y la referencia TDFC aprobada de "
+                   "los anteriores no cambia."),
+        "authorised_by": INSTRUCTION_2026_09_30_PACKET10,
+        "affects": {"modules": ["case_assessment_bank", "tdfc_declarations"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_pe_lysis_criterion_wording.py::"
+                  "test_every_mention_of_sustained_hypotension_carries_the_obstructive_shock_beside_it",
+                  "test_pe_lysis_criterion_wording.py::test_the_criterion_is_stated_in_d3_the_event_and_c1",
+                  "test_pe_lysis_criterion_wording.py::test_an_encounter_frozen_before_keeps_its_approved_tdfc_wording",
+                  "test_pe_lysis_criterion_wording.py::test_the_engine_and_the_notes_the_screening_reads_are_unchanged",
+                  "test_evaluation_basis.py::test_the_legacy_snapshot_is_the_code_before_the_change_for_every_other_case"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-03",
+        "date": "2026-09-30",
+        "title": "P-10: el portafolio completo de una cuenta inactiva lo prepara sólo un administrador",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Decisión docente P-10 A como regla técnica de permisos. Con la cuenta del residente inactiva, "
+                   "el portafolio completo (el ZIP para entregar al exusuario) lo prepara y descarga sólo un "
+                   "administrador; la función lo exige con el rol que el store lee del token, y la página del "
+                   "docente dice quién lo prepara en lugar del botón. El docente sigue inspeccionando el registro "
+                   "histórico y los documentos de cada encuentro con sus permisos normales; nada se borra ni "
+                   "cambia. El portafolio de una cuenta activa sigue igual para todos."),
+        "authorised_by": INSTRUCTION_2026_09_30_PACKET10,
+        "affects": {"modules": ["portfolio", "report_language"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_inactive_account_portfolio_export.py::"
+                  "test_only_the_administrator_prepares_an_inactive_account_s_complete_portfolio",
+                  "test_inactive_account_portfolio_export.py::test_an_active_resident_s_portfolio_is_prepared_as_before",
+                  "test_inactive_account_portfolio_export.py::"
+                  "test_the_faculty_page_says_who_prepares_it_and_the_administrator_s_page_offers_it"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-04",
+        "date": "2026-09-30",
+        "title": "P-11: los 10 scripts de regresión heredados quedan retirados con su motivo; cada script, activo o retirado",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Decisión docente P-11 B sobre el diagnóstico C10-01. Los 10 scripts que fallan en código o "
+                   "textos que ya no existen quedan en RETIRED_REGRESSIONS de run_regressions.py, cada uno con su "
+                   "motivo, y se conservan; ninguno se corre. Una prueba exige que cada regression_*.py esté activo o "
+                   "retirado y nunca ambos. El ejecutor informa «56/56 activas; 10 retiradas», no «56 de 66». Nada "
+                   "cambia en la aplicación."),
+        "authorised_by": INSTRUCTION_2026_09_30_PACKET10,
+        "affects": {"modules": ["run_regressions"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_regression_scripts_are_active_or_retired.py::test_every_script_is_active_or_retired_and_never_both",
+                  "test_regression_scripts_are_active_or_retired.py::test_every_retired_script_says_why_and_is_kept",
+                  "test_regression_scripts_are_active_or_retired.py::test_the_runner_reports_active_and_retired_apart"],
         "preservation": None,
     },
 )

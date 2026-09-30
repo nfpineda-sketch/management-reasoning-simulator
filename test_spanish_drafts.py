@@ -59,6 +59,14 @@ def test_every_engine_draft_answers_a_sentence_that_still_shows_english():
         assert not harvest.residue(row["spanish"].replace("{n}", "0")), row["spanish"]
 
 
+def test_every_engine_sentence_has_its_review_reading_and_nothing_else_does():
+    # R-4 (2026-09-30): the context, recommendation and ambiguity the faculty reads beside each draft.
+    assert set(spanish_drafts.ENGINE_REVIEW) == {row["english"] for row in spanish_drafts.ENGINE}
+    for reading in spanish_drafts.ENGINE_REVIEW.values():
+        assert len(reading) == 3 and all(isinstance(part, str) and part.strip() for part in reading)
+        assert reading[1].startswith(("Aprobar", "Cambiar"))
+
+
 def test_the_residue_check_sees_english_and_leaves_quotes_alone():
     assert harvest.residue("The anterior wall and apex show mildly reducido contraction") == [
         "The", "and", "contraction", "mildly", "show", "wall"]

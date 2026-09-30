@@ -44,13 +44,31 @@ def owner_of(context, user_id=None):
     """The resident the portfolio belongs to: the reader, or one a staff member may read."""
     user = context["user"]
     if user_id in (None, user["id"]):
-        return {"id": user["id"], "username": user["username"], "training_year": user.get("training_year")}
+        return {"id": user["id"], "username": user["username"], "training_year": user.get("training_year"),
+                "active": bool(user.get("active", True))}
     from progress_store import ProgressStore
     for person in ProgressStore(context["store"]).list_residents(context["token"]):
         if person["id"] == user_id:
             return {"id": person["id"], "username": person["username"],
-                    "training_year": person.get("training_year")}
+                    "training_year": person.get("training_year"), "active": bool(person.get("active", True))}
     raise AccountError("Your account does not have permission for this action.")
+
+
+#: P-10 (faculty, 2026-09-30): an inactive account's complete portfolio is an official export for
+#: delivery to its former user, and only an administrator prepares it. Faculty keep reading the
+#: historical record with their usual permissions; nothing in it is removed or changed.
+INACTIVE_EXPORT = ("This account is inactive: its complete portfolio, for delivery to its owner, is prepared by "
+                   "an administrator. Each encounter's documents stay available above.")
+
+
+def may_prepare_complete(context, owner):
+    """Whether this reader may prepare the complete portfolio of ``owner``: anyone who may read it,
+    except that an inactive account's is an administrator's export (P-10). The role is read from the
+    store with the reader's token, not from what the page holds."""
+    if owner.get("active", True):
+        return True
+    reader = context["store"].get_user(context["token"]) or {}
+    return reader.get("role") == "admin" and bool(reader.get("active"))
 
 
 def available(context, record):
@@ -134,6 +152,8 @@ def complete_zip(context, user_id=None):
     """Every final document of one resident in one ZIP, with a manifest. No paid call."""
     import prose_translation
     owner, rows = entries(context, user_id)
+    if not may_prepare_complete(context, owner):
+        raise AccountError("Only an administrator prepares the complete portfolio of an inactive account.")
     translate = prose_translation.stored_only(context)
     manifest, missing = [], []
     buffer = io.BytesIO()
@@ -249,6 +269,9 @@ def render_portfolio(context, user_id=None, *, heading=True, key="mine"):
     for stale in [name for name in list(st.session_state) if str(name).startswith(prefix + "_")
                   and not str(name).startswith(zipped)]:
         st.session_state.pop(stale, None)
+    if not may_prepare_complete(context, owner):
+        st.info(_t(INACTIVE_EXPORT))
+        return
     if st.session_state.get(zipped) is None and st.button(_t("Prepare the complete portfolio"),
                                                           key=zipped + "_prepare"):
         try:

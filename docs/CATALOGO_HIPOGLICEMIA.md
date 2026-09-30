@@ -223,6 +223,10 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-29-26 | TD-42, TD-43 y TD-38: las pantallas del piloto distinguen encuentros parecidos, no ofrecen un ZIP vencido y no preguntan después de un plan | general | technical_defect | none | — |
 | C-2026-09-29-27 | DC4-F (opción B mínima): el glucagón y el octreótido por la cánula fallida actúan como una dosis subcutánea | familia hypoglycemia | clinical_decision_applied | clinical | — |
 | C-2026-09-29-28 | TD-10, TD-03, TD-09 y TD-05: el commit en cada turno del Trace, los vínculos de marco congelados con la observación, la cola docente más rápida y las pruebas de recarga aisladas | general | technical_defect | none | — |
+| C-2026-09-30-01 | DC6 (P-01 A): la tiamina es una medida complementaria de D3; su omisión aislada no baja D3 de 2 y darla puede contribuir a D3 = 3 | familia hypoglycemia | clinical_decision_applied | clinical | — |
+| C-2026-09-30-02 | P-06: las declaraciones del TEP dicen el criterio de trombólisis que aplica el motor (shock obstructivo atribuible al TEP, o hipotensión sostenida de 15 minutos consecutivos) | familia pulmonary_embolism | clinical_decision_applied | clinical | — |
+| C-2026-09-30-03 | P-10: el portafolio completo de una cuenta inactiva lo prepara sólo un administrador | general | policy | none | — |
+| C-2026-09-30-04 | P-11: los 10 scripts de regresión heredados quedan retirados con su motivo; cada script, activo o retirado | general | policy | none | — |
 
 ## La batería, configuración por configuración
 

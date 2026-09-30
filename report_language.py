@@ -2286,6 +2286,8 @@ ES = {
         'Todavía no hay encuentros completados. Cada uno que completes agrega aquí sus documentos.',
     'Prepare the complete portfolio': 'Preparar el portafolio completo',
     'Download the complete portfolio (ZIP)': 'Descargar el portafolio completo (ZIP)',
+    "This account is inactive: its complete portfolio, for delivery to its owner, is prepared by an administrator. Each encounter's documents stay available above.":
+        "Esta cuenta está inactiva: su portafolio completo, para entregarlo a su titular, lo prepara un administrador. Los documentos de cada encuentro siguen disponibles arriba.",
     '{v0} document(s).': '{v0} documento(s).',
     'Clinical context': 'Contexto clínico',
     'Complete portfolio': 'Portafolio completo',
