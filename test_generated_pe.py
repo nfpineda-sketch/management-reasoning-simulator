@@ -134,12 +134,15 @@ def test_thrombolysis_in_obstructive_shock_dissolves_the_obstruction():
     assert gpe.relief(state["family_state"]) > .2
 
 
-def test_thrombolysis_before_the_indication_does_nothing():
+def test_thrombolysis_before_the_indication_acts_and_stays_unindicated():
+    """P-04 B (2026-09-30): the drug acts whether or not it was indicated; the record keeps the judgement."""
     state = pe_case()
-    run(state, LYSE)
+    result = run(state, LYSE)
     minutes(state, 50)
     assert state["family_state"]["lysis_indicated"] is False
-    assert gpe.relief(state["family_state"]) == 0
+    assert state["family_state"]["lysis_doses"][0]["basis"] is None
+    assert gpe.relief(state["family_state"]) > .2
+    assert "whether or not it was indicated" in " | ".join(s["label"] for s in result["action_summaries"])
 
 
 def test_the_thrombolytic_bleeds_where_the_case_declares_a_reason():

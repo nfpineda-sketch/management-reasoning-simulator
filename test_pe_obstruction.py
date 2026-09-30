@@ -87,7 +87,27 @@ def test_a_normotensive_submassive_embolism_has_no_indication(engine):
     state, labels = course(engine, [LYSE], "pulmonary_embolism_33f")
     assert "without the hemodynamic indication" in labels and "no hypotension from the embolism" in labels
     assert not pe.indicated(state["family_state"])
-    assert state["family_state"]["circulation"] > 1.0
+    assert state["family_state"]["lysis_indicated"] is False
+    # P-04 (2026-09-30): the drug acts whether or not it was indicated, and the note promises nothing.
+    assert "acts on the clot whether or not it was indicated" in labels
+    assert "obstruction is unchanged" not in labels and "begins to fall" not in labels
+
+
+def test_an_unindicated_thrombolytic_still_reperfuses_and_is_still_judged_on_its_minute(engine):
+    """P-04 B (2026-09-30): the effect, the bleeding and the judgement of the decision are three things."""
+    from test_pe_thrombolysis_screening import lysis_row, played
+    lysed, _ = course(engine, [LYSE, "Reassess in 50 minutes."], "pulmonary_embolism_33f")
+    untreated, _ = course(engine, ["Reassess in 55 minutes."], "pulmonary_embolism_33f")
+    f = lysed["family_state"]
+    assert f["lysis_indicated"] is False and pe.lysis_effect(f) > .7
+    embolism = f["circulation"] - f.get("pe_bleed_circulation", 0.0)
+    assert embolism < untreated["family_state"]["circulation"] - .2      # the clot dissolved
+    assert f["pe_bleed_circulation"] > 0 and f["major_bleed_reported"]   # and she bleeds, as her case declares
+    assert lysed["observable"]["spo2"] > untreated["observable"]["spo2"]
+    # A later improvement does not make the order a correct one: the screening reads its minute.
+    record = played(engine, [LYSE, "Reassess in 50 minutes."])
+    row = lysis_row(record)
+    assert row["status"] == "met" and "what followed it does not change that" in str(row)
 
 
 def test_a_pressure_held_up_by_a_vasopressor_it_needs_still_counts(engine):
@@ -168,7 +188,10 @@ def test_a_persisting_shock_does_not_make_a_second_dose_indicated(engine):
     assert first["basis"] == "obstructive_shock" and f["lysis_at"] == first["minute"]
     assert second["basis"] is None and second["repeat_of_minute"] == first["minute"]
     assert second["criteria_present"] == "obstructive_shock"
-    assert "A second systemic thrombolytic dose is recorded" in labels
+    # P-05 D (2026-09-30): a second full course, recorded with its added exposure.
+    assert second["course"] == "second_course" and second["additional_exposure"] is True
+    assert "A second course of systemic thrombolysis is recorded" in labels
+    assert "not evidence that repeating has no effect" in labels
     assert f["circulation"] < .8                          # the first dose keeps working
 
 
@@ -229,15 +252,50 @@ def test_the_thrombolytic_bleeds_slowly_even_when_it_is_indicated(engine):
     assert state["family_state"].get("major_bleed_reported") is None
 
 
-def test_a_patient_with_a_reason_to_bleed_bleeds_badly(engine):
-    state, labels = course(engine, [LYSE, "Order hemoglobin. Reassess in 40 minutes.", "Reassess in 40 minutes."],
-                           "pulmonary_embolism_33f")
+def test_a_patient_with_a_reason_to_bleed_bleeds_badly(engine, monkeypatch):
+    orders = [LYSE, "Order hemoglobin. Reassess in 40 minutes.", "Reassess in 40 minutes."]
+    state, labels = course(engine, orders, "pulmonary_embolism_33f")
     assert "Bleeding from the surgical site" in labels
     assert state["family_state"]["hemoglobin"] < 10
-    # The bleeding costs circulation too, so the patient is worse than untreated.
-    untreated, _ = course(engine, ["Reassess in 105 minutes."], "pulmonary_embolism_33f")
-    assert state["observable"]["sbp"] < untreated["observable"]["sbp"]
-    assert state["observable"]["hr"] > untreated["observable"]["hr"]
+    # The bleed says only what is certain: the pressure depends on everything else acting too (P-04).
+    assert "and the pressure with it" not in labels
+    # The bleeding costs circulation too: she is worse than the same dose without her reason to bleed.
+    monkeypatch.setattr(pe, "bleeding_risk", lambda state: None)
+    dry, dry_labels = course(engine, orders, "pulmonary_embolism_33f")
+    assert "Bleeding from" not in dry_labels
+    assert state["observable"]["sbp"] < dry["observable"]["sbp"]
+    assert state["observable"]["hr"] > dry["observable"]["hr"]
+    assert state["family_state"]["hemoglobin"] < dry["family_state"]["hemoglobin"] - 1.5
+
+
+def test_the_rest_of_an_alteplase_regimen_completes_the_first_dose(engine):
+    """P-05 (2026-09-30): a bolus and the rest are one regimen; the first dose keeps its clock."""
+    state, labels = course(engine, ["Give alteplase 10 mg IV. Reassess in 2 minutes.",
+                                    "Give alteplase 90 mg IV. Reassess in 30 minutes."])
+    f = state["family_state"]
+    first, rest = f["lysis_doses"]
+    assert first["course"] == "initial" and rest["course"] == "initial_regimen"
+    assert rest["regimen_total_mg"] == 100 and "additional_exposure" not in rest
+    assert f["lysis_at"] == first["minute"]
+    assert "recorded as part of the initial regimen begun at minute 0 (100 mg in all)" in labels
+    assert "second course" not in labels
+
+
+def test_a_second_course_neither_restarts_nor_stops_the_first_and_adds_no_effect(engine):
+    """P-05 D: the pending dissolution goes on from the first dose; the repeat changes nothing modelled."""
+    once, again = "Give alteplase 100 mg IV. Reassess in 10 minutes.", "Give tenecteplase 50 mg IV."
+    repeated, labels = course(engine, [once, again, "Reassess in 30 minutes."])
+    single, _ = course(engine, [once, "Reassess in 5 minutes.", "Reassess in 30 minutes."])
+    assert repeated["sim_time"] == single["sim_time"]      # the same minutes, one dose fewer
+    f = repeated["family_state"]
+    assert f["lysis_at"] == 0 and f["lysis_doses"][1]["course"] == "second_course"
+    assert f["circulation"] == pytest.approx(single["family_state"]["circulation"])
+    assert f["hemoglobin"] == pytest.approx(single["family_state"]["hemoglobin"])
+    assert "Bleeding from" not in labels                   # no bleed is described that was not modelled
+    # Each dose is listed once in the medicines given: the exposure is what was given, no more.
+    given = [m for m in repeated["treatments"]["administered_medications"]
+             if m.get("agent") in {"alteplase", "tenecteplase"}]
+    assert [(m["agent"], m["dose_mg"]) for m in given] == [("alteplase", 100), ("tenecteplase", 50)]
 
 
 def test_the_case_without_a_declared_risk_has_no_major_bleed(engine):

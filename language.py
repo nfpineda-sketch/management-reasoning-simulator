@@ -892,6 +892,22 @@ _RULES = _WALL_MOTION_RULES + (
   r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg, sin hipotensión por la embolia. Se asume el riesgo de sangrado sin la indicación, y la obstrucción no cambia."),
  (r"A second systemic thrombolytic dose is recorded; the first was given at minute (\d+)\. A persisting shock does not by itself indicate repeating a full dose, and this simulator gives the repeated dose no effect of its own\.",
   r"Se registra una segunda dosis de trombolítico sistémico; la primera se dio en el minuto \1. Un shock que persiste no indica por sí solo repetir una dosis completa, y este simulador no le da a la dosis repetida un efecto propio."),
+ # P-04 and P-05 (faculty, 2026-09-30): what the drug does, never what it will achieve, and
+ # the rest of a regimen apart from a second course. The notes above stay for older records.
+ (r"Systemic thrombolysis given in obstructive shock, a hypotension with signs of hypoperfusion\. The drug acts on the clot over about half an hour; what it changes is seen on reassessment\.",
+  "Trombolisis sistémica en shock obstructivo, una hipotensión con signos de hipoperfusión. El fármaco actúa sobre el trombo durante cerca de media hora; lo que cambie se ve al reevaluar."),
+ (r"Systemic thrombolysis given for sustained hypotension \(15 consecutive minutes\)\. The drug acts on the clot over about half an hour; what it changes is seen on reassessment\.",
+  "Trombolisis sistémica por hipotensión sostenida (15 minutos consecutivos). El fármaco actúa sobre el trombo durante cerca de media hora; lo que cambie se ve al reevaluar."),
+ (r"Systemic thrombolysis given without the hemodynamic indication: systolic (\d+) mmHg with no sign of hypoperfusion, low for (\d+) of the 15 consecutive minutes a hypotension without them requires\. The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken without the indication; what it changes is seen on reassessment\.",
+  r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg sin signos de hipoperfusión, baja durante \2 de los 15 minutos consecutivos que exige una hipotensión sin ellos. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar."),
+ (r"Systemic thrombolysis given without the hemodynamic indication: systolic (\d+) mmHg on a vasopressor the pressure does not need, with no hypotension from the embolism\. The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken without the indication; what it changes is seen on reassessment\.",
+  r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg con un vasopresor que la presión no necesita, sin hipotensión por la embolia. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar."),
+ (r"Systemic thrombolysis given without the hemodynamic indication: systolic (\d+) mmHg, with no hypotension from the embolism\. The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken without the indication; what it changes is seen on reassessment\.",
+  r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg, sin hipotensión por la embolia. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar."),
+ (r"(\w+) ([\d.]+) mg recorded as part of the initial regimen begun at minute (\d+) \(([\d.]+) mg in all\)\. It completes the first dose rather than starting a new one, and the first dose keeps acting as before\.",
+  r"\1 \2 mg registrado como parte del esquema inicial comenzado en el minuto \3 (\4 mg en total). Completa la primera dosis en lugar de iniciar una nueva, y la primera dosis sigue actuando como antes."),
+ (r"A second course of systemic thrombolysis is recorded \(([^)]+)\); the first course began at minute (\d+)\. Its added bleeding risk is recorded as exposure\. This simulator represents neither additional reperfusion from a second course nor any bleeding of its own; that is a simplification, not evidence that repeating has no effect\. The first dose keeps acting as before\.",
+  r"Se registra un segundo curso de trombolisis sistémica (\1); el primero comenzó en el minuto \2. Su riesgo adicional de sangrado queda registrado como exposición. Este simulador no representa una reperfusión adicional por un segundo curso ni un sangrado propio; es una simplificación, no evidencia de que repetir no tenga efecto. La primera dosis sigue actuando como antes."),
  (r"The systolic pressure has stayed below 90 mmHg for 15 consecutive minutes: this is sustained hypotension from the obstruction\.",
   "La presión sistólica se ha mantenido bajo 90 mmHg por 15 minutos consecutivos: esto es hipotensión sostenida por la obstrucción."),
  (r"The systolic pressure has needed a vasopressor to stay at 90 mmHg or above, or stayed below it, for 15 consecutive minutes: this is sustained hypotension from the obstruction\.",
@@ -985,16 +1001,19 @@ _RULES = _WALL_MOTION_RULES + (
   r"Se instala una aguja intraósea para dar esta dosis, en el minuto \1; la orden no indica el sitio."),
  (r"The dextrose 10% infusion at ([\d.]+) mL/h runs through the (cannula in the left forearm|new cannula in the right "
   r"forearm|intraosseous needle) from minute (\d+)\.",
-  lambda m: f"La infusión de glucosa al 10 % a {m.group(1)} mL/h pasa por " + {
+  lambda m: f"La infusión de suero glucosado al 10 % a {m.group(1)} mL/h pasa por " + {
       "cannula in the left forearm": "la cánula del antebrazo izquierdo",
       "new cannula in the right forearm": "la cánula nueva del antebrazo derecho",
       "intraosseous needle": "la aguja intraósea"}[m.group(2)] + f" desde el minuto {m.group(3)}."),
+ # R-4 terminology (faculty, 2026-09-30): «aumento de volumen», «dolor a la palpación», «suero glucosado».
  (r"Peripheral cannula in the left forearm; the site is clean, without swelling or tenderness\.",
-  "Cánula periférica en el antebrazo izquierdo; el sitio está limpio, sin aumento de volumen ni dolor."),
+  "Cánula periférica en el antebrazo izquierdo; el sitio está limpio, sin aumento de volumen ni dolor a la palpación."),
  (r"Peripheral cannula in the left forearm; the forearm around it is swollen, pale, cool and tender\.",
-  "Cánula periférica en el antebrazo izquierdo; el antebrazo a su alrededor está hinchado, pálido, frío y doloroso."),
+  "Cánula periférica en el antebrazo izquierdo; el antebrazo a su alrededor está aumentado de volumen, pálido, frío y "
+  "doloroso a la palpación."),
  (r"Peripheral cannula in the left forearm; the skin around its tip is slightly swollen and cool\.",
-  "Cánula periférica en el antebrazo izquierdo; la piel alrededor de su punta está levemente hinchada y fría."),
+  "Cánula periférica en el antebrazo izquierdo; la piel alrededor del extremo del catéter está levemente aumentada de "
+  "volumen y fría."),
  (r"A second peripheral cannula in the right forearm; the site is clean\.",
   "Una segunda cánula periférica en el antebrazo derecho; el sitio está limpio."),
  (r"An intraosseous needle in place \((humeral|tibial|sternal|femoral)\)\.",
@@ -1003,7 +1022,7 @@ _RULES = _WALL_MOTION_RULES + (
   "Una aguja intraósea instalada; no se registró el sitio."),
  (r"Dextrose 10% runs at ([\d.]+) mL/h through the (cannula in the left forearm|new cannula in the right forearm|"
   r"intraosseous needle)\.",
-  lambda m: f"La glucosa al 10 % pasa a {m.group(1)} mL/h por " + {
+  lambda m: f"Suero glucosado al 10 % a {m.group(1)} mL/h por " + {
       "cannula in the left forearm": "la cánula del antebrazo izquierdo",
       "new cannula in the right forearm": "la cánula nueva del antebrazo derecho",
       "intraosseous needle": "la aguja intraósea"}[m.group(2)] + "."),
@@ -1221,6 +1240,56 @@ def examination(text, language=None, case=None):
     return appearance or body
 
 
+#: TD-46 (faculty, 2026-09-30): the case's own POCUS and E-FAST findings. A line
+#: that still carries one of them in English -- no approved translation of the
+#: case replaced it -- is shown whole in English, its label included, instead of
+#: being translated word by word into a line of two languages. The findings the
+#: engine composes are not the case's words and are said as before.
+_STUDY_REPORTS = ("pocus", "efast")
+_STUDY_WORDS = {}
+_KEPT_LINE = re.compile("\ue000([\ue100-\uefff])\ue001")
+
+
+def _study_words(case):
+    """The English of one bank case's POCUS and E-FAST findings; none for any other case."""
+    if case not in _STUDY_WORDS:
+        try:
+            from clinical_cases import variant_by_id
+            investigations = variant_by_id(case).get("investigations") or {}
+        except KeyError:
+            investigations = {}
+        _STUDY_WORDS[case] = frozenset(
+            value.strip() for study in _STUDY_REPORTS
+            for value in ((investigations.get(study) or {}).get("result") or {}).values()
+            if isinstance(value, str) and value.strip())
+    return _STUDY_WORDS[case]
+
+
+def _keep_case_findings(body):
+    """Set aside, whole, each line of the text that still states the case's findings in English.
+
+    A line is a report line ("· LV contractility: …"), or one section of the
+    compact form ("HEART — … · …"), which the Management Trace joins with " | ".
+    """
+    case = _CASE.get()
+    words = _study_words(case) if case else frozenset()
+    if not words:
+        return body, []
+    kept = []
+
+    def keep(segment):
+        parts = segment.split(" · ")
+        if not any(part.strip() in words or part.partition(": ")[2].strip() in words for part in parts):
+            return segment
+        if len(kept) >= 0xE00:
+            return segment
+        kept.append(segment)
+        return "\ue000" + chr(0xE100 + len(kept) - 1) + "\ue001"
+
+    lines = body.split("\n")
+    return "\n".join(" | ".join(keep(segment) for segment in line.split(" | ")) for line in lines), kept
+
+
 def say(text, language=None):
     """Present a stored English string in the reading language."""
     language = language or current()
@@ -1230,9 +1299,12 @@ def say(text, language=None):
     exact = MESSAGES.get(body.strip())
     if exact:
         return exact
+    body, kept = _keep_case_findings(body)
     for sentence, translation in MESSAGES.items():
         if sentence in body:
             body = body.replace(sentence, translation)
     for pattern, replacement in _COMPILED:
         body = pattern.sub(replacement, body)
+    if kept:
+        body = _KEPT_LINE.sub(lambda match: kept[ord(match.group(1)) - 0xE100], body)
     return body

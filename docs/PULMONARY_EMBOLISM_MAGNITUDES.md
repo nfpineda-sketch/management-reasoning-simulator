@@ -17,8 +17,8 @@ encuentros jugados antes de este cambio se leen con la regla de su tiempo.
 | Signos de hipoperfusión (basta uno) | Conciencia alterada por la presión (PAS atribuible < 80) o escrita al llegar; periferia con llene de 3,5 s o más (frías o «cool» dentro de la categoría «impaired» o peor); lactato interno > 2,0 mmol/L. **Parámetros docentes** del simulador. La somnolencia por sedación no cuenta. No hace falta pedir el lactato para que la fisiología reconozca un shock manifiesto; y un dato interno no demuestra que el residente lo obtuvo |
 | Atribución | La presión se calcula antes de redondear, con lo que hacen la obstrucción, la distensión del VD y la presión positiva. El apoyo de vasopresores o inotrópicos, las caídas por sedación, opioide o nitrato y el sangrado tras la lisis conservan su efecto en el paciente, pero no son el shock del TEP |
 | Cada orden | Se juzga con el estado de su minuto. Haber cumplido el criterio queda como antecedente (`obstructive_shock_from_min`, `persistent_hypotension_from_min`), no como permiso |
-| Segunda dosis | Un shock que persiste no la indica por sí solo: se registra como repetición, la primera dosis sigue actuando y la repetida no tiene efecto propio en el simulador |
-| Registro | Cada trombolítico lleva `thrombolysis_indication` (versión 2): motivo (`obstructive_shock`, `persistent_hypotension` o ninguno), minuto y datos internos. El tamizaje de `pe_unindicated_thrombolysis` lo lee; un registro sin ese campo se lee con la regla de su tiempo, nunca como «sin indicación» |
+| Segunda dosis | Un shock que persiste no la indica por sí solo: se registra como repetición, la primera dosis sigue actuando y la repetida no tiene efecto propio en el simulador (desde el 2026-09-30, P-05: el resto de un esquema de alteplasa completa la primera dosis; lo demás es un segundo curso) |
+| Registro | Cada trombolítico lleva `thrombolysis_indication` (versión 2; versión 3 desde el 2026-09-30, con agente, dosis y curso): motivo (`obstructive_shock`, `persistent_hypotension` o ninguno), minuto y datos internos. El tamizaje de `pe_unindicated_thrombolysis` lo lee; un registro sin ese campo se lee con la regla de su tiempo, nunca como «sin indicación» |
 | Texto | «sustained hypotension» sólo se escribe cuando ocurrieron 15 minutos consecutivos. El shock obstructivo no se anuncia en la sala, para no nombrar el diagnóstico |
 | Casos generados | Misma regla. El núcleo compartido no separa el efecto de un vasopresor ni las caídas por fármacos: el vasopresor cuenta sólo si se inició con una PAS bajo 90, y la sedación nunca cuenta como conciencia alterada (aproximación documentada) |
 
@@ -30,8 +30,64 @@ con hipoperfusión de órganos) o hipotensión persistente (más de 15 minutos).
 secundarios. Los 15 minutos completos, el corte de lactato de 2,0 mmol/L y el llene de 3,5 s son
 **aproximaciones docentes de este simulador**, no una reproducción literal de la guía.
 
-**Qué quedó aparte (no resuelto):** la farmacología de una lisis no indicada (hoy no disuelve nada), la
-seguridad de las dosis repetidas y la redacción «sustained hypotension» de las declaraciones D3 y C1 y de TDFC.
+**Qué quedó aparte el 2026-09-29:** la farmacología de una lisis no indicada, la seguridad de las dosis
+repetidas y la redacción «sustained hypotension» de las declaraciones D3 y C1 y de TDFC. Se resolvieron el
+2026-09-30 (sección siguiente).
+
+## Regla final y cambios del 2026-09-30 (P-04, P-05, P-06)
+
+Decisiones docentes del 2026-09-30 (segunda respuesta al paquete del ciclo 10). Sólo encuentros nuevos: los
+anteriores conservan su trayectoria, su registro y la declaración con que se congelaron.
+
+**La regla, en el texto, en el motor y en la evaluación (P-06, corregido el mismo día).**
+
+| Dónde | Qué dice |
+|---|---|
+| Texto (D3 y evento de la 33f; D3, alternativa y C1 de la 61m) | «obstructive shock attributable to the PE (SBP < 90 mmHg, or a vasopressor needed to reach 90 mmHg despite adequate filling, with signs of hypoperfusion), recognised as soon as it is present, or sustained hypotension (SBP < 90 mmHg, or a vasopressor needed to keep it at 90 mmHg or above, for 15 consecutive minutes)». «A vasopressor the pressure does not need, or a pressure lowered by bleeding or a drug, is neither.» Vive en `pe_obstruction.CRITERION_TEXT`, junto a la regla |
+| Motor | `basis()`: shock obstructivo al instante (presión baja con un signo de hipoperfusión); hipotensión sostenida a los 15 minutos consecutivos de presión baja; un vasopresor cuenta sólo si la presión lo necesita. El motor no modela un estado de llenado aparte: «pese a un llenado adecuado» es la presión que explica la embolia, sin sangrado ni caídas por fármacos (los casos de TEP no tienen hipovolemia) |
+| Evaluación | El tamizaje de `pe_unindicated_thrombolysis` lee el registro de la primera dosis y explica la regla con las mismas palabras; si corría un vasopresor innecesario, lo dice. Agrega que la orden se juzga con el estado de su minuto |
+| Encuentros anteriores | Leen la redacción con que se congelaron (la de V3 o la de C-2026-09-30-02). Los registros anteriores al 2026-09-29 siguen leyéndose por las notas de su tiempo |
+
+**P-04 B · el efecto, el sangrado y el juicio, separados.**
+
+- **Efecto:** `lysis_effect` ya no exige la indicación. Cualquier primera dosis disuelve la parte embólica de la
+  obstrucción con la misma curva docente (inicio a los 5 min, constante de 30 min, hacia 0,62). Lo que eso cambia
+  en el paciente depende de todo lo demás: el sangrado, el volumen rápido y la presión positiva.
+- **Sangrado:** los mecanismos de siempre, sin tasas de PEITHO. La pérdida oculta (0,006 g/dL por minuto) tras
+  cualquier dosis y, sólo si el caso declara un motivo (la 33f, operada hace 12 días), el sangrado de ese sitio
+  desde el minuto 20.
+- **Juicio:** la indicación se juzga con el registro del minuto de la dosis. Una mejoría posterior no la vuelve
+  correcta.
+- **Sala:** las notas ya no prometen mejoría («the drug acts on the clot…; what it changes is seen on
+  reassessment»). El aviso del sangrado dice sólo que la hemoglobina cae; ya no afirma que la presión cae con
+  ella, porque ahora depende también de la disolución.
+
+**P-05 D · segundo curso, como simplificación explícita.** El registro de cada dosis (versión 3) lleva el agente,
+la dosis y el curso:
+
+- `initial`: la primera dosis;
+- `initial_regimen`: el resto de un esquema de alteplasa, hasta 100 mg dentro de 120 minutos de la primera;
+- `second_course`: cualquier otra dosis posterior, con `additional_exposure`.
+
+El segundo curso no agrega reperfusión ni un sangrado con magnitud propia, y la sala lo dice como
+simplificación, no como evidencia de que repetir no tenga efecto. La primera dosis sigue su curso: nunca se
+reinicia ni desaparece. Cada dosis se lista una sola vez entre los medicamentos dados.
+
+### Trayectorias con P-04 (sonda del 2026-09-30)
+
+Anotaciones: PA · FC · SpO₂ · FR · obstrucción embólica · Hb.
+
+| Escenario | 25 min | 65 min | 105 min |
+|---|---|---|---|
+| 33f, lisis no indicada al llegar (aire ambiente) | 117/74 · 120 · 91 · 28 · 0,83 · Hb 12,3 | 121/76 · 118 · 92 · 28 · 0,70 · Hb 10,8 | 119/75 · 119 · 92 · 28 · 0,66 · Hb 9,4 |
+| 33f, oxígeno y heparina | 109/69 · 125 · 99 · 30 · 1,02 · Hb 12,6 | 107/68 · 126 · 99 · 31 · 1,06 · Hb 12,6 | 105/67 · 127 · 99 · 31 · 1,10 · Hb 12,6 |
+| 61m, lisis indicada al llegar | 94/58 · 128 · 89 · 30 · 0,83 · Hb 11,4 | 100/62 · 124 · 90 · 29 · 0,70 · Hb 11,2 | — |
+
+**Para su revisión:** en la 33f la obstrucción cae y la hemoglobina baja 3,2 g/dL en 105 minutos, pero la
+presión sube, porque con las magnitudes actuales la disolución pesa más que el sangrado. Cambiar ese balance
+sería un ajuste de magnitud, y no lo hice. También se conserva la pérdida oculta tras cualquier dosis (decisión
+del 2026-09-20). Si usted la lee como un sangrado garantizado por el solo hecho de dar el fármaco, se retira
+en una decisión aparte.
 
 ### Trayectorias de 61m con el criterio revisado
 
@@ -65,7 +121,7 @@ indicada y el tamizaje propone el evento.
 | Exceso de velocidad | +0.0006 de obstrucción por mL por minuto sobre lo tolerado |
 | Recuperación del ventrículo distendido | Constante de 45 min |
 | Reparto del daño del volumen | 65% como caída de gasto, 35% como peor oxigenación |
-| Trombolisis | Empieza a los 5 min; la obstrucción cae hacia 0.62 con constante de 30 min; el espacio muerto hacia 0.80 |
+| Trombolisis | Empieza a los 5 min; la obstrucción cae hacia 0.62 con constante de 30 min; el espacio muerto hacia 0.80. Desde el 2026-09-30, indicada o no (P-04) |
 | Sangrado oculto | −0.006 g/dL por minuto en todo paciente trombolisado |
 | Sangrado mayor | Con riesgo declarado, desde los 20 min: −0.03 g/dL y +0.0015 de obstrucción por minuto |
 | Presión positiva | −0.40 de circulación, más 0.03 por cmH₂O de PEEP sobre 5 |

@@ -1664,10 +1664,11 @@ def _order(state, a):
     elif kind == "thrombolysis" and (state.get("engine_family") == "pulmonary_embolism"
                                      or __import__("generated_pe").spec(state) is not None):
         note, indication = pe_obstruction.give_thrombolysis(
-            f, f["elapsed"], _pe_assessment(state), state.get("observable", {}))
+            f, f["elapsed"], _pe_assessment(state), state.get("observable", {}),
+            agent=a.get("agent"), dose_mg=a.get("dose_mg"))
         a["thrombolysis_indication"] = indication
-        tr["administered_medications"].append({"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"],
-                                               "time_min": int(state.get("sim_time", 0))})
+        # Recorded once, below, with every other medicine: until 2026-09-30 this branch
+        # also wrote its own row, so each dose was listed twice (P-05, the exposure).
         f.setdefault("procedure_events", []).append(
             {"type": "procedure", "label": note, "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
         label = f"{a['agent']} {a['dose_mg']:g} mg {a['route']} given"
@@ -2486,6 +2487,8 @@ def _surface(state):
         dbp -= reaction["sbp_drop"] * .55
         hr += reaction["hr_rise"] + min(12, f["bronchodilation"] * 12)
         effort = obstruction
+        # TD-47 (2026-09-30): through an endotracheal tube there is no stridor to hear or
+        # to pay for; the reaction itself goes on (anaphylaxis_reaction.stridor_heard).
         f["upper_airway_stridor"] = bool(reaction["stridor"])
         if reaction["stridor"]:
             # An upper airway that is closing is not relieved by a nebulizer.
@@ -3175,6 +3178,9 @@ def current_findings(state):
         findings["Vascular access"] = glucose_rescue.access_finding(lines)
     elif family == "opioid":
         findings["Respiratory"] = f"Respiratory rate {o.get('respiratory_rate')} /min; " + ("assisted ventilation is in progress." if f.get("bag_mask") or f.get("invasive") else "breaths remain shallow." if o.get("respiratory_rate", 12) < 10 else "spontaneous breaths have greater depth.")
+    elif family == "anaphylaxis" and f.get("invasive"):
+        # TD-47 (2026-09-30): the room no longer hears stridor through a tube.
+        findings["Respiratory"] = anaphylaxis_reaction.intubated_chest(findings.get("Respiratory"))
     return findings
 
 

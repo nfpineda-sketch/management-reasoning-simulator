@@ -47,8 +47,8 @@ texto que el residente lee al pedir el POCUS al llegar. El motor puede cambiar a
 | dvt_femoral | Compressible bilaterally | Compresibles bilateralmente |
 | dvt_popliteal | Compressible bilaterally | Compresibles bilateralmente |
 
-- **C14, por qué:** ST depression in V1-V3 with posterior hypokinesis on POCUS: the regional wall motion can prioritise reperfusion for an occlusion the 12-lead understates (decision A); in the engine the wall motion evolves with the ischaemic minutes.
-- **Evidencia esperada:** requests POCUS and names the posterior hypokinesis; uses it with the ECG and the posterior leads to treat the pattern as an occlusion; activates or expedites reperfusion
+- **C14, por qué:** ST depression in V1-V3 with a regional wall-motion abnormality reported on POCUS (posterior hypokinesis): with the ECG and the posterior leads, the reported wall motion can support prioritising reperfusion for an occlusion the 12-lead understates (decision A); in the engine the wall motion evolves with the ischaemic minutes. Two limits: an isolated regional wall-motion abnormality is subtle, and the written report states it rather than the resident recognising it, so recognising it is not required; and a non-dilated aortic root and descending aorta on POCUS do not exclude an aortic dissection.
+- **Evidencia esperada:** requests POCUS and relates the reported wall motion to the ECG; uses it with the ECG and the posterior leads to treat the pattern as an occlusion; activates or expedites reperfusion
 
 **Revisión docente:** ☐ Confirmo tal como está · ☐ Cambio: ____________ · Firma y fecha: ________
 
@@ -69,8 +69,8 @@ texto que el residente lee al pedir el POCUS al llegar. El motor puede cambiar a
 | dvt_femoral | Compressible bilaterally | Compresibles bilateralmente |
 | dvt_popliteal | Compressible bilaterally | Compresibles bilateralmente |
 
-- **C14, por qué:** Borderline pressure with globally reduced contraction on POCUS: the global LV function, a state the EPA lists, is what should limit volume and prompt early support while reperfusion is arranged; the engine answers volume poorly in this profile.
-- **Evidencia esperada:** requests POCUS and names the globally reduced contraction; limits or withholds volume, or escalates support, because of it; relates it to the urgency of reperfusion
+- **C14, por qué:** Borderline pressure with incipient hypoperfusion (104/66, cool extremities, capillary refill 3 s) and intermediate POCUS findings: globally mildly reduced contraction, scattered basal B-lines and an IVC of 1.9 cm with about 50% collapse. No single answer follows from them: withholding volume, a small bolus with its limit stated and reassessed, or early support can each be justified, and the engine answers large volumes poorly in this profile. C14 observes whether the volume, support and urgency decisions are made with the global LV function in view and adapted to the response.
+- **Evidencia esperada:** requests POCUS and relates the global LV function, the B-lines and the IVC to the volume decision; withholds volume, or gives a small bolus with its limit stated and reassesses it, or escalates support, and says why; adapts the plan to the response and relates it to the urgency of reperfusion
 
 **Revisión docente:** ☐ Confirmo tal como está · ☐ Cambio: ____________ · Firma y fecha: ________
 

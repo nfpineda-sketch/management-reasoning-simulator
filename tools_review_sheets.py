@@ -326,6 +326,9 @@ def r2_sheet():
             f"esperada: {'; '.join(_cell(e) for e in c14.get('expected_evidence') or ())}",
             f"- **ACEP · alineación y límite:** {_cell(note['acep'])}",
             f"- **Posible problema clínico:** {_cell(note['issue'])}",
+            *([f"- **Criterio docente aprobado (R-2, 2026-09-30; aprueba el criterio, no la ficha):** "
+               f"{_cell(pocus_review_notes.FACULTY_CRITERIA[case_id])}"]
+              if case_id in pocus_review_notes.FACULTY_CRITERIA else []),
             f"- **Recomendación:** **{note['recommendation']}**",
             "",
             R2_REVIEW_LINE,

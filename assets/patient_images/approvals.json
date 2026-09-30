@@ -1274,5 +1274,16 @@
   "username": "npinedafaculty",
   "note": "Aprobación del docente dada en el chat del 2026-09-26 («soluciona esos dos, aprueba»: la V01 61898a34 que esperaba su decisión), por sobre el rechazo del revisor automático conforme a la decisión 5: compatible y parcial, el esfuerzo respiratorio se evalúa al examinar; registrada por el agente a su pedido.",
   "created_at": 1790459665
+ },
+ {
+  "id": "8f989ed0753a4c49af98e20c228f5e22",
+  "asset_id": "906790d456124104932a98e703780238",
+  "identity_id": "V34",
+  "role": "state",
+  "field": "clinical_review",
+  "value": "pending",
+  "username": "npinedafaculty",
+  "note": "Decisión docente P-07 del 2026-09-30, registrada por el agente a su pedido: pulmonary_edema_75f usa la vista neutral a la llegada hasta que una imagen aprobada represente adecuadamente su dificultad respiratoria. La aprobación clínica de V34 queda pendiente para este estado; V34 no se elimina ni se genera ninguna imagen nueva.",
+  "created_at": 1790803265
  }
 ]

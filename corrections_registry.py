@@ -66,6 +66,10 @@ INSTRUCTION_2026_09_29_CYCLE10 = ("Instrucción docente del 2026-09-29 que aprue
 INSTRUCTION_2026_09_30_PACKET10 = ("Instrucción docente del 2026-09-30 que responde al paquete de decisiones del "
                                    "ciclo 10 (P-01 A, P-06 B, P-10 A como regla técnica de permisos y P-11 B; sin "
                                    "abrir un ciclo nuevo)")
+INSTRUCTION_2026_09_30_SECOND = ("Instrucción docente del 2026-09-30, segunda respuesta al paquete del ciclo 10 (P-04 B "
+                                 "con condiciones, P-05 D como simplificación explícita, P-06 corregido, P-07 con la "
+                                 "75f en vista neutral, R-2 para dos casos, R-3 con C3 parcial y TD-47, R-4 con su "
+                                 "terminología y TD-46; sin abrir un ciclo nuevo)")
 INSTRUCTION_2026_09_29_POST_V3 = ("Instrucción docente del 2026-09-29 posterior a V3 (cerrar e implementar las decisiones "
                                   "clínicas analizadas: TEP con D revisada, DC1, POCUS de la HDA, TD-31, DC2–DC5 de "
                                   "hipoglicemia y el texto de acs_70f_left_main; y las decisiones no clínicas de su "
@@ -2647,6 +2651,210 @@ CORRECTIONS = (
         "tests": ["test_regression_scripts_are_active_or_retired.py::test_every_script_is_active_or_retired_and_never_both",
                   "test_regression_scripts_are_active_or_retired.py::test_every_retired_script_says_why_and_is_kept",
                   "test_regression_scripts_are_active_or_retired.py::test_the_runner_reports_active_and_retired_apart"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-05",
+        "date": "2026-09-30",
+        "title": "TD-46: una línea del POCUS o del E-FAST de un caso sin relato aprobado se ve entera en inglés",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("TD-46 aprobado por el docente. Antes de que el docente aprobara el relato de un caso, "
+                   "language.say traducía palabras sueltas dentro de su POCUS y la línea quedaba mezclada («Moderately "
+                   "reducido global contraction»). Ahora, con el caso conocido (la sala y cada documento lo nombran), "
+                   "cada línea que todavía dice un hallazgo del POCUS o del E-FAST escrito por el caso se aparta "
+                   "entera, con su rótulo, antes de las reglas, y se muestra en inglés; en la forma compacta del "
+                   "Trace, cada sección. Un caso aprobado lee su línea entera en español, y los hallazgos que compone "
+                   "el motor se dicen como antes. Sin traducciones nuevas ni llamadas."),
+        "authorised_by": INSTRUCTION_2026_09_30_SECOND,
+        "affects": {"modules": ["language"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_pocus_line_whole_until_approved.py::"
+                  "test_the_case_s_own_line_stays_whole_in_english_until_its_case_is_approved",
+                  "test_pocus_line_whole_until_approved.py::test_an_approved_case_reads_the_whole_line_in_spanish",
+                  "test_pocus_line_whole_until_approved.py::test_the_findings_the_engine_composes_are_said_as_before",
+                  "test_pocus_line_whole_until_approved.py::test_no_bank_case_leaves_a_line_in_two_languages"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-06",
+        "date": "2026-09-30",
+        "title": "P-04: la trombólisis actúa sobre el trombo esté o no indicada; efecto, sangrado y juicio, separados",
+        "scope": {"level": "family", "family": "pulmonary_embolism",
+                  "applies_to": "pulmonary_embolism_33f y 61m, y el núcleo que comparten los casos generados de TEP"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión docente P-04 B con condiciones. pe_obstruction.lysis_effect ya no exige la indicación: "
+                   "cualquier primera dosis disuelve la parte embólica de la obstrucción con la misma curva docente, "
+                   "y lo que eso cambia en el paciente depende de todo lo demás que actúa sobre él. El sangrado sigue "
+                   "con los mecanismos existentes (la pérdida oculta y, donde el caso declara un motivo para sangrar, "
+                   "ese sangrado), sin tasas de PEITHO. Las notas de la sala ya no prometen mejoría («lo que cambie se "
+                   "ve al reevaluar»), y la del sangrado de la 33f ya no afirma que la presión cae con él. La "
+                   "indicación se sigue juzgando con el registro del minuto de la dosis, y el tamizaje dice que lo "
+                   "que siguió no lo cambia. Las notas antiguas conservan su traducción para los registros previos. "
+                   "Sólo encuentros nuevos."),
+        "authorised_by": INSTRUCTION_2026_09_30_SECOND,
+        "affects": {"modules": ["pe_obstruction", "rubric_screening", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_pe_obstruction.py::test_a_normotensive_submassive_embolism_has_no_indication",
+                  "test_pe_obstruction.py::"
+                  "test_an_unindicated_thrombolytic_still_reperfuses_and_is_still_judged_on_its_minute",
+                  "test_pe_obstruction.py::test_a_patient_with_a_reason_to_bleed_bleeds_badly",
+                  "test_generated_pe.py::test_thrombolysis_before_the_indication_acts_and_stays_unindicated"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-07",
+        "date": "2026-09-30",
+        "title": ("P-05: el resto de un esquema de alteplasa completa la primera dosis; otra dosis es un segundo "
+                  "curso registrado, sin efecto propio"),
+        "scope": {"level": "family", "family": "pulmonary_embolism"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión docente P-05 D, como simplificación explícita. Cada dosis lleva en su registro de "
+                   "indicación (versión 3) el agente, la dosis y el curso: la inicial, el resto de un esquema de "
+                   "alteplasa (hasta 100 mg dentro de 120 minutos de la primera) o un segundo curso, con su "
+                   "exposición adicional. El segundo curso no agrega reperfusión ni un sangrado con magnitud propia, "
+                   "y la sala dice que es una simplificación, no evidencia de que repetir no tenga efecto. La "
+                   "evolución pendiente de la primera dosis sigue: nunca se reinicia ni desaparece. Además, cada "
+                   "dosis se lista una sola vez entre los medicamentos dados: la rama del TEP la escribía dos veces."),
+        "authorised_by": INSTRUCTION_2026_09_30_SECOND,
+        "affects": {"modules": ["pe_obstruction", "family_engine", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_pe_obstruction.py::test_a_persisting_shock_does_not_make_a_second_dose_indicated",
+                  "test_pe_obstruction.py::test_the_rest_of_an_alteplase_regimen_completes_the_first_dose",
+                  "test_pe_obstruction.py::"
+                  "test_a_second_course_neither_restarts_nor_stops_the_first_and_adds_no_effect"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-08",
+        "date": "2026-09-30",
+        "title": ("P-06 corregido: el criterio de lisis distingue el shock obstructivo de la hipotensión sostenida, "
+                  "con el vasopresor que la presión necesita"),
+        "scope": {"level": "family", "family": "pulmonary_embolism",
+                  "applies_to": ("D3 y pe_unindicated_thrombolysis de la 33f; D3, su alternativa y la fila C1 de "
+                                 "TDFC de la 61m; las explicaciones del tamizaje")},
+        "kind": "clinical_decision_applied",
+        "reason": ("Corrección docente de P-06 el mismo día. El texto dice ahora la regla que aplica el motor: shock "
+                   "obstructivo atribuible al TEP (PAS < 90 mmHg, o un vasopresor necesario para alcanzar 90 mmHg "
+                   "pese a un llenado adecuado, con signos de hipoperfusión), reconocido desde que está presente, u "
+                   "hipotensión sostenida (PAS < 90 mmHg, o un vasopresor necesario para mantenerla en 90 mmHg o "
+                   "más, durante 15 minutos consecutivos); un vasopresor que la presión no necesita, o una presión "
+                   "bajada por sangrado o un fármaco, no es ninguno. El texto vive junto a la regla "
+                   "(pe_obstruction.CRITERION_TEXT). El motor no modela un estado de llenado aparte: «pese a un "
+                   "llenado adecuado» es la presión que explica la embolia, sin sangrado ni caídas por fármacos. La "
+                   "redacción de C-2026-09-30-02 y la anterior quedan en los encuentros que se congelaron con ellas."),
+        "authorised_by": INSTRUCTION_2026_09_30_SECOND,
+        "affects": {"modules": ["pe_obstruction", "case_assessment_bank", "tdfc_declarations", "rubric_screening"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_pe_lysis_criterion_wording.py::test_the_criterion_is_stated_in_d3_the_event_and_c1",
+                  "test_pe_lysis_criterion_wording.py::test_the_engine_applies_the_rule_the_declarations_state",
+                  "test_pe_lysis_criterion_wording.py::test_an_encounter_frozen_before_keeps_its_approved_tdfc_wording",
+                  "test_evaluation_basis.py::test_the_legacy_snapshot_is_the_code_before_the_change_for_every_other_case"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-09",
+        "date": "2026-09-30",
+        "title": "P-07: pulmonary_edema_75f llega con la vista neutral; la aprobación clínica de V34 queda pendiente",
+        "scope": {"level": "variant", "variants": ["pulmonary_edema_75f"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión docente P-07. El paquete de imágenes agrega, bajo la cuenta del docente, una revisión "
+                   "clínica «pending» de V34 para su estado de llegada, después de las aprobaciones que tenía; con "
+                   "las dos revisiones exigidas (configuración del piloto) la sala muestra la vista neutral y el "
+                   "examen escrito. V34 no se borra ni se excluye, el estado clínico del caso no cambia y no se genera "
+                   "ninguna imagen: V34 sigue siendo utilizable, así que nada pide una nueva."),
+        "authorised_by": INSTRUCTION_2026_09_30_SECOND,
+        "affects": {"modules": ["assets/patient_images/approvals.json"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_p07_75f_arrives_with_the_neutral_view.py::"
+                  "test_the_pack_keeps_what_was_approved_and_adds_the_pending_decision_last",
+                  "test_p07_75f_arrives_with_the_neutral_view.py::"
+                  "test_after_the_import_v34_is_usable_but_not_approved_so_the_pilot_shows_the_neutral_view"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-10",
+        "date": "2026-09-30",
+        "title": "TD-47: con el tubo endotraqueal no se ausculta ni se cobra estridor; la anafilaxia sigue su curso",
+        "scope": {"level": "family", "family": "anaphylaxis"},
+        "kind": "technical_defect",
+        "reason": ("TD-47, con la decisión R-3. El estridor dependía sólo de la reacción y seguía marcado, restando "
+                   "SpO2 y fijando el esfuerzo, en una paciente intubada. Ahora el estridor se oye y se cobra sólo sin "
+                   "tubo (anaphylaxis_reaction.stridor_heard), y el examen de una paciente intubada dice «no stridor "
+                   "through the tube» con las sibilancias que escribió el caso. La reacción, el broncoespasmo y la "
+                   "circulación no cambian, y no se modela una vía aérea difícil: intubar sigue resultando siempre."),
+        "authorised_by": INSTRUCTION_2026_09_30_SECOND,
+        "affects": {"modules": ["anaphylaxis_reaction", "family_engine"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_td47_and_r4_engine_findings.py::test_no_stridor_is_heard_or_charged_through_the_tube",
+                  "test_td47_and_r4_engine_findings.py::test_without_a_tube_the_stridor_and_its_price_are_as_before",
+                  "test_td47_and_r4_engine_findings.py::test_the_intubated_chest_keeps_each_case_s_own_wheeze"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-11",
+        "date": "2026-09-30",
+        "title": "R-3: C3 de anaphylaxis_29f es una oportunidad parcial: la anticipación de la vía aérea, no su ejecución",
+        "scope": {"level": "variant", "variants": ["anaphylaxis_29f"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión docente R-3 sobre T-1. La fila C3 de TDFC de la 29f observa el reconocimiento de la "
+                   "amenaza, la anticipación de una vía aérea difícil (pedir ayuda capaz de manejarla o prepararla) "
+                   "y la reevaluación del estridor; ya no incluye el oxígeno, que observa F1. Lo que queda fuera dice "
+                   "que la ejecución no se observa, porque intubar siempre resulta, y la regla de confirmación es la "
+                   "del docente: nunca por la adrenalina y el oxígeno solos. TDFC no tiene un nivel parcial por "
+                   "observación: la fila lo dice en su componente, su evidencia y lo que queda fuera, con la revisión "
+                   "R-3 junto a su revisión original. Sólo encuentros nuevos."),
+        "authorised_by": INSTRUCTION_2026_09_30_SECOND,
+        "affects": {"modules": ["tdfc_declarations", "tdfc_review"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_tdfc_opportunities.py::test_the_published_final_table_is_the_bank_s",
+                  "test_r2_r3_declarations.py::test_the_29f_c3_row_observes_the_anticipation_and_says_what_it_cannot"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-12",
+        "date": "2026-09-30",
+        "title": "R-2: criterios C14 de acs_61m_posterior y acs_70f_left_main; sus fichas siguen pendientes",
+        "scope": {"level": "variant", "variants": ["acs_61m_posterior", "acs_70f_left_main"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisión docente R-2 para los dos casos discutidos; aprueba los criterios, no las fichas. 61m: "
+                   "no se exige reconocer la hipocinesia posterior sutil, que el informe escrito entrega, sino usar la "
+                   "motilidad informada con el ECG y las derivaciones posteriores; una aorta no dilatada en el POCUS "
+                   "no descarta una disección. 70f: ante hallazgos intermedios no hay una respuesta obligatoria; un "
+                   "bolo pequeño con su límite y reevaluación se juzga en contexto y por la adaptación posterior. Los "
+                   "borradores en español de C14 y la hoja R-2 lo reflejan; las otras 12 fichas siguen pendientes, "
+                   "sin marcas ni firmas. Sólo encuentros nuevos."),
+        "authorised_by": INSTRUCTION_2026_09_30_SECOND,
+        "affects": {"modules": ["case_assessment_bank", "c14_review", "spanish_drafts", "pocus_review_notes",
+                                "tools_review_sheets"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_r2_r3_declarations.py::test_the_61m_c14_row_does_not_require_the_subtle_finding",
+                  "test_r2_r3_declarations.py::test_the_70f_c14_row_accepts_a_justified_small_bolus",
+                  "test_c14_opportunities.py::test_the_final_table_document_is_the_bank_s_declarations",
+                  "test_spanish_drafts.py::test_every_c14_text_of_the_bank_has_one_draft_and_no_draft_is_stale"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-09-30-13",
+        "date": "2026-09-30",
+        "title": ("R-4: las 18 frases finales del motor quedan para revisión, y la sala usa «aumento de volumen», "
+                  "«dolor a la palpación» y «suero glucosado»"),
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("Decisión docente R-4. Los borradores de las 18 frases toman su versión final (la reposición de "
+                   "volumen de la fila 1, «reaparece» y «hemitórax», la frecuencia de la fila 9 como la de la "
+                   "ventilación asistida, que es la que muestra el motor, y la terminología acordada) y se entregan "
+                   "juntos para su revisión; ninguno se aprueba ni se muestra. La fila 3 conserva «menor esfuerzo»: "
+                   "una prueba verifica que el motor nunca la escribe junto al agotamiento. Las frases de la sala que "
+                   "ya tenían español usan la misma terminología («aumento de volumen», «dolor a la palpación», «suero "
+                   "glucosado»)."),
+        "authorised_by": INSTRUCTION_2026_09_30_SECOND,
+        "affects": {"modules": ["spanish_drafts", "language", "tools_review_sheets"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_spanish_drafts.py::test_every_engine_sentence_has_its_review_reading_and_nothing_else_does",
+                  "test_td47_and_r4_engine_findings.py::test_reduced_effort_is_never_written_beside_exhaustion",
+                  "test_review_sheets_are_current.py::test_the_sheets_on_disk_are_the_ones_the_code_writes"],
         "preservation": None,
     },
 )

@@ -1191,7 +1191,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 - **D2** · ventana 0–45 min. The POCUS, the CT pulmonary angiogram, the D-dimer with its age-adjusted limit, the blood gas and the calf examination are all available, and the case's own alternative explanation has to be addressed rather than assumed.
   - Esperado: Obtains objective evidence rather than accepting the offered explanation; examines or investigates for the source.
   - Alternativas aceptables: POCUS as the first objective evidence when the patient cannot be moved; treating on clinical grounds with the confirmation stated as pending.
-- **D3** · ventana 0–60 min. Anticoagulation, oxygen and the specialist pathway are executable; without obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), thrombolysis is not the treatment this patient needs.
+- **D3** · ventana 0–60 min. Anticoagulation, oxygen and the specialist pathway are executable; without obstructive shock attributable to the PE (SBP < 90 mmHg, or a vasopressor needed to reach 90 mmHg despite adequate filling, with signs of hypoperfusion), recognised as soon as it is present, or sustained hypotension (SBP < 90 mmHg, or a vasopressor needed to keep it at 90 mmHg or above, for 15 consecutive minutes), thrombolysis is not the treatment this patient needs. A vasopressor the pressure does not need, or a pressure lowered by bleeding or a drug, is neither.
   - Esperado: Anticoagulates or states why it is withheld; addresses the oxygenation.
   - Alternativas aceptables: Awaiting the confirming study with anticoagulation stated as pending it; oxygen titrated rather than given at a fixed flow.
 - **D4** · ventana 10–90 min. The engine moves the saturation, the rate and the pressure in response, and the right ventricle is where deterioration shows first.
@@ -1220,13 +1220,13 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
   - Evidencia necesaria: The absence of an executed anticoagulation action in the window.
   - Exclusiones: The encounter closed before the confirming study was reported.
   - Dominios sobre los que pesa: D3.
-- `pe_unindicated_thrombolysis` — **Acción peligrosa.** Systemic thrombolysis is given without obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), in a patient with a recent operation.
-  - Se activa cuando: A thrombolytic is executed while the record shows neither obstructive shock attributable to the PE nor sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), and the history carries a recent surgical site.
+- `pe_unindicated_thrombolysis` — **Acción peligrosa.** Systemic thrombolysis is given without obstructive shock attributable to the PE (SBP < 90 mmHg, or a vasopressor needed to reach 90 mmHg despite adequate filling, with signs of hypoperfusion), recognised as soon as it is present, or sustained hypotension (SBP < 90 mmHg, or a vasopressor needed to keep it at 90 mmHg or above, for 15 consecutive minutes), in a patient with a recent operation.
+  - Se activa cuando: A thrombolytic is executed while the record shows neither obstructive shock attributable to the PE nor sustained hypotension, as the engine defines them, and the history carries a recent surgical site. What followed the dose does not change it: the order is judged on the minute it was given.
   - Información que debía estar en el registro: Arrival and subsequent observables.
   - Ventana y oportunidad: 0–180 min.
   - Disponible preguntando, se haya preguntado o no: **Previous health** (the operation twelve days ago); **Bleeding symptoms** (whether the surgical site has bled).
-  - Alternativas aceptables: Anticoagulation; arranging a reperfusion-capable team without giving the drug; thrombolysis once obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), is recorded.
-  - Evidencia necesaria: An executed thrombolysis action with the record showing neither obstructive shock attributable to the PE nor sustained hypotension.
+  - Alternativas aceptables: Anticoagulation; arranging a reperfusion-capable team without giving the drug; thrombolysis once obstructive shock attributable to the PE, or sustained hypotension, is recorded.
+  - Evidencia necesaria: An executed thrombolysis action with the record showing neither obstructive shock attributable to the PE nor sustained hypotension at its minute.
   - Exclusiones: The record shows obstructive shock attributable to the PE, or sustained hypotension, within the engine's own criterion.
   - Dominios sobre los que pesa: D3.
 
@@ -1238,9 +1238,9 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 - **D2** · ventana 0–45 min. The POCUS, the CT pulmonary angiogram, the D-dimer with its age-adjusted limit, the blood gas and the calf examination are all available, and the case's own alternative explanation has to be addressed rather than assumed.
   - Esperado: Obtains objective evidence rather than accepting the offered explanation; examines or investigates for the source.
   - Alternativas aceptables: POCUS as the first objective evidence when the patient cannot be moved; treating on clinical grounds with the confirmation stated as pending.
-- **D3** · ventana 0–60 min. Anticoagulation, oxygen, the reperfusion-capable team and, in obstructive shock attributable to the PE or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), thrombolysis are all executable.
+- **D3** · ventana 0–60 min. Anticoagulation, oxygen, the reperfusion-capable team and thrombolysis are all executable; thrombolysis in obstructive shock attributable to the PE (SBP < 90 mmHg, or a vasopressor needed to reach 90 mmHg despite adequate filling, with signs of hypoperfusion), recognised as soon as it is present, or sustained hypotension (SBP < 90 mmHg, or a vasopressor needed to keep it at 90 mmHg or above, for 15 consecutive minutes). A vasopressor the pressure does not need, or a pressure lowered by bleeding or a drug, is neither.
   - Esperado: Anticoagulates or states why it is withheld; involves a reperfusion-capable team rapidly.
-  - Alternativas aceptables: Thrombolysis with its basis stated: obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes); cautious volume with a stated limit.
+  - Alternativas aceptables: Thrombolysis with its basis stated: obstructive shock attributable to the PE (SBP < 90 mmHg, or a vasopressor needed to reach 90 mmHg despite adequate filling, with signs of hypoperfusion), recognised as soon as it is present, or sustained hypotension (SBP < 90 mmHg, or a vasopressor needed to keep it at 90 mmHg or above, for 15 consecutive minutes); cautious volume with a stated limit.
 - **D4** · ventana 10–90 min. The engine moves the saturation, the rate and the pressure in response, and the right ventricle is where deterioration shows first.
   - Esperado: States a reassessment interval; checks the oxygenation and the haemodynamics.
   - Alternativas aceptables: Reassessing by POCUS rather than by the vitals.

@@ -1,7 +1,11 @@
 # Verificación de la evidencia de P-04 y P-05 (TEP)
 
-2026-09-30, a pedido docente (respuesta al paquete del ciclo 10, puntos 5 y 7). **Nada está implementado:** P-04 y P-05
-esperan una aprobación posterior.
+2026-09-30, a pedido docente (respuesta al paquete del ciclo 10, puntos 5 y 7).
+
+> **Decididas e implementadas el 2026-09-30 (segunda respuesta):** P-04 **B con condiciones** (C-2026-09-30-06) y
+> P-05 **D como simplificación explícita** (C-2026-09-30-07). La regla final y las trayectorias están en
+> `docs/PULMONARY_EMBOLISM_MAGNITUDES.md`, sección «Regla final y cambios del 2026-09-30». Este documento queda
+> como la evidencia que se presentó.
 
 ## Cómo se verificó y con qué límite
 

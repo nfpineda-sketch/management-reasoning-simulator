@@ -1,5 +1,8 @@
 # Guía del residente · piloto formativo
 
+> **Estado (R-5, 2026-09-30): borrador pendiente de aprobación docente.** Se entrega a los residentes sólo
+> después de esa aprobación.
+
 Un simulador de razonamiento de manejo. Es **formativo**: no hay nota global, ranking ni tabla de
 posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada encuentro.
 
@@ -10,7 +13,9 @@ posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada
 - **Foto e iniciales:** son opcionales. Lee el acuerdo; puedes aceptarlo o no, y nada cambia en tus
   encuentros.
 - **Idioma:** elígelo en «Idioma · Language». Las pantallas están en español o en inglés, y puedes escribir
-  tus órdenes en cualquiera de los dos. Durante un encuentro el idioma queda fijo.
+  tus órdenes en cualquiera de los dos. Durante un encuentro el idioma queda fijo. Parte del relato de un
+  caso, como su informe POCUS, puede verse en inglés mientras su traducción no esté aprobada; cada línea se
+  ve entera en un solo idioma.
 - **Sin datos reales:** no escribas nombres ni datos de pacientes reales. Todo es simulado.
 
 ## El encuentro

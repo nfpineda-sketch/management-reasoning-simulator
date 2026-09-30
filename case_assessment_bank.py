@@ -694,16 +694,18 @@ def _embolism(case_id, d1_text, d1_expected, d3_text, d3_expected, d3_alternativ
          *extra_events])}
 
 
+# P-06 (faculty, 2026-09-30, corrected the same day): the criterion in the words
+# pe_obstruction keeps beside the rule it applies, for new encounters.
+from pe_obstruction import CRITERION_TEXT as PE_LYSIS_CRITERION, NEITHER_TEXT as PE_LYSIS_NEITHER
+
 CASES.update(_embolism(
     "pulmonary_embolism_33f",
     "Sudden breathlessness with tachycardia and hypoxaemia, in a patient who offers anxiety "
     "as the explanation: the threat has to be recognised against that anchor.",
     ["Names the hypoxaemia and the tachycardia as a threat",
      "does not accept the offered explanation without objective evidence"],
-    # P-06 (faculty, 2026-09-30): the criterion as the engine applies it (pe_obstruction), for new encounters.
-    "Anticoagulation, oxygen and the specialist pathway are executable; without obstructive shock "
-    "attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), "
-    "thrombolysis is not the treatment this patient needs.",
+    "Anticoagulation, oxygen and the specialist pathway are executable; without " + PE_LYSIS_CRITERION
+    + ", thrombolysis is not the treatment this patient needs. " + PE_LYSIS_NEITHER,
     ["Anticoagulates or states why it is withheld", "addresses the oxygenation"],
     ["Awaiting the confirming study with anticoagulation stated as pending it",
      "oxygen titrated rather than given at a fixed flow"],
@@ -711,17 +713,17 @@ CASES.update(_embolism(
     ["Decides the destination on the observed haemodynamics",
      "states what would change the plan"],
     [_event("pe_unindicated_thrombolysis", "dangerous_action",
-            "Systemic thrombolysis is given without obstructive shock attributable to the PE, or sustained "
-            "hypotension (SBP < 90 mmHg for 15 consecutive minutes), in a patient with a recent operation.",
+            "Systemic thrombolysis is given without " + PE_LYSIS_CRITERION
+            + ", in a patient with a recent operation.",
             "A thrombolytic is executed while the record shows neither obstructive shock attributable to "
-            "the PE nor sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), and the history "
-            "carries a recent surgical site.",
+            "the PE nor sustained hypotension, as the engine defines them, and the history carries a recent "
+            "surgical site. What followed the dose does not change it: the order is judged on the minute it was "
+            "given.",
             ["Arrival and subsequent observables"], (0, 180),
             ["Anticoagulation", "arranging a reperfusion-capable team without giving the drug",
-             "thrombolysis once obstructive shock attributable to the PE, or sustained hypotension "
-             "(SBP < 90 mmHg for 15 consecutive minutes), is recorded"],
+             "thrombolysis once obstructive shock attributable to the PE, or sustained hypotension, is recorded"],
             "An executed thrombolysis action with the record showing neither obstructive shock "
-            "attributable to the PE nor sustained hypotension.",
+            "attributable to the PE nor sustained hypotension at its minute.",
             ["The record shows obstructive shock attributable to the PE, or sustained hypotension, within "
              "the engine's own criterion"],
             ["D3"],
@@ -733,13 +735,11 @@ CASES.update(_embolism(
     "Obstructive shock: the pressure, the rate and the perfusion all demand action before the "
     "confirming study returns.",
     ["Names the shock and its obstructive cause", "acts before the angiogram returns"],
-    "Anticoagulation, oxygen, the reperfusion-capable team and, in obstructive shock attributable to "
-    "the PE or sustained hypotension (SBP < 90 mmHg for 15 consecutive minutes), thrombolysis are all "
-    "executable.",
+    "Anticoagulation, oxygen, the reperfusion-capable team and thrombolysis are all executable; thrombolysis "
+    "in " + PE_LYSIS_CRITERION + ". " + PE_LYSIS_NEITHER,
     ["Anticoagulates or states why it is withheld",
      "involves a reperfusion-capable team rapidly"],
-    ["Thrombolysis with its basis stated: obstructive shock attributable to the PE, or sustained "
-     "hypotension (SBP < 90 mmHg for 15 consecutive minutes)",
+    ["Thrombolysis with its basis stated: " + PE_LYSIS_CRITERION,
      "cautious volume with a stated limit"],
     "Transport, the level of care and who performs the reperfusion are the continuity "
     "decisions, and they depend on the pressure.",
@@ -1492,15 +1492,25 @@ CASES.update(_trauma(
 # physiology; the faculty confirmed the NO on 2026-09-28, with the reason below): all 31
 # bank cases are reviewed for C14.
 
-def _c14_review(group, version="C14-REVIEW-1"):
+def _c14_review(group, version="C14-REVIEW-1", revised=None):
     # "clear": a row the draft already classified and the faculty kept (§9 of the decisions).
-    return {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "human_clinical_review",
-            "decision_group": group, "version": version}
+    reviewed = {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "human_clinical_review",
+                "decision_group": group, "version": version}
+    if revised:
+        reviewed["revised"] = revised
+    return reviewed
 
 
-def _c14_yes(group, rationale, component, evidence):
+def _c14_yes(group, rationale, component, evidence, revised=None):
     return {"opportunity": "yes", "rationale": rationale, "observable_component": component,
-            "expected_evidence": tuple(evidence), "reviewed": _c14_review(group)}
+            "expected_evidence": tuple(evidence), "reviewed": _c14_review(group, revised=revised)}
+
+
+# R-2 (faculty, 2026-09-30): the criteria of two cases, approved before the pilot. They approve the
+# criteria, not the case's whole POCUS review card, which stays pending with the other twelve.
+_R2_CRITERIA = {"id": "R-2", "by": "Nicolás Pineda", "on": "2026-09-30",
+                "decision": "Criteria approved for this case; its POCUS review card stays pending",
+                "basis": "Faculty response to the cycle-10 decision packet, 2026-09-30, point 5."}
 
 
 def _c14_no(group, reason, version="C14-REVIEW-1"):
@@ -1535,24 +1545,40 @@ C14_DECLARATIONS = {
         "antiplatelet and cautious-volume decisions are driven mainly by the ECG, the right-sided leads "
         "(V4R) and the haemodynamic context rather than by the POCUS finding.",
         version="C14-REVIEW-2"),
+    # R-2 (2026-09-30): intermediate findings have no single mandatory answer; a small bolus with
+    # its limit stated and reassessed is judged in context, with what the resident does next.
     "acs_70f_left_main": _c14_yes(
         "clear",
-        "Borderline pressure with globally reduced contraction on POCUS: the global LV function, a "
-        "state the EPA lists, is what should limit volume and prompt early support while reperfusion "
-        "is arranged; the engine answers volume poorly in this profile.",
-        "Deciding volume, support and urgency from the global LV function.",
-        ("requests POCUS and names the globally reduced contraction",
-         "limits or withholds volume, or escalates support, because of it",
-         "relates it to the urgency of reperfusion")),
+        "Borderline pressure with incipient hypoperfusion (104/66, cool extremities, capillary refill 3 s) "
+        "and intermediate POCUS findings: globally mildly reduced contraction, scattered basal B-lines and "
+        "an IVC of 1.9 cm with about 50% collapse. No single answer follows from them: withholding volume, "
+        "a small bolus with its limit stated and reassessed, or early support can each be justified, and "
+        "the engine answers large volumes poorly in this profile. C14 observes whether the volume, support "
+        "and urgency decisions are made with the global LV function in view and adapted to the response.",
+        "Deciding volume, support and urgency with the global LV function in view, and adapting them to "
+        "the response.",
+        ("requests POCUS and relates the global LV function, the B-lines and the IVC to the volume decision",
+         "withholds volume, or gives a small bolus with its limit stated and reassesses it, or escalates "
+         "support, and says why",
+         "adapts the plan to the response and relates it to the urgency of reperfusion"),
+        revised=_R2_CRITERIA),
+    # R-2 (2026-09-30): recognising a subtle wall-motion finding is not required, since the report
+    # states it; and a non-dilated aorta on POCUS never excludes a dissection.
     "acs_61m_posterior": _c14_yes(
         "A",
-        "ST depression in V1-V3 with posterior hypokinesis on POCUS: the regional wall motion can "
-        "prioritise reperfusion for an occlusion the 12-lead understates (decision A); in the engine "
-        "the wall motion evolves with the ischaemic minutes.",
-        "Using regional wall motion to prioritise the reperfusion decision.",
-        ("requests POCUS and names the posterior hypokinesis",
+        "ST depression in V1-V3 with a regional wall-motion abnormality reported on POCUS (posterior "
+        "hypokinesis): with the ECG and the posterior leads, the reported wall motion can support "
+        "prioritising reperfusion for an occlusion the 12-lead understates (decision A); in the engine the "
+        "wall motion evolves with the ischaemic minutes. Two limits: an isolated regional wall-motion "
+        "abnormality is subtle, and the written report states it rather than the resident recognising it, "
+        "so recognising it is not required; and a non-dilated aortic root and descending aorta on POCUS do "
+        "not exclude an aortic dissection.",
+        "Using the reported regional wall motion, with the ECG and the posterior leads, to prioritise the "
+        "reperfusion decision.",
+        ("requests POCUS and relates the reported wall motion to the ECG",
          "uses it with the ECG and the posterior leads to treat the pattern as an occlusion",
-         "activates or expedites reperfusion")),
+         "activates or expedites reperfusion"),
+        revised=_R2_CRITERIA),
     "acs_52m_de_winter": _c14_yes(
         "A",
         "Akinesis of the anterior wall and apex supports treating the de Winter pattern as an "

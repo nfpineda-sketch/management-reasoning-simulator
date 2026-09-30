@@ -10,8 +10,8 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 | # | Caso | Aplicación | Recomendación |
 |---|---|---|---|
 | 1 | `acs_52m_de_winter` | Cardíaca focalizada: motilidad regional del VI, como apoyo del ECG | **CONFIRM** |
-| 2 | `acs_61m_posterior` | Cardíaca focalizada (motilidad regional) y aorta torácica en un dolor torácico con irradiación al dorso | **DISCUSS** |
-| 3 | `acs_70f_left_main` | Cardíaca (función global del VI), pulmonar (líneas B) y VCI en un SCA con hipoperfusión incipiente | **DISCUSS** |
+| 2 | `acs_61m_posterior` | Cardíaca focalizada (motilidad regional) y aorta torácica en un dolor torácico con irradiación al dorso | **CONFIRM** |
+| 3 | `acs_70f_left_main` | Cardíaca (función global del VI), pulmonar (líneas B) y VCI en un SCA con hipoperfusión incipiente | **CONFIRM** |
 | 4 | `gi_bleed_57m` | Hipotensión indiferenciada: corazón y VCI (volumen) | **CONFIRM** |
 | 5 | `gi_bleed_72f` | Hipotensión por sangrado: corazón y VCI (volumen) | **CONFIRM** |
 | 6 | `obstructive_pyelonephritis_58f` | Shock séptico: corazón y VCI para la estrategia de fluidos | **CONFIRM** |
@@ -38,31 +38,33 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
 
-## 2 · `acs_61m_posterior` · DISCUSS
+## 2 · `acs_61m_posterior` · CONFIRM
 
 - **Estado clínico:** A 61-year-old man reports two hours of pressure across his chest and back, with nausea. PA 132/80 · FC 88 · SpO2 96 % · FR 20 · trabajo respiratorio Normal · Alert · llene 2 s, Warm
 - **Aplicación POCUS:** Cardíaca focalizada (motilidad regional) y aorta torácica en un dolor torácico con irradiación al dorso
 - **Hallazgo actual:** lv: Hypokinesis of the posterior wall; the anterior and lateral walls contract normally; ivc: 1.6 cm; about 50% inspiratory collapse. Sin hallazgos en: rv, pericardium, lung_sliding, lungs, lung_consolidation, aorta_root, aorta_descending, aorta_abdominal, dvt_femoral, dvt_popliteal
-- **Qué debe interpretar el residente:** Hipocinesia posterior, compatible con un infarto posterior que el ECG de 12 derivaciones subestima (infradesnivel V1–V3)
+- **Qué debe interpretar el residente:** Motilidad regional informada (hipocinesia posterior), compatible con un infarto posterior que el ECG de 12 derivaciones subestima (infradesnivel V1–V3). Una aorta no dilatada en el POCUS no descarta una disección
 - **Cómo debe guiar el manejo:** Derivaciones posteriores y activar la reperfusión
-- **Componente observable de C14:** Using regional wall motion to prioritise the reperfusion decision. · Evidencia esperada: requests POCUS and names the posterior hypokinesis; uses it with the ECG and the posterior leads to treat the pattern as an occlusion; activates or expedites reperfusion
+- **Componente observable de C14:** Using the reported regional wall motion, with the ECG and the posterior leads, to prioritise the reperfusion decision. · Evidencia esperada: requests POCUS and relates the reported wall motion to the ECG; uses it with the ECG and the posterior leads to treat the pattern as an occlusion; activates or expedites reperfusion
 - **ACEP · alineación y límite:** Motilidad regional: NO establecida por ACEP 2016 ni en la lista de la EPA C14; se aceptó por alcance local (decisión A). Informe escrito: no se observa la adquisición ni el reconocimiento en la imagen. La dilatación de la raíz aórtica y de la aorta descendente sí está establecida
-- **Posible problema clínico:** La hipocinesia posterior aislada es un hallazgo sutil incluso para ecografistas expertos. Con dolor al dorso, «aorta no dilatada» puede leerse como disección descartada, y el POCUS no la descarta. Revisar si el caso debe decir ese límite
-- **Recomendación:** **DISCUSS**
+- **Posible problema clínico:** Criterio docente aplicado a la declaración C14 (R-2): la motilidad sutil no se exige reconocer y el límite de la aorta queda escrito. Falta su revisión de la ficha completa
+- **Criterio docente aprobado (R-2, 2026-09-30; aprueba el criterio, no la ficha):** «Aorta no dilatada» en el POCUS no se presenta como disección descartada. La hipocinesia posterior aislada es un hallazgo sutil que el informe escrito entrega: no se exige reconocerla, sino usar la motilidad informada con el ECG y las derivaciones posteriores.
+- **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
 
-## 3 · `acs_70f_left_main` · DISCUSS
+## 3 · `acs_70f_left_main` · CONFIRM
 
 - **Estado clínico:** A 70-year-old woman presents with chest pressure, breathlessness and sweating that began an hour ago. PA 104/66 · FC 112 · SpO2 94 % · FR 26 · trabajo respiratorio Mildly increased · Alert · llene 3 s, Cool
 - **Aplicación POCUS:** Cardíaca (función global del VI), pulmonar (líneas B) y VCI en un SCA con hipoperfusión incipiente
 - **Hallazgo actual:** lv: Globally mildly reduced contraction without a single focal defect; ivc: 1.9 cm; about 50% inspiratory collapse; lungs: Scattered B-lines at both bases; no diffuse B-line pattern. Sin hallazgos en: rv, pericardium, lung_sliding, lung_consolidation, aorta_root, aorta_descending, aorta_abdominal, dvt_femoral, dvt_popliteal
 - **Qué debe interpretar el residente:** Contracción global levemente disminuida, sin defecto focal, y líneas B basales dispersas: isquemia difusa con congestión inicial, no edema franco. La VCI es intermedia
-- **Cómo debe guiar el manejo:** Volumen prudente o ninguno, soporte precoz si progresa la hipoperfusión y reperfusión urgente (tronco)
-- **Componente observable de C14:** Deciding volume, support and urgency from the global LV function. · Evidencia esperada: requests POCUS and names the globally reduced contraction; limits or withholds volume, or escalates support, because of it; relates it to the urgency of reperfusion
+- **Cómo debe guiar el manejo:** Volumen prudente o ninguno, soporte precoz si progresa la hipoperfusión y reperfusión urgente (tronco); un bolo pequeño con su límite y reevaluación es defendible
+- **Componente observable de C14:** Deciding volume, support and urgency with the global LV function in view, and adapting them to the response. · Evidencia esperada: requests POCUS and relates the global LV function, the B-lines and the IVC to the volume decision; withholds volume, or gives a small bolus with its limit stated and reassesses it, or escalates support, and says why; adapts the plan to the response and relates it to the urgency of reperfusion
 - **ACEP · alineación y límite:** VI cualitativo y VCI para el volumen: ESTABLECIDOS por ACEP 2016 (el método de la VCI no se especifica); repetir el examen para monitorizar la respuesta también está establecido. Las líneas B también están establecidas
-- **Posible problema clínico:** La hipoperfusión es incipiente (104/66, extremidades frías, llene de 3 s) y los hallazgos son intermedios (VI levemente disminuido desde DF-23, VCI de 1,9 cm con 50 %). C14 espera «limitar o retener volumen, o escalar soporte»: un bolo pequeño con reevaluación no debería juzgarse como error. Confirmar que el texto «leve» y la expectativa van juntos
-- **Recomendación:** **DISCUSS**
+- **Posible problema clínico:** Criterio docente aplicado a la declaración C14 (R-2): ya no exige sólo limitar el volumen; evalúa la decisión en contexto y su adaptación a la respuesta. Falta su revisión de la ficha completa
+- **Criterio docente aprobado (R-2, 2026-09-30; aprueba el criterio, no la ficha):** Un bolo pequeño, justificado y con reevaluación no se penaliza automáticamente: se evalúa en su contexto y por la adaptación posterior. Hallazgos intermedios no tienen una sola respuesta obligatoria.
+- **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
 

@@ -36,8 +36,8 @@ ENGINE = (
                 "replaces a source that is still open.",
      "example": "Circulatory arrest from uncontrolled haemorrhage. The bleeding had not been stopped, and no volume "
                 "replaces a source that is still open.",
-     "spanish": "Paro circulatorio por una hemorragia no controlada. El sangrado no se había detenido, y ningún "
-                "volumen reemplaza una fuente que sigue abierta.",
+     "spanish": "Paro circulatorio por una hemorragia no controlada. El sangrado no se había detenido; la "
+                "reposición de volumen no sustituye el control del sangrado activo.",
      "note": "trauma_hemorrhage.ARREST_TEXT; también como procedimiento"},
     {"kind": "examination", "cases": ["pulmonary_edema_75f"], "seen": True,
      "english": "Bilateral inspiratory crackles with increased respiratory effort.",
@@ -75,13 +75,13 @@ ENGINE = (
                 "expiratory wheeze.",
      "example": "Breath sounds returning on the right after decompression; improved air entry with residual "
                 "expiratory wheeze.",
-     "spanish": "Vuelve el murmullo pulmonar en el lado derecho después de la descompresión; mejor entrada de aire, "
-                "con sibilancias espiratorias residuales.",
+     "spanish": "Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; mejor entrada de "
+                "aire, con sibilancias espiratorias residuales.",
      "note": "neumotórax descomprimido; «left» → «izquierdo», y la segunda parte es cualquiera de las dos del asma"},
     {"kind": "examination", "cases": ["opioid"], "seen": False,
      "english": "Respiratory rate {n} /min; assisted ventilation is in progress.",
      "example": "Respiratory rate 8 /min; assisted ventilation is in progress.",
-     "spanish": "Frecuencia respiratoria {n}/min; se está dando ventilación asistida.",
+     "spanish": "Frecuencia respiratoria {n}/min, dada por la ventilación asistida en curso.",
      "note": "family_engine.current_findings, opioides"},
     {"kind": "examination", "cases": ["opioid"], "seen": False,
      "english": "Respiratory rate {n} /min; breaths remain shallow.",
@@ -98,20 +98,20 @@ ENGINE = (
     {"kind": "examination", "cases": ["hypoglycemia_54m_thiamine"], "seen": True,
      "english": "Peripheral cannula in the left forearm; the skin around its tip is slightly swollen and cool.",
      "example": "Peripheral cannula in the left forearm; the skin around its tip is slightly swollen and cool.",
-     "spanish": "Cánula periférica en el antebrazo izquierdo; la piel alrededor de su punta está levemente hinchada "
-                "y fría.",
+     "spanish": "Cánula periférica en el antebrazo izquierdo; la piel alrededor del extremo del catéter está "
+                "levemente aumentada de volumen y fría.",
      "note": "vía fallida antes de usarla; el español ya está en language, no en el panel"},
     {"kind": "examination", "cases": ["hypoglycemia"], "seen": False,
      "english": "Peripheral cannula in the left forearm; the site is clean, without swelling or tenderness.",
      "example": "Peripheral cannula in the left forearm; the site is clean, without swelling or tenderness.",
      "spanish": "Cánula periférica en el antebrazo izquierdo; el sitio está limpio, sin aumento de volumen ni "
-                "dolor.",
+                "dolor a la palpación.",
      "note": "vía que funciona; el español ya está en language, no en el panel"},
     {"kind": "examination", "cases": ["hypoglycemia"], "seen": False,
      "english": "Peripheral cannula in the left forearm; the forearm around it is swollen, pale, cool and tender.",
      "example": "Peripheral cannula in the left forearm; the forearm around it is swollen, pale, cool and tender.",
-     "spanish": "Cánula periférica en el antebrazo izquierdo; el antebrazo a su alrededor está hinchado, pálido, "
-                "frío y doloroso.",
+     "spanish": "Cánula periférica en el antebrazo izquierdo; el antebrazo a su alrededor está aumentado de "
+                "volumen, pálido, frío y doloroso a la palpación.",
      "note": "vía fallida ya usada; el español ya está en language, no en el panel"},
     {"kind": "examination", "cases": ["hypoglycemia"], "seen": False,
      "english": "A second peripheral cannula in the right forearm; the site is clean.",
@@ -131,28 +131,33 @@ ENGINE = (
     {"kind": "examination", "cases": ["hypoglycemia"], "seen": False,
      "english": "Dextrose {n}% runs at {n} mL/h through the cannula in the left forearm.",
      "example": "Dextrose 10% runs at 100 mL/h through the cannula in the left forearm.",
-     "spanish": "La glucosa al {n} % pasa a {n} mL/h por la cánula del antebrazo izquierdo.",
+     "spanish": "Suero glucosado al {n} % a {n} mL/h por la cánula del antebrazo izquierdo.",
      "note": "también por la cánula nueva del antebrazo derecho o por la aguja intraósea; el español ya está en "
              "language, no en el panel"},
 )
 
-#: R-4 (faculty, 2026-09-30): the 18 engine sentences are reviewed first, one by one. For each, the AI
-#: Advisor's reading for that review: the clinical moment it describes, a recommendation and the
-#: ambiguity a Spanish reader could meet. A proposal like the drafts themselves: nothing here is shown.
+#: R-4 (faculty, 2026-09-30): the 18 engine sentences are reviewed first, one by one. For each, the clinical
+#: moment it describes, the reading for the review and what a Spanish reader could still meet. The faculty's
+#: second response (2026-09-30) settled the terms -- the volume replacement of row 1, «reaparece» and
+#: «hemitórax», which rate row 9 shows, «aumento de volumen», «dolor a la palpación» and «suero glucosado» -- and
+#: asked for the 18 final phrases together: they are drafts still, and none is approved or shown.
 ENGINE_REVIEW = {
     "Circulatory arrest from uncontrolled haemorrhage. The bleeding had not been stopped, and no volume "
     "replaces a source that is still open.": (
         "Final del trauma cuando el sangrado nunca se controló (entrada de la sala)",
-        "Cambiar: «ningún volumen compensa un foco de sangrado que sigue activo»",
-        "«Fuente» no es la palabra habitual para el origen de un sangrado; «foco» sí"),
+        "Aprobar la versión final: «la reposición de volumen no sustituye el control del sangrado activo» (redacción "
+        "docente del 2026-09-30)",
+        "Ninguna"),
     "Bilateral inspiratory crackles with increased respiratory effort.": (
         "Edema pulmonar (75f) al examinar, antes de tratar",
         "Aprobar",
-        "Ninguna; «crépitos» es el uso local"),
+        "Ninguna en el español. En el motor, esta frase puede seguir mostrándose con el paciente agotado "
+        "(pendiente registrado aparte)"),
     "Bilateral crackles remain, with reduced respiratory effort.": (
         "Edema pulmonar que mejora con el tratamiento",
-        "Aprobar, o precisar que el esfuerzo bajó por mejoría",
-        "«Menor esfuerzo» también puede leerse como agotamiento; el inglés tiene la misma ambigüedad"),
+        "Aprobar: el motor la escribe sólo con la congestión en mejoría, y nunca junto al agotamiento (lo verifica "
+        "una prueba del motor); «menor esfuerzo» describe ese estado registrado",
+        "Ninguna mientras se mantenga esa regla del motor"),
     "New bibasal inspiratory crackles since the transfusion, with increased effort and no wheeze.": (
         "Sobrecarga circulatoria por transfusión, en cualquier familia",
         "Aprobar",
@@ -172,13 +177,13 @@ ENGINE_REVIEW = {
     "Breath sounds returning on the right after decompression; improved air entry with residual expiratory "
     "wheeze.": (
         "Neumotórax del asma después de la descompresión",
-        "Cambiar: «Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; …»",
-        "«Vuelve el murmullo» se entiende, pero «reaparece» es la forma habitual"),
+        "Aprobar la versión final: «Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; …»",
+        "Ninguna"),
     "Respiratory rate {n} /min; assisted ventilation is in progress.": (
-        "Intoxicación por opioides durante la ventilación con bolsa y mascarilla",
-        "Cambiar: «Frecuencia respiratoria {n}/min; con ventilación asistida en curso»",
-        "No dice si la frecuencia es la espontánea o la asistida; el inglés tampoco. «Se está dando» es "
-        "coloquial"),
+        "Intoxicación por opioides durante la ventilación con bolsa y mascarilla o la intubación",
+        "Aprobar la versión final: la frecuencia que muestra el motor durante la asistencia es la de la ventilación "
+        "asistida (fija en 12/min), no la espontánea; el español lo dice",
+        "El inglés no lo dice (pendiente registrado aparte)"),
     "Respiratory rate {n} /min; breaths remain shallow.": (
         "Intoxicación por opioides con hipoventilación persistente",
         "Aprobar",
@@ -190,18 +195,18 @@ ENGINE_REVIEW = {
     "Peripheral cannula in the left forearm; the skin around its tip is slightly swollen and cool.": (
         "Hipoglicemia (54m): la vía de llegada infiltrada antes de usarla, la pista que el residente puede "
         "notar",
-        "Cambiar: «…la piel alrededor del extremo del catéter está levemente aumentada de volumen y fría», "
-        "y lo mismo en language para que el panel y la sala digan lo mismo",
-        "«Hinchada» (aquí y en la 14) y «aumento de volumen» (en la 13) nombran el mismo signo con palabras "
-        "distintas"),
+        "Aprobar la versión final: «…levemente aumentada de volumen y fría»; la sala ya usa el mismo término",
+        "Ninguna: «aumento de volumen» en las filas 12, 13 y 14"),
     "Peripheral cannula in the left forearm; the site is clean, without swelling or tenderness.": (
         "Hipoglicemia: la vía que funciona",
-        "Cambiar: «…sin aumento de volumen ni dolor a la palpación»",
-        "«Tenderness» es dolor a la palpación, no dolor espontáneo"),
+        "Aprobar la versión final: «…sin aumento de volumen ni dolor a la palpación»; la sala ya usa el mismo "
+        "término",
+        "Ninguna"),
     "Peripheral cannula in the left forearm; the forearm around it is swollen, pale, cool and tender.": (
         "Hipoglicemia: la vía fallida después de pasar la glucosa (extravasación)",
-        "Cambiar: «…aumentado de volumen, pálido, frío y doloroso a la palpación»",
-        "La misma de las filas 12 y 13"),
+        "Aprobar la versión final: «…aumentado de volumen, pálido, frío y doloroso a la palpación»; la sala ya usa "
+        "el mismo término",
+        "Ninguna"),
     "A second peripheral cannula in the right forearm; the site is clean.": (
         "Hipoglicemia: la vía nueva que instaló el residente",
         "Aprobar",
@@ -216,8 +221,9 @@ ENGINE_REVIEW = {
         "Ninguna"),
     "Dextrose {n}% runs at {n} mL/h through the cannula in the left forearm.": (
         "Hipoglicemia: la infusión de glucosa en curso",
-        "Cambiar: «Suero glucosado al {n} % a {n} mL/h por la cánula del antebrazo izquierdo»",
-        "En un caso de hipoglicemia, «la glucosa» se confunde con la glicemia del paciente"),
+        "Aprobar la versión final: «Suero glucosado al {n} % a {n} mL/h por la cánula del antebrazo izquierdo»; la "
+        "sala ya usa el mismo término",
+        "Ninguna: no se confunde con la glicemia del paciente"),
 }
 
 #: The C14 declarations of the bank (``case_assessment_bank``), English -> Spanish draft.
@@ -239,22 +245,33 @@ C14 = {
     "(decision A).":
         "El síndrome coronario agudo ya está establecido por el ECG y una troponina de 180 ng/L; la hipocinesia "
         "inferolateral leve no cambia la ruta, sin oclusión y con una coronariografía que puede esperar (decisión A).",
-    # acs_61m_posterior
-    "ST depression in V1-V3 with posterior hypokinesis on POCUS: the regional wall motion can prioritise reperfusion "
-    "for an occlusion the 12-lead understates (decision A); in the engine the wall motion evolves with the ischaemic "
-    "minutes.":
-        "Infradesnivel del ST en V1-V3 con hipocinesia posterior en el POCUS: la motilidad regional puede priorizar la "
-        "reperfusión de una oclusión que el ECG de 12 derivaciones subestima (decisión A); en el motor, la motilidad "
-        "evoluciona con los minutos de isquemia.",
-    "Using regional wall motion to prioritise the reperfusion decision.":
-        "Usar la motilidad regional para priorizar la decisión de reperfusión.",
-    "requests POCUS and names the posterior hypokinesis":
-        "solicita POCUS y nombra la hipocinesia posterior",
+    # acs_61m_posterior (criteria revised by R-2, 2026-09-30)
+    "ST depression in V1-V3 with a regional wall-motion abnormality reported on POCUS (posterior hypokinesis): with "
+    "the ECG and the posterior leads, the reported wall motion can support prioritising reperfusion for an occlusion "
+    "the 12-lead understates (decision A); in the engine the wall motion evolves with the ischaemic minutes. Two "
+    "limits: an isolated regional wall-motion abnormality is subtle, and the written report states it rather than "
+    "the resident recognising it, so recognising it is not required; and a non-dilated aortic root and descending "
+    "aorta on POCUS do not exclude an aortic dissection.":
+        "Infradesnivel del ST en V1-V3 con una alteración de la motilidad regional informada en el POCUS (hipocinesia "
+        "posterior): junto con el ECG y las derivaciones posteriores, la motilidad informada puede apoyar la prioridad "
+        "de la reperfusión de una oclusión que el ECG de 12 derivaciones subestima (decisión A); en el motor, la "
+        "motilidad evoluciona con los minutos de isquemia. Dos límites: una alteración aislada de la motilidad "
+        "regional es sutil, y el informe escrito la entrega en lugar de que el residente la reconozca, así que "
+        "reconocerla no se exige; y una raíz aórtica y una aorta descendente no dilatadas en el POCUS no descartan "
+        "una disección aórtica.",
+    "Using the reported regional wall motion, with the ECG and the posterior leads, to prioritise the reperfusion "
+    "decision.":
+        "Usar la motilidad regional informada, junto con el ECG y las derivaciones posteriores, para priorizar la "
+        "decisión de reperfusión.",
+    "requests POCUS and relates the reported wall motion to the ECG":
+        "solicita POCUS y relaciona la motilidad informada con el ECG",
     "uses it with the ECG and the posterior leads to treat the pattern as an occlusion":
         "la usa junto con el ECG y las derivaciones posteriores para tratar el patrón como una oclusión",
     "activates or expedites reperfusion":
         "activa o acelera la reperfusión",
     # acs_52m_de_winter
+    "Using regional wall motion to prioritise the reperfusion decision.":
+        "Usar la motilidad regional para priorizar la decisión de reperfusión.",
     "Akinesis of the anterior wall and apex supports treating the de Winter pattern as an anterior occlusion "
     "(decision A); in the engine the wall motion evolves with the ischaemic minutes.":
         "La acinesia de la pared anterior y del ápex apoya tratar el patrón de de Winter como una oclusión anterior "
@@ -269,21 +286,29 @@ C14 = {
         "La decisión correcta —coronariografía y ninguna prueba de provocación— no depende del POCUS, y un POCUS "
         "normal en reposo no puede guiarla razonablemente. No tranquilizarse por él es razonamiento diagnóstico, no "
         "C14 (decisión B).",
-    # acs_70f_left_main
-    "Borderline pressure with globally reduced contraction on POCUS: the global LV function, a state the EPA lists, "
-    "is what should limit volume and prompt early support while reperfusion is arranged; the engine answers volume "
-    "poorly in this profile.":
-        "Presión limítrofe con contracción globalmente disminuida en el POCUS: la función global del VI, un estado "
-        "que la EPA enumera, es lo que debe limitar el volumen y motivar un soporte precoz mientras se coordina la "
-        "reperfusión; en este perfil, el motor responde mal al volumen.",
-    "Deciding volume, support and urgency from the global LV function.":
-        "Decidir el volumen, el soporte y la urgencia a partir de la función global del VI.",
-    "requests POCUS and names the globally reduced contraction":
-        "solicita POCUS y nombra la contracción globalmente disminuida",
-    "limits or withholds volume, or escalates support, because of it":
-        "limita o suspende el volumen, o escala el soporte, por ese hallazgo",
-    "relates it to the urgency of reperfusion":
-        "lo relaciona con la urgencia de la reperfusión",
+    # acs_70f_left_main (criteria revised by R-2, 2026-09-30)
+    "Borderline pressure with incipient hypoperfusion (104/66, cool extremities, capillary refill 3 s) and "
+    "intermediate POCUS findings: globally mildly reduced contraction, scattered basal B-lines and an IVC of 1.9 cm "
+    "with about 50% collapse. No single answer follows from them: withholding volume, a small bolus with its limit "
+    "stated and reassessed, or early support can each be justified, and the engine answers large volumes poorly in "
+    "this profile. C14 observes whether the volume, support and urgency decisions are made with the global LV "
+    "function in view and adapted to the response.":
+        "Presión limítrofe con hipoperfusión incipiente (104/66, extremidades frías, llene capilar de 3 s) y "
+        "hallazgos intermedios en el POCUS: contracción global levemente disminuida, líneas B basales dispersas y "
+        "una VCI de 1,9 cm con cerca de 50 % de colapso. De ellos no se deduce una única respuesta: no dar volumen, "
+        "un bolo pequeño con su límite declarado y reevaluado, o un soporte precoz pueden justificarse, y en este "
+        "perfil el motor responde mal a volúmenes grandes. C14 observa si las decisiones de volumen, soporte y "
+        "urgencia se toman con la función global del VI a la vista y se adaptan a la respuesta.",
+    "Deciding volume, support and urgency with the global LV function in view, and adapting them to the response.":
+        "Decidir el volumen, el soporte y la urgencia con la función global del VI a la vista, y adaptarlos a la "
+        "respuesta.",
+    "requests POCUS and relates the global LV function, the B-lines and the IVC to the volume decision":
+        "solicita POCUS y relaciona la función global del VI, las líneas B y la VCI con la decisión de volumen",
+    "withholds volume, or gives a small bolus with its limit stated and reassesses it, or escalates support, and "
+    "says why":
+        "no da volumen, o da un bolo pequeño con su límite declarado y lo reevalúa, o escala el soporte, y dice por qué",
+    "adapts the plan to the response and relates it to the urgency of reperfusion":
+        "adapta el plan a la respuesta y lo relaciona con la urgencia de la reperfusión",
     # asthma_24f, asthma_49m
     "Bronchodilation does not depend on POCUS. A pneumothorax appears only after ventilation with sustained high "
     "plateau pressures, and its event already names the diagnosis, so a POCUS would only confirm it (decision D). "

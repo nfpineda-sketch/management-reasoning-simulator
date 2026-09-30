@@ -29,6 +29,23 @@ that definition. Meeting the criterion is not the absence of contraindications,
 nor leave for any modality or dose: every order is judged on the state of its
 own minute, the history of having met it is kept, and a persisting shock does
 not by itself make a second full dose indicated.
+
+Three things kept apart (faculty, 2026-09-30, P-04 B with conditions). What the
+drug does to the clot does not depend on whether it was indicated: any dose
+dissolves the embolism's share of the obstruction by the same teaching curve,
+and what that changes in the patient is seen on reassessment, alongside
+everything else that acts on them. Its bleeding comes from the mechanisms that
+already existed -- the occult loss after any dose and, where the case declares a
+reason to bleed, that bleed -- never from a trial's rates applied to a case they
+did not study. And the decision is judged on the minute it was made: a later
+improvement does not make an order given without the indication a correct one.
+
+A second course (faculty, 2026-09-30, P-05 D, an explicit simplification). The
+rest of an alteplase regimen completes the first dose; any other later dose is
+a second course, recorded with its added exposure and given neither
+reperfusion nor a bleeding magnitude of its own, which no source supports. That
+is a limit of this simulator, not evidence that repeating does nothing. The
+first dose keeps acting either way: it never restarts and never stops.
 """
 import math
 
@@ -47,8 +64,19 @@ PERIPHERAL_HYPOPERFUSION_CRT_S = 3.5
 ALTERED_BY_PRESSURE_SBP = 80           # the engine's threshold for a pressure that dulls consciousness
 # The record every thrombolytic order carries since 2026-09-29. An older record
 # without it is read by the rule of its own time, never as "no indication".
-INDICATION_VERSION = 2
+# Version 3 (2026-09-30, P-05) adds the agent, the dose and the course.
+INDICATION_VERSION = 3
 BASES = ("obstructive_shock", "persistent_hypotension")
+# The rule above in the words the declarations use (P-06, faculty, 2026-09-30,
+# corrected the same day): D3 and the critical event of both cases and the C1 row
+# of the 61m. This engine carries no separate filling status: "despite adequate
+# filling" is the pressure the embolism itself explains, with bleeding and
+# drug-induced drops left out, and the PE cases carry no hypovolaemia.
+CRITERION_TEXT = (
+    "obstructive shock attributable to the PE (SBP < 90 mmHg, or a vasopressor needed to reach 90 mmHg despite "
+    "adequate filling, with signs of hypoperfusion), recognised as soon as it is present, or sustained hypotension "
+    "(SBP < 90 mmHg, or a vasopressor needed to keep it at 90 mmHg or above, for 15 consecutive minutes)")
+NEITHER_TEXT = "A vasopressor the pressure does not need, or a pressure lowered by bleeding or a drug, is neither."
 
 # Volume: tolerated rate, and the price of anything faster.
 TOLERATED_ML_PER_MIN = 10.0        # about 600 mL/h: a maintenance-rate infusion
@@ -61,6 +89,13 @@ LYSIS_ONSET_MIN = 5
 LYSIS_TAU_MIN = 30.0
 LYSIS_CIRCULATION_TARGET = .62     # what the obstruction falls to, from 1.0 at arrival
 LYSIS_LUNG_TARGET = .80
+
+# One alteplase regimen: up to 100 mg over two hours, whole or as a bolus and the
+# rest. A later alteplase order inside that total and those two hours completes
+# the first dose; anything else given later is a second course (P-05, 2026-09-30).
+REGIMEN_MG = {"alteplase": 100.0}
+REGIMEN_MIN = 120
+COURSES = ("initial", "initial_regimen", "second_course")
 
 # Bleeding is the price of the drug, indicated or not (faculty decision 2026-09-20).
 LYSIS_HEMOGLOBIN_PER_MIN = .006    # occult loss: about 0.36 g/dL per hour
@@ -149,44 +184,88 @@ def _record(f, elapsed, current):
     return {"version": INDICATION_VERSION, "minute": int(elapsed), "basis": None, "data": data}
 
 
-def give_thrombolysis(f, elapsed, current, observable=None):
+def _course(f, elapsed, agent, dose_mg):
+    """The course a later dose belongs to: the rest of the first regimen, or a second course."""
+    doses = f.get("lysis_doses") or []
+    if not doses:
+        # A first dose recorded before the doses were (an encounter older than 2026-09-29):
+        # nothing to complete, so what follows is counted as a course of its own.
+        return "second_course", None
+    first = doses[0]
+    agent = str(agent or "").lower()
+    limit = REGIMEN_MG.get(agent)
+    regimen = [dose for dose in doses if dose.get("course") in ("initial", "initial_regimen")]
+    amounts = [dose.get("dose_mg") for dose in regimen] + [dose_mg]
+    if (limit and all(isinstance(amount, (int, float)) and not isinstance(amount, bool) for amount in amounts)
+            and all(str(dose.get("agent") or "").lower() == agent for dose in regimen)
+            and len(regimen) == len(doses)
+            and sum(float(amount) for amount in amounts) <= limit + 1e-6
+            and elapsed - int(first["minute"]) <= REGIMEN_MIN):
+        return "initial_regimen", sum(float(amount) for amount in amounts)
+    return "second_course", None
+
+
+def _dose_words(agent, dose_mg):
+    named = str(agent or "thrombolytic")
+    return f"{named} {dose_mg:g} mg" if isinstance(dose_mg, (int, float)) and not isinstance(dose_mg, bool) else named
+
+
+# What the room says after any first dose: what the drug does, never what it will
+# achieve, which is seen on reassessment (P-04, 2026-09-30).
+ACTS = "The drug acts on the clot over about half an hour; what it changes is seen on reassessment."
+ACTS_UNINDICATED = ("The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken "
+                    "without the indication; what it changes is seen on reassessment.")
+
+
+def give_thrombolysis(f, elapsed, current, observable=None, *, agent=None, dose_mg=None):
     """Record a thrombolytic order and judge it on this minute's state. Returns (note, record)."""
     record = _record(f, elapsed, current)
+    record["agent"] = agent
+    record["dose_mg"] = dose_mg
     shown = (observable or {}).get("sbp")
     shown = int(round(float(shown))) if shown is not None else int(round((current or {}).get("sbp", 0)))
     first = f.get("lysis_at")
     if first is not None:
-        # A persisting shock is not leave for another full dose; the first dose goes
-        # on doing what it does, and what a repeat adds is a decision still open.
-        record["repeat_of_minute"] = int(first)
+        # A later dose never restarts or stops the first: its dissolution goes on
+        # from the minute it was given. What the later dose adds is recorded.
+        course, total = _course(f, elapsed, agent, dose_mg)
+        record["course"] = course
         record["criteria_present"] = basis(f, current)
         f.setdefault("lysis_doses", []).append(record)
-        return (f"A second systemic thrombolytic dose is recorded; the first was given at minute {int(first)}. "
-                "A persisting shock does not by itself indicate repeating a full dose, and this simulator gives "
-                "the repeated dose no effect of its own.", record)
+        if course == "initial_regimen":
+            record["regimen_of_minute"] = int(first)
+            record["regimen_total_mg"] = total
+            return (f"{_dose_words(agent, dose_mg)} recorded as part of the initial regimen begun at minute "
+                    f"{int(first)} ({total:g} mg in all). It completes the first dose rather than starting a new "
+                    "one, and the first dose keeps acting as before.", record)
+        record["repeat_of_minute"] = int(first)
+        record["additional_exposure"] = True
+        return (f"A second course of systemic thrombolysis is recorded ({_dose_words(agent, dose_mg)}); the first "
+                f"course began at minute {int(first)}. Its added bleeding risk is recorded as exposure. This "
+                "simulator represents neither additional reperfusion from a second course nor any bleeding of its "
+                "own; that is a simplification, not evidence that repeating has no effect. The first dose keeps "
+                "acting as before.", record)
     found = basis(f, current)
     record["basis"] = found
+    record["course"] = "initial"
     f["lysis_at"] = elapsed
     f["lysis_indicated"] = found is not None
     f["lysis_basis"] = found
     f.setdefault("lysis_doses", []).append(record)
     if found == "obstructive_shock":
-        return ("Systemic thrombolysis given in obstructive shock, a hypotension with signs of hypoperfusion: the "
-                "obstruction begins to fall within minutes and keeps falling for about half an hour.", record)
+        return ("Systemic thrombolysis given in obstructive shock, a hypotension with signs of hypoperfusion. "
+                + ACTS, record)
     if found == "persistent_hypotension":
         return (f"Systemic thrombolysis given for sustained hypotension ({SUSTAINED_HYPOTENSION_MIN} consecutive "
-                "minutes): the obstruction begins to fall within minutes and keeps falling for about half an hour.",
-                record)
+                "minutes). " + ACTS, record)
     if current and current.get("low"):
         so_far = int(f.get("sustained_hypotension_min", 0.0))
         return (f"Systemic thrombolysis given without the hemodynamic indication: systolic {shown} mmHg with no sign "
                 f"of hypoperfusion, low for {so_far} of the {SUSTAINED_HYPOTENSION_MIN} consecutive minutes a "
-                "hypotension without them requires. The bleeding risk is taken without the indication, and the "
-                "obstruction is unchanged.", record)
+                "hypotension without them requires. " + ACTS_UNINDICATED, record)
     support = " on a vasopressor the pressure does not need" if (current or {}).get("vasopressor_running") else ""
     return (f"Systemic thrombolysis given without the hemodynamic indication: systolic {shown} mmHg{support}, with no "
-            "hypotension from the embolism. The bleeding risk is taken without the indication, and the obstruction "
-            "is unchanged.", record)
+            "hypotension from the embolism. " + ACTS_UNINDICATED, record)
 
 
 def volume_insult(f, fluid_ml_this_minute):
@@ -201,8 +280,12 @@ def volume_insult(f, fluid_ml_this_minute):
 
 
 def lysis_effect(f):
-    """Share of the dissolution achieved so far, 0 before the drug works."""
-    if f.get("lysis_at") is None or not f.get("lysis_indicated"):
+    """Share of the dissolution achieved so far, 0 before the drug works.
+
+    Indicated or not (P-04, 2026-09-30): the drug does not know why it was given.
+    Measured from the first dose; a later dose neither restarts nor adds to it.
+    """
+    if f.get("lysis_at") is None:
         return 0.0
     since = f["elapsed"] - f["lysis_at"] - LYSIS_ONSET_MIN
     return 0.0 if since <= 0 else 1 - math.exp(-since / LYSIS_TAU_MIN)
@@ -239,9 +322,12 @@ def step(state, fluid_ml_this_minute):
             f["pe_bleed_circulation"] = f.get("pe_bleed_circulation", 0.0) + MAJOR_BLEED_CIRCULATION_PER_MIN
             if not f.get("major_bleed_reported"):
                 f["major_bleed_reported"] = True
-                return (f"Bleeding from {BLEED_RISK_TEXT.get(risk, 'the declared site')}: the haemoglobin is falling "
-                        "and the pressure with it. This is the risk the thrombolytic carries, and it was taken in a "
-                        "patient who had a reason to bleed.")
+                # The bleed takes circulation away, but whether the pressure falls depends on
+                # everything else acting at the same minute, dissolution included (P-04, 2026-09-30):
+                # the note says what is certain, and the monitor shows the rest.
+                return (f"Bleeding from {BLEED_RISK_TEXT.get(risk, 'the declared site')}: the haemoglobin is falling. "
+                        "This is the risk the thrombolytic carries, and it was taken in a patient who had a reason "
+                        "to bleed.")
     if strain > 0 and not f.get("rv_strain_reported") and strain >= .10:
         f["rv_strain_reported"] = True
         return ("The fluid was given faster than the obstructed right ventricle can accept: it distends, the septum "

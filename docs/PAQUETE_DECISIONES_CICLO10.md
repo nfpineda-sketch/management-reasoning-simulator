@@ -18,6 +18,11 @@ provisionales · R-4: primero las 18 frases del motor · R-5 espera. El detalle 
 en `docs/COLA_DECISIONES_AI_ADVISOR.md`, sección «Respuesta al paquete del ciclo 10». El texto de abajo queda
 como se presentó.
 
+**Segunda respuesta docente del 2026-09-30:** P-04 B con condiciones · P-05 D como simplificación explícita · P-06
+con la definición corregida · P-07 75f con vista neutral y V34 pendiente · R-2 con los criterios de la 61m y la
+70f · R-3 con C3 parcial y TD-47 · R-4 con su terminología · TD-46 aprobado · R-5 con la firma pendiente. Lo que se
+hizo está en `docs/COLA_DECISIONES_AI_ADVISOR.md`, sección «Segunda respuesta al paquete del ciclo 10».
+
 ## Decisiones
 
 ### P-01 · DC6 · Peso de la tiamina en D3 (hipoglicemia)

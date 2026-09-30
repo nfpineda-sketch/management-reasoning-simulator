@@ -5,10 +5,76 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-30, con la respuesta docente al paquete del ciclo 10
-  (sección «Respuesta al paquete del ciclo 10», la vigente). El ciclo 10, el
-  estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos
-  anteriores siguen más abajo, como estaban.
+- **Actualizado:** 2026-09-30, con la segunda respuesta docente al paquete del
+  ciclo 10 (sección «Segunda respuesta al paquete del ciclo 10», la vigente). La
+  primera respuesta, el ciclo 10, el estado posterior a V3, la tabla del cierre
+  del ciclo 9 y los ciclos anteriores siguen más abajo, como estaban.
+
+## Segunda respuesta al paquete del ciclo 10 (2026-09-30)
+
+**Instrucción docente del 2026-09-30:** avanzar con las decisiones de abajo, conservar lo implementado, limitar el
+trabajo a estos puntos y reutilizar escenarios y respuestas guardadas; no reiniciar una auditoría completa. **No es
+un ciclo nuevo.** Sin llamadas pagadas, sin regenerar la tanda de encuentros ni los PDF, sin publicar en la app
+pública. Los hallazgos nuevos quedan como pendientes, sin ampliar la tarea.
+
+| ID | Decisión docente | Qué se hizo | Registro |
+|---|---|---|---|
+| P-04 | **B con condiciones.** La lisis puede reperfundir aunque la indicación sea errónea; efecto fisiológico, riesgo hemorrágico y evaluación, separados; ni la mejoría ni el sangrado garantizados por el solo hecho de dar el fármaco; mecanismos existentes, sin sistema probabilístico nuevo ni tasas de PEITHO en la 33f; la indicación se juzga con lo disponible al decidir | La disolución ya no exige la indicación; el sangrado sigue con sus mecanismos; las notas de la sala no prometen mejoría; el aviso del sangrado ya no afirma que cae la presión; el tamizaje dice que lo que siguió no cambia el juicio | C-2026-09-30-06 |
+| P-05 | **D, como simplificación explícita.** Sin sangrado de magnitud arbitraria ni beneficio sin respaldo; distinguir completar el esquema de un segundo curso; la primera dosis sigue su curso; registrar la exposición y su riesgo, sin describir una hemorragia no modelada | El registro de cada dosis lleva agente, dosis y curso (versión 3); el resto de un esquema de alteplasa completa la primera dosis; otra dosis es un segundo curso con su exposición y sin efecto propio, dicho como simplificación; cada dosis se lista una vez | C-2026-09-30-07 |
+| P-06 | **Corregir la definición.** Incluir la necesidad de vasopresor, distinguir la hipotensión persistente del shock obstructivo (vasopresor necesario, llenado adecuado, hipoperfusión); sin esperar 15 minutos en un shock establecido; no cualquier vasopresor prueba un shock por TEP; revisar la concordancia texto, motor y evaluación; conservar las versiones históricas | La redacción nueva va en D3 y el evento de la 33f, en D3, su alternativa y C1 de la 61m, y en el tamizaje; vive junto a la regla (`pe_obstruction.CRITERION_TEXT`). El motor ya aplicaba esa regla; no modela un estado de llenado aparte, y eso queda escrito. Los encuentros anteriores leen la redacción con que se congelaron | C-2026-09-30-08 |
+| P-07 · 75f | **Vista neutral a la llegada** hasta que una imagen aprobada represente su dificultad respiratoria; no borrar V34; sin cambios clínicos; su aprobación queda pendiente para este estado; sin generaciones pagadas | Revisión clínica «pending» de V34 en el paquete de imágenes, bajo la cuenta del docente, después de sus aprobaciones; con las dos revisiones exigidas (piloto) la sala muestra la vista neutral | C-2026-09-30-09 |
+| R-2 | **Criterios de dos casos**, no sus fichas. 61m: «aorta no dilatada» no descarta una disección; límites de la motilidad sutil; no exigir reconocer lo que la representación no deja observar. 70f: no penalizar automáticamente un bolo pequeño justificado con reevaluación; evaluar en contexto y por la adaptación; no convertir hallazgos ambiguos en una respuesta obligatoria. Las otras 12, pendientes; sin CONFIRMO ni firma; la misma hoja | Las dos filas C14, sus borradores en español y la hoja R-2 (criterio aprobado; ficha pendiente) | C-2026-09-30-12 |
+| R-3 · T-1 | **Evidencia parcial de C3**: reconocer la amenaza, anticipar, pedir ayuda, preparar y reevaluar la vía aérea; no atribuir la ejecución competente ni el cumplimiento completo de C3; usar los niveles existentes, y si no alcanzan sin sobredeclarar, mantener PARCIAL y documentarlo | La fila C3 de TDFC de la 29f observa esa anticipación, dice lo que no observa y la regla de confirmación. TDFC no tiene un nivel parcial por observación: la limitación queda documentada en la fila, en la tabla final y en la hoja T-1 | C-2026-09-30-11 |
+| TD-47 | Coherente con una intubación exitosa, sin resolver la anafilaxia ni normalizar la fisiología, sin vía aérea difícil | Con el tubo no se ausculta ni se cobra estridor; el examen lo dice; la reacción sigue | C-2026-09-30-10 |
+| R-4 | **Aplicar los ajustes propuestos**, más: la reposición de volumen no sustituye el control del sangrado activo; la FR espontánea o asistida según el motor; «menor esfuerzo» sólo con el estado registrado; «suero glucosado al {n} %», «aumento de volumen» y «dolor a la palpación»; entregar las 18 juntas; sin aprobación global | Las 18 frases finales, juntas, en `docs/revision/R4_FRASES_MOTOR.md`, sin mostrarse. La fila 9 dice que la FR es la de la ventilación asistida: el motor la fija en 12/min durante la asistencia. Una prueba verifica que «menor esfuerzo» nunca aparece junto al agotamiento. Las frases de la sala que ya tenían español usan la terminología acordada | C-2026-09-30-13 |
+| TD-46 | **Aprobado**: línea del POCUS entera en inglés mientras no haya traducción aprobada, sin mezclas, sin traducciones nuevas | Implementado en `language.say` para el POCUS y el E-FAST del caso | C-2026-09-30-05 |
+| R-5 | **Firma pendiente.** Actualizar las guías con estas decisiones, distinguiendo lo autorizado, lo implementado y lo pendiente | `docs/GUIA_DOCENTE_PILOTO.md` y `docs/GUIA_RESIDENTE_PILOTO.md`, marcadas como borrador | — |
+
+**Pendientes que requieren su revisión:**
+
+- **R-4:** las 18 frases finales (`docs/revision/R4_FRASES_MOTOR.md`).
+- **R-2:** las 14 fichas (`docs/revision/R2_POCUS_C14.md`); en la 61m y la 70f sólo se aprobó el criterio.
+- **R-5:** las dos guías y su firma.
+- **P-07:** una imagen aprobada de la 75f con su dificultad respiratoria, cuando haya presupuesto y revisión.
+- **Español activo de las notas nuevas del TEP:** siete frases, como las anteriores del TEP, en `language.py`.
+- **Dos preguntas del TEP** (`docs/PULMONARY_EMBOLISM_MAGNITUDES.md`):
+  - la pérdida oculta tras cualquier dosis, decidida el 2026-09-20, se conservó. ¿Es un sangrado garantizado
+    por el solo hecho de dar el fármaco?
+  - en la 33f, con las magnitudes actuales, la disolución pesa más que el sangrado en la presión (la Hb baja
+    3,2 g/dL en 105 minutos y la PAS sube). ¿Se ajusta la magnitud?
+- **Hallazgos nuevos, pendientes y sin corregir** (registro de deuda):
+  - **TD-48:** el E-FAST de la sala muestra sólo la ventana pericárdica; en el 41m no se ve el derrame pleural
+    izquierdo. Recomendable antes del piloto.
+  - **TD-49:** el SCA lista dos veces cada trombolítico.
+  - **TD-50:** el examen de la anafilaxia no evoluciona, y en la 63m el estridor se cobra sin estar en su
+    examen.
+  - **TD-51:** «increased respiratory effort» junto al agotamiento en el edema sin tratar.
+  - **TD-52:** textos menores.
+
+**Verificación:**
+
+- **Pruebas focalizadas** de lo modificado (28 archivos): 1132 pasan, 0 fallan. Cubren:
+  - el efecto y el juicio de la lisis, por separado;
+  - el esquema inicial frente al segundo curso;
+  - el shock sostenido con vasopresor;
+  - C3 parcial;
+  - el estado tras intubar;
+  - la conservación histórica.
+- **PostgreSQL 16 local y desechable:** 13 de 13. Incluyen la importación del paquete de imágenes de P-07, el
+  banco de imágenes y la integridad del store.
+- **TD-46 sobre los eventos guardados de la cosecha anterior**, sin volver a jugar la tanda: 154 líneas del
+  POCUS o del E-FAST salían mezcladas; ahora son 0.
+- **Regresiones:** 56/56 activas pasan; 10 retiradas, que no se corren.
+- **Suite completa en 4 grupos:** TOTAL 6581 = **6497 passed / 83 skipped / 1 xfailed / 0 failed**.
+  - Omisiones: 55 por el dolor de llegada, 18 por el encuentro de demostración, que no está en esta copia, y 10 de
+    PostgreSQL. Las 10 de PostgreSQL corrieron aparte y pasaron.
+  - La xfailed: la brecha conocida del lector «Reviso la vía venosa».
+- **Revisión adversarial del diff:** encontró dos cosas, ambas corregidas antes de la suite final:
+  - un estado de lisis anterior al 2026-09-29, sin dosis registradas, que habría fallado al registrar otra dosis;
+  - marcadores invisibles en el código de TD-46, que ahora se escriben como secuencias de escape.
+
+**Sin cambios:** lector, `validation/`, V3 y los baselines. No hubo llamadas pagadas, ni se regeneró la tanda ni
+los PDF. Tampoco hubo despliegue ni publicación.
 
 ## Respuesta al paquete del ciclo 10 (2026-09-30)
 

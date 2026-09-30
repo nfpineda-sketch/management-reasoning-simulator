@@ -186,7 +186,9 @@ def final_table():
             "expected_evidence": tuple(entry.get("expected_evidence", ())),
             "review_source": (f"{reviewed['source']}; {reviewed['by']}, {reviewed['on']}; "
                               + ("clear row" if group == "clear" else f"decision {group}")
-                              + f"; {reviewed['version']}")})
+                              + f"; {reviewed['version']}"
+                              + (f"; criteria revised {reviewed['revised']['id']} ({reviewed['revised']['on']})"
+                                 if reviewed.get("revised") else ""))})
     return rows
 
 

@@ -24,6 +24,7 @@ resident observes rather than is told:
 The biphasic return is the family's premature-closure teaching: the reaction
 settles, and if nobody is watching it comes back.
 """
+import re
 
 # --- the reaction ----------------------------------------------------------
 #: How fast an untreated reaction still worsens, per simulated minute. Tuned so
@@ -74,6 +75,26 @@ SBP_PER_SEVERITY = 40            # per unit of severity, from the arrival severi
 HR_PER_SEVERITY = 30
 OBSTRUCTION_PER_SEVERITY = .45   # the bronchospasm, in the family's own units
 STRIDOR_AT = .80                 # above this the upper airway is audible
+
+# --- the intubated airway (TD-47, faculty, 2026-09-30) -----------------------
+#: A tube passes the swollen upper airway: no stridor is heard through it and none
+#: costs oxygen. The reaction, the bronchospasm and the circulation go on exactly
+#: as before; this is not a difficult-airway model, and intubating still always
+#: succeeds (T-1).
+INTUBATED_AIRWAY = "Endotracheal tube in place: no stridor through the tube"
+_SPONTANEOUS_EFFORT = re.compile(r"^\s*Increased effort with\s+", re.I)
+_STRIDOR_CLAUSE = re.compile(r"\s*(?:,|;|\band\b)\s*(?:no\s+)?(?:audible\s+)?(?:inspiratory\s+)?stridor\b[^.;]*", re.I)
+
+
+def stridor_heard(severity, intubated):
+    """Whether the upper airway is audible: from the reaction, and never through a tube."""
+    return severity >= STRIDOR_AT and not intubated
+
+
+def intubated_chest(authored):
+    """The case's chest findings once intubated: its wheeze as written, without stridor or spontaneous effort."""
+    chest = _STRIDOR_CLAUSE.sub("", _SPONTANEOUS_EFFORT.sub("", str(authored or ""))).strip().rstrip(".")
+    return INTUBATED_AIRWAY + (f"; {chest[:1].lower()}{chest[1:]}." if chest else ".")
 
 # --- the biphasic return ---------------------------------------------------
 #: Minutes after the reaction first settles before it can return.
@@ -199,5 +220,5 @@ def observables(f, state=None):
         "sbp_drop": SBP_PER_SEVERITY * moved,
         "hr_rise": HR_PER_SEVERITY * moved * hr_scale,
         "obstruction": OBSTRUCTION_PER_SEVERITY * moved,
-        "stridor": severity >= STRIDOR_AT,
+        "stridor": stridor_heard(severity, bool(f.get("invasive"))),
     }

@@ -38,15 +38,28 @@ R-5, entre ellas los borradores en español de R-4, que no se muestran hasta su 
 
 Todo aplica sólo a encuentros nuevos donde corresponde; el detalle está en `docs/COLA_DECISIONES_AI_ADVISOR.md`.
 
-**Antes de iniciar el piloto quedan cuatro revisiones humanas:**
+**Segunda respuesta docente (2026-09-30):** la respuesta sigue siendo la misma. Quedan implementados, sólo en
+encuentros nuevos:
 
-- **R-2:** el POCUS de los 14 casos C14 YES, caso por caso (`docs/revision/R2_POCUS_C14.md`).
-- **P-07:** la foto V34 de la 75f (`docs/revision/P07_75F_V34.md`).
-- **R-5:** las guías finales, después de P-07.
-- **R-3:** T-1 (`docs/revision/T1_ANAPHYLAXIS_29F_C3.md`).
+- P-04, P-05 y P-06: la trombólisis del TEP;
+- P-07: la 75f llega con la vista neutral;
+- R-2: los criterios C14 de la 61m y la 70f;
+- R-3: C3 parcial de la 29f;
+- TD-46 y TD-47;
+- R-4: la terminología de la sala.
 
-**P-04 y P-05 esperan su aprobación** sobre la evidencia verificada (`docs/VERIFICACION_P04_P05.md`). El piloto
-corre sin IA automática en el encuentro: determinista y con casos offline.
+El detalle está en `docs/COLA_DECISIONES_AI_ADVISOR.md`, sección «Segunda respuesta al paquete del ciclo 10».
+
+**Antes de iniciar el piloto quedan estas revisiones humanas:**
+
+- **R-2:** las 14 fichas POCUS de los casos C14 YES (`docs/revision/R2_POCUS_C14.md`); en la 61m y la 70f ya se
+  aprobó el criterio, no la ficha.
+- **R-4:** las 18 frases finales del motor en español (`docs/revision/R4_FRASES_MOTOR.md`).
+- **R-5:** las dos guías y su firma (`docs/GUIA_DOCENTE_PILOTO.md`, `docs/GUIA_RESIDENTE_PILOTO.md`).
+
+**Recomendado antes del piloto:** TD-48, el E-FAST de la sala que muestra sólo la ventana pericárdica (afecta los
+dos casos de trauma). Está registrado, sin corregir. El piloto corre sin IA automática en el encuentro:
+determinista y con casos offline.
 
 **No es una validación.** La fidelidad del lector con texto externo sigue sin medirse (B = NOT YET MEASURED);
 todo juicio lo confirma un docente.
@@ -122,8 +135,8 @@ cualquiera de ellas es una decisión nueva (pregunta abajo).
   casos SCA queda aturdida, a lo sumo levemente disminuida (fila 6); una pregunta por embarazo o FUM responde
   «No documentado» si el caso no lo escribió, y la prueba de embarazo queda solicitada sin resultado (fila 8).
 - **Casos con una limitación que el docente debe conocer** (se juegan igual):
-  - `bradycardia_bb_54f`: vista neutral; `pulmonary_edema_75f`: la foto V34
-    (ambas pendientes).
+  - `bradycardia_bb_54f` y `pulmonary_edema_75f`: vista neutral a la llegada (P-07; la aprobación clínica de
+    V34 quedó pendiente para ese estado).
 - **Idiomas:**
   - pantallas en inglés y en español;
   - órdenes en ambos idiomas, con la fidelidad externa sin medir;

@@ -725,23 +725,36 @@ def _screen_event(event, f):
             basis = record.get("basis")
             at = _minutes(record.get("minute", first))
             refs = [r["ref"] for r in lysis]
+            # P-06 (2026-09-30, corrected): the explanation names the criterion as the
+            # engine applies it. P-04: the first dose is judged on its own minute, and
+            # whatever followed it -- an improvement included -- does not change that.
             if basis == "obstructive_shock":
                 return _result("excluded", [_executed_fact(lysis, window), _say(
-                    f"The engine recorded obstructive shock when the thrombolytic was given at {at} min: a systolic "
-                    "below 90 mmHg, or a vasopressor it needed, with a sign of hypoperfusion.",
-                    f"El motor registró shock obstructivo cuando se dio el trombolítico a los {at} min: presión "
-                    "sistólica bajo 90 mmHg, o un vasopresor que la necesitaba, con un signo de hipoperfusión.")], refs)
+                    f"The engine recorded obstructive shock attributable to the PE when the thrombolytic was given at "
+                    f"{at} min: a systolic below 90 mmHg, or a vasopressor it needed to reach 90 mmHg, with a sign of "
+                    "hypoperfusion.",
+                    f"El motor registró shock obstructivo atribuible al TEP cuando se dio el trombolítico a los {at} "
+                    "min: presión sistólica bajo 90 mmHg, o un vasopresor que necesitaba para alcanzar 90 mmHg, con un "
+                    "signo de hipoperfusión.")], refs)
             if basis == "persistent_hypotension":
                 return _result("excluded", [_executed_fact(lysis, window), _say(
-                    f"The engine recorded sustained hypotension (15 consecutive minutes) when the thrombolytic was "
-                    f"given at {at} min.",
-                    f"El motor registró hipotensión sostenida (15 minutos consecutivos) cuando se dio el trombolítico "
-                    f"a los {at} min.")], refs)
-            return _result("met", [_executed_fact(lysis, window), _say(
+                    f"The engine recorded sustained hypotension (15 consecutive minutes of a systolic below 90 mmHg, "
+                    f"or of a vasopressor it needed to keep it at 90 mmHg or above) when the thrombolytic was given at "
+                    f"{at} min.",
+                    f"El motor registró hipotensión sostenida (15 minutos consecutivos de presión sistólica bajo "
+                    f"90 mmHg, o de un vasopresor que necesitaba para mantenerla en 90 mmHg o más) cuando se dio el "
+                    f"trombolítico a los {at} min.")], refs)
+            facts = [_executed_fact(lysis, window), _say(
                 f"The engine recorded no hemodynamic indication when the thrombolytic was given at {at} min: neither "
-                "obstructive shock nor sustained hypotension.",
+                "obstructive shock attributable to the PE nor sustained hypotension. The order is judged on the state "
+                "of its minute; what followed it does not change that.",
                 f"El motor no registró indicación hemodinámica cuando se dio el trombolítico a los {at} min: ni "
-                "shock obstructivo ni hipotensión sostenida.")], refs)
+                "shock obstructivo atribuible al TEP ni hipotensión sostenida. La orden se juzga con el estado de su "
+                "minuto; lo que ocurrió después no lo cambia.")]
+            if (record.get("data") or {}).get("vasopressor_running"):
+                facts.append(_say("A vasopressor was running that the pressure did not need: it is neither.",
+                                  "Corría un vasopresor que la presión no necesitaba: no es ninguno de los dos."))
+            return _result("met", facts, refs)
         sustained = [n for n in f["narratives"] if n["minute"] is not None and n["minute"] <= first
                      and re.search(r"sustained hypotension", n["text"], re.I)]
         if sustained:

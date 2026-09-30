@@ -227,6 +227,15 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-30-02 | P-06: las declaraciones del TEP dicen el criterio de trombólisis que aplica el motor (shock obstructivo atribuible al TEP, o hipotensión sostenida de 15 minutos consecutivos) | familia pulmonary_embolism | clinical_decision_applied | clinical | — |
 | C-2026-09-30-03 | P-10: el portafolio completo de una cuenta inactiva lo prepara sólo un administrador | general | policy | none | — |
 | C-2026-09-30-04 | P-11: los 10 scripts de regresión heredados quedan retirados con su motivo; cada script, activo o retirado | general | policy | none | — |
+| C-2026-09-30-05 | TD-46: una línea del POCUS o del E-FAST de un caso sin relato aprobado se ve entera en inglés | general | technical_defect | cosmetic | — |
+| C-2026-09-30-06 | P-04: la trombólisis actúa sobre el trombo esté o no indicada; efecto, sangrado y juicio, separados | familia pulmonary_embolism | clinical_decision_applied | clinical | — |
+| C-2026-09-30-07 | P-05: el resto de un esquema de alteplasa completa la primera dosis; otra dosis es un segundo curso registrado, sin efecto propio | familia pulmonary_embolism | clinical_decision_applied | clinical | — |
+| C-2026-09-30-08 | P-06 corregido: el criterio de lisis distingue el shock obstructivo de la hipotensión sostenida, con el vasopresor que la presión necesita | familia pulmonary_embolism | clinical_decision_applied | clinical | — |
+| C-2026-09-30-09 | P-07: pulmonary_edema_75f llega con la vista neutral; la aprobación clínica de V34 queda pendiente | variante pulmonary_edema_75f | clinical_decision_applied | clinical | — |
+| C-2026-09-30-10 | TD-47: con el tubo endotraqueal no se ausculta ni se cobra estridor; la anafilaxia sigue su curso | familia anaphylaxis | technical_defect | clinical | — |
+| C-2026-09-30-11 | R-3: C3 de anaphylaxis_29f es una oportunidad parcial: la anticipación de la vía aérea, no su ejecución | variante anaphylaxis_29f | clinical_decision_applied | clinical | — |
+| C-2026-09-30-12 | R-2: criterios C14 de acs_61m_posterior y acs_70f_left_main; sus fichas siguen pendientes | variante acs_61m_posterior, acs_70f_left_main | clinical_decision_applied | clinical | — |
+| C-2026-09-30-13 | R-4: las 18 frases finales del motor quedan para revisión, y la sala usa «aumento de volumen», «dolor a la palpación» y «suero glucosado» | general | text | clinical | — |
 
 ## La batería, configuración por configuración
 

@@ -1,7 +1,14 @@
 # R-3 · T-1: `anaphylaxis_29f`, C3 YES. Brief para decidir
 
-2026-09-30. **Sólo análisis; nada cambia.** Cuando no se indica otra cosa, las fuentes son el código del
-repositorio y una sonda determinista del motor, sin proveedor:
+> **Decidido e implementado el 2026-09-30 (R-3):** C3 queda YES como oportunidad **parcial**: se aceptan como
+> evidencia el reconocimiento de la amenaza, la anticipación, pedir ayuda, la preparación y la reevaluación de la
+> vía aérea; nunca la ejecución competente ni el cumplimiento completo de C3 (C-2026-09-30-11). TD-47 está
+> corregido: con el tubo no se ausculta ni se cobra estridor (C-2026-09-30-10). TDFC no tiene un nivel parcial por
+> observación, así que la fila lo dice en su componente, su evidencia y lo que queda fuera: esa es la limitación
+> documentada. Lo de abajo queda como el análisis que se presentó.
+
+2026-09-30. Cuando no se indica otra cosa, las fuentes son el código del repositorio y una sonda determinista
+del motor, sin proveedor:
 
 - 29f, estado de llegada;
 - 6 minutos con cada conducta.

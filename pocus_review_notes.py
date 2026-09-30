@@ -14,6 +14,19 @@ STATUS = "draft_for_faculty_review"
 DATE = "2026-09-30"
 RECOMMENDATIONS = ("CONFIRM", "MODIFY", "DISCUSS")
 
+#: The faculty's criteria for the two cases discussed (R-2, 2026-09-30), already applied to their C14
+#: declarations (``case_assessment_bank``). They approve the criteria, not the case's card: nothing here
+#: marks CONFIRMO or signs, and the other twelve cases stay as they were.
+FACULTY_CRITERIA = {
+    "acs_61m_posterior": ("«Aorta no dilatada» en el POCUS no se presenta como disección descartada. La "
+                          "hipocinesia posterior aislada es un hallazgo sutil que el informe escrito entrega: no se "
+                          "exige reconocerla, sino usar la motilidad informada con el ECG y las derivaciones "
+                          "posteriores."),
+    "acs_70f_left_main": ("Un bolo pequeño, justificado y con reevaluación no se penaliza automáticamente: se evalúa "
+                          "en su contexto y por la adaptación posterior. Hallazgos intermedios no tienen una sola "
+                          "respuesta obligatoria."),
+}
+
 _WMA = ("Motilidad regional: NO establecida por ACEP 2016 ni en la lista de la EPA C14; se aceptó por alcance "
         "local (decisión A). Informe escrito: no se observa la adquisición ni el reconocimiento en la imagen.")
 _VOLUME = ("VI cualitativo y VCI para el volumen: ESTABLECIDOS por ACEP 2016 (el método de la VCI no se "
@@ -37,14 +50,14 @@ NOTES = {
     "acs_61m_posterior": {
         "application": "Cardíaca focalizada (motilidad regional) y aorta torácica en un dolor torácico con "
                        "irradiación al dorso",
-        "interpret": "Hipocinesia posterior, compatible con un infarto posterior que el ECG de 12 derivaciones "
-                     "subestima (infradesnivel V1–V3)",
+        "interpret": "Motilidad regional informada (hipocinesia posterior), compatible con un infarto posterior que "
+                     "el ECG de 12 derivaciones subestima (infradesnivel V1–V3). Una aorta no dilatada en el POCUS "
+                     "no descarta una disección",
         "management": "Derivaciones posteriores y activar la reperfusión",
         "acep": _WMA + " La dilatación de la raíz aórtica y de la aorta descendente sí está establecida",
-        "issue": "La hipocinesia posterior aislada es un hallazgo sutil incluso para ecografistas expertos. "
-                 "Con dolor al dorso, «aorta no dilatada» puede leerse como disección descartada, y el POCUS no "
-                 "la descarta. Revisar si el caso debe decir ese límite",
-        "recommendation": "DISCUSS",
+        "issue": "Criterio docente aplicado a la declaración C14 (R-2): la motilidad sutil no se exige reconocer y el "
+                 "límite de la aorta queda escrito. Falta su revisión de la ficha completa",
+        "recommendation": "CONFIRM",
     },
     "acs_70f_left_main": {
         "application": "Cardíaca (función global del VI), pulmonar (líneas B) y VCI en un SCA con hipoperfusión "
@@ -52,13 +65,11 @@ NOTES = {
         "interpret": "Contracción global levemente disminuida, sin defecto focal, y líneas B basales dispersas: "
                      "isquemia difusa con congestión inicial, no edema franco. La VCI es intermedia",
         "management": "Volumen prudente o ninguno, soporte precoz si progresa la hipoperfusión y reperfusión "
-                      "urgente (tronco)",
+                      "urgente (tronco); un bolo pequeño con su límite y reevaluación es defendible",
         "acep": _VOLUME + " Las líneas B también están establecidas",
-        "issue": "La hipoperfusión es incipiente (104/66, extremidades frías, llene de 3 s) y los hallazgos son "
-                 "intermedios (VI levemente disminuido desde DF-23, VCI de 1,9 cm con 50 %). C14 espera «limitar "
-                 "o retener volumen, o escalar soporte»: un bolo pequeño con reevaluación no debería juzgarse "
-                 "como error. Confirmar que el texto «leve» y la expectativa van juntos",
-        "recommendation": "DISCUSS",
+        "issue": "Criterio docente aplicado a la declaración C14 (R-2): ya no exige sólo limitar el volumen; evalúa "
+                 "la decisión en contexto y su adaptación a la respuesta. Falta su revisión de la ficha completa",
+        "recommendation": "CONFIRM",
     },
     "gi_bleed_57m": {
         "application": "Hipotensión indiferenciada: corazón y VCI (volumen)",

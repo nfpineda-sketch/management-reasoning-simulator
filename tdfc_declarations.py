@@ -27,15 +27,19 @@ started before keeps the declaration it was frozen with.
 """
 from __future__ import annotations
 
+from pe_obstruction import CRITERION_TEXT as _PE_LYSIS_CRITERION
+
 _BASIS = ("Cycle 7 instruction §28 (2026-09-28): TDFC-1 to 6 and 8 approved conceptually as recommended "
           "in docs/tdfc/TDFC_DECISIONS_FOR_NICOLAS.md; written in cycle 8.")
 
 
-def _review(group, released=None):
+def _review(group, released=None, revised=None):
     reviewed = {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "faculty_decision",
                 "decision_group": group, "version": "TDFC-REVIEW-1", "basis": _BASIS}
     if released:
         reviewed["released"] = released
+    if revised:
+        reviewed["revised"] = revised
     return reviewed
 
 
@@ -45,6 +49,17 @@ _DF20_CLOSED = {"by": "Nicolás Pineda", "on": "2026-09-29", "decision": "DF-20 
                           "involvement can coexist with a qualitative emergency POCUS that is normal or "
                           "non-diagnostic; the rows the approved TDFC decisions derived are applied, and the "
                           "opportunities do not rest on the POCUS.")}
+
+
+# Rows the faculty revised after TDFC-REVIEW-1, for new encounters only (the declaration is frozen
+# with each encounter). The row says so beside its original review.
+_P06 = {"id": "P-06", "by": "Nicolás Pineda", "on": "2026-09-30",
+        "decision": "The lysis criterion as the engine applies it (P-06 B, corrected the same day)",
+        "basis": "Faculty response to the cycle-10 decision packet, 2026-09-30."}
+_R3_T1 = {"id": "R-3", "by": "Nicolás Pineda", "on": "2026-09-30",
+          "decision": ("T-1: C3 kept as a partial opportunity -- the anticipation of the airway is observable, its "
+                       "execution is not"),
+          "basis": "Faculty response to the cycle-10 decision packet, 2026-09-30, point 6."}
 
 
 # What stays outside any encounter of this simulator, objective by objective (objectives.py
@@ -60,11 +75,11 @@ OUTSIDE = {
 }
 
 
-def _yes(objective, group, rationale, component, evidence, also_outside=None, released=None):
+def _yes(objective, group, rationale, component, evidence, also_outside=None, released=None, revised=None):
     outside = OUTSIDE[objective] + (" " + also_outside if also_outside else "")
     return {"opportunity": "yes", "rationale": rationale, "observable_component": component,
             "expected_evidence": tuple(evidence), "outside_the_encounter": outside,
-            "reviewed": _review(group, released)}
+            "reviewed": _review(group, released, revised)}
 
 
 def _no(group, reason, released=None):
@@ -201,14 +216,26 @@ DECLARATIONS = {
                    "Integrating the response to epinephrine, the airway and volume, and recognising the return.",
                    ("compares the response with the one expected", "escalates to an infusion if it falls short",
                     "decides the observation and recognises and treats the return")),
+        # R-3 · T-1 (faculty, 2026-09-30): a partial opportunity. The anticipation is observable; the
+        # execution is not, because airway decisions carry no consequence in the engine.
         "C3": _yes("C3", "clear",
                    "An upper airway threat (stridor, lip angioedema) the engine charges in SpO2 and only epinephrine "
-                   "relieves; the declaration names the airway (D1, D4) and oxygen (D3), and preparing the airway can "
-                   "be executed. No complete obstruction or difficult intubation is modelled.",
-                   "Anticipating a difficult airway, giving oxygen and reassessing the airway after epinephrine.",
-                   ("names the stridor as a threat", "orders oxygen", "prepares the airway or calls for help",
+                   "relieves; the declaration names the airway (D1, D4), and preparing the airway and calling for help "
+                   "can be executed and are recorded. A partial opportunity: what the resident decides about the "
+                   "airway has no physiological consequence here, and intubating always succeeds. The faculty "
+                   "confirms C3 only when the anticipation of the airway itself appears, never for the epinephrine "
+                   "and the oxygen alone.",
+                   "Recognising the upper airway threat and anticipating a difficult airway: naming the threat, "
+                   "calling for help able to manage the airway or preparing it, and reassessing the airway after "
+                   "epinephrine.",
+                   ("names the stridor or the angioedema as an airway threat",
+                    "anticipates a difficult airway: calls for help able to manage it or prepares the airway",
                     "reassesses the stridor after the dose"),
-                   also_outside="A complete obstruction and a difficult intubation are not modelled."),
+                   also_outside=("The competent execution of the airway: intubation, a difficult or failed airway, "
+                                 "a surgical airway and a complete obstruction are not modelled, and intubating "
+                                 "always succeeds, so a confirmed observation here is evidence of anticipation, not "
+                                 "of execution."),
+                   revised=_R3_T1),
     },
     "anaphylaxis_63m_betablocked": {
         "TD1": _yes("TD1", "clear",
@@ -603,13 +630,13 @@ DECLARATIONS = {
                    "output) and tolerates slow, bounded volume.",
                    "Prioritising oxygenation and pressure support that does not overload the right ventricle.",
                    ("oxygen", "slow, bounded volume or a vasopressor", "reassesses pressure and perfusion")),
-        "C1": _yes("C1", "clear",
+        "C1": _yes("C1", "clear",  # evidence revised by P-06 (2026-09-30)
                    "Obstructive shock: deciding reperfusion without waiting for the CT angiography (20 min), limiting "
                    "volume, anticoagulating and deciding the transfer by the pressure.",
                    "Integrating reperfusion, support and transfer, and revising by the pressure.",
-                   ("recognises obstructive shock attributable to the PE, or sustained hypotension (SBP < 90 mmHg for 15 "
-                    "consecutive minutes)", "decides thrombolysis or the reperfusion team",
-                    "adjusts the support and defines the transfer")),
+                   # P-06 (2026-09-30, corrected): the engine's criterion, in the words it keeps beside the rule.
+                   ("recognises " + _PE_LYSIS_CRITERION, "decides thrombolysis or the reperfusion team",
+                    "adjusts the support and defines the transfer"), revised=_P06),
         "C3": _yes("C3", "TDFC-6",
                    "An obstructive shock with marked effort: avoiding, deferring or preparing intubation is a real "
                    "decision about a physiologically difficult airway, and the engine charges positive pressure "

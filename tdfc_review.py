@@ -188,7 +188,9 @@ def final_table():
                 "observable_component": entry.get("observable_component", ""),
                 "expected_evidence": tuple(entry.get("expected_evidence", ())),
                 "outside_the_encounter": entry.get("outside_the_encounter", ""),
-                "review_source": ("clear row" if group == "clear" else f"decision {group}") + f"; {reviewed['version']}"})
+                "review_source": ("clear row" if group == "clear" else f"decision {group}") + f"; {reviewed['version']}"
+                                 + (f"; revised {reviewed['revised']['id']} ({reviewed['revised']['on']})"
+                                    if reviewed.get("revised") else "")})
     return rows
 
 
