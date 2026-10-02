@@ -129,7 +129,7 @@ def test_the_litre_that_used_to_disappear_is_delivered(encounter):
         "antes de apretar. Pasa 1000 mL de suero fisiológico IV en 30 minutos. Espero que suba la "
         "presión. Reevalúa en 30 minutos presión arterial y perfusión."
     )
-    next(b for b in at.button if b.label == "Submit").click().run()
+    next(b for b in at.button if b.label == "Send").click().run()
     assert not at.exception
     updates = [e["text"] for e in at.session_state.events if e["kind"] == "clinical_update"]
     assert updates, [e["kind"] for e in at.session_state.events]

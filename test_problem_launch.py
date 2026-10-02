@@ -152,7 +152,7 @@ def test_new_ai_case_is_persisted_and_resumed_without_reauthoring(tmp_path, monk
     frozen = deepcopy(first.session_state.state['encounter_spec'])
     next(w for w in first.radio if w.label == 'Encounter').set_value('Tests').run()
     first.text_area[0].set_value('Measure temperature')
-    next(b for b in first.button if b.label == 'Submit').click().run()
+    next(b for b in first.button if b.label == 'Send').click().run()
     assert not first.exception
     # An ordered study no longer advances the clock on its own. It stays visibly
     # pending with its expected time until the resident reassesses explicitly.
@@ -161,7 +161,7 @@ def test_new_ai_case_is_persisted_and_resumed_without_reauthoring(tmp_path, monk
             first.session_state.state['pending_investigations']] == ['temperature']
     assert any('Temperature: pending' in str(c.value) for c in first.caption)
     first.text_area[0].set_value('Reassess in 5 minutes')
-    next(b for b in first.button if b.label == 'Submit').click().run()
+    next(b for b in first.button if b.label == 'Send').click().run()
     assert not first.exception
     expected = deepcopy(first.session_state.state)
     trace = deepcopy(first.session_state.management_trace)

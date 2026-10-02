@@ -96,7 +96,7 @@ def test_shared_app_displays_focus_after_its_actual_snapshot_is_frozen(monkeypat
     assert not any("Cognitive focus:" in item.value for item in app.markdown)
     next(item for item in app.radio if item.label == "Encounter").set_value("Treat").run()
     app.text_area[0].set_value("Reassess now").run()
-    next(item for item in app.button if item.label == "Submit").click().run()
+    next(item for item in app.button if item.label == "Send").click().run()
     assert not app.exception
     next(item for item in app.button if item.label == "Complete Encounter & Begin Review").click().run()
     # Closing without a destination warns without blocking (faculty decision 9).

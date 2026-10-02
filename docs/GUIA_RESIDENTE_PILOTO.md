@@ -39,6 +39,27 @@ posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada
    Review»). Para algunas de ellas te pregunta qué cambió en tu modelo de trabajo, qué disparó tu prioridad,
    qué harías distinto y qué respuesta esperabas. Queda guardada con el encuentro.
 
+## La pantalla del encuentro
+
+- **A la izquierda, el paciente** y, sobre la foto, el monitor. Arriba a la derecha, «Tiempo simulado»
+  («Simulated time»): es el único reloj, en minutos. El minuto de cada entrada dice cuándo se obtuvo esa
+  información; el monitor muestra al paciente ahora.
+- **A la derecha, arriba, cuatro vistas**, lo más reciente primero:
+  - «Evolución» («Evolution»): lo que la sala te entregó (respuestas, examen, resultados, reevaluaciones);
+  - «Historia y examen» («History & Exam»): lo que preguntaste y examinaste, cada cosa con su minuto;
+  - «Resultados» («Results»): lo pedido, lo pendiente y lo disponible; «Ver ECG» («View ECG») abre ese
+    trazado, el de su aviso, sin pedir otro ni mover el reloj;
+  - «Indicaciones» («Orders»): qué pasó con cada orden (ejecutada, no ejecutada, a la espera de una aclaración,
+    pendiente, cancelada, o indicada con su efecto no modelado) y los tratamientos en curso.
+  Consultarlas no envía nada ni borra lo que estás escribiendo.
+- **A la derecha, abajo, «Manejo»:** elige un modo (Talk, Examine, Tests, Treat; el elegido lleva ✓), escribe
+  y pulsa «Enviar» («Send»). Enter agrega una línea; no envía. Bajo los modos, la sala te dice qué pasó con tu
+  última orden. Si una orden queda retenida o la sala te pregunta algo, el aviso queda a la vista hasta que
+  respondas.
+- **«☰ Menú» («Menu»), arriba a la izquierda:** tu cuenta, tu contraseña, el idioma (fijo durante el encuentro)
+  y salir del encuentro (guardar y volver, o terminar el intento). Se abre con un clic o con el teclado y se
+  cierra con Escape o con un clic fuera. Durante el encuentro no hay barra lateral.
+
 ## La foto y el POCUS
 
 - **La foto** es una imagen fija del paciente, revisada por un docente. No muestra todos los signos clínicos:

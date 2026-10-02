@@ -40,7 +40,7 @@ def encounter(monkeypatch):
 def submit(app, text):
     next(w for w in app.radio if w.label == "Encounter").set_value("Treat").run()
     app.text_area[0].set_value(text)
-    next(b for b in app.button if b.label == "Submit").click().run()
+    next(b for b in app.button if b.label == "Send").click().run()
     assert not app.exception, app.exception
 
 

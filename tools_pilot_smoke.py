@@ -129,7 +129,7 @@ def _play(store, token, language, timeout):
     case = ((state.get("encounter_spec") or {}).get("clinical_case") or {}).get("id") or state.get("case_id")
     if at.text_area:
         at.text_area[0].set_value(ORDERS[language])
-        steps["submitted"] = _click(at, "Submit") and not at.exception
+        steps["submitted"] = _click(at, "Send") and not at.exception
     steps["trace_rows"] = len(at.session_state["management_trace"]) if "management_trace" in at.session_state else 0
     steps["buttons_after_submit"] = [(b.label, bool(b.disabled)) for b in at.button][:12]
     steps["messages_after_submit"] = _texts(at)[-600:]

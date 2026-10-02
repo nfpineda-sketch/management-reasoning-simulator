@@ -393,7 +393,7 @@ def step(page, action):
     elif kind in ("order", "answer"):
         page.radio("Encounter", "Treat")
         page.fill("Enter your clinical reasoning and/or actions", action[1])
-        page.click("Submit")
+        page.click("Send")
     elif kind == "complete":
         for label, value in action[1].items():
             if label == "delay":
@@ -404,6 +404,11 @@ def step(page, action):
     elif kind == "cancel":
         page.click("Cancel pending orders")
     elif kind == "recover":
+        # During the encounter leaving is in the room's menu, drawn only while it is open
+        # (UX of the clinical encounter, 2026-10-02).
+        menu = next((label for label in ("☰ Menu", "☰ Menú") if page.has_button(label)), None)
+        if menu and not page.has_button("Save & return to dashboard"):
+            page.click(menu)
         page.click("Save & return to dashboard")
         page.click("Resume encounter")
     else:

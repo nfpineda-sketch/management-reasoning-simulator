@@ -1,7 +1,6 @@
 """Visual, read-only bedside view driven exclusively by observed treatment state."""
 from html import escape
 import streamlit as st
-from encounter_workspace import encounter_sections
 
 
 def device_labels(t):
@@ -47,7 +46,7 @@ def patient_svg(t):
     <circle cx="177" cy="335" r="10" fill="#405565"/><circle cx="333" cy="335" r="10" fill="#405565"/>{mask}{pump}</svg>'''
 
 
-ROOM_RENDER_VERSION = 8
+ROOM_RENDER_VERSION = 9
 
 
 def monitor_html(o, time_label, profile='baseline', seed=0):
@@ -57,10 +56,15 @@ def monitor_html(o, time_label, profile='baseline', seed=0):
               ('SpO₂', str(o.get('spo2', '—')) if pulse else '—', '%', '#64dced'),
               ('NIBP', f"{o.get('sbp', '—')}/{o.get('dbp', '—')}" if pulse else '—', 'mmHg', '#f6c77a'),
               ('RR', str(o.get('respiratory_rate', '—')), '/min', '#f1efff')]
-    cards = ''.join(f'<div style="color:{c};padding:4px 8px"><small>{label}</small><div style="font:700 clamp(17px,2.1vw,34px) monospace">{escape(v)}</div><small>{unit}</small></div>' for label,v,unit,c in values)
+    # A value is never split across lines: a pressure reads 132/80, whole (UX of the
+    # clinical encounter, 2026-10-02); the size follows the monitor's width (BEDSPACE_CSS).
+    cards = ''.join(f'<div style="color:{c}"><small>{label} <span class="monitor-unit">{unit}</span></small><div class="monitor-value">{escape(v)}</div></div>' for label,v,unit,c in values)
     wave = monitor_wave_svg(o, profile=profile, seed=seed)
-    return (f'<div style="padding:8px"><div style="color:#c3d4df;font:12px monospace">BEDSIDE MONITOR · {escape(time_label)}</div>'
-            + wave + f'<div class="monitor-values" style="display:grid;grid-template-columns:repeat(4,1fr)">{cards}</div></div>')
+    # The room says the simulated time once, beside the information; the monitor shows
+    # the patient now, and carries a time only when one is given.
+    heading = 'BEDSIDE MONITOR' + (f' · {escape(time_label)}' if time_label else '')
+    return (f'<div class="monitor-body"><div class="monitor-heading">{heading}</div>'
+            + wave + f'<div class="monitor-values">{cards}</div></div>')
 
 
 @st.fragment(run_every=2)
@@ -89,34 +93,43 @@ def render_room(state, events, ecg_svg, render_event, time_label, context=None):
                           photo_apart=photo_apart), unsafe_allow_html=True)
 
 
-def render_bedside_tools(state, events, render_event):
-    """Acquire a frozen ECG; viewing an older acquisition never changes its data."""
-    from ecg12 import acquire_ecg, render_ecg_svg
-    from clinical_scene import setting
-    from patient_appearance import appearance_signature
-    acquired = False
-    @st.dialog('ECG · 12 leads', width='large')
-    def show_ecg(snapshot):
-        svg = render_ecg_svg(snapshot)
-        st.markdown(''.join(line.strip() for line in svg.splitlines()), unsafe_allow_html=True)
-        st.caption('Synthetic educational tracing · Clinical pattern validation pending.')
-        st.download_button('Download ECG', svg, file_name='ecg_12_leads.svg', mime='image/svg+xml')
+@st.dialog('ECG · 12 leads', width='large')
+def show_ecg(snapshot):
+    """One recording, exactly as it was acquired. Viewing it acquires nothing and changes nothing."""
+    from ecg12 import render_ecg_svg
+    svg = render_ecg_svg(snapshot)
+    st.markdown(''.join(line.strip() for line in svg.splitlines()), unsafe_allow_html=True)
+    st.caption('Synthetic educational tracing · Clinical pattern validation pending.')
+    st.download_button('Download ECG', svg, file_name='ecg_12_leads.svg', mime='image/svg+xml')
 
+
+def acquire_ecg_button(state, events):
+    """Acquire a frozen 12-lead ECG at the current minute, announce it once and show it.
+
+    Returns ``(acquired, notice)``: ``notice`` is what the room says when no tracing could be
+    acquired, as ``(kind, text)`` with ``kind`` "info" or "error", for the caller to say where
+    the room speaks -- the button sits in a one-line band.
+    """
+    from ecg12 import acquire_ecg
     # A closed encounter acquires nothing new; its recordings stay viewable.
-    if not st.session_state.get('encounter_ended') and st.button(
+    if st.session_state.get('encounter_ended') or not st.button(
             'ECG', help='Acquire a 12-lead ECG at the current simulation time.'):
-        try:
-            snapshot = acquire_ecg(state)
-            if snapshot.get('status') != 'available':
-                st.info(snapshot.get('reason', 'ECG unavailable for this electrical state.'))
-            else:
-                state.setdefault('diagnostics', {}).setdefault('ecg', []).append(snapshot)
-                events.append({'kind': 'diagnostic', 'time': state.get('sim_time', 0),
-                               'text': '12-lead ECG acquired. Available in ECG recordings.'})
-                acquired = True
-                show_ecg(snapshot)
-        except ValueError as error:
-            st.error(str(error))
+        return False, None
+    try:
+        snapshot = acquire_ecg(state)
+        if snapshot.get('status') != 'available':
+            return False, ('info', snapshot.get('reason', 'ECG unavailable for this electrical state.'))
+        state.setdefault('diagnostics', {}).setdefault('ecg', []).append(snapshot)
+        events.append({'kind': 'diagnostic', 'time': state.get('sim_time', 0),
+                       'text': '12-lead ECG acquired. Available in ECG recordings.'})
+        show_ecg(snapshot)
+        return True, None
+    except ValueError as error:
+        return False, ('error', str(error))
+
+
+def ecg_recordings(state):
+    """Every recording of this encounter; viewing an older acquisition never changes its data."""
     recordings = state.get('diagnostics', {}).get('ecg', [])
     if recordings:
         with st.expander('ECG recordings'):
@@ -125,6 +138,17 @@ def render_bedside_tools(state, events, render_event):
                                     index=len(recordings)-1)
             if st.button('View recording'):
                 show_ecg(recordings[recording])
+
+
+def image_tools(state):
+    """Troubleshooting of the patient image: for faculty and administrators only.
+
+    They are development controls, not part of the encounter (UX of the clinical
+    encounter, 2026-10-02, section 10): the page draws them only for staff, and they
+    keep the behaviour they had.
+    """
+    from clinical_scene import setting
+    from patient_appearance import appearance_signature
     jobs = st.session_state.get('_scene_jobs')
     if jobs is not None and st.button('Image issue details', help='Inspect a rejected illustration separately for troubleshooting. It is not the current clinical image.'):
         diagnostic = getattr(jobs, 'diagnostic_candidate', None)
@@ -149,6 +173,10 @@ def render_bedside_tools(state, events, render_event):
                 st.rerun()
             elif jobs.pending is not None:
                 st.info('The patient image is still being prepared. Its progress appears beside the monitor.')
+
+
+def study_upgrade(state):
+    """A case saved before its studies were modelled can enable them; its state and results are kept."""
     from case_study_compatibility import missing_native_studies, upgrade_studies
     missing = missing_native_studies(state.get('encounter_spec', {}).get('clinical_case', {}))
     if missing:
@@ -156,13 +184,3 @@ def render_bedside_tools(state, events, render_event):
         if st.button('Enable modeled studies for this saved case'):
             upgrade_studies(state)
             st.rerun()
-    labels = device_labels(state['treatments'])
-    if labels:
-        st.caption('Current support · ' + ' | '.join(labels))
-    _, latest, _, _ = encounter_sections(events)
-    if latest:
-        with st.expander('Latest response', expanded=True):
-            for event in latest:
-                if event.get('kind') != 'you':
-                    render_event(event)
-    return acquired

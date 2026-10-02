@@ -144,7 +144,7 @@ def _step(at, step):
         if box is None:
             raise RehearsalStop("The order box is not on the page.")
         box.set_value(step[1])
-        _click(at, "Submit")
+        _click(at, "Send")
     elif kind == "answer":
         # A natural-language answer to the follow-up question of a held order.
         _mode(at, "Treat")
@@ -153,7 +153,7 @@ def _step(at, step):
         if box is None:
             raise RehearsalStop("The answer box is not on the page.")
         box.set_value(step[1])
-        _click(at, "Submit")
+        _click(at, "Send")
     elif kind == "complete":
         answers = step[1]
         form = {item.label: item for item in at.text_area}

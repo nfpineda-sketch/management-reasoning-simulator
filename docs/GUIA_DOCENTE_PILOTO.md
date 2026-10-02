@@ -120,6 +120,18 @@ una omisión. La decisión de trombolizar se juzga como antes, en su minuto.
 - **Terminología (R-4):** «aumento de volumen», «dolor a la palpación» y «suero glucosado». Las 18 frases
   finales del motor esperan su firma (`docs/revision/CIERRE_PREPILOTO.md`).
 
+## La pantalla del encuentro (2026-10-02)
+
+- **Qué ve el residente:** el paciente a la izquierda; a la derecha, «Tiempo simulado», las vistas «Evolución»,
+  «Historia y examen», «Resultados» e «Indicaciones», y abajo el lugar para escribir. La barra lateral no se
+  dibuja durante el encuentro: la cuenta, la contraseña y el idioma están en «☰ Menú».
+- **No cambió nada de lo que se registra:** las mismas entradas producen la misma interpretación, ejecución,
+  tiempo, estado y registro (comprobado antes/después). Evolución no repite lo que el residente escribió ni los
+  mensajes sobre una orden; todo sigue en el registro y en el Management Trace.
+- **Lo que ya no se muestra al residente:** el panel vivo que leía la auscultación y el llene capilar del
+  momento sin examinar (un hallazgo se ve cuando se obtuvo, con su minuto) y los controles de desarrollo de la
+  imagen («Image issue details», «Retry patient image»), que quedan para docentes y administradores.
+
 ## Fotos y POCUS: qué muestran y qué no
 
 - **Fotos.** Sólo se muestran fotos con sus dos revisiones humanas aprobadas. Una foto fija no muestra todos

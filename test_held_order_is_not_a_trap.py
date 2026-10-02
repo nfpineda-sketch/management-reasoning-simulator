@@ -98,7 +98,7 @@ def edema(monkeypatch):
 def submit(at, text):
     next(r for r in at.radio if r.label == "Encounter").set_value("Treat").run()
     next(i for i in at.text_area if i.label == "Enter your clinical reasoning and/or actions").set_value(text)
-    next(b for b in at.button if b.label == "Submit").click().run()
+    next(b for b in at.button if b.label == "Send").click().run()
     assert not at.exception
 
 

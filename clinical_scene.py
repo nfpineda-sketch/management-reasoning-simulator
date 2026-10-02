@@ -299,43 +299,88 @@ UNAVAILABLE = {
 # element is the containing block of its fixed descendants. Against the window,
 # Streamlit's open sidebar covered the room's left edge -- the minute and the
 # start of the note on what the photograph cannot show (2026-09-26). On a phone
-# the sidebar opens over the page and the room is unchanged.
+# the room is stacked: the patient above, the information and the writing below.
+#
+# UX of the clinical encounter (faculty instruction of 2026-10-02): the patient on
+# the left half, nearly its whole height, with a compact monitor over its upper left
+# corner; on the right half the information above (it scrolls on its own) and the
+# writing area below, always in view. During the encounter the sidebar is not drawn
+# at all (the room's menu replaces it), so the two halves share the whole width.
 BEDSPACE_CSS = """
 [data-testid="stMain"]{transform:translate(0)}
-.clinical-scene{position:fixed;inset:3.4rem 1rem 1rem;background:#18252e;
- background-size:cover;background-position:38% center;border-radius:14px;overflow:hidden;z-index:1}
-.scene-photo{position:fixed;inset:3.4rem 1rem 1rem;background-size:cover;background-position:38% center;
- border-radius:14px;overflow:hidden;z-index:0}
+.clinical-scene{position:fixed;top:3.4rem;bottom:1rem;left:1rem;width:calc(50% - 1.5rem);background:#18252e;
+ background-size:cover;background-position:center;border-radius:14px;overflow:hidden;z-index:1}
+.scene-photo{position:fixed;top:3.4rem;bottom:1rem;left:1rem;width:calc(50% - 1.5rem);background-size:cover;
+ background-position:center;border-radius:14px;overflow:hidden;z-index:0}
 .scene-photo-empty{display:none}
-.scene-monitor{position:absolute;right:1.2%;top:1.5%;width:36%;background:#07141d;
- border:5px solid #263a48;border-radius:14px;box-shadow:0 8px 24px #0008;max-height:37vh;overflow:hidden}
-.scene-monitor svg{width:100%;height:auto;display:block;max-height:12vh}
-.monitor-values{min-width:0}.monitor-values>div{min-width:0}
-.scene-time{position:absolute;left:0;top:0;background:#000b;color:#eee;padding:8px 14px;font:12px system-ui;max-width:59%}
-.scene-observations{position:absolute;left:2%;bottom:3%;max-width:54%;background:#17222eee;color:white;padding:10px;border-radius:8px}
-.scene-image-status{position:absolute;left:3%;top:38%;max-width:53%;color:#dce8ef;font:16px/1.5 system-ui;padding:12px;background:#0e1b24;border-radius:8px}
-.st-key-encounter-console{position:fixed!important;right:2.2rem;top:calc(3.4rem + 39vh);
- bottom:1.8rem;width:35%!important;overflow-y:auto!important;overflow-x:hidden;z-index:2;
- background:rgba(248,250,252,.96);padding:14px;border:1px solid #b8c6cd;border-radius:12px;
- box-shadow:0 8px 28px #0005;color:#17232d;color-scheme:light}
-.st-key-encounter-console h3{font-size:1.1rem!important;margin:0!important;padding-top:0!important}
-.st-key-encounter-console [data-testid="stForm"]{padding:10px}
-.st-key-encounter-console [data-testid="stCaptionContainer"]{font-size:.8rem}
-.st-key-encounter-console [data-testid="stVerticalBlock"]{gap:.6rem}
+.scene-monitor{position:absolute;left:.7rem;top:.7rem;width:min(44%,24rem);background:#07141df0;
+ border:2px solid #263a48;border-radius:10px;box-shadow:0 6px 18px #0008;overflow:hidden}
+.monitor-body{padding:4px 9px 6px}
+.monitor-heading{color:#c3d4df;font:10px/1.3 monospace;letter-spacing:.04em}
+.scene-monitor svg{width:100%;height:auto;display:block;max-height:5.5vh}
+.monitor-values{display:grid;grid-template-columns:repeat(4,auto);justify-content:space-between;column-gap:.5rem;min-width:0}
+.monitor-values>div{min-width:0}
+.monitor-values small{font-size:10px;white-space:nowrap}.monitor-unit{opacity:.75}
+.monitor-value{font:700 clamp(15px,1.45vw,26px)/1.1 monospace;white-space:nowrap}
+.scene-time{position:absolute;right:0;top:0;background:#000b;color:#eee;padding:6px 12px;font:12px system-ui;
+ max-width:48%;border-bottom-left-radius:8px}
+.scene-observations{position:absolute;left:.8rem;bottom:.8rem;width:fit-content;max-width:calc(100% - 1.6rem);
+ background:#17222eee;color:white;padding:8px 12px;border-radius:8px;font:13px/1.4 system-ui}
+.scene-image-status{position:absolute;left:.8rem;top:42%;max-width:calc(100% - 1.6rem);color:#dce8ef;
+ font:15px/1.5 system-ui;padding:12px;background:#0e1b24;border-radius:8px}
+.st-key-encounter-console{position:fixed!important;top:3.4rem;bottom:1rem;right:1rem;width:calc(50% - 1.5rem)!important;
+ display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;gap:.5rem!important;
+ overflow:hidden!important;z-index:2;background:rgba(248,250,252,.98);padding:12px 14px;border:1px solid #b8c6cd;
+ border-radius:12px;box-shadow:0 8px 28px #0003;color:#17232d;color-scheme:light}
+.st-key-encounter-console>[data-testid="stLayoutWrapper"]{width:100%;min-width:0}
+.st-key-enc-status{position:fixed!important;top:.5rem;left:calc(50% + .5rem);right:15rem;z-index:999991;
+ display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center;gap:1rem;width:auto!important}
+.st-key-enc-status>div{width:auto!important;flex:0 0 auto}
+.st-key-enc-status button{min-height:2.1rem;padding:.2rem .9rem}
+.st-key-enc-feedback{padding:6px 10px!important;gap:.25rem!important}
+.st-key-enc-feedback [data-testid="stMarkdownContainer"],.st-key-enc-feedback [data-testid="stCaptionContainer"]{margin-bottom:0!important}
+.st-key-enc-feedback p,.st-key-enc-feedback li{font-size:.9rem;margin:0 0 .15rem!important}
+[data-testid="stMarkdownContainer"]:has(>.enc-title,>.enc-order,>.enc-clock){margin-bottom:0!important}
+.st-key-enc-feedback [data-testid="stAlert"]{padding:.4rem .6rem}
+.st-key-encounter-console>[data-testid="stLayoutWrapper"]:has(>.st-key-enc-info){flex:1 1 0;min-height:20%;
+ overflow-y:auto;overflow-x:hidden;padding-right:4px}
+.st-key-encounter-console>[data-testid="stLayoutWrapper"]:has(>.st-key-enc-action){flex:0 0 auto;max-height:66%;
+ overflow-y:auto;overflow-x:hidden;border-top:2px solid #cfd8dc;padding-top:.5rem}
+.st-key-encounter-console:has([class*="st-key-reasoning_model_"],.st-key-close_kind)>[data-testid="stLayoutWrapper"]:has(>.st-key-enc-action){max-height:84%}
+.st-key-encounter-console:has([class*="st-key-reasoning_model_"],.st-key-close_kind)>[data-testid="stLayoutWrapper"]:has(>.st-key-enc-info){min-height:10%}
+.st-key-enc-info [data-testid="stTabs"] [role="tablist"]{position:sticky;top:0;z-index:3;background:#f8fafc}
+.enc-title{font:700 clamp(.9rem,1.1vw,1.05rem)/1.3 system-ui;color:#0f2b40;white-space:nowrap}
+.st-key-enc-action h4{font-size:.98rem!important;padding:.2rem 0 0!important}
+.st-key-encounter-console .mrs-vitals-grid--response{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}
+.st-key-encounter-console .mrs-vital-cell{min-width:0;border:1px solid #d7e0e8;border-radius:8px;background:#f7fafc;padding:6px 8px}
+.st-key-encounter-console .mrs-vital-label{color:#667789;font-size:.62rem;font-weight:800;letter-spacing:.04em;line-height:1.2;text-transform:uppercase}
+.st-key-encounter-console .mrs-vital-value{color:#172433;font-size:.88rem;font-weight:700;line-height:1.25;margin-top:3px;overflow-wrap:anywhere}
+.st-key-encounter-console [data-testid="stForm"]{padding:8px 10px}
+.st-key-encounter-console [data-testid="stCaptionContainer"]{font-size:.82rem}
+.st-key-encounter-console [data-testid="stVerticalBlock"]{gap:.5rem}
 .st-key-encounter-console [data-testid="stExpander"]{background:#f7f9fb}
-.st-key-encounter-console [role="radiogroup"]{gap:.6rem;flex-wrap:wrap}
 .st-key-encounter-console [data-testid="stMarkdownContainer"]{overflow-wrap:anywhere}
+.enc-clock{font:700 1.1rem/1.3 system-ui;color:#0f2b40;white-space:nowrap}
+.enc-order{white-space:normal;overflow-wrap:anywhere;font-size:.9rem;color:#33424f}
+.st-key-enc-modes [data-testid="stElementContainer"],.st-key-enc-modes .stRadio{width:100%!important}
+.st-key-enc-modes [role="radiogroup"]{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:.4rem;width:100%}
+.st-key-enc-modes label[data-testid="stRadioOption"]{border:1px solid #9fb3bf;border-radius:10px;padding:.4rem .5rem;
+ justify-content:center;margin:0!important;background:#fff;color:#28404f;cursor:pointer}
+.st-key-enc-modes label[data-testid="stRadioOption"]>div>div:not([data-testid="stMarkdownContainer"]){display:none}
+.st-key-enc-modes label[data-testid="stRadioOption"]:has(input:checked){background:#0b5cad;border:2px solid #062f5c;color:#fff}
+.st-key-enc-modes label[data-testid="stRadioOption"]:has(input:checked) p{font-weight:700}
+.st-key-enc-modes label[data-testid="stRadioOption"]:has(input:checked) p::before{content:"\\2713\\00a0"}
+.st-key-enc-modes label[data-testid="stRadioOption"]:has(input:focus-visible){outline:3px solid #f59e0b;outline-offset:2px}
 @media(max-width:760px){
- .clinical-scene{inset:3.2rem .4rem auto;height:39vh;background-position:25% center}
- .scene-photo{inset:3.2rem .4rem auto;height:39vh;background-position:25% center}
- .scene-monitor{width:43%;max-height:35vh;right:1%;top:5%}
- .scene-monitor .monitor-values{grid-template-columns:repeat(2,1fr)!important}
- .scene-monitor .monitor-values>div{padding:2px!important}
- .scene-monitor .monitor-values small{font-size:10px}
- .scene-monitor svg{max-height:9vh}.scene-time{font-size:10px;max-width:52%;padding:4px}
- .scene-observations{font-size:11px;max-width:49%;padding:5px}
- .scene-image-status{font-size:11px;max-width:48%;padding:6px;top:20%}
- .st-key-encounter-console{left:.4rem;right:.4rem;top:calc(3.2rem + 40vh);bottom:.4rem;width:auto!important;padding:10px}
+ .clinical-scene,.scene-photo{top:5.6rem;left:.4rem;right:.4rem;width:auto;bottom:auto;height:36vh}
+ .scene-monitor{width:56%;left:.4rem;top:.4rem}
+ .monitor-values{grid-template-columns:repeat(2,auto)}
+ .scene-time{font-size:10px;padding:4px}
+ .scene-observations{font-size:11px;padding:5px}
+ .scene-image-status{font-size:11px;padding:6px;top:55%}
+ .st-key-encounter-console{left:.4rem;right:.4rem;width:auto!important;top:calc(5.6rem + 37vh);bottom:.4rem;padding:8px}
+ .st-key-enc-status{top:3rem;left:.4rem;right:.4rem;gap:.5rem;justify-content:space-between}
+ .enc-clock{font-size:.95rem}
 }
 @media(prefers-reduced-motion:reduce){.scene-monitor *{animation:none!important}}
 """

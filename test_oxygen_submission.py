@@ -25,7 +25,7 @@ def click(at, label):
 
 def submit(at, text):
     next(item for item in at.text_area if item.label == "Enter your clinical reasoning and/or actions").set_value(text)
-    click(at, "Submit")
+    click(at, "Send")
 
 
 @pytest.fixture

@@ -2485,5 +2485,24 @@ ES = {
         'No observado',
     'Target reached':
         'Meta alcanzada',
+    # The clinical encounter's screen (faculty instruction of 2026-10-02, which gives
+    # these words in both languages): its four views, the writing area's button, its
+    # one clock, its menu and the button that opens an ECG from its notice.
+    'Evolution':
+        'Evolución',
+    'History & Exam':
+        'Historia y examen',
+    'Results':
+        'Resultados',
+    'Orders':
+        'Indicaciones',
+    'Send':
+        'Enviar',
+    'Simulated time':
+        'Tiempo simulado',
+    'Menu':
+        'Menú',
+    'View ECG':
+        'Ver ECG',
 }
 TABLES = {"es": ES}

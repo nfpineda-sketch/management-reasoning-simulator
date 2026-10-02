@@ -56,7 +56,7 @@ def encounter(tmp_path, monkeypatch):
 
 def submit(app, text):
     app.text_area[0].set_value(text)
-    next(b for b in app.button if b.label == "Submit").click().run()
+    next(b for b in app.button if b.label == "Send").click().run()
     assert not app.exception
 
 

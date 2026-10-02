@@ -55,7 +55,7 @@ def click(at, label):
 def submit(at, text):
     next(r for r in at.radio if r.label == "Encounter").set_value("Treat").run()
     next(a for a in at.text_area if a.label == "Enter your clinical reasoning and/or actions").set_value(text)
-    click(at, "Submit")
+    click(at, "Send")
 
 
 def test_no_destination_warns_and_lets_the_resident_continue(encounter):

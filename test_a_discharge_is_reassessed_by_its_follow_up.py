@@ -57,7 +57,7 @@ def encounter(tmp_path, monkeypatch):
 def submit(at, text):
     widget(at.radio, "Encounter").set_value("Treat").run()
     widget(at.text_area, "Enter your clinical reasoning and/or actions").set_value(text)
-    widget(at.button, "Submit").click().run()
+    widget(at.button, "Send").click().run()
     assert not at.exception
 
 

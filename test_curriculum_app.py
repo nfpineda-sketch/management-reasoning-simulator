@@ -147,7 +147,7 @@ def test_resident_assignment_oxygen_persistence_and_private_ui(cohort):
         "Reassess SpO2, respiratory rate, work of breathing, and mental status in 2 minutes."
     )
     at.text_area[0].set_value(text)
-    click(at, "Submit")
+    click(at, "Send")
     assert at.session_state.state["treatments"]["oxygen"] is True
     assert at.session_state.state["treatments"]["oxygen_device"] == "Nasal cannula"
     assert at.session_state.state["treatments"]["oxygen_flow_lpm"] == 2
@@ -199,10 +199,10 @@ def test_completed_review_readonly_and_revision_conflict_recovery(cohort):
     other = open_app(token)
     click(other, "Resume encounter")
     at.text_area[0].set_value("My working model is that reduced preload contributes to poor perfusion. My priority is to improve perfusion. Give 500 mL normal saline IV. I expect improved blood pressure and capillary refill. Reassess blood pressure, heart rate, mental status, and perfusion in 5 minutes.")
-    click(at, "Submit")
+    click(at, "Send")
     # Second browser has the stale revision, and gets an explicit way out.
     other.text_area[0].set_value("Reassess blood pressure and perfusion now.")
-    click(other, "Submit")
+    click(other, "Send")
     assert any("another session" in str(item.value) for item in other.error)
     click(other, "Discard this tab's unsaved changes and reopen dashboard")
     assert any(b.label == "Resume encounter" for b in other.button)
@@ -399,7 +399,7 @@ def test_full_app_multiobjective_faculty_assessment_and_resident_progress(cohort
         "I expect improved blood pressure and capillary refill. Reassess blood pressure, "
         "heart rate, mental status, and perfusion in 5 minutes."
     )
-    click(learner, "Submit")
+    click(learner, "Send")
     assert learner.session_state.management_trace
     assert_active_encounter_private(learner)
     active_id = learner.session_state["_attempt_id"]

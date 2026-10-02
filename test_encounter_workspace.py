@@ -36,15 +36,15 @@ def test_generated_problems_render_handover_and_complete_record(monkeypatch):
         at.selectbox[0].select_index(index).run()
         next(b for b in at.button if b.label == 'Begin Encounter').click().run()
         assert not at.exception
-        assert [t.label for t in at.tabs][:3] == [
-            'Current exchange', 'Investigation reports', 'Complete encounter record']
+        # The four views of the encounter's screen (UX of the clinical encounter, 2026-10-02).
+        assert [t.label for t in at.tabs][:4] == ['Evolution', 'History & Exam', 'Results', 'Orders']
         source = next(e['text'] for e in at.session_state.events if e['kind'] == 'presentation')
-        # The arrival note reaches both the handover block and the complete
-        # record, whole. Compared paragraph by paragraph rather than as one
-        # string: the record renders it through render_event, which turns a
-        # newline into a markdown line break so the handover that follows the
-        # presentation is not run together with it, and markdown then
-        # normalises the trailing spaces away again.
+        # The arrival note reaches both Evolution and History & Exam, whole.
+        # Compared paragraph by paragraph rather than as one string: the views
+        # render it through render_event, which turns a newline into a markdown
+        # line break so the handover that follows the presentation is not run
+        # together with it, and markdown then normalises the trailing spaces
+        # away again.
         paragraphs = [part.strip() for part in source.split('\n') if part.strip()]
         assert len(paragraphs) >= 2, source
         assert sum(all(part in m.value for part in paragraphs) for m in at.markdown) >= 2

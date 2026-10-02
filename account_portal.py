@@ -227,9 +227,9 @@ def _sign_out(context: dict[str, Any]) -> None:
     st.rerun()
 
 
-def _render_admin_controls(context: dict[str, Any]) -> None:
+def _render_admin_controls(context: dict[str, Any], area: Any = None) -> None:
     store, token = context["store"], context["token"]
-    with st.sidebar.expander(_t("Account administration")):
+    with (area or st.sidebar).expander(_t("Account administration")):
         st.caption(_t("Invitations define access privileges. Send each invitation privately to its intended user."))
         # The role is chosen outside the form, so that the training year is
         # asked for only when it means something: a resident's (2026-09-25).
@@ -339,7 +339,7 @@ def _render_account_changes(store: AccountStore, token: str) -> None:
                              "Changed by": item["changed_by"]} for item in changes]), hide_index=True)
 
 
-def _render_password_change(context: dict[str, Any]) -> None:
+def _render_password_change(context: dict[str, Any], area: Any = None) -> None:
     """Change one's own password. Every role, including the resident.
 
     ``change_password`` existed in the store from the beginning and reached no
@@ -347,7 +347,7 @@ def _render_password_change(context: dict[str, Any]) -> None:
     Changing it revokes every other session and issues a fresh one here, which
     is what makes it useful after a password has been shared or seen.
     """
-    with st.sidebar.expander(_t("Change your password")):
+    with (area or st.sidebar).expander(_t("Change your password")):
         with st.form("account_password", clear_on_submit=True):
             current = st.text_input(_t("Current password"), type="password", max_chars=1024)
             fresh = st.text_input(_t("New password"), type="password", max_chars=1024)
@@ -376,18 +376,25 @@ def _render_password_change(context: dict[str, Any]) -> None:
         st.rerun()
 
 
-def render_account_sidebar(context: dict[str, Any]) -> None:
-    """Show identity and role-appropriate account controls after the access gate."""
+def render_account_sidebar(context: dict[str, Any], area: Any = None) -> None:
+    """Show identity and role-appropriate account controls after the access gate.
+
+    In the sidebar, or in ``area``: during a clinical encounter the same controls are
+    in the room's menu, which opens over the room instead of taking a column from it
+    (UX of the clinical encounter, 2026-10-02). They are the same controls, with the
+    same keys and the same permissions, wherever they are drawn.
+    """
+    area = area or st.sidebar
     user = context["user"]
-    st.sidebar.caption(_t("Signed in"))
-    st.sidebar.write(str(user["username"]))
-    st.sidebar.caption(str(user["role"]).capitalize())
-    if st.sidebar.button(_t("Sign out"), key="_account_sign_out"):
+    area.caption(_t("Signed in"))
+    area.write(str(user["username"]))
+    area.caption(str(user["role"]).capitalize())
+    if area.button(_t("Sign out"), key="_account_sign_out"):
         _sign_out(context)
     if st.session_state.get("_account_notice"):
-        st.sidebar.success(st.session_state.pop("_account_notice"))
-    _render_password_change(context)
+        area.success(st.session_state.pop("_account_notice"))
+    _render_password_change(context, area)
     if user["role"] == "admin":
         if st.session_state.get("_account_admin_notice"):
-            st.sidebar.success(st.session_state.pop("_account_admin_notice"))
-        _render_admin_controls(context)
+            area.success(st.session_state.pop("_account_admin_notice"))
+        _render_admin_controls(context, area)

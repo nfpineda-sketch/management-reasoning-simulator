@@ -15,7 +15,7 @@ ORIGINAL = (
 
 def submit(at, text):
     next(w for w in at.text_area if w.label == "Enter your clinical reasoning and/or actions").set_value(text)
-    click(at, "Submit")
+    click(at, "Send")
 
 
 def test_saved_attempt_recovers_without_treatment_or_evidence_loss(cohort):

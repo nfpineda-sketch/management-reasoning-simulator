@@ -142,7 +142,7 @@ def test_the_encounter_records_the_indication_and_gives_nothing(anaphylaxis):
         "Creo que es una reaccion alergica, porque tiene rash y edema facial. Mi prioridad es la alergia. "
         "Doy clorfenamina 10 mg ev y hidrocortisona 200 mg ev. Espero que ceda el rash. Reevaluo en 10 "
         "minutos rash y PA.")
-    next(b for b in at.button if b.label == "Submit").click().run()
+    next(b for b in at.button if b.label == "Send").click().run()
     assert not at.exception
     [entry] = at.session_state["management_trace"]
     assert [d["kind"] for d in entry["future_details"]] == ["not_modelled"]

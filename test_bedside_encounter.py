@@ -106,7 +106,7 @@ def test_exploring_patient_preserves_state_and_management_remains_reachable(beds
         widget(bedside.radio, "Encounter").set_value(mode).run()
         assert not bedside.exception
         assert bedside.text_area
-        widget(bedside.button, "Submit")
+        widget(bedside.button, "Send")
         widget(bedside.button, "ECG")
         assert any('class="clinical-scene' in item.value for item in bedside.markdown)
     assert bedside.session_state.state == before

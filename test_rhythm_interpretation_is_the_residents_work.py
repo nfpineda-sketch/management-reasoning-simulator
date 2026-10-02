@@ -82,7 +82,7 @@ def test_the_response_card_after_an_order_never_names_the_rhythm(encounter):
     app.text_area[0].set_value(
         "Acute pulmonary edema. My priority is oxygenation. Start oxygen 4 L/min nasal cannula. "
         "I expect SpO2 to rise. Reassess SpO2 in 5 minutes.")
-    next(b for b in app.button if b.label == "Submit").click().run()
+    next(b for b in app.button if b.label == "Send").click().run()
     assert not app.exception
     assert any(e["kind"] == "clinical_update" for e in app.session_state.events)
     rendered = visible_text(app)
@@ -94,13 +94,19 @@ def test_the_response_card_after_an_order_never_names_the_rhythm(encounter):
 
 
 def test_the_vitals_panel_reports_a_rate_and_not_a_diagnosis():
+    # The room's vitals are the bedside monitor's: the chart's live vitals panel, which also
+    # gave the capillary refill without an examination, is no longer drawn (UX of the clinical
+    # encounter, 2026-10-02). The monitor reports a rate and never the rhythm's name.
+    from resuscitation_room import monitor_html
+    observed = {"hr": 121, "rhythm": "Sinus tachycardia", "spo2": 93, "sbp": 132, "dbp": 80,
+                "respiratory_rate": 24, "pulse_present": True}
+    # Arrest is an interpretation too: the electrical rate, without the label.
+    for o in (observed, dict(observed, rhythm="PEA", pulse_present=False)):
+        shown = monitor_html(o, "")
+        assert ">121<" in shown
+        assert not names_a_rhythm(shown), names_a_rhythm(shown)
     source = (ROOT / "app.py").read_text()
-    # The line is now read in the presentation language (faculty decision 16),
-    # which changes how it is written and not what it says.
-    assert "st.write(_lang.say(f'HR: {o[\"hr\"]}/min'))" in source
     assert "{o[\"hr\"]}/min · {o[\"rhythm\"]}" not in source
-    # Arrest is an interpretation too: report the finding, not the label.
-    assert "organized electrical activity at {o[\"hr\"]}/min, no palpable pulse" in source
     assert "· {o[\"rhythm\"]}')" not in source
 
 

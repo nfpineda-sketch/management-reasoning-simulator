@@ -56,9 +56,12 @@ def start(tmp_path, monkeypatch, variant, challenge, language=None):
 
 
 def submit(at, text):
+    import report_language
+    language = at.session_state["presentation_language"] if "presentation_language" in at.session_state else "en"
     widget(at.radio, "Encounter").set_value("Treat").run()
     widget(at.text_area, "Enter your clinical reasoning and/or actions").set_value(text)
-    widget(at.button, "Submit").click().run()
+    # The button is said in the encounter's language: "Send" / "Enviar" (2026-10-02).
+    widget(at.button, report_language.t("Send", language)).click().run()
     assert not at.exception
 
 

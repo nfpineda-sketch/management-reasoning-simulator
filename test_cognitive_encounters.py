@@ -283,19 +283,19 @@ def test_each_family_keeps_all_encounter_modes_reachable_without_render_errors(s
         assert any('class="clinical-scene' in item.value for item in shared_app.markdown)
         widget(shared_app.button, "ECG")
         if mode in {"Tests", "Treat"}:
-            widget(shared_app.button, "Submit")
+            widget(shared_app.button, "Send")
             assert shared_app.text_area
     assert shared_app.session_state.state == generated["state"]
     # Exercise the ordinary submission/rerun/chart path as well as the mode
     # switches. Different lab schemas used to crash the legacy chart renderer.
     widget(shared_app.radio, "Encounter").set_value("Tests").run()
     shared_app.text_area[0].set_value("Order POCUS; order arterial blood gas; order basic labs")
-    widget(shared_app.button, "Submit").click().run()
+    widget(shared_app.button, "Send").click().run()
     assert not shared_app.exception, (family, shared_app.exception)
     # The laboratory and the gas come back on their own minutes; the resident is
     # not held waiting for them (2026-09-23).
     shared_app.text_area[0].set_value("Reassess blood pressure and perfusion in 15 minutes.")
-    widget(shared_app.button, "Submit").click().run()
+    widget(shared_app.button, "Send").click().run()
     assert not shared_app.exception, (family, shared_app.exception)
     assert {"pocus", "abg", "basic_labs"} <= shared_app.session_state.state["diagnostics"].keys()
     assert any(event["kind"] == "diagnostic_result" for event in shared_app.session_state.events)
@@ -314,7 +314,7 @@ def test_new_treatment_requires_reasoning_then_executes_the_held_order_once(shar
     shared_app.run()
     widget(shared_app.radio, "Encounter").set_value("Treat").run()
     shared_app.text_area[0].set_value("Give dextrose 25 g IV")
-    widget(shared_app.button, "Submit").click().run()
+    widget(shared_app.button, "Send").click().run()
     assert not shared_app.exception
     assert shared_app.session_state.pending_reasoning
     assert shared_app.session_state.state == generated["state"]
@@ -353,7 +353,7 @@ def test_a_consult_or_admission_reads_as_part_of_the_patient_response(shared_app
          "After requesting admission to ICU, BP "),
     ):
         shared_app.text_area[0].set_value(order)
-        widget(shared_app.button, "Submit").click().run()
+        widget(shared_app.button, "Send").click().run()
         assert not shared_app.exception
         updates = [e["text"] for e in shared_app.session_state.events if e["kind"] == "clinical_update"]
         assert updates, (shared_app.session_state.events, shared_app.session_state.pending_reasoning)
@@ -378,11 +378,11 @@ def test_a_finished_timed_bolus_leaves_no_pending_crystalloid_line(shared_app, e
     shared_app.text_area[0].set_value(
         "Adrenal crisis. My priority is perfusion. Give 1000 mL normal saline IV over 15 minutes. "
         "I expect a higher blood pressure. Reassess in 10 minutes BP and HR.")
-    widget(shared_app.button, "Submit").click().run()
+    widget(shared_app.button, "Send").click().run()
     shared_app.text_area[0].set_value(
         "Adrenal crisis. My priority is perfusion. Give 500 mL normal saline IV over 10 minutes. "
         "I expect a higher blood pressure. Reassess in 20 minutes BP and HR.")
-    widget(shared_app.button, "Submit").click().run()
+    widget(shared_app.button, "Send").click().run()
     assert not shared_app.exception
     assert shared_app.session_state.state["treatments"]["cumulative_crystalloid_ml"] == 1500
     assert not any("Crystalloid pending" in item.value for item in shared_app.markdown), \

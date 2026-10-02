@@ -84,7 +84,7 @@ def encounter(monkeypatch):
 def test_a_held_turn_names_the_orders_it_is_holding(encounter):
     at = encounter
     next(item for item in at.text_area if item.label == "Enter your clinical reasoning and/or actions").set_value(SEPSIS_ORDER)
-    next(b for b in at.button if b.label == "Submit").click().run()
+    next(b for b in at.button if b.label == "Send").click().run()
     assert not at.exception
     held = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"]
     assert held, "the held turn must be reported to the resident"
