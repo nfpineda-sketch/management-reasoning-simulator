@@ -316,6 +316,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 **Límites reales del motor:**
 - The engine does not perform angiography; a referral is recorded, not its result.
 - Serial troponin requires a new sample and the encounter may close first.
+- A volume past this ventricle's tolerance shows only as a pressure that stops answering and a message in the room; the lungs, the examination, the saturation and a repeat POCUS do not change. Detecting overload on the examination or POCUS is not required; when the only response the resident looked for is one the simulator does not show, that part is not evaluable rather than missing.
 
 **Eventos críticos:**
 
@@ -1034,6 +1035,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 **Límites reales del motor:**
 - Culture results are pending within the encounter, by design.
 - The engine does not model a chest CT.
+- A repeat POCUS shows the IVC filling with volume, but its lungs show no new B-lines with crystalloid overload; the saturation does fall. Seeing new B-lines is not required.
 
 **Eventos críticos:**
 
@@ -1072,6 +1074,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 **Límites reales del motor:**
 - Culture results are pending within the encounter, by design.
 - The engine does not model a chest CT.
+- A repeat POCUS shows the IVC filling with volume, but its lungs show no new B-lines with crystalloid overload; the saturation does fall. Seeing new B-lines is not required.
 
 **Eventos críticos:**
 
@@ -1208,6 +1211,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 **Límites reales del motor:**
 - The engine records a reperfusion referral, not its result.
 - The CT angiogram takes twenty minutes of simulated time and the encounter may close first.
+- After a thrombolytic the bleeding from the operated site does not stop in this simulator: the haemoglobin keeps falling while the pressure can stay reassuring. The room cannot stop an alteplase infusion; tranexamic acid and cryoprecipitate are recorded without a modelled effect, and fibrinogen concentrate is not recognised. The response to that bleeding is not evaluated and is never used to judge haemorrhage rescue: not reversing it is never charged, and a measure written for it is never an omission. The decision to give the thrombolytic is judged as before, on the minute it was given.
 
 **Eventos críticos:**
 
@@ -1387,6 +1391,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 **Límites reales del motor:**
 - The engine has no operating theatre; a referral is recorded, never its result, so the encounter is about recognising that one is needed and holding the patient until it is.
 - It does not perform a resuscitative thoracotomy or place an endovascular balloon.
+- A repeat POCUS shows the arrival IVC whatever the volume or the haemorrhage control, and a repeat E-FAST repeats the arrival windows: a change the simulator does not show is not required.
 
 **Eventos críticos:**
 
@@ -1433,6 +1438,7 @@ Cada oportunidad declarada se verifica contra el caso: un estudio nombrado tiene
 **Límites reales del motor:**
 - The engine has no operating theatre; a referral is recorded, never its result, so the encounter is about recognising that one is needed and holding the patient until it is.
 - It does not perform a resuscitative thoracotomy or place an endovascular balloon.
+- A repeat POCUS shows the arrival IVC whatever the volume, and a repeat E-FAST repeats the arrival windows, the drained pleural recess included: what it adds is the other cavities still clear.
 
 **Eventos críticos:**
 

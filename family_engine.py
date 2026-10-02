@@ -1685,8 +1685,8 @@ def _order(state, a):
             expected = acs_reperfusion.activate(f, spec, f["elapsed"], method="thrombolysis")
             label = (f"{a['agent']} {a['dose_mg']:g} mg {a['route']} given: reperfusion is expected at minute "
                      f"{expected + offset}")
-        tr["administered_medications"].append({"agent": a["agent"], "dose_mg": a["dose_mg"], "route": a["route"],
-                                               "time_min": int(state.get("sim_time", 0))})
+        # Recorded once, below, with every other medicine (TD-49, 2026-10-02): this branch also
+        # wrote the same row -- agent, dose, route and minute -- so each dose was listed twice.
         duration = 5
     elif kind == "stress_test":
         # Faculty decision: it is executed, and on an unstable occlusion it fibrillates.
@@ -2490,9 +2490,13 @@ def _surface(state):
         # TD-47 (2026-09-30): through an endotracheal tube there is no stridor to hear or
         # to pay for; the reaction itself goes on (anaphylaxis_reaction.stridor_heard).
         f["upper_airway_stridor"] = bool(reaction["stridor"])
-        if reaction["stridor"]:
-            # An upper airway that is closing is not relieved by a nebulizer.
-            spo2 -= 6
+        # TD-50 (2026-10-02): the authored arrival numbers already contain the stridor the
+        # patient arrived with. A stridor that appears costs oxygen and effort -- a closing
+        # upper airway is not relieved by a nebulizer -- and one that goes, through a tube
+        # or as the reaction settles, gives its oxygen back.
+        change = reaction.get("stridor_change", int(bool(reaction["stridor"])))
+        spo2 -= 6 * change
+        if change > 0:
             effort = max(effort, 1.5)
         if f.get("reaction", 0) < anaphylaxis_reaction.RESOLVED:
             mental = "Alert"
@@ -2746,6 +2750,11 @@ def _diagnostic(state, diagnostic, duration):
     # minute and the result arrives later), and the record has to say the truth
     # about the needle rather than about the printer.
     result["collected_at_min"] = int(state.get("sim_time", 0))
+    if diagnostic == "efast":
+        # Shown window by window from 2026-10-02 (TD-48); an older record, without
+        # the mark, keeps the line its room showed.
+        import efast_report
+        result["shown_as"] = efast_report.SHOWN_AS
     o = state["observable"]
     if diagnostic == "poc_glucose":
         result = {"glucose_mg_dl": o["glucose_mg_dl"], "report": f"Glucose {o['glucose_mg_dl']} mg/dL"}
@@ -3108,12 +3117,33 @@ def execute_family_bundle(state, parsed):
 EXAMINATION_REGIONS = ("General appearance", "Breathing", "Peripheral perfusion")
 
 
+def case_appearance(state):
+    """What the case wrote of the patient's appearance that still holds now, line by line (TD-59).
+
+    A stable finding is said as the case wrote it. The bleeding thigh is said as the case wrote it
+    while nothing has been applied to the wound, and afterwards as the engine records it: the wound,
+    and whether its bleeding is reduced or stopped. Nothing is said that the case did not write or
+    the engine does not hold (``clinical_cases._APPEARANCE``).
+    """
+    case = _case(state)
+    while_bleeding = case.get("appearance_while_bleeding")
+    if while_bleeding:
+        import trauma_hemorrhage
+        now = trauma_hemorrhage.external_now(state.get("family_state") or {})
+        if now is None:
+            return [while_bleeding]
+        return [case["appearance_stable"], now]
+    return [case["appearance_stable"]] if case.get("appearance_stable") else []
+
+
 def examination_finding(state, region):
     """The finding for one region, for the Examine control and for a written order."""
     observed = state.get("observable", {})
     if region == "General appearance":
         from patient_appearance import appearance_summary
-        return appearance_summary(state)
+        # The engine's summary first, then the case's own findings, each on its own line so that
+        # each reads whole in one language (TD-59, 2026-10-02).
+        return "\n".join([appearance_summary(state), *case_appearance(state)])
     findings = current_findings(state)
     if region in findings:
         return findings[region]
@@ -3181,6 +3211,10 @@ def current_findings(state):
     elif family == "anaphylaxis" and f.get("invasive"):
         # TD-47 (2026-09-30): the room no longer hears stridor through a tube.
         findings["Respiratory"] = anaphylaxis_reaction.intubated_chest(findings.get("Respiratory"))
+    elif family == "anaphylaxis" and f.get("upper_airway_stridor") is False:
+        # TD-50 (2026-10-02): the examination hears what the engine hears now. A stridor the
+        # case wrote is no longer said once the reaction has fallen below it.
+        findings["Respiratory"] = anaphylaxis_reaction.chest_without_stridor(findings.get("Respiratory"))
     return findings
 
 

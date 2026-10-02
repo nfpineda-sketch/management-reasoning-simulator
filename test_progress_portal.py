@@ -200,3 +200,33 @@ def test_admin_can_configure_targets_without_residents(tmp_path, password_hash):
     assert any("Program target saved" in item.value for item in app.success)
     target = next(row for row in ProgressStore(store).list_targets(admin) if row["objective_id"] == "C4")
     assert target["target"] == 22
+
+
+def test_the_simulator_limits_are_read_against_the_objectives_too(accounts):
+    """Pre-pilot closure (2026-10-02, D-3 and D-8): the same limits the rubric shows, where objectives are assessed."""
+    import evaluation_basis
+    store, resident = accounts["store"], accounts["resident"]
+    case = "acs_70f_left_main"
+    attempt_id = store.create_attempt(resident, "R1-03", {
+        "presentation": "Synthetic encounter",
+        "evaluation_basis": evaluation_basis.freeze(case, code_version="pre-pilot-closure")})
+    store.save_attempt(resident, attempt_id, {"session": {
+        "review_completed": True, "encounter": {"authored_case_id": case},
+        "management_trace": [{"execution_status": "executed", "learner_input": "Normal saline 250 mL IV over 15 minutes.",
+                              "reasoning": {"expected_effect": "A small bolus, reassessed"},
+                              "state_before": {"observable": {"sbp": 104}},
+                              "state_after": {"observable": {"sbp": 106}}}]}}, "completed", expected_revision=0)
+    app = page(accounts, "faculty", attempt_id)
+    captions = " ".join(item.value for item in app.caption)
+    assert "Never count these against the resident" in captions
+    assert "Detecting overload on the examination or POCUS is not required" in captions
+    # An encounter frozen before the closure keeps its own declaration: nothing is added to it.
+    older = store.create_attempt(resident, "R1-03", {"presentation": "Synthetic encounter"})
+    store.save_attempt(resident, older, {"session": {
+        "review_completed": True, "encounter": {"authored_case_id": "trauma_hemothorax_41m"},
+        "management_trace": [{"execution_status": "executed", "learner_input": "E-FAST.",
+                              "reasoning": {"expected_effect": "Find the bleeding"},
+                              "state_before": {"observable": {"sbp": 82}},
+                              "state_after": {"observable": {"sbp": 82}}}]}}, "completed", expected_revision=0)
+    captions = " ".join(item.value for item in page(accounts, "faculty", older).caption)
+    assert "a repeat E-FAST repeats the arrival windows" not in captions

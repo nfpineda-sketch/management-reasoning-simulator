@@ -7,6 +7,8 @@ sigue marcando todo el POCUS como borrador (`POCUS_DRAFT_PENDING_FACULTY_REVIEW`
 el posible problema y la recomendación son un borrador del AI Advisor para su revisión. El texto completo
 de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 
+**Estado:** Criterios de la tabla aceptados por el docente el 2026-10-02 (D-7), con sus condiciones ya aplicadas. La firma de cada ficha final sigue pendiente: nada aquí marca CONFIRMO ni firma.
+
 | # | Caso | Aplicación | Recomendación |
 |---|---|---|---|
 | 1 | `acs_52m_de_winter` | Cardíaca focalizada: motilidad regional del VI, como apoyo del ECG | **CONFIRM** |
@@ -31,9 +33,10 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 - **Hallazgo actual:** lv: Akinesis of the anterior wall and apex; the inferior wall contracts normally; ivc: 1.5 cm; about 50% inspiratory collapse. Sin hallazgos en: rv, pericardium, lung_sliding, lungs, lung_consolidation, aorta_root, aorta_descending, aorta_abdominal, dvt_femoral, dvt_popliteal
 - **Qué debe interpretar el residente:** Acinesia anterior y apical, territorio de la DA, concordante con el patrón de de Winter como equivalente de oclusión
 - **Cómo debe guiar el manejo:** Activar o acelerar la reperfusión sin esperar la troponina; el ECG basta para decidir y el POCUS lo apoya
-- **Componente observable de C14:** Using regional wall motion to prioritise the reperfusion decision. · Evidencia esperada: requests POCUS and names the anterior akinesis; relates it to the ECG pattern as an occlusion; activates or expedites reperfusion
+- **Componente observable de C14:** Using the reported regional wall motion to prioritise the reperfusion decision. · Evidencia esperada: requests POCUS and relates the reported anterior akinesis to the ECG pattern as an occlusion; activates or expedites reperfusion
 - **ACEP · alineación y límite:** Motilidad regional: NO establecida por ACEP 2016 ni en la lista de la EPA C14; se aceptó por alcance local (decisión A). Informe escrito: no se observa la adquisición ni el reconocimiento en la imagen.
-- **Posible problema clínico:** El hallazgo es coherente con la clínica y el ECG. Riesgo docente: demorar la activación por hacer el POCUS
+- **Posible problema clínico:** El hallazgo es coherente con la clínica y el ECG. Riesgo docente, ya escrito en la declaración (D-7): demorar la activación por hacer el POCUS
+- **Criterio docente aprobado (aprueba el criterio, no la ficha):** D-7, 2026-10-02: la motilidad la entrega el informe escrito; no se exige reconocerla. El POCUS nunca demora la reperfusión: activarla sólo por el ECG es correcto y no es un déficit de C14.
 - **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
@@ -48,7 +51,7 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 - **Componente observable de C14:** Using the reported regional wall motion, with the ECG and the posterior leads, to prioritise the reperfusion decision. · Evidencia esperada: requests POCUS and relates the reported wall motion to the ECG; uses it with the ECG and the posterior leads to treat the pattern as an occlusion; activates or expedites reperfusion
 - **ACEP · alineación y límite:** Motilidad regional: NO establecida por ACEP 2016 ni en la lista de la EPA C14; se aceptó por alcance local (decisión A). Informe escrito: no se observa la adquisición ni el reconocimiento en la imagen. La dilatación de la raíz aórtica y de la aorta descendente sí está establecida
 - **Posible problema clínico:** Criterio docente aplicado a la declaración C14 (R-2): la motilidad sutil no se exige reconocer y el límite de la aorta queda escrito. Falta su revisión de la ficha completa
-- **Criterio docente aprobado (R-2, 2026-09-30; aprueba el criterio, no la ficha):** «Aorta no dilatada» en el POCUS no se presenta como disección descartada. La hipocinesia posterior aislada es un hallazgo sutil que el informe escrito entrega: no se exige reconocerla, sino usar la motilidad informada con el ECG y las derivaciones posteriores.
+- **Criterio docente aprobado (aprueba el criterio, no la ficha):** R-2, 2026-09-30: «Aorta no dilatada» en el POCUS no se presenta como disección descartada. La hipocinesia posterior aislada es un hallazgo sutil que el informe escrito entrega: no se exige reconocerla, sino usar la motilidad informada con el ECG y las derivaciones posteriores.
 - **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
@@ -62,8 +65,8 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 - **Cómo debe guiar el manejo:** Volumen prudente o ninguno, soporte precoz si progresa la hipoperfusión y reperfusión urgente (tronco); un bolo pequeño con su límite y reevaluación es defendible
 - **Componente observable de C14:** Deciding volume, support and urgency with the global LV function in view, and adapting them to the response. · Evidencia esperada: requests POCUS and relates the global LV function, the B-lines and the IVC to the volume decision; withholds volume, or gives a small bolus with its limit stated and reassesses it, or escalates support, and says why; adapts the plan to the response and relates it to the urgency of reperfusion
 - **ACEP · alineación y límite:** VI cualitativo y VCI para el volumen: ESTABLECIDOS por ACEP 2016 (el método de la VCI no se especifica); repetir el examen para monitorizar la respuesta también está establecido. Las líneas B también están establecidas
-- **Posible problema clínico:** Criterio docente aplicado a la declaración C14 (R-2): ya no exige sólo limitar el volumen; evalúa la decisión en contexto y su adaptación a la respuesta. Falta su revisión de la ficha completa
-- **Criterio docente aprobado (R-2, 2026-09-30; aprueba el criterio, no la ficha):** Un bolo pequeño, justificado y con reevaluación no se penaliza automáticamente: se evalúa en su contexto y por la adaptación posterior. Hallazgos intermedios no tienen una sola respuesta obligatoria.
+- **Posible problema clínico:** Criterios docentes aplicados a la declaración C14 (R-2 y D-8): se evalúa la decisión en contexto, con las señales que el residente tiene. La sobrecarga no cambia el pulmón, el examen ni el POCUS (TD-53, sin corregir para el piloto). Falta su firma de la ficha
+- **Criterio docente aprobado (aprueba el criterio, no la ficha):** R-2, 2026-09-30: un bolo pequeño, justificado y con reevaluación no se penaliza automáticamente: se evalúa en su contexto y por la adaptación posterior. Hallazgos intermedios no tienen una sola respuesta obligatoria. D-8, 2026-10-02: el exceso de volumen se ve sólo en la presión que deja de responder y en el mensaje de la sala; el pulmón, el examen, la saturación y el POCUS de control no cambian. Se evalúa con esas señales: no se exige detectar sobrecarga por examen ni por POCUS, y si la única respuesta que buscó el residente es una que el simulador no muestra, esa parte no es evaluable.
 - **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
@@ -119,7 +122,7 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 - **Cómo debe guiar el manejo:** Volumen con reevaluación (la aparición de líneas B difusas es señal de detenerse), antibiótico, oxígeno y vasopresor si no responde
 - **Componente observable de C14:** Guiding and reassessing the fluid and haemodynamic strategy with POCUS. · Evidencia esperada: requests POCUS and names the volume findings (the IVC and the LV); gives, limits or titrates volume, or moves to a vasopressor, because of them; reassesses with POCUS after volume
 - **ACEP · alineación y límite:** VI cualitativo y VCI para el volumen: ESTABLECIDOS por ACEP 2016 (el método de la VCI no se especifica); repetir el examen para monitorizar la respuesta también está establecido. Líneas B: establecidas. Consolidación: parcial (decisión F: no hace la oportunidad por sí sola)
-- **Posible problema clínico:** Coherente. Con SpO2 89 %, la reevaluación pulmonar tras el volumen es lo que protege
+- **Posible problema clínico:** Coherente. Con SpO2 89 %, reevaluar tras el volumen es lo que protege: la VCI y la saturación muestran el exceso, pero el pulmón del POCUS no muestra líneas B nuevas con la sobrecarga de cristaloides (TD-54); no se exige verlas
 - **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
@@ -133,7 +136,7 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 - **Cómo debe guiar el manejo:** Volumen prudente con reevaluación, antibiótico y oxígeno
 - **Componente observable de C14:** Guiding and reassessing the fluid and haemodynamic strategy with POCUS. · Evidencia esperada: requests POCUS and names the volume findings (the IVC and the LV); gives, limits or titrates volume, or moves to a vasopressor, because of them; reassesses with POCUS after volume
 - **ACEP · alineación y límite:** VI cualitativo y VCI para el volumen: ESTABLECIDOS por ACEP 2016 (el método de la VCI no se especifica); repetir el examen para monitorizar la respuesta también está establecido. Consolidación: parcial (decisión F)
-- **Posible problema clínico:** Coherente. Detalle opcional: «air bronchograms» sin «dynamic» no distingue la neumonía de la atelectasia (la 46f sí dice «dynamic»)
+- **Posible problema clínico:** Coherente. «air bronchograms» sin «dynamic» se mantiene (D-7, 2026-10-02): agregarlo sería un hallazgo nuevo, no una mejora editorial
 - **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
@@ -147,7 +150,7 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 - **Cómo debe guiar el manejo:** Nitrato en dosis altas, VNI y diurético; no dar volumen
 - **Componente observable de C14:** Deciding nitrate, diuretic or NIV, and withholding volume, from the B-lines, the LV and the IVC. · Evidencia esperada: requests POCUS and names the diffuse B-lines and the depressed LV; withholds volume because of them; gives nitrate, diuretic or NIV because of them
 - **ACEP · alineación y límite:** VI cualitativo y VCI para el volumen: ESTABLECIDOS por ACEP 2016 (el método de la VCI no se especifica); repetir el examen para monitorizar la respuesta también está establecido. Líneas B: establecidas
-- **Posible problema clínico:** Coherente. En español, antes de aprobar el relato del caso, esta línea se lee mezclada («Moderately reducido global contraction», TD-46)
+- **Posible problema clínico:** Coherente. En español, hasta aprobar el relato del caso, la línea se ve entera en inglés (TD-46, corregido el 2026-09-30)
 - **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
@@ -203,7 +206,8 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 - **Cómo debe guiar el manejo:** Tubo pleural, hemoderivados, controlar el débito (toracotomía si es masivo) y reevaluar
 - **Componente observable de C14:** Deciding the drain and its reassessment from the haemothorax on the E-FAST. · Evidencia esperada: requests the E-FAST and names the left haemothorax; places a chest tube because of it; reassesses after the drain with the E-FAST, a film or surgery
 - **ACEP · alineación y límite:** E-FAST de cinco ventanas: ESTABLECIDO por ACEP 2016 para el trauma con hipotensión.
-- **Posible problema clínico:** Coherente. Un FAST abdominal negativo no descarta una lesión retroperitoneal o pélvica
+- **Posible problema clínico:** Coherente. Un FAST abdominal negativo no descarta una lesión retroperitoneal o pélvica. El E-FAST de control repite los hallazgos de llegada y la VCI del POCUS de control no cambia (TD-54): no se exige ver en ellos un cambio que el simulador no muestra
+- **Criterio docente aprobado (aprueba el criterio, no la ficha):** D-1, 2026-10-02: el E-FAST muestra sus cinco ventanas en la sala, el Trace y los documentos; el hemotórax izquierdo es visible y el control tras el drenaje muestra el abdomen y la pelvis. Ficha lista para su confirmación.
 - **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________
@@ -217,7 +221,8 @@ de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.
 - **Cómo debe guiar el manejo:** Compresión o torniquete primero, hemoderivados, ácido tranexámico y control quirúrgico; repetir el E-FAST si se deteriora sin explicación
 - **Componente observable de C14:** Directing haemorrhage control with the absence of cavity bleeding on the E-FAST. · Evidencia esperada: requests the E-FAST and names it negative; keeps haemorrhage control on the limb rather than searching a cavity; states what would change that
 - **ACEP · alineación y límite:** E-FAST de cinco ventanas: ESTABLECIDO por ACEP 2016 para el trauma con hipotensión.
-- **Posible problema clínico:** Coherente. El E-FAST no debe preceder al control de la hemorragia externa, y su sensibilidad precoz es limitada (el caso lo pide: «states what would change that»)
+- **Posible problema clínico:** Coherente. El E-FAST no debe preceder al control de la hemorragia externa, y su sensibilidad precoz es limitada (el caso lo pide: «states what would change that»). La VCI del POCUS de control no cambia tras el control y la sangre (TD-54): no se exige verla llenarse
+- **Criterio docente aprobado (aprueba el criterio, no la ficha):** D-1, 2026-10-02: el E-FAST muestra sus cinco ventanas en la sala, el Trace y los documentos, todas negativas. Ficha lista para su confirmación.
 - **Recomendación:** **CONFIRM**
 
 **Su decisión:** ☐ CONFIRMO · ☐ MODIFICO: ____________ · ☐ DISCUTIR · Firma y fecha: ________

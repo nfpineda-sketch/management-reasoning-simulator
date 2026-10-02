@@ -86,15 +86,45 @@ _SPONTANEOUS_EFFORT = re.compile(r"^\s*Increased effort with\s+", re.I)
 _STRIDOR_CLAUSE = re.compile(r"\s*(?:,|;|\band\b)\s*(?:no\s+)?(?:audible\s+)?(?:inspiratory\s+)?stridor\b[^.;]*", re.I)
 
 
-def stridor_heard(severity, intubated):
-    """Whether the upper airway is audible: from the reaction, and never through a tube."""
-    return severity >= STRIDOR_AT and not intubated
+# --- the stridor the room hears (TD-50, faculty, 2026-10-02) ------------------
+#: The examination says what the engine hears now: a case that wrote an audible
+#: stridor stops saying it once the reaction falls below ``STRIDOR_AT``. The
+#: oxygen never decides it; the reaction does.
+NO_STRIDOR_NOW = "no stridor heard now"
+_NEGATED_STRIDOR = re.compile(r"\bno\s+(?:audible\s+)?(?:inspiratory\s+)?stridor\b", re.I)
+
+
+def upper_airway(state):
+    """Whether this case's reaction reaches the upper airway (TD-50, 2026-10-02).
+
+    A case says so in its parameters; one that does not keeps the behaviour it had.
+    ``anaphylaxis_63m_betablocked`` says no: its examination never heard a stridor,
+    so none is charged for.
+    """
+    return bool(spec(state).get("upper_airway", True)) if state is not None else True
+
+
+def stridor_heard(severity, intubated, upper_airway=True):
+    """Whether the upper airway is audible: from the reaction, never through a tube, never without one."""
+    return bool(upper_airway) and severity >= STRIDOR_AT and not intubated
 
 
 def intubated_chest(authored):
     """The case's chest findings once intubated: its wheeze as written, without stridor or spontaneous effort."""
     chest = _STRIDOR_CLAUSE.sub("", _SPONTANEOUS_EFFORT.sub("", str(authored or ""))).strip().rstrip(".")
     return INTUBATED_AIRWAY + (f"; {chest[:1].lower()}{chest[1:]}." if chest else ".")
+
+
+def chest_without_stridor(authored):
+    """The case's chest findings once its stridor is no longer heard: the rest as written (TD-50).
+
+    A case whose examination never heard a stridor keeps its words unchanged.
+    """
+    text = str(authored or "")
+    if not re.search(r"stridor", text, re.I) or _NEGATED_STRIDOR.search(text):
+        return text
+    chest = _STRIDOR_CLAUSE.sub("", text).strip().rstrip(".")
+    return f"{chest}; {NO_STRIDOR_NOW}." if chest else NO_STRIDOR_NOW[:1].upper() + NO_STRIDOR_NOW[1:] + "."
 
 # --- the biphasic return ---------------------------------------------------
 #: Minutes after the reaction first settles before it can return.
@@ -216,9 +246,15 @@ def observables(f, state=None):
     # A blunted receptor does not mount the tachycardia either: in the
     # beta-blocked case the missing rate is itself the finding.
     hr_scale = float((spec(state) if state is not None else {}).get("hr_response", 1.0))
+    upper = upper_airway(state)
+    heard = stridor_heard(severity, bool(f.get("invasive")), upper)
+    # The authored arrival numbers already contain the stridor the patient arrived with
+    # (TD-50, 2026-10-02): like the rest of this function, only a change from it counts.
+    arrived_with = bool(f.setdefault("stridor_on_arrival", stridor_heard(arrival, False, upper)))
     return {
         "sbp_drop": SBP_PER_SEVERITY * moved,
         "hr_rise": HR_PER_SEVERITY * moved * hr_scale,
         "obstruction": OBSTRUCTION_PER_SEVERITY * moved,
-        "stridor": stridor_heard(severity, bool(f.get("invasive"))),
+        "stridor": heard,
+        "stridor_change": int(heard) - int(arrived_with),
     }

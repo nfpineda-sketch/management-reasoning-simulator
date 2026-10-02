@@ -80,6 +80,14 @@
    "en": "Fully alert and oriented; moves all limbs.",
    "es": "Completamente alerta y orientado; moviliza todas las extremidades."
   },
+  "/appearance_stable": {
+   "en": "A deep right thigh wound.",
+   "es": "Una herida profunda del muslo derecho."
+  },
+  "/appearance_while_bleeding": {
+   "en": "A soaked dressing over a deep right thigh wound that is bleeding.",
+   "es": "Apósito empapado sobre una herida profunda del muslo derecho que está sangrando."
+  },
   "/investigations/pocus/result/lv": {
    "en": "Vigorous contraction with near-obliteration in systole",
    "es": "Contracción vigorosa con obliteración casi completa en sístole"
@@ -277,6 +285,10 @@
   "/examination/Neurological": {
    "en": "Alert and oriented; moves all limbs.",
    "es": "Alerta y orientado; moviliza todas las extremidades."
+  },
+  "/appearance_stable": {
+   "en": "Seatbelt marking across the chest and abdomen.",
+   "es": "Marca del cinturón de seguridad que cruza el tórax y el abdomen."
   },
   "/investigations/pocus/result/lv": {
    "en": "Vigorous contraction with near-obliteration in systole",

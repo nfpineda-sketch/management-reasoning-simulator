@@ -164,6 +164,10 @@ def render_attempt_assessment(context, record):
             return
         with st.expander(_t("Read the recorded evidence"), expanded=False):
             _present_evidence(items)
+        # What the simulator cannot show or treat, read against every objective (D-3 and D-8, 2026-10-02).
+        import encounter_limits
+        from faculty_analysis import case_id_of
+        encounter_limits.render(record, case_id_of(record))
         eligible = []
         for goal in goals:
             if not goal["supported"] or not objective_is_eligible(goal["objective_id"], record):

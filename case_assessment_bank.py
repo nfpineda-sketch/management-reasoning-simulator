@@ -1513,6 +1513,18 @@ _R2_CRITERIA = {"id": "R-2", "by": "Nicolás Pineda", "on": "2026-09-30",
                 "basis": "Faculty response to the cycle-10 decision packet, 2026-09-30, point 5."}
 
 
+# The pre-pilot closure (faculty, 2026-10-02): the table's criteria accepted with their conditions. Like
+# R-2, a revision of the criterion, never a signature of the case's card, which stays pending.
+_D7_WORDING = {"id": "D-7", "by": "Nicolás Pineda", "on": "2026-10-02",
+               "decision": "Wording aligned with the 61m: the report states the wall motion, and POCUS never "
+                           "delays reperfusion; the card stays pending",
+               "basis": "Faculty response to the pre-pilot review packet, 2026-10-02, D-7."}
+_D8_RULE = {"id": "D-8", "by": "Nicolás Pineda", "on": "2026-10-02", "after": "R-2",
+            "decision": "Judged on the signals the room shows; what the simulator does not show is not evaluable, "
+                        "never missing; the card stays pending",
+            "basis": "Faculty response to the pre-pilot review packet, 2026-10-02, D-8."}
+
+
 def _c14_no(group, reason, version="C14-REVIEW-1"):
     return {"opportunity": "no", "reason": reason, "reviewed": _c14_review(group, version)}
 
@@ -1554,14 +1566,19 @@ C14_DECLARATIONS = {
         "an IVC of 1.9 cm with about 50% collapse. No single answer follows from them: withholding volume, "
         "a small bolus with its limit stated and reassessed, or early support can each be justified, and "
         "the engine answers large volumes poorly in this profile. C14 observes whether the volume, support "
-        "and urgency decisions are made with the global LV function in view and adapted to the response.",
+        "and urgency decisions are made with the global LV function in view and adapted to the response. In "
+        "this simulator a volume past the ventricle's tolerance shows only as a pressure that stops answering "
+        "and a message in the room; the lungs, the examination, the saturation and a repeat POCUS do not "
+        "change. The adaptation is judged on those signals: detecting overload on the examination or POCUS is "
+        "not required, and when the only response the resident looked for is one the simulator does not "
+        "show, that part of the observation is not evaluable rather than missing.",
         "Deciding volume, support and urgency with the global LV function in view, and adapting them to "
         "the response.",
         ("requests POCUS and relates the global LV function, the B-lines and the IVC to the volume decision",
          "withholds volume, or gives a small bolus with its limit stated and reassesses it, or escalates "
          "support, and says why",
          "adapts the plan to the response and relates it to the urgency of reperfusion"),
-        revised=_R2_CRITERIA),
+        revised=_D8_RULE),
     # R-2 (2026-09-30): recognising a subtle wall-motion finding is not required, since the report
     # states it; and a non-dilated aorta on POCUS never excludes a dissection.
     "acs_61m_posterior": _c14_yes(
@@ -1579,15 +1596,18 @@ C14_DECLARATIONS = {
          "uses it with the ECG and the posterior leads to treat the pattern as an occlusion",
          "activates or expedites reperfusion"),
         revised=_R2_CRITERIA),
+    # D-7 (2026-10-02): as the 61m -- the written report states the wall motion, so recognising it is not
+    # required -- and POCUS never delays reperfusion, which the ECG alone justifies here.
     "acs_52m_de_winter": _c14_yes(
         "A",
         "Akinesis of the anterior wall and apex supports treating the de Winter pattern as an "
         "anterior occlusion (decision A); in the engine the wall motion evolves with the ischaemic "
-        "minutes.",
-        "Using regional wall motion to prioritise the reperfusion decision.",
-        ("requests POCUS and names the anterior akinesis",
-         "relates it to the ECG pattern as an occlusion",
-         "activates or expedites reperfusion")),
+        "minutes. The report states the wall motion; recognising it is not required. POCUS never delays "
+        "reperfusion: activating it from the ECG alone is correct and is not a C14 deficit.",
+        "Using the reported regional wall motion to prioritise the reperfusion decision.",
+        ("requests POCUS and relates the reported anterior akinesis to the ECG pattern as an occlusion",
+         "activates or expedites reperfusion"),
+        revised=_D7_WORDING),
     "acs_66f_nonst": _c14_no(
         "A",
         "The acute coronary syndrome is already established by the ECG and a troponin of 180 ng/L; "
@@ -1756,6 +1776,40 @@ def _c4_no(group, reason):
     return {"opportunity": "no", "reason": reason,
             "reviewed": {"by": "Nicolás Pineda", "on": "2026-09-28", "source": "faculty_decision",
                          "decision_group": group, "version": "C4-REVIEW-1"}}
+
+
+# --- what evidence is read against (pre-pilot closure, faculty, 2026-10-02: D-3, D-7, D-8) -------------
+# Frozen with each new encounter, as the rest of the declaration, and shown to the faculty where they score.
+# A resident is never charged for what the simulator cannot show or treat, and a measure written for it is
+# never an omission because the room refused it or did not model it.
+_EVALUATION_LIMITS = {
+    "pulmonary_embolism_33f": (
+        "After a thrombolytic the bleeding from the operated site does not stop in this simulator: the "
+        "haemoglobin keeps falling while the pressure can stay reassuring. The room cannot stop an alteplase "
+        "infusion; tranexamic acid and cryoprecipitate are recorded without a modelled effect, and fibrinogen "
+        "concentrate is not recognised. The response to that bleeding is not evaluated and is never used to "
+        "judge haemorrhage rescue: not reversing it is never charged, and a measure written for it is never an "
+        "omission. The decision to give the thrombolytic is judged as before, on the minute it was given.",),
+    "acs_70f_left_main": (
+        "A volume past this ventricle's tolerance shows only as a pressure that stops answering and a message "
+        "in the room; the lungs, the examination, the saturation and a repeat POCUS do not change. Detecting "
+        "overload on the examination or POCUS is not required; when the only response the resident looked "
+        "for is one the simulator does not show, that part is not evaluable rather than missing.",),
+    "pneumonia_46f": (
+        "A repeat POCUS shows the IVC filling with volume, but its lungs show no new B-lines with crystalloid "
+        "overload; the saturation does fall. Seeing new B-lines is not required.",),
+    "pneumonia_83m": (
+        "A repeat POCUS shows the IVC filling with volume, but its lungs show no new B-lines with crystalloid "
+        "overload; the saturation does fall. Seeing new B-lines is not required.",),
+    "trauma_limb_hemorrhage_27m": (
+        "A repeat POCUS shows the arrival IVC whatever the volume or the haemorrhage control, and a repeat "
+        "E-FAST repeats the arrival windows: a change the simulator does not show is not required.",),
+    "trauma_hemothorax_41m": (
+        "A repeat POCUS shows the arrival IVC whatever the volume, and a repeat E-FAST repeats the arrival "
+        "windows, the drained pleural recess included: what it adds is the other cavities still clear.",),
+}
+for _case_id, _limits in _EVALUATION_LIMITS.items():
+    CASES[_case_id]["engine_limits"] = tuple(CASES[_case_id]["engine_limits"]) + _limits
 
 
 import observation_opportunities as _observation_opportunities

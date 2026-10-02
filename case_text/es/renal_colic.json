@@ -80,6 +80,10 @@
    "en": "Awake, oriented and fully cooperative.",
    "es": "Vigil, orientado y completamente cooperador."
   },
+  "/appearance_stable": {
+   "en": "No rash.",
+   "es": "Sin erupción."
+  },
   "/investigations/pocus/result/lv": {
    "en": "Preserved, vigorous contraction",
    "es": "Contracción conservada y vigorosa"

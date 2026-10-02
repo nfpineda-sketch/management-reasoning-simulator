@@ -55,7 +55,26 @@ retiene en todas partes, pero sin ella no hay nada que retener.
 4. **Desplegar** el commit aprobado y abrir la aplicación. Las tablas se crean al abrir; las nuevas del
    ciclo 10 también, sin tocar las existentes.
 5. **Entrar como administrador** y retirar de los Secrets `MRS_ADMIN_USERNAME` y
-   `MRS_ADMIN_PASSWORD_HASH`.
+   `MRS_ADMIN_PASSWORD_HASH`. Al abrir su página, la aplicación importa el paquete de fotos; sus
+   aprobaciones esperan la cuenta que nombran y no se registran bajo nadie más (TD-56).
+6. **Cuenta aprobadora de las fotos (TD-56), antes de cualquier encuentro.** Las 117 aprobaciones de
+   `assets/patient_images/approvals.json` nombran una sola cuenta docente. El administrador crea una
+   invitación de docente y **la persona que dio esas aprobaciones** registra su propia cuenta con
+   **exactamente** ese nombre de usuario (el paso 7 lo muestra). Nunca se crea esa cuenta para otra persona,
+   ni se renombra otra cuenta para que coincida, ni se usa la del administrador: la aprobación es de quien la
+   dio. Esa persona entra una vez; al abrir su página se registran sus aprobaciones.
+7. **Verificar el orden, sólo leyendo:**
+
+   ```
+   MRS_DATABASE_URL='…' python3 check_database.py --photo-approvals
+   ```
+
+   Debe terminar en «All 117 approvals are recorded under the accounts they name.» y decir el rol de la
+   cuenta («as faculty»). Si dice que esperan una cuenta, que tienen su cuenta pero no están registradas, o
+   que hay alguna registrada bajo otra cuenta: **no se crea ninguna invitación de residente ni se abre un
+   encuentro**. Sin las aprobaciones, todas las llegadas se verían en vista neutral. Si la cuenta correcta no
+   puede crearse, es un bloqueo del despliegue: se informa antes de seguir.
+8. Sólo entonces, la prueba de humo en la aplicación desplegada (§4) y las invitaciones de los residentes.
 
 ## 4. Prueba de humo (condición B)
 
@@ -73,7 +92,8 @@ Debe mostrar:
 - los documentos en español;
 - los permisos respetados.
 
-**En la aplicación desplegada, con cuentas de prueba sin nombres reales:**
+**En la aplicación desplegada, con cuentas de prueba sin nombres reales,** después de los pasos 6 y 7 de §3
+(la cuenta aprobadora de las fotos ya existe y `check_database.py --photo-approvals` terminó en «All … recorded»):
 
 1. El administrador crea una invitación de residente de año 1 y otra de docente.
 2. El residente entra, cambia su contraseña, decide su foto e iniciales, pulsa «Begin Encounter», juega
@@ -104,6 +124,10 @@ Debe mostrar:
   contenido, así que un error de programación ya no se confunde con una caída de la base.
 - **Integridad:** `python3 check_database.py --integrity` lista las claves repetidas, sin datos
   personales. No edite la base a mano sin un respaldo previo.
+- **Las llegadas se ven en vista neutral:** `python3 check_database.py --photo-approvals` dice si las
+  aprobaciones de las fotos esperan su cuenta (TD-56). Una vez creada la cuenta correcta, basta abrir la
+  página docente, o `python3 tools_image_bank.py import --database-url "$MRS_DATABASE_URL" --pack
+  assets/patient_images`, y volver a verificar.
 - **La base no abre:** `python3 check_database.py` dice por qué, sin imprimir la URL.
 - **Volver atrás:**
   - redesplegue el commit anterior;

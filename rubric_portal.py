@@ -16,6 +16,7 @@ import streamlit as st
 import report_palette as palette
 
 from account_store import AccountError
+import encounter_limits
 import evaluation_basis
 from rubric import DOMAIN_IDS, DOMAINS, NOT_ASSESSABLE, headline, score as compute_score
 from rubric_analysis import (RubricAnalysisError, case_id_of, generate_rubric_proposal,
@@ -283,6 +284,8 @@ def _review_form(store, token, record, case_id, proposal, review, training_year=
             st.divider()
 
     with st.container():
+        # What the simulator cannot show or treat here (D-3, D-8, 2026-10-02): encounter_limits.
+        encounter_limits.render(record, case_id)
         events = _event_controls(record, case_id, proposed_events, saved_events, check)
     try:
         preview = compute_score(scores, events)

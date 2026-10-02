@@ -3,6 +3,10 @@
 Revisión clínica y lingüística previa al primer piloto formativo. Fecha: 2026-10-02. Rama `clinical-encounter-v0.13`,
 sobre `ad98005`. No es el ciclo 11.
 
+> **Decidido y cerrado el 2026-10-02 (D-1 a D-11, TD-56 y TD-59).** Lo que se hizo, la tabla única de lo que espera su
+> firma, los casos y los pendientes reales están en `docs/revision/CIERRE_PREPILOTO.md`. Este paquete queda como se
+> presentó.
+
 **Este paquete no aprueba ni cambia nada clínico.** Presenta el material; las decisiones son suyas. En esta fase sólo
 se implementó un error de presentación determinista (regla B):
 

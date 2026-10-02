@@ -70,6 +70,9 @@ INSTRUCTION_2026_09_30_SECOND = ("Instrucción docente del 2026-09-30, segunda r
                                  "con condiciones, P-05 D como simplificación explícita, P-06 corregido, P-07 con la "
                                  "75f en vista neutral, R-2 para dos casos, R-3 con C3 parcial y TD-47, R-4 con su "
                                  "terminología y TD-46; sin abrir un ciclo nuevo)")
+INSTRUCTION_PREPILOT_CLOSURE = ("Instrucción docente de cierre del paquete prepiloto (2026-10-02): aplicar las "
+                               "decisiones D-1 a D-11, TD-56 y TD-59, corregir los bloqueos y verificar el recorrido "
+                               "afectado, sin un nuevo ciclo de auditoría ni ampliar el alcance")
 INSTRUCTION_PREPILOT_REVIEW = ("Instrucción docente «PRE-PILOT CLINICAL REVIEW», posterior a la segunda respuesta "
                                "del 2026-09-30 (presentar, revisión humana y sólo entonces implementar; sin aprobación "
                                "se implementa sólo una regresión directa, un error de presentación determinista, "
@@ -2876,6 +2879,224 @@ CORRECTIONS = (
         "affects": {"modules": ["rubric_portal"], "versions": {}},
         "clinical_relevance": "none",
         "tests": ["test_rubric_portal.py::test_a_spanish_reader_decides_each_event_in_spanish"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-02",
+        "date": "2026-10-02",
+        "title": "TD-48: el E-FAST muestra cada ventana que documenta su caso, en la sala, el Trace y los documentos",
+        "scope": {"level": "family", "family": "trauma"},
+        "kind": "technical_defect",
+        "reason": ("D-1. La sala, el Management Trace y los documentos de revisión mostraban del E-FAST sólo "
+                   "«Pericardium: No pericardial fluid»: el hemotórax izquierdo de la 41m y las ventanas negativas de "
+                   "los dos casos de trauma nunca llegaban al residente, y ninguna oportunidad C14 de trauma podía "
+                   "observarse. Ahora el informe sigue el protocolo de cinco ventanas (efast_report.SECTIONS), con "
+                   "«Not documented» para una ventana que el caso no documenta, sin inventar hallazgos. Un resultado "
+                   "anterior no lleva la marca y conserva la línea que su sala mostró. Los títulos y rótulos se dicen "
+                   "en español; las líneas del caso, enteras en inglés hasta aprobar su relato (TD-46)."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["efast_report", "family_engine", "family_reports", "app", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_td48_efast_window_by_window.py::test_the_41m_haemothorax_is_in_the_report_with_every_window",
+                  "test_td48_efast_window_by_window.py::test_both_trauma_c14_opportunities_can_now_be_observed",
+                  "test_td48_efast_window_by_window.py::test_a_window_the_case_does_not_document_says_so",
+                  "test_td48_efast_window_by_window.py::test_an_older_record_keeps_the_line_its_room_showed",
+                  "test_td48_efast_window_by_window.py::test_the_trace_state_carries_every_window",
+                  "test_td48_efast_window_by_window.py::test_spanish_titles_and_whole_lines_until_the_case_is_approved",
+                  "test_td48_efast_window_by_window.py::test_with_an_approved_translation_the_report_reads_in_spanish"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-03",
+        "date": "2026-10-02",
+        "title": "TD-49: la trombólisis de un SCA queda registrada una vez por dosis",
+        "scope": {"level": "family", "family": "acs"},
+        "kind": "technical_defect",
+        "reason": ("D-9. La rama de trombólisis del SCA agregaba la dosis a los medicamentos administrados y el "
+                   "registro común la agregaba otra vez: el Trace y los documentos mostraban dos administraciones de "
+                   "una sola dosis. Ahora queda una fila por dosis, con lo que se dio; una segunda indicación agrega "
+                   "una fila más. Es la misma información, presentada sin duplicar: no agrega contenido clínico ni "
+                   "cambia la reperfusión."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["family_engine"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_td49_acs_thrombolysis_recorded_once.py::test_each_dose_is_one_row_with_what_was_given",
+                  "test_td49_acs_thrombolysis_recorded_once.py::test_the_reperfusion_is_unchanged"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-04",
+        "date": "2026-10-02",
+        "title": "TD-50: el examen de la anafilaxia dice el estridor que el motor tiene ahora",
+        "scope": {"level": "family", "family": "anaphylaxis"},
+        "kind": "clinical_decision_applied",
+        "reason": ("D-2. El examen de la 29f seguía diciendo «audible inspiratory stridor» después de que el motor "
+                   "lo había resuelto con adrenalina. Ahora el examen sigue la bandera de estridor del motor (la "
+                   "reacción sobre su umbral, nunca a través de un tubo), no la saturación; tras una intubación "
+                   "exitosa se oye el tubo y la reacción sigue. El estridor con que el paciente llegó ya está en sus "
+                   "números de llegada y no se cobra otra vez en el minuto 1: sólo cuesta el que aparece y devuelve "
+                   "el que se va. La 63m declara que no tiene compromiso de la vía aérea alta y no paga un estridor "
+                   "que no se oye."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["anaphylaxis_reaction", "family_engine", "clinical_cases"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_td50_anaphylaxis_stridor_now.py::test_the_written_stridor_goes_when_the_reaction_falls_below_it",
+                  "test_td50_anaphylaxis_stridor_now.py::test_a_normal_saturation_does_not_settle_the_stridor",
+                  "test_td50_anaphylaxis_stridor_now.py::test_after_a_successful_intubation_the_tube_is_heard_and_the_reaction_goes_on",
+                  "test_td50_anaphylaxis_stridor_now.py::test_the_stridor_the_patient_arrived_with_is_not_charged_twice",
+                  "test_td50_anaphylaxis_stridor_now.py::test_a_stridor_that_appears_costs_and_one_that_goes_returns",
+                  "test_td50_anaphylaxis_stridor_now.py::test_the_63m_has_no_upper_airway_and_pays_for_none",
+                  "test_td50_anaphylaxis_stridor_now.py::test_a_case_that_never_heard_a_stridor_keeps_its_words"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-05",
+        "date": "2026-10-02",
+        "title": "D-4 y D-5: las notas de la trombólisis de la TEP nombran el criterio completo, también en español",
+        "scope": {"level": "family", "family": "pulmonary_embolism"},
+        "kind": "text",
+        "reason": ("D-4: la nota decía «shock obstructivo» sin su criterio. Ahora nombra la sistólica bajo 90 mmHg o "
+                   "el vasopresor necesario para llegar a 90, con signos de hipoperfusión, y dice que en shock está "
+                   "indicada desde que el shock existe: los 15 minutos consecutivos son sólo de la hipotensión sin "
+                   "esos signos, como la regla del motor (pe_obstruction.basis). D-5: en español, «administrada», "
+                   "«Trombólisis» con tilde, el fármaco en español y la nota del sangrado, que no tenía traducción."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["pe_obstruction", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_pe_notes_and_row_18.py::test_shock_is_named_whole_and_never_waits_fifteen_minutes",
+                  "test_pe_notes_and_row_18.py::test_a_hypotension_without_signs_needs_its_fifteen_minutes",
+                  "test_pe_notes_and_row_18.py::test_the_notes_in_spanish_say_administrada_and_the_whole_criterion",
+                  "test_pe_notes_and_row_18.py::test_the_regimen_and_the_second_course_name_the_drug_in_spanish",
+                  "test_pe_notes_and_row_18.py::test_the_bleeding_note_has_its_spanish",
+                  "test_pe_notes_and_row_18.py::test_the_room_never_writes_trombolisis_without_its_accent"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-06",
+        "date": "2026-10-02",
+        "title": "D-6: la frase 18 de R-4 recupera su verbo, en la sala y en el borrador",
+        "scope": {"level": "family", "family": "hypoglycemia"},
+        "kind": "text",
+        "reason": ("D-6. «Suero glucosado al {n} % a {n} mL/h…» había perdido el verbo que dice que la infusión "
+                   "está pasando. Vuelve «El suero glucosado al {n} % pasa a {n} mL/h por la cánula del antebrazo "
+                   "izquierdo.», sin cambiar dosis, concentración, vía ni velocidad."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["language", "spanish_drafts"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_pe_notes_and_row_18.py::test_row_18_keeps_its_verb_in_the_room_and_in_the_draft"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-07",
+        "date": "2026-10-02",
+        "title": "D-7 y D-8: la C14 de la 52m usa la motilidad informada y la de la 70f se juzga con lo que la sala muestra",
+        "scope": {"level": "variant", "family": "acs", "variants": ["acs_52m_de_winter", "acs_70f_left_main"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("D-7: la 52m usa la motilidad que entrega el informe escrito, no exige reconocerla, y activar la "
+                   "reperfusión sólo por el ECG es correcto. D-8: en la 70f la sobrecarga sólo se ve en una presión "
+                   "que deja de responder y en el mensaje de la sala; no se exige detectarla por examen ni por POCUS, "
+                   "un bolo pequeño justificado y reevaluado es aceptable, y lo que el simulador no muestra no es "
+                   "evaluable en vez de faltar. Valen desde el encuentro siguiente; las fichas R-2 registran la "
+                   "aceptación de los criterios y siguen sin firma."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["case_assessment_bank", "pocus_review_notes", "spanish_drafts", "tools_review_sheets"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_r2_r3_declarations.py::test_the_70f_c14_row_accepts_a_justified_small_bolus",
+                  "test_c14_opportunities.py::test_the_final_table_document_is_the_bank_s_declarations",
+                  "test_spanish_drafts.py::test_every_c14_text_of_the_bank_has_one_draft_and_no_draft_is_stale",
+                  "test_review_sheets_are_current.py::test_the_sheets_on_disk_are_the_ones_the_code_writes"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-08",
+        "date": "2026-10-02",
+        "title": "D-3 y D-8: lo que el simulador no muestra ni trata se declara por caso y se lee donde el docente evalúa",
+        "scope": {"level": "variant", "variants": ["pulmonary_embolism_33f", "acs_70f_left_main", "pneumonia_46f",
+                                                   "pneumonia_83m", "trauma_limb_hemorrhage_27m",
+                                                   "trauma_hemothorax_41m"]},
+        "kind": "clinical_decision_applied",
+        "reason": ("D-3: el sangrado de la 33f no se detiene, la alteplasa no se suspende y el ácido tranexámico y el "
+                   "crioprecipitado no tienen efecto modelado; esa respuesta no se evalúa, nunca se usa para juzgar "
+                   "el rescate hemorrágico y una medida escrita para ella nunca es una omisión. D-8 y TD-53: la "
+                   "sobrecarga de la 70f. TD-54: el pulmón y la VCI del POCUS de control, y el E-FAST de control. "
+                   "Cada límite se agrega a la declaración del caso, se congela con cada encuentro nuevo y se muestra "
+                   "en la rúbrica y en los objetivos con «Nunca las cuente contra el residente». No se excluye ningún "
+                   "caso: el objetivo central de cada uno sigue siendo evaluable."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["case_assessment_bank", "encounter_limits", "rubric_portal", "progress_portal",
+                                "report_language"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_rubric_portal.py::test_the_simulator_limits_are_shown_where_the_faculty_scores",
+                  "test_progress_portal.py::test_the_simulator_limits_are_read_against_the_objectives_too",
+                  "test_evaluation_basis.py::test_the_legacy_snapshot_is_the_code_before_the_change_for_every_other_case"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-09",
+        "date": "2026-10-02",
+        "title": "TD-56: una aprobación de foto espera su cuenta, nunca se registra bajo otra, y el despliegue lo verifica",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("La página docente abre el banco de imágenes en cuanto entra el administrador, antes de que pueda "
+                   "existir la cuenta docente que firmó las aprobaciones, y el paquete quedaba importado sin ellas: "
+                   "todas las fotos aprobadas seguían en vista neutral hasta reiniciar o reimportar. Ahora una "
+                   "aprobación cuya cuenta no existe espera, sin registrarse bajo nadie más, y la primera apertura "
+                   "después de crearla la registra; mientras espera, cada apertura lee una vez las cuentas. "
+                   "check_database.py --photo-approvals dice, sólo leyendo, si todas están bajo su cuenta."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["image_pack", "image_bank", "check_database"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_td56_photo_approvals_wait_for_their_account.py::test_an_approval_waits_for_its_account_and_is_recorded_once_it_exists",
+                  "test_td56_photo_approvals_wait_for_their_account.py::test_an_account_that_is_not_staff_never_receives_an_approval",
+                  "test_td56_photo_approvals_wait_for_their_account.py::test_the_runbook_check_says_whether_the_order_held",
+                  "test_td56_photo_approvals_wait_for_their_account.py::test_the_repository_pack_names_one_staff_account_for_every_approval"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-10",
+        "date": "2026-10-02",
+        "title": "TD-59: «General appearance» dice, bajo el resumen del motor, lo que el caso escribió y sigue siendo cierto",
+        "scope": {"level": "variant", "variants": ["anaphylaxis_63m_betablocked", "renal_colic_34m",
+                                                   "bradycardia_ccb_68m", "bradycardia_bb_54f",
+                                                   "bradycardia_hyperk_63m", "trauma_limb_hemorrhage_27m",
+                                                   "trauma_hemothorax_41m"]},
+        "kind": "technical_defect",
+        "reason": ("Desde el 2026-09-21 la región era sólo el resumen del motor y la línea del caso no se mostraba. "
+                   "Vuelven, como fragmentos literales de esa línea, los hallazgos estables (la fístula, la marca "
+                   "del cinturón, la picadura, las negativas que el caso escribe) y, para el muslo, el apósito que "
+                   "sangra mientras no se aplicó nada, y después la herida con lo que el motor registra de su "
+                   "sangrado. No se concatena el texto de llegada: la urticaria, el enrojecimiento, el edema, los "
+                   "escalofríos y la inquietud no tienen evolución en el motor y no se vuelven a decir. Sólo "
+                   "encuentros nuevos."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["clinical_cases", "family_engine", "trauma_hemorrhage", "tools_case_text", "case_text"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_td59_general_appearance_keeps_the_case.py::test_each_line_is_a_verbatim_part_of_what_the_case_wrote",
+                  "test_td59_general_appearance_keeps_the_case.py::test_a_stable_finding_is_said_below_the_engine_s_summary",
+                  "test_td59_general_appearance_keeps_the_case.py::test_what_has_no_course_in_the_engine_is_not_said_again",
+                  "test_td59_general_appearance_keeps_the_case.py::test_the_bleeding_thigh_follows_what_was_applied_to_it",
+                  "test_td59_general_appearance_keeps_the_case.py::test_an_encounter_keeps_the_case_it_started_with"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-11",
+        "date": "2026-10-02",
+        "title": "El examen en español: cada línea entera en un idioma, y el tórax reescrito de la anafilaxia va con su caso",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Verificación de traducciones del cierre prepiloto. Un examen de varias líneas se traduce línea a "
+                   "línea; el color «flushed» de la anafilaxia no tenía español y dejaba el resumen entero en inglés; "
+                   "las líneas del tórax que el motor reescribe (a través del tubo y sin estridor) no estaban en el "
+                   "relato del caso y quedaban en inglés aun con el relato aprobado. Ahora son pasajes del caso, con "
+                   "su borrador, que se aprueban con él; sin aprobación siguen enteras en inglés (TD-46)."),
+        "authorised_by": INSTRUCTION_PREPILOT_CLOSURE,
+        "affects": {"modules": ["language", "tools_case_text", "case_text"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_td59_general_appearance_keeps_the_case.py::test_each_line_reads_whole_in_one_language",
+                  "test_td59_general_appearance_keeps_the_case.py::test_the_rewritten_chest_is_part_of_the_case_s_narrative"],
         "preservation": None,
     },
 )

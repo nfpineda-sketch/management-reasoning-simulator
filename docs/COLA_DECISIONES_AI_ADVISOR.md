@@ -5,10 +5,34 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-02, con la revisión clínica prepiloto (sección «Revisión clínica prepiloto», la
-  vigente: once decisiones abiertas). La segunda y la primera respuesta al paquete del ciclo 10, el ciclo 10,
-  el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores siguen más abajo, como
-  estaban.
+- **Actualizado:** 2026-10-02, con el cierre del paquete prepiloto (sección «Cierre del paquete prepiloto», la
+  vigente: D-1 a D-11 decididas y aplicadas). La revisión clínica prepiloto, la segunda y la primera respuesta
+  al paquete del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos
+  anteriores siguen más abajo, como estaban.
+
+## Cierre del paquete prepiloto (2026-10-02)
+
+**Instrucción docente del 2026-10-02:** avanzar con D-1 a D-11, TD-56 y TD-59 para cerrar el paquete prepiloto;
+corregir los bloqueos y verificar el recorrido afectado; sin otro ciclo de auditoría ni ampliar el alcance; sin
+pedir de nuevo autorización para lo aprobado; sin desplegar ni ejecutar la prueba de humo contra datos reales.
+Registro: `INSTRUCTION_PREPILOT_CLOSURE` en `corrections_registry.py`. Las firmas pendientes, en una sola tabla,
+están en `docs/revision/CIERRE_PREPILOTO.md`.
+
+| ID | Decisión docente | Qué se hizo | Registro |
+|---|---|---|---|
+| D-1 · TD-48 | **Aprobado.** Todas las ventanas del E-FAST disponibles, coherentes en sala, Trace e informes; sin inventar hallazgos | Cinco ventanas, «Not documented» si el caso no la documenta; un resultado anterior conserva su línea. El hemotórax de la 41m se ve y las dos C14 de trauma son observables | C-2026-10-02-02 |
+| D-2 · TD-50 | **Aprobado.** El examen refleja el estridor del estado actual; no deducirlo de la SpO₂; comprobar tras intubar | El examen sigue la bandera del motor; la 63m declara sin compromiso de vía aérea alta; el estridor se cobra respecto de la llegada | C-2026-10-02-04 |
+| D-3 · TEP | **Mantener la fisiología para el piloto, con alcance limitado** | Sin recalibrar. El límite de la 33f queda en su declaración y en la rúbrica y los objetivos: esa respuesta no se evalúa ni juzga el rescate hemorrágico; nada se cobra por no revertirla. Ningún caso excluido: su objetivo central sigue evaluable | C-2026-10-02-08 |
+| D-4 · Shock | **Aprobado** | Nota con el criterio completo; el shock no espera 15 minutos; concordante con `pe_obstruction.basis` | C-2026-10-02-05 |
+| D-5 · Notas TEP | **Ajustes menores autorizados**; la autorización no es su firma | «administrada», «Trombólisis», fármacos en español, aviso del sangrado traducido. Versiones finales presentadas juntas para su firma | C-2026-10-02-05 |
+| D-6 · R-4 | **Autorizado** | La frase 18 recupera «pasa», sin cambiar dosis, concentración, vía ni velocidad; las 18 en una tabla | C-2026-10-02-06 |
+| D-7 · R-2 | **Criterios aceptados, con condiciones** | Redacción de la 52m aplicada; las dos fichas de trauma listas tras TD-48; sin «dynamic»; sin atribuir adquisición ni lectura de imágenes. La aceptación queda registrada en las fichas; su firma sigue pendiente | C-2026-10-02-07 |
+| D-8 · 70f | **Aviso docente y regla de evaluación para el piloto** | Sin corregir la fisiología (TD-53). Se juzga con las señales visibles; un bolo pequeño justificado y reevaluado es aceptable; lo que el simulador no muestra no es evaluable | C-2026-10-02-07, C-2026-10-02-08 |
+| D-9 · TD-49/51 | **TD-49 corregida si es la misma pérdida de información; TD-51 después** | TD-49: era la misma dosis escrita dos veces; ahora una fila por dosis, sin contenido clínico nuevo. TD-51 diferida | C-2026-10-02-03 |
+| D-10 · R-3 | **T-2 con C1 YES; T-3 y T-4 NO**, según el paquete | Decisión de alcance registrada en `docs/tdfc/TDFC_TABLA_FINAL.md`; sin cambiar declaraciones ni agregar la frase opcional; nada confirma observaciones ni niveles; firma pendiente | — |
+| D-11 · Guías | **Actualizar** con etiquetas en español, el paso de eventos críticos y los avisos de foto y POCUS | Las dos guías describen el funcionamiento comprobado y quedan listas para su firma | — |
+| TD-56 | Documentar y verificar el orden; no fabricar aprobadores | Una aprobación espera la cuenta que nombra; `check_database.py --photo-approvals` verifica antes de abrir encuentros (runbook §3) | C-2026-10-02-09 |
+| TD-59 | Recuperar los hallazgos propios sin concatenar texto que contradiga la evolución | Estables, como fragmentos literales; la herida de la 27m según su control; lo que no tiene evolución, documentado sin inventarla | C-2026-10-02-10, C-2026-10-02-11 |
 
 ## Revisión clínica prepiloto (2026-10-02)
 

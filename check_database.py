@@ -15,6 +15,11 @@ application does, tables included.
 
 checks the administrator bootstrap hash the same way the application does, and
 says which part of it is wrong. It never prints the hash.
+
+    MRS_DATABASE_URL='postgresql://...' python check_database.py --photo-approvals
+
+says whether every photo approval the repository's image pack carries is recorded under the
+staff account it names (TD-56). The pilot opens no encounter until it does.
 """
 import argparse
 import os
@@ -162,6 +167,48 @@ def report_integrity(url):
     return 0 if not repeated else 2
 
 
+def report_photo_approvals(url, pack=None):
+    """Whether the pack's photo approvals are recorded under the accounts they name (TD-56, 2026-10-02).
+
+    Writes no data. Opening the stores creates their tables when they are missing, as the
+    application does. Prints counts, the usernames the pack names and their roles: no password,
+    no URL, no note. Returns 0 only when every approval is recorded under its own account.
+    """
+    sqlite = str(url).startswith("sqlite:")
+    if not sqlite:
+        complaint = describe(url)
+        if complaint:
+            print("The database URL is not usable:", complaint)
+            return 1
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from account_store import AccountStore
+    from image_bank import ImageBank
+    import image_pack
+    directory = pack or image_pack.PACK_DIR
+    status = image_pack.approval_status(ImageBank(AccountStore(url, allow_sqlite=sqlite)), directory)
+    total = status["in_pack"]
+    if not total:
+        print("The image pack carries no approvals: there is nothing to check.")
+        return 0
+    print(f"Photo approvals in the pack: {total} · recorded under the account they name: {status['recorded']}")
+    for username, role in status["holders"].items():
+        print(f"   account {username!r} is here, as {role}")
+    for username, count in status["waiting"].items():
+        print(f"   {count} wait for the staff account {username!r}, which is not in this database. Create it "
+              "for the person who gave them, under that exact username, never for anybody else.")
+    if status["ready"]:
+        print(f"   {status['ready']} have their account here and are not recorded yet: open the faculty page "
+              "once, or run tools_image_bank.py import, and check again.")
+    if status["elsewhere"]:
+        print(f"   {status['elsewhere']} are recorded under another account than the one they name: "
+              "a person has to look at them before the pilot.")
+    if status["recorded"] == total:
+        print(f"All {total} approvals are recorded under the accounts they name.")
+        return 0
+    print("Not ready: open no encounter until every approval is recorded under its own account.")
+    return 2
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -173,9 +220,13 @@ def main(argv=None):
                         help="report whether this account exists, is active, and is throttled")
     parser.add_argument("--integrity", action="store_true",
                         help="list keys that should be unique and are repeated (I-F06, I-F19)")
+    parser.add_argument("--photo-approvals", action="store_true",
+                        help="whether every photo approval of the image pack is recorded under its own account (TD-56)")
     arguments = parser.parse_args(argv)
     if arguments.integrity:
         return report_integrity(os.environ.get("MRS_DATABASE_URL", ""))
+    if arguments.photo_approvals:
+        return report_photo_approvals(os.environ.get("MRS_DATABASE_URL", ""))
     if arguments.account:
         return report_account(os.environ.get("MRS_DATABASE_URL", ""), arguments.account)
     if arguments.admin_hash:

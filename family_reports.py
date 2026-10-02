@@ -58,6 +58,12 @@ def format_result(test_id, result):
         # Every POCUS report uses the same structure, normal findings included.
         from pocus_report import format_pocus
         return format_pocus(result, heading=label)
+    if test_id == "efast":
+        # Every window the case documents (TD-48, 2026-10-02). A result made before
+        # keeps the generic line below: the one its room showed.
+        from efast_report import format_efast, shown_as_windows
+        if shown_as_windows(result):
+            return format_efast(result, heading=label)
     if test_id == "ecg":
         # The tracing is the result. The resident reads it; the report never names the rhythm.
         timing = (f"Performed at minute {result['collected_at_min']:g} · "

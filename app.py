@@ -1000,6 +1000,13 @@ def _trace_state_text(snapshot, language="en"):
         from pocus_report import format_pocus
         sections = format_pocus(pocus, compact=True).splitlines()[1:]
         parts.append("POCUS: " + " | ".join(sections))
+    efast = d.get("efast")
+    from efast_report import format_efast, shown_as_windows
+    if shown_as_windows(efast):
+        # What the resident had from the E-FAST, every window (TD-48). An older
+        # record's E-FAST showed one line and is left as its room showed it.
+        sections = format_efast(efast, compact=True).splitlines()[1:]
+        parts.append("E-FAST: " + " | ".join(sections))
     labs = d.get("basic_labs")
     if labs:
         lab_bits = []
@@ -1088,6 +1095,11 @@ def _trace_state_words(snapshot, language):
         from pocus_report import format_pocus
         sections = format_pocus(pocus, compact=True).splitlines()[1:]
         parts.append("POCUS: " + languages.say(" | ".join(sections), language))
+    efast = d.get("efast")
+    from efast_report import format_efast, shown_as_windows
+    if shown_as_windows(efast):
+        sections = format_efast(efast, compact=True).splitlines()[1:]
+        parts.append("E-FAST: " + languages.say(" | ".join(sections), language))
     labs = d.get("basic_labs")
     if labs:
         lab_bits = []

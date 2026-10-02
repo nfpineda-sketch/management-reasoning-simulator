@@ -1078,7 +1078,9 @@ FAMILIES["anaphylaxis"]["variants"].append(_case(
      "What told you the reaction was still going, or had settled?"],
     ["epinephrine_im", "fluid", "oxygen"],
     visual=_visual(distributive=True, sweating="mild"),
-    anaphylaxis={"severity": 1.0, "beta_blocked": False, "biphasic": True}))
+    anaphylaxis={"severity": 1.0, "beta_blocked": False, "biphasic": True,
+                 # Its stridor is audible on arrival (TD-50, 2026-10-02).
+                 "upper_airway": True}))
 
 _o = _observable(76, 42, 64, 89, 26, wob="Increased", crt=4,
                  extremities="Warm", mental="Drowsy", temperature=36.4, glucose=132,
@@ -1124,7 +1126,9 @@ FAMILIES["anaphylaxis"]["variants"].append(_case(
     anaphylaxis={"severity": 1.15, "beta_blocked": True, "biphasic": False,
                  # A blocked receptor does not mount the tachycardia of shock
                  # either, and the rate that never rises is the finding.
-                 "hr_response": 0.25}))
+                 "hr_response": 0.25,
+                 # Its examination hears no stridor, so none is charged for (TD-50, 2026-10-02).
+                 "upper_airway": False}))
 
 
 # RENAL COLIC: the same complaint and the same dilatation on the ultrasound.
@@ -1493,10 +1497,32 @@ _HANDOVER_CONTEXT = {
     "anaphylaxis_63m_betablocked": "Handover notes a sting and a rash; the medication list came with the family, not with the patient.",
     "bradycardia_ccb_68m": "Handover notes a collapse and a slow rate; the boxes came in with the daughter.",
 }
+# TD-59 (pre-pilot closure, 2026-10-02): what a case wrote of the patient's appearance that still
+# holds while the encounter runs. Since 2026-09-21 the room's "General appearance" is the engine's
+# summary, which follows the state (family_engine.examination_finding), and the case's own line was
+# not shown at all. Each entry is a verbatim fragment of that line: what does not change in an
+# encounter -- a fistula, a belt mark, a sting site, a negative the case states -- or, for the
+# bleeding thigh, what holds only while nothing has been applied to the wound; once something has,
+# the engine says what the bleeding is now. The rest of each line is either in the engine's summary
+# already (colour, sweating, mental status) or has no defined course in the engine (urticaria,
+# flushing, swelling, shivering, restlessness), and is not shown again: docs/REGISTRO_DEUDA_TECNICA.md
+# (TD-59) lists it. Only new encounters carry these: an encounter keeps the case it started with.
+_APPEARANCE = {
+    "anaphylaxis_63m_betablocked": {"appearance_stable": "A sting site on the right forearm."},
+    "renal_colic_34m": {"appearance_stable": "No rash."},
+    "bradycardia_ccb_68m": {"appearance_stable": "No rash or swelling."},
+    "bradycardia_bb_54f": {"appearance_stable": "No rash."},
+    "bradycardia_hyperk_63m": {"appearance_stable": "A dialysis fistula in the left forearm."},
+    "trauma_limb_hemorrhage_27m": {
+        "appearance_stable": "A deep right thigh wound.",
+        "appearance_while_bleeding": "A soaked dressing over a deep right thigh wound that is bleeding."},
+    "trauma_hemothorax_41m": {"appearance_stable": "Seatbelt marking across the chest and abdomen."},
+}
 # A catalogued case carries its own source (hypoglycemia_catalog).
 _CATALOGUED = {_c["id"] for _c in _hypoglycemia_catalog.bank_configurations()}
 for _family in FAMILIES.values():
     for _variant in _family["variants"]:
+        _variant.update(_APPEARANCE.get(_variant["id"], {}))
         if _variant["id"] not in _CATALOGUED:
             _variant["history_source"] = _COLLATERAL_SOURCES.get(_variant["id"], "Patient")
         if _variant["id"] in _HANDOVER_CONTEXT:

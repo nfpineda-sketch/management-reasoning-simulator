@@ -1439,6 +1439,10 @@ ES = {
         'Confirmado - aplica la penalización',
     'Critical events defined for this case':
         'Eventos críticos definidos para este caso',
+    'What the simulator cannot show or treat in this case':
+        'Lo que el simulador no puede mostrar ni tratar en este caso',
+    'Never count these against the resident: what the simulator cannot show is not evidence, and a measure written for it is not an omission.':
+        'Nunca las cuente contra el residente: lo que el simulador no puede mostrar no es evidencia, y una medida escrita para ello no es una omisión.',
     'Critical omission':
         'Omisión crítica',
     'Dangerous action':

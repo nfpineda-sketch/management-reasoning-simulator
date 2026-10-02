@@ -213,6 +213,17 @@ def _dose_words(agent, dose_mg):
 # What the room says after any first dose: what the drug does, never what it will
 # achieve, which is seen on reassessment (P-04, 2026-09-30).
 ACTS = "The drug acts on the clot over about half an hour; what it changes is seen on reassessment."
+#: The two bases the room names when a first dose is given, in the words of the
+#: criterion (D-4, faculty, 2026-10-02): shock is recognised as soon as it is
+#: present, and the fifteen minutes belong only to a hypotension without signs
+#: of hypoperfusion -- never a wait imposed on an established shock.
+SHOCK_NOTE = (f"Systemic thrombolysis given in obstructive shock: systolic below {HYPOTENSION_SBP} mmHg, or a "
+              f"vasopressor needed to reach {HYPOTENSION_SBP} mmHg, with signs of hypoperfusion. In shock it is "
+              f"indicated as soon as the shock is present; the {SUSTAINED_HYPOTENSION_MIN} consecutive minutes apply "
+              "only to a hypotension without those signs. ")
+SUSTAINED_NOTE = (f"Systemic thrombolysis given for sustained hypotension: systolic below {HYPOTENSION_SBP} mmHg, or a "
+                  f"vasopressor needed to keep it at {HYPOTENSION_SBP} mmHg or above, for "
+                  f"{SUSTAINED_HYPOTENSION_MIN} consecutive minutes. ")
 ACTS_UNINDICATED = ("The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken "
                     "without the indication; what it changes is seen on reassessment.")
 
@@ -253,11 +264,9 @@ def give_thrombolysis(f, elapsed, current, observable=None, *, agent=None, dose_
     f["lysis_basis"] = found
     f.setdefault("lysis_doses", []).append(record)
     if found == "obstructive_shock":
-        return ("Systemic thrombolysis given in obstructive shock, a hypotension with signs of hypoperfusion. "
-                + ACTS, record)
+        return (SHOCK_NOTE + ACTS, record)
     if found == "persistent_hypotension":
-        return (f"Systemic thrombolysis given for sustained hypotension ({SUSTAINED_HYPOTENSION_MIN} consecutive "
-                "minutes). " + ACTS, record)
+        return (SUSTAINED_NOTE + ACTS, record)
     if current and current.get("low"):
         so_far = int(f.get("sustained_hypotension_min", 0.0))
         return (f"Systemic thrombolysis given without the hemodynamic indication: systolic {shown} mmHg with no sign "

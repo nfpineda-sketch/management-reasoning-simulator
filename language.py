@@ -439,7 +439,7 @@ _RULES = _WALL_MOTION_RULES + (
  (r"\bNaloxone infusion at ([\d.]+) mg/h started\b", r"infusión de Naloxone a \1 mg/h iniciada"),
  (r"(\d mg (?:IV|IO|PO|IM|SC)) given: this ECG shows no occlusion pattern, so thrombolysis carries its bleeding "
   r"risk without an artery to open",
-  r"\1 administrado: este ECG no muestra un patrón de oclusión, así que la trombolisis tiene su riesgo de "
+  r"\1 administrado: este ECG no muestra un patrón de oclusión, así que la trombólisis tiene su riesgo de "
   r"sangrado sin una arteria que abrir"),
  (r"(\d mg (?:IV|IO|PO|IM|SC)) given: the artery is already open", r"\1 administrado: la arteria ya está abierta"),
  (r"(\d mg (?:IV|IO|PO|IM|SC)) given: reperfusion is expected at minute (\d+)",
@@ -729,6 +729,26 @@ _RULES = _WALL_MOTION_RULES + (
  (r"(?<=· |— )Abdominal aorta: ", "Aorta abdominal: "),
  (r"(?<=· |— )Femoral veins: ", "Venas femorales: "),
  (r"(?<=· |— )Popliteal veins: ", "Venas poplíteas: "),
+ # The E-FAST window by window (TD-48, faculty, 2026-10-02): its titles and labels, anchored as the
+ # POCUS's. A window that states the case's own findings stays whole in English until the case's
+ # translation is approved (TD-46).
+ (r"\bE-FAST · performed at minute (\d+(?:\.\d+)?)", r"E-FAST · realizado en el minuto \1"),
+ (r"(?m)(?:^|(?<=\| )|(?<=: ))RIGHT UPPER QUADRANT(?=$| — )", "CUADRANTE SUPERIOR DERECHO"),
+ (r"(?m)(?:^|(?<=\| )|(?<=: ))LEFT UPPER QUADRANT(?=$| — )", "CUADRANTE SUPERIOR IZQUIERDO"),
+ (r"(?m)(?:^|(?<=\| )|(?<=: ))SUPRAPUBIC(?=$| — )", "SUPRAPÚBICA"),
+ (r"(?m)(?:^|(?<=\| )|(?<=: ))SUBXIPHOID(?=$| — )", "SUBXIFOIDEA"),
+ (r"(?m)(?:^|(?<=\| )|(?<=: ))LUNG(?=$| — )", "PULMÓN"),
+ (r"(?<=· |— )Morison's pouch \(hepatorenal\): ", "Espacio de Morison (hepatorrenal): "),
+ (r"(?<=· |— )Right subdiaphragmatic space: ", "Espacio subdiafragmático derecho: "),
+ (r"(?<=· |— )Right pleural recess: ", "Receso pleural derecho: "),
+ (r"(?<=· |— )Splenorenal space: ", "Espacio esplenorrenal: "),
+ (r"(?<=· |— )Left subdiaphragmatic space: ", "Espacio subdiafragmático izquierdo: "),
+ (r"(?<=· |— )Left pleural recess: ", "Receso pleural izquierdo: "),
+ (r"(?<=· |— )Longitudinal view: ", "Vista longitudinal: "),
+ (r"(?<=· |— )Transverse view: ", "Vista transversal: "),
+ (r"(?<=· |— )Right lung sliding: ", "Deslizamiento pulmonar derecho: "),
+ (r"(?<=· |— )Left lung sliding: ", "Deslizamiento pulmonar izquierdo: "),
+ (r"(?<=· |— )M-mode: ", "Modo M: "),
  (r"(?<=: )Not documented\b", "No documentado"),
  # What the engine writes into a POCUS it recomputes (the bleeding patient's
  # filling, 2026-09-29; positive pressure): a case's own passages come first,
@@ -881,39 +901,62 @@ _RULES = _WALL_MOTION_RULES + (
  (r"Gastroenterology performed upper endoscopy: bleeding ulcer treated endoscopically; active bleeding controlled\. Rebleeding remains possible\.",
   "Gastroenterología realizó la endoscopía alta: úlcera sangrante tratada endoscópicamente; sangrado activo controlado. El resangrado sigue siendo posible."),
  (r"Systemic thrombolysis given in obstructive shock, a hypotension with signs of hypoperfusion: the obstruction begins to fall within minutes and keeps falling for about half an hour\.",
-  "Trombolisis sistémica en shock obstructivo, una hipotensión con signos de hipoperfusión: la obstrucción empieza a ceder en minutos y sigue cediendo por media hora."),
+  "Trombólisis sistémica administrada en shock obstructivo, una hipotensión con signos de hipoperfusión: la obstrucción empieza a ceder en minutos y sigue cediendo por media hora."),
  (r"Systemic thrombolysis given for sustained hypotension \(15 consecutive minutes\): the obstruction begins to fall within minutes and keeps falling for about half an hour\.",
-  "Trombolisis sistémica por hipotensión sostenida (15 minutos consecutivos): la obstrucción empieza a ceder en minutos y sigue cediendo por media hora."),
+  "Trombólisis sistémica administrada por hipotensión sostenida (15 minutos consecutivos): la obstrucción empieza a ceder en minutos y sigue cediendo por media hora."),
  (r"Systemic thrombolysis given without the hemodynamic indication: systolic (\d+) mmHg with no sign of hypoperfusion, low for (\d+) of the 15 consecutive minutes a hypotension without them requires\. The bleeding risk is taken without the indication, and the obstruction is unchanged\.",
-  r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg sin signos de hipoperfusión, baja durante \2 de los 15 minutos consecutivos que exige una hipotensión sin ellos. Se asume el riesgo de sangrado sin la indicación, y la obstrucción no cambia."),
+  r"Trombólisis sistémica administrada sin la indicación hemodinámica: sistólica de \1 mmHg sin signos de hipoperfusión, baja durante \2 de los 15 minutos consecutivos que exige una hipotensión sin ellos. Se asume el riesgo de sangrado sin la indicación, y la obstrucción no cambia."),
  (r"Systemic thrombolysis given without the hemodynamic indication: systolic (\d+) mmHg on a vasopressor the pressure does not need, with no hypotension from the embolism\. The bleeding risk is taken without the indication, and the obstruction is unchanged\.",
-  r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg con un vasopresor que la presión no necesita, sin hipotensión por la embolia. Se asume el riesgo de sangrado sin la indicación, y la obstrucción no cambia."),
+  r"Trombólisis sistémica administrada sin la indicación hemodinámica: sistólica de \1 mmHg con un vasopresor que la presión no necesita, sin hipotensión por la embolia. Se asume el riesgo de sangrado sin la indicación, y la obstrucción no cambia."),
  (r"Systemic thrombolysis given without the hemodynamic indication: systolic (\d+) mmHg, with no hypotension from the embolism\. The bleeding risk is taken without the indication, and the obstruction is unchanged\.",
-  r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg, sin hipotensión por la embolia. Se asume el riesgo de sangrado sin la indicación, y la obstrucción no cambia."),
+  r"Trombólisis sistémica administrada sin la indicación hemodinámica: sistólica de \1 mmHg, sin hipotensión por la embolia. Se asume el riesgo de sangrado sin la indicación, y la obstrucción no cambia."),
  (r"A second systemic thrombolytic dose is recorded; the first was given at minute (\d+)\. A persisting shock does not by itself indicate repeating a full dose, and this simulator gives the repeated dose no effect of its own\.",
   r"Se registra una segunda dosis de trombolítico sistémico; la primera se dio en el minuto \1. Un shock que persiste no indica por sí solo repetir una dosis completa, y este simulador no le da a la dosis repetida un efecto propio."),
  # P-04 and P-05 (faculty, 2026-09-30): what the drug does, never what it will achieve, and
  # the rest of a regimen apart from a second course. The notes above stay for older records.
  (r"Systemic thrombolysis given in obstructive shock, a hypotension with signs of hypoperfusion\. The drug acts on the clot over about half an hour; what it changes is seen on reassessment\.",
-  "Trombolisis sistémica en shock obstructivo, una hipotensión con signos de hipoperfusión. El fármaco actúa sobre el trombo durante cerca de media hora; lo que cambie se ve al reevaluar."),
+  "Trombólisis sistémica administrada en shock obstructivo, una hipotensión con signos de hipoperfusión. El fármaco actúa sobre el trombo durante cerca de media hora; lo que cambie se ve al reevaluar."),
  (r"Systemic thrombolysis given for sustained hypotension \(15 consecutive minutes\)\. The drug acts on the clot over about half an hour; what it changes is seen on reassessment\.",
-  "Trombolisis sistémica por hipotensión sostenida (15 minutos consecutivos). El fármaco actúa sobre el trombo durante cerca de media hora; lo que cambie se ve al reevaluar."),
+  "Trombólisis sistémica administrada por hipotensión sostenida (15 minutos consecutivos). El fármaco actúa sobre el trombo durante cerca de media hora; lo que cambie se ve al reevaluar."),
  (r"Systemic thrombolysis given without the hemodynamic indication: systolic (\d+) mmHg with no sign of hypoperfusion, low for (\d+) of the 15 consecutive minutes a hypotension without them requires\. The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken without the indication; what it changes is seen on reassessment\.",
-  r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg sin signos de hipoperfusión, baja durante \2 de los 15 minutos consecutivos que exige una hipotensión sin ellos. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar."),
+  r"Trombólisis sistémica administrada sin la indicación hemodinámica: sistólica de \1 mmHg sin signos de hipoperfusión, baja durante \2 de los 15 minutos consecutivos que exige una hipotensión sin ellos. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar."),
  (r"Systemic thrombolysis given without the hemodynamic indication: systolic (\d+) mmHg on a vasopressor the pressure does not need, with no hypotension from the embolism\. The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken without the indication; what it changes is seen on reassessment\.",
-  r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg con un vasopresor que la presión no necesita, sin hipotensión por la embolia. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar."),
+  r"Trombólisis sistémica administrada sin la indicación hemodinámica: sistólica de \1 mmHg con un vasopresor que la presión no necesita, sin hipotensión por la embolia. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar."),
  (r"Systemic thrombolysis given without the hemodynamic indication: systolic (\d+) mmHg, with no hypotension from the embolism\. The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken without the indication; what it changes is seen on reassessment\.",
-  r"Trombolisis sistémica sin la indicación hemodinámica: sistólica de \1 mmHg, sin hipotensión por la embolia. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar."),
+  r"Trombólisis sistémica administrada sin la indicación hemodinámica: sistólica de \1 mmHg, sin hipotensión por la embolia. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar."),
  (r"(\w+) ([\d.]+) mg recorded as part of the initial regimen begun at minute (\d+) \(([\d.]+) mg in all\)\. It completes the first dose rather than starting a new one, and the first dose keeps acting as before\.",
-  r"\1 \2 mg registrado como parte del esquema inicial comenzado en el minuto \3 (\4 mg en total). Completa la primera dosis en lugar de iniciar una nueva, y la primera dosis sigue actuando como antes."),
+  lambda m: f"Se registran {m.group(2)} mg de {_thrombolytic_es(m.group(1))} como parte del esquema inicial comenzado en el "
+            f"minuto {m.group(3)} ({m.group(4)} mg en total): completan la primera dosis en lugar de iniciar una nueva, y "
+            "la primera dosis sigue actuando como antes."),
  (r"A second course of systemic thrombolysis is recorded \(([^)]+)\); the first course began at minute (\d+)\. Its added bleeding risk is recorded as exposure\. This simulator represents neither additional reperfusion from a second course nor any bleeding of its own; that is a simplification, not evidence that repeating has no effect\. The first dose keeps acting as before\.",
-  r"Se registra un segundo curso de trombolisis sistémica (\1); el primero comenzó en el minuto \2. Su riesgo adicional de sangrado queda registrado como exposición. Este simulador no representa una reperfusión adicional por un segundo curso ni un sangrado propio; es una simplificación, no evidencia de que repetir no tenga efecto. La primera dosis sigue actuando como antes."),
+  lambda m: f"Se registra un segundo curso de trombólisis sistémica ({_thrombolytic_es(m.group(1))}); el primero comenzó en "
+            f"el minuto {m.group(2)}. Su riesgo adicional de sangrado queda registrado como exposición. Este simulador no "
+            "representa una reperfusión adicional por un segundo curso ni un sangrado propio; es una simplificación, no "
+            "evidencia de que repetir no tenga efecto. La primera dosis sigue actuando como antes."),
+ # D-4 (faculty, 2026-10-02): the whole criterion in the note -- the vasopressor and hypoperfusion of shock, recognised
+ # as soon as present, and the fifteen minutes only for a hypotension without those signs.
+ (r"Systemic thrombolysis given in obstructive shock: systolic below 90 mmHg, or a vasopressor needed to reach 90 mmHg, with signs of hypoperfusion\. In shock it is indicated as soon as the shock is present; the 15 consecutive minutes apply only to a hypotension without those signs\. The drug acts on the clot over about half an hour; what it changes is seen on reassessment\.",
+  "Trombólisis sistémica administrada en shock obstructivo: sistólica bajo 90 mmHg, o un vasopresor necesario para llegar "
+  "a 90 mmHg, con signos de hipoperfusión. En shock está indicada desde que el shock está presente; los 15 minutos "
+  "consecutivos aplican sólo a una hipotensión sin esos signos. El fármaco actúa sobre el trombo durante cerca de media "
+  "hora; lo que cambie se ve al reevaluar."),
+ (r"Systemic thrombolysis given for sustained hypotension: systolic below 90 mmHg, or a vasopressor needed to keep it at 90 mmHg or above, for 15 consecutive minutes\. The drug acts on the clot over about half an hour; what it changes is seen on reassessment\.",
+  "Trombólisis sistémica administrada por hipotensión sostenida: sistólica bajo 90 mmHg, o un vasopresor necesario para "
+  "mantenerla en 90 mmHg o más, durante 15 minutos consecutivos. El fármaco actúa sobre el trombo durante cerca de media "
+  "hora; lo que cambie se ve al reevaluar."),
+ # D-5 (faculty, 2026-10-02): the bleeding note, which had no Spanish.
+ (r"Bleeding from (the surgical site operated on twelve days ago|an uncontrolled arterial pressure|the declared site): the haemoglobin is falling\. This is the risk the thrombolytic carries, and it was taken in a patient who had a reason to bleed\.",
+  lambda m: "Sangrado " + {"the surgical site operated on twelve days ago": "del sitio operado hace doce días",
+                           "an uncontrolled arterial pressure": "por una presión arterial no controlada",
+                           "the declared site": "del sitio declarado"}[m.group(1)]
+            + ": la hemoglobina está bajando. Es el riesgo que conlleva el trombolítico, y se asumió en una persona "
+              "que tenía un motivo para sangrar."),
  (r"The systolic pressure has stayed below 90 mmHg for 15 consecutive minutes: this is sustained hypotension from the obstruction\.",
   "La presión sistólica se ha mantenido bajo 90 mmHg por 15 minutos consecutivos: esto es hipotensión sostenida por la obstrucción."),
  (r"The systolic pressure has needed a vasopressor to stay at 90 mmHg or above, or stayed below it, for 15 consecutive minutes: this is sustained hypotension from the obstruction\.",
   "La presión sistólica ha necesitado un vasopresor para mantenerse en 90 mmHg o más, o se ha mantenido bajo ese valor, por 15 minutos consecutivos: esto es hipotensión sostenida por la obstrucción."),
  (r"Systemic thrombolysis given for sustained hypotension: the obstruction begins to fall within minutes and keeps falling for about half an hour\.",
-  "Trombolisis sistémica por hipotensión sostenida: la obstrucción empieza a ceder en minutos y sigue cediendo por media hora."),
+  "Trombólisis sistémica administrada por hipotensión sostenida: la obstrucción empieza a ceder en minutos y sigue cediendo por media hora."),
  (r"The systolic pressure has stayed below 90 mmHg for 15 minutes: this is sustained hypotension from the obstruction\.",
   "La presión sistólica se ha mantenido bajo 90 mmHg por 15 minutos: esto es hipotensión sostenida por la obstrucción."),
  (r"The patient was brought back to the emergency department after being sent home: ",
@@ -1022,7 +1065,7 @@ _RULES = _WALL_MOTION_RULES + (
   "Una aguja intraósea instalada; no se registró el sitio."),
  (r"Dextrose 10% runs at ([\d.]+) mL/h through the (cannula in the left forearm|new cannula in the right forearm|"
   r"intraosseous needle)\.",
-  lambda m: f"Suero glucosado al 10 % a {m.group(1)} mL/h por " + {
+  lambda m: f"El suero glucosado al 10 % pasa a {m.group(1)} mL/h por " + {
       "cannula in the left forearm": "la cánula del antebrazo izquierdo",
       "new cannula in the right forearm": "la cánula nueva del antebrazo derecho",
       "intraosseous needle": "la aguja intraósea"}[m.group(2)] + "."),
@@ -1071,6 +1114,16 @@ _COMPILED = tuple((re.compile(pattern), replacement) for pattern, replacement in
 #: longest first, so a sentence is replaced entirely or not at all -- never half
 #: one language (faculty, 2026-09-26). Cases share many sentences; each case reads
 #: only its own table, so approving one case never turns another one's lines Spanish.
+#: The thrombolytics the reader knows, as the Spanish room names them (D-5, faculty, 2026-10-02).
+_THROMBOLYTICS_ES = {"alteplase": "alteplasa", "tenecteplase": "tenecteplasa", "streptokinase": "estreptoquinasa",
+                     "thrombolytic": "trombolítico"}
+
+
+def _thrombolytic_es(words):
+    """``alteplase 100 mg`` as ``alteplasa 100 mg``: the drug in Spanish, the dose as written."""
+    return re.sub(r"[A-Za-z]+", lambda m: _THROMBOLYTICS_ES.get(m.group(0).lower(), m.group(0)), str(words))
+
+
 _NARRATIVE = {}
 #: The case whose narrative is being presented: the room's (``narrate``, once per
 #: run) or a document's (``narrating``). Without one, nothing is replaced.
@@ -1137,7 +1190,15 @@ def narrative(text, language=None, case=None):
 #: (family_engine.examination_finding, patient_appearance.appearance_summary).
 _EXPRESSION_ES = {"neutral": "neutra", "uncomfortable": "incómoda", "markedly uncomfortable": "muy incómoda",
                   "passive": "pasiva", "sedated": "sedada"}
-_SKIN_ES = {"natural": "natural", "mild pallor": "palidez leve", "pallor": "palidez"}
+# "flushed" (the anaphylaxis family, 2026-09-23) had no Spanish, and the 29f and 63m summary stayed
+# whole in English (pre-pilot closure, 2026-10-02).
+_SKIN_ES = {"natural": "natural", "mild pallor": "palidez leve", "pallor": "palidez", "flushed": "enrojecimiento"}
+#: Whole sentences the engine adds to an examination region (TD-59, 2026-10-02): the bleeding wound in
+#: "General appearance" once something has been applied to it, in the words the room uses for it.
+_EXAMINATION_SENTENCES_ES = {
+    "The external bleeding is reduced, not stopped.": "El sangrado externo está disminuido, sin detenerse.",
+    "The external bleeding is stopped.": "El sangrado externo está detenido.",
+}
 _SWEAT_ES = {"absent": "ausente", "mild": "leve", "marked": "marcada"}
 
 
@@ -1208,7 +1269,13 @@ def examination(text, language=None, case=None):
     language = language or current()
     if language == "en" or not text:
         return text
+    if "\n" in str(text):
+        # "General appearance" is the engine's summary and, below it, what the case wrote that still
+        # holds (TD-59, 2026-10-02): each line is said whole in one language, on its own.
+        return "\n".join(examination(line, language, case) for line in str(text).split("\n"))
     body = narrative(str(text), language, case).strip()
+    if body in _EXAMINATION_SENTENCES_ES:
+        return _EXAMINATION_SENTENCES_ES[body]
     match = _re.fullmatch(r"Respiratory rate: ([\d.]+|—)/min\. Work of breathing: (.+)", body)
     if match:
         return f"Frecuencia respiratoria: {match[1]}/min. Trabajo respiratorio: {_in_sentence(match[2], language)}"

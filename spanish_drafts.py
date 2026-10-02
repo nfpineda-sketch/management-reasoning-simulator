@@ -131,7 +131,7 @@ ENGINE = (
     {"kind": "examination", "cases": ["hypoglycemia"], "seen": False,
      "english": "Dextrose {n}% runs at {n} mL/h through the cannula in the left forearm.",
      "example": "Dextrose 10% runs at 100 mL/h through the cannula in the left forearm.",
-     "spanish": "Suero glucosado al {n} % a {n} mL/h por la cánula del antebrazo izquierdo.",
+     "spanish": "El suero glucosado al {n} % pasa a {n} mL/h por la cánula del antebrazo izquierdo.",
      "note": "también por la cánula nueva del antebrazo derecho o por la aguja intraósea; el español ya está en "
              "language, no en el panel"},
 )
@@ -221,9 +221,10 @@ ENGINE_REVIEW = {
         "Ninguna"),
     "Dextrose {n}% runs at {n} mL/h through the cannula in the left forearm.": (
         "Hipoglicemia: la infusión de glucosa en curso",
-        "Aprobar la versión final: «Suero glucosado al {n} % a {n} mL/h por la cánula del antebrazo izquierdo»; la "
-        "sala ya usa el mismo término",
-        "Ninguna: no se confunde con la glicemia del paciente"),
+        "Aprobar la versión final: «El suero glucosado al {n} % pasa a {n} mL/h por la cánula del antebrazo "
+        "izquierdo». El verbo dice que la infusión está pasando, como lo decía la sala antes del 2026-09-30 (D-6, "
+        "2026-10-02); la sala ya usa la misma frase",
+        "Ninguna: es un estado, no una indicación, y no se confunde con la glicemia del paciente"),
 }
 
 #: The C14 declarations of the bank (``case_assessment_bank``), English -> Spanish draft.
@@ -269,36 +270,47 @@ C14 = {
         "la usa junto con el ECG y las derivaciones posteriores para tratar el patrón como una oclusión",
     "activates or expedites reperfusion":
         "activa o acelera la reperfusión",
-    # acs_52m_de_winter
-    "Using regional wall motion to prioritise the reperfusion decision.":
-        "Usar la motilidad regional para priorizar la decisión de reperfusión.",
+    # acs_52m_de_winter (wording aligned with the 61m by D-7, 2026-10-02)
+    "Using the reported regional wall motion to prioritise the reperfusion decision.":
+        "Usar la motilidad regional informada para priorizar la decisión de reperfusión.",
     "Akinesis of the anterior wall and apex supports treating the de Winter pattern as an anterior occlusion "
-    "(decision A); in the engine the wall motion evolves with the ischaemic minutes.":
+    "(decision A); in the engine the wall motion evolves with the ischaemic minutes. The report states the wall "
+    "motion; recognising it is not required. POCUS never delays reperfusion: activating it from the ECG alone is "
+    "correct and is not a C14 deficit.":
         "La acinesia de la pared anterior y del ápex apoya tratar el patrón de de Winter como una oclusión anterior "
-        "(decisión A); en el motor, la motilidad evoluciona con los minutos de isquemia.",
-    "requests POCUS and names the anterior akinesis":
-        "solicita POCUS y nombra la acinesia anterior",
-    "relates it to the ECG pattern as an occlusion":
-        "la relaciona con el patrón del ECG como una oclusión",
+        "(decisión A); en el motor, la motilidad evoluciona con los minutos de isquemia. El informe entrega la "
+        "motilidad; no se exige reconocerla. El POCUS nunca demora la reperfusión: activarla sólo por el ECG es "
+        "correcto y no es un déficit de C14.",
+    "requests POCUS and relates the reported anterior akinesis to the ECG pattern as an occlusion":
+        "solicita POCUS y relaciona la acinesia anterior informada con el patrón del ECG como una oclusión",
     # acs_48m_wellens
     "The right decision -- angiography and no provocation test -- does not depend on POCUS, and a normal resting "
     "POCUS cannot reasonably guide it. Not being reassured by it is diagnostic reasoning, not C14 (decision B).":
         "La decisión correcta —coronariografía y ninguna prueba de provocación— no depende del POCUS, y un POCUS "
         "normal en reposo no puede guiarla razonablemente. No tranquilizarse por él es razonamiento diagnóstico, no "
         "C14 (decisión B).",
-    # acs_70f_left_main (criteria revised by R-2, 2026-09-30)
+    # acs_70f_left_main (criteria revised by R-2, 2026-09-30, and D-8, 2026-10-02)
     "Borderline pressure with incipient hypoperfusion (104/66, cool extremities, capillary refill 3 s) and "
     "intermediate POCUS findings: globally mildly reduced contraction, scattered basal B-lines and an IVC of 1.9 cm "
     "with about 50% collapse. No single answer follows from them: withholding volume, a small bolus with its limit "
     "stated and reassessed, or early support can each be justified, and the engine answers large volumes poorly in "
     "this profile. C14 observes whether the volume, support and urgency decisions are made with the global LV "
-    "function in view and adapted to the response.":
+    "function in view and adapted to the response. In this simulator a volume past the ventricle's tolerance "
+    "shows only as a pressure that stops answering and a message in the room; the lungs, the examination, the "
+    "saturation and a repeat POCUS do not change. The adaptation is judged on those signals: detecting overload on "
+    "the examination or POCUS is not required, and when the only response the resident looked for is one the "
+    "simulator does not show, that part of the observation is not evaluable rather than missing.":
         "Presión limítrofe con hipoperfusión incipiente (104/66, extremidades frías, llene capilar de 3 s) y "
         "hallazgos intermedios en el POCUS: contracción global levemente disminuida, líneas B basales dispersas y "
         "una VCI de 1,9 cm con cerca de 50 % de colapso. De ellos no se deduce una única respuesta: no dar volumen, "
         "un bolo pequeño con su límite declarado y reevaluado, o un soporte precoz pueden justificarse, y en este "
         "perfil el motor responde mal a volúmenes grandes. C14 observa si las decisiones de volumen, soporte y "
-        "urgencia se toman con la función global del VI a la vista y se adaptan a la respuesta.",
+        "urgencia se toman con la función global del VI a la vista y se adaptan a la respuesta. En este simulador, "
+        "un volumen que supera la tolerancia del ventrículo se ve sólo en una presión que deja de responder y en un "
+        "mensaje de la sala; el pulmón, el examen, la saturación y un POCUS de control no cambian. La adaptación se "
+        "juzga con esas señales: no se exige detectar sobrecarga por examen ni por POCUS, y cuando la única "
+        "respuesta que buscó el residente es una que el simulador no muestra, esa parte de la observación no es "
+        "evaluable, en vez de faltar.",
     "Deciding volume, support and urgency with the global LV function in view, and adapting them to the response.":
         "Decidir el volumen, el soporte y la urgencia con la función global del VI a la vista, y adaptarlos a la "
         "respuesta.",

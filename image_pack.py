@@ -28,6 +28,8 @@ MANIFEST = "manifest.json"
 # account it names (faculty, 2026-09-26: the pilot's photographs approved in the
 # chat). Written by hand or by the tool, never by an export.
 APPROVALS = "approvals.json"
+# The roles that may hold a review (``image_bank.STAFF``), named here so this module imports nothing heavy.
+STAFF_ROLES = frozenset({"faculty", "admin"})
 
 
 def _webp(raw, quality):
@@ -121,12 +123,40 @@ def import_pack(bank, directory=PACK_DIR):
     ledgers = manifest.get("ledgers") or [{"budget": manifest["budget"], "rows": manifest.get("ledger") or []}]
     ledger = sum(bank.import_ledger(entry["budget"], entry["rows"]) for entry in ledgers)
     jobs = sum(1 for job in manifest.get("jobs") or [] if job["id"] not in known_jobs and bank.import_job(job))
-    approvals = {}
+    approvals, waiting = {}, set()
     for entry in read_approvals(directory):
         outcome = ("known" if entry["id"] in known_reviews else
                    "no_account" if entry["username"] not in staff else bank.import_approval(entry))
         approvals[outcome] = approvals.get(outcome, 0) + 1
-    return {"assets": added, "ledger": ledger, "jobs": jobs, "approvals": approvals}
+        if outcome == "no_account":
+            waiting.add(entry["username"])
+    # The staff accounts an approval still waits for: it is recorded under its own account or not at all.
+    return {"assets": added, "ledger": ledger, "jobs": jobs, "approvals": approvals,
+            "waiting_for": sorted(waiting)}
+
+
+def approval_status(bank, directory=PACK_DIR):
+    """Where each approval of the pack stands in this database; nothing is written (TD-56, 2026-10-02).
+
+    ``recorded`` counts the approvals in the database under the account the pack names, and
+    ``elsewhere`` the ones under any other -- which the import never does, so a count there is a
+    provenance fault for a person to look at. ``waiting`` names, by username, the approvals whose
+    staff account is not in this database; ``ready`` the ones whose account is there and that the
+    next opening of the bank will record. ``holders`` gives the role of each named account found.
+    """
+    entries = read_approvals(directory)
+    actors, roles = bank.pack_review_actors()
+    status = {"in_pack": len(entries), "recorded": 0, "elsewhere": 0, "waiting": {}, "ready": 0,
+              "holders": {username: roles[username] for username in sorted({e["username"] for e in entries})
+                          if username in roles}}
+    for entry in entries:
+        if entry["id"] in actors:
+            status["recorded" if actors[entry["id"]] == entry["username"] else "elsewhere"] += 1
+        elif roles.get(entry["username"]) in STAFF_ROLES:
+            status["ready"] += 1
+        else:
+            status["waiting"][entry["username"]] = status["waiting"].get(entry["username"], 0) + 1
+    return status
 
 
 OBSERVATIONS = "observations.json"
@@ -164,8 +194,21 @@ def _read(directory, record):
     return raw
 
 
+# The approvals that waited for their account at this process's last import, by database and pack.
+_WAITING = {}
+
+
 def ensure_imported(bank, directory=None):
-    """Import the repository's pack once per process and database; quietly nothing without one."""
+    """Import the repository's pack once per process and database; quietly nothing without one.
+
+    The pack counts as imported only once every approval in it is recorded under the account it
+    names (TD-56, 2026-10-02). The faculty page opens the bank as soon as an administrator signs in,
+    before the approving faculty account can exist; it used to mark the pack imported then, and the
+    approved photographs stayed in the neutral view until the next restart or a manual import. An
+    approval whose staff account is not here waits: it is never recorded under anybody else, and the
+    first opening after that account exists records it. While it waits, an opening reads the staff
+    accounts once instead of importing the whole pack again.
+    """
     directory = Path(directory) if directory is not None else PACK_DIR
     path = directory / MANIFEST
     if not path.exists():
@@ -176,6 +219,15 @@ def ensure_imported(bank, directory=None):
     marker = f"image_pack:{digest}"
     if bank.accounts.schema_ready(marker):
         return None
+    key = (bank.accounts._url, digest)
+    if bank.accounts.schema_ready(marker + ":waiting") and key in _WAITING:
+        if not _WAITING[key] & bank.staff_usernames():
+            return None
     result = import_pack(bank, directory)
-    bank.accounts.mark_schema_ready(marker)
+    if result["waiting_for"]:
+        _WAITING[key] = frozenset(result["waiting_for"])
+        bank.accounts.mark_schema_ready(marker + ":waiting")
+    else:
+        _WAITING.pop(key, None)
+        bank.accounts.mark_schema_ready(marker)
     return result

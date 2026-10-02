@@ -163,6 +163,35 @@ def test_a_spanish_reader_decides_each_event_in_spanish(cohort):
     assert list(radios[0].options) == ["Not decided yet", "Confirmed - applies the penalty"]
 
 
+def test_the_simulator_limits_are_shown_where_the_faculty_scores(cohort):
+    """Pre-pilot closure (2026-10-02, D-3): the faculty reads the evidence against what the simulator cannot do."""
+    import evaluation_basis
+    accounts, _, users = cohort
+    token = users["resident"]["token"]
+    case = "pulmonary_embolism_33f"
+    attempt_id = accounts.create_attempt(token, "R1-03", {
+        "presentation": "Synthetic encounter",
+        "evaluation_basis": evaluation_basis.freeze(case, code_version="pre-pilot-closure")})
+    accounts.save_attempt(token, attempt_id, {
+        "schema_version": "mrs_attempt_v1",
+        "session": {"review_completed": True, "encounter": {"authored_case_id": case},
+                    "management_trace": [
+                        {"execution_status": "executed", "learner_input": "Give alteplase 100 mg IV.",
+                         "decision_time_min": 0, "response_time_min": 5,
+                         "reasoning": {"problem_representation": "A synthetic working model"},
+                         "state_before": {"observable": {"mental_status": "alert"}},
+                         "state_after": {"observable": {"mental_status": "alert"}}}]},
+    }, status="completed")
+    app = page(cohort, attempt_id)
+    captions = " ".join(item.value for item in app.caption)
+    assert "Never count these against the resident" in captions
+    assert "the bleeding from the operated site does not stop in this simulator" in captions
+    assert "is never used to judge haemorrhage rescue" in captions
+    spanish = page(cohort, attempt_id, language="es")
+    body = " ".join(item.value for item in spanish.markdown)
+    assert "Lo que el simulador no puede mostrar ni tratar en este caso" in body
+
+
 def test_an_encounter_with_no_authored_case_still_offers_the_five_domains(cohort):
     accounts, _, users = cohort
     attempt_id = attempt_on_case(accounts, users["resident"]["token"], case_id="")

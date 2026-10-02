@@ -70,6 +70,29 @@ determinista y con casos offline.
   `assets/patient_images/approvals.json` debe existir antes del primer encuentro; si no, hay que
   reimportar el paquete de fotos.
 
+**Cierre del paquete prepiloto (2026-10-02, D-1 a D-11):** la respuesta sigue siendo **TECHNICALLY READY WITH
+CONDITIONS**. Ya no hay bloqueos técnicos abiertos:
+
+- **TD-48** (E-FAST de cinco ventanas) y **TD-50** (el estridor que el motor tiene ahora) están corregidos y
+  verificados; los dos casos de trauma y la 29f siguen incluidos.
+- **TD-56** está corregido y verificable: una aprobación de foto espera la cuenta que nombra y nunca se
+  registra bajo otra; `check_database.py --photo-approvals` comprueba el orden antes de abrir encuentros
+  (runbook §3, pasos 5 a 8). Si la cuenta correcta no puede crearse, es un bloqueo del despliegue.
+- Alcances de evaluación declarados y visibles donde el docente evalúa: la 33f (D-3), la 70f (D-8), los POCUS
+  y E-FAST de control (TD-54). Ningún caso se excluye: el objetivo central de cada uno sigue siendo evaluable.
+- El detalle, la tabla única de lo que espera su firma y los pendientes reales están en
+  `docs/revision/CIERRE_PREPILOTO.md`.
+
+**Antes de iniciar el piloto (lo que queda):**
+
+1. Las firmas: las 14 fichas R-2, las 18 frases R-4, los textos finales del cierre y las dos guías
+   (`docs/revision/CIERRE_PREPILOTO.md`).
+2. **A:** desplegar el commit aprobado con la configuración del piloto, preflight incluido.
+3. El orden de las fotos (TD-56): cuenta aprobadora creada por su dueño y `check_database.py
+   --photo-approvals` en «All 117 approvals are recorded…».
+4. **B:** la prueba de humo contra el entorno desplegado.
+5. **C:** su autorización explícita.
+
 **No es una validación.** La fidelidad del lector con texto externo sigue sin medirse (B = NOT YET MEASURED);
 todo juicio lo confirma un docente.
 
@@ -146,6 +169,11 @@ cualquiera de ellas es una decisión nueva (pregunta abajo).
 - **Casos con una limitación que el docente debe conocer** (se juegan igual):
   - `bradycardia_bb_54f` y `pulmonary_edema_75f`: vista neutral a la llegada (P-07; la aprobación clínica de
     V34 quedó pendiente para ese estado).
+  - Con alcance de evaluación limitado y declarado (2026-10-02): `pulmonary_embolism_33f` (D-3: la respuesta
+    al sangrado tras la lisis no se evalúa), `acs_70f_left_main` (D-8: la sobrecarga se juzga con las señales
+    visibles), `pneumonia_46f`, `pneumonia_83m`, `trauma_limb_hemorrhage_27m` y `trauma_hemothorax_41m`
+    (TD-54: el POCUS o el E-FAST de control no cambia), `anaphylaxis_29f` (C3 parcial) y los hallazgos sin
+    evolución de TD-59 (29f, 63m, 58f y 34m). La lista completa está en `docs/revision/CIERRE_PREPILOTO.md`.
 - **Idiomas:**
   - pantallas en inglés y en español;
   - órdenes en ambos idiomas, con la fidelidad externa sin medir;

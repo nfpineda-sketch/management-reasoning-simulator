@@ -34,10 +34,17 @@ en una línea si usted lo decide):
   adrenalina y el oxígeno solos. TDFC no tiene un nivel «parcial» por observación: la fila lo dice en su
   componente, su evidencia y lo que queda fuera. Sólo en encuentros nuevos.
 - Opioides y bradicardias tóxicas, C1 YES: su EPA propia es C8 (no habilitada); cuentan por la
-  insuficiencia respiratoria o el shock y porque el motor obliga a revisar el plan.
+  insuficiencia respiratoria o el shock y porque el motor obliga a revisar el plan. **Criterio aceptado
+  el 2026-10-02 (D-10, T-2):** C1 YES con la justificación del paquete prepiloto (sección J).
 - `hypoglycemia_76f`, C1 NO: la recurrencia podría leerse como revisión del modelo de trabajo.
+  **Criterio aceptado el 2026-10-02 (D-10, T-3):** NO; la recurrencia queda en R1-06.
 - `acs_52m_de_winter`, F1 y C3 NO: el modelo general congestiona pasado el minuto 80; quedó fuera en
-  TDFC-5.
+  TDFC-5. **Criterio aceptado el 2026-10-02 (D-10, T-4):** NO.
+
+**D-10 es una decisión de alcance.** Las filas siguen exactamente como estaban: no se agregó la frase
+aclaratoria opcional de T-2, ninguna declaración cambió y ningún encuentro cambia de base. Aceptar el
+criterio no confirma la observación de ningún residente ni un nivel de cumplimiento: eso lo decide el
+docente en cada encuentro. La firma de este documento final sigue pendiente de su revisión.
 
 | CASE ID | OBJ. | OPPORTUNITY | RATIONALE (YES) / REASON (NO) | OBSERVABLE COMPONENT | EXPECTED TRACE EVIDENCE | OUTSIDE THE ENCOUNTER | SOURCE |
 |---|---|---|---|---|---|---|---|

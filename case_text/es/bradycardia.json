@@ -80,6 +80,10 @@
    "en": "Awake, oriented and moving all limbs; no focal deficit.",
    "es": "Vigil, orientado y moviliza todas las extremidades; sin déficit focal."
   },
+  "/appearance_stable": {
+   "en": "No rash or swelling.",
+   "es": "Sin erupción ni edema."
+  },
   "/investigations/pocus/result/lv": {
    "en": "Globally reduced contraction at a slow rate; no regional difference identified",
    "es": "Contracción globalmente disminuida a frecuencia lenta; no se identifica diferencia regional"
@@ -372,6 +376,10 @@
    "en": "Opens eyes to voice, follows simple commands slowly, moves all limbs.",
    "es": "Abre los ojos al llamado verbal, obedece órdenes simples con lentitud, moviliza todas las extremidades."
   },
+  "/appearance_stable": {
+   "en": "No rash.",
+   "es": "Sin erupción."
+  },
   "/investigations/pocus/result/lv": {
    "en": "Globally reduced contraction at a slow rate; no regional difference identified",
    "es": "Contracción globalmente disminuida a frecuencia lenta; no se identifica diferencia regional"
@@ -517,6 +525,10 @@
   "/examination/Neurological": {
    "en": "Awake and oriented; reduced power in both legs with reduced reflexes.",
    "es": "Vigil y orientado; fuerza disminuida en ambas extremidades inferiores, con reflejos disminuidos."
+  },
+  "/appearance_stable": {
+   "en": "A dialysis fistula in the left forearm.",
+   "es": "Una fístula de diálisis en el antebrazo izquierdo."
   },
   "/investigations/pocus/result/lv": {
    "en": "Globally reduced contraction at a slow rate; no regional difference identified",

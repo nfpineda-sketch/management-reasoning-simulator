@@ -727,6 +727,26 @@ class ImageBank:
                 connection, "SELECT username, role FROM mrs_users").fetchall() or [] if row["role"] in STAFF}
         return (*found, staff)
 
+    def staff_usernames(self):
+        """The usernames of this database's staff accounts, in one read (TD-56, 2026-10-02)."""
+        with self.accounts._transaction() as connection:
+            return {row["username"] for row in self._execute(
+                connection, "SELECT username, role FROM mrs_users").fetchall() or [] if row["role"] in STAFF}
+
+    def pack_review_actors(self):
+        """({review id: username of the account that recorded it}, {username: role}), in one read.
+
+        For ``image_pack.approval_status``: whether each approval the pack carries is recorded under
+        the account it names (TD-56, 2026-10-02).
+        """
+        with self.accounts._transaction() as connection:
+            actors = {row["id"]: row["username"] for row in self._execute(connection, """
+                SELECT r.id, u.username FROM mrs_image_reviews r JOIN mrs_users u ON u.id = r.actor_id
+                """).fetchall() or []}
+            roles = {row["username"]: row["role"] for row in self._execute(
+                connection, "SELECT username, role FROM mrs_users").fetchall() or []}
+        return actors, roles
+
     def import_ledger(self, budget, entries):
         """Ledger rows written elsewhere (the pilot, run outside this database), kept exactly.
 

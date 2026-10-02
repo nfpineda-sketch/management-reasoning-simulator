@@ -304,6 +304,8 @@ def r2_sheet():
         "el posible problema y la recomendación son un borrador del AI Advisor para su revisión. El texto completo",
         "de cada POCUS, con su borrador en español, está en `TD04_POCUS_C14.md`.",
         "",
+        f"**Estado:** {pocus_review_notes.ACCEPTANCE}",
+        "",
         "| # | Caso | Aplicación | Recomendación |",
         "|---|---|---|---|",
     ]
@@ -326,7 +328,7 @@ def r2_sheet():
             f"esperada: {'; '.join(_cell(e) for e in c14.get('expected_evidence') or ())}",
             f"- **ACEP · alineación y límite:** {_cell(note['acep'])}",
             f"- **Posible problema clínico:** {_cell(note['issue'])}",
-            *([f"- **Criterio docente aprobado (R-2, 2026-09-30; aprueba el criterio, no la ficha):** "
+            *([f"- **Criterio docente aprobado (aprueba el criterio, no la ficha):** "
                f"{_cell(pocus_review_notes.FACULTY_CRITERIA[case_id])}"]
               if case_id in pocus_review_notes.FACULTY_CRITERIA else []),
             f"- **Recomendación:** **{note['recommendation']}**",

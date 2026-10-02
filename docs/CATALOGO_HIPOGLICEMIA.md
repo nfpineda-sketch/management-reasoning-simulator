@@ -236,6 +236,17 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-09-30-11 | R-3: C3 de anaphylaxis_29f es una oportunidad parcial: la anticipación de la vía aérea, no su ejecución | variante anaphylaxis_29f | clinical_decision_applied | clinical | — |
 | C-2026-09-30-12 | R-2: criterios C14 de acs_61m_posterior y acs_70f_left_main; sus fichas siguen pendientes | variante acs_61m_posterior, acs_70f_left_main | clinical_decision_applied | clinical | — |
 | C-2026-09-30-13 | R-4: las 18 frases finales del motor quedan para revisión, y la sala usa «aumento de volumen», «dolor a la palpación» y «suero glucosado» | general | text | clinical | — |
+| C-2026-10-02-01 | El portal docente en español muestra en español el tipo de cada evento crítico y sus decisiones | general | technical_defect | none | — |
+| C-2026-10-02-02 | TD-48: el E-FAST muestra cada ventana que documenta su caso, en la sala, el Trace y los documentos | familia trauma | technical_defect | clinical | — |
+| C-2026-10-02-03 | TD-49: la trombólisis de un SCA queda registrada una vez por dosis | familia acs | technical_defect | clinical | — |
+| C-2026-10-02-04 | TD-50: el examen de la anafilaxia dice el estridor que el motor tiene ahora | familia anaphylaxis | clinical_decision_applied | clinical | — |
+| C-2026-10-02-05 | D-4 y D-5: las notas de la trombólisis de la TEP nombran el criterio completo, también en español | familia pulmonary_embolism | text | clinical | — |
+| C-2026-10-02-06 | D-6: la frase 18 de R-4 recupera su verbo, en la sala y en el borrador | familia hypoglycemia | text | cosmetic | — |
+| C-2026-10-02-07 | D-7 y D-8: la C14 de la 52m usa la motilidad informada y la de la 70f se juzga con lo que la sala muestra | variante acs_52m_de_winter, acs_70f_left_main | clinical_decision_applied | clinical | — |
+| C-2026-10-02-08 | D-3 y D-8: lo que el simulador no muestra ni trata se declara por caso y se lee donde el docente evalúa | variante pulmonary_embolism_33f, acs_70f_left_main, pneumonia_46f, pneumonia_83m, trauma_limb_hemorrhage_27m, trauma_hemothorax_41m | clinical_decision_applied | clinical | — |
+| C-2026-10-02-09 | TD-56: una aprobación de foto espera su cuenta, nunca se registra bajo otra, y el despliegue lo verifica | general | technical_defect | none | — |
+| C-2026-10-02-10 | TD-59: «General appearance» dice, bajo el resumen del motor, lo que el caso escribió y sigue siendo cierto | variante anaphylaxis_63m_betablocked, renal_colic_34m, bradycardia_ccb_68m, bradycardia_bb_54f, bradycardia_hyperk_63m, trauma_limb_hemorrhage_27m, trauma_hemothorax_41m | technical_defect | clinical | — |
+| C-2026-10-02-11 | El examen en español: cada línea entera en un idioma, y el tórax reescrito de la anafilaxia va con su caso | general | technical_defect | cosmetic | — |
 
 ## La batería, configuración por configuración
 

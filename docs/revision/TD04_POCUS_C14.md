@@ -25,8 +25,8 @@ texto que el residente lee al pedir el POCUS al llegar. El motor puede cambiar a
 | dvt_femoral | Compressible bilaterally | Compresibles bilateralmente |
 | dvt_popliteal | Compressible bilaterally | Compresibles bilateralmente |
 
-- **C14, por qué:** Akinesis of the anterior wall and apex supports treating the de Winter pattern as an anterior occlusion (decision A); in the engine the wall motion evolves with the ischaemic minutes.
-- **Evidencia esperada:** requests POCUS and names the anterior akinesis; relates it to the ECG pattern as an occlusion; activates or expedites reperfusion
+- **C14, por qué:** Akinesis of the anterior wall and apex supports treating the de Winter pattern as an anterior occlusion (decision A); in the engine the wall motion evolves with the ischaemic minutes. The report states the wall motion; recognising it is not required. POCUS never delays reperfusion: activating it from the ECG alone is correct and is not a C14 deficit.
+- **Evidencia esperada:** requests POCUS and relates the reported anterior akinesis to the ECG pattern as an occlusion; activates or expedites reperfusion
 
 **Revisión docente:** ☐ Confirmo tal como está · ☐ Cambio: ____________ · Firma y fecha: ________
 
@@ -69,7 +69,7 @@ texto que el residente lee al pedir el POCUS al llegar. El motor puede cambiar a
 | dvt_femoral | Compressible bilaterally | Compresibles bilateralmente |
 | dvt_popliteal | Compressible bilaterally | Compresibles bilateralmente |
 
-- **C14, por qué:** Borderline pressure with incipient hypoperfusion (104/66, cool extremities, capillary refill 3 s) and intermediate POCUS findings: globally mildly reduced contraction, scattered basal B-lines and an IVC of 1.9 cm with about 50% collapse. No single answer follows from them: withholding volume, a small bolus with its limit stated and reassessed, or early support can each be justified, and the engine answers large volumes poorly in this profile. C14 observes whether the volume, support and urgency decisions are made with the global LV function in view and adapted to the response.
+- **C14, por qué:** Borderline pressure with incipient hypoperfusion (104/66, cool extremities, capillary refill 3 s) and intermediate POCUS findings: globally mildly reduced contraction, scattered basal B-lines and an IVC of 1.9 cm with about 50% collapse. No single answer follows from them: withholding volume, a small bolus with its limit stated and reassessed, or early support can each be justified, and the engine answers large volumes poorly in this profile. C14 observes whether the volume, support and urgency decisions are made with the global LV function in view and adapted to the response. In this simulator a volume past the ventricle's tolerance shows only as a pressure that stops answering and a message in the room; the lungs, the examination, the saturation and a repeat POCUS do not change. The adaptation is judged on those signals: detecting overload on the examination or POCUS is not required, and when the only response the resident looked for is one the simulator does not show, that part of the observation is not evaluable rather than missing.
 - **Evidencia esperada:** requests POCUS and relates the global LV function, the B-lines and the IVC to the volume decision; withholds volume, or gives a small bolus with its limit stated and reassesses it, or escalates support, and says why; adapts the plan to the response and relates it to the urgency of reperfusion
 
 **Revisión docente:** ☐ Confirmo tal como está · ☐ Cambio: ____________ · Firma y fecha: ________

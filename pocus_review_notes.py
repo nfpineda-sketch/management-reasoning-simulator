@@ -14,17 +14,33 @@ STATUS = "draft_for_faculty_review"
 DATE = "2026-09-30"
 RECOMMENDATIONS = ("CONFIRM", "MODIFY", "DISCUSS")
 
-#: The faculty's criteria for the two cases discussed (R-2, 2026-09-30), already applied to their C14
-#: declarations (``case_assessment_bank``). They approve the criteria, not the case's card: nothing here
-#: marks CONFIRMO or signs, and the other twelve cases stay as they were.
+#: The pre-pilot closure (faculty, 2026-10-02, D-7): the criteria of the table were accepted, with the
+#: conditions below already applied; the signature of each final card stays pending.
+ACCEPTANCE = ("Criterios de la tabla aceptados por el docente el 2026-10-02 (D-7), con sus condiciones ya aplicadas. "
+              "La firma de cada ficha final sigue pendiente: nada aquí marca CONFIRMO ni firma.")
+
+#: The faculty's criteria applied to the C14 declarations (``case_assessment_bank``): R-2 for two cases
+#: (2026-09-30) and the pre-pilot closure (2026-10-02). They approve criteria, not the case's card.
 FACULTY_CRITERIA = {
-    "acs_61m_posterior": ("«Aorta no dilatada» en el POCUS no se presenta como disección descartada. La "
-                          "hipocinesia posterior aislada es un hallazgo sutil que el informe escrito entrega: no se "
-                          "exige reconocerla, sino usar la motilidad informada con el ECG y las derivaciones "
-                          "posteriores."),
-    "acs_70f_left_main": ("Un bolo pequeño, justificado y con reevaluación no se penaliza automáticamente: se evalúa "
-                          "en su contexto y por la adaptación posterior. Hallazgos intermedios no tienen una sola "
-                          "respuesta obligatoria."),
+    "acs_61m_posterior": ("R-2, 2026-09-30: «Aorta no dilatada» en el POCUS no se presenta como disección "
+                          "descartada. La hipocinesia posterior aislada es un hallazgo sutil que el informe escrito "
+                          "entrega: no se exige reconocerla, sino usar la motilidad informada con el ECG y las "
+                          "derivaciones posteriores."),
+    "acs_70f_left_main": ("R-2, 2026-09-30: un bolo pequeño, justificado y con reevaluación no se penaliza "
+                          "automáticamente: se evalúa en su contexto y por la adaptación posterior. Hallazgos "
+                          "intermedios no tienen una sola respuesta obligatoria. D-8, 2026-10-02: el exceso de volumen "
+                          "se ve sólo en la presión que deja de responder y en el mensaje de la sala; el pulmón, el "
+                          "examen, la saturación y el POCUS de control no cambian. Se evalúa con esas señales: no se "
+                          "exige detectar sobrecarga por examen ni por POCUS, y si la única respuesta que buscó el "
+                          "residente es una que el simulador no muestra, esa parte no es evaluable."),
+    "acs_52m_de_winter": ("D-7, 2026-10-02: la motilidad la entrega el informe escrito; no se exige reconocerla. El "
+                          "POCUS nunca demora la reperfusión: activarla sólo por el ECG es correcto y no es un déficit "
+                          "de C14."),
+    "trauma_hemothorax_41m": ("D-1, 2026-10-02: el E-FAST muestra sus cinco ventanas en la sala, el Trace y los "
+                              "documentos; el hemotórax izquierdo es visible y el control tras el drenaje muestra el "
+                              "abdomen y la pelvis. Ficha lista para su confirmación."),
+    "trauma_limb_hemorrhage_27m": ("D-1, 2026-10-02: el E-FAST muestra sus cinco ventanas en la sala, el Trace y los "
+                                   "documentos, todas negativas. Ficha lista para su confirmación."),
 }
 
 _WMA = ("Motilidad regional: NO establecida por ACEP 2016 ni en la lista de la EPA C14; se aceptó por alcance "
@@ -43,8 +59,8 @@ NOTES = {
         "management": "Activar o acelerar la reperfusión sin esperar la troponina; el ECG basta para decidir y "
                       "el POCUS lo apoya",
         "acep": _WMA,
-        "issue": "El hallazgo es coherente con la clínica y el ECG. Riesgo docente: demorar la activación por "
-                 "hacer el POCUS",
+        "issue": "El hallazgo es coherente con la clínica y el ECG. Riesgo docente, ya escrito en la declaración "
+                 "(D-7): demorar la activación por hacer el POCUS",
         "recommendation": "CONFIRM",
     },
     "acs_61m_posterior": {
@@ -67,8 +83,9 @@ NOTES = {
         "management": "Volumen prudente o ninguno, soporte precoz si progresa la hipoperfusión y reperfusión "
                       "urgente (tronco); un bolo pequeño con su límite y reevaluación es defendible",
         "acep": _VOLUME + " Las líneas B también están establecidas",
-        "issue": "Criterio docente aplicado a la declaración C14 (R-2): ya no exige sólo limitar el volumen; evalúa "
-                 "la decisión en contexto y su adaptación a la respuesta. Falta su revisión de la ficha completa",
+        "issue": "Criterios docentes aplicados a la declaración C14 (R-2 y D-8): se evalúa la decisión en contexto, "
+                 "con las señales que el residente tiene. La sobrecarga no cambia el pulmón, el examen ni el POCUS "
+                 "(TD-53, sin corregir para el piloto). Falta su firma de la ficha",
         "recommendation": "CONFIRM",
     },
     "gi_bleed_57m": {
@@ -108,7 +125,9 @@ NOTES = {
                       "antibiótico, oxígeno y vasopresor si no responde",
         "acep": _VOLUME + " Líneas B: establecidas. Consolidación: parcial (decisión F: no hace la oportunidad "
                           "por sí sola)",
-        "issue": "Coherente. Con SpO2 89 %, la reevaluación pulmonar tras el volumen es lo que protege",
+        "issue": "Coherente. Con SpO2 89 %, reevaluar tras el volumen es lo que protege: la VCI y la saturación "
+                 "muestran el exceso, pero el pulmón del POCUS no muestra líneas B nuevas con la sobrecarga de "
+                 "cristaloides (TD-54); no se exige verlas",
         "recommendation": "CONFIRM",
     },
     "pneumonia_83m": {
@@ -117,8 +136,8 @@ NOTES = {
                      "broncograma: el foco séptico que la derivación no nombró",
         "management": "Volumen prudente con reevaluación, antibiótico y oxígeno",
         "acep": _VOLUME + " Consolidación: parcial (decisión F)",
-        "issue": "Coherente. Detalle opcional: «air bronchograms» sin «dynamic» no distingue la neumonía de la "
-                 "atelectasia (la 46f sí dice «dynamic»)",
+        "issue": "Coherente. «air bronchograms» sin «dynamic» se mantiene (D-7, 2026-10-02): agregarlo sería un "
+                 "hallazgo nuevo, no una mejora editorial",
         "recommendation": "CONFIRM",
     },
     "pulmonary_edema_58m": {
@@ -127,8 +146,8 @@ NOTES = {
                      "cardiogénico hipertensivo",
         "management": "Nitrato en dosis altas, VNI y diurético; no dar volumen",
         "acep": _VOLUME + " Líneas B: establecidas",
-        "issue": "Coherente. En español, antes de aprobar el relato del caso, esta línea se lee mezclada "
-                 "(«Moderately reducido global contraction», TD-46)",
+        "issue": "Coherente. En español, hasta aprobar el relato del caso, la línea se ve entera en inglés (TD-46, "
+                 "corregido el 2026-09-30)",
         "recommendation": "CONFIRM",
     },
     "pulmonary_edema_75f": {
@@ -168,7 +187,9 @@ NOTES = {
                      "sin líquido abdominal ni pericárdico",
         "management": "Tubo pleural, hemoderivados, controlar el débito (toracotomía si es masivo) y reevaluar",
         "acep": _EFAST,
-        "issue": "Coherente. Un FAST abdominal negativo no descarta una lesión retroperitoneal o pélvica",
+        "issue": "Coherente. Un FAST abdominal negativo no descarta una lesión retroperitoneal o pélvica. El "
+                 "E-FAST de control repite los hallazgos de llegada y la VCI del POCUS de control no cambia (TD-54): "
+                 "no se exige ver en ellos un cambio que el simulador no muestra",
         "recommendation": "CONFIRM",
     },
     "trauma_limb_hemorrhage_27m": {
@@ -179,7 +200,8 @@ NOTES = {
                       "repetir el E-FAST si se deteriora sin explicación",
         "acep": _EFAST,
         "issue": "Coherente. El E-FAST no debe preceder al control de la hemorragia externa, y su sensibilidad "
-                 "precoz es limitada (el caso lo pide: «states what would change that»)",
+                 "precoz es limitada (el caso lo pide: «states what would change that»). La VCI del POCUS de "
+                 "control no cambia tras el control y la sangre (TD-54): no se exige verla llenarse",
         "recommendation": "CONFIRM",
     },
 }

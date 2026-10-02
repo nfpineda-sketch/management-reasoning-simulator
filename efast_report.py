@@ -56,6 +56,12 @@ KEYS = tuple(key for _, items in SECTIONS for key, _ in items)
 LABELS = {key: label for _, items in SECTIONS for key, label in items}
 NOT_DOCUMENTED = "Not documented"
 
+#: How a result made from 2026-10-02 is shown (TD-48): every window the case
+#: documents, in the faculty's order. A result made before carries no mark and
+#: keeps the single line its room showed, so its record still says what the
+#: resident saw.
+SHOWN_AS = "windows"
+
 #: The windows that answer the question a penetrating wound asks first.
 CARDIAC_WINDOWS = ("pericardium",)
 
@@ -129,3 +135,36 @@ def cardiac_first(order):
     """
     sequence = [key for key in (order or ()) if key in KEYS]
     return bool(sequence) and sequence[0] in CARDIAC_WINDOWS
+
+
+def shown_as_windows(result):
+    """True for a result the room shows window by window (TD-48)."""
+    return isinstance(result, dict) and result.get("shown_as") == SHOWN_AS
+
+
+def format_efast(result, *, heading="E-FAST", compact=False):
+    """The E-FAST in the faculty's order, every window the case documents (TD-48, 2026-10-02).
+
+    The same layout as ``pocus_report.format_pocus``: each window under its section
+    title, or one line per section in ``compact`` form for the Management Trace. A
+    window the case does not document says so; it is never filled with a finding.
+    """
+    result = result if isinstance(result, dict) else {}
+    header = heading
+    collected = result.get("collected_at_min", result.get("time_min"))
+    if type(collected) in {int, float} and not isinstance(collected, bool):
+        # A scan is performed, not sampled.
+        header += f" · performed at minute {collected:g}"
+    lines = [header]
+    for section, items in SECTIONS:
+        parts = []
+        for key, label in items:
+            value = result.get(key)
+            text = value.strip() if isinstance(value, str) and value.strip() else NOT_DOCUMENTED
+            parts.append(f"{label}: {text}")
+        if compact:
+            lines.append(section.upper() + " — " + " · ".join(parts))
+        else:
+            lines.append(section.upper())
+            lines.extend("· " + part for part in parts)
+    return "\n".join(lines)

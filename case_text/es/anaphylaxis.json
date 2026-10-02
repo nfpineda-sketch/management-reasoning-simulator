@@ -147,6 +147,14 @@
   "/investigations/blood_cultures/result/report": {
    "en": "Samples collected; culture identification and susceptibility results are pending.",
    "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/derived/Respiratory/without_stridor": {
+   "en": "Increased effort with widespread expiratory wheeze; no stridor heard now.",
+   "es": "Esfuerzo respiratorio aumentado, con sibilancias espiratorias difusas; ya no se escucha estridor."
+  },
+  "/derived/Respiratory/intubated": {
+   "en": "Endotracheal tube in place: no stridor through the tube; widespread expiratory wheeze.",
+   "es": "Tubo endotraqueal instalado: sin estridor a través del tubo; sibilancias espiratorias difusas."
   }
  },
  "anaphylaxis_63m_betablocked": {
@@ -234,6 +242,10 @@
    "en": "Opens eyes to voice and follows simple commands slowly; moves all limbs.",
    "es": "Abre los ojos al llamado verbal y obedece órdenes simples con lentitud; moviliza todas las extremidades."
   },
+  "/appearance_stable": {
+   "en": "A sting site on the right forearm.",
+   "es": "Sitio de picadura en el antebrazo derecho."
+  },
   "/investigations/pocus/result/lv": {
    "en": "Preserved contraction without the hyperdynamic pattern",
    "es": "Contracción conservada sin el patrón hiperdinámico"
@@ -297,6 +309,10 @@
   "/investigations/blood_cultures/result/report": {
    "en": "Samples collected; culture identification and susceptibility results are pending.",
    "es": "Muestras tomadas; los resultados de identificación y susceptibilidad del cultivo están pendientes."
+  },
+  "/derived/Respiratory/intubated": {
+   "en": "Endotracheal tube in place: no stridor through the tube; widespread wheeze.",
+   "es": "Tubo endotraqueal instalado: sin estridor a través del tubo; sibilancias difusas."
   }
  }
 }

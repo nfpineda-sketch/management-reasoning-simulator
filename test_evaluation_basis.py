@@ -61,9 +61,20 @@ def test_the_legacy_snapshot_is_the_code_before_the_change_for_every_other_case(
               for case_id in CASES}
     changed = [case_id for case_id in CASES if json.loads(json.dumps(rubric[case_id])) != legacy[case_id]]
     # Each deliberate difference since the snapshot has its registry entry: the 54m's new version
-    # (C-2026-09-25-05; DC6 in C-2026-09-30-01) and the lysis criterion as the engine applies it in the
-    # two pulmonary embolism cases (P-06, C-2026-09-30-02). A legacy record keeps reading the snapshot.
-    assert changed == ["hypoglycemia_54m_thiamine", "pulmonary_embolism_33f", "pulmonary_embolism_61m"]
+    # (C-2026-09-25-05; DC6 in C-2026-09-30-01), the lysis criterion as the engine applies it in the
+    # two pulmonary embolism cases (P-06, C-2026-09-30-02), and what the simulator cannot show or treat
+    # in six cases, written for the faculty who scores them (D-3, D-8, TD-54; C-2026-10-02-08).
+    # A legacy record keeps reading the snapshot.
+    assert changed == ["acs_70f_left_main", "hypoglycemia_54m_thiamine", "pneumonia_46f", "pneumonia_83m",
+                       "pulmonary_embolism_33f", "pulmonary_embolism_61m", "trauma_limb_hemorrhage_27m",
+                       "trauma_hemothorax_41m"]
+    limits_only = {"acs_70f_left_main", "pneumonia_46f", "pneumonia_83m", "trauma_limb_hemorrhage_27m",
+                   "trauma_hemothorax_41m"}
+    for case_id in limits_only:
+        current = json.loads(json.dumps(rubric[case_id]))
+        assert {key for key in current if current[key] != legacy[case_id].get(key)} == {"engine_limits"}
+        # The limits written before stay as they were; the new ones are added after them.
+        assert current["engine_limits"][:len(legacy[case_id]["engine_limits"])] == legacy[case_id]["engine_limits"]
     assert not any("objectives" in declaration for declaration in legacy.values())
 
 

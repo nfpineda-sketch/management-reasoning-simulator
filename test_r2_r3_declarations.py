@@ -42,7 +42,9 @@ def test_the_70f_c14_row_accepts_a_justified_small_bolus():
     assert "adapts the plan to the response" in evidence
     assert "No single answer follows" in row["rationale"]
     assert "limits or withholds volume, or escalates support, because of it" not in row["expected_evidence"]
-    assert row["reviewed"]["revised"]["id"] == "R-2"
+    # D-8 (2026-10-02) revised it after R-2: judged on the signals the room shows.
+    assert row["reviewed"]["revised"]["id"] == "D-8" and row["reviewed"]["revised"]["after"] == "R-2"
+    assert "that part of the observation is not evaluable rather than missing" in row["rationale"]
 
 
 def test_an_encounter_frozen_before_keeps_the_rows_it_started_with():

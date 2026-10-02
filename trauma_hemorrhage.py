@@ -114,6 +114,21 @@ def external_outcome(before, after):
     return "the external bleeding is reduced, not stopped"
 
 
+#: What the external source is now, in the record's words (TD-59, 2026-10-02): the examination
+#: says it once something has been applied to the wound, and never before.
+EXTERNAL_NOW = {"reduced": "The external bleeding is reduced, not stopped.",
+                "stopped": "The external bleeding is stopped."}
+
+
+def external_now(f):
+    """The external source as it is now, or None while nothing has been applied to it."""
+    achieved = controlled(f, "external")
+    if achieved <= 0:
+        return None
+    stops = achieved >= 1.0 and RESIDUAL_AFTER_CONTROL["external"] == 0.0
+    return EXTERNAL_NOW["stopped" if stops else "reduced"]
+
+
 def bleeding_ml_per_min(f, state):
     """What is being lost this minute, from every source that is still open."""
     total = 0.0

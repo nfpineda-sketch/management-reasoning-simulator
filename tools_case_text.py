@@ -32,7 +32,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 TARGET = ROOT / "case_text" / "es"
-FIELDS = ("presentation", "history_source", "history", "examination", "investigations")
+FIELDS = ("presentation", "history_source", "history", "examination", "appearance_stable",
+          "appearance_while_bleeding", "investigations")
 #: Leaves with no letters at all: numbers and symbols. A single word is a word
 #: to translate ("Wife", "Daughter"), however short.
 _NO_WORDS = re.compile(r"^[^A-Za-z]*$")
@@ -58,7 +59,24 @@ def passages(variant):
                 if field == "investigations" and "/result/" not in path + "/":
                     continue
                 found[path] = text
+    found.update(_derived(variant, found))
     return found
+
+
+def _derived(variant, found):
+    """The case's own lines as the room rewrites them, read and approved with the case (2026-10-02).
+
+    The anaphylaxis chest says what the engine hears now: through a tube (TD-47), or once the stridor
+    the case wrote has gone (TD-50). Those lines are the case's words rewritten, so they are translated
+    and approved with its narrative; otherwise they would stay in English beside its Spanish.
+    """
+    chest = (variant.get("examination") or {}).get("Respiratory")
+    if (variant.get("engine") or {}).get("family") != "anaphylaxis" or not chest:
+        return {}
+    import anaphylaxis_reaction
+    lines = {"/derived/Respiratory/without_stridor": anaphylaxis_reaction.chest_without_stridor(chest),
+             "/derived/Respiratory/intubated": anaphylaxis_reaction.intubated_chest(chest)}
+    return {path: line for path, line in lines.items() if line not in found.values()}
 
 
 def _families():
