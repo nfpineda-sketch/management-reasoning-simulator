@@ -16,4 +16,9 @@ local-data/
 
 # Tooling links Streamlit creates on launch; they point into a local .venv.
 .agents/
-.claude/
+.claude/*
+# The project's own Claude Code skills are versioned; nothing else under .claude/ is.
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/verificar-y-entregar/
+!.claude/skills/ux-antes-despues/
