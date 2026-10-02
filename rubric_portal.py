@@ -352,7 +352,7 @@ def _event_controls(record, case_id, proposed_events, saved_events, check=None):
                "recorded for review and carries no deduction."))
     decided = []
     for event in defined:
-        kind = "Dangerous action" if event["kind"] == "dangerous_action" else "Critical omission"
+        kind = _t("Dangerous action" if event["kind"] == "dangerous_action" else "Critical omission")
         proposed = event["event_id"] in proposed_events
         saved = saved_events.get(event["event_id"], {})
         st.markdown(f"`{event['event_id']}` — **{kind}.** {event['action']}")
@@ -383,7 +383,7 @@ def _event_controls(record, case_id, proposed_events, saved_events, check=None):
         current = saved.get("status", "proposed")
         state = st.radio(_t("Your decision"), options,
                          index=options.index(current) if current in options else 0,
-                         format_func=labels.get, horizontal=True,
+                         format_func=lambda option: _t(labels[option]), horizontal=True,
                          key=_key(record, "event", event["event_id"]))
         justification = ""
         if state == "confirmed" and against:

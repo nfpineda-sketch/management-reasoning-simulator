@@ -146,6 +146,23 @@ def test_confirming_an_event_shows_the_penalty_before_it_is_saved(cohort):
     assert "Penalty -3" in body
 
 
+def test_a_spanish_reader_decides_each_event_in_spanish(cohort):
+    """The event's kind and its three decisions come from the reviewed catalog, as the rest of the screen."""
+    accounts, _, users = cohort
+    attempt_id = attempt_on_case(accounts, users["resident"]["token"])
+    app = page(cohort, attempt_id, language="es")
+    radios = [r for r in app.radio if r.label == "Tu decisión"]
+    assert radios, "the defined events offer a decision"
+    for radio in radios:
+        assert list(radio.options) == ["Aún sin decidir", "Confirmado - aplica la penalización"]
+    body = " ".join(item.value for item in app.markdown)
+    assert "Omisión crítica" in body or "Acción peligrosa" in body
+    assert "Critical omission" not in body and "Dangerous action" not in body
+    english = page(cohort, attempt_id)
+    radios = [r for r in english.radio if r.label == "Your decision"]
+    assert list(radios[0].options) == ["Not decided yet", "Confirmed - applies the penalty"]
+
+
 def test_an_encounter_with_no_authored_case_still_offers_the_five_domains(cohort):
     accounts, _, users = cohort
     attempt_id = attempt_on_case(accounts, users["resident"]["token"], case_id="")

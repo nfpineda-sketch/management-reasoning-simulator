@@ -61,6 +61,15 @@ El detalle está en `docs/COLA_DECISIONES_AI_ADVISOR.md`, sección «Segunda res
 dos casos de trauma). Está registrado, sin corregir. El piloto corre sin IA automática en el encuentro:
 determinista y con casos offline.
 
+**Revisión clínica prepiloto (2026-10-02):** la respuesta sigue siendo la misma.
+
+- El paquete es `docs/revision/PRE_PILOT_REVIEW_PACKET.md`, con once decisiones abiertas (D-1 a D-11).
+- TD-48 pasa de recomendable a **BLOCKER** para los dos casos de trauma; TD-50 es **BLOCKER** para
+  `anaphylaxis_29f`. Ambos esperan su decisión.
+- **Condición nueva de despliegue (TD-56):** la cuenta docente que firmó
+  `assets/patient_images/approvals.json` debe existir antes del primer encuentro; si no, hay que
+  reimportar el paquete de fotos.
+
 **No es una validación.** La fidelidad del lector con texto externo sigue sin medirse (B = NOT YET MEASURED);
 todo juicio lo confirma un docente.
 

@@ -5,10 +5,38 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-09-30, con la segunda respuesta docente al paquete del
-  ciclo 10 (sección «Segunda respuesta al paquete del ciclo 10», la vigente). La
-  primera respuesta, el ciclo 10, el estado posterior a V3, la tabla del cierre
-  del ciclo 9 y los ciclos anteriores siguen más abajo, como estaban.
+- **Actualizado:** 2026-10-02, con la revisión clínica prepiloto (sección «Revisión clínica prepiloto», la
+  vigente: once decisiones abiertas). La segunda y la primera respuesta al paquete del ciclo 10, el ciclo 10,
+  el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores siguen más abajo, como
+  estaban.
+
+## Revisión clínica prepiloto (2026-10-02)
+
+Instrucción docente «PRE-PILOT CLINICAL REVIEW» (no es el ciclo 11): presentar, revisar y decidir antes del primer
+piloto formativo, sin reabrir el lector, la validación externa, V3 ni la metodología.
+
+- **El paquete:** `docs/revision/PRE_PILOT_REVIEW_PACKET.md`.
+  - Secciones A–L: R-2, R-4, el español y la fisiología de la TEP, TD-48 a TD-52, R-3, R-5 y la checklist.
+  - Al final, «DECISIONS NEEDED FROM NICOLÁS»: D-1 a D-11, abiertas.
+- **Implementado** (regla B, un error de presentación determinista): el tipo de cada evento crítico y sus decisiones
+  se muestran en español en el portal docente en español (C-2026-10-02-01).
+- **Registrado sin corregir:** TD-53 a TD-59 (`docs/REGISTRO_DEUDA_TECNICA.md`).
+- **BLOCKERS propuestos:** TD-48 para los dos casos de trauma; TD-50 para `anaphylaxis_29f`.
+- **Nada clínico cambió.** No se desplegó y no se ejecutó la prueba de humo.
+
+| ID | Decisión abierta | Recomendación |
+|---|---|---|
+| D-1 | TD-48: el E-FAST con sus cinco ventanas | Sí, opción A, antes del piloto |
+| D-2 | TD-50: el examen de la anafilaxia sigue al estridor | Sí a la opción 1 (o excluir la 29f) |
+| D-3 | Fisiología de la TEP | KEEP FOR PILOT, con aviso docente |
+| D-4 | La glosa del shock en la nota 1 de la TEP | Sí, el criterio completo |
+| D-5 | El español de las 7 notas de la TEP y del aviso del sangrado | Sí, con los cambios menores |
+| D-6 | Las 18 frases de R-4 | Sí; la fila 18, con su verbo |
+| D-7 | Las fichas R-2 | Sí; la redacción de la 52m |
+| D-8 | La sobrecarga de la 70f que no se ve (TD-53) | (a) aviso y regla para el piloto |
+| D-9 | TD-49 con TD-48; TD-51 después | Sí |
+| D-10 | R-3: T-2, T-3 y T-4 | Firmar como están |
+| D-11 | Los cambios requeridos de las guías (R-5) | Sí, y firmar tras D-1 a D-8 |
 
 ## Segunda respuesta al paquete del ciclo 10 (2026-09-30)
 

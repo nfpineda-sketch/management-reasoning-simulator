@@ -70,6 +70,10 @@ INSTRUCTION_2026_09_30_SECOND = ("Instrucción docente del 2026-09-30, segunda r
                                  "con condiciones, P-05 D como simplificación explícita, P-06 corregido, P-07 con la "
                                  "75f en vista neutral, R-2 para dos casos, R-3 con C3 parcial y TD-47, R-4 con su "
                                  "terminología y TD-46; sin abrir un ciclo nuevo)")
+INSTRUCTION_PREPILOT_REVIEW = ("Instrucción docente «PRE-PILOT CLINICAL REVIEW», posterior a la segunda respuesta "
+                               "del 2026-09-30 (presentar, revisión humana y sólo entonces implementar; sin aprobación "
+                               "se implementa sólo una regresión directa, un error de presentación determinista, "
+                               "seguridad o integridad de datos, o un cambio ya aprobado)")
 INSTRUCTION_2026_09_29_POST_V3 = ("Instrucción docente del 2026-09-29 posterior a V3 (cerrar e implementar las decisiones "
                                   "clínicas analizadas: TEP con D revisada, DC1, POCUS de la HDA, TD-31, DC2–DC5 de "
                                   "hipoglicemia y el texto de acs_70f_left_main; y las decisiones no clínicas de su "
@@ -2855,6 +2859,23 @@ CORRECTIONS = (
         "tests": ["test_spanish_drafts.py::test_every_engine_sentence_has_its_review_reading_and_nothing_else_does",
                   "test_td47_and_r4_engine_findings.py::test_reduced_effort_is_never_written_beside_exhaustion",
                   "test_review_sheets_are_current.py::test_the_sheets_on_disk_are_the_ones_the_code_writes"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-02-01",
+        "date": "2026-10-02",
+        "title": "El portal docente en español muestra en español el tipo de cada evento crítico y sus decisiones",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Error de presentación determinista hallado en la revisión prepiloto: el tipo de evento («Critical "
+                   "omission», «Dangerous action») y las opciones de la decisión («Not decided yet», «Confirmed - "
+                   "applies the penalty», «Dismissed - no penalty») se mostraban en inglés en el portal en español, "
+                   "aunque el catálogo revisado ya tenía su traducción. Ahora pasan por ese catálogo, como el resto "
+                   "de la pantalla. No cambia qué se guarda, ni la penalización, ni ninguna regla."),
+        "authorised_by": INSTRUCTION_PREPILOT_REVIEW,
+        "affects": {"modules": ["rubric_portal"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_rubric_portal.py::test_a_spanish_reader_decides_each_event_in_spanish"],
         "preservation": None,
     },
 )
