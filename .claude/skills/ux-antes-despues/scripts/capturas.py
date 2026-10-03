@@ -88,6 +88,8 @@ def _paso(page, p, paso, et):
         p.click(paso["boton"])
     elif accion == "boton":
         p.click(paso["etiqueta"])
+    elif accion == "pestana":
+        page.get_by_role("tab", name=paso["pestana"]).first.click()
     elif accion == "cerrar":
         p.click(_primer_boton(p, et["cerrar"]))
         if any(p.has_button(e) for e in et["terminar"]):

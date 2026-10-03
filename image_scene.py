@@ -378,4 +378,49 @@ def scene_photo_html(image):
     if not image:
         return '<div class="scene-photo scene-photo-empty"></div>'
     mime = getattr(image, "mime", "image/png")
-    return f'<div class="scene-photo" style="background-image:url(data:{mime};base64,{image})"></div>'
+    return (f'<div class="scene-photo" style="{framing_style(image)}">'
+            f'<div class="scene-photo-img" style="background-image:url(data:{mime};base64,{image})"></div></div>')
+
+
+#: Where the patient is across each photograph already measured: a digest of its bytes to
+#: (centre, aspect). Bounded: a room shows a handful of photographs.
+_FRAMING = {}
+
+
+def framing_style(image):
+    """The CSS that centres the patient when the room crops the photograph (BEDSPACE_CSS).
+
+    UX of the clinical encounter, second iteration (2026-10-02). The room shows the
+    photograph across the left half of the screen, which is narrower than the photograph,
+    and a patient who is not in the middle of the frame was cut at its edge. The bank's
+    photographs show a patient in bed with the white pillow, gown and sheet around them:
+    the horizontal centre of those white areas, below the ceiling, is where the patient is.
+    Presentation only -- which photograph is shown, its review and its record do not change
+    -- and a photograph this cannot read is centred, as before.
+    """
+    import hashlib
+    key = hashlib.sha1(str(image).encode()).hexdigest()
+    if key not in _FRAMING:
+        if len(_FRAMING) > 64:
+            _FRAMING.clear()
+        _FRAMING[key] = _measure_framing(image)
+    centre, aspect = _FRAMING[key]
+    return f"--fx:{centre:.3f};--fa:{aspect:.3f}"
+
+
+def _measure_framing(image):
+    try:
+        import io
+        import numpy as np
+        from PIL import Image
+        photo = Image.open(io.BytesIO(base64.b64decode(str(image))))
+        aspect = photo.width / photo.height
+        pixels = np.asarray(photo.convert("RGB").resize((192, 128)), dtype=np.int16)
+        white = (pixels.sum(axis=2) > 585) & (pixels.max(axis=2) - pixels.min(axis=2) < 28)
+        columns = white[23:, :].sum(axis=0)
+        if columns.sum() < 200 or not 1.0 <= aspect <= 2.5:
+            return 0.5, 1.5
+        centre = float((columns * np.arange(columns.size)).sum() / columns.sum()) / columns.size
+        return min(0.7, max(0.3, centre)), aspect
+    except Exception:
+        return 0.5, 1.5

@@ -169,3 +169,45 @@ ningún modelo. Hover: DIFERIDO. Antes y después del encuentro, la barra latera
   dashboard» dentro del menú cerrado; una cancelación aparecía dos veces; mensajes sin orden dejaban de verse tras el
   siguiente intercambio; el indicador de Streamlit no respondía a clics; «terminal locked» se leía mal en español; y
   la franja adelantaba el minuto de un resultado de los motores de familia. Nada de esto cambiaba lo registrado.
+
+## 11. Iteración 2 (2026-10-02): presentación, jerarquía y color
+
+Sólo presentación: el motor, la evaluación, el Management Trace, la persistencia y los cuatro campos no cambian.
+Se toma como referencia el mockup aprobado del encargo original.
+
+- **Paciente centrado.** Las 133 fotos del banco (1536×1024) se recortan a lo ancho y el paciente no siempre está
+  en el medio del cuadro: la cara cae entre el 33 % y el 54 % del ancho. Cada foto se encuadra ahora en su
+  paciente: el centro horizontal de las zonas blancas (almohada, bata y sábana) bajo el techo, medido una vez por
+  foto (`image_scene.framing_style`), y aplicado con CSS sin salirse de la imagen. Una foto que no se puede leer
+  queda centrada como antes. No cambia qué foto se muestra, su revisión ni su registro.
+- **Monitor.** Más ancho y legible (cifras de 19 a 36 px según la pantalla, trazado más alto), sobre la esquina
+  superior izquierda de la foto. El «ECG» de cabecera está en el propio monitor. Cuando el monitor es angosto
+  (1000 px, teléfono), las cifras pasan a dos filas en vez de superponerse.
+- **Color por categoría** (`encounter_screen.CATEGORY`), que decide sólo cómo se ve una entrada y nunca si se
+  muestra:
+  - Talk y las respuestas del paciente, en azul;
+  - Examine y el examen, en verde;
+  - Tests y los resultados y estudios, en violeta;
+  - Treat y lo que hizo el equipo, en coral;
+  - la respuesta del paciente, en turquesa;
+  - lo retenido o lo que espera una respuesta, en ámbar;
+  - lo escrito por el residente, en gris pizarra.
+
+  Los cuatro modos llevan su color y el elegido conserva ✓, borde y relleno.
+- **Evolution** como línea de tiempo: cada entrada es una tarjeta con su minuto, su categoría y «View ECG» cuando
+  corresponde. El texto de cada entrada es el mismo.
+- **Escritura:** el cuadro tiene marco propio y «Send» es la acción principal, a su derecha. «Complete Encounter &
+  Begin Review» sigue disponible, como botón secundario y separado.
+- **Aviso de la fotografía:** franja fina al pie de la foto, con el mismo texto.
+
+**Verificación:**
+- equivalencia del registro con `ux-antes-despues` (perfil de 20 pasos con las cuatro vistas): idéntica a
+  `890e733`;
+- 6 comprobaciones de navegador;
+- 56/56 regresiones activas;
+- suite completa: 6.659 aprobadas, 83 omitidas, 1 xfail, 0 fallidas.
+
+**Límites:**
+- La foto que elige el banco depende del identificador del intento, distinto en cada base sintética, así que las
+  capturas ANTES y DESPUÉS muestran pacientes distintos. El encuadre se comparó con las mismas fotos aparte.
+- En teléfono el monitor sigue sobre la foto y, en algunos encuadres, tapa parte de la cabeza, como antes.

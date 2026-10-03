@@ -58,6 +58,24 @@ GATE_PROMPT = "ORDER HELD — REASONING REQUIRED"
 ENTRY_KINDS = ("you", "reasoning_completion")
 
 
+#: The colour of each kind of entry on the screen (UX, second iteration, 2026-10-02), so that
+#: what happened can be scanned: what the resident wrote; the patient's answers (Talk), the
+#: examination (Examine) and the results and studies (Tests) in their mode's colour; what the
+#: team did (Treat); how the patient responded; and what is held or waits on an answer. It
+#: decides only how an entry looks, never whether or where it is shown; a kind it does not
+#: know is drawn plainly.
+CATEGORY = {"you": "resident", "reasoning_completion": "resident", "presentation": "arrival",
+            "patient_history": "talk", "examination": "examine",
+            "diagnostic_result": "tests", "diagnostic": "tests", "study_not_performed": "tests",
+            "procedure": "treat", "clinical_update": "response",
+            "clarification": "alert", "reasoning_note": "alert", "prototype": "alert", "order_cancelled": "alert"}
+
+
+def category(event):
+    """The colour family of an entry (``CATEGORY``), ``"other"`` when its kind is not listed."""
+    return CATEGORY.get((event or {}).get("kind") if isinstance(event, dict) else None, "other")
+
+
 def order_status(entry):
     """``None`` for an order that ran (its line says its actions); else what the record calls it."""
     status = (entry or {}).get("execution_status")

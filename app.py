@@ -9914,6 +9914,17 @@ def _room_minutes(minutes):
     return said(minutes)
 
 
+def _event_head(label, minute):
+    """An entry's heading: what it is and the minute it was obtained (``LABEL · 14 min``).
+
+    Read as one bold line anywhere; in the room the minute and the label are drawn apart, in
+    the entry's colour (UX, second iteration, 2026-10-02; BEDSPACE_CSS). The words are the same.
+    """
+    return ('<p class="enc-ev-head"><strong><span class="enc-ev-label">' + escape(label)
+            + '</span><span class="enc-ev-sep"> · </span><span class="enc-ev-time">'
+            + escape(_room_minutes(minute)) + '</span></strong></p>')
+
+
 def render_event(event):
     import language
     body = (language.say(event["text"]) if event["kind"] in _TRANSLATED_EVENTS
@@ -9923,13 +9934,14 @@ def render_event(event):
     labels = _EVENT_LABELS
     if event["kind"] == "clinical_update":
         with st.container(border=True):
-            st.markdown(f"**{language.say('PATIENT RESPONSE')} · {_room_minutes(event['time'])}**")
+            st.markdown(_event_head(language.say('PATIENT RESPONSE'), event['time']), unsafe_allow_html=True)
             st.write(body)
             snapshot = event.get("learner_vitals")
             if snapshot:
                 st.markdown(_vitals_grid_html(snapshot, variant="response"), unsafe_allow_html=True)
         return
-    st.markdown(f"**{language.say(labels.get(event['kind'], event['kind'].upper()))} · {_room_minutes(event['time'])}**")
+    st.markdown(_event_head(language.say(labels.get(event['kind'], event['kind'].upper())), event['time']),
+                unsafe_allow_html=True)
     # A structured report such as POCUS uses one line per section; markdown would
     # otherwise run the lines together.
     st.write(str(body).replace("\n", "  \n"))
@@ -10355,7 +10367,7 @@ def _render_order_words(minute, text):
     if not str(text or "").strip():
         return
     said = _record_words("At minute {v0}: “{v1}”", v0=int(minute or 0), v1=str(text).strip())
-    st.markdown('<div class="enc-order">' + escape(said).replace("\n", "<br>") + "</div>",
+    st.markdown('<div class="enc-order enc-order--words">' + escape(said).replace("\n", "<br>") + "</div>",
                 unsafe_allow_html=True)
 
 
@@ -10376,8 +10388,10 @@ def _order_outcome(entry):
 
 
 def _render_order_outcome(entry):
-    st.markdown('<div class="enc-order"><strong>' + escape(_order_outcome(entry)).replace("\n", "<br>")
-                + "</strong></div>", unsafe_allow_html=True)
+    import encounter_screen as screen
+    held = " enc-order--held" if screen.order_status(entry) is not None else ""
+    st.markdown('<div class="enc-order enc-order--outcome' + held + '"><strong>'
+                + escape(_order_outcome(entry)).replace("\n", "<br>") + "</strong></div>", unsafe_allow_html=True)
 
 
 def _render_pending_orders():
@@ -10386,21 +10400,27 @@ def _render_pending_orders():
     import language as _lang
     held = st.session_state.get("pending_reasoning")
     if held:
-        _render_order_words(held.get("held_at_min"), (held.get("parsed") or {}).get("raw_text"))
-        st.warning(_record_words("Status") + ": " + _record_words("Pending"))
+        with st.container(key="enc-ev-alert-orders-held"):
+            _render_order_words(held.get("held_at_min"), (held.get("parsed") or {}).get("raw_text"))
+            st.warning(_record_words("Status") + ": " + _record_words("Pending"))
     elif st.session_state.get("pending_action") or st.session_state.get("pending_bundle"):
         found = screen.latest_clarification(st.session_state.events)
-        st.warning(_record_words("Status") + ": " + _record_words(screen.STATUS_WORDS["clarification_required"])
-                   + ("\n\n" + _lang.say(found[1]["text"]) if found else ""))
+        with st.container(key="enc-ev-alert-orders-waiting"):
+            st.warning(_record_words("Status") + ": " + _record_words(screen.STATUS_WORDS["clarification_required"])
+                       + ("\n\n" + _lang.say(found[1]["text"]) if found else ""))
 
 
-def _render_order_row(row):
+def _render_order_row(row, index):
     """An order of the record with what became of it and the room's messages about it; an order
-    the record holds no entry for, with what followed it; or a message of the room on its own."""
+    the record holds no entry for, with what followed it; or a message of the room on its own.
+    Each in its colour: an order that ran as the team's action, one that did not as held."""
+    import encounter_screen as screen
     if row["row"] == "message":
-        render_event(row["event"])
+        with st.container(key=f"enc-ev-{screen.category(row['event'])}-orders-{index}"):
+            render_event(row["event"])
         return
-    with st.container(border=True):
+    ran = row["row"] == "order" and screen.order_status(row["entry"]) is None
+    with st.container(border=True, key=f"enc-ev-{'treat' if ran else 'alert'}-orders-{index}"):
         if row["row"] == "order":
             entry = row["entry"]
             _render_order_words(entry.get("decision_time_min"), entry.get("learner_input"))
@@ -10439,16 +10459,25 @@ def _render_encounter_views(bedside=True):
             if st.button(screen_words("View ECG"), key=f"view_ecg_{where}_{position}"):
                 _room.show_ecg(recordings[index])
 
+    def card(position, event, where, asked=None, ecg=True):
+        # Each entry in its colour (encounter_screen.CATEGORY); what it says is unchanged.
+        with st.container(key=f"enc-ev-{screen.category(event)}-{where}-{position}"):
+            if asked:
+                st.caption(asked)
+            render_event(event)
+            if ecg:
+                view_ecg(position, where)
+
     pending_lines = _pending_study_lines(state)
     if pending_lines:
         # The compact strip of what is pending (2026-10-02, section 9), from the engine's own record.
-        st.caption(" · ".join(pending_lines))
+        with st.container(key="enc-pending"):
+            st.caption(" · ".join(pending_lines))
     evolution, history, results, orders = st.tabs([
         screen_words("Evolution"), screen_words("History & Exam"), screen_words("Results"), screen_words("Orders")])
     with evolution:
         for position, event in screen.evolution(events):
-            render_event(event)
-            view_ecg(position, "evolution")
+            card(position, event, "evolution")
     with history:
         clinical_case = (state.get("encounter_spec") or {}).get("clinical_case") or {}
         st.markdown("**" + _lang.say("Weight and height") + "**")
@@ -10458,9 +10487,7 @@ def _render_encounter_views(bedside=True):
             # Whole in one language: Spanish once the case's translation is approved (case_text).
             st.caption(_lang.narrative("History source: " + str(clinical_case["history_source"])))
         for position, event, asked in screen.history_and_exam(events):
-            if asked:
-                st.caption(asked)
-            render_event(event)
+            card(position, event, "history", asked, ecg=False)
     with results:
         if bedside:
             _room.study_upgrade(state)
@@ -10470,8 +10497,7 @@ def _render_encounter_views(bedside=True):
         if not received and not pending_lines:
             st.caption(_lang.say("No investigation reports have been received yet."))
         for position, event in received:
-            render_event(event)
-            view_ecg(position, "results")
+            card(position, event, "results")
         if bedside:
             _room.ecg_recordings(state)
         _render_latest_diagnostics()
@@ -10482,8 +10508,8 @@ def _render_encounter_views(bedside=True):
             st.caption("Current support · " + " | ".join(support))
         with st.expander("Current treatments", expanded=True):
             _render_current_treatments()
-        for row in screen.order_rows(st.session_state.management_trace, events):
-            _render_order_row(row)
+        for index, row in enumerate(screen.order_rows(st.session_state.management_trace, events)):
+            _render_order_row(row, index)
 
 
 def _render_closed_bedside():
@@ -10537,8 +10563,9 @@ def _render_latest_response():
             st.warning(_lang.say(waiting[1]["text"]))
         if entry is not None:
             _render_order_outcome(entry)
-        for _, event in shown:
-            render_event(event)
+        for position, event in shown:
+            with st.container(key=f"enc-ev-{screen.category(event)}-latest-{position}"):
+                render_event(event)
         if new:
             st.caption("↑ " + screen_words("Evolution") + ": " + " · ".join(
                 _lang.say("PATIENT RESPONSE" if event.get("kind") == "clinical_update"
@@ -10641,6 +10668,8 @@ if _in_room:
     # the save that follows an acquisition, are said in the console below.
     with st.container(key="enc-status"):
         _render_encounter_clock()
+    # Drawn beside the monitor, the bedside's own action (UX, second iteration, 2026-10-02).
+    with st.container(key="enc-ecg"):
         _ecg_acquired, _ecg_notice = _room.acquire_ecg_button(st.session_state.state, st.session_state.events)
 with st.container(key="encounter-console"):
     if _ecg_notice:
@@ -11298,19 +11327,22 @@ with st.container(key="encounter-console"):
                         minute=st.session_state.state.get("sim_time"))
                     begin_decision_review(st.session_state.management_trace, st.session_state.state)
                     rerun_app()
-            elif st.button(
-                "Complete Encounter & Begin Review",
-                type="primary",
-                disabled=not bool(st.session_state.management_trace),
-            ):
-                if encounter_close.has_destination(st.session_state.management_trace, st.session_state.state):
-                    st.session_state.encounter_close = encounter_close.record(
-                        "clinical_close", destination_recorded=True, warned=False,
-                        minute=st.session_state.state.get("sim_time"))
-                    begin_decision_review(st.session_state.management_trace, st.session_state.state)
-                else:
-                    st.session_state.close_pending = True
-                rerun_app()
+            else:
+                # Available, and secondary to writing and Send (UX, second iteration, 2026-10-02).
+                with st.container(key="enc-close"):
+                    complete = st.button(
+                        "Complete Encounter & Begin Review",
+                        disabled=not bool(st.session_state.management_trace),
+                    )
+                if complete:
+                    if encounter_close.has_destination(st.session_state.management_trace, st.session_state.state):
+                        st.session_state.encounter_close = encounter_close.record(
+                            "clinical_close", destination_recorded=True, warned=False,
+                            minute=st.session_state.state.get("sim_time"))
+                        begin_decision_review(st.session_state.management_trace, st.session_state.state)
+                    else:
+                        st.session_state.close_pending = True
+                    rerun_app()
         else:
             frozen_trace = st.session_state.get("encounter_closed_trace")
             if frozen_trace is None:

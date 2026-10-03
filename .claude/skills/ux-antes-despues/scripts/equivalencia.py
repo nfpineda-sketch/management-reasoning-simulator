@@ -98,6 +98,8 @@ def _paso(at, paso, et):
         _boton(at, paso["boton"]).click().run()
     elif accion == "boton":
         _boton(at, paso["etiqueta"]).click().run()
+    elif accion == "pestana":
+        pass                                # una pestaña sólo cambia lo que se ve; AppTest dibuja todas
     elif accion == "cerrar":
         _boton(at, et["cerrar"]).click().run()
         if any(b.label in et["terminar"] for b in at.button):
