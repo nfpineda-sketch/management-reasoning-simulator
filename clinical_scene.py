@@ -235,13 +235,15 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
     # codes stay where they belong: the display log and the faculty's review
     # (image_scene._log, image_pack.read_observations).
     limitation = STILL_VIEW_NOTE if current else ''
+    # The monitor above, the patient below it: the monitor never covers the patient's head.
     return ("<style>" + BEDSPACE_CSS + "</style>" +
-            f'<div class="clinical-scene" style="{bg}">' + photo +
+            '<div class="clinical-scene">' +
             f'<div class="scene-monitor">{monitor}{ecg}</div>' +
+            f'<div class="scene-stage" style="{bg}">' + photo +
             f'<div class="scene-time">ED / Bed 03 · {escape(status)}</div>' +
             (f'<div class="scene-image-status" role="status">{escape(detail)}</div>' if detail else '') +
             (f'<div class="scene-observations scene-note" role="note">{limitation}</div>' if limitation else '') +
-            (f'<div class="scene-observations">{escape(observations)}</div>' if not current else '') + '</div>')
+            (f'<div class="scene-observations">{escape(observations)}</div>' if not current else '') + '</div></div>')
 
 
 def scene_status_text(status):
@@ -313,28 +315,32 @@ UNAVAILABLE = {
 # at all (the room's menu replaces it), so the two halves share the whole width.
 BEDSPACE_CSS = """
 [data-testid="stMain"]{transform:translate(0)}
-.clinical-scene{position:fixed;top:3.4rem;bottom:1rem;left:1rem;width:calc(50% - 1.5rem);background:#18252e;
- border-radius:14px;overflow:hidden;z-index:1;container-type:size}
-.scene-photo{position:fixed;top:3.4rem;bottom:1rem;left:1rem;width:calc(50% - 1.5rem);background:#18252e;
- border-radius:14px;overflow:hidden;z-index:0;container-type:size}
+.clinical-scene,.scene-photo{--mon-h:clamp(10rem,27vh,13.5rem);--scene-gap:.6rem}
+.clinical-scene{position:fixed;top:3.4rem;bottom:1rem;left:1rem;width:calc(50% - 1.5rem);z-index:1;
+ display:flex;flex-direction:column;gap:var(--scene-gap)}
+.scene-stage,.scene-photo{background:#18252e;border-radius:14px;overflow:hidden;container-type:size}
+.scene-stage{position:relative;flex:1 1 0;min-height:0}
+.scene-photo{position:fixed;top:calc(3.4rem + var(--mon-h) + var(--scene-gap));bottom:1rem;left:1rem;
+ width:calc(50% - 1.5rem);z-index:0}
 .scene-photo-empty{display:none}
 .scene-photo-img{position:absolute;inset:0;background-repeat:no-repeat;background-size:cover;
  --fw:max(100cqw,calc(100cqh * var(--fa,1.5)));
  background-position:clamp(calc(100cqw - var(--fw)),calc(50cqw - var(--fx,.5) * var(--fw)),0px) 30%}
-.scene-monitor{position:absolute;left:.8rem;top:.8rem;width:min(46%,27rem);background:linear-gradient(180deg,#0c1f2ef7,#06121bf7);
- border:1px solid #3b5a6e;border-radius:12px;box-shadow:0 12px 30px #000b,inset 0 1px 0 #ffffff1a;overflow:hidden;
+.scene-monitor{position:relative;flex:0 0 var(--mon-h);box-sizing:border-box;background:linear-gradient(180deg,#0c1f2e,#06121b);
+ border:1px solid #3b5a6e;border-radius:12px;box-shadow:0 6px 18px #08131b40,inset 0 1px 0 #ffffff1a;overflow:hidden;
  container-type:inline-size}
-.monitor-body{padding:8px 12px 10px}
+.monitor-body{height:100%;box-sizing:border-box;display:flex;flex-direction:column;padding:8px 14px 10px}
 .monitor-heading{color:#b8cedc;font:700 10.5px/1.3 system-ui,sans-serif;letter-spacing:.1em;min-height:22px;
  display:flex;align-items:center;padding-right:4.4rem}
-.scene-monitor svg{width:100%;height:auto;display:block;max-height:8vh;margin:3px 0 5px}
+.scene-monitor svg{display:block;flex:1 1 0;min-height:0;width:100%;height:auto;margin:4px 0 6px;border-radius:6px;
+ background:#08131b}
 .monitor-values{display:grid;grid-template-columns:repeat(4,auto);justify-content:space-between;column-gap:.7rem;min-width:0}
 .monitor-values>div{min-width:0}
 .monitor-values small{font:700 11px/1.2 system-ui,sans-serif;letter-spacing:.03em;white-space:nowrap}
 .monitor-unit{opacity:.75;font-weight:500}
-.monitor-value{font:700 clamp(19px,2.15vw,36px)/1.08 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:nowrap}
+.monitor-value{font:700 clamp(20px,5.4cqw,42px)/1.05 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:nowrap}
 @container (max-width:270px){.monitor-values{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:3px}}
-.scene-time{position:absolute;right:.8rem;top:.8rem;max-width:44%;background:#08131cb3;color:#e8eff4;padding:4px 11px;
+.scene-time{position:absolute;right:.8rem;top:.8rem;max-width:calc(100% - 1.6rem);background:#08131cb3;color:#e8eff4;padding:4px 11px;
  font:500 11.5px/1.35 system-ui,sans-serif;border-radius:999px;backdrop-filter:blur(3px)}
 .scene-observations{position:absolute;left:.8rem;bottom:.8rem;width:fit-content;max-width:calc(100% - 1.6rem);
  background:#0c1822e0;color:#f1f6f9;padding:8px 12px;border-radius:10px;font:13px/1.45 system-ui,sans-serif;
@@ -354,8 +360,8 @@ BEDSPACE_CSS = """
 .st-key-enc-status{position:fixed!important;top:.5rem;left:calc(50% + .5rem);right:15rem;z-index:999991;
  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center;gap:1rem;width:auto!important}
 .st-key-enc-status>div{width:auto!important;flex:0 0 auto}
-.st-key-enc-ecg{position:fixed!important;z-index:999990;width:3.9rem!important;top:calc(3.4rem + .8rem + 6px);
- left:calc(1.8rem + min((50% - 1.5rem) * .46, 27rem) - 3.9rem - 10px)}
+.st-key-enc-ecg{position:fixed!important;z-index:999990;width:3.9rem!important;top:calc(3.4rem + 6px);
+ left:calc(50% - .5rem - 3.9rem - 14px)}
 .st-key-enc-ecg [data-testid="stElementContainer"],.st-key-enc-ecg .stButton{width:100%!important}
 .st-key-enc-ecg button{width:100%;min-height:1.55rem;height:1.55rem;padding:0 .4rem;background:#12301f;color:#c9f7dd;
  border:1px solid #3d8c69;border-radius:7px}
@@ -456,19 +462,18 @@ BEDSPACE_CSS = """
 .st-key-enc-close .stButton button{min-height:1.8rem;padding:.12rem .8rem;color:#475569;background:#f8fafc;border:1px solid #c5d0da}
 .st-key-enc-close .stButton button p{font-size:.84rem;font-weight:600}
 @media(max-width:760px){
- .clinical-scene,.scene-photo{top:5.6rem;left:.4rem;right:.4rem;width:auto;bottom:auto;height:36vh}
- .scene-monitor{width:52%;left:.4rem;top:.4rem}
- .monitor-body{padding:5px 8px 6px}
+ .clinical-scene,.scene-photo{--mon-h:7.8rem;--scene-gap:.4rem;left:.4rem;right:.4rem;width:auto;bottom:auto}
+ .clinical-scene{top:5.6rem;height:36vh}
+ .scene-photo{top:calc(5.6rem + var(--mon-h) + var(--scene-gap));height:calc(36vh - var(--mon-h) - var(--scene-gap))}
+ .monitor-body{padding:5px 9px 6px}
  .monitor-heading{font-size:9px;min-height:19px;padding-right:3.6rem}
- .scene-monitor svg{max-height:4.5vh;margin:2px 0 3px}
- .monitor-values{grid-template-columns:repeat(2,auto)}
+ .scene-monitor svg{margin:2px 0 3px}
  .monitor-values small{font-size:9.5px}
- .monitor-value{font-size:16px}
  .scene-time{font-size:9.5px;padding:3px 8px;max-width:40%}
  .scene-observations{font-size:11px;padding:5px}
  .scene-note{font-size:10.5px;padding:3px 8px}
  .scene-image-status{font-size:11px;padding:6px;top:55%}
- .st-key-enc-ecg{width:3.2rem!important;top:calc(5.6rem + .4rem + 4px);left:calc(.8rem + (100% - .8rem) * .52 - 3.2rem - 8px)}
+ .st-key-enc-ecg{width:3.2rem!important;top:calc(5.6rem + 4px);left:auto;right:calc(.4rem + 9px)}
  .st-key-enc-ecg button{min-height:1.3rem;height:1.3rem}
  .st-key-enc-ecg button p{font-size:.64rem}
  .st-key-encounter-console{left:.4rem;right:.4rem;width:auto!important;top:calc(5.6rem + 37vh);bottom:.4rem;padding:8px}
