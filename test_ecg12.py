@@ -149,6 +149,29 @@ class ECGRecordingTests(unittest.TestCase):
                 else:
                     self.assertGreater(max(signals["II"]) - min(signals["II"]), .1)
 
+    def test_monitor_window_shows_more_of_the_same_signal_never_a_stretch(self):
+        """The wide bedside window continues the 4-s strip: same paper speed, gain, beats and sweep."""
+        from ecg12 import MONITOR_VIEW, _path, _rhythm, _signals
+        width, height = MONITOR_VIEW
+        seconds = (width - 20) / 145
+        for rhythm, rate, profile in (("Sinus rhythm", 88, "baseline"), ("Sinus tachycardia", 121, "st_elevation_inferior"),
+                                      ("AF", 162, "baseline"), ("Sinus bradycardia", 35, "posterior_infarct"),
+                                      ("complete heart block", 35, "baseline"), ("VT", 180, "baseline"),
+                                      ("VF", 0, "baseline"), ("asystole", 0, "baseline")):
+            with self.subTest(rhythm=rhythm, rate=rate):
+                svg = monitor_wave_svg({"rhythm": rhythm, "hr": rate}, profile, 17)
+                root = ET.fromstring(svg)
+                self.assertEqual(root.attrib["viewBox"], f"0 0 {width} {height}")
+                self.assertNotIn("preserveAspectRatio", svg)
+                drawn = root.find("{http://www.w3.org/2000/svg}path").attrib["d"]
+                # Point for point, the first four seconds are the strip the room drew before.
+                before, _, _ = _signals(rate, _rhythm({"rhythm": rhythm}), profile, 17, duration=4, sample_hz=250)
+                self.assertTrue(drawn.startswith(_path(before["II"], 0, 4, 250, 10, 80, 145, 42) + " L"))
+                last_x = float(drawn.rsplit(" L", 1)[1].split(",")[0])
+                self.assertAlmostEqual(last_x, 10 + seconds * 145, places=1)
+                self.assertIn(f"translateX({width + 32}px)", svg)
+                self.assertIn(f"animation:mrs-ecg-sweep {seconds:.3f}s linear infinite", svg)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -405,7 +405,15 @@ def framing_style(image):
             _FRAMING.clear()
         _FRAMING[key] = _measure_framing(image)
     centre, aspect = _FRAMING[key]
-    return f"--fx:{centre:.3f};--fa:{aspect:.3f}"
+    # Most bank photographs place the patient left of centre. Where the frame has the
+    # photograph's own proportion, cropping alone cannot move them, so the room may enlarge
+    # the photograph just enough to centre them (2026-10-03), never beyond 1.25: a little
+    # wall and sheet is cut, never the head.
+    zoom = min(_CENTRE_ZOOM_MAX, 1 / (1 - 2 * abs(.5 - centre)))
+    return f"--fx:{centre:.3f};--fa:{aspect:.3f};--fz:{zoom:.3f}"
+
+
+_CENTRE_ZOOM_MAX = 1.25
 
 
 def _measure_framing(image):

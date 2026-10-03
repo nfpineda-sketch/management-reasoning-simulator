@@ -340,8 +340,16 @@ def render_ecg_svg(snapshot):
     return "".join(parts)
 
 
+#: The bedside strip's drawing area: 6:1, the proportion of the monitor band above the patient.
+#: The trace keeps one paper speed (145 units/s) and one gain (42 units/mV), so a wider window
+#: shows more seconds of the same signal, never a stretched one (UX of the encounter, 2026-10-03).
+MONITOR_VIEW = (792, 132)
+
+
 def monitor_wave_svg(observable, profile="baseline", seed=0):
     """Short bedside Lead-II display. Electrical activity does not imply a pulse."""
+    width, height = MONITOR_VIEW
+    seconds = (width - 20) / 145
     try:
         rhythm = _rhythm(observable)
         rate = _finite(observable.get("hr"), "heart rate")
@@ -353,9 +361,11 @@ def monitor_wave_svg(observable, profile="baseline", seed=0):
             raise ValueError("Morphology unavailable")
         if rhythm in ("vt", "vf", "asystole") and profile != "baseline":
             raise ValueError("Morphology/rhythm combination unavailable")
-        signals, _, _ = _signals(rate, rhythm, profile, int(seed), duration=4, sample_hz=250,
+        signals, _, _ = _signals(rate, rhythm, profile, int(seed), duration=seconds, sample_hz=250,
                                  qrs_s=_qrs_override(observable))
-        path = _path(signals["II"], 0, 4, 250, 10, 80, 145, 42)
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 132" role="img" aria-label="Bedside lead II monitor"><rect width="600" height="132" fill="#08131b"/><text x="12" y="22" fill="#71ef9b" font-size="16" font-family="monospace">II</text><path d="' + path + '" fill="none" stroke="#71ef9b" stroke-width="1.8" stroke-linejoin="round"/><style>@keyframes mrs-ecg-sweep {from {transform:translateX(0)} to {transform:translateX(632px)}} .mrs-ecg-sweep {animation:mrs-ecg-sweep 4s linear infinite} @media (prefers-reduced-motion:reduce) {.mrs-ecg-sweep {display:none}}</style><g class="mrs-ecg-sweep"><rect x="-32" y="28" width="24" height="101" fill="#08131b"/><path d="M-8 28v101" stroke="#71ef9b" stroke-opacity=".20" stroke-width="1"/></g></svg>'
+        path = _path(signals["II"], 0, seconds, 250, 10, 80, 145, 42)
+        # The sweep crosses the window in the window's own time, as it did over the 4-s strip.
+        return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" role="img" aria-label="Bedside lead II monitor"><rect width="{width}" height="{height}" fill="#08131b"/><text x="12" y="22" fill="#71ef9b" font-size="16" font-family="monospace">II</text><path d="' + path + '" fill="none" stroke="#71ef9b" stroke-width="1.8" stroke-linejoin="round"/>'
+                f'<style>@keyframes mrs-ecg-sweep {{from {{transform:translateX(0)}} to {{transform:translateX({width + 32}px)}}}} .mrs-ecg-sweep {{animation:mrs-ecg-sweep {seconds:.3f}s linear infinite}} @media (prefers-reduced-motion:reduce) {{.mrs-ecg-sweep {{display:none}}}}</style><g class="mrs-ecg-sweep"><rect x="-32" y="28" width="24" height="101" fill="#08131b"/><path d="M-8 28v101" stroke="#71ef9b" stroke-opacity=".20" stroke-width="1"/></g></svg>')
     except (ValueError, TypeError, OverflowError):
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 132" role="img" aria-label="Electrical waveform unavailable"><rect width="600" height="132" fill="#08131b"/><text x="20" y="70" fill="#e8ca86" font-size="20" font-family="monospace">Electrical waveform unavailable</text></svg>'
+        return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" role="img" aria-label="Electrical waveform unavailable"><rect width="{width}" height="{height}" fill="#08131b"/><text x="20" y="70" fill="#e8ca86" font-size="20" font-family="monospace">Electrical waveform unavailable</text></svg>'

@@ -211,3 +211,120 @@ Se toma como referencia el mockup aprobado del encargo original.
 - La foto que elige el banco depende del identificador del intento, distinto en cada base sintética, así que las
   capturas ANTES y DESPUÉS muestran pacientes distintos. El encuadre se comparó con las mismas fotos aparte.
 - En teléfono el monitor sigue sobre la foto y, en algunos encuadres, tapa parte de la cabeza, como antes.
+
+## 12. Monitor arriba, paciente debajo: cierre (2026-10-03)
+
+Sólo presentación. No cambian el motor, el lector, el reloj clínico, la evaluación, el Management Trace, la
+persistencia, los cuatro campos ni la columna derecha. `39f9558` puso el monitor arriba, a todo el ancho de la
+columna, y al paciente en un bloque propio debajo. Esta sección cierra lo que esa entrega dejó pendiente.
+
+**Limitaciones de partida (`39f9558`).**
+- El trazado de cabecera era una ventana fija de 4 s (`viewBox` 600×132, 4,5:1). Con escala uniforme, en un monitor
+  ancho ocupaba sólo una parte de la banda: a 1366×768, 421 de 629 px.
+- En teléfono, la franja superior de 36vh dejaba el trazado en 186×41 px y la foto en 377×173 px. La consola se
+  desplazaba por dentro.
+- El aviso de la fotografía iba sobre el pie de la imagen y tapaba entre 29 y 46 px de la foto.
+- En un marco con la proporción de la foto, el encuadre de §11 no podía mover al paciente. Recortar sólo cambia qué
+  parte de la foto se ve, y ahí no sobra ancho. A 1366×768 el paciente quedaba entre 0,33 y 0,54 del ancho. Así se
+  veía en la app de desarrollo.
+- Lo anotado en §11 sobre el monitor que tapaba la cabeza en teléfono ya lo resolvió `39f9558`. Aquí se confirma en
+  los cuatro tamaños.
+
+**Solución.**
+- **Trazado** (`ecg12.monitor_wave_svg`, `MONITOR_VIEW`):
+  - la ventana mide 792×132 (6:1) y muestra unos 5,3 s de la misma señal (`_signals`);
+  - conserva la velocidad de papel (145 u/s) y la ganancia (42 u/mV);
+  - los primeros 4 s coinciden punto por punto con el trazado anterior;
+  - lo que sigue lo da el mismo reloj de latidos del modelo: no se duplican segmentos ni se inventan latidos;
+  - el barrido cruza la ventana en su propia duración;
+  - sin escalado no uniforme. El ECG de 12 derivaciones no cambia.
+- **Escritorio** (`clinical_scene.BEDSPACE_CSS`): el SVG toma su alto de su ancho y llena la banda. El alto del
+  monitor se reserva a partir del ancho de la columna (`--mon-h`), y la foto empieza debajo.
+- **Teléfono:**
+  - una sola columna con desplazamiento vertical normal: monitor → paciente (4:3) → aviso → consola;
+  - sin desplazamiento horizontal;
+  - los botones propios de Streamlit (⋮, y «Deploy» en local) llevan fondo propio. El encabezado es transparente
+    (`encounter_screen.MENU_CSS`), y ahora la página se desplaza bajo él: sin ese fondo, los botones quedaban sobre
+    el texto o la foto.
+- **Aviso:** el mismo texto aprobado, como pie bajo la foto. Queda fuera de la imagen, completo y sin truncar.
+- **Paciente centrado** (`image_scene.framing_style`):
+  - además del centro medido, la sala puede agrandar la foto lo justo para centrar al paciente (`--fz`), nunca más
+    de ×1,25;
+  - el ancla vertical sigue en el 30 % de la imagen: se recorta algo de pared y sábana, no la cabeza;
+  - una foto que no se puede leer queda como antes;
+  - no cambian qué foto se muestra, su revisión ni su registro.
+
+**Medidas en navegador** (sala real, datos sintéticos, Chromium sin red; antes `39f9558` → después):
+
+| Tamaño | Trazado dibujado (px; % del ancho de la banda) | Segundos | Foto visible, sin el aviso encima (px) | Aviso | Página |
+|---|---|---|---|---|---|
+| 1440×900 | 450×99 (68 %) → 666×111 (100 %) | 4 → 5,3 | 696×575 → 696×554 | sobre la foto (29 px) → debajo | sin desplazamiento |
+| 1366×768 | 421×93 (67 %) → 629×105 (100 %) | 4 → 5,3 | 659×435 → 659×430 | sobre la foto (46 px) → debajo | sin desplazamiento |
+| 1000×768 | 446×98 (100 %) → 446×74 (100 %) | 4 → 5,3 | 476×435 → 476×471 | sobre la foto (46 px) → debajo | sin desplazamiento |
+| 390×844 | 186×41 (52 %) → 357×60 (100 %) | 4 → 5,3 | 377×136 → 377×283 | sobre la foto (37 px) → debajo | consola con desplazamiento propio → página de 1.344 px; sin desplazamiento horizontal |
+
+Comprobado en los cuatro tamaños:
+- la escala es uniforme (la misma en x y en y) en el trazado y en su rótulo «II»;
+- el botón ECG queda dentro del monitor;
+- el cuadro y «Send» se alcanzan, también en teléfono con 480 px de alto (teclado virtual simulado);
+- ni la app ni la página hicieron solicitudes externas:
+  - los servidores tienen la red bloqueada en el proceso: 0 intentos;
+  - la página: 0 solicitudes;
+  - Chromium intentó por su cuenta conectar con servicios de Google (cuentas, hora, DNS), y el proxy del entorno
+    rechazó esas conexiones.
+
+**Centrado del paciente.** Cálculo con la fórmula del CSS sobre los centros medidos de las 133 fotos del banco.
+La posición va de 0 (borde izquierdo) a 1; 0,5 es el centro. Las capturas lo muestran en el navegador con las fotos
+que eligieron las bases sintéticas.
+
+| Marco | Sin el aumento | Con el aumento | Exactamente al centro | Recorte máximo arriba / abajo |
+|---|---|---|---|---|
+| 1440×900 | 0,39–0,50 | 0,41–0,50 | 103/133 | 1 % / 3 % |
+| 1366×768 | 0,33–0,54 | 0,41–0,50 | 103/133 | 7 % / 15 % |
+| 1000×768 | 0,49–0,50 | 0,49–0,50 | 131/133 | 0 % / 0 % |
+| 390×844 | 0,37–0,50 | 0,41–0,50 | 103/133 | 3 % / 7 % |
+
+**Capturas** (fuera del repositorio, entregadas con el informe):
+- EN y ES a 1440×900, 1366×768, 1000×768 y 390×844;
+- estados: llegada, cuatro campos pendientes y completos, ECG abierto y encuentro largo;
+- vista neutral sin imagen aprobada en los cuatro tamaños.
+
+**Versión verificada.** El árbol de trabajo sobre `39f9558`, con el código de la app de este commit. Después sólo
+cambió este documento.
+- **Pruebas focalizadas** (29 archivos que usan la escena, el monitor o el ECG): 596 aprobadas, 1 omitida,
+  209 subpruebas.
+- **Equivalencia del registro con `39f9558`** (perfil de 20 pasos con la orden retenida, los cuatro campos, el ECG y
+  las cuatro vistas): idéntica.
+  - Sólo se normalizan el commit registrado (`code_version`) y la hora en que se congela la base de la evaluación.
+  - Los 19 «hechos visibles nuevos» son todos la duración del barrido en el estilo del SVG («5.324s»). Se revisaron
+    a mano: no son hechos clínicos.
+- **Capturas y medidas** de arriba.
+- **Comportamiento:** 6 de 6 comprobaciones a 1366×768 y a 390×844.
+  - En teléfono, «abrir el menú no mueve nada» fallaba en falso. Con la página desplazada hasta abajo, Playwright
+    la subía 500 px para alcanzar el botón, y la comprobación medía posiciones en pantalla.
+  - `comportamiento.py` ahora trae el botón a la vista antes de medir.
+- **Ventana y vistas:** cambiar el tamaño de la ventana y recorrer las vistas no agrega eventos ni avanza el
+  reloj.
+
+La suite completa y las 56/56 regresiones activas corrieron sobre el candidato anterior (árbol de trabajo con huella
+`2b4970b38cee`), con el renderizador del trazado ya cambiado. La suite dio 6.661 aprobadas, 83 omitidas, 1 xfail y
+0 fallidas. Después cambiaron sólo dos cosas en la app, ambas cubiertas por las pruebas focalizadas:
+- `image_scene.framing_style` y dos reglas de CSS, para centrar al paciente;
+- una regla de CSS para teléfono: el fondo de los botones de Streamlit.
+
+**Límites.**
+- **1000×768:** el trazado ocupa todo el ancho, como antes, pero muestra 5,3 s en vez de 4 s. Su alto baja de 98 a
+  74 px (escala 0,74 → 0,56). Sigue legible en las capturas. Una ventana más corta para monitores angostos daría
+  más alto; no está implementada.
+- **Fibrilación auricular:** el modelo usa un ciclo de 16 latidos. Desde unos 181/min, ese ciclo cabe en la ventana
+  de 5,3 s y puede verse repetido; con 4 s pasaba desde 240/min. Es propiedad del modelo, no de la ventana.
+- **Barra lateral abierta:** la reserva del monitor se calcula con el ancho de la ventana del navegador. Con la
+  barra abierta, la columna real es más angosta y sólo crece el espacio entre monitor y foto, sin superposición.
+  Durante el encuentro, la barra está cerrada por defecto.
+- **Aumento:** en un marco ancho (1366×768) puede recortar hasta 15 % de la sábana abajo y 7 % arriba.
+- **Teléfono:**
+  - «☰ Menu» queda arriba de la página y se va con el desplazamiento: para abrirlo hay que volver arriba;
+  - el teclado virtual se simuló con 480 px de alto en Chromium sin interfaz; no se probó en un teléfono real.
+- **Capturas:** cada base sintética elige su foto, así que EN y ES muestran pacientes distintos.
+- **App de desarrollo:** no se comprueba desde este entorno, cuyo proxy no deja pasar el WebSocket de Streamlit.
+  Ver el informe de entrega.

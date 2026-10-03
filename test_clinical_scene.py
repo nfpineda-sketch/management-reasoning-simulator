@@ -91,3 +91,33 @@ def test_an_open_sidebar_covers_none_of_the_room():
     from clinical_scene import BEDSPACE_CSS, scene_html
     assert BEDSPACE_CSS.lstrip().startswith('[data-testid="stMain"]{transform:translate(0)}')
     assert BEDSPACE_CSS in scene_html(None, '<div>174</div>')
+
+
+def test_the_room_reserves_the_monitor_for_the_strip_it_draws():
+    # The photograph sits below the monitor, so the room reserves the monitor's height from
+    # its width (desktop and phone) for a 6:1 strip; the strip drawn must keep that proportion.
+    from clinical_scene import BEDSPACE_CSS
+    from ecg12 import MONITOR_VIEW
+    width, height = MONITOR_VIEW
+    assert width / height == 6
+    assert BEDSPACE_CSS.count(") / 6 + 1.05 * var(--mon-val))") == 2
+
+
+def test_a_photograph_is_enlarged_only_to_centre_its_patient():
+    # Bed, gown and sheet are white: their centre is where the patient is (image_scene).
+    import image_scene
+    from PIL import ImageDraw
+
+    def photo(x0, x1, light=250):
+        image = Image.new("RGB", (1536, 1024), (60, 60, 60))
+        ImageDraw.Draw(image).rectangle([x0, 300, x1, 1000], fill=(light, light, light))
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        return base64.b64encode(buffer.getvalue()).decode()
+
+    def zoom(style):
+        return float(style.rsplit("--fz:", 1)[1])
+
+    assert zoom(image_scene.framing_style(photo(480, 750))) == 1.25          # left of centre: capped
+    assert zoom(image_scene.framing_style(photo(650, 886))) < 1.01           # centred: as good as unchanged
+    assert zoom(image_scene.framing_style(photo(650, 886, 90))) == 1.0       # unreadable: as before

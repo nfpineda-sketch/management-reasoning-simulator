@@ -315,41 +315,40 @@ UNAVAILABLE = {
 # at all (the room's menu replaces it), so the two halves share the whole width.
 BEDSPACE_CSS = """
 [data-testid="stMain"]{transform:translate(0)}
-.clinical-scene,.scene-photo{--mon-h:clamp(10rem,27vh,13.5rem);--scene-gap:.6rem}
-.clinical-scene{position:fixed;top:3.4rem;bottom:1rem;left:1rem;width:calc(50% - 1.5rem);z-index:1;
- display:flex;flex-direction:column;gap:var(--scene-gap)}
+[data-testid="stMain"]{--scene-w:calc(50vw - 1.5rem);--mon-val:clamp(20px,2.65vw,42px);--scene-gap:.6rem;
+ --note-h:2.6rem;--note-gap:.35rem;--mon-h:calc(68px + (var(--scene-w) - 30px) / 6 + 1.05 * var(--mon-val))}
+.clinical-scene{position:fixed;top:3.4rem;bottom:1rem;left:1rem;width:calc(50% - 1.5rem);z-index:1}
 .scene-stage,.scene-photo{background:#18252e;border-radius:14px;overflow:hidden;container-type:size}
-.scene-stage{position:relative;flex:1 1 0;min-height:0}
-.scene-photo{position:fixed;top:calc(3.4rem + var(--mon-h) + var(--scene-gap));bottom:1rem;left:1rem;
- width:calc(50% - 1.5rem);z-index:0}
+.scene-stage{position:absolute;left:0;right:0;top:calc(var(--mon-h) + var(--scene-gap));bottom:0}
+.scene-photo{position:fixed;top:calc(3.4rem + var(--mon-h) + var(--scene-gap));bottom:calc(1rem + var(--note-h) + var(--note-gap));
+ left:1rem;width:calc(50% - 1.5rem);z-index:0}
 .scene-photo-empty{display:none}
-.scene-photo-img{position:absolute;inset:0;background-repeat:no-repeat;background-size:cover;
- --fw:max(100cqw,calc(100cqh * var(--fa,1.5)));
+.scene-photo-img{position:absolute;inset:0;background-repeat:no-repeat;background-size:var(--fw) auto;
+ --fw:max(calc(100cqw * var(--fz,1)),calc(var(--ph,100cqh) * var(--fa,1.5)));
  background-position:clamp(calc(100cqw - var(--fw)),calc(50cqw - var(--fx,.5) * var(--fw)),0px) 30%}
-.scene-monitor{position:relative;flex:0 0 var(--mon-h);box-sizing:border-box;background:linear-gradient(180deg,#0c1f2e,#06121b);
- border:1px solid #3b5a6e;border-radius:12px;box-shadow:0 6px 18px #08131b40,inset 0 1px 0 #ffffff1a;overflow:hidden;
- container-type:inline-size}
-.monitor-body{height:100%;box-sizing:border-box;display:flex;flex-direction:column;padding:8px 14px 10px}
-.monitor-heading{color:#b8cedc;font:700 10.5px/1.3 system-ui,sans-serif;letter-spacing:.1em;min-height:22px;
+.scene-stage:has(.scene-note) .scene-photo-img{bottom:calc(var(--note-h) + var(--note-gap));
+ --ph:calc(100cqh - var(--note-h) - var(--note-gap))}
+.scene-monitor{position:absolute;top:0;left:0;right:0;box-sizing:border-box;background:linear-gradient(180deg,#0c1f2e,#06121b);
+ border:1px solid #3b5a6e;border-radius:12px;box-shadow:0 6px 18px #08131b40,inset 0 1px 0 #ffffff1a;overflow:hidden}
+.monitor-body{padding:8px 14px 10px}
+.monitor-heading{color:#b8cedc;font:700 10.5px/1.3 system-ui,sans-serif;letter-spacing:.1em;height:22px;
  display:flex;align-items:center;padding-right:4.4rem}
-.scene-monitor svg{display:block;flex:1 1 0;min-height:0;width:100%;height:auto;margin:4px 0 6px;border-radius:6px;
- background:#08131b}
+.scene-monitor svg{display:block;width:100%;height:auto;margin:4px 0 6px;border-radius:6px}
 .monitor-values{display:grid;grid-template-columns:repeat(4,auto);justify-content:space-between;column-gap:.7rem;min-width:0}
 .monitor-values>div{min-width:0}
-.monitor-values small{font:700 11px/1.2 system-ui,sans-serif;letter-spacing:.03em;white-space:nowrap}
+.monitor-values small{display:block;font:700 11px/14px system-ui,sans-serif;letter-spacing:.03em;white-space:nowrap}
 .monitor-unit{opacity:.75;font-weight:500}
-.monitor-value{font:700 clamp(20px,5.4cqw,42px)/1.05 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:nowrap}
-@container (max-width:270px){.monitor-values{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:3px}}
+.monitor-value{font:700 var(--mon-val)/1.05 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:nowrap}
 .scene-time{position:absolute;right:.8rem;top:.8rem;max-width:calc(100% - 1.6rem);background:#08131cb3;color:#e8eff4;padding:4px 11px;
  font:500 11.5px/1.35 system-ui,sans-serif;border-radius:999px;backdrop-filter:blur(3px)}
 .scene-observations{position:absolute;left:.8rem;bottom:.8rem;width:fit-content;max-width:calc(100% - 1.6rem);
  background:#0c1822e0;color:#f1f6f9;padding:8px 12px;border-radius:10px;font:13px/1.45 system-ui,sans-serif;
  border:1px solid #ffffff1a;box-shadow:0 4px 16px #0006}
-.scene-note{left:.6rem;right:.6rem;bottom:.6rem;width:auto;max-width:none;display:flex;align-items:center;justify-content:center;
- gap:.5rem;padding:5px 12px;background:#09131bad;backdrop-filter:blur(4px);color:#e9f0f4;font:12px/1.4 system-ui,sans-serif;
- border-radius:8px;box-shadow:none}
+.scene-note{top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;min-height:var(--note-h);box-sizing:border-box;
+ display:flex;align-items:center;justify-content:center;gap:.55rem;padding:4px 12px;background:#f3f6f9;color:#2c3e50;
+ border:1px solid #d6dfe7;border-radius:10px;font:12.5px/1.35 system-ui,sans-serif;box-shadow:none}
 .scene-note::before{content:"i";flex:0 0 auto;width:15px;height:15px;border:1.4px solid currentColor;border-radius:50%;
- font:700 10px/12.6px Georgia,serif;text-align:center;opacity:.9}
+ font:700 10px/12.6px Georgia,serif;text-align:center;opacity:.8}
 .scene-image-status{position:absolute;left:.8rem;top:42%;max-width:calc(100% - 1.6rem);color:#dce8ef;
  font:15px/1.5 system-ui;padding:12px;background:#0e1b24;border-radius:8px}
 .st-key-encounter-console{position:fixed!important;top:3.4rem;bottom:1rem;right:1rem;width:calc(50% - 1.5rem)!important;
@@ -462,24 +461,35 @@ BEDSPACE_CSS = """
 .st-key-enc-close .stButton button{min-height:1.8rem;padding:.12rem .8rem;color:#475569;background:#f8fafc;border:1px solid #c5d0da}
 .st-key-enc-close .stButton button p{font-size:.84rem;font-weight:600}
 @media(max-width:760px){
- .clinical-scene,.scene-photo{--mon-h:7.8rem;--scene-gap:.4rem;left:.4rem;right:.4rem;width:auto;bottom:auto}
- .clinical-scene{top:5.6rem;height:36vh}
- .scene-photo{top:calc(5.6rem + var(--mon-h) + var(--scene-gap));height:calc(36vh - var(--mon-h) - var(--scene-gap))}
+ /* One column that scrolls: monitor, then the patient, the photograph's note, and the console below. */
+ [data-testid="stMain"]{--scene-w:calc(100vw - .8rem);--mon-val:clamp(18px,5.6vw,28px);--scene-gap:.4rem;--note-gap:.3rem;
+  --note-h:2.75rem;--pic-h:calc(var(--scene-w) * .75);--mon-h:calc(51px + (var(--scene-w) - 20px) / 6 + 1.05 * var(--mon-val));
+  --console-top:calc(5.6rem + var(--mon-h) + var(--scene-gap) + var(--pic-h) + var(--note-gap) + var(--note-h) + .6rem)}
+ .clinical-scene{top:5.6rem;left:.4rem;right:.4rem;width:auto;bottom:auto;
+  height:calc(var(--mon-h) + var(--scene-gap) + var(--pic-h) + var(--note-gap) + var(--note-h))}
+ .scene-photo{top:calc(5.6rem + var(--mon-h) + var(--scene-gap));left:.4rem;right:.4rem;width:auto;bottom:auto;height:var(--pic-h)}
  .monitor-body{padding:5px 9px 6px}
- .monitor-heading{font-size:9px;min-height:19px;padding-right:3.6rem}
+ .monitor-heading{font-size:9px;height:19px;padding-right:3.6rem}
  .scene-monitor svg{margin:2px 0 3px}
- .monitor-values small{font-size:9.5px}
- .scene-time{font-size:9.5px;padding:3px 8px;max-width:40%}
+ .monitor-values small{font-size:9.5px;line-height:12px}
+ .scene-time{font-size:10px;padding:3px 8px;max-width:calc(100% - 1rem)}
  .scene-observations{font-size:11px;padding:5px}
- .scene-note{font-size:10.5px;padding:3px 8px}
+ .scene-note{font-size:12px;padding:3px 10px}
  .scene-image-status{font-size:11px;padding:6px;top:55%}
  .st-key-enc-ecg{width:3.2rem!important;top:calc(5.6rem + 4px);left:auto;right:calc(.4rem + 9px)}
  .st-key-enc-ecg button{min-height:1.3rem;height:1.3rem}
  .st-key-enc-ecg button p{font-size:.64rem}
- .st-key-encounter-console{left:.4rem;right:.4rem;width:auto!important;top:calc(5.6rem + 37vh);bottom:.4rem;padding:8px}
+ .st-key-encounter-console{left:.4rem;right:.4rem;width:auto!important;top:var(--console-top);bottom:auto;
+  height:calc(100vh - 4.4rem);height:calc(100dvh - 4.4rem);padding:8px}
+ /* The header is transparent (encounter_screen.MENU_CSS) and the page scrolls under it: Streamlit's own
+    buttons get a backing, so that they never sit on the text or the photograph. */
+ [data-testid="stToolbarActions"],[data-testid="stAppDeployButton"],[data-testid="stMainMenu"],
+ [data-testid="stStatusWidget"]{background:#ffffff;border-radius:8px}
  .st-key-enc-status{top:3rem;left:.4rem;right:.4rem;gap:.5rem;justify-content:space-between}
  .enc-clock{font-size:.95rem}
 }
+@media(max-width:379px){[data-testid="stMain"]{--note-h:3.75rem}}
+@media(min-width:761px) and (max-width:800px){[data-testid="stMain"]{--note-h:3.6rem}}
 @media(prefers-reduced-motion:reduce){.scene-monitor *{animation:none!important}}
 """
 
