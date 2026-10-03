@@ -82,6 +82,10 @@ def main():
         menu_etiqueta = next((e for e in et["menu"] if p.has_button(e)), None)
         if menu_etiqueta and ({"menu_teclado_y_escape", "menu_no_mueve_nada"} & quiero):
             menu = page.get_by_role("button", name=menu_etiqueta).first
+            # Una página que se desplaza (teléfono) no cuenta como movimiento: el botón se trae a la vista antes
+            # de medir, como lo haría una persona, y el clic ya no desplaza la página.
+            menu.scroll_into_view_if_needed()
+            time.sleep(0.3)
             escena0, consola0 = caja(sel["escena"]), caja(sel["consola"])
             menu.click()
             time.sleep(0.8)
