@@ -64,6 +64,26 @@ def test_exploration_and_problem_generation_are_isolated_from_treatment(monkeypa
     assert at.session_state.events[-1]['kind']=='examination'
 
 
+def test_the_version_line_stays_out_of_the_room(monkeypatch):
+    # In the room it lay under the monitor and showed through it whenever the room was faded
+    # while running (seen on the deployment, 2026-10-05); the launch page keeps it.
+    from test_curriculum_app import authored_replay_fixture
+    authored_replay_fixture(monkeypatch)
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setenv('MRS_AUTH_MODE','shared')
+    monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+    at=AppTest.from_file(str(Path(__file__).with_name('app.py')), default_timeout=20)
+    at.secrets['APP_PASSWORD']='local-test'
+    at.session_state['_shared_access_granted']=True
+    at.run()
+    version=lambda: [c.value for c in at.caption if 'Clinical encounter v' in c.value]
+    assert version()
+    next(w for w in at.selectbox if w.label=='Clinical problem').set_value('R1-03').run()
+    next(b for b in at.button if b.label=='Begin Encounter').click().run()
+    assert not at.exception and not version()
+
+
 def test_indented_ecg_is_html_not_markdown_code():
     from clinical_scene import scene_html
     from markdown_it import MarkdownIt

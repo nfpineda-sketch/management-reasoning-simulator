@@ -10000,7 +10000,12 @@ def _install_case_narrative():
 
 
 _install_case_narrative()
-st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
+# In the room the version line lies under the monitor, and it showed through the room
+# whenever the room was faded while running (2026-10-05). The pages before and after the
+# encounter keep it.
+if not (st.session_state.get("started") and not st.session_state.get("encounter_ended")
+        and st.session_state.get("_attempt_status") != "completed"):
+    st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_language_interpretation_enabled() else "Local language interpretation is active.")
 

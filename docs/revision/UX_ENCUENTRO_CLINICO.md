@@ -328,3 +328,31 @@ La suite completa y las 56/56 regresiones activas corrieron sobre el candidato a
 - **Capturas:** cada base sintética elige su foto, así que EN y ES muestran pacientes distintos.
 - **App de desarrollo:** no se comprueba desde este entorno, cuyo proxy no deja pasar el WebSocket de Streamlit.
   Ver el informe de entrega.
+
+## 13. La línea de versión, fuera de la sala (2026-10-05)
+
+**Observado en la app de desarrollo** (video del 2026-10-05, con el código de §12): cada ~2 s la sala se pone gris
+durante unos 0,9 s. Mientras tanto, a través del monitor se lee «Management Reasoning Simulator · Clinical encounter
+v0.24.13».
+
+**Causa.**
+- La sala es un fragmento que se refresca solo cada 2 s (`resuscitation_room.render_room`,
+  `@st.fragment(run_every=2)`, desde el 2026-09-21), para mostrar una foto apenas esté lista.
+- Mientras corre, Streamlit atenúa la sala. En Streamlit Cloud cada refresco tarda lo bastante para que se vea.
+- En local es tan breve que la sala no se atenúa: la opacidad del monitor fue 1 en 160 muestras durante 8 s.
+- La línea de versión se dibuja arriba de la página, debajo del monitor, y se transparentaba con la sala atenuada.
+  Lo mismo pasa al enviar una acción, mientras la página corre.
+
+**Cambio.** `app.py` ya no dibuja la línea de versión durante el encuentro; antes y después del encuentro sigue
+igual. Prueba nueva: `test_the_version_line_stays_out_of_the_room`.
+
+**Verificación.**
+- 606 pruebas aprobadas y 1 omitida, en los 29 archivos de la sala, `test_generation_progress.py` y
+  `test_problem_launch.py`.
+- La prueba nueva falla sin el cambio.
+- En navegador local, la línea está en la página de inicio y no en la sala. 0 solicitudes externas.
+
+**Sigue pendiente.**
+- El gris periódico de la sala en Streamlit Cloud: lo causa el refresco de 2 s, no la línea.
+- Para cuentas docentes, la línea sobre la interpretación del lenguaje («… language interpretation is active.»)
+  sigue debajo del monitor y se transparentaría igual.
