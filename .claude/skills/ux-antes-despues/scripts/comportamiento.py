@@ -14,7 +14,9 @@ disponibles:
   - menu_no_mueve_nada: abrir el menú no mueve la escena ni la consola;
   - envio_limpia_cuadro: tras un envío real, el cuadro queda vacío.
 Una comprobación que el perfil no declara no se corre: no se exige a una pantalla que no la tiene.
-No crea cuentas ni toca bases. Escribe sólo el JSON de resultados.
+Además, 'red_del_navegador': el net log de Chromium sin destinos no locales; si no, el resultado es una falla.
+No crea cuentas ni toca bases. Escribe el JSON de resultados y, en RUN, el net log del navegador
+(red-navegador-comportamiento-LADO-TAMANO.json).
 """
 import argparse
 import json
@@ -39,86 +41,22 @@ def main():
     perfil = json.loads(Path(a.perfil).resolve().read_text(encoding="utf-8"))
     from playwright.sync_api import sync_playwright
 
-    et, sel, quiero = perfil["etiquetas"], perfil["selectores"], set(perfil["comprobaciones_navegador"])
-    cuadro = f'textarea[aria-label="{et["cuadro"]}"]'
     resultados = {}
 
     def anotar(nombre, ok, detalle=""):
         resultados[nombre] = {"ok": bool(ok), "detalle": detalle}
 
     with sync_playwright() as pw:
-        nav = navegador.Navegador(pw, a.tamano)
-        page = nav.page
-        p = nav.ingresar(datos["manifiesto"]["lados"][a.lado]["url"],
-                         navegador.cuenta(datos, a.tamano, "comportamiento"))
-        p.click(next(e for e in et["comenzar"] if p.has_button(e)))
-        time.sleep(3)
-        p.settle()
-        marcados = lambda: page.evaluate(
-            "(s) => [...document.querySelectorAll(s + ' input[type=radio]')].filter(i => i.checked)"
-            ".map(i => i.closest('label').innerText.trim())", sel["modos"])
-        borrador = lambda: page.locator(cuadro).first.input_value()
-        caja = lambda s: page.locator(s).first.bounding_box()
+        nav = navegador.Navegador(
+            pw, a.tamano, net_log=datos["dir"] / f"red-navegador-comportamiento-{a.lado}-{a.tamano}.json")
+        try:
+            comprobar(nav, datos, a, perfil, anotar)
+        finally:
+            red = nav.cerrar()
 
-        if "un_solo_modo" in quiero:
-            marca = page.evaluate(
-                "(s) => { const l = [...document.querySelectorAll(s + ' label[data-testid=\"stRadioOption\"]')]"
-                ".find(l => l.querySelector('input').checked); return l ? getComputedStyle(l.querySelector('p'),"
-                " '::before').content : ''; }", sel["modos"])
-            anotar("un_solo_modo", len(marcados()) == 1 and marca not in ("", "none", "normal"), [marcados(), marca])
-        if "enter_agrega_linea" in quiero or "borrador_en_vistas" in quiero:
-            page.locator(cuadro).first.click()
-            page.keyboard.type("Line one")
-            page.keyboard.press("Enter")
-            page.keyboard.type("line two")
-            time.sleep(1.5)
-            anotar("enter_agrega_linea", borrador() == "Line one\nline two", repr(borrador()))
-        if "borrador_en_vistas" in quiero:
-            antes = marcados()
-            for pestana in perfil["pestanas"]:
-                page.get_by_role("tab", name=pestana).first.click()
-                time.sleep(0.5)
-            anotar("borrador_en_vistas", borrador() == "Line one\nline two" and marcados() == antes, repr(borrador()))
-        menu_etiqueta = next((e for e in et["menu"] if p.has_button(e)), None)
-        if menu_etiqueta and ({"menu_teclado_y_escape", "menu_no_mueve_nada"} & quiero):
-            menu = page.get_by_role("button", name=menu_etiqueta).first
-            # Una página que se desplaza (teléfono) no cuenta como movimiento: el botón se trae a la vista antes
-            # de medir, como lo haría una persona, y el clic ya no desplaza la página.
-            menu.scroll_into_view_if_needed()
-            time.sleep(0.3)
-            escena0, consola0 = caja(sel["escena"]), caja(sel["consola"])
-            menu.click()
-            time.sleep(0.8)
-            abierto_clic = menu.get_attribute("aria-expanded") == "true"
-            sin_mover = caja(sel["escena"]) == escena0 and caja(sel["consola"]) == consola0
-            page.keyboard.press("Escape")
-            time.sleep(0.8)
-            cerrado_escape = menu.get_attribute("aria-expanded") == "false"
-            menu.focus()
-            page.keyboard.press("Enter")
-            time.sleep(0.8)
-            abierto_teclado = menu.get_attribute("aria-expanded") == "true"
-            page.mouse.click(nav.ancho * 0.42, nav.alto * 0.8)
-            time.sleep(0.8)
-            cerrado_fuera = menu.get_attribute("aria-expanded") == "false"
-            if "menu_teclado_y_escape" in quiero:
-                anotar("menu_teclado_y_escape", abierto_clic and cerrado_escape and abierto_teclado and cerrado_fuera,
-                       [abierto_clic, cerrado_escape, abierto_teclado, cerrado_fuera])
-            if "menu_no_mueve_nada" in quiero:
-                anotar("menu_no_mueve_nada", sin_mover)
-        elif {"menu_teclado_y_escape", "menu_no_mueve_nada"} & quiero:
-            anotar("menu", False, "el perfil declara un menú que esta pantalla no tiene")
-        if "envio_limpia_cuadro" in quiero:
-            page.locator(cuadro).first.fill("Troponin now.")
-            page.get_by_role("button", name=next(e for e in et["enviar"] if p.has_button(e))).first.click()
-            time.sleep(2)
-            p.settle()
-            anotar("envio_limpia_cuadro", borrador() == "", repr(borrador()))
-        bloqueadas = nav.bloqueadas
-        nav.cerrar()
-
+    anotar("red_del_navegador", navegador.red_limpia(red), red)
     informe = {"lado": a.lado, "tamano": a.tamano, "comprobaciones": resultados,
-               "red_externa_bloqueada_en_el_navegador": bloqueadas}
+               "red_externa_bloqueada_en_el_navegador": nav.bloqueadas}
     texto = json.dumps(informe, indent=1, ensure_ascii=False)
     if a.salida:
         Path(a.salida).write_text(texto)
@@ -126,6 +64,77 @@ def main():
     ok = all(r["ok"] for r in resultados.values())
     print("TODO OK" if ok else "HAY FALLAS")
     sys.exit(0 if ok else 1)
+
+
+def comprobar(nav, datos, a, perfil, anotar):
+    et, sel, quiero = perfil["etiquetas"], perfil["selectores"], set(perfil["comprobaciones_navegador"])
+    cuadro = f'textarea[aria-label="{et["cuadro"]}"]'
+    page = nav.page
+    p = nav.ingresar(datos["manifiesto"]["lados"][a.lado]["url"],
+                     navegador.cuenta(datos, a.tamano, "comportamiento"))
+    p.click(next(e for e in et["comenzar"] if p.has_button(e)))
+    time.sleep(3)
+    p.settle()
+    marcados = lambda: page.evaluate(
+        "(s) => [...document.querySelectorAll(s + ' input[type=radio]')].filter(i => i.checked)"
+        ".map(i => i.closest('label').innerText.trim())", sel["modos"])
+    borrador = lambda: page.locator(cuadro).first.input_value()
+    caja = lambda s: page.locator(s).first.bounding_box()
+
+    if "un_solo_modo" in quiero:
+        marca = page.evaluate(
+            "(s) => { const l = [...document.querySelectorAll(s + ' label[data-testid=\"stRadioOption\"]')]"
+            ".find(l => l.querySelector('input').checked); return l ? getComputedStyle(l.querySelector('p'),"
+            " '::before').content : ''; }", sel["modos"])
+        anotar("un_solo_modo", len(marcados()) == 1 and marca not in ("", "none", "normal"), [marcados(), marca])
+    if "enter_agrega_linea" in quiero or "borrador_en_vistas" in quiero:
+        page.locator(cuadro).first.click()
+        page.keyboard.type("Line one")
+        page.keyboard.press("Enter")
+        page.keyboard.type("line two")
+        time.sleep(1.5)
+        anotar("enter_agrega_linea", borrador() == "Line one\nline two", repr(borrador()))
+    if "borrador_en_vistas" in quiero:
+        antes = marcados()
+        for pestana in perfil["pestanas"]:
+            page.get_by_role("tab", name=pestana).first.click()
+            time.sleep(0.5)
+        anotar("borrador_en_vistas", borrador() == "Line one\nline two" and marcados() == antes, repr(borrador()))
+    menu_etiqueta = next((e for e in et["menu"] if p.has_button(e)), None)
+    if menu_etiqueta and ({"menu_teclado_y_escape", "menu_no_mueve_nada"} & quiero):
+        menu = page.get_by_role("button", name=menu_etiqueta).first
+        # Una página que se desplaza (teléfono) no cuenta como movimiento: el botón se trae a la vista antes
+        # de medir, como lo haría una persona, y el clic ya no desplaza la página.
+        menu.scroll_into_view_if_needed()
+        time.sleep(0.3)
+        escena0, consola0 = caja(sel["escena"]), caja(sel["consola"])
+        menu.click()
+        time.sleep(0.8)
+        abierto_clic = menu.get_attribute("aria-expanded") == "true"
+        sin_mover = caja(sel["escena"]) == escena0 and caja(sel["consola"]) == consola0
+        page.keyboard.press("Escape")
+        time.sleep(0.8)
+        cerrado_escape = menu.get_attribute("aria-expanded") == "false"
+        menu.focus()
+        page.keyboard.press("Enter")
+        time.sleep(0.8)
+        abierto_teclado = menu.get_attribute("aria-expanded") == "true"
+        page.mouse.click(nav.ancho * 0.42, nav.alto * 0.8)
+        time.sleep(0.8)
+        cerrado_fuera = menu.get_attribute("aria-expanded") == "false"
+        if "menu_teclado_y_escape" in quiero:
+            anotar("menu_teclado_y_escape", abierto_clic and cerrado_escape and abierto_teclado and cerrado_fuera,
+                   [abierto_clic, cerrado_escape, abierto_teclado, cerrado_fuera])
+        if "menu_no_mueve_nada" in quiero:
+            anotar("menu_no_mueve_nada", sin_mover)
+    elif {"menu_teclado_y_escape", "menu_no_mueve_nada"} & quiero:
+        anotar("menu", False, "el perfil declara un menú que esta pantalla no tiene")
+    if "envio_limpia_cuadro" in quiero:
+        page.locator(cuadro).first.fill("Troponin now.")
+        page.get_by_role("button", name=next(e for e in et["enviar"] if p.has_button(e))).first.click()
+        time.sleep(2)
+        p.settle()
+        anotar("envio_limpia_cuadro", borrador() == "", repr(borrador()))
 
 
 if __name__ == "__main__":
