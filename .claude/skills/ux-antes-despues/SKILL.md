@@ -48,7 +48,8 @@ python3 "$S/entorno.py" limpiar --dir RUN
   - el navegador aborta toda petición que no sea al servidor local.
 
   `iniciar` se detiene si la autoprueba falla o si el entorno del servidor muestra una variable sospechosa.
-  `detener` informa los intentos bloqueados.
+  `detener` informa los intentos bloqueados. El entorno y el directorio de cada servidor se leen de `/proc` en
+  Linux, y con `sysctl` y `lsof` en macOS.
 - Excepción, sólo si es imprescindible: desactivar la revisión de imágenes únicamente en ese entorno temporal
   sintético, con el motivo escrito en el manifiesto de la corrida. Nunca en un despliegue.
 - Después de cambiar el CSS o un módulo importado, reiniciar los servidores: Streamlit conserva los módulos entre

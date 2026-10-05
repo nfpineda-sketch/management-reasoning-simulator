@@ -167,10 +167,36 @@ def _responde(url, segundos=90):
     return False
 
 
+def _procargs(pid):
+    """macOS, sin /proc: los argumentos y el entorno de un proceso propio (sysctl KERN_PROCARGS2)."""
+    import ctypes
+    import ctypes.util
+    libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
+    maximo, largo = ctypes.c_int(), ctypes.c_size_t(ctypes.sizeof(ctypes.c_int))
+    if libc.sysctl((ctypes.c_int * 2)(1, 8), 2, ctypes.byref(maximo), ctypes.byref(largo), None, 0):  # KERN_ARGMAX
+        raise OSError(ctypes.get_errno(), "sysctl KERN_ARGMAX")
+    memoria, largo = ctypes.create_string_buffer(maximo.value), ctypes.c_size_t(maximo.value)
+    if libc.sysctl((ctypes.c_int * 3)(1, 49, pid), 3, memoria, ctypes.byref(largo), None, 0):    # KERN_PROCARGS2
+        raise OSError(ctypes.get_errno(), f"sysctl KERN_PROCARGS2 {pid}")
+    crudo = memoria.raw[:largo.value]
+    argc = int.from_bytes(crudo[:4], sys.byteorder)
+    # argc, la ruta del ejecutable, relleno de NUL, argv, el entorno hasta una cadena vacía; después, datos del
+    # sistema que no son entorno.
+    partes = crudo[4:].split(b"\0")[1:]
+    while partes and not partes[0]:
+        partes.pop(0)
+    argv, resto = partes[:argc], partes[argc:]
+    entorno = resto[:resto.index(b"")] if b"" in resto else resto
+    return argv, entorno
+
+
 def _variables(pid):
     """Los nombres (nunca los valores) del entorno con que corre el proceso."""
-    crudo = Path(f"/proc/{pid}/environ").read_bytes()
-    return sorted(e.split(b"=", 1)[0].decode(errors="replace") for e in crudo.split(b"\0") if e)
+    if Path("/proc").is_dir():
+        crudo = Path(f"/proc/{pid}/environ").read_bytes().split(b"\0")
+    else:
+        crudo = _procargs(pid)[1]
+    return sorted(e.split(b"=", 1)[0].decode(errors="replace") for e in crudo if e)
 
 
 def iniciar(a):
@@ -244,8 +270,16 @@ def _vivo(pid):
 
 def _es_de_la_corrida(pid, run):
     try:
-        return Path(f"/proc/{pid}/cwd").resolve().is_relative_to(run) and \
-            b"streamlit" in Path(f"/proc/{pid}/cmdline").read_bytes()
+        if Path("/proc").is_dir():
+            cwd, orden = Path(f"/proc/{pid}/cwd").resolve(), Path(f"/proc/{pid}/cmdline").read_bytes()
+        else:                                            # macOS: lsof da el directorio; sysctl, la orden
+            salida = subprocess.run([shutil.which("lsof") or "/usr/sbin/lsof", "-a", "-p", str(pid), "-d", "cwd",
+                                     "-Fn"], capture_output=True, text=True).stdout
+            nombre = next((linea[1:] for linea in salida.splitlines() if linea.startswith("n")), None)
+            if not nombre:
+                return False
+            cwd, orden = Path(nombre).resolve(), b"\0".join(_procargs(pid)[0])
+        return cwd.is_relative_to(run) and b"streamlit" in orden
     except OSError:
         return False
 
