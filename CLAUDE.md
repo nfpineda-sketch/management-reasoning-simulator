@@ -73,6 +73,8 @@ de alcance, rige la fuente, no este resumen.
 ## Privacidad y procedencia
 - No commitear datos reales, respuestas externas, secretos ni nombres de médicos.
 - No escribir la identidad del modelo del asistente de código en commits, comentarios ni archivos del repositorio.
+  - En los commits, la atribución va como «Co-Authored-By: Claude <noreply@anthropic.com>», sin nombre ni versión
+    del modelo (decisión del 2026-10-05). Los commits anteriores no se reescriben.
 - Sí conservar la procedencia de los análisis de IA de la aplicación en el almacenamiento autorizado de cada
   ejecución (la base de la app), como ya se hace:
   - modelo o proveedor cuando corresponda;
