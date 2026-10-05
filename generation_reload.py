@@ -36,7 +36,7 @@ _VISUAL_RELEASES = {
     "patient_appearance": ("APPEARANCE_VERSION", 4),
     "scene_pipeline": ("SCENE_PIPELINE_VERSION", 12),
     "clinical_scene": ("SCENE_RENDER_VERSION", 12),
-    "resuscitation_room": ("ROOM_RENDER_VERSION", 9),
+    "resuscitation_room": ("ROOM_RENDER_VERSION", 10),
 }
 _VISUAL_MODULES = (
     "account_store", "account_portal",

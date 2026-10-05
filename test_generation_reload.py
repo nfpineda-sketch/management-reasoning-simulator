@@ -119,7 +119,7 @@ assert scene_pipeline.inspect_image is image_consistency.inspect_image
 assert patient_appearance.APPEARANCE_VERSION == 4
 assert scene_pipeline.SCENE_PIPELINE_VERSION == 12
 assert clinical_scene.SCENE_RENDER_VERSION == 12
-assert resuscitation_room.ROOM_RENDER_VERSION == 9
+assert resuscitation_room.ROOM_RENDER_VERSION == 10
 assert generation_reload._LOCK is old_lock
 ''')
 

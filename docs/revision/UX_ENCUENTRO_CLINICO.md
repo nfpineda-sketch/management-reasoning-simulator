@@ -356,3 +356,39 @@ igual. Prueba nueva: `test_the_version_line_stays_out_of_the_room`.
 - El gris periódico de la sala en Streamlit Cloud: lo causa el refresco de 2 s, no la línea.
 - Para cuentas docentes, la línea sobre la interpretación del lenguaje («… language interpretation is active.»)
   sigue debajo del monitor y se transparentaría igual.
+
+## 14. La sala se refresca sola sólo mientras se prepara una foto (2026-10-05)
+
+Decisión del 2026-10-05: la opción A de las dos propuestas para el gris periódico que quedó pendiente en §13.
+
+**Cambio** (`resuscitation_room.render_room`).
+- En cada recarga de la página, la sala pregunta primero por la foto, una sola vez.
+- Pide el refresco de 2 s sólo si la foto está en preparación.
+- Si no hay una foto en preparación, la sala se dibuja con la página y no se refresca sola. Es lo que pasa siempre en
+  el primer piloto, que no genera imágenes durante el encuentro.
+  - Así desaparece el gris cada 2 s.
+  - El servidor deja de consultar el banco de imágenes cada 2 s.
+- `ROOM_RENDER_VERSION` pasa de 9 a 10 (`generation_reload.py`), para que una actualización sin reinicio recargue la
+  sala.
+
+**Consecuencias.**
+- Si un docente aprueba una foto durante el encuentro, aparece en la siguiente acción del residente, no a los 2 s.
+  El registro de lo mostrado anota el cambio cuando la foto se muestra.
+- Si una foto termina de prepararse mientras la sala se refresca, aparece en ese refresco.
+  - Los refrescos siguen hasta la siguiente acción, con la foto ya en memoria: Streamlit sólo deja decidirlos en
+    cada recarga de la página.
+
+**Verificación.**
+- **Prueba nueva:** con una foto en preparación la sala pide el refresco de 2 s; sin ella, ninguno. La foto se pide
+  una vez por recarga. La prueba falla con el código anterior.
+- **Navegador local**, con la sala quieta durante 8 s:
+  - antes (`6c1ecd7`), 28 mensajes del servidor, en ráfagas cada 2 s;
+  - después, 0;
+  - el monitor se dibuja igual.
+- **Pruebas focalizadas:** 607 aprobadas, 1 omitida, en los 29 archivos de la sala, `test_generation_progress.py`,
+  `test_problem_launch.py` y `test_generation_reload.py`.
+
+**Sigue igual.**
+- Al enviar una acción, la página corre y Streamlit atenúa, mientras tanto, lo que va a cambiar.
+- Para cuentas docentes, la línea «… language interpretation is active.» sigue debajo del monitor y se
+  transparentaría en ese momento.

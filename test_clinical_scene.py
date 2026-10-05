@@ -84,6 +84,34 @@ def test_the_version_line_stays_out_of_the_room(monkeypatch):
     assert not at.exception and not version()
 
 
+def test_the_room_redraws_itself_only_while_a_photograph_is_prepared(monkeypatch):
+    # Every redraw fades the room while it runs: on the deployment, about a second every 2 s,
+    # even with no photograph to wait for (2026-10-05). The page asks for the photograph once.
+    import streamlit as st
+    import clinical_scene
+    from streamlit.testing.v1 import AppTest
+    plan, asked, redraws = iter([True, False]), [], []
+
+    def scene_image(state, events, context=None):
+        asked.append(1)
+        st.session_state['_scene_pending'] = next(plan)
+
+    def fragment(func, run_every=None):
+        redraws.append(run_every)
+        return lambda *args, **kwargs: None
+
+    monkeypatch.setattr(clinical_scene, 'scene_image', scene_image)
+    monkeypatch.setattr(st, 'fragment', fragment)
+
+    def page():
+        import resuscitation_room
+        resuscitation_room.render_room({}, [], None, None, '')
+        resuscitation_room.render_room({}, [], None, None, '')
+
+    assert not AppTest.from_function(page).run().exception
+    assert redraws == [2, None] and len(asked) == 2
+
+
 def test_indented_ecg_is_html_not_markdown_code():
     from clinical_scene import scene_html
     from markdown_it import MarkdownIt

@@ -46,7 +46,7 @@ def patient_svg(t):
     <circle cx="177" cy="335" r="10" fill="#405565"/><circle cx="333" cy="335" r="10" fill="#405565"/>{mask}{pump}</svg>'''
 
 
-ROOM_RENDER_VERSION = 9
+ROOM_RENDER_VERSION = 10
 
 
 def monitor_html(o, time_label, profile='baseline', seed=0):
@@ -67,11 +67,29 @@ def monitor_html(o, time_label, profile='baseline', seed=0):
             + wave + f'<div class="monitor-values">{cards}</div></div>')
 
 
-@st.fragment(run_every=2)
 def render_room(state, events, ecg_svg, render_event, time_label, context=None):
+    """The room, drawn with the page; it also redraws itself every 2 s, but only while a
+    photograph is being prepared, so that the photograph appears when it is ready.
+
+    Every redraw fades the room while it runs, and on the deployment that lasted about a
+    second, every 2 s, even with no photograph to wait for (2026-10-05). Streamlit forgets
+    these redraws at every run of the page, so each run asks for the photograph first and
+    decides again.
+    """
+    from clinical_scene import scene_image
+    st.session_state['_room_image'] = scene_image(state, events, context)
+    every = 2 if st.session_state.get('_scene_pending', False) else None
+    st.fragment(_room, run_every=every)(state, events, ecg_svg, render_event, time_label, context)
+
+
+def _room(state, events, ecg_svg, render_event, time_label, context=None):
     from clinical_scene import scene_image, scene_html
     from patient_appearance import appearance_signature, appearance_summary
-    image = scene_image(state, events, context)
+    # The page has just asked for the photograph; a redraw of the room on its own asks again.
+    if '_room_image' in st.session_state:
+        image = st.session_state.pop('_room_image')
+    else:
+        image = scene_image(state, events, context)
     # A bank photograph is its own element, always present (empty when there is
     # none), so the element tree keeps its shape and the monitor can change
     # without sending the photograph again (image bank, 2026-09-26).
