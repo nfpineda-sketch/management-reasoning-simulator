@@ -5,12 +5,35 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-06, con el cierre de la Fase 0 (sección «Cierre de la Fase 0», la vigente: F0-1 a
-  F0-12 cerradas). La sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se
-  abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
+- **Actualizado:** 2026-10-06, con la preparación para el despliegue (sección «Preparación para el despliegue», la
+  vigente: NOT READY FOR DEPLOYMENT, seis bloqueos y sus decisiones) y, antes, con el cierre de la Fase 0 (sección
+  «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La sección «Fase 0 · Seguridad de la medición antes del piloto»,
+  con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
   siguen más abajo, como estaban.
+
+## Preparación para el despliegue (2026-10-06)
+
+Encargo «PRE-DEPLOYMENT READINESS — RESIDENT PILOT». No es la Fase 1 y no reabre la Fase 0. Informe:
+`docs/revision/PRE_DEPLOYMENT_READINESS_2026_10_06.md`.
+
+**Resultado: NOT READY FOR DEPLOYMENT.** Candidato del runtime: `009aadb`. Su suite completa (7.578, 0 fallas),
+PostgreSQL 16 local con TLS (23 de 23, respaldo y restauración), la prueba de humo automática y el envío seguro con
+Streamlit 1.65.0 pasan. No se desplegó ni se empujó nada, y no se aplicó ninguna corrección.
+
+| Bloqueo | Qué falta | Decisión que se necesita |
+|---|---|---|
+| B-1 | La prueba de PostgreSQL en una base descartable del proveedor, de su versión mayor (BLOCKED / NOT RUN) | Quién la corre y desde dónde: este entorno no llega al proveedor |
+| B-2 | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
+| B-3 | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
+| B-4 | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
+| B-5 | Las firmas docentes, todas pendientes | Firmar antes de construir el candidato final |
+| B-6 | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
+
+**Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,
+`CIERRE_PREPILOTO.md`, `GUIA_DOCENTE_PILOTO.md` y el preflight, frente a los 30 del manifiesto (F0-2); la guía docente
+dice que un fármaco sin verbo «puede perderse sin aviso»; ninguna guía describe la conducta nueva de la sala.
 
 ## Cierre de la Fase 0 (2026-10-06)
 
