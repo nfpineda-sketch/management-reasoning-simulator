@@ -569,6 +569,7 @@ def reset_session():
     # separate from the learner-facing narrative event stream so the encounter UI
     # remains unchanged while each decision can later support review/comparison.
     st.session_state.management_trace = []
+    st.session_state.order_ledger = []
     st.session_state.encounter_ended = False
     # A new encounter records its own language when it closes (document_language).
     st.session_state.pop("encounter_language", None)
@@ -872,11 +873,13 @@ def record_information_activity(activity, request, response, started, result, be
     })
 
 
-def record_management_trace(learner_input, parsed, result, state_before, state_after):
+def record_management_trace(learner_input, parsed, result, state_before, state_after, turn=None):
     """Append one structured decision-response event to the Management Trace."""
     from curriculum_runtime import code_version
+    from order_ledger import strip_tags as _untag
     status = "executed" if result.get("executed") else "not_executed"
-    if result.get("clarification"):
+    if result.get("clarification") and not result.get("partial"):
+        # A partly held order ran what it could: it is executed, with its scope said below.
         status = "clarification_required"
     elif result.get("terminal_locked"):
         status = "terminal_locked"
@@ -890,8 +893,9 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         "response_time_min": state_after.get("sim_time_min", 0),
         "elapsed_minutes": int(result.get("elapsed_min", 0) or 0),
         "learner_input": learner_input,
-        # Preserve what the engine understood separately from what the learner typed.
-        "interpreted_action": deepcopy(parsed.get("actions", [])),
+        # Preserve what the engine understood separately from what the learner typed (the
+        # reader's actions as it returned them; each order's id and fate are in "orders").
+        "interpreted_action": [_untag(a) for a in deepcopy(parsed.get("actions", []))],
         "reasoning": deepcopy(parsed.get("reasoning", {})),
         "reasoning_observations": deepcopy(parsed.get("reasoning_observations", [])),
         "reasoning_recognition": deepcopy(parsed.get("reasoning_recognition")),
@@ -913,6 +917,16 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         "state_before": deepcopy(state_before),
         "state_after": deepcopy(state_after),
     }
+    if result.get("partial"):
+        # Some orders ran and others wait on a question (Phase 0, 0B).
+        event["execution_scope"] = "partial"
+    if turn is not None:
+        # Phase 0 (0A, 0H): what was typed, once, and every order with its fate. The v1
+        # fields above are kept as they were.
+        import order_ledger
+        event["trace_extensions"] = ["phase0_v1"]
+        event["submission"] = deepcopy(turn.get("submission"))
+        event["orders"] = order_ledger.snapshot(turn.get("orders") or [])
     st.session_state.management_trace.append(event)
     return event
 
@@ -4091,6 +4105,7 @@ def begin_repeat_encounter(adaptation_plan, prior_attempt_record=None):
     st.session_state.events = []
     st.session_state.history = []
     st.session_state.management_trace = []
+    st.session_state.order_ledger = []
     st.session_state.encounter_ended = False
     # A new encounter's language is the one on screen as it starts, fixed until it
     # closes (faculty, 2026-09-27; document_language).
@@ -5336,6 +5351,12 @@ def try_resolve_pending_action(text):
             # The resident wrote a new order instead of answering. It runs, and
             # what it costs is stated rather than dropped in silence.
             held = _understood_order_labels(pending.get("parsed") or {})
+            import order_pipeline
+            cancelled = order_pipeline.ledger_cancel(st.session_state, (pending.get("parsed") or {}).get("actions"),
+                                                     "discarded when a new order replaced it")
+            if not held:
+                # What the reader had no name for is named by the resident's own words.
+                held = [o.get("span") for o in cancelled if o.get("span")]
             st.session_state.pending_action = None
             if held:
                 add_event("order_cancelled", "The held order was discarded to run this one: "
@@ -5355,6 +5376,10 @@ def try_resolve_pending_action(text):
                                      + ". Answer the question above, or say cancel. Nothing has been administered."}
         if (resolution and resolution.get("parsed")) or (resolution is None and (_opens_with_an_order(body) or _NEGATION.match(body))):
             st.session_state.pending_action = None
+            if resolution is None:
+                import order_pipeline
+                order_pipeline.ledger_cancel(st.session_state, (pending.get("parsed") or {}).get("actions"),
+                                             "discarded when a new order replaced it")
             if resolution is None and held:
                 # A new directive replaces the held order, and what that costs is
                 # said, as for any other order written instead of an answer.
@@ -8351,6 +8376,15 @@ def _seal_reasoning(held, pending, via=""):
 def cancel_pending_order():
     """Discard unexecuted orders, preserving patient state and encounter evidence."""
     from pending_cancellation import clear_pending_orders
+    held = []
+    for key in ("pending_reasoning", "pending_action", "pending_bundle"):
+        value = st.session_state.get(key) or {}
+        parsed = value.get("parsed") if isinstance(value, dict) else None
+        held.extend((parsed or {}).get("actions") or [])
+        if key == "pending_bundle" and isinstance(value, dict):
+            held.extend(list(value.get("before") or []) + list(value.get("after") or []))
+    import order_pipeline
+    order_pipeline.ledger_cancel(st.session_state, held, "cancelled by the resident before execution")
     if not clear_pending_orders(st.session_state):
         return False
     clear_reasoning_gate_clarification()
@@ -8513,6 +8547,16 @@ def resolve_pending_reasoning(text):
     if supplemental_reassessment:
         held_actions = [a for a in held_actions if a.get("type") != "reassessment"]
         held_actions.extend(deepcopy(supplemental_reassessment))
+    # Phase 0 (0B, 2026-10-06): a new order written in the answer is an order, not prose.
+    # It used to be dropped without a word: "Transfuse 2 units PRBC" written while
+    # completing a held pantoprazole never ran and was never mentioned (audit §17.7a).
+    # It joins the held order and runs with it; the held order restated is not given twice.
+    import order_pipeline
+    joining, restated = order_pipeline.join_followup(held_actions, supplemental.get("actions", []))
+    held_actions.extend(deepcopy(joining))
+    held["_followup_restated"] = list(held.get("_followup_restated") or []) + deepcopy(restated)
+    held["_coverage_text"] = str(text)
+    held["_coverage_parse"] = deepcopy(supplemental)
 
     held["reasoning"] = merged_reasoning
     held["actions"] = held_actions
@@ -9016,6 +9060,12 @@ def execute_bundle(parsed):
             state["sim_time"] = now
 
     state = st.session_state.state
+    import order_ledger as _ledger
+    if not state.get("engine_family"):
+        # The legacy and generated engines receive the reader's actions as it returned them:
+        # the order ledger's ids stay with the page, never in the patient state.
+        tagged_actions = list(parsed.get("actions") or [])
+        parsed = {**parsed, "actions": [_ledger.strip_tags(a) for a in tagged_actions]}
     if state.get("engine_family"):
         from family_engine import execute_family_bundle
         from pending_family_orders import hold_incomplete_bundle
@@ -9027,6 +9077,66 @@ def execute_bundle(parsed):
             return {"executed": False, "clarification": None, "action_summaries": [],
                     "reassess_delay": None, "elapsed_min": 0, "plans_only": True}
         waiting = weight_based_doses.resolve(parsed, state)
+        from family_engine import FAMILIES as _BANK_FAMILIES
+        _fs = state.get("family_state") or {}
+        _arrested = _fs.get("vf_at") is not None or _fs.get("arrest_at") is not None
+        if state.get("engine_family") in _BANK_FAMILIES and not _arrested:
+            # Phase 0 (0B): independent orders run; only dependency groups wait with the item
+            # that cannot run yet. The whole bundle no longer waits for one item.
+            import order_pipeline
+            split = order_pipeline.split_bundle(state, parsed, text=str(parsed.get("raw_text") or ""),
+                                                weight_waiting=waiting)
+            if split["held"] or split["unreadable"] or split["refused"]:
+                run = split["run"]
+                held_actions = [a for a, *_ in split["held"]]
+                question = (weight_based_doses.question_for(parsed, waiting, state) if waiting
+                            else split["question"])
+                split["question"] = question
+                result = None
+                if run or not held_actions:
+                    runnable = {**{k: v for k, v in parsed.items() if k != "clarification"},
+                                "actions": [_ledger.strip_tags(a) for a in run]}
+                    result = execute_family_bundle(state, runnable)
+                    if result.get("executed") and run:
+                        weight_based_doses.remember(state, runnable)
+                if held_actions:
+                    held_parsed = {**{k: v for k, v in parsed.items() if k != "clarification"},
+                                   "actions": deepcopy(held_actions), "recognized_future_actions": [],
+                                   "future_details": []}
+                    # The gate already decided this submission (an urgent order is never held for
+                    # its reasoning, decision 12): the part that waits for an answer keeps that
+                    # decision instead of being judged again on its own.
+                    held_parsed["reasoning_gate"] = deepcopy(parsed.get("reasoning_gate"))
+                    held_parsed["_gate_decided"] = True
+                    if waiting:
+                        st.session_state.pending_action = {
+                            "type": "family_bundle", "parsed": held_parsed,
+                            "index": next(i for i, a in enumerate(held_actions)
+                                          if weight_based_doses.needs_weight(a))}
+                    else:
+                        pending = hold_incomplete_bundle(held_parsed, state)
+                        if pending:
+                            st.session_state.pending_action = pending
+                        else:
+                            # Nothing can complete it: no answer is awaited, so its fate is final.
+                            split["no_pending"] = True
+                    if run:
+                        message = order_pipeline.held_message(split, _understood_order_labels)
+                    else:
+                        # Nothing ran: the hold is declared as it always was.
+                        message = _held_order_prompt({**held_parsed, "actions": [
+                            a for a, *_ in split["held"]] + [a for a, _ in split["unreadable"]]}, question or "")
+                    if result is None or not result.get("executed"):
+                        result = {"executed": False, "action_summaries": [], "elapsed_min": 0,
+                                  "reassess_delay": None, "clarification": message}
+                    else:
+                        result = {**result, "clarification": message, "partial": True}
+                elif result is None:
+                    result = {"executed": False, "action_summaries": [], "elapsed_min": 0,
+                              "reassess_delay": None, "clarification": None}
+                result["_split"] = split
+                result["_run_actions"] = run
+                return result
         if waiting:
             # Asking the weight is the reader's question, not a clinical minute:
             # nothing runs and the clock does not move (faculty decision 2).
@@ -9035,7 +9145,8 @@ def execute_bundle(parsed):
             return {"executed": False, "action_summaries": [], "elapsed_min": 0,
                     "clarification": _held_order_prompt(
                         parsed, weight_based_doses.question_for(parsed, waiting, state))}
-        result = execute_family_bundle(state, parsed)
+        result = execute_family_bundle(state, {**parsed, "actions": [_ledger.strip_tags(a)
+                                                                      for a in parsed.get("actions") or []]})
         if result.get("executed"):
             weight_based_doses.remember(state, parsed)
         if not result.get("executed") and result.get("clarification"):
@@ -9043,6 +9154,7 @@ def execute_bundle(parsed):
             pending = hold_incomplete_bundle(parsed, state)
             if pending:
                 st.session_state.pending_action = pending
+        result["_run_actions"] = list(parsed.get("actions") or [])
         return result
 
     # Keep the learner input available after collapse, but do not run ordinary
@@ -10034,6 +10146,7 @@ if not st.session_state.started:
         st.session_state.events = []
         st.session_state.history = []
         st.session_state.management_trace = []
+        st.session_state.order_ledger = []
         st.session_state.encounter_ended = False
         # A new encounter's language is the one on screen as it starts, fixed until
         # it closes (faculty, 2026-09-27; document_language).
@@ -10989,12 +11102,19 @@ with st.container(key="encounter-console"):
             if submission_parsed is None:
                 processing_input, interpretation_audit = normalize_clinical_turn(learner_input)
 
+            import order_ledger as _ledger
+            import order_pipeline as _order_pipeline
+            submission_id = st.session_state.pop("_current_submission_id", None) or _ledger.new_id()
+            entry_point = "guided_form" if submission_parsed is not None else "free_text"
             if submission_parsed is not None:
                 parsed = submission_parsed
             else:
                 reasoning_resolution = resolve_pending_reasoning(processing_input)
                 if reasoning_resolution and reasoning_resolution.get("clarification"):
                     active_pending = st.session_state.get("pending_reasoning") or {}
+                    # Whatever the answer added is held with the order, and recorded as held.
+                    _order_pipeline.ledger_hold_reasoning(st.session_state, active_pending.get("parsed") or {},
+                                                          processing_input, submission_id, add_event)
                     upsert_reasoning_gate_clarification(
                         active_pending.get("parsed", {}),
                         reasoning_resolution.get("missing", []),
@@ -11003,6 +11123,7 @@ with st.container(key="encounter-console"):
 
                 if reasoning_resolution and reasoning_resolution.get("parsed"):
                     parsed = reasoning_resolution["parsed"]
+                    entry_point = "reasoning_followup"
                 else:
                     pending_resolution = try_resolve_pending_action(processing_input)
                     if pending_resolution and pending_resolution.get("clarification"):
@@ -11011,6 +11132,7 @@ with st.container(key="encounter-console"):
 
                     if pending_resolution and pending_resolution.get("parsed"):
                         parsed = merge_pending_bundle(pending_resolution["parsed"])
+                        entry_point = "clarification_answer"
                     else:
                         # Parse the current turn in full before considering contextual
                         # shorthand. Context resolution is a fallback only when this turn does
@@ -11036,15 +11158,32 @@ with st.container(key="encounter-console"):
                 _restore_original_turn(parsed, processing_input, learner_input)
                 _attach_interpretation_audit(parsed, interpretation_audit)
 
+            # Phase 0 (0A-0B): every order of this turn gets an id and the text is checked
+            # against what the reader returned, whatever the entry point.
+            turn_minute = int(st.session_state.state.get("sim_time", 0) or 0)
+            ledger = st.session_state.setdefault("order_ledger", [])
+            turn = _order_pipeline.open_turn(
+                parsed.pop("_coverage_text", None) or processing_input, parsed,
+                coverage_parse=parsed.pop("_coverage_parse", None), submission_id=submission_id,
+                entry_point=entry_point, minute=turn_minute, ledger=ledger)
+            turn["orders"].extend(_order_pipeline.restated_orders(
+                parsed.pop("_followup_restated", None), submission_id=submission_id, minute=turn_minute,
+                text=processing_input))
+
             parsed["reasoning_observations"] = reasoning_state_observations(
                 parsed, st.session_state.state
             )
-            missing_reasoning = reasoning_still_missing(parsed)
+            gate_decided = parsed.pop("_gate_decided", False) and \
+                (parsed.get("reasoning_gate") or {}).get("status") in ("urgent_unheld", "complete", "overridden")
+            missing_reasoning = [] if gate_decided else reasoning_still_missing(parsed)
             gate_status = (parsed.get("reasoning_gate") or {}).get("status")
             if missing_reasoning and gate_status != "overridden":
-                st.session_state.last_parse = parsed
+                st.session_state.last_parse = _ledger.untagged(parsed)
                 hold_pending_reasoning(parsed, missing_reasoning)
                 upsert_reasoning_gate_clarification(parsed, missing_reasoning)
+                _order_pipeline.settle(turn, result={"executed": False}, run_actions=list(parsed.get("actions") or []),
+                                       minute_before=turn_minute, minute_after=turn_minute, held_for_reasoning=True)
+                _order_pipeline.ledger_record(st.session_state, turn, add_event)
                 rerun_app()
             if gate_status is None and any(
                 action.get("type") in REASONING_GATE_ACTION_TYPES
@@ -11067,17 +11206,28 @@ with st.container(key="encounter-console"):
             for observation in parsed.get("reasoning_observations", []) or []:
                 add_event("reasoning_note", observation)
 
-            st.session_state.last_parse = parsed
-            st.session_state.history.append(parsed)
+            st.session_state.last_parse = _ledger.untagged(parsed)
+            st.session_state.history.append(_ledger.untagged(parsed))
             trace_input = parsed.get("raw_text") or learner_input
 
             result = execute_bundle(parsed)
+            split = result.pop("_split", None)
+            run_actions = result.pop("_run_actions", None)
+            if run_actions is None:
+                run_actions = list(parsed.get("actions") or [])
+            _order_pipeline.settle(
+                turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
+                minute_after=int(st.session_state.state.get("sim_time", 0) or 0),
+                terminal=bool(result.get("terminal_locked")))
+            if entry_point == "clarification_answer" or entry_point == "reasoning_followup":
+                _order_pipeline.ledger_resolve_held(st.session_state, run_actions, bool(result.get("executed")),
+                                                    turn_minute, add_event)
             trace_state_after = management_state_snapshot(st.session_state.state)
             recorded_trace_event = record_management_trace(
-                trace_input, parsed, result, trace_state_before, trace_state_after
+                trace_input, parsed, result, trace_state_before, trace_state_after, turn=turn
             )
 
-            ran = bool(result.get("executed")) and not result.get("clarification")
+            ran = bool(result.get("executed")) and (not result.get("clarification") or bool(result.get("partial")))
             # An urgent intervention is said to have run only once the engine ran
             # it -- in this turn, or when the answer to a question about the same
             # order completes it. A bundle the engine refused ran nothing, and the
@@ -11110,7 +11260,7 @@ with st.container(key="encounter-console"):
                         + ". Any supported actions in the same order continue separately."
                     )
 
-            if result.get("clarification"):
+            if result.get("clarification") and not result.get("partial"):
                 add_event("clarification", result["clarification"])
             else:
                 summaries = _summaries_in_learner_order(
@@ -11296,6 +11446,12 @@ with st.container(key="encounter-console"):
                         "prototype",
                         "I preserved your input, but this build does not yet execute that action."
                     )
+
+            if result.get("partial") and result.get("clarification"):
+                # What ran was reported above; what waits, and the question, are said now.
+                add_event("clarification", result["clarification"])
+            # Every order that did not simply run is said, one line each (Phase 0, 0A).
+            _order_pipeline.ledger_record(st.session_state, turn, add_event)
 
             # The events this order produced are appended above, after the decision
             # was recorded, so the recorded response window used to end just before

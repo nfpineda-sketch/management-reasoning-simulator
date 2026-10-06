@@ -102,18 +102,26 @@ def submit(at, text):
     assert not at.exception
 
 
-def test_the_discarded_order_is_named_and_the_new_one_runs(edema):
+def test_a_study_the_reader_does_not_know_holds_nothing_and_is_named(edema):
+    # Phase 0 (0B, 2026-10-06), bundle rule: the BiPAP is independent of the study the
+    # reader does not know, so it runs now; the study is told as not recognized and nothing
+    # waits for an answer. The next order runs as written, with nothing to discard.
     at = edema
     submit(at, "Edema pulmonar agudo por poscarga, porque el ventrículo no eyecta. Prioridad: descargar "
                "el ventrículo. Conéctalo a BiPAP 14/8 con FiO2 60% y pídele una resonancia magnética. "
                "Espero que suba la saturación. Reevalúa en 10 minutos saturación y presión arterial.")
-    assert [e["kind"] for e in at.session_state.events][-1] == "clarification"
+    assert [e["kind"] for e in at.session_state.events][-1] in ("clarification", "prototype")
+    assert at.session_state.state["treatments"]["niv"] is True
+    texts = [e["text"] for e in at.session_state.events]
+    assert any("study was not recognized" in t for t in texts)
+    assert not at.session_state.pending_action
+    mri = [o for o in at.session_state.order_ledger if "resonancia" in (o.get("span") or "").lower()]
+    assert mri and all(o["fate"] == "UNRECOGNIZED" for o in mri)
     submit(at, "Prefiero tratar primero, porque el trabajo respiratorio manda. Prioridad: descargar. "
                "Pásale nitroglicerina 60 mcg/min IV. Espero que suba la saturación. Reevalúa en 10 "
                "minutos saturación y presión arterial.")
     texts = [e["text"] for e in at.session_state.events]
-    discarded = next(t for t in texts if "discarded to run this one" in t)
-    assert "BiPAP 14/8" in discarded and "None of it was administered." in discarded
+    assert not any("discarded to run this one" in t for t in texts)
     assert any("Nitroglycerin start at 60 mcg/min" in t for t in texts)
     assert at.session_state.state["treatments"]["nitroglycerin"] is True
-    assert at.session_state.state["treatments"]["niv"] is False
+    assert at.session_state.state["treatments"]["niv"] is True

@@ -17,10 +17,10 @@ a throwaway SQLite database, no provider key):
 
 A. recognised and executed: the page says so and offers the explanation;
 B. held for its reasoning: nothing is claimed and nothing changes;
-C. an unreadable item: the bundle is held, nothing is claimed; cancel
-   administers nothing;
-D. a question about the bundle: held, nothing claimed;
-E. the answer completes it: now it runs, and only now is it announced;
+C. an unreadable item: named as not understood; the independent urgent order
+   runs and is announced (Phase 0 bundle rule, 2026-10-06);
+D. a question about one order: only that order waits; what ran is announced;
+E. the answer completes it: now it runs;
 F. an answer that answers nothing: still held, asked again, nothing given.
 """
 import time
@@ -139,55 +139,57 @@ def test_b_an_order_held_for_its_reasoning_claims_nothing(opioid, lang):
 
 
 @pytest.mark.parametrize("lang", ["es", "en"])
-def test_c_an_unreadable_item_holds_the_urgent_bundle_and_claims_nothing(opioid, lang):
+def test_c_an_unreadable_item_is_named_and_the_urgent_order_runs(opioid, lang):
+    # Phase 0 (0B, 2026-10-06): an item the reader cannot read no longer holds the
+    # independent urgent order written with it (bundle rule). What the page says still
+    # follows what ran: the ventilation ran and is announced; the unreadable item is named
+    # as not understood, and nothing is claimed for it.
     at = opioid
     said, before, minute = submit(at, ORDERS[lang]["unreadable"])
     entry = at.session_state["management_trace"][-1]
-    assert entry["execution_status"] == "clarification_required"
-    assert not entry.get("action_summaries")
-    assert any("Nothing in this order was executed" in text for kind, text in said if kind == "clarification")
-    assert not claims_urgent_execution(said)
-    assert not offered(at)
-    assert unchanged(at, before, minute)
-    assert at.session_state["pending_action"]
-    # The held order is cancelled as a whole: nothing is administered.
-    said, before, minute = submit(at, ORDERS[lang]["cancel"])
-    assert any(kind == "order_cancelled" and "No treatment administered" in text for kind, text in said)
+    assert entry["execution_status"] == "executed"
+    assert {summary.get("type") for summary in entry["action_summaries"]} == {"bag_mask"}
+    assert any(kind == "prototype" and text.startswith('Not understood: "') and "xyzzol" in text
+               for kind, text in said)
+    assert any(kind == "clinical_update" and "Bag-mask" in text for kind, text in said)
+    fates = {order["class"]: order["fate"] for order in entry["orders"]}
+    assert fates["bag_mask"] == "EXECUTED" and fates["unrecognized"] == "UNRECOGNIZED"
     assert not at.session_state["pending_action"]
+    # Nothing is left waiting: cancel finds nothing to cancel and administers nothing.
+    said, before, minute = submit(at, ORDERS[lang]["cancel"])
+    assert any(kind == "clarification" and "no pending orders" in text for kind, text in said)
     assert unchanged(at, before, minute)
-    assert not offered(at)
 
 
 @pytest.mark.parametrize("lang", ["es", "en"])
-def test_d_f_e_a_question_keeps_the_urgent_bundle_until_it_runs(opioid, lang):
+def test_d_f_e_a_question_holds_only_the_order_it_is_about(opioid, lang):
     at = opioid
-    # D: a question about one order holds the whole bundle; nothing is claimed.
+    # D (Phase 0, 0B): the ventilation runs now and is said to have run; only the
+    # naloxone, whose dose is asked for, waits. It used to hold the ventilation too.
     said, before, minute = submit(at, ORDERS[lang]["question"])
     assert any("naloxone dose" in text for kind, text in said if kind == "clarification")
     assert at.session_state["pending_action"]
-    assert at.session_state["management_trace"][-1]["execution_status"] == "clarification_required"
-    assert not claims_urgent_execution(said)
-    assert not offered(at)
-    assert unchanged(at, before, minute)
-    # F: an answer that answers nothing keeps it held and asks again. The
-    # Spanish reply used to discard the whole bundle without a word.
+    entry = at.session_state["management_trace"][-1]
+    assert entry["execution_status"] == "executed" and entry.get("execution_scope") == "partial"
+    assert {summary.get("type") for summary in entry["action_summaries"]} == {"bag_mask"}
+    assert claims_urgent_execution(said)
+    held = [order for order in at.session_state["order_ledger"] if order["fate"] == "HELD_CLARIFICATION"]
+    assert [order["class"] for order in held] == ["naloxone"]
+    assert at.session_state["state"]["observable"].get("respiratory_support") == "Bag-mask ventilation"
+    # F: an answer that answers nothing keeps the naloxone held and asks again. The
+    # Spanish reply used to discard the held order without a word.
     said, before, minute = submit(at, ORDERS[lang]["unsure"])
     assert at.session_state["pending_action"]
-    assert any("The held order is still waiting: bag mask + naloxone" in text
+    assert any("The held order is still waiting: naloxone" in text
                and "Nothing has been administered" in text for kind, text in said if kind == "clarification")
-    assert not claims_urgent_execution(said)
-    assert not offered(at)
     assert unchanged(at, before, minute)
-    # E: the answer completes it; now it runs, and only now is it announced.
+    # E: the answer completes it; the naloxone runs now, and only now is it given.
     said, before, _ = submit(at, ORDERS[lang]["answer"])
     assert not at.session_state["pending_action"]
     entry = at.session_state["management_trace"][-1]
     assert entry["execution_status"] == "executed"
-    assert {summary.get("type") for summary in entry["action_summaries"]} >= {"bag_mask", "naloxone"}
-    assert claims_urgent_execution(said)
-    assert offered(at)
-    assert before.get("respiratory_support") is None
-    assert at.session_state["state"]["observable"].get("respiratory_support") == "Bag-mask ventilation"
+    assert {summary.get("type") for summary in entry["action_summaries"]} >= {"naloxone"}
+    assert {order["class"]: order["fate"] for order in entry["orders"]}["naloxone"] == "EXECUTED"
     # The record keeps the turns in the order they were decided.
     minutes = [e.get("decision_time_min") for e in at.session_state["management_trace"]]
     assert minutes == sorted(minutes)

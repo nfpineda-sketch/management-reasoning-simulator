@@ -170,13 +170,19 @@ def test_repeated_measurements_keep_the_old_result_and_observe_the_new_state(eng
     assert second_snapshot["diagnostics"]["poc_glucose"] == latest
 
 
-def test_unsupported_second_order_does_not_partially_execute_supported_first_order(engine):
+def test_unsupported_second_order_does_not_hold_the_supported_first_order(engine):
+    # Phase 0 (0B, 2026-10-06), bundle rule: the independent aspirin runs; the colchicine the
+    # reader cannot read gets its own fate (UNRECOGNIZED) and holds nothing. It used to hold
+    # the aspirin too, so a reasonable unknown item delayed a time-critical drug.
     session = initialize(engine, encounter(engine, "acs")["state"])
     before = deepcopy(session.state)
     parsed, result, _, _ = execute_turn(engine, "Give aspirin 324 mg PO and colchicine 0.5 mg PO")
     assert any(a["type"] == "clarification" for a in parsed["actions"])
-    assert not result["executed"] and result["clarification"]
-    assert session.state == before
+    assert result["executed"] and not result["clarification"]
+    assert [s.get("type") for s in result["action_summaries"]] == ["aspirin"]
+    split = result["_split"]
+    assert [a.get("unrecognized_text") for a, _ in split["unreadable"]] == ["colchicine 0.5 mg PO"]
+    assert session.state != before
 
 
 def test_review_uses_observed_trajectory_without_importing_sepsis_explanations(engine):

@@ -40,6 +40,9 @@ SESSION_FIELDS = (
     # The language it was played in, fixed when it starts: its documents are
     # written in it unless their reader chooses the other (document_language).
     "encounter_language",
+    # Every order with its fate (Phase 0, 0A, 2026-10-06), and every submission received
+    # (Phase 0, 0D): they travel with the encounter, so a resumed one keeps them.
+    "order_ledger", "submission_log",
 )
 
 

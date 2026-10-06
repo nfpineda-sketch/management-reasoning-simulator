@@ -89,13 +89,16 @@ def test_a_held_turn_names_the_orders_it_is_holding(encounter):
     held = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"]
     assert held, "the held turn must be reported to the resident"
     text = held[-1]
-    assert "ORDER HELD — CLARIFICATION REQUIRED" in text
-    assert "Nothing in this order was executed and the patient state has not changed." in text
-    # Everything the resident also asked for, by name.
+    # Phase 0 (0B, 2026-10-06): the antibiotic and the studies run now; only the oxygen,
+    # whose device and flow are asked for, waits. Both are said by name.
+    assert "PART OF THIS ORDER IS HELD — CLARIFICATION REQUIRED" in text
+    assert "Executed now:" in text
     for item in ("ceftriaxone 2000 mg IV", "Blood cultures", "Lactate", "Laboratory results", "Chest X-ray"):
         assert item in text, (item, text)
-    # And the device menu, so the turn can be completed in one reply.
+    # And the device menu, so the held oxygen can be completed in one reply.
     assert "non-rebreather mask 15 L/min" in text
-    # Nothing ran: no treatment, no investigation, no time.
-    assert at.session_state.state["sim_time"] == 0
-    assert not at.session_state.state.get("diagnostics")
+    assert at.session_state.state["treatments"].get("antibiotics") or any(
+        s.get("type") == "antibiotics" for s in at.session_state.management_trace[-1]["action_summaries"])
+    # The reassessment waits for the held oxygen: only the studies' own bedside minutes have
+    # passed, never the fifteen of the reassessment.
+    assert at.session_state.state["sim_time"] < 15

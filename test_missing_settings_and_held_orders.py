@@ -112,11 +112,18 @@ def test_a_turn_held_by_the_engine_declares_what_it_holds(edema):
     held = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"]
     assert held, [e["kind"] for e in at.session_state.events]
     text = held[-1]
-    assert "ORDER HELD — CLARIFICATION REQUIRED" in text
+    # Phase 0 (0B, 2026-10-06): the independent orders run now and the held one waits; the
+    # message says both, by name. It used to hold the nitroglycerin and the studies too.
+    assert "PART OF THIS ORDER IS HELD — CLARIFICATION REQUIRED" in text
+    assert "Executed now:" in text and "Held until you answer:" in text
     for item in ("CPAP", "start nitroglycerin 40 mcg/min", "POCUS", "Lactate"):
         assert item in text, (item, text)
     assert "Specify the NIV expiratory pressure in cm H₂O, from 0 to 20." in text
-    assert at.session_state.state["sim_time"] == 0
+    assert at.session_state.state["treatments"]["nitroglycerin"] is True
+    assert not at.session_state.state["treatments"].get("niv")
+    # The reassessment waits for the held CPAP it is meant to judge: only the studies' own
+    # bedside minutes have passed, never the ten of the reassessment.
+    assert at.session_state.state["sim_time"] < 10
 
 
 def test_one_incomplete_order_alone_is_not_dressed_as_a_held_bundle(edema):
