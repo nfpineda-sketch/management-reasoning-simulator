@@ -3358,8 +3358,8 @@ CORRECTIONS = (
                    "«Zyvox 600»), los que siguen con «with/con» a un nombre conocido que el lector leyó («Give "
                    "ceftriaxone with zyvox») y los que se escriben como un verbo o un participio solos "
                    "(«Suctioning.», «Lavado.», «Suboxone.») no se dicen como orden: quedan en el registro, sin "
-                   "recibo, y la regla A no lee una omisión contra ellos. «Taponamiento.» solo deja de leerse como "
-                   "nota (era el taponamiento de la herida en la hemorragia de la extremidad), y «Hacer "
+                   "recibo, y la regla A no lee una omisión contra ellos. «Taponamiento.» solo ya no desaparece (es "
+                   "también el taponamiento de la herida en la hemorragia de la extremidad), y «Hacer "
                    "taponamiento» ya no se dice «no entendido» después de correr como control de la hemorragia. El "
                    "congelamiento declara la garantía exacta y lo que queda sin ver (G-READER-V3; TD-69)."),
         "authorised_by": INSTRUCTION_2026_10_06_PHASE0_CLOSURE,

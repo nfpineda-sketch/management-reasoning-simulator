@@ -26,7 +26,7 @@ sección «Cierre de la Fase 0». Commits locales, sin push, despliegue, merge n
 | F0-3 | Aprobada como resuelta | **CERRADA** | TD-45 (g) resuelta en la sala; el lector, igual |
 | F0-4 | Aceptada: R1-03, R1-04 y R2-01 fuera de la asignación automática; PS001 no vuelve para completar el currículo | **CERRADA CON LIMITACIÓN DECLARADA** (rutas heredadas excluidas) | Hueco curricular aceptado para el primer piloto: esos desafíos y MK1 no se observan |
 | F0-5 | Aprobada: «reassess» sin número es una mirada inmediata en la cabecera (2 minutos); «dar X y reevaluar» es X más esa mirada, dicho así; una orden para más tarde no corre ahora; el límite de 120 minutos queda, explicado | **CERRADA CON LIMITACIÓN DECLARADA** (G-LATER-ORDERS, G-STEP-120) | Sin cambios |
-| F0-6 | Aprobada; un evento de causa UNKNOWN sigue protegido de toda inferencia negativa | **CERRADA** | Sin cambios |
+| F0-6 | Aprobada; un evento de causa UNKNOWN sigue protegido de toda inferencia negativa | **CERRADA CON LIMITACIÓN DECLARADA** (G-INTERRUPTIONS) | Sin cambios |
 | F0-7 | Aprobada; un evento con guion o NOT_PREVENTABLE_IN_SIMULATOR nunca sostiene una retroalimentación negativa | **CERRADA** | Sin cambios |
 | F0-8 | Aprobada | **CERRADA** | Sin cambios; el texto, ahora también en español (F0-11) |
 | F0-9 | Aprobada: mascarilla con reservorio a 15 L/min por omisión, dicho y registrado | **CERRADA** | Sin cambios; el recibo, también en español |

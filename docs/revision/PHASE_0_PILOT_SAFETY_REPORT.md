@@ -595,7 +595,7 @@ con su guarda.
 | F0-3 | TD-45 (g) resuelta en la sala | Cerrada |
 | F0-4 | Hueco curricular aceptado; PS001 no vuelve a la asignación | Cerrada con limitación declarada (R1-03, R1-04, R2-01 y MK1 no se observan) |
 | F0-5 | Mirada de 2 minutos; «dar X y reevaluar»; órdenes para más tarde; límite de 120 minutos | Cerrada con limitación declarada (G-LATER-ORDERS, G-STEP-120) |
-| F0-6 | Umbrales de interrupción; un evento de causa UNKNOWN sigue protegido de toda inferencia negativa | Cerrada |
+| F0-6 | Umbrales de interrupción; un evento de causa UNKNOWN sigue protegido de toda inferencia negativa | Cerrada con limitación declarada (G-INTERRUPTIONS) |
 | F0-7 | Un evento con guion o NOT_PREVENTABLE_IN_SIMULATOR nunca sostiene una retroalimentación negativa | Cerrada |
 | F0-8 | Paro de la bradicardia desde la frecuencia mostrada; texto del paro de la anafilaxia | Cerrada |
 | F0-9 | Mascarilla con reservorio a 15 L/min por omisión, dicho y registrado | Cerrada |
@@ -614,8 +614,8 @@ En la capa posterior al lector (`order_ledger.coverage`); el lector V3 no cambi�
   - donde va el nombre de la orden tras un verbo de orden («Give zyvox in 100 mL saline.»);
   - después del problema que trata («Sepsis, zyvox.», «Creo que es sepsis, ceftriaxona.»);
   - un nombre conocido junto a uno desconocido, que antes desaparecía con él («Zyvox and ceftriaxone.»);
-  - «Taponamiento.» solo, que la cobertura tomaba por nota (era el taponamiento de la herida en la hemorragia
-    de la extremidad). «Hacer taponamiento.», que corre como control de la hemorragia, ya no se dice además «no
+  - «Taponamiento.» solo, que desaparecía (es también el taponamiento de la herida en la hemorragia de la
+    extremidad). «Hacer taponamiento.», que corre como control de la hemorragia, ya no se dice además «no
     entendido».
 - **Guardado en silencio** (UNRECOGNIZED, clase `unread_words`, sin recibo en la sala; la regla A no lee una
   omisión en su ventana): las palabras que también podrían ser una nota, una descripción o un verbo suelto:
@@ -712,7 +712,8 @@ En la capa posterior al lector (`order_ledger.coverage`); el lector V3 no cambi�
 - **Pruebas nuevas (4):** `test_phase0_unknown_names.py`, `test_phase0_answer_parity.py`, `test_phase0_spanish.py`,
   `test_phase0_submission_guard_on_postgres.py`. Ninguna prueba existente cambió.
 - **Documentos:** este informe, `docs/COLA_DECISIONES_AI_ADVISOR.md`, `docs/REGISTRO_DEUDA_TECNICA.md` (TD-67 a
-  TD-70), `docs/revision/F0_11_FRASES_ES.md` (nuevo), `docs/RUNBOOK_PILOTO.md`, `docs/READINESS_PILOTO_FORMATIVO.md`;
+  TD-70), `docs/revision/F0_11_FRASES_ES.md` (nuevo), `docs/RUNBOOK_PILOTO.md`, `docs/READINESS_PILOTO_FORMATIVO.md`,
+  `docs/CAMBIOS_METODOLOGICOS.md`;
   regenerados: `docs/revision/PILOT_FREEZE_MANIFEST.md` y `docs/CATALOGO_HIPOGLICEMIA.md`.
 - **Sin tocar:** el lector (`family_parser.py`, `shared_order_language.py`, `active_order_context.py`), el corpus de
   validación, V3 y los baselines; la fisiología; los puntajes, las rúbricas, D1–D5, las penalidades y los
@@ -720,7 +721,25 @@ En la capa posterior al lector (`order_ledger.coverage`); el lector V3 no cambi�
 
 ### 21.7 Verificación final
 
-Pendiente de la corrida sobre el commit final: se completa en el commit que sigue a esa corrida.
+- **Commits del cierre** (locales, en `clinical-encounter-v0.13`, sobre `7970da0`):
+  - `79b77ae`: código, pruebas, registro y documentos generados;
+  - `e21f141`: este informe, el Decision File, el registro de deuda, la hoja F0-11, el runbook, el readiness y
+    la vista metodológica;
+  - el commit que agrega esta sección: la verificación, el estado de F0-6 (con limitación declarada, como el
+    criterio de 21.1 pide) y la redacción exacta sobre «Taponamiento.».
+- **Suite completa sobre `e21f141`, con el árbol limpio** (4 particiones; sin `MRS_TEST_POSTGRES_URL`):
+  **7.578 pasaron, 0 fallaron, 93 omitidas, 1 xfail**. Las omisiones son las 83 de siempre (pruebas que piden
+  PostgreSQL, un paquete de imágenes o un encuentro guardado que no están en esta copia, o sorteos que no tocan la
+  familia que la prueba necesita) más las 10 de PostgreSQL del cierre, que sin `MRS_TEST_POSTGRES_URL` se omiten y
+  corren aparte.
+- **PostgreSQL sobre `e21f141`** (la base descartable de 21.5): `test_phase0_submission_guard_on_postgres.py`,
+  **10 de 10**.
+- **El HEAD final** (el commit que agrega esta sección) vuelve a correr la suite completa y las pruebas de
+  PostgreSQL con el árbol limpio; un commit no puede contener el resultado de su propia corrida, así que ese
+  resultado va en la entrega del cierre.
+- **Corridas focalizadas durante el cierre:** 1.167 (cobertura, ensayos, batería y Fase 0), 1.264 (los archivos
+  de prueba que tocan las guardas silenciosas), 427 (congelamiento, catálogo, nombres, español, paridad,
+  registro), 364 (nombres y hemoderivados).
 
 ## Revisión final Q1–Q15
 
@@ -738,7 +757,7 @@ Pendiente de la corrida sobre el commit final: se completa en el commit que sigu
 | Q10 | ¿Critica el análisis en un punto afectado por una limitación? | NO | **NO**, con la misma excepción declarada de Q1 y Q15 (TD-69 d–f) | Reglas A–E; `limitations` por turno; categoría `trace_safety_guards` |
 | Q11 | ¿Se implementó el núcleo común? | NO | **NO** | Sección 19 |
 | Q12 | ¿Cubre la batería cada caso aceptado? | SÍ | **SÍ** | 30 de 30 aceptados en el motor (19 categorías) y en la página real; el excluido, también |
-| Q13 | ¿Pasa la suite completa sobre el HEAD final comprometido, con el árbol limpio y 0 fallos? | SÍ | Ver 21.7 | Sección 21.7 |
+| Q13 | ¿Pasa la suite completa sobre el HEAD final comprometido, con el árbol limpio y 0 fallos? | SÍ | **SÍ** sobre `e21f141`: 7.578 pasaron, 0 fallaron; el HEAD final, en la entrega | Sección 21.7 |
 | Q14 | ¿Se probó la persistencia en PostgreSQL? | SÍ, o «NO — PRE-DEPLOYMENT BLOCKER» | **SÍ**, en PostgreSQL 16 local y descartable (A–F y F0-12), nunca en producción; la base del proveedor queda para el paso 0 del runbook | Sección 21.5; `test_phase0_submission_guard_on_postgres.py` |
 | Q15 | ¿Puede una intervención plausiblemente accionable, fuera del vocabulario, desaparecer todavía sin aviso? | NO | **SÍ, sólo en las tres formas estrechas de TD-69 (d–f)**, sin guarda propia y con el texto del turno en el registro. Fuera de ellas: dicha como no entendida con su recibo, o guardada en silencio cuando también puede ser una nota, una descripción o un verbo suelto, y entonces la regla A no lee una omisión contra ella | Sección 21.2; `test_phase0_unknown_names.py` (107, EN/ES, con nombres que ningún vocabulario tiene) |
 
@@ -746,7 +765,7 @@ Pendiente de la corrida sobre el commit final: se completa en el commit que sigu
 
 **Entrega (2026-10-06): COMPLETA. Cierre (2026-10-06): hecho; ver 21.7 para la verificación final.**
 
-- F0-1 a F0-12 cerradas (cinco con limitación declarada); Q1 y Q15 dicen la garantía exacta, con la excepción
+- F0-1 a F0-12 cerradas (seis con limitación declarada); Q1 y Q15 dicen la garantía exacta, con la excepción
   declarada de TD-69 (d–f).
 - PostgreSQL: A–F y F0-12 en una base descartable local.
 - 30 casos aceptados de 31; excluido `trauma_hemothorax_41m` (F0-2).
