@@ -1,4 +1,7 @@
-streamlit>=1.41,<2
+# Streamlit is pinned for the formative pilot (pre-deployment readiness, B-4, 2026-10-06): Phase 0 certified
+# the submission guard (write-ahead, one run per click, reload and recovery, fastReruns = false) on
+# Streamlit 1.64.0. A newer release is reviewed after the pilot, not installed by a rebuild.
+streamlit==1.64.0
 reportlab>=4.2,<5
 pypdf>=5,<7
 openai>=2,<3
