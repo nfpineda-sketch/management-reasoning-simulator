@@ -491,6 +491,250 @@ def _bare(clause):
     return not re.search(r"[a-z0-9]", rest)
 
 
+def _bare_names(clause, relaxed=False):
+    """True for a clause of names no vocabulary knows (with known ones, if any), written the way
+    an order is (Phase 0 closure): a list item ("- Zyvox"), a name with "now", "urgente" or
+    "drip", a name after "Necesitamos" or "Plan:", a name joined to a known one ("Zyvox with
+    ceftriaxone"), or one name alone ("Zyvox.", "Plasmaféresis."). A note is not: a word of a
+    diagnosis, a finding or a state, a label ("Extremidades: frías"), a verb ("tratar la
+    infección"), or two words that may describe ("Víscera perforada", "ICC descompensada")."""
+    head = _head(clause)
+    rest = head
+    for entry in lexicon():
+        rest = entry["pattern"].sub(" ", rest)
+    named = rest != head
+    rest = re.sub(r"^\s*\d+[.)]\s*", " ", _BARE_FILLER.sub(" ", _BARE_QUANTITY.sub(" ", rest)))
+    rest = _SCHEDULE.sub(" ", rest)
+    if relaxed:
+        # Only names, wherever they stand: after a label ("Sepsis: zyvox"), with a bare number
+        # ("Zyvox 600"), or in a sentence that is not a list.
+        rest = re.sub(r"[0-9]+(?:[.,][0-9]+)?", " ", rest.split(":")[-1])
+        kinds = [_word_kind(word) for word in re.findall(r"[a-z][a-z0-9'\-]*", rest)]
+        return "name" in kinds and len(kinds) <= 4 and all(kind in ("name", "modifier") for kind in kinds) \
+            and not _COPULA.search(clause)
+    if re.search(r"[0-9]", rest) or _COPULA.search(clause) or (":" in clause and not _ORDER_HEADER.match(clause)):
+        return False
+    kinds = [_word_kind(word) for word in re.findall(r"[a-z][a-z0-9'\-]*", rest)]
+    names = kinds.count("name")
+    if not names or len(kinds) > 4 or any(kind not in ("name", "modifier") for kind in kinds):
+        return False
+    if named and not re.search(r"(?<![a-z])(?:with|con|junto\s+con|along\s+with)(?![a-z])", head):
+        return False  # "Cancel norepinephrine", "Insulina cristalina": a word beside a name, not a second name
+    cue = (named or _URGENCY.search(head) or _ORDER_HEADER.match(clause) or head.strip() != clause.strip(" ,;")
+           or re.match(r"\s*(?:\d+[.)]|[-\u2022*\u00b7])", clause))
+    return bool(cue) or (names == 1 and "modifier" not in kinds)
+
+
+# --------------------------------------------------------------------------------------
+# Words that are not the name of an order (Phase 0 closure, 2026-10-06).
+# --------------------------------------------------------------------------------------
+#: The small words around an order, and the words of time, quantity and route. Not names.
+_SMALL_WORDS = frozenset("""
+a an the this that these those it its he she they him her his them their there here is are was were be been
+being am has have had having do does did doing will would shall can could may might not yes yeah okay of in
+on at by for from to into onto with without within over under about after before during until than then so
+and or but nor also as if when while where which who whom whose what why how all any each every both either
+neither some such more most less least very much many few same other another again still just only even ever
+never always now soon later today tonight yesterday tomorrow already yet please thanks thank you we us our i me
+my mine your one two three four five six seven eight nine ten first second third last next half per plus minus
+around approx approximately up down out off back well good bad fine new old high low big small large wide open
+full start end target goal keep aim set bedside maybe perhaps true false meantime ready awaiting
+el la los las lo un una unos unas al del de en con sin por para ante bajo desde hasta hacia sobre tras entre
+ni que quien quienes cual cuales como cuando donde porque pues si no ya aun todavia mas menos muy mucho mucha
+muchos muchas poco poca pocos pocas tan tanto toda todo todos todas cada otro otra otros otras mismo misma
+mismos mismas este esta estos estas ese esa esos esas aquel aquella su sus mi mis tu tus nuestro nuestra le les
+se me te nos es son estan estaba estaban era eran fue fueron ser estar hay habia ha han he hemos tiene tienen
+tenia tuvo sigue siguen seguir queda quedan quedo parece parecen hoy ayer manana bien mal igual cinco seis siete
+ocho nueve diez primero primera segunda ultimo ultima siguiente ahi aqui alli asi solo casi aprox
+aproximadamente cerca alrededor gracias meta objetivo hacia cabecera quizas mientras tanto cuanto ultimas
+ultimos
+min mins minute minutes minuto minutos seg segs sec secs second seconds segundo segundos hour hours hora horas
+hrs day days dia dias week weeks semana semanas month months mes meses year years ano anos kg gr mg mcg ug ml cc
+lt litro litros liter liters litre litres mmhg mmol meq unit units unidad unidades lpm bpm rpm percent dosis dose
+doses vez veces time times every daily diario diaria hourly bid tid qid qhs prn sos rate
+iv ev im io sc sq po vo sl pr nbz neb nebs nebulized nebulised nebulizado nebulizada nebulizacion nebulization
+inhaled inhalado inhalada topical topico topica oral rectal intravenous intravenoso intravenosa endovenoso
+endovenosa intramuscular subcutaneous subcutaneo subcutanea sublingual intraosseous intraoseo intraosea central
+peripheral periferico periferica chorro push slow fast rapid rapido rapida lento lenta milliliters millilitres
+mililitros milligrams milligrammes miligramos micrograms microgramos grams gramos liter litre units neg pos
+suero solucion solution sol bolsa frasco jeringa syringe bag nuevo nueva nuevos nuevas panel perfil profile kit
+remains remain persists seems looks appears feels says wants needs gets
+""".split())
+
+#: The words of a note: a diagnosis, a finding, a state, a measure, the body, a person. A clause
+#: made of these is not the name of an order nobody knows ("Sepsis.", "Estable.", "Esfuerzo
+#: leve"). None of them is the name of an intervention: a word that may be one ("dialysis",
+#: "team", "alta", "line") is not here.
+_NOTE_WORDS = frozenset("""
+depression depresion elevation elevacion descenso supradesnivel infradesnivel capilar subendocardial sedated
+sedado sedada
+sepsis septic shock pneumonia anaphylaxis anaphylactic allergy allergic allergies reaction asthma asthmatic copd
+exacerbation stemi nstemi acs infarct infarction ischemia ischaemia ischemic angina embolism embolus thrombosis
+thrombus dvt dka hhs ketoacidosis acidosis alkalosis arrhythmia dysrhythmia afib flutter svt asystole block
+failure chf edema oedema overload congestion congestive hypovolemia hypovolemic hemorrhage haemorrhage
+hemorrhagic bleeding bleed trauma injury injuries wound fracture pneumothorax hemothorax haemothorax tamponade
+dissection aneurysm stroke seizure seizures syncope overdose intoxication poisoning toxicity toxic withdrawal
+arrest respiratory cardiac hypoxia hypoxic hypercapnia hypercarbia fever febrile afebrile pyrexia hypotension
+hypotensive hypertension hypertensive tachycardic bradycardic tachypnea tachypnoea tachypneic dyspneic
+breathless breathlessness wheeze wheezes wheezing stridor crackles rales rhonchi rash urticaria hives angioedema
+swelling pain painful chest abdominal headache nausea vomiting vomit diarrhea cough coughing sputum confusion
+confused agitated agitation delirium drowsy somnolent lethargic lethargy obtunded unresponsive unconscious
+conscious awake alert oriented disoriented stable unstable better worse improving worsening unchanged
+responding response responsive pale pallor diaphoretic diaphoresis sweaty sweating cyanotic mottled mottling
+cold clammy warm hot dry flushed jaundice jaundiced dehydrated dehydration perfusion hypoperfusion perfused
+distress effort work fatigue fatigued tired weak weakness dizzy dizziness anxious anxiety comfortable
+uncomfortable calm quiet sleepy normal abnormal elevated raised reduced decreased increased mild moderate severe
+critical serious grave likely unlikely possible probable suspected suspicion diagnosis impression assessment
+differential ddx history pmh exam examination findings finding result results value values level levels trend
+vitals vital sign signs symptom symptoms status picture presentation condition clinical improvement
+deterioration desaturation saturation sats sat spo2 gcs temp temperature map pulse pulses heart rhythm sinus
+breathing respirations respiration airway breath breaths sounds sound air entry murmur gallop jvp jvd crt
+capillary refill skin color colour mental mentation consciousness neuro neurological focal deficit pupils pupil
+reactive equal sugar output intake loss urine diuresis uresis balance pef peak patent permeable appearance aspecto viscera
+viscus urinary urinario urinaria horario horaria oxygenation oxigenacion provisional excellent satisfactory
+coherent present absent uncertain adequate inadequate appropriate sufficient insufficient adecuado adecuada
+inadecuado insuficiente suficiente presente ausente medications medicamentos medicacion onset notes notas reason
+razon rationale reflection reflexion evidence evidencia context contexto issue issues problem problems problema
+problemas interpretation interpretacion objective objectives objetivos nervous nervioso nerviosa irritable
+afebril
+patient patients man woman male female boy girl lady gentleman old wife husband mother father son daughter
+family relatives nurse doctor resident attending
+head neck thorax abdomen back spine arm arms forearm hand hands wrist elbow shoulder leg legs thigh knee calf
+foot feet ankle hip groin pelvis right left bilateral both side sided lung lungs heart kidney kidneys renal
+liver hepatic brain cerebral eye eyes mouth tongue throat lips face facial upper lower anterior posterior
+lateral medial proximal distal base bases apex apical lobe midline vein veins venous artery femoral radial
+brachial jugular subclavian antecubital deltoid humeral tibial
+septico septica choque neumonia anafilaxia anafilactico anafilactica alergia alergias alergico alergica reaccion
+asma asmatico asmatica epoc exacerbacion crisis iam sca infarto isquemia isquemico angina tep embolia trombosis
+tvp icc hta erc irc ira hda hdb nac itu eap cetoacidosis cad hipoglicemia hipoglucemia hiperglicemia hiperglucemia hiperkalemia hiperpotasemia
+hipokalemia hiponatremia bradicardia taquicardia arritmia asistolia bloqueo insuficiencia falla cardiaca
+sobrecarga congestion hipovolemia hipovolemico hipovolemica hemorragia hemorragico sangrado traumatismo lesion
+lesiones herida fractura neumotorax hemotorax diseccion aneurisma acv ave convulsion convulsiones
+sincope sobredosis intoxicacion intoxicado intoxicada toxicidad abstinencia paro cardiorrespiratorio
+respiratorio respiratoria fiebre febril hipotension hipotenso hipotensa hipertension hipertenso hipertensa
+taquicardico taquicardica bradicardico bradicardica taquipnea taquipneico taquipneica disnea disneico
+sibilancias sibilante estridor crepitos crepitaciones roncus exantema dolor doloroso dolorosa cefalea nauseas
+vomitos diarrea tos expectoracion confuso confusa agitado agitada agitacion delirio somnoliento somnolienta
+letargico letargica obnubilado obnubilada inconsciente consciente despierto despierta alerta vigil orientado
+orientada desorientado desorientada estable inestable mejor peor mejorando empeorando mejoria mejora
+empeoramiento respuesta responde respondiendo palido palida palidez diaforetico diaforetica sudoroso sudorosa
+cianosis cianotico cianotica moteado moteada frio fria caliente seco seca deshidratado deshidratada
+deshidratacion hipoperfusion esfuerzo trabajo fatiga cansado cansada debil debilidad mareo mareado ansioso
+ansiosa ansiedad comodo incomodo tranquilo tranquila anormal elevado elevada aumentado aumentada disminuido
+disminuida leve moderado moderada severo severa critico critica probable posible sospecha diagnostico impresion
+evaluacion hallazgos hallazgo resultado resultados valor valores nivel niveles tendencia signos sintomas estado
+cuadro presentacion condicion clinico clinica deterioro desaturacion saturacion satura saturando glasgow
+temperatura pam pulso pulsos frecuencia ritmo sinusal respiracion aerea murmullo pulmonar ruidos soplo llene
+piel conciencia neurologico neurologica deficit pupilas glicemia glucemia hemoglucotest hgt capilar orina
+debito ingresos egresos perdida perdidas aporte ingesta
+paciente pacientes hombre mujer varon femenino masculino edad esposa esposo madre padre hijo hija familia
+familiar familiares enfermera enfermero medico residente
+cabeza cuello torax pecho espalda columna brazo brazos antebrazo mano manos muneca codo hombro pierna piernas
+muslo rodilla pantorrilla pie pies tobillo cadera ingle derecho derecha izquierdo izquierda ambos lado pulmon
+pulmones corazon rinon rinones higado hepatico cerebro ojo ojos boca lengua garganta labios cara superior
+inferior vena venas venoso venosa arteria braquial yugular subclavia deltoides nariz oido oidos abdominal
+""".split())
+
+#: The endings of a diagnosis or a finding ("hypoglycaemia", "cellulitis", "dyspnoea"); none
+#: is the ending of an intervention.
+_NOTE_ENDINGS = re.compile(r"(?:emia|aemia|emias|itis|osis|algia|algias|penia|uria|cardia|pnea|pnoea|oma|omas|"
+                           r"opathy|opatia|megaly|megalia|ism|ismo|ness)$")
+#: How a word modifies another: an adverb, a participle, a gerund ("slowly", "titulada",
+#: "titrating"). It may stand beside a name; it is not one.
+_MODIFIER_ENDINGS = re.compile(r"(?:ly|mente|ed|ing|ado|ada|ados|adas|ido|ida|idos|idas|ando|iendo)$")
+#: When and for how long a dose is repeated: the shape of an order, as a dose or a route is.
+_SCHEDULE = re.compile(r"(?<![a-z0-9])(?:q\s*\d+\s*h(?:rs?)?|c/\s*\d+\s*(?:h(?:rs?)?|horas?)|cada\s+\d+\s*(?:h|hrs?|horas?)|"
+                       r"every\s+\d+\s*(?:h|hrs?|hours?)|x\s*\d+\s*(?:d|days?|dias?)|por\s+\d+\s*dias?|"
+                       r"for\s+\d+\s*days?|bid|tid|qid|qhs|qd|prn|sos)(?![a-z0-9])")
+
+
+#: Order verbs the reader's own phrasing uses that the order-verb pattern above does not
+#: take ("Repito morfina", "Ventila con ambu", "Indica ibuprofeno", "Remove the IO"). Here they
+#: only keep a verb from being read as the name of an order.
+_FALLBACK_VERB = re.compile(r"(?:repito|repite|repita|repetimos|ventila|ventilar|ventilo|ventilamos|ventilate|"
+                            r"nebuliza|nebulizar|nebulizo|nebulize|nebulise|examina|examinar|examino|examine|"
+                            r"indica|indique|indicamos|retira|retirar|retiro|quita|quitar|quito|remove|"
+                            r"discontinue|descontinuar|cancel|cancela|cancelar|take|toma|tomar|consider|"
+                            r"considerar|considero|evaluar|evalua|evaluate|controlar|controla|control)(?![a-z])")
+#: What others did or said, what was found or is under way: a report, not an order ("Lleva 2 U
+#: de GR", "Cardiología sugiere alta", "Pruebas cruzadas en curso", "β-hCG negativa").
+_REPORTED = re.compile(r"(?<![a-z])(?:lleva|llevaba|llevamos|viene|venia|trae|traia|perdio|requirio|recibio|"
+                       r"recibid[oa]s?|rechaza|rechazo|sugiere|sugirio|recomienda|recomendo|refiere|relata|niega|presenta|presento|"
+                       r"came|brought|lost|refuses|refused|declines|reports|reported|denies|denied|suggests|"
+                       r"suggested|recommends|recommended|helped|worked|en\s+ruta|en\s+camino|en\s+curso|"
+                       r"pendientes|drawn|sent|enviad[oa]s?|tomad[oa]s?|hech[oa]s?|realizad[oa]s?|negativ[oa]s?|"
+                       r"positiv[oa]s?|negative|positive|clipped|is\s+clean)(?![a-z])")
+_ORDER_HEADER = re.compile(r"^\s*(?:plan|orders?|ordenes|indicaciones|tratamiento|treatment|manejo|management|"
+                           r"tto|tx|rx)\s*:")
+_URGENCY = re.compile(r"(?<![a-z])(?:now|stat|asap|urgent(?:ly)?|emergent(?:ly)?|immediately|right\s+(?:now|away)|"
+                      r"ahora|ya|urgente|de\s+urgencia|inmediat[oa]|inmediatamente|cuanto\s+antes|drip|infusion|"
+                      r"goteo)(?![a-z])")
+#: A clause that says what something is or has is a note ("The IV is patent").
+_COPULA = re.compile(r"(?<![a-z])(?:is|are|was|were|has|have|had|esta|estan|estaba|es|son|fue|fueron|tiene|tienen|"
+                     r"tenia)(?![a-z])")
+#: "with zyvox", "con zyvox" at the end of a clause: what follows a known name (TD-69).
+_JOINED_TAIL = re.compile(r"(?<![a-z])(?:with|con|junto\s+con|along\s+with)\s+((?:[a-z][a-z0-9'\-]*\s*){1,3})$")
+_PREPOSITIONS = frozenset({"with", "con", "in", "en", "at", "to", "por", "para", "for", "via", "into", "on", "from",
+                           "de", "del", "al", "a", "sobre", "under", "over", "after", "before", "until", "hasta"})
+
+
+def _word_kind(word):
+    """What a word of a clause is: a small word, a verb, a note, a modifier or a name nobody knows."""
+    parts = [part for part in word.strip("'-").split("-") if part]
+    if len(parts) > 1:
+        kinds = [_word_kind(part) for part in parts]
+        return "name" if "name" in kinds else kinds[-1]
+    word = parts[0] if parts else ""
+    if len(word) < 3 or word in _SMALL_WORDS or word in _FILLER_WORDS or word in _PARAMETER_WORDS:
+        return "small"
+    if _ORDER_VERB.fullmatch(word) or _FALLBACK_VERB.fullmatch(word) \
+            or (len(word) > 4 and re.search(r"(?:ar|(?<!v)ir)(?:lo|la|los|las|le|les|se)?$", word)):
+        return "verb"  # a Spanish infinitive ("tratar", "descargar") is not a name; "-vir" drugs are
+    if word in _NOTE_WORDS or _NOTE_ENDINGS.search(word):
+        return "note"
+    if _MODIFIER_ENDINGS.search(word):
+        return "modifier"
+    return "name"
+
+
+def _doing_words(clause):
+    """The words of a clause made only of a verb or a participle, with nothing the vocabularies
+    know ("Suctioning.", "Lavado.", "- Proning", "Suboxone.", "Activase."): a procedure or a drug
+    spelt like a verb, or a verb with nothing after it. Too like a note or a stray verb to be said
+    as an order; kept, so that no omission is read against them (Phase 0 closure, TD-69)."""
+    head = _head(clause)
+    if _ORDER_HEADER.match(head):
+        head = _ORDER_HEADER.sub(" ", head, count=1)
+    if ":" in head or _COPULA.search(clause) or any(entry["pattern"].search(head) for entry in lexicon()):
+        return []
+    rest = re.sub(r"^\s*(?:\d+[.)]|[-\u2022*\u00b7])\s*", " ", head)
+    if re.search(r"[0-9]", rest):
+        return []
+    rest = _URGENCY.sub(" ", _BARE_FILLER.sub(" ", rest))
+    words = re.findall(r"[a-z][a-z0-9'\-]*", rest)
+    # One or two such words and nothing else; an adverb ("Previously") or a noun of an act
+    # ("agregación") is not one.
+    if not 1 <= len(words) <= 2 or any(_word_kind(word) not in ("verb", "modifier") or word in _NOTE_WORDS or
+                                       re.search(r"(?:ly|mente|cion|sion)$", word) for word in words):
+        return []
+    return words
+
+
+def _note_only(clause):
+    """A clause of the words of a note only: a diagnosis, a finding, a state ("Sepsis", "Shock
+    séptico", "Patient hypotensive"); no name of an order, no number, no verb."""
+    if re.search(r"[0-9]", clause) or any(entry["pattern"].search(clause) for entry in lexicon()):
+        return False
+    kinds = [_word_kind(word) for word in re.findall(r"[a-z][a-z0-9'\-]*", _head(clause))]
+    return "note" in kinds and all(kind in ("note", "small", "modifier") for kind in kinds)
+
+
+def _name_words(text):
+    """The words of a text that may be the name of an order no vocabulary knows, with where they are."""
+    return [(match.group(0), match.start()) for match in re.finditer(r"[a-z][a-z0-9'\-]*", text)
+            if _word_kind(match.group(0)) == "name"]
+
+
 def _raw(text, index, begin, end):
     """The resident's own words for a folded span (accents and case kept)."""
     raw = str(text or "")
@@ -543,11 +787,38 @@ def coverage(text, parsed):
     # anything else in it ("On aspirin and clopidogrel", "Troponin negative") is not.
     bare_sentence = {}
     for sentence, terminator, clause, start in pieces:
-        kind = "bare" if _bare(_head(clause)) else _clause_class(sentence, terminator, clause)
+        bare_clause = _bare(_head(clause)) or _bare_names(clause)
+        kind = "bare" if bare_clause else _clause_class(sentence, terminator, clause)
         if "?" in terminator or kind not in ("bare", "clinical_order"):
             bare_sentence[sentence] = False
         else:
             bare_sentence.setdefault(sentence, True)
+    # A sentence that names the problem first and the orders after it ("Sepsis, ceftriaxone.",
+    # "Due to sepsis, zyvox.", "Creo que es sepsis, ceftriaxona."): the names after the note are
+    # orders, as in a sentence of names; the reader returned nothing for them and they vanished
+    # (Phase 0 closure). A history, a result, a negation, a condition or a report anywhere in it
+    # keeps the whole sentence a note ("On aspirin and clopidogrel", "Troponin negative, ECG
+    # with ST depression", "Allergic to penicillin, ceftriaxone").
+    note_led = {}
+    by_sentence = {}
+    for sentence, terminator, clause, start in pieces:
+        by_sentence.setdefault(sentence, []).append((terminator, clause, start))
+    for sentence, items in by_sentence.items():
+        if any("?" in terminator or _HISTORY.search(clause) or _NEGATION.search(clause) or _STATUS_AFTER.search(clause)
+               or _REPORTED.search(clause) or _TRAILING_NEGATION.search(clause) or _CONDITION_HEAD.match(_head(clause))
+               or _HISTORY_HEAD.match(_head(clause)) or _EXPECTATION.search(clause) or _LOOK_WORDS.search(clause)
+               for terminator, clause, start in items):
+            note_led[sentence] = False
+            continue
+        kinds = ["bare" if _bare(_head(clause)) or _bare_names(clause) else
+                 "note" if _note_only(clause) or (_REASONING.search(clause) and not _ORDER_VERB.match(_head(clause))
+                                                  and not _DOSE.search(clause)) else "other"
+                 for terminator, clause, start in items]
+        lead = next((at for at, kind in enumerate(kinds) if kind != "note"), len(kinds))
+        # The note ends at a comma: "porque está taquicárdica y nerviosa" goes on describing.
+        between = folded[items[lead - 1][2] + len(items[lead - 1][1]):items[lead][2]] if 0 < lead < len(kinds) else ""
+        note_led[sentence] = (0 < lead < len(kinds) and "," in between
+                              and all(kind == "bare" for kind in kinds[lead:]))
     previous = {}
     for sentence, terminator, clause, start in pieces:
         # What governs a clause: the nearest clause before it in the same sentence that had
@@ -594,7 +865,10 @@ def coverage(text, parsed):
                                                       "reassessment_wait" and _ORDER_VERB.match(head)):
             span_class = governed[start]
         listed = span_class == "commentary" and led.get(sentence)
-        bare = span_class == "commentary" and bare_sentence.get(sentence) and _bare(head)
+        bare = span_class == "commentary" and bare_sentence.get(sentence) and (_bare(head) or _bare_names(clause))
+        if note_led.get(sentence) and span_class in ("commentary", "reasoning") and not _REASONING.search(clause) \
+                and (_bare(head) or _bare_names(clause)):
+            bare = True
         actionable = span_class == "clinical_order" or bool(listed) or bool(bare)
         entries = group["entries"]
         covered = (any(_covers(entry, action) for entry in entries for action in actions)
@@ -680,11 +954,11 @@ def coverage(text, parsed):
                       span.strip()).strip(" ,")
         entry = group["entries"][0]
         add({"text": _raw(text, index, group["begin"], group["begin"] + len(span)), "key": entry["key"],
-             "cls": entry["cls"], "kind": entry["kind"], "at": group["begin"]})
+             "cls": entry["cls"], "kind": entry["kind"], "at": group["begin"], "end": group["begin"] + len(span)})
     for at, phrase, piece in consult_flags:
         sentence, terminator, clause, start = piece
         add({"text": _raw(text, index, at, start + len(clause.rstrip())), "key": "consultation", "cls": "consult",
-             "kind": "consult", "at": at})
+             "kind": "consult", "at": at, "end": start + len(clause.rstrip())})
     # A dose beside a word no vocabulary knows ("Give zyxin 2 g"): the reader must have
     # produced something for this clause, or it is unaccounted. So must an order written with
     # no dose and no word the vocabularies know ("Arrange urgent haemodialysis"), unless one of
@@ -714,7 +988,134 @@ def coverage(text, parsed):
                    and w not in _PARAMETER_WORDS]
         if unknown and not _clause_is_covered(clause, actions, quoted):
             add({"text": _raw(text, index, start, start + len(clause.rstrip())), "key": unknown[-1],
-                 "cls": "unknown", "kind": "unknown", "at": start})
+                 "cls": "unknown", "kind": "unknown", "at": start, "end": start + len(clause.rstrip())})
+    # The name of an order no vocabulary knows, written the way an order is written: alone in a
+    # list or a sentence of names ("- Zyvox", "Plasmaféresis urgente", "Necesitamos zyvox"), with
+    # a dose, a route or a schedule and no verb ("Zyvox IV"), or where the order's own name goes
+    # after an order verb ("Give zyvox in 100 mL saline"). With a known name the same words were
+    # an order; with this one they vanished (Phase 0 closure). A clause one of the reader's
+    # actions came from, a note, a question, a negation, a condition, the history, a report of
+    # what others did or said, and reasoning are left as they were.
+    taken = [(item["at"], item.get("end", item["at"] + 1)) for item in held + unaccounted]
+    unread_words = []
+    spoken = [" ".join(fold(action.get("_span") or _mention_span(action, text)).split()) for action in actions]
+    for sentence, terminator, clause, start in pieces:
+        end = start + len(clause)
+        if start in called or "?" in terminator or reported.get(sentence):
+            continue
+        head = _head(clause)
+        if _CONDITION_HEAD.match(head) or _HISTORY_HEAD.match(head) or _INTERROGATIVE.match(head) \
+                or _HISTORY.search(clause) or _TRAILING_NEGATION.search(clause) or _REASONING.search(clause) \
+                or _EXPECTATION.search(clause) or _LOOK_WORDS.search(clause) or _STATUS_AFTER.search(clause) \
+                or _REPORTED.search(clause):
+            continue
+        local = masked[start:end]
+        listed_names = (bare_sentence.get(sentence) or note_led.get(sentence)) and _bare_names(clause)
+        if governed.get(start) in ("reasoning", "reassessment_wait") and not _DOSE.search(local) \
+                and not (note_led.get(sentence) and listed_names):
+            continue
+        inside = [g for g in groups if g["begin"] < end and g["end"] > start]
+        plain = " ".join(clause.split())
+        said = any(plain in span or (len(span) > 3 and span in plain) for span in spoken if span)
+        verb = _ORDER_VERB.match(head) or _FALLBACK_VERB.match(head)
+        if not inside:
+            doing = _doing_words(clause)
+            if doing and not any(begin < end and start < stop for begin, stop in taken) \
+                    and not _NEGATION.search(clause) and not said and not _attributed(clause, actions) \
+                    and not _clause_is_covered(clause, actions, quoted):
+                # Only a verb or a participle ("Suctioning.", "Lavado.", "Suboxone."): kept silently,
+                # like the names written where a note could also be (TD-69).
+                begin = start + len(clause) - len(head)
+                begin += len(re.match(r"\s*(?:\d+[.)]\s*)?", head).group(0))
+                unread_words.append({"text": _raw(text, index, begin, start + len(clause.rstrip())),
+                                     "key": doing[-1], "cls": "unread", "kind": "unread", "at": begin,
+                                     "words": doing})
+                continue
+            if any(begin < end and start < stop for begin, stop in taken) or _ORDER_VERB.match(head) \
+                    or led.get(sentence) or _NEGATION.search(clause):
+                continue  # flagged already, or the order-verb rule above has decided this clause
+            if said or _attributed(clause, actions) or _clause_is_covered(clause, actions, quoted):
+                continue
+            strong = (_DOSE.search(local) or _ROUTE.search(local) or _SCHEDULE.search(local)) \
+                and not _COPULA.search(clause) and not (":" in clause and not _ORDER_HEADER.match(clause))
+            names = _name_words(head[verb.end():] if verb else head)
+            if names and not (strong or verb or listed_names):
+                # Only names no vocabulary knows, written where a note could also be ("Sepsis: zyvox.",
+                # "If hypotensive, zyvox.", "Zyvox 600"): not said to the resident as an order, and
+                # kept, so that no omission is read against them (rule A of 0I).
+                if not _bare_names(clause, relaxed=True):
+                    continue
+                begin = start + len(clause) - len(head)
+                unread_words.append({"text": _raw(text, index, begin, start + len(clause.rstrip())),
+                                     "key": names[-1][0], "cls": "unread", "kind": "unread", "at": begin,
+                                     "words": [word for word, _ in names]})
+                continue
+            if not names:
+                continue
+            begin = start + len(clause) - len(head)
+            begin += len(re.match(r"\s*(?:\d+[.)]\s*)?", head).group(0))
+            add({"text": _raw(text, index, begin, start + len(clause.rstrip())), "key": names[-1][0],
+                 "cls": "unknown", "kind": "unknown", "at": begin, "end": start + len(clause.rstrip())})
+            continue
+        joined = _JOINED_TAIL.search(local.rstrip(" ,;"))
+        read_here = any(_covers(entry, action) for group in inside for entry in group["entries"] for action in actions)
+        if joined and read_here and joined.start(1) >= max(g["end"] for g in inside) - start:
+            # Names after "with"/"con" that follow a known name the reader read ("Give ceftriaxone
+            # with zyvox"): a second drug, or a word that describes the first ("with caution",
+            # "con reservorio"). Kept silently, so that no omission is read against them (TD-69).
+            tail = [(m.group(0), joined.start(1) + m.start()) for m in re.finditer(r"[a-z][a-z0-9'\-]*",
+                                                                                   joined.group(1))]
+            kinds = [_word_kind(word) for word, _ in tail]
+            named = [word for (word, _), kind in zip(tail, kinds) if kind == "name"]
+            explained = set()
+            for action in actions:
+                explained |= set(re.findall(r"[a-z][a-z0-9\-]{2,}", _signature(action) + " " + fold(canonical(action))))
+            if named and all(kind in ("name", "modifier", "small") for kind in kinds) \
+                    and not all(word in explained for word in named) \
+                    and not any(begin <= start + tail[0][1] < stop for begin, stop in taken) \
+                    and not _NEGATION.search(clause[:tail[0][1]]):
+                first, last = tail[0][1], tail[-1][1] + len(tail[-1][0])
+                unread_words.append({"text": _raw(text, index, start + first, start + last), "key": tail[-1][0],
+                                     "cls": "unread", "kind": "unread", "at": start + first,
+                                     "words": [word for word, _ in tail]})
+        if not verb:
+            # Names joined to a known one the reader did not read either ("Zyvox with ceftriaxone"):
+            # the known name is flagged above; the unknown one beside it is flagged with it.
+            if said or not listed_names or not any(begin < end and start < stop for begin, stop in taken):
+                continue
+            offset = len(clause) - len(head)
+            run = [(word, offset + at) for word, at in _name_words(local[offset:])
+                   if not any(g["begin"] - start <= offset + at < g["end"] - start for g in inside)]
+        else:
+            # After an order verb, the first words are the order's own name ("Give zyvox in 100 mL
+            # saline"); a word after a preposition or after the known name describes it ("ECG de 12
+            # derivaciones", "mascarilla con reservorio") and is left to it.
+            cursor = len(clause) - len(head) + verb.end()
+            run = []
+            for match in re.finditer(r"[a-z][a-z0-9'\-]*", local[cursor:]):
+                at = cursor + match.start()
+                if any(g["begin"] - start <= at < g["end"] - start for g in inside):
+                    break
+                kind = _word_kind(match.group(0))
+                if kind == "name":
+                    run.append((match.group(0), at))
+                    continue
+                if run or kind != "small" or match.group(0) in _PREPOSITIONS:
+                    break
+            if not run or not any(g["begin"] - start > run[-1][1] for g in inside):
+                continue
+        explained = set()
+        for action in actions:
+            explained |= set(re.findall(r"[a-z][a-z0-9\-]{2,}", _signature(action) + " " + fold(canonical(action))))
+        for quote in quoted:
+            explained |= set(re.findall(r"[a-z][a-z0-9\-]{2,}", quote))
+        run = [(word, at) for word, at in run if word not in explained
+               and not any(begin <= start + at < stop for begin, stop in taken)
+               and not _BEFORE_MENTION.search(clause[:at]) and not _NEGATION.search(clause[:at])]
+        if run:
+            first, last = run[0][1], run[-1][1] + len(run[-1][0])
+            add({"text": _raw(text, index, start + first, start + last), "key": run[-1][0], "cls": "unknown",
+                 "kind": "unknown", "at": start + first, "end": start + last})
     spans = []
     flagged = {item["at"] for item in held + unaccounted}
     for sentence, terminator, clause, start in pieces:
@@ -723,7 +1124,8 @@ def coverage(text, parsed):
             span_class = "actionable_unrecognized"
         spans.append({"text": _raw(text, index, start, start + len(clause.rstrip())), "class": span_class,
                       "mentions": spans_info.get(start, [])})
-    return {"spans": spans, "unaccounted": _unique(unaccounted), "held": _unique(held)}
+    return {"spans": spans, "unaccounted": _unique(unaccounted), "held": _unique(held),
+            "unread": _unique(unread_words)}
 
 
 def _unique(items):
@@ -766,10 +1168,11 @@ _TYPE_WORDS = {
                               r"epap|flow|flujo|pc/ac|vc/ac",
     "monitoring": r"monitor\w*|telemetr\w*|vigil\w*",
     "oxygen": r"oxyg\w*|oxig\w*|o2|mascar\w*|mask|cannula|naricera|reservorio|rebreather|venturi|recirculacion",
-    "fluid": r"suero|fluid\w*|crystalloid\w*|cristaloide\w*|saline|salino|ringer|bolus|bolo",
+    "fluid": r"suero|fluid\w*|crystalloid\w*|cristaloide\w*|saline|salino|ringer|bolus|bolo|volumen|volume|"
+             r"expansion",
     "blood": r"sangre|blood|globulos|prbc|plasma|plaquet\w*|platelet\w*",
     "vascular_access": r"piv|io|line|via|vvp|cannula|cateter|catheter|access|acceso|humer\w*|tibia",
-    "hemorrhage_control": r"bleed\w*|sangr\w*|pack\w*|tourniquet|torniquete|compres\w*|wound|herida",
+    "hemorrhage_control": r"bleed\w*|sangr\w*|pack\w*|tourniquet|torniquete|compres\w*|wound|herida|tapon\w*",
     "continuous_bronchodilator": r"nebuli\w*",
     "infusion_adjustment": r"infusion|drip|goteo|titra\w*|titul\w*|rate|velocidad",
     "repeat_order": r"repeat\w*|repet\w*|again|otra|another",
@@ -890,6 +1293,18 @@ def _mention_span(action, text, taken=()):
     return next((span for span in spans if span not in taken), spans[0] if spans else "")
 
 
+def measures(action):
+    """The dose, route and rate an action carries, as the record keeps them."""
+    action = action if isinstance(action, dict) else {}
+    return {
+        "dose": next((action.get(k) for k in ("dose_mg", "dose_g", "dose", "volume_ml", "energy_j")
+                      if action.get(k) is not None), None),
+        "route": action.get("route"),
+        "rate": next((action.get(k) for k in ("rate", "rate_mcg_min", "flow_lpm") if action.get(k) is not None),
+                     None),
+    }
+
+
 def order_from_action(action, *, submission_id, index, text, minute):
     action = action if isinstance(action, dict) else {}
     kind = action.get("type")
@@ -901,11 +1316,7 @@ def order_from_action(action, *, submission_id, index, text, minute):
         "class": ("reassessment" if kind == "reassessment" else
                   "unrecognized" if kind == "clarification" and action.get("unrecognized_text") else
                   "clarification" if kind == "clarification" else str(kind or "")),
-        "dose": next((action.get(k) for k in ("dose_mg", "dose_g", "dose", "volume_ml", "energy_j")
-                      if action.get(k) is not None), None),
-        "route": action.get("route"),
-        "rate": next((action.get(k) for k in ("rate", "rate_mcg_min", "flow_lpm") if action.get(k) is not None),
-                     None),
+        **measures(action),
         "timing": ({"delay_min": action.get("delay_min"), "wait": bool(action.get("wait"))}
                    if kind == "reassessment" else
                    {"after_result": action["after_result"]} if action.get("after_result") else None),
@@ -1066,5 +1477,5 @@ def snapshot(orders):
     """The orders as the Trace keeps them (no internal fields)."""
     keep = ("order_id", "submission_id", "span", "canonical", "class", "dose", "route", "rate", "timing",
             "written_at_min", "fate", "reason", "executed_at_min", "receipt", "modelled_effect", "history",
-            "limitation", "detected_as", "default_applied", "group")
+            "limitation", "detected_as", "default_applied", "group", "derived_from")
     return [{key: deepcopy(order.get(key)) for key in keep if key in order} for order in orders]

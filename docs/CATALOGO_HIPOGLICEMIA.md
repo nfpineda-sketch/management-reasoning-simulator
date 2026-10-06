@@ -258,6 +258,9 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-10-06-09 | Fase 0 (0J): el paro de la anafilaxia dice que la adrenalina se dio y se agotó, y el del hemotórax es una limitación | variante anaphylaxis_29f, anaphylaxis_63m_betablocked, trauma_hemothorax_41m | technical_defect | clinical | — |
 | C-2026-10-06-10 | Fase 0 (0J-0K): batería de aceptación de los 31 casos y congelamiento del piloto | general | policy | none | — |
 | C-2026-10-06-11 | Fase 0 (0J): una reevaluación sólo espera lo que una respuesta puede completar | general | technical_defect | clinical | — |
+| C-2026-10-06-12 | Cierre de la Fase 0: una orden cuyo nombre ningún vocabulario conoce no desaparece | general | technical_defect | clinical | — |
+| C-2026-10-06-13 | F0-12: la orden escrita después de la respuesta a una aclaración corre como orden propia | general | technical_defect | clinical | — |
+| C-2026-10-06-14 | F0-11: las frases nuevas de la Fase 0 en español, con las palabras citadas como se escribieron | general | text | cosmetic | — |
 
 ## La batería, configuración por configuración
 

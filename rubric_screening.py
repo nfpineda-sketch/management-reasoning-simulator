@@ -279,7 +279,7 @@ def _ledger(trace, session_ledger=()):
 def _kinds(order):
     """The kinds of order a ledger entry stands for; ``*`` when the reader could not tell."""
     klass = str(order.get("class") or "")
-    if klass in ("unrecognized", "held_with_question"):
+    if klass in ("unrecognized", "held_with_question", "unread_words"):
         return [_ANY_KIND]
     if klass == "plan":
         return list(order.get("planned_types") or []) or [_ANY_KIND]

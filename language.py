@@ -340,7 +340,152 @@ def _gate_fields_es(fields):
     return fields
 
 
-_RULES = _WALL_MOTION_RULES + (
+#: Phase 0 (closure, F0-11, 2026-10-06): the room's new sentences -- the order ledger's
+#: receipts, the look at the bedside, a wait an event cut short, the arrest, a submission
+#: stopped part way, an order written after an answer -- said whole in Spanish, before the
+#: word rules below can say them by halves. The resident's own words quoted in them stay as
+#: written (``_keep_resident_words``): «Stop the infusion», never «Stop infusión de the».
+#: Codes, fates and other fields the room does not show are not translated.
+_PHASE0_RULES = (
+ (r'Not understood: "([^"]*)"\. Nothing was given or done for it\. Write it again in other words if you still '
+  r'want it\.',
+  r'No se entendió: «\1». No se administró ni se hizo nada por ello. Escríbelo de nuevo con otras palabras si aún '
+  r'lo quieres.'),
+ (r'Not run: "([^"]*)" was written in the answer to the question above, which completes the held order only\. '
+  r'Write it again as a new order if you still want it\.',
+  r'No se ejecutó: «\1» se escribió en la respuesta a la pregunta anterior, que solo completa la orden retenida. '
+  r'Escríbelo de nuevo como una orden nueva si aún lo quieres.'),
+ (r'Not executed: "([^"]*)"\. The patient is in cardiac arrest; resuscitation management is not modelled in this '
+  r'pilot\.',
+  r'No se ejecutó: «\1». El paciente está en paro cardíaco; el manejo de la reanimación no está modelado en este '
+  r'piloto.'),
+ (r'Recorded as your decision, not given: "([^"]*)"\. This simulator does not model a response to it in this '
+  r'case, so nothing changed\.',
+  r'Registrado como tu decisión, no administrado: «\1». Este simulador no modela una respuesta a ello en este '
+  r'caso, así que nada cambió.'),
+ (r'"([^"]*)" in your answer was taken as the held order restated: it runs once, as it was held\.',
+  r'«\1» en tu respuesta se tomó como la orden retenida escrita de nuevo: se ejecuta una sola vez, tal como estaba '
+  r'retenida.'),
+ (r'Not done now: "([^"]*)"\. An order for a later time is not carried out in this pilot: nothing was given and '
+  r'nothing was scheduled\. Write it again when you want it done\.',
+  r'No se hizo ahora: «\1». En este piloto, una orden para más tarde no se ejecuta: no se administró nada ni se '
+  r'programó nada. Escríbela de nuevo cuando quieras que se haga.'),
+ (r'Your order "([^"]*)" was interrupted while it was being processed, and nothing of it was applied\. Nothing '
+  r"will be repeated automatically: check the patient's state, and send it again if it is still needed\.",
+  r'Tu orden «\1» se interrumpió mientras se procesaba, y no se aplicó nada de ella. Nada se repetirá '
+  r'automáticamente: revisa el estado del paciente y envíala de nuevo si todavía es necesaria.'),
+ (r'Your order "([^"]*)" was interrupted while it was being processed, and part of it may have been applied\. '
+  r"Nothing will be repeated automatically: check the patient's state, and send it again if it is still needed\.",
+  r'Tu orden «\1» se interrumpió mientras se procesaba, y es posible que una parte de ella se haya aplicado. Nada '
+  r'se repetirá automáticamente: revisa el estado del paciente y envíala de nuevo si todavía es necesaria.'),
+ (r'Also in your answer: "([^"]*)"\. The answer completes the held order only; this order is read next, as an '
+  r'order of its own, with its own receipt\.',
+  r'También en tu respuesta: «\1». La respuesta solo completa la orden retenida; esta orden se lee a continuación, '
+  r'como una orden propia, con su propio recibo.'),
+ (r'Part of this order could not be matched to what the simulator did: (.+?)\. Check the patient state before '
+  r'relying on it\.',
+  r'Parte de esta orden no pudo hacerse corresponder con lo que hizo el simulador: \1. Revisa el estado del '
+  r'paciente antes de confiar en ella.'),
+ (r'(?i:oxygen non-rebreather mask) ([\d.]+) L/min: no flow was written; the standard non-rebreather flow, '
+  r'([\d.]+) L/min, was used\.',
+  r'Oxígeno por mascarilla con reservorio a \1 L/min: no se escribió un flujo; se usó el flujo habitual de la '
+  r'mascarilla con reservorio, \2 L/min.'),
+ # A partly carried-out or partly held order (0B).
+ (r'\*\*PART OF THIS ORDER WAS NOT CARRIED OUT\*\*', '**PARTE DE ESTA ORDEN NO SE EJECUTÓ**'),
+ (r'\*\*PART OF THIS ORDER IS HELD — CLARIFICATION REQUIRED\*\*',
+  '**PARTE DE ESTA ORDEN ESTÁ RETENIDA — SE NECESITA UNA ACLARACIÓN**'),
+ (r'Executed now: \*\*(.+?)\*\*\.', r'Ejecutado ahora: **\1**.'),
+ (r'Not carried out: \*\*(.+?)\*\*\. Nothing of it has been given; write it again as a new order if you still '
+  r'want it\.',
+  r'No ejecutado: **\1**. No se ha administrado nada de ello; escríbelo de nuevo como una orden nueva si aún lo '
+  r'quieres.'),
+ (r'Held until you answer: \*\*(.+?)\*\*\. Nothing of it has been given\.',
+  r'Retenido hasta que respondas: **\1**. No se ha administrado nada de ello.'),
+ (r'The item below is held until you answer\. Nothing of it has been given\.',
+  'El elemento de abajo queda retenido hasta que respondas. No se ha administrado nada de ello.'),
+ # Time (0E, 0F): the look at the bedside, the limit of one step, a wait an event cut short.
+ (r'On reassessment at the bedside, 1 minute later, ', 'Al reevaluar en la cabecera, 1 minuto después, '),
+ (r'On reassessment at the bedside, (\d+) minutes later, ', r'Al reevaluar en la cabecera, \1 minutos después, '),
+ (r'\. On reassessment at the bedside 1 minute after the order, ',
+  '. Al reevaluar en la cabecera, 1 minuto después de la orden, '),
+ (r'\. On reassessment at the bedside (\d+) minutes after the order, ',
+  r'. Al reevaluar en la cabecera, \1 minutos después de la orden, '),
+ (r'The wait was interrupted after (\d+) minutes? of the (\d+) you asked for, at minute (\d+): (.+?)\. Now, ',
+  r'La espera se interrumpió tras \1 min de los \2 que pediste, en el minuto \3: \4. Ahora, '),
+ (r'The wait was interrupted after (\d+) minutes?, at minute (\d+): (.+?)\. Now, ',
+  r'La espera se interrumpió tras \1 min, en el minuto \2: \3. Ahora, '),
+ (r'^Given: (.+?)\. (?=La espera se interrumpió)', r'Administrado: \1. '),
+ (r'Specify a reassessment interval from 0 to 120 minutes\. The simulator moves the clock at most 120 minutes in '
+  r'one step \(a limit of this pilot\): write a wait or a reassessment of 120 minutes or less, and wait again '
+  r'afterwards if you need more time\.',
+  'Indica un intervalo de reevaluación de 0 a 120 minutos. El simulador avanza el reloj como máximo 120 minutos '
+  'de una vez (un límite de este piloto): escribe una espera o una reevaluación de 120 minutos o menos, y vuelve '
+  'a esperar después si necesitas más tiempo.'),
+ # The events that cut a wait short (0H), as the update names them.
+ (r'\bcomplete atrioventricular block\b', 'bloqueo auriculoventricular completo'),
+ (r'\bventricular fibrillation, pulse lost\b', 'fibrilación ventricular, sin pulso'),
+ (r'\bcardiac arrest, pulse lost\b', 'paro cardíaco, sin pulso'),
+ (r'\bcardiac arrest from uncontrolled haemorrhage\b', 'paro cardíaco por hemorragia no controlada'),
+ (r'\bcirculatory arrest from untreated anaphylaxis\b', 'paro circulatorio por anafilaxia no tratada'),
+ (r'\bloss of circulation from the falling rate\b', 'pérdida de la circulación por la frecuencia que cae'),
+ (r'\bgeneralized seizure\b', 'convulsión generalizada'),
+ (r'\bthe anaphylactic reaction returns\b', 'la reacción anafiláctica vuelve'),
+ (r'\btension pneumothorax on the ventilator\b', 'neumotórax a tensión con el ventilador'),
+ (r'\bmajor bleeding after thrombolysis\b', 'hemorragia mayor tras la trombólisis'),
+ (r'\bfrequent ventricular ectopy on dobutamine\b', 'extrasístoles ventriculares frecuentes con dobutamina'),
+ (r'\bright ventricle failing under fast volume\b', 'falla del ventrículo derecho con volumen rápido'),
+ (r'\bsustained hypotension from the obstruction\b', 'hipotensión sostenida por la obstrucción'),
+ (r'\bbrought back after discharge\b', 'traído de vuelta tras el alta'),
+ (r'\bsystolic pressure (\d+) mmHg and falling\b', r'presión sistólica de \1 mmHg y en descenso'),
+ (r'\bsaturation (\d+) % and falling\b', r'saturación de \1 % y en descenso'),
+ (r'\ba critical change\b', 'un cambio crítico'),
+ # The arrest (0G): what the room says, what the examination finds and the monitor shows.
+ (r'Cardiac arrest occurred at minute (\d+)\. Resuscitation management is not modelled in this pilot\. '
+  r'Subsequent management is not assessable\.',
+  r'Se produjo un paro cardíaco en el minuto \1. El manejo de la reanimación no está modelado en este piloto. El '
+  r'manejo posterior no es evaluable.'),
+ (r'Cardiac arrest occurred at an earlier minute\. Resuscitation management is not modelled in this pilot\. '
+  r'Subsequent management is not assessable\.',
+  'Se produjo un paro cardíaco en un minuto anterior. El manejo de la reanimación no está modelado en este piloto. '
+  'El manejo posterior no es evaluable.'),
+ (r'Unresponsive, not breathing, no central pulse: the patient is in cardiac arrest\. Resuscitation is not '
+  r'modelled in this pilot\.',
+  'Sin respuesta, sin respiración, sin pulso central: el paciente está en paro cardíaco. La reanimación no está '
+  'modelada en este piloto.'),
+ (r'No pulse: (.+?) on the monitor; no blood pressure; not breathing; unresponsive\.',
+  r'Sin pulso: \1 en el monitor; sin presión arterial; sin respiración; sin respuesta.'),
+ (r'Ahora, Sin pulso: ', 'Ahora, sin pulso: '),
+ (r'\bno organized rhythm\b', 'sin ritmo organizado'),
+ (r'\bPulseless ventricular tachycardia\b', 'Taquicardia ventricular sin pulso'),
+ (r'\bVentricular fibrillation\b', 'Fibrilación ventricular'),
+ (r'\bPulseless electrical activity\b', 'Actividad eléctrica sin pulso'),
+ # The anaphylaxis arrest, untreated and after a dose that wore off (0J).
+ (r'Circulatory arrest after twenty-five minutes of untreated anaphylaxis\. Adrenaline was the treatment that '
+  r'was missing; nothing else that was given acts on the reaction\.',
+  'Paro circulatorio tras veinticinco minutos de anafilaxia no tratada. La adrenalina era el tratamiento que '
+  'faltaba; nada más de lo administrado actúa sobre la reacción.'),
+ (r'Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier had '
+  r'worn off and the reaction had come back\. Nothing else that was given acts on the reaction\.',
+  'Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes había '
+  'perdido su efecto y la reacción había vuelto. Nada más de lo administrado actúa sobre la reacción.'),
+)
+_RESIDENT_WORDS = re.compile('([-])')
+
+
+def _keep_resident_words(body):
+    """Set aside the resident's words a sentence quotes ("..."), to be put back as they were written."""
+    kept = []
+
+    def keep(match):
+        if len(kept) >= 0x100:
+            return match.group(0)
+        kept.append(match.group(1))
+        return '"' + chr(0xE300 + len(kept) - 1) + '"'
+
+    return re.sub(r'"([^"\n]{1,500})"', keep, body), kept
+
+
+_RULES = _PHASE0_RULES + _WALL_MOTION_RULES + (
  # A delivery time longer than this simulator runs (cycle 8); before the word rules below.
  (r"([\d.]+) mL at ([\d.]+) mL/h would run for ([\d.]+) h; this simulator runs a fluid order over at most 120 min\. "
   r"Restate it as a bolus or a shorter infusion\.",
@@ -1198,6 +1343,11 @@ _SKIN_ES = {"natural": "natural", "mild pallor": "palidez leve", "pallor": "pali
 _EXAMINATION_SENTENCES_ES = {
     "The external bleeding is reduced, not stopped.": "El sangrado externo está disminuido, sin detenerse.",
     "The external bleeding is stopped.": "El sangrado externo está detenido.",
+    # Every region after an arrest (Phase 0, 0G; closure F0-11).
+    "Unresponsive, not breathing, no central pulse: the patient is in cardiac arrest. Resuscitation is not "
+    "modelled in this pilot.":
+    "Sin respuesta, sin respiración, sin pulso central: el paciente está en paro cardíaco. La reanimación no está "
+    "modelada en este piloto.",
 }
 _SWEAT_ES = {"absent": "ausente", "mild": "leve", "marked": "marcada"}
 
@@ -1370,8 +1520,11 @@ def say(text, language=None):
     for sentence, translation in MESSAGES.items():
         if sentence in body:
             body = body.replace(sentence, translation)
+    body, quoted = _keep_resident_words(body)
     for pattern, replacement in _COMPILED:
         body = pattern.sub(replacement, body)
+    if quoted:
+        body = _RESIDENT_WORDS.sub(lambda match: quoted[ord(match.group(1)) - 0xE300], body)
     if kept:
         body = _KEPT_LINE.sub(lambda match: kept[ord(match.group(1)) - 0xE100], body)
     return body

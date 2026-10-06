@@ -70,8 +70,8 @@ casos aceptados puede sortear cada desafío.
 La columna de limitaciones nombra las que halló la batería en cada caso y cuenta las que el caso ya
 declaraba (`engine_limits` de `case_assessment_bank`, cierre prepiloto C-2026-10-02-08: congeladas con
 cada encuentro y mostradas al docente con «Never count these against the resident»; no se repiten
-aquí). Las de todo el banco (abajo) valen para los 31; tres tocan decisiones evaluadas
-(G-RESUSCITATION, G-LATER-ORDERS, G-READER-V3) y cada una tiene su guarda.
+aquí). Las de todo el banco (abajo) valen para los 31; tocan decisiones evaluadas
+(G-RESUSCITATION, G-LATER-ORDERS, G-READER-V3, G-ANSWER-ORDER) y cada una tiene su guarda.
 
 | Caso | Familia | Desafíos | Motor | Batería | Limitaciones declaradas | ¿Afecta una decisión evaluada? | Decisión |
 |---|---|---|---|---|---|---|---|
@@ -111,7 +111,7 @@ aquí). Las de todo el banco (abajo) valen para los 31; tres tocan decisiones ev
 
 ### Excluido: `trauma_hemothorax_41m`
 
-An assessed management decision depends on a course the engine cannot run: the theatre is not modelled and, since Phase 0 made the arrest a true one, the patient arrests at about minute 60 whatever is done, so trauma_drained_and_never_looked_again (window 10-180) is never assessable. This departs from the pre-pilot closure (C-2026-10-02-08: no case excluded, the theatre declared as a limit while the arrest was only announced): the faculty decides between keeping it excluded, accepting it with the arrest declared, or representing the theatre.
+An assessed management decision depends on a course the engine cannot run: the theatre is not modelled and, since Phase 0 made the arrest a true one, the patient arrests at about minute 60 whatever is done, so trauma_drained_and_never_looked_again (window 10-180) is never assessable. This departs from the pre-pilot closure (C-2026-10-02-08: no case excluded, the theatre declared as a limit while the arrest was only announced). The faculty decided on 2026-10-06 (F0-2): excluded from the resident pilot, the theatre not modelled; the case stays in the faculty sandbox.
 
 ## Versiones de los casos aceptados
 
@@ -157,7 +157,8 @@ encuentro con este congelamiento. Un cambio posterior en cualquiera de las dos c
 - **G-RESUSCITATION** — Resuscitation is not modelled: a cardiac arrest is the end of what can be assessed. The page says so in the agreed words, later orders are TERMINAL_NOT_EXECUTABLE, and every decision whose window reaches past the arrest is NOT ASSESSABLE (rule E). *Guarda:* rule E (resuscitation_not_modelled).
 - **G-LATER-ORDERS** — An order for a later time ('in 30 minutes') is recorded and neither run nor scheduled (RECORDED_NOT_MODELLED, unsupported_future_execution); the resident is told to write it again when it is due. *Guarda:* rule A (the kinds the plan names, or a wildcard).
 - **G-STEP-120** — One step moves the clock at most 120 minutes; a longer wait is refused and explained (pilot_time_step_limit), never shortened. *Guarda:* the refusal is recorded with its fate.
-- **G-READER-V3** — The order reader is frozen at V3. What it does not read is UNRECOGNIZED, with a receipt, and never disappears; it counts as a wildcard for every assessed omission in its window. *Guarda:* rule A (wildcard) and rule D (an order not carried out).
+- **G-READER-V3** — The order reader is frozen at V3. After it, the room's coverage map (heuristic, TD-68) accounts for what the reader did not return: a clause written as an order is UNRECOGNIZED, with a receipt, also when no vocabulary knows its name; words that could as well be a note, a description or a stray verb (a label with a colon, a condition without a verb, a bare number, a name after 'with' a known order the reader read, a lone verb or participle) are kept silently as unread words, also UNRECOGNIZED. Either counts as a wildcard for every assessed omission in its window. Not kept on their own (TD-69): a name that is also a word of a note, an unknown name written right after a known one with nothing between, and a name a reader action takes into its own words; the turn's text stays whole in the record. *Guarda:* rule A (wildcard) and rule D (an order not carried out).
+- **G-ANSWER-ORDER** — The answer to a clarification completes the held order only. An order written after the answer, in the same submission, is read next as an order of its own (F0-12), with the minute it was written, and runs after the held order (and any wait written with it). When the answer leaves part of the held order unanswered, the order written after it is not run and its receipt says so (UNRECOGNIZED; TD-70). *Guarda:* rule A (an order written and not run) and rule B (a delay counts from the minute it was written).
 - **G-STATIC-OBSERVATIONS** — History, collateral and the examination regions and studies the engine does not model are the case's authored values, declared static (observation_consistency.declaration); a static result reported in a turn is a limitation of that turn (observable_static). *Guarda:* observable_static in the turn's limitations.
 - **G-HARM-NOT-MODELLED** — Several excesses and errors have no modelled harm (audit 8 D/E): crystalloid beyond need where the family has no lung to load, furosemide in septic hypotension, midazolam in severe asthma, repeated IM adrenaline, D50 or aspirin, repeated nebulised albuterol. The order runs with its fate; the absence of a consequence is the engine's, not evidence. *Guarda:* no declared critical event reads these consequences.
 - **G-INTERRUPTIONS** — A wait stops at a declared engine event, at a systolic below 70 that fell 20 or more for 2 minutes, or at a saturation below 85 that fell 5 or more for 2 minutes (event_provenance). *Guarda:* every event carries its cause class and preventability.

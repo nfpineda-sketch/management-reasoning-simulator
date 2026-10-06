@@ -69,8 +69,9 @@ def build():
             "La columna de limitaciones nombra las que halló la batería en cada caso y cuenta las que el caso ya",
             "declaraba (`engine_limits` de `case_assessment_bank`, cierre prepiloto C-2026-10-02-08: congeladas con",
             "cada encuentro y mostradas al docente con «Never count these against the resident»; no se repiten",
-            "aquí). Las de todo el banco (abajo) valen para los 31; tres tocan decisiones evaluadas",
-            "(G-RESUSCITATION, G-LATER-ORDERS, G-READER-V3) y cada una tiene su guarda.", "",
+            "aquí). Las de todo el banco (abajo) valen para los 31; tocan decisiones evaluadas",
+            "(" + ", ".join(key for key, item in freeze.GLOBAL_LIMITATIONS.items() if item["affects_assessed"])
+            + ") y cada una tiene su guarda.", "",
             "| Caso | Familia | Desafíos | Motor | Batería | Limitaciones declaradas | ¿Afecta una decisión "
             "evaluada? | Decisión |",
             "|---|---|---|---|---|---|---|---|"]

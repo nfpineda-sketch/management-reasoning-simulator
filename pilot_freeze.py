@@ -43,9 +43,24 @@ GLOBAL_LIMITATIONS = {
                 "(pilot_time_step_limit), never shortened.",
         "affects_assessed": False, "guard": "the refusal is recorded with its fate"},
     "G-READER-V3": {
-        "text": "The order reader is frozen at V3. What it does not read is UNRECOGNIZED, with a receipt, "
-                "and never disappears; it counts as a wildcard for every assessed omission in its window.",
+        "text": "The order reader is frozen at V3. After it, the room's coverage map (heuristic, TD-68) "
+                "accounts for what the reader did not return: a clause written as an order is UNRECOGNIZED, "
+                "with a receipt, also when no vocabulary knows its name; words that could as well be a note, "
+                "a description or a stray verb (a label with a colon, a condition without a verb, a bare "
+                "number, a name after 'with' a known order the reader read, a lone verb or participle) are "
+                "kept silently as unread words, also UNRECOGNIZED. Either counts as a wildcard for every "
+                "assessed omission in its window. Not kept on their own (TD-69): a name that is also a word "
+                "of a note, an unknown name written right after a known one with nothing between, and a name "
+                "a reader action takes into its own words; the turn's text stays whole in the record.",
         "affects_assessed": True, "guard": "rule A (wildcard) and rule D (an order not carried out)"},
+    "G-ANSWER-ORDER": {
+        "text": "The answer to a clarification completes the held order only. An order written after the "
+                "answer, in the same submission, is read next as an order of its own (F0-12), with the "
+                "minute it was written, and runs after the held order (and any wait written with it). When "
+                "the answer leaves part of the held order unanswered, the order written after it is not run "
+                "and its receipt says so (UNRECOGNIZED; TD-70).",
+        "affects_assessed": True, "guard": "rule A (an order written and not run) and rule B (a delay counts "
+                                           "from the minute it was written)"},
     "G-STATIC-OBSERVATIONS": {
         "text": "History, collateral and the examination regions and studies the engine does not model are "
                 "the case's authored values, declared static (observation_consistency.declaration); a "
@@ -157,9 +172,9 @@ CASES = {
                                               "is done, so trauma_drained_and_never_looked_again (window 10-180) "
                                               "is never assessable. This departs from the pre-pilot closure "
                                               "(C-2026-10-02-08: no case excluded, the theatre declared as a limit "
-                                              "while the arrest was only announced): the faculty decides between "
-                                              "keeping it excluded, accepting it with the arrest declared, or "
-                                              "representing the theatre."},
+                                              "while the arrest was only announced). The faculty decided on "
+                                              "2026-10-06 (F0-2): excluded from the resident pilot, the theatre "
+                                              "not modelled; the case stays in the faculty sandbox."},
 }
 
 #: The legacy PS001 challenges no resident is assigned (Phase 0, 0C).

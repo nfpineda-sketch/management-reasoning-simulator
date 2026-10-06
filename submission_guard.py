@@ -211,6 +211,37 @@ def _write_down(session, form_id, entry_point, minute):
     return entry
 
 
+def derive(session, parent, text, *, minute):
+    """Write down, as a submission of its own, a new order written in an answer (Phase 0 closure, F0-12).
+
+    The answer to a held order's question completes that order; an order written after it
+    ("0.1 mcg/kg/min. Also give 500 mL LR.") runs next, read like any order the resident
+    sends, with its own fate and receipt. It is written down while the answer runs and
+    saved with it, once: the answer run again after a stop finds it already there.
+    """
+    def run():
+        entries = log(session)
+        entry_id = f"{parent['id']}:new"
+        for entry in entries:
+            if entry.get("id") == entry_id:
+                return entry
+        entry = {
+            "id": entry_id,
+            "form_id": None,
+            "raw_text": str(text or "").strip(),
+            "entry_point": "free_text",
+            "derived_from": parent["id"],
+            "received_at": _now(),
+            "received_at_min": minute,
+            "status": "received",
+            "duplicates": 0,
+            "retries": 0,
+        }
+        entries.append(entry)
+        return entry
+    return atomic(run)
+
+
 def pending(session):
     """Entries written and not yet run, oldest first."""
     return [entry for entry in _entries(session) if entry.get("status") == "received"]

@@ -5393,7 +5393,20 @@ def try_resolve_pending_action(text):
 
     if pending.get("type") == "family_bundle":
         from pending_family_orders import complete_bundle
-        resolution = complete_bundle(pending, text, st.session_state.get("state"))
+        import order_pipeline
+        # Phase 0 closure (F0-12): an order written after the answer ("0.1 mcg/kg/min. Also
+        # give 500 mL LR.") is not part of it. The answer alone completes the held order, and
+        # the order after it is written down to run next, read like any order the resident
+        # sends. Only when the answer leaves nothing of the held order waiting; otherwise the
+        # whole text is read as before and the order after it is said not run.
+        split = order_pipeline.split_answer(text)
+        resolution = None
+        if split:
+            answered = complete_bundle(pending, split[0], st.session_state.get("state"))
+            if answered and answered.get("parsed") and order_pipeline.bundle_complete(answered["parsed"]):
+                resolution = {**answered, "answer_text": split[0], "new_order_text": split[1]}
+        if resolution is None:
+            resolution = complete_bundle(pending, text, st.session_state.get("state"))
         if resolution and resolution.get("superseded"):
             # The resident wrote a new order instead of answering. It runs, and
             # what it costs is stated rather than dropped in silence.
@@ -11161,10 +11174,14 @@ with st.container(key="encounter-console"):
                 if not cancel_pending_order():
                     add_event("clarification", "There are no pending orders to cancel.")
                 rerun_app()
-            add_event(
-                "reasoning_completion" if submission_parsed is not None else "you",
-                learner_input,
-            )
+            # An order written after the answer to a held order's question (F0-12) was shown
+            # with the answer; it is not shown again as a new message.
+            derived_entry = bool((_guard_entry or {}).get("derived_from"))
+            if not derived_entry:
+                add_event(
+                    "reasoning_completion" if submission_parsed is not None else "you",
+                    learner_input,
+                )
             trace_state_before = management_state_snapshot(st.session_state.state)
             processing_input = learner_input
             interpretation_audit = {"mode": "guided-form"}
@@ -11177,6 +11194,17 @@ with st.container(key="encounter-console"):
             entry_point = "guided_form" if submission_parsed is not None else "free_text"
             if submission_parsed is not None:
                 parsed = submission_parsed
+            elif derived_entry:
+                # Read as a new order, never as an answer. Should a question be waiting again,
+                # the order is not run and its receipt says so (the protected behaviour).
+                if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action",
+                                                               "pending_bundle")):
+                    parsed = {"raw_text": processing_input, "reasoning": {}, "actions": []}
+                    entry_point = "clarification_answer"
+                else:
+                    parsed = clinical_interpreter(processing_input)
+                _restore_original_turn(parsed, processing_input, learner_input)
+                _attach_interpretation_audit(parsed, interpretation_audit)
             else:
                 reasoning_resolution = resolve_pending_reasoning(processing_input)
                 if reasoning_resolution and reasoning_resolution.get("clarification"):
@@ -11202,6 +11230,16 @@ with st.container(key="encounter-console"):
                     if pending_resolution and pending_resolution.get("parsed"):
                         parsed = merge_pending_bundle(pending_resolution["parsed"])
                         entry_point = "clarification_answer"
+                        if pending_resolution.get("new_order_text") and _guard_entry is not None:
+                            # F0-12: the order written after the answer runs next as an order of
+                            # its own, and the resident is told so now.
+                            import submission_guard as _guard
+                            _guard.derive(st.session_state, _guard_entry, pending_resolution["new_order_text"],
+                                          minute=int(st.session_state.state.get("sim_time", 0) or 0))
+                            parsed["_answer_text"] = pending_resolution["answer_text"]
+                            add_event("prototype", "Also in your answer: \"" + pending_resolution["new_order_text"]
+                                      .strip().rstrip(".") + "\". The answer completes the held order only; this "
+                                      "order is read next, as an order of its own, with its own receipt.")
                     else:
                         # Parse the current turn in full before considering contextual
                         # shorthand. Context resolution is a fallback only when this turn does
@@ -11234,7 +11272,19 @@ with st.container(key="encounter-console"):
             turn = _order_pipeline.open_turn(
                 parsed.pop("_coverage_text", None) or processing_input, parsed,
                 coverage_parse=parsed.pop("_coverage_parse", None), submission_id=submission_id,
-                entry_point=entry_point, minute=turn_minute, ledger=ledger)
+                entry_point=entry_point, minute=turn_minute, ledger=ledger,
+                coverage_text=parsed.pop("_answer_text", None))
+            derived_from = (_guard_entry or {}).get("derived_from")
+            if derived_from:
+                # Written in the answer to a held order's question, at the minute of the answer,
+                # and run after it: the record keeps when it was written (F0-12, rule B of 0I).
+                turn["submission"]["derived_from"] = derived_from
+                for _order in turn["orders"]:
+                    _order["written_at_min"] = _guard_entry.get("received_at_min", turn_minute)
+                    _order["derived_from"] = derived_from
+                if entry_point == "clarification_answer":
+                    _order_pipeline.ledger_record(st.session_state, turn, add_event)
+                    rerun_app()
             turn["orders"].extend(_order_pipeline.restated_orders(
                 parsed.pop("_followup_restated", None), submission_id=submission_id, minute=turn_minute,
                 text=processing_input))

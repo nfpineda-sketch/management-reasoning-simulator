@@ -104,20 +104,23 @@ def apply_safe_defaults(parsed, text=None):
     return parsed
 
 
-def open_turn(text, parsed, *, submission_id, entry_point, minute, ledger=None, coverage_parse=None):
+def open_turn(text, parsed, *, submission_id, entry_point, minute, ledger=None, coverage_parse=None,
+              coverage_text=None):
     """Tag the turn's orders, map the text and account for everything the reader did not return.
 
     ``ledger`` is the encounter's order ledger (a list); orders already in it -- the ones
     a held bundle carries -- are reused, never duplicated. ``coverage_parse`` is what the
     reader returned for this turn's own text when ``parsed`` also carries a held order
     (the answer to the reasoning gate): the text is checked against what it produced.
+    ``coverage_text`` is the part of the text this turn answers with, when the rest of it
+    was written down as an order of its own (``split_answer``).
     """
     parsed = parsed if isinstance(parsed, dict) else {}
     apply_safe_defaults(parsed, text)
     L.tag(parsed, submission_id, text, minute)
     if coverage_parse is not None:
         apply_safe_defaults(coverage_parse, text)
-    cov = L.coverage(text, coverage_parse if coverage_parse is not None else parsed)
+    cov = L.coverage(coverage_text or text, coverage_parse if coverage_parse is not None else parsed)
     known = {order["order_id"]: order for order in (ledger or [])}
     orders = []
     for index, action in enumerate(parsed.get("actions") or []):
@@ -150,6 +153,20 @@ def open_turn(text, parsed, *, submission_id, entry_point, minute, ledger=None, 
                                "which completes the held order only. Write it again as a new order if you still "
                                "want it.")
     orders.extend(unread)
+    for offset, item in enumerate(cov.get("unread") or []):
+        # Words no vocabulary knows, written where a note could also be (Phase 0 closure): not said
+        # to the resident as an order (they may be a note), and kept with the turn, so that rule A
+        # never reads an omission against them.
+        order = {
+            "order_id": f"{submission_id}:w{5000 + offset}", "submission_id": submission_id,
+            "span": item["text"], "canonical": "unread", "class": "unread_words", "detected_as": item["cls"],
+            "dose": None, "route": None, "rate": None, "timing": None, "written_at_min": minute, "fate": None,
+            "reason": None, "executed_at_min": None, "receipt": None, "modelled_effect": False, "history": [],
+        }
+        L.set_fate(order, "UNRECOGNIZED", "words no vocabulary knows, written where a note could also be; not "
+                   "said to the resident as an order; kept so that no omission is read against them",
+                   minute=minute)
+        orders.append(order)
     for offset, item in enumerate(cov.get("held") or []):
         order = {
             "order_id": f"{submission_id}:h{3000 + offset}", "submission_id": submission_id,
@@ -167,6 +184,50 @@ def open_turn(text, parsed, *, submission_id, entry_point, minute, ledger=None, 
         "orders": orders,
         "coverage": cov,
     }
+
+
+def split_answer(text):
+    """The answer to a held order's question, and a new order written after it (Phase 0 closure, F0-12).
+
+    "0.1 mcg/kg/min. Also give 500 mL LR." -> ("0.1 mcg/kg/min", "Also give 500 mL LR."). The
+    new order begins at the first clause, after the first, that opens with an order verb and
+    that the reader reads as an order of its own (a reassessment alone is not one: it belongs
+    to the answer). None when there is no such clause.
+    """
+    raw = str(text or "")
+    folded, pieces = L._clauses(raw)
+    index = L._fold_map(raw)[1]
+    for position in range(1, len(pieces)):
+        sentence, terminator, clause, start = pieces[position]
+        if "?" in terminator or not L._ORDER_VERB.match(L._head(clause)):
+            continue
+        previous = pieces[position - 1]
+        end = previous[3] + len(previous[2].rstrip())
+        if not 0 < end <= len(index):
+            continue
+        answer = raw[:index[end - 1] + 1].strip(" ,;:")
+        # The words that join it to the answer ("Also", "y además") are not part of the order:
+        # the reader does not take "Also give 500 mL LR" for one.
+        tail = re.sub(r"^(?:(?:and|also|plus|then|y|e|ademas|además|tambien|también|luego|despues|después)"
+                      r"[\s,]+)+", "", raw[index[end - 1] + 1:].lstrip(" ,;:.\n"), flags=re.I).strip()
+        if not answer or not tail:
+            continue
+        from family_parser import parse_family_actions
+        if any(isinstance(action, dict) and action.get("type") != "reassessment"
+               for action in parse_family_actions(tail).get("actions") or []):
+            return answer, tail
+    return None
+
+
+def bundle_complete(parsed):
+    """True when no order of a resolved held bundle still waits for an answer (F0-12)."""
+    from pending_family_orders import missing_fields
+    for action in (parsed or {}).get("actions") or []:
+        if not isinstance(action, dict):
+            continue
+        if action.get("type") == "clarification" or missing_fields(action.get("pending_action", action)):
+            return False
+    return True
 
 
 def _same_order(a, b):
@@ -395,6 +456,11 @@ def settle(turn, *, result, run_actions, split=None, minute_before, minute_after
             order["receipt_shown_elsewhere"] = True
             continue
         L.set_fate(order, "EXECUTED", label or "executed", minute=minute_before)
+        # An order held for a question runs as the answer completed it: the record keeps what ran
+        # ("Give normal saline." answered "1000 mL" ran 1000 mL), not the gap it was held for.
+        order.update({key: value for key, value in L.measures(action).items() if value is not None})
+        if action.get("type") not in ("clarification", None):
+            order["canonical"] = L.canonical(action)
         if order.get("default_applied"):
             order["receipt"] = f"{order.get('canonical')}: {order['default_applied']}."
         if action.get("type") == "reassessment":

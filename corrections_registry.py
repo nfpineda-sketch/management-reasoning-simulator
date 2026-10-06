@@ -85,6 +85,11 @@ INSTRUCTION_2026_10_06_PHASE0 = ("Instrucción del 2026-10-06 «PHASE 0 — PRE-
                                  "orden, envío seguro, tiempo, interrupción por eventos, paro coherente, procedencia, "
                                  "guardas del análisis, batería de aceptación y congelamiento; sin núcleo fisiológico "
                                  "común, sin cambios de puntaje, rúbrica ni D1–D5)")
+INSTRUCTION_2026_10_06_PHASE0_CLOSURE = ("Instrucción del 2026-10-06, cierre de la Fase 0 («Phase 0 is APPROVED IN "
+                                         "PRINCIPLE»): F0-1 a F0-12 decididas; cerrar la brecha de cobertura de los "
+                                         "nombres desconocidos después del lector, paridad de F0-12 si es pequeña y "
+                                         "segura, el español de los textos nuevos, prueba de humo en PostgreSQL; "
+                                         "commits locales, sin push ni despliegue; sin Fase 1)")
 INSTRUCTION_2026_09_28_CYCLE6 = ("Instrucción docente del 2026-09-28, ciclo 6 del AI Advisor (DF-22 por clase, 59O-03 y "
                                  "seguridad de la aclaración, L-F01, L-F04 y sólo las correcciones de DF-23 que "
                                  "cumplen las seis condiciones)")
@@ -3333,6 +3338,86 @@ CORRECTIONS = (
         "tests": ["test_phase0_acceptance_findings.py::test_a_reassessment_written_with_an_order_no_answer_completes_runs",
                   "test_phase0_acceptance_findings.py::test_the_page_never_says_held_when_no_answer_is_awaited",
                   "test_oxygen_device_phrasing.py::test_a_held_turn_names_the_orders_it_is_holding"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-12",
+        "date": "2026-10-06",
+        "title": "Cierre de la Fase 0: una orden cuyo nombre ningún vocabulario conoce no desaparece",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Escrita como se escribe una orden (sola en una lista o en una frase de nombres, con dosis, vía o "
+                   "pauta y sin verbo, tras «Necesitamos», donde va el nombre después de un verbo de orden, o después "
+                   "del problema que trata), una orden con un nombre que ningún vocabulario conocía («Zyvox.», "
+                   "«- Plasmaféresis», «Zyvox IV») desaparecía, y un nombre conocido de la misma frase con ella "
+                   "(«Zyvox and ceftriaxone.», «Sepsis, ceftriaxone.»). Ahora queda UNRECOGNIZED con su recibo, en la "
+                   "capa posterior al lector (el lector V3 no cambia). Una nota, un hallazgo, la historia, un "
+                   "resultado, una negación, una pregunta, el razonamiento o lo que dijeron otros siguen siendo eso. "
+                   "Una falsa alarma sólo pide escribir de nuevo: no ejecuta nada ni cuenta en contra. Los nombres "
+                   "escritos donde también podría haber una nota («Sepsis: zyvox.», «If hypotensive, zyvox.», "
+                   "«Zyvox 600»), los que siguen con «with/con» a un nombre conocido que el lector leyó («Give "
+                   "ceftriaxone with zyvox») y los que se escriben como un verbo o un participio solos "
+                   "(«Suctioning.», «Lavado.», «Suboxone.») no se dicen como orden: quedan en el registro, sin "
+                   "recibo, y la regla A no lee una omisión contra ellos. «Taponamiento.» solo deja de leerse como "
+                   "nota (era el taponamiento de la herida en la hemorragia de la extremidad), y «Hacer "
+                   "taponamiento» ya no se dice «no entendido» después de correr como control de la hemorragia. El "
+                   "congelamiento declara la garantía exacta y lo que queda sin ver (G-READER-V3; TD-69)."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0_CLOSURE,
+        "affects": {"modules": ["order_ledger", "order_pipeline", "rubric_screening", "pilot_freeze"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_phase0_unknown_names.py::test_an_order_no_vocabulary_names_is_not_understood_never_gone",
+                  "test_phase0_unknown_names.py::test_a_known_name_beside_an_unknown_one_is_not_lost_with_it",
+                  "test_phase0_unknown_names.py::test_a_note_a_report_or_reasoning_is_not_made_an_order",
+                  "test_phase0_unknown_names.py::test_the_course_is_the_one_it_would_be_without_the_unknown_order",
+                  "test_phase0_unknown_names.py::test_a_flagged_name_is_never_read_as_an_omission",
+                  "test_phase0_unknown_names.py::test_names_where_a_note_could_also_be_are_kept_silently_and_guard_the_omission",
+                  "test_phase0_unknown_names.py::test_names_the_coverage_cannot_call_an_order_are_kept_silently_and_guard_the_omission",
+                  "test_phase0_unknown_names.py::test_a_note_a_state_or_a_known_name_is_not_kept_as_unread_words",
+                  "test_phase0_unknown_names.py::test_an_order_the_reader_read_is_not_also_said_not_understood"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-13",
+        "date": "2026-10-06",
+        "title": "F0-12: la orden escrita después de la respuesta a una aclaración corre como orden propia",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("La respuesta a la pregunta de una orden retenida la completa sola («0.1 mcg/kg/min»); la orden "
+                   "escrita después («Also give 500 mL LR.») se guarda como un envío propio, con el minuto en que se "
+                   "escribió, y se lee a continuación como cualquier orden: compuerta de razonamiento, preguntas, "
+                   "destino y recibo propios. Nunca completa ni cambia la orden retenida. Si la respuesta deja algo "
+                   "retenido, la orden de después conserva el recibo protegido. El ledger guarda además la dosis y "
+                   "la velocidad con que corrió una orden retenida que la respuesta completó. El congelamiento lo "
+                   "declara (G-ANSWER-ORDER; TD-70)."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0_CLOSURE,
+        "affects": {"modules": ["app", "order_pipeline", "order_ledger", "submission_guard", "pilot_freeze"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_phase0_answer_parity.py::test_the_held_order_resolves_and_the_new_order_enters_the_normal_pipeline",
+                  "test_phase0_answer_parity.py::test_the_new_order_never_completes_or_changes_the_held_one",
+                  "test_phase0_answer_parity.py::test_an_answer_that_leaves_the_held_order_waiting_keeps_the_protected_receipt",
+                  "test_phase0_submission_guard_on_postgres.py::test_an_order_written_after_an_answer_is_saved_with_it_and_runs_once"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-14",
+        "date": "2026-10-06",
+        "title": "F0-11: las frases nuevas de la Fase 0 en español, con las palabras citadas como se escribieron",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("El piloto corre también en español: cada frase que la Fase 0 agregó a la sala (recibos del "
+                   "ledger, paquete parcial, mirada en la cabecera, espera interrumpida y sus eventos, paro, límite de "
+                   "120 minutos, envío interrumpido, orden después de una respuesta, flujo por omisión, paro de la "
+                   "anafilaxia) se dice entera en español, antes de las reglas de palabras; las palabras de la persona "
+                   "residente citadas en ellas quedan intactas. La redacción espera la firma docente "
+                   "(docs/revision/F0_11_FRASES_ES.md)."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0_CLOSURE,
+        "affects": {"modules": ["language"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_phase0_spanish.py::test_each_new_sentence_is_said_whole_in_spanish_and_unchanged_in_english",
+                  "test_phase0_spanish.py::test_the_resident_s_quoted_words_are_never_translated",
+                  "test_phase0_spanish.py::test_the_room_says_each_receipt_through_the_reading_language"],
         "preservation": None,
     },
 )
