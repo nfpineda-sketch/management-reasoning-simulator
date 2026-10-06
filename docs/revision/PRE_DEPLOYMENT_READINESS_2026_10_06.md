@@ -10,6 +10,11 @@ cambia esa historia; la completa.
 
 **Decisión:** **NOT READY FOR DEPLOYMENT** (sección 13). Bloqueos explícitos en la sección 10.
 
+**Actualizado el 2026-10-06** (encargo «resolver sólo B-3, B-4 y B-6»): B-3, B-4 y B-6 quedan **RESUELTOS** en
+commits locales, sin push (`87bbbe1`, `4d570a8` y `e200ccc`; sección 14). Siguen abiertos B-1, B-2 y B-5, y la
+decisión sigue siendo **NOT READY FOR DEPLOYMENT**. Las secciones 1 a 13 conservan lo hallado sobre `009aadb`; donde
+algo cambió, una nota «Resuelto» remite a la sección 14.
+
 Fuente de verdad del congelamiento: el manifiesto ejecutable `docs/revision/PILOT_FREEZE_MANIFEST.md` (generado de
 `pilot_freeze.py`). Donde un texto lo contradice, se informa en la sección 10.2 y no se corrige aquí.
 
@@ -32,6 +37,11 @@ Fuente de verdad del congelamiento: el manifiesto ejecutable `docs/revision/PILO
   `git diff --stat 009aadb HEAD -- . ':(exclude)docs'`, que debe salir vacío).
 - `MRS_CODE_VERSION` debe ser el commit que efectivamente se despliegue (sección 3.2). Si se despliega un commit de
   sólo documentación, ése es el que se registra.
+- **Actualizado (B-3, B-4 y B-6):** el candidato pasa a ser el último commit de ese encargo, que contiene `87bbbe1`,
+  `4d570a8`, `e200ccc` y el commit de esta actualización. `git diff --stat 009aadb HEAD -- . ':(exclude)docs'` ya no
+  sale vacío: lista sólo `tools_pilot_preflight.py` y su prueba, `requirements.txt` y los dos scripts de regresión.
+  La app no importa ninguno de ellos: `app.py` y los módulos que carga son los de `009aadb`, y `requirements.txt`
+  fija la versión de Streamlit con que se verificó todo (14.2).
 
 ## 3. Requisitos del entorno
 
@@ -42,22 +52,22 @@ valores secretos se informan sólo como PRESENT / MISSING / UNKNOWN; aquí, todo
 
 | Indicador | Valor exigido | Valor actual / disponible | Estado | Fuente del valor | ¿Bloqueo? |
 |---|---|---|---|---|---|
-| `.streamlit/config.toml` `[runner] fastReruns` | `false` | `false` en `009aadb` (archivo del repositorio) | OK en el código | Repositorio | NO |
-| `MRS_OFFLINE_CASES` | `"1"` (texto o entero; **nunca** booleano TOML, ver 3.3) | UNKNOWN | UNKNOWN | Secrets → entorno | **SÍ** hasta verificarlo |
-| `MRS_PAID_GENERATION` | `"off"` (texto; nunca booleano TOML) | UNKNOWN | UNKNOWN | Secrets → entorno | **SÍ** hasta verificarlo (el preflight sólo lo recomienda) |
-| `MRS_FREE_GENERATION` | ausente | UNKNOWN | UNKNOWN | Secrets → entorno | **SÍ** hasta verificarlo (el preflight sólo lo recomienda) |
-| `MRS_DEFAULT_VARIANT` | ausente | UNKNOWN | UNKNOWN | Secrets → entorno | **SÍ** (salta la exclusión, 5.2; el preflight sólo avisa) |
+| `.streamlit/config.toml` `[runner] fastReruns` | `false` | `false` en `009aadb` (archivo del repositorio) | OK en el código | Repositorio | NO (el preflight lo exige, leído del commit que se despliega, 14.1) |
+| `MRS_OFFLINE_CASES` | `"1"` (texto o entero; **nunca** booleano TOML, ver 3.3) | UNKNOWN | UNKNOWN | Secrets → entorno | **SÍ** hasta verificarlo (el preflight falla si la app no queda sin conexión, 14.1) |
+| `MRS_PAID_GENERATION` | `"off"` (texto; nunca booleano TOML) | UNKNOWN | UNKNOWN | Secrets → entorno | **SÍ** hasta verificarlo (en `009aadb` el preflight sólo lo recomendaba; desde `87bbbe1` lo exige) |
+| `MRS_FREE_GENERATION` | ausente | UNKNOWN | UNKNOWN | Secrets → entorno | **SÍ** hasta verificarlo (en `009aadb` el preflight sólo lo recomendaba; desde `87bbbe1` falla con cualquier valor) |
+| `MRS_DEFAULT_VARIANT` | ausente | UNKNOWN | UNKNOWN | Secrets → entorno | **SÍ** hasta verificarlo (salta la exclusión, 5.2; en `009aadb` el preflight sólo avisaba; desde `87bbbe1` falla con cualquier valor) |
 | `MRS_REPLAY_CASE` | ausente | UNKNOWN | UNKNOWN | Secrets → entorno | **SÍ** hasta verificarlo (el preflight falla si está) |
-| `MRS_CODE_VERSION` | el commit desplegado | UNKNOWN; candidato `009aadb4c527` | UNKNOWN | Secrets → entorno; si falta, `git rev-parse` del checkout | **SÍ** hasta verificarlo (3.2) |
+| `MRS_CODE_VERSION` | el commit desplegado | UNKNOWN; candidato: el último commit del encargo B-3, B-4 y B-6 (sección 2) | UNKNOWN | Secrets → entorno; si falta, `git rev-parse` del checkout | **SÍ** hasta verificarlo (3.2; desde `87bbbe1` el preflight exige el commit que se despliega) |
 | `MRS_IMAGE_REQUIRE_REVIEW` | `"on"` | UNKNOWN | UNKNOWN | Secrets (la app lo lee también de `st.secrets`) | **SÍ** hasta verificarlo |
 | `MRS_AUTH_MODE` | `"accounts"` | UNKNOWN | UNKNOWN | Secrets | **SÍ** hasta verificarlo |
 | `MRS_DATABASE_URL` (secreto) | URL PostgreSQL del proveedor con `sslmode=require` | UNKNOWN (PRESENT/MISSING no verificable) | UNKNOWN | Secrets | **SÍ** hasta verificarlo |
-| `OPENAI_API_KEY` (secreto) | **ausente** (runbook §2: «retírela»; aquí, obligatorio por 3.3) | UNKNOWN | UNKNOWN | Secrets | **SÍ** |
+| `OPENAI_API_KEY` (secreto) | **ausente** (runbook §2: «retírela»; aquí, obligatorio por 3.3) | UNKNOWN | UNKNOWN | Secrets | **SÍ** hasta verificarlo (desde `87bbbe1`, si quedara, el preflight falla salvo que la app la retenga en todas partes, 14.1) |
 | `MRS_ADMIN_USERNAME`, `MRS_ADMIN_PASSWORD_HASH` (secreto) | sólo hasta crear el primer administrador; después, ausentes | UNKNOWN | UNKNOWN | Secrets | NO (paso del runbook) |
 | `MRS_ALLOW_LOCAL_SQLITE` | ausente | UNKNOWN | UNKNOWN | Secrets | **SÍ** hasta verificarlo |
 | `MRS_SYNTHETIC_ACCOUNTS`, `MRS_BATCH_*` | ausentes | UNKNOWN en el destino. El contenedor de desarrollo de esta revisión sí tiene `MRS_BATCH_*` definidas: no es el destino | UNKNOWN | Secrets / entorno | **SÍ** hasta verificarlo |
-| Python | 3.11 (probado: 3.11.15) | UNKNOWN: Streamlit Community Cloud lo fija al crear la app; el repositorio no lo fija | UNKNOWN | Configuración de la app | **SÍ** (sección 8) |
-| Streamlit | 1.64.0 (probado) | `requirements.txt` admite `>=1.41,<2`; PyPI publica hoy **1.65.0**: una instalación nueva tomaría 1.65.0, verificada hoy en la Fase 0 y en 0D, no en la suite completa (9.4) | RIESGO | `requirements.txt` | **SÍ** (sección 8) |
+| Python | 3.11 (probado: 3.11.15) | UNKNOWN: Streamlit Community Cloud lo fija al crear la app; el repositorio no lo fija | UNKNOWN | Configuración de la app | **SÍ** (sección 8; se elige al crear la app: B-2) |
+| Streamlit | 1.64.0 (probado) | En `009aadb`, `requirements.txt` admitía `>=1.41,<2` y una instalación nueva tomaba **1.65.0** (PyPI), verificada en la Fase 0 y en 0D, no en la suite completa (9.4). **Desde `4d570a8`: `streamlit==1.64.0`** (14.2) | OK en el código | `requirements.txt` | NO (resuelto, B-4) |
 | Rama que despliega la app | una rama fija en el commit aprobado, sin pushes durante el piloto | UNKNOWN: la app y la base del piloto no están identificadas en el repositorio | UNKNOWN | Configuración de la app | **SÍ** (3.2) |
 
 ### 3.2 Contrato de versión
@@ -114,6 +124,10 @@ valores secretos se informan sólo como PRESENT / MISSING / UNKNOWN; aquí, todo
 - No se verificó si Streamlit Community Cloud carga los Secrets por otro camino; el procedimiento de arriba vale en
   ambos casos.
 - **Corrección propuesta, no aplicada** (sección 10.1, B-3).
+- **Resuelto (B-3, `87bbbe1`; sección 14.1):** el preflight lee los Secrets con el analizador de Streamlit, los
+  pasa al entorno con la regla de Streamlit y pregunta a los lectores de la app: con `MRS_OFFLINE_CASES = true`
+  falla («la aplicación NO queda sin conexión») y da «NO LISTA». La app no cambió: con esa configuración haría lo
+  mismo que arriba; lo que cambió es que el gate ya no la deja pasar.
 
 ## 4. Base de datos y proveedor
 
@@ -183,6 +197,11 @@ valores secretos se informan sólo como PRESENT / MISSING / UNKNOWN; aquí, todo
 - El manifiesto lo exige ausente; el preflight sólo lo recomienda (contradicción 10.2-a).
 - Mientras se decide: toda línea **AVISO** de `no_pinned_case`, `free_generation_closed`, `paid_generation_off` o
   `code_version` detiene el despliegue.
+- **Resuelto (B-3, `87bbbe1`; 14.1):** con `MRS_DEFAULT_VARIANT=trauma_hemothorax_41m`, o con cualquier otro valor,
+  en los Secrets o en el entorno con que arranca la app, el preflight da «[FALLA] no_pinned_case», «NO LISTA» y
+  código de salida 1 (prueba E). Esas cuatro reglas son obligatorias y la regla transitoria de arriba ya no hace
+  falta. La app no cambió: con esa variable, R2-04 seguiría abriendo el caso excluido; lo impide la configuración,
+  que el gate ahora exige.
 
 ## 6. Firmas y aprobaciones docentes
 
@@ -230,10 +249,11 @@ nuevo. Conviene firmar antes de construir el candidato final, no después de des
 | Elemento | Local (verificado) | Destino | Efecto posible |
 |---|---|---|---|
 | Plataforma | Contenedor Linux; Streamlit local y AppTest | Streamlit Community Cloud (`docs/SETUP_v0.11.0.md`); app del piloto no identificada | — |
-| Python | 3.11.15 | UNKNOWN (se elige al crear la app; no hay `runtime.txt` ni equivalente) | Toda la verificación es sobre 3.11 |
-| Streamlit | 1.64.0 | `>=1.41,<2` → hoy 1.65.0 | **Reruns, idempotencia y recuperación de sesión:** el envío seguro de la Fase 0 se diseñó y probó con la secuencia de Streamlit 1.64 (informe de la Fase 0, sección 11). Resultado con 1.65.0 en la sección 9.4 |
-| psycopg | 3.3.6 | `>=3.2,<4` → hoy 3.3.6 | Igual hoy; sin fijar |
+| Python | 3.11.15 | UNKNOWN (se elige al crear la app; no hay `runtime.txt` ni equivalente) | Toda la verificación es sobre 3.11; elegirlo al crear la app es parte de B-2 |
+| Streamlit | 1.64.0 | En `009aadb`, `>=1.41,<2` → hoy 1.65.0. **Desde `4d570a8`, `==1.64.0`** (14.2) | **Reruns, idempotencia y recuperación de sesión:** el envío seguro de la Fase 0 se diseñó y probó con la secuencia de Streamlit 1.64 (informe de la Fase 0, sección 11); fijada, un reinicio ya no instala otra versión. Resultado con 1.65.0 en la sección 9.4 |
+| psycopg | 3.3.6 | `>=3.2,<4` → hoy 3.3.6 | Igual hoy; sin fijar (B-4 fija sólo Streamlit, 14.2) |
 | reportlab, pypdf, openai | 4.5.1, 6.19.0, 2.54.0 | rangos sin fijar | Documentos PDF; `openai` no se llama sin conexión |
+| Dependencias de Streamlit | Las de la instalación local | Sin fijar: un reinicio puede tomar versiones nuevas dentro de los rangos que declara Streamlit 1.64.0 | Limitación declarada (14.2) |
 | Paquetes del sistema | Ninguno (no hay `packages.txt`); fuentes de los PDF en `assets/fonts` | Igual | — |
 | Punto de entrada | `streamlit run app.py` | Archivo principal `app.py` | — |
 | Configuración de Streamlit | `.streamlit/config.toml` (`fastReruns = false`) | El mismo archivo del repositorio | Si la plataforma lo ignorara, volvería el doble clic concurrente; se comprueba en la prueba de humo (paso 12) |
@@ -326,53 +346,63 @@ son las 83 de siempre más las 10 de PostgreSQL, que corren aparte (9.2).
   interpretada, el estado antes y después, y el orden instantánea → ejecución → instantánea se cumple.
 - Clasificación: **CODE FAILURE** de los activos de prueba (comprobaciones de texto que quedaron atrás de un cambio
   aprobado), no del entorno ni de un requisito externo. No se cambiaron (B-6).
+- **Resuelto (B-6, `e200ccc`; 14.3):** los tres textos esperados siguen al código de la Fase 0, con la misma
+  intención; `run_regressions.py`: 56 de 56.
 
 ### 9.6 Seguridad y privacidad
 
 - Pruebas existentes, todas aprobadas: permisos por rol (`test_role_permissions.py`, 5), cuentas y portal
   (`test_account_store.py`, 15; `test_account_portal.py`, 6), diagnósticos sin URL ni credenciales
   (`test_account_store_diagnostics.py`, 9; `test_check_database.py`, 13), preflight sin secretos
-  (`test_tools_pilot_preflight.py`, 7), clave retenida sin conexión (`test_offline_cases.py`, 17), foco oculto hasta la
-  revisión (`test_learning_focus_waits_for_review.py`, 4), fotos que esperan su cuenta (`test_td56_…`, 4), cambios de
-  cuenta auditados (7), integridad del store (9), exportación de cuentas inactivas (3), simulacro (2); en PostgreSQL
-  con TLS, el error del driver registrado sólo por su clase.
+  (`test_tools_pilot_preflight.py`, 7; 70 desde `87bbbe1`), clave retenida sin conexión (`test_offline_cases.py`,
+  17), foco oculto hasta la revisión (`test_learning_focus_waits_for_review.py`, 4), fotos que esperan su cuenta
+  (`test_td56_…`, 4), cambios de cuenta auditados (7), integridad del store (9), exportación de cuentas inactivas (3),
+  simulacro (2); en PostgreSQL con TLS, el error del driver registrado sólo por su clase.
 - Archivos versionados: ninguna credencial real; las coincidencias son valores ficticios de las pruebas que verifican
   la redacción. `.streamlit/secrets.toml` no está versionado y está ignorado.
-- El riesgo verificado es de configuración (3.3 y 5.2), no de código.
+- El riesgo verificado es de configuración (3.3 y 5.2), no de código. El gate que lo cierra es el de 14.1.
 
 ## 10. Bloqueos y contradicciones
 
 ### 10.1 Bloqueos previos al despliegue
 
-| # | Bloqueo | Por qué bloquea | Lo más pequeño que lo resuelve | ¿Invalida verificación de la Fase 0? |
-|---|---|---|---|---|
-| B-1 | Prueba PostgreSQL del proveedor no corrida (BLOCKED / NOT RUN) | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
-| B-2 | Entorno de destino sin identificar | No se sabe qué app, qué rama, qué base ni qué Python | Nombrar la app y la base del piloto; crear la app con Python 3.11; desplegar una rama propia fija en el commit aprobado (3.2) | No |
-| B-3 | El preflight puede dar «LISTA» con la app fuera de la configuración congelada (3.3 y 5.2) | El gate del runbook (paso 3) no garantiza lo que dice | **Decisión:** (a) procedimiento: `OPENAI_API_KEY` ausente, valores entre comillas y todo AVISO de los indicadores del manifiesto tratado como FALLA; o (b) corrección del preflight (sólo la herramienta, no el runtime): tratar un valor TOML no textual como ausente, como hace Streamlit, y volver obligatorias las reglas que el manifiesto exige (cambia `test_a_recommendation_warns_and_never_fails`) | No (no toca el runtime) |
-| B-4 | Dependencias sin fijar: Streamlit `>=1.41,<2` (hoy instalaría 1.65.0) y Python sin fijar | El envío seguro depende de la secuencia de reruns de Streamlit; una versión que aparezca durante el piloto entraría en el próximo reinicio | **Decisión:** fijar en `requirements.txt` una versión verificada, `streamlit==1.64.0` (la de la suite completa) o `1.65.0` (verificada hoy sólo en la Fase 0 y en 0D, 9.4), y crear la app con Python 3.11. Es un commit de dependencias; el runtime no cambia | No con 1.64.0. Con 1.65.0, la suite completa con esa versión |
-| B-5 | Firmas docentes pendientes (sección 6) | `READINESS` las exige antes del piloto; una firma que cambie un texto cambia el candidato | Las firmas, antes de construir el candidato final | Sólo si una firma cambia texto: se repiten las pruebas afectadas y la suite |
-| B-6 | 2 de las 56 regresiones activas fallan (9.5); `run_regressions.py` sale con código 1 | La verificación del proyecto exige las regresiones activas (las fuentes de verdad las nombran; los ciclos anteriores informaron 56 de 56); sin ellas, las pruebas no están en verde | **Decisión:** actualizar los 3 textos esperados en los 2 scripts al texto que la Fase 0 aprobó (`turn=None`; `interpreted_action` con `_untag`), con su justificación, o retirarlos con motivo como en P-11. No cambia el runtime | No: la suite de pytest y sus conclusiones siguen; agrega la corrida de regresiones que la Fase 0 omitió |
+| # | Estado (2026-10-06) | Bloqueo | Por qué bloquea | Lo más pequeño que lo resuelve | ¿Invalida verificación de la Fase 0? |
+|---|---|---|---|---|---|
+| B-1 | **ABIERTO** | Prueba PostgreSQL del proveedor no corrida (BLOCKED / NOT RUN) | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
+| B-2 | **ABIERTO** | Entorno de destino sin identificar | No se sabe qué app, qué rama, qué base ni qué Python | Nombrar la app y la base del piloto; crear la app con Python 3.11; desplegar una rama propia fija en el commit aprobado (3.2) | No |
+| B-3 | **RESUELTO** (`87bbbe1`; 14.1): opción (b), el preflight corregido; el runtime no cambió | El preflight puede dar «LISTA» con la app fuera de la configuración congelada (3.3 y 5.2) | El gate del runbook (paso 3) no garantiza lo que dice | **Decisión:** (a) procedimiento: `OPENAI_API_KEY` ausente, valores entre comillas y todo AVISO de los indicadores del manifiesto tratado como FALLA; o (b) corrección del preflight (sólo la herramienta, no el runtime): tratar un valor TOML no textual como ausente, como hace Streamlit, y volver obligatorias las reglas que el manifiesto exige (cambia `test_a_recommendation_warns_and_never_fails`) | No (no toca el runtime) |
+| B-4 | **RESUELTO** (`4d570a8`; 14.2): `streamlit==1.64.0`. Python 3.11 se elige al crear la app y queda en B-2 | Dependencias sin fijar: Streamlit `>=1.41,<2` (hoy instalaría 1.65.0) y Python sin fijar | El envío seguro depende de la secuencia de reruns de Streamlit; una versión que aparezca durante el piloto entraría en el próximo reinicio | **Decisión:** fijar en `requirements.txt` una versión verificada, `streamlit==1.64.0` (la de la suite completa) o `1.65.0` (verificada hoy sólo en la Fase 0 y en 0D, 9.4), y crear la app con Python 3.11. Es un commit de dependencias; el runtime no cambia | No con 1.64.0. Con 1.65.0, la suite completa con esa versión |
+| B-5 | **ABIERTO** | Firmas docentes pendientes (sección 6) | `READINESS` las exige antes del piloto; una firma que cambie un texto cambia el candidato | Las firmas, antes de construir el candidato final | Sólo si una firma cambia texto: se repiten las pruebas afectadas y la suite |
+| B-6 | **RESUELTO** (`e200ccc`; 14.3): textos esperados actualizados con su justificación; 56 de 56 | 2 de las 56 regresiones activas fallan (9.5); `run_regressions.py` sale con código 1 | La verificación del proyecto exige las regresiones activas (las fuentes de verdad las nombran; los ciclos anteriores informaron 56 de 56); sin ellas, las pruebas no están en verde | **Decisión:** actualizar los 3 textos esperados en los 2 scripts al texto que la Fase 0 aprobó (`turn=None`; `interpreted_action` con `_untag`), con su justificación, o retirarlos con motivo como en P-11. No cambia el runtime | No: la suite de pytest y sus conclusiones siguen; agrega la corrida de regresiones que la Fase 0 omitió |
 
 **Antes de abrir el piloto, después del despliegue (no bloquean el despliegue mismo):** TD-56 (sección 7), relato en
 español aprobado en la base desplegada si el piloto corre en español, prueba de humo desplegada (sección 11) y la
 autorización explícita (C).
 
-### 10.2 Contradicciones entre fuentes (se informan; no se resolvieron)
+### 10.2 Contradicciones entre fuentes (se informan; a y d quedaron resueltas con B-3, 14.1)
 
 a. **Manifiesto frente a preflight.** `pilot_freeze.RUNTIME_FLAGS` exige `MRS_PAID_GENERATION=off`,
    `MRS_FREE_GENERATION` y `MRS_DEFAULT_VARIANT` ausentes y `MRS_CODE_VERSION` = commit desplegado;
    `tools_pilot_preflight.py` (C10-06) los trata como recomendación, y `MRS_CODE_VERSION` se da por cumplido si
    existe `.git`. Su prueba fija que «una recomendación avisa y nunca falla».
+   **Resuelta (B-3, `87bbbe1`):** cada exigencia del manifiesto es una regla obligatoria del preflight, y
+   `test_every_freeze_requirement_is_a_required_rule` falla si `RUNTIME_FLAGS` gana una exigencia sin su regla. La
+   prueba de la recomendación sigue, ahora sobre `no_batch_settings`, la única recomendación que queda sobre la
+   configuración del despliegue.
 b. **Treinta casos, no treinta y uno** (manifiesto y decisión F0-2): siguen diciendo 31
    `docs/READINESS_PILOTO_FORMATIVO.md:158`, `docs/revision/CIERRE_PREPILOTO.md:133` («Ninguno se excluye»),
-   `docs/GUIA_DOCENTE_PILOTO.md:20` y el mensaje de `tools_pilot_preflight.py:77`.
+   `docs/GUIA_DOCENTE_PILOTO.md:20` y el mensaje de `tools_pilot_preflight.py:77`. El mensaje del preflight dice
+   ahora «los 30 aceptados» (`87bbbe1`); los tres documentos siguen diciendo 31 y no se tocaron (fuera del alcance
+   del encargo B-3, B-4 y B-6).
 c. **Guías.** `docs/GUIA_DOCENTE_PILOTO.md:155` dice que un fármaco sin verbo «puede perderse sin aviso»; desde la
    Fase 0 queda UNRECOGNIZED con su recibo (salvo TD-69 d–f). Ninguna guía describe lo que la Fase 0 cambió en la
    sala: esperar N minutos, «reevaluar» como mirada de 2 minutos, órdenes para más tarde que no se ejecutan, el
    límite de 120 minutos, el fin de lo evaluable en un paro, el recibo «No se entendió», el envío interrumpido. Ambas
    esperan firma.
 d. **Runbook §2:** «Si queda [la clave], `MRS_OFFLINE_CASES=1` la retiene en todas partes» sólo es cierto si el valor
-   llega al entorno como texto o número (3.3).
+   llega al entorno como texto o número (3.3). **Desde `87bbbe1` vale siempre que el preflight dé «LISTA»:** un
+   `MRS_OFFLINE_CASES` que la app no activa lo hace fallar, y una clave que la app leería, también. El runbook no
+   se cambió.
 e. **Informe de la Fase 0, §20:** «Push: ninguno», superado por el push autorizado de `009aadb`. Historia cerrada; no
    se modifica.
 
@@ -380,6 +410,8 @@ e. **Informe de la Fase 0, §20:** «Push: ninguno», superado por el push autor
 
 **Precondiciones:** bloqueos de 10.1 resueltos; despliegue autorizado; Secrets como en 3.1; preflight con esos mismos
 Secrets en «LISTA» y sin AVISO en los indicadores del manifiesto; «Reboot app» hecho; TD-56 en «All 117 approvals…».
+Desde `87bbbe1` los indicadores del manifiesto no pueden dar AVISO: fallan (14.1). Sigue sin bastar un AVISO de
+`no_batch_settings`: el runbook pide que esas variables no estén.
 
 **Registros de prueba:** según la convención existente (runbook §4): cuentas de prueba sin nombres reales, creadas por
 invitación, desactivadas al terminar (queda en «Account change history»). **No existe mecanismo de borrado:** sus
@@ -435,26 +467,167 @@ registro del encuentro: es una limitación declarada, no un defecto nuevo.
 
 ## 12. GO / NO-GO
 
+Estado actualizado el 2026-10-06, después de resolver B-3, B-4 y B-6. Lo que valía sobre `009aadb` se conserva en
+la columna «Por qué».
+
 | Categoría | Estado | Por qué |
 |---|---|---|
-| A · Código y pruebas | **BLOCKED** | Suite completa 7.578/0, Fase 0 completa y prueba de humo automática en verde; 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (B-6) |
+| A · Código y pruebas | **PASS** (sujeto a 14.4) | Sobre `009aadb`: suite completa 7.578/0, Fase 0 completa y prueba de humo automática en verde, y 2 de 56 regresiones activas fallaban (B-6). Ahora: 56 de 56 y las pruebas focalizadas en verde (14.4). La suite completa sobre el candidato final se corre después de este commit y se informa en la entrega del encargo: si no da 0 fallas, esta fila no vale |
 | B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado; proveedor: BLOCKED / NOT RUN (B-1) |
-| C · Configuración congelada | **BLOCKED** | Secrets del destino sin verificar; el preflight puede decir «LISTA» fuera de la configuración (B-3) |
-| D · Enrutamiento | PASS WITH DECLARED LIMITATION | 30 aceptados, excluido y PS001 fuera (5.1); `MRS_DEFAULT_VARIANT` sólo lo cierra la configuración (5.2) |
+| C · Configuración congelada | **BLOCKED** | El gate ya es confiable: falla cerrado ante cualquier exigencia del manifiesto (B-3 resuelto, 14.1). Falta correrlo con los Secrets del destino (runbook §3, paso 3), que no se conocen (B-2) |
+| D · Enrutamiento | PASS WITH DECLARED LIMITATION | 30 aceptados, excluido y PS001 fuera (5.1); `MRS_DEFAULT_VARIANT` sólo lo cierra la configuración (5.2), y el preflight falla si está definido (14.1) |
 | E · Idioma y firmas docentes | **BLOCKED** | Todas pendientes (sección 6; B-5) |
 | F · Imágenes y TD-56 | PASS WITH DECLARED LIMITATION | Procedimiento declarado y verificable; falla hacia la vista neutral (sección 7) |
-| G · Entorno de despliegue | **BLOCKED** | App, rama, base y Python sin identificar; Streamlit sin fijar (B-2, B-4) |
-| H · Seguridad y acceso | PASS WITH DECLARED LIMITATION | Pruebas de permisos, aislamiento, diagnósticos y fotos en verde (9.6); sin credenciales versionadas. Limitación: la ausencia de `OPENAI_API_KEY` en los Secrets es obligatoria (3.3) |
+| G · Entorno de despliegue | **BLOCKED** | App, rama, base y Python sin identificar (B-2). Streamlit fijo en 1.64.0 (B-4 resuelto, 14.2) |
+| H · Seguridad y acceso | PASS WITH DECLARED LIMITATION | Pruebas de permisos, aislamiento, diagnósticos y fotos en verde (9.6); sin credenciales versionadas. Limitación: la ausencia de `OPENAI_API_KEY` en los Secrets es obligatoria (3.3); desde `87bbbe1`, si quedara, el preflight falla salvo que la app la retenga (14.1) |
 | I · Observabilidad | PASS WITH DECLARED LIMITATION | Base y fotos en el registro del servidor; conflictos, envíos interrumpidos e inconsistencias sólo en la sala y en el registro del encuentro (11.1) |
 | J · Plan de humo desplegado | PASS (READY) | Sección 11; se ejecuta después de resolver los bloqueos y con autorización |
 
 ## 13. Recomendación
 
-**NOT READY FOR DEPLOYMENT.** Bloquean B-1 a B-6.
+**NOT READY FOR DEPLOYMENT.** Bloquean B-1, B-2 y B-5. B-3, B-4 y B-6 se resolvieron el 2026-10-06 (sección 14); al
+escribir la primera versión de este documento bloqueaban B-1 a B-6.
 
 - El runtime de `009aadb` no mostró un defecto de conducta: la suite completa, la Fase 0, PostgreSQL con TLS, el
   simulacro de respaldo y la prueba de humo automática pasan, y el envío seguro se comporta igual con Streamlit 1.65.0.
-- Falta: la prueba en el proveedor (B-1), el entorno de destino (B-2), un gate de configuración confiable (B-3),
-  dependencias fijas (B-4), las firmas (B-5) y dos regresiones que quedaron atrás de la Fase 0 (B-6).
-- B-3, B-4 y B-6 se resuelven sin tocar el runtime y esperan una decisión: no se aplicó ninguna corrección.
+- Falta: la prueba en el proveedor (B-1), el entorno de destino, con el preflight corrido sobre sus Secrets (B-2), y
+  las firmas (B-5).
+- B-3, B-4 y B-6 se resolvieron sin cambiar la conducta del runtime: el preflight (una herramienta que la app no
+  importa), la versión de Streamlit con que ya se había verificado todo y dos scripts de regresión (sección 14).
 - No se desplegó; no se hizo push, merge, PR ni release; no se empezó la Fase 1.
+
+## 14. Resolución de B-3, B-4 y B-6 (2026-10-06)
+
+Encargo: resolver sólo B-3, B-4 y B-6, sin desplegar, sin push y sin tocar la conducta clínica del runtime. Tres
+commits de código y uno de documentación, locales. B-1, B-2 y B-5 no se trabajaron.
+
+### 14.1 B-3 · El preflight falla cerrado (`87bbbe1`)
+
+Cambian sólo `tools_pilot_preflight.py` (una herramienta: ningún módulo la importa) y su prueba. La app, el
+manifiesto y `pilot_freeze.py` no cambiaron.
+
+- **Lee la configuración como la app.** Los Secrets, con el analizador de Streamlit; al entorno pasan con la regla de
+  Streamlit (sólo texto y números: un booleano TOML nunca llega); `st.secrets` se arma con los mismos valores.
+  Después pregunta a los lectores de la app (`offline_cases`, `image_scene`, `account_portal`, `clinical_scene`) qué
+  harían, y al terminar restaura el entorno y `st.secrets`.
+- **Con `--secrets`, el archivo es toda la configuración del despliegue:** las variables locales `MRS_*`,
+  `STREAMLIT_*` y `OPENAI_API_KEY` quedan fuera y se nombran, sin su valor, en el AVISO `local_environment`. La
+  revisión adversarial propia lo encontró: sin esto, el entorno de quien corre el preflight podía tapar un error de
+  los Secrets.
+- **Cada exigencia del manifiesto es una regla obligatoria** (`FREEZE_RULES`, una por cada `RUNTIME_FLAGS`):
+
+  | Exigencia del manifiesto | Regla | Falla si |
+  |---|---|---|
+  | `[runner] fastReruns = false` | `fast_reruns` | El `.streamlit/config.toml` del commit que se despliega (leído con `git show`) falta o no tiene el booleano `false`, ese commit no se puede determinar, o `STREAMLIT_RUNNER_FAST_RERUNS` lo sobrescribe |
+  | `MRS_OFFLINE_CASES=1` | `offline_cases` | `offline_cases_enabled()` es falso con la configuración que la app recibe: booleano TOML, `"0"`, `"off"`, vacío o ausente |
+  | `MRS_PAID_GENERATION=off` | `paid_generation_off` | `paid_generation_allowed` la abre a alguna cuenta. Se evalúa sin el modo sin conexión, que también la cierra: el congelamiento exige los dos |
+  | `MRS_FREE_GENERATION` ausente | `free_generation_closed` | Tiene un valor, en los Secrets o en el entorno con que arranca la app |
+  | `MRS_DEFAULT_VARIANT` ausente | `no_pinned_case` | Tiene un valor, cualquiera, en los Secrets o en el entorno con que arranca la app |
+  | `MRS_REPLAY_CASE` ausente | `no_replay_case` | Tiene un valor |
+  | `MRS_CODE_VERSION` = commit desplegado | `code_version` | No llega al entorno de la app, no tiene de 7 a 40 caracteres hexadecimales, no es el commit que se despliega (`--commit`, o el HEAD de la copia) o ese commit no se puede determinar |
+  | `MRS_IMAGE_REQUIRE_REVIEW=on` | `image_review` | `review_required()` es falso para la app |
+
+- **Siguen obligatorias:** `auth_mode`, `database_url`, `no_local_sqlite`, `admin_bootstrap` (si están esas claves) y,
+  con `--connect`, `database_reachable`. `provider_key_withheld` falla si hay una clave del proveedor y la app la
+  leería. Recomendaciones (AVISO, nunca FALLA): `no_batch_settings`, `local_environment` y, con `--connect`,
+  `administrator`.
+- **Falla cerrado.** Una regla que no se puede evaluar falla («no se pudo evaluar (<clase>)»). Unos Secrets
+  ilegibles dan la FALLA `secrets_readable`, y sin ninguna regla evaluada el resultado es «NO LISTA». El código de
+  salida es 0 sólo con «LISTA». Nunca imprime un valor, una clave, una URL ni un hash: un error se nombra sólo por su
+  clase.
+- **Pruebas A–J del encargo** (`test_tools_pilot_preflight.py`):
+
+  | Prueba | Dónde |
+  |---|---|
+  | A · La configuración congelada pasa, sin imprimir secretos | `test_a_the_frozen_configuration_passes_and_no_secret_is_printed` |
+  | B · `MRS_OFFLINE_CASES = true` (booleano TOML) falla | `test_b_offline_as_a_toml_boolean_fails` |
+  | C · `MRS_OFFLINE_CASES` ausente falla | `test_c_offline_missing_fails` |
+  | D · Cualquier variante fijada falla, en los Secrets o en el entorno | `test_d_any_pinned_case_fails` |
+  | E · `MRS_DEFAULT_VARIANT=trauma_hemothorax_41m` nunca da un preflight exitoso | `test_e_the_excluded_haemothorax_can_never_pass_the_preflight`: con todo lo demás congelado, una sola FALLA, «NO LISTA» y código 1, también por `main()` |
+  | F · `MRS_REPLAY_CASE` falla | `test_f_a_replay_case_fails` |
+  | G · La revisión de fotos distinta de «on» falla | `test_g_image_review_not_on_fails` |
+  | H · Generación pagada o libre fuera del congelamiento falla | `test_h_paid_and_free_generation_outside_the_freeze_fail` |
+  | I · El commit que se despliega pasa | `test_i_the_commit_to_deploy_passes` |
+  | J · Commit ausente, distinto, no hexadecimal o no determinable falla | `test_j_a_missing_or_different_commit_fails`, `test_j_without_the_commit_to_deploy_the_version_cannot_pass` |
+
+  Además:
+  - el preflight y el cargador real de Streamlit, en un proceso aparte, coinciden en el modo sin conexión y en la
+    generación pagada;
+  - `test_every_freeze_requirement_is_a_required_rule` falla si el manifiesto gana una exigencia sin su regla
+    obligatoria;
+  - `fastReruns` se lee del commit: `13592e4`, sin `config.toml`, falla;
+  - el entorno local no tapa los Secrets;
+  - el entorno y `st.secrets` quedan como estaban;
+  - siguen las pruebas de C10-06.
+- **Resultado:** 70 de 70, en el entorno del contenedor de desarrollo (con `MRS_BATCH_*` definidas) y en un entorno
+  vacío.
+- **Uso:** el del runbook (§3, paso 3), sin cambios: en una copia del commit aprobado,
+  `python3 tools_pilot_preflight.py --secrets ruta/a/secrets.toml --connect`; desde otra copia, con
+  `--commit <sha>`.
+
+### 14.2 B-4 · Streamlit fijo en 1.64.0 (`4d570a8`)
+
+- **`requirements.txt`:** `streamlit==1.64.0`, con su motivo en un comentario. Los demás rangos no cambian:
+  `reportlab>=4.2,<5`, `pypdf>=5,<7`, `openai>=2,<3` y `psycopg[binary]>=3.2,<4`.
+- **Por qué 1.64.0:** la Fase 0 certificó el envío seguro con 1.64.0: write-ahead, una ejecución por clic, recarga,
+  recuperación y `fastReruns = false`. La suite completa también corrió con 1.64.0. La 1.65.0 se verificó sólo en las
+  pruebas de la Fase 0 y en 0D (9.4). Una versión nueva se revisa después del piloto; no la instala un reinicio.
+- **Verificación:**
+  - una resolución desde cero de `requirements.txt` (entorno virtual vacío, Python 3.11,
+    `pip install --dry-run --report`) da `streamlit 1.64.0`, entre 51 paquetes;
+  - el entorno de las pruebas tiene 1.64.0 instalada, y `pip check` no encuentra conflictos;
+  - las pruebas sensibles al envío y a Streamlit pasan, 55 de 55: `test_phase0_submission_guard.py`,
+    `test_phase0_answer_parity.py` y `test_phase0_acceptance_page.py`;
+  - `regression_v087_pdf_export.py`, que lee `requirements.txt`, pasa.
+- **No se fijó, y queda declarado:**
+  - Python: se elige al crear la app en Streamlit Community Cloud y queda en B-2;
+  - los demás paquetes directos;
+  - las dependencias de Streamlit: un reinicio puede tomar versiones nuevas dentro de los rangos que declara
+    Streamlit 1.64.0.
+
+  El encargo pidió no fijar dependencias ajenas sin necesidad.
+
+### 14.3 B-6 · Las dos regresiones siguen al código de la Fase 0 (`e200ccc`)
+
+| Script | Texto esperado antes | Ahora |
+|---|---|---|
+| `regression_v06020_management_trace.py` | `def record_management_trace(learner_input, parsed, result, state_before, state_after):` | `…, state_before, state_after, turn=None):` |
+| `regression_v06020_management_trace.py` y `regression_v06021_management_trace_ui.py` | `"interpreted_action": deepcopy(parsed.get("actions", []))` | `"interpreted_action": [_untag(a) for a in deepcopy(parsed.get("actions", []))]` |
+
+- **Misma intención:** cada script sigue exigiendo lo de antes:
+  - la entrada;
+  - la acción interpretada que dio el lector;
+  - el estado antes y después;
+  - el esquema `management_trace_v1`;
+  - en v06021, la vista del desarrollador;
+  - en v06020, el orden instantánea → ejecución → instantánea.
+
+  `_untag` es `order_ledger.strip_tags`: quita sólo las claves internas del ledger, las que empiezan con «_». Cada
+  script dice el motivo en un comentario.
+- **No se debilitaron.** Se probaron cinco mutaciones de `app.py`, en una copia aparte; cada una hace fallar al menos
+  un script:
+
+  | Mutación | v06020 | v06021 |
+  |---|---|---|
+  | `interpreted_action` vacío, no lo que dio el lector | falla | falla |
+  | `state_after` no se registra | falla | falla |
+  | El registro pierde `state_after` de su firma | falla | pasa (sólo exige que la función exista, como antes) |
+  | La instantánea posterior deja de tomarse después de ejecutar | falla | pasa (no mira el orden, como antes) |
+  | Se quita la vista del desarrollador | pasa (no la mira, como antes) | falla |
+
+- **Resultado:**
+  - `run_regressions.py`: «PASS: 56/56 active regression scripts; 10 retired», código 0;
+  - ninguna regresión se retiró; siguen retiradas las 10 de P-11;
+  - `test_regression_scripts_are_active_or_retired.py` pasa, 3 de 3.
+
+### 14.4 Recertificación
+
+- **Pruebas focalizadas durante el trabajo** (Python 3.11.15, Streamlit 1.64.0):
+  - preflight, 70 de 70;
+  - envío, paridad y página, 55 de 55;
+  - congelamiento y enrutamiento (los archivos de 9.1), 59 de 59, con 25 subpruebas;
+  - contabilidad de regresiones, 3 de 3;
+  - regresiones activas, 56 de 56.
+- **Sobre el candidato final** (el commit de esta actualización, con el árbol limpio) se corren la suite completa,
+  las pruebas de PostgreSQL 16 local con TLS y `run_regressions.py`. Sus resultados se informan en la entrega del
+  encargo: anotarlos aquí cambiaría el candidato. La prueba en el proveedor sigue siendo B-1.
