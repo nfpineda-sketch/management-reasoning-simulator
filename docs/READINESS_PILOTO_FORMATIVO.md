@@ -86,7 +86,8 @@ CONDITIONS**. Ya no hay bloqueos técnicos abiertos:
 **Antes de iniciar el piloto (lo que queda):**
 
 1. Las firmas: las 14 fichas R-2, las 18 frases R-4, los textos finales del cierre y las dos guías
-   (`docs/revision/CIERRE_PREPILOTO.md`).
+   (`docs/revision/CIERRE_PREPILOTO.md`); si el piloto corre en español, también las frases nuevas de la Fase 0
+   (F0-11, `docs/revision/F0_11_FRASES_ES.md`).
 2. **A:** desplegar el commit aprobado con la configuración del piloto, preflight incluido.
 3. El orden de las fotos (TD-56): cuenta aprobadora creada por su dueño y `check_database.py
    --photo-approvals` en «All 117 approvals are recorded…».

@@ -43,6 +43,16 @@ retiene en todas partes, pero sin ella no hay nada que retener.
 
 ## 3. Desplegar (condición A)
 
+0. **Antes del primer despliegue del commit aprobado (cierre de la Fase 0):** la prueba del envío sobre
+   PostgreSQL, en una base **descartable** (nunca la del piloto: la prueba borra y recrea su esquema), de la misma
+   versión mayor que la del proveedor:
+
+   ```
+   MRS_TEST_POSTGRES_URL='postgresql://…/base_descartable' python3 -m pytest -q test_phase0_submission_guard_on_postgres.py
+   ```
+
+   Debe terminar con 10 pruebas aprobadas (A–F y la orden escrita después de una respuesta). En el cierre se corrió
+   sobre PostgreSQL 16 local (`docs/revision/PHASE_0_PILOT_SAFETY_REPORT.md`, sección 21).
 1. **Respaldar** la base si ya existe (`docs/RESPALDO_Y_RESTAURACION.md`).
 2. **Poner los Secrets** de la tabla anterior.
 3. **Correr el preflight con esos mismos Secrets.** En una copia local del commit aprobado, con los

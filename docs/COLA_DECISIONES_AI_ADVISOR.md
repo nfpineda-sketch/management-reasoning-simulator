@@ -5,11 +5,48 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-06, con la Fase 0 de seguridad de la medición (sección «Fase 0 · Seguridad de la
-  medición antes del piloto», la vigente: F0-1 a F0-12 abiertas). El cierre del paquete prepiloto (2026-10-02,
+- **Actualizado:** 2026-10-06, con el cierre de la Fase 0 (sección «Cierre de la Fase 0», la vigente: F0-1 a
+  F0-12 cerradas). La sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se
+  abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
   siguen más abajo, como estaban.
+
+## Cierre de la Fase 0 (2026-10-06)
+
+**Instrucción del 2026-10-06** («Phase 0 is APPROVED IN PRINCIPLE»): cerrar la Fase 0 sin reabrir su diseño y sin
+empezar la Fase 1 ni el núcleo fisiológico común. Registro: `INSTRUCTION_2026_10_06_PHASE0_CLOSURE` y
+C-2026-10-06-12 a C-2026-10-06-14 en `corrections_registry.py`. Informe: `docs/revision/PHASE_0_PILOT_SAFETY_REPORT.md`,
+sección «Cierre de la Fase 0». Commits locales, sin push, despliegue, merge ni release.
+
+| ID | Decisión docente (2026-10-06) | Estado | Qué quedó |
+|---|---|---|---|
+| F0-1 | Aprobada: el lector V3 sigue congelado; la capa posterior al lector es de la sala | **CERRADA CON LIMITACIÓN DECLARADA** (G-READER-V3; TD-69) | El lector y sus baselines no cambiaron; el cierre de la cobertura (C-2026-10-06-12) también es de esa capa |
+| F0-2 | `trauma_hemothorax_41m` fuera del piloto de residentes; sin modelar el pabellón | **CERRADA CON LIMITACIÓN DECLARADA** (C-NO-THEATRE) | 30 casos aceptados; el caso queda en el sandbox docente; el manifiesto registra la decisión |
+| F0-3 | Aprobada como resuelta | **CERRADA** | TD-45 (g) resuelta en la sala; el lector, igual |
+| F0-4 | Aceptada: R1-03, R1-04 y R2-01 fuera de la asignación automática; PS001 no vuelve para completar el currículo | **CERRADA CON LIMITACIÓN DECLARADA** (rutas heredadas excluidas) | Hueco curricular aceptado para el primer piloto: esos desafíos y MK1 no se observan |
+| F0-5 | Aprobada: «reassess» sin número es una mirada inmediata en la cabecera (2 minutos); «dar X y reevaluar» es X más esa mirada, dicho así; una orden para más tarde no corre ahora; el límite de 120 minutos queda, explicado | **CERRADA CON LIMITACIÓN DECLARADA** (G-LATER-ORDERS, G-STEP-120) | Sin cambios |
+| F0-6 | Aprobada; un evento de causa UNKNOWN sigue protegido de toda inferencia negativa | **CERRADA** | Sin cambios |
+| F0-7 | Aprobada; un evento con guion o NOT_PREVENTABLE_IN_SIMULATOR nunca sostiene una retroalimentación negativa | **CERRADA** | Sin cambios |
+| F0-8 | Aprobada | **CERRADA** | Sin cambios; el texto, ahora también en español (F0-11) |
+| F0-9 | Aprobada: mascarilla con reservorio a 15 L/min por omisión, dicho y registrado | **CERRADA** | Sin cambios; el recibo, también en español |
+| F0-10 | Aprobada como está. **Una demora causada por la compuerta de razonamiento es de la compuerta y nunca se lee como demora del residente** | **CERRADA** | Registrado aquí. Una orden retenida por la compuerta queda HELD_REASONING con el minuto en que se escribió; si corre después, la regla B (0I) atribuye la demora al simulador |
+| F0-11 | El piloto corre también en español: traducir antes del despliegue todos los textos nuevos de la Fase 0 que ve el residente, sin traducir códigos ni campos internos | **CERRADA** (firma docente pendiente) | Hecho (C-2026-10-06-14): cada frase nueva se dice entera en español y las palabras citadas de la persona residente quedan intactas. La autorización no es su firma: la redacción está a la firma docente en `docs/revision/F0_11_FRASES_ES.md` |
+| F0-12 | Paridad del punto de entrada si es pequeña y segura | **CERRADA CON LIMITACIÓN DECLARADA** (paridad implementada; G-ANSWER-ORDER, TD-70) | C-2026-10-06-13: la respuesta completa sola la orden retenida y la orden escrita después se lee a continuación como orden propia (compuerta, preguntas, destino y recibo propios), con el minuto en que se escribió. Queda un caso protegido y declarado (TD-70): si la respuesta deja algo retenido, la orden de después conserva el recibo «Not run» |
+
+**Cobertura (sección 2 de la instrucción).** Una cláusula escrita como se escribe una orden ya no desaparece porque
+el nombre de la intervención esté fuera del vocabulario: queda UNRECOGNIZED con su recibo, en la capa posterior al
+lector (C-2026-10-06-12). Las palabras que también podrían ser una nota, una descripción o un verbo suelto quedan
+en el registro sin recibo, y ninguna omisión se lee contra ellas. Quedan tres formas estrechas sin destino propio
+ni guarda (TD-69 d–f), declaradas en el congelamiento (G-READER-V3); la respuesta a Q1 y Q15 del informe dice la
+garantía exacta.
+
+**Estados.** «CERRADA CON LIMITACIÓN DECLARADA»: la decisión acepta una conducta que el manifiesto de congelamiento
+declara como limitación del piloto, con su guarda.
+
+**Prueba de humo en PostgreSQL (sección 5).** Hecha en una base PostgreSQL 16 local y descartable del entorno de
+desarrollo, nunca en producción: A–F pasan (`test_phase0_submission_guard_on_postgres.py`, con
+`MRS_TEST_POSTGRES_URL`).
 
 ## Fase 0 · Seguridad de la medición antes del piloto (2026-10-06)
 

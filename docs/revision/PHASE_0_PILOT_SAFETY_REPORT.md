@@ -4,15 +4,22 @@
 **Criterio de éxito del encargo:** «No resident action can silently disappear, no engine limitation can silently
 become a resident omission, and no clinically important timeline or observable contradiction in an accepted pilot
 case can cause the Management Trace to make a false inference about the resident.»
-**Estado:** ver «Estado de la Fase 0», al final, después de Q1–Q12.
+**Garantía exacta tras el cierre** (sección 21; Q1 y Q15): ninguna orden que el lector o la cobertura reconocen
+como orden queda sin destino; una cláusula escrita como orden cuyo nombre ningún vocabulario conoce queda
+UNRECOGNIZED con su recibo; las palabras que también podrían ser una nota, una descripción o un verbo suelto
+quedan en el registro sin recibo y ninguna omisión se lee contra ellas. Quedan tres formas estrechas sin destino
+propio ni guarda (TD-69 d–f), cuyo texto el registro conserva entero.
+**Estado:** ver «Estado de la Fase 0», al final, después de Q1–Q15.
 
 Documentos de esta fase:
 
-- este informe;
+- este informe (secciones 1–20 de la entrega; sección 21, el cierre);
 - el manifiesto generado del código: `docs/revision/PILOT_FREEZE_MANIFEST.md`;
-- las decisiones abiertas: `docs/COLA_DECISIONES_AI_ADVISOR.md`, sección «Fase 0», F0-1 a F0-12;
-- el registro de correcciones: C-2026-10-06-01 a C-2026-10-06-11 en `corrections_registry.py`;
-- la deuda que queda: TD-62 a TD-68 en `docs/REGISTRO_DEUDA_TECNICA.md`.
+- las decisiones: `docs/COLA_DECISIONES_AI_ADVISOR.md`, secciones «Fase 0» (F0-1 a F0-12) y «Cierre de la
+  Fase 0»;
+- el registro de correcciones: C-2026-10-06-01 a C-2026-10-06-14 en `corrections_registry.py`;
+- la deuda que queda: TD-62 a TD-70 en `docs/REGISTRO_DEUDA_TECNICA.md`;
+- la hoja de firma del español nuevo: `docs/revision/F0_11_FRASES_ES.md`.
 
 **Nomenclatura.** El encargo nombra 0A (ledger), 0B (PS001), 0C (envío) y 0D (tiempo); las secciones 9 a 18 no
 llevan letra. El plan de trabajo, los commits y el registro usan una secuencia propia:
@@ -40,8 +47,8 @@ llevan letra. El plan de trabajo, los commits y el registro usan una secuencia p
 | Parte | Qué se hizo | Dónde |
 |---|---|---|
 | Ledger por orden | Cada orden recibe un destino de un vocabulario de diez, con su texto, su forma canónica, clase, dosis, vía, ritmo, tiempo, motivo, minuto de ejecución, recibo y si su efecto está modelado | `order_ledger.py` |
-| Mapa de cobertura | Más amplio que el lector: lo que parece una orden y el lector no devolvió queda UNRECOGNIZED con su recibo; también el nombre de una orden sin verbo ni dosis («- Aspirin», «Heparin drip») y la orden escrita tras una intención («We should start heparin», «Necesitamos hemocultivos») | `order_ledger.coverage` |
-| Un solo camino | Texto libre, formulario guiado, respuesta a la compuerta de razonamiento y respuesta a una aclaración (también un envío recuperado tras una interrupción) pasan por el mismo camino: cobertura, ledger, ejecución y destino. Una orden nueva escrita junto a la respuesta a una aclaración no corre (F0-12) | `order_pipeline.py`, `app.py` |
+| Mapa de cobertura | Más amplio que el lector: lo que parece una orden y el lector no devolvió queda UNRECOGNIZED con su recibo; también el nombre de una orden sin verbo ni dosis («- Aspirin», «Heparin drip») y la orden escrita tras una intención («We should start heparin», «Necesitamos hemocultivos»). En el cierre, también el nombre que ningún vocabulario conoce, y en silencio las palabras que podrían ser una nota (sección 21) | `order_ledger.coverage` |
+| Un solo camino | Texto libre, formulario guiado, respuesta a la compuerta de razonamiento y respuesta a una aclaración (también un envío recuperado tras una interrupción) pasan por el mismo camino: cobertura, ledger, ejecución y destino. En el cierre, una orden nueva escrita después de la respuesta a una aclaración se lee a continuación como orden propia (F0-12, sección 21) | `order_pipeline.py`, `app.py`, `submission_guard.py` |
 | Regla de paquete | Las órdenes independientes corren; sólo esperan los grupos dependientes (vía aérea, «X then Y», mismo agente, una reevaluación con el tratamiento retenido que juzga, si una respuesta puede completarlo) | `order_pipeline.split_bundle` |
 | PS001 | R1-03, R1-04 y R2-01 fuera de la asignación automática y de las directivas; el código heredado sigue | `curriculum.py`, `encounter_directives.py` |
 | Envío | Identidad por envío, guardado previo, idempotencia, botón deshabilitado, recuperación de una ejecución interrumpida, `fastReruns = false` | `submission_guard.py`, `.streamlit/config.toml` |
@@ -100,7 +107,9 @@ Desde `13592e4`: 51 archivos de código, pruebas y configuración (6.451 líneas
 | «Stop the epinephrine infusion» se rechazaba y la infusión seguía | La detiene |
 | El paro del hemotórax se declaraba prevenible | ENGINE_LIMITATION; el caso queda excluido |
 | Una reevaluación escrita con una orden que ninguna respuesta completa no corría nunca, y el aviso decía «held until you answer» | Corre, y el aviso dice lo que no se hizo |
-| Una orden escrita junto a la respuesta a una aclaración se marcaba «Not understood… write it again in other words» | No corre, y su recibo dice que iba en la respuesta y pide escribirla como orden nueva (F0-12) |
+| Una orden escrita junto a la respuesta a una aclaración se marcaba «Not understood… write it again in other words» | En la entrega, no corría y su recibo lo decía. En el cierre se lee a continuación como orden propia, con su compuerta, sus preguntas, su destino y su recibo (F0-12) |
+| Un nombre que ningún vocabulario conocía, escrito como orden («Zyvox.», «- Plasmaféresis», «Zyvox IV», «Sepsis, ceftriaxone.»), desaparecía, y un nombre conocido de la misma frase con él (cierre) | UNRECOGNIZED con su recibo; si las palabras también pueden ser una nota, quedan en el registro sin recibo y guardan la omisión |
+| Las frases nuevas de la Fase 0 sólo estaban en inglés (cierre) | Se dicen enteras en español, con las palabras citadas de la persona residente intactas (F0-11) |
 
 ## 5. Esquema del ledger de ejecución
 
@@ -110,13 +119,14 @@ Desde `13592e4`: 51 archivos de código, pruebas y configuración (6.451 líneas
 |---|---|
 | `order_id`, `submission_id` | Identidad estable, que viaja con la orden si queda retenida |
 | `span` | Las palabras del residente, citadas con su propia cláusula; una llamada, un destino o una pregunta del lector, por las palabras de su tipo o de la pregunta |
-| `canonical`, `class` | Forma normalizada y tipo (o `unrecognized`, `clarification`) |
+| `canonical`, `class` | Forma normalizada y tipo (o `unrecognized`, `clarification`, `held_with_question`; en el cierre, `unread_words`: palabras guardadas en silencio, sin recibo) |
 | `dose`, `route`, `rate`, `timing` | Lo que el lector leyó; `timing` con `delay_min`, `wait`, `immediate` o `after_result` |
 | `written_at_min`, `executed_at_min` | Minuto en que se escribió y en que corrió |
 | `fate`, `reason`, `history` | Destino, motivo y cada cambio de destino con su minuto |
 | `receipt`, `receipt_shown_elsewhere` | Lo que se dijo al residente |
 | `modelled_effect` | Si el simulador modela su efecto |
 | `default_applied`, `limitation` | Un valor por omisión dicho en el recibo; la limitación que decidió el destino |
+| `derived_from` | En el cierre: el envío de la respuesta del que salió una orden escrita después de ella (F0-12) |
 
 **Destinos:** EXECUTED, HELD_CLARIFICATION, HELD_REASONING, RECORDED_NOT_MODELLED, UNRECOGNIZED, SCHEDULED,
 CANCELLED, DUPLICATE_IGNORED, DUPLICATE_CONFIRMED, TERMINAL_NOT_EXECUTABLE.
@@ -229,6 +239,9 @@ tiene turno propio en el Trace.
 5. Cada paso corre en un hilo auxiliar con el contexto del script, donde Streamlit no detiene la ejecución.
 6. `.streamlit/config.toml`: `fastReruns = false`.
 7. Una recarga no ejecuta nada de nuevo. Un envío recibido y no procesado se encuentra al reanudar y corre una vez.
+8. Cierre (F0-12): la orden escrita después de la respuesta a una aclaración se guarda, junto con la respuesta y
+   antes de correr nada, como un envío derivado (`derived_from`, `entry_point = free_text`), con el minuto en que
+   se escribió; corre en la ejecución siguiente, una vez, por el mismo camino.
 
 **Navegador real** (Chromium aislado, sin red externa; ANTES = `13592e4`, DESPUÉS = `d91dfe5`):
 
@@ -297,7 +310,14 @@ tiene turno propio en el Trace.
 | `test_phase0_acceptance_page.py` | 31 (un caso por prueba, en la página real) |
 | `test_phase0_acceptance_findings.py` | 81 |
 | `test_phase0_pilot_freeze.py` | 4 |
-| **Total** | **826** |
+| **Total de la entrega** | **826** |
+| `test_phase0_unknown_names.py` (cierre) | 107 |
+| `test_phase0_answer_parity.py` (cierre) | 12 |
+| `test_phase0_spanish.py` (cierre) | 23 |
+| `test_phase0_submission_guard_on_postgres.py` (cierre; sólo con `MRS_TEST_POSTGRES_URL`, A–F y F0-12) | 10 |
+| **Total con el cierre** | **978** |
+
+El cierre no modificó ninguna prueba existente.
 
 ### Pruebas existentes actualizadas y por qué
 
@@ -430,8 +450,9 @@ código en el manifiesto (`docs/revision/PILOT_FREEZE_MANIFEST.md`, «Casos: bat
   - la batería falla exactamente en «manejo correcto» y «recuperación»;
   - corregirlo exige fisiología del trauma, fuera de la Fase 0.
 
-  El caso no se sortea ni se ofrece en las directivas; sigue en el sandbox docente. Esta exclusión se aparta del
-  cierre prepiloto C-2026-10-02-08 («ningún caso excluido»): queda como decisión docente F0-2, con tres opciones.
+  El caso no se sortea ni se ofrece en las directivas; sigue en el sandbox docente. Esta exclusión se apartaba del
+  cierre prepiloto C-2026-10-02-08 («ningún caso excluido»). **Decisión docente F0-2 (2026-10-06):** fuera del
+  piloto de residentes, sin modelar el pabellón; el piloto usa 30 casos aceptados.
 - **R1-03, R1-04 y R2-01 (rutas de PS001).** No son casos del banco, pero quedan fuera de la asignación de
   residentes (sección 10).
 
@@ -454,44 +475,38 @@ código en el manifiesto (`docs/revision/PILOT_FREEZE_MANIFEST.md`, «Casos: bat
   - TD-64: terapias definitivas de la bradicardia;
   - TD-65: órdenes para más tarde y esperas largas;
   - TD-66: daño no modelado;
-  - TD-67: textos nuevos en inglés;
+  - TD-67: textos nuevos en inglés (corregida en el cierre; la redacción espera la firma docente);
   - TD-68: la cobertura es heurística, con falsos positivos seguros y texto citado aproximado tras un número con
-    punto.
-- **Lo que la cobertura no puede ver:** una orden escrita sin verbo, sin dosis, sin una intención al frente y sin
-  ningún nombre que el vocabulario del ledger conozca (155 fármacos, estudios y procedimientos). Con verbo, con
-  dosis o tras una intención, un nombre desconocido sí queda UNRECOGNIZED. Una pregunta («Can we get a CT?») no
-  se lee como orden, por diseño.
-- **Textos nuevos sólo en inglés** (TD-46, F0-11):
-  - recibos del ledger;
-  - el aviso de una orden para más tarde;
-  - la mirada a la cabecera y la espera interrumpida;
-  - el límite de 120 minutos;
-  - el mensaje del paro, su actualización sin pulso y el examen del paro;
-  - el aviso del envío interrumpido;
-  - las etiquetas de los eventos;
-  - `ARREST_AFTER_DOSE_TEXT`;
-  - «PART OF THIS ORDER WAS NOT CARRIED OUT»;
-  - el recibo de una orden escrita junto a la respuesta a una aclaración.
-  - Además, un defecto cosmético: el aviso de la espera interrumpida pone en mayúscula el resumen que sigue a
-    «Now,» («Now, No pulse: …»).
+    punto;
+  - TD-69 (cierre): lo que la cobertura todavía no dice como orden no entendida, con su guarda donde se pudo;
+  - TD-70 (cierre): lo que queda de F0-12.
+- **Lo que la cobertura no puede ver** (cierre, sección 21; TD-69): una orden escrita sola con una palabra del
+  vocabulario de notas («Vitals.», «Airway.»); nombres escritos justo después de un nombre conocido que el lector
+  leyó, sin «with/con» («Give ceftriaxone zyvox»); un nombre que una acción del lector absorbe en su propio texto.
+  El registro guarda el texto entero del turno. Una pregunta («Can we get a CT?») no se lee como orden, por
+  diseño.
+- **Español** (cierre, F0-11): las frases nuevas de la Fase 0 se dicen enteras en español; la redacción espera la
+  firma docente (`docs/revision/F0_11_FRASES_ES.md`). El defecto cosmético de la mayúscula tras «Now,» ya no
+  aparece en español («Ahora, sin pulso: …»); en inglés sigue («Now, No pulse: …»), sin efecto en el registro.
 - **Lo no probado:**
   - En navegador real se verificaron:
     - el envío (0D);
     - la espera, la mirada, la interrupción, el paro y las órdenes tras el paro de 0E–0G, en un caso
       (`acs_54m_inferior`).
   - El resto de las pantallas cambiadas, en los 31 casos, se verificó con AppTest sobre la página real, con
-    recarga.
-  - No se probó contra PostgreSQL en esta fase. El guardado previo usa `save_session` y su control de revisión,
-    sin SQL nuevo.
-- **Una orden escrita junto a la respuesta a una aclaración** no corre: la respuesta completa sólo la orden
-  retenida. Queda UNRECOGNIZED con un recibo que lo dice (F0-12). En la respuesta a la compuerta de razonamiento sí
-  corre.
+    recarga. La sala en español no se recorre con AppTest (no selecciona una opción traducida): se verifica por
+    las frases y por el código de la página (sección 21).
+  - PostgreSQL: en el cierre, A–F y F0-12 sobre una base PostgreSQL 16 local y descartable (sección 21). No se
+    probó contra la base del proveedor del piloto.
+- **Una orden escrita después de la respuesta a una aclaración** (cierre, F0-12): se lee a continuación como orden
+  propia. Si la respuesta deja algo de la orden retenida sin completar, no corre y su recibo lo dice (TD-70).
 - **Lo que la Fase 0 no cambia:** la fisiología. Lo que el motor no modela sigue sin modelarse; la Fase 0 lo vuelve
   visible, registrado y no evaluable en contra del residente.
 
 ## 17. Decisiones que requieren al docente
 
-En `docs/COLA_DECISIONES_AI_ADVISOR.md`, sección «Fase 0», con lo que hay mientras tanto y una recomendación:
+En `docs/COLA_DECISIONES_AI_ADVISOR.md`, sección «Fase 0», con lo que hay mientras tanto y una recomendación. **Todas
+se decidieron el 2026-10-06** y quedan cerradas (sección 21 y «Cierre de la Fase 0» del Decision File):
 
 | ID | Tema | Tipo |
 |---|---|---|
@@ -557,15 +572,162 @@ código, como en las fases anteriores.
   - `3c67cd9` (0E–0K: código, pruebas, registro y documentos generados);
   - el commit de documentación que contiene este informe, el Decision File, el registro de deuda, la vista
     metodológica y el runbook.
+  - los commits del cierre (sección 21).
 - **Push:** ninguno. **Despliegue, merge, PR y release:** ninguno.
 - No se tocaron datos de producción y no hubo llamadas pagadas.
 
-## Revisión final Q1–Q12
+## 21. Cierre de la Fase 0 (2026-10-06)
+
+**Instrucción:** «Phase 0 is APPROVED IN PRINCIPLE»: cerrar la Fase 0 sin reabrir su diseño y sin empezar la
+Fase 1 ni el núcleo fisiológico común. Registro: `INSTRUCTION_2026_10_06_PHASE0_CLOSURE` y C-2026-10-06-12 a
+C-2026-10-06-14 en `corrections_registry.py`. Decisiones: `docs/COLA_DECISIONES_AI_ADVISOR.md`, «Cierre de la
+Fase 0».
+
+### 21.1 Decisiones F0-1 a F0-12
+
+«Con limitación declarada»: la decisión acepta una conducta que el manifiesto declara como limitación del piloto,
+con su guarda.
+
+| ID | Decisión docente | Estado |
+|---|---|---|
+| F0-1 | El lector V3 sigue congelado; la capa posterior al lector es de la sala | Cerrada con limitación declarada (G-READER-V3; TD-69) |
+| F0-2 | `trauma_hemothorax_41m` fuera del piloto de residentes; sin modelar el pabellón | Cerrada con limitación declarada (C-NO-THEATRE): 30 casos |
+| F0-3 | TD-45 (g) resuelta en la sala | Cerrada |
+| F0-4 | Hueco curricular aceptado; PS001 no vuelve a la asignación | Cerrada con limitación declarada (R1-03, R1-04, R2-01 y MK1 no se observan) |
+| F0-5 | Mirada de 2 minutos; «dar X y reevaluar»; órdenes para más tarde; límite de 120 minutos | Cerrada con limitación declarada (G-LATER-ORDERS, G-STEP-120) |
+| F0-6 | Umbrales de interrupción; un evento de causa UNKNOWN sigue protegido de toda inferencia negativa | Cerrada |
+| F0-7 | Un evento con guion o NOT_PREVENTABLE_IN_SIMULATOR nunca sostiene una retroalimentación negativa | Cerrada |
+| F0-8 | Paro de la bradicardia desde la frecuencia mostrada; texto del paro de la anafilaxia | Cerrada |
+| F0-9 | Mascarilla con reservorio a 15 L/min por omisión, dicho y registrado | Cerrada |
+| F0-10 | La compuerta de razonamiento sigue reteniendo el envío completo; su demora es de la compuerta y nunca del residente (regla B), registrado en el Decision File | Cerrada |
+| F0-11 | Español de todos los textos nuevos de la Fase 0 que ve el residente | Cerrada: hecho (21.4); la redacción espera la firma docente |
+| F0-12 | Paridad del punto de entrada si es pequeña y segura | Cerrada con limitación declarada (G-ANSWER-ORDER; TD-70): paridad implementada (21.3) |
+
+### 21.2 Cobertura: un nombre que ningún vocabulario conoce
+
+En la capa posterior al lector (`order_ledger.coverage`); el lector V3 no cambió.
+
+- **Dicho como no entendido** (UNRECOGNIZED con su recibo; no ejecuta nada; la regla A lo lee como comodín):
+  - un nombre solo, en una lista o en una frase de nombres («Zyvox.», «- Plasmaféresis», «ECMO.»);
+  - con «now», «urgente», tras «Necesitamos» o «Quiero» («Zyvox now.», «Necesitamos zyvox.»);
+  - con vía o pauta y sin verbo («Zyvox IV.», «Tygacil q12h.», «Zyvox cada 12 horas.»);
+  - donde va el nombre de la orden tras un verbo de orden («Give zyvox in 100 mL saline.»);
+  - después del problema que trata («Sepsis, zyvox.», «Creo que es sepsis, ceftriaxona.»);
+  - un nombre conocido junto a uno desconocido, que antes desaparecía con él («Zyvox and ceftriaxone.»);
+  - «Taponamiento.» solo, que la cobertura tomaba por nota (era el taponamiento de la herida en la hemorragia
+    de la extremidad). «Hacer taponamiento.», que corre como control de la hemorragia, ya no se dice además «no
+    entendido».
+- **Guardado en silencio** (UNRECOGNIZED, clase `unread_words`, sin recibo en la sala; la regla A no lee una
+  omisión en su ventana): las palabras que también podrían ser una nota, una descripción o un verbo suelto:
+  - una etiqueta con dos puntos, una condición sin verbo, un número sin unidad, un nombre unido a la nota con «y»
+    («Sepsis: zyvox.», «If hypotensive, zyvox.», «Zyvox 600»);
+  - nombres tras «with/con» que siguen a un nombre conocido que el lector leyó («Give ceftriaxone with zyvox»);
+  - un verbo o un participio solo («Suctioning.», «Lavado.», «Suboxone.», «- Proning»).
+- **No se vuelve orden:** un diagnóstico, un hallazgo, un estado, una etiqueta, la historia, un resultado, una
+  negación, una pregunta, el razonamiento o lo que dijeron otros (controles negativos de
+  `test_phase0_unknown_names.py`).
+- **Falsos positivos medidos** sobre los textos de residente del repositorio (ensayos tanda20, batería y pruebas;
+  nunca el corpus de validación):
+  - recibos: 3.082 textos, 168 marcas nuevas, 0 perdidas, ninguna en los ensayos tanda20;
+  - silencio: en 3.200 textos, las formas «with/con» y verbo o participio suman 45 marcas, ninguna en tanda20, y no
+    cambian ninguna marca con recibo. La primera forma silenciosa (nombres donde también podría haber una nota)
+    guarda palabras en 4 textos de tanda20 («corticoide», «Despertó» dos veces, «Pain-free»): no se dice nada;
+    sólo una omisión evaluada en esa ventana pasaría a «reading»;
+  - «Taponamiento.»: 1 marca silenciosa más, ninguna perdida;
+  - se midió y se descartó una guarda para nombres pegados a un nombre conocido sin «with/con»: marcaba palabras
+    de descripción en 6 textos de tanda20 («laboratorio básico», «VVP gruesas»).
+- **Lo que queda sin destino propio ni guarda** (TD-69 d–f; declarado en G-READER-V3):
+  - una orden escrita sola con una palabra del vocabulario de notas («Vitals.», «Airway.», «Neuro checks.»);
+  - nombres justo después de un nombre conocido que el lector leyó, sin «with/con» («Give ceftriaxone zyvox»):
+    quedan en el texto citado de esa orden;
+  - un nombre que una acción del lector absorbe en su propio texto («Reassess BP and zyvox in 10 minutes»).
+
+  En los tres, el registro guarda el texto entero del turno, y la persona docente lo lee.
+- **Garantía exacta** (Q1, Q15): ninguna orden que el lector o la cobertura reconocen como orden queda sin destino;
+  una cláusula escrita como orden, con un nombre que ningún vocabulario conoce, queda UNRECOGNIZED con su recibo;
+  las palabras que podrían ser una nota quedan en el registro y protegen la omisión. Las tres formas de arriba son
+  la excepción declarada.
+
+### 21.3 F0-12: la orden escrita después de la respuesta
+
+- **El ejemplo de la instrucción:** «Start norepinephrine.» queda retenida y pregunta la dosis; la respuesta es
+  «0.1 mcg/kg/min. Also give 500 mL LR.».
+  - La noradrenalina se completa con 0,1 mcg/kg/min y corre (EXECUTED, con su ritmo en el ledger).
+  - «give 500 mL LR» se guarda con la respuesta, antes de correr nada, como un envío propio (`derived_from`,
+    `submission_guard.derive`), con el minuto en que se escribió.
+  - En la ejecución siguiente se lee como cualquier orden escrita: pasa por la compuerta de razonamiento (en el
+    ejemplo, la pide: HELD_REASONING), sus propias preguntas, su destino y su recibo.
+  - La sala lo dice: «Also in your answer: "give 500 mL LR". The answer completes the held order only; this order
+    is read next, as an order of its own, with its own receipt.»
+- **Nunca** completa ni cambia la orden retenida, ni se salta la compuerta ni una aclaración.
+- **Lo que queda** (TD-70, G-ANSWER-ORDER):
+  - si la respuesta deja algo de la orden retenida sin completar, la orden de después no corre y su recibo lo dice
+    (UNRECOGNIZED, comodín de la regla A);
+  - la orden de después corre después de la retenida y de su espera: el registro guarda el minuto en que se
+    escribió, y la regla B no lee la demora como del residente.
+- **Pruebas:** `test_phase0_answer_parity.py` (12, con la página real) y la prueba F0-12 sobre PostgreSQL (21.5).
+
+### 21.4 Español (F0-11)
+
+- Cada frase nueva de la sala se dice entera en español, antes de las reglas de palabras (`language._PHASE0_RULES`):
+  - recibos del ledger (no entendido, registrado sin modelo, no ejecutado tras el paro, orden para más tarde);
+  - paquete parcial (ejecutado y retenido);
+  - mirada en la cabecera y espera interrumpida, con sus eventos;
+  - paro, actualización sin pulso y examen del paro;
+  - límite de 120 minutos;
+  - envío interrumpido (con y sin una parte aplicada);
+  - orden escrita en una respuesta y orden leída después de ella;
+  - flujo por omisión de la mascarilla con reservorio;
+  - los dos paros de la anafilaxia.
+- Las palabras citadas de la persona residente quedan como las escribió (nunca «Stop infusión de the»).
+- El inglés no cambia. Los destinos, los códigos y los campos internos no se traducen; el registro guarda el
+  recibo en inglés y la sala lo dice en el idioma del encuentro, que no cambia durante el encuentro.
+- **Pruebas:** `test_phase0_spanish.py` (23). La sala en español no se recorre con AppTest (no puede seleccionar
+  una opción traducida): se verifica por las frases y por el código de la página.
+- **Firma:** `docs/revision/F0_11_FRASES_ES.md`, como R-4.
+
+### 21.5 PostgreSQL (A–F)
+
+- **Entorno:** PostgreSQL 16.13, un clúster creado para esto en el contenedor de desarrollo, descartable, en
+  127.0.0.1:55432, base `mrs_phase0_smoke`, sin red externa ni datos reales. **Nunca producción.** La prueba borra
+  y recrea su esquema.
+- **Cómo:** la página real (AppTest), en modo cuentas, con `MRS_DATABASE_URL` en esa base
+  (`test_phase0_submission_guard_on_postgres.py`; sin `MRS_TEST_POSTGRES_URL` se omite):
+  - A: la orden queda en la base antes de correr, corre una vez y queda `processed`;
+  - B: un segundo clic sobre el mismo formulario no ejecuta nada más;
+  - C: una recarga entre el guardado previo y la ejecución la ejecuta una vez al reanudar;
+  - D: una recarga después no ejecuta nada;
+  - E: una ejecución detenida se deshace y corre una vez; detenida dos veces, se dice y no se repite;
+  - F: dos sesiones sobre un encuentro: el control de revisión rechaza el guardado de la segunda y la página lo
+    dice; ninguna orden corre dos veces ni se pierde sin aviso;
+  - y F0-12: la orden escrita después de una respuesta se guarda con ella y corre una vez.
+- **Resultado:** 10 de 10 (sección 21.7, sobre el HEAD final).
+- **No probado:** la base del proveedor del piloto. El runbook (§3, paso 0) pide esta prueba sobre una base
+  descartable de la misma versión antes del despliegue.
+
+### 21.6 Archivos del cierre
+
+- **Código:** `order_ledger.py`, `order_pipeline.py`, `submission_guard.py`, `app.py`, `rubric_screening.py`,
+  `language.py`, `pilot_freeze.py`, `tools_pilot_freeze.py`, `corrections_registry.py`.
+- **Pruebas nuevas (4):** `test_phase0_unknown_names.py`, `test_phase0_answer_parity.py`, `test_phase0_spanish.py`,
+  `test_phase0_submission_guard_on_postgres.py`. Ninguna prueba existente cambió.
+- **Documentos:** este informe, `docs/COLA_DECISIONES_AI_ADVISOR.md`, `docs/REGISTRO_DEUDA_TECNICA.md` (TD-67 a
+  TD-70), `docs/revision/F0_11_FRASES_ES.md` (nuevo), `docs/RUNBOOK_PILOTO.md`, `docs/READINESS_PILOTO_FORMATIVO.md`;
+  regenerados: `docs/revision/PILOT_FREEZE_MANIFEST.md` y `docs/CATALOGO_HIPOGLICEMIA.md`.
+- **Sin tocar:** el lector (`family_parser.py`, `shared_order_language.py`, `active_order_context.py`), el corpus de
+  validación, V3 y los baselines; la fisiología; los puntajes, las rúbricas, D1–D5, las penalidades y los
+  objetivos. No se abrió ninguna respuesta externa.
+
+### 21.7 Verificación final
+
+Pendiente de la corrida sobre el commit final: se completa en el commit que sigue a esa corrida.
+
+## Revisión final Q1–Q15
 
 | # | Pregunta | Respuesta exigida | Respuesta | Evidencia |
 |---|---|---|---|---|
-| Q1 | ¿Puede una orden desaparecer sin destino? | NO | **NO** | Invariante por turno (`order_pipeline.check`); ledger completo en los 31 casos; pruebas 1, 2 y 13. Límite: la cobertura es heurística (sección 16, TD-68) |
-| Q2 | ¿Puede leerse como omisión algo no soportado? | NO | **NO** | Reglas A y D; prueba 15; `test_rule_a_*` |
+| Q1 | ¿Puede una orden desaparecer sin destino? | NO | **NO para toda orden que el lector o la cobertura reconocen como orden; sí en tres formas estrechas que la cobertura no reconoce** (TD-69 d–f: una orden escrita sola con una palabra del vocabulario de notas, nombres pegados sin «with/con» a un nombre conocido leído, un nombre absorbido por una acción del lector). En ellas el registro guarda el texto entero del turno, sin destino propio ni guarda | Invariante por turno (`order_pipeline.check`); ledger completo en los 31 casos; pruebas 1, 2 y 13; cierre: sección 21.2. La cobertura es heurística (TD-68, TD-69) |
+| Q2 | ¿Puede leerse como omisión algo no soportado? | NO | **NO** para todo lo que el registro sabe que el simulador no ejecutó (retenido, no entendido con recibo o en silencio, registrado sin modelo, para más tarde, tras el paro). La excepción es la de Q1 y Q15: las tres formas de TD-69 (d–f) no tienen guarda propia | Reglas A y D; prueba 15; `test_rule_a_*`; `test_phase0_unknown_names.py` |
 | Q3 | ¿Puede un duplicado ejecutarse dos veces? | NO | **NO** | Pruebas 4 y 6; navegador real |
 | Q4 | ¿Puede perderse un envío por doble clic o recarga? | NO | **NO** | Pruebas 5 y 6; navegador real |
 | Q5 | ¿Puede el residente esperar y reevaluar? | SÍ | **SÍ** | Pruebas 7 y 8; categorías I y J en los 31 casos |
@@ -573,20 +735,25 @@ código, como en las fases anteriores.
 | Q7 | ¿Puede un evento con guion o no prevenible usarse en contra del residente? | NO | **NO** | Regla D; `test_rule_d_*`; página: ningún evento con `may_support_negative_feedback` tras una orden no ejecutada |
 | Q8 | ¿Contradice la observación al estado en un caso aceptado de modo que afecte el razonamiento de manejo? | NO | **NO** | Pruebas 11 y 12; `observation_consistency` en cada turno de la batería y de la página (0 inconsistencias); barrido sin tratamiento |
 | Q9 | ¿Se asigna PS001 automáticamente? | NO | **NO** | Prueba 16 |
-| Q10 | ¿Critica el análisis en un punto afectado por una limitación? | NO | **NO** | Reglas A–E; `limitations` por turno; categoría `trace_safety_guards` |
+| Q10 | ¿Critica el análisis en un punto afectado por una limitación? | NO | **NO**, con la misma excepción declarada de Q1 y Q15 (TD-69 d–f) | Reglas A–E; `limitations` por turno; categoría `trace_safety_guards` |
 | Q11 | ¿Se implementó el núcleo común? | NO | **NO** | Sección 19 |
 | Q12 | ¿Cubre la batería cada caso aceptado? | SÍ | **SÍ** | 30 de 30 aceptados en el motor (19 categorías) y en la página real; el excluido, también |
+| Q13 | ¿Pasa la suite completa sobre el HEAD final comprometido, con el árbol limpio y 0 fallos? | SÍ | Ver 21.7 | Sección 21.7 |
+| Q14 | ¿Se probó la persistencia en PostgreSQL? | SÍ, o «NO — PRE-DEPLOYMENT BLOCKER» | **SÍ**, en PostgreSQL 16 local y descartable (A–F y F0-12), nunca en producción; la base del proveedor queda para el paso 0 del runbook | Sección 21.5; `test_phase0_submission_guard_on_postgres.py` |
+| Q15 | ¿Puede una intervención plausiblemente accionable, fuera del vocabulario, desaparecer todavía sin aviso? | NO | **SÍ, sólo en las tres formas estrechas de TD-69 (d–f)**, sin guarda propia y con el texto del turno en el registro. Fuera de ellas: dicha como no entendida con su recibo, o guardada en silencio cuando también puede ser una nota, una descripción o un verbo suelto, y entonces la regla A no lee una omisión contra ella | Sección 21.2; `test_phase0_unknown_names.py` (107, EN/ES, con nombres que ningún vocabulario tiene) |
 
 ## Estado de la Fase 0
 
-**COMPLETA.**
+**Entrega (2026-10-06): COMPLETA. Cierre (2026-10-06): hecho; ver 21.7 para la verificación final.**
 
-- Q1–Q12 se responden como el encargo exige.
-- La suite completa final pasa, salvo la prueba que compara HEAD con el árbol, que pasa sobre el commit.
-- La batería cubre los 31 casos.
-- No se hizo push ni despliegue y no se empezó la Fase 1.
+- F0-1 a F0-12 cerradas (cinco con limitación declarada); Q1 y Q15 dicen la garantía exacta, con la excepción
+  declarada de TD-69 (d–f).
+- PostgreSQL: A–F y F0-12 en una base descartable local.
+- 30 casos aceptados de 31; excluido `trauma_hemothorax_41m` (F0-2).
+- No se hizo push, despliegue, merge, PR ni release, y no se empezó la Fase 1 ni el núcleo común.
 - Antes de desplegar, el piloto espera:
-  - la revisión de esta fase;
-  - las decisiones F0-1 y F0-2, que son contradicciones entre fuentes;
-  - el resto de F0-3 a F0-12;
-  - el español de los textos nuevos si el piloto corre en español.
+  - la autorización del push;
+  - las condiciones del readiness (`docs/READINESS_PILOTO_FORMATIVO.md`): las firmas, incluida la de las frases
+    F0-11 si el piloto corre en español; el despliegue con preflight (A); el orden de las fotos (TD-56); la prueba
+    de humo en el entorno desplegado (B); la autorización explícita (C);
+  - el paso 0 del runbook: la prueba del envío sobre una base PostgreSQL descartable de la versión del proveedor.
