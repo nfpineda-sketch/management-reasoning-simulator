@@ -5,10 +5,58 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-02, con el cierre del paquete prepiloto (sección «Cierre del paquete prepiloto», la
-  vigente: D-1 a D-11 decididas y aplicadas). La revisión clínica prepiloto, la segunda y la primera respuesta
-  al paquete del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos
-  anteriores siguen más abajo, como estaban.
+- **Actualizado:** 2026-10-06, con la Fase 0 de seguridad de la medición (sección «Fase 0 · Seguridad de la
+  medición antes del piloto», la vigente: F0-1 a F0-12 abiertas). El cierre del paquete prepiloto (2026-10-02,
+  D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
+  del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
+  siguen más abajo, como estaban.
+
+## Fase 0 · Seguridad de la medición antes del piloto (2026-10-06)
+
+**Instrucción del 2026-10-06** «PHASE 0 — PRE-PILOT MEASUREMENT SAFETY»: que el piloto sobre el motor de familias
+actual no pueda atribuir al razonamiento del residente una limitación del motor, del lector, de la pantalla o del
+tiempo. Sin núcleo fisiológico común ni Fase 1; sin cambios de puntaje, rúbrica, D1–D5, penalidades, objetivos ni
+reportes; sin push, merge, despliegue ni release. Registro: `INSTRUCTION_2026_10_06_PHASE0` y C-2026-10-06-01 a
+C-2026-10-06-11 en `corrections_registry.py`. Informe: `docs/revision/PHASE_0_PILOT_SAFETY_REPORT.md`. Manifiesto
+generado: `docs/revision/PILOT_FREEZE_MANIFEST.md`.
+
+- **Implementado y probado** (detalle y pruebas en el informe):
+  - cada orden termina con un destino registrado y un recibo; las órdenes independientes corren y sólo esperan
+    los grupos dependientes;
+  - R1-03, R1-04 y R2-01 (motor heredado PS001) fuera de la asignación automática y de las directivas;
+  - un envío se guarda antes de correr, corre una vez y no se pierde por doble clic ni recarga;
+  - esperar avanza el reloj, «reassess» sin número es una mirada de 2 minutos, una orden para más tarde no corre
+    ahora y un evento crítico corta la espera;
+  - un paro es un paro (sin pulso ni presión, mensaje acordado, nada más ejecutable); el potasio del laboratorio
+    es el del motor; cada evento dice su causa, severidad y prevenibilidad;
+  - guardas deterministas A–E antes de todo análisis;
+  - batería de aceptación de los 31 casos (motor y página real): 30 aceptados (12 ACCEPT, 18 ACCEPT WITH
+    DECLARED LIMITATION) y 1 excluido, `trauma_hemothorax_41m`.
+- **Sin cambios:** el lector (`family_parser.py`, `shared_order_language.py`), el corpus de validación, V3 y los
+  baselines; los puntajes, las rúbricas, D1–D5 y las penalidades.
+- **Commits locales**, sin push ni despliegue.
+
+### Contradicciones entre fuentes, señaladas y no resueltas en silencio
+
+| ID | Fuentes | Qué hay mientras tanto | Decisión pedida |
+|---|---|---|---|
+| F0-1 | El lector queda congelado durante la validación externa (CLAUDE.md; fila «Validación externa») frente a «You MAY modify parser/action handling» (Fase 0) | El lector no cambió (0 líneas de diferencia; baselines intactos). Lo nuevo es una capa de la sala, después del lector: las palabras de tiempo, el mapa de cobertura (lo no leído queda UNRECOGNIZED con su recibo), el nombre de la infusión en «Stop the epinephrine infusion» y el flujo de la mascarilla con reservorio | Confirmar que la capa es de la sala y no del lector que mide la validación, o pedir que se retire hasta la ingesta externa |
+| F0-2 | Cierre prepiloto C-2026-10-02-08 («ningún caso excluido») frente a la regla de exclusión de la Fase 0 (§17) | `trauma_hemothorax_41m` excluido: desde que el paro es verdadero (0G), tras el drenaje el paciente para hacia el minuto 60 haga lo que haga, porque el pabellón no está modelado; la decisión evaluada después del drenaje (`trauma_drained_and_never_looked_again`, ventana 10–180) nunca sería evaluable. No se sortea ni se ofrece en las directivas; sigue en el sandbox docente | (a) mantenerlo excluido en el primer piloto (**recomendado**); (b) aceptarlo con el paro declarado: su decisión central quedaría sin evaluar; (c) representar el pabellón: es fisiología, fuera de la Fase 0 |
+
+### Decisiones docentes abiertas
+
+| ID | Decisión | Qué hay ahora | Recomendación |
+|---|---|---|---|
+| F0-3 | TD-45 (g) | La sala detiene «Stop the dextrose infusion» y «Suspender la infusión de glucosado» por la capa de F0-1; el lector y `test_reader_gaps_registered.py` siguen igual | Confirmar: (g) queda resuelta en la sala y pendiente en el lector |
+| F0-4 | Hueco curricular de PS001 | Un residente de primer año recibe R1-05, R1-06 y R1-07; R1-03, R1-04 y R2-01 no se observan en el piloto, y MK1 (ACGME) sólo se vincula a R2-01 | Aceptar para el primer piloto; casos del banco para esos desafíos, después |
+| F0-5 | Tiempo | Mirada inmediata de 2 minutos (una región examinada); una espera de más de 120 minutos se rechaza y se explica; una orden para más tarde se registra sin programarse y se pide escribirla cuando corresponda | Confirmar para el piloto |
+| F0-6 | Umbrales de interrupción | Un evento declarado del motor, una PAS < 70 que cayó ≥ 20 sostenida 2 minutos o una SpO₂ < 85 que cayó ≥ 5 sostenida 2 minutos cortan la espera | Confirmar |
+| F0-7 | Prevenibilidad declarada | Bloqueo AV de la 54m y FV de las oclusiones: con guion, nunca evidencia negativa (la FV se juzga por la decisión de reperfusión, no por su minuto); bifásica: NOT_PREVENTABLE_IN_SIMULATOR; sangrado mayor tras la lisis: UNKNOWN; paro del hemotórax: ENGINE_LIMITATION; paro del miembro sin tratar (~13 min): PREVENTABLE | Confirmar |
+| F0-8 | Dos correcciones de la batería | El paro de la bradicardia se lee de la frecuencia que muestra el monitor (C-2026-10-06-08); el paro de la anafilaxia tras una dosis que se agotó lo dice así (C-2026-10-06-09) | Confirmar; el texto nuevo, en inglés, espera su español (TD-46) |
+| F0-9 | Valores por omisión de la sala | Mascarilla con reservorio sin flujo: 15 L/min, dicho en el recibo; una infusión sin nombre toma el de la única que sus palabras nombran | Confirmar |
+| F0-10 | Compuerta de razonamiento | Sigue reteniendo el envío completo que retiene (metodología sin cambio; una intervención urgente nunca se retiene: decisión docente 12 del 2026-09-25); cada orden queda HELD_REASONING y una orden nueva escrita al responder recibe su destino | Confirmar que la regla de paquete no alcanza a la compuerta |
+| F0-11 | Textos nuevos en inglés | Recibos del ledger, mensajes de tiempo, de espera interrumpida, de paro y de envío interrumpido, etiquetas de eventos y el texto nuevo de la anafilaxia: en inglés, sin traducción automática (TD-46) | Revisión docente del español antes del piloto en español |
+| F0-12 | Orden nueva escrita al responder una aclaración | La respuesta completa sólo la orden retenida («1000 mL»); una orden escrita junto a ella («…and give ceftriaxone 2 g IV») no corre y queda UNRECOGNIZED, con un recibo que dice por qué y pide escribirla como orden nueva. En la respuesta a la compuerta de razonamiento, en cambio, la orden nueva corre (0A-0B) | Mantener para el piloto: leer órdenes en una respuesta arriesga dar dos veces lo retenido |
 
 ## Cierre del paquete prepiloto (2026-10-02)
 

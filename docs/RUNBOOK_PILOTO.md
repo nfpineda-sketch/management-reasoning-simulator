@@ -36,6 +36,8 @@ del docente responsable (condición **C**). El piloto nunca se inicia automátic
 - `MRS_DEFAULT_VARIANT` (fijaría un caso);
 - `MRS_SYNTHETIC_ACCOUNTS` y `MRS_BATCH_*` (cuentas y contraseñas del lote de prueba).
 
+**Congelamiento del piloto (Fase 0, 2026-10-06):** el piloto corre sobre `docs/revision/PILOT_FREEZE_MANIFEST.md`: los casos aceptados con sus huellas, los desafíos permitidos, las versiones, los indicadores y las limitaciones declaradas. `.streamlit/config.toml` conserva `[runner] fastReruns = false` (un segundo clic nunca inicia una ejecución concurrente). No despliegue mientras haya encuentros abiertos: cada encuentro y cada turno registran el código con que corrieron.
+
 **`OPENAI_API_KEY`:** para el piloto, retírela de los Secrets. Si queda, `MRS_OFFLINE_CASES=1` la
 retiene en todas partes, pero sin ella no hay nada que retener.
 
