@@ -81,6 +81,10 @@ INSTRUCTION_2026_09_29_POST_V3 = ("Instrucción docente del 2026-09-29 posterior
                                   "clínicas analizadas: TEP con D revisada, DC1, POCUS de la HDA, TD-31, DC2–DC5 de "
                                   "hipoglicemia y el texto de acs_70f_left_main; y las decisiones no clínicas de su "
                                   "ampliación)")
+INSTRUCTION_2026_10_06_PHASE0 = ("Instrucción del 2026-10-06 «PHASE 0 — PRE-PILOT MEASUREMENT SAFETY» (ledger por "
+                                 "orden, envío seguro, tiempo, interrupción por eventos, paro coherente, procedencia, "
+                                 "guardas del análisis, batería de aceptación y congelamiento; sin núcleo fisiológico "
+                                 "común, sin cambios de puntaje, rúbrica ni D1–D5)")
 INSTRUCTION_2026_09_28_CYCLE6 = ("Instrucción docente del 2026-09-28, ciclo 6 del AI Advisor (DF-22 por clase, 59O-03 y "
                                  "seguridad de la aclaración, L-F01, L-F04 y sólo las correcciones de DF-23 que "
                                  "cumplen las seis condiciones)")
@@ -1257,8 +1261,8 @@ CORRECTIONS = (
         "affects": {"modules": ["app", "urgent_interventions", "faculty_analysis", "language"], "versions": {}},
         "clinical_relevance": "none",
         "tests": ["test_what_the_page_says_follows_what_ran.py::test_a_an_urgent_order_that_runs_is_announced_and_offered_for_explanation",
-                  "test_what_the_page_says_follows_what_ran.py::test_c_an_unreadable_item_holds_the_urgent_bundle_and_claims_nothing",
-                  "test_what_the_page_says_follows_what_ran.py::test_d_f_e_a_question_keeps_the_urgent_bundle_until_it_runs",
+                  "test_what_the_page_says_follows_what_ran.py::test_c_an_unreadable_item_is_named_and_the_urgent_order_runs",
+                  "test_what_the_page_says_follows_what_ran.py::test_d_f_e_a_question_holds_only_the_order_it_is_about",
                   "test_what_the_page_says_follows_what_ran.py::test_only_an_urgent_entry_that_ran_awaits_an_explanation"],
         "preservation": None,
     },
@@ -3097,6 +3101,238 @@ CORRECTIONS = (
         "clinical_relevance": "cosmetic",
         "tests": ["test_td59_general_appearance_keeps_the_case.py::test_each_line_reads_whole_in_one_language",
                   "test_td59_general_appearance_keeps_the_case.py::test_the_rewritten_chest_is_part_of_the_case_s_narrative"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-01",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0A-0B): cada orden termina con un destino registrado y las órdenes independientes corren",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("La auditoría del motor halló órdenes que desaparecían sin aviso: un ítem no leído retenía todo el "
+                   "paquete y una orden nueva escrita al responder la compuerta de razonamiento se perdía. Ahora un "
+                   "ledger por orden da a cada una un destino (EXECUTED, HELD_*, RECORDED_NOT_MODELLED, "
+                   "UNRECOGNIZED...) con su recibo, un mapa de cobertura del texto registra lo que el lector no "
+                   "devolvió, y sólo los grupos dependientes esperan. El lector congelado no se tocó."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["order_ledger", "order_pipeline", "app"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_phase0_order_ledger.py::test_every_actionable_text_and_every_order_ends_with_a_fate",
+                  "test_phase0_order_ledger.py::test_what_the_reader_did_not_read_never_disappears",
+                  "test_phase0_order_ledger.py::test_independent_orders_run_and_a_dependency_waits",
+                  "test_phase0_order_ledger.py::test_a_transfusion_written_in_the_gate_follow_up_runs_and_has_a_fate"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-02",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0C): ningún residente recibe automáticamente el motor heredado PS001",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("R1-03, R1-04 y R2-01 corren sobre PS001, que los documentos del piloto excluyen y que la "
+                   "asignación automática seguía ofreciendo. Salen de la asignación automática y de las "
+                   "directivas; quedan en el catálogo, el sandbox docente y las pruebas."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["curriculum", "curriculum_runtime"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_phase0_routing.py::test_the_automatic_assignment_never_launches_the_legacy_engine",
+                  "test_phase0_routing.py::test_a_directive_cannot_reach_a_legacy_challenge"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-03",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0D): un envío se escribe antes de correr, corre una vez y no se pierde",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Un doble clic perdía la orden sin rastro y una segunda ejecución concurrente dejaba la sesión en "
+                   "conflicto con su propio guardado. Ahora cada envío tiene identidad, se guarda antes de correr, "
+                   "una ejecución interrumpida se deshace y se reintenta una vez, y fastReruns=false impide la "
+                   "ejecución concurrente."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["submission_guard", "curriculum_runtime", "app"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_phase0_submission_guard.py::test_a_second_click_on_the_same_form_executes_nothing_more",
+                  "test_phase0_submission_guard.py::test_a_reload_after_processing_re_executes_nothing",
+                  "test_phase0_submission_guard.py::test_a_run_stopped_part_way_is_undone_and_the_order_runs_once"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-04",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0E-0F): esperar avanza el reloj, reevaluar es una mirada inmediata y un evento crítico corta la espera",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«Wait 20 minutes» no se entendía, «reassess» tomaba 0 minutos y mostraba signos previos al "
+                   "tratamiento bajo «After...», una orden para más tarde corría de inmediato y ningún evento "
+                   "interrumpía una espera de 120 minutos. Ahora la capa de tiempo traduce la espera, la mirada "
+                   "inmediata (2 minutos) y registra las órdenes futuras sin ejecutarlas, y el motor detiene la "
+                   "espera en el minuto del primer evento crítico. Las trayectorias del catálogo de hipoglicemia "
+                   "esperan el resto del intervalo, como antes."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["time_semantics", "family_engine", "event_provenance", "catalog_trajectories", "app"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_phase0_time_and_events.py::test_a_wait_is_a_reassessment_after_its_minutes",
+                  "test_phase0_time_and_events.py::test_reassess_without_a_number_is_a_look_at_the_bedside",
+                  "test_phase0_time_and_events.py::test_an_order_for_later_never_runs_now",
+                  "test_phase0_time_and_events.py::test_a_long_wait_stops_at_the_first_critical_event"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-05",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0G-0H): un paro es un paro, el potasio del laboratorio es el del motor y cada evento dice su origen",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Tres familias anunciaban un paro mientras el monitor mostraba pulso y presión, una frecuencia de "
+                   "0 se rotulaba «sinus bradycardia» y el potasio del laboratorio quedaba en el valor del caso. "
+                   "Ahora el paro es el del motor (sin pulso, sin presión, examen de paro, mensaje acordado y nada "
+                   "más ejecutable), el laboratorio lee el estado, y cada evento lleva clase de causa, severidad y "
+                   "prevenibilidad. El Trace agrega observación, limitaciones y versiones."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["observation_consistency", "event_provenance", "trace_phase0", "family_engine",
+                                "anaphylaxis_reaction", "trauma_hemorrhage", "bradycardia_toxicology", "app"],
+                    "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_phase0_observation_and_provenance.py::test_an_untreated_arrest_is_the_engines_arrest_and_nothing_contradicts_it",
+                  "test_phase0_observation_and_provenance.py::test_the_hyperkalaemia_laboratory_potassium_reads_the_engine",
+                  "test_phase0_observation_and_provenance.py::test_every_event_of_the_course_declares_where_it_comes_from",
+                  "test_phase0_observation_and_provenance.py::test_the_trace_records_observation_limitations_and_versions"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-06",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0I): el registro nunca asienta contra el residente lo que decidió una limitación",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("El tamizaje lee el destino de cada orden (también la retenida por razonamiento y nunca "
+                   "respondida, desde el ledger del encuentro): una orden no leída, retenida, registrada sin "
+                   "modelo o ejecutada tarde por el simulador vuelve «reading» lo que habría sido «met»; nada "
+                   "después de un paro no modelado es evaluable; un evento con guion, una limitación del motor o un "
+                   "evento precedido por una orden que el simulador no ejecutó nunca apoya una retroalimentación "
+                   "negativa. Ningún puntaje, peso ni definición cambió."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["rubric_screening"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_phase0_guards.py::test_rule_a_an_order_the_reader_did_not_understand_is_not_an_omission",
+                  "test_phase0_guards.py::test_rule_b_an_order_written_in_time_and_run_late_by_the_simulator_is_not_a_delay",
+                  "test_phase0_guards.py::test_rule_d_a_scripted_unpreventable_event_never_supports_negative_feedback",
+                  "test_phase0_guards.py::test_rule_e_nothing_after_an_unmodelled_arrest_is_assessable",
+                  "test_phase0_guards.py::test_rule_d_an_order_held_for_its_reasoning_and_never_answered_is_read_from_the_encounter_ledger"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-07",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0J): lo que halló la batería de aceptación — órdenes que aún desaparecían e infusiones que no se detenían",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("«Arrange urgent hemodialysis», «Keep him NPO» u «Organize dialysis» no producían orden ni "
+                   "destino, ni el nombre de una orden sin verbo ni dosis («- Aspirin» en una lista, «Cefepime now», "
+                   "«Heparin drip», «CPR now»: TD-45 (a)), ni una orden escrita tras una intención o una necesidad "
+                   "(«We should start heparin», «Need a chest X-ray», «Necesitamos hemocultivos», «Le daría "
+                   "cefepima»); ahora quedan UNRECOGNIZED con su recibo, y una nota, un resultado o la medicación "
+                   "habitual no. Las muletillas del inicio de una cláusula se reconocen como palabras enteras (antes "
+                   "«ecg» se leía «cg» y «solicito», «licito»), y cada orden conserva el texto con que se escribió, "
+                   "también una llamada, una pregunta del lector o una reevaluación (la cláusula que dice cuándo). "
+                   "Una orden escrita junto a la respuesta a una aclaración no corre y su recibo lo dice, en vez de "
+                   "«not understood». «Stop the epinephrine infusion» llegaba al "
+                   "motor como un ajuste de ninguna infusión y la adrenalina seguía corriendo; ahora toma el nombre "
+                   "de la única infusión que sus palabras nombran (también «Suspender la infusión de glucosado», "
+                   "ejemplo de TD-45 (g): el lector sigue igual y la sala nombra la infusión). Una orden no "
+                   "ejecutada se cita con sus propias palabras y no con las de otra orden del mismo envío. Un "
+                   "evento causado por un tratamiento nombra, en la página, las órdenes ejecutadas de su causa, y "
+                   "un problema del ledger queda como limitación del turno en el Trace."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["order_ledger", "order_pipeline", "event_provenance", "app"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_phase0_acceptance_findings.py::test_an_order_no_vocabulary_knows_is_not_understood_never_gone",
+                  "test_phase0_acceptance_findings.py::test_the_name_of_an_order_alone_is_an_order_never_gone",
+                  "test_phase0_acceptance_findings.py::test_a_name_in_a_note_a_result_or_the_history_is_not_an_order",
+                  "test_phase0_acceptance_findings.py::test_every_order_keeps_the_words_it_was_written_with",
+                  "test_phase0_acceptance_findings.py::test_the_front_of_a_word_is_never_cut_as_a_filler",
+                  "test_phase0_acceptance_findings.py::test_an_order_beside_the_answer_to_a_question_is_said_not_run_not_misunderstood",
+                  "test_phase0_acceptance_findings.py::test_stop_the_infusion_stops_the_infusion_its_words_name",
+                  "test_phase0_acceptance_findings.py::test_an_order_not_carried_out_is_quoted_with_its_own_words",
+                  "test_phase0_acceptance_findings.py::test_a_treatment_event_names_the_executed_orders_of_its_cause_from_the_ledger"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-08",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0J): el paro de la bradicardia se lee de la frecuencia que muestra el monitor",
+        "scope": {"level": "family", "family": "bradycardia"},
+        "kind": "technical_defect",
+        "reason": ("El paro se calculaba con la frecuencia previa a las catecolaminas mientras el monitor mostraba "
+                   "la frecuencia con ellas: un paciente con adrenalina a 10 mcg/min, mostrado a 38/min, paraba "
+                   "en el mismo minuto que sin ella. Ahora el umbral de paro (20/min, sin cambio) se lee de la "
+                   "frecuencia mostrada. Sin catecolaminas nada cambia; las magnitudes son las del motor."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["family_engine"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_phase0_acceptance_findings.py::test_an_adrenaline_infusion_the_monitor_shows_holds_off_the_arrest"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-09",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0J): el paro de la anafilaxia dice que la adrenalina se dio y se agotó, y el del hemotórax es una limitación",
+        "scope": {"level": "variant", "variants": ["anaphylaxis_29f", "anaphylaxis_63m_betablocked",
+                                                   "trauma_hemothorax_41m"]},
+        "kind": "technical_defect",
+        "reason": ("Tras una dosis que se agotó, el paro decía «untreated anaphylaxis... Adrenaline was the "
+                   "treatment that was missing» a quien la había dado; ahora lo dice tal como ocurrió (texto nuevo "
+                   "en inglés, pendiente de revisión docente en español, TD-46). El paro del hemotórax, al que "
+                   "nada del simulador detiene porque el pabellón no está modelado, se declara ENGINE_LIMITATION y "
+                   "NOT_PREVENTABLE_IN_SIMULATOR."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["anaphylaxis_reaction", "event_provenance"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_phase0_acceptance_findings.py::test_the_anaphylaxis_arrest_after_a_dose_that_wore_off_says_so",
+                  "test_phase0_acceptance_findings.py::test_the_haemothorax_arrest_is_the_engine_s_limitation_and_the_limb_arrest_is_preventable"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-10",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0J-0K): batería de aceptación de los 31 casos y congelamiento del piloto",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("Cada caso del banco corre los escenarios A-K y las propiedades del curso, por el motor y por la "
+                   "página real con recarga. pilot_freeze declara la decisión de cada caso y sus limitaciones; el "
+                   "manifiesto se genera del código. trauma_hemothorax_41m queda excluido: no se sortea para un "
+                   "residente ni se ofrece en las directivas, y sigue en el sandbox docente."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["pilot_acceptance", "pilot_freeze", "tools_pilot_freeze", "cognitive_generator",
+                                "encounter_directives"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_phase0_acceptance_battery.py::test_an_accepted_case_passes",
+                  "test_phase0_acceptance_battery.py::test_an_excluded_case_fails_where_its_exclusion_says_and_nowhere_else",
+                  "test_phase0_acceptance_page.py::test_the_case_on_the_page",
+                  "test_phase0_acceptance_findings.py::test_the_excluded_case_is_never_drawn_for_a_resident",
+                  "test_phase0_pilot_freeze.py::test_the_published_manifest_is_the_one_the_code_produces"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-06-11",
+        "date": "2026-10-06",
+        "title": "Fase 0 (0J): una reevaluación sólo espera lo que una respuesta puede completar",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Una reevaluación escrita junto a una orden que ninguna respuesta completa (un dispositivo de "
+                   "oxígeno que el encuentro no tiene, «Stop the infusion» sin nombre) quedaba retenida con ella y, "
+                   "como la página no guarda una pregunta sola, terminaba sin correr nunca; el aviso decía «Held "
+                   "until you answer». Ahora espera sólo cuando la página guarda lo retenido para una respuesta (la "
+                   "misma prueba de pending_family_orders), corre en otro caso, y el aviso dice lo que no se hizo. "
+                   "El texto nuevo, en inglés, espera su español (TD-46)."),
+        "authorised_by": INSTRUCTION_2026_10_06_PHASE0,
+        "affects": {"modules": ["order_pipeline"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_phase0_acceptance_findings.py::test_a_reassessment_written_with_an_order_no_answer_completes_runs",
+                  "test_phase0_acceptance_findings.py::test_the_page_never_says_held_when_no_answer_is_awaited",
+                  "test_oxygen_device_phrasing.py::test_a_held_turn_names_the_orders_it_is_holding"],
         "preservation": None,
     },
 )

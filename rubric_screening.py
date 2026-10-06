@@ -221,10 +221,173 @@ def facts(record, case_id=""):
             asked = set(history_review.review(record, case_id).get("named") or ())
         except Exception:
             asked = set()
+    # Each order's own fate (Phase 0, 0I rules A and B), once per order the turns above did not
+    # already list.
+    listed = {(row["type"], row["ref"]) for row in withheld}
+    ledger = _session(record).get("order_ledger")
+    withheld += [row for row in _not_carried_out(trace, ledger if isinstance(ledger, list) else ())
+                 if (row["type"], row["ref"]) not in listed]
+    course, terminal_at, inconsistent_at = _course(trace)
     return {"executed": executed, "withheld": withheld, "requested": requested,
             "reported": reported, "narratives": narratives, "closed_at": closed,
             "any_executed": any_executed, "asked_topics": asked, "trace": trace,
-            "indicated": indicated, "prior": prior}
+            "indicated": indicated, "prior": prior,
+            "course_events": course, "terminal_at": terminal_at, "inconsistent_at": inconsistent_at}
+
+
+# --- Phase 0 (0I, 2026-10-06): what the record cannot settle against the resident ---------------
+# The rules, in the order of the Phase 0 request:
+#   A. an omission only when the order was never written, or the resident cancelled it: an order
+#      written and not carried out by the simulator (held, not understood, recorded, not
+#      executable after an arrest) is not an omission;
+#   B. a delay only from when the resident wrote the order: one the simulator held and ran later
+#      was written in time;
+#   C. a recognition only where the observation was there to be had: an order the reader could
+#      not understand may be the look the event asks for, and an observation that contradicted
+#      the state is no observation;
+#   D. an event the simulator scripts and the resident could not prevent never supports
+#      negative feedback (it travels to the model marked so);
+#   E. where a limitation decided what happened (an arrest this pilot does not resuscitate, an
+#      engine inconsistency), the event is not assessable there.
+# None of them changes a score, a weight or a definition: a "met" the record cannot settle
+# becomes a "reading" with the reason, and the faculty decides.
+_ANY_KIND = "*"
+_NOT_CARRIED_OUT = ("HELD_CLARIFICATION", "HELD_REASONING", "RECORDED_NOT_MODELLED", "UNRECOGNIZED",
+                    "SCHEDULED", "TERMINAL_NOT_EXECUTABLE")
+
+
+def _ledger(trace, session_ledger=()):
+    """Each order's last recorded fate, with the turn it was first written in.
+
+    The encounter's own ledger (``order_ledger`` in the record's session) keeps the latest
+    fate of every order, and the only record of one held for its reasoning and never
+    answered: that turn writes no Trace entry (Phase 0, 0J).
+    """
+    orders = {}
+    for position, event in enumerate(trace):
+        for order in event.get("orders") or []:
+            if isinstance(order, dict) and order.get("order_id"):
+                first = orders.get(order["order_id"], {}).get("_ref", f"trace:{position}")
+                orders[order["order_id"]] = {**order, "_ref": first}
+    for order in session_ledger or []:
+        if isinstance(order, dict) and order.get("order_id"):
+            first = orders.get(order["order_id"], {}).get("_ref", f"ledger:{order['order_id']}")
+            orders[order["order_id"]] = {**order, "_ref": first}
+    return list(orders.values())
+
+
+def _kinds(order):
+    """The kinds of order a ledger entry stands for; ``*`` when the reader could not tell."""
+    klass = str(order.get("class") or "")
+    if klass in ("unrecognized", "held_with_question"):
+        return [_ANY_KIND]
+    if klass == "plan":
+        return list(order.get("planned_types") or []) or [_ANY_KIND]
+    if klass in ("not_modelled", "reassessment", "examination", "diagnostic"):
+        return []  # recorded decisions and looks are read by the rules that name them
+    return [klass] if klass else []
+
+
+def _not_carried_out(trace, session_ledger=()):
+    rows = []
+    for order in _ledger(trace, session_ledger):
+        fate = order.get("fate")
+        written = _number(order.get("written_at_min"))
+        executed_at = _number(order.get("executed_at_min"))
+        status = fate if fate in _NOT_CARRIED_OUT else (
+            "EXECUTED_LATER" if fate == "EXECUTED" and written is not None and executed_at is not None
+            and executed_at > written else None)
+        if status is None:
+            continue
+        for kind in _kinds(order):
+            rows.append({"type": kind, "minute": written, "ref": order["_ref"], "status": status,
+                         "action": {"agent": order.get("canonical")}, "span": order.get("span")})
+    return rows
+
+
+def _course(trace):
+    events, terminal, inconsistent = [], None, []
+    for position, entry in enumerate(trace):
+        for event in entry.get("events") or []:
+            if isinstance(event, dict) and event.get("kind"):
+                events.append({**event, "ref": f"trace:{position}"})
+                if event.get("terminal"):
+                    minute = _number(event.get("minute"))
+                    terminal = minute if terminal is None else min(terminal, minute)
+        arrest = (entry.get("observation_snapshot") or {}).get("arrest")
+        if arrest and arrest.get("minute") is not None:
+            minute = _number(arrest["minute"])
+            terminal = minute if terminal is None else min(terminal, minute)
+        if any(item.get("kind") == "engine_inconsistency" for item in entry.get("limitations") or []):
+            minute = _number(entry.get("response_time_min"))
+            if minute is not None:
+                inconsistent.append(minute)
+    return events, terminal, inconsistent
+
+
+def _guard(event, f, result):
+    """Rules C and E on a result that says the record settles an event (A and B act in the facts)."""
+    if result.get("status") != "met":
+        return result
+    window = event["window_min"]
+    reasons, rows = [], list(result["facts"])
+    terminal = f.get("terminal_at")
+    if terminal is not None and window[1] > terminal:
+        reasons.append("resuscitation_not_modelled")
+        rows.append(_say(
+            f"Cardiac arrest at {_minutes(terminal)} min: resuscitation is not modelled in this pilot, so nothing "
+            "after it is assessable, and the window runs past it.",
+            f"Paro cardíaco a los {_minutes(terminal)} min: la reanimación no está modelada en este piloto, así que "
+            "nada después es evaluable, y la ventana sigue más allá."))
+    if any(window[0] <= minute <= window[1] for minute in f.get("inconsistent_at") or ()):
+        reasons.append("engine_inconsistency")
+        rows.append(_say("What the room showed contradicted the patient's state inside the window.",
+                         "Lo que mostró la sala contradijo el estado del paciente dentro de la ventana."))
+    unread = [row for row in f.get("withheld") or () if row["type"] == _ANY_KIND and _within(row, window)]
+    if unread:
+        reasons.append("unrecognized_order")
+        rows.append(_say(
+            "Written inside the window and not understood by the simulator's reader: "
+            + "; ".join(f"\u201c{row.get('span') or ''}\u201d at {_minutes(row['minute'])} min" for row in unread)
+            + ". It may be what this event looks for.",
+            "Escrito dentro de la ventana y no entendido por el lector del simulador: "
+            + "; ".join(f"\u201c{row.get('span') or ''}\u201d a los {_minutes(row['minute'])} min" for row in unread)
+            + ". Puede ser lo que este evento busca."))
+    if not reasons:
+        return result
+    guarded = _result("reading", rows, list(result.get("refs") or []) + [r["ref"] for r in unread], _reading(
+        "a limitation of the simulator decided part of what this event reads; it is not assessable as met.",
+        "una limitación del simulador decidió parte de lo que este evento lee; no es evaluable como cumplido."))
+    guarded["not_assessable"] = reasons
+    return guarded
+
+
+def may_support_negative_feedback(event, *, withheld=(), case_id=""):
+    """Rule D: only an event the resident could have prevented may be held against them.
+
+    Never a scripted one, and only when the simulator decided none of what came before it
+    (Phase 0, 0J): an order
+    the resident wrote before the event and the simulator did not carry out, or carried out
+    late (not understood, recorded and not modelled, held, executed later), or a limitation
+    the pilot declares for this case and this kind of event (``pilot_freeze``), takes the
+    event out of what may be held against the resident. Without those it reads as before.
+    """
+    if event.get("preventability") != "PREVENTABLE" or event.get("cause_class") in ("ENGINE_LIMITATION",
+                                                                                     "SCRIPTED_NATURAL_HISTORY"):
+        # A scripted course is the simulator's clock, never the resident's doing: whether the
+        # decision that could have pre-empted it came in time is read from the decision itself.
+        return False
+    minute = _number(event.get("minute"))
+    for row in withheld or ():
+        written = _number(row.get("minute"))
+        if row.get("status") in _NOT_CARRIED_OUT + ("EXECUTED_LATER",) and (
+                minute is None or written is None or written <= minute):
+            return False
+    if case_id:
+        import pilot_freeze
+        if pilot_freeze.engine_limited_event(case_id, event.get("kind")):
+            return False
+    return True
 
 
 _ANTICOAGULANT = re.compile(r"\b(?:heparin\w*|enoxaparin\w*|anticoag\w*|hbpm|fondaparinux|rivaroxab\w*|"
@@ -325,7 +488,8 @@ def _within(row, window):
 
 def _of(rows, kinds, window=None):
     kinds = set(kinds)
-    return [row for row in rows if row["type"] in kinds and (window is None or _within(row, window))]
+    return [row for row in rows if (row["type"] in kinds or row["type"] == _ANY_KIND)
+            and (window is None or _within(row, window))]
 
 
 def _studies(rows, keys, window=None):
@@ -390,7 +554,18 @@ def _absent_fact(kinds, window):
 
 _WITHHELD = {"clarification_required": ("held for a clarification", "retenido para una aclaración"),
              "not_executed": ("not executed", "no ejecutado"),
-             "deferred": ("deferred", "diferido")}
+             "deferred": ("deferred", "diferido"),
+             # Each order's own fate (Phase 0, 0A/0I).
+             "HELD_CLARIFICATION": ("held for a clarification", "retenido para una aclaración"),
+             "HELD_REASONING": ("held for its reasoning", "retenido para su razonamiento"),
+             "RECORDED_NOT_MODELLED": ("recorded; this simulator does not carry it out",
+                                       "registrado; este simulador no lo ejecuta"),
+             "UNRECOGNIZED": ("not understood by the simulator's reader; nothing was given",
+                              "no entendido por el lector del simulador; no se dio nada"),
+             "SCHEDULED": ("waiting for a result", "esperando un resultado"),
+             "TERMINAL_NOT_EXECUTABLE": ("not executable after the arrest", "no ejecutable después del paro"),
+             "EXECUTED_LATER": ("written here and executed later, after the simulator held it",
+                                "escrito aquí y ejecutado después, tras retenerlo el simulador")}
 
 
 def _withheld_fact(rows):
@@ -977,7 +1152,7 @@ def screen_events(record, case_id):
     f = facts(record, case_id)
     rows = []
     for event in defined:
-        result = _screen_event(event, f)
+        result = _guard(event, f, _screen_event(event, f))
         rows.append({"event_id": event["event_id"], "kind": event["kind"],
                      "window_min": list(event["window_min"]), **result})
     return rows
@@ -1064,7 +1239,15 @@ def screening(record, case_id):
             "domains": screen_domains(record, case_id),
             # How the encounter ended, as the resident said it ended (decision 9).
             "close": _session(record).get("encounter_close") or None,
-            "indicated_not_modelled": [{**row, "facts": [_indicated_fact([row])]} for row in f["indicated"]]}
+            "indicated_not_modelled": [{**row, "facts": [_indicated_fact([row])]} for row in f["indicated"]],
+            # Every event of the course with where it came from (Phase 0, 0H/0I rule D).
+            "course_events": [{"minute": e.get("minute"), "kind": e.get("kind"), "label": e.get("label"),
+                               "cause_class": e.get("cause_class"), "preventability": e.get("preventability"),
+                               "severity": e.get("severity"), "ref": e.get("ref"),
+                               "may_support_negative_feedback": may_support_negative_feedback(
+                                   e, withheld=f["withheld"], case_id=case_id)}
+                              for e in f["course_events"]],
+            "terminal_at_min": f["terminal_at"]}
 
 
 def for_model(result):
@@ -1086,6 +1269,12 @@ def for_model(result):
         # decisions, never as doses given (faculty decision 3, 2026-09-25).
         "indicated_not_modelled": [{"evidence_ref": row["ref"], "fact": row["facts"][0]["en"]}
                                    for row in result.get("indicated_not_modelled") or []],
+        # Rule D (Phase 0, 0I): an event the simulator scripts, or whose cause it does not know, is
+        # never a reason for negative feedback; after an arrest nothing is assessable.
+        "course_events": [{key: row.get(key) for key in ("minute", "kind", "label", "cause_class", "preventability",
+                                                         "may_support_negative_feedback", "ref")}
+                          for row in result.get("course_events") or []],
+        "nothing_assessable_after_min": result.get("terminal_at_min"),
     }
 
 

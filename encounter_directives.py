@@ -43,7 +43,12 @@ NOT_AUTHORIZED = ("Your account is not authorized to choose this resident's case
 
 
 def case_options(challenge_id):
-    """The authored cases a challenge offers: [(variant_id, family, presentation)]."""
+    """The authored cases a challenge offers: [(variant_id, family, presentation)].
+
+    Without the cases the pilot freeze excludes (Phase 0, 0K): a faculty member cannot direct
+    a resident to one either.
+    """
+    import pilot_freeze
     from clinical_cases import FAMILIES
     from curriculum import CHALLENGES
     challenge = CHALLENGES.get(challenge_id)
@@ -51,7 +56,8 @@ def case_options(challenge_id):
         return []
     return [(variant["id"], family, variant.get("presentation", ""))
             for family in (challenge.get("families") or ())
-            for variant in FAMILIES.get(family, {}).get("variants", [])]
+            for variant in FAMILIES.get(family, {}).get("variants", [])
+            if not pilot_freeze.excluded(variant["id"])]
 
 
 class DirectiveStore:

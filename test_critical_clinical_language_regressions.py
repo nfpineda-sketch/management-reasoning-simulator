@@ -466,8 +466,11 @@ def test_the_tranexamic_acid_duration_is_recorded_like_any_other_medicine_s(engi
     # As for every fixed-dose medicine written with its time, the stated
     # minutes pass when no reassessment is given; the drug's effect is the one
     # the engine already models, with or without the duration.
-    timed = _run(engine, "trauma", "trauma_limb_hemorrhage_27m", "TXA 1 g IV over 10 minutes.")
-    plain = _run(engine, "trauma", "trauma_limb_hemorrhage_27m", "TXA 1 g IV.")
+    # With the bleeding stopped first: an untreated limb haemorrhage now collapses at minute 6
+    # and stops the turn there (Phase 0, 0F), which is not what this test is about.
+    tourniquet = "Tourniquet high on the right thigh now."
+    timed = _run(engine, "trauma", "trauma_limb_hemorrhage_27m", "TXA 1 g IV over 10 minutes.", setup=tourniquet)
+    plain = _run(engine, "trauma", "trauma_limb_hemorrhage_27m", "TXA 1 g IV.", setup=tourniquet)
     assert timed["executed"] and plain["executed"]
     assert timed["elapsed_min"] == 10 and plain["elapsed_min"] < 10
 

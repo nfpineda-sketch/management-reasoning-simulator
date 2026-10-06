@@ -98,7 +98,13 @@ def test_seed_reproducibility_and_variety_are_not_only_af_variants():
             assert first == second
             selected.add((first["spec"]["case_family"], first["spec"]["variant_id"]))
     assert {family for family, _ in selected} == set(FAMILY_LABELS)
-    assert len(selected) == sum(len(family["variants"]) for family in FAMILIES.values())
+    # Every bank case is drawn except the one the pilot freeze excludes (Phase 0, 0K), which
+    # only a named request (faculty sandbox, tests) reaches.
+    import pilot_freeze
+    drawable = {variant["id"] for family in FAMILIES.values() for variant in family["variants"]
+                if not pilot_freeze.excluded(variant["id"])}
+    assert {variant for _, variant in selected} == drawable
+    assert len(drawable) == sum(len(family["variants"]) for family in FAMILIES.values()) - 1
 
 
 def test_saved_identity_and_spec_do_not_alias_global_case_bank_or_each_other():

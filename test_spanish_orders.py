@@ -134,6 +134,14 @@ def test_the_litre_that_used_to_disappear_is_delivered(encounter):
     updates = [e["text"] for e in at.session_state.events if e["kind"] == "clinical_update"]
     assert updates, [e["kind"] for e in at.session_state.events]
     assert "normal saline 1000 mL" in updates[-1], updates[-1]
+    # Phase 0 (0F, 2026-10-06): a wait stops at a critical event; the litre keeps running, and
+    # the resident keeps waiting for the rest of the thirty minutes.
+    while (at.session_state.management_trace or [{}])[-1].get("interrupted"):
+        stop = at.session_state.management_trace[-1]["interrupted"]
+        next(i for i in at.text_area if i.label == "Enter your clinical reasoning and/or actions").set_value(
+            f"Reevalúa en {stop['requested_until_min'] - stop['minute']} minutos presión arterial y perfusión.")
+        next(b for b in at.button if b.label == "Send").click().run()
+        assert not at.exception
     assert at.session_state.state["treatments"]["cumulative_crystalloid_ml"] == 1000
 
 

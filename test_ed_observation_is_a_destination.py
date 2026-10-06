@@ -104,6 +104,25 @@ def test_ordered_hours_complete_only_when_the_time_runs(anaphylaxis):
     assert at.session_state["state"]["disposition"] == "ED observation"
     said = lambda: " ".join(str(e.get("text")) for e in at.session_state["events"])
     assert "emergency department observation ordered at" not in said()
-    for _ in range(3):
-        submit(at, "Reevaluo en 120 minutos")
+    # Phase 0 (0F/0G, 2026-10-06): one intramuscular dose does not hold this reaction; the
+    # first wait now stops when the pressure collapses, and the patient arrests at minute 93.
+    # The hours never complete: the old run waited through the collapse and the arrest.
+    submit(at, "Reevaluo en 120 minutos")
+    assert at.session_state["management_trace"][-1]["interrupted"]
+    assert "are complete" not in said()
+
+
+def test_ordered_hours_complete_when_the_time_runs_in_a_stable_patient(tmp_path, monkeypatch):
+    # The same rule, in a patient whose course does not stop the waits (renal colic).
+    from test_phase0_order_ledger import _encounter
+    at = _encounter(tmp_path, monkeypatch, "renal_colic_34m", "R2-05")
+    submit(at, "Creo que es un cólico renal. Mi prioridad es el dolor. Doy ketorolaco 30 mg ev. Espero que "
+               "baje el dolor. Reevaluo dolor en 15 minutos.")
+    submit(at, "Mi prioridad es que el dolor no vuelva. La dejo en observacion 6 horas. Espero que no recurra. "
+               "Reevaluo en 30 minutos dolor y PA.")
+    said = lambda: " ".join(str(e.get("text")) for e in at.session_state["events"])
+    submit(at, "Reevaluo en 120 minutos")
+    submit(at, "Reevaluo en 120 minutos")
+    assert "are complete" not in said(), "four and a half hours are not six"
+    submit(at, "Reevaluo en 120 minutos")
     assert "of emergency department observation ordered at" in said() and "are complete" in said()

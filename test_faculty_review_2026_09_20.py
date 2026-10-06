@@ -11,6 +11,7 @@ import glucose_rescue as glu
 from family_engine import execute_family_bundle
 from family_parser import parse_family_actions
 from test_cognitive_encounters import encounter
+from test_phase0_time_and_events import keep_waiting
 from test_curriculum_trajectories import load_engine
 
 
@@ -26,6 +27,9 @@ def course(engine, family, variant, orders):
         result = execute_family_bundle(state, parse_family_actions(order))
         assert result["executed"], result["clarification"]
         events += result["action_summaries"]
+        # Phase 0 (0F, 2026-10-06): a wait stops at a critical event; this course is about what
+        # the whole interval brings, so the resident keeps waiting after each stop.
+        events += keep_waiting(state, result)
     return state, " | ".join(str(e.get("label", "")) for e in events)
 
 

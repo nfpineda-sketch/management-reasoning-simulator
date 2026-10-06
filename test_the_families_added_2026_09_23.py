@@ -397,8 +397,11 @@ def test_the_minutes_before_the_tourniquet_are_paid_for_in_blood(engine):
     _, early = play(engine, "trauma", "trauma_limb_hemorrhage_27m", [
         "Pongo un torniquete en el muslo." + TRAUMA_REASON,
         wait(10)])
+    # Phase 0 (0F, 2026-10-06): a wait now stops at a critical event, and this one collapses at
+    # minute 6 (systolic below 70 after a fall of 20 for two minutes). The ten minutes are
+    # waited out in two steps; the physiology does not depend on the step.
     session, late = play(engine, "trauma", "trauma_limb_hemorrhage_27m", [
-        wait(10),
+        wait(6), wait(4),
         "Pongo un torniquete en el muslo." + TRAUMA_REASON])
     assert late[-1]["sbp"] < early[-1]["sbp"] - 30
     assert late[-1]["mental_status"] != "Alert"

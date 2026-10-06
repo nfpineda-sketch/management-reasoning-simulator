@@ -276,7 +276,10 @@ def test_red_cells_run_and_plasma_is_recorded_beside_them(engine):
     state, _, result = run(engine, "trauma", "trauma_hemothorax_41m", "Transfuse 2 units PRBC and 2 units FFP")
     assert result["executed"]
     assert "Packed red cells 2 units started" in labels(result)
-    assert state["family_state"]["pending_blood_units"] + state["family_state"]["blood_delivered_units"] == 2
+    # The turn may now stop at the collapse part way through the transfusion (Phase 0, 0F): what
+    # is pending and what was delivered still add up to the two units, to the rounding of floats.
+    assert state["family_state"]["pending_blood_units"] + state["family_state"]["blood_delivered_units"] \
+        == pytest.approx(2)
 
 
 @pytest.mark.parametrize("text", ["Transfuse 2 units FFP", "Activate the massive transfusion protocol"])

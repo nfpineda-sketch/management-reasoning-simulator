@@ -142,6 +142,13 @@ ARREST_TEXT = (
     "Adrenaline was the treatment that was missing; nothing else that was given "
     "acts on the reaction."
 )
+#: The same arrest when adrenaline had been given and had worn off (Phase 0, 0J): the
+#: words above told a resident who gave it that it was never given.
+ARREST_AFTER_DOSE_TEXT = (
+    "Circulatory arrest after twenty-five minutes without effective adrenaline: the "
+    "adrenaline given earlier had worn off and the reaction had come back. Nothing else "
+    "that was given acts on the reaction."
+)
 
 
 def _case(state):
@@ -206,6 +213,8 @@ def step(state):
     # An adrenaline infusion holds what a bolus cannot.
     absorbed += float(f.get("epinephrine", 0) or 0) * .06
     f["epi_effect"] = f["epi_effect"] * CLEARANCE_PER_MIN + absorbed
+    if absorbed > 0:
+        f["adrenaline_given"] = True
     f["glucagon_level"] *= GLUCAGON_CLEARANCE_PER_MIN
 
     working = f["epi_effect"] * responsiveness(f, beta_blocked(state))
@@ -229,7 +238,11 @@ def step(state):
         event = BIPHASIC_TEXT
     if f["untreated_min"] >= ARREST_AFTER_MIN and not f.get("arrested"):
         f["arrested"] = True
-        event = ARREST_TEXT
+        # The arrest it announces is the engine's arrest: no pulse, nothing more to run
+        # (Phase 0, 0G). It used to be prose beside a monitor that kept a pressure.
+        if f.get("arrest_at") is None:
+            f["arrest_at"] = f["elapsed"]
+        event = ARREST_AFTER_DOSE_TEXT if f.get("adrenaline_given") else ARREST_TEXT
     return event
 
 

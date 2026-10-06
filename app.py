@@ -951,6 +951,29 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         event["trace_extensions"] = ["phase0_v1"]
         event["submission"] = deepcopy(turn.get("submission"))
         event["orders"] = order_ledger.snapshot(turn.get("orders") or [])
+        # What the time words became (0E), every event of the course with where it comes
+        # from (0H), and the event that stopped the wait, if one did (0F).
+        event["time_semantics"] = deepcopy(parsed.get("time_semantics") or [])
+        # A treatment's event names the orders it follows, from the encounter's ledger (0J):
+        # the orders reach the engine without their ids.
+        import event_provenance
+        event["events"] = event_provenance.attribute(
+            deepcopy(result.get("events") or []),
+            list(st.session_state.get("order_ledger") or []) + list(event["orders"]))
+        event["interrupted"] = deepcopy(result.get("interrupted"))
+        # What the resident could see, where the simulator and not the resident decided what
+        # happened, and the code and case the turn ran on (0G/0H; trace_phase0).
+        import trace_phase0
+        event["observation_snapshot"] = trace_phase0.observation_snapshot(st.session_state.state, result)
+        event["limitations"] = trace_phase0.limitations(
+            orders=event["orders"], events=event["events"], observation=event["observation_snapshot"],
+            terminal_locked=bool(result.get("terminal_locked")))
+        # An order without a fate, or a text the ledger could not account for, is the
+        # simulator's inconsistency, and the analysis reads it as such (0J).
+        import order_pipeline as _ledger_check
+        event["limitations"] += [{"kind": "engine_inconsistency", "detail": f"order ledger: {problem}"}
+                                 for problem in _ledger_check.check(turn)]
+        event["versions"] = trace_phase0.versions(st.session_state.state)
     st.session_state.management_trace.append(event)
     return event
 
@@ -7095,7 +7118,10 @@ def _held_order_prompt(parsed, message):
 def clinical_interpreter(text):
     if (st.session_state.get("state") or {}).get("engine_family"):
         from family_parser import parse_family_actions
-        parsed = parse_family_actions(text)
+        import time_semantics
+        # The resident's time words the reader leaves out: a wait, an immediate look, an
+        # order for later (Phase 0, 0E). The reader itself is unchanged.
+        parsed = time_semantics.apply(text, parse_family_actions(text))
         parsed["reasoning"] = extract_explicit_reasoning(text)
         unresolved = next((a for a in parsed.get("actions", []) if a.get("type") == "clarification"), None)
         if unresolved:
@@ -11226,7 +11252,11 @@ with st.container(key="encounter-console"):
             )
             gate_decided = parsed.pop("_gate_decided", False) and \
                 (parsed.get("reasoning_gate") or {}).get("status") in ("urgent_unheld", "complete", "overridden")
-            missing_reasoning = [] if gate_decided else reasoning_still_missing(parsed)
+            # After an arrest the simulator does not model, nothing is assessed: no order is held to
+            # ask for its reasoning, and the engine answers it with the arrest (Phase 0, 0G).
+            import observation_consistency as _arrest_now
+            arrested_now = _arrest_now.arrest_minute(st.session_state.state) is not None
+            missing_reasoning = [] if (gate_decided or arrested_now) else reasoning_still_missing(parsed)
             gate_status = (parsed.get("reasoning_gate") or {}).get("status")
             if missing_reasoning and gate_status != "overridden":
                 st.session_state.last_parse = _ledger.untagged(parsed)
@@ -11451,9 +11481,13 @@ with st.container(key="encounter-console"):
                                      for x in summaries if x.get("pathway_note")]
                     for kind, text, time in sorted(timed_events, key=lambda item: item[2]):
                         add_event(kind, text, time=time)
-                    if treatment_labels:
-                        lead = "After " + " + ".join(treatment_labels) + ", "
-                        add_event("clinical_update", lead + format_clinical_update())
+                    # What was given and when the values were taken: an immediate look is
+                    # never "after" a treatment still running, and a wait an event stopped
+                    # says so, at the event's minute (Phase 0, 0E/0F; time_semantics).
+                    import time_semantics as _time_words
+                    if treatment_labels or result.get("interrupted"):
+                        add_event("clinical_update",
+                                  _time_words.update_lead(result, parsed, treatment_labels) + format_clinical_update())
                     elif (
                         diagnostic_summaries
                         # A reassessment the resident asked for is reported as such, even
@@ -11469,28 +11503,22 @@ with st.container(key="encounter-console"):
                             + format_clinical_update(),
                         )
                     elif result.get("reassess_delay") is not None:
-                        d = result.get("reassess_delay") or 0
-                        add_event(
-                            "clinical_update",
-                            ("On immediate reassessment, " if d == 0 else f"After {d} minutes, ")
-                            + format_clinical_update()
-                        )
+                        add_event("clinical_update",
+                                  _time_words.update_lead(result, parsed, []) + format_clinical_update())
 
                 # A reassessment-only order has no treatment/diagnostic summaries, so
                 # it needs its own learner-facing patient update.
                 if result.get("reassess_delay") is not None and not result.get("action_summaries"):
-                    d = result["reassess_delay"] or 0
-                    add_event(
-                        "clinical_update",
-                        ("On immediate reassessment, " if d == 0 else f"After {d} minutes, ")
-                        + format_clinical_update()
-                    )
+                    import time_semantics as _time_words
+                    add_event("clinical_update",
+                              _time_words.update_lead(result, parsed, []) + format_clinical_update())
 
-                if result.get("terminal_locked"):
-                    add_event(
-                        "prototype",
-                        "Cardiovascular collapse is a terminal state in this build. Ordinary reassessment is paused; arrest-management actions are not yet executable."
-                    )
+                if result.get("terminal_locked") or any(
+                        event.get("terminal") for event in result.get("events") or []):
+                    # Said in the words the pilot agreed (Phase 0, 0G): the arrest, its minute, and
+                    # that nothing after it is assessed. No recovery is invented.
+                    import observation_consistency as _arrest
+                    add_event("prototype", _arrest.arrest_message(_arrest.arrest_minute(st.session_state.state)))
 
                 if not result.get("executed") and not parsed["recognized_future_actions"] and not result.get("terminal_locked"):
                     add_event(

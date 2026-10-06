@@ -86,11 +86,16 @@ def save_session(context, status=None):
         st.stop()
 
 
+#: What ``write_session`` returns when there is no open encounter to write. No screen shows it:
+#: the callers that can reach it (the write-ahead, Phase 0 0D) only learn that nothing was written.
+NO_OPEN_ENCOUNTER = AccountError("no_open_encounter")
+
+
 def write_session(context, status=None):
     """Write the encounter and record the revision; the store's refusal is returned."""
     if not context or not st.session_state.get("_attempt_id") or \
             st.session_state.get("_attempt_status") == "completed":
-        return AccountError("There is no open encounter to save.")
+        return NO_OPEN_ENCOUNTER
     payload = _payload()
     status = status or ("completed" if st.session_state.get("review_completed") else "active")
     digest = hashlib.sha256(json.dumps([payload, status], sort_keys=True).encode()).hexdigest()

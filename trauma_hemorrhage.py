@@ -183,6 +183,10 @@ def step(f, state):
     f["blood_lost_ml"] += bleeding_ml_per_min(f, state)
     if (deficit_fraction(f) >= ARREST_DEFICIT_FRACTION and not f.get("hemorrhage_arrest")):
         f["hemorrhage_arrest"] = True
+        # The arrest it announces is the engine's arrest (Phase 0, 0G): it used to leave a
+        # pressure and a pulse on the monitor while tourniquets and blood changed nothing.
+        if f.get("arrest_at") is None:
+            f["arrest_at"] = f.get("elapsed", 0)
         return ARREST_TEXT
     return None
 

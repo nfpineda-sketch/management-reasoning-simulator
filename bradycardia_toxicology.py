@@ -163,6 +163,9 @@ def arrest_event(f, rate):
     if rate > ARREST_RATE or f.get("bradycardia_arrest"):
         return None
     f["bradycardia_arrest"] = True
+    # The arrest it announces is the engine's arrest (Phase 0, 0G).
+    if f.get("arrest_at") is None:
+        f["arrest_at"] = f.get("elapsed", 0)
     return ARREST_TEXT
 
 

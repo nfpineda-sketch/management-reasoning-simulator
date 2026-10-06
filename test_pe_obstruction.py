@@ -9,6 +9,7 @@ import pe_obstruction as pe
 from family_engine import execute_family_bundle
 from family_parser import parse_family_actions
 from test_cognitive_encounters import encounter
+from test_phase0_time_and_events import keep_waiting
 from test_curriculum_trajectories import load_engine
 
 OXYGEN = "Start oxygen 15 L/min non-rebreather. Reassess in 20 minutes."
@@ -29,6 +30,9 @@ def course(engine, orders, variant="pulmonary_embolism_61m"):
         result = execute_family_bundle(state, parse_family_actions(order))
         assert result["executed"], result["clarification"]
         events += result["action_summaries"]
+        # Phase 0 (0F, 2026-10-06): a wait stops at a critical event; this course is about what
+        # the whole interval brings, so the resident keeps waiting after each stop.
+        events += keep_waiting(state, result)
     return state, " | ".join(str(e.get("label", "")) for e in events)
 
 
@@ -50,7 +54,9 @@ def test_slow_volume_is_neither_treatment_nor_insult(engine):
 def test_the_insult_recovers_slowly(engine):
     state, _ = course(engine, [FAST])
     worst = state["observable"]["sbp"]
-    execute_family_bundle(state, parse_family_actions("Reassess in 45 minutes."))
+    # The forty-five minutes are waited out past the sustained hypotension that now stops a
+    # wait at its minute (Phase 0, 0F).
+    keep_waiting(state, execute_family_bundle(state, parse_family_actions("Reassess in 45 minutes.")))
     assert state["observable"]["sbp"] > worst
     assert state["family_state"]["rv_strain"] < .2
 

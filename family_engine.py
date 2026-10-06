@@ -622,7 +622,11 @@ def _validate(state, parsed):
                 continue
         elif kind == "reassessment":
             if not _number(a.get("delay_min"), 0, 120):
-                return None, "Specify a reassessment interval from 0 to 120 minutes."
+                # The limit stays; it is said, never applied by shortening the wait (Phase 0, 0E).
+                return None, ("Specify a reassessment interval from 0 to 120 minutes. The simulator moves the "
+                              "clock at most 120 minutes in one step (a limit of this pilot): write a wait or a "
+                              "reassessment of 120 minutes or less, and wait again afterwards if you need more "
+                              "time.")
             a["delay_min"] = int(math.ceil(a["delay_min"]))
         elif kind in _MEDICINES:
             field = "dose_g" if kind == "dextrose" else "dose_mg"
@@ -2469,11 +2473,6 @@ def _surface(state):
         if sbp >= 95:
             mental = "Alert"
         f["bradycardia_rate"] = rate
-        terminal = bradycardia_toxicology.arrest_event(f, rate)
-        if terminal:
-            f.setdefault("procedure_events", []).append(
-                {"type": "procedure", "label": terminal,
-                 "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
 
     elif family == "anaphylaxis":
         # Two threats from one reaction: the airway closes and the circulation
@@ -2611,6 +2610,15 @@ def _surface(state):
     equivalent = _epinephrine_equivalent(f)
     vasopressor_boost += min(EPINEPHRINE["max_sbp"], EPINEPHRINE["sbp_per_mcg_min"] * equivalent)
     hr += min(EPINEPHRINE["max_hr"], EPINEPHRINE["hr_per_mcg_min"] * equivalent)
+    if family == "bradycardia":
+        # The arrest is read from the rate the monitor shows, the one a catecholamine lifts as
+        # well (Phase 0, 0J). It was read before them, and a patient shown at 38/min arrested
+        # from a rate of 20 that nothing on the screen showed.
+        terminal = bradycardia_toxicology.arrest_event(f, hr)
+        if terminal:
+            f.setdefault("procedure_events", []).append(
+                {"type": "procedure", "label": terminal,
+                 "time_min": int(state.get("sim_time", 0)), "duration_min": 0})
     sbp += vasopressor_boost - float(f.get("sedation_bp_drop") or 0)
     dbp += vasopressor_boost * .7 - float(f.get("sedation_bp_drop") or 0) * .6
     # Pressure support does not independently clear authored peripheral findings.
@@ -2700,7 +2708,9 @@ def _surface(state):
                  mental_status="Unresponsive", crt=8.0, peripheral_perfusion="critical",
                  spo2=0, respiratory_rate=0, work_of_breathing="Absent")
         state["ecg_profile"] = "baseline"
-    if str(base.get("rhythm", "")).lower().startswith("sinus") and not f.get("surface_rhythm") and f.get("vf_at") is None:
+    if (str(base.get("rhythm", "")).lower().startswith("sinus") and not f.get("surface_rhythm")
+            and f.get("vf_at") is None and not f.get("surface_arrest")):
+        # Never for an arrest: its rate of 0 was relabelled "sinus bradycardia" (Phase 0, 0G).
         o["rhythm"] = "Sinus tachycardia" if o["hr"] > 100 else "Sinus bradycardia" if o["hr"] < 60 else "Sinus rhythm"
     o["respiratory_support"] = "Invasive ventilation" if f["invasive"] else "NIV" if f["niv"] else "Bag-mask ventilation" if f["bag_mask"] else f["oxygen_device"]
     # Explicit authored visual contract is kept separate from diagnostic text.
@@ -2772,8 +2782,10 @@ def _diagnostic(state, diagnostic, duration):
                 result["report"] = f"Hemoglobin {f['hemoglobin']:.1f} g/dL."
         if "glucose_mg_dl" in result:
             result["glucose_mg_dl"] = o["glucose_mg_dl"]
-        if state["engine_family"] == "asthma" and "potassium_mmol_l" in result and f.get("potassium") is not None:
-            result["potassium_mmol_l"] = round(f["potassium"], 1)
+        # Wherever the engine models the potassium (asthma, the hyperkalaemic bradycardia), the
+        # laboratory reads it; it stayed at the authored 7.6 while the engine's was 8.3 (Phase 0, 0G).
+        import observation_consistency
+        observation_consistency.lab_follows_state(state, diagnostic, result)
     elif diagnostic == "troponin" and state["engine_family"] == "acs" and acs_reperfusion.coronary(state):
         baseline = float(result.get("value_ng_l", 20))
         spec = acs_reperfusion.coronary(state) or {}
@@ -2987,8 +2999,12 @@ def recorded_only(parsed):
     record the faculty reads.
     """
     import unexecuted_items
+    # An order written for a later time, alone, is recorded the same way: nothing runs now
+    # and no minute passes (Phase 0, 0E; time_semantics).
+    later = any(isinstance(plan, dict) and plan.get("kind") == "future_timed"
+                for plan in (parsed.get("ledger_plans") or [] if isinstance(parsed, dict) else []))
     if (isinstance(parsed, dict) and not parsed.get("clarification") and not parsed.get("actions")
-            and unexecuted_items.indicated(parsed)):
+            and (unexecuted_items.indicated(parsed) or later)):
         return {"executed": True, "clarification": None, "action_summaries": [], "reassess_delay": None,
                 "elapsed_min": 0, "recorded_only": True}
     return None
@@ -3075,6 +3091,13 @@ def execute_family_bundle(state, parsed):
     summaries.extend(_release_due_diagnostics(candidate, started_at))
     for summary in due.pop(started_at, []):
         summaries.append(_release_diagnostic(candidate, summary, started_at))
+    # Every event of the course is recorded with where it comes from, and a critical one
+    # stops the wait at its own minute: the resident is given the patient back then, not
+    # at the end of the interval they asked for (Phase 0, 0F/0H).
+    import event_provenance
+    watch = event_provenance.Watch(candidate, source_order_ids=[
+        a["_order_id"] for a in actions + waiting_orders if a.get("_order_id")])
+    requested_until, interrupted = started_at + elapsed, None
     for minute in range(1, elapsed + 1):
         _minute(candidate)
         candidate["sim_time"] = int(candidate.get("sim_time", 0)) + 1
@@ -3089,6 +3112,11 @@ def execute_family_bundle(state, parsed):
         summaries.extend(arrived)
         if arrived:
             summaries.extend(_release_due_orders(candidate))
+        interrupted = event_provenance.interruption(
+            watch.step(candidate), requested_until=requested_until, started_at=started_at)
+        if interrupted:
+            elapsed = minute
+            break
     # What is still not back waits for a later turn rather than holding this one.
     pending = candidate["family_state"].setdefault("pending_diagnostics", [])
     for due_at, waiting in sorted(due.items()):
@@ -3111,7 +3139,8 @@ def execute_family_bundle(state, parsed):
         _surface(candidate)
     state.clear()
     state.update(candidate)
-    return {"executed": True, "clarification": None, "action_summaries": summaries, "reassess_delay": reassess, "elapsed_min": elapsed}
+    return {"executed": True, "clarification": None, "action_summaries": summaries, "reassess_delay": reassess,
+            "elapsed_min": elapsed, "interrupted": interrupted, "events": event_provenance.snapshot(watch.events)}
 
 
 EXAMINATION_REGIONS = ("General appearance", "Breathing", "Peripheral perfusion")
@@ -3139,6 +3168,10 @@ def case_appearance(state):
 def examination_finding(state, region):
     """The finding for one region, for the Examine control and for a written order."""
     observed = state.get("observable", {})
+    if not observed.get("pulse_present", True):
+        # Nothing the case wrote for a live patient is found after an arrest (Phase 0, 0G).
+        import observation_consistency
+        return observation_consistency.arrest_examination(region)
     if region == "General appearance":
         from patient_appearance import appearance_summary
         # The engine's summary first, then the case's own findings, each on its own line so that
@@ -3168,6 +3201,10 @@ def current_findings(state):
         return generated_findings(state)
     o = state.get("observable", {})
     findings = deepcopy(_case(state).get("examination", {}))
+    if not o.get("pulse_present", True):
+        import observation_consistency
+        return {region: observation_consistency.arrest_examination(region)
+                for region in list(dict.fromkeys(list(EXAMINATION_REGIONS) + list(findings)))}
     findings["General appearance"] = f"{o.get('mental_status', 'Not recorded')}. Respiratory effort: {o.get('work_of_breathing', 'Not recorded')}."
     findings["Peripheral perfusion"] = f"Capillary refill {o.get('crt', 'not measured')} s; extremities {str(o.get('extremities', 'not recorded')).lower()}."
     authored_neuro = findings.get("Neurological", "")
@@ -3223,6 +3260,10 @@ def clinical_update(state):
         from generated_engine import clinical_update as generated_update
         return generated_update(state)
     o = state.get("observable", {})
+    if not o.get("pulse_present", True):
+        # No pressure and no rate are measured without a pulse (Phase 0, 0G).
+        return (f"No pulse: {o.get('rhythm') or 'no organized rhythm'} on the monitor; no blood pressure; "
+                "not breathing; unresponsive.")
     text = (f"BP {o.get('sbp')}/{o.get('dbp')} mmHg · HR {o.get('hr')}/min · "
             f"SpO₂ {o.get('spo2')}% · RR {o.get('respiratory_rate')}/min. "
             f"{o.get('mental_status', 'Not recorded')}; respiratory effort {str(o.get('work_of_breathing', 'not recorded')).lower()}; "

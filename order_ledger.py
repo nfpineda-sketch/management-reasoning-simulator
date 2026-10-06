@@ -270,20 +270,29 @@ def lexicon():
 _LEXICON = None
 
 # Order cues. An imperative or infinitive at the head of a clause, a dose, or a route.
-_FILLERS = re.compile(r"^(?:\s|please|now|then|also|and|so|ok|okay|stat|immediately|next|first|"
+# Whole words only: without the boundary "e", "so" and "y" were cut from the front of a word
+# ("ecg" became "cg", "solicito" became "licito"). What a resident writes before the order
+# itself -- "we should", "need", "quiero", "necesitamos", "le" -- is set aside the same way
+# (Phase 0, 0J: "Need a chest X-ray", "Necesitamos hemocultivos" vanished).
+_FILLERS = re.compile(r"^(?:\s|(?:please|now|then|also|and|so|ok|okay|stat|immediately|next|first|"
                       r"let'?s|lets|we\s+will|we'?ll|i\s+will|i'?ll|i\s+would\s+like\s+to|i\s+want\s+to|"
                       r"we\s+need\s+to|need\s+to|plan\s+to|going\s+to|gonna|"
+                      r"(?:we|i)\s+(?:should|must|need|want|have\s+to)|should|must|need|want|have\s+to|"
+                      r"(?:i|we)?\s*(?:would|'d)\s+like|"
                       r"por\s+favor|favor|ahora|luego|despues|tambien|ademas|primero|y|e|entonces|"
-                      r"vamos\s+a|voy\s+a|hay\s+que|quiero|necesito|vamos|indico|indicar|se\s+indica)+")
+                      r"vamos\s+a|voy\s+a|hay\s+que|habria\s+que|quiero|queremos|quisiera|necesito|necesitamos|"
+                      r"necesita|me\s+gustaria|nos\s+gustaria|deberiamos|debemos|debo|tenemos\s+que|tengo\s+que|"
+                      r"vamos|indico|indicar|se\s+indica|se\s+le|se\s+lo|se\s+la|le|les)(?![a-z']))+")
 _ORDER_VERB = re.compile(
     r"(?:give|start|begin|initiate|commence|administer|push|infuse|transfuse|bolus|run|hang|load|"
     r"call|consult|page|contact|request|order|obtain|get|draw|send|check|recheck|repeat|perform|do|"
     r"intubate|insert|place|apply|put|activate|admit|transfer|discharge|stop|hold|increase|decrease|"
-    r"titrate|wean|switch|change|add|prepare|set|use|continue|resume|book|arrange|"
-    r"dar|dale|denle|darle|doy|damos|administr\w*|inici\w*|comenz\w*|comienz\w*|pon\w*|pas\w*|coloc\w*|instal\w*|"
+    r"titrate|wean|switch|change|add|prepare|set|use|continue|resume|book|arrange|keep|organi[sz]e|coordinate|schedule|"
+    r"turn|shut|"
+    r"dar|dale|denle|darle|doy|damos|dar(?:ia|iamos|ias)|har(?:ia|iamos)|administr\w*|inici\w*|comenz\w*|comienz\w*|pon\w*|pas\w*|coloc\w*|instal\w*|"
     r"llam\w*|avis\w*|solicit\w*|ped\w*|pid\w*|tom\w*|hac\w*|realiz\w*|intub\w*|insert\w*|"
     r"activ\w*|hospitaliz\w*|ingres(?:ar|e|en|a|amos|o)|traslad\w*|suspend\w*|deten\w*|aument\w*|disminu\w*|baj\w*|"
-    r"sub\w*|titul\w*|cambi\w*|agreg\w*|prepar\w*|usar|continu\w*|mant\w*|repet\w*|"
+    r"sub\w*|titul\w*|cambi\w*|agreg\w*|prepar\w*|usar|continu\w*|mant\w*|repet\w*|organiz\w*|coordin\w*|program\w*|gestion\w*|"
     r"transfund\w*|cargar|carg\w*|infund\w*|dej\w*)(?![a-z])")
 _DOSE = re.compile(
     r"(?<![a-z0-9.,])\d+(?:[.,]\d+)?\s*(?:mcg/kg/min|mcg/kg/h|mcg/min|mg/kg/h|mg/kg|mcg/kg|ml/kg|ml/h|"
@@ -458,6 +467,30 @@ def _clause_class(sentence, terminator, clause):
     return "commentary"
 
 
+#: What may stand beside the name of an order in a clause that is only that name: "- Aspirin",
+#: "Cefepime now", "Heparin drip", "Bicarbonate 1 amp", "Echo at bedside" (Phase 0, 0J).
+_BARE_QUANTITY = re.compile(r"(?<![a-z0-9])\d+(?:[.,]\d+)?\s*(?:amps?|ampoules?|ampollas?|ampolletas?|vials?|viales?|"
+                            r"frascos?|tabs?|tablets?|comprimidos?|puffs?|inhalaciones?)(?![a-z])")
+_BARE_FILLER = re.compile(r"(?<![a-z0-9])(?:now|stat|asap|please|urgent(?:ly)?|emergent(?:ly)?|immediately|"
+                          r"right\s+(?:now|away)|at\s+(?:the\s+)?bedside|bedside|drip|infusion|goteo|a|an|the|"
+                          r"in|of|with|en|de|con|el|la|los|las|un|una|ahora|ya|urgente|de\s+urgencia|inmediat[oa]|"
+                          r"por\s+favor|"
+                          r"en\s+(?:la\s+)?cabecera|plan)(?![a-z0-9])")
+
+
+def _bare(clause):
+    """True for a clause that is only the names of orders, with filler and no verb: a list item
+    ("- Aspirin"), a name with "now" or "drip". The reader returns nothing for some of these,
+    and they were neither orders nor commentary to the ledger: they vanished (Phase 0, 0J)."""
+    rest = clause
+    for entry in lexicon():
+        rest = entry["pattern"].sub(" ", rest)
+    if rest == clause:
+        return False
+    rest = re.sub(r"^\s*\d+[.)]\s*", " ", _BARE_FILLER.sub(" ", _BARE_QUANTITY.sub(" ", rest)))
+    return not re.search(r"[a-z0-9]", rest)
+
+
 def _raw(text, index, begin, end):
     """The resident's own words for a folded span (accents and case kept)."""
     raw = str(text or "")
@@ -505,6 +538,16 @@ def coverage(text, parsed):
             # what was given, in every clause of the sentence.
             reported[sentence] = (bool(_HISTORY_HEAD.match(first) or _HISTORY_HEAD.match(clause.strip()))
                                   and not _ORDER_VERB.match(first))
+    # A sentence made only of orders and bare names ("Aspirin, heparin 5000 units IV, ECG";
+    # "Cefepime and vancomycin"): each bare name in it is an order too. A sentence with
+    # anything else in it ("On aspirin and clopidogrel", "Troponin negative") is not.
+    bare_sentence = {}
+    for sentence, terminator, clause, start in pieces:
+        kind = "bare" if _bare(_head(clause)) else _clause_class(sentence, terminator, clause)
+        if "?" in terminator or kind not in ("bare", "clinical_order"):
+            bare_sentence[sentence] = False
+        else:
+            bare_sentence.setdefault(sentence, True)
     previous = {}
     for sentence, terminator, clause, start in pieces:
         # What governs a clause: the nearest clause before it in the same sentence that had
@@ -551,7 +594,8 @@ def coverage(text, parsed):
                                                       "reassessment_wait" and _ORDER_VERB.match(head)):
             span_class = governed[start]
         listed = span_class == "commentary" and led.get(sentence)
-        actionable = span_class == "clinical_order" or bool(listed)
+        bare = span_class == "commentary" and bare_sentence.get(sentence) and _bare(head)
+        actionable = span_class == "clinical_order" or bool(listed) or bool(bare)
         entries = group["entries"]
         covered = (any(_covers(entry, action) for entry in entries for action in actions)
                    or any(group["text"] in quote for quote in quoted))
@@ -560,7 +604,7 @@ def coverage(text, parsed):
                 or bool(_HISTORY.search(clause)) or bool(_HISTORY_HEAD.match(head))
                 or bool(_CONDITION_HEAD.match(head)) or bool(_BEFORE_MENTION.search(before))
                 or bool(_STATUS_AFTER.search(after)) or reported.get(sentence) or "?" in terminator)
-        if all(e["kind"] == "study" for e in entries) and not _ORDER_VERB.match(head) and not listed:
+        if all(e["kind"] == "study" for e in entries) and not _ORDER_VERB.match(head) and not listed and not bare:
             # A study named beside a number is a result ("Hb 7 g"), not a request.
             skip = True
         if any(e["key"] in ("vascular access", "central or arterial line") for e in entries) \
@@ -642,9 +686,13 @@ def coverage(text, parsed):
         add({"text": _raw(text, index, at, start + len(clause.rstrip())), "key": "consultation", "cls": "consult",
              "kind": "consult", "at": at})
     # A dose beside a word no vocabulary knows ("Give zyxin 2 g"): the reader must have
-    # produced something for this clause, or it is unaccounted.
+    # produced something for this clause, or it is unaccounted. So must an order written with
+    # no dose and no word the vocabularies know ("Arrange urgent haemodialysis"), unless one of
+    # the reader's actions plainly came from it (Phase 0, 0J: such an order used to vanish).
+    # A clause whose call was already flagged above is one order, not two.
+    called = {piece[3] for _, _, piece in consult_flags}
     for sentence, terminator, clause, start in pieces:
-        if any(start <= g["begin"] < start + len(clause) for g in groups):
+        if any(start <= g["begin"] < start + len(clause) for g in groups) or start in called:
             continue
         head = _head(clause)
         listed = led.get(sentence) and not _ORDER_VERB.match(head)
@@ -655,9 +703,13 @@ def coverage(text, parsed):
             continue
         local = masked[start:start + len(clause)]
         dose = _DOSE.search(local)
-        if not dose:
+        if dose:
+            words = re.findall(r"[a-z][a-z\-]{2,}", _head(local[:dose.start()]))
+        elif (_ORDER_VERB.match(head) and _clause_class(sentence, terminator, clause) == "clinical_order"
+              and not _LOOK_WORDS.search(clause) and not _attributed(clause, actions)):
+            words = re.findall(r"[a-z][a-z\-]{2,}", _head(local))
+        else:
             continue
-        words = re.findall(r"[a-z][a-z\-]{2,}", _head(local[:dose.start()]))
         unknown = [w for w in words if not _ORDER_VERB.fullmatch(w) and w not in _FILLER_WORDS
                    and w not in _PARAMETER_WORDS]
         if unknown and not _clause_is_covered(clause, actions, quoted):
@@ -692,7 +744,56 @@ _FILLER_WORDS = frozenset({"the", "and", "with", "for", "now", "please", "then",
                            "fluid", "fluids", "liquido", "liquidos", "units", "unidades", "dosage", "single",
                            "unica", "total", "load", "loading", "carga", "infusion", "drip", "goteo", "velocidad",
                            "ampollas", "ampolla", "ampoules", "ampoule", "vial", "viales", "dosis", "una", "dos",
-                           "tres", "one", "two", "three", "four", "cuatro", "half", "media", "medio"})
+                           "tres", "one", "two", "three", "four", "cuatro", "half", "media", "medio",
+                           "hrs", "hr", "mins", "seg", "secs"})
+
+#: Looks and waits: the time words (0E) turn them into a reassessment, never an unread order.
+_LOOK_WORDS = re.compile(
+    r"(?<![a-z])(?:re-?assess\w*|re-?evaluat\w*|reevalu\w*|recontrol\w*|re-?examin\w*|monitor\w*|vigil\w*|"
+    r"observ\w*|wait\w*|esper\w*|vital\s+signs?|vitals|signos\s+vitales|constantes|blood\s+pressure|presion\s+arterial|"
+    r"(?:the\s+)?bp|pa)(?![a-z])")
+
+#: Words that tie an order clause to a reader action whose type no vocabulary above names
+#: (a disposition, a call, a ventilator change...): the clause is that action, not an unread order.
+_TYPE_WORDS = {
+    "disposition": r"admi\w*|hospitali[sz]\w*|ingres\w*|discharg\w*|alta|transfer\w*|trasla\w*|icu|uci|ccu|uco|upc|"
+                   r"sala|ward|home|domicilio|intermedio|unit|unidad|observ\w*",
+    "consult": r"call\w*|consult\w*|llam\w*|avis\w*|page|contact\w*|activ\w*|hemodinamia|cath\w*|code|codigo|team|"
+               r"equipo|surg\w*|cirug\w*|specialist|especialista|pid\w*|ped\w*|request\w*|solicit\w*|nefrostom\w*|"
+               r"referr\w*|deriv\w*",
+    "npo": r"npo|regimen\s+cero|nada\s+por\s+boca|ayun\w*|nil\s+by\s+mouth",
+    "respiratory_adjustment": r"fio2|peep|tidal|volum\w*|frecuencia|rate|pressure|presion|ventila\w*|plateau|ipap|"
+                              r"epap|flow|flujo|pc/ac|vc/ac",
+    "monitoring": r"monitor\w*|telemetr\w*|vigil\w*",
+    "oxygen": r"oxyg\w*|oxig\w*|o2|mascar\w*|mask|cannula|naricera|reservorio|rebreather|venturi|recirculacion",
+    "fluid": r"suero|fluid\w*|crystalloid\w*|cristaloide\w*|saline|salino|ringer|bolus|bolo",
+    "blood": r"sangre|blood|globulos|prbc|plasma|plaquet\w*|platelet\w*",
+    "vascular_access": r"piv|io|line|via|vvp|cannula|cateter|catheter|access|acceso|humer\w*|tibia",
+    "hemorrhage_control": r"bleed\w*|sangr\w*|pack\w*|tourniquet|torniquete|compres\w*|wound|herida",
+    "continuous_bronchodilator": r"nebuli\w*",
+    "infusion_adjustment": r"infusion|drip|goteo|titra\w*|titul\w*|rate|velocidad",
+    "repeat_order": r"repeat\w*|repet\w*|again|otra|another",
+    "examination": r"exam\w*|auscult\w*|palpa\w*|inspect\w*|pupil\w*|perfusion|evalua\w*",
+    "reassessment": r"check\w*|recheck\w*|later|again|repeat\w*|reassess\w*|reevalu\w*|control\w*|perfusion",
+    "result_review": r"result\w*|resultado\w*|review\w*|revis\w*",
+}
+_TYPE_WORDS["reperfusion_referral"] = _TYPE_WORDS["consult"]
+
+
+def _attributed(clause, actions):
+    """True when one of the reader's actions plainly came from this clause (its words or its kind's)."""
+    plain = " ".join(clause.split())
+    for action in actions:
+        if action.get("type") == "clarification":
+            continue
+        words = set(re.findall(r"[a-z]{4,}", _signature(action) + " " + fold(canonical(action))))
+        if any(re.search(rf"(?<![a-z]){re.escape(word)}", plain) for word in words
+               if word not in ("type", "reassessment")):
+            return True
+        pattern = _TYPE_WORDS.get(action.get("type"))
+        if pattern and re.search(rf"(?<![a-z])(?:{pattern})(?![a-z])", plain):
+            return True
+    return False
 
 
 def _clause_is_covered(clause, actions, quoted):
@@ -736,21 +837,57 @@ def canonical(action):
     return " ".join(part for part in parts if part)
 
 
-def _mention_span(action, text):
-    """Where in the resident's text an action came from, best effort (for the record)."""
+def _mention_span(action, text, taken=()):
+    """Where in the resident's text an action came from, best effort (for the record).
+
+    A clause another order of the same turn already came from (``taken``) is the last choice:
+    one clause can carry two orders ("ketamine and rocuronium"), but a clause that names its
+    own order is the better match. An adjustment that names no infusion is looked for first
+    where an infusion is named as one: in "Give 50 mL of D50 IV. Suspender la infusión de
+    glucosado." the refused adjustment was quoted with the bolus's words (Phase 0, 0J).
+    """
     if action.get("type") == "clarification" and action.get("unrecognized_text"):
         return str(action["unrecognized_text"])
     folded, pieces = _clauses(text)
     index = _fold_map(text)[1]
+    kind = action.get("type")
+    found = []
+    if kind == "infusion_adjustment" and not action.get("agent"):
+        named = re.compile(rf"(?<![a-z])(?:{_TYPE_WORDS[kind]})(?![a-z])")
+        found += [(start, clause) for sentence, terminator, clause, start in pieces if named.search(clause)]
     for sentence, terminator, clause, start in pieces:
-        for entry in lexicon():
-            if entry["pattern"].search(clause) and _covers(entry, action):
-                return _raw(text, index, start, start + len(clause.rstrip()))
-    if action.get("type") == "reassessment":
-        for sentence, terminator, clause, start in pieces:
-            if _WAIT_WORDS.search(clause):
-                return _raw(text, index, start, start + len(clause.rstrip()))
-    return ""
+        if any(entry["pattern"].search(clause) and _covers(entry, action) for entry in lexicon()):
+            found.append((start, clause))
+    if kind == "reassessment":
+        # The clause that says when, before one that only names what is looked at: "I expect the
+        # vital signs to improve" is the expectation, "check them in 15 minutes" the look.
+        delay = action.get("delay_min")
+        if isinstance(delay, (int, float)) and delay > 0:
+            amount = re.compile(rf"(?<![0-9.,]){int(delay)}\s*(?:min|mins|minutes?|minutos?)(?![a-z])")
+            found += [(start, clause) for sentence, terminator, clause, start in pieces if amount.search(clause)]
+        found += [(start, clause) for sentence, terminator, clause, start in pieces
+                  if _WAIT_WORDS.search(clause) and not _EXPECTATION.search(clause)
+                  and not _REASONING.search(clause)]
+        found += [(start, clause) for sentence, terminator, clause, start in pieces if _WAIT_WORDS.search(clause)]
+    if not found:
+        # No vocabulary names it (a call, a destination, a question about an order): the words of
+        # its kind, and a text of one clause is that clause. The ledger keeps every order's span.
+        pending = action.get("pending_action") if isinstance(action.get("pending_action"), dict) else {}
+        words = _TYPE_WORDS.get(kind) or _TYPE_WORDS.get(pending.get("type"))
+        if words:
+            named = re.compile(rf"(?<![a-z])(?:{words})(?![a-z])")
+            found += [(start, clause) for sentence, terminator, clause, start in pieces if named.search(clause)]
+        if not found and kind == "clarification" and action.get("message"):
+            # A question about an order names it: the clause that shares the most of its words.
+            asked = set(re.findall(r"[a-z][a-z\-]{3,}", fold(action["message"]))) - _FILLER_WORDS
+            shared = [(len(asked & set(re.findall(r"[a-z][a-z\-]{3,}", clause))), start, clause)
+                      for sentence, terminator, clause, start in pieces]
+            best = max((count for count, *_ in shared), default=0)
+            found += [(start, clause) for count, start, clause in shared if best and count == best]
+        if not found and len(pieces) == 1:
+            found.append((pieces[0][3], pieces[0][2]))
+    spans = [_raw(text, index, start, start + len(clause.rstrip())) for start, clause in found]
+    return next((span for span in spans if span not in taken), spans[0] if spans else "")
 
 
 def order_from_action(action, *, submission_id, index, text, minute):
@@ -784,12 +921,14 @@ def order_from_action(action, *, submission_id, index, text, minute):
 
 def tag(parsed, submission_id, text=None, minute=None):
     """Give each reader action a stable order id that travels with it through holds."""
+    taken = []
     for index, action in enumerate(parsed.get("actions") or []):
         if isinstance(action, dict) and not action.get("_order_id"):
             action["_order_id"] = f"{submission_id}:{index}"
             action["_submission_id"] = submission_id
             if text is not None:
-                action["_span"] = _mention_span(action, text)
+                action["_span"] = _mention_span(action, text, taken)
+                taken.append(action["_span"])
             if minute is not None:
                 action["_written_at_min"] = minute
     return parsed
@@ -887,6 +1026,7 @@ def plan_orders(parsed, *, submission_id, minute, start=2000):
         if detail["kind"] == "future_timed":
             order["limitation"] = "unsupported_future_execution"
             order["receipt"] = detail.get("receipt")
+            order["planned_types"] = list(detail.get("types") or [])
         else:
             # The room already says these, by kind (unexecuted_items).
             order["receipt_shown_elsewhere"] = True

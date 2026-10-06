@@ -117,7 +117,13 @@ def test_real_case_diagnostics_preserve_discriminating_findings(engine, family, 
     # Since 2026-09-23 a study the resident sends away does not hold them until
     # it is back: requesting costs a minute and the result arrives on its own.
     # The bedside one is there at once; the others need their own minutes.
-    _, _, _, after = execute_turn(engine, "Reassess blood pressure and perfusion in 15 minutes.")
+    _, waited, _, after = execute_turn(engine, "Reassess blood pressure and perfusion in 15 minutes.")
+    # Phase 0 (0F, 2026-10-06): a wait stops at a critical event (the untreated limb haemorrhage
+    # collapses at minute 6); the resident keeps waiting for the rest of the fifteen minutes.
+    while waited.get("interrupted"):
+        stop = waited["interrupted"]
+        _, waited, _, after = execute_turn(
+            engine, f"Reassess blood pressure and perfusion in {stop['requested_until_min'] - stop['minute']} minutes.")
     studies = session.state["diagnostics"]
     assert {"pocus", "abg", "basic_labs"} <= studies.keys()
     # A structured update must not erase the source's ventricular findings.
@@ -303,6 +309,14 @@ def test_each_family_keeps_all_encounter_modes_reachable_without_render_errors(s
     shared_app.text_area[0].set_value("Reassess blood pressure and perfusion in 15 minutes.")
     widget(shared_app.button, "Send").click().run()
     assert not shared_app.exception, (family, shared_app.exception)
+    # Phase 0 (0F, 2026-10-06): a wait stops at a critical event (the untreated limb haemorrhage
+    # collapses at minute 6); the resident keeps waiting for the rest of the fifteen minutes.
+    while (shared_app.session_state.management_trace or [{}])[-1].get("interrupted"):
+        stop = shared_app.session_state.management_trace[-1]["interrupted"]
+        shared_app.text_area[0].set_value(
+            f"Reassess blood pressure and perfusion in {stop['requested_until_min'] - stop['minute']} minutes.")
+        widget(shared_app.button, "Send").click().run()
+        assert not shared_app.exception, (family, shared_app.exception)
     assert {"pocus", "abg", "basic_labs"} <= shared_app.session_state.state["diagnostics"].keys()
     assert any(event["kind"] == "diagnostic_result" for event in shared_app.session_state.events)
     widget(shared_app.button, "ECG").click().run()

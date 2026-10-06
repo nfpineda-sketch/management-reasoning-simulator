@@ -41,9 +41,13 @@ def generate_cognitive_encounter(challenge_id, base_state, api_key="", model="",
     allowed = tuple(challenge["families"])
     if family_id is not None and family_id not in allowed:
         raise ValueError("This family is not available for the selected challenge.")
+    import pilot_freeze
     candidates = [(family, variant) for family in allowed for variant in FAMILIES[family]["variants"]
                   if (family_id is None or family == family_id)
-                  and (variant_id is None or variant["id"] == variant_id)]
+                  and (variant_id is None or variant["id"] == variant_id)
+                  # A case the pilot freeze excludes is never drawn; only a case named explicitly
+                  # (the faculty sandbox, the tests) reaches it (Phase 0, 0K).
+                  and (variant_id is not None or not pilot_freeze.excluded(variant["id"]))]
     if not candidates and allow_review_candidates and variant_id is not None:
         # A catalogue composition awaiting faculty review, named explicitly.
         # Only the faculty sandbox passes this flag (curriculum_runtime); the

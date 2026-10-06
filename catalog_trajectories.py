@@ -78,10 +78,40 @@ def run(state, script):
     from family_engine import execute_family_bundle
     rows = []
     for turn in script:
-        result = execute_family_bundle(state, {"actions": deepcopy(list(turn))})
+        result = waited_out(state, execute_family_bundle(state, {"actions": deepcopy(list(turn))}))
         rows.append({"turn": deepcopy(list(turn)), "result": deepcopy(result),
                      "state": deepcopy(moving_state(state))})
     return rows
+
+
+def waited_out(state, result):
+    """A turn whose wait a critical event stopped, waited out to the minute it asked for.
+
+    Since Phase 0 (0F, 2026-10-06) the engine ends a wait at a critical event and gives the
+    resident the turn back. These scripts are about what each turn's whole interval brings, as
+    they were written: the rest of the interval is waited out, as a resident who keeps waiting
+    would, and the engine is step-invariant, so the state is the one a single wait reached.
+    Each stop is kept in ``result["interruptions"]``.
+    """
+    from family_engine import execute_family_bundle
+    stops = []
+    while result.get("executed") and result.get("interrupted"):
+        stop = result["interrupted"]
+        stops.append(stop)
+        left = int(stop["requested_until_min"]) - int(stop["minute"])
+        if left <= 0:
+            break
+        more = execute_family_bundle(state, {"actions": [{"type": "reassessment", "delay_min": left}]})
+        if not more.get("executed"):
+            break
+        result = {**result, "interrupted": more.get("interrupted"),
+                  "action_summaries": list(result.get("action_summaries") or [])
+                  + list(more.get("action_summaries") or []),
+                  "events": list(result.get("events") or []) + list(more.get("events") or []),
+                  "elapsed_min": int(result.get("elapsed_min") or 0) + int(more.get("elapsed_min") or 0)}
+    if stops:
+        result = {**result, "interruptions": stops}
+    return result
 
 
 def readable(row):

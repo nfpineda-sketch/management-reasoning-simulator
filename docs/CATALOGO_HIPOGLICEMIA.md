@@ -247,6 +247,17 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-10-02-09 | TD-56: una aprobación de foto espera su cuenta, nunca se registra bajo otra, y el despliegue lo verifica | general | technical_defect | none | — |
 | C-2026-10-02-10 | TD-59: «General appearance» dice, bajo el resumen del motor, lo que el caso escribió y sigue siendo cierto | variante anaphylaxis_63m_betablocked, renal_colic_34m, bradycardia_ccb_68m, bradycardia_bb_54f, bradycardia_hyperk_63m, trauma_limb_hemorrhage_27m, trauma_hemothorax_41m | technical_defect | clinical | — |
 | C-2026-10-02-11 | El examen en español: cada línea entera en un idioma, y el tórax reescrito de la anafilaxia va con su caso | general | technical_defect | cosmetic | — |
+| C-2026-10-06-01 | Fase 0 (0A-0B): cada orden termina con un destino registrado y las órdenes independientes corren | general | technical_defect | clinical | — |
+| C-2026-10-06-02 | Fase 0 (0C): ningún residente recibe automáticamente el motor heredado PS001 | general | policy | none | — |
+| C-2026-10-06-03 | Fase 0 (0D): un envío se escribe antes de correr, corre una vez y no se pierde | general | technical_defect | none | — |
+| C-2026-10-06-04 | Fase 0 (0E-0F): esperar avanza el reloj, reevaluar es una mirada inmediata y un evento crítico corta la espera | general | technical_defect | clinical | — |
+| C-2026-10-06-05 | Fase 0 (0G-0H): un paro es un paro, el potasio del laboratorio es el del motor y cada evento dice su origen | general | technical_defect | clinical | — |
+| C-2026-10-06-06 | Fase 0 (0I): el registro nunca asienta contra el residente lo que decidió una limitación | general | technical_defect | none | — |
+| C-2026-10-06-07 | Fase 0 (0J): lo que halló la batería de aceptación — órdenes que aún desaparecían e infusiones que no se detenían | general | technical_defect | clinical | — |
+| C-2026-10-06-08 | Fase 0 (0J): el paro de la bradicardia se lee de la frecuencia que muestra el monitor | familia bradycardia | technical_defect | clinical | — |
+| C-2026-10-06-09 | Fase 0 (0J): el paro de la anafilaxia dice que la adrenalina se dio y se agotó, y el del hemotórax es una limitación | variante anaphylaxis_29f, anaphylaxis_63m_betablocked, trauma_hemothorax_41m | technical_defect | clinical | — |
+| C-2026-10-06-10 | Fase 0 (0J-0K): batería de aceptación de los 31 casos y congelamiento del piloto | general | policy | none | — |
+| C-2026-10-06-11 | Fase 0 (0J): una reevaluación sólo espera lo que una respuesta puede completar | general | technical_defect | clinical | — |
 
 ## La batería, configuración por configuración
 

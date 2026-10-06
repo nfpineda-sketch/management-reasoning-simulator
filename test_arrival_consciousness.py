@@ -10,6 +10,7 @@ import family_engine
 from family_engine import execute_family_bundle
 from family_parser import parse_family_actions
 from test_cognitive_encounters import VARIANTS, encounter
+from test_phase0_time_and_events import keep_waiting
 from test_curriculum_trajectories import load_engine
 
 # The five arrivals the engine used to rewrite at minute 1, and their family.
@@ -30,6 +31,9 @@ def course(engine, family, variant, orders):
     for order in orders:
         result = execute_family_bundle(state, parse_family_actions(order))
         assert result["executed"], result["clarification"]
+        # Phase 0 (0F, 2026-10-06): a wait stops at a critical event; this course is about what
+        # the whole interval brings, so the resident keeps waiting after each stop.
+        keep_waiting(state, result)
         seen.append(state["observable"]["mental_status"])
     return state, seen
 

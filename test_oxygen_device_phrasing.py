@@ -89,16 +89,19 @@ def test_a_held_turn_names_the_orders_it_is_holding(encounter):
     held = [e["text"] for e in at.session_state.events if e["kind"] == "clarification"]
     assert held, "the held turn must be reported to the resident"
     text = held[-1]
-    # Phase 0 (0B, 2026-10-06): the antibiotic and the studies run now; only the oxygen,
-    # whose device and flow are asked for, waits. Both are said by name.
-    assert "PART OF THIS ORDER IS HELD — CLARIFICATION REQUIRED" in text
+    # Phase 0 (0B, 2026-10-06): the antibiotic and the studies run now, and are said by name.
+    # Phase 0 (0J): the oxygen device this encounter does not have is not held -- no answer is
+    # kept for a lone question (pending_family_orders.hold_incomplete_bundle) -- so the page no
+    # longer says "held until you answer", and the reassessment written with it runs instead
+    # of never running at all.
+    assert "PART OF THIS ORDER WAS NOT CARRIED OUT" in text and "Held until you answer" not in text
     assert "Executed now:" in text
     for item in ("ceftriaxone 2000 mg IV", "Blood cultures", "Lactate", "Laboratory results", "Chest X-ray"):
         assert item in text, (item, text)
-    # And the device menu, so the held oxygen can be completed in one reply.
+    # And the device menu, so the oxygen can be ordered again in one reply.
     assert "non-rebreather mask 15 L/min" in text
     assert at.session_state.state["treatments"].get("antibiotics") or any(
         s.get("type") == "antibiotics" for s in at.session_state.management_trace[-1]["action_summaries"])
-    # The reassessment waits for the held oxygen: only the studies' own bedside minutes have
-    # passed, never the fifteen of the reassessment.
-    assert at.session_state.state["sim_time"] < 15
+    fates = {order["class"]: order["fate"] for order in at.session_state.order_ledger}
+    assert fates["clarification"] == "UNRECOGNIZED" and fates["reassessment"] == "EXECUTED"
+    assert at.session_state.state["sim_time"] >= 15

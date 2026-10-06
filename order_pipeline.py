@@ -41,18 +41,49 @@ _NOT_MODELLED_REFUSAL = "requires a generated encounter"
 _STUDY_QUESTION = re.compile(r"(?<![a-z])(?:study|studies|estudio|estudios|investigation|examination|examen)(?![a-z])",
                              re.I)
 _NRB_FLOW_LPM = 15
+#: The infusions the family engine runs under their own name, as the reader names them when it
+#: reads the agent ("Stop epinephrine"). "Stop the epinephrine infusion" reached the engine as
+#: an adjustment of no named infusion, which it refused: the infusion ran on (Phase 0, 0J).
+_INFUSION_AGENTS = (
+    (re.compile(r"(?<![a-z])(?:norepinephrine|noradrenalin[ae]?|norepinefrina|levophed)(?![a-z])"), "norepinephrine"),
+    (re.compile(r"(?<![a-z])(?:epinephrine|adrenalin[ae]?|epinefrina)(?![a-z])"), "epinephrine"),
+    (re.compile(r"(?<![a-z])(?:nitroglycerine?|ntg|nitroglicerina)(?![a-z])"), "nitroglycerin"),
+    (re.compile(r"(?<![a-z])(?:dobutamin[ae])(?![a-z])"), "dobutamine"),
+    (re.compile(r"(?<![a-z])(?:dextrose|dextrosa|glucose|glucosa|glucosad[oa]|d10|d5)(?![a-z0-9])"), "dextrose_infusion"),
+    (re.compile(r"(?<![a-z])(?:naloxon[ae]|narcan)(?![a-z])"), "naloxone_infusion"),
+)
 
 
 # --------------------------------------------------------------------------------------
 # Opening a turn
 # --------------------------------------------------------------------------------------
-def apply_safe_defaults(parsed):
+def name_the_infusion(text, parsed):
+    """An adjustment of an infusion the text names, given that infusion's own name.
+
+    Only when the order's words name exactly one infusion this engine runs; otherwise it is left
+    as the reader returned it, and the engine's refusal says that nothing changed.
+    """
+    folded = L.fold(text)
+    for action in parsed.get("actions") or []:
+        if not isinstance(action, dict) or action.get("type") != "infusion_adjustment" or action.get("agent"):
+            continue
+        named = {kind for pattern, kind in _INFUSION_AGENTS if pattern.search(folded)}
+        if len(named) == 1:
+            action["type"] = named.pop()
+            action["_named_from_text"] = True
+    return parsed
+
+
+def apply_safe_defaults(parsed, text=None):
     """Defaults that are standard practice and said in the receipt, never silent.
 
     A non-rebreather mask is run at 15 L/min: it is the flow its reservoir needs, and the
-    reader's own question names it ("non-rebreather mask 15 L/min"). Nothing else is
-    defaulted here.
+    reader's own question names it ("non-rebreather mask 15 L/min"). An adjustment of an
+    infusion is given the name of the one infusion its words name (``name_the_infusion``).
+    Nothing else is defaulted here.
     """
+    if text is not None:
+        name_the_infusion(text, parsed)
     for index, action in enumerate(parsed.get("actions") or []):
         pending = action.get("pending_action") if isinstance(action, dict) else None
         if (isinstance(pending, dict) and action.get("type") == "clarification"
@@ -82,10 +113,10 @@ def open_turn(text, parsed, *, submission_id, entry_point, minute, ledger=None, 
     (the answer to the reasoning gate): the text is checked against what it produced.
     """
     parsed = parsed if isinstance(parsed, dict) else {}
-    apply_safe_defaults(parsed)
+    apply_safe_defaults(parsed, text)
     L.tag(parsed, submission_id, text, minute)
     if coverage_parse is not None:
-        apply_safe_defaults(coverage_parse)
+        apply_safe_defaults(coverage_parse, text)
     cov = L.coverage(text, coverage_parse if coverage_parse is not None else parsed)
     known = {order["order_id"]: order for order in (ledger or [])}
     orders = []
@@ -107,7 +138,18 @@ def open_turn(text, parsed, *, submission_id, entry_point, minute, ledger=None, 
         if order.get("span") in seen_plans and any(o["order_id"] == order["order_id"] for o in orders):
             continue
         orders.append(order)
-    orders.extend(L.unaccounted_orders(cov, submission_id=submission_id, minute=minute))
+    unread = L.unaccounted_orders(cov, submission_id=submission_id, minute=minute)
+    if entry_point == "clarification_answer":
+        # The answer to a held order's question completes that order; an order written beside
+        # the answer is not read as one. Its receipt says so, not "not understood", which
+        # asked the resident to reword an order that was clear (Phase 0, 0J).
+        for order in unread:
+            L.set_fate(order, "UNRECOGNIZED", "written in the answer to a held order's question; the answer "
+                       "completes the held order only", minute=minute,
+                       receipt=f'Not run: "{order["span"]}" was written in the answer to the question above, '
+                               "which completes the held order only. Write it again as a new order if you still "
+                               "want it.")
+    orders.extend(unread)
     for offset, item in enumerate(cov.get("held") or []):
         order = {
             "order_id": f"{submission_id}:h{3000 + offset}", "submission_id": submission_id,
@@ -168,6 +210,19 @@ def _position(text, action):
     return None
 
 
+_WAITING_FOR_WEIGHT = "waiting for the patient's weight"
+
+
+def _an_answer_can_complete(state, base, held, dependent):
+    """Whether the page will keep what is held for an answer: the weight it waits for, or the
+    test the page itself applies (``pending_family_orders.hold_incomplete_bundle``)."""
+    if any(reason == _WAITING_FOR_WEIGHT for _, reason, _ in held):
+        return True
+    from pending_family_orders import hold_incomplete_bundle
+    actions = [deepcopy(a) for a, *_ in held] + [deepcopy(a) for a, _ in dependent]
+    return hold_incomplete_bundle({**base, "actions": actions}, state) is not None
+
+
 def split_bundle(state, parsed, *, text="", weight_waiting=()):
     """Which actions run now and which wait, with each one's reason.
 
@@ -183,7 +238,7 @@ def split_bundle(state, parsed, *, text="", weight_waiting=()):
     waiting = set(weight_waiting or ())
     for index, action in enumerate(actions):
         if index in waiting:
-            held.append((action, "waiting for the patient's weight", "question"))
+            held.append((action, _WAITING_FOR_WEIGHT, "question"))
             continue
         if action.get("type") == "clarification":
             if action.get("unrecognized_text"):
@@ -229,10 +284,16 @@ def split_bundle(state, parsed, *, text="", weight_waiting=()):
                         and folded.rfind(".", theirs, mine) < 0:
                     reason = "written after an order that has not run (\"then\")"
                     break
-        if reason is None and kind == "reassessment" and pending_question:
-            reason = "the reassessment waits for the held treatment it is meant to judge"
         if reason:
             dependent.append((action, reason))
+    # ... and only when an answer can complete what is held (the page's own test for keeping a
+    # held order). Otherwise nothing held ever runs here, and the reassessment written with it
+    # would never run either: "Stop the infusion" with none named, or an oxygen device this
+    # encounter does not have, left the resident's "Reassess in 15 minutes" undone (Phase 0, 0J).
+    if pending_question and _an_answer_can_complete(state, base, held, dependent):
+        waiting_reassessment = "the reassessment waits for the held treatment it is meant to judge"
+        dependent += [(action, waiting_reassessment) for action in accepted
+                      if action.get("type") == "reassessment" and all(action is not a for a, _ in dependent)]
     for action, reason in dependent:
         accepted.remove(action)
         held.append((action, reason, "dependency"))
@@ -244,7 +305,15 @@ def held_message(split, labels_of):
     ran = labels_of({"actions": split["run"]})
     waiting = labels_of({"actions": [a for a, *_ in split["held"] if a.get("type") != "clarification"]})
     lines = []
-    if ran:
+    if ran and split.get("no_pending"):
+        # No answer can complete what did not run: it is not held, and the page does not say so.
+        lines.append("**PART OF THIS ORDER WAS NOT CARRIED OUT**")
+        lines.append("")
+        lines.append("Executed now: **" + " + ".join(ran) + "**.")
+        if waiting:
+            lines.append("Not carried out: **" + " + ".join(waiting) + "**. Nothing of it has been given; "
+                         "write it again as a new order if you still want it.")
+    elif ran:
         lines.append("**PART OF THIS ORDER IS HELD — CLARIFICATION REQUIRED**")
         lines.append("")
         lines.append("Executed now: **" + " + ".join(ran) + "**.")
@@ -346,6 +415,9 @@ def settle(turn, *, result, run_actions, split=None, minute_before, minute_after
                 L.set_fate(order, "UNRECOGNIZED", reason, minute=minute_before, modelled_effect=False)
             else:
                 L.set_fate(order, "RECORDED_NOT_MODELLED", reason, minute=minute_before, modelled_effect=False)
+                if "at most 120 minutes in one step" in str(reason or ""):
+                    # A wait longer than the engine's step: refused and said, never shortened (0E).
+                    order["limitation"] = "pilot_time_step_limit"
             order["receipt_shown_elsewhere"] = True
         else:
             L.set_fate(order, "HELD_CLARIFICATION", reason, minute=minute_before)
