@@ -68,17 +68,12 @@ def save_session(context, status=None):
         return
     if st.session_state.get("_attempt_status") == "completed":
         return  # Finalized reviews are displayed read-only; the frozen evidence stays intact.
-    payload = _payload()
-    status = status or ("completed" if st.session_state.get("review_completed") else "active")
-    digest = hashlib.sha256(json.dumps([payload, status], sort_keys=True).encode()).hexdigest()
-    if digest == st.session_state.get("_saved_digest"):
-        return
-    try:
-        revision = context["store"].save_attempt(
-            context["token"], st.session_state["_attempt_id"], payload, status,
-            expected_revision=st.session_state.get("_attempt_revision", 0),
-        )
-    except AccountError as exc:
+    # The write and the record of the revision it made go together (Phase 0, 0D): a click
+    # arriving meanwhile cannot stop the run between them and leave this session one
+    # revision behind its own save, which the next save would take for another session's.
+    from submission_guard import atomic
+    exc = atomic(write_session, context, status)
+    if exc is not None:
         st.error(str(exc))
         st.info(_t("Your current work remains in this browser session. Resolve the save problem before continuing. If another tab changed this attempt, reopen it from your dashboard."))
         if st.button(_t("Retry save"), key="retry_attempt_save"):
@@ -89,9 +84,29 @@ def save_session(context, status=None):
             st.session_state["_account_user_id"] = context["user"]["id"]
             st.rerun()
         st.stop()
+
+
+def write_session(context, status=None):
+    """Write the encounter and record the revision; the store's refusal is returned."""
+    if not context or not st.session_state.get("_attempt_id") or \
+            st.session_state.get("_attempt_status") == "completed":
+        return AccountError("There is no open encounter to save.")
+    payload = _payload()
+    status = status or ("completed" if st.session_state.get("review_completed") else "active")
+    digest = hashlib.sha256(json.dumps([payload, status], sort_keys=True).encode()).hexdigest()
+    if digest == st.session_state.get("_saved_digest"):
+        return None
+    try:
+        revision = context["store"].save_attempt(
+            context["token"], st.session_state["_attempt_id"], payload, status,
+            expected_revision=st.session_state.get("_attempt_revision", 0),
+        )
+    except AccountError as exc:
+        return exc
     st.session_state["_attempt_revision"] = revision
     st.session_state["_attempt_status"] = status
     st.session_state["_saved_digest"] = digest
+    return None
 
 
 def restore_attempt(context, record, reset_session):

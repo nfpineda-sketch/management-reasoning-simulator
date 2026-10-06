@@ -1,0 +1,14 @@
+# Phase 0 (0D), 2026-10-06: one script run at a time per browser session.
+#
+# With fast reruns (Streamlit's default), a click that arrives while the page is still
+# running starts a second run at once, in another thread, on the same session state, while
+# the first one goes on until its next drawing call. A zero-gap double click on Send then
+# ran two copies of the page together: in the clinical engine audit the order was lost
+# (§8 G); with the submission guard, the two runs saved the same revision and the second
+# save was refused ("This encounter changed in another session").
+#
+# Without fast reruns, the click waits for the running script to reach its next drawing
+# call, and the new run starts after it in the same thread: the order is written down,
+# run once and saved once (submission_guard.py; test_phase0_submission_guard.py).
+[runner]
+fastReruns = false

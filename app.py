@@ -76,6 +76,16 @@ ACCOUNT_CONTEXT = require_account_access() if accounts_enabled() else None
 if ACCOUNT_CONTEXT is None:
     require_shared_password()
 
+# Phase 0 (0D): before anything reads the encounter, a run that was stopped part way through
+# processing a submission is undone, and the submission waits to run again from the start
+# (submission_guard). Nothing it had applied is kept, and nothing is applied twice.
+# An order written down by the Send button reaches the database here, before it runs.
+import submission_guard as _submission_guard
+from curriculum_runtime import SESSION_FIELDS as _SESSION_FIELDS, write_session as _write_session
+_submission_guard.recover(st.session_state, _SESSION_FIELDS)
+if ACCOUNT_CONTEXT:
+    _submission_guard.write_ahead(st.session_state, lambda: _write_session(ACCOUNT_CONTEXT))
+
 
 def _encounter_menu():
     """The room's menu, which takes the sidebar's place while an encounter is under way.
@@ -112,9 +122,23 @@ def faculty_access():
 
 def rerun_app():
     context = globals().get("ACCOUNT_CONTEXT")
+    # The submission this run processed is done (Phase 0, 0D): it is saved as processed.
+    import submission_guard
+    submission_guard.finish(st.session_state)
     if context:
         save_session(context)
     st.rerun()
+
+
+def _capture_submission(form_id):
+    """The Send button's callback: write the order down before anything runs (Phase 0, 0D).
+
+    It runs at the start of the next script run, before the page draws anything. The
+    encounter is saved with it at the top of that run (submission_guard.write_ahead), so a
+    double click or a reload cannot lose the text.
+    """
+    import submission_guard
+    submission_guard.capture(st.session_state, form_id)
 
 # Historical source markers retained so the v0.8.21 regression lineage remains auditable.
 LEGACY_REGRESSION_VERSION_MARKER = 'SIMULATOR_VERSION = "0.8.21"'
@@ -10904,6 +10928,7 @@ with st.container(key="encounter-console"):
 
         submitted = False
         submission_text = ""
+        _guard_entry = None  # the Send submission this run processes (Phase 0, 0D)
         submission_parsed = None
         with orders_panel:
             if not st.session_state.encounter_ended and (encounter_mode in {"Tests", "Treat"} or st.session_state.get("pending_reasoning")):
@@ -11058,8 +11083,16 @@ with st.container(key="encounter-console"):
                                     rerun_app()
 
                 if not submitted:
-                    with st.form("learner_form", clear_on_submit=True):
-                        natural_text = st.text_area(
+                    # Phase 0 (0D): the text is written down by the Send callback before
+                    # anything runs, runs once, and is never lost to a double click or a
+                    # reload (submission_guard). A run that stopped part way is said.
+                    import submission_guard as _guard
+                    for lost in _guard.notices(st.session_state):
+                        add_event("prototype", _guard.interrupted_message(lost))
+                    form_id = _guard.nonce(st.session_state)
+                    busy = _guard.waiting(st.session_state)
+                    with st.form(f"learner_form_{form_id}", clear_on_submit=False):
+                        st.text_area(
                             "Enter your clinical reasoning and/or actions",
                             height=100,
                             label_visibility="collapsed",
@@ -11067,12 +11100,15 @@ with st.container(key="encounter-console"):
                                 "Describe your reasoning naturally. For example: I think...; "
                                 "I am addressing... first; I expect...; reassess ... in ... minutes."
                             ),
+                            key=_guard.text_key(form_id),
                         )
                         # Send, in the reading language (2026-10-02, section 4); Enter still adds a line.
                         from screen_language import t as _send_words
-                        natural_submitted = st.form_submit_button(_send_words("Send"), type="primary")
-                    if natural_submitted:
-                        submission_text = natural_text.strip()
+                        st.form_submit_button(_send_words("Send"), type="primary", key=_guard.send_key(form_id),
+                                              disabled=busy, on_click=_capture_submission, args=(form_id,))
+                    _guard_entry = next(iter(_guard.pending(st.session_state)), None)
+                    if _guard_entry is not None:
+                        submission_text = _guard_entry["raw_text"]
                         submitted = True
 
                 if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action", "pending_bundle")):
@@ -11086,6 +11122,13 @@ with st.container(key="encounter-console"):
                     )
 
         if submitted and submission_text.strip():
+            if _guard_entry is not None:
+                # Claimed here, where nothing more is drawn until the page reruns: a run
+                # stopped before this line leaves the submission waiting, never lost, and
+                # one stopped after it is said, never repeated (Phase 0, 0D).
+                import submission_guard as _guard
+                _guard.begin(st.session_state, _guard_entry, fields=_SESSION_FIELDS,
+                             minute=int(st.session_state.state.get("sim_time", 0) or 0))
             learner_input = submission_text.strip()
             from pending_cancellation import is_cancellation
             if is_cancellation(learner_input):
@@ -11104,7 +11147,7 @@ with st.container(key="encounter-console"):
 
             import order_ledger as _ledger
             import order_pipeline as _order_pipeline
-            submission_id = st.session_state.pop("_current_submission_id", None) or _ledger.new_id()
+            submission_id = (_guard_entry or {}).get("id") or _ledger.new_id()
             entry_point = "guided_form" if submission_parsed is not None else "free_text"
             if submission_parsed is not None:
                 parsed = submission_parsed
@@ -11169,6 +11212,14 @@ with st.container(key="encounter-console"):
             turn["orders"].extend(_order_pipeline.restated_orders(
                 parsed.pop("_followup_restated", None), submission_id=submission_id, minute=turn_minute,
                 text=processing_input))
+            written = next((entry for entry in st.session_state.get("submission_log") or []
+                            if entry.get("id") == submission_id), None)
+            if written:
+                # When the text was written down, whether it reached the database before
+                # anything ran, and how often a stopped run was undone (Phase 0, 0D).
+                turn["submission"]["received_at"] = written.get("received_at")
+                turn["submission"]["write_ahead"] = bool(written.get("saved_before_run"))
+                turn["submission"]["retried_after_interruption"] = int(written.get("retries", 0) or 0)
 
             parsed["reasoning_observations"] = reasoning_state_observations(
                 parsed, st.session_state.state
