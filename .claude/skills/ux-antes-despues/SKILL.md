@@ -44,11 +44,30 @@ python3 "$S/entorno.py" limpiar --dir RUN
   - el entorno se arma desde una lista permitida, sin claves, tokens ni proxies;
   - HOME queda dentro de la corrida, sin `secrets.toml`;
   - dentro del proceso se bloquea toda conexión saliente, también a loopback, donde escucha el proxy de salida;
-  - una autoprueba confirma el bloqueo al arrancar, y cada intento queda en el log de la corrida;
-  - el navegador aborta toda petición que no sea al servidor local.
+  - una autoprueba confirma el bloqueo al arrancar, y cada intento queda en el log de la corrida.
 
   `iniciar` se detiene si la autoprueba falla o si el entorno del servidor muestra una variable sospechosa.
-  `detener` informa los intentos bloqueados.
+  `detener` informa los intentos bloqueados. El entorno y el directorio de cada servidor se leen de `/proc` en
+  Linux, y con `sysctl` y `lsof` en macOS.
+- El navegador (`scripts/navegador.py`) se aísla en dos capas, porque el tráfico propio de Chromium no pasa por las
+  rutas de la página:
+  - la página: toda petición o WebSocket que no vaya a 127.0.0.1 o localhost se aborta y se cuenta;
+  - Chromium:
+    - usa como proxy un sumidero: un puerto de loopback tomado y sin escuchar;
+    - no resuelve nombres no locales;
+    - apunta al sumidero sus servicios de Google: cuentas, GCM, buscador, actualizador de componentes y
+      autocompletar;
+    - arranca con un perfil temporal que apaga el DNS sobre HTTPS, las consultas de hora, la predicción de red y
+      el gestor de contraseñas con su revisión de filtraciones.
+
+    Usa el mismo ejecutable que `tanda20_runner.launch`, que no cambia para sus otros usos.
+  - Cada navegador escribe su net log en la corrida (`red-navegador-*.json`). `capturas.py` y `comportamiento.py`
+    lo resumen:
+    - un destino no local intentado es un problema o una falla;
+    - los servicios desviados al sumidero se informan;
+    - un `connect` UDP sin bytes enviados no sale a la red y no cuenta (es el sondeo de IPv6 del resolvedor).
+  - Límite: es una configuración de Chromium, no un cortafuegos del sistema. Una versión nueva de Chromium puede
+    traer servicios nuevos: el net log los muestra, el informe falla, y hay que apagarlos antes de usar la corrida.
 - Excepción, sólo si es imprescindible: desactivar la revisión de imágenes únicamente en ese entorno temporal
   sintético, con el motivo escrito en el manifiesto de la corrida. Nunca en un despliegue.
 - Después de cambiar el CSS o un módulo importado, reiniciar los servidores: Streamlit conserva los módulos entre
@@ -86,6 +105,10 @@ python3 "$S/entorno.py" limpiar --dir RUN
   no envía, el borrador conservado, y un menú que abre y cierra sin mover nada.
 - `capturas.py` toma los mismos estados del perfil en cada tamaño y versión, y arma hojas ANTES | DESPUÉS con pares
   de dimensiones iguales.
+  - Con `--lados antes` o `--lados despues` captura un solo lado: la hoja es de ese lado, no hay pares que
+    faltan y la comparación visual no aplica.
+- El ingreso reconoce los rótulos de cada idioma del catálogo de textos de la app (`report_language`), por ejemplo
+  con `entorno.py iniciar --idioma es`. Los pasos del perfil siguen en el idioma del perfil.
 - Mirar cada captura:
   - recortes, superposiciones, textos partidos y scroll;
   - que las señales clínicas visibles (monitor, avisos, preguntas pendientes) sigan a la vista.
@@ -101,6 +124,7 @@ retenida con sus cuatro campos, el ECG, la aclaración y el cierre. No exigir pa
   - qué se ve, y dónde se conserva lo que deja de verse;
   - las rutas normalizadas;
   - lo diferido;
+  - el aislamiento del navegador: destinos no locales en el net log (debe ser 0) y servicios desviados al sumidero;
   - los límites: navegador sin interfaz, asset controlado o no, barra de Streamlit Cloud distinta.
 - `entorno.py detener` y `entorno.py limpiar` actúan sólo sobre los procesos y el directorio que creó esa corrida.
 - Esta skill no autoriza cambios a la app ni a sus fixtures. Commit y push se rigen por `verificar-y-entregar` y

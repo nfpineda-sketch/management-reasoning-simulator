@@ -5,7 +5,7 @@
 
 No depende del directorio actual; el perfil por defecto es perfil_encuentro_clinico.json, junto a este script.
 Usa los servidores y las cuentas sintéticas de captura de 'entorno.py' (RUN/manifiesto.json y
-RUN/credenciales.json), y un Chromium sin red externa (navegador.py).
+RUN/credenciales.json), y un Chromium sin red externa, ni de la página ni propia (navegador.py).
 
 Para cada tamaño y lado:
   - ingresa con la cuenta de capturas de ese tamaño;
@@ -14,7 +14,12 @@ Para cada tamaño y lado:
 
 Junto a cada captura guarda la huella de la foto del paciente; si difiere entre lados, el informe marca la
 comparación visual como NO controlada. Al final arma hojas ANTES | DESPUÉS y exige pares de dimensiones
-idénticas. Escribe sólo en DIR. No crea cuentas ni toca bases: las de la corrida ya existen.
+idénticas. Con un solo lado (--lados antes o --lados despues) no hay pares: la hoja es de ese lado, no se
+informan pares faltantes y la comparación visual no aplica.
+
+Escribe las capturas y el informe en DIR, y el net log de cada navegador en RUN
+(red-navegador-capturas-LADO-TAMANO.json). Un destino no local en un net log es un problema. No crea cuentas ni
+toca bases: las de la corrida ya existen.
 """
 import argparse
 import hashlib
@@ -26,6 +31,7 @@ from pathlib import Path
 import navegador
 
 PERFIL = Path(__file__).resolve().parent / "perfil_encuentro_clinico.json"
+LADOS = ("antes", "despues")
 HUELLA_FOTO = """(selectores) => {
   for (const sel of selectores) {
     const el = document.querySelector(sel);
@@ -116,40 +122,44 @@ def capturar(datos, perfil, salida, lado, tamano, notas):
     from playwright.sync_api import sync_playwright
     et = perfil["etiquetas"]
     with sync_playwright() as pw:
-        nav = navegador.Navegador(pw, tamano)
-        page = nav.page
-        p = nav.ingresar(datos["manifiesto"]["lados"][lado]["url"], navegador.cuenta(datos, tamano, "capturas"))
-        for paso in perfil["pasos"]:
-            _paso(page, p, paso, et)
-            if paso["id"] in perfil["capturas"]:
-                nombre = f"{lado}_{tamano}_{paso['id']}.png"
-                page.screenshot(path=str(salida / nombre))
-                foto = page.evaluate(HUELLA_FOTO, perfil["selectores"]["foto"])
-                notas.append({"lado": lado, "tamano": tamano, "paso": paso["id"], "archivo": nombre,
-                              "foto": hashlib.sha256(foto.encode()).hexdigest()[:12]})
-            if perfil.get("panel", {}).get("despues_de") == paso["id"]:
-                page.screenshot(path=str(salida / f"{lado}_{tamano}_panel_cerrado.png"))
-                cual = _panel(page, p, et)
-                time.sleep(1)
-                page.screenshot(path=str(salida / f"{lado}_{tamano}_panel_abierto.png"))
-                notas.append({"lado": lado, "tamano": tamano, "paso": "panel", "control": cual})
-                page.keyboard.press("Escape")
-                time.sleep(0.8)
-        notas.append({"lado": lado, "tamano": tamano, "paso": "red", "bloqueadas": nav.bloqueadas})
-        nav.cerrar()
+        nav = navegador.Navegador(pw, tamano, net_log=datos["dir"] / f"red-navegador-capturas-{lado}-{tamano}.json")
+        try:
+            page = nav.page
+            p = nav.ingresar(datos["manifiesto"]["lados"][lado]["url"], navegador.cuenta(datos, tamano, "capturas"))
+            for paso in perfil["pasos"]:
+                _paso(page, p, paso, et)
+                if paso["id"] in perfil["capturas"]:
+                    nombre = f"{lado}_{tamano}_{paso['id']}.png"
+                    page.screenshot(path=str(salida / nombre))
+                    foto = page.evaluate(HUELLA_FOTO, perfil["selectores"]["foto"])
+                    notas.append({"lado": lado, "tamano": tamano, "paso": paso["id"], "archivo": nombre,
+                                  "foto": hashlib.sha256(foto.encode()).hexdigest()[:12]})
+                if perfil.get("panel", {}).get("despues_de") == paso["id"]:
+                    page.screenshot(path=str(salida / f"{lado}_{tamano}_panel_cerrado.png"))
+                    cual = _panel(page, p, et)
+                    time.sleep(1)
+                    page.screenshot(path=str(salida / f"{lado}_{tamano}_panel_abierto.png"))
+                    notas.append({"lado": lado, "tamano": tamano, "paso": "panel", "control": cual})
+                    page.keyboard.press("Escape")
+                    time.sleep(0.8)
+        finally:
+            red = nav.cerrar()
+        notas.append({"lado": lado, "tamano": tamano, "paso": "red", "bloqueadas": nav.bloqueadas, "navegador": red})
 
 
-def hojas(salida, tamanos, notas):
+def hojas(salida, tamanos, notas, lados):
+    """Una hoja por tamaño: ANTES | DESPUÉS si se pidieron los dos lados; si no, la columna del lado pedido."""
     from PIL import Image
     problemas = []
+    columnas = [lado for lado in LADOS if lado in lados]
     for tamano in tamanos:
         w, h = (int(x) for x in tamano.split("x"))
         pares = sorted({n["archivo"].split("_", 2)[2] for n in notas if n["tamano"] == tamano and "archivo" in n})
         escala, borde = 0.5, 16
         sw, sh = int(w * escala), int(h * escala)
-        hoja = Image.new("RGB", (2 * sw + 3 * borde, len(pares) * (sh + borde) + borde), "white")
+        hoja = Image.new("RGB", (len(columnas) * (sw + borde) + borde, len(pares) * (sh + borde) + borde), "white")
         for fila, sufijo in enumerate(pares):
-            for col, lado in enumerate(("antes", "despues")):
+            for col, lado in enumerate(columnas):
                 ruta = salida / f"{lado}_{tamano}_{sufijo}"
                 if not ruta.exists():
                     problemas.append(f"falta {ruta.name}")
@@ -159,7 +169,7 @@ def hojas(salida, tamanos, notas):
                     problemas.append(f"{ruta.name}: {img.size} ≠ {(w, h)}")
                     continue
                 hoja.paste(img.resize((sw, sh)), (borde + col * (sw + borde), borde + fila * (sh + borde)))
-        hoja.save(salida / f"hoja_{tamano}_antes_despues.jpg", quality=82)
+        hoja.save(salida / f"hoja_{tamano}_{'_'.join(columnas)}.jpg", quality=82)
     return problemas
 
 
@@ -171,6 +181,9 @@ def main():
     ap.add_argument("--lados", default="antes,despues")
     ap.add_argument("--tamanos")
     a = ap.parse_args()
+    lados = [lado.strip() for lado in a.lados.split(",") if lado.strip()]
+    if not lados or set(lados) - set(LADOS) or len(set(lados)) != len(lados):
+        sys.exit(f"--lados admite antes, despues o los dos, sin repetir: {a.lados!r}")
     datos = navegador.corrida(a.run)
     perfil = json.loads(Path(a.perfil).resolve().read_text(encoding="utf-8"))
     salida = Path(a.salida).resolve()
@@ -178,24 +191,38 @@ def main():
     tamanos = a.tamanos.split(",") if a.tamanos else datos["manifiesto"]["tamanos"]
     notas = []
     for tamano in tamanos:
-        for lado in a.lados.split(","):
+        for lado in lados:
             capturar(datos, perfil, salida, lado, tamano, notas)
-    problemas = hojas(salida, tamanos, notas)
+    problemas = hojas(salida, tamanos, notas, lados)
+    redes = [n for n in notas if n["paso"] == "red"]
+    for n in redes:
+        if not navegador.red_limpia(n["navegador"]):
+            problemas.append(f"Chromium {n['lado']} {n['tamano']}: "
+                             + (f"destinos no locales {n['navegador']['no_locales']}" if n["navegador"].get("legible")
+                                else f"net log ilegible ({n['navegador'].get('error')})"))
     fotos = {}
     for n in notas:
         if "foto" in n:
             fotos.setdefault((n["tamano"], n["paso"]), {})[n["lado"]] = n["foto"]
     distintas = sorted(f"{t} {paso}" for (t, paso), v in fotos.items() if len(set(v.values())) > 1)
+    controlada = not distintas if len(lados) == 2 else None      # con un solo lado no hay comparación
     bloqueadas = sorted({u for n in notas for u in n.get("bloqueadas", [])})
+    no_locales = sorted({h for n in redes for h in n["navegador"].get("no_locales", {})})
+    desviados = sorted({s for n in redes for s in n["navegador"].get("desviados_al_sumidero", {})})
     servidor = datos["manifiesto"].get("servidor", {})
-    informe = {"notas": notas, "problemas": problemas, "fotos_distintas": distintas,
-               "comparacion_visual_controlada": not distintas, "semilla": servidor.get("semilla"),
-               "red_externa_bloqueada_en_el_navegador": bloqueadas}
+    informe = {"lados": lados, "notas": notas, "problemas": problemas, "fotos_distintas": distintas,
+               "comparacion_visual_controlada": controlada, "semilla": servidor.get("semilla"),
+               "red_externa_bloqueada_en_el_navegador": bloqueadas,
+               "chromium_destinos_no_locales": no_locales, "chromium_desviados_al_sumidero": desviados}
     (salida / "capturas.json").write_text(json.dumps(informe, indent=1, ensure_ascii=False))
+    visual = ("no aplica (un solo lado)" if controlada is None else "controlada" if controlada
+              else f"NO controlada ({len(distintas)} estados)")
     print("capturas:", sum("archivo" in n for n in notas), "· problemas:", len(problemas),
-          "· comparación visual", "controlada" if not distintas else f"NO controlada ({len(distintas)} estados)",
+          "· comparación visual", visual,
           "· semilla de los servidores:", servidor.get("semilla"),
-          "· peticiones externas abortadas:", len(bloqueadas))
+          "· peticiones externas abortadas:", len(bloqueadas),
+          "· Chromium, destinos no locales:", len(no_locales),
+          "· servicios desviados al sumidero:", ", ".join(desviados) or "ninguno")
     for problema in problemas:
         print("  ", problema)
     sys.exit(1 if problemas else 0)
