@@ -29,8 +29,19 @@ _FOUNDATION_CHALLENGES = {
     },
 }
 # Neutral selectors open on the varied-case catalog. The original foundations
-# remain available for selection, replay, and later automatic exposure.
+# remain available for selection and replay.
 CHALLENGES = {**BIAS_CHALLENGES, **_FOUNDATION_CHALLENGES}
+
+# Phase 0 (0C, 2026-10-06). The three foundation challenges run on the legacy PS001
+# engine, which the pilot documents exclude ("motor antiguo, inaccesible"; "no se usan")
+# and which the clinical engine audit found assigned to residents all the same (audit
+# §1.1: a year-1 resident who completes the three year-1 bias challenges is next given
+# PS001). The automatic assignment no longer offers them to a resident. They stay in the
+# catalogue, the faculty sandbox and the tests; the code is kept for the migration that
+# would re-express their scenario on the common core (proposal, Phase 4). A faculty
+# member can still open them in the sandbox; a directive cannot reach them (they name no
+# bank case).
+LEGACY_ENGINE_CHALLENGES = frozenset({"R1-03", "R1-04", "R2-01"})
 
 
 def eligible_challenges(training_year):
@@ -40,6 +51,12 @@ def eligible_challenges(training_year):
     if isinstance(training_year, bool) or not isinstance(training_year, int) or training_year not in (1, 2, 3):
         raise ValueError("Training year must be assigned by an administrator.")
     return [key for key, value in CHALLENGES.items() if value["year"] <= training_year]
+
+
+def assignable_challenges(training_year):
+    """What the automatic assignment may give a resident of this year: the eligible
+    challenges without the ones that run on the legacy engine (Phase 0, 0C)."""
+    return [key for key in eligible_challenges(training_year) if key not in LEGACY_ENGINE_CHALLENGES]
 
 
 def evidence_summary(payload):
@@ -80,7 +97,7 @@ def assign_challenge(training_year, attempts, seed, unmet=None):
     breaks the tie. Without it, or when every candidate offers the same, the
     random pick is unchanged (faculty request, 2026-09-23).
     """
-    eligible = eligible_challenges(training_year)
+    eligible = assignable_challenges(training_year)
     completed = sorted([a for a in attempts if a.get("status") == "completed" and not a.get("is_sandbox") and a.get("challenge_id") in eligible], key=lambda a: str(a.get("updated_at", "")))
     latest = {a["challenge_id"]: a for a in completed}
     unseen = [key for key in eligible if key not in latest]

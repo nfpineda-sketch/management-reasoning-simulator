@@ -7,7 +7,8 @@ from pathlib import Path
 from types import SimpleNamespace
 import unittest
 
-from curriculum import CHALLENGES, assign_challenge, eligible_challenges, evidence_summary
+from curriculum import (CHALLENGES, LEGACY_ENGINE_CHALLENGES, assign_challenge, assignable_challenges,
+                        eligible_challenges, evidence_summary)
 
 
 def evidence_payload(complete=False):
@@ -74,28 +75,43 @@ class AssignmentTests(unittest.TestCase):
             self.assertEqual(assign_challenge(2, excluded, seed), assign_challenge(2, [], seed))
 
     def test_initial_exposure_precedes_repeating_an_evidence_gap(self):
-        # Every other eligible challenge has been completed, with evidence gaps.
+        # Every other assignable challenge has been completed, with evidence gaps.
         attempts = [attempt(key, index) for index, key in enumerate(
-            (key for key in eligible_challenges(2) if key != "R2-01"), 1)]
+            (key for key in assignable_challenges(2) if key != "R2-05"), 1)]
         result = assign_challenge(2, attempts, 17)
-        self.assertEqual(result["challenge_id"], "R2-01")
+        self.assertEqual(result["challenge_id"], "R2-05")
         self.assertEqual(result["reason"], "initial_exposure")
 
     def test_revisit_uses_latest_evidence_and_interleaves(self):
         records = [attempt(key, index, True) for index, key in enumerate(
-            (key for key in eligible_challenges(2) if key not in {"R1-03", "R1-04", "R2-01"}), 1)]
+            (key for key in assignable_challenges(2) if key not in {"R1-05", "R1-06", "R2-02"}), 1)]
         offset = len(records)
         records.extend([
-            attempt("R1-03", offset + 1),
-            attempt("R1-03", offset + 2, True),  # Earlier absence is no longer the latest evidence.
-            attempt("R1-04", offset + 3),
-            attempt("R2-01", offset + 4, True),
+            attempt("R1-05", offset + 1),
+            attempt("R1-05", offset + 2, True),  # Earlier absence is no longer the latest evidence.
+            attempt("R1-06", offset + 3),
+            attempt("R2-02", offset + 4, True),
         ])
         chosen = assign_challenge(2, records, 17)
-        self.assertEqual(chosen["challenge_id"], "R1-04")
+        self.assertEqual(chosen["challenge_id"], "R1-06")
         self.assertEqual(chosen["reason"], "interleaved_evidence_review")
-        records.append(attempt("R1-04", offset + 5))
-        self.assertNotEqual(assign_challenge(2, records, 17)["challenge_id"], "R1-04")
+        records.append(attempt("R1-06", offset + 5))
+        self.assertNotEqual(assign_challenge(2, records, 17)["challenge_id"], "R1-06")
+
+    def test_a_resident_is_never_assigned_a_legacy_engine_challenge(self):
+        # Phase 0 (0C): R1-03, R1-04 and R2-01 run on the legacy PS001 engine, which the
+        # pilot excludes. Whatever the resident has completed, the automatic assignment
+        # never gives them, and their past attempts never decide the next assignment.
+        for year in (1, 2, 3):
+            everything_else = [attempt(key, index, True) for index, key in enumerate(assignable_challenges(year), 1)]
+            for seed in range(40):
+                for records in ([], everything_else, everything_else + [attempt("R1-03", 90)]):
+                    chosen = assign_challenge(year, records, seed)["challenge_id"]
+                    self.assertNotIn(chosen, LEGACY_ENGINE_CHALLENGES)
+        self.assertEqual(set(eligible_challenges(1)) - set(assignable_challenges(1)), {"R1-03", "R1-04"})
+        self.assertEqual(set(eligible_challenges(2)) - set(assignable_challenges(2)), {"R1-03", "R1-04", "R2-01"})
+        # The legacy challenges stay in the catalogue for the faculty sandbox and the migration.
+        self.assertTrue(LEGACY_ENGINE_CHALLENGES <= set(CHALLENGES))
 
     def test_case_outcome_never_creates_evidence_or_mastery(self):
         records = [attempt(key, i) for i, key in enumerate(CHALLENGES, 1)]

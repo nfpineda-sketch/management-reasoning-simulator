@@ -4,7 +4,7 @@ from copy import deepcopy
 import unittest
 
 from cognitive_catalog import BIAS_CHALLENGES, BIAS_CONTEXTS, FAMILY_LABELS, EVIDENCE_INTERPRETATION
-from curriculum import CHALLENGES, assign_challenge, eligible_challenges, evidence_summary
+from curriculum import CHALLENGES, assign_challenge, assignable_challenges, eligible_challenges, evidence_summary
 
 
 class CognitiveCatalogTests(unittest.TestCase):
@@ -19,10 +19,14 @@ class CognitiveCatalogTests(unittest.TestCase):
                                for index, key in enumerate(sorted(eligible_biases))]
             foundations = set(eligible_challenges(year)) - eligible_biases
             self.assertTrue(foundations)
+            # Phase 0 (0C, 2026-10-06): the foundations run on the legacy PS001 engine and are
+            # no longer assigned to residents. Once the varied cases are all seen, the next
+            # assignment revisits one of them; it never reaches a foundation.
             for seed in range(10):
                 result = assign_challenge(year, completed_biases, seed)
-                self.assertIn(result["challenge_id"], foundations)
-                self.assertEqual(result["reason"], "initial_exposure")
+                self.assertIn(result["challenge_id"], eligible_biases)
+                self.assertNotIn(result["challenge_id"], foundations)
+                self.assertEqual(result["reason"], "interleaved_evidence_review")
 
     def test_distinct_biases_cover_multiple_real_clinical_families(self):
         self.assertEqual(len(BIAS_CHALLENGES), 8)
@@ -62,7 +66,8 @@ class CognitiveCatalogTests(unittest.TestCase):
     def test_full_first_exposure_cycle_reaches_each_eligible_challenge(self):
         for year in (1, 2, 3):
             records = []
-            expected = set(eligible_challenges(year))
+            # Every challenge the assignment may give (Phase 0, 0C: the legacy foundations excluded).
+            expected = set(assignable_challenges(year))
             encountered = set()
             for position in range(len(expected)):
                 assignment = assign_challenge(year, records, seed=30 + position)
