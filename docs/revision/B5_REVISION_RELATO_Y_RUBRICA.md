@@ -245,3 +245,11 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
   - se mantienen «susceptibilidad» (L0-21) y «Campos pulmonares limpios; sin consolidación ni edema.» (L0-26);
   - T-1 a T-3 siguen como se aprobaron, y los 18 pasajes del corpus no se tocan.
 - **Lote RUB, entregado para revisión:** `docs/revision/B5_RUBRICA_RUB.md`: 5 decisiones, una por dominio, con R-1 aplicada en D4.
+- **Lote RUB, decidido (2026-10-07): 5 de 5.**
+  - D1, D2 y D3, tal cual;
+  - D4, con R-1 (versión `041597d9…`);
+  - D5, opción (b), versión `52958f1c…`: «control posterior» para «follow-up» en el nivel 3, porque «Seguimiento»
+    nombra D4;
+  - sin cambios en los niveles, el puntaje, la estructura ni el inglés; sin aprobaciones ni cambios en
+    `rubric_text/es`.
+- **R1 dividido en R1A y R1B (docente, 2026-10-07), en el orden canónico del banco.** R1A, entregado para revisión: `docs/revision/B5_RELATO_R1A.md`.

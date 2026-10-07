@@ -324,6 +324,10 @@ B-5 sigue bloqueado (Decision File, vigesimoprimera actualización).
 el lote RUB quedó listo para su revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File, vigesimosegunda
 actualización).
 
+**Actualización del 2026-10-07 (B-5, rúbrica en español):** la docencia decidió D1 a D5 (5 de 5; D4 con R-1, D5
+con la opción b). El lote R1A del relato está en revisión. Sin aprobaciones creadas. B-5 sigue bloqueado (Decision
+File, vigesimotercera actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

@@ -222,7 +222,7 @@ desvíos están en `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1.
   - **Actualización del 2026-10-07:** las 100 están decididas, y también el español de X-1, entero (105 de 105,
     `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar. B-5 sigue bloqueado por:
     - la revisión del relato y de la rúbrica en español, antes de congelar (diseño aprobado el 2026-10-07:
-      `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0 aprobado, RUB en revisión);
+      `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0 y rúbrica aprobados, R1A en revisión);
     - implementar lo decidido (los 7 REVISE, X-1 y las claves internas) y verificar el candidato final;
     - sobre ese candidato, la firma de H-62 e I-63.
 - **No bloquean:** las 3 opcionales de la 41m si se difieren (sin cambio de SHA) y `MRS_LANGUAGE`, una configuración de los Secrets que no es un texto ni cambia el SHA.

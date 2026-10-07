@@ -1,6 +1,6 @@
 # B-5 · Rúbrica en español · Lote RUB (D1–D5)
 
-> **PARA REVISIÓN DOCENTE. Nada implementado.** Segundo lote de la revisión (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`,
+> **DECIDIDO por la docencia el 2026-10-07: D1 a D5, 5 de 5. Nada implementado.** Segundo lote de la revisión (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`,
 > aprobado el 2026-10-07). Una decisión por dominio. Cada decisión ata la versión exacta del texto que se presenta: el
 > hash de sus descriptores en los dos idiomas (`rubric_text.version`). No se crean aprobaciones ni se toca
 > `rubric_text/es`.
@@ -10,6 +10,10 @@
 
 **En una mirada**
 
+- **Decidido (docente, 2026-10-07):** D1, D2 y D3, APPROVE AS IS; D4, APPROVE AS IS con R-1 (versión `041597d9…`); D5, APPROVE
+  de la opción (b), «…un traspaso de la atención o un control posterior que explicite los asuntos pendientes.»
+  (versión `52958f1c…`). Sin cambios en los niveles 0–3, el puntaje, la estructura de dominios ni la rúbrica en
+  inglés. Sin aprobaciones creadas y sin cambios en `rubric_text/es`.
 - **Estructura:** 5 dominios. Cada uno tiene «qué evalúa» y los niveles 0 a 3: 25 descriptores. El inglés del borrador
   coincide con el inglés vigente en los 5 (`rubric_text.current`). Nada cambia en los niveles, el puntaje ni la
   estructura.
@@ -43,8 +47,7 @@
   y «Primero abordo…» (L-03). Es el mismo constructo, la prioridad, dicho desde la evaluación; concuerda.
 - **Diferencias de sentido entre EN y ES:** ninguna que cambie la evaluación.
 - **Recomendación:** **APPROVE AS IS**.
-- **Decisión docente (D1, versión `552618f3085a42ae3d6e13d8be3338a60ce3fb713f1a223eb74825e505fe1369`):** ☐ APPROVE ·
-  ☐ REVISE — Nota: ________
+- **Decisión docente (D1, versión `552618f3085a42ae3d6e13d8be3338a60ce3fb713f1a223eb74825e505fe1369`):** ☒ **APPROVE AS IS** — docente, 2026-10-07.
 
 ## D2 · Evaluación e interpretación clínica
 
@@ -63,8 +66,7 @@
   (G-03) y «Creo que…» (L-03). Es el mismo constructo, el modelo de trabajo; concuerda.
 - **Diferencias de sentido entre EN y ES:** ninguna que cambie la evaluación.
 - **Recomendación:** **APPROVE AS IS**.
-- **Decisión docente (D2, versión `0393ca0dd6717a6a54b649541e7f140c1d0dd822cbf8e98e205f8456df6763c4`):** ☐ APPROVE ·
-  ☐ REVISE — Nota: ________
+- **Decisión docente (D2, versión `0393ca0dd6717a6a54b649541e7f140c1d0dd822cbf8e98e205f8456df6763c4`):** ☒ **APPROVE AS IS** — docente, 2026-10-07.
 
 ## D3 · Selección y ejecución de un manejo seguro
 
@@ -83,8 +85,7 @@
   aclaraciones aprobadas («Indica …», «Aclara la orden») y a la pestaña «Indicaciones». Concuerda.
 - **Diferencias de sentido entre EN y ES:** ninguna que cambie la evaluación.
 - **Recomendación:** **APPROVE AS IS**.
-- **Decisión docente (D3, versión `bf7395c34d28bce676adfc5bad71f5a6d4a1dbdced9952c64dda64f52284a191`):** ☐ APPROVE ·
-  ☐ REVISE — Nota: ________
+- **Decisión docente (D3, versión `bf7395c34d28bce676adfc5bad71f5a6d4a1dbdced9952c64dda64f52284a191`):** ☒ **APPROVE AS IS** — docente, 2026-10-07.
 
 ## D4 · Seguimiento y reevaluación
 
@@ -118,7 +119,7 @@
   - El título y el radar dicen «Seguimiento» para «Monitoring». Ver D5.
 - **Recomendación:** **APPROVE AS IS**, con R-1 ya aplicada en el texto propuesto.
 - **Decisión docente (D4, versión con R-1 `041597d975468e31bdf8d6c1d1ddd35e289b98fa05b5e8d3b9106db0c36e2dad`):**
-  ☐ APPROVE · ☐ REVISE — Nota: ________
+  ☒ **APPROVE AS IS con R-1** — docente, 2026-10-07: «revisar» para «check» y «vigilar» para «watch».
 
 ## D5 · Adaptación y continuidad del manejo
 
@@ -150,18 +151,20 @@
 - **Recomendación:** **REVIEW CLOSELY**, y entre las opciones, la (b): cambia una palabra dentro de la unidad que se
   aprueba y deja «seguimiento» sólo en D4.
 - **Decisión docente (D5):** ☐ APPROVE (a), versión `a87a1655f6611fbc3c55ee298447710c8343a3e0f42d2019d27539b99b989137` ·
-  ☐ APPROVE (b), versión `52958f1cdcd83dc9e7f4535c9ae65862f0f4ab829d230ac4bd8eff617abbdac4` · ☐ REVISE — Nota:
-  ________
+  ☒ **APPROVE (b)**, versión `52958f1cdcd83dc9e7f4535c9ae65862f0f4ab829d230ac4bd8eff617abbdac4` — docente, 2026-10-07. En el nivel 3,
+  «…un traspaso de la atención o un control posterior que explicite los asuntos pendientes.». No se usa
+  «seguimiento» para «follow-up», porque D4 ya usa «Seguimiento» para «Monitoring», y la distinción entre D4 y D5
+  tiene que quedar clara.
 
 ## Resumen del lote RUB
 
 | Dominio | Recomendación | Versión que ata la aprobación | Decisión docente |
 |---|---|---|---|
-| D1 | APPROVE AS IS | `552618f3…` (tal cual) | ☐ |
-| D2 | APPROVE AS IS | `0393ca0d…` (tal cual) | ☐ |
-| D3 | APPROVE AS IS | `bf7395c3…` (tal cual) | ☐ |
-| D4 | APPROVE AS IS, con R-1 | `041597d9…` (con R-1; el borrador actual es `8591b254…`) | ☐ |
-| D5 | REVIEW CLOSELY; recomendada (b) | `a87a1655…` (a) o `52958f1c…` (b) | ☐ |
+| D1 | APPROVE AS IS | `552618f3…` (tal cual) | ☒ APPROVE |
+| D2 | APPROVE AS IS | `0393ca0d…` (tal cual) | ☒ APPROVE |
+| D3 | APPROVE AS IS | `bf7395c3…` (tal cual) | ☒ APPROVE |
+| D4 | APPROVE AS IS, con R-1 | `041597d9…` (con R-1; el borrador actual es `8591b254…`) | ☒ APPROVE, con R-1 |
+| D5 | REVIEW CLOSELY; recomendada (b) | `52958f1c…` (b) | ☒ APPROVE (b) |
 
 - **Decisiones que pide el lote:** 5, una por dominio.
 - **Después, al implementar (no autorizado):**
@@ -171,4 +174,4 @@
   - antes de congelar el candidato, se identifica y se prueba el camino de activación que ya usa la app
     (`rubric_text.pack_approvals` y `rubric_text.status`).
 
-Siguiente lote, según el orden docente: R1 (síndrome coronario agudo).
+Siguiente lote, según el orden docente: R1 (síndrome coronario agudo), dividido en R1A y R1B (`docs/revision/B5_RELATO_R1A.md`).

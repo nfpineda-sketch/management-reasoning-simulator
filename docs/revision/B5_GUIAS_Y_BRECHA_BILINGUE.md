@@ -634,7 +634,7 @@ diseñada en `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`.
 ## 5. Decisiones pendientes
 
 Actualizado el 2026-10-07, con las 100 decisiones docentes del paquete, los estados límite de la 49m, el alcance y
-X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigesimosegunda actualizaciones).
+X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigesimotercera actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -653,7 +653,8 @@ X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigesim
    diseño aprobado el 2026-10-07 sigue el mismo principio que el relato: una aprobación por dominio, con
    `{domain_id, version, decision}`, que el código ya lee (`rubric_text/es/approvals.json`), y R-1 («revisar» para
    «check»). Antes de congelar el candidato, se identifica y se prueba el camino de activación que ya usa la app.
-   Lote RUB en revisión (`docs/revision/B5_RUBRICA_RUB.md`).
+   **Rúbrica decidida el 2026-10-07 (`docs/revision/B5_RUBRICA_RUB.md`): 5 de 5**, con R-1 en D4 y la opción (b) en D5; sin aprobaciones
+   creadas todavía.
 7. **Decidido:** K-18, REVISE con la redacción docente; es una corrección de texto antes del candidato final
    (3.6; TD-82). También K-E5 y K-E6, REVISE con la redacción docente (3.10; TD-82 y TD-67).
 8. **Decidido:** A-6, REVISE. En la 49m, el examen respiratorio conserva la gravedad de llegada mientras la
