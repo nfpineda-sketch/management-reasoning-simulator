@@ -17,8 +17,8 @@
   (decisiones docentes del 2026-10-07). El relato aprobado entra en el candidato en
   `case_text/es/approvals.json` (4.1).
 - **Después del despliegue, antes del GO:** ningún texto de este paquete; sólo lo de 4.4.
-- **Decididas al 2026-10-07:** 42 de las 100; quedan 58 (15 de nivel 1 y 43 de nivel 2). H-62 e I-63 se
-  decidieron DEFER de la firma: siguen sin firmar, así que las firmas abiertas son 60.
+- **Decididas al 2026-10-07:** 52 de las 100; quedan 48 (5 de nivel 1 y 43 de nivel 2). H-62 e I-63 se
+  decidieron DEFER de la firma: siguen sin firmar, así que las firmas abiertas son 50.
 
 Los criterios de cada nivel están en 0.4.
 
@@ -124,8 +124,10 @@ Actualización del 2026-10-07: con X-1 cerrada, A-9 pasa de REVIEW CLOSELY a NEE
   regla de X1-0 cuando la orden nombra un fármaco; H-62 e I-63, DEFER de la firma: no es un rechazo, se firman
   cuando describan el candidato final.
 - L-17 y M-02, confirmadas (sección 2, X-1).
-- Quedan 58 de las 100: 15 de nivel 1 (K-7 a K-21) y 43 de nivel 2. Con las firmas de H-62 e I-63, que siguen
-  pendientes, son 60 firmas abiertas.
+- Lote 5 de nivel 1: K-7 a K-16, APPROVE. K-13 y K-14, con la regla de X1-0; en K-9, la mayúscula tras «sin
+  pulso:» es cosmética; K-16 conserva la semántica de F0-12.
+- Quedan 48 de las 100: 5 de nivel 1 (K-17 a K-21) y 43 de nivel 2. Con las firmas de H-62 e I-63, que siguen
+  pendientes, son 50 firmas abiertas.
 - El relato en español de los 30 casos se revisa antes de congelar el candidato final, que no se congela sin esa
   revisión (4.1). Reemplaza la decisión anterior del mismo día (después del despliegue). Su aprobación entra en el
   candidato en `case_text/es/approvals.json` (camino a, 4.1).
@@ -733,7 +735,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - **Firma:** la hoja agrupa la firma en dos filas («Redacción de las frases de la sala», K-1 a K-21; «Eventos que cortan una espera», K-E1 a K-E17). Aquí cada texto lleva su decisión, para cambiar uno sin reabrir el resto.
 - **SHA:** S-A. Corregir una frase es cambiar su regla en `language.py` (`_PHASE0_RULES`) y su prueba en `test_phase0_spanish.py`.
 - **Revisión del español:** fiel en las 21 frases y los 17 eventos; ninguna dice algo distinto del inglés ni engaña. Observaciones, sin reescribir: (1) dos criterios para los nombres de fármacos (K-13); (2) masculino genérico («el paciente», «traído»), también con pacientes mujeres, como en toda la sala; (3) mayúscula tras dos puntos en K-6 y K-9, cosmética; (4) «recibo» no se explica al residente (K-16, I-6); (5) un calco en K-E6.
-- **Nombres de fármacos (X1-0, docente, 2026-10-07):** en un encuentro en español, los fármacos que nombra el motor se muestran con su nombre en español; el identificador canónico guardado no cambia. Resuelve la observación (1). Sin implementar: hoy K-13 y K-14 los muestran en inglés, y K-5 y K-6 también cuando la orden es un fármaco. K-5 y K-6 se aprobaron con esta regla (lote 4).
+- **Nombres de fármacos (X1-0, docente, 2026-10-07):** en un encuentro en español, los fármacos que nombra el motor se muestran con su nombre en español; el identificador canónico guardado no cambia. Resuelve la observación (1). Sin implementar: hoy K-13 y K-14 los muestran en inglés, y K-5 y K-6 también cuando la orden es un fármaco. K-5, K-6, K-13 y K-14 se aprobaron con esta regla (lotes 4 y 5).
 
 **K-1 y K-2 · UNA DECISIÓN → filas 1 y 2 · Orden no entendida (UNRECOGNIZED)** — TIER 1 · ACTIVE
 - Dónde: recibo bajo los modos · EN `order_ledger.py:1381` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -791,7 +793,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: hubo un paro; la reanimación no está modelada; lo que siga no se evalúa.
 - Revisión: fiel.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **K-8 · Fila 8 · Orden escrita después del paro** — TIER 1 · ACTIVE
 - Dónde: recibo de una orden tras el paro (TERMINAL_NOT_EXECUTABLE) · EN `order_pipeline.py:434` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -800,7 +802,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: nada se ejecuta después del paro.
 - Revisión: fiel.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **K-9 · Fila 9 · Actualización sin pulso** — TIER 1 · ACTIVE
 - Dónde: espera cortada por el paro · EN `time_semantics.py:258` y el estado sin pulso · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -809,7 +811,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: la espera se cortó por el paro; el monitor y el examen muestran paro.
 - Revisión: fiel. Mayúscula tras «sin pulso:» (cosmética). En inglés queda «Now, No pulse:» (informe de la Fase 0, §16), sin efecto en el registro.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07: la mayúscula tras «sin pulso:» es cosmética y no pide revisión.
 
 **K-10 · Fila 10 · Orden para más tarde, no programada** — TIER 1 · ACTIVE
 - Dónde: recibo de una orden para más tarde · EN `time_semantics.py:161` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -818,7 +820,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: no se dio ni se programó: hay que escribirla cuando corresponda.
 - Revisión: fiel.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **K-11 · Fila 11 · Envío interrumpido (nada aplicado)** — TIER 1 · ACTIVE
 - Dónde: aviso de un envío interrumpido · EN `submission_guard.py:350` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -827,7 +829,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: el envío se interrumpió y no se aplicó nada; no se repetirá solo.
 - Revisión: fiel.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **K-12 · Fila 12 · Envío interrumpido (quizá aplicado en parte)** — TIER 1 · ACTIVE
 - Dónde: aviso de un envío interrumpido · EN `submission_guard.py:350` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -836,7 +838,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: puede haberse aplicado una parte: revisar el estado antes de reenviar.
 - Revisión: fiel; «es posible que una parte de ella se haya aplicado» conserva la incertidumbre del inglés.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **K-13 · Fila 13 · Paquete parcial: parte no ejecutada** — TIER 1 · ACTIVE
 - Dónde: recibo de un paquete parcial · EN `order_pipeline.py:371` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -845,7 +847,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: una parte se ejecutó y otra no; lo no ejecutado no se dio.
 - Revisión: fiel. Los fármacos que nombra el motor quedan en inglés («aspirin», «norepinephrine»), los fluidos se traducen («suero fisiológico», K-5, K-6, K-14) y las notas de la TEP traducen el fármaco («alteplasa», B-24, B-25). Es la convención declarada de la sala (hoja F0-11, regla 3), pero conviven dos criterios: confirmarlos.
 - Recomendación: **APPROVE con la regla de X1-0**, como la docencia decidió K-5 y K-6 (ajustada el 2026-10-07, lote 4; antes, REVISE, que lleva al mismo texto) — la frase es fiel; en un encuentro en español, los fármacos que nombra el motor se muestran con su nombre en español («Ejecutado ahora: **aspirina 300 mg PO**», «No ejecutado: **noradrenalina**»), y el valor canónico guardado no cambia. Sin implementar: hoy se ven en inglés.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07, con la regla de X1-0: en un encuentro en español, los fármacos reconocidos que ve el residente llevan su nombre en español; el valor canónico guardado no cambia.
 
 **K-14 · Fila 14 · Paquete parcial: parte retenida** — TIER 1 · ACTIVE
 - Dónde: recibo de un paquete parcial · EN `order_pipeline.py:378` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -854,7 +856,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: una parte se ejecutó y otra espera una aclaración; lo retenido no se ha dado.
 - Revisión: fiel; la misma convención que K-13.
 - Recomendación: **APPROVE con la regla de X1-0**, como K-5, K-6 y K-13 (precisada el 2026-10-07, lote 4; antes, APPROVE AS IS con esta nota) — al implementarse, «aspirin 300 mg PO» se mostrará «aspirina 300 mg PO»; el valor canónico guardado no cambia.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07, con la regla de X1-0, como K-13.
 
 **K-15 · Fila 15 · Orden junto a la respuesta, cuando algo sigue retenido** — TIER 1 · ACTIVE
 - Dónde: recibo de una orden escrita en la respuesta · EN `order_pipeline.py:153` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -863,7 +865,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: la orden de la respuesta no corrió porque algo sigue retenido: hay que reescribirla.
 - Revisión: fiel. Es el caso protegido de TD-70 (a).
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **K-16 · Fila 16 · Orden después de la respuesta, leída a continuación (F0-12)** — TIER 1 · ACTIVE
 - Dónde: aviso tras la respuesta (F0-12) · EN `app.py:11240` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -872,7 +874,8 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: la otra orden de la respuesta se lee después, como orden propia, con su propio aviso.
 - Revisión: fiel. «Recibo» (y «receipt») es el término de la sala para el aviso de qué pasó con una orden; la guía del residente no lo explica hoy (I-6).
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Actualización del 2026-10-07: la guía del residente actualizada (I-3 e I-6, sin firmar) ya explica «recibo» y este caso; la nota de arriba es anterior a esa actualización.
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07: se conserva la semántica de F0-12; una orden escrita después de responder la aclaración se procesa como orden propia, con su propio destino y su propio recibo. La guía del residente puede explicar «recibo» cuando se actualicen H-62 e I-63; eso no bloquea esta aprobación.
 
 **K-17 · Fila 17 · Límite de 120 minutos por paso** — TIER 1 · ACTIVE
 - Dónde: respuesta a una espera de más de 120 minutos · EN `family_engine.py:626` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -889,7 +892,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES: Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes había perdido su efecto y la reacción había vuelto. Nada más de lo administrado actúa sobre la reacción.
 - Se infiere: la adrenalina se dio, su efecto se agotó y la reacción volvió; lo demás no actúa sobre la reacción. No dice «nunca dada».
 - Revisión: fiel. VINCULADA con K-21 (su hermana).
-- Recomendación: **APPROVE AS IS**
+- Recomendación: **REVISE** (actualizada el 2026-10-07, al preparar el lote final; antes, APPROVE AS IS) — la traducción es fiel, pero el inglés describe un curso que no siempre ocurrió. Comprobado en la sala real, sin cambiar código (`pilot_acceptance`): en `anaphylaxis_63m_betablocked`, con una sola dosis de adrenalina IM y espera, la reacción nunca mejora (empeora desde la llegada) y el paro llega en el minuto 71 con esta frase, que dice que el efecto «se agotó» y que la reacción «había vuelto». En `anaphylaxis_29f` es exacta: la reacción mejora y después vuelve. Es el curso que el caso enseña (una respuesta menor que la esperada por el betabloqueo). Opciones: (a) APPROVE tal cual, aceptando esa imprecisión en la 63m; (b) una frase cierta en los dos cursos: EN «Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier did not keep the reaction under control. Nothing else that was given acts on the reaction.» · ES «Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes no logró mantener la reacción bajo control. Nada más de lo administrado actúa sobre la reacción.»; (c) dos frases según el curso, la actual si la reacción había mejorado y otra si nunca mejoró. (b) y (c) cambian el texto del motor y su español: nuevo SHA (16.4). Se recomienda (b), la más simple.
 - Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
 **K-19 · Fila 19 · Flujo por omisión de la mascarilla con reservorio** — TIER 1 · ACTIVE
@@ -911,7 +914,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
 **K-21 · Paro de la anafilaxia sin tratar (frase anterior a la Fase 0, hermana de la 18)** — TIER 1 · ACTIVE
-- Dónde: entrada al paro de la anafilaxia sin tratar · EN `anaphylaxis_reaction.py:142` · ES `_PHASE0_RULES`.
+- Dónde: entrada al paro de la anafilaxia sin tratar · EN `anaphylaxis_reaction.py:141` · ES `_PHASE0_RULES`.
 - EN: Circulatory arrest after twenty-five minutes of untreated anaphylaxis. Adrenaline was the treatment that was missing; nothing else that was given acts on the reaction.
 - ES: Paro circulatorio tras veinticinco minutos de anafilaxia no tratada. La adrenalina era el tratamiento que faltaba; nada más de lo administrado actúa sobre la reacción.
 - Se infiere: el paro se debió a una anafilaxia sin adrenalina.

@@ -15,7 +15,8 @@ Reglas de la traducción:
   sala); las etiquetas de órdenes que compone el motor siguen como antes.
   **Decisión docente del 2026-10-07 (X1-0, aclaración), sin implementar:** en un encuentro en español, los
   fármacos que el motor inserta en un texto que ve el residente se mostrarán con su nombre en español; el
-  identificador canónico guardado no cambia. Hoy, las frases de abajo todavía los muestran en inglés.
+  identificador canónico guardado no cambia. Hoy, las frases de abajo todavía los muestran en inglés. Las filas 5,
+  6, 13 y 14 se aprobaron con esta regla (lotes 4 y 5 del paquete de firmas).
 - Los códigos internos (destinos del ledger como UNRECOGNIZED o RECORDED_NOT_MODELLED, nombres de campos) no se
   traducen ni se muestran a la persona residente.
 - El registro guarda la frase en inglés, como todo el registro; la sala la dice en el idioma del encuentro.
@@ -85,5 +86,15 @@ Aparecen dentro de la frase de la espera interrumpida (fila 6).
 
 | Revisión | Resultado | Fecha | Firma |
 |---|---|---|---|
-| Redacción de las frases de la sala | Pendiente | | |
+| Redacción de las frases de la sala | Parcial: filas 1 a 16 aprobadas (K-1 a K-16); filas 17 a 19 y las dos de «Examen y frase hermana» (K-17 a K-21), pendientes | 2026-10-07 (parcial) | |
 | Eventos que cortan una espera | Pendiente | | |
+
+**Decisiones docentes del 2026-10-07 (lotes 4 y 5 del paquete de firmas), sin implementar.** Las filas 1 a 16 se
+aprueban como están, con dos condiciones que no cambian su inglés:
+
+- filas 5, 6, 13 y 14: rige X1-0 para los fármacos (regla 3, arriba);
+- fila 16: se conserva la semántica de F0-12. La orden escrita después de responder se procesa como orden propia,
+  con su propio destino y su propio recibo.
+
+En la fila 9, la mayúscula tras «sin pulso:» es cosmética y no pide revisión. Cada decisión, con su nota, está en
+el paquete (`docs/revision/FACULTY_SIGNOFF_PACKET_PREPILOT.md`, bloque K).

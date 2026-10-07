@@ -383,7 +383,33 @@ el motor, no la cita.
 | 7 | K-13 · paquete parcial, parte no ejecutada | «**PARTE DE ESTA ORDEN NO SE EJECUTÓ** … Ejecutado ahora: **aspirin 300 mg PO**. / No ejecutado: **norepinephrine**. …» | **APPROVE con la regla de X1-0**, como K-5 y K-6: se verá «**aspirina 300 mg PO**» y «**noradrenalina**»; el valor canónico no cambia. Antes recomendaba REVISE, que lleva al mismo texto |
 | 8 | K-14 · paquete parcial, parte retenida | «**PARTE DE ESTA ORDEN ESTÁ RETENIDA — SE NECESITA UNA ACLARACIÓN** … Ejecutado ahora: **aspirin 300 mg PO**. / Retenido hasta que respondas: **suero fisiológico**. …» | **APPROVE con la regla de X1-0**: se verá «**aspirina 300 mg PO**» |
 | 9 | K-15 · orden en la respuesta, con algo retenido | «No se ejecutó: «…» se escribió en la respuesta a la pregunta anterior, que solo completa la orden retenida. Escríbelo de nuevo como una orden nueva si aún lo quieres.» | **APPROVE AS IS** — es el caso protegido de TD-70 (a) |
-| 10 | K-16 · orden después de la respuesta (F0-12) | «También en tu respuesta: «…». La respuesta solo completa la orden retenida; esta orden se lee a continuación, como una orden propia, con su propio recibo.» | **APPROVE AS IS** — la guía del residente no explica hoy «recibo» (I-6) |
+| 10 | K-16 · orden después de la respuesta (F0-12) | «También en tu respuesta: «…». La respuesta solo completa la orden retenida; esta orden se lee a continuación, como una orden propia, con su propio recibo.» | **APPROVE AS IS** — la guía del residente actualizada, sin firmar, ya explica «recibo» (I-6) y este caso (I-3); corregido el 2026-10-07, antes decía que no |
+
+**Decisión docente (2026-10-07):** K-7 a K-16, APPROVE. K-13 y K-14, con la regla de X1-0: en un encuentro en
+español, los fármacos reconocidos que ve el residente llevan su nombre en español, y el valor canónico guardado no
+cambia. En K-9, la mayúscula tras «sin pulso:» es cosmética y no pide revisión. K-16 conserva la semántica de
+F0-12: una orden escrita después de responder la aclaración se procesa como orden propia, con su propio destino y
+su propio recibo; la guía puede explicar «recibo» al actualizarse, sin bloquear la aprobación. Registradas en el
+paquete, en la hoja F0-11 y en el Decision File (duodécima actualización), sin implementar.
+
+### 3.6 Lote final de nivel 1 (propuesto el 2026-10-07)
+
+Orden del paquete: K-17 a K-21. **Comprobado el 2026-10-07:**
+
+- en las cinco, el inglés y el español del paquete coinciden con la hoja F0-11;
+- `language.say` convierte cada inglés exactamente en el español del paquete, y en K-20 también
+  `language.examination`, el panel del examen;
+- cada línea citada del código tiene esa frase.
+
+K-18 se comprobó además en la sala real (`pilot_acceptance`), sin cambiar código.
+
+| # | ID | Qué dice el español activo | Recomendación |
+|---|---|---|---|
+| 1 | K-17 · límite de 120 minutos por paso | «Indica un intervalo de reevaluación de 0 a 120 minutos. El simulador avanza el reloj como máximo 120 minutos de una vez (un límite de este piloto): escribe una espera o una reevaluación de 120 minutos o menos, y vuelve a esperar después si necesitas más tiempo.» | **APPROVE AS IS** — dice el límite y qué hacer; el mismo «como máximo» del borrador X1-C30 |
+| 2 | K-18 · paro de la anafilaxia tras una dosis | «Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes había perdido su efecto y la reacción había vuelto. Nada más de lo administrado actúa sobre la reacción.» | **REVISE** (antes, APPROVE AS IS) — en `anaphylaxis_63m_betablocked`, con una sola dosis y espera, la reacción nunca mejora y el paro (minuto 71) dice que «había vuelto». Se propone una frase cierta en los dos cursos: «… la adrenalina administrada antes no logró mantener la reacción bajo control. …» (paquete, K-18, con el inglés y las opciones) |
+| 3 | K-19 · flujo por omisión de la mascarilla con reservorio | «Oxígeno por mascarilla con reservorio a 15 L/min: no se escribió un flujo; se usó el flujo habitual de la mascarilla con reservorio, 15 L/min.» | **APPROVE AS IS** — F0-9; la mayúscula inicial es cosmética |
+| 4 | K-20 · examen de cualquier región tras el paro | «Sin respuesta, sin respiración, sin pulso central: el paciente está en paro cardíaco. La reanimación no está modelada en este piloto.» | **APPROVE AS IS** — se ve en español también en el panel del examen |
+| 5 | K-21 · paro de la anafilaxia sin tratar (anterior a la Fase 0) | «Paro circulatorio tras veinticinco minutos de anafilaxia no tratada. La adrenalina era el tratamiento que faltaba; nada más de lo administrado actúa sobre la reacción.» | **APPROVE AS IS** — exacta en el motor: sin adrenalina, nada más actúa sobre la reacción (el glucagón sólo devuelve la respuesta a la adrenalina). Se decide junto a K-18, su hermana |
 
 ## 4. Verificación
 
@@ -402,8 +428,8 @@ el motor, no la cita.
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes de los lotes 1 a 4, del alcance y las bases de X-1, del
-relato, de la rúbrica y de las guías (Decision File, octava a undécima actualizaciones).
+Actualizado el 2026-10-07, con las decisiones docentes de los lotes 1 a 5, del alcance y las bases de X-1, del
+relato, de la rúbrica y de las guías (Decision File, octava a duodécima actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -412,8 +438,10 @@ relato, de la rúbrica y de las guías (Decision File, octava a undécima actual
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
    revisión.
-4. **Las firmas que quedan del paquete:** 58 de 100 decisiones; con las firmas de H-62 e I-63, 60. El quinto lote
-   de nivel 1 está en 3.5.
+4. **Las firmas que quedan del paquete:** 48 de 100 decisiones; con las firmas de H-62 e I-63, 50. El lote final
+   de nivel 1 (K-17 a K-21) está en 3.6.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
 6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
    de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista.
+7. **K-18:** decidir si la frase del paro tras una dosis se aprueba tal cual o se corrige, porque en la 63m
+   (betabloqueo) describe un curso que no ocurrió (3.6; TD-82).

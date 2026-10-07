@@ -280,6 +280,10 @@ revisiones; ya no quedan para después del despliegue. El relato aprobado entra 
 registrarlo a mano en la base del piloto. El mecanismo con que la rúbrica se activa en el candidato se identifica
 antes de implementarla (Decision File, décima y undécima actualizaciones; TD-81).
 
+**Actualización del 2026-10-07 (B-5, lotes 4 y 5):** de las frases de F0-11, K-1 a K-16 están aprobadas (K-5, K-6,
+K-13 y K-14 con la regla de X1-0); faltan K-17 a K-21 y los eventos K-E1 a K-E17 (Decision File, duodécima
+actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 
