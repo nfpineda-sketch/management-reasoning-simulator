@@ -6,11 +6,10 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
 - **Actualizado:** 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
-  vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06; B-2 quedó
-  definido en diseño el 2026-10-07 y BLOCKED por información de las cuentas; siguen B-1, B-2 y B-5). Antes, con el
-  cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La sección «Fase 0 · Seguridad de la
-  medición antes del piloto»,
-  con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
+  vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
+  2026-10-07, con los datos confirmados en los proveedores; siguen B-1, listo para ejecutar, y B-5, bloqueado). Antes,
+  con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La sección «Fase 0 · Seguridad
+  de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
   siguen más abajo, como estaban.
@@ -52,13 +51,44 @@ documentado que la app de desarrollo se redespliega con cada push. Decisiones y 
 - **Datos:** las apps del workspace con su rama, archivo principal y Python, y la versión mayor de PostgreSQL del
   proyecto.
 
+**Actualizado otra vez el 2026-10-07: B-2 RESUELTO.** Los datos los confirmaste en las interfaces de los
+proveedores (informe, sección 16):
+
+- Streamlit Community Cloud tiene tres apps, una por rama (`ai-integration-v0.9.0`, `clinical-encounter-v0.13` y
+  `main`), todas con `app.py`.
+- La de desarrollo, `clinical-management-reasoning-dev`, sigue `clinical-encounter-v0.13` y usa Python 3.12; ofrece
+  Python 3.11 al crear una app.
+- En Neon, el proyecto `management-reasoning-simulator` usa PostgreSQL 17. Sus ramas son `production` (por omisión)
+  y dos de desarrollo, archivadas.
+
+Las decisiones de B-2 quedan así:
+
+- **D-B2-1:** una app nueva, `clinical-management-reasoning-pilot` (repositorio, rama `pilot-residents-v1`, `app.py`,
+  Python 3.11). La de desarrollo no se toca.
+- **D-B2-2:** el mismo proyecto de Neon, con una rama propia, `pilot-residents-v1`.
+- **D-B2-3:** el nombre `pilot-residents-v1`; la rama de Git se crea sólo en la promoción. Proteger la rama en GitHub
+  queda como recomendación, sin decidir.
+- **D-B2-4:** B-1 en `pilot-b1-validation`, con la base `mrs_b1`, temporal y borrada sólo con autorización, sin
+  datos de producción.
+
+Sigue pendiente de ti:
+
+- **D-B2-5 · Origen de las ramas de Neon:** «Schema only», sin datos, con una base nueva y vacía (`mrs_b1` para B-1,
+  `mrs_pilot` para el piloto). Es lo recomendado: una rama normal desde `production` copiaría sus datos (informe 16.7
+  y 16.10). Si la consola no ofrece «Schema only», decides la alternativa.
+- **B-1 · READY TO EXECUTE / NOT YET EXECUTED.** Con tu autorización, se crea la rama y la base, y se corre 16.8
+  desde un equipo con red directa a Neon. Este entorno no llega.
+- **Push:** sigue prohibido sin autorización expresa, porque está confirmado que un push a `clinical-encounter-v0.13`
+  redespliega desarrollo.
+- **B-5:** BLOCKED.
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
-| B-1 | Abierto | La prueba de PostgreSQL en una base descartable del proveedor, de su versión mayor (BLOCKED / NOT RUN) | Quién la corre y desde dónde: este entorno no llega al proveedor |
-| B-2 | **Blocked** (2026-10-07): diseño definido; faltan datos de las cuentas (D-B2-1 a D-B2-4) | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
+| B-1 | **Ready to execute / not yet executed** (2026-10-07; informe 16.8 y 16.9) | La prueba de PostgreSQL en una base descartable del proveedor, de su versión mayor (BLOCKED / NOT RUN) | Quién la corre y desde dónde: este entorno no llega al proveedor |
+| B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | Abierto | Las firmas docentes, todas pendientes | Firmar antes de construir el candidato final |
+| B-5 | **Bloqueado** | Las firmas docentes, todas pendientes | Firmar antes de construir el candidato final |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

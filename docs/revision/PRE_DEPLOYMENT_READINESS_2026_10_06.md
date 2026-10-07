@@ -20,6 +20,13 @@ queda definido en diseño (rama `pilot-residents-v1`, app y base propias, contra
 BLOCKED**: la app del piloto, su base, el Python de la plataforma y las vinculaciones de las apps existentes sólo se
 conocen desde las cuentas (sección 15). Sigue **NOT READY FOR DEPLOYMENT**.
 
+**Actualizado otra vez el 2026-10-07** (datos confirmados en los proveedores): **B-2 RESUELTO** (sección 16).
+- Topología del piloto: rama `pilot-residents-v1`, app nueva `clinical-management-reasoning-pilot`, `app.py`,
+  Python 3.11, y en Neon el proyecto `management-reasoning-simulator` (PostgreSQL 17) con la rama `pilot-residents-v1`.
+- **B-1: READY TO EXECUTE / NOT YET EXECUTED** (16.8 y 16.9).
+- **B-5: BLOCKED.**
+- Sigue **NOT READY FOR DEPLOYMENT**.
+
 Fuente de verdad del congelamiento: el manifiesto ejecutable `docs/revision/PILOT_FREEZE_MANIFEST.md` (generado de
 `pilot_freeze.py`). Donde un texto lo contradice, se informa en la sección 10.2 y no se corrige aquí.
 
@@ -376,11 +383,11 @@ son las 83 de siempre más las 10 de PostgreSQL, que corren aparte (9.2).
 
 | # | Estado (2026-10-06) | Bloqueo | Por qué bloquea | Lo más pequeño que lo resuelve | ¿Invalida verificación de la Fase 0? |
 |---|---|---|---|---|---|
-| B-1 | **ABIERTO** | Prueba PostgreSQL del proveedor no corrida (BLOCKED / NOT RUN) | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
-| B-2 | **BLOCKED** (2026-10-07; sección 15): diseño definido; faltan la app, la base, el Python y las vinculaciones de las apps (15.12) | Entorno de destino sin identificar | No se sabe qué app, qué rama, qué base ni qué Python | Nombrar la app y la base del piloto; crear la app con Python 3.11; desplegar una rama propia fija en el commit aprobado (3.2) | No |
+| B-1 | **READY TO EXECUTE / NOT YET EXECUTED** (2026-10-07; 16.8 y 16.9): rama «Schema only» `pilot-b1-validation` y base `mrs_b1`, por crear con autorización | Prueba PostgreSQL del proveedor no corrida (BLOCKED / NOT RUN) | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
+| B-2 | **RESUELTO** (2026-10-07; sección 16) con los datos confirmados en los proveedores. Antes, BLOCKED (sección 15) | Entorno de destino sin identificar | No se sabe qué app, qué rama, qué base ni qué Python | Nombrar la app y la base del piloto; crear la app con Python 3.11; desplegar una rama propia fija en el commit aprobado (3.2) | No |
 | B-3 | **RESUELTO** (`87bbbe1`; 14.1): opción (b), el preflight corregido; el runtime no cambió | El preflight puede dar «LISTA» con la app fuera de la configuración congelada (3.3 y 5.2) | El gate del runbook (paso 3) no garantiza lo que dice | **Decisión:** (a) procedimiento: `OPENAI_API_KEY` ausente, valores entre comillas y todo AVISO de los indicadores del manifiesto tratado como FALLA; o (b) corrección del preflight (sólo la herramienta, no el runtime): tratar un valor TOML no textual como ausente, como hace Streamlit, y volver obligatorias las reglas que el manifiesto exige (cambia `test_a_recommendation_warns_and_never_fails`) | No (no toca el runtime) |
 | B-4 | **RESUELTO** (`4d570a8`; 14.2): `streamlit==1.64.0`. Python 3.11 se elige al crear la app y queda en B-2 | Dependencias sin fijar: Streamlit `>=1.41,<2` (hoy instalaría 1.65.0) y Python sin fijar | El envío seguro depende de la secuencia de reruns de Streamlit; una versión que aparezca durante el piloto entraría en el próximo reinicio | **Decisión:** fijar en `requirements.txt` una versión verificada, `streamlit==1.64.0` (la de la suite completa) o `1.65.0` (verificada hoy sólo en la Fase 0 y en 0D, 9.4), y crear la app con Python 3.11. Es un commit de dependencias; el runtime no cambia | No con 1.64.0. Con 1.65.0, la suite completa con esa versión |
-| B-5 | **ABIERTO** | Firmas docentes pendientes (sección 6) | `READINESS` las exige antes del piloto; una firma que cambie un texto cambia el candidato | Las firmas, antes de construir el candidato final | Sólo si una firma cambia texto: se repiten las pruebas afectadas y la suite |
+| B-5 | **BLOCKED** | Firmas docentes pendientes (sección 6) | `READINESS` las exige antes del piloto; una firma que cambie un texto cambia el candidato | Las firmas, antes de construir el candidato final | Sólo si una firma cambia texto: se repiten las pruebas afectadas y la suite |
 | B-6 | **RESUELTO** (`e200ccc`; 14.3): textos esperados actualizados con su justificación; 56 de 56 | 2 de las 56 regresiones activas fallan (9.5); `run_regressions.py` sale con código 1 | La verificación del proyecto exige las regresiones activas (las fuentes de verdad las nombran; los ciclos anteriores informaron 56 de 56); sin ellas, las pruebas no están en verde | **Decisión:** actualizar los 3 textos esperados en los 2 scripts al texto que la Fase 0 aprobó (`turn=None`; `interpreted_action` con `_untag`), con su justificación, o retirarlos con motivo como en P-11. No cambia el runtime | No: la suite de pytest y sus conclusiones siguen; agrega la corrida de regresiones que la Fase 0 omitió |
 
 **Antes de abrir el piloto, después del despliegue (no bloquean el despliegue mismo):** TD-56 (sección 7), relato en
@@ -475,31 +482,32 @@ registro del encuentro: es una limitación declarada, no un defecto nuevo.
 
 ## 12. GO / NO-GO
 
-Estado actualizado el 2026-10-06, después de resolver B-3, B-4 y B-6. Lo que valía sobre `009aadb` se conserva en
-la columna «Por qué».
+Estado actualizado el 2026-10-07, después de resolver B-3, B-4 y B-6 (2026-10-06) y B-2 (2026-10-07). Lo que valía
+sobre `009aadb` se conserva en la columna «Por qué».
 
 | Categoría | Estado | Por qué |
 |---|---|---|
 | A · Código y pruebas | **PASS** (sujeto a 14.4) | Sobre `009aadb`: suite completa 7.578/0, Fase 0 completa y prueba de humo automática en verde, y 2 de 56 regresiones activas fallaban (B-6). Ahora: 56 de 56 y las pruebas focalizadas en verde (14.4). La suite completa sobre el candidato final se corre después de este commit y se informa en la entrega del encargo: si no da 0 fallas, esta fila no vale |
-| B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado; proveedor: BLOCKED / NOT RUN (B-1) |
-| C · Configuración congelada | **BLOCKED** | El gate ya es confiable: falla cerrado ante cualquier exigencia del manifiesto (B-3 resuelto, 14.1). Falta correrlo con los Secrets del destino (runbook §3, paso 3), que no se conocen (B-2, sección 15) |
+| B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado. Proveedor (Neon, PostgreSQL 17): B-1 READY TO EXECUTE / NOT YET EXECUTED (16.8) |
+| C · Configuración congelada | **BLOCKED** | El gate ya es confiable: falla cerrado ante cualquier exigencia del manifiesto (B-3 resuelto, 14.1). Falta correrlo con los Secrets reales del piloto, antes y después de crear la app (pasos 10 y 11 del contrato, 16.4 y 16.11) |
 | D · Enrutamiento | PASS WITH DECLARED LIMITATION | 30 aceptados, excluido y PS001 fuera (5.1); `MRS_DEFAULT_VARIANT` sólo lo cierra la configuración (5.2), y el preflight falla si está definido (14.1) |
 | E · Idioma y firmas docentes | **BLOCKED** | Todas pendientes (sección 6; B-5) |
 | F · Imágenes y TD-56 | PASS WITH DECLARED LIMITATION | Procedimiento declarado y verificable; falla hacia la vista neutral (sección 7) |
-| G · Entorno de despliegue | **BLOCKED** | Diseño definido: rama `pilot-residents-v1`, app nueva, base propia y contrato de promoción (sección 15). App, base, Python y vinculaciones de las apps sin identificar (B-2, 15.12). Streamlit fijo en 1.64.0 (B-4 resuelto, 14.2) |
+| G · Entorno de despliegue | PASS WITH DECLARED LIMITATION | Definido y confirmado (B-2 resuelto, sección 16): rama `pilot-residents-v1`, app nueva `clinical-management-reasoning-pilot`, `app.py`, Python 3.11, Neon `management-reasoning-simulator` con PostgreSQL 17. Streamlit fijo en 1.64.0 (B-4, 14.2). Limitación: la app, la rama de Git y la rama de Neon se crean en la promoción (16.4) |
 | H · Seguridad y acceso | PASS WITH DECLARED LIMITATION | Pruebas de permisos, aislamiento, diagnósticos y fotos en verde (9.6); sin credenciales versionadas. Limitación: la ausencia de `OPENAI_API_KEY` en los Secrets es obligatoria (3.3); desde `87bbbe1`, si quedara, el preflight falla salvo que la app la retenga (14.1) |
 | I · Observabilidad | PASS WITH DECLARED LIMITATION | Base y fotos en el registro del servidor; conflictos, envíos interrumpidos e inconsistencias sólo en la sala y en el registro del encuentro (11.1) |
 | J · Plan de humo desplegado | PASS (READY) | Sección 11; se ejecuta después de resolver los bloqueos y con autorización |
 
 ## 13. Recomendación
 
-**NOT READY FOR DEPLOYMENT.** Bloquean B-1, B-2 y B-5. B-3, B-4 y B-6 se resolvieron el 2026-10-06 (sección 14); al
-escribir la primera versión de este documento bloqueaban B-1 a B-6.
+**NOT READY FOR DEPLOYMENT.** Bloquean B-1 (READY TO EXECUTE / NOT YET EXECUTED) y B-5 (BLOCKED).
+- B-3, B-4 y B-6 se resolvieron el 2026-10-06 (sección 14), y B-2 el 2026-10-07 (sección 16).
+- Al escribir la primera versión de este documento bloqueaban B-1 a B-6.
 
 - El runtime de `009aadb` no mostró un defecto de conducta: la suite completa, la Fase 0, PostgreSQL con TLS, el
   simulacro de respaldo y la prueba de humo automática pasan, y el envío seguro se comporta igual con Streamlit 1.65.0.
-- Falta: la prueba en el proveedor (B-1), el entorno de destino, con el preflight corrido sobre sus Secrets (B-2:
-  diseño definido y bloqueado por información de las cuentas, sección 15), y las firmas (B-5).
+- Falta: la prueba en el proveedor (B-1, preparada en 16.8 y 16.9) y las firmas (B-5). Después, el contrato de
+  promoción (16.4), con el preflight sobre los Secrets reales del piloto.
 - B-3, B-4 y B-6 se resolvieron sin cambiar la conducta del runtime: el preflight (una herramienta que la app no
   importa), la versión de Streamlit con que ya se había verificado todo y dos scripts de regresión (sección 14).
 - No se desplegó; no se hizo push, merge, PR ni release; no se empezó la Fase 1.
@@ -641,6 +649,9 @@ manifiesto y `pilot_freeze.py` no cambiaron.
   encargo: anotarlos aquí cambiaría el candidato. La prueba en el proveedor sigue siendo B-1.
 
 ## 15. B-2 · Entorno de despliegue del piloto (2026-10-07)
+
+**Superada por la sección 16 (2026-10-07)** en todo lo que dependía de las cuentas. Con los datos confirmados en los
+proveedores, B-2 quedó resuelto. Esta sección se conserva como registro del estado anterior.
 
 Encargo: definir dónde y cómo correrá el piloto congelado, para que el despliegue sea deliberado y reproducible. Sin
 desplegar, sin push y sin crear ramas. **Resultado: B-2 BLOCKED.** El diseño queda definido, pero faltan datos que
@@ -952,3 +963,414 @@ identificado el proveedor de la base del piloto:
 
 **B-2: BLOCKED.** Falta la información externa de 15.12. Con ella se completan los criterios 2, 6, 7, 8, 10 y 11, y
 B-2 puede revisarse.
+
+## 16. B-2 resuelto y B-1 preparado (2026-10-07)
+
+Encargo: cerrar B-2 con los datos que la persona responsable confirmó en las interfaces de los proveedores, y dejar
+B-1 listo para correrse sin riesgo. Sin desplegar, sin push y sin crear la app, la rama de Git ni ramas de Neon. Sólo
+documentación.
+
+**Resultado:**
+- B-2: **RESUELTO**.
+- B-1: **READY TO EXECUTE / NOT YET EXECUTED**.
+- B-5: **BLOCKED**.
+- Sigue **NOT READY FOR DEPLOYMENT**.
+
+### 16.1 Verificación inicial
+
+| Comprobación | Resultado |
+|---|---|
+| Rama | `clinical-encounter-v0.13` |
+| HEAD local | `82bdc51618a598d4b267a5bd9a118b8fb59698ce` |
+| `origin/clinical-encounter-v0.13` | `009aadb` (comprobado con `git ls-remote`) |
+| Adelante / atrás | 6 / 0 |
+| Árbol | Limpio |
+| Commits después de `009aadb` | Los seis son de preparación para el despliegue. Fuera de `docs/`, sólo el preflight y su prueba, `requirements.txt` y dos scripts de regresión |
+| Fase 1 o núcleo común | Ninguno. Una sola rama local, sin stash; `pilot-residents-v1` no existe en el remoto |
+
+### 16.2 Datos confirmados en los proveedores (2026-10-07)
+
+Los confirmó la persona responsable en las interfaces de Streamlit y de Neon. No se verificaron desde este entorno,
+que no tiene acceso a esas cuentas.
+
+**Streamlit Community Cloud**
+- Es el proveedor de alojamiento.
+- Hay tres apps del repositorio `management-reasoning-simulator`, todas con `app.py`: una por cada rama
+  (`ai-integration-v0.9.0`, `clinical-encounter-v0.13` y `main`).
+- La app de desarrollo, `clinical-management-reasoning-dev`, sigue `clinical-encounter-v0.13` y usa Python 3.12.
+- Al crear una app se puede elegir Python 3.11.
+- La app de desarrollo no se modifica para el piloto.
+
+**Neon**
+- Proyecto `management-reasoning-simulator`, con PostgreSQL 17.
+- Ramas visibles: `production` (por omisión), `development-validation` y `clinical-encounter-v0.13`. Las dos últimas
+  están archivadas.
+
+**Decisiones**
+- El piloto usará una app nueva, `clinical-management-reasoning-pilot`: repositorio
+  `management-reasoning-simulator`, rama `pilot-residents-v1`, `app.py` y Python 3.11. Todavía no existe.
+- La base del piloto irá en el mismo proyecto de Neon, en una rama propia, `pilot-residents-v1`.
+- B-1 usará una rama temporal, `pilot-b1-validation`, con la base `mrs_b1`. Se borra después, y sólo con
+  autorización expresa.
+- B-1 no usa datos de producción.
+
+**Correcciones a la sección 15:** la app de `main` existe (15.2 no podía saberlo), y la versión mayor de PostgreSQL
+es 17 (15.6 la daba por desconocida).
+
+### 16.3 Topología final
+
+| | Desarrollo | Piloto |
+|---|---|---|
+| Rama de Git | `clinical-encounter-v0.13` | `pilot-residents-v1` (sólo promociones; sin crear) |
+| App de Streamlit | `clinical-management-reasoning-dev` (existe y no se toca) | `clinical-management-reasoning-pilot` (nueva; sin crear) |
+| Archivo principal | `app.py` | `app.py` |
+| Python | 3.12 | 3.11, elegido al crear la app |
+| Proyecto de Neon | `management-reasoning-simulator` | `management-reasoning-simulator` |
+| Rama de Neon | `clinical-encounter-v0.13`, archivada (según `docs/CLINICAL_DEV_DATABASE.md`) | `pilot-residents-v1` (sin crear; 16.10) |
+| PostgreSQL | 17 | 17 |
+| Uso | Sólo desarrollo. La Fase 1 seguirá aquí cuando se abra, con el piloto ya congelado | Sólo el piloto con residentes |
+
+**Reglas:**
+- `pilot-residents-v1` se promueve explícitamente desde un SHA conocido y aprobado (16.4).
+- Ningún push ordinario de desarrollo puede actualizar la app del piloto, porque ésta no sigue
+  `clinical-encounter-v0.13`.
+- Una vez creada la app, la lista de apps de Streamlit debe mostrar que sólo `clinical-management-reasoning-pilot`
+  sigue `pilot-residents-v1`.
+
+### 16.4 Contrato de promoción
+
+**`pilot-residents-v1` no es una rama de desarrollo.** Sólo recibe candidatos de despliegue aprobados explícitamente.
+Nunca se despliega «lo último» ni un commit sin revisar. Este contrato reemplaza al de 15.8.
+
+1. Cerrar las firmas docentes (B-5).
+2. Crear el candidato final en `clinical-encounter-v0.13`, con el árbol limpio.
+3. Correr la suite completa de pytest: 0 FAILED, con Python 3.11 y Streamlit 1.64.0.
+4. Correr `run_regressions.py`: 56/56.
+5. Correr B-1 en el proveedor sobre ese commit (16.8): 23/23.
+6. Anotar el SHA aprobado exacto, de 40 caracteres.
+7. Crear `pilot-residents-v1` en ese SHA, o avanzarla hasta él, con autorización:
+   `git push origin <SHA>:refs/heads/pilot-residents-v1`. Sólo avance rápido; nunca force-push sin una decisión
+   expresa.
+8. Verificar que la rama contiene exactamente el candidato: `git ls-remote origin refs/heads/pilot-residents-v1`
+   devuelve el SHA del paso 6.
+9. Poner `MRS_CODE_VERSION = "<SHA>"` en los Secrets del piloto.
+10. Correr el preflight contra la configuración del piloto (16.11):
+    `python3 tools_pilot_preflight.py --secrets <archivo> --commit <SHA> --connect`. Debe dar «LISTA», sin FALLA y
+    sin AVISO de `no_batch_settings`.
+11. Desplegar la app nueva: repositorio, `pilot-residents-v1`, `app.py`, Python 3.11 en «Advanced settings» y los
+    mismos Secrets.
+12. Correr la prueba de humo desplegada (sección 11).
+13. Verificar las fotos (TD-56): `check_database.py --photo-approvals` debe terminar en «All 117 approvals…».
+14. GO explícito del docente responsable (condición C).
+
+**En las promociones siguientes,** el push del paso 7 ya redespliega la app del piloto. Por eso los pasos 7 a 11 se
+hacen en una sola ventana: primero la puerta de encuentros abiertos (16.12), y después `MRS_CODE_VERSION` nuevo y
+«Reboot app».
+
+### 16.5 Riesgo de autodespliegue
+
+- **Confirmado:** `clinical-encounter-v0.13` → `clinical-management-reasoning-dev`. Un push redespliega desarrollo.
+- **Los seis commits locales no se empujan sin tu autorización expresa.** Si se autoriza el push, conviene saber:
+  - llevaría a la app de desarrollo el preflight, las regresiones y la fijación de Streamlit;
+  - el cambio de `requirements.txt` provoca un redespliegue completo, según el proveedor;
+  - antes conviene confirmar que nadie la está usando.
+- **Crear `pilot-residents-v1` en GitHub no mueve `clinical-encounter-v0.13`,** así que no redespliega desarrollo.
+- **Con el piloto creado:** `pilot-residents-v1` → sólo `clinical-management-reasoning-pilot`. Los commits de la Fase
+  1 nunca se empujan a `pilot-residents-v1`.
+
+### 16.6 Python: RESUELTO
+
+- **Confirmado:**
+  - Streamlit Community Cloud ofrece Python 3.11;
+  - la app del piloto se creará con 3.11;
+  - la de desarrollo sigue en 3.12 y no se cambia.
+- **Hay que elegirla al crear la app:** según el proveedor, cambiar Python después obliga a borrar la app y volver a
+  desplegarla.
+- **Verificación:** la app no registra la versión de Python en el encuentro. Se comprueba en su configuración, y la
+  captura queda en el registro del despliegue.
+
+### 16.7 Topología de la base
+
+| Elemento | Valor |
+|---|---|
+| Proveedor y proyecto | Neon, `management-reasoning-simulator` |
+| PostgreSQL | 17 |
+| Rama por omisión | `production`: producción. **Nunca** para pruebas ni para el piloto |
+| Rama persistente del piloto | `pilot-residents-v1` (sin crear; 16.10) |
+| Rama temporal de B-1 | `pilot-b1-validation` (sin crear; 16.9) |
+| Base temporal de B-1 | `mrs_b1` |
+
+**Reglas:**
+- ni el piloto ni B-1 modifican `production`;
+- B-1 es descartable y corre en el mismo proyecto, con PostgreSQL 17;
+- la base del piloto queda aislada de desarrollo;
+- ningún documento ni ninguna salida muestran credenciales.
+
+**Lo que dice el proveedor** (documentación de Neon, consultada por búsqueda; no verificada en la cuenta):
+- **Una rama normal hereda el esquema y todos los datos de su madre** en el momento de crearla. `production` es la
+  rama por omisión y la única no archivada. **Por eso una rama normal creada desde `production` contendría una
+  copia de los datos de producción.**
+- **La opción «Schema only»** crea una rama con el esquema y sin filas. Es una rama raíz independiente, sin madre,
+  dentro del mismo proyecto.
+- **Todas las ramas de un proyecto comparten la versión de PostgreSQL.**
+- **Crear una hija de una rama archivada la desarchiva,** junto con sus madres. Por eso las ramas archivadas de
+  desarrollo no se usan como madre.
+
+### 16.8 B-1: procedimiento exacto (preparado, no ejecutado)
+
+**Dónde.** Desde un equipo con red directa a Neon (por ejemplo, tu Mac con una copia del repositorio). Desde este
+entorno no es posible: su proxy sólo cursa HTTP(S), y las pruebas usan psycopg sobre TCP.
+
+**Qué commit.** El código de persistencia probado tiene que ser el del candidato.
+- Hoy, `009aadb` (que ya está en GitHub) y el HEAD local tienen idénticos todos los `.py`, salvo el preflight y dos
+  scripts de regresión, e idénticos los activos (comprobado el 2026-10-07 con `git diff`).
+- **Opción 1:** `009aadb` desde GitHub, más `pip install streamlit==1.64.0`, porque su `requirements.txt` admite
+  1.65.0.
+- **Opción 2:** el HEAD local exacto, mediante un `git bundle` y sin push, si lo pides.
+- Se anota el SHA probado. En la promoción, el paso 5 vuelve a correr B-1 sobre el SHA final.
+
+**Entorno.**
+- Python 3.11, con `pip install -r requirements.txt`.
+- Para J, `pg_dump` y `pg_restore` de la versión 17 o mayor: un `pg_dump` 16 no respalda un servidor 17.
+
+**Credenciales.** La URL nunca va a un archivo del repositorio, al chat ni a un registro. Se pega sin eco:
+
+```
+read -rs MRS_TEST_POSTGRES_URL; export MRS_TEST_POSTGRES_URL   # URL pooled de mrs_b1; no se muestra
+```
+
+Se usa la URL *pooled*, la que usará la app. El pooler del proveedor es comportamiento propio de Neon, y la prueba
+local no lo ejercitó. Si algo falla sólo con la URL pooled, se repite con la directa para aislar la causa, y se anotan
+las dos.
+
+**Paso 1 · Comprobar el destino.** Falla cerrado, imprime sólo lo de abajo y nunca la URL. Se probó en PostgreSQL 16
+local: con el destino correcto dice `TARGET OK`; con otra base u otra versión, `STOP`; sin TLS, no conecta.
+
+```
+EXPECT_DB=mrs_b1 EXPECT_MAJOR=17 python3 - <<'PY'
+import os, sys
+from urllib.parse import urlsplit
+import psycopg
+url = os.environ.get("MRS_TEST_POSTGRES_URL", "")
+part = urlsplit(url)
+print("endpoint:", (part.hostname or "").split(".")[0], "| database in URL:", part.path.lstrip("/"),
+      "| sslmode=require in URL:", "sslmode=require" in (part.query or ""))
+try:
+    with psycopg.connect(url, connect_timeout=10) as conn:
+        db, version, num = conn.execute("select current_database(), current_setting('server_version'), "
+                                        "current_setting('server_version_num')::int").fetchone()
+        tables = conn.execute("select count(*) from information_schema.tables where table_schema = 'public'").fetchone()[0]
+        tls = conn.pgconn.ssl_in_use
+except Exception as error:
+    print("connection failed:", type(error).__name__); sys.exit(1)
+print("database:", db, "| server:", version, "| major:", num // 10000, "| tables in public:", tables, "| client TLS:", tls)
+ok = db == os.environ["EXPECT_DB"] and num // 10000 == int(os.environ["EXPECT_MAJOR"]) and tls
+print("TARGET OK" if ok else "TARGET WRONG: STOP"); sys.exit(0 if ok else 1)
+PY
+```
+
+- La primera vez debe mostrar `TARGET OK`, `tables in public: 0` y `client TLS: True`.
+- El campo `endpoint` se compara con el endpoint de `pilot-b1-validation` en la consola.
+- Con `TARGET WRONG` o `connection failed`, se detiene todo.
+
+**Paso 2 · Crear el esquema por el camino del repositorio.** `check_database.py` imprime el host y el nombre de la
+base, nunca la contraseña.
+
+```
+MRS_DATABASE_URL="$MRS_TEST_POSTGRES_URL" python3 check_database.py            # «Connected.» y «This user may create tables.»
+MRS_DATABASE_URL="$MRS_TEST_POSTGRES_URL" python3 check_database.py --create   # «The application's store opened; its tables are in place.»
+```
+
+**Paso 3 · Las pruebas.**
+
+```
+python3 -m pytest -p no:cacheprovider -rA --junitxml=b1_junit.xml \
+  test_phase0_submission_guard_on_postgres.py test_store_integrity_on_postgres.py \
+  test_the_image_bank_on_postgres.py test_p07_75f_arrives_with_the_neutral_view.py 2>&1 | tee b1_pytest.log
+```
+
+**Paso 4 · Comprobar el destino otra vez.** Repetir el paso 1: debe seguir siendo `mrs_b1`, versión 17 y con TLS. Esta
+vez ya habrá tablas.
+
+**Paso 5 · J, recomendado.** Se corre sobre una segunda base vacía de la misma rama, `mrs_b1_drill`, con su URL
+**directa**: `pg_dump` y `CREATE DATABASE` son operaciones de sesión, y así el pooler no se mezcla con el respaldo.
+
+```
+read -rs B1_DRILL_URL; export B1_DRILL_URL
+python3 tools_backup_drill.py --postgres "$B1_DRILL_URL" --out b1_drill.json
+```
+
+El simulacro crea `mrs_b1_drill_restored` en la misma rama, desde la base `postgres`. Si el rol no puede crear bases,
+J queda NOT RUN, sin tocar nada fuera de la rama.
+
+**Qué demuestra cada parte:**
+
+| Ítem | Qué demuestra | Prueba |
+|---|---|---|
+| A | El envío queda escrito antes de ejecutarse | `test_a_the_order_is_in_the_database_before_it_runs`, `test_a_an_order_is_saved_before_it_runs_runs_once_and_is_saved_processed` |
+| B | Un ID de envío se ejecuta una vez | `test_b_a_second_click_on_the_same_form_executes_nothing_more` |
+| C | Una recarga después del write-ahead y antes de procesar reanuda una vez | `test_c_a_reload_between_the_write_ahead_and_the_run_executes_once_on_resume` |
+| D | Una recarga después de procesar no ejecuta de nuevo | `test_d_a_reload_after_processing_re_executes_nothing` |
+| E | Un proceso interrumpido se deshace y corre una vez; interrumpido dos veces, se dice y no corre | `test_e_a_run_stopped_part_way_is_undone_and_the_order_runs_once`, `test_e_a_run_stopped_twice_is_said_once_and_never_repeated` |
+| F | Un conflicto de revisión no duplica ni pierde nada en silencio | `test_f_two_sessions_on_one_encounter_never_run_an_order_twice_nor_lose_one_silently` |
+| G | F0-12: una orden escrita después de una respuesta | `test_an_order_written_after_an_answer_is_saved_with_it_and_runs_once` |
+| H | El esquema en una base nueva y su compatibilidad | `check_database.py --create`; cada fixture recrea `public` y la app crea sus tablas; `test_every_unique_key_is_an_index_of_a_new_database`, `test_an_old_repeat_no_longer_locks_the_store`, `test_the_directive_and_its_encounter_are_one_transaction`, `test_account_changes_are_written_with_author_and_time`, `test_the_encounter_is_kept_in_postgresql`, las 4 del banco de imágenes y la importación de la 75f |
+| I | La conexión del proveedor, con TLS | `sslmode=require`; paso 1 (`client TLS: True`, PostgreSQL 17); `check_database.py` («Connected.»); URL pooled; `test_a_driver_failure_is_logged_by_class_not_by_message` |
+| J | Respaldo y restauración en PostgreSQL 17 | `tools_backup_drill.py`. Recomendado: el plan vigente (runbook §3, paso 0) sólo exige el envío |
+
+**PASS de B-1:**
+- el paso 1 dice `TARGET OK` antes (`mrs_b1`, 17, TLS, 0 tablas) y después;
+- `check_database.py` dice «Connected.» y «This user may create tables.», y `--create` abre el store;
+- pytest da **23 passed, 0 failed, 0 errors y 0 skipped** (10 + 5 + 4 + 4);
+- la evidencia queda guardada y ningún registro contiene un secreto.
+
+J se informa aparte: PASS, FAIL o NOT RUN.
+
+**FAIL de B-1:**
+- cualquier falla o error;
+- **cualquier prueba de PostgreSQL omitida**: quiere decir que la URL no llegó, y la corrida no cuenta;
+- `TARGET WRONG` o una conexión sin TLS;
+- otra rama u otra base que las indicadas;
+- un secreto en un registro. En ese caso, además, se rota la contraseña del rol.
+
+**Cómo se demuestra que producción no se tocó:**
+1. Por construcción: la rama de B-1 es «Schema only», así que no contiene ninguna fila de producción. Las pruebas
+   sólo reciben la URL de `mrs_b1` en esa rama.
+2. Durante B-1 nadie obtiene ni usa la URL de producción.
+3. El paso 1, antes y después, deja anotados el endpoint y la base, cotejados con la consola.
+4. Según el proveedor, las ramas están aisladas: lo que se escribe en una no cambia otra.
+5. Opcional: si la consola muestra la actividad o el tamaño de `production`, se anotan antes y después.
+
+**Evidencia que se guarda.** Va en una subsección nueva de este informe, sin URLs, contraseñas ni hosts completos:
+- el SHA probado y que el árbol estaba limpio;
+- las versiones de Python, psycopg y Streamlit;
+- la salida del paso 1, antes y después, y la de `check_database.py`;
+- el resumen de pytest y su `b1_junit.xml`;
+- `b1_drill.json`, si J corrió;
+- de Neon: proyecto, rama y su tipo («Schema only»), base, tipo de endpoint, versión y horas de creación y de borrado;
+- quién la corrió y en qué ventana.
+
+### 16.9 Creación del recurso de B-1 (preparada; no ejecutar sin autorización)
+
+1. En la consola de Neon, en el proyecto `management-reasoning-simulator`, ir a Branches → New branch:
+   - nombre `pilot-b1-validation`;
+   - origen `production`, con la opción **«Schema only»**: copia el esquema, sin datos.
+   - No usar las ramas archivadas como origen.
+   - Si la consola no ofrece «Schema only», **no crear una rama con datos de producción**: detenerse y decidir
+     (alternativas en 16.10).
+2. En esa rama, crear la base `mrs_b1`, cuya dueña sea el rol con que correrán las pruebas: las pruebas borran y
+   recrean el esquema `public`, y eso exige ser dueño de la base. Para J, también `mrs_b1_drill`, con la misma dueña.
+3. En «Connect», copiar la URL *pooled* de `mrs_b1` y, para J, la directa de `mrs_b1_drill` a un gestor de
+   contraseñas. Nunca al repositorio, al chat ni a archivos.
+4. Crear el esquema por el camino del repositorio: 16.8, paso 2.
+5. Correr B-1: 16.8, pasos 1 a 5.
+6. Registrar el proveedor, la versión de PostgreSQL, la rama, la base, el SHA probado y los resultados (evidencia de
+   16.8), sin credenciales.
+7. **Con tu aprobación,** borrar la rama `pilot-b1-validation`; con ella se van `mrs_b1`, `mrs_b1_drill` y
+   `mrs_b1_drill_restored`. Se anota la hora. El borrado no es automático.
+
+### 16.10 Base persistente del piloto (para después; no crear sin autorización)
+
+**Recomendación: C, inicialización independiente y vacía.**
+- `pilot-residents-v1` se crea como rama «Schema only»: una raíz independiente, sin datos.
+- Dentro, una base nueva y vacía, `mrs_pilot`, cuya dueña sea un rol propio de la app del piloto. La app usa sólo esa
+  base.
+- Una base nueva, y no la heredada, porque la rama «Schema only» trae las definiciones de tablas de producción; así la
+  app empieza sin estructura heredada y crea la suya.
+
+**La app no necesita datos sembrados.** Lo crea todo al abrirse (verificado en el código):
+- sus tablas `mrs_*`, con `CREATE TABLE IF NOT EXISTS`;
+- las metas del programa, que `ProgressStore` siembra desde `objectives.py`;
+- el paquete de fotos, que se importa desde `assets/patient_images` al abrir la página (`image_pack.ensure_imported`);
+- el primer administrador, desde los Secrets de bootstrap.
+
+Lo demás son acciones docentes dentro de la app, después del despliegue (secciones 6 y 7): la aprobación del relato
+en español, los descriptores de la rúbrica y las aprobaciones de fotos de TD-56.
+
+**Por qué no las otras:**
+- **A, rama desde `production`:** copiaría los datos de producción al piloto con residentes.
+- **B, rama desde las de desarrollo o validación:** están archivadas (crear una hija las desarchiva) y traen datos de
+  desarrollo.
+
+**Si «Schema only» no está disponible,** no se crea una rama con datos de producción. Decides tú entre:
+- (i) crear la rama desde `production` y, sólo en esa rama hija y con autorización expresa, borrar las bases heredadas
+  antes de usarla;
+- (ii) un proyecto de Neon aparte, con PostgreSQL 17. Esto se aparta de la decisión de usar el mismo proyecto.
+
+**Cuándo:** antes del paso 10 del contrato, porque `--connect` la necesita, y con autorización.
+
+**Conexión:** la URL *pooled* de `mrs_pilot`, con `sslmode=require`, en los Secrets del piloto.
+
+**Respaldos:** antes de cada despliegue y a diario (`docs/RESPALDO_Y_RESTAURACION.md`), con `pg_dump` 17 sobre la URL
+directa (TD-76).
+
+### 16.11 Contrato de Secrets de la app del piloto (sólo nombres)
+
+**Dónde:** `clinical-management-reasoning-pilot` → Settings → Secrets, o «Advanced settings» al crearla. **El gate es
+el preflight corregido.**
+- **Antes de crear la app:** se corre el preflight con el archivo local cuyo texto se va a pegar.
+- **Después de crearla:** se copian los Secrets tal como quedaron en la app a un archivo temporal y se corre otra vez
+  (`--commit <SHA> --connect`).
+- El despliegue no se da por listo hasta que las dos corridas digan «LISTA».
+- El archivo nunca se versiona y se borra al terminar.
+
+| Setting | Estado exigido en el piloto | ¿Secreto? | Regla del preflight |
+|---|---|---|---|
+| `MRS_DATABASE_URL` | URL *pooled* de `mrs_pilot` (rama `pilot-residents-v1`), `sslmode=require` | **SÍ** | `database_url`; con `--connect`, `database_reachable` |
+| `MRS_AUTH_MODE` | `"accounts"` | NO | `auth_mode` |
+| `MRS_OFFLINE_CASES` | `"1"` | NO | `offline_cases` |
+| `MRS_PAID_GENERATION` | `"off"` | NO | `paid_generation_off` |
+| `MRS_FREE_GENERATION` | Ausente | NO | `free_generation_closed` |
+| `MRS_DEFAULT_VARIANT` | Ausente | NO | `no_pinned_case` |
+| `MRS_REPLAY_CASE` | Ausente | NO | `no_replay_case` |
+| `MRS_CODE_VERSION` | `"<SHA aprobado>"` | NO | `code_version` |
+| `MRS_IMAGE_REQUIRE_REVIEW` | `"on"` | NO | `image_review` |
+| `MRS_ADMIN_USERNAME`, `MRS_ADMIN_PASSWORD_HASH` | Sólo para crear el primer administrador; después se retiran | El hash: **SÍ** | `admin_bootstrap` |
+| `OPENAI_API_KEY` | Ausente | **SÍ** | `provider_key_withheld` |
+| `MRS_ALLOW_LOCAL_SQLITE` | Ausente | NO | `no_local_sqlite` |
+| `MRS_SYNTHETIC_ACCOUNTS`, `MRS_BATCH_*` | Ausentes | Contraseñas: **SÍ** | `no_batch_settings` (AVISO) |
+| `MRS_PUBLIC_APP_URL` | La URL que Streamlit asigne a la app; se espera `https://clinical-management-reasoning-pilot.streamlit.app/` | NO | Ninguna (TD-75) |
+| `MRS_IMAGE_BANK` | Ausente: el banco de fotos aprobadas queda activo | NO | Ninguna (TD-75) |
+| `MRS_LANGUAGE` | Opcional (`es` o `en`); decisión docente | NO | Ninguna |
+| `APP_PASSWORD`, `MRS_DEFAULT_CHALLENGE`, `MRS_ANALYSIS_CORRECTIONS`, `OPENAI_MODEL`, `MRS_*_MODEL`, `MRS_AI_*`, `MRS_IMAGE_BUDGET_*`, `MRS_DIAGNOSTIC_DIR` y `STREAMLIT_*` | Ausentes | `APP_PASSWORD`: **SÍ** | `fast_reruns` vigila `STREAMLIT_RUNNER_FAST_RERUNS`; el resto, ninguna |
+| `.streamlit/config.toml` `[runner] fastReruns` | `false` en el SHA | NO | `fast_reruns` |
+
+**Para las fotos no hace falta ningún secreto:** basta `MRS_IMAGE_REQUIRE_REVIEW = "on"` y `MRS_IMAGE_BANK` ausente.
+Las fotos llegan en `assets/`.
+
+### 16.12 Puerta de encuentros abiertos
+
+**NO SE DESPLIEGA CON ENCUENTROS DEL PILOTO ABIERTOS.**
+- La puerta del operador son las tres consultas de sólo lectura y el chequeo mínimo de 15.10.
+- Se aplica antes de cada despliegue, promoción o «Reboot app» de la app del piloto.
+- En el primer despliegue la base es nueva, así que la consulta 1 da 0.
+- No se implementa ningún bloqueo en el runtime.
+
+### 16.13 Aceptación de B-2
+
+| Criterio | Estado |
+|---|---|
+| Proveedor: Streamlit Community Cloud | SÍ (16.2) |
+| App nueva dedicada: `clinical-management-reasoning-pilot` | SÍ (decidida; se crea en el paso 11) |
+| Repositorio: `management-reasoning-simulator` | SÍ |
+| Estrategia de rama: `pilot-residents-v1`, sólo promociones | SÍ (16.3, 16.4) |
+| Archivo principal: `app.py` | SÍ |
+| Python 3.11 | SÍ (16.6) |
+| Proveedor y proyecto de Neon | SÍ: `management-reasoning-simulator` |
+| PostgreSQL 17 | SÍ |
+| Estrategia de la rama de base del piloto | SÍ (16.10; con alternativa si «Schema only» no está disponible) |
+| Prueba descartable de B-1 | SÍ (16.8, 16.9) |
+| Lugar de los Secrets | SÍ (16.11) |
+| Autodespliegue entendido | SÍ (16.5) |
+| Procedimiento de encuentros abiertos | SÍ (16.12) |
+| Contrato de promoción del SHA | SÍ (16.4) |
+
+**B-2: RESUELTO.**
+
+### 16.14 Estado al cerrar el encargo
+
+- **B-1: READY TO EXECUTE / NOT YET EXECUTED.** Siguiente acción, con tu autorización:
+  1. crear en Neon `pilot-b1-validation` («Schema only») y la base vacía `mrs_b1` (16.9);
+  2. desde un equipo con red directa, correr los pasos 1 a 5 de 16.8.
+- **B-5: BLOCKED.** No se cambió ningún texto que espera firma. El SHA final se construye sólo después de cerrarlo.
+- **NOT READY FOR DEPLOYMENT:** faltan B-1 y B-5.
