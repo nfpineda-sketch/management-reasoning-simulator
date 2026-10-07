@@ -411,6 +411,42 @@ K-18 se comprobó además en la sala real (`pilot_acceptance`), sin cambiar cód
 | 4 | K-20 · examen de cualquier región tras el paro | «Sin respuesta, sin respiración, sin pulso central: el paciente está en paro cardíaco. La reanimación no está modelada en este piloto.» | **APPROVE AS IS** — se ve en español también en el panel del examen |
 | 5 | K-21 · paro de la anafilaxia sin tratar (anterior a la Fase 0) | «Paro circulatorio tras veinticinco minutos de anafilaxia no tratada. La adrenalina era el tratamiento que faltaba; nada más de lo administrado actúa sobre la reacción.» | **APPROVE AS IS** — exacta en el motor: sin adrenalina, nada más actúa sobre la reacción (el glucagón sólo devuelve la respuesta a la adrenalina). Se decide junto a K-18, su hermana |
 
+**Decisión docente (2026-10-07):** K-17, K-19, K-20 y K-21, APPROVE. K-18, REVISE, con la redacción propuesta: EN
+«Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier did not keep the reaction under control. Nothing else that was given acts on the reaction.» · ES «Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes no logró mantener la reacción bajo control. Nada más de lo administrado actúa sobre la reacción.» Motivo docente: es cierta cuando la adrenalina ayudó y después perdió su efecto, y cuando
+la dosis previa nunca controló bien la reacción, también con betabloqueo. Es una corrección de texto antes del
+candidato final (TD-82), sin implementar. **Con este lote, todas las decisiones de nivel 1 están tomadas.** H-62 e
+I-63 siguen sin firma a propósito, hasta el candidato final implementado: no es un rechazo y no reabre el nivel 1.
+
+### 3.7 Primer lote de nivel 2 (propuesto el 2026-10-07)
+
+Orden del paquete: A-3 a A-8 y A-10 a A-13; A-9 es de nivel 1, ya decidida. Son frases del motor (R-4): el examen
+respiratorio y la vía de la hipoglicemia. **Comprobado el 2026-10-07:**
+
+- el inglés y el español coinciden con el motor (`family_engine.py:3222–3247`, `glucose_rescue.py:202–220`), los
+  borradores (`spanish_drafts.ENGINE`) y la hoja R-4;
+- en un encuentro en español, el panel del examen las muestra hoy en inglés (`language.examination`). Con X-1
+  decidida, se verán en español al implementarla. El registro las guarda en inglés;
+- cuándo aparece cada una, con el motor y sin cambiar código: asma y opioides con y sin tratamiento; edema
+  pulmonar, por su prueba (`test_td47_and_r4_engine_findings.py`).
+
+Dónde se ven: en el panel del examen, región «Respiratory» (A-3 a A-11) o «Vascular access» (A-12 y A-13).
+Ninguna es idéntica a otra, así que no se agrupan. A-5, A-6 y A-8 se marcan VINCULADAS: A-8 repite A-5 o A-6.
+
+| # | ID · casos | EN exacto | ES exacto | Qué significa | Recomendación |
+|---|---|---|---|---|---|
+| 1 | A-3 · 58m, 75f | Bilateral crackles remain, with reduced respiratory effort. | Persisten crépitos bilaterales, con menor esfuerzo respiratorio. | La congestión mejora con el tratamiento: el menor esfuerzo es mejoría. Una prueba fija que nunca aparece sin tratamiento ni junto al agotamiento | **APPROVE AS IS** — distinta de la frase de esfuerzo aumentado y de A-2 revisada (agotamiento) |
+| 2 | A-4 · todas las familias salvo asma, edema pulmonar y opioides | New bibasal inspiratory crackles since the transfusion, with increased effort and no wheeze. | Crépitos inspiratorios bibasales nuevos desde la transfusión, con aumento del esfuerzo y sin sibilancias. | Sobrecarga circulatoria por una transfusión innecesaria (hemoglobina de 10 g/dL o más, sin hemorragia activa que reponer), no broncoespasmo | **APPROVE AS IS** — con la precisión de dónde aparece |
+| 3 | A-5 · 24f, 49m | Improved air entry with residual expiratory wheeze. | Mejor entrada de aire, con sibilancias espiratorias residuales. | Responde a los broncodilatadores; queda una obstrucción leve. Aparece con broncodilatadores (minuto 6), nunca con oxígeno solo | **APPROVE AS IS** — VINCULADA con A-8 |
+| 4 | A-6 · 24f, 49m | Reduced bilateral air entry with prolonged expiration and wheeze. | Entrada de aire disminuida en ambos lados, con espiración prolongada y sibilancias. | Obstrucción grave, sin respuesta | **REVIEW CLOSELY** — en la 49m reemplaza, desde la primera orden y sin cambio fisiológico, un tórax casi silente («very poor bilateral air entry and only faint wheeze»). Opciones: aprobar tal cual, o que el motor conserve el examen de llegada mientras la obstrucción siga igual (TD-83) |
+| 5 | A-7 · 24f, 49m, intubados | Breath sounds absent over the right hemithorax, which is hyper-resonant; wheeze on the other side. | Murmullo pulmonar abolido en el hemitórax derecho, que está hipersonoro; sibilancias en el otro lado. | Neumotórax a tensión por barotrauma en ventilación mecánica (meseta sostenida sobre 30 cmH₂O): hay que descomprimir. El motor lo pone siempre a la derecha | **APPROVE AS IS** |
+| 6 | A-8 · 24f, 49m | Breath sounds returning on the right after decompression; improved air entry with residual expiratory wheeze. | Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; mejor entrada de aire, con sibilancias espiratorias residuales. | La descompresión funcionó; queda la obstrucción. Si sigue grave, la segunda parte es A-6 | **APPROVE AS IS** — VINCULADA con A-5 y A-6 |
+| 7 | A-10 · 35m, 67f | Respiratory rate {n} /min; breaths remain shallow. | Frecuencia respiratoria {n}/min; las respiraciones siguen siendo superficiales. | Hipoventilación persistente (FR bajo 10 sin ventilación asistida): faltan la naloxona o la ventilación. Es también el examen de llegada | **APPROVE AS IS** — notas cosméticas: «{n} /min» lleva un espacio que A-9 revisada no lleva; «siguen siendo» en el primer examen |
+| 8 | A-11 · 35m, 67f | Respiratory rate {n} /min; spontaneous breaths have greater depth. | Frecuencia respiratoria {n}/min; las respiraciones espontáneas son más profundas. | Respuesta a la naloxona (FR de 10 o más sin ventilación asistida; minuto 3 tras la dosis IV) | **APPROVE AS IS** — la misma nota de «{n} /min» |
+| 9 | A-12 · `hypoglycemia_54m_thiamine` | Peripheral cannula in the left forearm; the skin around its tip is slightly swollen and cool. | Cánula periférica en el antebrazo izquierdo; la piel alrededor del extremo del catéter está levemente aumentada de volumen y fría. | La vía de llegada puede estar infiltrada: un signo, no un veredicto | **APPROVE AS IS** |
+| 10 | A-13 · `hypoglycemia_28m`, `hypoglycemia_76f` | Peripheral cannula in the left forearm; the site is clean, without swelling or tenderness. | Cánula periférica en el antebrazo izquierdo; el sitio está limpio, sin aumento de volumen ni dolor a la palpación. | La vía de llegada está en vena y limpia | **APPROVE AS IS** |
+
+Campo de decisión de cada una, en el paquete (bloque A): ☐ APPROVE · ☐ REVISE · ☐ DEFER.
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -428,8 +464,8 @@ K-18 se comprobó además en la sala real (`pilot_acceptance`), sin cambiar cód
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes de los lotes 1 a 5, del alcance y las bases de X-1, del
-relato, de la rúbrica y de las guías (Decision File, octava a duodécima actualizaciones).
+Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1, del alcance y las bases de X-1, del
+relato, de la rúbrica y de las guías (Decision File, octava a decimotercera actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -438,10 +474,11 @@ relato, de la rúbrica y de las guías (Decision File, octava a duodécima actua
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
    revisión.
-4. **Las firmas que quedan del paquete:** 48 de 100 decisiones; con las firmas de H-62 e I-63, 50. El lote final
-   de nivel 1 (K-17 a K-21) está en 3.6.
+4. **Las firmas que quedan del paquete:** 43 de 100 decisiones, todas de nivel 2; con las firmas de H-62 e I-63,
+   45. El primer lote de nivel 2 está en 3.7.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
 6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
    de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista.
-7. **K-18:** decidir si la frase del paro tras una dosis se aprueba tal cual o se corrige, porque en la 63m
-   (betabloqueo) describe un curso que no ocurrió (3.6; TD-82).
+7. **Decidido:** K-18, REVISE con la redacción docente; es una corrección de texto antes del candidato final
+   (3.6; TD-82).
+8. **A-6:** decidir si, en la 49m, el examen respiratorio conserva la gravedad de llegada (3.7; TD-83).

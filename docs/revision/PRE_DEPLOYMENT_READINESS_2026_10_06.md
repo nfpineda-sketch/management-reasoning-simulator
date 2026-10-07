@@ -284,6 +284,10 @@ antes de implementarla (Decision File, décima y undécima actualizaciones; TD-8
 K-13 y K-14 con la regla de X1-0); faltan K-17 a K-21 y los eventos K-E1 a K-E17 (Decision File, duodécima
 actualización).
 
+**Actualización del 2026-10-07 (B-5, lote final de nivel 1):** K-17 a K-21 quedan decididas, y con ellas todo el
+nivel 1. K-18 se revisa: es una corrección de texto del motor antes del candidato final (TD-82). De F0-11 quedan
+los eventos K-E1 a K-E17, de nivel 2 (Decision File, decimotercera actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

@@ -9,7 +9,7 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
-  en español, sin interfaz mezclada en el candidato final; los lotes 1 a 5 de nivel 1 quedaron decididos, el español
+  en español, sin interfaz mezclada en el candidato final; todas las decisiones de nivel 1 quedaron tomadas, el español
   que falta para X-1 está redactado y sus decisiones de base, tomadas; el relato y la rúbrica en español se revisan
   antes de congelar el candidato, y el relato aprobado entra en él en `case_text/es/approvals.json`). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
@@ -364,13 +364,41 @@ paquete, en la hoja F0-11 (`docs/revision/F0_11_FRASES_ES.md`) y en `docs/revisi
 - **Siguiente lote de nivel 1, el último:** K-17 a K-21.
 - **B-5: BLOCKED.**
 
+**Actualizado por decimotercera vez el 2026-10-07: B-5 · lote final de nivel 1 (K-17 a K-21) y nivel 1 completo;
+primer lote de nivel 2 preparado.** Registradas también en el paquete, en la hoja F0-11 y en
+`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`. **Ninguna está implementada.**
+
+| ID | Decisión docente (2026-10-07) | Qué exige, sin implementar todavía |
+|---|---|---|
+| K-17, K-19, K-20 y K-21 | APPROVE | Nada: activas en los dos idiomas |
+| K-18 | REVISE. EN «Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier did not keep the reaction under control. Nothing else that was given acts on the reaction.» · ES «Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes no logró mantener la reacción bajo control. Nada más de lo administrado actúa sobre la reacción.» Motivo: es cierta cuando la adrenalina ayudó y después perdió su efecto, y cuando la dosis previa nunca controló bien la reacción, también en el caso con betabloqueo | Corrección de texto antes del candidato final: la frase del motor y su español, con sus pruebas (TD-82). No se implementa todavía |
+
+- **Nivel 1 completo:** las 55 decisiones de nivel 1 están tomadas. H-62 e I-63 siguen sin firma a propósito,
+  hasta que exista el candidato final implementado. No es un rechazo y no reabre el nivel 1.
+- **Cuentas:**
+  - paquete: 57 de las 100 decididas; quedan 43, todas de nivel 2. Con H-62 e I-63, las firmas abiertas son 45;
+  - borrador de X-1: 7 de 105 decididas, quedan 98 (sin cambio).
+- **Primer lote de nivel 2, propuesto:** A-3 a A-8 y A-10 a A-13, las frases del motor de R-4 (el examen
+  respiratorio y la vía de la hipoglicemia). Ninguna es idéntica a otra, así que no se agrupan; A-5, A-6 y A-8 se
+  marcan VINCULADAS. Comprobado el 2026-10-07: su inglés y su español coinciden con el motor, los borradores y la
+  hoja R-4.
+- **Hallazgo del lote (A-6, TD-83):**
+  - en `asthma_49m`, la llegada describe un tórax casi silente («very poor bilateral air entry and only faint
+    wheeze»);
+  - desde la primera orden, aun con oxígeno solo, el examen muestra A-6 («Reduced bilateral air entry with
+    prolonged expiration and wheeze»), sin cambio fisiológico. Comprobado con el motor, sin cambiar código;
+  - recomendación: REVIEW CLOSELY, con dos opciones (paquete, A-6).
+- **Precisión (A-4):** la frase de la sobrecarga por transfusión aparece en todas las familias salvo asma, edema
+  pulmonar y opioides, cuya línea respiratoria la reemplaza.
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J y los lotes 1 a 5 de nivel 1, sin implementar; quedan 48 de 100 (5 de nivel 1 y 43 de nivel 2), y H-62 e I-63, decididas DEFER, siguen sin firma (50 firmas abiertas). Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J y todo el nivel 1, sin implementar; quedan 43 de 100, todas de nivel 2, y H-62 e I-63, decididas DEFER, siguen sin firma a propósito (45 firmas abiertas). Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

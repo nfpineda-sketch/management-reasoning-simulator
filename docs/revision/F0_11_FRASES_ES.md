@@ -86,15 +86,21 @@ Aparecen dentro de la frase de la espera interrumpida (fila 6).
 
 | Revisión | Resultado | Fecha | Firma |
 |---|---|---|---|
-| Redacción de las frases de la sala | Parcial: filas 1 a 16 aprobadas (K-1 a K-16); filas 17 a 19 y las dos de «Examen y frase hermana» (K-17 a K-21), pendientes | 2026-10-07 (parcial) | |
+| Redacción de las frases de la sala | Decidida: filas 1 a 17 y 19 y las dos de «Examen y frase hermana», aprobadas; fila 18, REVISE (redacción nueva abajo, sin implementar) | 2026-10-07 | |
 | Eventos que cortan una espera | Pendiente | | |
 
-**Decisiones docentes del 2026-10-07 (lotes 4 y 5 del paquete de firmas), sin implementar.** Las filas 1 a 16 se
-aprueban como están, con dos condiciones que no cambian su inglés:
+**Decisiones docentes del 2026-10-07 (lotes 4, 5 y final del paquete de firmas), sin implementar.** Las filas 1 a
+17 y 19, y las dos de «Examen y frase hermana», se aprueban como están, con dos condiciones que no cambian su
+inglés:
 
 - filas 5, 6, 13 y 14: rige X1-0 para los fármacos (regla 3, arriba);
 - fila 16: se conserva la semántica de F0-12. La orden escrita después de responder se procesa como orden propia,
   con su propio destino y su propio recibo.
+
+La fila 18 se revisa (REVISE). La tabla de arriba muestra la frase activa hasta implementarla (TD-82):
+
+- EN: Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier did not keep the reaction under control. Nothing else that was given acts on the reaction.
+- ES: Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes no logró mantener la reacción bajo control. Nada más de lo administrado actúa sobre la reacción.
 
 En la fila 9, la mayúscula tras «sin pulso:» es cosmética y no pide revisión. Cada decisión, con su nota, está en
 el paquete (`docs/revision/FACULTY_SIGNOFF_PACKET_PREPILOT.md`, bloque K).
