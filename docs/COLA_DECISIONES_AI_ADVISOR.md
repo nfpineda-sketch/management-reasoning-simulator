@@ -8,7 +8,8 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Actualizado:** 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
-  corrida única 23/23 en Neon, y sigue B-5, bloqueado). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
+  corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
+  en español). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
@@ -138,13 +139,39 @@ Sigue pendiente de ti:
   borró.
 - **Queda B-5:** las firmas docentes (informe, 20.5).
 
+**Actualizado por séptima vez el 2026-10-07: B-5 · X-1 CERRADA; guías actualizadas para la firma** (detalle en
+`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`).
+
+- **X-1, decisión docente:** el piloto de residentes corre en inglés y en español. De ella sigue:
+  - el español entra en el candidato final, y F0-11 es un requisito previo al candidato;
+  - todo texto activo de la Fase 0 que ve el residente debe estar en ambos idiomas antes de congelar el
+    candidato;
+  - los códigos y destinos que lee la máquina son canónicos y no se traducen;
+  - todavía no se activa ni se reescribe texto clínico.
+- **Hecho, sólo documentación y sin push:**
+  - las dos guías, actualizadas con las correcciones H-1 a H-11 e I-1 a I-9 del paquete (H-6 e I-9 siguen
+    siendo ciertas y no cambian), **no aprobadas**;
+  - la tabla de la brecha bilingüe y el primer lote de diez decisiones de nivel 1.
+- **La brecha:**
+  - las 21 frases K y los 17 eventos ya se ven en español;
+  - las filas 12–18 de R-4 no: el panel del examen las muestra en inglés, y hace falta un cambio de código
+    después de su firma;
+  - fuera de F0-11, la mayoría de las preguntas de aclaración anteriores a la Fase 0 se ven en inglés o
+    mezcladas (TD-79, nueva), y varios rótulos de la sala siguen en inglés (TD-61).
+- **Decisiones que se necesitan:**
+  - el alcance de X-1 fuera de las frases de la Fase 0: filas 1–11 de R-4, aviso de la foto (J), preguntas de
+    aclaración (TD-79) y rótulos (TD-61);
+  - las firmas del paquete, empezando por el nivel 1;
+  - la firma de las dos guías.
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes, todas pendientes | Firmar antes de construir el candidato final |
+| B-5 | **Bloqueado** | Las firmas docentes. X-1 quedó decidida el 2026-10-07 (piloto en inglés y en español); las demás siguen pendientes | Firmar antes de construir el candidato final; definir el alcance de X-1 fuera de la Fase 0 |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

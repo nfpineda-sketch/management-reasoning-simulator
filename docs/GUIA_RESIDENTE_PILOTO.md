@@ -1,6 +1,6 @@
 # Guía del residente · piloto formativo
 
-> **Estado (cierre prepiloto, 2026-10-02): lista para la firma docente, no aprobada.** Se entrega a los
+> **Estado (Fase 0 cerrada el 2026-10-06): lista para la firma docente, no aprobada.** Se entrega a los
 > residentes sólo después de esa aprobación. Las etiquetas van como las muestra la pantalla en español y,
 > entre paréntesis, en inglés.
 
@@ -13,10 +13,15 @@ posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada
   contraseña la primera vez: «Cambia tu contraseña» («Change your password»), en la barra lateral.
 - **Foto e iniciales:** son opcionales. Lee el acuerdo; puedes aceptarlo o no, y nada cambia en tus
   encuentros.
-- **Idioma:** elígelo en «Idioma · Language». Las pantallas están en español o en inglés, y puedes escribir
-  tus órdenes en cualquiera de los dos. Durante un encuentro el idioma queda fijo. Parte del relato de un
-  caso, como su informe POCUS, puede verse en inglés mientras su traducción no esté aprobada; cada línea se
-  ve entera en un solo idioma.
+- **Idioma:** el piloto corre en español y en inglés; elígelo en «Idioma · Language». Las pantallas están en
+  español o en inglés, y puedes escribir tus órdenes en cualquiera de los dos. Durante un encuentro el idioma
+  queda fijo. Lo que la sala te dice sobre tus órdenes (qué pasó con cada una, las esperas, las
+  interrupciones, el paro) se ve en el idioma que elegiste. Parte del relato de un caso, como su informe
+  POCUS, puede verse en inglés mientras su traducción no esté aprobada, y también algunas líneas del examen
+  que escribe el simulador (por ejemplo, la auscultación o las vías venosas); cada línea se ve entera en un
+  solo idioma. Por ahora, muchas preguntas de la sala sobre una orden (por ejemplo, qué dosis o qué vía), el
+  aviso de una orden retenida para que expliques tu razonamiento y algunos rótulos de la pantalla todavía se
+  ven en inglés, en todo o en parte.
 - **Sin datos reales:** no escribas nombres ni datos de pacientes reales. Todo es simulado.
 
 ## El encuentro
@@ -27,15 +32,30 @@ posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada
 3. **Actúa como lo harías en la práctica:**
    - pregunta, examina, pide estudios y da órdenes, en texto libre;
    - escribe las dosis, las vías y cuándo reevaluar;
-   - si una orden es ambigua, la sala te pregunta, y la pregunta no consume minutos.
-4. **Explica tu razonamiento cuando puedas:** tu modelo de trabajo, tu prioridad, qué respuesta esperas y
-   cuándo reevaluarás. El registro del encuentro (el Management Trace) guarda lo que escribiste y lo que
-   pasó.
-5. **El paciente responde a lo que haces:** el tiempo avanza con tus órdenes y reevaluaciones. El examen
-   dice lo que se encuentra en el momento en que examinas: para reevaluar, vuelve a examinar.
-6. **Termina con un destino:** a dónde va el paciente y con qué plan. Si cierras sin destino, la sala te
+   - si una orden es ambigua, la sala te pregunta, y la pregunta no consume minutos. Tu respuesta completa
+     sólo esa orden: si en la misma respuesta escribes otra, la sala la lee a continuación como una orden
+     aparte y te dice qué pasó con ella; si tu respuesta deja algo sin completar, esa otra orden no se ejecuta
+     y la sala te lo dice: escríbela de nuevo.
+4. **Explica tu razonamiento con tus órdenes de manejo:** qué crees que está pasando, qué esperas que ocurra
+   y qué vas a revisar. Si falta alguna de esas tres cosas, la sala retiene todo el envío y te pide
+   completarlas, con tus palabras o con las preguntas guiadas. Tu prioridad y cuándo reevaluarás también se
+   registran, pero su falta no retiene la orden. Una intervención urgente (ventilar con bolsa y mascarilla,
+   descomprimir el tórax, controlar una hemorragia o poner un cinturón pélvico) nunca se retiene, y puedes
+   explicarla después.
+   El registro del encuentro (el Management Trace) guarda lo que escribiste y lo que pasó.
+5. **El paciente responde a lo que haces:** el tiempo avanza con tus órdenes, tus esperas y tus
+   reevaluaciones. «Espera 15 minutos» (u «observa 15 minutos») avanza el reloj 15 minutos; «reevalúa» sin un
+   número es una mirada a la cabecera de 2 minutos; «da X y reevalúa» es X más esa mirada, y la sala te dice si
+   X alcanzó a actuar. Para ver el efecto de un tratamiento, espera o reevalúa con un intervalo («reevalúa en
+   15 minutos»). El reloj avanza como máximo 120 minutos de una vez: para más, vuelve a esperar. Si durante una
+   espera ocurre algo importante, la espera se corta en ese minuto, la sala te dice qué pasó y recuperas el
+   control. El examen dice lo que se encuentra en el momento en que examinas: para reevaluar, vuelve a
+   examinar.
+6. **Si el paciente hace un paro,** la sala lo dice. La reanimación no está modelada en este piloto: nada de
+   lo que escribas después se ejecuta ni se evalúa.
+7. **Termina con un destino:** a dónde va el paciente y con qué plan. Si cierras sin destino, la sala te
    pregunta cómo termina el encuentro; puedes seguir o terminar: «Finalizar ahora» («Finish now»).
-7. **Revisa tus decisiones** en la revisión que se abre al terminar: «Revisión de decisiones» («Decision
+8. **Revisa tus decisiones** en la revisión que se abre al terminar: «Revisión de decisiones» («Decision
    Review»). Para algunas de ellas te pregunta qué cambió en tu modelo de trabajo, qué disparó tu prioridad,
    qué harías distinto y qué respuesta esperabas. Queda guardada con el encuentro.
 
@@ -54,8 +74,15 @@ posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada
   Consultarlas no envía nada ni borra lo que estás escribiendo.
 - **A la derecha, abajo, «Manejo»:** elige un modo (Talk, Examine, Tests, Treat; el elegido lleva ✓), escribe
   y pulsa «Enviar» («Send»). Enter agrega una línea; no envía. Bajo los modos, la sala te dice qué pasó con tu
-  última orden. Si una orden queda retenida o la sala te pregunta algo, el aviso queda a la vista hasta que
-  respondas.
+  última orden (su recibo). Por ejemplo: «No se entendió: …» («Not understood: …»): no se dio ni se hizo
+  nada, escríbela de nuevo con otras palabras; «Registrado como tu decisión, no administrado» («Recorded as
+  your decision, not given»): el simulador no modela esa respuesta en este caso y nada cambió; «No se hizo
+  ahora» («Not done now»): una orden para más tarde no se ejecuta ni se programa, escríbela cuando quieras que
+  se haga; o, en un envío con varias órdenes, qué se ejecutó y qué no. Si una
+  orden queda retenida o la sala te pregunta algo, el aviso queda a la vista hasta que respondas.
+- **Envía una vez:** «Enviar» se desactiva mientras la sala procesa. Un doble clic o recargar la página no
+  repiten una orden. Si un envío se interrumpe, la sala te lo dice y no lo repite: revisa el estado del
+  paciente y envíalo de nuevo si todavía hace falta.
 - **«☰ Menú» («Menu»), arriba a la izquierda:** tu cuenta, tu contraseña, el idioma (fijo durante el encuentro)
   y salir del encuentro (guardar y volver, o terminar el intento). Se abre con un clic o con el teclado y se
   cierra con Escape o con un clic fuera. Durante el encuentro no hay barra lateral.

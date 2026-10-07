@@ -104,6 +104,8 @@ Recomendación del AI Advisor sobre las 100 requeridas:
 - REVIEW CLOSELY: 9;
 - NEEDS UPDATE BEFORE SIGN-OFF: 2.
 
+Actualización del 2026-10-07: con X-1 cerrada, A-9 pasa de REVIEW CLOSELY a NEEDS REVISION del inglés (`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 3).
+
 Además, **después del despliegue y antes del GO** (sección 4, no bloquean B-5):
 
 - el relato en español de cada caso, que incluye el español de las filas 27–36;
@@ -133,6 +135,9 @@ Son 3:
 - **I · Guía del residente** (fila 63): 9 correcciones, 6 de nivel 1.
 
 Ninguna se editó aquí. Ningún otro ítem necesita cambios para poder firmarse.
+
+**2026-10-07:** las correcciones H e I se aplicaron a las guías, que siguen sin firma. El ANTES → DESPUÉS y los
+desvíos están en `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1.
 
 ### 1.4 Hallazgos verificados en el código que cambian la lectura del §2
 
@@ -173,6 +178,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - **Decide:** usted (qué ve el residente) y la persona responsable del encargo (autoriza el cambio de código).
 - **Recomendación:** REVIEW CLOSELY — decidirla después de A y J; la opción (b) no bloquea B-5.
 - **Decisión docente:** ☐ APPROVE = (a) · ☐ REVISE = (c): ________ · ☐ DEFER = (b) — Nota: ________
+- **Cerrada el 2026-10-07** (decisión docente comunicada en el encargo B-5): el piloto de residentes corre en inglés y en español. Las filas 12–18 de R-4 en el panel del examen entran. Las casillas quedan en blanco: el alcance fuera de las frases de la Fase 0 (filas 1–11, J, lo anterior a la Fase 0) sigue pendiente. Ver `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, secciones 0 y 5.
 
 ### A. R-4 · Las 18 frases del motor (filas 1–18)
 
@@ -191,7 +197,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 | A-6 | 24f, 49m | Reduced bilateral air entry with prolonged expiration and wheeze. | Entrada de aire disminuida en ambos lados, con espiración prolongada y sibilancias. | Obstrucción grave al llegar o sin respuesta. | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-7 | 24f, 49m | Breath sounds absent over the right hemithorax, which is hyper-resonant; wheeze on the other side. | Murmullo pulmonar abolido en el hemitórax derecho, que está hipersonoro; sibilancias en el otro lado. | Neumotórax a tensión de ese lado: hay que descomprimir. | **APPROVE AS IS** — el motor escribe el lado del caso (`family_engine.py:3235`); el borrador cubre «izquierdo» para «left» (`spanish_drafts.py:72`). «En el otro lado» es claro. | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-8 | 24f, 49m | Breath sounds returning on the right after decompression; improved air entry with residual expiratory wheeze. | Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; mejor entrada de aire, con sibilancias espiratorias residuales. | La descompresión funcionó; queda la obstrucción. | **APPROVE AS IS** — el lado, como en la fila 7. | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| A-9 | 35m, 67f | Respiratory rate {n} /min; assisted ventilation is in progress. | Frecuencia respiratoria {n}/min, dada por la ventilación asistida en curso. | EN: «12/min» puede leerse como respiración espontánea. ES: dice que es la frecuencia de la ventilación asistida. | **REVIEW CLOSELY** — TD-52 (a): el inglés activo no dice que la frecuencia es la de la ventilación asistida (el motor la fija en 12/min); el español sí. Aprobados tal cual, los dos idiomas dicen cosas distintas; corregir el inglés es un cambio de código (nuevo SHA). | TIER 1 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| A-9 | 35m, 67f | Respiratory rate {n} /min; assisted ventilation is in progress. | Frecuencia respiratoria {n}/min, dada por la ventilación asistida en curso. | EN: «12/min» puede leerse como respiración espontánea. ES: dice que es la frecuencia de la ventilación asistida. | **REVIEW CLOSELY** — TD-52 (a): el inglés activo no dice que la frecuencia es la de la ventilación asistida (el motor la fija en 12/min); el español sí. Aprobados tal cual, los dos idiomas dicen cosas distintas; corregir el inglés es un cambio de código (nuevo SHA). Actualizada el 2026-10-07, con X-1 cerrada (se mostrarán las dos versiones): **NEEDS REVISION** del inglés (`B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 3). | TIER 1 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-10 | 35m, 67f | Respiratory rate {n} /min; breaths remain shallow. | Frecuencia respiratoria {n}/min; las respiraciones siguen siendo superficiales. | Hipoventilación persistente: la naloxona o la ventilación todavía hacen falta. | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-11 | 35m, 67f | Respiratory rate {n} /min; spontaneous breaths have greater depth. | Frecuencia respiratoria {n}/min; las respiraciones espontáneas son más profundas. | Responde a la naloxona («más profundas» que en el examen anterior). | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-12 | 54m | Peripheral cannula in the left forearm; the skin around its tip is slightly swollen and cool. | Cánula periférica en el antebrazo izquierdo; la piel alrededor del extremo del catéter está levemente aumentada de volumen y fría. | La vía de llegada puede estar infiltrada: una pista para no usarla. | **APPROVE AS IS** — terminología R-4 («aumento de volumen»). En español hoy se ve en inglés en el panel del examen (1.4); mostrarla es X-1. | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
