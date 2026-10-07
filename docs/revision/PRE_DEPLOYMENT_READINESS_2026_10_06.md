@@ -312,6 +312,10 @@ implementar lo decidido y verificar el candidato (Decision File, decimoctava act
 implementar. De X-1 quedan 38 de 105 decisiones, en el lote 2, y una contradicción abierta (L-09). B-5 sigue
 bloqueado (Decision File, decimonovena actualización).
 
+**Actualización del 2026-10-07 (B-5, lote 2 de X-1):** XR-15 a XR-28 quedan decididas (12 APPROVE y 2 REVISE) y
+L-09, resuelta. X-1 queda decidida entera (105 de 105), sin implementar. La revisión del relato y de la rúbrica en
+español quedó diseñada (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`). B-5 sigue bloqueado (Decision File, vigésima actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

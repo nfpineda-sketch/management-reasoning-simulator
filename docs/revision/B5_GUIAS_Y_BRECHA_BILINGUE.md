@@ -611,6 +611,11 @@ texto final en el §12.2 de X-1 y en la fila de cada miembro. XR-05 queda con la
 fármaco que el residente nombró. L-09 abre una contradicción con C-2026-09-26-25, a decisión docente. El lote 2
 (XR-15 a XR-28) está en el §12.3; al prepararlo se vio que X1-C11 y X1-C30 ya tienen español activo.
 
+**Lote 2 y L-09, decididos el 2026-10-07 (docente):** 12 APPROVE y 2 REVISE (XR-18 y XR-23), y L-09 resuelta con la
+opción (c): «Fuente de la historia: {fuente}». Con eso están tomadas las 105 decisiones de X-1 (28 consolidadas: 21
+APPROVE y 7 REVISE), sin implementar. La etapa siguiente, la revisión del relato y de la rúbrica en español, quedó
+diseñada en `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`.
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -629,22 +634,23 @@ fármaco que el residente nombró. L-09 abre una contradicción con C-2026-09-26
 ## 5. Decisiones pendientes
 
 Actualizado el 2026-10-07, con las 100 decisiones docentes del paquete, los estados límite de la 49m, el alcance y
-las bases de X-1 y su lote 1, el relato, la rúbrica y las guías (Decision File, octava a decimonovena
-actualizaciones).
+X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigésima actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
-2. **Firmar el resto del español que X-1 exige** (`docs/revision/X1_ESPANOL_PROPUESTO.md`): 38 de 105 decisiones,
-   el lote 2 (XR-15 a XR-28, §12.3 de ese documento). El lote 1 quedó decidido el 2026-10-07, con V-9 aprobada
-   (XR-06). **Falta decidir** la contradicción de L-09 con C-2026-09-26-25 (§12.2, XR-11).
+2. **Decidido:** el español de X-1, entero (105 de 105, 2026-10-07; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin
+   implementar. L-09 se resolvió con la opción (c), «Fuente de la historia: {fuente}».
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
-   revisión.
+   revisión. **La revisión quedó diseñada el 2026-10-07** (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`);
+   falta que la docencia apruebe el diseño.
 4. **Decidido:** las 100 decisiones del paquete (3.11). Siguen sin firma, a propósito, H-62 e I-63, hasta el
    candidato final implementado.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
 6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
-   de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista.
+   de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista. El
+   diseño del 2026-10-07 propone el mismo camino que el relato: `rubric_text/es/approvals.json`, con
+   `{domain_id, version, decision}`, que el código ya lee. Falta confirmarlo.
 7. **Decidido:** K-18, REVISE con la redacción docente; es una corrección de texto antes del candidato final
    (3.6; TD-82). También K-E5 y K-E6, REVISE con la redacción docente (3.10; TD-82 y TD-67).
 8. **Decidido:** A-6, REVISE. En la 49m, el examen respiratorio conserva la gravedad de llegada mientras la

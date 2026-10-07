@@ -588,12 +588,47 @@ TD-80). **Nada está implementado.**
 - **Contradicción informada, sin resolver (L-09):** «Fuente de información» choca con «Fuente de la historia», la
   etiqueta que la docencia fijó el 2026-09-26 (C-2026-09-26-25) y que la sala usa también en la línea de llegada. El
   corpus de la validación externa lee ese mismo marco y no se toca. Opciones y recomendación en X-1, §12.2 (XR-11). No
-  se eligió.
+  se eligió. **Resuelta el mismo día con la opción (c)** (vigésima actualización).
 - **Hallazgo al preparar el lote 2, sin cambiar código:** X1-C11 y las tres frases de X1-C30 ya salen enteras en
   español (`language.py`); el inventario las había contado entre las que faltan. Se decide entre el español activo y
   el borrador (XR-15 y XR-22).
 - **Siguiente lote:** X-1, lote 2 (XR-15 a XR-28; X-1, §12.3).
 - **B-5: BLOCKED.**
+
+**Actualizado por vigésima vez el 2026-10-07: B-5 · L-09 resuelta, lote 2 de X-1 (XR-15 a XR-28) y X-1 decidida
+entera.** Registrado también en `docs/revision/X1_ESPANOL_PROPUESTO.md` (§12.2 y §12.3), en
+`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, en el paquete (1.5) y en el registro de deuda. **Nada está
+implementado.**
+
+| ID | Decisión docente (2026-10-07) | Texto final o regla |
+|---|---|---|
+| L-09 | Opción (c) | «Fuente de la historia: {fuente}». No se implementa «Fuente de información». Razones: una sola etiqueta formal para el mismo concepto; se conserva la redacción aprobada de la llegada; no se modifica ni se separa el texto de llegada que lee el corpus congelado de la validación externa; «informante disponible» sigue aprobado en L-04 y L-10 como prosa |
+| XR-15 | APPROVE | X1-C10, como se propuso. X1-C11, con el español que ya estaba activo: no se cambia «Indica» por «Escribe» |
+| XR-16, XR-17, XR-19 y XR-20 | APPROVE | — |
+| XR-18 | REVISE | EN: «The patient is {state} and cannot safely swallow. Use an intravenous or intramuscular route until oral administration is safe.» · ES: «El paciente está {estado} y no puede tragar con seguridad. Usa una vía intravenosa o intramuscular hasta que sea seguro administrar por vía oral.» V-5, aprobada. Sólo redacción: no cambian la lógica de la vía ni el estado clínico |
+| XR-21 | APPROVE | Etiquetas en vez de claves internas, en los dos idiomas; X1-C27 y X1-C28 como se propusieron; X1-C29: «Esta versión reconoce, pero no ejecuta: {lista}. Las acciones soportadas de la misma orden siguen por separado.» Las claves canónicas e internas no cambian |
+| XR-22 | APPROVE | X1-C30, con el español que ya estaba activo; no se reemplaza por el borrador sólo por estilo |
+| XR-23 | REVISE (menor) | Primera frase de X1-C31, neutra en género: «La orden de {fármaco} se interpretó como {forma}{ de {dosis}}.» V-6 y el resto, aprobados |
+| XR-24, XR-25, XR-27 y XR-28 | APPROVE | — |
+| XR-26 | APPROVE | «Registro» para «Acquisition», no «Toma»; «ECG» en vez de la clave cruda DIAGNOSTIC |
+
+- **Cuentas, contadas en el borrador con un script, no supuestas:**
+  - 28 de 28 decisiones consolidadas: 21 APPROVE y 7 REVISE (XR-01, XR-07, XR-10, XR-11, XR-14, XR-18 y XR-23);
+  - 105 de 105 decisiones originales, con la tabla conjunta de vocabularios cerrada por V-5 y V-6;
+  - **la revisión docente de X-1 está completa, y X-1 no está implementada.**
+- **Contradicciones de X-1:** ninguna abierta; L-09 quedó resuelta con la opción (c).
+- **Al implementar (no autorizado):** X1-C24 cambia también en inglés, y ese texto está en el registro de preservación
+  de la hipoglicemia. El cambio se declara en `corrections_registry.py`, como pide ese registro (X-1, §10).
+- **Siguiente etapa, preparada sin implementar:** la revisión del relato de los 30 casos y de la rúbrica en español
+  (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`):
+  - 30 casos y 5 dominios como unidades de aprobación, cada uno con el hash de lo que se leyó;
+  - un lote 0 de frases comunes y terminología, 6 lotes de casos y un lote de rúbrica;
+  - 4 decisiones de terminología (T-1 a T-3 en el relato, R-1 en la rúbrica);
+  - 18 pasajes que fija el corpus de la validación externa: se aprueban tal cual o su corrección espera.
+- **B-5: BLOCKED.** Falta:
+  - la revisión del relato y de la rúbrica;
+  - implementar lo decidido (X-1, los 7 REVISE del paquete y las claves internas) y verificar el candidato final;
+  - sobre ese candidato, la firma de H-62 e I-63.
 
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
@@ -601,14 +636,13 @@ TD-80). **Nada está implementado.**
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). Del borrador del español de X-1, 67 de 105 decididas (el lote 1, XR-01 a XR-14, el 2026-10-07); las 38 restantes, en el lote 2 (XR-15 a XR-28; `docs/revision/X1_ESPANOL_PROPUESTO.md`, §12.3). Abierta: la contradicción de L-09 con C-2026-09-26-25 (§12.2) | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño de `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`, que falta aprobar; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,
 `CIERRE_PREPILOTO.md` y `GUIA_DOCENTE_PILOTO.md`, frente a los 30 del manifiesto (F0-2; el preflight ya dice 30);
 la guía docente dice que un fármaco sin verbo «puede perderse sin aviso»; ninguna guía describe la conducta nueva
-de la sala. Desde el 2026-10-07 (X-1, §12.2): L-09, «Fuente de información», frente a «Fuente de la historia»,
-fijada por C-2026-09-26-25.
+de la sala.
 
 ## Cierre de la Fase 0 (2026-10-06)
 
