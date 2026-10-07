@@ -487,9 +487,40 @@ decisión para dos casos.
 
 Campo de decisión de cada una, en el paquete (bloques A y C): ☐ APPROVE · ☐ REVISE · ☐ DEFER.
 
-Aparte, sin relación con estos textos: dos formas habituales de pedir una vía no se leen hoy. «Insert a 16G cannula
-in the right antecubital fossa» recibe «No se entendió»; «Second IV access, 16G, right antecubital.» no deja fila
-en el ledger. El lector está congelado por la validación externa: quedan anotadas en TD-45.
+**Decisión docente (2026-10-07):** A-14 a A-18 y C-27 a C-31, APPROVE; C-31 es una sola decisión para sus dos
+casos. Las dos formas de pedir una segunda vía que el lector no lee no cambian A-15 y quedan sólo en TD-45; el
+lector congelado no se toca. A-6 sigue en REVISE: la redacción de sus estados límite y de A-8 está propuesta para
+la firma en el paquete (bloque A, «A-6 y A-8 · Estados límite»). Ninguna está implementada.
+
+### 3.9 Tercer lote de nivel 2 (propuesto el 2026-10-07)
+
+Orden del paquete: C-32, C-33, C-35, C-36, C-38, C-EFAST y K-E1 a K-E4. **Comprobado el 2026-10-07, sin escribir
+nada:**
+
+- C-32 a C-36: el inglés coincide con el banco (`clinical_cases.py:1511–1518`). Con el relato aprobado en memoria,
+  el panel dice exactamente el español del paquete; hoy cada línea se ve entera en inglés.
+- C-38: el resumen de la apariencia de la 29f y la 63m («Mental status: Alert. Expression: uncomfortable. Color:
+  flushed. Diaphoresis: mild.») sale entero en español: «Estado mental: Alerta. Expresión: incómoda. Color:
+  enrojecimiento. Diaforesis: leve.»
+- C-EFAST: el formateador único (`efast_report.format_efast`) y su español dan los títulos y rótulos del paquete.
+- K-E1 a K-E4: el inglés y el español coinciden con la hoja F0-11, y la frase entera de la espera interrumpida
+  (K-6) sale en español con cada evento.
+
+| # | ID · dónde | EN exacto | ES exacto | Qué significa | Recomendación |
+|---|---|---|---|---|---|
+| 1 | C-32 · `bradycardia_ccb_68m`, «General appearance» | No rash or swelling. | Sin erupción ni edema. | Una negativa que el caso escribe y que se mantiene | **APPROVE AS IS** (EN) — «swelling» es «edema» aquí y «aumento de volumen» en R-4: contextos distintos |
+| 2 | C-33 · `bradycardia_hyperk_63m`, «General appearance» | A dialysis fistula in the left forearm. | Una fístula de diálisis en el antebrazo izquierdo. | Paciente en diálisis: una pista de la hiperkalemia | **APPROVE AS IS** (EN) |
+| 3 | C-35 · 27m antes de cualquier medida, «General appearance» | A soaked dressing over a deep right thigh wound that is bleeding. | Apósito empapado sobre una herida profunda del muslo derecho que está sangrando. | La herida sangra activamente: hay que controlarla. Se ve mientras no se aplicó nada (TD-59) | **APPROVE AS IS** (EN) |
+| 4 | C-36 · 27m con una medida aplicada, «General appearance» | A deep right thigh wound. | Una herida profunda del muslo derecho. | La herida, sin el apósito empapado; el estado del sangrado lo dice C-37, ya aprobada | **APPROVE AS IS** (EN) — VINCULADA con C-37 |
+| 5 | C-38 · 29f y 63m, resumen de la apariencia | Color: flushed | Color: enrojecimiento | Piel enrojecida (anafilaxia) | **APPROVE AS IS** — sustantivo, como «palidez» en el mismo resumen |
+| 6 | C-EFAST · resultado del E-FAST en la sala, el Trace y los documentos | E-FAST · performed at minute {n}; RIGHT UPPER QUADRANT, LEFT UPPER QUADRANT, SUPRAPUBIC, SUBXIPHOID, LUNG; Morison's pouch (hepatorenal) y los otros diez rótulos; Not documented | E-FAST · realizado en el minuto {n}; CUADRANTE SUPERIOR DERECHO, CUADRANTE SUPERIOR IZQUIERDO, SUPRAPÚBICA, SUBXIFOIDEA, PULMÓN; Espacio de Morison (hepatorrenal) y los otros diez; No documentado | Las cinco ventanas, en doce líneas. «No documentado» quiere decir que el caso no documenta esa ventana: no es un hallazgo negativo | **APPROVE AS IS** — lista completa en el paquete (C-EFAST) |
+| 7 | K-E1 · en la espera interrumpida (K-6) | complete atrioventricular block | bloqueo auriculoventricular completo | Historia natural del infarto inferior (minuto isquémico 45): el registro lo marca no prevenible en el simulador | **APPROVE AS IS** |
+| 8 | K-E2 · ídem | ventricular fibrillation, pulse lost | fibrilación ventricular, sin pulso | Fibrilación de una arteria todavía cerrada (minuto isquémico 120); el registro la marca prevenible con una reperfusión a tiempo. Terminal | **APPROVE AS IS** |
+| 9 | K-E3 · ídem (y K-9) | cardiac arrest, pulse lost | paro cardíaco, sin pulso | Paro por la evolución sin tratamiento (por ejemplo, la apnea por opioides sin soporte); prevenible con el tratamiento de la causa. Terminal | **APPROVE AS IS** |
+| 10 | K-E4 · ídem | cardiac arrest from uncontrolled haemorrhage | paro cardíaco por hemorragia no controlada | La 27m llega al paro con la fuente abierta; prevenible controlándola. Terminal | **APPROVE AS IS** — VINCULADA con A-1 («Circulatory arrest…») y K-7 («Cardiac arrest occurred…»), ya aprobadas: dos nombres del mismo paro |
+
+Campo de decisión de cada una, en el paquete (bloques C y K): ☐ APPROVE · ☐ REVISE · ☐ DEFER. Ninguna es idéntica a
+otra.
 
 ## 4. Verificación
 
@@ -508,8 +539,9 @@ en el ledger. El lector está congelado por la validación externa: quedan anota
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1 y del primer lote de nivel 2, del alcance
-y las bases de X-1, del relato, de la rúbrica y de las guías (Decision File, octava a decimocuarta actualizaciones).
+Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1 y de los dos primeros lotes de nivel 2,
+del alcance y las bases de X-1, del relato, de la rúbrica y de las guías (Decision File, octava a decimoquinta
+actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -518,8 +550,8 @@ y las bases de X-1, del relato, de la rúbrica y de las guías (Decision File, o
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
    revisión.
-4. **Las firmas que quedan del paquete:** 33 de 100 decisiones, todas de nivel 2; con las firmas de H-62 e I-63,
-   35. El segundo lote de nivel 2 está en 3.8.
+4. **Las firmas que quedan del paquete:** 23 de 100 decisiones, todas de nivel 2; con las firmas de H-62 e I-63,
+   25. El tercer lote de nivel 2 está en 3.9.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
 6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
    de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista.
@@ -527,4 +559,5 @@ y las bases de X-1, del relato, de la rúbrica y de las guías (Decision File, o
    (3.6; TD-82).
 8. **Decidido:** A-6, REVISE. En la 49m, el examen respiratorio conserva la gravedad de llegada mientras la
    obstrucción no mejore (TD-83). Al implementarlo hay que resolver, con aprobación docente de cualquier texto
-   nuevo, el examen de la 49m intubada sin mejoría y la segunda parte de A-8.
+   nuevo, el examen de la 49m intubada sin mejoría y la segunda parte de A-8. **Redacción propuesta para la firma**
+   (paquete, bloque A): A-6a, A-6b y A-8a.
