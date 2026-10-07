@@ -9,7 +9,7 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
-  en español, sin interfaz mezclada en el candidato final; todas las decisiones de nivel 1 y los dos primeros lotes de nivel 2 quedaron tomados, el español
+  en español, sin interfaz mezclada en el candidato final; todas las decisiones de nivel 1, los tres primeros lotes de nivel 2 y la redacción de los estados límite de la 49m quedaron tomados, el español
   que falta para X-1 está redactado y sus decisiones de base, tomadas; el relato y la rúbrica en español se revisan
   antes de congelar el candidato, y el relato aprobado entra en él en `case_text/es/approvals.json`). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
@@ -463,13 +463,66 @@ redacción propuesta para los estados límite de A-6 y A-8.** Registradas tambi�
 - **Siguiente lote de nivel 2:** C-32, C-33, C-35, C-36, C-38, C-EFAST y K-E1 a K-E4.
 - **B-5: BLOCKED.**
 
+**Actualizado por decimosexta vez el 2026-10-07: B-5 · tercer lote de nivel 2 (C-32, C-33, C-35, C-36, C-38,
+C-EFAST, K-E1 a K-E4) y redacción aprobada de los estados límite de la 49m (A-6a, A-6b, A-7-49m, A-8a).**
+Registradas también en el paquete y en `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`. **Ninguna está
+implementada.**
+
+| ID | Decisión docente (2026-10-07) | Qué exige, sin implementar todavía |
+|---|---|---|
+| C-32, C-33, C-35 y C-36 | APPROVE (el inglés) | Su español llega con el relato de cada caso (paquete, 4.1) |
+| C-38 y C-EFAST | APPROVE | Nada: ya activos en inglés y en español |
+| K-E1, K-E2, K-E3 y K-E4 | APPROVE | Nada: ya activos en inglés y en español (hoja F0-11) |
+| A-6a | APPROVE. EN «Severe effort with very poor bilateral air entry and only faint wheeze. He cannot complete a reliable peak-flow maneuver.» · ES «Esfuerzo respiratorio severo, con murmullo pulmonar muy disminuido en forma bilateral y solo sibilancias tenues. No logra completar una maniobra confiable de flujo espiratorio máximo.» Mientras siga la respiración espontánea y la obstrucción no haya mejorado desde la llegada; la ventilación no invasiva cuenta como respiración espontánea | Implementar A-6 (TD-83). Su español es el del relato del caso |
+| A-6b | APPROVE. EN «Endotracheal tube in place: air entry remains very poor bilaterally, with only faint wheeze.» · ES «Tubo endotraqueal instalado: el murmullo pulmonar sigue muy disminuido en forma bilateral, con solo sibilancias tenues.» Con ventilación invasiva y la obstrucción todavía en el estado grave de llegada | Ídem. Frase nueva del motor, con su español |
+| A-8a | APPROVE. EN «Breath sounds returning on the right after decompression; air entry remains very poor bilaterally, with only faint wheeze.» · ES «Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; sigue muy disminuido en forma bilateral, con solo sibilancias tenues.» Tras una descompresión eficaz, mientras la obstrucción grave no haya mejorado. Con mejoría real tras el broncodilatador sigue el texto de A-8 ya aprobado | Ídem |
+| A-7 | Se reabre sólo para `asthma_49m` con la obstrucción todavía en el estado grave de llegada: es una revisión acotada de A-7, no una trayectoria clínica nueva. A-7 aprobada sigue en `asthma_24f`. Variante A-7-49m, redacción docente aprobada: EN «Breath sounds absent over the right hemithorax, which is hyper-resonant; air entry on the left remains very poor, with only faint wheeze.» · ES «Murmullo pulmonar abolido en el hemitórax derecho, que está hipersonoro; en el lado izquierdo el murmullo pulmonar sigue muy disminuido, con solo sibilancias tenues.» No cambia el momento del neumotórax, la fisiología de la obstrucción, la respuesta al broncodilatador ni a la descompresión, los signos vitales ni los eventos críticos: es sólo coherencia del examen con el estado | Ídem (TD-83) |
+
+- **Consecuencia para implementar A-6 con estas redacciones (no autorizada todavía).** Completa la de la
+  decimocuarta actualización:
+  1. En la rama del asma de `family_engine.current_findings`, la 49m elige su examen respiratorio con dos datos
+     del estado actual: cómo respira (espontánea, que incluye la ventilación no invasiva, o con ventilación
+     invasiva) y si el índice de obstrucción bajó de su valor de llegada.
+  2. Sin mejoría: A-6a, A-6b, A-7-49m o A-8a, según el momento. Con mejoría: las frases ya aprobadas (A-5, A-6, A-7
+     y A-8). Cada condición se lee en cada examen, sobre el estado de ese momento, como la segunda parte de A-8.
+  3. No cambian la trayectoria, la respuesta al tratamiento, el momento del neumotórax, los signos vitales ni los
+     eventos: sólo la redacción del examen.
+  4. Comprobado con el motor, sin cambiar código:
+     - el neumotórax del asma ocurre sólo con ventilación invasiva y siempre a la derecha, así que A-7-49m y A-8a
+       son siempre de la 49m intubada;
+     - intubada con etomidato y rocuronio, el índice no baja de su valor de llegada (1,01 a los dos minutos):
+       rige A-6b;
+     - intubada con ketamina, el índice sí baja (0,81 a los dos minutos, con 150 mg indicados), porque el motor
+       modela su efecto broncodilatador: es una mejoría parcial y rige A-6, ya aprobada.
+  5. Pruebas:
+     - la 49m con oxígeno solo conserva A-6a;
+     - intubada sin mejoría, A-6b;
+     - con el neumotórax sin descomprimir, A-7-49m; tras descomprimir, A-8a;
+     - con broncodilatadores, A-5 y A-8 ya aprobadas;
+     - la 24f, sin cambio;
+     - los valores del motor, idénticos antes y después del cambio.
+  6. Es un cambio del motor: SHA nuevo y contrato 16.4. El español de A-6b, A-7-49m y A-8a entra con la
+     implementación, por el mismo camino que las demás frases del motor (X-1). El de A-6a es el del relato y se ve
+     cuando se aprueba el relato de la 49m (4.1).
+- **Cuentas:**
+  - paquete: 87 de las 100 decididas; quedan 13, todas de nivel 2 (K-E5 a K-E17). Con H-62 e I-63, las firmas
+    abiertas son 15. Las 4 redacciones de los estados límite quedaron aprobadas; no suman a las 100;
+  - borrador de X-1: 7 de 105 decididas, quedan 98 (sin cambio).
+- **Hallazgo al preparar el lote siguiente, sin decidir (TD-82):** K-E5, la etiqueta del paro de la anafilaxia en
+  la espera interrumpida, dice «circulatory arrest from untreated anaphylaxis» también cuando ya se dio adrenalina.
+  Comprobado en la sala real, sin cambiar código: en la 63m con betabloqueo y una dosis IM, la misma entrada trae
+  K-18 («…without effective adrenaline…») y esa etiqueta. Es el defecto que llevó a revisar K-18. Recomendación:
+  NEEDS REVISION, con una propuesta cierta en los dos cursos (paquete, K-E5).
+- **Siguiente lote de nivel 2:** K-E5 a K-E14; después, K-E15 a K-E17.
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, todo el nivel 1 y los dos primeros lotes de nivel 2, sin implementar; quedan 23 de 100, todas de nivel 2, y H-62 e I-63, decididas DEFER, siguen sin firma a propósito (25 firmas abiertas). Además esperan su firma 3 redacciones de los estados límite de A-6 y A-8. Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, todo el nivel 1, los tres primeros lotes de nivel 2 y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; quedan 13 de 100, todas de nivel 2 (K-E5 a K-E17), y H-62 e I-63, decididas DEFER, siguen sin firma a propósito (15 firmas abiertas). Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

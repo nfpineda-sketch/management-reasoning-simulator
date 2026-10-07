@@ -292,6 +292,12 @@ los eventos K-E1 a K-E17, de nivel 2 (Decision File, decimotercera actualizació
 conserva la gravedad de llegada mientras la obstrucción no mejore. Es un cambio del motor antes del candidato final
 (TD-83). Quedan 33 decisiones, todas de nivel 2 (Decision File, decimocuarta actualización).
 
+**Actualización del 2026-10-07 (B-5, lotes 2 y 3 de nivel 2):** quedan decididas A-14 a A-18, C-27 a C-33, C-35,
+C-36, C-38, C-EFAST y K-E1 a K-E4. La redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a) quedó
+aprobada y entra en el mismo cambio del motor de TD-83, antes del candidato final. Quedan 13 decisiones, todas de
+nivel 2: K-E5 a K-E17, y K-E5 trae un hallazgo (TD-82; Decision File, decimoquinta y decimosexta
+actualizaciones).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

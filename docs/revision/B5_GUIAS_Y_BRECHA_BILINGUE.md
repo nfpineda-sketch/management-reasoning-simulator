@@ -522,6 +522,38 @@ nada:**
 Campo de decisión de cada una, en el paquete (bloques C y K): ☐ APPROVE · ☐ REVISE · ☐ DEFER. Ninguna es idéntica a
 otra.
 
+**Decisión docente (2026-10-07):** C-32, C-33, C-35, C-36, C-38, C-EFAST y K-E1 a K-E4, APPROVE. En la misma
+respuesta quedó aprobada la redacción de los estados límite de la 49m (A-6a, A-6b y A-8a, con sus condiciones de
+uso), y A-7 se reabrió sólo para el estado grave de llegada de la 49m, con la variante docente A-7-49m: es coherencia
+del examen con el estado, no una trayectoria clínica nueva (paquete, bloque A; TD-83). Ninguna está implementada.
+
+### 3.10 Cuarto lote de nivel 2 (propuesto el 2026-10-07)
+
+Orden del paquete: K-E5 a K-E14; después quedan K-E15 a K-E17. **Comprobado el 2026-10-07, sin escribir nada:**
+
+- el inglés coincide con las etiquetas del motor (`event_provenance.FLAG_EVENTS`) y con la hoja F0-11, y el
+  español, con la hoja;
+- la frase entera de la espera interrumpida (K-6) sale en español con cada evento, sin mezcla;
+- dónde aparece cada evento, en el código que lo dispara; y, para K-E5, en la sala real con `pilot_acceptance`.
+
+Todos aparecen dentro de la frase de K-6, cuando el evento corta una espera; el registro guarda además su
+procedencia (causa, prevenibilidad, gravedad). Ninguno es idéntico a otro.
+
+| # | ID · dónde | EN exacto | ES exacto | Qué significa | Recomendación |
+|---|---|---|---|---|---|
+| 1 | K-E5 · anafilaxia (29f y 63m) | circulatory arrest from untreated anaphylaxis | paro circulatorio por anafilaxia no tratada | Paro tras 25 minutos sin adrenalina eficaz; el registro lo marca prevenible con adrenalina. Terminal | **NEEDS REVISION** — la etiqueta es la misma se haya dado adrenalina o no. Con una dosis IM, la espera se corta con «untreated» en la misma entrada que K-18 («…without effective adrenaline…»): 63m, minuto 71; 29f, minuto 93. Es el defecto que llevó a revisar K-18 (TD-82). Propuesta, cierta en los dos cursos: EN «circulatory arrest from anaphylaxis without effective adrenaline» · ES «paro circulatorio por anafilaxia sin adrenalina eficaz»; o dos etiquetas según el curso. VINCULADA con K-18 y K-21 |
+| 2 | K-E6 · bradicardias (54f, 68m, 63m y 78f) | loss of circulation from the falling rate | pérdida de la circulación por la frecuencia que cae | La frecuencia del monitor cae a 20/min o menos y deja de sostener un gasto; prevenible con marcapaso o antídoto. Terminal | **REVIEW CLOSELY** — calco del inglés, se entiende. Opcional, sin cambiar el sentido: «por la caída de la frecuencia» |
+| 3 | K-E7 · hipoglicemia | generalized seizure | convulsión generalizada | Veinte minutos con glucosa bajo 40 mg/dL; prevenible con glucosa a tiempo. Crítico, no terminal | **APPROVE AS IS** |
+| 4 | K-E8 · `anaphylaxis_29f` | the anaphylactic reaction returns | la reacción anafiláctica vuelve | Reacción bifásica, programada 75 minutos después de que la primera se calmó; el registro la marca no prevenible en el simulador. Sólo la 29f la tiene | **APPROVE AS IS** |
+| 5 | K-E9 · asma (24f, 49m) con ventilación invasiva | tension pneumothorax on the ventilator | neumotórax a tensión con el ventilador | Barotrauma por una presión meseta sostenida sobre 30 cmH₂O; prevenible con una programación que la mantenga más baja. Abre el estado de A-7 (A-7-49m en la 49m grave) | **APPROVE AS IS** — «con el ventilador» se entiende; «en ventilación mecánica» sería más usual |
+| 6 | K-E10 · `pulmonary_embolism_33f` | major bleeding after thrombolysis | hemorragia mayor tras la trombólisis | Sangrado desde 20 minutos después de la lisis, en la única paciente con riesgo declarado (cirugía reciente). Si la lisis estaba indicada lo juzga la docencia: prevenibilidad desconocida | **APPROVE AS IS** — VINCULADA con B-26 y D-40 |
+| 7 | K-E11 · cualquier caso con dobutamina sobre 10 mcg/kg/min | frequent ventricular ectopy on dobutamine | extrasístoles ventriculares frecuentes con dobutamina | La dosis pasó el umbral de arritmia; prevenible con una dosis menor. Significativo, no terminal | **APPROVE AS IS** |
+| 8 | K-E12 · TEP (33f, 61m) | right ventricle failing under fast volume | falla del ventrículo derecho con volumen rápido | Volumen dado más rápido de lo que acepta un ventrículo derecho obstruido; prevenible con volúmenes lentos y pequeños | **APPROVE AS IS** |
+| 9 | K-E13 · TEP (33f, 61m) sin lisis | sustained hypotension from the obstruction | hipotensión sostenida por la obstrucción | 15 minutos seguidos con la sistólica bajo 90 mmHg, o sostenida con vasopresor: define el shock, se haya hecho lo que se haya hecho (prevenibilidad desconocida) | **APPROVE AS IS** |
+| 10 | K-E14 · cualquier caso dado de alta inestable | brought back after discharge | traído de vuelta tras el alta | Vuelve 20 minutos después de la alarma (conciencia, glucosa bajo 60 mg/dL, FR bajo 10, SpO₂ bajo 90 % o sistólica bajo 90 mmHg); prevenible. Logístico | **APPROVE AS IS** — masculino genérico, como «el paciente» en toda la sala, también con pacientes mujeres |
+
+Campo de decisión de cada una, en el paquete (bloque K): ☐ APPROVE · ☐ REVISE · ☐ DEFER.
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -539,9 +571,9 @@ otra.
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1 y de los dos primeros lotes de nivel 2,
-del alcance y las bases de X-1, del relato, de la rúbrica y de las guías (Decision File, octava a decimoquinta
-actualizaciones).
+Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1 y de los tres primeros lotes de nivel 2,
+de los estados límite de la 49m, del alcance y las bases de X-1, del relato, de la rúbrica y de las guías (Decision
+File, octava a decimosexta actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -550,8 +582,9 @@ actualizaciones).
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
    revisión.
-4. **Las firmas que quedan del paquete:** 23 de 100 decisiones, todas de nivel 2; con las firmas de H-62 e I-63,
-   25. El tercer lote de nivel 2 está en 3.9.
+4. **Las firmas que quedan del paquete:** 13 de 100 decisiones, todas de nivel 2 (K-E5 a K-E17); con las firmas de
+   H-62 e I-63, 15. El cuarto lote de nivel 2 está en 3.10. En él, K-E5 trae un hallazgo nuevo: su etiqueta dice
+   «untreated» también tras una dosis de adrenalina (TD-82).
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
 6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
    de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista.
@@ -559,5 +592,6 @@ actualizaciones).
    (3.6; TD-82).
 8. **Decidido:** A-6, REVISE. En la 49m, el examen respiratorio conserva la gravedad de llegada mientras la
    obstrucción no mejore (TD-83). Al implementarlo hay que resolver, con aprobación docente de cualquier texto
-   nuevo, el examen de la 49m intubada sin mejoría y la segunda parte de A-8. **Redacción propuesta para la firma**
-   (paquete, bloque A): A-6a, A-6b y A-8a.
+   nuevo, el examen de la 49m intubada sin mejoría y la segunda parte de A-8. **Redacción aprobada el 2026-10-07**
+   (paquete, bloque A): A-6a, A-6b y A-8a, con sus condiciones de uso, y A-7 reabierta sólo para el estado grave de
+   llegada de la 49m, con la variante A-7-49m. Falta implementarlo (TD-83).
