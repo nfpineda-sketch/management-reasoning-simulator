@@ -356,6 +356,35 @@ las casillas están en el paquete. **Comprobado el 2026-10-07:**
   - líneas 238–244 («Relato en español»): el relato se revisa antes del candidato; R-4, el aviso de la foto, las
     preguntas de la sala y la compuerta dejarán de verse en inglés.
 
+**Decisión docente (2026-10-07):** F-58, F-60, G-61, K-1 y K-2, K-3 y K-4, APPROVE. K-5 y K-6, APPROVE: cuando la
+orden insertada contiene un fármaco reconocido, rige X1-0 (en un encuentro en español se muestra su nombre en
+español; el valor canónico guardado no cambia). H-62 e I-63, DEFER de la firma: no es un rechazo. Se firman cuando
+describan el candidato final, después de implementar X-1, A-2 y A-9, la redacción final de D-42, la limpieza de la
+interfaz bilingüe y la revisión y activación del relato y de la rúbrica en español. Registradas en el paquete y en el
+Decision File (undécima actualización), sin implementar.
+
+### 3.5 Quinto lote de nivel 1 (propuesto el 2026-10-07)
+
+Orden del paquete: K-7 a K-16. Los textos exactos y las casillas están en el paquete. **Comprobado el 2026-10-07:**
+en las diez, el inglés y el español del paquete coinciden con la hoja F0-11, y `language.say` convierte cada ejemplo
+inglés exactamente en el español del paquete. Están activas en los dos idiomas (S-A).
+
+Las citas entre «» son lo que escribió el residente y no se traducen (paquete, K). X1-0 rige el nombre que inserta
+el motor, no la cita.
+
+| # | ID | Qué dice el español activo | Recomendación |
+|---|---|---|---|
+| 1 | K-7 · paro: mensaje acordado | «Se produjo un paro cardíaco en el minuto 12. El manejo de la reanimación no está modelado en este piloto. El manejo posterior no es evaluable.» | **APPROVE AS IS** |
+| 2 | K-8 · orden escrita después del paro | «No se ejecutó: «…». El paciente está en paro cardíaco; el manejo de la reanimación no está modelado en este piloto.» | **APPROVE AS IS** |
+| 3 | K-9 · actualización sin pulso | «La espera se interrumpió tras 3 min, en el minuto 3: paro cardíaco, sin pulso. Ahora, sin pulso: Fibrilación ventricular en el monitor; …» | **APPROVE AS IS** — la mayúscula tras «sin pulso:» es cosmética |
+| 4 | K-10 · orden para más tarde | «No se hizo ahora: «…». En este piloto, una orden para más tarde no se ejecuta: no se administró nada ni se programó nada. Escríbela de nuevo cuando quieras que se haga.» | **APPROVE AS IS** |
+| 5 | K-11 · envío interrumpido, nada aplicado | «Tu orden «…» se interrumpió mientras se procesaba, y no se aplicó nada de ella. Nada se repetirá automáticamente: revisa el estado del paciente y envíala de nuevo si todavía es necesaria.» | **APPROVE AS IS** |
+| 6 | K-12 · envío interrumpido, quizá en parte | Lo mismo, con «… y es posible que una parte de ella se haya aplicado.» | **APPROVE AS IS** — conserva la incertidumbre del inglés |
+| 7 | K-13 · paquete parcial, parte no ejecutada | «**PARTE DE ESTA ORDEN NO SE EJECUTÓ** … Ejecutado ahora: **aspirin 300 mg PO**. / No ejecutado: **norepinephrine**. …» | **APPROVE con la regla de X1-0**, como K-5 y K-6: se verá «**aspirina 300 mg PO**» y «**noradrenalina**»; el valor canónico no cambia. Antes recomendaba REVISE, que lleva al mismo texto |
+| 8 | K-14 · paquete parcial, parte retenida | «**PARTE DE ESTA ORDEN ESTÁ RETENIDA — SE NECESITA UNA ACLARACIÓN** … Ejecutado ahora: **aspirin 300 mg PO**. / Retenido hasta que respondas: **suero fisiológico**. …» | **APPROVE con la regla de X1-0**: se verá «**aspirina 300 mg PO**» |
+| 9 | K-15 · orden en la respuesta, con algo retenido | «No se ejecutó: «…» se escribió en la respuesta a la pregunta anterior, que solo completa la orden retenida. Escríbelo de nuevo como una orden nueva si aún lo quieres.» | **APPROVE AS IS** — es el caso protegido de TD-70 (a) |
+| 10 | K-16 · orden después de la respuesta (F0-12) | «También en tu respuesta: «…». La respuesta solo completa la orden retenida; esta orden se lee a continuación, como una orden propia, con su propio recibo.» | **APPROVE AS IS** — la guía del residente no explica hoy «recibo» (I-6) |
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -373,17 +402,18 @@ las casillas están en el paquete. **Comprobado el 2026-10-07:**
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes de los lotes 1 a 3, del alcance y las bases de X-1, y del
-relato (Decision File, octava a décima actualizaciones).
+Actualizado el 2026-10-07, con las decisiones docentes de los lotes 1 a 4, del alcance y las bases de X-1, del
+relato, de la rúbrica y de las guías (Decision File, octava a undécima actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
-   I-10, L-01, V-4, M-02, L-17).
+   I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
 2. **Firmar el resto del español que X-1 exige** (`docs/revision/X1_ESPANOL_PROPUESTO.md`): 98 de 105 decisiones,
    entre ellas V-9 (nombres de fármacos en español), que falta redactar.
-3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final. **Falta
-   decidir** cómo llega su aprobación al piloto: en `case_text/es/approvals.json`, dentro del candidato, o
-   registrada de nuevo en la base del piloto antes del GO.
-4. **Las firmas que quedan del paquete:** 68 de 100. El cuarto lote de nivel 1 está en 3.4.
-5. **Las dos guías:** se recomienda diferir su firma hasta implementar X-1 y revisar el relato (3.4).
-6. **Sin decidir:** si la rúbrica en español (4.2 del paquete) también se revisa antes del candidato, y si la
-   aclaración de X1-0 alcanza a los documentos en español que descarga el residente.
+3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
+   aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
+   revisión.
+4. **Las firmas que quedan del paquete:** 58 de 100 decisiones; con las firmas de H-62 e I-63, 60. El quinto lote
+   de nivel 1 está en 3.5.
+5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
+6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
+   de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista.

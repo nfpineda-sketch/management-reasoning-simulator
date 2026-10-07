@@ -10,6 +10,11 @@
 > **Decisiones docentes del 2026-10-07 (segunda ronda), sin implementar:** X1-0 (con una aclaración), I-10, L-01,
 > V-4, M-02 y L-17, APPROVE; A-2 con redacción final docente (§9); las claves internas se limpian antes del
 > candidato final (§10). Las demás casillas siguen en blanco.
+>
+> **Tercera ronda (2026-10-07), sin implementar:** L-17 y M-02, confirmadas (M-02, el renglón entero); X1-0 rige
+> también los documentos que se ofrecen al residente en español (§0, punto 4); el relato aprobado entra en el
+> candidato en `case_text/es/approvals.json` (§1), y la rúbrica en español se revisa antes de congelarlo (§10). La
+> cuenta no cambia: 7 de 105 decididas.
 
 **En una mirada**
 
@@ -44,7 +49,11 @@
    tranexámico, tenecteplasa), como en B-24. **Aclaración docente (2026-10-07):** en un encuentro en español,
    también los fármacos que el motor inserta ({fármaco}) se muestran con su nombre en español; el identificador
    canónico guardado puede seguir en inglés. Ninguna línea dice «infusión de norepinephrine». Así queda la
-   convención de K-13; su vocabulario es V-9, por redactar (§4.10).
+   convención de K-13; su vocabulario es V-9, por redactar (§4.10). **Alcance (docente, 2026-10-07, tercera
+   ronda):** la regla vale también en los documentos que la app ofrece expresamente en español al residente; allí
+   los fármacos visibles llevan su nombre en español, y los identificadores canónicos no cambian. No exige traducir
+   lo que se guarda en inglés por diseño, como el ledger o el Trace canónico. Con esta regla se aprobaron K-5 y K-6
+   (paquete, lote 4).
 5. Dispositivos con los nombres que ya usa la sala: naricera, mascarilla simple, mascarilla con reservorio, aire
    ambiente.
 6. Los números se escriben como los imprime el motor (punto decimal: «0.05 mcg/kg/min»), como en el resto de la
@@ -75,7 +84,9 @@
 1. **El relato del caso**: presentación, respuestas de la historia, fuente de la historia, hallazgos escritos por el
    caso e informes de estudios. Su español existe (`case_text/es/`) y se revisa aparte. Por decisión docente del
    2026-10-07, la revisión de los 30 casos va antes de congelar el candidato final. Esa decisión reemplaza la
-   anterior del mismo día, que la ponía después del despliegue (paquete, 4.1).
+   anterior del mismo día, que la ponía después del despliegue (paquete, 4.1). Las versiones aprobadas entran en el
+   candidato en `case_text/es/approvals.json` (camino a, decisión docente del 2026-10-07); el archivo se crea
+   después de la revisión.
 2. **40 preguntas del motor heredado** (`app.py:5459–5699` y `app.py:9236–9404`; anexo A). Ningún caso del
    piloto llega a ellas:
    - los 31 casos del banco declaran `engine.family`;
@@ -408,7 +419,7 @@ manejo · NIV → VMNI. Cualquier otro tipo de acción, con su etiqueta del regi
 **V-9 · Nombres de fármacos para mostrar en español** (aclaración de X1-0, 2026-10-07) — **por redactar**. Cada
 fármaco que el lector reconoce, con el nombre que la sala muestra en español; por ejemplo, norepinephrine →
 noradrenalina y aspirin → aspirina. El identificador canónico guardado no cambia. Es una decisión y se presenta
-después de cerrar el nivel 1.
+después de cerrar el nivel 1. Vale también en los documentos que se ofrecen al residente en español (X1-0, punto 4).
 
 ## 5. Compuerta de razonamiento y explicación retrospectiva (16)
 
@@ -457,7 +468,7 @@ la explicación retrospectiva; sus preguntas son I-7 y G-13. La sonda de la 27m 
 | L-14 | APP:10690 | Current treatments | Tratamientos en curso | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-15 | APP:10489 | Diagnostics | Resultados de exámenes | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-16 | APP:10689 · APP:10709 | Current support · {soporte} | Soporte actual · {soporte} — {soporte}: M-04 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| L-17 | APP:10118 · APP:10753 | ORDER_CANCELLED (clave cruda como encabezado de la entrada) | ORDEN CANCELADA; en inglés, ORDER CANCELLED | ☒ **APPROVE** (docente, 2026-10-07, regla de las claves internas) |
+| L-17 | APP:10118 · APP:10753 | ORDER_CANCELLED (clave cruda como encabezado de la entrada) | ORDEN CANCELADA; en inglés, ORDER CANCELLED | ☒ **APPROVE** (docente, 2026-10-07, regla de las claves internas; confirmada en la tercera ronda: la clave canónica no cambia) |
 | L-18 | APP:10118 · `resuscitation_room.py:141` | DIAGNOSTIC (clave cruda; la entrada del ECG tomado) | ECG; en inglés, también ECG (regla de las claves internas) | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-19 | APP:10183 · APP:11681 | Management Reasoning Simulator · Clinical encounter v{n} | Management Reasoning Simulator · Encuentro clínico v{n} | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-20 | `account_portal.py:391` (barra lateral) | Resident (el rol de la cuenta) | Residente | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
@@ -474,7 +485,7 @@ la explicación retrospectiva; sus preguntas son I-7 y G-13. La sonda de la 27m 
 | ID | Fuente | EN | ES propuesto | Decisión docente |
 |---|---|---|---|---|
 | M-01 | `resuscitation_room.py:55–65` | BEDSIDE MONITOR · HR · NIBP · RR (SpO₂ igual) | MONITOR DE CABECERA · FC · PANI · FR | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| M-02 | `clinical_scene.py:227–243` | ED / Bed 03 · {Patient illustration · current state / Updating patient appearance / Current patient image unavailable} | Urgencias / Cama 03 · {Imagen del paciente · estado actual / Actualizando la apariencia del paciente / Imagen actual del paciente no disponible} | ☒ **APPROVE** (docente, 2026-10-07: «Urgencias / Cama 03»; se registra el renglón entero, con sus tres estados) |
+| M-02 | `clinical_scene.py:227–243` | ED / Bed 03 · {Patient illustration · current state / Updating patient appearance / Current patient image unavailable} | Urgencias / Cama 03 · {Imagen del paciente · estado actual / Actualizando la apariencia del paciente / Imagen actual del paciente no disponible} | ☒ **APPROVE** (docente, 2026-10-07: «Urgencias / Cama 03»; el renglón entero, con sus tres estados, confirmado en la tercera ronda) |
 | M-03 | `clinical_scene.py:282–302` | Por qué no hay foto: 11 avisos, todos terminados en «The monitor and the examination are current.» | Ver la tabla de abajo; el final común: «El monitor y el examen están al día.» | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | M-04 | `resuscitation_room.py:6–19` | Soporte en curso: Ventilator · {modo} · FiO₂ {n}% · PEEP {n} · {NIV} · FiO₂ {n}% · {dispositivo / Oxygen} · {n} L/min · Norepinephrine / Dobutamine / Nitroglycerin · {n} {unidad} | Ventilador · {modo} · FiO₂ {n}% · PEEP {n} · VMNI · FiO₂ {n}% · {dispositivo / Oxígeno} · {n} L/min · Noradrenalina / Dobutamina / Nitroglicerina · {n} {unidad}. «Bag-mask ventilation» ya tiene su español («Ventilación con bolsa-mascarilla») | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 
@@ -582,7 +593,8 @@ los demás estados, las frases de A-2 y A-3 siguen igual.
   nada fuera de este inventario, que no se puede asegurar sólo leyendo el código.
 - Guías: la del residente dice que estas preguntas, el aviso de la orden retenida, el aviso de la foto y algunos
   rótulos se ven en inglés, y nombra los modos en inglés. La docente cita TD-51 como diferida (línea 232) y junta
-  el trauma y la neumonía en el párrafo de TD-54 que D-42 reemplaza. Se actualizan antes de su firma (H-62, I-63).
+  el trauma y la neumonía en el párrafo de TD-54 que D-42 reemplaza. Se actualizan antes de su firma (H-62, I-63),
+  que la docencia difirió el 2026-10-07 hasta que describan el candidato final.
 - **Dónde se implementa:** en la capa de presentación (`language.py` y la sala), sin tocar el lector
   (`family_parser.py`), el corpus ni los baselines (CLAUDE.md: validación externa en espera).
 - El cambio es de código: nuevo SHA y el contrato 16.4 (suite, 56 regresiones, B-1).
@@ -592,6 +604,15 @@ los demás estados, las frases de A-2 y A-3 siguen igual.
   - la acción en X1-C27 (e) y el estudio en X1-C28: sus etiquetas del registro y de los estudios ya existen en los
     dos idiomas;
   - los encabezados L-17 (decidido) y L-18.
+- **Documentos en español (X1-0, tercera ronda):** listar los documentos que la app ofrece al residente en español
+  y probar que nombran los fármacos en español. Hoy, al menos, el registro de la revisión de decisiones en PDF y
+  Markdown (`app.py:3985–4013`) y los PDF de cada encuentro en el portafolio
+  (`portfolio.render_encounter_documents`). El JSON del registro (`app.py:3986` y `:4015`), el ledger y el Trace
+  canónico siguen en inglés.
+- **Relato y rúbrica en español (decisiones docentes del 2026-10-07):** no son parte de este borrador, pero el
+  candidato final no se congela sin su revisión. El relato aprobado entra en `case_text/es/approvals.json`
+  (paquete, 4.1); el mecanismo de la rúbrica se identifica antes de implementarla (paquete, 4.2). El centinela
+  corre con las aprobaciones del candidato, para que el relato también quede comprobado.
 
 ## 11. Resumen de decisiones
 
@@ -609,7 +630,8 @@ los demás estados, las frases de A-2 y A-3 siguen igual.
 | **Total** | **100 formulaciones; 8 vocabularios** | **105** | **7; quedan 98** |
 
 Antes del 2026-10-07 eran 103 decisiones. Suman dos: V-4 se decidió aparte de los demás vocabularios, y V-9
-nace de la aclaración de X1-0.
+nace de la aclaración de X1-0. La tercera ronda (L-17 y M-02 confirmadas, X1-0 en los documentos) no cambia la
+cuenta.
 
 Firma docente y fecha: ________________________
 

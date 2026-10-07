@@ -273,6 +273,13 @@ Ninguna firma se inventa aquí. Estado a la fecha, según `docs/revision/CIERRE_
 | Descriptores de la rúbrica en español | UNKNOWN en la base del piloto: se aprueban en la app; sin aprobación se muestran en inglés | App desplegada |
 | Autorización explícita del piloto (condición C) | PENDING | Decision File |
 
+**Actualización del 2026-10-07 (B-5, decisiones docentes):** el relato en español de los 30 casos y los
+descriptores de la rúbrica en español se revisan antes de congelar el candidato final, que no se congela sin esas
+revisiones; ya no quedan para después del despliegue. El relato aprobado entra en el candidato en
+`case_text/es/approvals.json` (camino a; el archivo se crea después de la revisión docente), sin volver a
+registrarlo a mano en la base del piloto. El mecanismo con que la rúbrica se activa en el candidato se identifica
+antes de implementarla (Decision File, décima y undécima actualizaciones; TD-81).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 
@@ -429,10 +436,12 @@ son las 83 de siempre más las 10 de PostgreSQL, que corren aparte (9.2).
 español aprobado en la base desplegada si el piloto corre en español, prueba de humo desplegada (sección 11) y la
 autorización explícita (C).
 
-**Actualización del 2026-10-07 (B-5, decisión docente):** el relato en español de los 30 casos se revisa antes de
-congelar el candidato final, que no se congela sin esa revisión; ya no queda para después del despliegue. Falta
-decidir cómo llega su aprobación al piloto: en `case_text/es/approvals.json`, dentro del candidato, o
-registrada de nuevo en la base del piloto antes del GO (Decision File, décima actualización).
+**Actualización del 2026-10-07 (B-5, decisiones docentes):** el relato en español de los 30 casos y los
+descriptores de la rúbrica en español se revisan antes de congelar el candidato final, que no se congela sin esas
+revisiones; ya no quedan para después del despliegue. El relato aprobado entra en el candidato en
+`case_text/es/approvals.json` (camino a; el archivo se crea después de la revisión docente), sin volver a
+registrarlo a mano en la base del piloto. El mecanismo con que la rúbrica se activa en el candidato se identifica
+antes de implementarla (Decision File, décima y undécima actualizaciones; TD-81).
 
 ### 10.2 Contradicciones entre fuentes (se informan; a y d quedaron resueltas con B-3, 14.1)
 
@@ -1327,10 +1336,12 @@ J se informa aparte: PASS, FAIL o NOT RUN.
 Lo demás son acciones docentes dentro de la app, después del despliegue (secciones 6 y 7): la aprobación del relato
 en español, los descriptores de la rúbrica y las aprobaciones de fotos de TD-56.
 
-**Actualización del 2026-10-07 (B-5, decisión docente):** el relato en español de los 30 casos se revisa antes de
-congelar el candidato final, que no se congela sin esa revisión; ya no queda para después del despliegue. Falta
-decidir cómo llega su aprobación al piloto: en `case_text/es/approvals.json`, dentro del candidato, o
-registrada de nuevo en la base del piloto antes del GO (Decision File, décima actualización).
+**Actualización del 2026-10-07 (B-5, decisiones docentes):** el relato en español de los 30 casos y los
+descriptores de la rúbrica en español se revisan antes de congelar el candidato final, que no se congela sin esas
+revisiones; ya no quedan para después del despliegue. El relato aprobado entra en el candidato en
+`case_text/es/approvals.json` (camino a; el archivo se crea después de la revisión docente), sin volver a
+registrarlo a mano en la base del piloto. El mecanismo con que la rúbrica se activa en el candidato se identifica
+antes de implementarla (Decision File, décima y undécima actualizaciones; TD-81).
 
 **Por qué no las otras:**
 - **A, rama desde `production`:** copiaría los datos de producción al piloto con residentes.
@@ -2104,10 +2115,12 @@ Ninguna firma está hecha (sección 6). Las 64 filas de `docs/revision/CIERRE_PR
   español;
 - los descriptores de la rúbrica en español; sin aprobación, se muestran en inglés.
 
-**Actualización del 2026-10-07 (B-5, decisión docente):** el relato en español de los 30 casos se revisa antes de
-congelar el candidato final, que no se congela sin esa revisión; ya no queda para después del despliegue. Falta
-decidir cómo llega su aprobación al piloto: en `case_text/es/approvals.json`, dentro del candidato, o
-registrada de nuevo en la base del piloto antes del GO (Decision File, décima actualización).
+**Actualización del 2026-10-07 (B-5, decisiones docentes):** el relato en español de los 30 casos y los
+descriptores de la rúbrica en español se revisan antes de congelar el candidato final, que no se congela sin esas
+revisiones; ya no quedan para después del despliegue. El relato aprobado entra en el candidato en
+`case_text/es/approvals.json` (camino a; el archivo se crea después de la revisión docente), sin volver a
+registrarlo a mano en la base del piloto. El mecanismo con que la rúbrica se activa en el candidato se identifica
+antes de implementarla (Decision File, décima y undécima actualizaciones; TD-81).
 
 **Y la condición C:** la autorización explícita del piloto (Decision File).
 

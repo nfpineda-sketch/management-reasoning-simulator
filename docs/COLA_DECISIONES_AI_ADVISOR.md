@@ -9,8 +9,9 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
-  en español, sin interfaz mezclada en el candidato final; los lotes 1 a 3 de nivel 1 quedaron decididos, el español
-  que falta para X-1 está redactado y sus decisiones de base, tomadas). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
+  en español, sin interfaz mezclada en el candidato final; los lotes 1 a 4 de nivel 1 quedaron decididos, el español
+  que falta para X-1 está redactado y sus decisiones de base, tomadas; el relato y la rúbrica en español se revisan
+  antes de congelar el candidato, y el relato aprobado entra en él en `case_text/es/approvals.json`). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
@@ -285,7 +286,51 @@ del relato y claves internas.** Registradas también en el paquete y en `docs/re
      activas (K-13 y K-14) siguen en inglés hasta implementar.
   5. **Alcance de la aclaración de X1-0 fuera del encuentro:** los documentos en español que el residente
      descarga nombran hoy los fármacos en inglés. Si la decisión los incluye, el cambio es mayor.
+
+  **Resueltas en la undécima actualización:** la 1, la 2, la 3 y la 5. La 4 sigue anotada en la hoja F0-11 hasta
+  implementar X1-0.
 - **Siguiente lote de nivel 1:** F-58, F-60, G-61, H-62, I-63, K-1 y K-2 (una decisión), K-3, K-4, K-5 y K-6.
+- **B-5: BLOCKED.**
+
+**Actualizado por undécima vez el 2026-10-07: B-5 · lote 4 de nivel 1 y decisiones sobre el relato, la rúbrica, las
+guías y los documentos en español.** Registradas también en el paquete y en `docs/revision/X1_ESPANOL_PROPUESTO.md`.
+**Ninguna está implementada, y `case_text/es/approvals.json` no se creó.**
+
+| ID | Decisión docente (2026-10-07) | Qué exige, sin implementar todavía |
+|---|---|---|
+| F-58, F-60 y G-61 | APPROVE | Nada: las fichas, sus declaraciones C14 y la tabla TDFC siguen como están |
+| K-1 y K-2 (una decisión), K-3 y K-4 | APPROVE | Nada: las frases están activas en los dos idiomas |
+| K-5 y K-6 | APPROVE. Cuando la orden insertada contiene un fármaco reconocido, rige X1-0: en un encuentro en español, el residente lo lee con su nombre en español, y el valor canónico guardado no cambia | Implementación, con V-9 |
+| H-62 e I-63 | DEFER de la firma. No es un rechazo: las guías todavía no se pueden firmar. Deben describir el candidato final real, después de implementar X-1, los cambios de A-2 y A-9, la redacción final de D-42, la limpieza de la interfaz bilingüe y la revisión y activación del relato y de la rúbrica en español | Actualizarlas (sólo documentación) cuando todo eso esté hecho, y volver a firma |
+| L-17 | Confirmada: EN ORDER CANCELLED, ES ORDEN CANCELADA; la clave canónica no cambia | Implementación (TD-80) |
+| M-02 | Confirmada para el renglón entero: «Urgencias / Cama 03», «Imagen del paciente · estado actual», «Actualizando la apariencia del paciente» e «Imagen actual del paciente no disponible» | Implementación |
+| X1-0 en los documentos | Alcanza también a los documentos que se ofrecen expresamente en español al residente: los fármacos visibles llevan su nombre en español, y los identificadores canónicos no cambian. No exige traducir lo que se guarda en inglés por diseño, como el ledger o el Trace canónico | Al implementar, la lista de esos documentos y su prueba (TD-80) |
+| Relato en español: cómo llega al piloto | **Camino (a).** Terminada la revisión docente de los 30 casos, las versiones aprobadas entran en el candidato final en `case_text/es/approvals.json`. Requisitos: en el repositorio y determinista; comprobable antes del congelamiento; sin nombres de médicos ni de revisores, sin identificadores personales y sin metadatos de revisión innecesarios; sólo lo que ata la aprobación al caso, la versión y el texto exactos. El archivo no se crea todavía: primero se completa la revisión. Así se evita volver a registrar las aprobaciones a mano después del despliegue (el camino b queda descartado) | La exportación y su prueba (TD-81) |
+| Rúbrica en español (D1–D5) | **REVIEW BEFORE FINAL CANDIDATE FREEZE.** Vive en el repositorio: la docencia la revisa, y su español para residentes y docentes queda listo antes de congelar el SHA final del despliegue. No se difiere a después del despliegue | Identificar, antes de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista (TD-81) |
+
+- **Lo que ya hace el código para el relato** (comprobado el 2026-10-07, sin cambiarlo):
+  - `case_text.pack_approvals` lee `case_text/es/approvals.json` y toma sus filas con `"decision": "approved"`;
+  - `case_text.status` ata cada fila a su caso por `variant_id` y al texto exacto por `version`, el SHA-256 de
+    todos los pasajes del caso en los dos idiomas;
+  - para el lector actual basta una fila `{"variant_id", "version", "decision"}`, y ningún otro campo se usa;
+  - una revisión registrada después en la base del piloto, sobre la misma versión, prevalece sobre el archivo.
+
+  Para la rúbrica, `rubric_text.py` tiene la misma forma (`domain_id` y `version`, y su propio
+  `rubric_text/es/approvals.json`, que tampoco existe). Es un dato, no la decisión del mecanismo.
+- **Cuentas:**
+  - paquete: 42 de las 100 decididas; quedan 58 (15 de nivel 1, K-7 a K-21, y 43 de nivel 2). H-62 e I-63 tienen
+    decisión (DEFER) pero no firma: las firmas abiertas son 60;
+  - borrador de X-1: 7 de 105 decididas, quedan 98. L-17 y M-02 se confirmaron sin cambiar la cuenta, y el alcance
+    de X1-0 en los documentos no agrega decisiones.
+- **Contradicciones de la décima actualización:** la 1 (camino del relato), la 2 (rúbrica), la 3 (guías) y la 5
+  (documentos) quedan resueltas por estas decisiones. La 4 (regla 3 de la hoja F0-11) sigue anotada en la hoja
+  hasta implementar X1-0: K-13 y K-14 todavía muestran los fármacos en inglés.
+- **Abierto, sin contradicción:**
+  - el mecanismo de activación de la rúbrica;
+  - dónde se hace la revisión previa (la app de desarrollo o una local) y cómo se exporta sin la cuenta de quien
+    revisa;
+  - la lista exacta de los documentos que se ofrecen en español (al implementar).
+- **Siguiente lote de nivel 1:** K-7 a K-16.
 - **B-5: BLOCKED.**
 
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
@@ -294,7 +339,7 @@ del relato y claves internas.** Registradas también en el paquete y en `docs/re
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J y los lotes 1 a 3 de nivel 1, sin implementar; quedan 68 de 100 (25 de nivel 1 y 43 de nivel 2). Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos antes de congelar el candidato y decidir cómo llega su aprobación al piloto; implementar lo decidido antes de construir el candidato final |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J y los lotes 1 a 4 de nivel 1, sin implementar; quedan 58 de 100 (15 de nivel 1 y 43 de nivel 2), y H-62 e I-63, decididas DEFER, siguen sin firma (60 firmas abiertas). Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

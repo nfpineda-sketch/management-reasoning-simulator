@@ -13,10 +13,12 @@
 - **TIER 2 — redacción clínica:** 43.
 - **TIER 3 — redacción operativa o de pantalla:** 2.
 - **Deben actualizarse antes de firmarse:** las dos guías.
-- **Antes de congelar el candidato final:** el relato en español de los 30 casos (decisión docente del
-  2026-10-07).
-- **Después del despliegue, antes del GO:** la rúbrica en español.
-- **Decididas al 2026-10-07:** 32 de las 100; quedan 68 (25 de nivel 1 y 43 de nivel 2).
+- **Antes de congelar el candidato final:** el relato en español de los 30 casos y la rúbrica en español
+  (decisiones docentes del 2026-10-07). El relato aprobado entra en el candidato en
+  `case_text/es/approvals.json` (4.1).
+- **Después del despliegue, antes del GO:** ningún texto de este paquete; sólo lo de 4.4.
+- **Decididas al 2026-10-07:** 42 de las 100; quedan 58 (15 de nivel 1 y 43 de nivel 2). H-62 e I-63 se
+  decidieron DEFER de la firma: siguen sin firmar, así que las firmas abiertas son 60.
 
 Los criterios de cada nivel están en 0.4.
 
@@ -40,7 +42,7 @@ Las casillas «☐» del §2 y de las hojas siguen siendo el registro de la firm
 | **ACTIVE** | Está en el código y la sala (o el portal docente) ya lo muestra |
 | **DRAFT** | Está escrito, como borrador en el código o sólo en un documento, y no se muestra hasta activarlo con un cambio registrado |
 | **DOCUMENTATION ONLY** | Un documento (guía, ficha, tabla) que la app no muestra; firmarlo no cambia el runtime |
-| **POST-DEPLOYMENT REVIEW** | Se aprueba en la base desplegada (tablero docente), después del despliegue y antes del GO del piloto |
+| **POST-DEPLOYMENT REVIEW** | Se aprueba en la base desplegada (tablero docente), después del despliegue y antes del GO del piloto. Desde el 2026-10-07 ningún texto de este paquete queda en este estado: el relato y la rúbrica pasaron a antes del candidato final (sección 4) |
 
 Cuando el inglés y el español están en estados distintos, cada ítem dice los dos (por ejemplo, «EN ACTIVE · ES DRAFT»).
 
@@ -52,7 +54,7 @@ Cada ítem tiene un campo en blanco: **APPROVE** (tal como está) · **REVISE** 
 - **S-B · borrador en el código (`spanish_drafts.py`) o sólo en un documento.** APPROVE: por sí sola no cambia el SHA (el borrador sigue sin mostrarse). Mostrarlo es activarlo (X-1): cambio de código → nuevo SHA → 16.4. REVISE: si el borrador está en `spanish_drafts.py` (fuera de `docs/`), cambiarlo da un nuevo SHA y, por la regla de 18.2, B-1 de nuevo; si sólo está en un documento (el aviso de la foto), es un cambio de documentación (S-C). DEFER: sin cambio; la sala sigue en inglés.
 - **S-C · DOCUMENTATION ONLY bajo `docs/`.** APPROVE: sin cambio. Actualizarlo es un commit sólo de documentación: el SHA cambia, el runtime no, y B-1 sigue válido si `git diff 8ff41a4 <final> -- . ':(exclude)docs'` queda vacío (18.2). Ninguna prueba lee las guías.
 - **S-D · documento generado desde el código (fichas R-2, tabla TDFC).** APPROVE: sin cambio. REVISE: cambia el banco o el caso (runtime) o las notas de revisión (`pocus_review_notes.py`, fuera de `docs/`), y la hoja se regenera → nuevo SHA → 16.4 y B-1 de nuevo (18.2).
-- **S-E · POST-DEPLOYMENT REVIEW en la base desplegada.** Aprobar en el tablero: sin cambio de SHA. «Pedir cambios»: el caso (o el dominio) sigue en inglés. Corregir el texto es un cambio del repositorio (`case_text/es/*.json`, `rubric_text/es/descriptors.json`) → nuevo SHA → 16.4 completo y un nuevo despliegue.
+- **S-E · POST-DEPLOYMENT REVIEW en la base desplegada.** Aprobar en el tablero: sin cambio de SHA. «Pedir cambios»: el caso (o el dominio) sigue en inglés. Corregir el texto es un cambio del repositorio (`case_text/es/*.json`, `rubric_text/es/descriptors.json`) → nuevo SHA → 16.4 completo y un nuevo despliegue. Desde el 2026-10-07 no se aplica a ningún texto de este paquete: el relato y la rúbrica se revisan antes de congelar el candidato final (sección 4).
 
 ### 0.3 Recomendación (del AI Advisor, no es una decisión)
 
@@ -118,9 +120,17 @@ Actualización del 2026-10-07: con X-1 cerrada, A-9 pasa de REVIEW CLOSELY a NEE
 - Lote 3 de nivel 1: F-48 a F-57, APPROVE. F-49, F-53 y F-54 llevan sus límites vinculantes (D-41, E-46 y D-42).
 - J (aviso de la foto): APPROVE, con el español en «tú».
 - A-2: redacción final docente para el estado de agotamiento (bloque A).
-- Quedan 68 de las 100: 25 de nivel 1 y 43 de nivel 2.
+- Lote 4 de nivel 1: F-58, F-60, G-61, K-1 y K-2 (una decisión), K-3 y K-4, APPROVE; K-5 y K-6, APPROVE, con la
+  regla de X1-0 cuando la orden nombra un fármaco; H-62 e I-63, DEFER de la firma: no es un rechazo, se firman
+  cuando describan el candidato final.
+- L-17 y M-02, confirmadas (sección 2, X-1).
+- Quedan 58 de las 100: 15 de nivel 1 (K-7 a K-21) y 43 de nivel 2. Con las firmas de H-62 e I-63, que siguen
+  pendientes, son 60 firmas abiertas.
 - El relato en español de los 30 casos se revisa antes de congelar el candidato final, que no se congela sin esa
-  revisión (4.1). Reemplaza la decisión anterior del mismo día (después del despliegue).
+  revisión (4.1). Reemplaza la decisión anterior del mismo día (después del despliegue). Su aprobación entra en el
+  candidato en `case_text/es/approvals.json` (camino a, 4.1).
+- La rúbrica en español también se revisa antes de congelar el candidato final (4.2).
+- X1-0 alcanza también a los documentos que se ofrecen al residente en español (sección 2, X-1).
 - El español que falta para X-1 está redactado para revisión (`docs/revision/X1_ESPANOL_PROPUESTO.md`); sus
   decisiones de base están en la sección 2, X-1.
 - Antes del candidato final se limpian las claves internas que ve el residente, sin cambiar las canónicas
@@ -129,9 +139,9 @@ Actualización del 2026-10-07: con X-1 cerrada, A-9 pasa de REVIEW CLOSELY a NEE
 
 Además (sección 4):
 
-- **antes de congelar el candidato final** (decisión docente del 2026-10-07): el relato en español de los 30
-  casos, que incluye el español de las filas 27–36;
-- **después del despliegue y antes del GO**, sin bloquear B-5: los descriptores de la rúbrica en español.
+- **antes de congelar el candidato final** (decisiones docentes del 2026-10-07): el relato en español de los 30
+  casos, que incluye el español de las filas 27–36, y los descriptores de la rúbrica en español;
+- **después del despliegue y antes del GO:** ningún texto de este paquete; sólo lo de 4.4.
 
 ### 1.2 Decisiones agrupadas (texto idéntico)
 
@@ -179,13 +189,16 @@ desvíos están en `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1.
 ### 1.5 Qué bloquea B-5 y qué no
 
 - **Bloquean:** las 100 decisiones requeridas de la sección 2. Si se difiere un texto activo, hace falta además su acuerdo expreso de pilotear con él sin firma.
-- **No bloquean:** las 3 opcionales de la 41m si se difieren (sin cambio de SHA); la rúbrica en español (4.2), después del despliegue (el relato, 4.1, pasó a antes del candidato final el 2026-10-07); y `MRS_LANGUAGE`, una configuración de los Secrets que no es un texto ni cambia el SHA.
+- **No bloquean:** las 3 opcionales de la 41m si se difieren (sin cambio de SHA) y `MRS_LANGUAGE`, una configuración de los Secrets que no es un texto ni cambia el SHA.
+- **No están entre las 100, pero el candidato final no se congela sin ellas** (decisiones docentes del 2026-10-07): la revisión del relato en español (4.1) y la de la rúbrica en español (4.2).
 - **Orden recomendado:**
   1. las decisiones de nivel 1;
   2. X-1, una vez decididos A y J;
   3. las correcciones de H e I;
-  4. la firma de las guías actualizadas.
-- **Después:** el candidato final se construye con lo aprobado (16.4).
+  4. la firma de las guías actualizadas, cuando describan el candidato final (H-62 e I-63, DEFER de la firma,
+     2026-10-07).
+- **Después:** el candidato final se construye con lo aprobado (16.4). Las guías se actualizan y se firman sobre ese
+  candidato: es un cambio sólo de documentación (18.2).
 
 ## 2. ANTES DEL CANDIDATO FINAL
 
@@ -222,6 +235,13 @@ Decisión transversal de los bloques A y J. **TIER 3.**
   residente, en inglés y en español (por ejemplo, `beta_blocker` → beta blocker / betabloqueador;
   `ORDER_CANCELLED` → ORDER CANCELLED / ORDEN CANCELADA). Es sólo presentación: las claves canónicas no cambian
   (TD-80).
+- **Documentos que se descargan (docente, 2026-10-07):** X1-0 rige también los documentos que la app ofrece
+  expresamente en español al residente: en ellos, los fármacos visibles llevan su nombre en español, y los
+  identificadores canónicos no cambian. No exige traducir lo que se guarda en inglés por diseño, como el ledger o
+  el Trace canónico.
+- **L-17 y M-02, confirmadas (docente, 2026-10-07, lote 4):** L-17, ORDER CANCELLED / ORDEN CANCELADA, con la
+  clave canónica sin cambio; M-02, el renglón entero: «Urgencias / Cama 03», «Imagen del paciente · estado
+  actual», «Actualizando la apariencia del paciente» e «Imagen actual del paciente no disponible».
 
 ### A. R-4 · Las 18 frases del motor (filas 1–18)
 
@@ -316,6 +336,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 ### C. Líneas del examen y rótulos del E-FAST (filas 27–38 y E-FAST)
 
 - **Filas 27–36:** EN ACTIVE (panel del examen) · ES POST-DEPLOYMENT REVIEW: el español es un pasaje del relato del caso (`case_text/es/<familia>.json`) y se muestra cuando usted aprueba ese relato en el tablero de la base desplegada (sección 4; §4 del cierre). **Lo que se decide ahora es el inglés.** SHA: EN, S-A; ES, S-E.
+  - Actualización del 2026-10-07: ese español se revisa con el relato antes de congelar el candidato final, y su aprobación entra en el candidato en `case_text/es/approvals.json` (4.1); ya no es POST-DEPLOYMENT REVIEW.
 - **Filas 37, 38 y E-FAST:** ACTIVE en inglés y en español. SHA: S-A.
 
 | # | Caso · dónde | EN exacto | ES exacto | Se infiere | Recomendación | Nivel | Decisión docente |
@@ -578,7 +599,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): actúa sin esperar la angio-TC
 - Se infiere (docente): se observa decidir la reperfusión y la anticoagulación por el VD o la TVP en shock, sin esperar la angiografía.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **F-59 · Fila 59 · `trauma_hemothorax_41m`** — OPCIONAL (F0-2) · ficha «CONFIRM» · E-FAST en trauma cerrado con hipotensión
 - EN · componente: Deciding the drain and its reassessment from the haemothorax on the E-FAST.
@@ -604,7 +625,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): dice qué cambiaría eso
 - Se infiere (docente): se observa nombrar el E-FAST negativo y mantener el control de la hemorragia en el miembro.
 - Recomendación: **APPROVE AS IS** — tras TD-48 la E-FAST muestra sus doce ventanas negativas; el control repite la llegada (TD-54, fila 43) y la evidencia no exige ver un cambio.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 ### G. R-3 · Tabla TDFC final (fila 61)
 
@@ -614,7 +635,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES: la prosa del documento está en español; las filas, en inglés.
 - Se infiere (docente): qué oportunidades declara cada caso. YES observa un componente, nunca la EPA completa; NO no quiere decir falla.
 - Recomendación: **APPROVE AS IS** — criterios aceptados en D-10; la tabla coincide con el banco (`test_tdfc_opportunities.py`). Los totales cuentan los 31 casos; las cuatro filas de la 41m no se ejercen en el piloto de residentes (F0-2).
-- SHA: S-D. — Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- SHA: S-D. — Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 ### H. Guía docente (fila 62)
 
@@ -662,7 +683,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 
 - **Recomendación:** **NEEDS UPDATE BEFORE SIGN-OFF** — 11 correcciones (2 de nivel 1), una de ellas una sección nueva.
 - **Actualización del 2026-10-07:** las correcciones se aplicaron (`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1), pero las decisiones de ese día (X-1, J, L-01, D-42, A-2 y el relato antes del candidato) vuelven a dejar la guía desactualizada respecto del candidato final. Recomendación: **DEFER** la firma hasta implementar X-1 y revisar el relato; las frases afectadas están en la sección 3.4 de ese documento.
-- **Decisión docente sobre la guía actualizada:** ☐ APPROVE · ☐ REVISE · ☐ DEFER — Firma y fecha: ________
+- **Decisión docente sobre la guía actualizada:** ☐ APPROVE · ☐ REVISE · ☒ **DEFER de la firma** — docente, 2026-10-07. No es un rechazo: la guía docente todavía no se puede firmar. Debe describir el candidato final real, después de implementar X-1, los cambios de A-2 y A-9, la redacción final de D-42, la limpieza de la interfaz bilingüe y la revisión y activación del relato y de la rúbrica en español. Entonces se actualiza (sólo documentación) y vuelve a firma. — Firma y fecha: ________
 
 ### I. Guía del residente (fila 63)
 
@@ -691,7 +712,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 
 - **Recomendación:** **NEEDS UPDATE BEFORE SIGN-OFF** — 9 correcciones (6 de nivel 1).
 - **Actualización del 2026-10-07:** las correcciones se aplicaron (`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1), pero las decisiones de ese día (X-1, J, L-01, D-42, A-2 y el relato antes del candidato) vuelven a dejar la guía desactualizada respecto del candidato final. Recomendación: **DEFER** la firma hasta implementar X-1 y revisar el relato; las frases afectadas están en la sección 3.4 de ese documento.
-- **Decisión docente sobre la guía actualizada:** ☐ APPROVE · ☐ REVISE · ☐ DEFER — Firma y fecha: ________
+- **Decisión docente sobre la guía actualizada:** ☐ APPROVE · ☐ REVISE · ☒ **DEFER de la firma** — docente, 2026-10-07. No es un rechazo: la guía del residente todavía no se puede firmar. Debe describir el candidato final real, después de implementar X-1, los cambios de A-2 y A-9, la redacción final de D-42, la limpieza de la interfaz bilingüe y la revisión y activación del relato y de la rúbrica en español. Entonces se actualiza (sólo documentación) y vuelve a firma. — Firma y fecha: ________
 
 ### J. Aviso de la foto (fila 64)
 
@@ -712,7 +733,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - **Firma:** la hoja agrupa la firma en dos filas («Redacción de las frases de la sala», K-1 a K-21; «Eventos que cortan una espera», K-E1 a K-E17). Aquí cada texto lleva su decisión, para cambiar uno sin reabrir el resto.
 - **SHA:** S-A. Corregir una frase es cambiar su regla en `language.py` (`_PHASE0_RULES`) y su prueba en `test_phase0_spanish.py`.
 - **Revisión del español:** fiel en las 21 frases y los 17 eventos; ninguna dice algo distinto del inglés ni engaña. Observaciones, sin reescribir: (1) dos criterios para los nombres de fármacos (K-13); (2) masculino genérico («el paciente», «traído»), también con pacientes mujeres, como en toda la sala; (3) mayúscula tras dos puntos en K-6 y K-9, cosmética; (4) «recibo» no se explica al residente (K-16, I-6); (5) un calco en K-E6.
-- **Nombres de fármacos (X1-0, docente, 2026-10-07):** en un encuentro en español, los fármacos que nombra el motor se muestran con su nombre en español; el identificador canónico guardado no cambia. Resuelve la observación (1). Sin implementar: hoy K-13 y K-14 los muestran en inglés, y K-5 y K-6 también cuando la orden es un fármaco.
+- **Nombres de fármacos (X1-0, docente, 2026-10-07):** en un encuentro en español, los fármacos que nombra el motor se muestran con su nombre en español; el identificador canónico guardado no cambia. Resuelve la observación (1). Sin implementar: hoy K-13 y K-14 los muestran en inglés, y K-5 y K-6 también cuando la orden es un fármaco. K-5 y K-6 se aprobaron con esta regla (lote 4).
 
 **K-1 y K-2 · UNA DECISIÓN → filas 1 y 2 · Orden no entendida (UNRECOGNIZED)** — TIER 1 · ACTIVE
 - Dónde: recibo bajo los modos · EN `order_ledger.py:1381` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -723,7 +744,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: esa orden no se ejecutó; no se dio ni se hizo nada; hay que reescribirla.
 - Revisión: fiel. «Por ello» puede leerse como «por esa razón»; el sentido (no se dio ni se hizo nada) no cambia. La fila 2 sólo muestra que la cita queda como se escribió: es el mismo texto.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **K-3 · Fila 3 · Registrada, no administrada (RECORDED_NOT_MODELLED)** — TIER 1 · ACTIVE
 - Dónde: recibo bajo los modos (RECORDED_NOT_MODELLED) · EN `order_pipeline.py:505` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -732,7 +753,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: la orden quedó registrada como decisión, sin efecto en el paciente: no se dio nada.
 - Revisión: fiel. «no administrado» también cuando la decisión no es un fármaco, igual que «not given» en inglés.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **K-4 · Fila 4 · Reevaluación inmediata (mirada en la cabecera)** — TIER 1 · ACTIVE
 - Dónde: entrada tras «reevaluar» sin número · EN `time_semantics.py:282` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -741,7 +762,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: pasaron 2 minutos; los valores son de esa mirada, no el resultado de un tratamiento.
 - Revisión: fiel. «En la cabecera» = a pie de cama.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **K-5 · Fila 5 · Mirada inmediata después de una orden** — TIER 1 · ACTIVE
 - Dónde: entrada tras «dar X y reevaluar» · EN `time_semantics.py:294` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -751,7 +772,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Revisión: fiel.
 - Recomendación: **APPROVE AS IS**
 - Actualización del 2026-10-07 (X1-0): si la orden es un fármaco, su nombre se mostrará en español al implementarse; el ejemplo, un fluido, ya está en español.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07: cuando la orden insertada contiene un fármaco reconocido, rige X1-0: en un encuentro en español, el residente lo lee con su nombre en español, y el valor canónico guardado no cambia.
 
 **K-6 · Fila 6 · Espera interrumpida por un evento** — TIER 1 · ACTIVE
 - Dónde: entrada al cortarse una espera · EN `time_semantics.py:258` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -761,7 +782,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Revisión: fiel. Mayúscula tras «Administrado:» (cosmética; la hoja F0-11 ya la anota).
 - Recomendación: **APPROVE AS IS**
 - Actualización del 2026-10-07 (X1-0): si la orden es un fármaco, su nombre se mostrará en español al implementarse; el ejemplo, un fluido, ya está en español.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07: la misma regla de X1-0 que K-5.
 
 **K-7 · Fila 7 · Paro: mensaje acordado** — TIER 1 · ACTIVE
 - Dónde: entrada al paro (mensaje acordado F0-8) · EN `observation_consistency.py:14` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -823,7 +844,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES: **PARTE DE ESTA ORDEN NO SE EJECUTÓ** /  / Ejecutado ahora: **aspirin 300 mg PO**. / No ejecutado: **norepinephrine**. No se ha administrado nada de ello; escríbelo de nuevo como una orden nueva si aún lo quieres.
 - Se infiere: una parte se ejecutó y otra no; lo no ejecutado no se dio.
 - Revisión: fiel. Los fármacos que nombra el motor quedan en inglés («aspirin», «norepinephrine»), los fluidos se traducen («suero fisiológico», K-5, K-6, K-14) y las notas de la TEP traducen el fármaco («alteplasa», B-24, B-25). Es la convención declarada de la sala (hoja F0-11, regla 3), pero conviven dos criterios: confirmarlos.
-- Recomendación: **REVISE** (actualizada el 2026-10-07; antes, REVIEW CLOSELY) — la convención quedó decidida en X1-0: en un encuentro en español, los fármacos que nombra el motor se muestran con su nombre en español («Ejecutado ahora: **aspirina 300 mg PO**», «No ejecutado: **noradrenalina**»); el valor canónico guardado no cambia. Falta firmar esa redacción, que cambia al implementarse.
+- Recomendación: **APPROVE con la regla de X1-0**, como la docencia decidió K-5 y K-6 (ajustada el 2026-10-07, lote 4; antes, REVISE, que lleva al mismo texto) — la frase es fiel; en un encuentro en español, los fármacos que nombra el motor se muestran con su nombre en español («Ejecutado ahora: **aspirina 300 mg PO**», «No ejecutado: **noradrenalina**»), y el valor canónico guardado no cambia. Sin implementar: hoy se ven en inglés.
 - Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
 **K-14 · Fila 14 · Paquete parcial: parte retenida** — TIER 1 · ACTIVE
@@ -832,8 +853,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES: **PARTE DE ESTA ORDEN ESTÁ RETENIDA — SE NECESITA UNA ACLARACIÓN** /  / Ejecutado ahora: **aspirin 300 mg PO**. / Retenido hasta que respondas: **suero fisiológico**. No se ha administrado nada de ello.
 - Se infiere: una parte se ejecutó y otra espera una aclaración; lo retenido no se ha dado.
 - Revisión: fiel; la misma convención que K-13.
-- Recomendación: **APPROVE AS IS**
-- Actualización del 2026-10-07 (X1-0): al implementarse, «aspirin 300 mg PO» se mostrará «aspirina 300 mg PO»; el valor canónico guardado no cambia.
+- Recomendación: **APPROVE con la regla de X1-0**, como K-5, K-6 y K-13 (precisada el 2026-10-07, lote 4; antes, APPROVE AS IS con esta nota) — al implementarse, «aspirin 300 mg PO» se mostrará «aspirina 300 mg PO»; el valor canónico guardado no cambia.
 - Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
 **K-15 · Fila 15 · Orden junto a la respuesta, cuando algo sigue retenido** — TIER 1 · ACTIVE
@@ -932,10 +952,11 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 
 ## 4. DESPUÉS DEL DESPLIEGUE, ANTES DEL GO DEL PILOTO
 
-**Actualización del 2026-10-07:** el relato (4.1) pasó a antes de congelar el candidato final, por decisión
-docente; la rúbrica (4.2) sigue aquí.
+**Actualización del 2026-10-07:** por decisión docente, el relato (4.1) y la rúbrica (4.2) pasaron a antes de
+congelar el candidato final; después del despliegue sólo queda lo de 4.4. El relato aprobado entra en el candidato
+en `case_text/es/approvals.json` (4.1); el mecanismo de la rúbrica se identifica antes de implementarla (4.2).
 
-No bloquean B-5. El contrato de preparación los pone después del despliegue y antes de abrir el piloto (informe de preparación, 10.1 y 20.5; §4 del cierre, punto 2). Se aprueban en el tablero docente de la base desplegada.
+Antes de esas decisiones no bloqueaban B-5: el contrato de preparación los ponía después del despliegue y antes de abrir el piloto (informe de preparación, 10.1 y 20.5; §4 del cierre, punto 2), y se aprobaban en el tablero docente de la base desplegada. Ahora no están entre las 100 decisiones, pero el candidato final no se congela sin ellos (1.5).
 
 **4.1 · El relato en español de cada caso** — ANTES DEL CANDIDATO FINAL desde el 2026-10-07 (antes, POST-DEPLOYMENT REVIEW) · S-E
 
@@ -952,18 +973,46 @@ No bloquean B-5. El contrato de preparación los pone después del despliegue y 
   despliegue): el relato en español de los 30 casos del piloto se revisa **antes de congelar el candidato final**,
   y el candidato bilingüe no se congela sin esa revisión. Motivo: el texto vive en el repositorio
   (`case_text/es/`), y corregirlo después del despliegue daría un SHA nuevo y otro despliegue.
-- **Falta decidir cómo llega la aprobación al piloto.** La sala sólo muestra el relato de un caso cuya versión exacta
-  está aprobada en la base del despliegue, o en `case_text/es/approvals.json`. El código ya lee ese archivo, pero
-  hoy no existe. Ver la décima actualización del Decision File.
+- **Cómo llega la aprobación al piloto: camino (a)** (decisión docente del 2026-10-07). Terminada la revisión
+  docente de los 30 casos, las versiones aprobadas entran en el candidato final en `case_text/es/approvals.json`.
+  Así no hace falta volver a registrarlas a mano en la base del piloto después del despliegue (camino b,
+  descartado). Requisitos:
+  - en el repositorio y determinista;
+  - comprobable con una prueba antes de congelar el candidato;
+  - sin nombres de médicos ni de revisores, sin identificadores personales y sin metadatos de la revisión que no
+    hagan falta;
+  - sólo lo necesario para atar la aprobación al caso, la versión y el texto exactos que se aprobaron.
+- **El archivo todavía no se crea:** primero se completa la revisión docente.
+- **Lo que ya hace el código** (comprobado el 2026-10-07, sin cambiarlo):
+  - `case_text.pack_approvals` lee el archivo y toma sus filas con `"decision": "approved"`;
+  - `case_text.status` ata cada fila a su caso por `variant_id` y al texto exacto por `version`, el SHA-256 de
+    todos los pasajes del caso en los dos idiomas (`case_text.version`);
+  - una fila `{"variant_id", "version", "decision"}` basta para el lector actual, que no usa ningún otro campo. El
+    `reviewer` que nombra la documentación de `pack_approvals` no hace falta, y el archivo no lo llevará;
+  - un cambio posterior en cualquiera de los dos idiomas cambia la versión y devuelve el caso al inglés;
+  - una revisión registrada después en la base del piloto, sobre la misma versión, prevalece sobre el archivo.
+- **Falta, al implementar (no autorizado todavía):**
+  - la exportación que escriba sólo esos campos: no hay herramienta, y la base donde se revise guarda la cuenta de
+    quien revisa, que no se exporta;
+  - la prueba que, con la base vacía, compruebe que los 30 casos del piloto se leen aprobados en español sólo por
+    el archivo, y que el archivo no tiene otros campos.
+- El archivo vive fuera de `docs/`: entra con el candidato y su contrato 16.4.
 
-**4.2 · Los descriptores de la rúbrica en español** — POST-DEPLOYMENT REVIEW · S-E
+**4.2 · Los descriptores de la rúbrica en español** — ANTES DEL CANDIDATO FINAL desde el 2026-10-07 (antes, POST-DEPLOYMENT REVIEW)
 
 - Qué es: qué evalúa cada uno de los 5 dominios (D1–D5) y sus niveles 0–3 (`rubric_text/es/descriptors.json`, rúbrica 1.0-pilot).
 - Cómo se decide: dominio por dominio, en el tablero.
 - Sin aprobación, el dominio se ve en inglés. Los puntajes y los criterios siguen en inglés, que son la norma.
+- **Decisión docente (2026-10-07): REVIEW BEFORE FINAL CANDIDATE FREEZE.** La rúbrica en español vive en el
+  repositorio (`rubric_text/es/descriptors.json`). La docencia la revisa, y su español, el que leen residentes y
+  docentes, queda listo antes de congelar el SHA final del despliegue. No se difiere a después del despliegue.
+- **Sin implementar.** Antes de implementar, falta identificar el mecanismo exacto con que la rúbrica aprobada se
+  activa en el candidato, de modo que se compruebe de forma determinista en él. Dato del código, no una decisión:
+  `rubric_text.py` tiene la misma forma que el relato (revisión por dominio, atada a un hash de sus descriptores en
+  los dos idiomas) y ya lee `rubric_text/es/approvals.json` (`rubric_text.pack_approvals`), que hoy no existe.
 
-**4.3 · Cómo evitar un SHA nuevo después del despliegue.** Desde el 2026-10-07, el relato ya se revisa antes del
-candidato (4.1); lo que sigue queda para la rúbrica.
+**4.3 · Cómo evitar un SHA nuevo después del despliegue.** Resuelto el 2026-10-07: el relato (4.1) y la rúbrica
+(4.2) se revisan antes del candidato, y esa revisión ya no es opcional. Lo que sigue queda como antecedente.
 
 - El tablero no edita textos: corregir una traducción es un cambio del repositorio, con un candidato nuevo y otro despliegue (S-E).
 - Leer antes del candidato final los relatos de los casos que se jugarán en español, y los descriptores, permite corregirlos dentro del mismo SHA.
@@ -990,8 +1039,10 @@ candidato (4.1); lo que sigue queda para la rúbrica.
 | H · I | — | Commit sólo de documentación: SHA nuevo, runtime igual; B-1 sigue válido (18.2) | — |
 | Sección 4 | Sin cambio (base desplegada) | Corregir = nuevo SHA y nuevo despliegue | El caso o el dominio siguen en inglés |
 
-Actualización del 2026-10-07: el relato (4.1) se revisa antes del candidato final. Corregirlo entonces cambia el SHA
-antes de congelarlo, no después del despliegue.
+Actualización del 2026-10-07: el relato (4.1) y la rúbrica (4.2) se revisan antes del candidato final. Corregirlos
+entonces cambia el SHA antes de congelarlo, no después del despliegue, y la fila «Sección 4» ya no se aplica a
+ellos. El archivo de aprobaciones del relato (`case_text/es/approvals.json`) también entra antes del congelamiento:
+está fuera de `docs/`, así que va con el contrato 16.4.
 
 Si el SHA final cambia por código, el contrato de promoción (16.4) vuelve a correr la suite, las 56 regresiones y B-1 sobre ese SHA. Si sólo cambia `docs/`, B-1 sigue valiendo para `8ff41a4` (18.2).
 
@@ -1026,5 +1077,5 @@ Si el SHA final cambia por código, el contrato de promoción (16.4) vuelve a co
 | I · Guía del residente | 1 | | | |
 | J · Aviso de la foto | 1 | | | |
 | K · F0-11: frases nuevas de la Fase 0 | 37 | | | |
-| 4.1 · relato en español (30 casos) | Antes de congelar el candidato final | | | |
-| 4.2 · rúbrica en español | En el tablero de la base desplegada | | | |
+| 4.1 · relato en español (30 casos) | Antes de congelar el candidato final; entra en `case_text/es/approvals.json` | | | |
+| 4.2 · rúbrica en español | Antes de congelar el candidato final (mecanismo por identificar) | | | |
