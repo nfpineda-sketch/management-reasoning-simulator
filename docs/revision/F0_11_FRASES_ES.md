@@ -87,7 +87,7 @@ Aparecen dentro de la frase de la espera interrumpida (fila 6).
 | Revisión | Resultado | Fecha | Firma |
 |---|---|---|---|
 | Redacción de las frases de la sala | Decidida: filas 1 a 17 y 19 y las dos de «Examen y frase hermana», aprobadas; fila 18, REVISE (redacción nueva abajo, sin implementar) | 2026-10-07 | |
-| Eventos que cortan una espera | En curso: las cuatro primeras filas (K-E1 a K-E4), aprobadas; quedan K-E5 a K-E17 | 2026-10-07 | |
+| Eventos que cortan una espera | En curso: las catorce primeras filas (K-E1 a K-E14) decididas; la quinta y la sexta, REVISE (redacción nueva abajo, sin implementar), y el resto, aprobadas. Quedan las tres últimas (K-E15 a K-E17) | 2026-10-07 | |
 
 **Decisiones docentes del 2026-10-07 (lotes 4, 5 y final del paquete de firmas), sin implementar.** Las filas 1 a
 17 y 19, y las dos de «Examen y frase hermana», se aprueban como están, con dos condiciones que no cambian su
@@ -105,6 +105,16 @@ La fila 18 se revisa (REVISE). La tabla de arriba muestra la frase activa hasta 
 En la fila 9, la mayúscula tras «sin pulso:» es cosmética y no pide revisión. Cada decisión, con su nota, está en
 el paquete (`docs/revision/FACULTY_SIGNOFF_PACKET_PREPILOT.md`, bloque K).
 
-**Eventos (2026-10-07):** las cuatro primeras filas de «Eventos que cortan una espera» (K-E1 a K-E4) quedan
-aprobadas como están. La quinta (K-E5) trae un hallazgo, a decisión docente: dice «untreated» también cuando ya se
-dio adrenalina, en la misma entrada que la fila 18 (TD-82; paquete, K-E5).
+**Eventos (2026-10-07):** de «Eventos que cortan una espera», las filas 1 a 4 y 7 a 14 (K-E1 a K-E4 y K-E7 a
+K-E14) quedan aprobadas como están. La quinta y la sexta se revisan (REVISE). La tabla de arriba muestra la etiqueta
+activa hasta implementarlas:
+
+- quinta (K-E5), cierta tanto si no se dio adrenalina como si se dio sin control eficaz. La anafilaxia realmente no
+  tratada sigue teniendo su frase propia, la segunda de «Examen y frase hermana» (K-21) (TD-82):
+  - EN: circulatory arrest from anaphylaxis without effective adrenaline
+  - ES: paro circulatorio por anafilaxia sin adrenalina eficaz
+- sexta (K-E6), el mismo evento terminal, sin cambiar su disparador, su prevenibilidad ni su fisiología:
+  - EN: circulatory arrest from profound bradycardia
+  - ES: paro circulatorio por bradicardia profunda
+
+Quedan las tres últimas filas (K-E15 a K-E17).

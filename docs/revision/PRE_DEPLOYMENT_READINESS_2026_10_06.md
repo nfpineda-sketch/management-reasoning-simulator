@@ -298,6 +298,11 @@ aprobada y entra en el mismo cambio del motor de TD-83, antes del candidato fina
 nivel 2: K-E5 a K-E17, y K-E5 trae un hallazgo (TD-82; Decision File, decimoquinta y decimosexta
 actualizaciones).
 
+**Actualización del 2026-10-07 (B-5, lote 4 de nivel 2):** K-E7 a K-E14 quedan aprobadas. K-E5 y K-E6 se revisan:
+son cambios de texto del motor antes del candidato final (TD-82, TD-67). La elección entre A-6 y A-6b queda por el
+estado del motor, no por el fármaco de inducción (TD-83). Quedan 3 decisiones, K-E15 a K-E17 (Decision File,
+decimoséptima actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

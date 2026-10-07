@@ -554,6 +554,40 @@ procedencia (causa, prevenibilidad, gravedad). Ninguno es idéntico a otro.
 
 Campo de decisión de cada una, en el paquete (bloque K): ☐ APPROVE · ☐ REVISE · ☐ DEFER.
 
+**Decisión docente (2026-10-07):** K-E7 a K-E14, APPROVE. K-E5, REVISE: EN «circulatory arrest from anaphylaxis
+without effective adrenaline» · ES «paro circulatorio por anafilaxia sin adrenalina eficaz», cierta se haya dado
+adrenalina o no; K-21 sigue siendo la frase de la anafilaxia realmente no tratada (TD-82). K-E6, REVISE: EN
+«circulatory arrest from profound bradycardia» · ES «paro circulatorio por bradicardia profunda», el mismo evento
+terminal, sin cambiar su disparador, su prevenibilidad ni su fisiología (TD-67). En la misma respuesta, A-6 y A-6b
+quedaron aclaradas: se eligen por el estado del motor, no por la intubación ni por el fármaco de inducción, y la
+fisiología de la ketamina no cambia (TD-83). Ninguna está implementada.
+
+### 3.11 Lote final de nivel 2 (propuesto el 2026-10-07)
+
+Orden del paquete: K-E15, K-E16 y K-E17, las tres últimas de las 100 decisiones. **Comprobado el 2026-10-07, sin
+escribir nada:**
+
+- el inglés coincide con el motor (`event_provenance.Watch` para los dos cambios vigilados y
+  `time_semantics.interrupted_lead` para el respaldo) y con la hoja F0-11, y el español, con la hoja;
+- la frase entera de la espera interrumpida (K-6) sale en español con cada una, también con otros valores (48 mmHg,
+  79 %);
+- qué exige el motor para cada cambio vigilado, y si su etiqueta fue cierta: 90 recorridos de la sala (los 30
+  casos, sin tratamiento, con el tratamiento definitivo y con uno dañino), con el detector envuelto en memoria y sin
+  cambiar código.
+
+Los dos cambios vigilados no nombran una causa: el motor no la sabe. El registro los guarda con la clase
+`NATURAL_DISEASE`, prevenibilidad `UNKNOWN`, gravedad crítica y la nota de que el motor no dice su causa, y nunca se
+usan solos en contra del residente (F0-6).
+
+| # | ID · cuándo aparece | EN exacto | ES exacto | Qué significa y por qué | Recomendación |
+|---|---|---|---|---|---|
+| 1 | K-E15 · cualquier caso, con pulso: la sistólica queda bajo 70 mmHg y 20 o más por debajo del inicio de la espera durante dos minutos seguidos; una vez por espera | systolic pressure {n} mmHg and falling (en el paquete, 62) | presión sistólica de {n} mmHg y en descenso | Un colapso circulatorio que muestran los signos vitales, sin nombrar su causa. En los 90 recorridos apareció 8 veces (anafilaxia 29f y 63m, hemorragia 27m), y en las 8 la presión seguía bajando en ese minuto | **APPROVE AS IS** |
+| 2 | K-E16 · cualquier caso, con pulso: la saturación queda bajo 85 % y 5 puntos o más por debajo del inicio de la espera durante dos minutos seguidos; una vez por espera | saturation {n} % and falling (en el paquete, 84) | saturación de {n} % y en descenso | Una caída de la oxigenación, sin nombrar su causa. Apareció 3 veces (edema pulmonar 58m y 75f, con suero): la lectura entera repetía la del minuto anterior, dentro de un descenso que seguía después | **APPROVE AS IS** — cosmético: el inglés escribe «84 %» con espacio y el resto de la sala en inglés, «84%»; si se unifica, cambia también la regla en español |
+| 3 | K-E17 · respaldo de K-6 cuando el evento no trae nombre | a critical change | un cambio crítico | Que la frase nunca quede sin nombre. Con el código actual no aparece: todo evento que corta una espera trae su etiqueta | **APPROVE AS IS** |
+
+Campo de decisión de cada una, en el paquete (bloque K): ☐ APPROVE · ☐ REVISE · ☐ DEFER. Con ellas se completan las
+100.
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -571,9 +605,9 @@ Campo de decisión de cada una, en el paquete (bloque K): ☐ APPROVE · ☐ REV
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1 y de los tres primeros lotes de nivel 2,
-de los estados límite de la 49m, del alcance y las bases de X-1, del relato, de la rúbrica y de las guías (Decision
-File, octava a decimosexta actualizaciones).
+Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1 y de los cuatro primeros lotes de nivel
+2, de los estados límite de la 49m, del alcance y las bases de X-1, del relato, de la rúbrica y de las guías
+(Decision File, octava a decimoséptima actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -582,16 +616,16 @@ File, octava a decimosexta actualizaciones).
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
    revisión.
-4. **Las firmas que quedan del paquete:** 13 de 100 decisiones, todas de nivel 2 (K-E5 a K-E17); con las firmas de
-   H-62 e I-63, 15. El cuarto lote de nivel 2 está en 3.10. En él, K-E5 trae un hallazgo nuevo: su etiqueta dice
-   «untreated» también tras una dosis de adrenalina (TD-82).
+4. **Las firmas que quedan del paquete:** 3 de 100 decisiones, las últimas de nivel 2 (K-E15 a K-E17); con las
+   firmas de H-62 e I-63, 5. El lote final está en 3.11.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
 6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
    de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista.
 7. **Decidido:** K-18, REVISE con la redacción docente; es una corrección de texto antes del candidato final
-   (3.6; TD-82).
+   (3.6; TD-82). También K-E5 y K-E6, REVISE con la redacción docente (3.10; TD-82 y TD-67).
 8. **Decidido:** A-6, REVISE. En la 49m, el examen respiratorio conserva la gravedad de llegada mientras la
    obstrucción no mejore (TD-83). Al implementarlo hay que resolver, con aprobación docente de cualquier texto
    nuevo, el examen de la 49m intubada sin mejoría y la segunda parte de A-8. **Redacción aprobada el 2026-10-07**
    (paquete, bloque A): A-6a, A-6b y A-8a, con sus condiciones de uso, y A-7 reabierta sólo para el estado grave de
-   llegada de la 49m, con la variante A-7-49m. Falta implementarlo (TD-83).
+   llegada de la 49m, con la variante A-7-49m. A-6 y A-6b se eligen por el estado del motor, no por el fármaco de
+   inducción (aclaración docente). Falta implementarlo (TD-83).

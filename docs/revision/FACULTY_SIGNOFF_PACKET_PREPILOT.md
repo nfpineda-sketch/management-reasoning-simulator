@@ -17,9 +17,9 @@
   (decisiones docentes del 2026-10-07). El relato aprobado entra en el candidato en
   `case_text/es/approvals.json` (4.1).
 - **Después del despliegue, antes del GO:** ningún texto de este paquete; sólo lo de 4.4.
-- **Decididas al 2026-10-07:** 87 de las 100: todo el nivel 1 y 30 de nivel 2; quedan 13, todas de nivel 2 (K-E5 a
-  K-E17). H-62 e I-63 se decidieron DEFER de la firma: siguen sin firmar a propósito, así que las firmas abiertas
-  son 15. Aparte, la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a) quedó aprobada, sin
+- **Decididas al 2026-10-07:** 97 de las 100: todo el nivel 1 y 40 de nivel 2; quedan 3, las últimas de nivel 2
+  (K-E15 a K-E17). H-62 e I-63 se decidieron DEFER de la firma: siguen sin firmar a propósito, así que las firmas
+  abiertas son 5. Aparte, la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a) quedó aprobada, sin
   implementar (bloque A).
 
 Los criterios de cada nivel están en 0.4.
@@ -143,7 +143,11 @@ Actualización del 2026-10-07: con X-1 cerrada, A-9 pasa de REVIEW CLOSELY a NEE
   para la 49m con la obstrucción todavía en el estado grave de llegada: es una revisión acotada, con la variante
   docente A-7-49m, y no una trayectoria clínica nueva. A-6 sigue en REVISE hasta implementarse; nada de esto está
   implementado (TD-83).
-- Quedan 13 de las 100, todas de nivel 2 (K-E5 a K-E17). Con las firmas de H-62 e I-63 son 15 firmas abiertas.
+- Lote 4 de nivel 2: K-E7 a K-E14, APPROVE; K-E5 y K-E6, REVISE con la redacción docente (bloque K), sin
+  implementar.
+- A-6 y A-6b se eligen por el estado del motor, no por la intubación ni por el fármaco de inducción (aclaración
+  docente; bloque A). La fisiología de la ketamina no cambia.
+- Quedan 3 de las 100, las últimas de nivel 2 (K-E15 a K-E17). Con las firmas de H-62 e I-63 son 5 firmas abiertas.
 - El relato en español de los 30 casos se revisa antes de congelar el candidato final, que no se congela sin esa
   revisión (4.1). Reemplaza la decisión anterior del mismo día (después del despliegue). Su aprobación entra en el
   candidato en `case_text/es/approvals.json` (camino a, 4.1).
@@ -176,7 +180,7 @@ Son 3:
 - F-53 ↔ F-54 y F-55 ↔ F-56: el mismo texto C14 en las dos neumonías y en los dos edemas pulmonares; cada ficha revisa además su propio POCUS de llegada, por eso no se agrupan;
 - B-26 ↔ D-40: el sangrado tras la lisis en la 33f;
 - A-1 ↔ K-E4 ↔ K-7: tres nombres del mismo paro, también en inglés;
-- K-18 ↔ K-21: el paro de la anafilaxia;
+- K-18 ↔ K-21 ↔ K-E5: el paro de la anafilaxia, también en la espera interrumpida;
 - J ↔ H-6 ↔ I-9: el aviso de la foto y las guías que lo citan.
 
 ### 1.3 Deben actualizarse antes de poder firmarse
@@ -314,6 +318,11 @@ implementarse; no suma decisiones a las 100. Sin implementar (TD-83).
   quieren decir que el índice de obstrucción del motor no bajó de su valor de llegada; «intubado», ventilación
   invasiva; la ventilación no invasiva cuenta como respiración espontánea. Cada condición se lee sobre el estado
   actual del motor en cada examen, como la segunda parte de A-8.
+- **A-6 y A-6b, por estado (aclaración docente, 2026-10-07):** la intubación sola no elige A-6b. Si la ketamina
+  baja de verdad la obstrucción del motor, rige el examen de ese estado mejorado (A-6, o A-5 si la obstrucción baja
+  lo bastante); con ventilación invasiva y la obstrucción en el estado grave de llegada, A-6b. El examen dice el
+  estado del motor, no el fármaco de inducción. No cambian la fisiología de la ketamina ni la respuesta al
+  tratamiento.
 - **Comprobado en el motor (2026-10-07):** el neumotórax del asma ocurre sólo con ventilación invasiva y siempre a
   la derecha (`asthma_complications.step`, `family_engine.py:2392–2398`). A-7-49m y A-8a son, por lo tanto, de la
   49m intubada, y su lado fijo es exacto. Intubada con etomidato y rocuronio, el índice no baja de su valor de
@@ -977,19 +986,19 @@ implementarse; no suma decisiones a las 100. Sin implementar (TD-83).
 | K-E2 | ventricular fibrillation, pulse lost | fibrilación ventricular, sin pulso | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
 | K-E3 | cardiac arrest, pulse lost | paro cardíaco, sin pulso | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
 | K-E4 | cardiac arrest from uncontrolled haemorrhage | paro cardíaco por hemorragia no controlada | VINCULADA con A-1 (el mismo paro, otro nombre, también en inglés). | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
-| K-E5 | circulatory arrest from untreated anaphylaxis | paro circulatorio por anafilaxia no tratada | Fiel. Hallazgo del 2026-10-07, comprobado en la sala real sin cambiar código (`pilot_acceptance`): la etiqueta es la misma con adrenalina o sin ella. En `anaphylaxis_63m_betablocked`, con una dosis IM, la espera se corta en el minuto 71 con «circulatory arrest from untreated anaphylaxis», en la misma entrada que K-18 («…without effective adrenaline…»); en `anaphylaxis_29f` con una dosis, igual (minuto 93). Es el mismo defecto que llevó a revisar K-18 (TD-82). Propuesta, a decisión docente, cierta en los dos cursos: EN «circulatory arrest from anaphylaxis without effective adrenaline» · ES «paro circulatorio por anafilaxia sin adrenalina eficaz». Otra opción: dos etiquetas, según se haya dado adrenalina o no. Cualquiera de las dos cambia el motor y su regla en español (SHA nuevo) | **NEEDS REVISION** (2026-10-07; antes, APPROVE AS IS) | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E6 | loss of circulation from the falling rate | pérdida de la circulación por la frecuencia que cae | Calco del inglés («from the falling rate»); se entiende. Opcional y sin cambiar el sentido: «por la caída de la frecuencia». No es necesario cambiarlo. | **REVIEW CLOSELY** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E7 | generalized seizure | convulsión generalizada | Fiel. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E8 | the anaphylactic reaction returns | la reacción anafiláctica vuelve | Fiel. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E9 | tension pneumothorax on the ventilator | neumotórax a tensión con el ventilador | «Con el ventilador» se entiende («en ventilación mecánica» sería más usual). | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E10 | major bleeding after thrombolysis | hemorragia mayor tras la trombólisis | Fiel. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E11 | frequent ventricular ectopy on dobutamine | extrasístoles ventriculares frecuentes con dobutamina | Fiel. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E12 | right ventricle failing under fast volume | falla del ventrículo derecho con volumen rápido | Fiel. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E13 | sustained hypotension from the obstruction | hipotensión sostenida por la obstrucción | Fiel. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E14 | brought back after discharge | traído de vuelta tras el alta | Masculino genérico, como «el paciente» en toda la sala, también con pacientes mujeres. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E15 | systolic pressure 62 mmHg and falling | presión sistólica de 62 mmHg y en descenso | Fiel. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E16 | saturation 84 % and falling | saturación de 84 % y en descenso | Fiel. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E17 | a critical change | un cambio crítico | Fiel. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| K-E5 | circulatory arrest from untreated anaphylaxis | paro circulatorio por anafilaxia no tratada | Fiel. Hallazgo del 2026-10-07, comprobado en la sala real sin cambiar código (`pilot_acceptance`): la etiqueta es la misma con adrenalina o sin ella. En `anaphylaxis_63m_betablocked`, con una dosis IM, la espera se corta en el minuto 71 con «circulatory arrest from untreated anaphylaxis», en la misma entrada que K-18 («…without effective adrenaline…»); en `anaphylaxis_29f` con una dosis, igual (minuto 93). Es el mismo defecto que llevó a revisar K-18 (TD-82). Propuesta, a decisión docente, cierta en los dos cursos: EN «circulatory arrest from anaphylaxis without effective adrenaline» · ES «paro circulatorio por anafilaxia sin adrenalina eficaz». Otra opción: dos etiquetas, según se haya dado adrenalina o no. Cualquiera de las dos cambia el motor y su regla en español (SHA nuevo) | **NEEDS REVISION** (2026-10-07; antes, APPROVE AS IS) | ☒ **REVISE** (docente, 2026-10-07): EN «circulatory arrest from anaphylaxis without effective adrenaline» · ES «paro circulatorio por anafilaxia sin adrenalina eficaz». La etiqueta debe ser cierta tanto si no se dio adrenalina como si se dio y no logró un control eficaz; «untreated anaphylaxis» no se usa como etiqueta general. K-21 sigue siendo la frase de la anafilaxia realmente no tratada. Sin implementar (TD-82) |
+| K-E6 | loss of circulation from the falling rate | pérdida de la circulación por la frecuencia que cae | Calco del inglés («from the falling rate»); se entiende. Opcional y sin cambiar el sentido: «por la caída de la frecuencia». No es necesario cambiarlo. | **REVIEW CLOSELY** | ☒ **REVISE** (docente, 2026-10-07): EN «circulatory arrest from profound bradycardia» · ES «paro circulatorio por bradicardia profunda». Más clara y clínicamente natural; es el mismo evento terminal del motor y no cambian su disparador, su prevenibilidad ni su fisiología. Sin implementar (TD-67) |
+| K-E7 | generalized seizure | convulsión generalizada | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
+| K-E8 | the anaphylactic reaction returns | la reacción anafiláctica vuelve | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
+| K-E9 | tension pneumothorax on the ventilator | neumotórax a tensión con el ventilador | «Con el ventilador» se entiende («en ventilación mecánica» sería más usual). | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
+| K-E10 | major bleeding after thrombolysis | hemorragia mayor tras la trombólisis | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
+| K-E11 | frequent ventricular ectopy on dobutamine | extrasístoles ventriculares frecuentes con dobutamina | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
+| K-E12 | right ventricle failing under fast volume | falla del ventrículo derecho con volumen rápido | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
+| K-E13 | sustained hypotension from the obstruction | hipotensión sostenida por la obstrucción | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
+| K-E14 | brought back after discharge | traído de vuelta tras el alta | Masculino genérico, como «el paciente» en toda la sala, también con pacientes mujeres. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
+| K-E15 | systolic pressure 62 mmHg and falling | presión sistólica de 62 mmHg y en descenso | Fiel. Comprobado el 2026-10-07: el motor la escribe cuando, con pulso, la sistólica queda bajo 70 mmHg y 20 o más por debajo del inicio de la espera durante dos minutos seguidos, una vez por espera. En 90 recorridos (los 30 casos, sin tratamiento, con el tratamiento definitivo y con uno dañino) apareció 8 veces, y en las 8 la presión seguía bajando en ese minuto. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| K-E16 | saturation 84 % and falling | saturación de 84 % y en descenso | Fiel. Comprobado el 2026-10-07: con pulso, la saturación queda bajo 85 % y 5 puntos o más por debajo del inicio de la espera durante dos minutos seguidos, una vez por espera. En los mismos recorridos apareció 3 veces (edema pulmonar con suero): la lectura entera repetía la del minuto anterior, dentro de un descenso que seguía después. Cosmético: el inglés escribe «84 %» con espacio y el resto de la sala en inglés, «84%». | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| K-E17 | a critical change | un cambio crítico | Fiel. Comprobado el 2026-10-07: es el respaldo de K-6 cuando el evento no trae nombre; con el código actual no aparece, porque todo evento que corta una espera trae su etiqueta. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 
 ## 3. Fuera del piloto de residentes (F0-2): las filas de la 41m
 
