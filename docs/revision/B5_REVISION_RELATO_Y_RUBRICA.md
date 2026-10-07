@@ -1,8 +1,8 @@
 # B-5 · Revisión docente del relato y de la rúbrica en español (diseño)
 
-> **DISEÑO PARA APROBAR. Nada implementado.** Este documento propone cómo revisar el relato en español de los 30 casos
-> del piloto y los descriptores D1–D5 de la rúbrica. No activa el español, no crea `approvals.json`, no cambia el
-> relato ni la rúbrica y no toca el corpus de la validación externa.
+> **DISEÑO APROBADO por la docencia el 2026-10-07 (§8). Nada implementado.** Este documento define cómo revisar el
+> relato en español de los 30 casos del piloto y los descriptores D1–D5 de la rúbrica. No activa el español, no crea
+> `approvals.json`, no cambia el relato ni la rúbrica y no toca el corpus de la validación externa.
 >
 > 2026-10-07 · rama `clinical-encounter-v0.13` · decisión docente del mismo día: con X-1 decidida, preparar esta etapa
 > sin empezar la implementación (Decision File, vigésima actualización). Base: decisiones docentes del 2026-10-07 sobre
@@ -14,14 +14,14 @@
   desactualizado y ninguno sobra.
 - **Lectura real:** 587 textos distintos. 47 frases comunes cubren 527 pasajes y se leen una sola vez. Las demás, 542,
   se leen caso por caso, en 6 lotes de 77 a 111 pasajes.
-- **Decisiones genuinas del relato:** 3 de terminología (T-1 a T-3). Además, 18 pasajes que fija el corpus congelado de
-  la validación externa: se aprueban tal cual o su corrección espera.
+- **Decisiones genuinas del relato:** 3 de terminología (T-1 a T-3), decididas el 2026-10-07. Además, 18 pasajes que
+  fija el corpus congelado de la validación externa, aprobados tal cual (§8).
 - **Lo demás no pide decisión:**
   - las comprobaciones automáticas no encontraron cifras distintas, textos sin traducir, nombres de fármacos fuera de
     V-9 ni una misma frase traducida de dos formas;
   - sus 29 alertas de negación o lateralidad se leyeron una por una, y ninguna es un error.
 - **Rúbrica:** 5 dominios y 25 descriptores, alineados con el inglés vigente (5 de 5). Una decisión de terminología
-  con el lenguaje de razonamiento aprobado en X-1 (R-1).
+  con el lenguaje de razonamiento aprobado en X-1 (R-1), decidida: «revisar» para «check».
 - **Unidades de aprobación:** 30 casos y 5 dominios, cada uno con el hash exacto de lo que se leyó. Los dos
   `approvals.json` salen de esas decisiones de forma determinista, después de la revisión.
 
@@ -67,7 +67,7 @@ para los 30 casos aceptados del manifiesto (`pilot_freeze.accepted_variants`). S
 
 ## 3. Decisiones genuinas del relato
 
-### 3.1 Terminología (se decide una vez, en el lote 0)
+### 3.1 Terminología (decidida el 2026-10-07: T-1 a T-3, como se recomendó; §8)
 
 Un mismo término clínico, en la voz del clínico (examen e informes), está escrito de dos formas. Las palabras del
 paciente («me silba el pecho») no se cuentan: ahí el registro coloquial es esperable.
@@ -90,8 +90,8 @@ paciente («me silba el pecho») no se cuentan: ahí el registro coloquial es es
 - La presentación dice «confundido»; el examen neurológico, «confuso».
 - Recomendación: **«confundido»**, como la presentación y la historia del mismo caso.
 
-Cada corrección cambia la versión de su caso, que se revisa ya corregido. Se corrige antes de revisar el lote del
-caso, para no revisarlo dos veces.
+Cada caso que cambia se revisa en su lote ya con el término aprobado, y su aprobación lleva la versión de ese
+contenido. `case_text/es` cambia al implementar, y su versión tiene que coincidir entonces con la aprobada.
 
 ### 3.2 Pasajes que fija el corpus de la validación externa (18)
 
@@ -103,27 +103,27 @@ exige que las plantillas comprometidas sean byte a byte lo que genera hoy
   `renal_colic_34m` y `trauma_limb_hemorrhage_27m`), la presentación, `/history/chief_complaint/0` y
   `/history/onset/0`: 18 pasajes.
 - **Qué pasa si se corrige uno:** cambia lo que genera el corpus, que no se toca mientras la validación esté en espera.
-- **En la revisión:** estos pasajes van marcados. Se aprueban tal cual, o se pide el cambio y la corrección espera a
-  que termine la espera de la validación. Si se pide un cambio, ese caso queda sin aprobar en el candidato hasta
-  entonces y se ve en inglés.
+- **Decidido el 2026-10-07 (§8):** se aprueban tal cual para este candidato y no se cambian en esta revisión.
+  Una mejora de estilo espera a que la validación externa se cierre formalmente. Un error clínicamente relevante,
+  si apareciera, se escala; no se conserva en silencio.
 - **Otro texto fijo, en una prueba:** la prueba del corpus también fija «Esposa» como fuente de la historia de
   `anaphylaxis_63m_betablocked` (`test_validation_corpus.py:62`). No es una de las 6 hojas, pero cambiarla obligaría a
   tocar esa prueba.
 
 T-1 a T-3 no tocan ninguno de estos pasajes.
 
-## 4. Lotes de revisión
+## 4. Lotes de revisión (orden docente: 0, RUB y R1 a R6)
 
 | Lote | Qué | Casos | Pasajes | A leer | Marcados por el corpus |
 |---|---|---|---|---|---|
 | 0 | Frases comunes y terminología (T-1 a T-3) | — | 527 | 47 frases y 3 decisiones | 0 |
+| RUB | Rúbrica D1–D5, por dominio | — | 25 descriptores | 25 y 1 decisión (R-1) | — |
 | R1 | Síndrome coronario agudo | 6 | 210 | 93 | 0 |
 | R2 | Respiratorio: asma, neumonía y edema pulmonar | 6 | 202 | 102 | 6 |
 | R3 | TEP y bradicardias | 6 | 220 | 111 | 0 |
 | R4 | Hipoglicemia y opioides | 5 | 165 | 79 | 0 |
 | R5 | Anafilaxia y hemorragia digestiva | 4 | 146 | 80 | 6 |
 | R6 | Urología y trauma | 3 | 126 | 77 | 6 |
-| RUB | Rúbrica D1–D5 | — | 25 descriptores | 25 y 1 decisión (R-1) | — |
 
 Los casos van agrupados por familia, para leerlos con su contexto clínico. «A leer» son los pasajes propios de cada
 caso, sin las frases comunes que el lote 0 ya cubrió.
@@ -176,7 +176,7 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
   - (b) usar «revisar» donde la rúbrica traduce «check» (la pregunta de D4 y sus niveles 0 y 2), y conservar
     «vigilar» para «watch».
 - **Recomendada: (b).** El residente lee «revisar» en la compuerta y en la rúbrica para el mismo acto, y el inglés no
-  cambia.
+  cambia. **Decidida (b) el 2026-10-07** (§8).
 
 ## 6. Después de la revisión (no autorizado todavía)
 
@@ -196,7 +196,7 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
 4. **Candidato:** el cambio es de repositorio. Hace un SHA nuevo, y el contrato 16.4 (suite, 56 regresiones, B-1)
    vuelve a correr.
 
-## 7. Decisiones que necesita esta etapa
+## 7. Decisiones que necesitaba esta etapa (tomadas el 2026-10-07: §8)
 
 - **Para empezar:** aprobar este diseño: la unidad de aprobación, el lote 0 y los lotes R1 a R6 y RUB, y el trato de
   los 18 pasajes que fija el corpus.
@@ -206,3 +206,37 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
 - **En cada lote:**
   - T-1 a T-3 y R-1;
   - APPROVE o REVISE por caso y por dominio.
+
+## 8. Decisiones docentes (2026-10-07)
+
+**El diseño, aprobado.** Sin implementar y sin `approvals.json`.
+
+- **Relato:**
+  - 30 casos; las frases comunes se revisan una vez donde es seguro, con trazabilidad exacta a cada pasaje;
+  - la unidad de aprobación final es el **caso entero**, y cada aprobación ata `variant_id`, `version` y
+    `decision = approved`;
+  - la versión es el hash ya definido del contenido bilingüe exacto que se revisó (`case_text.version`);
+  - sin nombres ni identificadores personales;
+  - `case_text/es/approvals.json` se genera sólo cuando los 30 casos hayan terminado su revisión docente; no antes.
+- **Terminología:** T-1 «crépitos», como la terminología ya aprobada de R-4; T-2 «defensa»; T-3 «confundido». Se
+  aplican de forma coherente en la revisión del relato.
+- **Los 18 pasajes que fija el corpus de la validación externa:**
+  - se **aprueban tal cual** para este candidato del piloto, porque no tienen errores de traducción ni de contenido y
+    cambiarlos ahora alteraría el corpus congelado;
+  - no se cambia su redacción en esta revisión;
+  - una mejora de estilo espera a que la validación externa se cierre formalmente;
+  - un error clínicamente relevante, si apareciera, se escala igual; no se conserva en silencio.
+- **Rúbrica D1–D5:**
+  - mismo principio que el relato, respaldado en el repositorio y determinista;
+  - una aprobación por dominio (D1 a D5), que ata `domain_id`, `version` y `decision = approved`, sin nombres ni
+    identificadores personales;
+  - no se crean todavía las aprobaciones finales;
+  - antes de congelar el candidato, se identifica y se prueba el camino exacto de activación que ya usa la app.
+- **R-1:**
+  - «revisar» para «check», y «vigilar» reservado para «watch»;
+  - la rúbrica en español usa el mismo vocabulario de razonamiento ya aprobado en X-1 donde los constructos son los
+    mismos;
+  - no cambian el sentido, los niveles, el puntaje ni la estructura D1–D5.
+- **Orden de revisión:** lote 0 (las 47 frases comunes; T-1 a T-3 ya decididas), RUB (D1–D5, por dominio), R1, R2,
+  R3, R4, R5 y R6, sin entregar todos los pasajes de una vez.
+- **Lote 0, entregado para revisión:** `docs/revision/B5_RELATO_LOTE_0.md`.

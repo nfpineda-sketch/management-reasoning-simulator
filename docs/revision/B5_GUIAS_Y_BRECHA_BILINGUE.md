@@ -634,7 +634,7 @@ diseñada en `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`.
 ## 5. Decisiones pendientes
 
 Actualizado el 2026-10-07, con las 100 decisiones docentes del paquete, los estados límite de la 49m, el alcance y
-X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigésima actualizaciones).
+X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigesimoprimera actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -642,15 +642,17 @@ X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigési
    implementar. L-09 se resolvió con la opción (c), «Fuente de la historia: {fuente}».
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
-   revisión. **La revisión quedó diseñada el 2026-10-07** (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`);
-   falta que la docencia apruebe el diseño.
+   revisión. **La revisión quedó diseñada y aprobada el 2026-10-07** (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`, §8): la unidad es el caso
+   entero; T-1 a T-3 y los 18 pasajes del corpus, decididos. El archivo se genera cuando los 30 casos terminen su
+   revisión. Lote 0 en revisión (`docs/revision/B5_RELATO_LOTE_0.md`).
 4. **Decidido:** las 100 decisiones del paquete (3.11). Siguen sin firma, a propósito, H-62 e I-63, hasta el
    candidato final implementado.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
 6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
    de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista. El
-   diseño del 2026-10-07 propone el mismo camino que el relato: `rubric_text/es/approvals.json`, con
-   `{domain_id, version, decision}`, que el código ya lee. Falta confirmarlo.
+   diseño aprobado el 2026-10-07 sigue el mismo principio que el relato: una aprobación por dominio, con
+   `{domain_id, version, decision}`, que el código ya lee (`rubric_text/es/approvals.json`), y R-1 («revisar» para
+   «check»). Antes de congelar el candidato, se identifica y se prueba el camino de activación que ya usa la app.
 7. **Decidido:** K-18, REVISE con la redacción docente; es una corrección de texto antes del candidato final
    (3.6; TD-82). También K-E5 y K-E6, REVISE con la redacción docente (3.10; TD-82 y TD-67).
 8. **Decidido:** A-6, REVISE. En la 49m, el examen respiratorio conserva la gravedad de llegada mientras la
