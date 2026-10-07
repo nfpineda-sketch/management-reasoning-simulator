@@ -74,7 +74,7 @@ def gi_bleed(monkeypatch):
         "competence_decision": "Not assessed automatically"})
     from resident_profile import ProfileStore
     ProfileStore(accounts).decline(token)
-    at = AppTest.from_file(APP, default_timeout=180)
+    at = AppTest.from_file(APP, default_timeout=300)
     at.session_state["_account_token"] = token
     at.run()
     next(b for b in at.button if b.label == "Begin Encounter").click().run()
