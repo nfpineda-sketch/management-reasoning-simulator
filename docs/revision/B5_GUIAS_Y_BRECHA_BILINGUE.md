@@ -588,6 +588,24 @@ usan solos en contra del residente (F0-6).
 Campo de decisión de cada una, en el paquete (bloque K): ☐ APPROVE · ☐ REVISE · ☐ DEFER. Con ellas se completan las
 100.
 
+**Decisión docente (2026-10-07):** K-E15, K-E16 y K-E17, APPROVE. En K-E16, la diferencia del inglés «84 %» /
+«84%» es cosmética: al implementar se normaliza, sin otra decisión y sin cambiar el disparador ni el sentido del
+evento. Con ellas quedan decididas las 100 del paquete (niveles 1, 2 y 3). H-62 e I-63 siguen sin firma a propósito,
+hasta el candidato final implementado. B-5 no está resuelto.
+
+### 3.12 X-1: lotes de revisión (propuesto el 2026-10-07)
+
+La consolidación y el primer lote están en `docs/revision/X1_ESPANOL_PROPUESTO.md`, §12, junto al español que
+revisan, y no se repiten aquí. Las 98 decisiones pendientes quedan en 28 decisiones consolidadas (XR-01 a XR-28), en
+dos lotes de 14:
+
+- se agrupan las que siguen una misma regla de traducción, las que llena una misma tabla de vocabulario y las que
+  forman una familia coherente de la pantalla;
+- las preguntas con un sentido clínico propio (vía, deglución, cardioversión) siguen siendo decisiones separadas.
+
+El lote 1 (XR-01 a XR-14) reúne lo que se ve en cada turno del manejo activo e incluye V-9, los nombres de fármacos
+en español, redactada para este lote.
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -605,19 +623,19 @@ Campo de decisión de cada una, en el paquete (bloque K): ☐ APPROVE · ☐ REV
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1 y de los cuatro primeros lotes de nivel
-2, de los estados límite de la 49m, del alcance y las bases de X-1, del relato, de la rúbrica y de las guías
-(Decision File, octava a decimoséptima actualizaciones).
+Actualizado el 2026-10-07, con las 100 decisiones docentes del paquete, los estados límite de la 49m, el alcance y
+las bases de X-1, el relato, la rúbrica y las guías (Decision File, octava a decimoctava actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
 2. **Firmar el resto del español que X-1 exige** (`docs/revision/X1_ESPANOL_PROPUESTO.md`): 98 de 105 decisiones,
-   entre ellas V-9 (nombres de fármacos en español), que falta redactar.
+   consolidadas el 2026-10-07 en 28, en dos lotes (§12 de ese documento; el primero, XR-01 a XR-14). V-9, los
+   nombres de fármacos en español, quedó redactada en XR-06.
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
    revisión.
-4. **Las firmas que quedan del paquete:** 3 de 100 decisiones, las últimas de nivel 2 (K-E15 a K-E17); con las
-   firmas de H-62 e I-63, 5. El lote final está en 3.11.
+4. **Decidido:** las 100 decisiones del paquete (3.11). Siguen sin firma, a propósito, H-62 e I-63, hasta el
+   candidato final implementado.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
 6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
    de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista.

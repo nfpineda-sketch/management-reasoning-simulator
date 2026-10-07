@@ -29,6 +29,8 @@
 - **Fuera del alcance, con su motivo** (§1): el relato del caso, 40 preguntas del motor heredado que ningún caso
   del piloto alcanza, las herramientas del personal y la ruta sin cuentas.
 - **A-2:** la redacción final docente del examen respiratorio con el paciente agotado está en el §9.
+- **Lotes de revisión (2026-10-07, §12):** las 98 decisiones pendientes quedan en 28 decisiones consolidadas
+  (XR-01 a XR-28), en 2 lotes de 14. V-9 queda redactada (XR-06). Ninguna está decidida todavía.
 
 ## 0. Cómo leer
 
@@ -631,9 +633,234 @@ los demás estados, las frases de A-2 y A-3 siguen igual.
 
 Antes del 2026-10-07 eran 103 decisiones. Suman dos: V-4 se decidió aparte de los demás vocabularios, y V-9
 nace de la aclaración de X1-0. La tercera ronda (L-17 y M-02 confirmadas, X1-0 en los documentos) no cambia la
-cuenta.
+cuenta. **Consolidación del 2026-10-07 (§12):** las 98 pendientes se deciden en 28 decisiones consolidadas (XR-01 a
+XR-28), sin juntar significados clínicos distintos; cada una nombra los IDs que cubre.
 
 Firma docente y fecha: ________________________
+
+## 12. Lotes de revisión docente (2026-10-07)
+
+**Encargo docente del 2026-10-07:** consolidar las 98 decisiones pendientes en el menor conjunto seguro de lotes, sin
+implementar nada. Se agrupan las formulaciones que siguen una misma regla de traducción, las que llena una misma tabla
+de vocabulario y las que forman una familia coherente de la pantalla. No se juntan significados clínicos distintos:
+las preguntas sobre la vía, la deglución o la cardioversión siguen siendo decisiones separadas.
+
+- **Resultado:** las 98 quedan en **28 decisiones consolidadas** (XR-01 a XR-28), repartidas en **2 lotes de 14**.
+- **Trazabilidad:** cada XR nombra los IDs originales que cubre. Su inglés y su español propuesto siguen en las
+  secciones 4 a 8, que no se repiten aquí. Este apartado sólo agrega lo nuevo: V-9, la columna inglesa de V-1 y dos
+  ajustes de redacción. Un REVISE sobre una XR dice qué miembro cambia; los demás quedan aprobados.
+- **Vocabularios:** V-1 a V-3 y V-5 a V-7 eran una sola decisión. Ahora cada tabla se decide con las preguntas que
+  llena (XR-04, XR-05, XR-08, XR-18 y XR-23). V-4 ya está aprobada. V-9 se redacta aquí (XR-06).
+- **Fuera de estos lotes:**
+  - el relato y la rúbrica en español, que se revisan aparte, antes de congelar el candidato;
+  - los 11 puntos de «sólo implementación» (§3), que no piden redacción.
+- **Cuenta:** al decidirse los dos lotes quedan decididas las 105; hasta entonces, el §11 sigue en 7 de 105.
+
+### 12.1 Mapa de las 28 decisiones
+
+| XR | Qué cubre | IDs originales | Lote |
+|---|---|---|---|
+| XR-01 | Compuerta de razonamiento: mensaje, campos y botón | G-01, G-02, G-04 a G-10, G-12 | 1 |
+| XR-02 | Los elementos del razonamiento que pide la compuerta | G-03 | 1 |
+| XR-03 | Explicación retrospectiva de una intervención urgente | G-13 a G-16 | 1 |
+| XR-04 | Pedir el dato que falta | X1-C05 (con V-3), X1-C06 a X1-C09, X1-C12, X1-C13, X1-C16 | 1 |
+| XR-05 | Fármaco, clase y dosis | X1-C01 a X1-C04 (con V-1 y V-2) | 1 |
+| XR-06 | Nombres de fármacos para mostrar | V-9 | 1 |
+| XR-07 | Rangos y límites del simulador | X1-R01 (16 frases), X1-C14 | 1 |
+| XR-08 | Un solo valor absoluto o una acción sobre un soporte en curso | X1-C17, X1-C18 (con V-7), X1-C19 | 1 |
+| XR-09 | Órdenes pendientes | X1-C32, X1-C33, G-11 | 1 |
+| XR-10 | Campo de entrada de la sala | L-02, L-03 | 1 |
+| XR-11 | Modo Conversar | L-04 a L-10 | 1 |
+| XR-12 | Modo Examinar | L-11, X1-C15 | 1 |
+| XR-13 | Monitor y soporte en curso | M-01, M-04, L-16 | 1 |
+| XR-14 | Tratamientos en curso: fármacos y soporte | L-14, T-01, T-05 a T-11, T-13 | 1 |
+| XR-15 | Dosis que faltan o son ambiguas | X1-C10, X1-C11 | 2 |
+| XR-16 | Ventilación: lo que el soporte no permite | X1-C20, X1-C21 | 2 |
+| XR-17 | Vía de los bolos de adrenalina y de nitroglicerina | X1-C22, X1-C23 | 2 |
+| XR-18 | El paciente no puede tragar | X1-C24 (con V-5) | 2 |
+| XR-19 | Cardioversión sincronizada | X1-C25 | 2 |
+| XR-20 | Cardioversión sin pulso | X1-C26 | 2 |
+| XR-21 | Lo que este encuentro no tiene o no ejecuta | X1-C27, X1-C28, X1-C29 | 2 |
+| XR-22 | Límite de 120 minutos | X1-C30 | 2 |
+| XR-23 | Una forma que el encuentro no da | X1-C31 (con V-6) | 2 |
+| XR-24 | Controles de la sesión | L-12, L-13, L-19, L-20, P-01 | 2 |
+| XR-25 | Avisos de «sin foto» | M-03 | 2 |
+| XR-26 | ECG y resultados | E-01 a E-05, L-15, L-18 | 2 |
+| XR-27 | Tratamientos en curso: fluidos y sangre | T-02, T-03, T-04, T-12 | 2 |
+| XR-28 | Después del cierre | P-02 a P-07 | 2 |
+
+El lote 1 reúne lo que el residente ve en cada turno del manejo activo: la compuerta, las preguntas de aclaración más
+frecuentes, los nombres de los fármacos, los modos de la sala, el monitor y los tratamientos en curso. El lote 2
+reúne las preguntas con un sentido clínico propio, que se deciden una por una, y las pantallas de los bordes del
+encuentro.
+
+### 12.2 Lote 1 (XR-01 a XR-14)
+
+Comprobado el 2026-10-07, sin cambiar código:
+
+- el inglés de cada miembro sigue en el código que cita (55 fragmentos);
+- en un encuentro en español, la sala muestra hoy todos los fármacos con su nombre inglés («Aspirin 300 mg PO»), y
+  algunas líneas salen mezcladas («Infusión de dextrose», «Infusión de naloxone»; `report_presentation.action_phrase`
+  con `language.say`);
+- en la sala real (`pilot_acceptance`, `pneumonia_46f`), «Give ceftriaxone IV.» pregunta «Please specify or confirm the
+  antibiotics dose in milligrams.», que en español sale mezclada: «Indica o confirma la dosis de antibiotics en
+  miligramos.». «Give fentanyl IV.» pregunta por microgramos y sale entera en inglés.
+
+**XR-01 · Compuerta de razonamiento** — G-01, G-02, G-04 a G-10, G-12 (§5)
+- Dónde: el bloque «ORDEN RETENIDA — FALTA EL RAZONAMIENTO», el aviso que queda a la vista, los campos guiados y su
+  botón. G-12, sólo si alguien escribe la frase de anulación del facilitador.
+- Por qué importa: aparece cada vez que una orden llega sin razonamiento, el momento más frecuente del manejo activo.
+  Hoy, alrededor del título ya traducido, sale en inglés.
+- Recomendación: **APPROVE AS IS**. Dos ajustes opcionales, que no cambian el sentido:
+  - G-06: «Hay una orden entendida retenida.», para usar el término del título («ORDEN RETENIDA») en lugar de «en
+    espera»;
+  - G-02: «Todavía falta indicar: {lista}.», que se lee mejor cuando la lista tiene varios elementos.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-02 · Los elementos del razonamiento** — G-03 (§5)
+- Dónde: dentro de G-01 y G-02 («Reconocí …», «Todavía falta: …»).
+- Por qué importa: nombran lo que la metodología pide que el residente exprese. La redacción orienta lo que escribe.
+- Coincide con el español que ya existe en las preguntas de la explicación retrospectiva (I-7): «¿Qué crees que está
+  pasando?», «¿Qué vas a revisar y cuándo?».
+- Recomendación: **REVIEW CLOSELY**. La traducción es fiel; conviene confirmar que los términos coinciden con los del
+  español de la rúbrica, que se revisa aparte.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-03 · Explicación retrospectiva** — G-13 a G-16 (§5)
+- Dónde: el formulario para explicar después una intervención urgente que se ejecutó sin esperar (D12). Sus cuatro
+  primeras preguntas ya tienen español (I-7).
+- Por qué importa: G-15 dice que lo escrito queda registrado como posterior a la decisión, nunca como razonamiento
+  expresado al tomarla. Es la regla del registro.
+- Recomendación: **APPROVE AS IS**.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-04 · Pedir el dato que falta** — X1-C05 (con V-3), X1-C06, X1-C07, X1-C08, X1-C09, X1-C12, X1-C13, X1-C16
+(§4.1 y §4.10)
+- Dónde: la entrada «ACLARACIÓN» y el aviso que queda a la vista hasta que el residente responde.
+- Por qué importa: son las preguntas más simples y frecuentes. Todas siguen la regla «Specify …» → «Indica …»,
+  con los dispositivos que ya usa la sala.
+- Recomendación: **APPROVE AS IS**.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-05 · Fármaco, clase y dosis** — X1-C01 a X1-C04, con V-1 y V-2 (§4.1 y §4.10)
+- Dónde: la entrada «ACLARACIÓN», cuando falta la dosis, el fármaco de una clase o un fármaco con respuesta modelada.
+- Por qué importa: hoy muestran claves internas también en inglés («Which beta_blocker medication…», «the
+  antibiotics dose») y en español salen mezcladas.
+- **Columna inglesa de V-1** (decisión de las claves internas, TD-80). Las claves canónicas no cambian:
+
+  | Clave | EN para mostrar | ES |
+  |---|---|---|
+  | antibiotics | antibiotic | antibiótico |
+  | beta_blocker | beta blocker | betabloqueador |
+  | ppi | proton pump inhibitor | inhibidor de la bomba de protones |
+  | opioid, opioid_analgesia | opioid | opioide |
+  | anticoagulation | anticoagulant | anticoagulante |
+  | thrombolysis | thrombolytic | trombolítico |
+  | procedural_sedation | procedural sedation | sedación para el procedimiento |
+  | p2y12 (falta en V-1) | P2Y12 inhibitor | inhibidor de P2Y12 |
+  | las demás claves de V-1 | la misma palabra, sin guion bajo | la de V-1 |
+
+- **Ajuste de X1-C02** («¿Qué {clase} quieres administrar?»), donde la plantilla se lee mal:
+  - calcium: «¿Qué sal de calcio quieres administrar?» (el gluconato y el cloruro no son equivalentes en dosis);
+  - procedural_sedation: «¿Qué fármaco quieres usar para la sedación del procedimiento?».
+- **Hallazgo:** X1-C01 nombra la clase aunque el residente haya nombrado el fármaco («Give ceftriaxone IV.» → «the
+  antibiotics dose»). Sólo P2Y12 usa hoy el fármaco nombrado. Dos opciones:
+  - (a) la clase, con V-1: «the antibiotic dose» · «la dosis del antibiótico»;
+  - (b) el fármaco nombrado, como ya hace P2Y12: «the ceftriaxone dose» · «la dosis de ceftriaxona» (con V-9).
+
+  Recomendada: (b), porque nombra lo que el residente escribió. Cualquiera de las dos cambia el inglés del motor.
+- Recomendación: **REVIEW CLOSELY**.
+- Decisión docente: ☐ APPROVE (opción a) · ☐ APPROVE (opción b) · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-06 · Nombres de fármacos para mostrar (V-9)** — nueva (aclaración de X1-0)
+- Dónde: en un encuentro en español, todo fármaco que nombra la sala:
+  - recibos y paquete parcial (K-5, K-6, K-13 y K-14);
+  - «Indicaciones» e «Tratamientos en curso»;
+  - preguntas de aclaración;
+  - documentos que se ofrecen al residente en español.
+  El identificador canónico guardado no cambia, y el ledger y el Trace canónico siguen en inglés.
+- Por qué importa: hoy se ven en inglés o mezclados en cada orden de fármaco.
+- Fuente: los nombres canónicos que el lector reconoce (`family_parser._AGENTS`) y los tipos de orden que son un
+  fármaco (`family_parser.NEW_TREATMENT_ACTIONS`).
+
+  | Grupo | Nombre canónico → español |
+  |---|---|
+  | Vasoactivos e inótropos | norepinephrine → noradrenalina · epinephrine → adrenalina · dobutamine → dobutamina · nitroglycerin → nitroglicerina |
+  | Frecuencia y ritmo | amiodarone → amiodarona · diltiazem → diltiazem · metoprolol → metoprolol · propranolol → propranolol · atropine → atropina |
+  | Antiagregantes, anticoagulantes y trombolíticos | aspirin → aspirina · clopidogrel → clopidogrel · ticagrelor → ticagrelor · prasugrel → prasugrel · heparin → heparina · enoxaparin → enoxaparina · tenecteplase → tenecteplasa · alteplase → alteplasa · streptokinase → estreptoquinasa |
+  | Hemostasia y sangre | tranexamic acid → ácido tranexámico · packed red cells → glóbulos rojos (ya activo) |
+  | Inducción, sedación y bloqueo | etomidate → etomidato · ketamine → ketamina · midazolam → midazolam · propofol → propofol · dexmedetomidine → dexmedetomidina · rocuronium → rocuronio · succinylcholine → succinilcolina · vecuronium → vecuronio · cisatracurium → cisatracurio |
+  | Analgesia y antipiréticos | morphine → morfina · fentanyl → fentanilo · paracetamol → paracetamol · ibuprofen → ibuprofeno · ketorolac → ketorolaco · metamizole → metamizol |
+  | Respiratorio | albuterol → salbutamol · ipratropium → ipratropio · magnesium sulfate → sulfato de magnesio · prednisone → prednisona · methylprednisolone → metilprednisolona · hydrocortisone → hidrocortisona · dexamethasone → dexametasona |
+  | Antibióticos | ceftriaxone → ceftriaxona · azithromycin → azitromicina · piperacillin-tazobactam → piperacilina-tazobactam · vancomycin → vancomicina |
+  | Metabólico y antídotos | dextrose → glucosa · dextrose infusion → suero glucosado (como A-18) · thiamine → tiamina · glucagon → glucagón · naloxone → naloxona · calcium gluconate → gluconato de calcio · calcium chloride → cloruro de calcio · octreotide → octreotida |
+  | Digestivo y diurético | pantoprazole → pantoprazol · omeprazole → omeprazol · furosemide → furosemida |
+  | Otros nombres de una orden | crystalloid → cristaloide · continuous nebulization → nebulización continua · sedation (infusión) → sedación · oral carbohydrate → carbohidratos por vía oral |
+
+- Mirar de cerca:
+  - dextrose → glucosa en el bolo y suero glucosado en la infusión, como A-18;
+  - aspirin → aspirina (no «AAS» ni «ácido acetilsalicílico»);
+  - metamizole → metamizol (no «dipirona»);
+  - oral carbohydrate → carbohidratos por vía oral.
+- Recomendación: **REVIEW CLOSELY** (tabla nueva).
+- Decisión docente (la tabla entera): ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-07 · Rangos y límites del simulador** — X1-R01 (las 16 frases) y X1-C14 (§4.1 y §4.2)
+- Dónde: la entrada «ACLARACIÓN», cuando un valor queda fuera de lo que el simulador soporta.
+- Por qué importa: las sondas vieron dos mezcladas («Indica NIV expiratory pressure in cm H₂O, from 0 to 20.» e
+  «Indica infusión de naloxone rate in mg/h (0.05 to 4).»). Una sola plantilla reemplaza las tres formas inglesas.
+  Dos frases conservan la nota de dosis habitual del inglés: adrenalina IM, 0.5 mg; bolo IV diluido, 50-150 mcg.
+- Recomendación: **APPROVE AS IS**.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-08 · Un solo valor absoluto o una acción sobre un soporte en curso** — X1-C17, X1-C18 (con V-7), X1-C19 (§4.3,
+§4.4 y §4.10)
+- Dónde: la entrada «ACLARACIÓN», ante un cambio relativo, varios valores o un soporte que ya corre.
+- Por qué importa: las sondas de la 35m y la 61m vieron X1-C18 mezclada («Indica un solo target oxygen device…»).
+- Recomendación: **APPROVE AS IS**.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-09 · Órdenes pendientes** — X1-C32, X1-C33 y G-11 (§4.9 y §5)
+- Dónde: el botón para cancelar las órdenes pendientes y sus dos respuestas.
+- Por qué importa: dice que no se administró nada y que el tiempo simulado no cambió.
+- Recomendación: **APPROVE AS IS**.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-10 · Campo de entrada de la sala** — L-02 y L-03 (§6)
+- Dónde: el campo donde el residente escribe; L-02 lo lee un lector de pantalla, y L-03 es el texto de ejemplo.
+- Por qué importa: es lo primero que el residente ve en cada turno.
+- Recomendación: **APPROVE AS IS**.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-11 · Modo Conversar** — L-04 a L-10 (§6)
+- Dónde: el modo «Conversar» (L-01, aprobado): el campo para preguntar, los temas de la historia, la fuente de la
+  historia y los avisos cuando el paciente no puede responder.
+- Por qué importa: la historia se toma en este modo, y hoy sus rótulos están en inglés.
+- Recomendación: **APPROVE AS IS**.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-12 · Modo Examinar** — L-11 y X1-C15, con V-4 ya aprobada (§4.1 y §6)
+- Dónde: el selector y el botón de examen, la entrada «Examen: {región}» y las dos preguntas sobre la región.
+- Por qué importa: el examen se pide en cada turno; con V-4, sus regiones ya tienen nombre aprobado.
+- Recomendación: **APPROVE AS IS**.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-13 · Monitor y soporte en curso** — M-01, M-04 y L-16 (§6 y §7.1)
+- Dónde: el monitor de la cabecera y la línea del soporte en curso.
+- Por qué importa: está a la vista durante todo el encuentro y nombra los fármacos vasoactivos (con V-9).
+- Nota: el espacio antes de «%» («FiO₂ {n}%») se normaliza al implementar, con la misma regla que la docencia fijó
+  para K-E16. No es otra decisión.
+- Recomendación: **APPROVE AS IS**.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+
+**XR-14 · Tratamientos en curso: fármacos y soporte** — L-14, T-01, T-05 a T-11 y T-13 (§6 y §7.3)
+- Dónde: «Tratamientos en curso», en «Indicaciones».
+- Por qué importa: está a la vista durante todo el manejo; las sondas vieron T-07 y T-11 en inglés («aspirin 300 mg
+  PO · minute 7»).
+- **Ajuste de T-08:** «— iniciado {hh:mm}» no concuerda con los fármacos femeninos («Noradrenalina: … — iniciado»).
+  Propuesta neutra: «— inicio {hh:mm} · último ajuste {hh:mm}».
+- Recomendación: **REVIEW CLOSELY**, por el ajuste de T-08; el resto, tal cual, con los nombres de V-9.
+- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
 ## Anexo A · Las 40 preguntas del motor heredado, fuera del alcance
 

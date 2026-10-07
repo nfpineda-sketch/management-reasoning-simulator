@@ -17,9 +17,9 @@
   (decisiones docentes del 2026-10-07). El relato aprobado entra en el candidato en
   `case_text/es/approvals.json` (4.1).
 - **Después del despliegue, antes del GO:** ningún texto de este paquete; sólo lo de 4.4.
-- **Decididas al 2026-10-07:** 97 de las 100: todo el nivel 1 y 40 de nivel 2; quedan 3, las últimas de nivel 2
-  (K-E15 a K-E17). H-62 e I-63 se decidieron DEFER de la firma: siguen sin firmar a propósito, así que las firmas
-  abiertas son 5. Aparte, la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a) quedó aprobada, sin
+- **Decididas al 2026-10-07: las 100.** Los niveles 1, 2 y 3 están completos: 91 APPROVE, 7 REVISE y 2 DEFER de
+  la firma. H-62 e I-63 siguen sin firmar a propósito, hasta que exista el candidato final implementado: son las
+  2 firmas abiertas. **B-5 sigue BLOCKED** (1.5). Aparte, la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a) quedó aprobada, sin
   implementar (bloque A).
 
 Los criterios de cada nivel están en 0.4.
@@ -147,7 +147,15 @@ Actualización del 2026-10-07: con X-1 cerrada, A-9 pasa de REVIEW CLOSELY a NEE
   implementar.
 - A-6 y A-6b se eligen por el estado del motor, no por la intubación ni por el fármaco de inducción (aclaración
   docente; bloque A). La fisiología de la ketamina no cambia.
-- Quedan 3 de las 100, las últimas de nivel 2 (K-E15 a K-E17). Con las firmas de H-62 e I-63 son 5 firmas abiertas.
+- Lote final de nivel 2: K-E15, K-E16 y K-E17, APPROVE. En K-E16, la diferencia del inglés «84 %» / «84%» es
+  cosmética: al implementar se normaliza la presentación, sin otra decisión docente y sin cambiar el disparador ni
+  el sentido del evento.
+- **Las 100 decididas (2026-10-07):** niveles 1, 2 y 3 completos.
+  - 91 APPROVE; A-7, con la revisión acotada para la 49m (A-7-49m).
+  - 7 REVISE, sin implementar: A-2, A-9, D-42, K-18, A-6, K-E5 y K-E6.
+  - 2 DEFER de la firma: H-62 e I-63, a propósito, hasta el candidato final implementado.
+- **B-5 no está resuelto.** Faltan las decisiones de X-1 (98 de 105), la revisión del relato y de la rúbrica en
+  español, la implementación de lo decidido y la firma de las guías sobre el candidato final.
 - El relato en español de los 30 casos se revisa antes de congelar el candidato final, que no se congela sin esa
   revisión (4.1). Reemplaza la decisión anterior del mismo día (después del despliegue). Su aprobación entra en el
   candidato en `case_text/es/approvals.json` (camino a, 4.1).
@@ -211,6 +219,11 @@ desvíos están en `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1.
 ### 1.5 Qué bloquea B-5 y qué no
 
 - **Bloquean:** las 100 decisiones requeridas de la sección 2. Si se difiere un texto activo, hace falta además su acuerdo expreso de pilotear con él sin firma.
+  - **Actualización del 2026-10-07:** las 100 están decididas. B-5 sigue bloqueado por:
+    - las 98 decisiones que faltan del español de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`, §12);
+    - la revisión del relato y de la rúbrica en español, antes de congelar;
+    - implementar lo decidido (los 7 REVISE, X-1 y las claves internas) y verificar el candidato final;
+    - sobre ese candidato, la firma de H-62 e I-63.
 - **No bloquean:** las 3 opcionales de la 41m si se difieren (sin cambio de SHA) y `MRS_LANGUAGE`, una configuración de los Secrets que no es un texto ni cambia el SHA.
 - **No están entre las 100, pero el candidato final no se congela sin ellas** (decisiones docentes del 2026-10-07): la revisión del relato en español (4.1) y la de la rúbrica en español (4.2).
 - **Orden recomendado:**
@@ -996,9 +1009,9 @@ implementarse; no suma decisiones a las 100. Sin implementar (TD-83).
 | K-E12 | right ventricle failing under fast volume | falla del ventrículo derecho con volumen rápido | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
 | K-E13 | sustained hypotension from the obstruction | hipotensión sostenida por la obstrucción | Fiel. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
 | K-E14 | brought back after discharge | traído de vuelta tras el alta | Masculino genérico, como «el paciente» en toda la sala, también con pacientes mujeres. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
-| K-E15 | systolic pressure 62 mmHg and falling | presión sistólica de 62 mmHg y en descenso | Fiel. Comprobado el 2026-10-07: el motor la escribe cuando, con pulso, la sistólica queda bajo 70 mmHg y 20 o más por debajo del inicio de la espera durante dos minutos seguidos, una vez por espera. En 90 recorridos (los 30 casos, sin tratamiento, con el tratamiento definitivo y con uno dañino) apareció 8 veces, y en las 8 la presión seguía bajando en ese minuto. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E16 | saturation 84 % and falling | saturación de 84 % y en descenso | Fiel. Comprobado el 2026-10-07: con pulso, la saturación queda bajo 85 % y 5 puntos o más por debajo del inicio de la espera durante dos minutos seguidos, una vez por espera. En los mismos recorridos apareció 3 veces (edema pulmonar con suero): la lectura entera repetía la del minuto anterior, dentro de un descenso que seguía después. Cosmético: el inglés escribe «84 %» con espacio y el resto de la sala en inglés, «84%». | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| K-E17 | a critical change | un cambio crítico | Fiel. Comprobado el 2026-10-07: es el respaldo de K-6 cuando el evento no trae nombre; con el código actual no aparece, porque todo evento que corta una espera trae su etiqueta. | **APPROVE AS IS** | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| K-E15 | systolic pressure 62 mmHg and falling | presión sistólica de 62 mmHg y en descenso | Fiel. Comprobado el 2026-10-07: el motor la escribe cuando, con pulso, la sistólica queda bajo 70 mmHg y 20 o más por debajo del inicio de la espera durante dos minutos seguidos, una vez por espera. En 90 recorridos (los 30 casos, sin tratamiento, con el tratamiento definitivo y con uno dañino) apareció 8 veces, y en las 8 la presión seguía bajando en ese minuto. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
+| K-E16 | saturation 84 % and falling | saturación de 84 % y en descenso | Fiel. Comprobado el 2026-10-07: con pulso, la saturación queda bajo 85 % y 5 puntos o más por debajo del inicio de la espera durante dos minutos seguidos, una vez por espera. En los mismos recorridos apareció 3 veces (edema pulmonar con suero): la lectura entera repetía la del minuto anterior, dentro de un descenso que seguía después. Cosmético: el inglés escribe «84 %» con espacio y el resto de la sala en inglés, «84%». | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07). La diferencia «84 %» / «84%» del inglés es cosmética: al implementar se normaliza la presentación, sin otra decisión docente y sin cambiar el disparador ni el sentido del evento |
+| K-E17 | a critical change | un cambio crítico | Fiel. Comprobado el 2026-10-07: es el respaldo de K-6 cuando el evento no trae nombre; con el código actual no aparece, porque todo evento que corta una espera trae su etiqueta. | **APPROVE AS IS** | ☒ **APPROVE** (docente, 2026-10-07) |
 
 ## 3. Fuera del piloto de residentes (F0-2): las filas de la 41m
 

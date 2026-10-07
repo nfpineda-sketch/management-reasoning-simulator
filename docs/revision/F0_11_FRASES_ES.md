@@ -87,7 +87,7 @@ Aparecen dentro de la frase de la espera interrumpida (fila 6).
 | Revisión | Resultado | Fecha | Firma |
 |---|---|---|---|
 | Redacción de las frases de la sala | Decidida: filas 1 a 17 y 19 y las dos de «Examen y frase hermana», aprobadas; fila 18, REVISE (redacción nueva abajo, sin implementar) | 2026-10-07 | |
-| Eventos que cortan una espera | En curso: las catorce primeras filas (K-E1 a K-E14) decididas; la quinta y la sexta, REVISE (redacción nueva abajo, sin implementar), y el resto, aprobadas. Quedan las tres últimas (K-E15 a K-E17) | 2026-10-07 | |
+| Eventos que cortan una espera | Decidida: las 17 filas. La quinta y la sexta, REVISE (redacción nueva abajo, sin implementar); las demás, aprobadas | 2026-10-07 | |
 
 **Decisiones docentes del 2026-10-07 (lotes 4, 5 y final del paquete de firmas), sin implementar.** Las filas 1 a
 17 y 19, y las dos de «Examen y frase hermana», se aprueban como están, con dos condiciones que no cambian su
@@ -117,4 +117,6 @@ activa hasta implementarlas:
   - EN: circulatory arrest from profound bradycardia
   - ES: paro circulatorio por bradicardia profunda
 
-Quedan las tres últimas filas (K-E15 a K-E17).
+Las tres últimas (K-E15 a K-E17) también quedan aprobadas como están. En la penúltima, la diferencia del inglés
+«84 %» / «84%» es cosmética: al implementar se normaliza la presentación, sin otra decisión y sin cambiar el
+disparador ni el sentido del evento.

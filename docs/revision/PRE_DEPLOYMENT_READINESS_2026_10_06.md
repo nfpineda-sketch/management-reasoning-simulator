@@ -303,6 +303,11 @@ son cambios de texto del motor antes del candidato final (TD-82, TD-67). La elec
 estado del motor, no por el fármaco de inducción (TD-83). Quedan 3 decisiones, K-E15 a K-E17 (Decision File,
 decimoséptima actualización).
 
+**Actualización del 2026-10-07 (B-5, lote final de nivel 2):** K-E15 a K-E17 quedan aprobadas, y con ellas las 100
+decisiones del paquete. H-62 e I-63 siguen sin firma a propósito, hasta el candidato final implementado. B-5 sigue
+bloqueado: falta X-1 (98 de 105 decisiones, consolidadas en 28), la revisión del relato y de la rúbrica en español,
+implementar lo decidido y verificar el candidato (Decision File, decimoctava actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

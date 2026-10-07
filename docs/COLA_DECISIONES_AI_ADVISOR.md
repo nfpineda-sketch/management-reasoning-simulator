@@ -9,7 +9,7 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
-  en español, sin interfaz mezclada en el candidato final; todas las decisiones de nivel 1, los cuatro primeros lotes de nivel 2 y la redacción de los estados límite de la 49m quedaron tomados, el español
+  en español, sin interfaz mezclada en el candidato final; las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m quedaron tomadas, el español
   que falta para X-1 está redactado y sus decisiones de base, tomadas; el relato y la rúbrica en español se revisan
   antes de congelar el candidato, y el relato aprobado entra en él en `case_text/es/approvals.json`). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
@@ -534,13 +534,44 @@ de A-6 y A-6b.** Registradas también en el paquete, en la hoja F0-11 y en
 - **Lote final de nivel 2:** K-E15, K-E16 y K-E17 (`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, 3.11).
 - **B-5: BLOCKED.**
 
+**Actualizado por decimoctava vez el 2026-10-07: B-5 · lote final de nivel 2 (K-E15 a K-E17), las 100
+decididas, y X-1 consolidada en lotes.** Registradas también en el paquete, en la hoja F0-11, en
+`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md` y en `docs/revision/X1_ESPANOL_PROPUESTO.md` (§12). **Ninguna está
+implementada.**
+
+| ID | Decisión docente (2026-10-07) | Qué exige, sin implementar todavía |
+|---|---|---|
+| K-E15 y K-E17 | APPROVE | Nada: ya activos en inglés y en español |
+| K-E16 | APPROVE. La diferencia del inglés «84 %» / «84%» es cosmética: al implementar se normaliza la presentación de forma coherente, sin otra decisión docente; no cambian el disparador ni el sentido del evento | La normalización, al implementar |
+
+- **Las 100 decisiones originales:** todas decididas; los niveles 1, 2 y 3, completos.
+  - 91 APPROVE; A-7, con la revisión acotada para la 49m (A-7-49m).
+  - 7 REVISE: A-2, A-9, D-42, K-18, A-6, K-E5 y K-E6.
+  - 2 DEFER de la firma: H-62 e I-63.
+- **Firmas abiertas:** H-62 e I-63, a propósito, hasta que exista el candidato final implementado, porque las guías
+  deben describirlo.
+- **B-5 no está resuelto (BLOCKED).** Falta:
+  - decidir el español de X-1;
+  - revisar el relato y la rúbrica en español;
+  - implementar lo decidido y verificar el candidato final;
+  - firmar H-62 e I-63 sobre ese candidato.
+- **X-1, siguiente frente (encargo docente del 2026-10-07):**
+  - las 98 decisiones pendientes quedan consolidadas en 28 (XR-01 a XR-28), en 2 lotes de 14, sin juntar
+    significados clínicos distintos (X-1, §12);
+  - V-9, los nombres de fármacos para mostrar, queda redactada para el primer lote;
+  - al preparar el lote se comprobó, sin cambiar código, que X1-C01 nombra la clase aunque el residente haya nombrado
+    el fármaco (TD-80).
+- **Cuentas:** paquete, 100 de 100. X-1, 7 de 105; las 98 restantes, en 28 decisiones consolidadas.
+- **Siguiente lote:** X-1, lote 1 (XR-01 a XR-14).
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, todo el nivel 1, los cuatro primeros lotes de nivel 2 y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; quedan 3 de 100, las últimas de nivel 2 (K-E15 a K-E17), y H-62 e I-63, decididas DEFER, siguen sin firma a propósito (5 firmas abiertas). Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). Del borrador del español de X-1, 7 de 105 decididas; las 98 restantes, consolidadas en 28 decisiones en dos lotes (`docs/revision/X1_ESPANOL_PROPUESTO.md`, §12) | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,
