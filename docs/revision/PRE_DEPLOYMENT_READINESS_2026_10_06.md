@@ -46,6 +46,15 @@ los resultados del Mac (sección 18).
   del cómputo de la rama.
 - Sigue **NOT READY FOR DEPLOYMENT**.
 
+**Actualizado por quinta vez el 2026-10-07** (corrida en el proveedor): **B-1 STILL BLOCKED** (sección 19).
+- **La corrida conjunta en Neon** (PostgreSQL 17.11, TLS) dio **21 passed y 2 errors**. Las dos fallas fueron por el
+  límite de 180 s de AppTest al empezar el encuentro, y los cuerpos de esas pruebas no corrieron.
+- **Las dos pruebas pasaron al correrlas solas.**
+- **La causa está medida:** la latencia del enlace llevó ese arranque sobre base vacía a unos 170 s.
+- **La aceptación vigente pide una corrida única 23/23.** Se propone, sin implementar, subir ese límite a 300 s en
+  el fixture de PostgreSQL.
+- Sigue **NOT READY FOR DEPLOYMENT**.
+
 Fuente de verdad del congelamiento: el manifiesto ejecutable `docs/revision/PILOT_FREEZE_MANIFEST.md` (generado de
 `pilot_freeze.py`). Donde un texto lo contradice, se informa en la sección 10.2 y no se corrige aquí.
 
@@ -402,7 +411,7 @@ son las 83 de siempre más las 10 de PostgreSQL, que corren aparte (9.2).
 
 | # | Estado (2026-10-06) | Bloqueo | Por qué bloquea | Lo más pequeño que lo resuelve | ¿Invalida verificación de la Fase 0? |
 |---|---|---|---|---|---|
-| B-1 | **READY TO EXECUTE** (2026-10-07; sección 18): la rama `pilot-b1-validation` se creó a mano; candidato `e200ccc`; el procedimiento del Mac se ensayó aquí. Faltan los resultados. Antes, BLOCKED (sección 17) | Prueba PostgreSQL del proveedor no corrida (NOT YET EXECUTED) | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
+| B-1 | **STILL BLOCKED** (2026-10-07; sección 19): en Neon con PostgreSQL 17.11, 21 passed y 2 errors por el límite de 180 s de AppTest (latencia; las dos pasaron solas). Falta una corrida única 23/23. Antes, READY TO EXECUTE (sección 18) y BLOCKED (sección 17) | Prueba PostgreSQL del proveedor sin una corrida 23/23 | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
 | B-2 | **RESUELTO** (2026-10-07; sección 16) con los datos confirmados en los proveedores. Antes, BLOCKED (sección 15) | Entorno de destino sin identificar | No se sabe qué app, qué rama, qué base ni qué Python | Nombrar la app y la base del piloto; crear la app con Python 3.11; desplegar una rama propia fija en el commit aprobado (3.2) | No |
 | B-3 | **RESUELTO** (`87bbbe1`; 14.1): opción (b), el preflight corregido; el runtime no cambió | El preflight puede dar «LISTA» con la app fuera de la configuración congelada (3.3 y 5.2) | El gate del runbook (paso 3) no garantiza lo que dice | **Decisión:** (a) procedimiento: `OPENAI_API_KEY` ausente, valores entre comillas y todo AVISO de los indicadores del manifiesto tratado como FALLA; o (b) corrección del preflight (sólo la herramienta, no el runtime): tratar un valor TOML no textual como ausente, como hace Streamlit, y volver obligatorias las reglas que el manifiesto exige (cambia `test_a_recommendation_warns_and_never_fails`) | No (no toca el runtime) |
 | B-4 | **RESUELTO** (`4d570a8`; 14.2): `streamlit==1.64.0`. Python 3.11 se elige al crear la app y queda en B-2 | Dependencias sin fijar: Streamlit `>=1.41,<2` (hoy instalaría 1.65.0) y Python sin fijar | El envío seguro depende de la secuencia de reruns de Streamlit; una versión que aparezca durante el piloto entraría en el próximo reinicio | **Decisión:** fijar en `requirements.txt` una versión verificada, `streamlit==1.64.0` (la de la suite completa) o `1.65.0` (verificada hoy sólo en la Fase 0 y en 0D, 9.4), y crear la app con Python 3.11. Es un commit de dependencias; el runtime no cambia | No con 1.64.0. Con 1.65.0, la suite completa con esa versión |
@@ -507,7 +516,7 @@ sobre `009aadb` se conserva en la columna «Por qué».
 | Categoría | Estado | Por qué |
 |---|---|---|
 | A · Código y pruebas | **PASS** (sujeto a 14.4) | Sobre `009aadb`: suite completa 7.578/0, Fase 0 completa y prueba de humo automática en verde, y 2 de 56 regresiones activas fallaban (B-6). Ahora: 56 de 56 y las pruebas focalizadas en verde (14.4). La suite completa sobre el candidato final se corre después de este commit y se informa en la entrega del encargo: si no da 0 fallas, esta fila no vale |
-| B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado. Proveedor (Neon, PostgreSQL 17): B-1 READY TO EXECUTE desde el Mac, todavía sin resultados (sección 18) |
+| B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado. Proveedor (Neon, PostgreSQL 17.11): 21 passed y 2 errors por el límite de tiempo del arnés; falta una corrida única 23/23 (sección 19) |
 | C · Configuración congelada | **BLOCKED** | El gate ya es confiable: falla cerrado ante cualquier exigencia del manifiesto (B-3 resuelto, 14.1). Falta correrlo con los Secrets reales del piloto, antes y después de crear la app (pasos 10 y 11 del contrato, 16.4 y 16.11) |
 | D · Enrutamiento | PASS WITH DECLARED LIMITATION | 30 aceptados, excluido y PS001 fuera (5.1); `MRS_DEFAULT_VARIANT` sólo lo cierra la configuración (5.2), y el preflight falla si está definido (14.1) |
 | E · Idioma y firmas docentes | **BLOCKED** | Todas pendientes (sección 6; B-5) |
@@ -519,14 +528,14 @@ sobre `009aadb` se conserva en la columna «Por qué».
 
 ## 13. Recomendación
 
-**NOT READY FOR DEPLOYMENT.** Bloquean B-1 (READY TO EXECUTE: falta correrlo en el proveedor desde el Mac, sección
-18) y B-5 (BLOCKED).
+**NOT READY FOR DEPLOYMENT.** Bloquean B-1 (STILL BLOCKED: falta una corrida única 23/23 en el proveedor, sección
+19) y B-5 (BLOCKED).
 - B-3, B-4 y B-6 se resolvieron el 2026-10-06 (sección 14), y B-2 el 2026-10-07 (sección 16).
 - Al escribir la primera versión de este documento bloqueaban B-1 a B-6.
 
 - El runtime de `009aadb` no mostró un defecto de conducta: la suite completa, la Fase 0, PostgreSQL con TLS, el
   simulacro de respaldo y la prueba de humo automática pasan, y el envío seguro se comporta igual con Streamlit 1.65.0.
-- Falta: la prueba en el proveedor (B-1, lista para correr desde el Mac, sección 18) y las firmas (B-5). Después, el contrato de
+- Falta: una corrida única 23/23 en el proveedor (B-1, sección 19) y las firmas (B-5). Después, el contrato de
   promoción (16.4), con el preflight sobre los Secrets reales del piloto.
 - B-3, B-4 y B-6 se resolvieron sin cambiar la conducta del runtime: el preflight (una herramienta que la app no
   importa), la versión de Streamlit con que ya se había verificado todo y dos scripts de regresión (sección 14).
@@ -1870,5 +1879,142 @@ sys.exit(0 if total == 0 else 1)
 ### 18.11 Estado
 
 - **B-1: READY TO EXECUTE.** Se marca RESUELTO sólo si la evidencia cumple 18.8.
+- **B-5: BLOCKED.**
+- Sigue **NOT READY FOR DEPLOYMENT**.
+
+## 19. B-1: resultado de la corrida en el proveedor (2026-10-07) — STILL BLOCKED
+
+Encargo: interpretar la corrida que la persona responsable hizo desde su Mac, sin cambiar código. **B-1: STILL
+BLOCKED.** No se tocaron el runtime ni las pruebas. El cambio de 19.4 es sólo una propuesta.
+
+### 19.1 Evidencia del proveedor, tal como se informó
+
+**Entorno:**
+- proyecto `management-reasoning-simulator`;
+- rama `pilot-b1-validation`, en modo «schema only»;
+- base `mrs_b1`;
+- PostgreSQL 17.11, con TLS;
+- el endpoint coincide con el cómputo de la rama, y el rol es dueño de la base;
+- candidato `e200cccc6487af807cab419595baed5b15dd6179`;
+- Python 3.11.9, Streamlit 1.64.0 y psycopg 3.3.6;
+- `HOME` vacío.
+
+**Destino y arranque:**
+- antes: `TARGET OK`, con 0 tablas;
+- arranque: «Connected.», el usuario puede crear tablas, y `--create` abrió el store;
+- después del arranque: 7 tablas y `TARGET OK`;
+- al final de todo: `TARGET OK`.
+
+**Corrida conjunta de las cuatro pruebas: 21 passed, 2 errors, 0 skipped y 0 failed, en 2141.98 s (35:41).**
+- Los dos errores fueron:
+  - `test_c_a_reload_between_the_write_ahead_and_the_run_executes_once_on_resume`;
+  - `test_e_a_run_stopped_twice_is_said_once_and_never_repeated`.
+- Los dos ocurrieron en la preparación común (`gi_bleed`), en
+  `next(b for b in at.button if b.label == "Begin Encounter").click().run()`, con «AppTest script run timed out
+  after 180(s)».
+- El cuerpo de esas dos pruebas no llegó a correr.
+
+**Reejecuciones de diagnóstico, una prueba por vez:**
+- C: `1 passed` en 186.44 s;
+- E: `1 passed` en 185.16 s.
+
+**Conexión:** el informe dice «direct». 16.8 y 18.4 piden la URL *pooled*, la que usará la app. Lo dice la línea
+`endpoint:` de `b1_target_before.txt`: termina en `-pooler` sólo si la URL era la *pooled*.
+
+### 19.2 Diagnóstico, hecho aquí sin tocar el repositorio
+
+**El límite de 180 s es por ejecución del script, no por prueba.** AppTest corta cada `.run()` que supere
+`default_timeout` (`streamlit/testing/v1/local_script_runner.py`). Por eso, que una prueba completa tarde 185–186 s
+no muestra por sí solo que una ejecución haya pasado de 180 s.
+
+**Medición local.** Se usó el PostgreSQL 16 descartable, el mismo SHA y un plugin de diagnóstico fuera del
+repositorio. Así se midió la ejecución de «Begin Encounter»:
+
+| Estado de la base | Conexiones | Sentencias | Datos enviados |
+|---|---|---|---|
+| Vacía (primer arranque) | 460, una por transacción (`account_store._transaction`) | 1.410 | 15,3 MB, el paquete de fotos |
+| Ya cargada (otro residente en la misma base) | 28 | 79 | 43 KB |
+
+Las demás ejecuciones de esas pruebas abren entre 3 y 19 conexiones. El peso está en la importación de la primera
+vez, que el fixture repite en cada prueba porque recrea el esquema.
+
+**Ajuste con los tiempos del Mac:**
+- las dos reejecuciones dan un tiempo de ida y vuelta efectivo de 32 a 38 ms, coherente entre ambas;
+- con ese valor, «Begin Encounter» sobre una base vacía tarda unos 168–175 s en ese enlace: entre el 93 % y el 97 %
+  del límite de 180 s;
+- el mismo modelo predice 2.215 s para las 23 pruebas, y la corrida conjunta tardó 2.142 s: una diferencia del 3 %.
+
+**Clasificación: latencia del proveedor que choca con el límite del arnés.**
+- No hubo falla de aserción, error de base de datos ni excepción de la app.
+- Las dos fallas están en la misma línea del fixture. Ese mismo fixture terminó a tiempo en las otras 8 pruebas y en
+  las dos reejecuciones.
+- No hace falta otro mecanismo para explicarlo: la latencia medida deja esa ejecución a 3–7 % del límite.
+- En ninguna corrida local de estas pruebas apareció un cuelgue.
+
+**Repetir tal cual no basta.** Hubo 2 de 12 arranques sobre base vacía por encima de 180 s. Con esa proporción, que
+diez seguidos terminen a tiempo pasa más o menos 1 vez de cada 6.
+
+**Nota para el piloto, que no es parte de B-1.** El primer encuentro sobre la base nueva del piloto hará esa misma
+importación. Cuánto tarde depende de la latencia entre la app desplegada y Neon; conviene medirlo en la prueba de humo
+(sección 11).
+
+### 19.3 Qué exige la aceptación vigente
+
+| Fuente | Qué dice |
+|---|---|
+| 16.8 | PASS: «pytest da **23 passed, 0 failed, 0 errors y 0 skipped**». FAIL: «cualquier falla o error» |
+| 18.8 | PASS: la última línea de pytest dice `23 passed`, sin `failed`, `error`, `skipped` ni `xfailed`. FAIL: cualquier `failed` o `error` |
+| 16.4, paso 5 | «Correr B-1 en el proveedor sobre ese commit (16.8): 23/23» |
+
+**Las fuentes piden una corrida única.**
+- Las conductas A–G quedaron demostradas en el proveedor, sumando la corrida conjunta y las dos reejecuciones.
+- Aceptar evidencia repartida entre corridas sería un criterio nuevo, adoptado después de ver el resultado.
+- La corrida conjunta es FAIL según 16.8 y 18.8.
+
+### 19.4 Cambio mínimo propuesto, sin implementar; requiere autorización
+
+**Dónde y qué:** en `test_phase0_submission_guard_on_postgres.py`, línea 77 (fixture `gi_bleed`), cambiar
+`AppTest.from_file(APP, default_timeout=180)` por `AppTest.from_file(APP, default_timeout=300)`.
+
+**Por qué 300 s:**
+- es 1,7 veces la ejecución sobre base vacía estimada para el enlace más lento usado hasta ahora, de unos 170 s;
+- 240 s dejaría sólo 1,4 veces;
+- un cuelgue real se sigue cortando a los cinco minutos.
+
+**Por qué es sólo del arnés:**
+- `default_timeout` sólo fija cuánto espera AppTest cada ejecución simulada;
+- no lo leen la app, la configuración de Streamlit ni el runtime desplegado;
+- no cambia ninguna aserción ni el cuerpo de ninguna prueba;
+- el archivo se omite cuando falta `MRS_TEST_POSTGRES_URL`.
+
+**Qué se vuelve a correr:**
+- **local:** las cuatro pruebas de proveedor sobre el PostgreSQL descartable, con 23/23;
+- **en Neon, desde el Mac:** una sola corrida de las cuatro pruebas, sobre el nuevo SHA y por la URL *pooled*, con
+  23 passed y 0 errores;
+- **suite completa:** este cambio no la exige, porque sólo toca un archivo que se omite sin URL. El contrato de
+  promoción (16.4, paso 3) la corre igual sobre el candidato final.
+
+**Candidato:** el cambio toca un archivo fuera de `docs/`, así que el candidato de B-1 pasa a ser ese commit nuevo. El
+código de runtime sigue siendo idéntico al de `e200ccc`.
+
+**Fase 0:** sigue válida. El cambio no toca runtime ni aserciones, y las pruebas que cita el cierre de la Fase 0
+conservan su nombre y su contenido.
+
+**Alternativa sin cambio:** correr desde un equipo con menos latencia hacia Neon. Desde el Mac, sin el cambio, la
+corrida única no es fiable (19.2).
+
+### 19.5 Secrets globales de Streamlit
+
+- **No afectan esta evidencia.** La corrida usó un `HOME` vacío, que impide leer `~/.streamlit/secrets.toml`, y la
+  comprobación del destino confirmó `mrs_b1` al final.
+- **El aislamiento por `HOME` bastó para esta corrida.**
+- **Corregir el arnés sigue siendo una tarea aparte**, de sólo pruebas, antes del despliegue.
+
+### 19.6 Estado
+
+- **B-1: STILL BLOCKED.**
+- **Lo único que falta:** una corrida única en el proveedor con **23 passed, 0 errors y 0 skipped**. Tiene que ser
+  sobre el SHA con el límite corregido y por la URL *pooled* de `mrs_b1`.
+- Si la rama `pilot-b1-validation` ya venció, se vuelve a crear igual (18.1 y 18.3).
 - **B-5: BLOCKED.**
 - Sigue **NOT READY FOR DEPLOYMENT**.
