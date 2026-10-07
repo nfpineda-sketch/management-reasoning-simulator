@@ -1,6 +1,7 @@
 # B-5 · Relato en español · Lote R2B: respiratorio (casos 4 a 6)
 
-> **PARA REVISIÓN DOCENTE. Nada implementado.** Segunda mitad del lote R2 de la revisión del relato
+> **DECIDIDO por la docencia el 2026-10-07: los 3 casos, APPROVE WHOLE CASE (la 24f, con P-1). Nada
+> implementado.** Segunda mitad del lote R2 de la revisión del relato
 > (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`), en el orden canónico del banco (`clinical_cases.FAMILIES`):
 > `pulmonary_edema_75f`, `asthma_24f` y `asthma_49m`. Se aprueba el caso entero, en la versión objetivo impresa
 > (`case_text.version`). No se crea `approvals.json` ni se cambia `case_text/es`. No se implementa nada del motor
@@ -11,6 +12,9 @@
 
 **En una mirada**
 
+- **Decidido (docente, 2026-10-07):** 3 de 3 casos aprobados, cada uno en su versión objetivo; `asthma_24f` con P-1. Con R2A,
+  el bloque respiratorio queda aprobado entero (6 de 6) y el relato del piloto suma 12 de 30 casos. Rige la regla
+  de versión.
 - **Pasajes:** 3 casos y 99 pasajes. 50 están cubiertos por frases del lote 0, ya aprobadas; **49 son propios y se
   revisan** (19, 14 y 16). Con R2A, el bloque respiratorio suma los 102 pasajes propios que preveía el diseño (§4).
 - **Corpus de la validación externa:** `asthma_24f` está en él (C01). Sus 3 pasajes fijos (la presentación,
@@ -77,7 +81,7 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Se aplica T-1 en `/examination/Respiratory`, ya aprobado («crépitos bilaterales que se extienden hasta los campos medios»; la concordancia no cambia). Con eso, la llegada usa el mismo término que las frases del motor A-2 y A-3. La decisión A-2 (REVISE, TD-51) es sobre el texto del motor durante el agotamiento, no sobre este pasaje de llegada, que no se toca.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `4695ee50cfa00208c0c9fa70b527e7495119392cf279487b72a5880d25d2d06c`. Incluye T-1 (crackles → crépitos). La revisión A-2 del motor sigue igual y no es parte de esta aprobación.
 
 ## asthma_24f
 
@@ -107,7 +111,7 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/allergies/0` (L0-3
 
 - **Observaciones:** **una, de sentido (P-1), en `/history/chest_pain/0`.** El pasaje existe para distinguir la opresión del asma de un dolor de tipo coronario: «tightness … not a separate focal or crushing pain». Hoy traduce «crushing» como «opresivo». En el relato, «opresión» es la palabra de «tightness» (la presentación fija de este mismo caso dice «opresión torácica») y «crushing» se traduce «aplastante» en `pulmonary_edema_58m` (aprobado en R2A) y en `anaphylaxis_29f`. Así, el caso afirma «opresión torácica» y luego niega un dolor «opresivo»: el residente puede leer que la paciente niega lo que la presentación afirma. Propuesta mínima: «…localizado u opresivo» → «…localizado o aplastante». No toca los 3 pasajes 🔒, que se leyeron con el caso sin hallar ningún error clínicamente relevante.
 - **Recomendación para el caso entero:** **APPROVE con P-1** (versión `844d280d…`). Si la docencia prefiere el texto actual: APPROVE tal cual (versión `6471a99e…`).
-- **Decisión docente:** ☐ APPROVE WHOLE CASE con P-1 · ☐ APPROVE WHOLE CASE tal cual · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE WITH P-1** — docente, 2026-10-07; versión aprobada `844d280d53271a3444adc8293a73f42ec5aac090a08d4af839d5100a5fbc4615`. **Con P-1**: en `/history/chest_pain/0`, «…no un dolor aparte que sea localizado o aplastante.» Motivo docente: «crushing» no se traduce «opresivo» aquí, porque el caso ya usa «opresión» para «tightness», y la negación podría parecer que contradice el síntoma de presentación. Los 3 pasajes fijos del corpus siguen exactamente como están.
 
 ## asthma_49m
 
@@ -138,15 +142,15 @@ Cubiertos por el lote 0: `/history_source` (L0-32), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. **Intersección con A-6a:** el examen respiratorio de llegada (`/examination/Respiratory`) es, en inglés y en español, el texto exacto de A-6a, aprobada el 2026-10-07 («su español es el del relato del caso»). Aprobar este caso fija también el español de A-6a; cambiar este pasaje obligaría a revisar A-6a y a mantener alineadas A-6b, A-7-49m y A-8a, que repiten «murmullo pulmonar … muy disminuido en forma bilateral» y «solo sibilancias tenues». La presentación («las sibilancias suenan más silenciosas que antes», «se ve cansado»), la historia («antes el pecho le silbaba más fuerte», «está moviendo menos aire») y el examen neurológico («Somnoliento») dicen la misma gravedad que A-6a: nada en el relato se lee como mejoría.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `6b8cc7770904dce49a87fccc7ff91b4948d06d2c422c825854d0dc722d057540`. El examen respiratorio de llegada no se cambia: es la redacción aprobada de A-6a y debe seguir alineado con A-6b, A-7-49m y A-8a. «Murmullo pulmonar» y «entrada de aire» siguen aceptados en sus contextos ya aprobados; no hace falta decisión nueva.
 
 ## Resumen del lote R2B
 
 | Caso | Propios | Cubiertos por el lote 0 | Fijos del corpus | Versión objetivo que se aprueba | Recomendación | Decisión docente |
 |---|---|---|---|---|---|---|
-| `pulmonary_edema_75f` | 19 | 14 | 0 | `4695ee50…` (con T-1) | APPROVE | ☐ |
-| `asthma_24f` | 14 | 19 | 3 🔒 | `844d280d…` (con P-1) · tal cual: `6471a99e…` | APPROVE con P-1 | ☐ |
-| `asthma_49m` | 16 | 17 | 0 | `6b8cc777…` (sin cambios) | APPROVE | ☐ |
+| `pulmonary_edema_75f` | 19 | 14 | 0 | `4695ee50…` (con T-1) | APPROVE | ☒ APPROVE |
+| `asthma_24f` | 14 | 19 | 3 🔒 | `844d280d…` (con P-1) · tal cual: `6471a99e…` | APPROVE con P-1 | ☒ APPROVE con P-1 |
+| `asthma_49m` | 16 | 17 | 0 | `6b8cc777…` (sin cambios) | APPROVE | ☒ APPROVE |
 | **Total** | **49** | **50** | **3** | | | |
 
-Siguiente, según el orden docente: R3 (TEP y bradicardias), después de la decisión docente sobre R2B.
+Siguiente, según el orden docente: R3 (TEP y bradicardias), en dos mitades. R3A, en `docs/revision/B5_RELATO_R3A.md`.

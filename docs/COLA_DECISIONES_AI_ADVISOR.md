@@ -773,13 +773,47 @@ en el registro de deuda (TD-81). **Nada está implementado.**
 - **Siguiente lote:** R3 (TEP y bradicardias), después de la decisión docente sobre R2B.
 - **B-5: BLOCKED.**
 
+**Actualizado por vigesimoséptima vez el 2026-10-07: B-5 · R2B aprobado (bloque respiratorio 6 de 6; relato 12 de 30);
+R3A para revisión.** Registrado también en `docs/revision/B5_RELATO_R2B.md`, en `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md` (§8), en
+`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, en el paquete (1.5) y en el registro de deuda (TD-81). **Nada está
+implementado.**
+
+| Caso | Decisión docente (2026-10-07) | Versión objetivo aprobada |
+|---|---|---|
+| `pulmonary_edema_75f` | APPROVE WHOLE CASE, con T-1; la revisión A-2 del motor sigue igual y no es parte de esta aprobación | `4695ee50cfa00208c0c9fa70b527e7495119392cf279487b72a5880d25d2d06c` |
+| `asthma_24f` | APPROVE WHOLE CASE **con P-1**: «…no un dolor aparte que sea localizado o aplastante.»; los 3 pasajes fijos del corpus, sin cambios | `844d280d53271a3444adc8293a73f42ec5aac090a08d4af839d5100a5fbc4615` |
+| `asthma_49m` | APPROVE WHOLE CASE; el examen respiratorio de llegada no se cambia (es A-6a, alineado con A-6b, A-7-49m y A-8a) | `6b8cc7770904dce49a87fccc7ff91b4948d06d2c422c825854d0dc722d057540` |
+
+- **P-1, motivo docente:** «crushing» no se traduce «opresivo» en la 24f, porque el caso ya usa «opresión» para
+  «tightness», y la negación podría parecer que contradice el síntoma de presentación.
+- **Terminología:** «murmullo pulmonar» y «entrada de aire» siguen aceptados en sus contextos ya aprobados; no hace
+  falta decisión nueva.
+- **Regla de versión (docente):** cada versión del español tiene que dar exactamente su hash aprobado al implementar;
+  si da otro, se detiene y vuelve a revisión docente.
+- **Estado del relato:**
+  - R1, 6 de 6; R2, 6 de 6;
+  - relato del piloto, 12 de 30 casos aprobados;
+  - ningún archivo de aprobación creado.
+- **Cambios del relato aprobados, para implementar:** T-1, T-2 y T-3 donde corresponda, y P-1 en `asthma_24f`.
+- **R3, dividido por decisión docente** en R3A y R3B, en el orden canónico del banco (`clinical_cases.FAMILIES`: TEP,
+  después bradicardias). **R3A, preparado para la revisión docente** (`docs/revision/B5_RELATO_R3A.md`):
+  - casos `pulmonary_embolism_33f`, `pulmonary_embolism_61m` y `bradycardia_ccb_68m`;
+  - 57 pasajes propios, y 53 cubiertos por el lote 0;
+  - ningún pasaje fijado por el corpus;
+  - T-1 a T-3 ya rigen en los 3; ninguna versión cambia;
+  - P-1 revisada: el «presión opresiva» de la 61m no reproduce el problema de la 24f;
+  - recomendación APPROVE en los 3.
+- **Siguiente lote:** R3B (`bradycardia_avb3_78f`, `bradycardia_bb_54f` y `bradycardia_hyperk_63m`), después de la
+  decisión docente sobre R3A.
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0, rúbrica, R1 y R2A aprobados, 9 de 30 casos; R2B en revisión); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0, rúbrica, R1 y R2 aprobados, 12 de 30 casos; R3A en revisión); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

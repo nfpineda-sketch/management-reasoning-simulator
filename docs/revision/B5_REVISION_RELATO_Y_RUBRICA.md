@@ -269,3 +269,15 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
 - **R2B, entregado para revisión:** `docs/revision/B5_RELATO_R2B.md`. Trae una observación de sentido en `asthma_24f` (P-1, «opresivo» →
   «aplastante»), con las dos versiones objetivo, y la intersección de `asthma_49m` con A-6a a A-8a, que no pide
   decisión nueva.
+- **R2B, decidido (2026-10-07):** APPROVE WHOLE CASE en `pulmonary_edema_75f` (`4695ee50…`, con T-1; la revisión
+  A-2 del motor no es parte de esta aprobación), `asthma_24f` **con P-1** (`844d280d…`; «…no un dolor aparte que sea
+  localizado o aplastante.»; sus 3 pasajes fijos del corpus, sin cambios) y `asthma_49m` (`6b8cc777…`, la del
+  repositorio; su examen respiratorio de llegada no se cambia, porque es A-6a y debe seguir alineado con A-6b,
+  A-7-49m y A-8a). «Murmullo pulmonar» y «entrada de aire» siguen aceptados en sus contextos aprobados. El bloque
+  respiratorio queda entero (6 de 6); van 12 de 30 casos. Rige la misma regla de versión.
+- **Cambios del relato aprobados, para implementar** (en las versiones objetivo, sin implementar): T-1, T-2 y T-3
+  donde corresponda, y P-1 en `asthma_24f`.
+- **R3 dividido en R3A y R3B (docente, 2026-10-07), en el orden canónico del banco** (`clinical_cases.FAMILIES`:
+  TEP, después bradicardias). R3A (`pulmonary_embolism_33f`, `pulmonary_embolism_61m` y `bradycardia_ccb_68m`),
+  entregado para revisión: `docs/revision/B5_RELATO_R3A.md`. R3B: `bradycardia_avb3_78f`, `bradycardia_bb_54f` y
+  `bradycardia_hyperk_63m`.
