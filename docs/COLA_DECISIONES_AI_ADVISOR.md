@@ -5,10 +5,11 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-06, con la preparación para el despliegue (sección «Preparación para el despliegue», la
-  vigente: NOT READY FOR DEPLOYMENT; de los seis bloqueos, B-3, B-4 y B-6 quedaron resueltos el mismo día y siguen
-  B-1, B-2 y B-5) y, antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
-  sección «Fase 0 · Seguridad de la medición antes del piloto»,
+- **Actualizado:** 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
+  vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06; B-2 quedó
+  definido en diseño el 2026-10-07 y BLOCKED por información de las cuentas; siguen B-1, B-2 y B-5). Antes, con el
+  cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La sección «Fase 0 · Seguridad de la
+  medición antes del piloto»,
   con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
@@ -33,10 +34,28 @@ Los tres quedan resueltos en commits locales, sin push: `87bbbe1`, `4d570a8` y `
 sección 14 del informe. La conducta del runtime no cambió. **Sigue NOT READY FOR DEPLOYMENT:** faltan B-1, B-2 y
 B-5. No se desplegó, no se hizo push y no se empezó la Fase 1.
 
+**Actualizado el 2026-10-07** (encargo «B-2 — define the pilot target deployment environment»): **B-2 BLOCKED.** Está
+definido el diseño (informe, sección 15): una rama `pilot-residents-v1` que sólo recibe promociones de un SHA
+aprobado, una app nueva de Streamlit Community Cloud con Python 3.11 y una base vacía propia en Neon, además del
+contrato de promoción, el chequeo de encuentros abiertos y el plan de B-1. Lo demás está en las cuentas, y desde aquí
+no se ve. **Mientras no se sepa qué apps siguen `clinical-encounter-v0.13`, no se hace push a esa rama:** está
+documentado que la app de desarrollo se redespliega con cada push. Decisiones y datos que se necesitan de ti:
+
+- **D-B2-1 · App del piloto:** nueva (recomendado) o una existente. Si es nueva, subdominio y workspace; si es
+  existente, su URL, rama, archivo principal y Python.
+- **D-B2-2 · Base del piloto:** un proyecto de Neon aparte, o una rama del proyecto `management-reasoning-simulator`
+  con una base vacía `mrs_pilot`. Nunca `production`.
+- **D-B2-3 · Rama:** aprobar el nombre `pilot-residents-v1`, que se crea sólo en la promoción, y decidir si se
+  protege en GitHub.
+- **D-B2-4 · B-1:** quién crea la rama descartable con una base vacía, en el proyecto de la base del piloto, y quién
+  corre la prueba y desde qué equipo.
+- **Datos:** las apps del workspace con su rama, archivo principal y Python, y la versión mayor de PostgreSQL del
+  proyecto.
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | Abierto | La prueba de PostgreSQL en una base descartable del proveedor, de su versión mayor (BLOCKED / NOT RUN) | Quién la corre y desde dónde: este entorno no llega al proveedor |
-| B-2 | Abierto | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
+| B-2 | **Blocked** (2026-10-07): diseño definido; faltan datos de las cuentas (D-B2-1 a D-B2-4) | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
 | B-5 | Abierto | Las firmas docentes, todas pendientes | Firmar antes de construir el candidato final |
