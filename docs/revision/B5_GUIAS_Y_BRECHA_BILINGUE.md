@@ -215,6 +215,10 @@ Los textos EN y ES de las filas K son los de la hoja F0-11, con valores de muest
 
 No se corrigió. El encargo nombra la aclaración y «otra pantalla activa del piloto», así que se informa aquí.
 
+**Actualizado el 2026-10-07:** el inventario completo, con la fuente de cada frase y su español propuesto, está en
+`docs/revision/X1_ESPANOL_PROPUESTO.md`. Corrige la cifra de abajo: 40 de las preguntas de `app.py` son del motor
+heredado y ningún caso del piloto llega a ellas (su anexo A); las que un residente puede ver son 73.
+
 | Grupo | Qué ve hoy un residente en español | Medida | Registro |
 |---|---|---|---|
 | Preguntas de aclaración de la sala | Muchas, enteras en inglés: «What route would you like to use (IV or PO)?», «Please specify the fluid volume (for example, 500 mL or 1 L).». Otras, mezcladas, porque `language.say` traduce palabras sueltas dentro de una oración que no conoce: «What infusión de norepinephrine rate would you like to inicio (for example, 0.05 mcg/kg/min or 5 mcg/min)?», «Indica cardioversion energy in joules, from 1 to 360.» | De 102 textos escritos como literales (36 en `app.py`, 66 que devuelve `family_engine.py`): 52 en inglés, 31 mezclados, 19 en español, según un detector de palabras inglesas (cifra aproximada). No se midió cuántas aparecen en los 30 casos; las de dosis, vía, flujo y ritmo son frecuentes. | TD-79 (nueva) |
@@ -281,6 +285,33 @@ paquete. Cada texto se comprobó contra el código: el inglés, en el banco o en
 | 9 | E-46 · C14 de la 70f | Ídem | Criterio de evaluación | Borrador | **APPROVE AS IS** (decidir con D-41) |
 | 10 | F-47 · ficha POCUS de la 52m | Docente: la ficha R-2 y la declaración C14 | Criterio de evaluación | Borrador | **APPROVE AS IS** (decidir con E-45) |
 
+**Decisión docente (2026-10-07):** B-26, C-37, D-39, D-40, D-41, D-43, E-45, E-46 y F-47, APPROVE; D-42, REVISE:
+se mantienen el inglés y el motor, y D-42 lleva un español propio para las dos neumonías, propuesto en el paquete
+(bloque D-42). Están registradas en el paquete y en el Decision File, sin implementar.
+
+### 3.3 Tercer lote de nivel 1 (propuesto el 2026-10-07)
+
+Orden del paquete: F-48 a F-57, diez fichas POCUS C14 YES (R-2). Los textos exactos y las casillas están en el
+paquete. **Comprobado el 2026-10-07:** en las diez, el componente y la evidencia en inglés coinciden con la
+declaración C14 del banco (`case_assessment_bank.CASES[<caso>]["objectives"]["C14"]`), y su español con el
+borrador (`spanish_drafts.C14`). Las diez son C14 = yes y ninguna tiene casilla marcada.
+
+Todas son nivel 1 porque son criterio de evaluación. Las ve el docente, en la ficha R-2 y en la declaración C14 del
+caso (en inglés también en español, TD-07); su español es borrador inactivo.
+
+| # | ID · caso | Qué observa C14 | Recomendación |
+|---|---|---|---|
+| 1 | F-48 · `acs_61m_posterior` | Usar la motilidad informada, con el ECG y las derivaciones posteriores, para priorizar la reperfusión | **APPROVE AS IS** — no se exige reconocer la hipocinesia posterior sutil; una aorta no dilatada no descarta una disección |
+| 2 | F-49 · `acs_70f_left_main` | Decidir volumen, soporte y urgencia con la función del VI a la vista, y adaptarlos a la respuesta | **REVIEW CLOSELY** — D-8: la sobrecarga no cambia pulmón, examen, saturación ni POCUS (TD-53); confirmar que la ficha no exige verla. Es el mismo criterio de D-41 y E-46, ya aprobadas |
+| 3 | F-50 · `gi_bleed_57m` | Usar la volemia por POCUS para guiar y reevaluar la reanimación | **APPROVE AS IS** |
+| 4 | F-51 · `gi_bleed_72f` | Lo mismo, con la VCI que colapsa | **APPROVE AS IS** |
+| 5 | F-52 · `obstructive_pyelonephritis_58f` | Guiar con POCUS los fluidos y la hemodinamia en el shock séptico | **APPROVE AS IS** — la VCI de control no cambia (TD-54) y la evidencia no exige reevaluar con POCUS |
+| 6 | F-53 · `pneumonia_46f` | Guiar y reevaluar con POCUS los fluidos y la hemodinamia | **REVIEW CLOSELY** — una evidencia pide reevaluar con POCUS tras el volumen; el control muestra la VCI que se llena y ninguna línea B nueva (D-42): confirmar que se juzga con la VCI y la saturación, nunca con las líneas B. Decidir con F-54 |
+| 7 | F-54 · `pneumonia_83m` | Lo mismo | **REVIEW CLOSELY** — igual que F-53 |
+| 8 | F-55 · `pulmonary_edema_58m` | Decidir nitrato, diurético o VMNI, y no dar volumen, por las líneas B, el VI y la VCI | **APPROVE AS IS** — decidir con F-56 (el mismo texto C14) |
+| 9 | F-56 · `pulmonary_edema_75f` | Lo mismo | **APPROVE AS IS** — llega con la vista neutral (P-07); la ficha no depende de la foto |
+| 10 | F-57 · `pulmonary_embolism_33f` | Integrar el VD y la TVP proximal con la estabilidad: anticoagular antes de confirmar y no trombolizar | **APPROVE AS IS** |
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -298,13 +329,14 @@ paquete. Cada texto se comprobó contra el código: el inglés, en el banco o en
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes del lote 1 y del alcance de X-1 (Decision File,
-octava actualización).
+Actualizado el 2026-10-07, con las decisiones docentes de los lotes 1 y 2, del alcance de X-1 y del relato
+(Decision File, octava y novena actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final.
-2. **Redactar y firmar el español que X-1 exige y no existe:** las preguntas de aclaración (TD-79), el texto
-   de la compuerta y los rótulos (TD-61). También la redacción EN y ES del examen respiratorio en agotamiento
-   (A-2, TD-51).
-3. **Cuándo se revisa el relato en español de los casos:** antes de congelar el candidato o antes del GO.
-4. **Las firmas que quedan del paquete:** 89 de 100. El segundo lote de nivel 1 está en 3.2.
+2. **Firmar el español que X-1 exige:** está redactado para revisión, sin implementar
+   (`docs/revision/X1_ESPANOL_PROPUESTO.md`): 103 decisiones, entre ellas la redacción EN y ES del examen
+   respiratorio en agotamiento (A-2, TD-51).
+3. **Decidido:** el relato en español se revisa después del despliegue y antes del GO; el piloto bilingüe no abre
+   sin esa revisión.
+4. **Las firmas que quedan del paquete:** 79 de 100. El tercer lote de nivel 1 está en 3.3.
 5. **La firma de las dos guías actualizadas** (bloques H e I).

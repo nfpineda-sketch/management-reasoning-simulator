@@ -9,7 +9,8 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
-  en español, sin interfaz mezclada en el candidato final; el lote 1 de nivel 1 quedó decidido). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
+  en español, sin interfaz mezclada en el candidato final; los lotes 1 y 2 de nivel 1 quedaron decididos y el español
+  que falta para X-1 está redactado para revisión). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
@@ -201,13 +202,45 @@ implementada.**
     limitación TD-51 de la guía docente y la mención de los modos en inglés en la guía del residente.
 - **B-5: BLOCKED.** Quedan 89 de las 100 decisiones: 45 de nivel 1, 43 de nivel 2 y 1 de nivel 3 (J).
 
+**Actualizado por novena vez el 2026-10-07: B-5 · lote 2 de nivel 1, relato en español y borrador del español de
+X-1.** Registradas también en el paquete. **Ninguna está implementada.**
+
+| ID | Decisión docente (2026-10-07) | Qué exige, sin implementar todavía |
+|---|---|---|
+| B-26, C-37, D-39, D-40, D-41, D-43, E-45, E-46, F-47 | APPROVE | Nada en el código ni en el banco: siguen activos como están |
+| D-42 | REVISE: se mantienen el sentido del inglés y el comportamiento del motor. El español de D-42 debe decir, para las dos neumonías, que el POCUS de control muestra la VCI que se llena con el volumen, que no muestra líneas B nuevas por la sobrecarga de cristaloides y que la saturación sí cae; no sirve el párrafo de la guía que junta el trauma y la neumonía | Firmar el español propuesto en el paquete (bloque D-42) y llevarlo a la guía docente: sólo documentación (S-C) |
+
+- **El relato en español (decisión docente):**
+  - se revisa después del despliegue y antes del GO del piloto;
+  - no necesita estar en el SHA precandidato en lo que es contenido de la base (la aprobación de cada caso);
+  - el piloto bilingüe no abre hasta completar esa revisión;
+  - el texto del relato está en el repositorio (`case_text/es/`): corregir una traducción es un SHA nuevo y otro
+    despliegue (paquete, 4.3).
+
+  Responde la consecuencia que la octava actualización dejaba por decidir.
+- **El español que falta para X-1 (decisión docente):** autorizado para redactarse y revisarse, no para
+  implementarse. Borrador: `docs/revision/X1_ESPANOL_PROPUESTO.md`:
+  - 100 formulaciones únicas y 7 vocabularios, cada una con las fuentes que cubre;
+  - las preguntas de aclaración van en 34 plantillas para las 73 frases que un residente del piloto puede ver;
+  - 11 textos ya tienen español y sólo falta aplicarlo;
+  - la redacción de A-2 con el paciente agotado, en inglés y en español (§9);
+  - fuera del alcance, con su evidencia: el relato, 40 preguntas del motor heredado que ningún caso del piloto
+    alcanza, las herramientas del personal y la ruta sin cuentas.
+- **Hallazgo del inventario:** las 40 preguntas de `app.py` que TD-79 contaba entre las pendientes son del motor
+  heredado. Los 31 casos del banco usan el motor por familias, que vuelve antes de llegar a ellas. TD-79 queda
+  acotada a las del motor por familias.
+- **Siguiente lote de nivel 1:** F-48 a F-57, las fichas POCUS de 61m, 70f, 57m, 72f, 58f, 46f, 83m, 58m, 75f y
+  33f.
+- **B-5: BLOCKED.** Quedan 79 de las 100 decisiones: 35 de nivel 1, 43 de nivel 2 y 1 de nivel 3 (J). Aparte,
+  las 103 decisiones del borrador de X-1, que no estaban entre las 100.
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1 (alcance ampliado) y el lote 1 de nivel 1 (8 APPROVE, 2 REVISE, sin implementar); quedan 89 de 100 | Firmar las restantes; redactar y firmar el español que X-1 exige y no existe; implementar lo decidido antes de construir el candidato final |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1 (alcance ampliado), el lote 1 de nivel 1 (8 APPROVE, 2 REVISE) y el lote 2 (9 APPROVE, 1 REVISE), sin implementar; quedan 79 de 100. El español que falta para X-1 está redactado para revisión (103 decisiones aparte) | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); implementar lo decidido antes de construir el candidato final; revisar el relato en español antes del GO |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,
