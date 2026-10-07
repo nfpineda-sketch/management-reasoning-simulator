@@ -565,19 +565,50 @@ implementada.**
 - **Siguiente lote:** X-1, lote 1 (XR-01 a XR-14).
 - **B-5: BLOCKED.**
 
+**Actualizado por decimonovena vez el 2026-10-07: B-5 · lote 1 de X-1 (XR-01 a XR-14).** Registrado también en
+`docs/revision/X1_ESPANOL_PROPUESTO.md` (§12.2, con el texto final en cada fila), en
+`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, en el paquete (1.5) y en el registro de deuda (TD-61, TD-79 y
+TD-80). **Nada está implementado.**
+
+| XR | Decisión docente (2026-10-07) | Texto final de lo que cambia |
+|---|---|---|
+| XR-01 | REVISE | G-02: «Todavía falta indicar: {lista}.» · G-06: «Hay una orden entendida que está retenida. El estado del paciente no ha cambiado; completa el razonamiento con tus palabras o con los campos guiados.» El resto, aprobado |
+| XR-02, XR-03 y XR-04 | APPROVE | — |
+| XR-05 | APPROVE, opción b | Si el residente nombró un fármaco reconocido, la pregunta lo repite («the ceftriaxone dose» · «la dosis de ceftriaxona»); si sólo se reconoció una clase, usa la etiqueta de la clase. Aprobados también la limpieza inglesa de las claves de V-1, el español de V-1 y V-2, y los ajustes del calcio y de la sedación del procedimiento. Los identificadores canónicos e internos no cambian |
+| XR-06 | APPROVE: V-9 entera, como se propuso | Los identificadores canónicos guardados no cambian |
+| XR-07 | REVISE | Sólo la unidad de la cardioversión: «Indica la energía de la cardioversión entre 1 y 360 J.» El resto de los rangos y límites, y X1-C14, aprobados |
+| XR-08 y XR-09 | APPROVE | — |
+| XR-10 | REVISE | L-02: «Ingresa tu razonamiento clínico y/o tus acciones.» L-03, aprobada |
+| XR-11 | REVISE | L-04: «Pregúntale al paciente» · «Pregunta al informante disponible». L-09: «Fuente de información: {fuente}». L-10, segunda frase: «El paciente no puede responder por ahora. Las preguntas se dirigen al informante disponible.» El resto, aprobado |
+| XR-12 y XR-13 | APPROVE | — |
+| XR-14 | REVISE | T-08: «— inicio {hh:mm} · último ajuste {hh:mm}», sin «(ajustado)». T-06: «Sedación para el procedimiento: etomidato {n} mg en total + midazolam {n} mg en total». El resto, aprobado |
+
+- **Cuentas:** de las 28 decisiones consolidadas, 14 decididas (9 APPROVE y 5 REVISE) y 14 por decidir. De las 105
+  originales de X-1, 67 decididas y 38 por decidir, todas en el lote 2.
+- **Contradicción informada, sin resolver (L-09):** «Fuente de información» choca con «Fuente de la historia», la
+  etiqueta que la docencia fijó el 2026-09-26 (C-2026-09-26-25) y que la sala usa también en la línea de llegada. El
+  corpus de la validación externa lee ese mismo marco y no se toca. Opciones y recomendación en X-1, §12.2 (XR-11). No
+  se eligió.
+- **Hallazgo al preparar el lote 2, sin cambiar código:** X1-C11 y las tres frases de X1-C30 ya salen enteras en
+  español (`language.py`); el inventario las había contado entre las que faltan. Se decide entre el español activo y
+  el borrador (XR-15 y XR-22).
+- **Siguiente lote:** X-1, lote 2 (XR-15 a XR-28; X-1, §12.3).
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). Del borrador del español de X-1, 7 de 105 decididas; las 98 restantes, consolidadas en 28 decisiones en dos lotes (`docs/revision/X1_ESPANOL_PROPUESTO.md`, §12) | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). Del borrador del español de X-1, 67 de 105 decididas (el lote 1, XR-01 a XR-14, el 2026-10-07); las 38 restantes, en el lote 2 (XR-15 a XR-28; `docs/revision/X1_ESPANOL_PROPUESTO.md`, §12.3). Abierta: la contradicción de L-09 con C-2026-09-26-25 (§12.2) | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,
 `CIERRE_PREPILOTO.md` y `GUIA_DOCENTE_PILOTO.md`, frente a los 30 del manifiesto (F0-2; el preflight ya dice 30);
 la guía docente dice que un fármaco sin verbo «puede perderse sin aviso»; ninguna guía describe la conducta nueva
-de la sala.
+de la sala. Desde el 2026-10-07 (X-1, §12.2): L-09, «Fuente de información», frente a «Fuente de la historia»,
+fijada por C-2026-09-26-25.
 
 ## Cierre de la Fase 0 (2026-10-06)
 

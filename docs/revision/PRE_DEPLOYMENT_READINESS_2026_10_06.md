@@ -308,6 +308,10 @@ decisiones del paquete. H-62 e I-63 siguen sin firma a propósito, hasta el cand
 bloqueado: falta X-1 (98 de 105 decisiones, consolidadas en 28), la revisión del relato y de la rúbrica en español,
 implementar lo decidido y verificar el candidato (Decision File, decimoctava actualización).
 
+**Actualización del 2026-10-07 (B-5, lote 1 de X-1):** XR-01 a XR-14 quedan decididas: 9 APPROVE y 5 REVISE, sin
+implementar. De X-1 quedan 38 de 105 decisiones, en el lote 2, y una contradicción abierta (L-09). B-5 sigue
+bloqueado (Decision File, decimonovena actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

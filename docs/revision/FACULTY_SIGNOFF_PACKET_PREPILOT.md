@@ -220,7 +220,8 @@ desvíos están en `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1.
 
 - **Bloquean:** las 100 decisiones requeridas de la sección 2. Si se difiere un texto activo, hace falta además su acuerdo expreso de pilotear con él sin firma.
   - **Actualización del 2026-10-07:** las 100 están decididas. B-5 sigue bloqueado por:
-    - las 98 decisiones que faltan del español de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`, §12);
+    - las 38 decisiones que faltan del español de X-1, en su lote 2 (`docs/revision/X1_ESPANOL_PROPUESTO.md`, §12.3;
+      el lote 1 quedó decidido el 2026-10-07), y la contradicción abierta de L-09 (§12.2);
     - la revisión del relato y de la rúbrica en español, antes de congelar;
     - implementar lo decidido (los 7 REVISE, X-1 y las claves internas) y verificar el candidato final;
     - sobre ese candidato, la firma de H-62 e I-63.

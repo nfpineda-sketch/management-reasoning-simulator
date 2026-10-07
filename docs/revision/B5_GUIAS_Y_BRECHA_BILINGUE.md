@@ -606,6 +606,11 @@ dos lotes de 14:
 El lote 1 (XR-01 a XR-14) reúne lo que se ve en cada turno del manejo activo e incluye V-9, los nombres de fármacos
 en español, redactada para este lote.
 
+**Lote 1, decidido el 2026-10-07 (docente):** 9 APPROVE y 5 REVISE (XR-01, XR-07, XR-10, XR-11 y XR-14), con el
+texto final en el §12.2 de X-1 y en la fila de cada miembro. XR-05 queda con la opción b: la pregunta repite el
+fármaco que el residente nombró. L-09 abre una contradicción con C-2026-09-26-25, a decisión docente. El lote 2
+(XR-15 a XR-28) está en el §12.3; al prepararlo se vio que X1-C11 y X1-C30 ya tienen español activo.
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -624,13 +629,14 @@ en español, redactada para este lote.
 ## 5. Decisiones pendientes
 
 Actualizado el 2026-10-07, con las 100 decisiones docentes del paquete, los estados límite de la 49m, el alcance y
-las bases de X-1, el relato, la rúbrica y las guías (Decision File, octava a decimoctava actualizaciones).
+las bases de X-1 y su lote 1, el relato, la rúbrica y las guías (Decision File, octava a decimonovena
+actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
-2. **Firmar el resto del español que X-1 exige** (`docs/revision/X1_ESPANOL_PROPUESTO.md`): 98 de 105 decisiones,
-   consolidadas el 2026-10-07 en 28, en dos lotes (§12 de ese documento; el primero, XR-01 a XR-14). V-9, los
-   nombres de fármacos en español, quedó redactada en XR-06.
+2. **Firmar el resto del español que X-1 exige** (`docs/revision/X1_ESPANOL_PROPUESTO.md`): 38 de 105 decisiones,
+   el lote 2 (XR-15 a XR-28, §12.3 de ese documento). El lote 1 quedó decidido el 2026-10-07, con V-9 aprobada
+   (XR-06). **Falta decidir** la contradicción de L-09 con C-2026-09-26-25 (§12.2, XR-11).
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
    revisión.
