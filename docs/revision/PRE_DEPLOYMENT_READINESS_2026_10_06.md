@@ -55,6 +55,13 @@ los resultados del Mac (sección 18).
   el fixture de PostgreSQL.
 - Sigue **NOT READY FOR DEPLOYMENT**.
 
+**Actualizado por sexta vez el 2026-10-07** (corrida final en el proveedor): **B-1 RESUELTO** (sección 20).
+- **Corrida única en Neon:** 23 passed en 2208.13 s, sin fallas, errores ni omisiones.
+- **Destino:** PostgreSQL 17.11, endpoint *pooled* de `pilot-b1-validation`, TLS, y `TARGET OK` antes y después.
+- **SHA probado:** `8ff41a45a6ce60dfc652149b2ef774424304e49a`. Respecto de `e200ccc` sólo cambia el límite de AppTest
+  en el fixture de PostgreSQL (de 180 s a 300 s); el runtime no cambia.
+- Sigue **NOT READY FOR DEPLOYMENT**: queda B-5.
+
 Fuente de verdad del congelamiento: el manifiesto ejecutable `docs/revision/PILOT_FREEZE_MANIFEST.md` (generado de
 `pilot_freeze.py`). Donde un texto lo contradice, se informa en la sección 10.2 y no se corrige aquí.
 
@@ -411,7 +418,7 @@ son las 83 de siempre más las 10 de PostgreSQL, que corren aparte (9.2).
 
 | # | Estado (2026-10-06) | Bloqueo | Por qué bloquea | Lo más pequeño que lo resuelve | ¿Invalida verificación de la Fase 0? |
 |---|---|---|---|---|---|
-| B-1 | **STILL BLOCKED** (2026-10-07; sección 19): en Neon con PostgreSQL 17.11, 21 passed y 2 errors por el límite de 180 s de AppTest (latencia; las dos pasaron solas). Falta una corrida única 23/23. Antes, READY TO EXECUTE (sección 18) y BLOCKED (sección 17) | Prueba PostgreSQL del proveedor sin una corrida 23/23 | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
+| B-1 | **RESUELTO** (2026-10-07; sección 20): corrida única en Neon (PostgreSQL 17.11, endpoint *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, STILL BLOCKED (sección 19), READY TO EXECUTE (sección 18) y BLOCKED (sección 17) | Prueba PostgreSQL del proveedor sin correr | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
 | B-2 | **RESUELTO** (2026-10-07; sección 16) con los datos confirmados en los proveedores. Antes, BLOCKED (sección 15) | Entorno de destino sin identificar | No se sabe qué app, qué rama, qué base ni qué Python | Nombrar la app y la base del piloto; crear la app con Python 3.11; desplegar una rama propia fija en el commit aprobado (3.2) | No |
 | B-3 | **RESUELTO** (`87bbbe1`; 14.1): opción (b), el preflight corregido; el runtime no cambió | El preflight puede dar «LISTA» con la app fuera de la configuración congelada (3.3 y 5.2) | El gate del runbook (paso 3) no garantiza lo que dice | **Decisión:** (a) procedimiento: `OPENAI_API_KEY` ausente, valores entre comillas y todo AVISO de los indicadores del manifiesto tratado como FALLA; o (b) corrección del preflight (sólo la herramienta, no el runtime): tratar un valor TOML no textual como ausente, como hace Streamlit, y volver obligatorias las reglas que el manifiesto exige (cambia `test_a_recommendation_warns_and_never_fails`) | No (no toca el runtime) |
 | B-4 | **RESUELTO** (`4d570a8`; 14.2): `streamlit==1.64.0`. Python 3.11 se elige al crear la app y queda en B-2 | Dependencias sin fijar: Streamlit `>=1.41,<2` (hoy instalaría 1.65.0) y Python sin fijar | El envío seguro depende de la secuencia de reruns de Streamlit; una versión que aparezca durante el piloto entraría en el próximo reinicio | **Decisión:** fijar en `requirements.txt` una versión verificada, `streamlit==1.64.0` (la de la suite completa) o `1.65.0` (verificada hoy sólo en la Fase 0 y en 0D, 9.4), y crear la app con Python 3.11. Es un commit de dependencias; el runtime no cambia | No con 1.64.0. Con 1.65.0, la suite completa con esa versión |
@@ -510,13 +517,13 @@ registro del encuentro: es una limitación declarada, no un defecto nuevo.
 
 ## 12. GO / NO-GO
 
-Estado actualizado el 2026-10-07, después de resolver B-3, B-4 y B-6 (2026-10-06) y B-2 (2026-10-07). Lo que valía
+Estado actualizado el 2026-10-07, después de resolver B-3, B-4 y B-6 (2026-10-06) y B-2 y B-1 (2026-10-07). Lo que valía
 sobre `009aadb` se conserva en la columna «Por qué».
 
 | Categoría | Estado | Por qué |
 |---|---|---|
 | A · Código y pruebas | **PASS** (sujeto a 14.4) | Sobre `009aadb`: suite completa 7.578/0, Fase 0 completa y prueba de humo automática en verde, y 2 de 56 regresiones activas fallaban (B-6). Ahora: 56 de 56 y las pruebas focalizadas en verde (14.4). La suite completa sobre el candidato final se corre después de este commit y se informa en la entrega del encargo: si no da 0 fallas, esta fila no vale |
-| B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado. Proveedor (Neon, PostgreSQL 17.11): 21 passed y 2 errors por el límite de tiempo del arnés; falta una corrida única 23/23 (sección 19) |
+| B · Base de datos | PASS WITH DECLARED LIMITATION | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado. Proveedor (Neon, PostgreSQL 17.11, *pooled*, TLS): 23 de 23 en una corrida única sobre `8ff41a4` (B-1, sección 20). Limitación: el respaldo en PostgreSQL 17 no se probó (TD-76) |
 | C · Configuración congelada | **BLOCKED** | El gate ya es confiable: falla cerrado ante cualquier exigencia del manifiesto (B-3 resuelto, 14.1). Falta correrlo con los Secrets reales del piloto, antes y después de crear la app (pasos 10 y 11 del contrato, 16.4 y 16.11) |
 | D · Enrutamiento | PASS WITH DECLARED LIMITATION | 30 aceptados, excluido y PS001 fuera (5.1); `MRS_DEFAULT_VARIANT` sólo lo cierra la configuración (5.2), y el preflight falla si está definido (14.1) |
 | E · Idioma y firmas docentes | **BLOCKED** | Todas pendientes (sección 6; B-5) |
@@ -528,14 +535,13 @@ sobre `009aadb` se conserva en la columna «Por qué».
 
 ## 13. Recomendación
 
-**NOT READY FOR DEPLOYMENT.** Bloquean B-1 (STILL BLOCKED: falta una corrida única 23/23 en el proveedor, sección
-19) y B-5 (BLOCKED).
-- B-3, B-4 y B-6 se resolvieron el 2026-10-06 (sección 14), y B-2 el 2026-10-07 (sección 16).
+**NOT READY FOR DEPLOYMENT.** Sólo bloquea B-5 (BLOCKED): las firmas docentes (sección 6; detalle en 20.5).
+- B-3, B-4 y B-6 se resolvieron el 2026-10-06 (sección 14); B-2 y B-1, el 2026-10-07 (secciones 16 y 20).
 - Al escribir la primera versión de este documento bloqueaban B-1 a B-6.
 
 - El runtime de `009aadb` no mostró un defecto de conducta: la suite completa, la Fase 0, PostgreSQL con TLS, el
   simulacro de respaldo y la prueba de humo automática pasan, y el envío seguro se comporta igual con Streamlit 1.65.0.
-- Falta: una corrida única 23/23 en el proveedor (B-1, sección 19) y las firmas (B-5). Después, el contrato de
+- Falta: las firmas docentes (B-5). Después, el contrato de
   promoción (16.4), con el preflight sobre los Secrets reales del piloto.
 - B-3, B-4 y B-6 se resolvieron sin cambiar la conducta del runtime: el preflight (una herramienta que la app no
   importa), la versión de Streamlit con que ya se había verificado todo y dos scripts de regresión (sección 14).
@@ -2018,3 +2024,97 @@ corrida única no es fiable (19.2).
 - Si la rama `pilot-b1-validation` ya venció, se vuelve a crear igual (18.1 y 18.3).
 - **B-5: BLOCKED.**
 - Sigue **NOT READY FOR DEPLOYMENT**.
+
+## 20. B-1 resuelto (2026-10-07)
+
+Encargo: registrar la corrida final en el proveedor y reevaluar la preparación. **B-1: RESUELTO.** Sigue **NOT READY
+FOR DEPLOYMENT**: queda B-5.
+
+### 20.1 Evidencia, informada por la persona responsable
+
+| Qué | Resultado |
+|---|---|
+| SHA probado | `8ff41a45a6ce60dfc652149b2ef774424304e49a` |
+| Entorno | Python 3.11.9, Streamlit 1.64.0 y psycopg 3.3.6, con `HOME` aislado |
+| Proveedor | Neon: proyecto `management-reasoning-simulator`, rama `pilot-b1-validation` («schema only»), base `mrs_b1` |
+| Conexión | Endpoint *pooled* del cómputo de la rama, PostgreSQL 17.11, TLS |
+| Destino antes | `TARGET OK`: el cómputo coincide, la base es `mrs_b1`, el rol es su dueño, versión 17, TLS |
+| Corrida única de las cuatro pruebas | **23 passed in 2208.13s (0:36:48)**: 23 resultados, sin fallas, errores ni omisiones |
+| Destino después | `TARGET OK`, con lo mismo, servidor 17.11 y 16 tablas en `public` |
+| Fecha | 2026-10-07 |
+
+### 20.2 Frente a la aceptación vigente
+
+| Criterio (16.8 y 18.8) | Evidencia |
+|---|---|
+| 23 passed, 0 failed, 0 errors y 0 skipped, en una sola corrida | La corrida final (20.1) |
+| La URL *pooled*, la que usará la app (16.8 y 18.4) | El endpoint termina en `-pooler`, antes y después |
+| PostgreSQL 17 y TLS | 17.11 y `client TLS: True` |
+| `TARGET OK` antes y después, con producción sin tocar | Antes y después, el cómputo es el de `pilot-b1-validation` |
+| Base vacía antes del arranque, y arranque con `check_database.py` | Se mostró en la primera corrida, sobre la misma base (19.1): 0 tablas antes; «Connected.», el usuario puede crear tablas y el store abrió; 7 tablas después. En la corrida final, cada prueba recrea el esquema vacío por la URL *pooled* |
+| Ningún registro con secretos | La evidencia que llegó aquí no trae URL, contraseña ni host completo. El conteo del paso 6 no se informó: hay que confirmarlo al archivar la evidencia |
+
+Esa corrida cubre A–G, H (esquema), I (PostgreSQL 17), J (TLS y proveedor) y K (transacciones y revisiones), según la
+tabla de 18.7.
+
+### 20.3 El candidato
+
+- **El candidato de B-1 es `8ff41a4`.** Fuera de `docs/`, lo único que cambia respecto de `e200ccc` es la línea 77
+  de `test_phase0_submission_guard_on_postgres.py` (de 180 s a 300 s; 19.4). El código de runtime es el mismo.
+- **Si las firmas de B-5 cambian un texto activo, el candidato final cambia.** El contrato de promoción (16.4, pasos
+  3 a 5) vuelve a correr la suite, las regresiones y B-1 sobre ese SHA.
+
+### 20.4 La rama de Neon
+
+- **`pilot-b1-validation` sigue siendo descartable y está lista para limpiarse.** Desde aquí no se borró, y borrarla
+  requiere autorización.
+- **Producción no se tocó:** todas las conexiones fueron al cómputo de esta rama.
+
+### 20.5 Qué queda: B-5
+
+Ninguna firma está hecha (sección 6). Las 64 filas de `docs/revision/CIERRE_PREPILOTO.md` (sección 2) siguen con «☐».
+
+**Antes de construir el candidato final:**
+
+| Filas | Qué | Estado | Dónde |
+|---|---|---|---|
+| 1–18 | R-4: 18 frases del motor | 1–11 en borrador, 12–18 activas | `docs/revision/R4_FRASES_MOTOR.md` |
+| 19–26 | Notas de la TEP y aviso del sangrado | Activas | `CIERRE_PREPILOTO.md` |
+| 27–38 | Líneas del examen y rótulos del E-FAST | En inglés, activos; en español, con el relato | `CIERRE_PREPILOTO.md` |
+| 39–44 | Límites declarados | Activos en inglés | `CIERRE_PREPILOTO.md` |
+| 45–46 | C14 de la 52m y de la 70f | Activos en inglés | `CIERRE_PREPILOTO.md` |
+| 47–60 | R-2: 14 fichas POCUS C14 YES | — | `docs/revision/R2_POCUS_C14.md` |
+| 61 | R-3: TDFC final | — | `docs/tdfc/TDFC_TABLA_FINAL.md` |
+| 62–63 | Guía docente y guía del residente | Hay que actualizarlas antes de firmar: no describen lo que cambió la Fase 0 (10.2-c) | `docs/GUIA_DOCENTE_PILOTO.md`, `docs/GUIA_RESIDENTE_PILOTO.md` |
+| 64 | Aviso de la foto | En inglés, activo; en español, en borrador | `CIERRE_PREPILOTO.md` |
+| F0-11 | 19 frases nuevas de la Fase 0, si el piloto corre en español | Activas | `docs/revision/F0_11_FRASES_ES.md` |
+
+**Después del despliegue, en la app:**
+- los relatos de los casos en español, aprobados en el tablero docente de la base desplegada antes de jugar en
+  español;
+- los descriptores de la rúbrica en español; sin aprobación, se muestran en inglés.
+
+**Y la condición C:** la autorización explícita del piloto (Decision File).
+
+### 20.6 Estado
+
+**Bloqueos:**
+- B-1, B-2, B-3, B-4 y B-6: RESUELTOS;
+- **B-5: BLOCKED.**
+
+**NOT READY FOR DEPLOYMENT.** Después de B-5 viene el contrato de promoción (16.4):
+1. el candidato final;
+2. la suite y las regresiones;
+3. B-1 de nuevo, si cambió el SHA;
+4. la rama del piloto;
+5. los Secrets, con TD-75;
+6. el preflight;
+7. el despliegue;
+8. la prueba de humo, que incluye el primer encuentro sobre la base vacía (TD-78);
+9. las fotos (TD-56);
+10. el GO explícito.
+
+**Sin corregir, sin bloquear el despliegue:**
+- TD-76: el respaldo en PostgreSQL 17, antes del primer respaldo con datos;
+- TD-77: el aislamiento de los Secrets en las pruebas;
+- TD-78: el primer encuentro sobre una base vacía.

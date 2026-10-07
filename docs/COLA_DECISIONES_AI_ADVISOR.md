@@ -7,8 +7,8 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
 - **Actualizado:** 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
-  2026-10-07, con los datos confirmados en los proveedores; siguen B-1, bloqueado porque la corrida en el proveedor dio
-  21 passed y 2 errors por el límite de tiempo del arnés, y B-5, bloqueado). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
+  2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
+  corrida única 23/23 en Neon, y sigue B-5, bloqueado). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
@@ -126,9 +126,21 @@ Sigue pendiente de ti:
   - El cambio es subir a 300 s el `default_timeout` del fixture de `test_phase0_submission_guard_on_postgres.py`.
   - Es sólo de pruebas y no toca la Fase 0.
 
+**Actualizado por sexta vez el 2026-10-07: B-1 RESUELTO** (informe, sección 20).
+
+- **Corrida única en Neon:** 23 passed en 2208.13 s, sin fallas, errores ni omisiones.
+- **Destino:** PostgreSQL 17.11, endpoint *pooled* de `pilot-b1-validation`, TLS, y `TARGET OK` antes y después.
+- **SHA probado:** `8ff41a45a6ce60dfc652149b2ef774424304e49a`.
+  - Respecto de `e200ccc`, sólo cambia el límite de AppTest en el fixture de PostgreSQL, de 180 s a 300 s, aprobado
+    el 2026-10-07.
+  - El runtime es el mismo.
+- **La rama `pilot-b1-validation`:** sigue siendo descartable y está lista para limpiarse con autorización. No se
+  borró.
+- **Queda B-5:** las firmas docentes (informe, 20.5).
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
-| B-1 | **Bloqueado** (2026-10-07; informe, sección 19): en Neon, 21 passed y 2 errors por el límite de 180 s de AppTest (latencia medida; las dos pasaron solas). Antes, listo para ejecutar (sección 18) | Una corrida única 23/23 en el proveedor, por la URL pooled | Autorizar subir a 300 s ese límite en el fixture de PostgreSQL (sólo pruebas), o correr desde un equipo con menos latencia |
+| B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
