@@ -1,6 +1,7 @@
 # B-5 · Relato en español · Lote R3A: TEP y bradicardias (casos 1 a 3)
 
-> **PARA REVISIÓN DOCENTE. Nada implementado.** Primera mitad del lote R3 de la revisión del relato
+> **DECIDIDO por la docencia el 2026-10-07: los 3 casos, APPROVE WHOLE CASE. Nada implementado.** Primera mitad
+> del lote R3 de la revisión del relato
 > (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`). La docencia pidió R3 en dos mitades el 2026-10-07, como R1 y R2.
 > Se sigue el orden canónico del banco (`clinical_cases.FAMILIES`: TEP, después bradicardias; el mismo del manifiesto,
 > `pilot_freeze.CASES`):
@@ -15,6 +16,9 @@
 
 **En una mirada**
 
+- **Decidido (docente, 2026-10-07):** 3 de 3 casos aprobados, cada uno en la versión exacta revisada (la del repositorio). El
+  relato del piloto suma 15 de 30 casos. Si la implementación cambia el hash de un caso aprobado, se detiene y
+  vuelve a revisión docente.
 - **Pasajes:** 3 casos y 110 pasajes. 53 están cubiertos por frases del lote 0, ya aprobadas; **57 son propios y se
   revisan** (18, 20 y 19).
 - **Corpus de la validación externa:** ninguno de los 3 casos está en él, así que no hay pasajes fijos en este lote.
@@ -62,7 +66,7 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/associated_symptom
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Ya dice «crépitos» (T-1), así que no cambia nada.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `d3a826e9c4679a8944e2a5eb5e174f36ba800ca0c91a48bd7a14f8afbe05e5ab`. El texto aprobado es el del repositorio y de este documento: «Defectos de llenado agudos lobares y segmentarios en las arterias pulmonares derecha e izquierda. Leve aumento de tamaño del VD.» El «derechas e izquierdas» que apareció en el chat fue un error de transcripción y no es parte de la versión aprobada.
 
 ## pulmonary_embolism_61m
 
@@ -97,7 +101,7 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Ya dice «crépitos» (T-1) y «defensa muscular» (T-2; la misma forma que en los dos casos de hemorragia digestiva), así que no cambia nada. Revisado a la luz de P-1: «crushing pressure» → «presión opresiva» no reproduce el problema de la 24f, porque este caso no usa «opresión» para otro síntoma, y «opresiva» conserva el sentido (una presión de tipo coronario, que el paciente niega).
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `71c15c2b2811acd747993f8bb4e5d6f0cad5083ceaf035655fe7aba055ebd714`. Se conservan «defensa muscular» (clínicamente equivalente a T-2; no requiere cambio) y «presión opresiva sostenida» (P-1 de `asthma_24f` no se aplica aquí: el caso no crea la misma contradicción con «opresión»).
 
 ## bradycardia_ccb_68m
 
@@ -131,16 +135,15 @@ Cubiertos por el lote 0: `/history_source` (L0-31), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Ningún término de T-1 a T-3 aparece en el caso.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `10b926936212c922ccd2a3ce699c4d87df4f76d4c50e456bbf0c628d3f8932c4`.
 
 ## Resumen del lote R3A
 
 | Caso | Propios | Cubiertos por el lote 0 | Fijos del corpus | Versión objetivo que se aprueba | Recomendación | Decisión docente |
 |---|---|---|---|---|---|---|
-| `pulmonary_embolism_33f` | 18 | 19 | 0 | `d3a826e9…` (sin cambios) | APPROVE | ☐ |
-| `pulmonary_embolism_61m` | 20 | 16 | 0 | `71c15c2b…` (sin cambios) | APPROVE | ☐ |
-| `bradycardia_ccb_68m` | 19 | 18 | 0 | `10b92693…` (sin cambios) | APPROVE | ☐ |
+| `pulmonary_embolism_33f` | 18 | 19 | 0 | `d3a826e9…` (sin cambios) | APPROVE | ☒ APPROVE |
+| `pulmonary_embolism_61m` | 20 | 16 | 0 | `71c15c2b…` (sin cambios) | APPROVE | ☒ APPROVE |
+| `bradycardia_ccb_68m` | 19 | 18 | 0 | `10b92693…` (sin cambios) | APPROVE | ☒ APPROVE |
 | **Total** | **57** | **53** | **0** | | | |
 
-Siguiente: R3B (`bradycardia_avb3_78f`, `bradycardia_bb_54f` y `bradycardia_hyperk_63m`), después de la decisión
-docente sobre R3A.
+Siguiente: R3B (`bradycardia_avb3_78f`, `bradycardia_bb_54f` y `bradycardia_hyperk_63m`), en `docs/revision/B5_RELATO_R3B.md`.

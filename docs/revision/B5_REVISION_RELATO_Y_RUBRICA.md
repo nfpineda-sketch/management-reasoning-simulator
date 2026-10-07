@@ -281,3 +281,10 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
   TEP, después bradicardias). R3A (`pulmonary_embolism_33f`, `pulmonary_embolism_61m` y `bradycardia_ccb_68m`),
   entregado para revisión: `docs/revision/B5_RELATO_R3A.md`. R3B: `bradycardia_avb3_78f`, `bradycardia_bb_54f` y
   `bradycardia_hyperk_63m`.
+- **R3A, decidido (2026-10-07):** APPROVE WHOLE CASE en `pulmonary_embolism_33f` (`d3a826e9…`; el texto aprobado
+  es el del repositorio, «…arterias pulmonares derecha e izquierda…»; el «derechas e izquierdas» del chat fue un
+  error de transcripción), `pulmonary_embolism_61m` (`71c15c2b…`; se conservan «defensa muscular», equivalente a
+  T-2, y «presión opresiva sostenida», donde P-1 no se aplica) y `bradycardia_ccb_68m` (`10b92693…`). Las 3
+  versiones son las del repositorio. Van 15 de 30 casos. Si la implementación cambia el hash de un caso aprobado,
+  se detiene y vuelve a revisión docente.
+- **R3B, entregado para revisión:** `docs/revision/B5_RELATO_R3B.md`. Trae la comprobación pedida de T-3, V-9 y K-E6, sin conflicto.

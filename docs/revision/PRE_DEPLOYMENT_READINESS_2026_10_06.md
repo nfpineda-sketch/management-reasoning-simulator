@@ -344,6 +344,10 @@ cada uno en su versión objetivo (9 de 30). R2B está en revisión. Sin `approva
 con P-1), cada uno en su versión objetivo. El bloque respiratorio queda entero y el relato suma 12 de 30 casos. R3A
 está en revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File, vigesimoséptima actualización).
 
+**Actualización del 2026-10-07 (B-5, R3A del relato):** la docencia aprobó los 2 casos de TEP y la 68m, cada uno en
+su versión exacta (15 de 30). R3B está en revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File,
+vigesimoctava actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 
