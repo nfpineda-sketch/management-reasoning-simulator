@@ -36,6 +36,16 @@ TEST ENVIRONMENT FAILURE.
 - Siguiente acción: correr B-1 desde un equipo con red directa (sección 17).
 - Sigue **NOT READY FOR DEPLOYMENT**.
 
+**Actualizado por cuarta vez el 2026-10-07** (rama de B-1 creada a mano): **B-1 READY TO EXECUTE**, a la espera de
+los resultados del Mac (sección 18).
+- La rama `pilot-b1-validation` se creó a mano en la consola: PostgreSQL 17, «Branch schema only», sin datos de
+  producción y con borrado automático al día.
+- Candidato de B-1: `e200cccc6487af807cab419595baed5b15dd6179`, el último commit de runtime y dependencias. Llega al
+  Mac en un `git bundle`, sin push.
+- El procedimiento del Mac se ensayó aquí de punta a punta. Suma dos resguardos: un `HOME` vacío y la comprobación
+  del cómputo de la rama.
+- Sigue **NOT READY FOR DEPLOYMENT**.
+
 Fuente de verdad del congelamiento: el manifiesto ejecutable `docs/revision/PILOT_FREEZE_MANIFEST.md` (generado de
 `pilot_freeze.py`). Donde un texto lo contradice, se informa en la sección 10.2 y no se corrige aquí.
 
@@ -392,7 +402,7 @@ son las 83 de siempre más las 10 de PostgreSQL, que corren aparte (9.2).
 
 | # | Estado (2026-10-06) | Bloqueo | Por qué bloquea | Lo más pequeño que lo resuelve | ¿Invalida verificación de la Fase 0? |
 |---|---|---|---|---|---|
-| B-1 | **BLOCKED** (2026-10-07; sección 17): TEST ENVIRONMENT FAILURE. Este entorno no llega a Neon; no se creó nada. Procedimiento listo (16.8 y 16.9), a correr desde un equipo con red directa | Prueba PostgreSQL del proveedor no corrida (BLOCKED / NOT RUN) | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
+| B-1 | **READY TO EXECUTE** (2026-10-07; sección 18): la rama `pilot-b1-validation` se creó a mano; candidato `e200ccc`; el procedimiento del Mac se ensayó aquí. Faltan los resultados. Antes, BLOCKED (sección 17) | Prueba PostgreSQL del proveedor no corrida (NOT YET EXECUTED) | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
 | B-2 | **RESUELTO** (2026-10-07; sección 16) con los datos confirmados en los proveedores. Antes, BLOCKED (sección 15) | Entorno de destino sin identificar | No se sabe qué app, qué rama, qué base ni qué Python | Nombrar la app y la base del piloto; crear la app con Python 3.11; desplegar una rama propia fija en el commit aprobado (3.2) | No |
 | B-3 | **RESUELTO** (`87bbbe1`; 14.1): opción (b), el preflight corregido; el runtime no cambió | El preflight puede dar «LISTA» con la app fuera de la configuración congelada (3.3 y 5.2) | El gate del runbook (paso 3) no garantiza lo que dice | **Decisión:** (a) procedimiento: `OPENAI_API_KEY` ausente, valores entre comillas y todo AVISO de los indicadores del manifiesto tratado como FALLA; o (b) corrección del preflight (sólo la herramienta, no el runtime): tratar un valor TOML no textual como ausente, como hace Streamlit, y volver obligatorias las reglas que el manifiesto exige (cambia `test_a_recommendation_warns_and_never_fails`) | No (no toca el runtime) |
 | B-4 | **RESUELTO** (`4d570a8`; 14.2): `streamlit==1.64.0`. Python 3.11 se elige al crear la app y queda en B-2 | Dependencias sin fijar: Streamlit `>=1.41,<2` (hoy instalaría 1.65.0) y Python sin fijar | El envío seguro depende de la secuencia de reruns de Streamlit; una versión que aparezca durante el piloto entraría en el próximo reinicio | **Decisión:** fijar en `requirements.txt` una versión verificada, `streamlit==1.64.0` (la de la suite completa) o `1.65.0` (verificada hoy sólo en la Fase 0 y en 0D, 9.4), y crear la app con Python 3.11. Es un commit de dependencias; el runtime no cambia | No con 1.64.0. Con 1.65.0, la suite completa con esa versión |
@@ -497,7 +507,7 @@ sobre `009aadb` se conserva en la columna «Por qué».
 | Categoría | Estado | Por qué |
 |---|---|---|
 | A · Código y pruebas | **PASS** (sujeto a 14.4) | Sobre `009aadb`: suite completa 7.578/0, Fase 0 completa y prueba de humo automática en verde, y 2 de 56 regresiones activas fallaban (B-6). Ahora: 56 de 56 y las pruebas focalizadas en verde (14.4). La suite completa sobre el candidato final se corre después de este commit y se informa en la entrega del encargo: si no da 0 fallas, esta fila no vale |
-| B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado. Proveedor (Neon, PostgreSQL 17): B-1 BLOCKED, sin correr; este entorno no llega al proveedor (sección 17) |
+| B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado. Proveedor (Neon, PostgreSQL 17): B-1 READY TO EXECUTE desde el Mac, todavía sin resultados (sección 18) |
 | C · Configuración congelada | **BLOCKED** | El gate ya es confiable: falla cerrado ante cualquier exigencia del manifiesto (B-3 resuelto, 14.1). Falta correrlo con los Secrets reales del piloto, antes y después de crear la app (pasos 10 y 11 del contrato, 16.4 y 16.11) |
 | D · Enrutamiento | PASS WITH DECLARED LIMITATION | 30 aceptados, excluido y PS001 fuera (5.1); `MRS_DEFAULT_VARIANT` sólo lo cierra la configuración (5.2), y el preflight falla si está definido (14.1) |
 | E · Idioma y firmas docentes | **BLOCKED** | Todas pendientes (sección 6; B-5) |
@@ -509,14 +519,14 @@ sobre `009aadb` se conserva en la columna «Por qué».
 
 ## 13. Recomendación
 
-**NOT READY FOR DEPLOYMENT.** Bloquean B-1 (BLOCKED: no corrió en el proveedor, sección 17) y B-5 (BLOCKED).
+**NOT READY FOR DEPLOYMENT.** Bloquean B-1 (READY TO EXECUTE: falta correrlo en el proveedor desde el Mac, sección
+18) y B-5 (BLOCKED).
 - B-3, B-4 y B-6 se resolvieron el 2026-10-06 (sección 14), y B-2 el 2026-10-07 (sección 16).
 - Al escribir la primera versión de este documento bloqueaban B-1 a B-6.
 
 - El runtime de `009aadb` no mostró un defecto de conducta: la suite completa, la Fase 0, PostgreSQL con TLS, el
   simulacro de respaldo y la prueba de humo automática pasan, y el envío seguro se comporta igual con Streamlit 1.65.0.
-- Falta: la prueba en el proveedor (B-1, preparada en 16.8 y 16.9; se corre desde un equipo con red directa, sección
-  17.4) y las firmas (B-5). Después, el contrato de
+- Falta: la prueba en el proveedor (B-1, lista para correr desde el Mac, sección 18) y las firmas (B-5). Después, el contrato de
   promoción (16.4), con el preflight sobre los Secrets reales del piloto.
 - B-3, B-4 y B-6 se resolvieron sin cambiar la conducta del runtime: el preflight (una herramienta que la app no
   importa), la versión de Streamlit con que ya se había verificado todo y dos scripts de regresión (sección 14).
@@ -1465,3 +1475,400 @@ empezar.
 **Alternativa, sin verificar:** dar a una sesión de este entorno un conector de Neon o un token guardado como variable
 del entorno, y una red que permita `console.neon.tech` y conexiones directas a 5432. Hoy el contenedor no tiene salida
 TCP fuera del 443, y no se sabe si la configuración de red lo permite. Por eso se recomienda el Mac.
+
+## 18. B-1 listo para correr desde el Mac (2026-10-07)
+
+Encargo: completar B-1 hasta donde lo permite este entorno. **B-1: READY TO EXECUTE.** Faltan la corrida en el Mac y su
+evidencia; no se declara resuelto antes. Esta sección reemplaza, para B-1, el procedimiento de 16.8.
+
+### 18.1 La rama de Neon
+
+**Creada a mano y confirmada en la consola por la persona responsable:**
+- proyecto `management-reasoning-simulator`, con PostgreSQL 17;
+- rama `pilot-b1-validation`, con madre `production` y en modo «Branch schema only»;
+- sin datos de producción;
+- borrado automático al día. **La corrida tiene que hacerse antes de que venza**; si vence, se vuelve a crear igual.
+
+**Desde este entorno no se pudo verificar.** Se volvió a comprobar hoy:
+- no hay conector de Neon;
+- el proxy rechaza `console.neon.tech` («CONNECT tunnel failed, response 403»);
+- no hay salida TCP a 5432.
+
+Por eso la rama se verifica desde el Mac, con la comprobación del destino (18.6, pasos 4 a 7). Desde aquí no se creó,
+cambió ni borró nada en Neon.
+
+### 18.2 SHA candidato
+
+| | SHA | Qué es |
+|---|---|---|
+| A · Último commit de runtime y dependencias | `e200cccc6487af807cab419595baed5b15dd6179` | El último que cambia algo fuera de `docs/`. Trae el preflight (`87bbbe1`), `streamlit==1.64.0` (`4d570a8`) y las regresiones (`e200ccc`). El código de la app es el de `009aadb` |
+| B · HEAD de documentación | El commit de esta actualización | Después de A sólo hay documentación |
+| C · Candidato de B-1 | `e200cccc6487af807cab419595baed5b15dd6179` | Es lo que se desplegaría, salvo `docs/`: `git diff e200ccc HEAD -- . ':(exclude)docs'` está vacío |
+
+- **A es lo que corre; B es lo que lo documenta.** B-1 se registra contra A.
+- No se usa `009aadb`, aunque esté en GitHub: no trae la fijación de Streamlit, el preflight ni las regresiones.
+- **GitHub sigue en `009aadb`** (comprobado con `git ls-remote`). Por eso el candidato viaja en un `git bundle`, sin
+  push. Esto reemplaza las dos opciones de 16.8 («Qué commit»).
+- En la promoción, el paso 5 del contrato (16.4) vuelve a correr B-1 sobre el SHA final.
+
+### 18.3 Base de B-1: una nueva y vacía, `mrs_b1`
+
+Lo decide lo que exige el repositorio, no una suposición:
+- **Las pruebas exigen una base desechable:** borran y recrean el esquema `public`, y para eso el rol tiene que ser
+  dueño de la base.
+- **El respaldo exige otra base vacía, `mrs_b1_drill`:** el simulacro llena la base que recibe y crea
+  `<base>_restored` a su lado.
+- **El piloto usará una base nueva, creada por la app** (16.10). B-1 tiene que repetir ese arranque. La base que la
+  rama copió trae las definiciones de tablas de producción, sin filas: arrancar ahí probaría una migración que el
+  piloto no hará.
+
+**Cómo crearla, en la consola de Neon:**
+1. En la rama `pilot-b1-validation`, ir a las bases de datos y elegir «New database».
+2. Nombre: `mrs_b1`.
+3. Dueño: el rol que la consola ofrece en «Connect» para esa rama, el mismo con que vas a conectarte. La comprobación
+   del destino exige `role owns database: True`.
+4. Para el respaldo opcional, crear también `mrs_b1_drill`, con el mismo dueño.
+
+No hace falta enviar ninguna contraseña.
+
+### 18.4 Qué se copia de la consola
+
+- **ID del cómputo de la rama:**
+  - está en la página de `pilot-b1-validation` y empieza con `ep-`;
+  - se escribe sin `-pooler`;
+  - no es secreto;
+  - la comprobación del destino lo exige: una URL de otra rama, producción incluida, no pasa.
+- **URL de `mrs_b1`:**
+  - en «Connect», elegir la rama `pilot-b1-validation`, la base `mrs_b1` y el rol dueño;
+  - con **Connection pooling activado**: es la URL *pooled*, la que usará la app (16.11);
+  - se copia la cadena que empieza con `postgresql://`, no el comando `psql`.
+- **URL de `mrs_b1_drill`, opcional:** igual, pero con el pooling **desactivado** (la directa).
+- **Dónde se pega:** cada URL va **sólo** en la terminal, cuando `read -rs` la pide; así no queda a la vista ni en el
+  historial. Nunca al chat, a un archivo ni a la documentación.
+
+### 18.5 Dos resguardos que 16.8 no tenía
+
+**HOME vacío para cada comando de Python.** Es un hallazgo de esta preparación:
+- el fixture de las pruebas de la Fase 0 sobre PostgreSQL le pasa la base a la app por una variable de entorno, y no
+  fija `at.secrets`;
+- sin `at.secrets`, Streamlit lee `~/.streamlit/secrets.toml`, y `account_portal._setting` prefiere ese archivo a la
+  variable;
+- si el Mac tiene ese archivo con `MRS_DATABASE_URL`, la app bajo prueba trabajaría sobre esa base y no sobre `mrs_b1`.
+
+**Se comprobó con una base señuelo (18.10):**
+- **Sin el `HOME` vacío**, `test_the_encounter_is_kept_in_postgresql` creó 7 tablas de cuentas (`mrs_users`,
+  `mrs_sessions` y otras) en la base que nombraba `~/.streamlit/secrets.toml`. Después falló al preparar el encuentro.
+- **Con el `HOME` vacío**, la base señuelo quedó con 0 tablas, y las 23 pruebas pasaron sobre `mrs_b1`.
+
+Si ese archivo nombrara producción o desarrollo, la prueba habría escrito ahí.
+
+Por eso el procedimiento corre cada comando de Python con `HOME` apuntando a una carpeta vacía. No se tocó el código.
+Queda como propuesta, sin hacer: que `conftest.py` aísle `HOME`, o que el fixture fije `at.secrets`.
+
+**El destino se comprueba antes de cada conexión y de cada escritura:**
+- los dos ayudantes leen el ID del cómputo en la URL **antes de conectarse**. Si no es el de `pilot-b1-validation`,
+  se detienen sin contactar el servidor, así que nunca se contacta otra rama, producción incluida;
+- después de conectarse, `b1_target_check.py` exige además:
+  - la base esperada;
+  - PostgreSQL 17;
+  - TLS;
+  - que el rol sea dueño de la base;
+- antes del arranque y para el respaldo, exige también que la base esté vacía;
+- los pasos que escriben (5, 6 y 7) sólo corren si la comprobación pasa;
+- en el paso 7 esto importa más: `tools_backup_drill.py` no verifica que su base esté vacía, sino que llena la que
+  recibe.
+
+### 18.6 Procedimiento en el Mac (zsh)
+
+**Antes de empezar**, descargar del chat a `~/Downloads`:
+- el paquete `mrs-b1-candidate.bundle`;
+- `b1_target_check.py`;
+- `b1_copy_rows_check.py`.
+
+Los dos ayudantes imprimen sólo nombres de base y de rol, conteos, la versión, TLS y el ID del cómputo. Nunca la URL,
+la contraseña ni el host completo. Su texto está en 18.10.
+
+**Dónde se corre:**
+- en el clon que ya tienes; `RUTA` es la carpeta que lo contiene, y el candidato queda al lado, en
+  `RUTA/mrs-b1-e200ccc`;
+- **todo en la misma ventana de terminal.** Si se cierra, las variables se pierden y los pasos siguientes se detienen
+  solos. Para retomar:
+  1. `cd` a `RUTA/mrs-b1-e200ccc`;
+  2. repetir los pasos 2 y 3;
+  3. seguir desde el paso donde quedó.
+
+```
+# 0 · Tu clon en el Mac. Si no tienes uno: git clone https://github.com/<cuenta>/management-reasoning-simulator.git
+cd ~/RUTA/management-reasoning-simulator
+git fetch origin                                     # trae 009aadb, la base del paquete
+
+# 1 · El candidato exacto, aparte: sin push y sin tocar tu rama
+git bundle verify ~/Downloads/mrs-b1-candidate.bundle
+git fetch ~/Downloads/mrs-b1-candidate.bundle clinical-encounter-v0.13:refs/b1/bundle
+git worktree add --detach ../mrs-b1-e200ccc e200cccc6487af807cab419595baed5b15dd6179
+cd ../mrs-b1-e200ccc
+git rev-parse HEAD                                   # debe decir e200cccc6487af807cab419595baed5b15dd6179
+git status --porcelain                               # no debe imprimir nada
+
+# 2 · Python 3.11 aparte (si falta: brew install python@3.11)
+python3.11 -m venv ~/mrs-b1-venv && source ~/mrs-b1-venv/bin/activate
+pip install -r requirements.txt "pytest==9.1.1"
+B1_TOOLS=~/mrs-b1-tools B1_EV=~/mrs-b1-evidence B1_HOME=$(mktemp -d)   # B1_HOME: un HOME vacío para cada corrida
+mkdir -p "$B1_TOOLS" "$B1_EV" && cp ~/Downloads/b1_target_check.py ~/Downloads/b1_copy_rows_check.py "$B1_TOOLS"/
+python -c "import sys, streamlit, psycopg; print(sys.version.split()[0], streamlit.__version__, psycopg.__version__)" | tee "$B1_EV/b1_versions.txt"
+
+# 3 · Sesión limpia y datos del destino. Nunca se define MRS_ALLOW_NETWORK_TESTS
+for v in $(env | cut -d= -f1 | grep -E '^(MRS_|OPENAI_|STREAMLIT_|PG)'); do unset "$v"; done
+printf "ID del computo de pilot-b1-validation (ep-..., sin -pooler): "; read -r EXPECT_ENDPOINT
+printf "URL pooled de mrs_b1 (no se muestra): "; read -rs MRS_TEST_POSTGRES_URL; echo
+export EXPECT_ENDPOINT MRS_TEST_POSTGRES_URL EXPECT_DB=mrs_b1 EXPECT_MAJOR=17 PYTHONDONTWRITEBYTECODE=1
+
+# 4 · Destino, antes: tiene que decir TARGET OK; si no, parar aquí
+HOME="$B1_HOME" EXPECT_EMPTY=1 python "$B1_TOOLS/b1_target_check.py" | tee "$B1_EV/b1_target_before.txt"
+
+# 5 · Esquema con la herramienta del repositorio; el host queda tapado
+if HOME="$B1_HOME" python "$B1_TOOLS/b1_target_check.py" > /dev/null; then
+  HOME="$B1_HOME" MRS_DATABASE_URL="$MRS_TEST_POSTGRES_URL" python check_database.py | sed -E 's/host [^ ]+/host <host>/' | tee "$B1_EV/b1_check_database.txt"
+  HOME="$B1_HOME" MRS_DATABASE_URL="$MRS_TEST_POSTGRES_URL" python check_database.py --create | sed -E 's/host [^ ]+/host <host>/' | tee -a "$B1_EV/b1_check_database.txt"
+  HOME="$B1_HOME" python "$B1_TOOLS/b1_target_check.py" | tee "$B1_EV/b1_target_bootstrap.txt"
+else echo "STOP: destino incorrecto"; fi
+
+# 6 · Las 23 pruebas del proveedor
+if HOME="$B1_HOME" python "$B1_TOOLS/b1_target_check.py" > /dev/null; then
+  HOME="$B1_HOME" python -m pytest -p no:cacheprovider -rA --junitxml="$B1_EV/b1_junit.xml" \
+    test_phase0_submission_guard_on_postgres.py test_store_integrity_on_postgres.py \
+    test_the_image_bank_on_postgres.py test_p07_75f_arrives_with_the_neutral_view.py > "$B1_EV/b1_pytest.log" 2>&1
+  tail -1 "$B1_EV/b1_pytest.log"
+  grep -E "^(PASSED|FAILED|ERROR|SKIPPED) test_" "$B1_EV/b1_pytest.log" > "$B1_EV/b1_results.txt"; wc -l < "$B1_EV/b1_results.txt"
+  HOME="$B1_HOME" python "$B1_TOOLS/b1_target_check.py" | tee "$B1_EV/b1_target_after.txt"
+else echo "STOP: destino incorrecto"; fi
+
+# 7 · Opcional (TD-76): respaldo y restauración en PostgreSQL 17, sobre mrs_b1_drill vacía
+brew install postgresql@17                           # sólo se usan pg_dump y pg_restore
+export PATH="$(brew --prefix postgresql@17)/bin:$PATH"; pg_dump --version | tee "$B1_EV/b1_pg_dump_version.txt"
+printf "URL DIRECTA (sin pooling) de mrs_b1_drill (no se muestra): "; read -rs B1_DRILL_URL; echo
+HOME="$B1_HOME" MRS_TEST_POSTGRES_URL="$B1_DRILL_URL" EXPECT_DB=mrs_b1_drill EXPECT_EMPTY=1 python "$B1_TOOLS/b1_target_check.py" > "$B1_EV/b1_target_drill.txt"; B1_DRILL_OK=$?; cat "$B1_EV/b1_target_drill.txt"
+if [ "$B1_DRILL_OK" = 0 ]; then
+  HOME="$B1_HOME" python tools_backup_drill.py --postgres "$B1_DRILL_URL" --out "$B1_EV/b1_drill.json" > /dev/null 2>&1; echo "drill exit: $?"
+else echo "STOP: destino del respaldo incorrecto"; fi
+
+# 8 · Opcional: una base que la rama copió de producción no trae filas (sólo lee; repetir por cada base que no sea mrs_b1*)
+printf "URL de una base que la rama ya traía (no se muestra): "; read -rs B1_COPY_URL; echo
+HOME="$B1_HOME" B1_COPY_URL="$B1_COPY_URL" python "$B1_TOOLS/b1_copy_rows_check.py" | tee -a "$B1_EV/b1_copy_rows.txt"
+
+# 9 · Evidencia sin secretos y cierre de la sesión
+git rev-parse HEAD | tee "$B1_EV/b1_sha.txt"
+grep -cE "postgresql://|neon\.tech" "$B1_EV"/*       # todas las cuentas deben ser 0
+unset MRS_TEST_POSTGRES_URL B1_DRILL_URL B1_COPY_URL; deactivate; rm -rf "$B1_HOME"
+```
+
+**Al terminar, cuando lo decidas:**
+- en tu clon, `git worktree remove ../mrs-b1-e200ccc` y `git update-ref -d refs/b1/bundle`;
+- la rama de Neon se borra sola al día, o antes con tu autorización.
+
+### 18.7 Qué cubre cada parte
+
+Las letras H–K siguen este encargo. En 16.8, la J era el respaldo; aquí va como opcional, y TD-76 sigue refiriéndose a
+él.
+
+| Ítem | Prueba o paso |
+|---|---|
+| A · Write-ahead | `test_a_the_order_is_in_the_database_before_it_runs`, `test_a_an_order_is_saved_before_it_runs_runs_once_and_is_saved_processed` |
+| B · Un ID de envío corre a lo sumo una vez | `test_b_a_second_click_on_the_same_form_executes_nothing_more` |
+| C · Reanudar antes de procesar: una vez | `test_c_a_reload_between_the_write_ahead_and_the_run_executes_once_on_resume` |
+| D · Recargar después de procesar: nada se repite | `test_d_a_reload_after_processing_re_executes_nothing` |
+| E · Proceso interrumpido | `test_e_a_run_stopped_part_way_is_undone_and_the_order_runs_once`, `test_e_a_run_stopped_twice_is_said_once_and_never_repeated` |
+| F · Conflicto de revisión | `test_f_two_sessions_on_one_encounter_never_run_an_order_twice_nor_lose_one_silently` |
+| G · F0-12 | `test_an_order_written_after_an_answer_is_saved_with_it_and_runs_once` |
+| H · Esquema y arranque | Paso 5 (`check_database.py` y `--create`); `test_every_unique_key_is_an_index_of_a_new_database`, `test_the_encounter_is_kept_in_postgresql`, las 4 del banco de imágenes y la importación de la 75f. Cada fixture recrea el esquema |
+| I · PostgreSQL 17 | Pasos 4 a 6: `major: 17` |
+| J · TLS y proveedor | `sslmode=require` en la URL y `client TLS: True`; «Connected.»; URL pooled; `test_a_driver_failure_is_logged_by_class_not_by_message` |
+| K · Transacciones y revisiones | F; `test_the_directive_and_its_encounter_are_one_transaction`; `test_an_old_repeat_no_longer_locks_the_store`; `test_concurrent_reservations_on_postgres_never_pass_the_limit`; la reversión de E |
+| Opcional · Respaldo en PostgreSQL 17 (TD-76) | Paso 7 |
+| Opcional · Aislamiento | Paso 8: 0 filas en las bases copiadas |
+
+### 18.8 PASS y FAIL
+
+**PASS de B-1, todo junto:**
+- **Destino:** `TARGET OK` en los pasos 4, 5 y 6, con:
+  - `database: mrs_b1`;
+  - `matches EXPECT_ENDPOINT: True`;
+  - `role owns database: True`;
+  - `major: 17`;
+  - `client TLS: True`;
+  - en el paso 4, además, `tables in public: 0`.
+- **Arranque:** el paso 5 dice «Connected.», «This user may create tables.» y «The application's store opened; its
+  tables are in place.».
+- **Pruebas:**
+  - la última línea de pytest dice `23 passed`, sin `failed`, `error`, `skipped` ni `xfailed`;
+  - `b1_results.txt` tiene 23 líneas, todas `PASSED`;
+  - cubren A–G y H–K (18.7).
+- **Producción sin tocar:** el ID del cómputo es el de `pilot-b1-validation`, no el de `production`. El resto de la
+  prueba está en 16.8.
+- **Sin secretos:** todas las cuentas del `grep -c` del paso 9 dan 0.
+- **SHA:** `e200cccc6487af807cab419595baed5b15dd6179`.
+
+**Dos líneas `ERROR` esperadas.** En el registro aparecen dos fallas que las pruebas provocan a propósito:
+- «Uncaught app execution», de `test_a_the_order_is_in_the_database_before_it_runs`;
+- «Account store transaction failed: UndefinedTable», de `test_a_driver_failure_is_logged_by_class_not_by_message`.
+
+No empiezan con `ERROR test_`, así que no entran en `b1_results.txt`.
+
+**FAIL de B-1:**
+- cualquier `failed` o `error`;
+- cualquier `skipped`: quiere decir que la URL no llegó, y la corrida no cuenta;
+- `TARGET WRONG`, `connection failed` o «STOP»;
+- otro SHA;
+- un secreto en la evidencia. En ese caso, además, se rota la contraseña del rol en la consola.
+
+**Si algo falla, no se reintenta a ciegas:** se trae la evidencia y se analiza. La latencia entre el Mac y Neon no es
+la de la app desplegada, y puede hacer que una prueba tarde más que en el ensayo.
+
+**Los opcionales se informan aparte, como PASS, FAIL o NOT RUN:**
+- respaldo: `drill exit: 0` y `"passed": true` en `b1_drill.json`;
+- aislamiento: `NO ROWS COPIED` en cada base copiada.
+
+### 18.9 Evidencia que hay que traer
+
+Nada de esto contiene URLs, contraseñas, tokens ni hosts completos:
+
+| Qué | De dónde |
+|---|---|
+| SHA probado y árbol limpio | `b1_sha.txt`, y la salida vacía de `git status --porcelain` del paso 1 |
+| Versiones de Python, Streamlit y psycopg | `b1_versions.txt` |
+| Destino antes, después del arranque y después de las pruebas | `b1_target_before.txt`, `b1_target_bootstrap.txt` y `b1_target_after.txt` |
+| Arranque | `b1_check_database.txt` |
+| Pruebas | La última línea de `b1_pytest.log` y `b1_results.txt` |
+| Revisión de secretos | La salida del `grep -c` del paso 9 |
+| Opcional · Respaldo | `b1_pg_dump_version.txt`, `b1_target_drill.txt`, la línea `drill exit` y `b1_drill.json` |
+| Opcional · Aislamiento | `b1_copy_rows.txt` |
+| De la consola de Neon | Proyecto, rama y madre, modo «schema only», versión, tipo de endpoint (pooled), y horas de creación y de borrado automático. Si el ID del cómputo es el de `pilot-b1-validation`: sí o no |
+| Quién y cuándo | Quién la corrió y en qué ventana horaria |
+
+`b1_pytest.log` y `b1_junit.xml` quedan en el Mac, porque incluyen rutas locales y el nombre del equipo. Se traen sólo
+si se piden.
+
+### 18.10 Ensayo hecho aquí y ayudantes
+
+**El bloque de 18.6 se corrió aquí tal cual, de punta a punta.** Se hizo en bash, en un entorno limpio, sobre el
+PostgreSQL 16 local descartable con TLS. Sólo cambiaron cinco cosas:
+- las URL, leídas de archivos en vez de `read -rs`;
+- `EXPECT_ENDPOINT=127`, el primer tramo de `127.0.0.1`;
+- `EXPECT_MAJOR=16`;
+- `pg_dump` 16 en lugar de `brew`;
+- un `HOME` simulado del Mac.
+
+**Montaje del ensayo:**
+- un clon que sólo tenía `009aadb`, traído de GitHub;
+- el paquete armado igual que el definitivo, desde el HEAD de entonces;
+- un rol **sin superusuario**, con `CREATEDB` y contraseña SCRAM, y `channel_binding=require`, como en Neon;
+- un `~/.streamlit/secrets.toml` señuelo, que apunta a la base `b1_decoy`;
+- `MRS_DATABASE_URL`, `OPENAI_API_KEY` y `PGPASSWORD` definidos de antemano, para comprobar que el paso 3 los borra.
+
+| Paso | Resultado |
+|---|---|
+| 1 · Paquete y copia aparte | `is okay`, requiere `009aadb`; la copia queda en `e200ccc`; `git status --porcelain` vacío |
+| 2 · venv nuevo desde `requirements.txt` | `3.11.15 1.64.0 3.3.6` |
+| 4 · Destino antes | `TARGET OK`: `tables in public: 0`, `role owns database: True`, `client TLS: True` |
+| 5 · Arranque | «Connected.», «This user may create tables.» y «The application's store opened…»; 7 tablas |
+| 6 · Pruebas | **`23 passed in 217.04s (0:03:37)`**; `b1_results.txt` con 23 `PASSED`; después, 16 tablas y `TARGET OK` |
+| 7 · Respaldo (opcional) | `TARGET OK` sobre `mrs_b1_drill` vacía; `drill exit: 0`; `"passed": true`, con 33 tablas y 690 filas, ninguna tabla distinta y encuentros y cambios de cuentas idénticos |
+| 8 · Aislamiento (opcional) | `NO ROWS COPIED` en una base con 2 tablas vacías, como las que copia «schema only» |
+| 9 · SHA y secretos | `e200cccc6487af807cab419595baed5b15dd6179`. Cero apariciones de la URL, `neon.tech`, la contraseña, `usuario:` o el host, en la evidencia, en la transcripción de la terminal y en el control |
+| Resguardos | El paso 3 borró las variables puestas de antemano. La base señuelo quedó con 0 tablas. Sin `HOME` vacío, la misma prueba creó 7 (18.5). Con otro ID de cómputo, los dos ayudantes se detienen sin conectarse (`STOP (not connected)`) |
+
+**Lo que el ensayo no cubre**, y queda para el Mac:
+- PostgreSQL 17;
+- el pooler de Neon (la URL *pooled*);
+- la latencia real;
+- zsh: el bloque se revisó para que valga igual en bash y en zsh, pero aquí corrió en bash.
+
+**Además:**
+- se volvió a comprobar que el guardia de red de `conftest.py` bloquea los sockets de Python (`BlockedNetworkCall`), pero
+  no las conexiones de psycopg (libpq). Por eso las pruebas llegan al servidor remoto sin `MRS_ALLOW_NETWORK_TESTS`,
+  que debe seguir sin definirse;
+- todo lo del ensayo se borró: las bases, el rol, su línea en `pg_hba.conf`, el clon simulado y la contraseña
+  descartable.
+
+**`b1_target_check.py`**
+
+```python
+"""B-1: is MRS_TEST_POSTGRES_URL the disposable target? Prints no URL, password or full host; exit 0 only if so."""
+import os
+import sys
+from urllib.parse import urlsplit
+
+import psycopg
+
+url = os.environ.get("MRS_TEST_POSTGRES_URL", "")
+expect_db = os.environ.get("EXPECT_DB", "mrs_b1")
+expect_major = int(os.environ.get("EXPECT_MAJOR", "17"))
+expect_endpoint = os.environ.get("EXPECT_ENDPOINT", "")
+expect_empty = os.environ.get("EXPECT_EMPTY") == "1"
+part = urlsplit(url)
+endpoint = (part.hostname or "?").split(".")[0]
+endpoint_ok = bool(expect_endpoint) and endpoint.removesuffix("-pooler") == expect_endpoint
+tls_in_url = "sslmode=require" in (part.query or "")
+print("endpoint:", endpoint, "| matches EXPECT_ENDPOINT:", endpoint_ok, "| database in URL:",
+      part.path.lstrip("/") or "?", "| sslmode=require in URL:", tls_in_url)
+if not (endpoint_ok and tls_in_url and part.path.lstrip("/") == expect_db):
+    print("TARGET WRONG: STOP (not connected)")  # another branch, production included, is never contacted
+    sys.exit(1)
+try:
+    with psycopg.connect(url, connect_timeout=15) as conn:
+        db, role, version, num = conn.execute(
+            "select current_database(), current_user, current_setting('server_version'), "
+            "current_setting('server_version_num')::int").fetchone()
+        owner = conn.execute("select pg_get_userbyid(datdba) = current_user from pg_database "
+                             "where datname = current_database()").fetchone()[0]
+        tables = conn.execute("select count(*) from information_schema.tables "
+                              "where table_schema = 'public'").fetchone()[0]
+        tls = conn.pgconn.ssl_in_use
+except Exception as error:  # the driver's message can carry the host: name only its class
+    print("connection failed:", type(error).__name__)
+    sys.exit(1)
+print("database:", db, "| role:", role, "| role owns database:", owner, "| server:", version,
+      "| major:", num // 10000, "| tables in public:", tables, "| client TLS:", tls)
+ok = db == expect_db and num // 10000 == expect_major and tls and owner and (tables == 0 or not expect_empty)
+print("TARGET OK" if ok else "TARGET WRONG: STOP")
+sys.exit(0 if ok else 1)
+```
+
+**`b1_copy_rows_check.py`**
+
+```python
+"""B-1, optional: rows in a database the schema-only branch copied. Reads only; prints counts, never content."""
+import os
+import sys
+from urllib.parse import urlsplit
+
+import psycopg
+
+url = os.environ.get("B1_COPY_URL", "")
+expect_endpoint = os.environ.get("EXPECT_ENDPOINT", "")
+endpoint = (urlsplit(url).hostname or "?").split(".")[0]
+endpoint_ok = bool(expect_endpoint) and endpoint.removesuffix("-pooler") == expect_endpoint
+print("endpoint:", endpoint, "| matches EXPECT_ENDPOINT:", endpoint_ok)
+if not endpoint_ok:  # another branch, production included, is never contacted
+    print("WRONG BRANCH: STOP (not connected)")
+    sys.exit(1)
+try:
+    with psycopg.connect(url, connect_timeout=15) as conn:
+        conn.execute("set transaction read only")
+        db = conn.execute("select current_database()").fetchone()[0]
+        tables = [row[0] for row in conn.execute(
+            "select format('%I.%I', schemaname, relname) from pg_stat_user_tables").fetchall()]
+        total = sum(conn.execute(f"select count(*) from {name}").fetchone()[0] for name in tables)
+except Exception as error:  # the driver's message can carry the host: name only its class
+    print("connection failed:", type(error).__name__)
+    sys.exit(1)
+print("database:", db, "| user tables:", len(tables), "| total rows:", total)
+print("NO ROWS COPIED" if total == 0 else "ROWS PRESENT: STOP")
+sys.exit(0 if total == 0 else 1)
+```
+
+### 18.11 Estado
+
+- **B-1: READY TO EXECUTE.** Se marca RESUELTO sólo si la evidencia cumple 18.8.
+- **B-5: BLOCKED.**
+- Sigue **NOT READY FOR DEPLOYMENT**.

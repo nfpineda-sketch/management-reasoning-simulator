@@ -7,8 +7,8 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
 - **Actualizado:** 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
-  2026-10-07, con los datos confirmados en los proveedores; siguen B-1, bloqueado porque este entorno no llega a Neon, y
-  B-5, bloqueado). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
+  2026-10-07, con los datos confirmados en los proveedores; siguen B-1, listo para correr desde el Mac y sin resultados
+  todavía, y B-5, bloqueado). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
@@ -97,9 +97,24 @@ Sigue pendiente de ti:
   - `009aadb`, desde GitHub, con `streamlit==1.64.0`. Tiene el mismo código de persistencia;
   - o `8cc054f` mediante un `git bundle`, sin push.
 
+**Actualizado por cuarta vez el 2026-10-07: B-1 READY TO EXECUTE.**
+
+- **La rama `pilot-b1-validation` se creó a mano**, y la persona responsable la confirmó en la consola:
+  - proyecto `management-reasoning-simulator`, con PostgreSQL 17;
+  - madre `production`, en modo «Branch schema only»;
+  - sin datos de producción;
+  - borrado automático al día.
+- **Commit, decidido por el encargo:** el candidato real del piloto, con los cambios aprobados antes del despliegue.
+  - Es `e200cccc6487af807cab419595baed5b15dd6179`, el último commit de runtime y dependencias.
+  - No es `009aadb`.
+  - Llega al Mac en un `git bundle`, sin push.
+- **Base:** una nueva y vacía, `mrs_b1`, cuyo dueño es el rol con que se conecta.
+- **Procedimiento:** en el informe, sección 18, ensayado aquí de punta a punta.
+- **Falta:** correrlo en el Mac y traer la evidencia de 18.9.
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
-| B-1 | **Bloqueado** (2026-10-07; informe, sección 17): este entorno no llega a Neon y no se creó nada. Procedimiento listo (16.8 y 16.9), a correr desde un equipo con red directa | La prueba de PostgreSQL en una base descartable del proveedor, de su versión mayor (BLOCKED / NOT RUN) | Quién la corre y desde dónde: este entorno no llega al proveedor |
+| B-1 | **Listo para ejecutar** (2026-10-07; informe, sección 18): la rama `pilot-b1-validation` se creó a mano; candidato `e200ccc`; el procedimiento del Mac se ensayó aquí. Antes, bloqueado (sección 17) | La prueba de PostgreSQL en `mrs_b1`, la base descartable del proveedor, con su versión mayor (NOT YET EXECUTED) | Ninguna nueva: correrla desde el Mac antes de que la rama venza y traer la evidencia de 18.9 |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
