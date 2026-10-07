@@ -7,9 +7,9 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
 - **Actualizado:** 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
-  2026-10-07, con los datos confirmados en los proveedores; siguen B-1, listo para ejecutar, y B-5, bloqueado). Antes,
-  con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La sección «Fase 0 · Seguridad
-  de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
+  2026-10-07, con los datos confirmados en los proveedores; siguen B-1, bloqueado porque este entorno no llega a Neon, y
+  B-5, bloqueado). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
+  sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
   siguen más abajo, como estaban.
@@ -82,9 +82,24 @@ Sigue pendiente de ti:
   redespliega desarrollo.
 - **B-5:** BLOCKED.
 
+**Actualizado por tercera vez el 2026-10-07: B-1 BLOCKED (TEST ENVIRONMENT FAILURE).**
+
+- **D-B2-5, confirmada:** la consola de Neon ofrece «Branch schema only» para el proyecto; ese modo copia sólo el
+  esquema, sin datos.
+- **El intento de correr B-1 desde este entorno no llegó a Neon:**
+  - no hay conector de Neon instalado ni credenciales;
+  - el proxy rechaza `console.neon.tech` (CONNECT 403);
+  - no hay salida TCP a 5432.
+- **No se creó ni se tocó nada en el proveedor**, y producción quedó intacta: no hubo ninguna conexión (informe,
+  sección 17).
+- **Decisión que se necesita:** quién corre B-1 desde un equipo con red directa, como tu Mac (informe 17.4), y sobre
+  qué commit:
+  - `009aadb`, desde GitHub, con `streamlit==1.64.0`. Tiene el mismo código de persistencia;
+  - o `8cc054f` mediante un `git bundle`, sin push.
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
-| B-1 | **Ready to execute / not yet executed** (2026-10-07; informe 16.8 y 16.9) | La prueba de PostgreSQL en una base descartable del proveedor, de su versión mayor (BLOCKED / NOT RUN) | Quién la corre y desde dónde: este entorno no llega al proveedor |
+| B-1 | **Bloqueado** (2026-10-07; informe, sección 17): este entorno no llega a Neon y no se creó nada. Procedimiento listo (16.8 y 16.9), a correr desde un equipo con red directa | La prueba de PostgreSQL en una base descartable del proveedor, de su versión mayor (BLOCKED / NOT RUN) | Quién la corre y desde dónde: este entorno no llega al proveedor |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |

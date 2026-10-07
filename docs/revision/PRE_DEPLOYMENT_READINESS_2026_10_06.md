@@ -27,6 +27,15 @@ conocen desde las cuentas (sección 15). Sigue **NOT READY FOR DEPLOYMENT**.
 - **B-5: BLOCKED.**
 - Sigue **NOT READY FOR DEPLOYMENT**.
 
+**Actualizado por tercera vez el 2026-10-07** (intento de B-1 en el proveedor): **B-1 BLOCKED**, clasificado como
+TEST ENVIRONMENT FAILURE.
+- Desde este entorno no se llega a Neon: no hay conector ni credenciales, el proxy rechaza la API y no hay salida TCP
+  a 5432.
+- No se creó ni se tocó ningún recurso del proveedor.
+- D-B2-5 confirmada: la consola ofrece «Branch schema only».
+- Siguiente acción: correr B-1 desde un equipo con red directa (sección 17).
+- Sigue **NOT READY FOR DEPLOYMENT**.
+
 Fuente de verdad del congelamiento: el manifiesto ejecutable `docs/revision/PILOT_FREEZE_MANIFEST.md` (generado de
 `pilot_freeze.py`). Donde un texto lo contradice, se informa en la sección 10.2 y no se corrige aquí.
 
@@ -383,7 +392,7 @@ son las 83 de siempre más las 10 de PostgreSQL, que corren aparte (9.2).
 
 | # | Estado (2026-10-06) | Bloqueo | Por qué bloquea | Lo más pequeño que lo resuelve | ¿Invalida verificación de la Fase 0? |
 |---|---|---|---|---|---|
-| B-1 | **READY TO EXECUTE / NOT YET EXECUTED** (2026-10-07; 16.8 y 16.9): rama «Schema only» `pilot-b1-validation` y base `mrs_b1`, por crear con autorización | Prueba PostgreSQL del proveedor no corrida (BLOCKED / NOT RUN) | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
+| B-1 | **BLOCKED** (2026-10-07; sección 17): TEST ENVIRONMENT FAILURE. Este entorno no llega a Neon; no se creó nada. Procedimiento listo (16.8 y 16.9), a correr desde un equipo con red directa | Prueba PostgreSQL del proveedor no corrida (BLOCKED / NOT RUN) | La persistencia del piloto vive en el proveedor; sólo se probó PostgreSQL 16 local | Correr `test_phase0_submission_guard_on_postgres.py` (y los otros tres archivos de PostgreSQL) contra una base **descartable** del proveedor, de su misma versión mayor, desde un equipo con red directa (runbook §3, paso 0) | No |
 | B-2 | **RESUELTO** (2026-10-07; sección 16) con los datos confirmados en los proveedores. Antes, BLOCKED (sección 15) | Entorno de destino sin identificar | No se sabe qué app, qué rama, qué base ni qué Python | Nombrar la app y la base del piloto; crear la app con Python 3.11; desplegar una rama propia fija en el commit aprobado (3.2) | No |
 | B-3 | **RESUELTO** (`87bbbe1`; 14.1): opción (b), el preflight corregido; el runtime no cambió | El preflight puede dar «LISTA» con la app fuera de la configuración congelada (3.3 y 5.2) | El gate del runbook (paso 3) no garantiza lo que dice | **Decisión:** (a) procedimiento: `OPENAI_API_KEY` ausente, valores entre comillas y todo AVISO de los indicadores del manifiesto tratado como FALLA; o (b) corrección del preflight (sólo la herramienta, no el runtime): tratar un valor TOML no textual como ausente, como hace Streamlit, y volver obligatorias las reglas que el manifiesto exige (cambia `test_a_recommendation_warns_and_never_fails`) | No (no toca el runtime) |
 | B-4 | **RESUELTO** (`4d570a8`; 14.2): `streamlit==1.64.0`. Python 3.11 se elige al crear la app y queda en B-2 | Dependencias sin fijar: Streamlit `>=1.41,<2` (hoy instalaría 1.65.0) y Python sin fijar | El envío seguro depende de la secuencia de reruns de Streamlit; una versión que aparezca durante el piloto entraría en el próximo reinicio | **Decisión:** fijar en `requirements.txt` una versión verificada, `streamlit==1.64.0` (la de la suite completa) o `1.65.0` (verificada hoy sólo en la Fase 0 y en 0D, 9.4), y crear la app con Python 3.11. Es un commit de dependencias; el runtime no cambia | No con 1.64.0. Con 1.65.0, la suite completa con esa versión |
@@ -488,7 +497,7 @@ sobre `009aadb` se conserva en la columna «Por qué».
 | Categoría | Estado | Por qué |
 |---|---|---|
 | A · Código y pruebas | **PASS** (sujeto a 14.4) | Sobre `009aadb`: suite completa 7.578/0, Fase 0 completa y prueba de humo automática en verde, y 2 de 56 regresiones activas fallaban (B-6). Ahora: 56 de 56 y las pruebas focalizadas en verde (14.4). La suite completa sobre el candidato final se corre después de este commit y se informa en la entrega del encargo: si no da 0 fallas, esta fila no vale |
-| B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado. Proveedor (Neon, PostgreSQL 17): B-1 READY TO EXECUTE / NOT YET EXECUTED (16.8) |
+| B · Base de datos | **BLOCKED** | PostgreSQL 16 local con TLS: 23 de 23 y simulacro de respaldo aprobado. Proveedor (Neon, PostgreSQL 17): B-1 BLOCKED, sin correr; este entorno no llega al proveedor (sección 17) |
 | C · Configuración congelada | **BLOCKED** | El gate ya es confiable: falla cerrado ante cualquier exigencia del manifiesto (B-3 resuelto, 14.1). Falta correrlo con los Secrets reales del piloto, antes y después de crear la app (pasos 10 y 11 del contrato, 16.4 y 16.11) |
 | D · Enrutamiento | PASS WITH DECLARED LIMITATION | 30 aceptados, excluido y PS001 fuera (5.1); `MRS_DEFAULT_VARIANT` sólo lo cierra la configuración (5.2), y el preflight falla si está definido (14.1) |
 | E · Idioma y firmas docentes | **BLOCKED** | Todas pendientes (sección 6; B-5) |
@@ -500,13 +509,14 @@ sobre `009aadb` se conserva en la columna «Por qué».
 
 ## 13. Recomendación
 
-**NOT READY FOR DEPLOYMENT.** Bloquean B-1 (READY TO EXECUTE / NOT YET EXECUTED) y B-5 (BLOCKED).
+**NOT READY FOR DEPLOYMENT.** Bloquean B-1 (BLOCKED: no corrió en el proveedor, sección 17) y B-5 (BLOCKED).
 - B-3, B-4 y B-6 se resolvieron el 2026-10-06 (sección 14), y B-2 el 2026-10-07 (sección 16).
 - Al escribir la primera versión de este documento bloqueaban B-1 a B-6.
 
 - El runtime de `009aadb` no mostró un defecto de conducta: la suite completa, la Fase 0, PostgreSQL con TLS, el
   simulacro de respaldo y la prueba de humo automática pasan, y el envío seguro se comporta igual con Streamlit 1.65.0.
-- Falta: la prueba en el proveedor (B-1, preparada en 16.8 y 16.9) y las firmas (B-5). Después, el contrato de
+- Falta: la prueba en el proveedor (B-1, preparada en 16.8 y 16.9; se corre desde un equipo con red directa, sección
+  17.4) y las firmas (B-5). Después, el contrato de
   promoción (16.4), con el preflight sobre los Secrets reales del piloto.
 - B-3, B-4 y B-6 se resolvieron sin cambiar la conducta del runtime: el preflight (una herramienta que la app no
   importa), la versión de Streamlit con que ya se había verificado todo y dos scripts de regresión (sección 14).
@@ -747,7 +757,7 @@ Ninguna app documentada es la del piloto:
 `docs/DEMO_RESEARCH_2026-09-23.md` ya recomendaba una app nueva para no tocar las existentes.
 
 **Recomendación: una app nueva para el piloto:**
-- repositorio `nfpineda-sketch/management-reasoning-simulator`;
+- repositorio `management-reasoning-simulator` (en GitHub);
 - rama `pilot-residents-v1`;
 - archivo principal `app.py`;
 - Python 3.11;
@@ -948,7 +958,7 @@ identificado el proveedor de la base del piloto:
 |---|---|---|
 | 1 | Proveedor | Streamlit Community Cloud: DOCUMENTADO, NO VERIFICADO en la cuenta |
 | 2 | App exacta del piloto | **NO**: no está identificada |
-| 3 | Repositorio exacto | SÍ: `nfpineda-sketch/management-reasoning-simulator` |
+| 3 | Repositorio exacto | SÍ: `management-reasoning-simulator` (en GitHub) |
 | 4 | Estrategia de rama | SÍ: `pilot-residents-v1`, sólo promociones (15.3); sin crear |
 | 5 | Punto de entrada | SÍ: `app.py` |
 | 6 | Python 3.11 | **NO VERIFICADO**: el método es la elección al crear la app (documentado por el proveedor); falta confirmarlo en la plataforma |
@@ -1369,8 +1379,89 @@ Las fotos llegan en `assets/`.
 
 ### 16.14 Estado al cerrar el encargo
 
-- **B-1: READY TO EXECUTE / NOT YET EXECUTED.** Siguiente acción, con tu autorización:
+- **B-1: READY TO EXECUTE / NOT YET EXECUTED** al cerrar esta sección. Después quedó BLOCKED: el intento desde este
+  entorno no pudo llegar a Neon (sección 17). Siguiente acción, con tu autorización:
   1. crear en Neon `pilot-b1-validation` («Schema only») y la base vacía `mrs_b1` (16.9);
   2. desde un equipo con red directa, correr los pasos 1 a 5 de 16.8.
 - **B-5: BLOCKED.** No se cambió ningún texto que espera firma. El SHA final se construye sólo después de cerrarlo.
 - **NOT READY FOR DEPLOYMENT:** faltan B-1 y B-5.
+
+## 17. B-1: intento de ejecución en el proveedor (2026-10-07) — BLOCKED
+
+Encargo: correr B-1 contra un PostgreSQL 17 descartable de Neon, en el proyecto que alojará el piloto. Estaba
+autorizado crear sólo la rama `pilot-b1-validation` («Schema only») y la base `mrs_b1`. **Resultado: B-1 BLOCKED,
+clasificado como TEST ENVIRONMENT FAILURE.** Desde este entorno no se puede llegar a Neon, así que no se creó ni se
+tocó ningún recurso del proveedor y no corrió ninguna prueba contra él.
+
+### 17.1 Verificación inicial
+
+| Comprobación | Resultado |
+|---|---|
+| Rama | `clinical-encounter-v0.13` |
+| HEAD local | `8cc054ff2d91b43dcc1917db70a3945d507c9a5b` |
+| `origin/clinical-encounter-v0.13` | `009aadb` (comprobado con `git ls-remote`) |
+| Adelante / atrás | 7 / 0 |
+| Árbol | Limpio |
+| Commits después de `009aadb` | Los siete son de preparación para el despliegue |
+| Fase 1 o núcleo común | Ninguno |
+| Cambios del runtime | Ninguno después de `009aadb`: salvo el preflight y su prueba y dos scripts de regresión, todos los `.py` son idénticos (`git diff`), y también los activos |
+| SHA que se iba a validar | `8cc054ff2d91b43dcc1917db70a3945d507c9a5b`. Su código de persistencia es el de `009aadb` |
+
+D-B2-5 queda **confirmada**: la persona responsable vio que la consola de Neon ofrece «Branch schema only» para el
+proyecto `management-reasoning-simulator`, y que ese modo copia sólo el esquema, sin datos.
+
+### 17.2 Por qué no pudo correrse aquí
+
+| Requisito | Comprobación en este entorno | Resultado |
+|---|---|---|
+| Crear la rama y la base en Neon | No hay conector de Neon en esta sesión. Existe en el directorio de conectores, pero no está instalado ni habilitado. No hay credencial ni token de Neon en el entorno (sólo se buscaron nombres de variables, nunca valores) | Imposible |
+| Llegar a la API de Neon | `https://console.neon.tech/api/v2/...`: el proxy del entorno rechaza el túnel (CONNECT 403) | Bloqueado por la política de red |
+| Conectar las pruebas a PostgreSQL | psycopg usa TCP al puerto 5432. Sin salida directa a 5432 ni a 22 (timeout); el 443 sí sale. El proxy sólo cursa HTTP(S) | Bloqueado |
+| Obtener una URL de conexión | Sin acceso a la consola ni a la API | Imposible |
+
+**Clasificación:** TEST ENVIRONMENT FAILURE. No es un defecto del código, ni una mala configuración del proveedor, ni
+un problema del esquema, de red o de TLS del proveedor, ni una falla de aislamiento de datos: la prueba no llegó a
+empezar.
+
+### 17.3 Qué no se hizo y qué no cambió
+
+| Ítem | Estado |
+|---|---|
+| Rama `pilot-b1-validation` y base `mrs_b1` | **No creadas** |
+| Ramas `production`, `development-validation` y `clinical-encounter-v0.13` | **No tocadas**: no hubo ninguna conexión al proveedor |
+| Datos de producción copiados | **No**: no se creó nada |
+| A–G | **NOT RUN** |
+| Versión 17, TLS, esquema y transacciones en el proveedor | **NOT RUN** |
+| J (respaldo y restauración) | **NOT RUN**. Para B-1 no es obligatorio: el plan vigente (runbook §3, paso 0) exige el envío; J está recomendado (16.8) y abre TD-76 |
+| Limpieza | Nada que limpiar |
+| Código, runtime, rama de Git del piloto, app de Streamlit y rama persistente de Neon | Sin cambios; nada creado |
+
+### 17.4 Siguiente acción exacta
+
+**Recomendado: correr B-1 desde tu Mac**, con red directa a Neon, siguiendo 16.9 y 16.8 tal como están:
+
+1. En la consola de Neon (proyecto `management-reasoning-simulator`), crear la rama `pilot-b1-validation` desde
+   `production` con «Branch schema only». Se acepta que se borre sola al día; en ese caso B-1 y su registro tienen que
+   hacerse dentro de ese día.
+2. En esa rama, crear la base `mrs_b1`. Su dueña tiene que ser el rol con que correrán las pruebas, porque éstas
+   recrean el esquema `public`.
+3. Copiar la URL *pooled* de `mrs_b1` a un gestor de contraseñas, y pegarla en la terminal sin eco
+   (`read -rs MRS_TEST_POSTGRES_URL`).
+4. **Elegir qué commit probar.** Los siete commits locales no están en GitHub, y no se empujan sin autorización:
+   - `009aadb`, desde GitHub, con `pip install streamlit==1.64.0`. Tiene el mismo código de persistencia que
+     `8cc054f`;
+   - o `8cc054f` exacto, mediante un `git bundle` que puedo preparar sin push.
+5. Correr los pasos 1 a 5 de 16.8: comprobación del destino, `check_database.py` y `--create`, las cuatro pruebas de
+   PostgreSQL, la comprobación final y, si se puede, J.
+6. Traer los resultados, sin URLs ni contraseñas:
+   - la salida de la comprobación del destino, antes y después;
+   - la salida de `check_database.py`;
+   - el resumen de pytest y `b1_junit.xml`;
+   - `b1_drill.json`, si J corrió;
+   - el SHA probado.
+
+   Con eso se registra B-1 en este informe, y queda RESUELTO sólo si se cumplen los 17 criterios del encargo.
+
+**Alternativa, sin verificar:** dar a una sesión de este entorno un conector de Neon o un token guardado como variable
+del entorno, y una red que permita `console.neon.tech` y conexiones directas a 5432. Hoy el contenedor no tiene salida
+TCP fuera del 443, y no se sabe si la configuración de red lo permite. Por eso se recomienda el Mac.
