@@ -1,6 +1,7 @@
 # B-5 · Relato en español · Lote 0: frases comunes
 
-> **PARA REVISIÓN DOCENTE. Nada implementado.** Primer lote de la revisión del relato
+> **DECIDIDO por la docencia el 2026-10-07: los 11 grupos, APPROVE. Nada implementado.** Primer lote de la
+> revisión del relato
 > (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`, aprobado por la docencia el 2026-10-07). Aprobar una frase aquí no
 > aprueba ningún caso: la aprobación final es por caso entero, con su versión exacta, en su lote (R1 a R6). Este lote
 > evita leer 527 veces lo que dicen 47 frases.
@@ -10,6 +11,7 @@
 
 **En una mirada**
 
+- **Decidido (docente, 2026-10-07):** 11 de 11 grupos aprobados; 47 de 47 frases; las 527 apariciones siguen trazables.
 - **47 frases** que se repiten, iguales, en 2 casos o más: **527 apariciones** en los 30 casos del piloto.
 - Cada frase tiene **un solo español** en todas sus apariciones; ninguna está traducida de dos formas.
 - **11 decisiones docentes**, una por grupo (G1 a G11). Los grupos juntan frases de la misma sección y del mismo
@@ -36,7 +38,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G1): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G1): ☒ **APPROVE** — docente, 2026-10-07.
 
 ### G2 · POCUS · corazón y pericardio — 6 frases, 72 apariciones
 
@@ -51,7 +53,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G2): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G2): ☒ **APPROVE** — docente, 2026-10-07.
 
 ### G3 · POCUS · vena cava inferior — 5 frases, 13 apariciones
 
@@ -65,7 +67,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G3): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G3): ☒ **APPROVE** — docente, 2026-10-07.
 
 ### G4 · POCUS · pulmón y pleura — 4 frases, 84 apariciones
 
@@ -78,7 +80,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G4): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G4): ☒ **APPROVE** — docente, 2026-10-07.
 
 ### G5 · POCUS · aorta — 3 frases, 90 apariciones
 
@@ -90,7 +92,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G5): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G5): ☒ **APPROVE** — docente, 2026-10-07.
 
 ### G6 · Laboratorio y microbiología — 4 frases, 90 apariciones
 
@@ -103,7 +105,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G6): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G6): ☒ **APPROVE** — docente, 2026-10-07. Se mantiene «susceptibilidad» como está escrito (L0-21).
 
 ### G7 · Radiografía de tórax — 4 frases, 11 apariciones
 
@@ -116,7 +118,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G7): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G7): ☒ **APPROVE** — docente, 2026-10-07. Se mantiene «Campos pulmonares limpios; sin consolidación ni edema.» (L0-26), sin revisión de estilo.
 
 ### G8 · ECG · derivaciones adicionales — 2 frases, 12 apariciones
 
@@ -127,7 +129,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G8): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G8): ☒ **APPROVE** — docente, 2026-10-07.
 
 ### G9 · Fuente de la historia — 3 frases, 23 apariciones
 
@@ -139,7 +141,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G9): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G9): ☒ **APPROVE** — docente, 2026-10-07.
 
 ### G10 · Historia — 5 frases, 40 apariciones
 
@@ -153,7 +155,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G10): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G10): ☒ **APPROVE** — docente, 2026-10-07.
 
 ### G11 · Examen físico — 10 frases, 34 apariciones
 
@@ -172,7 +174,7 @@
 
 - Observaciones semánticas o clínicas: ninguna.
 - Recomendación: **APPROVE AS IS**.
-- Decisión docente (G11): ☐ APPROVE · ☐ REVIEW CLOSELY · ☐ NEEDS REVISION — N.º y nota: ________
+- Decisión docente (G11): ☒ **APPROVE** — docente, 2026-10-07.
 
 ## 2. Terminología ya decidida (T-1 a T-3, docente, 2026-10-07)
 
@@ -195,17 +197,17 @@ con el término aprobado.
 
 | Grupo | Frases | Apariciones | Recomendación | Decisión docente |
 |---|---|---|---|---|
-| G1 · POCUS · venas (TVP) | L0-01 | 58 | APPROVE AS IS | ☐ |
-| G2 · POCUS · corazón y pericardio | L0-02 a L0-07 | 72 | APPROVE AS IS | ☐ |
-| G3 · POCUS · vena cava inferior | L0-08 a L0-12 | 13 | APPROVE AS IS | ☐ |
-| G4 · POCUS · pulmón y pleura | L0-13 a L0-16 | 84 | APPROVE AS IS | ☐ |
-| G5 · POCUS · aorta | L0-17 a L0-19 | 90 | APPROVE AS IS | ☐ |
-| G6 · Laboratorio y microbiología | L0-20 a L0-23 | 90 | APPROVE AS IS | ☐ |
-| G7 · Radiografía de tórax | L0-24 a L0-27 | 11 | APPROVE AS IS | ☐ |
-| G8 · ECG · derivaciones adicionales | L0-28 y L0-29 | 12 | APPROVE AS IS | ☐ |
-| G9 · Fuente de la historia | L0-30 a L0-32 | 23 | APPROVE AS IS | ☐ |
-| G10 · Historia | L0-33 a L0-37 | 40 | APPROVE AS IS | ☐ |
-| G11 · Examen físico | L0-38 a L0-47 | 34 | APPROVE AS IS | ☐ |
+| G1 · POCUS · venas (TVP) | L0-01 | 58 | APPROVE AS IS | ☒ APPROVE |
+| G2 · POCUS · corazón y pericardio | L0-02 a L0-07 | 72 | APPROVE AS IS | ☒ APPROVE |
+| G3 · POCUS · vena cava inferior | L0-08 a L0-12 | 13 | APPROVE AS IS | ☒ APPROVE |
+| G4 · POCUS · pulmón y pleura | L0-13 a L0-16 | 84 | APPROVE AS IS | ☒ APPROVE |
+| G5 · POCUS · aorta | L0-17 a L0-19 | 90 | APPROVE AS IS | ☒ APPROVE |
+| G6 · Laboratorio y microbiología | L0-20 a L0-23 | 90 | APPROVE AS IS | ☒ APPROVE |
+| G7 · Radiografía de tórax | L0-24 a L0-27 | 11 | APPROVE AS IS | ☒ APPROVE |
+| G8 · ECG · derivaciones adicionales | L0-28 y L0-29 | 12 | APPROVE AS IS | ☒ APPROVE |
+| G9 · Fuente de la historia | L0-30 a L0-32 | 23 | APPROVE AS IS | ☒ APPROVE |
+| G10 · Historia | L0-33 a L0-37 | 40 | APPROVE AS IS | ☒ APPROVE |
+| G11 · Examen físico | L0-38 a L0-47 | 34 | APPROVE AS IS | ☒ APPROVE |
 | **Total** | **47** | **527** | | |
 
-Siguiente lote, según el orden docente: RUB (rúbrica D1–D5).
+Siguiente lote, según el orden docente: RUB (rúbrica D1–D5), en `docs/revision/B5_RUBRICA_RUB.md`.

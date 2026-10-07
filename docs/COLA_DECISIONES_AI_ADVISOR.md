@@ -652,13 +652,31 @@ implementado.**
 - **Siguiente lote:** RUB, después de la decisión docente sobre el lote 0.
 - **B-5: BLOCKED.**
 
+**Actualizado por vigesimosegunda vez el 2026-10-07: B-5 · lote 0 del relato aprobado; lote RUB para revisión.**
+Registrado también en `docs/revision/B5_RELATO_LOTE_0.md`, en `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md` (§8), en `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, en el paquete (1.5) y
+en el registro de deuda (TD-81). **Nada está implementado.**
+
+- **Lote 0 (docente, 2026-10-07):**
+  - APPROVE en los 11 grupos: 47 de 47 frases comunes aprobadas; sus 527 apariciones siguen trazables por caso y
+    ruta;
+  - se mantienen «susceptibilidad» (L0-21) y «Campos pulmonares limpios; sin consolidación ni edema.» (L0-26);
+  - T-1 a T-3 siguen como se aprobaron, y los 18 pasajes del corpus no se tocan.
+- **Lote RUB, preparado para la revisión docente** (`docs/revision/B5_RUBRICA_RUB.md`):
+  - 5 decisiones, una por dominio, cada una con el hash de la versión que se presenta;
+  - R-1 aplicada en D4: cambian 3 descriptores;
+  - recomendación: APPROVE AS IS en D1 a D4, y REVIEW CLOSELY en D5. En español, «seguimiento» nombra el D4 y también
+    el «follow-up» del nivel 3 de D5. Opción (b): «un control posterior» en ese nivel;
+  - sin conflicto con X-1 después de R-1.
+- **Siguiente lote:** R1, después de la decisión docente sobre RUB.
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0 en revisión); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0 aprobado, RUB en revisión); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

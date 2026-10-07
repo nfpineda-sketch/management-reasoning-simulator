@@ -240,3 +240,8 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
 - **Orden de revisión:** lote 0 (las 47 frases comunes; T-1 a T-3 ya decididas), RUB (D1–D5, por dominio), R1, R2,
   R3, R4, R5 y R6, sin entregar todos los pasajes de una vez.
 - **Lote 0, entregado para revisión:** `docs/revision/B5_RELATO_LOTE_0.md`.
+- **Lote 0, decidido (2026-10-07):**
+  - APPROVE en los 11 grupos: 47 de 47 frases comunes aprobadas, y sus 527 apariciones siguen trazables;
+  - se mantienen «susceptibilidad» (L0-21) y «Campos pulmonares limpios; sin consolidación ni edema.» (L0-26);
+  - T-1 a T-3 siguen como se aprobaron, y los 18 pasajes del corpus no se tocan.
+- **Lote RUB, entregado para revisión:** `docs/revision/B5_RUBRICA_RUB.md`: 5 decisiones, una por dominio, con R-1 aplicada en D4.

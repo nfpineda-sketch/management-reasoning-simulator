@@ -320,6 +320,10 @@ español quedó diseñada (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`). B-5
 terminología T-1 a T-3, R-1 y los 18 pasajes del corpus tal cual. El lote 0 está en revisión. Sin `approvals.json`.
 B-5 sigue bloqueado (Decision File, vigesimoprimera actualización).
 
+**Actualización del 2026-10-07 (B-5, lote 0 del relato):** la docencia aprobó las 47 frases comunes (11 grupos) y
+el lote RUB quedó listo para su revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File, vigesimosegunda
+actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 
