@@ -21,9 +21,13 @@
   - los códigos y destinos que lee la máquina (EXECUTED, UNRECOGNIZED, HELD_REASONING…) son canónicos y no se
     traducen;
   - todavía no se activa ni se reescribe texto clínico, salvo la actualización de las guías.
-- El encargo nombra las filas 12–18 de R-4 y el panel del examen: entran en X-1. No dice nada de las filas 1–11
-  de R-4 (español en borrador), del aviso de la foto (bloque J) ni de lo anterior a la Fase 0 que hoy se ve en
-  inglés (2.4). Ese alcance queda como decisión pendiente (sección 5).
+- El encargo nombra las filas 12–18 de R-4 y el panel del examen: entran en X-1.
+- **Alcance ampliado por decisión docente (2026-10-07, después de este informe):**
+  - en un encuentro en español, todo texto que ve el residente es enteramente español, salvo los nombres
+    canónicos de fármacos y los códigos;
+  - incluye las filas 1–18 de R-4, el aviso de la foto, las preguntas de aclaración, el texto de la compuerta
+    y los rótulos;
+  - no se acepta una interfaz mezclada en el candidato final.
 - Este documento tiene tres partes:
   1. las guías, ANTES → DESPUÉS;
   2. la brecha bilingüe;
@@ -106,6 +110,10 @@
   - la última frase de H-10;
   - la parte de I-2 sobre el examen y su última frase;
   - la última frase del punto «Idioma (X-1)».
+- Con las decisiones del 2026-10-07, también:
+  - la limitación TD-51 de la guía docente, que todavía dice «diferida» (A-2 la decidió para antes del
+    candidato final), al implementarse;
+  - los modos Talk, Examine, Tests y Treat, que la guía del residente nombra en inglés, si se traducen (X-1).
 - Es una edición de documentación (S-C): por sí sola no cambia el SHA.
 
 ## 2. Brecha bilingüe (X-1 / F0-11)
@@ -251,6 +259,28 @@ No se corrigió. El encargo nombra la aclaración y «otra pantalla activa del p
 | 9 | B-24 · nota 6, resto del esquema | Ídem | Dice qué se dio y que no es un segundo curso | Activo | **APPROVE AS IS** (el fármaco va en español, «alteplasa», como pidió D-5; K-13 deja los nombres en inglés) |
 | 10 | B-25 · nota 7, segundo curso | Ídem | Declara una simplificación del motor y registra la exposición | Activo | **APPROVE AS IS** |
 
+**Decisión docente (2026-10-07):** A-1 y B-19 a B-25, APPROVE; A-2 y A-9, REVISE. Están registradas en el
+paquete y en el Decision File, sin implementar.
+
+### 3.2 Segundo lote de nivel 1 (propuesto el 2026-10-07)
+
+Orden del paquete: B-26, C-37, D-39 a D-43, E-45, E-46 y F-47. Los textos exactos y las casillas están en el
+paquete. Cada texto se comprobó contra el código: el inglés, en el banco o en el motor; el español, en
+`language.py`, `report_language.py` o `spanish_drafts.py`.
+
+| # | ID · fila | Dónde lo ve | Por qué es nivel 1 | Español hoy | Recomendación |
+|---|---|---|---|---|---|
+| 1 | B-26 · aviso del sangrado (33f) | Residente: entrada de la sala cuando sangra tras la lisis. Docente: el registro | Atribuye una causa a la decisión de trombolizar | Activo | **APPROVE AS IS** (vinculada con D-40) |
+| 2 | C-37 · 27m, «General appearance» tras una medida | Residente: examen de la 27m | Dice si la medida detuvo el sangrado (escalar o no) | Activo (panel) | **APPROVE AS IS** |
+| 3 | D-39 · encabezado y aviso de los límites | Docente: rúbrica y objetivos del caso | Declara lo que nunca se cobra | Activo | **APPROVE AS IS** |
+| 4 | D-40 · límite de la 33f | Docente: rúbrica y objetivos | Declara un límite y lo que no se evalúa | Sólo en la guía docente | **APPROVE AS IS** (vinculada con B-26) |
+| 5 | D-41 · límite de la 70f | Ídem | Declara un límite y lo no evaluable | Sólo en la guía docente | **APPROVE AS IS** (decidir con E-46) |
+| 6 | D-42 · límite de las neumonías (46f, 83m) | Ídem | Declara un límite | Sólo en la guía docente | **APPROVE AS IS** (una decisión para los dos casos) |
+| 7 | D-43 · límite de la 27m | Ídem | Declara un límite | Sólo en la guía docente | **APPROVE AS IS** |
+| 8 | E-45 · C14 de la 52m | Docente: la declaración C14 del caso (en inglés también en español, TD-07) | Criterio de evaluación | Borrador | **APPROVE AS IS** (decidir con F-47) |
+| 9 | E-46 · C14 de la 70f | Ídem | Criterio de evaluación | Borrador | **APPROVE AS IS** (decidir con D-41) |
+| 10 | F-47 · ficha POCUS de la 52m | Docente: la ficha R-2 y la declaración C14 | Criterio de evaluación | Borrador | **APPROVE AS IS** (decidir con E-45) |
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -268,13 +298,13 @@ No se corrigió. El encargo nombra la aclaración y «otra pantalla activa del p
 
 ## 5. Decisiones pendientes
 
-1. **El alcance de X-1 fuera de las frases de la Fase 0:**
-   - las filas 1–11 de R-4;
-   - el aviso de la foto (J);
-   - las preguntas de aclaración (TD-79);
-   - los rótulos de la sala (TD-61).
+Actualizado el 2026-10-07, con las decisiones docentes del lote 1 y del alcance de X-1 (Decision File,
+octava actualización).
 
-   Sin esa decisión, el candidato final puede cumplir F0-11 y aun así mostrar inglés, o inglés mezclado, a un
-   residente en español.
-2. **Las firmas del paquete, empezando por el nivel 1.** Este documento propone el primer lote.
-3. **La firma de las dos guías actualizadas** (bloques H e I).
+1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final.
+2. **Redactar y firmar el español que X-1 exige y no existe:** las preguntas de aclaración (TD-79), el texto
+   de la compuerta y los rótulos (TD-61). También la redacción EN y ES del examen respiratorio en agotamiento
+   (A-2, TD-51).
+3. **Cuándo se revisa el relato en español de los casos:** antes de congelar el candidato o antes del GO.
+4. **Las firmas que quedan del paquete:** 89 de 100. El segundo lote de nivel 1 está en 3.2.
+5. **La firma de las dos guías actualizadas** (bloques H e I).

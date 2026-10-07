@@ -106,6 +106,13 @@ Recomendación del AI Advisor sobre las 100 requeridas:
 
 Actualización del 2026-10-07: con X-1 cerrada, A-9 pasa de REVIEW CLOSELY a NEEDS REVISION del inglés (`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 3).
 
+**Decisiones docentes registradas (2026-10-07):**
+
+- X-1: APPROVE (a), con el alcance ampliado (sección 2, X-1).
+- Lote 1 de nivel 1: A-1 y B-19 a B-25, APPROVE; A-2 y A-9, REVISE.
+- Quedan 89 de las 100: 45 de nivel 1, 43 de nivel 2 y 1 de nivel 3 (J).
+- Ninguna revisión está implementada.
+
 Además, **después del despliegue y antes del GO** (sección 4, no bloquean B-5):
 
 - el relato en español de cada caso, que incluye el español de las filas 27–36;
@@ -177,8 +184,16 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - **SHA:** (a) y (c) son un cambio de código registrado, con sus pruebas → nuevo SHA → 16.4 (suite, regresiones y B-1). (b) no cambia el SHA.
 - **Decide:** usted (qué ve el residente) y la persona responsable del encargo (autoriza el cambio de código).
 - **Recomendación:** REVIEW CLOSELY — decidirla después de A y J; la opción (b) no bloquea B-5.
-- **Decisión docente:** ☐ APPROVE = (a) · ☐ REVISE = (c): ________ · ☐ DEFER = (b) — Nota: ________
-- **Cerrada el 2026-10-07** (decisión docente comunicada en el encargo B-5): el piloto de residentes corre en inglés y en español. Las filas 12–18 de R-4 en el panel del examen entran. Las casillas quedan en blanco: el alcance fuera de las frases de la Fase 0 (filas 1–11, J, lo anterior a la Fase 0) sigue pendiente. Ver `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, secciones 0 y 5.
+- **Decisión docente (2026-10-07):** ☒ APPROVE = (a), con el alcance ampliado de abajo · ☐ REVISE = (c) · ☐ DEFER = (b).
+- **Alcance decidido:**
+  - el piloto es bilingüe;
+  - en el candidato final, todo texto que ve el residente durante un encuentro en español es enteramente español,
+    salvo los nombres canónicos de fármacos y los códigos que se dejan sin cambiar a propósito;
+  - incluye F0-11, las filas 1–18 de R-4, el aviso de la foto, las preguntas de aclaración, el texto de la
+    compuerta de razonamiento y los rótulos que ve el residente;
+  - no se acepta una interfaz mezclada en inglés y español en el candidato final.
+- **Sin implementar.** Lo que falta está en el Decision File (2026-10-07, octava actualización) y en
+  `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, 2.5.
 
 ### A. R-4 · Las 18 frases del motor (filas 1–18)
 
@@ -189,15 +204,15 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 
 | # | Casos | EN exacto | ES exacto | Se infiere | Recomendación | Nivel | Decisión docente |
 |---|---|---|---|---|---|---|---|
-| A-1 | 27m (41m: sandbox) | Circulatory arrest from uncontrolled haemorrhage. The bleeding had not been stopped, and no volume replaces a source that is still open. | Paro circulatorio por una hemorragia no controlada. El sangrado no se había detenido; la reposición de volumen no sustituye el control del sangrado activo. | El paro siguió a un sangrado que nunca se detuvo; reponer volumen no reemplaza controlar la fuente. Atribuye una causa. | **APPROVE AS IS** — redacción docente del 2026-09-30. En la 27m sin control el paro llega hacia el minuto 13 (C-LIMB-ARREST-13) y la frase es exacta. VINCULADA con K-E4 y K-7: el mismo paro se nombra «cardiac arrest from uncontrolled haemorrhage» al cortar una espera y «Cardiac arrest occurred at minute…» en el mensaje acordado, también en inglés. | TIER 1 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| A-2 | 75f | Bilateral inspiratory crackles with increased respiratory effort. | Crépitos inspiratorios bilaterales, con aumento del esfuerzo respiratorio. | Esfuerzo aumentado: el paciente todavía compensa. | **REVIEW CLOSELY** — TD-51 (diferida): sin tratamiento, el motor muestra esta frase durante 12–13 minutos en que el esfuerzo ya es «Exhausted»; el residente puede leer compensación donde hay agotamiento. La traducción es fiel; el problema es del motor y la guía docente lo declara (líneas 162–163). | TIER 1 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| A-1 | 27m (41m: sandbox) | Circulatory arrest from uncontrolled haemorrhage. The bleeding had not been stopped, and no volume replaces a source that is still open. | Paro circulatorio por una hemorragia no controlada. El sangrado no se había detenido; la reposición de volumen no sustituye el control del sangrado activo. | El paro siguió a un sangrado que nunca se detuvo; reponer volumen no reemplaza controlar la fuente. Atribuye una causa. | **APPROVE AS IS** — redacción docente del 2026-09-30. En la 27m sin control el paro llega hacia el minuto 13 (C-LIMB-ARREST-13) y la frase es exacta. VINCULADA con K-E4 y K-7: el mismo paro se nombra «cardiac arrest from uncontrolled haemorrhage» al cortar una espera y «Cardiac arrest occurred at minute…» en el mensaje acordado, también en inglés. | TIER 1 | ☒ **APPROVE** (docente, 2026-10-07) |
+| A-2 | 75f | Bilateral inspiratory crackles with increased respiratory effort. | Crépitos inspiratorios bilaterales, con aumento del esfuerzo respiratorio. | Esfuerzo aumentado: el paciente todavía compensa. | **REVIEW CLOSELY** — TD-51 (diferida): sin tratamiento, el motor muestra esta frase durante 12–13 minutos en que el esfuerzo ya es «Exhausted»; el residente puede leer compensación donde hay agotamiento. La traducción es fiel; el problema es del motor y la guía docente lo declara (líneas 232–233). | TIER 1 | ☒ **REVISE** (docente, 2026-10-07): la traducción está bien, pero el examen no debe seguir diciendo «increased respiratory effort» cuando el estado es de agotamiento; el examen respiratorio que se muestra debe ser coherente con el estado. Sin implementar |
 | A-3 | 58m, 75f | Bilateral crackles remain, with reduced respiratory effort. | Persisten crépitos bilaterales, con menor esfuerzo respiratorio. | La congestión mejora; el menor esfuerzo es mejoría, no agotamiento. | **APPROVE AS IS** — una prueba del motor fija que sólo aparece con la congestión en mejoría y nunca junto al agotamiento. | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-4 | transfusión, cualquier familia | New bibasal inspiratory crackles since the transfusion, with increased effort and no wheeze. | Crépitos inspiratorios bibasales nuevos desde la transfusión, con aumento del esfuerzo y sin sibilancias. | Sobrecarga circulatoria por la transfusión, no broncoespasmo. | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-5 | 24f, 49m | Improved air entry with residual expiratory wheeze. | Mejor entrada de aire, con sibilancias espiratorias residuales. | Responde a los broncodilatadores; persiste una obstrucción leve. | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-6 | 24f, 49m | Reduced bilateral air entry with prolonged expiration and wheeze. | Entrada de aire disminuida en ambos lados, con espiración prolongada y sibilancias. | Obstrucción grave al llegar o sin respuesta. | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-7 | 24f, 49m | Breath sounds absent over the right hemithorax, which is hyper-resonant; wheeze on the other side. | Murmullo pulmonar abolido en el hemitórax derecho, que está hipersonoro; sibilancias en el otro lado. | Neumotórax a tensión de ese lado: hay que descomprimir. | **APPROVE AS IS** — el motor escribe el lado del caso (`family_engine.py:3235`); el borrador cubre «izquierdo» para «left» (`spanish_drafts.py:72`). «En el otro lado» es claro. | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-8 | 24f, 49m | Breath sounds returning on the right after decompression; improved air entry with residual expiratory wheeze. | Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; mejor entrada de aire, con sibilancias espiratorias residuales. | La descompresión funcionó; queda la obstrucción. | **APPROVE AS IS** — el lado, como en la fila 7. | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| A-9 | 35m, 67f | Respiratory rate {n} /min; assisted ventilation is in progress. | Frecuencia respiratoria {n}/min, dada por la ventilación asistida en curso. | EN: «12/min» puede leerse como respiración espontánea. ES: dice que es la frecuencia de la ventilación asistida. | **REVIEW CLOSELY** — TD-52 (a): el inglés activo no dice que la frecuencia es la de la ventilación asistida (el motor la fija en 12/min); el español sí. Aprobados tal cual, los dos idiomas dicen cosas distintas; corregir el inglés es un cambio de código (nuevo SHA). Actualizada el 2026-10-07, con X-1 cerrada (se mostrarán las dos versiones): **NEEDS REVISION** del inglés (`B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 3). | TIER 1 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| A-9 | 35m, 67f | Respiratory rate {n} /min; assisted ventilation is in progress. | Frecuencia respiratoria {n}/min, dada por la ventilación asistida en curso. | EN: «12/min» puede leerse como respiración espontánea. ES: dice que es la frecuencia de la ventilación asistida. | **REVIEW CLOSELY** — TD-52 (a): el inglés activo no dice que la frecuencia es la de la ventilación asistida (el motor la fija en 12/min); el español sí. Aprobados tal cual, los dos idiomas dicen cosas distintas; corregir el inglés es un cambio de código (nuevo SHA). Actualizada el 2026-10-07, con X-1 cerrada (se mostrarán las dos versiones): **NEEDS REVISION** del inglés (`B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 3). | TIER 1 | ☒ **REVISE** (docente, 2026-10-07): se mantiene el español; el inglés pasa a «Respiratory rate {n}/min, provided by the assisted ventilation currently in progress.» Sin implementar |
 | A-10 | 35m, 67f | Respiratory rate {n} /min; breaths remain shallow. | Frecuencia respiratoria {n}/min; las respiraciones siguen siendo superficiales. | Hipoventilación persistente: la naloxona o la ventilación todavía hacen falta. | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-11 | 35m, 67f | Respiratory rate {n} /min; spontaneous breaths have greater depth. | Frecuencia respiratoria {n}/min; las respiraciones espontáneas son más profundas. | Responde a la naloxona («más profundas» que en el examen anterior). | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-12 | 54m | Peripheral cannula in the left forearm; the skin around its tip is slightly swollen and cool. | Cánula periférica en el antebrazo izquierdo; la piel alrededor del extremo del catéter está levemente aumentada de volumen y fría. | La vía de llegada puede estar infiltrada: una pista para no usarla. | **APPROVE AS IS** — terminología R-4 («aumento de volumen»). En español hoy se ve en inglés en el panel del examen (1.4); mostrarla es X-1. | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
@@ -219,49 +234,49 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES: Trombólisis sistémica administrada en shock obstructivo: sistólica bajo 90 mmHg, o un vasopresor necesario para llegar a 90 mmHg, con signos de hipoperfusión. En shock está indicada desde que el shock está presente; los 15 minutos consecutivos aplican sólo a una hipotensión sin esos signos. El fármaco actúa sobre el trombo durante cerca de media hora; lo que cambie se ve al reevaluar.
 - Se infiere: la lisis estaba indicada desde que el shock estaba presente; no había que esperar 15 minutos. Lo que cambie se verá al reevaluar.
 - Recomendación: **APPROVE AS IS** — es el criterio D-4, el mismo del motor (`test_pe_notes_and_row_18.py`).
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **B-20 · Fila 20 · Nota 2 · hipotensión sostenida** — TIER 1 · ACTIVE
 - EN: Systemic thrombolysis given for sustained hypotension: systolic below 90 mmHg, or a vasopressor needed to keep it at 90 mmHg or above, for 15 consecutive minutes. The drug acts on the clot over about half an hour; what it changes is seen on reassessment.
 - ES: Trombólisis sistémica administrada por hipotensión sostenida: sistólica bajo 90 mmHg, o un vasopresor necesario para mantenerla en 90 mmHg o más, durante 15 minutos consecutivos. El fármaco actúa sobre el trombo durante cerca de media hora; lo que cambie se ve al reevaluar.
 - Se infiere: indicada por 15 minutos consecutivos de hipotensión sin signos de hipoperfusión.
 - Recomendación: **APPROVE AS IS** — criterio D-4.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **B-21 · Fila 21 · Nota 3 · sin indicación, presión baja** — TIER 1 · ACTIVE
 - EN: Systemic thrombolysis given without the hemodynamic indication: systolic {n} mmHg with no sign of hypoperfusion, low for {m} of the 15 consecutive minutes a hypotension without them requires. The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken without the indication; what it changes is seen on reassessment.
 - ES: Trombólisis sistémica administrada sin la indicación hemodinámica: sistólica de {n} mmHg sin signos de hipoperfusión, baja durante {m} de los 15 minutos consecutivos que exige una hipotensión sin ellos. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar.
 - Se infiere: durante el encuentro, la sala dice que se trombolizó antes de cumplir el criterio y que el riesgo de sangrado se asumió sin indicación: es una retroalimentación inmediata sobre la indicación.
 - Recomendación: **APPROVE AS IS** — P-06 y D-4; los valores son los del minuto de la orden.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **B-22 · Fila 22 · Nota 4 · vasopresor innecesario** — TIER 1 · ACTIVE
 - EN: Systemic thrombolysis given without the hemodynamic indication: systolic {n} mmHg on a vasopressor the pressure does not need, with no hypotension from the embolism. The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken without the indication; what it changes is seen on reassessment.
 - ES: Trombólisis sistémica administrada sin la indicación hemodinámica: sistólica de {n} mmHg con un vasopresor que la presión no necesita, sin hipotensión por la embolia. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar.
 - Se infiere: la presión no necesitaba el vasopresor y no había hipotensión por la embolia: sin indicación.
 - Recomendación: **APPROVE AS IS** — el §2 abrevia «(sigue como la 3)»; aquí va el texto completo del código.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **B-23 · Fila 23 · Nota 5 · normotensión** — TIER 1 · ACTIVE
 - EN: Systemic thrombolysis given without the hemodynamic indication: systolic {n} mmHg, with no hypotension from the embolism. The drug acts on the clot whether or not it was indicated, and its bleeding risk is taken without the indication; what it changes is seen on reassessment.
 - ES: Trombólisis sistémica administrada sin la indicación hemodinámica: sistólica de {n} mmHg, sin hipotensión por la embolia. El fármaco actúa sobre el trombo esté o no indicado, y su riesgo de sangrado se asume sin la indicación; lo que cambie se ve al reevaluar.
 - Se infiere: sin hipotensión por la embolia: sin indicación.
 - Recomendación: **APPROVE AS IS** — el §2 abrevia «(sigue como la 3)»; aquí va el texto completo del código.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **B-24 · Fila 24 · Nota 6 · resto del esquema** — TIER 1 · ACTIVE
 - EN: alteplase {n} mg recorded as part of the initial regimen begun at minute {t} ({total} mg in all). It completes the first dose rather than starting a new one, and the first dose keeps acting as before.
 - ES: Se registran {n} mg de alteplasa como parte del esquema inicial comenzado en el minuto {t} ({total} mg en total): completan la primera dosis en lugar de iniciar una nueva, y la primera dosis sigue actuando como antes.
 - Se infiere: lo que se dio completa la primera dosis; no es un segundo curso.
 - Recomendación: **APPROVE AS IS** — el fármaco va en español («alteplasa»), como pidió D-5; las etiquetas de órdenes de la Fase 0 lo dejan en inglés (ver K-13).
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **B-25 · Fila 25 · Nota 7 · segundo curso** — TIER 1 · ACTIVE
 - EN: A second course of systemic thrombolysis is recorded (alteplase {n} mg); the first course began at minute {t}. Its added bleeding risk is recorded as exposure. This simulator represents neither additional reperfusion from a second course nor any bleeding of its own; that is a simplification, not evidence that repeating has no effect. The first dose keeps acting as before.
 - ES: Se registra un segundo curso de trombólisis sistémica (alteplasa {n} mg); el primero comenzó en el minuto {t}. Su riesgo adicional de sangrado queda registrado como exposición. Este simulador no representa una reperfusión adicional por un segundo curso ni un sangrado propio; es una simplificación, no evidencia de que repetir no tenga efecto. La primera dosis sigue actuando como antes.
 - Se infiere: el segundo curso queda registrado como exposición; el simulador no le da efecto propio, y lo dice como simplificación.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **B-26 · Fila 26 · Aviso del sangrado (33f)** — TIER 1 · ACTIVE
 - EN: Bleeding from the surgical site operated on twelve days ago: the haemoglobin is falling. This is the risk the thrombolytic carries, and it was taken in a patient who had a reason to bleed.
@@ -311,7 +326,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 **D-40 · Fila 40 · `pulmonary_embolism_33f`** — TIER 1 · EN ACTIVE · ES DOCUMENTATION ONLY
 - Dónde: la rúbrica y los objetivos de cada caso, bajo D-39; `case_assessment_bank.py:1787`.
 - EN: After a thrombolytic the bleeding from the operated site does not stop in this simulator: the haemoglobin keeps falling while the pressure can stay reassuring. The room cannot stop an alteplase infusion; tranexamic acid and cryoprecipitate are recorded without a modelled effect, and fibrinogen concentrate is not recognised. The response to that bleeding is not evaluated and is never used to judge haemorrhage rescue: not reversing it is never charged, and a measure written for it is never an omission. The decision to give the thrombolytic is judged as before, on the minute it was given.
-- ES (§2): (en inglés, como toda declaración del banco; la guía docente lo dice en español) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 109–114.
+- ES (§2): (en inglés, como toda declaración del banco; la guía docente lo dice en español) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 118–123.
 - Se infiere (docente): la respuesta al sangrado tras la lisis no se evalúa ni juzga el rescate hemorrágico; la decisión de trombolizar sí, en su minuto.
 - Recomendación: **APPROVE AS IS** — D-3 (TD-55). VINCULADA con B-26.
 - SHA: S-A (el inglés); S-C (la guía). — Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
@@ -319,7 +334,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 **D-41 · Fila 41 · `acs_70f_left_main`** — TIER 1 · EN ACTIVE · ES DOCUMENTATION ONLY
 - Dónde: la rúbrica y los objetivos de cada caso, bajo D-39; `case_assessment_bank.py:1794`.
 - EN: A volume past this ventricle's tolerance shows only as a pressure that stops answering and a message in the room; the lungs, the examination, the saturation and a repeat POCUS do not change. Detecting overload on the examination or POCUS is not required; when the only response the resident looked for is one the simulator does not show, that part is not evaluable rather than missing.
-- ES (§2): (ídem) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 103–107.
+- ES (§2): (ídem) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 112–116.
 - Se infiere (docente): el exceso de volumen sólo se ve en la presión y en un mensaje; no se exige detectarlo por examen ni POCUS; lo no visible es no evaluable.
 - Recomendación: **APPROVE AS IS** — D-8 (TD-53). VINCULADA con E-46: el mismo criterio con otra redacción; decidirlas juntas.
 - SHA: S-A (el inglés); S-C (la guía). — Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
@@ -327,7 +342,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 **D-42 · Fila 42 · `pneumonia_46f` y `pneumonia_83m`** — TIER 1 · EN ACTIVE · ES DOCUMENTATION ONLY
 - Dónde: la rúbrica y los objetivos de cada caso, bajo D-39; `case_assessment_bank.py:1799, 1802`.
 - EN: A repeat POCUS shows the IVC filling with volume, but its lungs show no new B-lines with crystalloid overload; the saturation does fall. Seeing new B-lines is not required.
-- ES (§2): (ídem) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 145–148.
+- ES (§2): (ídem) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 156–159.
 - Se infiere (docente): un POCUS de control no muestra líneas B nuevas con cristaloides (la saturación sí cae); no se exige verlas.
 - Recomendación: **APPROVE AS IS** — TD-54. UNA DECISIÓN → `pneumonia_46f`, `pneumonia_83m` (el §2 ya la agrupa). Ver F-53 y F-54.
 - SHA: S-A (el inglés); S-C (la guía). — Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
@@ -335,7 +350,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 **D-43 · Fila 43 · `trauma_limb_hemorrhage_27m`** — TIER 1 · EN ACTIVE · ES DOCUMENTATION ONLY
 - Dónde: la rúbrica y los objetivos de cada caso, bajo D-39; `case_assessment_bank.py:1805`.
 - EN: A repeat POCUS shows the arrival IVC whatever the volume or the haemorrhage control, and a repeat E-FAST repeats the arrival windows: a change the simulator does not show is not required.
-- ES (§2): (ídem) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 145–148.
+- ES (§2): (ídem) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 156–159.
 - Se infiere (docente): la VCI y el E-FAST de control repiten la llegada; no se exige ver un cambio.
 - Recomendación: **APPROVE AS IS** — TD-54.
 - SHA: S-A (el inglés); S-C (la guía). — Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
@@ -343,7 +358,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 **D-44 · Fila 44 · `trauma_hemothorax_41m`** — OPCIONAL (F0-2) · EN ACTIVE · ES DOCUMENTATION ONLY
 - Dónde: la rúbrica y los objetivos de cada caso, bajo D-39; `case_assessment_bank.py:1808`.
 - EN: A repeat POCUS shows the arrival IVC whatever the volume, and a repeat E-FAST repeats the arrival windows, the drained pleural recess included: what it adds is the other cavities still clear.
-- ES (§2): (ídem) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 145–148.
+- ES (§2): (ídem) El equivalente está en `docs/GUIA_DOCENTE_PILOTO.md`, líneas 156–159.
 - Se infiere (docente): el control repite la llegada, incluido el receso drenado; lo que agrega es que las otras cavidades siguen limpias.
 - Recomendación: **APPROVE AS IS** — TD-54. OPCIONAL (F0-2): el caso está fuera del piloto de residentes.
 - SHA: S-A (el inglés); S-C (la guía). — Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________

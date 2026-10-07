@@ -9,7 +9,7 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
-  en español). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
+  en español, sin interfaz mezclada en el candidato final; el lote 1 de nivel 1 quedó decidido). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
@@ -165,13 +165,49 @@ Sigue pendiente de ti:
   - la firma de las dos guías.
 - **B-5: BLOCKED.**
 
+**Actualizado por octava vez el 2026-10-07: B-5 · decisiones docentes del lote 1 de nivel 1 y alcance de X-1.**
+Registradas también en el paquete (`docs/revision/FACULTY_SIGNOFF_PACKET_PREPILOT.md`). **Ninguna está
+implementada.**
+
+- **X-1, cerrada con alcance ampliado (decisión docente):**
+  - el piloto es bilingüe;
+  - en el candidato final, todo texto que ve el residente durante un encuentro en español es enteramente
+    español, salvo los nombres canónicos de fármacos y los códigos que se dejan sin cambiar a propósito;
+  - incluye F0-11, las filas 1–18 de R-4, el aviso de la foto, las preguntas de aclaración, el texto de la
+    compuerta de razonamiento y los rótulos que ve el residente;
+  - no se acepta una interfaz mezclada en inglés y español en el candidato final.
+
+| ID | Decisión docente (2026-10-07) | Qué exige, sin implementar todavía |
+|---|---|---|
+| A-1 | APPROVE | Nada en el inglés. Su español (borrador) entra con X-1 |
+| A-2 | REVISE: la traducción está bien, pero el examen no debe seguir diciendo «increased respiratory effort» cuando el estado es de agotamiento; el examen respiratorio que se muestra debe ser coherente con el estado | Cambio del motor o del examen (TD-51), con su redacción en inglés y en español para firmar antes de implementarlo. **Adelanta TD-51**, que D-9 (2026-10-02) había dejado para después del piloto: ahora va antes del candidato final |
+| A-9 | REVISE: se mantiene el español; el inglés pasa a «Respiratory rate {n}/min, provided by the assisted ventilation currently in progress.» | Cambio del texto inglés en el código (TD-52 a) |
+| B-19 a B-25 | APPROVE | Nada: activas en inglés y en español |
+
+- **Lo que X-1 agrega al trabajo antes del candidato final** (todo es código, salvo la redacción, y por lo tanto
+  un SHA nuevo, con el contrato de promoción 16.4: suite, regresiones y B-1):
+  - el panel del examen debe mostrar el español aprobado de las filas 1–18 de R-4;
+  - las filas 2–8, 10 y 11 de R-4 todavía esperan la firma de su español (nivel 2), y la fila 64 (aviso de la
+    foto, J), la suya;
+  - las preguntas de aclaración (TD-79), el texto de la compuerta y los rótulos (TD-61) no tienen español
+    redactado: hay que redactarlo y firmarlo (TD-46: sin traducción automática) antes de implementarlo;
+  - los modos Talk, Examine, Tests y Treat son rótulos que ve el residente: entran.
+- **Consecuencias que conviene decidir:**
+  - el relato en español de cada caso se aprueba en el tablero después del despliegue (paquete, sección 4); con
+    X-1, un relato sin aprobar mostraría inglés en un encuentro en español. Corregir una traducción del relato
+    es un cambio del repositorio (nuevo SHA). Falta decidir si se revisa antes de congelar el candidato o antes
+    del GO, como dice la sección 4;
+  - al implementar, las guías cambian: H-6 e I-9 (aviso de la foto), H-10, I-2, el punto «Idioma (X-1)», la
+    limitación TD-51 de la guía docente y la mención de los modos en inglés en la guía del residente.
+- **B-5: BLOCKED.** Quedan 89 de las 100 decisiones: 45 de nivel 1, 43 de nivel 2 y 1 de nivel 3 (J).
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. X-1 quedó decidida el 2026-10-07 (piloto en inglés y en español); las demás siguen pendientes | Firmar antes de construir el candidato final; definir el alcance de X-1 fuera de la Fase 0 |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1 (alcance ampliado) y el lote 1 de nivel 1 (8 APPROVE, 2 REVISE, sin implementar); quedan 89 de 100 | Firmar las restantes; redactar y firmar el español que X-1 exige y no existe; implementar lo decidido antes de construir el candidato final |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,
