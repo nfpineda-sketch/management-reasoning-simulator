@@ -253,3 +253,6 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
   - sin cambios en los niveles, el puntaje, la estructura ni el inglés; sin aprobaciones ni cambios en
     `rubric_text/es`.
 - **R1 dividido en R1A y R1B (docente, 2026-10-07), en el orden canónico del banco.** R1A, entregado para revisión: `docs/revision/B5_RELATO_R1A.md`.
+- **R1A, decidido (2026-10-07):** APPROVE WHOLE CASE en `acs_54m_inferior` (`e1afcda5…`, con T-2), `acs_66f_nonst`
+  (`d64dc726…`, con T-1) y `acs_61m_posterior` (`a6311c11…`). Van 3 de 30 casos. **Regla de versión:** la aprobación ata la versión objetivo presentada en la revisión, no la que está hoy en el repositorio. Al implementar, el español del repositorio tiene que dar exactamente ese hash antes de generar la entrada de aprobación; si da otro, se detiene y vuelve a revisión docente.
+- **R1B, entregado para revisión:** `docs/revision/B5_RELATO_R1B.md`.

@@ -634,7 +634,7 @@ diseñada en `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`.
 ## 5. Decisiones pendientes
 
 Actualizado el 2026-10-07, con las 100 decisiones docentes del paquete, los estados límite de la 49m, el alcance y
-X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigesimotercera actualizaciones).
+X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigesimocuarta actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -645,6 +645,7 @@ X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigesim
    revisión. **La revisión quedó diseñada y aprobada el 2026-10-07** (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`, §8): la unidad es el caso
    entero; T-1 a T-3 y los 18 pasajes del corpus, decididos. El archivo se genera cuando los 30 casos terminen su
    revisión. **Lote 0 aprobado el 2026-10-07** (`docs/revision/B5_RELATO_LOTE_0.md`): 47 de 47 frases comunes.
+   **R1A aprobado** (`docs/revision/B5_RELATO_R1A.md`): 3 de 30 casos, cada uno en su versión objetivo. R1B en revisión (`docs/revision/B5_RELATO_R1B.md`).
 4. **Decidido:** las 100 decisiones del paquete (3.11). Siguen sin firma, a propósito, H-62 e I-63, hasta el
    candidato final implementado.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
