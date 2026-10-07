@@ -263,3 +263,9 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
 - **R2 dividido en R2A y R2B (docente, 2026-10-07), en el orden canónico del banco** (`clinical_cases.FAMILIES`:
   neumonía, edema pulmonar y asma). R2A (`pneumonia_46f`, `pneumonia_83m` y `pulmonary_edema_58m`), entregado
   para revisión: `docs/revision/B5_RELATO_R2A.md`. R2B: `pulmonary_edema_75f`, `asthma_24f` y `asthma_49m`.
+- **R2A, decidido (2026-10-07):** APPROVE WHOLE CASE en `pneumonia_46f` (`d16cb333…`, con T-1 y T-2; sus 3 pasajes
+  fijos del corpus, sin cambios), `pneumonia_83m` (`45a84e87…`, con T-1) y `pulmonary_edema_58m` (`dffcae29…`, con
+  T-1 y «crépitos bilaterales difusos»). Van 9 de 30 casos. Rige la misma regla de versión.
+- **R2B, entregado para revisión:** `docs/revision/B5_RELATO_R2B.md`. Trae una observación de sentido en `asthma_24f` (P-1, «opresivo» →
+  «aplastante»), con las dos versiones objetivo, y la intersección de `asthma_49m` con A-6a a A-8a, que no pide
+  decisión nueva.

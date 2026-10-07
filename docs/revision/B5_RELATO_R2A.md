@@ -1,6 +1,7 @@
 # B-5 · Relato en español · Lote R2A: respiratorio (casos 1 a 3)
 
-> **PARA REVISIÓN DOCENTE. Nada implementado.** Primera mitad del lote R2 de la revisión del relato
+> **DECIDIDO por la docencia el 2026-10-07: los 3 casos, APPROVE WHOLE CASE. Nada implementado.** Primera mitad
+> del lote R2 de la revisión del relato
 > (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`). La docencia pidió R2 en dos mitades el 2026-10-07, como R1. Se
 > sigue el orden canónico del banco (`clinical_cases.FAMILIES`: neumonía, edema pulmonar y asma; el mismo del
 > manifiesto, `pilot_freeze.CASES`):
@@ -16,6 +17,9 @@
 
 **En una mirada**
 
+- **Decidido (docente, 2026-10-07):** 3 de 3 casos aprobados, cada uno en su versión objetivo. Los 3 pasajes fijos del corpus
+  de `pneumonia_46f` siguen aprobados exactamente como están escritos y no cambian. El relato del piloto suma 9 de
+  30 casos. Rige la regla de versión.
 - **Pasajes:** 3 casos y 103 pasajes. 50 están cubiertos por frases del lote 0, ya aprobadas; **53 son propios y se
   revisan** (18, 19 y 16).
 - **Corpus de la validación externa:** `pneumonia_46f` está en él (C02). Sus 3 pasajes fijos (la presentación,
@@ -61,7 +65,7 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Se aplican T-1 en `/examination/Respiratory` y T-2 en `/examination/Abdomen`, ya aprobados. Los 3 pasajes 🔒 se leyeron con el caso: ningún error clínicamente relevante, así que quedan como están.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `d16cb3330fc87b73abb6d2e03eae76b428b4f61c0c33b9848cff27caa22977ca`. Incluye T-1 (crackles → crépitos) y T-2 (guarding → defensa). Los 3 pasajes fijos del corpus siguen aprobados exactamente como están escritos y no cambian.
 
 ## pneumonia_83m
 
@@ -95,7 +99,7 @@ Cubiertos por el lote 0: `/history_source` (L0-31), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Se aplica T-1 en `/examination/Respiratory`, ya aprobado.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `45a84e879f0a33e8167bf2de5937d23d7eb8ef4068439f77f162563640cd0c1b`. Incluye T-1 (crackles → crépitos).
 
 ## pulmonary_edema_58m
 
@@ -126,15 +130,15 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Se aplica T-1 en `/examination/Respiratory`, ya aprobado, con la concordancia: «crepitaciones bilaterales difusas» pasa a «crépitos bilaterales difusos». Así la llegada coincide con la frase del motor A-3, ya aprobada («Persisten crépitos bilaterales»).
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `dffcae29509ba47cbea4b30959c62e9093d6bce2df1099d724495a6238f804ae`. Incluye T-1 y la concordancia que trae: «crépitos bilaterales difusos».
 
 ## Resumen del lote R2A
 
 | Caso | Propios | Cubiertos por el lote 0 | Fijos del corpus | Versión objetivo que se aprueba | Recomendación | Decisión docente |
 |---|---|---|---|---|---|---|
-| `pneumonia_46f` | 18 | 17 | 3 🔒 | `d16cb333…` (con T-1 y T-2) | APPROVE | ☐ |
-| `pneumonia_83m` | 19 | 15 | 0 | `45a84e87…` (con T-1) | APPROVE | ☐ |
-| `pulmonary_edema_58m` | 16 | 18 | 0 | `dffcae29…` (con T-1) | APPROVE | ☐ |
+| `pneumonia_46f` | 18 | 17 | 3 🔒 | `d16cb333…` (con T-1 y T-2) | APPROVE | ☒ APPROVE |
+| `pneumonia_83m` | 19 | 15 | 0 | `45a84e87…` (con T-1) | APPROVE | ☒ APPROVE |
+| `pulmonary_edema_58m` | 16 | 18 | 0 | `dffcae29…` (con T-1) | APPROVE | ☒ APPROVE |
 | **Total** | **53** | **50** | **3** | | | |
 
-Siguiente: R2B (`pulmonary_edema_75f`, `asthma_24f` y `asthma_49m`), después de la decisión docente sobre R2A.
+Siguiente: R2B (`pulmonary_edema_75f`, `asthma_24f` y `asthma_49m`), en `docs/revision/B5_RELATO_R2B.md`.
