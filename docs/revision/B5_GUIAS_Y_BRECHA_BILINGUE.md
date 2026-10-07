@@ -312,6 +312,50 @@ caso (en inglés también en español, TD-07); su español es borrador inactivo.
 | 9 | F-56 · `pulmonary_edema_75f` | Lo mismo | **APPROVE AS IS** — llega con la vista neutral (P-07); la ficha no depende de la foto |
 | 10 | F-57 · `pulmonary_embolism_33f` | Integrar el VD y la TVP proximal con la estabilidad: anticoagular antes de confirmar y no trombolizar | **APPROVE AS IS** |
 
+**Decisión docente (2026-10-07):** F-48 a F-57, APPROVE. En F-49, el límite de D-41 y E-46 es vinculante: no se
+exige detectar la sobrecarga por examen ni por POCUS cuando el motor no la modela. F-53 y F-54 quedan vinculadas a
+D-42: la respuesta al volumen se juzga con la VCI y la saturación, nunca con líneas B nuevas. Registradas en el
+paquete y en el Decision File (décima actualización), sin implementar.
+
+### 3.4 Cuarto lote de nivel 1 (propuesto el 2026-10-07)
+
+Orden del paquete: F-58, F-60, G-61, H-62, I-63, K-1 y K-2 (una decisión), K-3, K-4, K-5 y K-6. Los textos exactos y
+las casillas están en el paquete. **Comprobado el 2026-10-07:**
+
+- F-58 y F-60: el componente y la evidencia en inglés coinciden con el banco, y su español con el borrador.
+- G-61: el documento termina con la tabla que genera `tdfc_review.final_table_markdown()`; lo comprueba
+  `test_tdfc_opportunities.py`, 12 de 12.
+- K-1 a K-6: `language.say` convierte cada ejemplo inglés exactamente en el español del paquete, que también está en
+  la hoja F0-11. Están activas en los dos idiomas.
+
+| # | ID | Qué se decide | Recomendación |
+|---|---|---|---|
+| 1 | F-58 · `pulmonary_embolism_61m` | Decidir reperfusión y anticoagulación por la sobrecarga del VD (signo D o de McConnell) o la TVP, en shock, sin esperar la angio-TC | **APPROVE AS IS** |
+| 2 | F-60 · `trauma_limb_hemorrhage_27m` | Dirigir el control de la hemorragia con el E-FAST negativo: mantenerlo en la extremidad y decir qué lo cambiaría | **APPROVE AS IS** — el E-FAST de control repite la llegada (D-43, ya aprobada) |
+| 3 | G-61 · tabla TDFC final | Las oportunidades TD1, F1, C1 y C3 de los 31 casos (T-2: C1 YES; T-3 y T-4: NO) | **APPROVE AS IS** |
+| 4 | H-62 · guía docente | La guía actualizada | **DEFER la firma** (recomendación nueva): describe la sala anterior a X-1 y el calendario anterior del relato (lista abajo). Actualizarla, sólo documentación, cuando se implemente X-1 y se revise el relato, y firmar la versión que describe el candidato final |
+| 5 | I-63 · guía del residente | La guía actualizada | **DEFER la firma**, por la misma razón |
+| 6 | K-1 y K-2 · orden no entendida | «No se entendió: «…». No se administró ni se hizo nada por ello. Escríbelo de nuevo con otras palabras si aún lo quieres.» | **APPROVE AS IS** |
+| 7 | K-3 · registrada, no administrada | «Registrado como tu decisión, no administrado: «…». Este simulador no modela una respuesta a ello en este caso, así que nada cambió.» | **APPROVE AS IS** |
+| 8 | K-4 · mirada en la cabecera | «Al reevaluar en la cabecera, 2 minutos después, PA …» | **APPROVE AS IS** |
+| 9 | K-5 · mirada después de una orden | «Suero fisiológico 1000 mL. Al reevaluar en la cabecera, 1 minuto después de la orden, PA …» | **APPROVE AS IS** — con X1-0, un fármaco en esa línea se nombrará en español al implementarse |
+| 10 | K-6 · espera interrumpida | «Administrado: Suero fisiológico 1000 mL. La espera se interrumpió tras 7 min de los 15 que pediste, en el minuto 7: …» | **APPROVE AS IS** — lo mismo de K-5; la mayúscula tras «Administrado:» es cosmética |
+
+**Frases de las guías que las decisiones del 2026-10-07 dejan desactualizadas** (H-62 e I-63):
+
+- Guía del residente:
+  - líneas 16–24 («Idioma»): el relato puede verse en inglés; líneas del examen, muchas preguntas de la sala, el
+    aviso de una orden retenida y algunos rótulos se ven en inglés;
+  - línea 75: nombra los modos en inglés (L-01);
+  - líneas 93–94: el aviso de la foto se ve «por ahora, en inglés» (J).
+- Guía docente:
+  - líneas 25–30 («Idioma (X-1)»): remite a lo que «todavía se ve en inglés»;
+  - líneas 149–150: el aviso de la foto «todavía se ve en inglés» (J);
+  - líneas 156–159 (TD-54): junta el trauma y la neumonía; D-42 tiene su español propio;
+  - líneas 232–233: «TD-51, diferida»; A-2 quedó decidida para antes del candidato;
+  - líneas 238–244 («Relato en español»): el relato se revisa antes del candidato; R-4, el aviso de la foto, las
+    preguntas de la sala y la compuerta dejarán de verse en inglés.
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -329,14 +373,17 @@ caso (en inglés también en español, TD-07); su español es borrador inactivo.
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes de los lotes 1 y 2, del alcance de X-1 y del relato
-(Decision File, octava y novena actualizaciones).
+Actualizado el 2026-10-07, con las decisiones docentes de los lotes 1 a 3, del alcance y las bases de X-1, y del
+relato (Decision File, octava a décima actualizaciones).
 
-1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final.
-2. **Firmar el español que X-1 exige:** está redactado para revisión, sin implementar
-   (`docs/revision/X1_ESPANOL_PROPUESTO.md`): 103 decisiones, entre ellas la redacción EN y ES del examen
-   respiratorio en agotamiento (A-2, TD-51).
-3. **Decidido:** el relato en español se revisa después del despliegue y antes del GO; el piloto bilingüe no abre
-   sin esa revisión.
-4. **Las firmas que quedan del paquete:** 79 de 100. El tercer lote de nivel 1 está en 3.3.
-5. **La firma de las dos guías actualizadas** (bloques H e I).
+1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
+   I-10, L-01, V-4, M-02, L-17).
+2. **Firmar el resto del español que X-1 exige** (`docs/revision/X1_ESPANOL_PROPUESTO.md`): 98 de 105 decisiones,
+   entre ellas V-9 (nombres de fármacos en español), que falta redactar.
+3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final. **Falta
+   decidir** cómo llega su aprobación al piloto: en `case_text/es/approvals.json`, dentro del candidato, o
+   registrada de nuevo en la base del piloto antes del GO.
+4. **Las firmas que quedan del paquete:** 68 de 100. El cuarto lote de nivel 1 está en 3.4.
+5. **Las dos guías:** se recomienda diferir su firma hasta implementar X-1 y revisar el relato (3.4).
+6. **Sin decidir:** si la rúbrica en español (4.2 del paquete) también se revisa antes del candidato, y si la
+   aclaración de X1-0 alcanza a los documentos en español que descarga el residente.

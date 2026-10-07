@@ -13,6 +13,9 @@ Reglas de la traducción:
 - Las palabras de la persona residente citadas en una frase quedan como las escribió, entre «»: no se traducen.
 - Los nombres de los fármacos, las unidades y las abreviaturas son iguales en ambos idiomas (convención de la
   sala); las etiquetas de órdenes que compone el motor siguen como antes.
+  **Decisión docente del 2026-10-07 (X1-0, aclaración), sin implementar:** en un encuentro en español, los
+  fármacos que el motor inserta en un texto que ve el residente se mostrarán con su nombre en español; el
+  identificador canónico guardado no cambia. Hoy, las frases de abajo todavía los muestran en inglés.
 - Los códigos internos (destinos del ledger como UNRECOGNIZED o RECORDED_NOT_MODELLED, nombres de campos) no se
   traducen ni se muestran a la persona residente.
 - El registro guarda la frase en inglés, como todo el registro; la sala la dice en el idioma del encuentro.

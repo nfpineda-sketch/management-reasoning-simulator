@@ -9,8 +9,8 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
-  en español, sin interfaz mezclada en el candidato final; los lotes 1 y 2 de nivel 1 quedaron decididos y el español
-  que falta para X-1 está redactado para revisión). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
+  en español, sin interfaz mezclada en el candidato final; los lotes 1 a 3 de nivel 1 quedaron decididos, el español
+  que falta para X-1 está redactado y sus decisiones de base, tomadas). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
   D-1 a D-11 decididas y aplicadas), la revisión clínica prepiloto, la segunda y la primera respuesta al paquete
   del ciclo 10, el ciclo 10, el estado posterior a V3, la tabla del cierre del ciclo 9 y los ciclos anteriores
@@ -217,7 +217,8 @@ X-1.** Registradas también en el paquete. **Ninguna está implementada.**
   - el texto del relato está en el repositorio (`case_text/es/`): corregir una traducción es un SHA nuevo y otro
     despliegue (paquete, 4.3).
 
-  Responde la consecuencia que la octava actualización dejaba por decidir.
+  Responde la consecuencia que la octava actualización dejaba por decidir. **Reemplazado en la décima
+  actualización:** el relato se revisa antes de congelar el candidato final.
 - **El español que falta para X-1 (decisión docente):** autorizado para redactarse y revisarse, no para
   implementarse. Borrador: `docs/revision/X1_ESPANOL_PROPUESTO.md`:
   - 100 formulaciones únicas y 7 vocabularios, cada una con las fuentes que cubre;
@@ -234,13 +235,66 @@ X-1.** Registradas también en el paquete. **Ninguna está implementada.**
 - **B-5: BLOCKED.** Quedan 79 de las 100 decisiones: 35 de nivel 1, 43 de nivel 2 y 1 de nivel 3 (J). Aparte,
   las 103 decisiones del borrador de X-1, que no estaban entre las 100.
 
+**Actualizado por décima vez el 2026-10-07: B-5 · lote 3 de nivel 1, decisiones de base de X-1, A-2, calendario
+del relato y claves internas.** Registradas también en el paquete y en `docs/revision/X1_ESPANOL_PROPUESTO.md`.
+**Ninguna está implementada.**
+
+| ID | Decisión docente (2026-10-07) | Qué exige, sin implementar todavía |
+|---|---|---|
+| F-48, F-50, F-51, F-52, F-55, F-56 y F-57 | APPROVE | Nada: las fichas y sus declaraciones C14 siguen como están |
+| F-49 | APPROVE. El límite aprobado en D-41 y E-46 es vinculante: no se exige detectar la sobrecarga por examen ni por POCUS cuando el motor no la modela; la adaptación se juzga con las señales que el simulador entrega | Nada en el banco: es la regla de la revisión docente |
+| F-53 y F-54 | APPROVE, vinculadas a D-42: la respuesta al volumen se juzga con la VCI y la saturación; nunca se exigen líneas B nuevas, que el simulador no modela | Ídem |
+| J | APPROVE, en «tú»: «Una fotografía fija no muestra todos los signos clínicos; examina al paciente para evaluar lo que no puede mostrar.» | Mostrarlo en español (X-1) |
+| D-42, español | APPROVE de la traducción propia | Llevarla a la guía docente (sólo documentación) |
+| A-2 | Sigue en REVISE, con redacción final docente: EN «Bilateral inspiratory crackles; respiratory effort is now shallow and ineffective, consistent with exhaustion.»; ES «Crépitos inspiratorios bilaterales; el esfuerzo respiratorio ahora es superficial e ineficaz, compatible con agotamiento.» Con el criterio del motor ya propuesto | Cambio del motor y de su español (TD-51) |
+| X1-0 | APPROVE, con una aclaración: en un encuentro en español, los fármacos que el motor inserta en un texto que ve el residente también se muestran con su nombre en español; el identificador canónico puede seguir en inglés. Así queda la convención de K-13, sin cambiar su valor guardado | Redactar V-9 (los nombres en español); al implementarse cambian K-13, K-14 y, con un fármaco, K-5 y K-6 |
+| I-10 | APPROVE: el resumen de la orden retenida reusa las etiquetas del registro; V-8 no se construye salvo que aparezca una acción sin etiqueta | Implementación |
+| L-01 | APPROVE: Conversar · Examinar · Exámenes · Tratar | Implementación y guía del residente |
+| V-4 | APPROVE: Respiración y Pulmonar, regiones distintas | Implementación |
+| M-02 | APPROVE: Urgencias / Cama 03 | Implementación |
+| Claves internas | Antes del candidato final se limpian las claves internas que ve el residente (por ejemplo, `beta_blocker` → beta blocker / betabloqueador; `ORDER_CANCELLED` → ORDER CANCELLED / ORDEN CANCELADA). Sólo presentación: las claves canónicas no cambian | TD-80. L-17 queda decidida así |
+| Relato en español | **Reemplaza la decisión de la novena actualización.** Se revisa el de los 30 casos antes de congelar el candidato final, y el candidato bilingüe no se congela sin esa revisión. Motivo: el texto vive en el repositorio, y corregirlo después del despliegue daría un SHA nuevo y otro despliegue | Revisión docente antes del congelamiento; falta decidir cómo llega la aprobación al piloto (abajo) |
+
+- **Cuentas:**
+  - paquete: 32 de las 100 decididas; quedan 68 (25 de nivel 1 y 43 de nivel 2);
+  - borrador de X-1: 7 de 105 decididas, quedan 98. Eran 103: V-4 se decidió aparte de los demás vocabularios, y la
+    aclaración de X1-0 agrega V-9.
+- **Contradicciones y huecos que crean estas decisiones:**
+  1. **Cómo llega al piloto la aprobación del relato.** La sala muestra el relato en español de un caso sólo si su
+     versión exacta está aprobada en la base del despliegue o en `case_text/es/approvals.json`, que el código ya
+     lee (`case_text.pack_approvals`) y hoy no existe. Revisar antes del congelamiento no basta: sin una de las dos,
+     el piloto bilingüe mostraría el relato en inglés. Hay dos caminos:
+     - (a) exportar las aprobaciones a ese archivo dentro del candidato. No hay herramienta de exportación, y el
+       archivo no debe llevar nombres de médicos (CLAUDE.md);
+     - (b) volver a registrar las mismas aprobaciones en el tablero de la base del piloto después del despliegue,
+       sin cambiar el SHA, como paso mecánico antes del GO.
+
+     La revisión misma se hace en un entorno que no sea el del piloto: la app de desarrollo o una local.
+  2. **La rúbrica en español (4.2) tiene la misma propiedad** (`rubric_text/es/`, en el repositorio, con su propio
+     `approvals.json`) y la decisión no la nombra: corregirla después del despliegue también da un SHA nuevo.
+  3. **Las guías (H-62 e I-63) ya no describen el candidato final:**
+     - dicen que las preguntas, el aviso de la orden retenida, el aviso de la foto y algunos rótulos se ven en
+       inglés, y nombran los modos en inglés;
+     - dicen que el relato puede verse en inglés;
+     - citan TD-51 como diferida;
+     - juntan el trauma y la neumonía en el párrafo de TD-54 que D-42 reemplaza.
+
+     Firmarlas ahora sería firmar un texto que dejará de ser cierto.
+  4. **La hoja F0-11** (`docs/revision/F0_11_FRASES_ES.md`, tercera regla) dice que los nombres de fármacos son
+     iguales en ambos idiomas; la aclaración de X1-0 la reemplaza. Quedó anotado con fecha en la hoja. Las frases
+     activas (K-13 y K-14) siguen en inglés hasta implementar.
+  5. **Alcance de la aclaración de X1-0 fuera del encuentro:** los documentos en español que el residente
+     descarga nombran hoy los fármacos en inglés. Si la decisión los incluye, el cambio es mayor.
+- **Siguiente lote de nivel 1:** F-58, F-60, G-61, H-62, I-63, K-1 y K-2 (una decisión), K-3, K-4, K-5 y K-6.
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1 (alcance ampliado), el lote 1 de nivel 1 (8 APPROVE, 2 REVISE) y el lote 2 (9 APPROVE, 1 REVISE), sin implementar; quedan 79 de 100. El español que falta para X-1 está redactado para revisión (103 decisiones aparte) | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); implementar lo decidido antes de construir el candidato final; revisar el relato en español antes del GO |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J y los lotes 1 a 3 de nivel 1, sin implementar; quedan 68 de 100 (25 de nivel 1 y 43 de nivel 2). Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos antes de congelar el candidato y decidir cómo llega su aprobación al piloto; implementar lo decidido antes de construir el candidato final |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

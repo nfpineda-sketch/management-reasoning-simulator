@@ -13,7 +13,10 @@
 - **TIER 2 — redacción clínica:** 43.
 - **TIER 3 — redacción operativa o de pantalla:** 2.
 - **Deben actualizarse antes de firmarse:** las dos guías.
-- **Después del despliegue, antes del GO:** el relato y la rúbrica en español.
+- **Antes de congelar el candidato final:** el relato en español de los 30 casos (decisión docente del
+  2026-10-07).
+- **Después del despliegue, antes del GO:** la rúbrica en español.
+- **Decididas al 2026-10-07:** 32 de las 100; quedan 68 (25 de nivel 1 y 43 de nivel 2).
 
 Los criterios de cada nivel están en 0.4.
 
@@ -110,20 +113,25 @@ Actualización del 2026-10-07: con X-1 cerrada, A-9 pasa de REVIEW CLOSELY a NEE
 
 - X-1: APPROVE (a), con el alcance ampliado (sección 2, X-1).
 - Lote 1 de nivel 1: A-1 y B-19 a B-25, APPROVE; A-2 y A-9, REVISE.
-- Lote 2 de nivel 1: B-26, C-37, D-39, D-40, D-41, D-43, E-45, E-46 y F-47, APPROVE; D-42, REVISE (un español
-  propio para D-42, propuesto en su bloque).
-- Quedan 79 de las 100: 35 de nivel 1, 43 de nivel 2 y 1 de nivel 3 (J).
-- El relato en español se revisa después del despliegue y antes del GO; el piloto bilingüe no abre sin esa
-  revisión (4.1).
-- El español que falta para X-1 se redacta para revisión, sin implementarlo:
-  `docs/revision/X1_ESPANOL_PROPUESTO.md`.
+- Lote 2 de nivel 1: B-26, C-37, D-39, D-40, D-41, D-43, E-45, E-46 y F-47, APPROVE; D-42, REVISE, con su
+  español propio, aprobado después (bloque D-42).
+- Lote 3 de nivel 1: F-48 a F-57, APPROVE. F-49, F-53 y F-54 llevan sus límites vinculantes (D-41, E-46 y D-42).
+- J (aviso de la foto): APPROVE, con el español en «tú».
+- A-2: redacción final docente para el estado de agotamiento (bloque A).
+- Quedan 68 de las 100: 25 de nivel 1 y 43 de nivel 2.
+- El relato en español de los 30 casos se revisa antes de congelar el candidato final, que no se congela sin esa
+  revisión (4.1). Reemplaza la decisión anterior del mismo día (después del despliegue).
+- El español que falta para X-1 está redactado para revisión (`docs/revision/X1_ESPANOL_PROPUESTO.md`); sus
+  decisiones de base están en la sección 2, X-1.
+- Antes del candidato final se limpian las claves internas que ve el residente, sin cambiar las canónicas
+  (sección 2, X-1).
 - Ninguna revisión está implementada.
 
-Además, **después del despliegue y antes del GO** (sección 4; no bloquean B-5, y el relato es condición del GO del
-piloto bilingüe desde el 2026-10-07):
+Además (sección 4):
 
-- el relato en español de cada caso, que incluye el español de las filas 27–36;
-- los descriptores de la rúbrica en español.
+- **antes de congelar el candidato final** (decisión docente del 2026-10-07): el relato en español de los 30
+  casos, que incluye el español de las filas 27–36;
+- **después del despliegue y antes del GO**, sin bloquear B-5: los descriptores de la rúbrica en español.
 
 ### 1.2 Decisiones agrupadas (texto idéntico)
 
@@ -171,7 +179,7 @@ desvíos están en `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1.
 ### 1.5 Qué bloquea B-5 y qué no
 
 - **Bloquean:** las 100 decisiones requeridas de la sección 2. Si se difiere un texto activo, hace falta además su acuerdo expreso de pilotear con él sin firma.
-- **No bloquean:** las 3 opcionales de la 41m si se difieren (sin cambio de SHA); la sección 4, después del despliegue; y `MRS_LANGUAGE`, una configuración de los Secrets que no es un texto ni cambia el SHA.
+- **No bloquean:** las 3 opcionales de la 41m si se difieren (sin cambio de SHA); la rúbrica en español (4.2), después del despliegue (el relato, 4.1, pasó a antes del candidato final el 2026-10-07); y `MRS_LANGUAGE`, una configuración de los Secrets que no es un texto ni cambia el SHA.
 - **Orden recomendado:**
   1. las decisiones de nivel 1;
   2. X-1, una vez decididos A y J;
@@ -203,6 +211,17 @@ Decisión transversal de los bloques A y J. **TIER 3.**
   `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, 2.5.
 - **Borrador del español que falta** (autorizado el 2026-10-07 para revisión, no para implementar):
   `docs/revision/X1_ESPANOL_PROPUESTO.md`, con 100 formulaciones únicas, 7 vocabularios y la fuente de cada frase.
+- **Decisiones de base del borrador (docente, 2026-10-07), sin implementar:**
+  - APPROVE: X1-0 (convenciones), I-10 (el resumen de la orden retenida reusa las etiquetas del registro), L-01
+    (Conversar · Examinar · Exámenes · Tratar), V-4 (Respiración y Pulmonar, regiones distintas), M-02 (Urgencias /
+    Cama 03) y L-17 (ORDER CANCELLED / ORDEN CANCELADA);
+  - aclaración de X1-0: en un encuentro en español, los fármacos que el motor inserta en un texto también se
+    muestran con su nombre en español; el identificador canónico guardado puede seguir en inglés (K-13);
+  - A-2: redacción final docente (bloque A).
+- **Claves internas (docente, 2026-10-07):** antes del candidato final se limpian las claves internas que ve el
+  residente, en inglés y en español (por ejemplo, `beta_blocker` → beta blocker / betabloqueador;
+  `ORDER_CANCELLED` → ORDER CANCELLED / ORDEN CANCELADA). Es sólo presentación: las claves canónicas no cambian
+  (TD-80).
 
 ### A. R-4 · Las 18 frases del motor (filas 1–18)
 
@@ -214,7 +233,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 | # | Casos | EN exacto | ES exacto | Se infiere | Recomendación | Nivel | Decisión docente |
 |---|---|---|---|---|---|---|---|
 | A-1 | 27m (41m: sandbox) | Circulatory arrest from uncontrolled haemorrhage. The bleeding had not been stopped, and no volume replaces a source that is still open. | Paro circulatorio por una hemorragia no controlada. El sangrado no se había detenido; la reposición de volumen no sustituye el control del sangrado activo. | El paro siguió a un sangrado que nunca se detuvo; reponer volumen no reemplaza controlar la fuente. Atribuye una causa. | **APPROVE AS IS** — redacción docente del 2026-09-30. En la 27m sin control el paro llega hacia el minuto 13 (C-LIMB-ARREST-13) y la frase es exacta. VINCULADA con K-E4 y K-7: el mismo paro se nombra «cardiac arrest from uncontrolled haemorrhage» al cortar una espera y «Cardiac arrest occurred at minute…» en el mensaje acordado, también en inglés. | TIER 1 | ☒ **APPROVE** (docente, 2026-10-07) |
-| A-2 | 75f | Bilateral inspiratory crackles with increased respiratory effort. | Crépitos inspiratorios bilaterales, con aumento del esfuerzo respiratorio. | Esfuerzo aumentado: el paciente todavía compensa. | **REVIEW CLOSELY** — TD-51 (diferida): sin tratamiento, el motor muestra esta frase durante 12–13 minutos en que el esfuerzo ya es «Exhausted»; el residente puede leer compensación donde hay agotamiento. La traducción es fiel; el problema es del motor y la guía docente lo declara (líneas 232–233). | TIER 1 | ☒ **REVISE** (docente, 2026-10-07): la traducción está bien, pero el examen no debe seguir diciendo «increased respiratory effort» cuando el estado es de agotamiento; el examen respiratorio que se muestra debe ser coherente con el estado. Sin implementar. Redacción propuesta (EN y ES): `X1_ESPANOL_PROPUESTO.md`, §9 |
+| A-2 | 75f | Bilateral inspiratory crackles with increased respiratory effort. | Crépitos inspiratorios bilaterales, con aumento del esfuerzo respiratorio. | Esfuerzo aumentado: el paciente todavía compensa. | **REVIEW CLOSELY** — TD-51 (diferida): sin tratamiento, el motor muestra esta frase durante 12–13 minutos en que el esfuerzo ya es «Exhausted»; el residente puede leer compensación donde hay agotamiento. La traducción es fiel; el problema es del motor y la guía docente lo declara (líneas 232–233). | TIER 1 | ☒ **REVISE** (docente, 2026-10-07): la traducción está bien, pero el examen no debe seguir diciendo «increased respiratory effort» cuando el estado es de agotamiento; el examen respiratorio que se muestra debe ser coherente con el estado. Sin implementar. Redacción final docente (2026-10-07) para el estado de agotamiento, con el criterio del motor de `X1_ESPANOL_PROPUESTO.md`, §9: EN «Bilateral inspiratory crackles; respiratory effort is now shallow and ineffective, consistent with exhaustion.» · ES «Crépitos inspiratorios bilaterales; el esfuerzo respiratorio ahora es superficial e ineficaz, compatible con agotamiento.» |
 | A-3 | 58m, 75f | Bilateral crackles remain, with reduced respiratory effort. | Persisten crépitos bilaterales, con menor esfuerzo respiratorio. | La congestión mejora; el menor esfuerzo es mejoría, no agotamiento. | **APPROVE AS IS** — una prueba del motor fija que sólo aparece con la congestión en mejoría y nunca junto al agotamiento. | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-4 | transfusión, cualquier familia | New bibasal inspiratory crackles since the transfusion, with increased effort and no wheeze. | Crépitos inspiratorios bibasales nuevos desde la transfusión, con aumento del esfuerzo y sin sibilancias. | Sobrecarga circulatoria por la transfusión, no broncoespasmo. | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | A-5 | 24f, 49m | Improved air entry with residual expiratory wheeze. | Mejor entrada de aire, con sibilancias espiratorias residuales. | Responde a los broncodilatadores; persiste una obstrucción leve. | **APPROVE AS IS** | TIER 2 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
@@ -355,7 +374,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere (docente): un POCUS de control no muestra líneas B nuevas con cristaloides (la saturación sí cae); no se exige verlas.
 - Recomendación: **APPROVE AS IS** — TD-54. UNA DECISIÓN → `pneumonia_46f`, `pneumonia_83m` (el §2 ya la agrupa). Ver F-53 y F-54.
 - SHA: S-A (el inglés); S-C (la guía). — Decisión docente: ☐ APPROVE · ☒ **REVISE** · ☐ DEFER — docente, 2026-10-07: se mantienen el sentido del inglés y el comportamiento del motor; el español de D-42 no es el párrafo de la guía que junta el trauma y la neumonía, sino uno propio (abajo). Sin implementar
-- **ES propuesto para D-42** (borrador para revisión, sin implementar; una decisión para `pneumonia_46f` y `pneumonia_83m`): «Un POCUS de control muestra que la VCI se llena con el volumen, pero en los pulmones no muestra líneas B nuevas por la sobrecarga de cristaloides; la saturación sí cae. No se exige ver líneas B nuevas.» Al implementarse, reemplaza la parte de la neumonía del párrafo de TD-54 de la guía docente (líneas 156–159), que hoy no dice que la VCI se llena; la frase del trauma queda igual (S-C, sólo documentación).
+- **ES aprobado para D-42** (docente, 2026-10-07; sin implementar; una decisión para `pneumonia_46f` y `pneumonia_83m`): «Un POCUS de control muestra que la VCI se llena con el volumen, pero en los pulmones no muestra líneas B nuevas por la sobrecarga de cristaloides; la saturación sí cae. No se exige ver líneas B nuevas.» Al implementarse, reemplaza la parte de la neumonía del párrafo de TD-54 de la guía docente (líneas 156–159), que hoy no dice que la VCI se llena; la frase del trauma queda igual (S-C, sólo documentación).
 
 **D-43 · Fila 43 · `trauma_limb_hemorrhage_27m`** — TIER 1 · EN ACTIVE · ES DOCUMENTATION ONLY
 - Dónde: la rúbrica y los objetivos de cada caso, bajo D-39; `case_assessment_bank.py:1805`.
@@ -431,7 +450,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): activa o acelera la reperfusión
 - Se infiere (docente): se observa usar la motilidad informada con el ECG y las derivaciones posteriores; no se exige reconocer la hipocinesia sutil.
 - Recomendación: **APPROVE AS IS** — no se exige reconocer la hipocinesia posterior sutil que entrega el informe; una aorta no dilatada no descarta una disección.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **F-49 · Fila 49 · `acs_70f_left_main`** — TIER 1 · ficha «CONFIRM» · Cardíaca (función global del VI), pulmonar (líneas B) y VCI en un SCA con hipoperfusión incipiente
 - EN · componente: Deciding volume, support and urgency with the global LV function in view, and adapting them to the response.
@@ -444,7 +463,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): adapta el plan a la respuesta y lo relaciona con la urgencia de la reperfusión
 - Se infiere (docente): se observa decidir volumen, soporte y urgencia con la función del VI a la vista y adaptarlos a la respuesta; la sobrecarga no se ve y no se exige.
 - Recomendación: **REVIEW CLOSELY** — D-8: el exceso de volumen no cambia pulmón, examen, saturación ni POCUS (TD-53). La evidencia pide relacionar el VI, las líneas B y la VCI de llegada con la decisión y adaptar el plan a la respuesta: confirmar que la ficha no exige ver la sobrecarga.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07: el límite aprobado en D-41 y E-46 es vinculante. No se exige detectar la sobrecarga por examen ni por POCUS cuando el motor no la modela; la adaptación se juzga con las señales que el simulador sí entrega.
 
 **F-50 · Fila 50 · `gi_bleed_57m`** — TIER 1 · ficha «CONFIRM» · Hipotensión indiferenciada: corazón y VCI (volumen)
 - EN · componente: Using the POCUS volume assessment to guide and reassess resuscitation.
@@ -457,7 +476,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): reevalúa con POCUS después de la reanimación
 - Se infiere (docente): se observa nombrar el VI vacío e hiperdinámico y la VCI colapsada, relacionarlos con la transfusión o el volumen y reevaluar con POCUS.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **F-51 · Fila 51 · `gi_bleed_72f`** — TIER 1 · ficha «CONFIRM» · Hipotensión por sangrado: corazón y VCI (volumen)
 - EN · componente: Using the POCUS volume assessment to guide and reassess resuscitation.
@@ -470,7 +489,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): reevalúa con POCUS después de la reanimación
 - Se infiere (docente): lo mismo que en la 57m, con la VCI que colapsa.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **F-52 · Fila 52 · `obstructive_pyelonephritis_58f`** — TIER 1 · ficha «CONFIRM» · Shock séptico: corazón y VCI para la estrategia de fluidos
 - EN · componente: Guiding the fluid and haemodynamic strategy with POCUS in septic shock.
@@ -481,7 +500,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): da, limita o titula el volumen, o pasa a un vasopresor, por esos hallazgos
 - Se infiere (docente): se observa nombrar la VCI y el VI y decidir por ellos el volumen o el vasopresor; la VCI de control no cambia.
 - Recomendación: **APPROVE AS IS** — la VCI de control no cambia (TD-54) y su C14 ya lo declara; la evidencia no exige reevaluar con POCUS.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **F-53 · Fila 53 · `pneumonia_46f`** — TIER 1 · ficha «CONFIRM» · Shock séptico con hipoxemia: corazón y VCI, más pulmón (consolidación y líneas B)
 - EN · componente: Guiding and reassessing the fluid and haemodynamic strategy with POCUS.
@@ -494,7 +513,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): reevalúa con POCUS después del volumen
 - Se infiere (docente): se observa decidir el volumen o el vasopresor por la VCI y el VI, y reevaluar con POCUS; en el control, la VCI se llena pero no aparecen líneas B nuevas.
 - Recomendación: **REVIEW CLOSELY** — una evidencia pide reevaluar con POCUS tras el volumen; el control muestra la VCI que se llena, pero ninguna línea B nueva (TD-54, fila 42): confirmar que se juzga con la VCI y la saturación, nunca con las líneas B. VINCULADA con F-54: el mismo texto C14.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07, vinculada expresamente a D-42: la respuesta al volumen se juzga con la VCI y la saturación; nunca se exigen líneas B nuevas, porque el simulador no las modela.
 
 **F-54 · Fila 54 · `pneumonia_83m`** — TIER 1 · ficha «CONFIRM» · Hipotensión en un anciano derivado como «deshidratado»: corazón y VCI, más pulmón
 - EN · componente: Guiding and reassessing the fluid and haemodynamic strategy with POCUS.
@@ -507,7 +526,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): reevalúa con POCUS después del volumen
 - Se infiere (docente): lo mismo que en la 46f.
 - Recomendación: **REVIEW CLOSELY** — igual que la 46f; sin «dynamic» (D-7). VINCULADA con F-53: el mismo texto C14.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07: el mismo límite de F-53 y D-42.
 
 **F-55 · Fila 55 · `pulmonary_edema_58m`** — TIER 1 · ficha «CONFIRM» · Disnea aguda: pulmón (líneas B), corazón y VCI
 - EN · componente: Deciding nitrate, diuretic or NIV, and withholding volume, from the B-lines, the LV and the IVC.
@@ -520,7 +539,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): da nitrato, diurético o VMNI por esos hallazgos
 - Se infiere (docente): se observa nombrar las líneas B difusas y el VI deprimido, no dar volumen y dar nitrato, diurético o VMNI por ellos.
 - Recomendación: **APPROVE AS IS** — VINCULADA con F-56: el mismo texto C14; cada ficha revisa su propio POCUS de llegada.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **F-56 · Fila 56 · `pulmonary_edema_75f`** — TIER 1 · ficha «CONFIRM» · Disnea aguda en IC con FE reducida: pulmón, corazón y VCI
 - EN · componente: Deciding nitrate, diuretic or NIV, and withholding volume, from the B-lines, the LV and the IVC.
@@ -533,7 +552,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): da nitrato, diurético o VMNI por esos hallazgos
 - Se infiere (docente): lo mismo que en la 58m.
 - Recomendación: **APPROVE AS IS** — llega con la vista neutral (P-07); la ficha no depende de la foto. VINCULADA con F-55: el mismo texto C14.
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **F-57 · Fila 57 · `pulmonary_embolism_33f`** — TIER 1 · ficha «CONFIRM» · Disnea súbita posoperatoria: TVP por compresión, VD y VCI
 - EN · componente: Integrating the RV and a proximal DVT with the haemodynamic stability: anticoagulation before confirmation, and no thrombolysis.
@@ -546,7 +565,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES · evidencia (borrador): no da trombólisis, y explicita la estabilidad hemodinámica y el VD
 - Se infiere (docente): se observa integrar la TVP o el VD con la estabilidad: anticoagular antes de confirmar y no trombolizar.
 - Recomendación: **APPROVE AS IS**
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07
 
 **F-58 · Fila 58 · `pulmonary_embolism_61m`** — TIER 1 · ficha «CONFIRM» · Shock indiferenciado: VD (RUSH), VCI y TVP
 - EN · componente: Deciding reperfusion and anticoagulation from RV strain and a proximal DVT in shock.
@@ -642,6 +661,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 **Lo que sigue vigente** (revisado, sin corrección): lo esencial sobre la IA (apagada en el encuentro, no autorizada después), los pasos para revisar un encuentro, elegir el caso de un residente, la trombólisis en la TEP, la anafilaxia, la 27m, «General appearance», los criterios C14, la 33f, las fotos y el POCUS, el fluido sin verbo retenido («IV fluids 1 L»), la transfusión (30 minutos por unidad salvo velocidad o reevaluación; el motor lo hace así), el «suero glucosado» sin concentración, TD-51 y TD-59.
 
 - **Recomendación:** **NEEDS UPDATE BEFORE SIGN-OFF** — 11 correcciones (2 de nivel 1), una de ellas una sección nueva.
+- **Actualización del 2026-10-07:** las correcciones se aplicaron (`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1), pero las decisiones de ese día (X-1, J, L-01, D-42, A-2 y el relato antes del candidato) vuelven a dejar la guía desactualizada respecto del candidato final. Recomendación: **DEFER** la firma hasta implementar X-1 y revisar el relato; las frases afectadas están en la sección 3.4 de ese documento.
 - **Decisión docente sobre la guía actualizada:** ☐ APPROVE · ☐ REVISE · ☐ DEFER — Firma y fecha: ________
 
 ### I. Guía del residente (fila 63)
@@ -670,6 +690,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 **Lo que sigue vigente** (revisado, sin corrección): la cuenta, la foto y las iniciales, «sin datos reales», cómo comenzar, terminar con un destino, la revisión de decisiones, la pantalla (el monitor sobre la foto, las cuatro vistas, el «☰ Menú» sin barra lateral durante el encuentro), el POCUS y el E-FAST como informes escritos, y «Después». Las limitaciones del lector no se dicen al residente como instrucciones (guía docente, línea 152).
 
 - **Recomendación:** **NEEDS UPDATE BEFORE SIGN-OFF** — 9 correcciones (6 de nivel 1).
+- **Actualización del 2026-10-07:** las correcciones se aplicaron (`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, sección 1), pero las decisiones de ese día (X-1, J, L-01, D-42, A-2 y el relato antes del candidato) vuelven a dejar la guía desactualizada respecto del candidato final. Recomendación: **DEFER** la firma hasta implementar X-1 y revisar el relato; las frases afectadas están en la sección 3.4 de ese documento.
 - **Decisión docente sobre la guía actualizada:** ☐ APPROVE · ☐ REVISE · ☐ DEFER — Firma y fecha: ________
 
 ### J. Aviso de la foto (fila 64)
@@ -680,9 +701,9 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES (§2): Propuesta, sin activar: «Una fotografía fija no muestra todos los signos clínicos; examine al paciente para evaluar lo que no puede mostrar.»
 - Se infiere: una foto fija no muestra todos los signos; hay que examinar. Es igual en todas las fotos, así que su presencia no dice nada del paciente.
 - Recomendación: **REVIEW CLOSELY** — el inglés está activo y es constante a propósito. La propuesta en español trata de «usted» («examine al paciente») y la sala tutea al residente («Escríbelo de nuevo», «revisa el estado del paciente», «pediste»): conviene decidir el trato antes de activarla (X-1); con «tú» diría «examina al paciente para evaluar lo que no puede mostrar». Las guías citan el aviso (H-6, I-9). El §4 del cierre lo dejó como pendiente que no bloquea.
-- Actualización del 2026-10-07: la versión con «tú», coherente con la sala, está en `docs/revision/X1_ESPANOL_PROPUESTO.md`, §2. Sigue sin decisión.
+- Actualización del 2026-10-07: la versión con «tú», coherente con la sala, está en `docs/revision/X1_ESPANOL_PROPUESTO.md`, §2. Aprobada el mismo día (abajo).
 - SHA: el inglés, S-A. El español es una propuesta que sólo vive en el §2: revisarla es un cambio de documentación (S-C); mostrarla es X-1, un cambio de código (nuevo SHA).
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07: el español, con «tú»: «Una fotografía fija no muestra todos los signos clínicos; examina al paciente para evaluar lo que no puede mostrar.» El inglés activo no cambia. Mostrarlo es X-1, sin implementar
 
 ### K. F0-11 · Las frases nuevas de la Fase 0 en español
 
@@ -691,6 +712,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - **Firma:** la hoja agrupa la firma en dos filas («Redacción de las frases de la sala», K-1 a K-21; «Eventos que cortan una espera», K-E1 a K-E17). Aquí cada texto lleva su decisión, para cambiar uno sin reabrir el resto.
 - **SHA:** S-A. Corregir una frase es cambiar su regla en `language.py` (`_PHASE0_RULES`) y su prueba en `test_phase0_spanish.py`.
 - **Revisión del español:** fiel en las 21 frases y los 17 eventos; ninguna dice algo distinto del inglés ni engaña. Observaciones, sin reescribir: (1) dos criterios para los nombres de fármacos (K-13); (2) masculino genérico («el paciente», «traído»), también con pacientes mujeres, como en toda la sala; (3) mayúscula tras dos puntos en K-6 y K-9, cosmética; (4) «recibo» no se explica al residente (K-16, I-6); (5) un calco en K-E6.
+- **Nombres de fármacos (X1-0, docente, 2026-10-07):** en un encuentro en español, los fármacos que nombra el motor se muestran con su nombre en español; el identificador canónico guardado no cambia. Resuelve la observación (1). Sin implementar: hoy K-13 y K-14 los muestran en inglés, y K-5 y K-6 también cuando la orden es un fármaco.
 
 **K-1 y K-2 · UNA DECISIÓN → filas 1 y 2 · Orden no entendida (UNRECOGNIZED)** — TIER 1 · ACTIVE
 - Dónde: recibo bajo los modos · EN `order_ledger.py:1381` · ES `language.py:349–471` (`_PHASE0_RULES`).
@@ -728,6 +750,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: la orden se dio y se miró un minuto después: los valores son de los primeros minutos, no su efecto.
 - Revisión: fiel.
 - Recomendación: **APPROVE AS IS**
+- Actualización del 2026-10-07 (X1-0): si la orden es un fármaco, su nombre se mostrará en español al implementarse; el ejemplo, un fluido, ya está en español.
 - Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
 **K-6 · Fila 6 · Espera interrumpida por un evento** — TIER 1 · ACTIVE
@@ -737,6 +760,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: la espera se cortó en el minuto del evento; lo pedido no corrió entero y el control vuelve al residente.
 - Revisión: fiel. Mayúscula tras «Administrado:» (cosmética; la hoja F0-11 ya la anota).
 - Recomendación: **APPROVE AS IS**
+- Actualización del 2026-10-07 (X1-0): si la orden es un fármaco, su nombre se mostrará en español al implementarse; el ejemplo, un fluido, ya está en español.
 - Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
 **K-7 · Fila 7 · Paro: mensaje acordado** — TIER 1 · ACTIVE
@@ -799,7 +823,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - ES: **PARTE DE ESTA ORDEN NO SE EJECUTÓ** /  / Ejecutado ahora: **aspirin 300 mg PO**. / No ejecutado: **norepinephrine**. No se ha administrado nada de ello; escríbelo de nuevo como una orden nueva si aún lo quieres.
 - Se infiere: una parte se ejecutó y otra no; lo no ejecutado no se dio.
 - Revisión: fiel. Los fármacos que nombra el motor quedan en inglés («aspirin», «norepinephrine»), los fluidos se traducen («suero fisiológico», K-5, K-6, K-14) y las notas de la TEP traducen el fármaco («alteplasa», B-24, B-25). Es la convención declarada de la sala (hoja F0-11, regla 3), pero conviven dos criterios: confirmarlos.
-- Recomendación: **REVIEW CLOSELY**
+- Recomendación: **REVISE** (actualizada el 2026-10-07; antes, REVIEW CLOSELY) — la convención quedó decidida en X1-0: en un encuentro en español, los fármacos que nombra el motor se muestran con su nombre en español («Ejecutado ahora: **aspirina 300 mg PO**», «No ejecutado: **noradrenalina**»); el valor canónico guardado no cambia. Falta firmar esa redacción, que cambia al implementarse.
 - Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
 **K-14 · Fila 14 · Paquete parcial: parte retenida** — TIER 1 · ACTIVE
@@ -809,6 +833,7 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 - Se infiere: una parte se ejecutó y otra espera una aclaración; lo retenido no se ha dado.
 - Revisión: fiel; la misma convención que K-13.
 - Recomendación: **APPROVE AS IS**
+- Actualización del 2026-10-07 (X1-0): al implementarse, «aspirin 300 mg PO» se mostrará «aspirina 300 mg PO»; el valor canónico guardado no cambia.
 - Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
 **K-15 · Fila 15 · Orden junto a la respuesta, cuando algo sigue retenido** — TIER 1 · ACTIVE
@@ -907,9 +932,12 @@ Decisión transversal de los bloques A y J. **TIER 3.**
 
 ## 4. DESPUÉS DEL DESPLIEGUE, ANTES DEL GO DEL PILOTO
 
+**Actualización del 2026-10-07:** el relato (4.1) pasó a antes de congelar el candidato final, por decisión
+docente; la rúbrica (4.2) sigue aquí.
+
 No bloquean B-5. El contrato de preparación los pone después del despliegue y antes de abrir el piloto (informe de preparación, 10.1 y 20.5; §4 del cierre, punto 2). Se aprueban en el tablero docente de la base desplegada.
 
-**4.1 · El relato en español de cada caso** — POST-DEPLOYMENT REVIEW · S-E
+**4.1 · El relato en español de cada caso** — ANTES DEL CANDIDATO FINAL desde el 2026-10-07 (antes, POST-DEPLOYMENT REVIEW) · S-E
 
 - Qué es: 1.119 pasajes de los 31 casos (presentación, respuestas de la historia, examen, informes de estudios; `case_text/es/<familia>.json`).
 - En el piloto se revisan los 30 casos aceptados; la 41m, sólo si se usará en el sandbox.
@@ -920,10 +948,13 @@ No bloquean B-5. El contrato de preparación los pone después del despliegue y 
 - Incluye el español de las filas 27–33, 35 y 36 (columna ES del bloque C) y el de la 34 si se usa la 41m.
 - Una frase que comparten dos casos (la fila 31) se aprueba con cada caso.
 - Si el piloto corre en español, va antes de jugar en español.
-- **Decisión docente (2026-10-07):** se revisa después del despliegue y antes del GO del piloto. No necesita estar en
-  el SHA precandidato en lo que es contenido de la base (la aprobación de cada caso vive en la base), y el piloto
-  bilingüe no abre hasta completar esa revisión. El texto del relato sí está en el repositorio (`case_text/es/`):
-  si la revisión pide corregir una traducción, es un SHA nuevo y otro despliegue (4.3).
+- **Decisión docente (2026-10-07), que reemplaza la anterior del mismo día** (que la ponía después del
+  despliegue): el relato en español de los 30 casos del piloto se revisa **antes de congelar el candidato final**,
+  y el candidato bilingüe no se congela sin esa revisión. Motivo: el texto vive en el repositorio
+  (`case_text/es/`), y corregirlo después del despliegue daría un SHA nuevo y otro despliegue.
+- **Falta decidir cómo llega la aprobación al piloto.** La sala sólo muestra el relato de un caso cuya versión exacta
+  está aprobada en la base del despliegue, o en `case_text/es/approvals.json`. El código ya lee ese archivo, pero
+  hoy no existe. Ver la décima actualización del Decision File.
 
 **4.2 · Los descriptores de la rúbrica en español** — POST-DEPLOYMENT REVIEW · S-E
 
@@ -931,7 +962,8 @@ No bloquean B-5. El contrato de preparación los pone después del despliegue y 
 - Cómo se decide: dominio por dominio, en el tablero.
 - Sin aprobación, el dominio se ve en inglés. Los puntajes y los criterios siguen en inglés, que son la norma.
 
-**4.3 · Cómo evitar un SHA nuevo después del despliegue.**
+**4.3 · Cómo evitar un SHA nuevo después del despliegue.** Desde el 2026-10-07, el relato ya se revisa antes del
+candidato (4.1); lo que sigue queda para la rúbrica.
 
 - El tablero no edita textos: corregir una traducción es un cambio del repositorio, con un candidato nuevo y otro despliegue (S-E).
 - Leer antes del candidato final los relatos de los casos que se jugarán en español, y los descriptores, permite corregirlos dentro del mismo SHA.
@@ -957,6 +989,9 @@ No bloquean B-5. El contrato de preparación los pone después del despliegue y 
 | F · G | Sin cambio | Nuevo SHA (banco o notas; hoja regenerada) | Sin cambio |
 | H · I | — | Commit sólo de documentación: SHA nuevo, runtime igual; B-1 sigue válido (18.2) | — |
 | Sección 4 | Sin cambio (base desplegada) | Corregir = nuevo SHA y nuevo despliegue | El caso o el dominio siguen en inglés |
+
+Actualización del 2026-10-07: el relato (4.1) se revisa antes del candidato final. Corregirlo entonces cambia el SHA
+antes de congelarlo, no después del despliegue.
 
 Si el SHA final cambia por código, el contrato de promoción (16.4) vuelve a correr la suite, las 56 regresiones y B-1 sobre ese SHA. Si sólo cambia `docs/`, B-1 sigue valiendo para `8ff41a4` (18.2).
 
@@ -991,4 +1026,5 @@ Si el SHA final cambia por código, el contrato de promoción (16.4) vuelve a co
 | I · Guía del residente | 1 | | | |
 | J · Aviso de la foto | 1 | | | |
 | K · F0-11: frases nuevas de la Fase 0 | 37 | | | |
-| Sección 4 · relato y rúbrica en español | En el tablero de la base desplegada | | | |
+| 4.1 · relato en español (30 casos) | Antes de congelar el candidato final | | | |
+| 4.2 · rúbrica en español | En el tablero de la base desplegada | | | |

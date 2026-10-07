@@ -429,6 +429,11 @@ son las 83 de siempre más las 10 de PostgreSQL, que corren aparte (9.2).
 español aprobado en la base desplegada si el piloto corre en español, prueba de humo desplegada (sección 11) y la
 autorización explícita (C).
 
+**Actualización del 2026-10-07 (B-5, decisión docente):** el relato en español de los 30 casos se revisa antes de
+congelar el candidato final, que no se congela sin esa revisión; ya no queda para después del despliegue. Falta
+decidir cómo llega su aprobación al piloto: en `case_text/es/approvals.json`, dentro del candidato, o
+registrada de nuevo en la base del piloto antes del GO (Decision File, décima actualización).
+
 ### 10.2 Contradicciones entre fuentes (se informan; a y d quedaron resueltas con B-3, 14.1)
 
 a. **Manifiesto frente a preflight.** `pilot_freeze.RUNTIME_FLAGS` exige `MRS_PAID_GENERATION=off`,
@@ -1322,6 +1327,11 @@ J se informa aparte: PASS, FAIL o NOT RUN.
 Lo demás son acciones docentes dentro de la app, después del despliegue (secciones 6 y 7): la aprobación del relato
 en español, los descriptores de la rúbrica y las aprobaciones de fotos de TD-56.
 
+**Actualización del 2026-10-07 (B-5, decisión docente):** el relato en español de los 30 casos se revisa antes de
+congelar el candidato final, que no se congela sin esa revisión; ya no queda para después del despliegue. Falta
+decidir cómo llega su aprobación al piloto: en `case_text/es/approvals.json`, dentro del candidato, o
+registrada de nuevo en la base del piloto antes del GO (Decision File, décima actualización).
+
 **Por qué no las otras:**
 - **A, rama desde `production`:** copiaría los datos de producción al piloto con residentes.
 - **B, rama desde las de desarrollo o validación:** están archivadas (crear una hija las desarchiva) y traen datos de
@@ -2093,6 +2103,11 @@ Ninguna firma está hecha (sección 6). Las 64 filas de `docs/revision/CIERRE_PR
 - los relatos de los casos en español, aprobados en el tablero docente de la base desplegada antes de jugar en
   español;
 - los descriptores de la rúbrica en español; sin aprobación, se muestran en inglés.
+
+**Actualización del 2026-10-07 (B-5, decisión docente):** el relato en español de los 30 casos se revisa antes de
+congelar el candidato final, que no se congela sin esa revisión; ya no queda para después del despliegue. Falta
+decidir cómo llega su aprobación al piloto: en `case_text/es/approvals.json`, dentro del candidato, o
+registrada de nuevo en la base del piloto antes del GO (Decision File, décima actualización).
 
 **Y la condición C:** la autorización explícita del piloto (Decision File).
 

@@ -2,22 +2,28 @@
 
 > **BORRADOR PARA REVISIÓN DOCENTE. No implementado.** La decisión docente del 2026-10-07 autoriza redactar
 > este español para revisarlo, no implementarlo. Ningún texto de este documento está en el código ni lo ve un
-> residente. Las casillas quedan en blanco.
+> residente. Las casillas quedan en blanco, salvo las que la docencia decidió el 2026-10-07 (abajo).
 >
 > 2026-10-07 · rama `clinical-encounter-v0.13` · código leído en `af921a9` (el runtime es el de `8ff41a4`, el
 > candidato de B-1). Alcance: X-1 con el alcance ampliado (paquete, sección 2, X-1; Decision File, 2026-10-07).
+>
+> **Decisiones docentes del 2026-10-07 (segunda ronda), sin implementar:** X1-0 (con una aclaración), I-10, L-01,
+> V-4, M-02 y L-17, APPROVE; A-2 con redacción final docente (§9); las claves internas se limpian antes del
+> candidato final (§10). Las demás casillas siguen en blanco.
 
 **En una mirada**
 
 - **Formulaciones nuevas para aprobar: 100**, en 8 grupos (cuadro del §11). Las preguntas de aclaración son
   **34 plantillas** que cubren las **73 frases** del motor que un residente del piloto puede ver.
-- **Una convención** (X1-0) y **una decisión de diseño** (I-10).
+- **Una convención** (X1-0) y **una decisión de diseño** (I-10), las dos aprobadas el 2026-10-07.
+- **Decididas el 2026-10-07: 7 de 105 decisiones; quedan 98** (§11). La aclaración de X1-0 agrega un vocabulario
+  por redactar (V-9, nombres de fármacos en español).
 - **Ya redactado en otro documento, no se repite:** las filas 1–18 de R-4 (A-1 a A-18), el aviso de la foto
   (J-64) y las frases de la Fase 0 (K).
 - **Sólo implementación (el español existe y el código no lo aplica): 11 puntos** (§3).
 - **Fuera del alcance, con su motivo** (§1): el relato del caso, 40 preguntas del motor heredado que ningún caso
   del piloto alcanza, las herramientas del personal y la ruta sin cuentas.
-- **A-2:** la redacción nueva del examen respiratorio con el paciente agotado está en el §9.
+- **A-2:** la redacción final docente del examen respiratorio con el paciente agotado está en el §9.
 
 ## 0. Cómo leer
 
@@ -35,7 +41,10 @@
    CPAP, BiPAP, J, ECG, POCUS, E-FAST.
 3. Siglas en español donde la sala ya las usa: VMNI, FC, FR, PA, PAM, PANI, UCI.
 4. Nombres de fármacos en el texto fijo, en español (noradrenalina, adrenalina, nitroglicerina, salbutamol, ácido
-   tranexámico, tenecteplasa), como en B-24. Los que inserta el motor ({fármaco}) siguen lo que se decida en K-13.
+   tranexámico, tenecteplasa), como en B-24. **Aclaración docente (2026-10-07):** en un encuentro en español,
+   también los fármacos que el motor inserta ({fármaco}) se muestran con su nombre en español; el identificador
+   canónico guardado puede seguir en inglés. Ninguna línea dice «infusión de norepinephrine». Así queda la
+   convención de K-13; su vocabulario es V-9, por redactar (§4.10).
 5. Dispositivos con los nombres que ya usa la sala: naricera, mascarilla simple, mascarilla con reservorio, aire
    ambiente.
 6. Los números se escriben como los imprime el motor (punto decimal: «0.05 mcg/kg/min»), como en el resto de la
@@ -43,7 +52,7 @@
 7. Masculino genérico («el paciente»), como en toda la sala (paquete, K, observación 2).
 8. «o di cancelar», como ya dice la sala (`family_parser.py:2252`).
 
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: ☒ **APPROVE** · ☐ REVISE · ☐ DEFER — docente, 2026-10-07, con la aclaración del punto 4
 
 ## 1. Método y alcance
 
@@ -64,8 +73,9 @@
 **Fuera del alcance:**
 
 1. **El relato del caso**: presentación, respuestas de la historia, fuente de la historia, hallazgos escritos por el
-   caso e informes de estudios. Su español existe (`case_text/es/`) y se aprueba en el tablero después del
-   despliegue. Por decisión docente del 2026-10-07, el piloto bilingüe no abre sin esa revisión (paquete, 4.1).
+   caso e informes de estudios. Su español existe (`case_text/es/`) y se revisa aparte. Por decisión docente del
+   2026-10-07, la revisión de los 30 casos va antes de congelar el candidato final. Esa decisión reemplaza la
+   anterior del mismo día, que la ponía después del despliegue (paquete, 4.1).
 2. **40 preguntas del motor heredado** (`app.py:5459–5699` y `app.py:9236–9404`; anexo A). Ningún caso del
    piloto llega a ellas:
    - los 31 casos del banco declaran `engine.family`;
@@ -90,9 +100,9 @@
 
 | Qué | Dónde se decide | Estado al 2026-10-07 |
 |---|---|---|
-| R-4, filas 1–11 (examen respiratorio y frecuencia respiratoria) | Paquete, A-1 a A-11 | A-1 APPROVE. A-2 REVISE (redacción nueva en el §9). A-9 REVISE del inglés. A-3 a A-8, A-10 y A-11 pendientes (nivel 2) |
+| R-4, filas 1–11 (examen respiratorio y frecuencia respiratoria) | Paquete, A-1 a A-11 | A-1 APPROVE. A-2 REVISE (redacción final docente en el §9). A-9 REVISE del inglés. A-3 a A-8, A-10 y A-11 pendientes (nivel 2) |
 | R-4, filas 12–18 (accesos vasculares) | Paquete, A-12 a A-18 | El español existe; mostrarlo es implementación (I-1) |
-| Aviso de la foto | Paquete, J-64 | La propuesta del §2 del cierre trata de «usted». Con el trato de la sala (X1-0, 1): «Una fotografía fija no muestra todos los signos clínicos; examina al paciente para evaluar lo que no puede mostrar.» |
+| Aviso de la foto | Paquete, J-64 | **APPROVE** (docente, 2026-10-07), con el trato de la sala: «Una fotografía fija no muestra todos los signos clínicos; examina al paciente para evaluar lo que no puede mostrar.» |
 | Frases nuevas de la Fase 0 | Paquete, K | Activas en los dos idiomas |
 
 ## 3. Sólo implementación: el español existe y el código no lo aplica
@@ -118,8 +128,9 @@ registro, que ya están en español y se ven en «Indicaciones» («Oxígeno 2 L
 troponina», «Reevaluación»; `_trace_action_words`). No agrega texto nuevo. Si no se aprueba, hace falta el
 vocabulario V-8 (§4.10).
 
-- Decisión docente: ☐ APPROVE (reutilizar las etiquetas del registro) · ☐ REVISE (vocabulario V-8) · ☐ DEFER
-  — Nota: ________
+- Decisión docente: ☒ **APPROVE** (reutilizar las etiquetas del registro) · ☐ REVISE (vocabulario V-8) · ☐ DEFER
+  — docente, 2026-10-07: V-8 no se construye salvo que aparezca una acción sin etiqueta. Esas etiquetas nombran
+  hoy los fármacos en inglés («Aspirin 300 mg PO»); con la aclaración de X1-0, también se mostrarán en español.
 
 ## 4. Preguntas y avisos sobre una orden (34 plantillas, 73 frases)
 
@@ -328,11 +339,13 @@ FE:780 («Indica infusión de naloxone rate in mg/h (0.05 to 4).»).
 
 ### 4.10 Vocabularios para los valores
 
-Cada tabla se aprueba entera. Decisión docente (V-1 a V-7): ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+Cada tabla se aprueba entera. **V-4: APPROVE** (docente, 2026-10-07). Decisión docente para V-1, V-2, V-3, V-5, V-6 y
+V-7: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
 
-**V-1 · Clases y fármacos que nombra el motor** ({fármaco}, {clase}; X1-C01 a X1-C04). Cuando el residente nombró
-un fármaco, el motor usa ese nombre (K-13). Cuando sólo hay una clase, el inglés de hoy muestra la clave interna
-(«beta_blocker»).
+**V-1 · Clases y fármacos que nombra el motor** ({fármaco}, {clase}; X1-C01 a X1-C04). Cuando el residente nombró un
+fármaco, el motor usa ese nombre (K-13), que en español se muestra con V-9. Cuando sólo hay una clase, el inglés de
+hoy muestra la clave interna («beta_blocker»). Por la decisión de las claves internas (§10), V-1 llevará también la
+columna inglesa (por ejemplo, beta_blocker → beta blocker); se agrega al presentar la tabla.
 
 | Clave | ES | Clave | ES |
 |---|---|---|---|
@@ -371,7 +384,8 @@ un fármaco, el motor usa ese nombre (K-13). Cuando sólo hay una clase, el ingl
 | Cardiac | Cardíaco | | |
 
 «Breathing» (frecuencia y trabajo respiratorio) y «Respiratory» (auscultación) son regiones distintas del motor;
-«Respiración» y «Pulmonar» las separan en español.
+«Respiración» y «Pulmonar» las separan en español. **APPROVE** (docente, 2026-10-07): quedan como regiones
+distintas.
 
 **V-5 · Estado de conciencia** (X1-C24): Drowsy → somnoliento · Obtunded → obnubilado · Unresponsive → sin
 respuesta. Son las formas que ya usa la sala, en minúscula.
@@ -382,13 +396,19 @@ un bolo IV directo · spray dose → una dosis en spray · tablet → un comprim
 **V-7 · Ejemplos de oxígeno** (X1-C18; `family_parser.py:1949`): naricera 4 L/min, mascarilla simple 8 L/min o
 mascarilla con reservorio 15 L/min.
 
-**V-8 · Resumen de la orden retenida** — sólo si I-10 no se aprueba (`app.py:8204–8276`): start → iniciar ·
-adjust → ajustar · continue → continuar · stop → suspender · crystalloid → cristaloide · unit(s) → unidad(es) ·
-oxygen → oxígeno · synchronized cardioversion → cardioversión sincronizada · the running infusion at → la infusión en
-curso a · prepare for intubation → preparar la intubación · intubation with invasive ventilation → intubación con
-ventilación invasiva · ventilator adjustment → ajuste del ventilador · ventilator continuation → mantener el
-ventilador · discharge home → alta a domicilio · admission to {destino} → hospitalización en {destino} · management
-intervention → intervención de manejo · NIV → VMNI. Cualquier otro tipo de acción, con su etiqueta del registro.
+**V-8 · Resumen de la orden retenida** — no se construye: I-10 quedó aprobada el 2026-10-07. Queda como referencia
+por si aparece una acción sin etiqueta (`app.py:8204–8276`): start → iniciar · adjust → ajustar · continue →
+continuar · stop → suspender · crystalloid → cristaloide · unit(s) → unidad(es) · oxygen → oxígeno · synchronized
+cardioversion → cardioversión sincronizada · the running infusion at → la infusión en curso a · prepare for
+intubation → preparar la intubación · intubation with invasive ventilation → intubación con ventilación invasiva ·
+ventilator adjustment → ajuste del ventilador · ventilator continuation → mantener el ventilador · discharge home →
+alta a domicilio · admission to {destino} → hospitalización en {destino} · management intervention → intervención de
+manejo · NIV → VMNI. Cualquier otro tipo de acción, con su etiqueta del registro.
+
+**V-9 · Nombres de fármacos para mostrar en español** (aclaración de X1-0, 2026-10-07) — **por redactar**. Cada
+fármaco que el lector reconoce, con el nombre que la sala muestra en español; por ejemplo, norepinephrine →
+noradrenalina y aspirin → aspirina. El identificador canónico guardado no cambia. Es una decisión y se presenta
+después de cerrar el nivel 1.
 
 ## 5. Compuerta de razonamiento y explicación retrospectiva (16)
 
@@ -421,7 +441,7 @@ la explicación retrospectiva; sus preguntas son I-7 y G-13. La sonda de la 27m 
 
 | ID | Fuente | EN | ES propuesto | Decisión docente |
 |---|---|---|---|---|
-| L-01 | APP:10884 | Talk · Examine · Tests · Treat (los cuatro modos) | Conversar · Examinar · Exámenes · Tratar | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| L-01 | APP:10884 | Talk · Examine · Tests · Treat (los cuatro modos) | Conversar · Examinar · Exámenes · Tratar | ☒ **APPROVE** (docente, 2026-10-07) |
 | L-02 | APP:11135 | Enter your clinical reasoning and/or actions (rótulo oculto, lo lee un lector de pantalla) | Tu razonamiento clínico y tus acciones | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-03 | APP:11139 | Describe your reasoning naturally. For example: I think...; I am addressing... first; I expect...; reassess ... in ... minutes. | Describe tu razonamiento con naturalidad. Por ejemplo: Creo que…; Primero abordo…; Espero que…; Reevalúo … en … minutos. | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-04 | APP:10906 | Ask the patient · Ask the available history source | Pregúntale al paciente · Pregunta a la fuente de la historia disponible | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
@@ -437,15 +457,15 @@ la explicación retrospectiva; sus preguntas son I-7 y G-13. La sonda de la 27m 
 | L-14 | APP:10690 | Current treatments | Tratamientos en curso | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-15 | APP:10489 | Diagnostics | Resultados de exámenes | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-16 | APP:10689 · APP:10709 | Current support · {soporte} | Soporte actual · {soporte} — {soporte}: M-04 | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| L-17 | APP:10118 · APP:10753 | ORDER_CANCELLED (clave cruda como encabezado de la entrada) | ORDEN CANCELADA | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| L-18 | APP:10118 · `resuscitation_room.py:141` | DIAGNOSTIC (clave cruda; la entrada del ECG tomado) | ECG | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| L-17 | APP:10118 · APP:10753 | ORDER_CANCELLED (clave cruda como encabezado de la entrada) | ORDEN CANCELADA; en inglés, ORDER CANCELLED | ☒ **APPROVE** (docente, 2026-10-07, regla de las claves internas) |
+| L-18 | APP:10118 · `resuscitation_room.py:141` | DIAGNOSTIC (clave cruda; la entrada del ECG tomado) | ECG; en inglés, también ECG (regla de las claves internas) | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-19 | APP:10183 · APP:11681 | Management Reasoning Simulator · Clinical encounter v{n} | Management Reasoning Simulator · Encuentro clínico v{n} | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | L-20 | `account_portal.py:391` (barra lateral) | Resident (el rol de la cuenta) | Residente | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 
 - L-01: la guía del residente nombra hoy los modos en inglés («Talk, Examine, Tests, Treat»); se actualiza al
   implementar.
-- L-17 y L-18 también salen crudos en inglés. Un rótulo inglés («ORDER CANCELLED», «ECG») es opcional y va aparte
-  (§10).
+- Por la decisión de las claves internas (2026-10-07), L-17 y L-18 se limpian también en inglés: L-17 queda
+  «ORDER CANCELLED» y para L-18 se propone «ECG» en los dos idiomas.
 
 ## 7. Monitor, escena, ECG y tratamientos en curso (22)
 
@@ -454,7 +474,7 @@ la explicación retrospectiva; sus preguntas son I-7 y G-13. La sonda de la 27m 
 | ID | Fuente | EN | ES propuesto | Decisión docente |
 |---|---|---|---|---|
 | M-01 | `resuscitation_room.py:55–65` | BEDSIDE MONITOR · HR · NIBP · RR (SpO₂ igual) | MONITOR DE CABECERA · FC · PANI · FR | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
-| M-02 | `clinical_scene.py:227–243` | ED / Bed 03 · {Patient illustration · current state / Updating patient appearance / Current patient image unavailable} | Urgencias / Cama 03 · {Imagen del paciente · estado actual / Actualizando la apariencia del paciente / Imagen actual del paciente no disponible} | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
+| M-02 | `clinical_scene.py:227–243` | ED / Bed 03 · {Patient illustration · current state / Updating patient appearance / Current patient image unavailable} | Urgencias / Cama 03 · {Imagen del paciente · estado actual / Actualizando la apariencia del paciente / Imagen actual del paciente no disponible} | ☒ **APPROVE** (docente, 2026-10-07: «Urgencias / Cama 03»; se registra el renglón entero, con sus tres estados) |
 | M-03 | `clinical_scene.py:282–302` | Por qué no hay foto: 11 avisos, todos terminados en «The monitor and the examination are current.» | Ver la tabla de abajo; el final común: «El monitor y el examen están al día.» | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 | M-04 | `resuscitation_room.py:6–19` | Soporte en curso: Ventilator · {modo} · FiO₂ {n}% · PEEP {n} · {NIV} · FiO₂ {n}% · {dispositivo / Oxygen} · {n} L/min · Norepinephrine / Dobutamine / Nitroglycerin · {n} {unidad} | Ventilador · {modo} · FiO₂ {n}% · PEEP {n} · VMNI · FiO₂ {n}% · {dispositivo / Oxígeno} · {n} L/min · Noradrenalina / Dobutamina / Nitroglicerina · {n} {unidad}. «Bag-mask ventilation» ya tiene su español («Ventilación con bolsa-mascarilla») | ☐ APPROVE · ☐ REVISE · ☐ DEFER |
 
@@ -537,20 +557,20 @@ paciente agotado según el mismo criterio del motor que pone «Exhausted» en el
 del paciente y del examen (`work_of_breathing.exhausted`: 25 minutos seguidos con carga alta y sin soporte). En
 los demás estados, las frases de A-2 y A-3 siguen igual.
 
-- **EN propuesto:** Bilateral inspiratory crackles; the respiratory effort is now exhausted: shallow and
-  ineffective.
-- **ES propuesto:** Crépitos inspiratorios bilaterales; el esfuerzo respiratorio ya está agotado: es superficial e
-  ineficaz.
+- **EN final (docente, 2026-10-07):** Bilateral inspiratory crackles; respiratory effort is now shallow and
+  ineffective, consistent with exhaustion.
+- **ES final (docente, 2026-10-07):** Crépitos inspiratorios bilaterales; el esfuerzo respiratorio ahora es
+  superficial e ineficaz, compatible con agotamiento.
+- Reemplaza la propuesta de este borrador («…; the respiratory effort is now exhausted: shallow and ineffective.» /
+  «…; el esfuerzo respiratorio ya está agotado: es superficial e ineficaz.»). El criterio del motor es el propuesto
+  arriba.
 - **Se infiere:** el paciente dejó de compensar; un esfuerzo menor no es mejoría. Coincide con el trabajo
   respiratorio que muestran la respuesta del paciente y el examen («Agotado: esfuerzo superficial e ineficaz»).
-- **Alternativa:** «Bilateral inspiratory crackles.» / «Crépitos inspiratorios bilaterales.», sin hablar del
-  esfuerzo, que ya dicen la frecuencia respiratoria y el examen general. Es más corta, pero quien lee sólo la
-  auscultación no ve el agotamiento.
-- **Recomendación:** la propuesta. Una prueba del motor fija hoy que A-3 («reduced respiratory effort») nunca aparece
-  junto al agotamiento; al implementar, otra prueba debe fijar que en el agotamiento se lee esta frase y nunca
-  «increased».
+- **Al implementar:** una prueba del motor ya fija que A-3 («reduced respiratory effort») nunca aparece junto al
+  agotamiento; otra debe fijar que en el agotamiento se lee esta frase y nunca «increased».
 - **SHA:** cambio de código del motor y de su español (nuevo SHA; 16.4).
-- Decisión docente: ☐ APPROVE · ☐ REVISE · ☐ DEFER — Nota: ________
+- Decisión docente: A-2 sigue en ☒ **REVISE**, con esta redacción para la firma — docente, 2026-10-07. Sin
+  implementar.
 
 ## 10. Al implementar (no autorizado todavía)
 
@@ -560,28 +580,36 @@ los demás estados, las frases de A-2 y A-3 siguen igual.
   pregunta de este documento, y fallar ante cualquier línea visible con palabras inglesas fuera de los nombres
   canónicos y los códigos. Las 7 sondas de este inventario son el punto de partida. Es la prueba de que no queda
   nada fuera de este inventario, que no se puede asegurar sólo leyendo el código.
-- Guías: la del residente dice que estas preguntas, el aviso de la orden retenida y algunos rótulos se ven en
-  inglés, y nombra los modos en inglés. La docente cita TD-51 como diferida (línea 232). Se actualizan con la
-  implementación.
+- Guías: la del residente dice que estas preguntas, el aviso de la orden retenida, el aviso de la foto y algunos
+  rótulos se ven en inglés, y nombra los modos en inglés. La docente cita TD-51 como diferida (línea 232) y junta
+  el trauma y la neumonía en el párrafo de TD-54 que D-42 reemplaza. Se actualizan antes de su firma (H-62, I-63).
+- **Dónde se implementa:** en la capa de presentación (`language.py` y la sala), sin tocar el lector
+  (`family_parser.py`), el corpus ni los baselines (CLAUDE.md: validación externa en espera).
 - El cambio es de código: nuevo SHA y el contrato 16.4 (suite, 56 regresiones, B-1).
-- **Opcional, en inglés (aparte de X-1):** cuatro textos ingleses muestran claves internas: la clase en X1-C01 a
-  C04, la acción en X1-C27 (e), el estudio en X1-C28, y los encabezados L-17 y L-18. Corregirlos en inglés es una
-  decisión aparte.
+- **Claves internas (decisión docente, 2026-10-07):** antes del candidato final se limpia su presentación, en
+  inglés y en español, sin cambiar las claves canónicas (TD-80):
+  - la clase en X1-C01 a C04: V-1, con su columna inglesa por agregar;
+  - la acción en X1-C27 (e) y el estudio en X1-C28: sus etiquetas del registro y de los estudios ya existen en los
+    dos idiomas;
+  - los encabezados L-17 (decidido) y L-18.
 
 ## 11. Resumen de decisiones
 
-| Grupo | Formulaciones | Decisiones |
-|---|---|---|
-| X1-0 · Convenciones | — | 1 |
-| I-10 · Resumen de la orden retenida (diseño) | — | 1 |
-| 4 · Preguntas sobre una orden (X1-C01 a C33, X1-R01) | 34 plantillas (73 frases) | 34 |
-| 4.10 · Vocabularios (V-1 a V-7; V-8 sólo si I-10 no se aprueba) | 7 tablas | 1 |
-| 5 · Compuerta y explicación retrospectiva (G-01 a G-16) | 16 | 16 |
-| 6 · Rótulos de la sala (L-01 a L-20) | 20 | 20 |
-| 7 · Monitor, escena, ECG y tratamientos (M-01 a M-04, E-01 a E-05, T-01 a T-13) | 22 | 22 |
-| 8 · Después del cierre (P-01 a P-07) | 7 | 7 |
-| 9 · A-2 en agotamiento (EN y ES) | 1 | 1 |
-| **Total** | **100 formulaciones, 7 vocabularios** | **103** |
+| Grupo | Formulaciones | Decisiones | Decididas el 2026-10-07 |
+|---|---|---|---|
+| X1-0 · Convenciones | — | 1 | 1 (APPROVE, con aclaración) |
+| I-10 · Resumen de la orden retenida (diseño) | — | 1 | 1 (APPROVE) |
+| 4 · Preguntas sobre una orden (X1-C01 a C33, X1-R01) | 34 plantillas (73 frases) | 34 | 0 |
+| 4.10 · Vocabularios (V-1 a V-7 y V-9; V-8 no se construye) | 8 tablas (V-9 por redactar) | 3: V-4; V-1 a V-3 y V-5 a V-7; V-9 | 1 (V-4) |
+| 5 · Compuerta y explicación retrospectiva (G-01 a G-16) | 16 | 16 | 0 |
+| 6 · Rótulos de la sala (L-01 a L-20) | 20 | 20 | 2 (L-01, L-17) |
+| 7 · Monitor, escena, ECG y tratamientos (M-01 a M-04, E-01 a E-05, T-01 a T-13) | 22 | 22 | 1 (M-02) |
+| 8 · Después del cierre (P-01 a P-07) | 7 | 7 | 0 |
+| 9 · A-2 en agotamiento (EN y ES) | 1 | 1 | 1 (redacción final docente) |
+| **Total** | **100 formulaciones; 8 vocabularios** | **105** | **7; quedan 98** |
+
+Antes del 2026-10-07 eran 103 decisiones. Suman dos: V-4 se decidió aparte de los demás vocabularios, y V-9
+nace de la aclaración de X1-0.
 
 Firma docente y fecha: ________________________
 
