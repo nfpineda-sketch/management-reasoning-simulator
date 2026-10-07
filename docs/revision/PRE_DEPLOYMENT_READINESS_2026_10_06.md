@@ -288,6 +288,10 @@ actualización).
 nivel 1. K-18 se revisa: es una corrección de texto del motor antes del candidato final (TD-82). De F0-11 quedan
 los eventos K-E1 a K-E17, de nivel 2 (Decision File, decimotercera actualización).
 
+**Actualización del 2026-10-07 (B-5, lote 1 de nivel 2):** A-6 se revisa: en la 49m, el examen respiratorio
+conserva la gravedad de llegada mientras la obstrucción no mejore. Es un cambio del motor antes del candidato final
+(TD-83). Quedan 33 decisiones, todas de nivel 2 (Decision File, decimocuarta actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

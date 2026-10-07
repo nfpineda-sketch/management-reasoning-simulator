@@ -9,7 +9,7 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
-  en español, sin interfaz mezclada en el candidato final; todas las decisiones de nivel 1 quedaron tomadas, el español
+  en español, sin interfaz mezclada en el candidato final; todas las decisiones de nivel 1 y el primer lote de nivel 2 quedaron tomados, el español
   que falta para X-1 está redactado y sus decisiones de base, tomadas; el relato y la rúbrica en español se revisan
   antes de congelar el candidato, y el relato aprobado entra en él en `case_text/es/approvals.json`). Antes, con el cierre de la Fase 0 (sección «Cierre de la Fase 0»: F0-1 a F0-12 cerradas). La
   sección «Fase 0 · Seguridad de la medición antes del piloto», con las preguntas tal como se abrieron, sigue debajo. El cierre del paquete prepiloto (2026-10-02,
@@ -392,13 +392,49 @@ primer lote de nivel 2 preparado.** Registradas también en el paquete, en la ho
   pulmonar y opioides, cuya línea respiratoria la reemplaza.
 - **B-5: BLOCKED.**
 
+**Actualizado por decimocuarta vez el 2026-10-07: B-5 · primer lote de nivel 2 (A-3 a A-8, A-10 a A-13).**
+Registradas también en el paquete y en `docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`. **Ninguna está implementada.**
+
+| ID | Decisión docente (2026-10-07) | Qué exige, sin implementar todavía |
+|---|---|---|
+| A-3, A-4, A-5, A-7, A-8, A-12 y A-13 | APPROVE | Nada en el inglés; su español se muestra con X-1 |
+| A-10 y A-11 | APPROVE | Con X-1. Normalización cosmética: al implementar A-9, A-10 y A-11, la frecuencia se escribe «{n}/min». No es otra decisión |
+| A-6 | REVISE. En `asthma_49m`, conservar el examen respiratorio grave de llegada («very poor bilateral air entry and only faint wheeze») mientras la obstrucción no haya mejorado. Una orden que no mejora la obstrucción, tampoco el oxígeno solo, no puede hacer que el examen parezca menos grave. La frase no cambia por la sola ejecución de una orden; A-6 aparece sólo cuando describe el estado actual del motor; A-5 sigue siendo la mejoría real tras la respuesta al broncodilatador. Es redacción coherente con el estado, no un cambio de la trayectoria clínica ni de la respuesta al tratamiento | Cambio del motor antes del candidato final (TD-83), abajo |
+
+- **Consecuencia para implementar A-6 (no autorizada todavía):**
+  1. En `asthma_49m`, mientras la obstrucción del motor siga en su nivel de llegada, el examen respiratorio
+     conserva la línea de llegada del caso («Severe effort with very poor bilateral air entry and only faint
+     wheeze…»; en español, la del relato del caso).
+  2. La frase cambia sólo cuando cambia el estado del motor, nunca por la sola ejecución de una orden.
+  3. A-6 aparece sólo cuando describe el estado actual; A-5, sólo con la mejoría real tras el broncodilatador.
+  4. No cambian la trayectoria, la respuesta al tratamiento, los signos vitales ni los eventos: sólo la redacción
+     del examen.
+  5. Lugar: `family_engine.current_findings`, rama del asma (`family_engine.py:3227–3229`).
+  6. Pruebas:
+     - la 49m con oxígeno solo conserva la línea de llegada;
+     - con broncodilatadores pasa a A-5;
+     - los valores del motor son idénticos antes y después del cambio.
+  7. Es un cambio del motor: SHA nuevo y contrato 16.4.
+- **Por resolver al implementar A-6, con aprobación docente de cualquier texto nuevo:**
+  - si la 49m se intuba sin que la obstrucción mejore (comprobado con el motor: con etomidato y rocuronio, la
+    obstrucción no baja), la línea de llegada habla de esfuerzo y de flujo espiratorio máximo, que ya no
+    describen a un paciente intubado. Hay que conservar la gravedad (entrada de aire muy pobre, sibilancias apenas
+    audibles) sin esas partes;
+  - A-8 compone su segunda parte con el examen respiratorio vigente. En la 49m sin mejoría, esa parte no puede ser
+    la línea de llegada entera.
+- **Cuentas:**
+  - paquete: 67 de las 100 decididas; quedan 33, todas de nivel 2. Con H-62 e I-63, las firmas abiertas son 35;
+  - borrador de X-1: 7 de 105 decididas, quedan 98 (sin cambio).
+- **Siguiente lote de nivel 2:** A-14 a A-18 y C-27 a C-31.
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J y todo el nivel 1, sin implementar; quedan 43 de 100, todas de nivel 2, y H-62 e I-63, decididas DEFER, siguen sin firma a propósito (45 firmas abiertas). Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, todo el nivel 1 y el primer lote de nivel 2, sin implementar; quedan 33 de 100, todas de nivel 2, y H-62 e I-63, decididas DEFER, siguen sin firma a propósito (35 firmas abiertas). Del borrador del español de X-1, 7 de 105 decididas | Firmar las restantes y el borrador de X-1 (`docs/revision/X1_ESPANOL_PROPUESTO.md`); revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato; llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

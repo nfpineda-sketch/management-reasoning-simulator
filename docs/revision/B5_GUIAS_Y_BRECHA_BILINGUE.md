@@ -447,6 +447,50 @@ Ninguna es idéntica a otra, así que no se agrupan. A-5, A-6 y A-8 se marcan VI
 
 Campo de decisión de cada una, en el paquete (bloque A): ☐ APPROVE · ☐ REVISE · ☐ DEFER.
 
+**Decisión docente (2026-10-07):** A-3, A-4, A-5, A-7, A-8, A-10, A-11, A-12 y A-13, APPROVE. A-6, REVISE: en
+`asthma_49m`, el examen respiratorio conserva la gravedad de llegada mientras la obstrucción no haya mejorado; una
+orden que no la mejora, tampoco el oxígeno solo, no puede hacerlo parecer menos grave; A-6 sólo cuando describe el
+estado actual del motor, y A-5 para la mejoría real tras el broncodilatador. Es redacción coherente con el estado,
+sin cambiar la trayectoria (TD-83; la consecuencia para implementar está en el Decision File, decimocuarta
+actualización). Al implementar A-9, A-10 y A-11, la frecuencia se escribe «{n}/min»: es cosmético, no otra
+decisión. Ninguna está implementada.
+
+### 3.8 Segundo lote de nivel 2 (propuesto el 2026-10-07)
+
+Orden del paquete: A-14 a A-18 y C-27 a C-31. **Comprobado el 2026-10-07:**
+
+- A-14 a A-18: el inglés y el español coinciden con el motor (`glucose_rescue.access_finding`), los borradores y
+  la hoja R-4. Cada variante sale entera en español en las entradas: los cuatro sitios intraóseos y las tres vías
+  de la infusión. El panel del examen las muestra hoy en inglés; se verán en español con X-1.
+- C-27 a C-31: el inglés coincide con el motor y el banco (`anaphylaxis_reaction.py:84–96`,
+  `clinical_cases.py:1511–1515`). Su español es parte del relato de cada caso. Con el relato aprobado en memoria,
+  sin escribir aprobaciones, el panel dice exactamente el español del paquete; hoy, sin aprobación, cada línea se
+  ve entera en inglés.
+
+Dónde se ven: en el panel del examen, «Vascular access» de la hipoglicemia (A-14 a A-18), «Respiratory» (C-27 a
+C-29) y «General appearance» (C-30 y C-31). En C-27 a C-31 se decide el inglés; su español se aprueba con el relato
+del caso (4.1 del paquete) y llega en `case_text/es/approvals.json`. Ninguna es idéntica a otra; C-31 ya es una
+decisión para dos casos.
+
+| # | ID · casos | EN exacto | ES exacto | Qué significa | Recomendación |
+|---|---|---|---|---|---|
+| 1 | A-14 · `hypoglycemia_54m_thiamine` | Peripheral cannula in the left forearm; the forearm around it is swollen, pale, cool and tender. | Cánula periférica en el antebrazo izquierdo; el antebrazo a su alrededor está aumentado de volumen, pálido, frío y doloroso a la palpación. | Extravasación: se pasó algo por la vía infiltrada de llegada | **APPROVE AS IS** |
+| 2 | A-15 · hipoglicemia | A second peripheral cannula in the right forearm; the site is clean. | Una segunda cánula periférica en el antebrazo derecho; el sitio está limpio. | Hay una segunda vía, limpia | **APPROVE AS IS** — el motor la pone siempre en el antebrazo derecho, aunque el residente nombre otro sitio; la sala lo dice en la nota del procedimiento |
+| 3 | A-16 · hipoglicemia | An intraosseous needle in place (humeral). | Una aguja intraósea instalada (humeral). | Acceso intraóseo instalado; el sitio puede ser humeral, tibial, esternal o femoral | **APPROVE AS IS** — los cuatro sitios salen en español («sternal» → «esternal») |
+| 4 | A-17 · hipoglicemia | An intraosseous needle in place; no site was recorded. | Una aguja intraósea instalada; no se registró el sitio. | Acceso intraóseo sin sitio registrado | **APPROVE AS IS** |
+| 5 | A-18 · hipoglicemia | Dextrose {n}% runs at {n} mL/h through the cannula in the left forearm. | El suero glucosado al {n} % pasa a {n} mL/h por la cánula del antebrazo izquierdo. | La glucosa está pasando por esa vía: un estado, no una indicación (D-6). El motor escribe siempre el 10 %; la vía puede ser la de llegada, la nueva del antebrazo derecho o la aguja intraósea | **APPROVE AS IS** |
+| 6 | C-27 · `anaphylaxis_29f` | Increased effort with widespread expiratory wheeze; no stridor heard now. | Esfuerzo respiratorio aumentado, con sibilancias espiratorias difusas; ya no se escucha estridor. | La reacción bajó lo bastante para que ya no haya estridor; el broncoespasmo sigue. El examen sigue al motor, no a la SpO₂ (TD-50) | **APPROVE AS IS** (EN) |
+| 7 | C-28 · `anaphylaxis_29f` intubada | Endotracheal tube in place: no stridor through the tube; widespread expiratory wheeze. | Tubo endotraqueal instalado: sin estridor a través del tubo; sibilancias espiratorias difusas. | Con el tubo no se ausculta estridor; las sibilancias dicen que la reacción sigue (TD-47). No es un modelo de vía aérea difícil | **APPROVE AS IS** (EN) |
+| 8 | C-29 · `anaphylaxis_63m_betablocked` intubado | Endotracheal tube in place: no stridor through the tube; widespread wheeze. | Tubo endotraqueal instalado: sin estridor a través del tubo; sibilancias difusas. | Igual que C-28, con las sibilancias que escribió el caso | **APPROVE AS IS** (EN) — no se agrupa con C-28: no dice «expiratory» |
+| 9 | C-30 · `anaphylaxis_63m_betablocked` | A sting site on the right forearm. | Sitio de picadura en el antebrazo derecho. | La puerta de entrada, que sigue a la vista durante el encuentro (TD-59) | **APPROVE AS IS** (EN) |
+| 10 | C-31 · `renal_colic_34m` y `bradycardia_bb_54f` | No rash. | Sin erupción. | Una negativa que el caso escribe y que se mantiene | **APPROVE AS IS** (EN) — UNA DECISIÓN para los dos casos |
+
+Campo de decisión de cada una, en el paquete (bloques A y C): ☐ APPROVE · ☐ REVISE · ☐ DEFER.
+
+Aparte, sin relación con estos textos: dos formas habituales de pedir una vía no se leen hoy. «Insert a 16G cannula
+in the right antecubital fossa» recibe «No se entendió»; «Second IV access, 16G, right antecubital.» no deja fila
+en el ledger. El lector está congelado por la validación externa: quedan anotadas en TD-45.
+
 ## 4. Verificación
 
 - **El código no cambió:** el diff respecto de `8ff41a4`, fuera de `docs/`, está vacío. B-1 sigue valiendo
@@ -464,8 +508,8 @@ Campo de decisión de cada una, en el paquete (bloque A): ☐ APPROVE · ☐ REV
 
 ## 5. Decisiones pendientes
 
-Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1, del alcance y las bases de X-1, del
-relato, de la rúbrica y de las guías (Decision File, octava a decimotercera actualizaciones).
+Actualizado el 2026-10-07, con las decisiones docentes de todo el nivel 1 y del primer lote de nivel 2, del alcance
+y las bases de X-1, del relato, de la rúbrica y de las guías (Decision File, octava a decimocuarta actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -474,11 +518,13 @@ relato, de la rúbrica y de las guías (Decision File, octava a decimotercera ac
 3. **Decidido:** el relato en español de los 30 casos se revisa antes de congelar el candidato final, y su
    aprobación entra en el candidato en `case_text/es/approvals.json` (camino a). El archivo se crea después de la
    revisión.
-4. **Las firmas que quedan del paquete:** 43 de 100 decisiones, todas de nivel 2; con las firmas de H-62 e I-63,
-   45. El primer lote de nivel 2 está en 3.7.
+4. **Las firmas que quedan del paquete:** 33 de 100 decisiones, todas de nivel 2; con las firmas de H-62 e I-63,
+   35. El segundo lote de nivel 2 está en 3.8.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).
 6. **Decidido:** la rúbrica en español se revisa antes de congelar el candidato final. **Falta identificar**, antes
    de implementarla, el mecanismo exacto con que se activa en el candidato, comprobable de forma determinista.
 7. **Decidido:** K-18, REVISE con la redacción docente; es una corrección de texto antes del candidato final
    (3.6; TD-82).
-8. **A-6:** decidir si, en la 49m, el examen respiratorio conserva la gravedad de llegada (3.7; TD-83).
+8. **Decidido:** A-6, REVISE. En la 49m, el examen respiratorio conserva la gravedad de llegada mientras la
+   obstrucción no mejore (TD-83). Al implementarlo hay que resolver, con aprobación docente de cualquier texto
+   nuevo, el examen de la 49m intubada sin mejoría y la segunda parte de A-8.
