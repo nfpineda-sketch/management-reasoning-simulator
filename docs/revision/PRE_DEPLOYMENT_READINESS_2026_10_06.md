@@ -332,6 +332,10 @@ File, vigesimotercera actualización).
 su versión objetivo (3 de 30). R1B está en revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File,
 vigesimocuarta actualización).
 
+**Actualización del 2026-10-07 (B-5, R1B del relato):** la docencia aprobó los otros 3 casos de SCA, cada uno en su
+versión objetivo. El bloque de SCA queda entero (6 de 6) y el relato suma 6 de 30 casos. R2A (respiratorio) está en
+revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File, vigesimoquinta actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

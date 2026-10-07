@@ -256,3 +256,10 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
 - **R1A, decidido (2026-10-07):** APPROVE WHOLE CASE en `acs_54m_inferior` (`e1afcda5…`, con T-2), `acs_66f_nonst`
   (`d64dc726…`, con T-1) y `acs_61m_posterior` (`a6311c11…`). Van 3 de 30 casos. **Regla de versión:** la aprobación ata la versión objetivo presentada en la revisión, no la que está hoy en el repositorio. Al implementar, el español del repositorio tiene que dar exactamente ese hash antes de generar la entrada de aprobación; si da otro, se detiene y vuelve a revisión docente.
 - **R1B, entregado para revisión:** `docs/revision/B5_RELATO_R1B.md`.
+- **R1B, decidido (2026-10-07):** APPROVE WHOLE CASE en `acs_52m_de_winter` (`daf76611…`, con T-1),
+  `acs_48m_wellens` (`13a56987…`, la del repositorio) y `acs_70f_left_main` (`c94b56ee…`, con T-1 y «crépitos
+  basales dispersos»). El bloque de SCA queda aprobado entero (6 de 6); van 6 de 30 casos. Rige la misma regla
+  de versión.
+- **R2 dividido en R2A y R2B (docente, 2026-10-07), en el orden canónico del banco** (`clinical_cases.FAMILIES`:
+  neumonía, edema pulmonar y asma). R2A (`pneumonia_46f`, `pneumonia_83m` y `pulmonary_edema_58m`), entregado
+  para revisión: `docs/revision/B5_RELATO_R2A.md`. R2B: `pulmonary_edema_75f`, `asthma_24f` y `asthma_49m`.

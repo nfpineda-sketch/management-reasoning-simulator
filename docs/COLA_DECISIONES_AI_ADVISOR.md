@@ -717,13 +717,41 @@ en el registro de deuda (TD-81). **Nada está implementado.**
 - **Siguiente lote:** R2, después de la decisión docente sobre R1B.
 - **B-5: BLOCKED.**
 
+**Actualizado por vigesimoquinta vez el 2026-10-07: B-5 · R1B aprobado (bloque de SCA 6 de 6; relato 6 de 30); R2A
+para revisión.** Registrado también en `docs/revision/B5_RELATO_R1B.md`, en `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md` (§8), en
+`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, en el paquete (1.5) y en el registro de deuda (TD-81). **Nada está
+implementado.**
+
+| Caso | Decisión docente (2026-10-07) | Versión objetivo aprobada |
+|---|---|---|
+| `acs_52m_de_winter` | APPROVE WHOLE CASE, con T-1 (crackles → crépitos) | `daf766118b4ae254ae6fa4261bebb40a96eb3ce6d3a4d92f3048d0f5acdc4056` |
+| `acs_48m_wellens` | APPROVE WHOLE CASE; coincide con la versión del repositorio | `13a569872e3a88cf1f01537ee50544f5057cc21942bd10d4e3b3ba03681ab04d` |
+| `acs_70f_left_main` | APPROVE WHOLE CASE, con T-1 y su concordancia («crépitos basales dispersos») | `c94b56ee409f799557c53b017e5144c4c076549426d9a75aaec6cd314bddb552` |
+
+- **Regla de versión (docente):** la misma de R1A. Rige para las versiones objetivo que difieren de la del
+  repositorio (aquí, la 52m y la 70f).
+- **Estado del relato:**
+  - R1A, 3 de 3; R1B, 3 de 3; bloque de SCA, 6 de 6;
+  - relato del piloto, 6 de 30 casos aprobados;
+  - ningún archivo de aprobación creado.
+- **R2, dividido por decisión docente** en R2A y R2B, en el orden canónico del banco (`clinical_cases.FAMILIES`:
+  neumonía, edema pulmonar y asma). **R2A, preparado para la revisión docente** (`docs/revision/B5_RELATO_R2A.md`):
+  - casos `pneumonia_46f`, `pneumonia_83m` y `pulmonary_edema_58m`;
+  - 53 pasajes propios, y 50 cubiertos por el lote 0;
+  - 3 pasajes fijados por el corpus, en `pneumonia_46f`, marcados y sin cambios;
+  - T-1 en los 3 casos (en la 58m, con «crépitos bilaterales difusos») y T-2 en la 46f;
+  - recomendación APPROVE en los 3.
+- **Siguiente lote:** R2B (`pulmonary_edema_75f`, `asthma_24f` y `asthma_49m`), después de la decisión docente sobre
+  R2A.
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0, rúbrica y R1A aprobados, 3 de 30 casos; R1B en revisión); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0, rúbrica, R1A y R1B aprobados, 6 de 30 casos; R2A en revisión); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

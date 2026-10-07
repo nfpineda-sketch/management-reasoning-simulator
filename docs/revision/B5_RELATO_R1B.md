@@ -1,6 +1,7 @@
 # B-5 · Relato en español · Lote R1B: síndrome coronario agudo (casos 4 a 6)
 
-> **PARA REVISIÓN DOCENTE. Nada implementado.** Segunda mitad del lote R1 de la revisión del relato
+> **DECIDIDO por la docencia el 2026-10-07: los 3 casos, APPROVE WHOLE CASE. Nada implementado.** Segunda mitad
+> del lote R1 de la revisión del relato
 > (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`), en el orden canónico del banco (`clinical_cases.FAMILIES["acs"]`):
 > `acs_52m_de_winter`, `acs_48m_wellens` y `acs_70f_left_main`. Se aprueba el caso entero, en la versión objetivo impresa
 > (`case_text.version`). No se crea `approvals.json` ni se cambia `case_text/es`.
@@ -10,6 +11,8 @@
 
 **En una mirada**
 
+- **Decidido (docente, 2026-10-07):** 3 de 3 casos aprobados, cada uno en su versión objetivo. Con R1A, el bloque de SCA queda
+  aprobado entero (6 de 6) y el relato del piloto suma 6 de 30 casos. Regla de versión: la aprobación ata la versión objetivo presentada en la revisión, no la que está hoy en el repositorio. Al implementar, el español del repositorio tiene que dar exactamente ese hash antes de generar la entrada de aprobación; si da otro, se detiene y vuelve a revisión docente.
 - **Pasajes:** 3 casos y 105 pasajes. 61 están cubiertos por frases del lote 0, ya aprobadas; **44 son propios y se
   revisan** (14, 15 y 15).
 - **Corpus de la validación externa:** ninguno de los 3 casos está en él, así que no hay pasajes fijos en este lote.
@@ -48,7 +51,7 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Se aplica T-1 en `/examination/Respiratory`, ya aprobado.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `daf766118b4ae254ae6fa4261bebb40a96eb3ce6d3a4d92f3048d0f5acdc4056`. Incluye T-1 (crackles → crépitos).
 
 ## acs_48m_wellens
 
@@ -78,7 +81,7 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `13a569872e3a88cf1f01537ee50544f5057cc21942bd10d4e3b3ba03681ab04d`. Coincide con la versión que está hoy en el repositorio.
 
 ## acs_70f_left_main
 
@@ -108,15 +111,15 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/associated_symptom
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Se aplica T-1 en `/examination/Respiratory`, ya aprobado.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-07; versión aprobada `c94b56ee409f799557c53b017e5144c4c076549426d9a75aaec6cd314bddb552`. Incluye T-1 y la concordancia que trae: «crépitos basales dispersos».
 
 ## Resumen del lote R1B
 
 | Caso | Propios | Cubiertos por el lote 0 | Versión objetivo que se aprueba | Recomendación | Decisión docente |
 |---|---|---|---|---|---|
-| `acs_52m_de_winter` | 14 | 21 | `daf76611…` (con T-1) | APPROVE | ☐ |
-| `acs_48m_wellens` | 15 | 20 | `13a56987…` (sin cambios) | APPROVE | ☐ |
-| `acs_70f_left_main` | 15 | 20 | `c94b56ee…` (con T-1) | APPROVE | ☐ |
+| `acs_52m_de_winter` | 14 | 21 | `daf76611…` (con T-1) | APPROVE | ☒ APPROVE |
+| `acs_48m_wellens` | 15 | 20 | `13a56987…` (sin cambios) | APPROVE | ☒ APPROVE |
+| `acs_70f_left_main` | 15 | 20 | `c94b56ee…` (con T-1) | APPROVE | ☒ APPROVE |
 | **Total** | **44** | **61** | | | |
 
-Siguiente, según el orden docente: R2 (respiratorio), después de la decisión docente sobre R1B.
+Siguiente, según el orden docente: R2 (respiratorio), en dos mitades. R2A, en `docs/revision/B5_RELATO_R2A.md`.
