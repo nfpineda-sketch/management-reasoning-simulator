@@ -348,6 +348,11 @@ está en revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File, vi
 su versión exacta (15 de 30). R3B está en revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File,
 vigesimoctava actualización).
 
+**Actualización del 2026-10-08 (B-5, R3B del relato):** la docencia aprobó los otros 3 casos de bradicardia, cada
+uno en su versión exacta. El bloque de TEP y bradicardias queda entero y el relato suma 18 de 30 casos. R4A
+(hipoglicemia) está en revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File, vigesimonovena
+actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

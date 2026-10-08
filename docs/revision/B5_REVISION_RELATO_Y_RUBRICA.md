@@ -288,3 +288,11 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
   versiones son las del repositorio. Van 15 de 30 casos. Si la implementación cambia el hash de un caso aprobado,
   se detiene y vuelve a revisión docente.
 - **R3B, entregado para revisión:** `docs/revision/B5_RELATO_R3B.md`. Trae la comprobación pedida de T-3, V-9 y K-E6, sin conflicto.
+- **R3B, decidido (2026-10-08):** APPROVE WHOLE CASE en `bradycardia_avb3_78f` (`677c6278…`; el sustantivo
+  «confusión» queda), `bradycardia_bb_54f` (`45310f3b…`; «muy lenta» queda, con la misma ambigüedad del inglés, que
+  el examen resuelve) y `bradycardia_hyperk_63m` (`89a347fa…`; «carbonato de calcio» queda como medicación
+  crónica, distinta de las sales de calcio de V-9). Las 3 versiones son las del repositorio. El bloque de TEP y
+  bradicardias queda entero (6 de 6); van 18 de 30 casos. T-3, V-9 y K-E6 no requieren otra decisión.
+- **R4 en dos partes (docente, 2026-10-08), en el orden canónico del banco** (`clinical_cases.FAMILIES`:
+  hipoglicemia, después opioides). R4A (`hypoglycemia_28m`, `hypoglycemia_76f` y `hypoglycemia_54m_thiamine`),
+  entregado para revisión: `docs/revision/B5_RELATO_R4A.md`. R4B: `opioid_35m` y `opioid_67f`.

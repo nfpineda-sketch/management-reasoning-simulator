@@ -1,6 +1,7 @@
 # B-5 · Relato en español · Lote R3B: bradicardias (casos 4 a 6)
 
-> **PARA REVISIÓN DOCENTE. Nada implementado.** Segunda mitad del lote R3 de la revisión del relato
+> **DECIDIDO por la docencia el 2026-10-08: los 3 casos, APPROVE WHOLE CASE. Nada implementado.** Segunda mitad
+> del lote R3 de la revisión del relato
 > (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`), en el orden canónico del banco (`clinical_cases.FAMILIES`):
 > `bradycardia_avb3_78f`, `bradycardia_bb_54f` y `bradycardia_hyperk_63m`. Se aprueba el caso entero, en la versión
 > objetivo impresa (`case_text.version`). No se crea `approvals.json` ni se cambia `case_text/es`. No se implementa
@@ -11,6 +12,9 @@
 
 **En una mirada**
 
+- **Decidido (docente, 2026-10-08):** 3 de 3 casos aprobados, cada uno en la versión exacta revisada (la del repositorio). Con
+  R3A, el bloque de TEP y bradicardias queda aprobado entero (6 de 6) y el relato del piloto suma 18 de 30 casos.
+  T-3, V-9 y K-E6 no requieren ninguna decisión docente adicional para estos 3 casos.
 - **Pasajes:** 3 casos y 110 pasajes. 56 están cubiertos por frases del lote 0, ya aprobadas; **54 son propios y se
   revisan** (18, 16 y 20). Con R3A, el bloque suma los 111 pasajes propios que preveía el diseño (§4).
 - **Corpus de la validación externa:** ninguno de los 3 casos está en él, así que no hay pasajes fijos en este lote.
@@ -63,7 +67,7 @@ Cubiertos por el lote 0: `/history/allergies/0` (L0-33), `/examination/Respirato
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. **T-3:** no aparece «confused»; el pasaje `/history/neurological_symptoms/0` usa el sustantivo «confusion» → «confusión posterior», que T-3 no toca. **V-9:** «beta blocker» → «betabloqueador», como la clase de V-9; amlodipino, atorvastatina y digoxina son medicación habitual que el lector no reconoce como orden, en su nombre genérico.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-08; versión aprobada `677c6278c0afd61dfc0e8c284473e88109b0d6e9e9222f5883555c60b338d3a7`. El sustantivo «confusión» queda como está: T-3 rige «confused» → «confundido» y no obliga a cambiar este sustantivo.
 
 ## bradycardia_bb_54f
 
@@ -94,7 +98,7 @@ Cubiertos por el lote 0: `/history_source` (L0-32), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. **V-9:** «propranolol» → «propranolol», como en V-9; losartán, medicación habitual en su nombre genérico. «Muy lenta» reproduce la misma ambigüedad del inglés («very slow»: el pulso o la respuesta); el examen («Pulso muy lento») y el monitor la resuelven.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-08; versión aprobada `45310f3bbe2d6151424d8955d4e2d24e8f88f72341670cf164955dbce8a009d9`. Se conserva la redacción actual: «muy lenta» refleja la misma ambigüedad del inglés «very slow», y el examen físico identifica después el pulso como muy lento; no requiere revisión.
 
 ## bradycardia_hyperk_63m
 
@@ -129,15 +133,15 @@ Cubiertos por el lote 0: `/history_source` (L0-30), `/history/allergies/0` (L0-3
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Ya dice «sin crépitos» (T-1). **V-9:** carbonato de calcio, insulina y espironolactona son medicación habitual, en su nombre genérico; «carbonato de calcio» (el quelante de fósforo que toma con las comidas) no se confunde con las sales de calcio de V-9 que sirven de antídoto («gluconato de calcio», «cloruro de calcio»): el español conserva la misma distinción que el inglés.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, 2026-10-08; versión aprobada `89a347fa21123325e432c3b04970fd23b7218c8b4b41e2b5b0960510ad61b8e8`. Se conserva «carbonato de calcio» como medicación crónica del paciente, distinta de las sales de calcio que V-9 usa como tratamiento agudo.
 
 ## Resumen del lote R3B
 
 | Caso | Propios | Cubiertos por el lote 0 | Fijos del corpus | Versión objetivo que se aprueba | Recomendación | Decisión docente |
 |---|---|---|---|---|---|---|
-| `bradycardia_avb3_78f` | 18 | 18 | 0 | `677c6278…` (sin cambios) | APPROVE | ☐ |
-| `bradycardia_bb_54f` | 16 | 21 | 0 | `45310f3b…` (sin cambios) | APPROVE | ☐ |
-| `bradycardia_hyperk_63m` | 20 | 17 | 0 | `89a347fa…` (sin cambios) | APPROVE | ☐ |
+| `bradycardia_avb3_78f` | 18 | 18 | 0 | `677c6278…` (sin cambios) | APPROVE | ☒ APPROVE |
+| `bradycardia_bb_54f` | 16 | 21 | 0 | `45310f3b…` (sin cambios) | APPROVE | ☒ APPROVE |
+| `bradycardia_hyperk_63m` | 20 | 17 | 0 | `89a347fa…` (sin cambios) | APPROVE | ☒ APPROVE |
 | **Total** | **54** | **56** | **0** | | | |
 
-Siguiente, según el orden docente: R4 (hipoglicemia y opioides), después de la decisión docente sobre R3B.
+Siguiente, según el orden docente: R4 (hipoglicemia y opioides). R4A, en `docs/revision/B5_RELATO_R4A.md`.
