@@ -1,8 +1,9 @@
 # Guía del residente · piloto formativo
 
-> **Estado (Fase 0 cerrada el 2026-10-06): lista para la firma docente, no aprobada.** Se entrega a los
-> residentes sólo después de esa aprobación. Las etiquetas van como las muestra la pantalla en español y,
-> entre paréntesis, en inglés.
+> **Estado (2026-10-08): actualizada al candidato local de B-5 (IG-6), para la firma docente (I-63); no está
+> firmada.** Describe la sala implementada en local el 2026-10-08, todavía no desplegada. Se entrega a los
+> residentes sólo después de la firma. Las etiquetas van como las muestra la pantalla en español y, entre
+> paréntesis, en inglés.
 
 Un simulador de razonamiento de manejo. Es **formativo**: no hay nota global, ranking ni tabla de
 posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada encuentro.
@@ -15,13 +16,14 @@ posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada
   encuentros.
 - **Idioma:** el piloto corre en español y en inglés; elígelo en «Idioma · Language». Las pantallas están en
   español o en inglés, y puedes escribir tus órdenes en cualquiera de los dos. Durante un encuentro el idioma
-  queda fijo. Lo que la sala te dice sobre tus órdenes (qué pasó con cada una, las esperas, las
-  interrupciones, el paro) se ve en el idioma que elegiste. Parte del relato de un caso, como su informe
-  POCUS, puede verse en inglés mientras su traducción no esté aprobada, y también algunas líneas del examen
-  que escribe el simulador (por ejemplo, la auscultación o las vías venosas); cada línea se ve entera en un
-  solo idioma. Por ahora, muchas preguntas de la sala sobre una orden (por ejemplo, qué dosis o qué vía), el
-  aviso de una orden retenida para que expliques tu razonamiento y algunos rótulos de la pantalla todavía se
-  ven en inglés, en todo o en parte.
+  queda fijo. En un encuentro en español, la sala te habla en español: el relato del caso (también el POCUS y
+  el E-FAST), el examen, las preguntas sobre tus órdenes, el aviso de una orden retenida, los recibos, los
+  rótulos y los documentos que descargas. Los fármacos se nombran en español («noradrenalina», «salbutamol»);
+  las dosis, las unidades, las vías y las siglas se escriben igual (mg, mL/h, IV, FiO₂, CPAP). Lo que tú
+  escribiste se muestra tal como lo escribiste. Algunos textos todavía se ven en inglés mientras la docencia
+  decide su redacción: la ayuda del selector de idioma, «Ask about …» al preguntar por un tema de la historia,
+  «units» en la dosis de heparina, dos títulos que aparecen al cerrar el encuentro y unos pocos avisos de
+  órdenes poco frecuentes.
 - **Sin datos reales:** no escribas nombres ni datos de pacientes reales. Todo es simulado.
 
 ## El encuentro
@@ -72,7 +74,8 @@ posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada
   - «Indicaciones» («Orders»): qué pasó con cada orden (ejecutada, no ejecutada, a la espera de una aclaración,
     pendiente, cancelada, o indicada con su efecto no modelado) y los tratamientos en curso.
   Consultarlas no envía nada ni borra lo que estás escribiendo.
-- **A la derecha, abajo, «Manejo»:** elige un modo (Talk, Examine, Tests, Treat; el elegido lleva ✓), escribe
+- **A la derecha, abajo, «Manejo»:** elige un modo («Conversar», «Examinar», «Exámenes» o «Tratar»; en inglés,
+  Talk, Examine, Tests y Treat; el elegido lleva ✓), escribe
   y pulsa «Enviar» («Send»). Enter agrega una línea; no envía. Bajo los modos, la sala te dice qué pasó con tu
   última orden (su recibo). Por ejemplo: «No se entendió: …» («Not understood: …»): no se dio ni se hizo
   nada, escríbela de nuevo con otras palabras; «Registrado como tu decisión, no administrado» («Recorded as
@@ -90,8 +93,8 @@ posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada
 ## La foto y el POCUS
 
 - **La foto** es una imagen fija del paciente, revisada por un docente. No muestra todos los signos clínicos:
-  examina al paciente para evaluar lo que una foto no puede mostrar. La sala lo recuerda junto a la foto
-  (por ahora, en inglés). Algunos casos llegan con una vista neutral, sin foto: el monitor, el examen y los
+  examina al paciente para evaluar lo que una foto no puede mostrar. La sala lo recuerda junto a la foto.
+  Algunos casos llegan con una vista neutral, sin foto: el monitor, el examen y los
   resultados dicen lo mismo de todos modos.
 - **El POCUS y el E-FAST** se entregan como un informe escrito de hallazgos: no hay imágenes ni videos. Lo
   que cuenta es cuándo los pides, cómo interpretas esos hallazgos y cómo los usas en tu manejo.

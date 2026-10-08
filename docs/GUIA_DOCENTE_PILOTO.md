@@ -1,12 +1,15 @@
 # Guía docente · piloto formativo
 
-Para quien revisa encuentros durante el piloto. El detalle técnico está en `docs/RUNBOOK_PILOTO.md` y en
-`docs/READINESS_PILOTO_FORMATIVO.md`.
+Para quien revisa encuentros durante el piloto. El detalle técnico está en
+`docs/revision/PILOT_PROMOTION_DEPLOYMENT_RUNBOOK.md` (que reemplaza a `docs/RUNBOOK_PILOTO.md` para el piloto) y
+en `docs/READINESS_PILOTO_FORMATIVO.md`.
 
-> **Estado (Fase 0 cerrada el 2026-10-06): lista para su firma, no aprobada.** Describe el funcionamiento
-> comprobado al cierre del paquete prepiloto (D-1 a D-11) y lo que cambió la Fase 0 (F0-1 a F0-12), con las
-> etiquetas de la pantalla en español y, entre paréntesis, en inglés. Lo implementado vale sólo para
-> encuentros nuevos: uno anterior conserva su registro y la declaración con que se congeló.
+> **Estado (2026-10-08): actualizada al candidato local de B-5 (IG-6), para su firma (H-62); no está firmada.**
+> Describe el funcionamiento comprobado al cierre del paquete prepiloto (D-1 a D-11), lo que cambió la Fase 0
+> (F0-1 a F0-12) y lo implementado en local el 2026-10-08 con las decisiones docentes de B-5 («El candidato de
+> B-5»), todavía no desplegado, con las etiquetas de la pantalla en español y, entre paréntesis, en inglés. Lo
+> implementado vale sólo para encuentros nuevos: uno anterior conserva su registro y la declaración con que se
+> congeló.
 >
 > Firma y fecha: ________________________
 
@@ -23,11 +26,14 @@ Para quien revisa encuentros durante el piloto. El detalle técnico está en `do
   composiciones de hipoglicemia, los casos escritos por IA y PS001/PS002 no se usan, y R1-03, R1-04 y R2-01
   no se asignan (F0-4).
 - **Idioma (X-1):** el piloto corre en inglés y en español. El residente elige el idioma antes de empezar y
-  queda fijo durante el encuentro. Los mensajes nuevos de la Fase 0 sobre las órdenes (recibos, esperas,
-  interrupciones, paro, la respuesta a una aclaración) se dicen en ese idioma (F0-11). El registro, el
-  Management Trace y el ledger se guardan en inglés; sus destinos y códigos (EXECUTED, UNRECOGNIZED,
-  HELD_REASONING…) son canónicos y no se traducen. Lo que todavía se ve en inglés en un encuentro en español
-  está en «Limitaciones conocidas».
+  queda fijo durante el encuentro. En un encuentro en español la sala habla en español (X-1, 105 decisiones):
+  el relato aprobado de los 30 casos, el examen, las preguntas sobre una orden, la compuerta de razonamiento,
+  los recibos (F0-11), los rótulos, el monitor, el ECG, los tratamientos en curso y las pantallas del cierre.
+  Los fármacos se nombran en español (V-9), también en los documentos que se descargan en español; dosis,
+  unidades, vías y siglas se escriben igual. El registro, el Management Trace y el ledger se guardan en inglés;
+  sus destinos y códigos (EXECUTED, UNRECOGNIZED, HELD_REASONING…) y los nombres canónicos de los fármacos no se
+  traducen. La rúbrica en español (D1 a D5) es la que usted aprobó. Lo que todavía se ve en inglés en un
+  encuentro en español está en «Limitaciones conocidas».
 
 ## Revisar un encuentro
 
@@ -146,17 +152,19 @@ una omisión. La decisión de trombolizar se juzga como antes, en su minuto.
 ## Fotos y POCUS: qué muestran y qué no
 
 - **Fotos.** Sólo se muestran fotos con sus dos revisiones humanas aprobadas. Una foto fija no muestra todos
-  los signos: la sala lo recuerda junto a la foto («A still photograph does not show every clinical sign;
-  examine the patient to assess what it cannot carry.»; esa nota todavía se ve en inglés). Lo que la foto no
+  los signos: la sala lo recuerda junto a la foto, en el idioma del encuentro («Una fotografía fija no muestra
+  todos los signos clínicos; examina al paciente para evaluar lo que no puede mostrar.»; J-64). Lo que la foto no
   muestra está en el examen. `bradycardia_bb_54f` y `pulmonary_edema_75f` llegan con la vista neutral.
 - **POCUS y E-FAST.** Son informes escritos de hallazgos: no hay imágenes ni videos. Lo que se observa es la
   indicación (pedirlo y cuándo), la interpretación de los hallazgos entregados por escrito, su uso en el
   manejo y la reevaluación. **No** se observa la adquisición, la destreza psicomotora ni el reconocimiento
   de imágenes: no se los atribuya al residente.
 - **POCUS y E-FAST de control (TD-54).** Un POCUS repetido no cambia la VCI con el volumen o el control de la
-  hemorragia en el trauma, ni muestra líneas B nuevas con la sobrecarga de cristaloides en la neumonía (la
-  saturación sí cae); un E-FAST de control repite las ventanas de llegada (en la 41m, sólo en el sandbox
+  hemorragia en el trauma; un E-FAST de control repite las ventanas de llegada (en la 41m, sólo en el sandbox
   docente, también el receso drenado). No exija ver un cambio que el simulador no muestra.
+- **POCUS de control en la neumonía (D-42; `pneumonia_46f` y `pneumonia_83m`).** Un POCUS de control muestra que la
+  VCI se llena con el volumen, pero en los pulmones no muestra líneas B nuevas por la sobrecarga de cristaloides; la
+  saturación sí cae. No se exige ver líneas B nuevas.
 
 ## La sala desde la Fase 0 (2026-10-06)
 
@@ -207,6 +215,33 @@ Lo que cambió la Fase 0 y cómo leerlo al evaluar. Vale para encuentros nuevos.
   (`docs/revision/PILOT_FREEZE_MANIFEST.md`) declara las limitaciones de cada caso; por ejemplo,
   C-LIMB-ARREST-13: sin tratamiento, la 27m llega al paro hacia el minuto 13.
 
+## El candidato de B-5 (implementado en local el 2026-10-08)
+
+Lo que las decisiones docentes de B-5 cambiaron en la sala. Vale para encuentros nuevos.
+
+- **Relato (30 de 30) y rúbrica (5 de 5) en español,** cada uno atado al hash que usted aprobó; en la rúbrica, D4
+  con «revisar/vigilar» (R-1) y D5 con la opción b. Estructura, niveles, puntaje y la rúbrica inglesa no cambian.
+- **El examen dice el estado del motor.**
+  - Edema pulmonar agotado (A-2): «Crépitos inspiratorios bilaterales; el esfuerzo respiratorio ahora es
+    superficial e ineficaz, compatible con agotamiento.»
+  - `asthma_49m` (A-6, A-6a, A-6b, A-7-49m, A-8a): conserva el examen grave de llegada mientras su obstrucción no
+    mejora, respirando solo o con VMNI; intubado sin mejoría, «Tubo endotraqueal instalado: el murmullo pulmonar
+    sigue muy disminuido…»; el neumotórax y la descompresión tienen sus frases propias. La elección es por el
+    estado de cada examen, no por la orden ni por el fármaco de inducción. La 24f no cambia.
+  - Opioides (A-9 a A-11): con ventilación asistida, «Frecuencia respiratoria {n}/min, dada por la ventilación
+    asistida en curso.»
+  - Opioides (TD-84): el examen inglés dice «Pupils are small and reactive.», como ya lo decía el español.
+- **Paros y eventos.** Paro de la anafilaxia después de una dosis (K-18): «…la adrenalina administrada antes no
+  logró mantener la reacción bajo control…»; etiqueta del paro (K-E5): «paro circulatorio por anafilaxia sin
+  adrenalina eficaz»; bradicardia (K-E6 y TD-85): «paro circulatorio por bradicardia profunda» y, en la sala en
+  español, «Paro circulatorio por bradicardia profunda.»; reacción bifásica (TD-85): «La reacción anafiláctica
+  vuelve.»; saturación (K-E16): «saturación de 84 % y en descenso». Disparadores, minutos, prevenibilidad y
+  fisiología no cambian.
+- **Vía oral (XR-18):** con el paciente que no puede tragar, la pregunta termina «…hasta que sea seguro
+  administrar por vía oral.» (en inglés, «…until oral administration is safe.»). La lógica de la vía no cambia.
+- **Preguntas sobre una orden (X-1):** nombran el fármaco que el residente escribió o, si sólo se reconoció una
+  clase, su nombre («betabloqueador»), nunca una clave interna.
+
 ## Limitaciones conocidas
 
 Son para el docente; **no se le dicen al residente como instrucciones**.
@@ -229,19 +264,23 @@ Son para el docente; **no se le dicen al residente como instrucciones**.
 - **Transfusión (TD-32):** una unidad corre 30 minutos y el reloj avanza hasta que termina, salvo que el
   residente escriba una velocidad o un momento de reevaluación.
 - **«Suero glucosado» sin concentración:** sigue sin decidir.
-- **Edema pulmonar sin tratamiento (TD-51, diferida):** durante unos 12 minutos el examen dice «Bilateral
-  inspiratory crackles with increased respiratory effort.» mientras el esfuerzo ya es «Exhausted».
+- **Edema pulmonar sin tratamiento (TD-51, resuelta por A-2):** cuando el esfuerzo del motor es «Exhausted», el
+  examen lo dice: «Crépitos inspiratorios bilaterales; el esfuerzo respiratorio ahora es superficial e ineficaz,
+  compatible con agotamiento.» (en inglés, «…consistent with exhaustion.»). Ya no hay minutos en que el examen diga
+  un esfuerzo aumentado mientras el paciente está agotado.
 - **Hallazgos sin evolución en el motor (TD-59):** la urticaria, el enrojecimiento y el edema de labios y
   párpados de la 29f, el enrojecimiento y los habones de la 63m, el enrojecimiento y los escalofríos de la
   58f y la inquietud de la 34m no se vuelven a describir después de la llegada (su presentación los dice).
   No exija reevaluarlos.
-- **Relato en español:** sólo se muestra el de los casos cuya traducción usted aprobó en el tablero
-  docente. El resto se ve en inglés, línea por línea entera, también en el POCUS y el E-FAST. Las frases
-  nuevas de la Fase 0 se dicen siempre en español en un encuentro en español (F0-11). Mientras no se activen
-  (X-1), las frases del motor de R-4 (la auscultación y las vías venosas, entre otras) y el aviso de la foto
-  se ven en inglés. Anteriores a la Fase 0, también se ven en inglés, en todo o en parte, la mayoría de las
-  preguntas de aclaración de la sala (dosis, vía, flujo, ritmo de infusión), el aviso de una orden retenida
-  por la compuerta de razonamiento y varios rótulos de la sala.
+- **Relato y sala en español:** el relato en español de los 30 casos del piloto es el que usted aprobó, en su
+  versión exacta (`case_text/es/approvals.json`); el caso del sandbox docente (`trauma_hemothorax_41m`) sigue en
+  inglés. Las frases del motor de R-4, el aviso de la foto y las preguntas de la sala se dicen en español. Siguen
+  en inglés, mientras usted decide su redacción (TD-86; `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`): la
+  ayuda del selector de idioma, «Ask about {tema}» al preguntar por un tema de la historia, los títulos «Latest
+  response» y «Clinical chart · examination · results · treatment record» al cerrar, la frase de
+  gastroenterología de la 72f, «units» en la dosis de heparina, los nombres de respaldo «Hemorrhage control» y
+  «Blood», y, en órdenes poco frecuentes, los avisos del lector sobre lo que no está activo, la base de la dosis
+  del ácido tranexámico sin dosis escrita, la fibrilación tras una prueba de esfuerzo y «endoscopy performed».
 - **TEP:** un segundo curso de trombolítico no tiene efecto propio en el simulador (simplificación
   declarada).
 

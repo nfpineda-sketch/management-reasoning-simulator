@@ -9,6 +9,13 @@ bloqueado, y por qué.
 
 ## Respuesta
 
+> **Estado al 2026-10-08 (B-5):** el candidato con las decisiones docentes de B-5 está implementado en local, sin
+> desplegar (`docs/revision/B5_CANDIDATO_LOCAL.md`). La promoción y el despliegue siguen
+> `docs/revision/PILOT_PROMOTION_DEPLOYMENT_RUNBOOK.md`, que reemplaza a `docs/RUNBOOK_PILOTO.md` para el piloto; la
+> prueba de humo corre en un destino descartable, nunca en la base del piloto. Siguen pendientes la firma de las
+> guías (H-62 e I-63), la redacción de TD-86, B-1 sobre el SHA final y las autorizaciones de push, Neon, Streamlit,
+> despliegue y GO. La respuesta de abajo no cambia: las condiciones A, B y C siguen sin cumplirse.
+
 **TECHNICALLY READY WITH CONDITIONS** (confirmado por el docente al cerrar el ciclo, 2026-09-29). Antes de
 iniciarlo se requiere:
 

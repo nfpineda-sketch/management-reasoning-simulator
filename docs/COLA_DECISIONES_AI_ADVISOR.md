@@ -5,7 +5,8 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
+- **Actualizado:** 2026-10-08, con las decisiones docentes finales de B-5 y su implementación local (trigésima
+  segunda actualización de la sección «Preparación para el despliegue»). Antes, 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
@@ -938,13 +939,44 @@ desplegado.** Documentos nuevos:
 de implementación (mapa, §7).
 - **B-5: BLOCKED.**
 
+**Actualizado por trigésima segunda vez el 2026-10-08: B-5 · decisiones docentes finales e implementación local
+(«FINAL FACULTY DECISIONS + LOCAL IMPLEMENTATION AUTHORIZATION»).** Lo decidido:
+
+| Asunto | Decisión docente (2026-10-08) |
+|---|---|
+| Relato en español | **30 de 30 APROBADOS**, cada uno atado a su hash exacto (R4B, R5 y R6 aprobados ese día; `docs/revision/B5_RELATO_INTEGRIDAD_30.md`). `trauma_hemothorax_41m` queda fuera (sólo sandbox) |
+| TD-84 | **APROBADA:** el examen neurológico inglés de los dos casos de opioides dice «Pupils are small and reactive.»; el español no cambia. En IG-4, con pruebas EN/ES |
+| TD-85 | **APROBADA:** el paro de la bradicardia dice «paro circulatorio por bradicardia profunda» (K-E6) y la reacción bifásica «la reacción anafiláctica vuelve» (K-E8), sin sinónimos. En IG-3 |
+| Rama de la Fase 1 | `phase-1-contracts-v2`, desde el mismo SHA congelado que `pilot-residents-v1`. No crear ninguna de las dos en esta ronda. Reemplaza lo que decía readiness §16.3 |
+| Propuesta de arquitectura | Agregar a `docs/` la propuesta existente, byte a byte. Hecho: `docs/CLINICAL_ENGINE_ARCHITECTURE_PROPOSAL.md` (sha256 `cd6a1520…`), la versión del 2026-10-06 a la que se refirió la decisión de la opción C |
+| Base de la prueba de humo | Los 25 pasos en un destino descartable (p. ej., rama de Neon «Schema only» con `mrs_pilot_smoke`), nunca en la `mrs_pilot` prístina. Después: Secret a `mrs_pilot`, preflight, identidad de la base, SHA y `MRS_CODE_VERSION`, comprobaciones sin escritura y ninguna cuenta de residente de prueba en `mrs_pilot` antes del GO. Ninguna base creada. En el runbook, 6E |
+| Visibilidad de Streamlit | PRIVADA o RESTRINGIDA; si no está disponible o no es práctica, detenerse antes del despliegue, nunca pasar en silencio a pública. Ninguna acción en Streamlit autorizada. En el runbook, 6D |
+| Push | **No empujar `clinical-encounter-v0.13`** (redespliega la app de desarrollo) |
+| Implementación | IG-0 a IG-7 en orden, en local, con pruebas focalizadas por grupo; X-1 entera (105 de 105) en IG-5; detener cualquier ítem que exija una decisión docente nueva |
+
+**Implementado en local** (commits sin push; detalle y SHA en `docs/revision/B5_CANDIDATO_LOCAL.md`):
+- IG-0 `a0ddd20`, IG-1 `6cdc77b` (relato 30/30), IG-2 `6e09682` (rúbrica 5/5), IG-3 `7cf3930` (K-18, K-E5, K-E6,
+  K-E16, TD-85), IG-4 `30334bb` (A-2, grupo A-6, A-9 a A-11, TD-84), IG-5 `71aeb08` (X-1 105/105, V-9, XR-18,
+  claves crudas, R-4 activo, J); IG-6 (documentos) e IG-7 (registro de correcciones, manifiesto, candidato).
+- **Detenido para decisión docente (TD-86):** 11 textos que la sala muestra en inglés y que no estaban en el
+  inventario de X-1 (ES-P1 a ES-P11; `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`). El centinela de los 30 casos
+  no halla inglés no intencional; sí 156 líneas de 7 de esos ítems. **El centinela no está limpio** hasta que se
+  decidan.
+- Guías H-62 e I-63 actualizadas al candidato, **sin firma**.
+
+**Siguiente (decisiones de la docencia o de la persona responsable):** la firma de H-62 e I-63; la redacción de
+ES-P1 a ES-P11 (TD-86); B-1 sobre el SHA final, desde un equipo con red (paquete preparado); y las autorizaciones
+de push, Neon y Streamlit. Nada se empujó, no se creó ningún recurso en Neon ni en Streamlit, no hubo despliegue ni
+GO, y la Fase 1 no empezó.
+- **B-5: BLOCKED** (firmas de las guías, TD-86 y B-1 sobre el SHA final).
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0, rúbrica, R1, R2, R3 y R4A aprobados, 21 de 30 casos; R4B, R5 y R6 en revisión; plan de implementación en `docs/revision/B5_IMPLEMENTATION_READINESS_MAP.md`); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Decididas el 2026-10-08 todas las piezas del candidato (relato 30/30, rúbrica 5/5, TD-84, TD-85, X-1 105/105) e implementadas en local (IG-0 a IG-7; trigésima segunda actualización). Quedan: la firma de H-62 e I-63 sobre el candidato (guías actualizadas, sin firmar); la redacción de los 11 textos fuera de X-1 que siguen en inglés (TD-86); B-1 sobre el SHA final | La firma de las dos guías; la redacción de ES-P1 a ES-P11 (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`); correr B-1 sobre el SHA final con el paquete preparado; las autorizaciones de push, Neon y Streamlit |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

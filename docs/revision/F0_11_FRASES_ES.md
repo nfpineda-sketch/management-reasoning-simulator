@@ -13,10 +13,11 @@ Reglas de la traducción:
 - Las palabras de la persona residente citadas en una frase quedan como las escribió, entre «»: no se traducen.
 - Los nombres de los fármacos, las unidades y las abreviaturas son iguales en ambos idiomas (convención de la
   sala); las etiquetas de órdenes que compone el motor siguen como antes.
-  **Decisión docente del 2026-10-07 (X1-0, aclaración), sin implementar:** en un encuentro en español, los
-  fármacos que el motor inserta en un texto que ve el residente se mostrarán con su nombre en español; el
-  identificador canónico guardado no cambia. Hoy, las frases de abajo todavía los muestran en inglés. Las filas 5,
-  6, 13 y 14 se aprobaron con esta regla (lotes 4 y 5 del paquete de firmas).
+  **Decisión docente del 2026-10-07 (X1-0, aclaración), implementada en local el 2026-10-08 (B-5, IG-5):** en un
+  encuentro en español, los fármacos que el motor inserta en un texto que ve el residente se muestran con su nombre
+  en español (V-9); el identificador canónico guardado no cambia. Esta regla reemplaza a la anterior para los
+  fármacos. Las filas 5, 6, 13 y 14 se aprobaron con ella (lotes 4 y 5 del paquete de firmas) y la tabla las
+  muestra como las dice hoy la sala.
 - Los códigos internos (destinos del ledger como UNRECOGNIZED o RECORDED_NOT_MODELLED, nombres de campos) no se
   traducen ni se muestran a la persona residente.
 - El registro guarda la frase en inglés, como todo el registro; la sala la dice en el idioma del encuentro.
@@ -40,12 +41,12 @@ persona residente.
 | 10 | Orden para más tarde, no programada | Not done now: "Give aspirin 300 mg in 30 minutes". An order for a later time is not carried out in this pilot: nothing was given and nothing was scheduled. Write it again when you want it done. | No se hizo ahora: «Give aspirin 300 mg in 30 minutes». En este piloto, una orden para más tarde no se ejecuta: no se administró nada ni se programó nada. Escríbela de nuevo cuando quieras que se haga. |
 | 11 | Envío interrumpido (nada aplicado) | Your order "Give the normal saline" was interrupted while it was being processed, and nothing of it was applied. Nothing will be repeated automatically: check the patient's state, and send it again if it is still needed. | Tu orden «Give the normal saline» se interrumpió mientras se procesaba, y no se aplicó nada de ella. Nada se repetirá automáticamente: revisa el estado del paciente y envíala de nuevo si todavía es necesaria. |
 | 12 | Envío interrumpido (quizá aplicado en parte) | Your order "Give 1 L LR" was interrupted while it was being processed, and part of it may have been applied. Nothing will be repeated automatically: check the patient's state, and send it again if it is still needed. | Tu orden «Give 1 L LR» se interrumpió mientras se procesaba, y es posible que una parte de ella se haya aplicado. Nada se repetirá automáticamente: revisa el estado del paciente y envíala de nuevo si todavía es necesaria. |
-| 13 | Paquete parcial: parte no ejecutada | **PART OF THIS ORDER WAS NOT CARRIED OUT** /  / Executed now: **aspirin 300 mg PO**. / Not carried out: **norepinephrine**. Nothing of it has been given; write it again as a new order if you still want it. | **PARTE DE ESTA ORDEN NO SE EJECUTÓ** /  / Ejecutado ahora: **aspirin 300 mg PO**. / No ejecutado: **norepinephrine**. No se ha administrado nada de ello; escríbelo de nuevo como una orden nueva si aún lo quieres. |
-| 14 | Paquete parcial: parte retenida | **PART OF THIS ORDER IS HELD — CLARIFICATION REQUIRED** /  / Executed now: **aspirin 300 mg PO**. / Held until you answer: **normal saline**. Nothing of it has been given. | **PARTE DE ESTA ORDEN ESTÁ RETENIDA — SE NECESITA UNA ACLARACIÓN** /  / Ejecutado ahora: **aspirin 300 mg PO**. / Retenido hasta que respondas: **suero fisiológico**. No se ha administrado nada de ello. |
+| 13 | Paquete parcial: parte no ejecutada | **PART OF THIS ORDER WAS NOT CARRIED OUT** /  / Executed now: **aspirin 300 mg PO**. / Not carried out: **norepinephrine**. Nothing of it has been given; write it again as a new order if you still want it. | **PARTE DE ESTA ORDEN NO SE EJECUTÓ** /  / Ejecutado ahora: **aspirina 300 mg PO**. / No ejecutado: **noradrenalina**. No se ha administrado nada de ello; escríbelo de nuevo como una orden nueva si aún lo quieres. |
+| 14 | Paquete parcial: parte retenida | **PART OF THIS ORDER IS HELD — CLARIFICATION REQUIRED** /  / Executed now: **aspirin 300 mg PO**. / Held until you answer: **normal saline**. Nothing of it has been given. | **PARTE DE ESTA ORDEN ESTÁ RETENIDA — SE NECESITA UNA ACLARACIÓN** /  / Ejecutado ahora: **aspirina 300 mg PO**. / Retenido hasta que respondas: **suero fisiológico**. No se ha administrado nada de ello. |
 | 15 | Orden junto a la respuesta, cuando algo sigue retenido | Not run: "ceftriaxone 2 g IV" was written in the answer to the question above, which completes the held order only. Write it again as a new order if you still want it. | No se ejecutó: «ceftriaxone 2 g IV» se escribió en la respuesta a la pregunta anterior, que solo completa la orden retenida. Escríbelo de nuevo como una orden nueva si aún lo quieres. |
 | 16 | Orden después de la respuesta, leída a continuación (F0-12) | Also in your answer: "give 500 mL LR". The answer completes the held order only; this order is read next, as an order of its own, with its own receipt. | También en tu respuesta: «give 500 mL LR». La respuesta solo completa la orden retenida; esta orden se lee a continuación, como una orden propia, con su propio recibo. |
 | 17 | Límite de 120 minutos por paso | Specify a reassessment interval from 0 to 120 minutes. The simulator moves the clock at most 120 minutes in one step (a limit of this pilot): write a wait or a reassessment of 120 minutes or less, and wait again afterwards if you need more time. | Indica un intervalo de reevaluación de 0 a 120 minutos. El simulador avanza el reloj como máximo 120 minutos de una vez (un límite de este piloto): escribe una espera o una reevaluación de 120 minutos o menos, y vuelve a esperar después si necesitas más tiempo. |
-| 18 | Paro de la anafilaxia tras una dosis que se agotó | Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier had worn off and the reaction had come back. Nothing else that was given acts on the reaction. | Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes había perdido su efecto y la reacción había vuelto. Nada más de lo administrado actúa sobre la reacción. |
+| 18 | Paro de la anafilaxia después de una dosis (K-18, TD-82) | Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier did not keep the reaction under control. Nothing else that was given acts on the reaction. | Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes no logró mantener la reacción bajo control. Nada más de lo administrado actúa sobre la reacción. |
 | 19 | Flujo por omisión de la mascarilla con reservorio | oxygen non-rebreather mask 15 L/min: no flow was written; the standard non-rebreather flow, 15 L/min, was used. | Oxígeno por mascarilla con reservorio a 15 L/min: no se escribió un flujo; se usó el flujo habitual de la mascarilla con reservorio, 15 L/min. |
 
 ## Examen y frase hermana
@@ -68,8 +69,8 @@ Aparecen dentro de la frase de la espera interrumpida (fila 6).
 | ventricular fibrillation, pulse lost | fibrilación ventricular, sin pulso |
 | cardiac arrest, pulse lost | paro cardíaco, sin pulso |
 | cardiac arrest from uncontrolled haemorrhage | paro cardíaco por hemorragia no controlada |
-| circulatory arrest from untreated anaphylaxis | paro circulatorio por anafilaxia no tratada |
-| loss of circulation from the falling rate | pérdida de la circulación por la frecuencia que cae |
+| circulatory arrest from anaphylaxis without effective adrenaline | paro circulatorio por anafilaxia sin adrenalina eficaz |
+| circulatory arrest from profound bradycardia | paro circulatorio por bradicardia profunda |
 | generalized seizure | convulsión generalizada |
 | the anaphylactic reaction returns | la reacción anafiláctica vuelve |
 | tension pneumothorax on the ventilator | neumotórax a tensión con el ventilador |
@@ -79,10 +80,17 @@ Aparecen dentro de la frase de la espera interrumpida (fila 6).
 | sustained hypotension from the obstruction | hipotensión sostenida por la obstrucción |
 | brought back after discharge | traído de vuelta tras el alta |
 | systolic pressure 62 mmHg and falling | presión sistólica de 62 mmHg y en descenso |
-| saturation 84 % and falling | saturación de 84 % y en descenso |
+| saturation 84% and falling | saturación de 84 % y en descenso |
 | a critical change | un cambio crítico |
 
 ## Firma
+
+> **Implementado en local el 2026-10-08 (B-5):** la fila 18 (K-18) y los eventos quinto y sexto (K-E5 y K-E6), con
+> la redacción docente, y la normalización de K-E16 («84%» en inglés, «84 %» en español), en IG-3 (`7cf3930`); los
+> fármacos en español de las filas 5, 6, 13 y 14 (V-9), en IG-5. La tabla de arriba muestra lo que hoy dicen la
+> sala y el registro. Las etiquetas anteriores conservan su regla en español, para los encuentros que las
+> registraron antes. En la sala, el paro de la bradicardia dice «Paro circulatorio por bradicardia profunda.» y la
+> reacción bifásica «La reacción anafiláctica vuelve.» (TD-85, decidida el 2026-10-08), sin sinónimos.
 
 | Revisión | Resultado | Fecha | Firma |
 |---|---|---|---|

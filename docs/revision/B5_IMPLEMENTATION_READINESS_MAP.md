@@ -1,5 +1,10 @@
 # B-5 · Mapa de preparación para la implementación
 
+> **Ejecutado en local el 2026-10-08** con la autorización «FINAL FACULTY DECISIONS + LOCAL IMPLEMENTATION
+> AUTHORIZATION»: IG-0 a IG-7 en este orden, con commits locales y sin push. El estado de cada grupo, el SHA del
+> candidato local y lo que quedó detenido para decisión docente están en `docs/revision/B5_CANDIDATO_LOCAL.md` y en
+> `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`. Lo que sigue es el plan tal como se escribió antes de ejecutarlo.
+
 > **Documento de planificación. Nada implementado.** Sesión autónoma del 2026-10-08, rama `clinical-encounter-v0.13`.
 > Prepara la ronda de implementación para que corra en **una sola pasada controlada** cuando la docencia apruebe los 9
 > relatos pendientes, decida TD-84 y TD-85 y autorice implementar. No cambia código, `case_text/es`,

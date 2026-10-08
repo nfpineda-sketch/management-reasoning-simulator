@@ -1,5 +1,12 @@
 # Runbook del piloto formativo
 
+> **SUPERADO PARA EL PILOTO (2026-10-08, B-5, IG-6).** La promoción y el despliegue se hacen con
+> `docs/revision/PILOT_PROMOTION_DEPLOYMENT_RUNBOOK.md`, que sigue el contrato de readiness §16. Este documento quedó
+> desactualizado frente a §16: nombra `clinical-encounter-v0.13` como la rama desplegada (la del piloto es
+> `pilot-residents-v1`), su paso 0 corre una sola prueba, no lista `MRS_FREE_GENERATION`, y la prueba de humo ya no
+> corre en la base del piloto sino en un destino descartable. Se conserva como registro del ciclo 10; donde difiera,
+> rige el runbook de promoción.
+
 Ciclo 10, tarea C10-06 (2026-09-29). Cómo cumplir las condiciones **A** (desplegar el candidato y la
 configuración aprobados) y **B** (prueba de humo en el entorno desplegado) de
 `docs/READINESS_PILOTO_FORMATIVO.md`, y cómo operar el piloto.

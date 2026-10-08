@@ -24,6 +24,16 @@
 >
 > Ese runbook se actualiza o se marca como superado en IG-6 del mapa.
 >
+> **Decisiones del 2026-10-08 («FINAL FACULTY DECISIONS + LOCAL IMPLEMENTATION AUTHORIZATION»), registradas aquí
+> sin ejecutar nada:**
+> - rama de la Fase 1: `phase-1-contracts-v2`, desde el mismo SHA congelado que `pilot-residents-v1` (6B); ninguna de
+>   las dos se crea en esta ronda;
+> - base de la prueba de humo: los 25 pasos corren en un destino descartable, nunca en `mrs_pilot` (6E);
+> - visibilidad de la app del piloto: PRIVADA o RESTRINGIDA; si no se puede, detenerse antes del despliegue (6D);
+> - `clinical-encounter-v0.13` no se empuja: empujarla redespliega la app de desarrollo (6B).
+>
+> No se creó ninguna base, rama de Neon ni app de Streamlit, y no hubo push ni despliegue.
+>
 > **Etiquetas:** VERIFICADO EN EL CÓDIGO · VERIFICADO CON PRUEBA · CONFIRMADO POR LA PERSONA RESPONSABLE (en los
 > proveedores; no verificable desde aquí) · PROPUESTO · SUPUESTO / POR DEFINIR.
 
@@ -33,12 +43,12 @@
 
 | N.º | Condición | Cómo se demuestra | Estado al 2026-10-08 |
 |---|---|---|---|
-| P-1 | Los 30 relatos aprobados por la docencia, cada uno en su versión exacta | `docs/revision/B5_RELATO_INTEGRIDAD_30.md` con 30 APROBADO | 21 de 30; R4B, R5 y R6 en revisión |
-| P-2 | TD-84 y TD-85 decididos por la docencia | Decision File | PROPUESTOS |
-| P-3 | Ronda de implementación autorizada y hecha (IG-0 a IG-7 del mapa) | Commits locales por grupo; pruebas focalizadas en verde | No autorizada |
+| P-1 | Los 30 relatos aprobados por la docencia, cada uno en su versión exacta | `docs/revision/B5_RELATO_INTEGRIDAD_30.md` con 30 APROBADO | **30 de 30**, cada uno atado a su hash (docencia, 2026-10-08) |
+| P-2 | TD-84 y TD-85 decididos por la docencia | Decision File | **Decididos** el 2026-10-08 e implementados en local (IG-4 e IG-3) |
+| P-3 | Ronda de implementación autorizada y hecha (IG-0 a IG-7 del mapa) | Commits locales por grupo; pruebas focalizadas en verde | Autorizada el 2026-10-08; estado por grupo en `docs/revision/B5_CANDIDATO_LOCAL.md` |
 | P-4 | Matriz A del mapa (§9) en verde sobre **un solo** SHA, con el árbol limpio | Evidencia de A-1 a A-14 (6H) | No corrida (no hay candidato) |
 | P-5 | Guías H-62 e I-63 actualizadas al comportamiento final y firmadas | Firma registrada en el Decision File | DEFER (a propósito) |
-| P-6 | Rama de desarrollo después del piloto decidida (`phase-1-contracts-v2` o seguir en `clinical-encounter-v0.13`) | Decision File | Contradicción abierta (6B) |
+| P-6 | Rama de desarrollo después del piloto decidida (`phase-1-contracts-v2` o seguir en `clinical-encounter-v0.13`) | Decision File | **Decidida** (2026-10-08): `phase-1-contracts-v2`, desde el mismo SHA congelado que `pilot-residents-v1`. No creada |
 | P-7 | Autorizaciones de esta ventana: push de `pilot-residents-v1`; rama y base en Neon; app de Streamlit; Secrets; despliegue; GO | Cada una expresa y registrada | Ninguna concedida |
 
 **SHA candidato:** `<SHA_FINAL>`, de 40 caracteres. Hoy POR DEFINIR: el último runtime certificado es `8ff41a4`
@@ -74,14 +84,16 @@ git ls-remote origin refs/heads/pilot-residents-v1    # debe devolver <SHA_FINAL
 
 **Notas:**
 - **El push de un SHA sube sus objetos.** La rama del piloto puede crearse sin empujar `clinical-encounter-v0.13`.
-- **Empujar `clinical-encounter-v0.13` redespliega la app de desarrollo** (§16.5, confirmado). Hoy lleva unos 37
-  commits locales sin empujar. Si conviene empujarla y cuándo es otra decisión, aparte de esta ventana.
-- **Rama de desarrollo después del piloto: contradicción a decidir.**
-  - Readiness §16.3 dice que la Fase 1 «seguirá» en `clinical-encounter-v0.13`.
-  - El encargo del 2026-10-08 propone `phase-1-contracts-v2`.
-  - Ninguna de las dos afecta a `pilot-residents-v1`, pero CLAUDE.md nombra hoy `clinical-encounter-v0.13` como la
-    rama autorizada, y hay que actualizarla cuando se decida.
-  - Se recomienda `phase-1-contracts-v2` (`docs/revision/PHASE_1_KICKOFF_PACKAGE.md`, §1).
+- **Empujar `clinical-encounter-v0.13` redespliega la app de desarrollo** (§16.5, confirmado). **Decisión del
+  2026-10-08: no se empuja.** Sus commits locales siguen sin empujar; empujarla exige otra autorización expresa.
+- **Rama de desarrollo después del piloto: decidida el 2026-10-08.** La Fase 1 va en `phase-1-contracts-v2`, creada
+  desde el **mismo SHA congelado** que `pilot-residents-v1` (`<SHA_FINAL>`). Reemplaza lo que decía readiness §16.3
+  («seguirá» en `clinical-encounter-v0.13`).
+  - No se crea ni se empuja en esta ronda; crearla es parte de la autorización de la Fase 1.
+  - Al autorizar la Fase 1, se actualiza la línea de la rama autorizada de CLAUDE.md (hoy,
+    `clinical-encounter-v0.13`).
+  - Paso, con autorización: `git push origin <SHA_FINAL>:refs/heads/phase-1-contracts-v2` y comprobar con
+    `git ls-remote origin refs/heads/phase-1-contracts-v2` que devuelve `<SHA_FINAL>`.
 
 ## 6C. Plan de Neon
 
@@ -133,7 +145,7 @@ el encuentro guarda `code_version`, no el destino de la base). Se verifica en lo
 | Archivo principal | `app.py` |
 | Python | **3.11**, elegido en «Advanced settings» al crearla. Cambiarlo después obliga a borrar la app y volver a desplegarla (§16.6). Ningún archivo del repositorio lo fija (VERIFICADO: no hay `runtime.txt`) |
 | Dependencias | `requirements.txt` del SHA: `streamlit==1.64.0` (B-4), `psycopg[binary]>=3.2,<4`, etc. |
-| Visibilidad de la app | POR DEFINIR por la persona responsable. La app exige cuenta de todos modos: `MRS_AUTH_MODE = "accounts"` |
+| Visibilidad de la app | **PRIVADA o RESTRINGIDA** (decisión del 2026-10-08). Si no está disponible o no es práctica, **detenerse antes del despliegue** e informar: nunca pasar en silencio a una app pública. La cuenta se exige además: `MRS_AUTH_MODE = "accounts"`. Ninguna acción en Streamlit está autorizada en esta ronda |
 | La app de desarrollo | `clinical-management-reasoning-dev` no se toca |
 
 **Matriz de configuración.** Los valores son cadenas entre comillas en el TOML de Secrets. Las reglas de la columna
@@ -181,8 +193,22 @@ del piloto: LISTA.», sin `FALLA` y sin `AVISO` de `no_batch_settings`. El archi
 - sin nombres reales;
 - desactivadas al terminar.
 
-**Decisión pendiente (readiness §11):** no hay mecanismo de borrado, así que sus encuentros quedan en `mrs_pilot`. La
-alternativa es correr la prueba contra una base descartable y repetir en `mrs_pilot` sólo los pasos 1, 2, 19 y 25.
+**Destino de la prueba (decisión del 2026-10-08):** los 25 pasos corren **completos en un destino descartable**,
+por ejemplo una rama de Neon «Schema only» con una base `mrs_pilot_smoke`, **nunca en la `mrs_pilot` prístina**. No hay
+mecanismo de borrado, así que nada de la prueba debe quedar en `mrs_pilot`. En esa corrida, donde la tabla dice
+`mrs_pilot` (pasos 2 y 25), se lee el destino descartable. Crear ese destino necesita la misma autorización que 6C; en
+esta ronda no se creó ninguna base.
+
+**Después de que los 25 pasos pasen**, en este orden:
+1. cambiar el Secret `MRS_DATABASE_URL` a la URL *pooled* de `mrs_pilot` (sin imprimirla);
+2. volver a correr el preflight (`tools_pilot_preflight.py --secrets <archivo> --commit <SHA_FINAL> --connect` →
+   «LISTA»);
+3. verificar la identidad de la base: `TARGET OK` sobre `mrs_pilot` (6C-4) y `python3 check_database.py`;
+4. verificar el SHA: la rama desplegada y `MRS_CODE_VERSION` = `<SHA_FINAL>`;
+5. correr sólo las comprobaciones que no escriben filas: el paso 1 (configuración de la app), el paso 2 (identidad de
+   la base), `python3 check_database.py --photo-approvals` (del paso 19) y la puerta de encuentros abiertos
+   (§15.10, consulta 1, en 0);
+6. no crear cuentas de residente de prueba en `mrs_pilot` antes del GO.
 
 | N.º | Acción | Esperado | Evidencia | Detener si |
 |---|---|---|---|---|
@@ -258,7 +284,8 @@ hosts, contraseñas ni nombres de personas**:
 | E-9 | `git ls-remote` de `pilot-residents-v1` = SHA final | 6B-2 |
 | E-10 | `TARGET OK` y arranque de `mrs_pilot` | 6C-4 y 6C-5 |
 | E-11 | Captura de la configuración de la app (rama, archivo, Python) | 6E-1 |
-| E-12 | Los 25 pasos de la prueba de humo con su resultado | 6E |
+| E-12 | Los 25 pasos de la prueba de humo con su resultado, en el destino descartable | 6E |
+| E-12b | Después de la prueba: Secret cambiado a `mrs_pilot`, preflight «LISTA», `TARGET OK`, SHA y `MRS_CODE_VERSION`, y las comprobaciones sin escritura | 6E, después de los 25 pasos |
 | E-13 | «All 117 approvals…» | 6E-19 |
 | E-14 | Respaldo y, si se hizo, simulacro de restauración en PG 17 | 6C-6 y 6F-3 |
 | E-15 | Conteos de la puerta de encuentros abiertos, con su hora | 6F-5 |

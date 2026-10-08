@@ -10,6 +10,13 @@
 
 ## 1. Dos huecos que hay que cerrar antes de empezar
 
+> **Cerrados el 2026-10-08, sin empezar la Fase 1.** (a) La rama quedó decidida: `phase-1-contracts-v2`, desde el
+> mismo SHA congelado que `pilot-residents-v1`; ninguna de las dos se creó. (b) La propuesta de arquitectura está en
+> `docs/CLINICAL_ENGINE_ARCHITECTURE_PROPOSAL.md`, copiada byte a byte de la versión de 2026-10-06 a la que se refirió
+> la decisión de la opción C (sha256 `cd6a1520cd73daa5ffa2b6c3f9a1d88fe500901de6a0c3a1aaed770d731a4f95`). Su §9.4 y su
+> fase 4 son las que cita el código. La auditoría que la propuesta nombra como fuente (`CLINICAL_ENGINE_AUDIT.md`) no
+> se agregó: el encargo pidió sólo la propuesta. Lo que sigue queda como registro de cómo estaban.
+
 **(a) La rama de desarrollo de la Fase 1: dos fuentes se contradicen.**
 - Readiness §16.3 (2026-10-07) dice: «Sólo desarrollo. La Fase 1 seguirá aquí [`clinical-encounter-v0.13`] cuando se
   abra, con el piloto ya congelado».
@@ -30,7 +37,8 @@ Con cualquiera de las dos, hay que actualizar la línea «Trabajar sólo en la r
 - Ni la propuesta ni la expresión «Contracts v2» aparecen en `docs/`. `docs/ARQUITECTURA.md` es otro documento (ciclo
   5, «lo implementado y lo planificado»).
 - El alcance de este paquete sale del encargo del 2026-10-08 (SUPUESTO hasta que la propuesta se agregue a `docs/` y
-  se compare).
+  se compare). La propuesta se agregó el 2026-10-08; la comparación con este paquete no se hizo y queda para antes de
+  WP1.
 
 **Recomendación:** agregar la propuesta a `docs/` antes de WP1. WP0 no la necesita.
 
@@ -152,7 +160,7 @@ Tamaño del diff (PROPUESTO): S < 200 líneas, M 200–600, L > 600, sin contar 
 
 ## 7H. Riesgos y decisiones abiertas
 
-- **Rama (§1 a)** y **propuesta de arquitectura en `docs/` (§1 b):** decisiones de la persona responsable.
+- **Rama (§1 a)** y **propuesta de arquitectura en `docs/` (§1 b):** cerradas el 2026-10-08 (§1).
 - **El lector sigue congelado** hasta «BEGIN EXTERNAL VALIDATION INGESTION». Si un contrato no puede construirse sin
   tocarlo, se detiene y se pide decisión.
 - **WP9 es el de mayor superficie:** 73 archivos de prueba dependen del AST de `app.py`. Va al final, con el arnés
@@ -166,9 +174,12 @@ Tamaño del diff (PROPUESTO): S < 200 líneas, M 200–600, L > 600, sin contar 
 
 La Fase 1 empieza sólo cuando **todas** se cumplen:
 1. Existe `<SHA_FINAL>`: el candidato del piloto, certificado (matriz A), promovido y con GO.
-2. La rama de la Fase 1 está decidida y autorizada, y la línea de la rama de CLAUDE.md está actualizada.
+2. La rama de la Fase 1 está decidida (`phase-1-contracts-v2`, 2026-10-08) y autorizada su creación, y la línea de
+   la rama de CLAUDE.md está actualizada.
 3. La Fase 1 está autorizada expresamente, con su alcance (§7B).
-4. Recomendado: la propuesta de arquitectura agregada a `docs/` (necesaria antes de WP1, no de WP0).
+4. La propuesta de arquitectura en `docs/`: hecho el 2026-10-08 (`docs/CLINICAL_ENGINE_ARCHITECTURE_PROPOSAL.md`).
 5. La espera de la validación externa sigue vigente: el lector, el corpus, V3 y los baselines no se tocan.
 
-**Hoy (2026-10-08) no se cumple ninguna de las tres primeras.**
+**Hoy (2026-10-08) no se cumple ninguna de las tres primeras:** no hay `<SHA_FINAL>` promovido ni GO; la rama está
+decidida pero no autorizada su creación ni actualizada CLAUDE.md; la Fase 1 no está autorizada. **La Fase 1 no
+empezó.**
