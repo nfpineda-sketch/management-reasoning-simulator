@@ -15,14 +15,16 @@
 | IG-3 | Paros y eventos: K-18, K-E5, K-E6, K-E16, TD-85 | `7cf3930` | ver §3 |
 | IG-4 | Examen por estado: A-2, grupo A-6, A-9 a A-11, TD-84 | `30334bb` | ver §3 |
 | IG-5 | X-1 (105/105): V-9, preguntas, compuerta, rótulos, monitor, ECG, tratamientos, cierre, J, R-4 activo, XR-18, documentos en español | `71aeb08` | ver §3 |
-| IG-6 | Guías H-62 e I-63 (sin firma), Decision File, deuda, readiness, runbook, F0-11, propuesta de arquitectura | IG-6 | documentos |
-| IG-7 | Registro de correcciones, manifiesto de congelamiento, este documento | IG-7 | ver §3 |
+| IG-6 | Guías H-62 e I-63 (sin firma), Decision File, deuda, readiness, runbook, F0-11, propuesta de arquitectura | `ba94fc9` | pruebas de documentos |
+| IG-7 | Registro de correcciones (C-2026-10-08-02 a -06; -01 entró con IG-5), manifiesto de congelamiento regenerado (sin diferencias: la batería y las decisiones de congelamiento no cambian), este documento | el candidato (§2) | ver §3 |
 
 **Detenido para decisión docente:** los 11 textos de TD-86 (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`).
 
 ## 2. SHA del candidato
 
-Se completa en IG-7 y en la recertificación (§3).
+El candidato es el commit de IG-7: el último que cambia algo fuera de `docs/`. Su SHA exacto, y la comprobación de
+que lo que vino después sólo cambia `docs/`, se registran al cerrar la recertificación (un commit no puede
+nombrar su propio SHA).
 
 ## 3. Recertificación local
 

@@ -3446,6 +3446,115 @@ CORRECTIONS = (
         "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_76f", "hypoglycemia_54m_thiamine"],
                          "scripts": ["oral_while_not_alert"]},
     },
+    {
+        "id": "C-2026-10-08-02",
+        "date": "2026-10-08",
+        "title": "TD-81: el relato en español de los 30 casos del piloto, atado a las versiones que aprobó la docencia",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("La docencia aprobó el relato en español de los 30 casos del piloto, cada uno en su versión exacta "
+                   "(lote 0, R1 a R6; 2026-10-07 y 2026-10-08). Se aplicaron una vez los 11 cambios aprobados de "
+                   "pasajes en 10 casos (T-1 «crépitos», T-2 «defensa», T-3 «confuso», P-1) y las 30 aprobaciones "
+                   "quedan en case_text/es/approvals.json (variant_id, version, decision; sin identidad de quien "
+                   "revisó). El caso del sandbox docente (trauma_hemothorax_41m) sigue en inglés. Sólo el español: "
+                   "el inglés, el corpus fijo y la clínica no cambian. IG-1, 6cdc77b."),
+        "authorised_by": INSTRUCTION_2026_10_08_B5,
+        "affects": {"modules": ["case_text"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_case_text_approvals.py::test_the_committed_narrative_pack_is_what_the_faculty_approved",
+                  "test_case_text_approvals.py::test_with_an_empty_database_the_thirty_cases_read_in_spanish_and_the_sandbox_case_in_english",
+                  "test_case_text_approvals.py::test_the_faculty_panel_counts_thirty_approved_and_the_sandbox_case_pending"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-08-03",
+        "date": "2026-10-08",
+        "title": "TD-81: la rúbrica en español (D1 a D5), atada a las versiones que aprobó la docencia",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("La docencia aprobó los cinco dominios de la rúbrica en español (RUB, 2026-10-07): D1 a D3 como "
+                   "estaban, D4 con R-1 (revisar/vigilar) y D5 con la opción b. Las 5 aprobaciones quedan en "
+                   "rubric_text/es/approvals.json (domain_id, version, decision). Estructura, niveles 0-3, puntaje y "
+                   "la rúbrica inglesa no cambian. IG-2, 6e09682."),
+        "authorised_by": INSTRUCTION_2026_10_08_B5,
+        "affects": {"modules": ["rubric_text"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_case_text_approvals.py::test_the_committed_rubric_pack_is_what_the_faculty_approved",
+                  "test_case_text_approvals.py::test_with_an_empty_database_the_five_domains_read_in_the_approved_spanish"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-08-04",
+        "date": "2026-10-08",
+        "title": "TD-82 y TD-85: lo que dicen el paro y la recaída (K-18, K-E5, K-E6, K-E16)",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisiones docentes del 2026-10-07 (K-18, K-E5, K-E6, K-E16) y del 2026-10-08 (TD-85). El paro "
+                   "de la anafilaxia tras una dosis dice que la adrenalina «no logró mantener la reacción bajo "
+                   "control» (cierto en la 29f y en la 63m con betabloqueo), su etiqueta es «paro circulatorio por "
+                   "anafilaxia sin adrenalina eficaz», el de la bradicardia «paro circulatorio por bradicardia "
+                   "profunda», la saturación «84%»; en la sala en español, «Paro circulatorio por bradicardia "
+                   "profunda.» y «La reacción anafiláctica vuelve.». Sólo cambian las palabras: el disparador, el "
+                   "minuto, la clase de causa, la prevenibilidad, la gravedad y la fisiología quedan como estaban "
+                   "(equivalencia con 8ff41a4 en guiones fijos de los 30 casos). IG-3, 7cf3930."),
+        "authorised_by": INSTRUCTION_2026_10_08_B5,
+        "affects": {"modules": ["anaphylaxis_reaction", "event_provenance", "language"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_b5_event_wording.py::test_the_anaphylaxis_arrest_label_is_true_with_and_without_a_dose",
+                  "test_b5_event_wording.py::test_the_arrest_after_a_dose_says_the_adrenaline_did_not_keep_the_reaction_under_control",
+                  "test_b5_event_wording.py::test_the_bradycardia_arrest_is_named_in_the_approved_terminology",
+                  "test_b5_event_wording.py::test_the_reaction_that_returns_is_said_in_the_approved_terminology"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-08-05",
+        "date": "2026-10-08",
+        "title": "TD-83, TD-51, TD-52 y TD-84: el examen dice el estado del motor",
+        "scope": {"level": "general"},
+        "kind": "clinical_decision_applied",
+        "reason": ("Decisiones docentes del 2026-10-07 (A-2, A-6, A-6a, A-6b, A-7-49m, A-8a, A-9, A-10/A-11) y del "
+                   "2026-10-08 (TD-84). El edema pulmonar agotado se lee como agotamiento; la 49m conserva su examen "
+                   "grave mientras su obstrucción no mejora, leído en el estado de cada examen y no en la orden ni en "
+                   "el fármaco de inducción; la frecuencia del opioide con ventilación asistida dice de quién es; el "
+                   "examen inglés de los opioides dice «Pupils are small and reactive.». Sólo cambian las frases del "
+                   "examen: la fisiología, los signos vitales, los eventos, los destinos y la trayectoria no cambian "
+                   "(equivalencia con 8ff41a4 en guiones fijos de los 30 casos). IG-4, 30334bb."),
+        "authorised_by": INSTRUCTION_2026_10_08_B5,
+        "affects": {"modules": ["family_engine", "language", "spanish_drafts"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_b5_examination_by_state.py::test_the_exhausted_oedema_reads_as_exhaustion_and_never_as_increased_effort",
+                  "test_b5_examination_by_state.py::test_the_intubated_49m_reads_a6b_by_his_state_not_by_the_intubation_or_the_drug",
+                  "test_b5_examination_by_state.py::test_the_24f_reads_as_before",
+                  "test_b5_examination_by_state.py::test_the_opioid_rate_says_whose_it_is",
+                  "test_b5_examination_by_state.py::test_the_opioid_pupils_read_the_same_in_english_and_spanish"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-08-06",
+        "date": "2026-10-08",
+        "title": "TD-79 y TD-80: X-1, la sala en español sin inglés no declarado ni claves internas",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("Las 105 decisiones de X-1 (2026-10-07): los fármacos en español en la sala y en los documentos que "
+                   "se ofrecen en español (V-9); las preguntas sobre una orden enteras en español, y en inglés con el "
+                   "fármaco que el residente escribió o la etiqueta de la clase, nunca una clave interna (XR-05 b, "
+                   "V-1, X1-C27 e, X1-C28); la compuerta, los rótulos, el monitor, el ECG, los tratamientos, las "
+                   "pantallas del cierre, el aviso de la foto y las frases del motor de R-4. Las claves y los valores "
+                   "guardados no cambian y el lector congelado no se tocó. El centinela de los 30 casos no halla "
+                   "inglés no intencional; 11 textos fuera del inventario esperan redacción docente (TD-86). IG-5, "
+                   "71aeb08."),
+        "authorised_by": INSTRUCTION_2026_10_08_B5,
+        "affects": {"modules": ["language", "app", "family_engine", "report_presentation", "report_language",
+                                "family_reports", "resuscitation_room", "clinical_scene", "management_trace_report"],
+                    "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_b5_x1_spanish.py::test_each_question_is_said_whole_in_the_approved_spanish",
+                  "test_b5_x1_spanish.py::test_a_dose_question_names_the_drug_the_resident_wrote",
+                  "test_b5_x1_spanish.py::test_the_internal_keys_are_cleaned_in_both_languages",
+                  "test_b5_x1_spanish.py::test_the_decision_review_record_names_its_drugs_in_spanish",
+                  "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english"],
+        "preservation": None,
+    },
 )
 
 
