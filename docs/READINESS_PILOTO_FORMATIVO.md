@@ -18,7 +18,8 @@ bloqueado, y por qué.
 > local está congelado en `37c9afb1094327dd498857aa97a91820ddb4fe4c`. Siguen pendientes la firma de las guías
 > (H-62 e I-63; paquete en `docs/revision/B5_FIRMA_H62_I63.md`), B-1 sobre ese SHA (autorizado, PENDING
 > EXTERNAL: `docs/revision/PRE_DEPLOYMENT_READINESS_2026_10_06.md`, §21) y las autorizaciones de push, Streamlit,
-> despliegue y GO. La respuesta de abajo no cambia: las condiciones A, B y C siguen sin
+> despliegue y GO. Antes de B-1 entran la corrección de TD-77 (aprobada; espera su diff de referencia) y las tres
+> correcciones de H-62 (hechas): eso produce un candidato nuevo, que se certifica entero y es el que va a B-1. La respuesta de abajo no cambia: las condiciones A, B y C siguen sin
 > cumplirse.
 
 **TECHNICALLY READY WITH CONDITIONS** (confirmado por el docente al cerrar el ciclo, 2026-09-29). Antes de

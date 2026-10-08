@@ -11,6 +11,11 @@
 | Última versión revisada por la docencia | `f59b953` (2026-10-07): sobre ella la docencia decidió «DEFER de la firma» hasta el candidato final (`docs/revision/FACULTY_SIGNOFF_PACKET_PREPILOT.md`, H-62 e I-63) |
 | Commits que cambiaron las guías desde entonces | `ba94fc9` (IG-6: guías al candidato) y `2dc09e4` (ES-P1 a ES-P13); `37c9afb` no las cambió |
 
+> **Actualización del 2026-10-08:** la docencia pidió corregir las tres frases obsoletas de H-62 que señala §1, y
+> se corrigieron (sólo esas). El sha256 de H-62 pasa a `7ae8232b7b2198623bb134d465157fa9ebf48dfb3eeca9c21252cdba971457af`;
+> I-63 no cambia. Este paquete se regenera sobre el candidato nuevo (TD-77 más H-62) cuando exista; hasta entonces,
+> lo que sigue describe `37c9afb`.
+
 ## 1. H-62 · `docs/GUIA_DOCENTE_PILOTO.md`
 
 **Título y versión.** «Guía docente · piloto formativo». Estado en el archivo: «actualizada al candidato final

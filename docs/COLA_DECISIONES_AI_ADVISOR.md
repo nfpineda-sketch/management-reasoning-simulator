@@ -5,7 +5,9 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-08, con la decisión docente de ES-P8g, el candidato local congelado `37c9afb`, el paquete
+- **Actualizado:** 2026-10-08, con TD-77 aprobada para integrar (detenida: falta el diff de referencia), las tres
+  correcciones de H-62, TD-87 y la defensa en profundidad de B-1 (trigésima sexta actualización); antes, el mismo
+  día, con la decisión docente de ES-P8g, el candidato local congelado `37c9afb`, el paquete
   de firma de H-62 e I-63 y el intento autorizado de B-1 (trigésima quinta actualización de la sección «Preparación
   para el despliegue»); antes, el mismo día, con las decisiones docentes de ES-P8 a ES-P13, su implementación local y
   el candidato final local (trigésima cuarta); antes, el mismo día,
@@ -1048,6 +1050,27 @@ de `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md` (§2):
   (`docs/revision/PRE_DEPLOYMENT_READINESS_2026_10_06.md`, §21). El PASS sobre `8ff41a4` no vale para este SHA.
 - Nada se empujó; no se creó `pilot-residents-v1` ni `phase-1-contracts-v2`, ni una rama o base persistente del
   piloto, ni una app de Streamlit; no hubo despliegue ni GO, y la Fase 1 no empezó.
+
+**Actualizado por trigésima sexta vez el 2026-10-08: dos ítems de readiness antes de B-1.**
+
+- **TD-77: integración aprobada; DETENIDA.** La docencia aprobó integrar la corrección validada de TD-77 (commit de
+  referencia `54ad288`, hecho sobre `8ff41a4` en un worktree aislado), portando sólo el fixture de `conftest.py`, la
+  prueba `test_a_machine_wide_secrets_file_does_not_redirect_the_app.py` y su fila de deuda. `54ad288` no existe en
+  este clon, en las ramas del remoto ni en GitHub, y no hay ningún parche ni bundle con él en el entorno. No se
+  escribió una versión propia: sería una corrección distinta de la validada. Falta el diff exacto (por ejemplo,
+  `git format-patch -1 54ad288 --stdout`).
+- **H-62: corregidas las tres frases obsoletas** (sólo esas): las 13 fichas R-2 del piloto, aprobadas; las 18 frases
+  de R-4, decididas y activas; y, al final, que no queda ninguna decisión docente sobre el relato ni la rúbrica y
+  que sólo faltan las firmas de H-62 e I-63. I-63 no cambia. Ninguna de las dos está firmada.
+- **B-1, defensa en profundidad:** aun con TD-77 integrada, la corrida externa conserva el `HOME` aislado y agrega
+  una precondición que falla cerrada: si `.streamlit/secrets.toml` del proyecto trae `MRS_DATABASE_URL` u otra
+  clave que cambie la base, se detiene (sólo se informan los nombres de las claves). Hoy el proyecto no tiene ese
+  archivo.
+- **TD-87 (no bloqueante):** el ejecutor particionado usa `timeout` de GNU, que macOS no trae; no se implementa el
+  cambio propuesto.
+- **Candidato:** sigue `37c9afb`. El candidato nuevo (TD-77 más H-62), su certificación y su paquete de B-1 esperan
+  el diff de TD-77. B-1 sigue PENDING EXTERNAL. Nada se empujó; no se creó ninguna rama remota ni recurso en Neon o
+  Streamlit; no hubo despliegue ni GO, y la Fase 1 no empezó.
 
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|

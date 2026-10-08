@@ -110,8 +110,8 @@ en `docs/READINESS_PILOTO_FORMATIVO.md`.
 el examen dice lo que el caso escribió y sigue siendo cierto: la fístula de diálisis, la marca del cinturón,
 la picadura, las negativas que el caso escribe.
 
-**Criterios C14 (R-2, D-7, D-8).** La tabla de criterios R-2 quedó aceptada el 2026-10-02; la firma de cada
-ficha final sigue pendiente.
+**Criterios C14 (R-2, D-7, D-8).** La tabla de criterios R-2 quedó aceptada el 2026-10-02, y las 13 fichas R-2
+del piloto quedaron aprobadas por usted el 2026-10-07.
 
 - `acs_61m_posterior`: no se exige reconocer la hipocinesia posterior sutil, que el informe entrega. Una
   aorta no dilatada en el POCUS no descarta una disección.
@@ -135,8 +135,8 @@ una omisión. La decisión de trombolizar se juzga como antes, en su minuto.
 - **`pulmonary_edema_75f` (P-07):** llega con la vista neutral hasta que una imagen aprobada muestre su
   dificultad respiratoria.
 - **Terminología (R-4):** «aumento de volumen», «dolor a la palpación» y «suero glucosado». Las 18 frases
-  finales del motor esperan su firma (`docs/revision/CIERRE_PREPILOTO.md`, ordenadas en
-  `docs/revision/FACULTY_SIGNOFF_PACKET_PREPILOT.md`).
+  finales del motor quedaron decididas por usted el 2026-10-07 y están activas en el candidato, donde el caso las
+  usa (`docs/revision/FACULTY_SIGNOFF_PACKET_PREPILOT.md`, bloque A).
 
 ## La pantalla del encuentro (2026-10-02)
 
@@ -292,6 +292,6 @@ Son para el docente; **no se le dicen al residente como instrucciones**.
 
 ## Si algo no calza
 
-Anote el encuentro y la hora, y avise al responsable del piloto. Lo pendiente de su firma está en
-`docs/revision/CIERRE_PREPILOTO.md` y `docs/revision/F0_11_FRASES_ES.md`, ordenado en
-`docs/revision/FACULTY_SIGNOFF_PACKET_PREPILOT.md`.
+Anote el encuentro y la hora, y avise al responsable del piloto. Para el piloto de 30 casos no queda pendiente
+ninguna decisión docente sobre el relato ni sobre la rúbrica; las únicas firmas que faltan son las de esta guía
+(H-62) y la de la guía del residente (I-63).

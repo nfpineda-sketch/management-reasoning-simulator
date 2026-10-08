@@ -2276,3 +2276,32 @@ un rodeo. No hay fallas que clasificar: la corrida no empezó.
   autorización.
 - Nada se empujó; no se creó `pilot-residents-v1` ni `phase-1-contracts-v2`, ni una rama o base persistente del
   piloto, ni una app de Streamlit; no hubo despliegue ni GO, y la Fase 1 no empezó.
+
+### 21.4 Antes de la corrida externa: TD-77 y defensa en profundidad (2026-10-08)
+
+- **El candidato de B-1 va a cambiar.** La docencia aprobó integrar la corrección validada de TD-77 y corregir tres
+  frases de H-62. El candidato nuevo (sólo arnés de pruebas y documentación sobre `37c9afb`) se certifica entero, y
+  B-1 se corre sobre él, con un paquete nuevo. El paquete de `37c9afb` no sirve de evidencia final.
+- **TD-77, detenida:** el commit de referencia `54ad288` no está disponible en este entorno; falta su diff exacto.
+- **Defensa en profundidad, que el paquete nuevo conserva aunque TD-77 esté integrada:**
+  - A. el aislamiento de TD-77 dentro de pytest;
+  - B. el `HOME` aislado durante la corrida externa (`B1_HOME=$(mktemp -d)`), como en 18.6.
+- **Precondición que falla cerrada, antes de crear el destino:** en el worktree del candidato,
+
+  ```
+  python - <<'PY'
+  import pathlib, re, sys
+  f = pathlib.Path(".streamlit/secrets.toml")
+  keys = sorted(set(re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=", f.read_text(), re.M))) if f.exists() else []
+  bad = [k for k in keys if k == "MRS_DATABASE_URL" or re.search(r"DATABASE|POSTGRES|_URL$|^PG", k)]
+  print("project secrets.toml:", "present" if f.exists() else "absent", "| keys:", keys, "| target overrides:", bad)
+  sys.exit(1 if bad else 0)
+  PY
+  ```
+
+  Imprime sólo nombres de claves, nunca valores. Si encuentra `MRS_DATABASE_URL` u otra clave que cambie la base:
+  **STOP**. Al 2026-10-08 el proyecto no tiene `.streamlit/secrets.toml` (sólo `config.toml`, con `[runner]
+  fastReruns`).
+- **TD-87:** la suite particionada no corre en macOS sin `timeout` de GNU; no afecta a B-1, que llama a pytest
+  directamente.
+
