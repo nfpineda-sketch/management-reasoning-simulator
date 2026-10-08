@@ -1,0 +1,27 @@
+[
+  {
+    "domain_id": "D1",
+    "version": "552618f3085a42ae3d6e13d8be3338a60ce3fb713f1a223eb74825e505fe1369",
+    "decision": "approved"
+  },
+  {
+    "domain_id": "D2",
+    "version": "0393ca0dd6717a6a54b649541e7f140c1d0dd822cbf8e98e205f8456df6763c4",
+    "decision": "approved"
+  },
+  {
+    "domain_id": "D3",
+    "version": "bf7395c34d28bce676adfc5bad71f5a6d4a1dbdced9952c64dda64f52284a191",
+    "decision": "approved"
+  },
+  {
+    "domain_id": "D4",
+    "version": "041597d975468e31bdf8d6c1d1ddd35e289b98fa05b5e8d3b9106db0c36e2dad",
+    "decision": "approved"
+  },
+  {
+    "domain_id": "D5",
+    "version": "52958f1cdcd83dc9e7f4535c9ae65862f0f4ab829d230ac4bd8eff617abbdac4",
+    "decision": "approved"
+  }
+]

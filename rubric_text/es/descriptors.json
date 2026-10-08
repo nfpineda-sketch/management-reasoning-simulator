@@ -70,11 +70,11 @@
   "D4": {
    "asks": {
     "en": "Whether what to watch was defined, delivery and response were checked, and reassessment happened within an appropriate interval.",
-    "es": "Si se definió qué vigilar, si se comprobaron la ejecución y la respuesta, y si la reevaluación ocurrió en un intervalo apropiado."
+    "es": "Si se definió qué vigilar, si se revisaron la ejecución y la respuesta, y si la reevaluación ocurrió en un intervalo apropiado."
    },
    "levels/0": {
     "en": "Does not check the response or reassess, though there was both need and opportunity.",
-    "es": "No comprueba la respuesta ni reevalúa, aunque había necesidad y oportunidad."
+    "es": "No revisa la respuesta ni reevalúa, aunque había necesidad y oportunidad."
    },
    "levels/1": {
     "en": "Reassessment late, incomplete, or unrelated to what had to be watched.",
@@ -82,7 +82,7 @@
    },
    "levels/2": {
     "en": "Checks delivery and response with appropriate variables and intervals.",
-    "es": "Comprueba la ejecución y la respuesta con variables e intervalos apropiados."
+    "es": "Revisa la ejecución y la respuesta con variables e intervalos apropiados."
    },
    "levels/3": {
     "en": "Also sets targets and alarm thresholds, and actively looks for treatment failure or complications.",
@@ -108,7 +108,7 @@
    },
    "levels/3": {
     "en": "Also sets alternatives for failure, timely escalation, and a handover or follow-up with its loose ends stated.",
-    "es": "Además, define alternativas ante una falla, un escalamiento oportuno y un traspaso de la atención o un seguimiento que explicite los asuntos pendientes."
+    "es": "Además, define alternativas ante una falla, un escalamiento oportuno y un traspaso de la atención o un control posterior que explicite los asuntos pendientes."
    }
   }
  }

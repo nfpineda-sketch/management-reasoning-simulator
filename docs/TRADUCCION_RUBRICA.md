@@ -4,6 +4,12 @@
 > Nada de esto se muestra en la pantalla de la rúbrica hasta que un docente apruebe cada dominio en
 > el panel de revisión. Fuente única del texto: `rubric_text/es/descriptors.json` (cada frase en
 > español va junto al inglés exacto que traduce).
+>
+> **Actualización del 2026-10-08 (B-5, IG-2):** la docencia aprobó los cinco dominios fuera de la aplicación
+> (RUB, 2026-10-07), con R-1 en D4 («revisar» = *check*; «vigilar» = *watch*) y la opción (b) en D5
+> («un control posterior»). El texto de abajo es el aprobado, y el candidato del piloto lleva esas aprobaciones en
+> `rubric_text/es/approvals.json` (versiones exactas; `tools_case_text_approvals.py --rubric --verify`). Una edición
+> posterior del español o del inglés vuelve a dejar el dominio en inglés hasta una nueva aprobación.
 
 ## Qué cambia y qué no
 
@@ -94,10 +100,10 @@ repetido antes de cada condición de lo que evalúa el dominio.
 
 | | Inglés (criterio vigente) | Español (borrador) |
 |---|---|---|
-| **Qué evalúa** | Whether what to watch was defined, delivery and response were checked, and reassessment happened within an appropriate interval. | Si se definió qué vigilar, si se comprobaron la ejecución y la respuesta, y si la reevaluación ocurrió en un intervalo apropiado. |
-| **Nivel 0** | Does not check the response or reassess, though there was both need and opportunity. | No comprueba la respuesta ni reevalúa, aunque había necesidad y oportunidad. |
+| **Qué evalúa** | Whether what to watch was defined, delivery and response were checked, and reassessment happened within an appropriate interval. | Si se definió qué vigilar, si se revisaron la ejecución y la respuesta, y si la reevaluación ocurrió en un intervalo apropiado. |
+| **Nivel 0** | Does not check the response or reassess, though there was both need and opportunity. | No revisa la respuesta ni reevalúa, aunque había necesidad y oportunidad. |
 | **Nivel 1** | Reassessment late, incomplete, or unrelated to what had to be watched. | Reevaluación tardía, incompleta o sin relación con lo que había que vigilar. |
-| **Nivel 2** | Checks delivery and response with appropriate variables and intervals. | Comprueba la ejecución y la respuesta con variables e intervalos apropiados. |
+| **Nivel 2** | Checks delivery and response with appropriate variables and intervals. | Revisa la ejecución y la respuesta con variables e intervalos apropiados. |
 | **Nivel 3** | Also sets targets and alarm thresholds, and actively looks for treatment failure or complications. | Además, establece objetivos clínicos y umbrales de alarma, y busca activamente signos de fracaso terapéutico o complicaciones. |
 
 ## D5 · Adaptación y continuidad del manejo
@@ -110,7 +116,7 @@ repetido antes de cada condición de lo que evalúa el dominio.
 | **Nivel 0** | Persists with an inadequate plan despite the available evidence, or proposes an unsafe continuity. | Persiste en un plan inadecuado pese a la evidencia disponible, o propone una continuidad insegura. |
 | **Nivel 1** | Recognises the course but adjusts incompletely or late. | Reconoce la evolución, pero ajusta de forma incompleta o tardía. |
 | **Nivel 2** | Updates or justifiably keeps the plan and defines the next safe step. | Actualiza el plan o lo mantiene de forma justificada, y define el siguiente paso seguro. |
-| **Nivel 3** | Also sets alternatives for failure, timely escalation, and a handover or follow-up with its loose ends stated. | Además, define alternativas ante una falla, un escalamiento oportuno y un traspaso de la atención o un seguimiento que explicite los asuntos pendientes. |
+| **Nivel 3** | Also sets alternatives for failure, timely escalation, and a handover or follow-up with its loose ends stated. | Además, define alternativas ante una falla, un escalamiento oportuno y un traspaso de la atención o un control posterior que explicite los asuntos pendientes. |
 
 ## D4 frente a D5: nota visible para el docente
 

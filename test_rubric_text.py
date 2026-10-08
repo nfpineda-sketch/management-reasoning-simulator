@@ -6,6 +6,10 @@ draft; an approval is a faculty member's, recorded under their account, for
 the exact words they read; a later edit to either language, or to the rubric's
 English, takes the domain back to English; and the scores and the AI proposal
 keep the English criteria whatever is approved.
+
+The pilot candidate also carries the faculty's approval of the five domains
+(``rubric_text/es/approvals.json``, B-5, 2026-10-08; ``test_case_text_approvals``).
+The tests of what a review in the app does run without that file (``no_pack``).
 """
 import json
 import re
@@ -34,6 +38,12 @@ def cohort(tmp_path):
     return accounts, users
 
 
+@pytest.fixture
+def no_pack(monkeypatch):
+    """The app as it is with no approvals carried in the repository: only the reviews in its database."""
+    monkeypatch.setattr(rubric_text, "pack_approvals", lambda language="es": [])
+
+
 @pytest.fixture(autouse=True)
 def nothing_installed():
     rubric_text._INSTALLED.clear()
@@ -60,6 +70,7 @@ def test_the_draft_translates_every_descriptor_the_rubric_has_today():
     assert file["rubric_version"] == rubric.VERSION
 
 
+@pytest.mark.usefixtures("no_pack")
 def test_nothing_is_spanish_until_a_faculty_member_approves_it(cohort):
     accounts, _ = cohort
     for domain in rubric.DOMAIN_IDS:
@@ -69,6 +80,7 @@ def test_nothing_is_spanish_until_a_faculty_member_approves_it(cohort):
         assert shown["levels"] == rubric.DOMAINS[domain]["levels"]
 
 
+@pytest.mark.usefixtures("no_pack")
 def test_an_approval_is_the_faculty_member_s_names_what_they_read_and_speaks_for_its_domain(cohort):
     accounts, users = cohort
     reviews = rubric_text.RubricTextReviews(accounts)
@@ -148,8 +160,11 @@ def test_approvals_carried_from_another_deployment_name_the_words_they_approved(
     assert rubric_text.descriptors("D1", "es")["language"] == "en"
 
 
-def test_no_approval_is_carried_by_default():
-    assert rubric_text.pack_approvals() == []
+def test_the_carried_approvals_are_the_faculty_s_five_and_nothing_else():
+    """B-5 (2026-10-08): the candidate carries the faculty's approvals of D1 to D5, at the approved versions."""
+    import tools_case_text_approvals as approvals
+    assert rubric_text.pack_approvals() == approvals.pack("rubric")
+    assert approvals.verify_file("rubric") == []
 
 
 
@@ -167,6 +182,7 @@ def screen_cohort(tmp_path):
     return accounts, None, users
 
 
+@pytest.mark.usefixtures("no_pack")
 def test_the_rubric_screen_reads_an_approved_domain_in_spanish_and_the_others_in_english(screen_cohort):
     from test_rubric_portal import attempt_on_case, page
     accounts, _, users = screen_cohort
@@ -202,6 +218,7 @@ render_rubric_text_review({'store': store, 'token': token, 'user': store.get_use
 """
 
 
+@pytest.mark.usefixtures("no_pack")
 def test_the_review_panel_records_the_faculty_member_s_decision_and_shows_nothing_to_a_resident(screen_cohort):
     from streamlit.testing.v1 import AppTest
     accounts, _, users = screen_cohort
@@ -237,6 +254,7 @@ def test_the_review_document_shows_the_words_on_file():
 
 
 def test_the_faculty_review_of_2026_09_27_is_applied_word_for_word():
+    """With the RUB decisions of 2026-10-07 on top: R-1 (revisar = check) in D4, option (b) in D5."""
     drafts = rubric_text.drafts()
     expected = {
         ("D1", "levels/1"): "o requiere orientación correctiva importante.",
@@ -244,13 +262,17 @@ def test_the_faculty_review_of_2026_09_27_is_applied_word_for_word():
         ("D3", "levels/2"): "Indica un manejo apropiado",
         ("D4", "levels/3"): "establece objetivos clínicos y umbrales de alarma",
         ("D4", "levels/3", "signs"): "busca activamente signos de fracaso terapéutico o complicaciones",
-        ("D5", "levels/3"): "un traspaso de la atención o un seguimiento que explicite los asuntos pendientes",
+        ("D5", "levels/3"): "un traspaso de la atención o un control posterior que explicite los asuntos pendientes",
+        ("D4", "asks"): "si se revisaron la ejecución y la respuesta",
+        ("D4", "levels/0"): "No revisa la respuesta ni reevalúa",
+        ("D4", "levels/2"): "Revisa la ejecución y la respuesta",
     }
     for (domain, key, *_), words in expected.items():
         assert words in drafts[domain][key]["es"], (domain, key)
     spanish = " ".join(row["es"] for rows in drafts.values() for row in rows.values())
     for gone in ("indicación correctiva", "Ordena un manejo", "prepara contingencias", "fija metas",
-                 "la falla del tratamiento", "pendientes explícitos"):
+                 "la falla del tratamiento", "pendientes explícitos", "un seguimiento que explicite",
+                 "comprueba", "comprobaron"):
         assert gone not in spanish, gone
 
 
@@ -266,6 +288,7 @@ def test_indicacion_is_kept_for_clinical_orders_and_orientacion_is_the_help_a_re
                                                      if key.startswith("You may enter your reasoning and orders"))]
 
 
+@pytest.mark.usefixtures("no_pack")
 def test_once_approved_the_spanish_screen_shows_only_approved_descriptors_and_no_domain_mixes_languages(screen_cohort):
     """Closing check of 2026-09-27: each domain reads whole in one language, Spanish only where approved."""
     from test_rubric_portal import attempt_on_case, page

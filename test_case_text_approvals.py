@@ -179,3 +179,30 @@ def test_the_faculty_panel_counts_thirty_approved_and_the_sandbox_case_pending()
     states = {case: case_text.status(case, rows, {}, pack) for case, rows in case_text.passages("es").items()}
     assert sorted(case for case, state in states.items() if state != "approved") == ["trauma_hemothorax_41m"]
     assert sum(state == "approved" for state in states.values()) == 30
+
+
+# --- the rubric pack the candidate carries (IG-2, 2026-10-08) ----------------------------------------
+
+def test_the_committed_rubric_pack_is_what_the_faculty_approved():
+    assert approvals.verify_file("rubric") == []
+
+
+def test_with_an_empty_database_the_five_domains_read_in_the_approved_spanish():
+    rubric_text._INSTALLED.clear()
+    rubric_text._APPROVED.clear()
+    try:
+        rubric_text.install(None, now=0)
+        drafts = rubric_text.drafts()
+        for domain in rubric.DOMAINS:
+            shown = rubric_text.descriptors(domain, "es")
+            assert shown["language"] == "es", domain
+            assert shown["asks"] == drafts[domain]["asks"]["es"]
+            assert shown["levels"] == {int(key.split("/")[1]): row["es"]
+                                       for key, row in drafts[domain].items() if key.startswith("levels/")}
+            # The criteria the scores and the AI use stay English.
+            assert rubric_text.descriptors(domain, "en")["asks"] == rubric.DOMAINS[domain]["asks"]
+        assert "control posterior" in rubric_text.descriptors("D5", "es")["levels"][3]
+        assert rubric_text.descriptors("D4", "es")["levels"][2].startswith("Revisa la ejecución")
+    finally:
+        rubric_text._INSTALLED.clear()
+        rubric_text._APPROVED.clear()
