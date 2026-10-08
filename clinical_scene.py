@@ -206,10 +206,20 @@ def _session_scene_image(state, events, context=None):
 #: its presence carries no information about this patient.
 STILL_VIEW_NOTE = ('A still photograph does not show every clinical sign; '
                    'examine the patient to assess what it cannot carry.')
+#: The same note in Spanish, in the faculty's wording (J-64, 2026-10-07).
+STILL_VIEW_NOTE_ES = ('Una fotografía fija no muestra todos los signos clínicos; examina al paciente para evaluar lo '
+                      'que no puede mostrar.')
+#: The bed space's heading and its three states (M-02, faculty, 2026-10-07).
+SCENE_WORDS_ES = {
+    'ED / Bed 03': 'Urgencias / Cama 03',
+    'Patient illustration · current state': 'Imagen del paciente · estado actual',
+    'Updating patient appearance': 'Actualizando la apariencia del paciente',
+    'Current patient image unavailable': 'Imagen actual del paciente no disponible',
+}
 
 
 def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, observations='', image_status=None,
-               photo_apart=False):
+               photo_apart=False, language='en'):
     """The bed space. With ``photo_apart`` the photograph is its own element (``image_scene``) and
     this overlay carries no image bytes, so a monitor change does not send the photograph again."""
     if not current:
@@ -226,7 +236,11 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
     bg = 'background:transparent;' if image_b64 and photo_apart else ''
     status = 'Patient illustration · current state' if current else (
         'Updating patient appearance' if pending else 'Current patient image unavailable')
-    detail = scene_status_text(image_status) if not current else ''
+    spanish = language == 'es'
+    place = SCENE_WORDS_ES['ED / Bed 03'] if spanish else 'ED / Bed 03'
+    if spanish:
+        status = SCENE_WORDS_ES[status]
+    detail = scene_status_text(image_status, language) if not current else ''
     # One fixed sentence beside every photograph (faculty instruction of
     # 2026-09-26, point 6). Naming the findings a photograph does not show
     # told the resident what there was to find -- "breathing effort: not
@@ -234,22 +248,28 @@ def scene_html(image_b64, monitor, ecg='', *, current=True, pending=False, obser
     # warning is neutral and identical for every patient, and the specific
     # codes stay where they belong: the display log and the faculty's review
     # (image_scene._log, image_pack.read_observations).
-    limitation = STILL_VIEW_NOTE if current else ''
+    limitation = (STILL_VIEW_NOTE_ES if spanish else STILL_VIEW_NOTE) if current else ''
     # The monitor above, the patient below it: the monitor never covers the patient's head.
     return ("<style>" + BEDSPACE_CSS + "</style>" +
             '<div class="clinical-scene">' +
             f'<div class="scene-monitor">{monitor}{ecg}</div>' +
             f'<div class="scene-stage" style="{bg}">' + photo +
-            f'<div class="scene-time">ED / Bed 03 · {escape(status)}</div>' +
+            f'<div class="scene-time">{escape(place)} · {escape(status)}</div>' +
             (f'<div class="scene-image-status" role="status">{escape(detail)}</div>' if detail else '') +
             (f'<div class="scene-observations scene-note" role="note">{limitation}</div>' if limitation else '') +
             (f'<div class="scene-observations">{escape(observations)}</div>' if not current else '') + '</div></div>')
 
 
-def scene_status_text(status):
-    """Render only fixed labels and safe diagnostics; never job/provider text."""
+def scene_status_text(status, language='en'):
+    """Render only fixed labels and safe diagnostics; never job/provider text.
+
+    In Spanish the room says why there is no photograph (M-03, faculty, 2026-10-07); the states
+    that need an image key to prepare one are staff tools outside the pilot (X-1, §1, point 5).
+    """
     if not isinstance(status, dict):
         return ''
+    if language == 'es' and status.get('state') == 'unavailable' and status.get('code') in UNAVAILABLE_ES:
+        return UNAVAILABLE_ES[status['code']]
     if status.get('state') == 'failed':
         from scene_errors import SceneImageError
         error = SceneImageError(status.get('code'), status.get('stage'), status.get('failed_checks', ()))
@@ -299,6 +319,26 @@ UNAVAILABLE = {
                         'The monitor and the examination are current.'),
     'BUDGET_CONFIG': 'The image budget is not configured correctly. The monitor and the examination are current.',
     'INTERNAL': 'The saved photograph could not be read. The monitor and the examination are current.',
+}
+#: The same notices in Spanish (M-03, XR-25, faculty, 2026-10-07). NO_ACCOUNTS is left out: the
+#: pilot runs with accounts.
+_CURRENT_ES = ' El monitor y el examen están al día.'
+UNAVAILABLE_ES = {
+    'NOT_ALLOWED': 'No hay una fotografía preparada para este encuentro.' + _CURRENT_ES,
+    'CONFIG': 'La generación de imágenes del paciente no está configurada.' + _CURRENT_ES,
+    'UNSUPPORTED': 'Ningún paciente sintético del banco de imágenes corresponde a este caso.' + _CURRENT_ES,
+    'CONTRACT': 'Esta apariencia no tiene una fotografía disponible.' + _CURRENT_ES,
+    'UNRENDERABLE': ('El generador de imágenes no pudo dibujar esta apariencia de forma confiable, así que no se pide '
+                     'una fotografía.' + _CURRENT_ES),
+    'REVIEW_PENDING': 'La fotografía de esta apariencia espera la revisión docente.' + _CURRENT_ES,
+    'PRICE': ('El modelo de imágenes configurado no tiene un precio verificado, así que no se pide una '
+              'fotografía.' + _CURRENT_ES),
+    'BUDGET_DOLLARS': ('El presupuesto de imágenes de este entorno se agotó; las fotografías guardadas se siguen '
+                       'mostrando.' + _CURRENT_ES),
+    'BUDGET_REQUESTS': ('El presupuesto de imágenes de este entorno se agotó; las fotografías guardadas se siguen '
+                        'mostrando.' + _CURRENT_ES),
+    'BUDGET_CONFIG': 'El presupuesto de imágenes no está bien configurado.' + _CURRENT_ES,
+    'INTERNAL': 'No se pudo leer la fotografía guardada.' + _CURRENT_ES,
 }
 
 

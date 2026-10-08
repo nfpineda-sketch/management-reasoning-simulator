@@ -71,8 +71,9 @@ def test_an_engine_order_is_said_whole_in_spanish(english):
 def test_what_the_engine_writes_stays_as_written():
     spanish = language.say("After normal saline 1000 mL IV started as a bolus (no rate written; the simulator's "
                            "standard rate, about 50 mL/min) + Epinephrine 0.5 mg IM administered, BP 77/42 mmHg", "es")
+    # The drug by its Spanish name (V-9, faculty, 2026-10-07; B-5, IG-5); the dose and the route as written.
     assert spanish == ("Tras suero fisiológico 1000 mL IV iniciado en bolo (sin velocidad escrita; velocidad estándar "
-                       "del simulador, unos 50 mL/min) + Epinephrine 0.5 mg IM administrado, PA 77/42 mmHg")
+                       "del simulador, unos 50 mL/min) + Adrenalina 0.5 mg IM administrado, PA 77/42 mmHg")
     assert language.say("Tourniquet applied to the left thigh: the external bleeding is controlled", "es") == (
         "Torniquete aplicado en el muslo izquierdo: el sangrado externo está controlado")
     for sample in SAMPLES:

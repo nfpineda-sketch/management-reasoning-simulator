@@ -2504,5 +2504,79 @@ ES = {
         'Menú',
     'View ECG':
         'Ver ECG',
+    # X-1 (faculty, 2026-10-07; B-5, IG-5): the room's labels, the reasoning gate, the after-close
+    # screens. Decided whole in XR-01 to XR-28 (docs/revision/X1_ESPANOL_PROPUESTO.md, §5 to §8).
+    # L-01, I-9: the modes and the selector's hidden name.
+    'Talk': 'Conversar', 'Examine': 'Examinar', 'Tests': 'Exámenes', 'Treat': 'Tratar',
+    # L-02, L-03 (XR-10).
+    'Enter your clinical reasoning and/or actions':
+        'Ingresa tu razonamiento clínico y/o tus acciones.',
+    'Describe your reasoning naturally. For example: I think...; I am addressing... first; I expect...; reassess ... in ... minutes.':
+        'Describe tu razonamiento con naturalidad. Por ejemplo: Creo que…; Primero abordo…; Espero que…; Reevalúo … en … minutos.',
+    # L-04 to L-08, L-10 (XR-11).
+    'Ask the patient': 'Pregúntale al paciente',
+    'Ask the available history source': 'Pregunta al informante disponible',
+    'What brought you in today?': '¿Por qué consulta hoy?',
+    'Ask': 'Preguntar',
+    'History topics': 'Temas de la historia', 'Explore': 'Explorar', 'Ask about this topic': 'Preguntar por este tema',
+    'Presenting symptoms and onset': 'Motivo de consulta e inicio',
+    'Associated symptoms': 'Síntomas asociados', 'Previous health': 'Antecedentes',
+    'The patient cannot provide a history at present. Review the history already obtained in the clinical chart.':
+        'El paciente no puede dar su historia por ahora. Revisa la historia ya obtenida en la ficha clínica.',
+    'The patient cannot answer at present. Questions are directed to the available collateral source.':
+        'El paciente no puede responder por ahora. Las preguntas se dirigen al informante disponible.',
+    # L-11 (XR-12).
+    'Examine patient': 'Examinar al paciente',
+    # L-12, L-13, L-19, L-20, P-01 (XR-24).
+    'Complete Encounter & Begin Review': 'Terminar el encuentro y comenzar la revisión',
+    'Save & return to dashboard': 'Guardar y volver al inicio',
+    'End this attempt without completing review': 'Terminar este intento sin completar la revisión',
+    'Management Reasoning Simulator · Clinical encounter v{version}':
+        'Management Reasoning Simulator · Encuentro clínico v{version}',
+    'Return to dashboard': 'Volver al inicio',
+    # L-14, L-15, L-16 (XR-14, XR-26, XR-13).
+    'Current treatments': 'Tratamientos en curso',
+    'Diagnostics': 'Resultados de exámenes',
+    'Current support · ': 'Soporte actual · ',
+    # The reasoning gate: G-04 to G-11, G-14 to G-16 (XR-01, XR-03, XR-09).
+    'An understood order is being held. The patient state is unchanged; complete the reasoning in your own words or use the guided fields.':
+        'Hay una orden entendida que está retenida. El estado del paciente no ha cambiado; completa el razonamiento con tus palabras o con los campos guiados.',
+    '**Held order:** {summary}': '**Orden retenida:** {summary}',
+    'Or answer naturally below. You only need to add what is missing; you do not need to repeat the held order.':
+        'O responde con tus palabras abajo. Basta con agregar lo que falta; no necesitas repetir la orden retenida.',
+    'e.g. HR and rhythm, BP/MAP, capillary refill, mental status':
+        'p. ej., FC y ritmo, PA/PAM, llene capilar, estado mental',
+    'Complete reasoning & execute held order': 'Completar el razonamiento y ejecutar la orden retenida',
+    'Cancel pending orders': 'Cancelar las órdenes pendientes',
+    'Explain an urgent decision afterwards (optional, recorded as retrospective)':
+        'Explicar después una decisión urgente (opcional; queda registrada como retrospectiva)',
+    'The intervention already ran. What you write here is recorded as written now, after the decision, and never as reasoning shown when it was taken.':
+        'La intervención ya se ejecutó. Lo que escribas aquí queda registrado como escrito ahora, después de la decisión, y nunca como un razonamiento expresado cuando se tomó.',
+    'Save retrospective explanation': 'Guardar la explicación retrospectiva',
+    # T-01 to T-10, T-13 (XR-14, XR-27): what is running and what has been given.
+    'Bag-mask assisted ventilation': 'Ventilación asistida con bolsa-mascarilla',
+    'Cumulative crystalloid: {volume} mL': 'Cristaloide acumulado: {volume} mL',
+    'Fluid order: {amount} mL over {duration} min; delivered {delivered} mL.':
+        'Orden de fluido: {amount} mL en {duration} min; pasados {delivered} mL.',
+    'Crystalloid pending: {volume} mL. Delivery continues as simulation time advances.':
+        'Cristaloide pendiente: {volume} mL. Sigue pasando a medida que avanza el tiempo simulado.',
+    '{drug}: {dose} mg total': '{drug}: {dose} mg en total',
+    'Procedural sedation administered: ': 'Sedación para el procedimiento: ',
+    '{drug} {dose} mg total': '{drug} {dose} mg en total',
+    'Oxygen: {device} at {flow} L/min': 'Oxígeno: {device} a {flow} L/min',
+    'Airway equipment and team prepared for intubation': 'Equipo y personal preparados para la intubación',
+    'Disposition: {destination}': 'Destino: {destination}',
+    'Furosemide administered: {dose} mg total': 'Furosemida administrada: {dose} mg en total',
+    # P-02 to P-07 (XR-28).
+    '**Expert comparison · faculty-validation draft**':
+        '**Comparación con el experto · borrador pendiente de validación docente**',
+    '### Attempt {number} · Carry-Forward Learning Goal':
+        '### Intento {number} · Objetivo de aprendizaje del intento anterior',
+    'This prospective plan came from the previous attempt. Use it as an intention for action and reassessment; the new Management Trace records only what you actually do now.':
+        'Este plan prospectivo viene del intento anterior. Úsalo como una intención de acción y de reevaluación; el nuevo Management Trace registra sólo lo que haces ahora.',
+    '**Previous attempt record · Attempt {number}**': '**Registro del intento anterior · Intento {number}**',
+    'The completed prior trajectory remains separate and available for download.':
+        'La trayectoria anterior completa se mantiene aparte y disponible para descargar.',
+    'Previous PDF': 'PDF anterior', 'Previous Markdown': 'Markdown anterior', 'Previous JSON': 'JSON anterior',
 }
 TABLES = {"es": ES}

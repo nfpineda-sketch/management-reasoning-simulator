@@ -1,4 +1,4 @@
-"""The Spanish drafts of cycle 10 wait for the faculty and none of them is shown (C10-08, packet R-4).
+"""The Spanish drafts of cycle 10 (C10-08, packet R-4): the engine's sentences, decided and active; C14, drafts.
 
 ``spanish_drafts`` holds two sets: the engine's sentences a Spanish reader still sees in English
 (the rest of DF-23 row 11) and the C14 declarations the Spanish faculty portal shows in English
@@ -6,6 +6,7 @@
 change moves it into ``language`` or the portal.
 """
 import ast
+import re
 from pathlib import Path
 
 import language
@@ -46,17 +47,20 @@ def test_the_c14_drafts_are_not_what_the_portal_says():
         assert language.say(english, "es") != draft
 
 
-def test_every_engine_draft_answers_a_sentence_that_still_shows_english():
+def test_every_engine_sentence_is_said_as_the_faculty_approved_it():
+    """B-5, IG-5 (2026-10-08): the engine's sentences the faculty decided on 2026-10-07 (packet, block A) are
+    active. The room says each one exactly as approved; the C14 drafts still wait."""
     assert spanish_drafts.STATUS == "draft_pending_faculty_review"
-    assert spanish_drafts.ENGINE
+    assert spanish_drafts.ENGINE_STATUS == "approved_active"
+    assert len(spanish_drafts.ENGINE) == 22
     for row in spanish_drafts.ENGINE:
         assert set(row) >= {"kind", "english", "example", "spanish", "cases", "seen", "note"}, row
-        # Still English as the room presents it today: the draft is neither active nor made
-        # unnecessary by another change.
-        said = harvest.presented(row["example"], kind=row["kind"])
-        assert harvest.still_english(said, row["example"]), row["english"]
         assert harvest.template(row["example"]) == row["english"]
-        assert not harvest.residue(row["spanish"].replace("{n}", "0")), row["spanish"]
+        said = harvest.presented(row["example"], narrative=[], kind=row["kind"])
+        numbers = iter(re.findall(r"\d+(?:[.,]\d+)?", row["example"]))
+        approved = re.sub(r"\{n\}", lambda _: next(numbers), row["spanish"])
+        assert said == approved, (row["english"], said)
+        assert not harvest.residue(said), said
 
 
 def test_every_engine_sentence_has_its_review_reading_and_nothing_else_does():

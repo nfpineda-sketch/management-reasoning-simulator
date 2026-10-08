@@ -3,19 +3,30 @@ from html import escape
 import streamlit as st
 
 
-def device_labels(t):
+def device_labels(t, language="en"):
+    """The support running now, one label each (M-04 in Spanish, faculty, 2026-10-07; drugs with V-9)."""
+    spanish = language == "es"
+    if spanish:
+        import language as languages
     labels = []
     if t.get('invasive_ventilation'):
-        labels.append(f"Ventilator · {t.get('ventilator_mode') or 'VC/AC'} · FiO₂ {t.get('ventilator_fio2_percent', 100)}% · PEEP {t.get('ventilator_peep_cmh2o', 8)}")
+        labels.append(f"{'Ventilador' if spanish else 'Ventilator'} · {t.get('ventilator_mode') or 'VC/AC'} · FiO₂ {t.get('ventilator_fio2_percent', 100)}% · PEEP {t.get('ventilator_peep_cmh2o', 8)}")
     elif t.get('bag_mask'):
-        labels.append('Bag-mask ventilation')
+        labels.append('Ventilación con bolsa-mascarilla' if spanish else 'Bag-mask ventilation')
     elif t.get('niv'):
-        labels.append(f"{t.get('niv_mode') or 'NIV'} · FiO₂ {t.get('niv_fio2_percent', '—')}%")
+        mode = t.get('niv_mode') or 'NIV'
+        if spanish and mode == 'NIV':
+            mode = 'VMNI'
+        labels.append(f"{mode} · FiO₂ {t.get('niv_fio2_percent', '—')}%")
     elif t.get('oxygen'):
-        labels.append(f"{t.get('oxygen_device') or 'Oxygen'} · {t.get('oxygen_flow_lpm', '—')} L/min")
+        device = t.get('oxygen_device') or ('Oxígeno' if spanish else 'Oxygen')
+        if spanish:
+            device = languages.say(str(device), "es")
+        labels.append(f"{device} · {t.get('oxygen_flow_lpm', '—')} L/min")
     for flag, rate, unit in [('norepinephrine', 'norepinephrine_rate', t.get('norepinephrine_units') or 'mcg/kg/min'), ('dobutamine', 'dobutamine_rate', 'mcg/kg/min'), ('nitroglycerin', 'nitroglycerin_rate_mcg_min', 'mcg/min')]:
         if t.get(flag):
-            labels.append(f"{flag.capitalize()} · {t.get(rate, '—')} {unit}")
+            name = languages.drug(flag.capitalize(), "es") if spanish else flag.capitalize()
+            labels.append(f"{name} · {t.get(rate, '—')} {unit}")
     return labels
 
 
@@ -49,20 +60,25 @@ def patient_svg(t):
 ROOM_RENDER_VERSION = 10
 
 
-def monitor_html(o, time_label, profile='baseline', seed=0):
+#: The monitor's labels in Spanish (M-01, faculty, 2026-10-07); SpO₂ is the same.
+MONITOR_WORDS_ES = {'BEDSIDE MONITOR': 'MONITOR DE CABECERA', 'HR': 'FC', 'NIBP': 'PANI', 'RR': 'FR', 'SpO₂': 'SpO₂'}
+
+
+def monitor_html(o, time_label, profile='baseline', seed=0, language='en'):
     from ecg12 import monitor_wave_svg
     pulse = o.get('pulse_present', True)
-    values = [('HR', str(o.get('hr', '—')), '/min', '#72efa5'),
+    words = MONITOR_WORDS_ES if language == 'es' else {}
+    values = [(words.get('HR', 'HR'), str(o.get('hr', '—')), '/min', '#72efa5'),
               ('SpO₂', str(o.get('spo2', '—')) if pulse else '—', '%', '#64dced'),
-              ('NIBP', f"{o.get('sbp', '—')}/{o.get('dbp', '—')}" if pulse else '—', 'mmHg', '#f6c77a'),
-              ('RR', str(o.get('respiratory_rate', '—')), '/min', '#f1efff')]
+              (words.get('NIBP', 'NIBP'), f"{o.get('sbp', '—')}/{o.get('dbp', '—')}" if pulse else '—', 'mmHg', '#f6c77a'),
+              (words.get('RR', 'RR'), str(o.get('respiratory_rate', '—')), '/min', '#f1efff')]
     # A value is never split across lines: a pressure reads 132/80, whole (UX of the
     # clinical encounter, 2026-10-02); the size follows the monitor's width (BEDSPACE_CSS).
     cards = ''.join(f'<div style="color:{c}"><small>{label} <span class="monitor-unit">{unit}</span></small><div class="monitor-value">{escape(v)}</div></div>' for label,v,unit,c in values)
     wave = monitor_wave_svg(o, profile=profile, seed=seed)
     # The room says the simulated time once, beside the information; the monitor shows
     # the patient now, and carries a time only when one is given.
-    heading = 'BEDSIDE MONITOR' + (f' · {escape(time_label)}' if time_label else '')
+    heading = words.get('BEDSIDE MONITOR', 'BEDSIDE MONITOR') + (f' · {escape(time_label)}' if time_label else '')
     return (f'<div class="monitor-body"><div class="monitor-heading">{heading}</div>'
             + wave + f'<div class="monitor-values">{cards}</div></div>')
 
@@ -101,24 +117,73 @@ def _room(state, events, ecg_svg, render_event, time_label, context=None):
     # A background image failure must never restart the whole app: a full rerun
     # here consumes form-submit events before the learner's order is processed.
     o = state['observable']
+    import language as languages
+    reading = languages.current()
     description = appearance_summary(state) + ' Work of breathing: ' + str(o.get('work_of_breathing', 'Not recorded'))
+    if reading == 'es':
+        # I-3: the summary and the work of breathing, each said whole (``language.examination``).
+        description = (languages.examination(appearance_summary(state), 'es') + ' Trabajo respiratorio: '
+                       + languages.observed_value(str(o.get('work_of_breathing', 'Not recorded')), 'es'))
     profile = state.get('ecg_profile', state.get('encounter_spec', {}).get('ecg_profile', 'baseline'))
-    st.markdown(scene_html(image, monitor_html(o, time_label, profile, state.get('seed', 0)),
+    st.markdown(scene_html(image, monitor_html(o, time_label, profile, state.get('seed', 0), reading),
                           current=st.session_state.get('_scene_current', False),
                           pending=st.session_state.get('_scene_pending', False),
                           observations=description,
                           image_status=st.session_state.get('_scene_status'),
-                          photo_apart=photo_apart), unsafe_allow_html=True)
+                          photo_apart=photo_apart, language=reading), unsafe_allow_html=True)
 
 
-@st.dialog('ECG · 12 leads', width='large')
-def show_ecg(snapshot):
+#: The ECG's words in Spanish (E-01 to E-05, XR-26, faculty, 2026-10-07).
+ECG_WORDS_ES = {
+    'ECG · 12 leads': 'ECG · 12 derivaciones',
+    'Synthetic educational tracing · Clinical pattern validation pending.':
+        'Trazado educativo sintético · Validación clínica del patrón pendiente.',
+    'Download ECG': 'Descargar el ECG',
+    'Acquire a 12-lead ECG at the current simulation time.':
+        'Tomar un ECG de 12 derivaciones en el tiempo simulado actual.',
+    '12-lead ECG acquired. Available in ECG recordings.': 'ECG de 12 derivaciones tomado. Está en «Registros de ECG».',
+    'ECG recordings': 'Registros de ECG', 'Acquisition': 'Registro', 'View recording': 'Ver el registro',
+    'ECG unavailable for this electrical state.': 'No se puede tomar un ECG en este estado eléctrico.',
+    'ECG unavailable': 'ECG no disponible', 'Recording unavailable.': 'Registro no disponible.',
+    'This electrical rhythm has no waveform model yet.': 'Este ritmo eléctrico todavía no tiene un modelo de trazado.',
+    "Heart rate is outside this waveform model's range (20–300/min).":
+        'La frecuencia cardíaca está fuera del rango de este modelo de trazado (20–300/min).',
+    'Invalid heart rate.': 'Frecuencia cardíaca no válida.',
+    'This ECG morphology profile has not been implemented.': 'Este perfil de morfología del ECG no está implementado.',
+    'This morphology/rhythm combination has not been implemented.':
+        'Esta combinación de morfología y ritmo no está implementada.',
+    'Electrical morphology for PEA has not been specified.': 'La morfología eléctrica de la AESP no está especificada.',
+    'This recording requires its original waveform model version.':
+        'Este registro requiere la versión original de su modelo de trazado.',
+}
+
+
+def ecg_words(text, language=None):
+    """One of the ECG's fixed sentences in the reading language; anything else as it came."""
+    if language is None:
+        import language as languages
+        language = languages.current()
+    return ECG_WORDS_ES.get(text, text) if language == 'es' else text
+
+
+def _show_ecg(snapshot):
     """One recording, exactly as it was acquired. Viewing it acquires nothing and changes nothing."""
     from ecg12 import render_ecg_svg
     svg = render_ecg_svg(snapshot)
     st.markdown(''.join(line.strip() for line in svg.splitlines()), unsafe_allow_html=True)
-    st.caption('Synthetic educational tracing · Clinical pattern validation pending.')
-    st.download_button('Download ECG', svg, file_name='ecg_12_leads.svg', mime='image/svg+xml')
+    st.caption(ecg_words('Synthetic educational tracing · Clinical pattern validation pending.'))
+    st.download_button(ecg_words('Download ECG'), svg, file_name='ecg_12_leads.svg', mime='image/svg+xml')
+
+
+# A dialog's title is fixed when it is declared: one dialog per language.
+_show_ecg_en = st.dialog('ECG · 12 leads', width='large')(_show_ecg)
+_show_ecg_es = st.dialog(ECG_WORDS_ES['ECG · 12 leads'], width='large')(_show_ecg)
+
+
+def show_ecg(snapshot):
+    """Open one recording in the reading language's dialog."""
+    import language as languages
+    (_show_ecg_es if languages.current() == 'es' else _show_ecg_en)(snapshot)
 
 
 def acquire_ecg_button(state, events):
@@ -131,30 +196,31 @@ def acquire_ecg_button(state, events):
     from ecg12 import acquire_ecg
     # A closed encounter acquires nothing new; its recordings stay viewable.
     if st.session_state.get('encounter_ended') or not st.button(
-            'ECG', help='Acquire a 12-lead ECG at the current simulation time.'):
+            'ECG', help=ecg_words('Acquire a 12-lead ECG at the current simulation time.')):
         return False, None
     try:
         snapshot = acquire_ecg(state)
         if snapshot.get('status') != 'available':
-            return False, ('info', snapshot.get('reason', 'ECG unavailable for this electrical state.'))
+            return False, ('info', ecg_words(snapshot.get('reason', 'ECG unavailable for this electrical state.')))
         state.setdefault('diagnostics', {}).setdefault('ecg', []).append(snapshot)
+        # The record keeps the English sentence; the room says it in the reading language (render_event).
         events.append({'kind': 'diagnostic', 'time': state.get('sim_time', 0),
                        'text': '12-lead ECG acquired. Available in ECG recordings.'})
         show_ecg(snapshot)
         return True, None
     except ValueError as error:
-        return False, ('error', str(error))
+        return False, ('error', ecg_words(str(error)))
 
 
 def ecg_recordings(state):
     """Every recording of this encounter; viewing an older acquisition never changes its data."""
     recordings = state.get('diagnostics', {}).get('ecg', [])
     if recordings:
-        with st.expander('ECG recordings'):
-            recording = st.selectbox('Acquisition', list(range(len(recordings))),
+        with st.expander(ecg_words('ECG recordings')):
+            recording = st.selectbox(ecg_words('Acquisition'), list(range(len(recordings))),
                                     format_func=lambda i: f"ECG {i+1} · {recordings[i].get('acquired_at_minutes', 0):g} min",
                                     index=len(recordings)-1)
-            if st.button('View recording'):
+            if st.button(ecg_words('View recording')):
                 show_ecg(recordings[recording])
 
 

@@ -88,30 +88,59 @@ def format_result(test_id, result):
     return label + ": " + (" · ".join(parts) if parts else "No result has been recorded.")
 
 
-def format_administration(record):
+#: The treatments panel's words in Spanish (T-11 and T-12, faculty, 2026-10-07).
+TREATMENT_WORDS_ES = {
+    "medication": "Medicamento", "minute": " · minuto ", "over": " · en {duration} min",
+    "so_far": " · {given} de {ordered} {unit} dados hasta ahora",
+    "running": "Glóbulos rojos: {given} de {total} unidades transfundidas hasta ahora",
+    "given": "Glóbulos rojos transfundidos: {given} unidad", "plural": "es",
+}
+
+
+def format_administration(record, language="en"):
+    """One dose given, as «Tratamientos en curso» lists it (T-11; Spanish with V-9, faculty, 2026-10-07)."""
+    spanish = language == "es"
+    words = TREATMENT_WORDS_ES
     amount = record.get("dose_g", record.get("dose_mg", record.get("dose")))
     unit = "g" if "dose_g" in record else "mg" if "dose_mg" in record else record.get("units", "")
-    parts = [str(record.get("agent") or "Medication")]
+    if spanish:
+        import language as languages
+        name = languages.drug(record.get("agent"), "es") if record.get("agent") else words["medication"]
+    else:
+        name = str(record.get("agent") or "Medication")
+    parts = [str(name)]
     if isinstance(amount, (int, float)) and not isinstance(amount, bool):
         parts.append(f"{_dose_text(amount)} {unit}")
     if record.get("route"):
-        parts.append(str(record["route"]))
-    text = " ".join(parts) + " · minute " + str(record.get("time_min", "—"))
+        route = str(record["route"])
+        if spanish:
+            # The route as the record's labels say it in Spanish (report_presentation; «nebulizado»).
+            import report_presentation
+            route = report_presentation._ROUTES_ES.get(report_presentation._ROUTES.get(route, route), route)
+        parts.append(route)
+    text = " ".join(parts) + (words["minute"] if spanish else " · minute ") + str(record.get("time_min", "—"))
     duration = record.get("administration_duration_min")
     if duration:
         # A timed dose names what has gone in, not only what was ordered.
         ordered = record.get("ordered_dose_g", record.get("ordered_dose_mg", record.get("ordered_dose")))
-        text += f" · over {duration:g} min"
+        text += words["over"].format(duration=f"{duration:g}") if spanish else f" · over {duration:g} min"
         if record.get("administration_status") == "in_progress" and isinstance(ordered, (int, float)):
-            text += f" · {_dose_text(amount)} of {_dose_text(ordered)} {unit} given so far"
+            text += (words["so_far"].format(given=_dose_text(amount), ordered=_dose_text(ordered), unit=unit)
+                     if spanish else f" · {_dose_text(amount)} of {_dose_text(ordered)} {unit} given so far")
     return text
 
 
-def format_transfusion(delivered, pending):
-    """Red cells given so far, and what is still running, without spurious decimals."""
+def format_transfusion(delivered, pending, language="en"):
+    """Red cells given so far, and what is still running, without spurious decimals (T-12 in Spanish)."""
     def number(value):
         return f"{value:.1f}".rstrip("0").rstrip(".")
+    spanish = language == "es"
+    words = TREATMENT_WORDS_ES
     if pending >= .05:
+        if spanish:
+            return words["running"].format(given=number(delivered), total=number(delivered + pending))
         return f"Packed red cells: {number(delivered)} of {number(delivered + pending)} units given so far"
     given = number(delivered)
+    if spanish:
+        return words["given"].format(given=given) + ("" if given == "1" else words["plural"])
     return f"Packed red cells given: {given} unit" + ("" if given == "1" else "s")

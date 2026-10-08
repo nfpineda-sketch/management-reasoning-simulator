@@ -44,11 +44,26 @@ def test_the_declared_exceptions_are_only_these():
     assert all("Idioma" in line or "Fijo durante" in line or line == "English" for line in sentinel.BILINGUAL)
 
 
-@pytest.mark.xfail(strict=True, reason="B-5 IG-5 (X-1) is not implemented yet: the room still shows English")
+def test_a_pending_item_is_recognised_only_with_its_own_english():
+    assert sentinel.pending_item("Latest response", ["latest", "response"]) == "ES-P3"
+    assert sentinel.pending_item("heparina 4000 units IV · minuto 16", ["units"]) == "ES-P6"
+    assert sentinel.pending_item("heparina 4000 units IV given", ["units", "given"]) is None
+    assert sentinel.pending_item("Latest response and more", ["latest", "response", "and", "more"]) is None
+
+
 @pytest.mark.parametrize("variant", pilot_freeze.accepted_variants())
 def test_a_spanish_encounter_shows_no_english(variant, tmp_path):
+    """No English the faculty has not been asked about (B-5, IG-5).
+
+    Any line with English fails, except a line still waiting for its Spanish wording from the faculty
+    (``PENDING_FACULTY_WORDING``). Those are not passed as clean: the test is marked as an expected
+    failure that names them, until the faculty decides them and the room says them in Spanish.
+    """
     result = sentinel.walk(variant, tmp_path)
     assert not result["stopped"], result["stopped"]
-    shown = "\n".join(f"[{row['step']}] {row['where']}: {row['line']}  ← {row['english']}"
-                      for row in result["english"])
-    assert not result["english"], f"{len(result['english'])} lines with English:\n{shown}"
+    unintended = [row for row in result["english"] if not sentinel.pending_item(row["line"], row["english"])]
+    shown = "\n".join(f"[{row['step']}] {row['where']}: {row['line']}  ← {row['english']}" for row in unintended)
+    assert not unintended, f"{len(unintended)} lines with English:\n{shown}"
+    pending = sorted({sentinel.pending_item(row["line"], row["english"]) for row in result["english"]})
+    if pending:
+        pytest.xfail(f"English awaiting faculty wording (docs/revision/B5_IG5_PENDIENTES_DOCENTES.md): {pending}")

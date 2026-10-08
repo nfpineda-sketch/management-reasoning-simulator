@@ -414,7 +414,12 @@ def _listed(items):
 
 # Everything given as a dose rather than run as an infusion or a setting.
 # Classes whose name is an abbreviation nobody says at the bedside.
-_CLASS_ONLY_KINDS = frozenset({"p2y12"})
+def _class_label(kind):
+    """A class or an action as the room shows it (V-1, XR-05; TD-80): never its internal key."""
+    from language import class_label
+    return class_label(kind, "en")
+
+
 _FIXED_DOSE_KINDS = frozenset(_MEDICINES) | {"anticoagulation", "ppi", "aspirin"}
 
 
@@ -570,7 +575,7 @@ def _validate(state, parsed):
             # repeated consult is, instead of demanding a dose nobody meant to give.
             given = _already_given(validation_state, kind, a.get("agent"))
             if given is None:
-                return None, (f"No {a.get('agent') or kind} is recorded as given. "
+                return None, (f"No {a.get('agent') or _class_label(kind)} is recorded as given. "
                               "Specify the dose and route to start it.")
             a["given_at_min"] = given
             normalized.append(a)
@@ -613,8 +618,11 @@ def _validate(state, parsed):
                 if key not in TEST_LABELS:
                     # Not a study anybody can ask for: a malformed order, and the
                     # whole submission is refused as it always was.
-                    return None, (f"Requested study {key!r} is unavailable. Available studies: "
-                                  f"{', '.join(sorted(_case(state).get('investigations', {})))}; ecg. "
+                    # The studies by their names, never their keys, in both languages (XR-21, TD-80).
+                    named = sorted(TEST_LABELS.get(study, study.replace("_", " "))
+                                   for study in _case(state).get("investigations", {}))
+                    return None, (f"Requested study {TEST_LABELS.get(key, str(key).replace('_', ' '))} is "
+                                  f"unavailable. Available studies: {', '.join(named)}; ECG. "
                                   "No orders in this submission were executed.")
                 # Recognised, and not something this version of the simulator
                 # can produce for this case. Until 2026-09-24 this refused the
@@ -638,11 +646,10 @@ def _validate(state, parsed):
             routes, lower, upper = _dose_range(kind, a.get("agent"))
             # A class name is not something a resident wrote. Ask about the drug
             # they named when the class has no everyday name of its own.
-            named = str(a.get("agent") or "").strip() if kind in _CLASS_ONLY_KINDS else ""
-            if kind == "opioid_analgesia":
-                # "opioid_analgesia" is a field name, not a word anyone wrote.
-                named = str(a.get("agent") or "").strip() or "opioid"
-            spoken = named or kind
+            # XR-05, option b (faculty, 2026-10-07): the drug the resident named; with only a class
+            # recognised, the class's label (V-1), never its internal key.
+            named = str(a.get("agent") or "").strip()
+            spoken = named or _class_label(kind)
             if not _number(a.get(field), lower, upper):
                 unit = ("grams" if field == "dose_g"
                         else "micrograms" if str(a.get("agent") or "").lower() in _MCG_AGENTS
@@ -656,9 +663,10 @@ def _validate(state, parsed):
                 if error:
                     return None, error
             if kind not in {"dextrose", "naloxone", "aspirin"} and not str(a.get("agent", "")).strip():
-                return None, f"Which {kind} medication would you like to administer?"
+                return None, f"Which {_class_label(kind)} medication would you like to administer?"
             if kind in _EXPOSURE_MG and str(a.get("agent", "")).lower() not in _EXPOSURE_MG[kind]:
-                return None, f"The specified {kind} agent has no modeled response in this encounter. Please clarify the medication."
+                return None, (f"The specified {_class_label(kind)} agent has no modeled response in this encounter. "
+                              "Please clarify the medication.")
             if kind == "dextrose" and a["route"] == "PO" and str(state.get("observable", {}).get("mental_status", "")).lower() != "alert":
                 return None, "The patient is not fully alert. Please clarify the intended route and airway protection before oral glucose."
         elif kind == "fluid" and a.get("operation") == "stop":
@@ -773,8 +781,9 @@ def _validate(state, parsed):
         elif kind == "oral_carbohydrate":
             mental = str(validation_state.get("observable", {}).get("mental_status"))
             if mental not in glucose_rescue.ORAL_SAFE_MENTAL:
+                # XR-18 (faculty, 2026-10-07): wording only; the route logic and the state are unchanged.
                 return None, (f"The patient is {mental.lower()} and cannot safely swallow. Use an intravenous or "
-                              "intramuscular route until the airway is protected.")
+                              "intramuscular route until oral administration is safe.")
         elif kind == "dextrose_infusion":
             a["operation"] = str(a.get("operation") or "start").lower()
             if a["operation"] != "stop" and not _number(a.get("rate_ml_h"), 10, 500):
@@ -857,7 +866,9 @@ def _validate(state, parsed):
         elif kind in {"bag_mask", "airway_preparation"}:
             pass
         else:
-            return None, f"The requested action ({str(kind)[:60]}) is not executable in this encounter. Please clarify the order."
+            # The action by its record label, never its internal key (XR-21, TD-80).
+            return None, (f"The requested action ({_class_label(str(kind)[:60])}) is not executable in this "
+                          "encounter. Please clarify the order.")
         if a.get("administration_duration_min") is not None:
             if (kind == "fluid" and a.get("rate_ml_h") and a.get("volume_ml")
                     and not _number(a["administration_duration_min"], 1/60, 120)):

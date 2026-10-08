@@ -16,6 +16,11 @@ change moves it into ``language`` or the portal; ``test_spanish_drafts.py``
 keeps it so, and says when a draft no longer matches the English it translates.
 """
 STATUS = "draft_pending_faculty_review"
+#: The engine sentences (``ENGINE``) were decided by the faculty on 2026-10-07 (packet, block A: A-1 to A-18,
+#: with A-2 and A-6 revised and the 49m's edge states approved) and are active since B-5, IG-5 (2026-10-08):
+#: their Spanish is in ``language`` (``_ENGINE_FINDINGS_ES`` and the A-1 rule). This module keeps them as the
+#: record of what was reviewed; nothing here is read by the room.
+ENGINE_STATUS = "approved_active"
 
 #: The offline harvest this set comes from (``tools_engine_spanish --harvest``, 2026-09-29): the
 #: twenty rehearsal scripts and a probe of the eleven cases they do not play. Of the templates
@@ -134,6 +139,40 @@ ENGINE = (
      "spanish": "El suero glucosado al {n} % pasa a {n} mL/h por la cánula del antebrazo izquierdo.",
      "note": "también por la cánula nueva del antebrazo derecho o por la aguja intraósea; el español ya está en "
              "language, no en el panel"},
+    # Approved in the packet itself (block A, 2026-10-07), not in R-4: the R-4 sheets leave them out.
+    # A-2 (faculty, 2026-10-07; B-5, IG-4): the same congestion once the patient is exhausted.
+    {"kind": "examination", "cases": ["pulmonary_edema"], "seen": False, "review": "packet, block A (2026-10-07)",
+     "english": "Bilateral inspiratory crackles; respiratory effort is now shallow and ineffective, consistent with "
+                "exhaustion.",
+     "example": "Bilateral inspiratory crackles; respiratory effort is now shallow and ineffective, consistent with "
+                "exhaustion.",
+     "spanish": "Crépitos inspiratorios bilaterales; el esfuerzo respiratorio ahora es superficial e ineficaz, "
+                "compatible con agotamiento.",
+     "note": "family_engine.current_findings, edema pulmonar con el paciente agotado (A-2)"},
+    # A-6b, A-7-49m and A-8a (faculty, 2026-10-07; B-5, IG-4): the 49m while its obstruction has not improved.
+    # A-6a is the case's own arrival finding, whose Spanish is its approved narrative.
+    {"kind": "examination", "cases": ["asthma_49m"], "seen": False, "review": "packet, block A (2026-10-07)",
+     "english": "Endotracheal tube in place: air entry remains very poor bilaterally, with only faint wheeze.",
+     "example": "Endotracheal tube in place: air entry remains very poor bilaterally, with only faint wheeze.",
+     "spanish": "Tubo endotraqueal instalado: el murmullo pulmonar sigue muy disminuido en forma bilateral, con "
+                "solo sibilancias tenues.",
+     "note": "asthma_49m intubado, obstrucción sin mejorar (A-6b)"},
+    {"kind": "examination", "cases": ["asthma_49m"], "seen": False, "review": "packet, block A (2026-10-07)",
+     "english": "Breath sounds absent over the right hemithorax, which is hyper-resonant; air entry on the left "
+                "remains very poor, with only faint wheeze.",
+     "example": "Breath sounds absent over the right hemithorax, which is hyper-resonant; air entry on the left "
+                "remains very poor, with only faint wheeze.",
+     "spanish": "Murmullo pulmonar abolido en el hemitórax derecho, que está hipersonoro; en el lado izquierdo el "
+                "murmullo pulmonar sigue muy disminuido, con solo sibilancias tenues.",
+     "note": "asthma_49m con el neumotórax sin descomprimir y la obstrucción grave (A-7-49m)"},
+    {"kind": "examination", "cases": ["asthma_49m"], "seen": False, "review": "packet, block A (2026-10-07)",
+     "english": "Breath sounds returning on the right after decompression; air entry remains very poor bilaterally, "
+                "with only faint wheeze.",
+     "example": "Breath sounds returning on the right after decompression; air entry remains very poor bilaterally, "
+                "with only faint wheeze.",
+     "spanish": "Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; sigue muy disminuido "
+                "en forma bilateral, con solo sibilancias tenues.",
+     "note": "asthma_49m tras la descompresión, obstrucción grave sin mejorar (A-8a)"},
 )
 
 #: R-4 (faculty, 2026-09-30): the 18 engine sentences are reviewed first, one by one. For each, the clinical
@@ -225,6 +264,26 @@ ENGINE_REVIEW = {
         "izquierdo». El verbo dice que la infusión está pasando, como lo decía la sala antes del 2026-09-30 (D-6, "
         "2026-10-02); la sala ya usa la misma frase",
         "Ninguna: es un estado, no una indicación, y no se confunde con la glicemia del paciente"),
+    "Bilateral inspiratory crackles; respiratory effort is now shallow and ineffective, consistent with "
+    "exhaustion.": (
+        "Edema pulmonar con la congestión sin mejorar y el paciente agotado (el mismo criterio que escribe «Agotado» "
+        "en el trabajo respiratorio)",
+        "Aprobar: redacción final docente de A-2 (2026-10-07), en inglés y en español",
+        "Ninguna: un esfuerzo menor es agotamiento, no mejoría"),
+    "Endotracheal tube in place: air entry remains very poor bilaterally, with only faint wheeze.": (
+        "asthma_49m intubado con la obstrucción todavía en el estado grave de llegada",
+        "Aprobar: A-6b, redacción aprobada por la docencia el 2026-10-07",
+        "Ninguna: «sigue» no sugiere mejoría"),
+    "Breath sounds absent over the right hemithorax, which is hyper-resonant; air entry on the left remains very "
+    "poor, with only faint wheeze.": (
+        "asthma_49m con el neumotórax a tensión sin descomprimir y la obstrucción grave",
+        "Aprobar: A-7-49m, redacción docente del 2026-10-07",
+        "Ninguna"),
+    "Breath sounds returning on the right after decompression; air entry remains very poor bilaterally, with only "
+    "faint wheeze.": (
+        "asthma_49m tras una descompresión eficaz, con la obstrucción grave sin mejorar",
+        "Aprobar: A-8a, redacción aprobada por la docencia el 2026-10-07",
+        "Ninguna"),
 }
 
 #: The C14 declarations of the bank (``case_assessment_bank``), English -> Spanish draft.

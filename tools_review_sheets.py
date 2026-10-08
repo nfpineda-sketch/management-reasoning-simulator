@@ -186,7 +186,8 @@ def spanish_sheet():
     """R-4: the Spanish drafts of the engine's sentences and of C14, none of them shown (C10-08)."""
     import spanish_drafts
     import tools_engine_spanish
-    engine = list(spanish_drafts.ENGINE)
+    # The R-4 rows only: the four the packet approved itself (block A) are not part of this sheet.
+    engine = [row for row in spanish_drafts.ENGINE if "review" not in row]
     harvest = spanish_drafts.HARVEST
     texts = spanish_drafts.c14_texts()
     by_case = {}
@@ -197,9 +198,10 @@ def spanish_sheet():
         "# R-4 · Borradores en español: frases del motor y C14",
         "",
         "Generado por `tools_review_sheets.py` desde `spanish_drafts.py`. **No se edita a mano** y **no aprueba",
-        "nada**: ningún borrador se muestra a un residente ni a un docente hasta que usted lo apruebe, y activarlo",
-        "después es un cambio aparte, registrado y con pruebas (`test_spanish_drafts.py`). La columna «Borrador» es",
-        "una propuesta para que usted la confirme o la cambie.",
+        "nada**. Las frases del motor (sección 1) se decidieron el 2026-10-07 y están activas desde B-5, IG-5",
+        "(2026-10-08), con el español aprobado en `language.py`. Los textos de C14 (sección 2) siguen siendo",
+        "borradores: ninguno se muestra hasta que usted lo apruebe, y activarlo después es un cambio aparte,",
+        "registrado y con pruebas (`test_spanish_drafts.py`).",
         "",
         f"**Frases del motor (resto de DF-23 fila 11):** {len(engine)} · **Textos de C14 (TD-07):** {len(texts)} "
         f"en {len(by_case)} casos",
@@ -346,15 +348,16 @@ def r4_engine_sheet():
         "# R-4 · Las 18 frases del motor que lee el residente",
         "",
         "Generado por `tools_review_sheets.py` desde `spanish_drafts.py`. **No se edita a mano** y **no aprueba",
-        "nada**: ninguna frase se activa hasta su aprobación, y activarla después es un cambio aparte, registrado y",
-        "con pruebas. La recomendación y la ambigüedad son del AI Advisor, para su revisión. Los 67 textos de C14",
-        "vienen después, en `ES_BORRADORES.md`. Los números se escriben `{n}`.",
+        "nada**: es el formulario de la revisión. Las 18 frases se decidieron el 2026-10-07 (paquete, bloque A: A-1",
+        "a A-18; A-2 y A-6 con su revisión) y están activas desde B-5, IG-5 (2026-10-08), con el español aprobado en",
+        "`language.py`. La recomendación y la ambigüedad son del AI Advisor. Los 67 textos de C14 vienen después, en",
+        "`ES_BORRADORES.md`, y siguen siendo borradores. Los números se escriben `{n}`.",
         "",
         "| # | Caso | Inglés original | Borrador en español | Contexto clínico | Recomendación | Ambigüedad posible "
         "| Su decisión |",
         "|---|---|---|---|---|---|---|---|",
     ]
-    for number, row in enumerate(spanish_drafts.ENGINE, 1):
+    for number, row in enumerate([row for row in spanish_drafts.ENGINE if "review" not in row], 1):
         context, recommendation, ambiguity = spanish_drafts.ENGINE_REVIEW[row["english"]]
         lines.append(f"| {number} | {_cell(', '.join(row['cases']))} | {_cell(row['english'])} | "
                      f"{_cell(row['spanish'])} | {_cell(context)} | {_cell(recommendation)} | {_cell(ambiguity)} | "

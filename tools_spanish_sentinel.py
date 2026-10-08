@@ -22,12 +22,19 @@ whose Spanish differs, V-9).
 
 Left out, on purpose, and only these:
 
-* what the resident wrote (the ``YOU`` entries, quoted «…» words, the values in
-  the boxes): it is quoted, never translated;
+* what the resident wrote -- exactly the texts this walk typed, wherever the room
+  quotes them, and quoted «…» words: it is quoted, never translated. A ``YOU``
+  entry the room composes itself («Examine: …», «Ask about …») is not the
+  resident's writing and is checked like any other line;
 * the canonical names the faculty kept in English (``CANONICAL``): the product
   and the Management Trace;
 * lines bilingual by design (``BILINGUAL``): the language selector, which has to
   be found by a reader of either language.
+
+A line the room shows in English because the faculty has not yet decided its
+Spanish is not an exception and is not left out: it is reported as pending
+(``PENDING_FACULTY_WORDING``, B-5 IG-5; ``docs/revision/B5_IG5_PENDIENTES_DOCENTES.md``),
+apart from any other line with English, which is unintended.
 
 Nothing is translated, approved or repaired here. Usage::
 
@@ -70,16 +77,21 @@ dextrose thiamine glucagon naloxone octreotide pantoprazole omeprazole furosemid
 """.split())
 ALWAYS_ENGLISH = FUNCTION_WORDS | V9_DIFFERENT
 #: Codes and units written the same in both languages (X1-0, point 2, faculty, 2026-10-07).
-CODES = frozenset("iv io im sc po ml min mcg kg mg cm fio peep cpap bipap ecg pocus efast fast".split())
+#: IPAP and EPAP are the two pressures of BiPAP, written the same way in Spanish, like CPAP and BiPAP
+#: (X1-0, point 2; classified as codes in IG-5, not a faculty decision of their own).
+CODES = frozenset("iv io im sc po ml min mcg kg mg cm fio peep cpap bipap ipap epap ecg pocus efast fast".split())
 
 #: Names the faculty kept as they are in Spanish (X-1, P-04: «Management Trace» is a proper name).
 CANONICAL = ("MANAGEMENT REASONING SIMULATOR", "Management Reasoning Simulator", "Management Trace")
-#: Lines that are bilingual by design: the language selector (faculty, 2026-09-27).
+#: Lines that are bilingual by design: the language selector (faculty, 2026-09-27) and the language a
+#: document is written in (``document_language.choose``, faculty, 2026-09-26), which a reader of either
+#: language has to find.
 BILINGUAL = (
     "Idioma · Language",
     "Fijo durante el encuentro: es el idioma en que se inició. · Fixed during the encounter: the language it "
     "started in.",
     "English",
+    "Idioma del documento · Document language",
 )
 
 #: Modules whose English is never read on screen: the tests, the tools, the regression scripts and
@@ -138,13 +150,25 @@ def english_vocabulary():
 
 
 def _spanish_values(module, names_like=("_ES", "_es")):
-    """The values of a module's Spanish tables (dictionaries named ``*_ES``)."""
+    """The values of a module's Spanish tables and sentences (named ``*_ES``)."""
     found = set()
     for name, value in vars(module).items():
         if name.endswith(names_like) and isinstance(value, dict):
             for item in value.values():
                 found |= _words(item if isinstance(item, str) else json.dumps(item, ensure_ascii=False))
+        elif name.endswith(names_like) and isinstance(value, str):
+            found |= _words(value)
+        elif name.endswith(names_like) and isinstance(value, (tuple, list)):
+            # A table of (pattern, Spanish) pairs, such as the engine's findings: only the Spanish counts.
+            for pair in value:
+                if isinstance(pair, (tuple, list)) and len(pair) == 2 and isinstance(pair[1], str):
+                    found |= _words(pair[1])
     return found
+
+
+#: The room's modules that keep Spanish tables of their own (X-1, IG-5): the bed space, the monitor
+#: and the ECG, the record's labels and the treatments panel.
+_SPANISH_MODULES = ("history_topics", "resuscitation_room", "clinical_scene", "report_presentation", "family_reports")
 
 
 @lru_cache(maxsize=None)
@@ -154,7 +178,6 @@ def spanish_vocabulary():
     Only what the room can show: the drafts (``spanish_drafts``) count once they are active rules.
     """
     import case_text
-    import history_topics
     import language
     import report_language
     import rubric_text
@@ -172,11 +195,40 @@ def spanish_vocabulary():
             found |= _words(replacement)
     for value in language.MESSAGES.values():
         found |= _words(value)
-    found |= _spanish_values(language) | _spanish_values(history_topics)
+    found |= _spanish_values(language)
+    import importlib
+    for name in _SPANISH_MODULES:
+        found |= _spanish_values(importlib.import_module(name))
     for table in (getattr(language, "ENGINE_SENTENCES", {}).get("es", {}),):
         for value in table.values():
             found |= _words(value)
     return frozenset(found)
+
+
+#: Lines found in English whose Spanish the faculty has not decided (B-5, IG-5; TD-86;
+#: ``docs/revision/B5_IG5_PENDIENTES_DOCENTES.md``). Not exceptions: decisions pending. Each entry is
+#: (item, pattern, English words it may carry): with ``None`` the pattern must match the whole line;
+#: otherwise it must occur in the line and the line's English must be only those words.
+PENDING_FACULTY_WORDING = (
+    ("ES-P1", re.compile(r"Presentation only\. Orders are read in Spanish and English either way\."), None),
+    ("ES-P2", re.compile(r"Ask about [a-z ,/&-]+"), None),
+    ("ES-P3", re.compile(r"Latest response"), None),
+    ("ES-P4", re.compile(r"Clinical chart · examination · results · treatment record"), None),
+    ("ES-P5", re.compile(r"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated "
+                         r"\(hemoglobin [\d.]+ g/dL without blood running\); they will re-check every 15 minutes\."), None),
+    ("ES-P6", re.compile(r"\b[Hh]eparina \d+ units IV\b"), frozenset({"units"})),
+    ("ES-P7", re.compile(r"\bHemorrhage control\b|\bBlood\b"), frozenset({"hemorrhage", "control", "blood"})),
+)
+
+
+def pending_item(line, english):
+    """The pending faculty item a line with English belongs to, or None when its English is unintended."""
+    for item, pattern, words in PENDING_FACULTY_WORDING:
+        if words is None and pattern.fullmatch(str(line)):
+            return item
+        if words is not None and pattern.search(str(line)) and set(english) <= words:
+            return item
+    return None
 
 
 def english_words(line):
@@ -235,10 +287,21 @@ def visible(at):
     return texts
 
 
-def _resident_lines(at):
-    """What the resident wrote, as the room quotes it, so that it is never counted."""
-    return {str(event.get("text") or "").strip() for event in at.session_state["events"] or []
-            if event.get("kind") in ("you", "reasoning_completion")}
+def _resident_lines(at, typed=()):
+    """What the resident wrote, as the room quotes it, so that it is never counted.
+
+    Only what was typed: the walk's own orders and questions, and each piece of them the room
+    quotes on its own (an order split into its clauses). An entry the room writes in the
+    resident's place («Examine: General appearance») is the room's own words.
+    """
+    typed = [str(text).strip() for text in typed if str(text or "").strip()]
+    found = set(typed)
+    for event in at.session_state["events"] or []:
+        text = str(event.get("text") or "").strip()
+        if event.get("kind") in ("you", "reasoning_completion") and any(
+                text == written or (len(text) > 12 and text in written) for written in typed):
+            found.add(text)
+    return found
 
 
 def findings(texts, resident=()):
@@ -272,7 +335,7 @@ class Walk:
     """One pilot case on the page, in Spanish, recording what each step shows."""
 
     def __init__(self, variant, challenge, workdir):
-        self.variant, self.steps = variant, []
+        self.variant, self.steps, self.typed = variant, [], []
         self._env = {"MRS_AUTH_MODE": "accounts", "MRS_ALLOW_LOCAL_SQLITE": "true", "MRS_OFFLINE_CASES": "1",
                      "MRS_DEFAULT_VARIANT": variant, "MRS_LANGUAGE": "es", "HOME": str(workdir),
                      "MRS_DATABASE_URL": f"sqlite:///{Path(workdir) / (variant + '.sqlite3')}"}
@@ -302,7 +365,7 @@ class Walk:
         return False
 
     def snap(self, name):
-        resident = sorted(_resident_lines(self.at)) if "events" in self.at.session_state else []
+        resident = sorted(_resident_lines(self.at, self.typed)) if "events" in self.at.session_state else []
         self.steps.append({"step": name, "texts": visible(self.at), "resident": resident,
                            "exception": [str(e.value) for e in self.at.exception] if self.at.exception else None})
 
@@ -316,7 +379,7 @@ class Walk:
             # A name with no letters a word list could know: the sidebar shows it as written.
             store._execute(connection, "INSERT INTO mrs_users VALUES (?, ?, ?, ?, ?, 1, ?)",
                            (user_id, f"centinela_{int(time.time() * 1000) % 10 ** 6}", "unused-fixture-hash",
-                            "resident", 2, int(time.time())))
+                            "resident", 3, int(time.time())))
             token = store._new_session(connection, user_id)
         ProfileStore(store).decline(token)
         self.at = AppTest.from_file(str(APP), default_timeout=300)
@@ -335,6 +398,7 @@ class Walk:
 
     def send(self, text, name=None):
         self.mode("Treat")
+        self.typed.append(text)
         _widget(self.at.text_area, "Enter your clinical reasoning and/or actions").set_value(text)
         _widget(self.at.button, "Send").click().run()
         self.snap(name or f"orden: {text}")
@@ -343,6 +407,7 @@ class Walk:
         self.mode("Talk")
         box = [item for item in self.at.text_input]
         if box:
+            self.typed.append(question)
             box[0].set_value(question)
             _widget(self.at.button, "Ask").click().run()
         self.snap(f"pregunta: {question}")
@@ -460,13 +525,20 @@ def main(argv=None):
     for case in cases:
         with tempfile.TemporaryDirectory(prefix="sentinel_") as workdir:
             result = walk(case, workdir)
+        for row in result["english"]:
+            row["pending"] = pending_item(row["line"], row["english"])
         results.append(result)
-        print(f"{case}: {len(result['english'])} lines with English; stopped: {len(result['stopped'])}", flush=True)
+        unintended = sum(1 for row in result["english"] if not row["pending"])
+        print(f"{case}: {len(result['english'])} lines with English ({unintended} unintended, "
+              f"{len(result['english']) - unintended} pending faculty wording); stopped: {len(result['stopped'])}",
+              flush=True)
     report = {"seconds": round(time.monotonic() - started), "cases": results}
     (out / "sentinel.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
     total = sum(len(r["english"]) for r in results)
+    unintended = sum(1 for r in results for row in r["english"] if not row["pending"])
     stopped = sum(len(r["stopped"]) for r in results)
-    print(f"{len(results)} cases; {total} lines with English; {stopped} stopped steps; {report['seconds']} s")
+    print(f"{len(results)} cases; {total} lines with English: {unintended} unintended, {total - unintended} pending "
+          f"faculty wording; {stopped} stopped steps; {report['seconds']} s")
     return 0 if not total and not stopped else 1
 
 

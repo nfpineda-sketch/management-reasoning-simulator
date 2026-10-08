@@ -158,6 +158,8 @@ _FIELD_NAMES_ES = {
     "wbc_k_ul": "leucocitos (k/µL)",
 }
 _ROUTES_ES = {"nebulised": "nebulizado", "inhaled": "inhalado"}
+#: A consult, as the Spanish record names it ("interconsulta a cardiología").
+CONSULT_ES = "interconsulta "
 _OPERATION_ES = {"started": "iniciado", "stopped": "suspendido", "adjusted": "ajustado",
                  "continued unchanged": "sin cambios", "increased": "aumentado", "decreased": "disminuido"}
 _SUPPORT_NAMES_ES = {
@@ -296,7 +298,7 @@ def action_phrase(action, language="en"):
             from language import _SERVICES_ES, _to
             name = {"cath lab": "hemodinamia"}.get(service.lower()) or _SERVICES_ES.get(service) \
                 or _SERVICES_ES.get(service.lower())
-            phrase = "interconsulta " + (_to(name) if name else "a " + service)
+            phrase = CONSULT_ES + (_to(name) if name else "a " + service)
         else:
             phrase = f"{service} contacted"
     elif kind == "cardioversion":
@@ -329,11 +331,16 @@ def action_phrase(action, language="en"):
             + ", ".join(bit for bit in settings if bit)
     elif action.get("rate") is not None or action.get("rate_mcg_min") is not None:
         agent = str(action.get("agent") or kind).replace("_", " ")
+        if spanish:
+            agent = languages.drug(action.get("agent") or kind, "es").replace("_", " ")
         rate = (_amount(action.get("rate_mcg_min"), "mcg/min") if action.get("rate_mcg_min") is not None
                 else f"{_number(action.get('rate')):g} {action.get('units') or ''}".strip())
         phrase = " ".join(bit for bit in (agent, rate, route) if bit)
     elif action.get("agent") or action.get("dose_mg") is not None or action.get("dose_g") is not None:
         agent = str(action.get("agent") or action.get("agent_name") or kind).replace("_", " ")
+        if spanish:
+            # V-9 (XR-06): the drug's Spanish name; the stored canonical name does not change.
+            agent = languages.drug(action.get("agent") or action.get("agent_name") or kind, "es").replace("_", " ")
         dose = (_amount(action.get("dose_g"), "g") if action.get("dose_g") is not None
                 else _amount(action.get("dose_mg"), "mg") if action.get("dose_mg") is not None
                 else _amount(action.get("dose"), str(action.get("units") or "")).strip())
@@ -361,6 +368,8 @@ def action_phrase(action, language="en"):
         if not isinstance(medication, dict):
             continue
         name = str(medication.get("agent") or "").replace("_", " ")
+        if spanish:
+            name = languages.drug(medication.get("agent") or "", "es").replace("_", " ")
         dose = (_amount(medication.get("dose_g"), "g") if medication.get("dose_g") is not None
                 else _amount(medication.get("dose_mg"), "mg") if medication.get("dose_mg") is not None
                 else _amount(medication.get("dose"), str(medication.get("units") or "")).strip())

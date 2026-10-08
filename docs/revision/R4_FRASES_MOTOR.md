@@ -1,9 +1,10 @@
 # R-4 · Las 18 frases del motor que lee el residente
 
 Generado por `tools_review_sheets.py` desde `spanish_drafts.py`. **No se edita a mano** y **no aprueba
-nada**: ninguna frase se activa hasta su aprobación, y activarla después es un cambio aparte, registrado y
-con pruebas. La recomendación y la ambigüedad son del AI Advisor, para su revisión. Los 67 textos de C14
-vienen después, en `ES_BORRADORES.md`. Los números se escriben `{n}`.
+nada**: es el formulario de la revisión. Las 18 frases se decidieron el 2026-10-07 (paquete, bloque A: A-1
+a A-18; A-2 y A-6 con su revisión) y están activas desde B-5, IG-5 (2026-10-08), con el español aprobado en
+`language.py`. La recomendación y la ambigüedad son del AI Advisor. Los 67 textos de C14 vienen después, en
+`ES_BORRADORES.md`, y siguen siendo borradores. Los números se escriben `{n}`.
 
 | # | Caso | Inglés original | Borrador en español | Contexto clínico | Recomendación | Ambigüedad posible | Su decisión |
 |---|---|---|---|---|---|---|---|

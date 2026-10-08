@@ -96,14 +96,16 @@ CASES = {
             {"run": [{"type": "aspirin"}], "held": [({"type": "norepinephrine"}, "refused", "question")],
              "question": None, "no_pending": True}, lambda parsed: ["aspirin 300 mg PO"]
             if parsed["actions"][0]["type"] == "aspirin" else ["norepinephrine"]),
-        "**PARTE DE ESTA ORDEN NO SE EJECUTÓ**\n\nEjecutado ahora: **aspirin 300 mg PO**.\nNo ejecutado: "
-        "**norepinephrine**. No se ha administrado nada de ello; escríbelo de nuevo como una orden nueva si aún lo "
+        # K-13 with the rule of X1-0 (faculty, 2026-10-07; B-5, IG-5): the drugs by their Spanish names (V-9).
+        "**PARTE DE ESTA ORDEN NO SE EJECUTÓ**\n\nEjecutado ahora: **aspirina 300 mg PO**.\nNo ejecutado: "
+        "**noradrenalina**. No se ha administrado nada de ello; escríbelo de nuevo como una orden nueva si aún lo "
         "quieres."),
     "partial_bundle_held": (
         lambda: order_pipeline.held_message(
             {"run": [{"type": "aspirin"}], "held": [({"type": "fluid"}, "missing", "question")], "question": None},
             lambda parsed: ["aspirin 300 mg PO"] if parsed["actions"][0]["type"] == "aspirin" else ["normal saline"]),
-        "**PARTE DE ESTA ORDEN ESTÁ RETENIDA — SE NECESITA UNA ACLARACIÓN**\n\nEjecutado ahora: **aspirin 300 mg "
+        # K-14, with the same rule.
+        "**PARTE DE ESTA ORDEN ESTÁ RETENIDA — SE NECESITA UNA ACLARACIÓN**\n\nEjecutado ahora: **aspirina 300 mg "
         "PO**.\nRetenido hasta que respondas: **suero fisiológico**. No se ha administrado nada de ello."),
     "order_after_an_answer": (
         lambda: _receipt("1000 mL, and give ceftriaxone 2 g IV.", "clarification_answer"),

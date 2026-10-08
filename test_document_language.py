@@ -333,7 +333,8 @@ def test_an_order_is_written_in_spanish_with_its_dose_untouched():
               ({"type": "oxygen", "flow_lpm": 10, "device": "Simple mask"},
                "Oxygen 10 L/min via Simple mask", "Oxígeno 10 L/min por mascarilla simple"),
               ({"agent": "epinephrine", "rate": 0.1, "units": "mcg/kg/min", "operation": "start"},
-               "Epinephrine 0.1 mcg/kg/min (started)", "Epinephrine 0.1 mcg/kg/min (iniciado)")]
+               # V-9 (faculty, 2026-10-07; B-5, IG-5): the drug by its Spanish name in a Spanish document.
+               "Epinephrine 0.1 mcg/kg/min (started)", "Adrenalina 0.1 mcg/kg/min (iniciado)")]
     for action, english, spanish in orders:
         assert presentation.action_phrase(action) == english
         assert presentation.action_phrase(action, "es") == spanish

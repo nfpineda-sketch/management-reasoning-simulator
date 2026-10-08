@@ -119,6 +119,9 @@ MESSAGES = {
  '¿Qué vas a revisar y cuándo?',
  'What will you check?':
  '¿Qué vas a revisar?',
+ # G-13 (XR-03): the fifth question of the retrospective explanation.
+ 'When will you check it?':
+ '¿Cuándo lo vas a revisar?',
  'Which problem are you addressing first? (optional)':
  '¿Qué problema estás abordando primero? (opcional)',
  'Your current explanation of the problem and the findings that support it. You do not need a definitive diagnosis.':
@@ -394,13 +397,13 @@ _PHASE0_RULES = (
  (r'\*\*PART OF THIS ORDER WAS NOT CARRIED OUT\*\*', '**PARTE DE ESTA ORDEN NO SE EJECUTÓ**'),
  (r'\*\*PART OF THIS ORDER IS HELD — CLARIFICATION REQUIRED\*\*',
   '**PARTE DE ESTA ORDEN ESTÁ RETENIDA — SE NECESITA UNA ACLARACIÓN**'),
- (r'Executed now: \*\*(.+?)\*\*\.', r'Ejecutado ahora: **\1**.'),
+ (r'Executed now: \*\*(.+?)\*\*\.', lambda m: f'Ejecutado ahora: **{order_summary(m[1], "es")}**.'),
  (r'Not carried out: \*\*(.+?)\*\*\. Nothing of it has been given; write it again as a new order if you still '
   r'want it\.',
-  r'No ejecutado: **\1**. No se ha administrado nada de ello; escríbelo de nuevo como una orden nueva si aún lo '
-  r'quieres.'),
+  lambda m: f'No ejecutado: **{order_summary(m[1], "es")}**. No se ha administrado nada de ello; escríbelo de nuevo '
+            'como una orden nueva si aún lo quieres.'),
  (r'Held until you answer: \*\*(.+?)\*\*\. Nothing of it has been given\.',
-  r'Retenido hasta que respondas: **\1**. No se ha administrado nada de ello.'),
+  lambda m: f'Retenido hasta que respondas: **{order_summary(m[1], "es")}**. No se ha administrado nada de ello.'),
  (r'The item below is held until you answer\. Nothing of it has been given\.',
   'El elemento de abajo queda retenido hasta que respondas. No se ha administrado nada de ello.'),
  # Time (0E, 0F): the look at the bedside, the limit of one step, a wait an event cut short.
@@ -470,6 +473,11 @@ _PHASE0_RULES = (
   r'was missing; nothing else that was given acts on the reaction\.',
   'Paro circulatorio tras veinticinco minutos de anafilaxia no tratada. La adrenalina era el tratamiento que '
   'faltaba; nada más de lo administrado actúa sobre la reacción.'),
+ # A-1 (faculty, 2026-10-07; R-4): the arrest of an uncontrolled haemorrhage.
+ (r'Circulatory arrest from uncontrolled haemorrhage\. The bleeding had not been stopped, and no volume replaces a '
+  r'source that is still open\.',
+  'Paro circulatorio por una hemorragia no controlada. El sangrado no se había detenido; la reposición de volumen no '
+  'sustituye el control del sangrado activo.'),
  # K-18 (faculty, 2026-10-07).
  (r'Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier did '
   r'not keep the reaction under control\. Nothing else that was given acts on the reaction\.',
@@ -505,7 +513,395 @@ def _keep_resident_words(body):
     return re.sub(r'"([^"\n]{1,500})"', keep, body), kept
 
 
-_RULES = _PHASE0_RULES + _WALL_MOTION_RULES + (
+#: V-1 (XR-05, faculty, 2026-10-07): the classes the engine names when no drug was named, as the room
+#: shows them in English (the internal key cleaned, TD-80) and in Spanish. The keys do not change.
+CLASS_LABELS = {
+    "antibiotics": ("antibiotic", "antibiótico"), "bronchodilator": ("bronchodilator", "broncodilatador"),
+    "steroid": ("steroid", "corticoide"), "dextrose": ("dextrose", "glucosa"), "naloxone": ("naloxone", "naloxona"),
+    "atropine": ("atropine", "atropina"), "opioid": ("opioid", "opioide"), "opioid_analgesia": ("opioid", "opioide"),
+    "antipyretic": ("antipyretic", "antipirético"), "ppi": ("proton pump inhibitor", "inhibidor de la bomba de protones"),
+    "aspirin": ("aspirin", "aspirina"), "anticoagulation": ("anticoagulant", "anticoagulante"),
+    "norepinephrine": ("norepinephrine", "noradrenalina"), "epinephrine": ("epinephrine", "adrenalina"),
+    "diuretic": ("diuretic", "diurético"), "beta_blocker": ("beta blocker", "betabloqueador"),
+    "diltiazem": ("diltiazem", "diltiazem"), "amiodarone": ("amiodarone", "amiodarona"),
+    "procedural_sedation": ("procedural sedation", "sedación para el procedimiento"),
+    "magnesium": ("magnesium", "magnesio"), "thrombolysis": ("thrombolytic", "trombolítico"),
+    "octreotide": ("octreotide", "octreotida"), "glucagon": ("glucagon", "glucagón"), "calcium": ("calcium", "calcio"),
+    "thiamine": ("thiamine", "tiamina"), "dobutamine": ("dobutamine", "dobutamina"),
+    "nitroglycerin": ("nitroglycerin", "nitroglicerina"), "p2y12": ("P2Y12 inhibitor", "inhibidor de P2Y12"),
+}
+#: The same classes by the words a sentence names them with: the clean English and, for a record
+#: written before 2026-10-08, the internal key itself.
+_CLASS_ES = {**{key: es for key, (_, es) in CLASS_LABELS.items()},
+             **{key.replace("_", " "): es for key, (_, es) in CLASS_LABELS.items()},
+             **{en.lower(): es for en, es in CLASS_LABELS.values()}}
+
+
+def class_label(kind, language="en"):
+    """A class the engine names, as the room shows it (V-1); an unknown key with its spaces."""
+    english, spanish = CLASS_LABELS.get(str(kind), (str(kind).replace("_", " "), None))
+    return spanish if language == "es" and spanish else english
+
+
+def _named_es(words):
+    """A drug or a class a question names (V-9, then V-1); anything else as it was written."""
+    text = str(words).strip()
+    key = text.lower()
+    return DRUG_NAMES_ES.get(key) or _CLASS_ES.get(key) or _DRUG_KINDS_ES.get(key) or text
+
+
+#: V-2: the units a dose question names.
+_UNITS_ES = {"grams": "gramos", "milligrams": "miligramos", "micrograms": "microgramos"}
+#: V-3: what a ventilator, an anticoagulant or a pacing order is missing.
+_MISSING_ES = {"mode": "el modo del ventilador", "FiO₂ as a percentage": "la FiO₂ en porcentaje",
+               "PEEP in cm H₂O": "la PEEP en cm H₂O", "which anticoagulant": "qué anticoagulante",
+               "the dose": "la dosis", "the dose units": "las unidades de la dosis", "the route": "la vía",
+               "the pacing rate in beats per minute": "la frecuencia del marcapasos en latidos por minuto",
+               "the output current in mA": "la corriente en mA"}
+#: V-4 (faculty, 2026-10-07): the regions of the examination; «Respiración» and «Pulmonar» stay apart.
+REGIONS_ES = {"General appearance": "Aspecto general", "Breathing": "Respiración",
+              "Peripheral perfusion": "Perfusión periférica", "Respiratory": "Pulmonar", "Cardiac": "Cardíaco",
+              "Abdomen": "Abdomen", "Neurological": "Neurológico", "Extremities": "Extremidades",
+              "Vascular access": "Accesos vasculares"}
+_REGIONS_FOLDED = {key.lower(): value for key, value in REGIONS_ES.items()}
+#: V-5: the states in which a patient cannot swallow.
+_SWALLOW_STATES_ES = {"drowsy": "somnoliento", "obtunded": "obnubilado", "unresponsive": "sin respuesta"}
+#: V-6: the single-dose forms the nitroglycerin and the vasoactive drugs are not given in.
+_FORMS_ES = {"sublingual dose": "una dosis sublingual", "bolus": "un bolo", "IV push": "un bolo IV directo",
+             "spray dose": "una dosis en spray", "tablet": "un comprimido", "single dose": "una dosis única"}
+#: V-7: the oxygen examples.
+_OXYGEN_EXAMPLES_ES = "naricera 4 L/min, mascarilla simple 8 L/min o mascarilla con reservorio 15 L/min"
+_OXYGEN_EXAMPLES_EN = r"nasal cannula 4 L/min, simple mask 8 L/min or non-rebreather mask 15 L/min"
+
+
+def region(name, language=None):
+    """An examination region in the reading language (V-4); the region stored stays English."""
+    language = language or current()
+    if language != "es":
+        return name
+    said = _REGIONS_FOLDED.get(str(name).strip().lower())
+    if not said:
+        return name
+    return said if str(name)[:1].isupper() else said[:1].lower() + said[1:]
+
+
+def _listed_es(items, last=" y "):
+    items = [item for item in items if item]
+    if len(items) < 2:
+        return "".join(items)
+    return ", ".join(items[:-1]) + last + items[-1]
+
+
+def _english_items(text):
+    """«a, b and c» or «a, b or c» as its items."""
+    head, _, tail = re.sub(r",? (?:and|or) (?=[^,]+$)", ", ", str(text)).rpartition(", ")
+    return [item.strip() for item in (head.split(", ") if head else []) + [tail] if item.strip()]
+
+
+def _ventilator_missing_es(match):
+    items = _english_items(match.group(1))
+    said = [_MISSING_ES.get(item, item) for item in items]
+    if "mode" not in items and said and said[0].startswith("la FiO₂"):
+        said[0] = "la FiO₂ del ventilador en porcentaje"
+    elif "mode" not in items and said and said[0].startswith("la PEEP"):
+        said[0] = "la PEEP del ventilador en cm H₂O"
+    return "Indica " + _listed_es(said) + "."
+
+
+def _regions_es(text, last=" o "):
+    return _listed_es([region(item, "es") for item in _english_items(text)], last)
+
+
+#: An action the room names by its record label (X1-C27 e, XR-21): the room's own Spanish for it.
+_ACTION_LABELS_ES = {"pelvic binder": "faja pélvica"}
+
+
+def _action_es(words):
+    text = str(words).strip()
+    said = _ACTION_LABELS_ES.get(text.lower()) or _named_es(text)
+    return said if said != text else say(text, "es")
+
+
+def _which_class_es(match):
+    kind = match.group(1).strip()
+    if kind.lower() == "calcium":
+        return "¿Qué sal de calcio quieres administrar?"
+    if kind.lower() in ("procedural sedation", "procedural_sedation"):
+        return "¿Qué fármaco quieres usar para la sedación del procedimiento?"
+    return f"¿Qué {_named_es(kind)} quieres administrar?"
+
+
+def _understood_form_es(match):
+    name, form, dose = match.group(1), match.group(2), match.group(3)
+    said = f"La orden de {_named_es(name)} se interpretó como {_FORMS_ES.get(form, form)}"
+    return said + (f" de {dose}" if dose else "") + "."
+
+
+#: G-03 (XR-02): the elements of the reasoning the gate names, as a clause inside a sentence.
+_GATE_ELEMENTS_ES = {
+    "what you think is going on": "qué crees que está pasando", "what you want to do": "qué quieres hacer",
+    "what you expect to happen": "qué esperas que ocurra", "what you will check": "qué vas a revisar",
+    "which problem you are addressing first": "qué problema estás abordando primero",
+    "when you will check it": "cuándo lo vas a revisar",
+}
+
+
+def _gate_elements_es(text):
+    return _listed_es([_GATE_ELEMENTS_ES.get(item, item) for item in _english_items(text)])
+
+
+#: I-10 (faculty, 2026-10-07): the held order's summary in Spanish uses the record's own labels
+#: (``report_presentation.action_phrase``); an action the record has no label for takes the
+#: reference words of V-8, as the decision provides.
+_OPERATIONS_ES = {"start": "iniciado", "adjust": "ajustado", "continue": "sin cambios", "stop": "suspendido"}
+_V8_VERBS_ES = {"start": "iniciar", "adjust": "ajustar", "continue": "continuar", "stop": "suspender"}
+_OXYGEN_DEVICES_ES = {"nasal cannula": "naricera", "simple mask": "mascarilla simple",
+                      "non-rebreather mask": "mascarilla con reservorio"}
+_SUMMARY_WORDS_ES = {
+    "prepare for intubation": "preparar la intubación",
+    "intubation with invasive ventilation": "intubación con ventilación invasiva",
+    "ventilator adjustment": "ajuste del ventilador", "ventilator continuation": "mantener el ventilador",
+    "discharge home": "alta a domicilio", "management intervention": "intervención de manejo",
+    "procedural sedation": "sedación para el procedimiento", "bag mask": "ventilación con bolsa-mascarilla",
+    "oxygen": "oxígeno", "room air": "aire ambiente", "NIV": "VMNI",
+}
+
+
+def _summary_piece_es(piece):
+    text = piece.strip()
+    match = re.fullmatch(r"(start|adjust|continue|stop) (norepinephrine|dobutamine|nitroglycerin|epinephrine)"
+                         r"(?: ([\d.]+) (\S+))?", text)
+    if match:
+        rate = f" {match[3]} {match[4]}" if match[3] else ""
+        return f"{DRUG_NAMES_ES[match[2]]}{rate} ({_OPERATIONS_ES[match[1]]})"
+    match = re.fullmatch(r"(start|adjust|continue|stop) the running infusion(?: at ([\d.]+) (\S+))?", text)
+    if match:
+        return f"{_V8_VERBS_ES[match[1]]} la infusión en curso" + (f" a {match[2]} {match[3]}" if match[2] else "")
+    match = re.fullmatch(r"(nasal cannula|simple mask|non-rebreather mask)(?: ([\d.]+) L/min)?", text, flags=re.I)
+    if match:
+        flow = f" {match[2]} L/min" if match[2] else ""
+        return f"oxígeno{flow} por {_OXYGEN_DEVICES_ES[match[1].lower()]}"
+    match = re.fullmatch(r"synchronized cardioversion(?: ([\d.]+) J)?", text)
+    if match:
+        return "cardioversión sincronizada" + (f" {match[1]} J" if match[1] else "")
+    match = re.fullmatch(r"admission to (.+)", text)
+    if match:
+        return "ingreso a " + (_DESTINATIONS_ES.get(match[1]) or say(match[1], "es"))
+    match = re.fullmatch(r"procedural sedation with (.+)", text)
+    if match:
+        return "sedación para el procedimiento con " + _summary_piece_es(match[1])
+    match = re.fullmatch(r"(?:blood|packed red cells) ([\d.]+) unit\(s\)(.*)", text)
+    if match:
+        return f"glóbulos rojos {match[1]} unidad(es){match[2]}"
+    match = re.fullmatch(r"NIV( [\d./]+)", text)
+    if match:
+        return "VMNI" + match[1]
+    if text in _SUMMARY_WORDS_ES:
+        return _SUMMARY_WORDS_ES[text]
+    if text.lower() in _CLASS_ES:
+        return _CLASS_ES[text.lower()]
+    return say(text, "es")
+
+
+def order_summary(text, language=None):
+    """What a held order understood (its English summary), in the reading language (I-10)."""
+    language = language or current()
+    if language != "es" or not text:
+        return text
+    return " + ".join(_summary_piece_es(piece) for piece in str(text).split(" + "))
+
+
+#: X-1, decided whole by the faculty on 2026-10-07 (XR-01 to XR-28; docs/revision/X1_ESPANOL_PROPUESTO.md):
+#: the questions and notices about an order, each said whole, before any rule below could say one by
+#: halves. The English of the reader (family_parser) is not changed: its Spanish is here.
+_X1_RULES = (
+ # The reasoning gate (G-01 to G-05, G-12; XR-01, XR-02).
+ (r"(?m)^I recognised (.+?)\.$", lambda m: f"Reconocí {_gate_elements_es(m[1])}."),
+ (r"(?m)^Still to state: (.+?)\.$", lambda m: f"Todavía falta indicar: {_gate_elements_es(m[1])}."),
+ (r"In your own words, or in the fields on screen:", "Con tus palabras o en los campos de la pantalla:"),
+ (r"What you already wrote is kept\.", "Lo que ya escribiste se conserva."),
+ (r"Complete the requested reasoning to continue\.", "Completa el razonamiento pedido para continuar."),
+ # L-17 (faculty, 2026-10-07): the cancelled order's heading, never its key.
+ (r"^ORDER CANCELLED$", "ORDEN CANCELADA"),
+ # I-10: the held order's summary, inside each sentence that names it.
+ (r"\bI understood: \*\*(.+?)\*\*\.", lambda m: f"Entendí: **{order_summary(m[1], 'es')}**."),
+ (r"The held order was discarded to run this one: (.+?)\. None of it was administered\.",
+  lambda m: f"La orden retenida se descartó para ejecutar esta: {order_summary(m[1], 'es')}. "
+            "No se administró nada de ella."),
+ (r"The held order is still waiting: (.+?)\. Answer the question above, or say cancel\. Nothing has been "
+  r"administered\.",
+  lambda m: f"La orden retenida sigue esperando: {order_summary(m[1], 'es')}. Responde la pregunta de arriba o "
+            "escribe «cancelar». No se ha administrado nada."),
+ # T-08 (XR-14): when a running treatment started and was last adjusted.
+ (r" — started (\d+:\d\d)(?: · last adjusted (\d+:\d\d))?",
+  lambda m: f" — inicio {m[1]}" + (f" · último ajuste {m[2]}" if m[2] else "")),
+ # X1-C01 to X1-C04 (XR-05, option b): the drug the resident named, or the class (V-1, V-2, V-9).
+ (r"Please specify or confirm the (.+?) dose in (grams|milligrams|micrograms)\.",
+  lambda m: f"Indica o confirma la dosis de {_named_es(m[1])} en {_UNITS_ES[m[2]]}."),
+ (r"Specify or confirm (\w+) dose and units \(mcg/min or mcg/kg/min\)\.",
+  lambda m: f"Indica o confirma la dosis de {_named_es(m[1])} y sus unidades (mcg/min o mcg/kg/min)."),
+ (r"Specify or confirm the (\w+) rate in (\S+?)\.(?=\s|$)",
+  lambda m: f"Indica o confirma la velocidad de {_named_es(m[1])} en {m[2]}."),
+ (r"Which (.+?) medication would you like to administer\?", _which_class_es),
+ (r"The specified (.+?) agent has no modeled response in this encounter\. Please clarify the medication\.",
+  lambda m: f"El fármaco indicado como {_named_es(m[1])} no tiene una respuesta modelada en este encuentro. "
+            "Aclara el fármaco."),
+ (r"No (.+?) is recorded as given\. Specify the dose and route to start it\.",
+  lambda m: f"No hay registro de que se haya dado {_named_es(m[1])}. Indica la dosis y la vía para iniciarlo."),
+ # X1-C05 (V-3), X1-C06 to X1-C09, X1-C12, X1-C13 (XR-04).
+ (r"Specify the ventilator (.+?)\.(?=\s|$)", _ventilator_missing_es),
+ (r"Specify ((?:which anticoagulant|the dose units|the dose|the route)(?:(?:, | and )"
+  r"(?:which anticoagulant|the dose units|the dose|the route))*)\.",
+  lambda m: "Indica " + _listed_es([_MISSING_ES[item] for item in _english_items(m[1])]) + "."),
+ (r"Specify (the pacing rate in beats per minute|the output current in mA)\.",
+  lambda m: "Indica " + _MISSING_ES[m[1]] + "."),
+ (r"Specify which side of the chest to decompress\.", "Indica qué lado del tórax quieres descomprimir."),
+ (r"Specify CPAP or BiPAP\.", "Indica CPAP o BiPAP."),
+ (r"Specify nasal cannula, a simple mask, a non-rebreather mask, or room air\.",
+  "Indica naricera, mascarilla simple, mascarilla con reservorio o aire ambiente."),
+ (r"Specify the oxygen flow in L/min\.", "Indica el flujo de oxígeno en L/min."),
+ (r"Specify one quantity for the treatment to repeat\.",
+  "Indica una sola cantidad para el tratamiento que quieres repetir."),
+ (r"Specify explicit units for the quantity to repeat\.", "Indica las unidades de la cantidad que quieres repetir."),
+ (r"Specify one target ventilator mode\.", "Indica un solo modo de ventilación."),
+ # X1-C10 (XR-15); X1-C11 keeps its active Spanish (below).
+ (r"Specify the thrombolytic agent and dose, for example tenecteplase 40 mg IV\.",
+  "Indica el trombolítico y la dosis; por ejemplo, tenecteplasa 40 mg IV."),
+ # X1-C14 and X1-R01 (XR-07; the cardioversion with «J»).
+ (r"Confirm the bolus volume in mL, up to 3000 mL per order\.",
+  "Confirma el volumen del bolo en mL, hasta 3000 mL por orden."),
+ (r"Specify the cardioversion energy in joules, from ([\d.]+) to ([\d.]+)\.",
+  r"Indica la energía de la cardioversión entre \1 y \2 J."),
+ (r"Specify the NIV expiratory pressure in cm H₂O, from ([\d.]+) to ([\d.]+)\.",
+  r"Indica la presión espiratoria de la VMNI entre \1 y \2 cm H₂O."),
+ (r"Specify the NIV FiO₂ as a percentage, from ([\d.]+) to ([\d.]+)\.", r"Indica la FiO₂ de la VMNI entre \1 y \2 %."),
+ (r"Specify a tranexamic acid dose from ([\d.]+) to ([\d.]+) g\.",
+  r"Indica una dosis de ácido tranexámico entre \1 y \2 g."),
+ (r"Specify an intramuscular epinephrine dose from ([\d.]+) to ([\d.]+) mg \(([\d.]+) mg is the usual adult dose\)\.",
+  r"Indica una dosis de adrenalina intramuscular entre \1 y \2 mg (\3 mg es la dosis habitual en adultos)."),
+ (r"Specify an epinephrine IV bolus from ([\d.]+) to ([\d.]+) mcg \(([\d.-]+) mcg is the usual diluted bolus\)\.",
+  r"Indica un bolo IV de adrenalina entre \1 y \2 mcg (\3 mcg es el bolo diluido habitual)."),
+ (r"Specify the continuous nebulized albuterol rate in mg/h \(([\d.]+) to ([\d.]+)\)\.",
+  r"Indica la velocidad de la nebulización continua de salbutamol entre \1 y \2 mg/h."),
+ (r"Specify a nitroglycerin IV bolus from ([\d.]+) to ([\d.]+) mcg\.",
+  r"Indica un bolo IV de nitroglicerina entre \1 y \2 mcg."),
+ (r"Specify the dextrose infusion rate in mL/h \(([\d.]+) to ([\d.]+)\)\.",
+  r"Indica la velocidad de la infusión de suero glucosado entre \1 y \2 mL/h."),
+ (r"Specify the naloxone infusion rate in mg/h \(([\d.]+) to ([\d.]+)\)\.",
+  r"Indica la velocidad de la infusión de naloxona entre \1 y \2 mg/h."),
+ (r"Specify a tidal volume from ([\d.]+) to ([\d.]+) mL\.", r"Indica un volumen corriente entre \1 y \2 mL."),
+ (r"Specify a tidal volume from ([\d.]+) to ([\d.]+) mL/kg\.", r"Indica un volumen corriente entre \1 y \2 mL/kg."),
+ (r"Specify a ventilator rate from ([\d.]+) to ([\d.]+) breaths per minute\.",
+  r"Indica una frecuencia del ventilador entre \1 y \2 respiraciones por minuto."),
+ (r"Specify an inspiratory flow from ([\d.]+) to ([\d.]+) L/min\.", r"Indica un flujo inspiratorio entre \1 y \2 L/min."),
+ (r"Set a pacing rate between ([\d.]+) and ([\d.]+) beats per minute\.",
+  r"Indica una frecuencia del marcapasos entre \1 y \2 latidos por minuto."),
+ (r"Set a pacing output between ([\d.]+) and ([\d.]+) mA\.", r"Indica una corriente del marcapasos entre \1 y \2 mA."),
+ # X1-C15 (XR-12, V-4).
+ (r"Name the part of the examination to perform: (.+?)\.(?=\s|$)",
+  lambda m: f"Indica qué parte del examen quieres hacer: {_regions_es(m[1])}."),
+ (r"That examination is not available in this encounter\. You may examine (.+?)\.(?=\s|$)",
+  lambda m: f"Ese examen no está disponible en este encuentro. Puedes examinar: {_regions_es(m[1])}."),
+ # X1-C27 (e) before X1-C16 (c): its «Please clarify the order.» is said with it.
+ (r"The requested action \((.+?)\) is not executable in this encounter\. Please clarify the order\.",
+  lambda m: f"La acción solicitada ({_action_es(m[1])}) no es ejecutable en este encuentro. Aclara la orden."),
+ # X1-C16 (XR-04).
+ (r"Please specify a question, investigation, treatment, or reassessment\.",
+  "Indica una pregunta, un examen, un tratamiento o una reevaluación."),
+ (r"Please restate the order\.", "Escribe de nuevo la orden."),
+ (r"Please clarify the order before it is executed\.", "Aclara la orden antes de que se ejecute."),
+ (r"Please clarify the order\.", "Aclara la orden antes de que se ejecute."),
+ # X1-C17 to X1-C19 (XR-08, V-7).
+ (r"Specify the absolute target oxygen flow in L/min, not a relative change\.",
+  "Indica el flujo de oxígeno que quieres, en L/min, como un valor absoluto y no como un cambio relativo."),
+ (r"Specify absolute target ventilator settings, not a relative change\.",
+  "Indica los parámetros del ventilador que quieres como valores absolutos, no como un cambio relativo."),
+ (r"Specify a single absolute target infusion rate; a relative change or several rates is ambiguous\.",
+  "Indica una sola velocidad de infusión, como un valor absoluto; un cambio relativo o varias velocidades son "
+  "ambiguos."),
+ (r"Specify nitroglycerin as an absolute infusion rate in mcg/min\.",
+  "Indica la nitroglicerina como una velocidad de infusión absoluta, en mcg/min."),
+ (r"Specify one target oxygen device and its flow in L/min \(for example, " + _OXYGEN_EXAMPLES_EN + r"\)\.",
+  "Indica un solo dispositivo de oxígeno y su flujo en L/min (por ejemplo, " + _OXYGEN_EXAMPLES_ES + ")."),
+ (r"Specify one absolute target oxygen flow in L/min \(for example, " + _OXYGEN_EXAMPLES_EN + r"\)\.",
+  "Indica un solo flujo de oxígeno, como un valor absoluto en L/min (por ejemplo, " + _OXYGEN_EXAMPLES_ES + ")."),
+ (r"High-flow oxygen is not a supported device in this encounter\. Specify an available oxygen device and flow "
+  r"\(for example, " + _OXYGEN_EXAMPLES_EN + r"\)\.",
+  "El oxígeno de alto flujo no es un dispositivo disponible en este encuentro. Indica un dispositivo de oxígeno "
+  "disponible y su flujo (por ejemplo, " + _OXYGEN_EXAMPLES_ES + ")."),
+ (r"Specify whether to start, adjust, continue, or stop (NIV|the continuous nebulization|the infusion)\.",
+  lambda m: "Indica si quieres iniciar, ajustar, continuar o suspender " + {
+      "NIV": "la VMNI", "the continuous nebulization": "la nebulización continua",
+      "the infusion": "la infusión"}[m[1]] + "."),
+ # X1-C20 to X1-C26 (XR-16 to XR-20; XR-18 with V-5).
+ (r"Specify an inspiratory pressure at least as high as expiratory pressure\.",
+  "Indica una presión inspiratoria igual o mayor que la espiratoria."),
+ (r"The patient is not on a ventilator, so there is no circuit to disconnect\.",
+  "El paciente no está conectado a un ventilador, así que no hay un circuito que desconectar."),
+ (r"An intramuscular epinephrine dose is given IM or SC; for the intravenous route, order a diluted bolus or an "
+  r"infusion\.",
+  "Una dosis de adrenalina intramuscular se da IM o SC; por vía intravenosa, indica un bolo diluido o una infusión."),
+ (r"A diluted epinephrine bolus is given IV in this encounter\.",
+  "En este encuentro, un bolo diluido de adrenalina se da IV."),
+ (r"A nitroglycerin bolus is given IV in this encounter\.", "En este encuentro, un bolo de nitroglicerina se da IV."),
+ (r"The patient is (drowsy|obtunded|unresponsive) and cannot safely swallow\. Use an intravenous or intramuscular "
+  r"route until oral administration is safe\.",
+  lambda m: f"El paciente está {_SWALLOW_STATES_ES[m[1]]} y no puede tragar con seguridad. Usa una vía intravenosa "
+            "o intramuscular hasta que sea seguro administrar por vía oral."),
+ (r"Specify that the cardioversion is synchronized; an unsynchronized shock is outside this encounter\.|"
+  r"Specify synchronized cardioversion; defibrillation is outside this pulse-present encounter\.",
+  "Indica una cardioversión sincronizada: una descarga no sincronizada (desfibrilación) está fuera de este "
+  "encuentro, en que el paciente tiene pulso."),
+ (r"Cardioversion requires a pulse-present encounter\.",
+  "La cardioversión requiere un encuentro en que el paciente tenga pulso."),
+ # X1-C27 (a to d) and X1-C28, with the studies' own names (XR-21).
+ (r"That study is not one this encounter carries\.", "Este encuentro no incluye ese examen."),
+ (r"A stress test is not an executable study in this encounter\.",
+  "Una prueba de esfuerzo no es un examen ejecutable en este encuentro."),
+ (r"Chest decompression is not an executable intervention in this encounter\.",
+  "La descompresión torácica no es una intervención ejecutable en este encuentro."),
+ (r"That neuromuscular blocker is not supported in this encounter\.",
+  "Ese bloqueador neuromuscular no está disponible en este encuentro."),
+ (r"Requested study (.+?) is unavailable\. Available studies: (.*?); ECG\. No orders in this submission were "
+  r"executed\.",
+  lambda m: f"El examen {say(m[1], 'es')} no está disponible. Exámenes disponibles: "
+            + ", ".join(say(item, "es") for item in m[2].split(", ") if item) + "; ECG. No se ejecutó ninguna orden "
+            "de esta entrega."),
+ # X1-C29 (XR-21, with its adjustment); the list is what the resident wrote.
+ (r"Recognized but not executed in this build: (.+?)\. Any supported actions in the same order continue "
+  r"separately\.",
+  r"Esta versión reconoce, pero no ejecuta: \1. Las acciones soportadas de la misma orden siguen por separado."),
+ # X1-C31 (XR-23, V-6): the first sentence neutral in gender, in both branches.
+ (r"(\w+) was understood as an? (sublingual dose|bolus|IV push|spray dose|tablet|single dose)(?: of ([\d.]+ \w+))?\. ",
+  lambda m: _understood_form_es(m) + " "),
+ (r"This encounter gives nitroglycerin as a continuous IV infusion or an IV bolus, so nothing was converted or "
+  r"executed\. To give it, state an infusion rate in (\S+) or an IV bolus in mcg, or say cancel\.",
+  r"Este encuentro da la nitroglicerina como infusión IV continua o como bolo IV, así que no se convirtió ni se "
+  r"ejecutó nada. Para darla, indica una velocidad de infusión en \1 o un bolo IV en mcg, o di cancelar."),
+ (r"This encounter gives (\w+) only as a continuous IV infusion, so nothing was converted or executed\. To give it, "
+  r"state an infusion rate in (mcg/kg/min or mcg/min|mcg/min), or say cancel\.",
+  lambda m: f"Este encuentro da {_named_es(m[1])} sólo como infusión IV continua, así que no se convirtió ni se "
+            f"ejecutó nada. Para darla, indica una velocidad de infusión en {m[2].replace(' or ', ' o ')}, o di "
+            "cancelar."),
+ # X1-C32, X1-C33 (XR-09).
+ (r"There are no pending orders to cancel\.", "No hay órdenes pendientes que cancelar."),
+ (r"Pending orders cancelled before execution\. No treatment administered; simulation time unchanged\.",
+  "Órdenes pendientes canceladas antes de ejecutarse. No se administró ningún tratamiento; el tiempo simulado no "
+  "cambió."),
+)
+
+
+def _infusion_es(match, tail):
+    """«X infusion» as «infusión de X»: the drug with its Spanish name in lower case (V-9), and a capital
+    where the label opens a sentence."""
+    word = match.group(1)
+    name = DRUG_NAMES_ES.get(word.lower())
+    said = "infusión de " + (name if name else word) + tail
+    before = match.string[:match.start()].rstrip()
+    return said[:1].upper() + said[1:] if not before or before.endswith((".", ":", "\n", "·", "+")) else said
+
+
+_RULES = _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
  # A delivery time longer than this simulator runs (cycle 8); before the word rules below.
  (r"([\d.]+) mL at ([\d.]+) mL/h would run for ([\d.]+) h; this simulator runs a fluid order over at most 120 min\. "
   r"Restate it as a bolus or a shorter infusion\.",
@@ -547,6 +943,14 @@ _RULES = _PHASE0_RULES + _WALL_MOTION_RULES + (
  (r"\bmarkedly increased\b", "muy aumentado"), (r"\bMarkedly increased\b", "Muy aumentado"),
  (r"\bmoderately increased\b", "moderadamente aumentado"), (r"\bModerately increased\b", "Moderadamente aumentado"),
  (r"\bmildly increased\b", "levemente aumentado"), (r"\bMildly increased\b", "Levemente aumentado"),
+ # The bare grade after its own name, as the observed value «Aumentado» says it (OBSERVED_VALUES_ES); never a
+ # bare word inside another sentence (B-5, IG-5).
+ (r"\besfuerzo respiratorio increased\b", "esfuerzo respiratorio aumentado"),
+ # A nebulized dose by the record's route (report_presentation._ROUTES_ES), and the dextrose bolus and NIV by their
+ # Spanish names (V-9; X1-0, point 3) in the line that follows an order (B-5, IG-5).
+ (r"\b(\d+(?:\.\d+)? (?:mg|g)) nebulized\b", r"\1 nebulizado"),
+ (r"\bGlucose (\d+(?:\.\d+)? g IV\b)", r"Glucosa \1"),
+ (r"\bNIV (?=inicio\b|suspensión\b|ajuste\b|start\b|stop\b|adjust\b)", "VMNI "),
  (r"\bUnresponsive\b", "Sin respuesta"), (r"\bunresponsive\b", "sin respuesta"),
  (r"\bObtunded\b", "Obnubilado"), (r"\bobtunded\b", "obnubilado"),
  (r"\bDrowsy\b", "Somnoliento"), (r"\bdrowsy\b", "somnoliento"),
@@ -599,9 +1003,9 @@ _RULES = _PHASE0_RULES + _WALL_MOTION_RULES + (
  (r"; this is analgesia, not sedation\b", "; esto es analgesia, no sedación"),
  (r"; the atrial rate rises and the ventricular escape does not follow\b",
   "; la frecuencia auricular sube y el escape ventricular no la sigue"),
- (r"\bOral carbohydrate given\b", "Carbohidratos orales administrados"),
- (r"\bDextrose 10% at ([\d.]+) mL/h started\b", r"Dextrose 10% a \1 mL/h iniciada"),
- (r"\bNaloxone infusion at ([\d.]+) mg/h started\b", r"infusión de Naloxone a \1 mg/h iniciada"),
+ (r"\bOral carbohydrate given\b", "Carbohidratos por vía oral administrados"),  # V-9 (XR-06)
+ (r"\bDextrose 10% at ([\d.]+) mL/h started\b", r"Suero glucosado al 10 % a \1 mL/h iniciado"),  # V-9, A-18
+ (r"\bNaloxone infusion at ([\d.]+) mg/h started\b", r"Infusión de naloxona a \1 mg/h iniciada"),  # V-9
  (r"(\d mg (?:IV|IO|PO|IM|SC)) given: this ECG shows no occlusion pattern, so thrombolysis carries its bleeding "
   r"risk without an artery to open",
   r"\1 administrado: este ECG no muestra un patrón de oclusión, así que la trombólisis tiene su riesgo de "
@@ -757,8 +1161,12 @@ _RULES = _PHASE0_RULES + _WALL_MOTION_RULES + (
  (r"\badministered over (\d+(?:[.,]\d+)?) min\b", r"administrado en \1 min"),
  (r"\badministered\b", "administrado"),
  (r"\bstarted at\b", "iniciado a"), (r"\badjusted to\b", "ajustado a"),
- (r"\b(\w+) infusion stopped\b", r"infusión de \1 suspendida"),
- (r"\b(\w+) infusion\b", r"infusión de \1"),
+ # The dextrose infusion is «suero glucosado» (V-9, as A-18), never «infusión de glucosa».
+ (r"\bDextrose infusion stopped\b", "Suero glucosado suspendido"),
+ (r"\bdextrose infusion stopped\b", "suero glucosado suspendido"),
+ (r"\bDextrose infusion\b", "Suero glucosado"), (r"\bdextrose infusion\b", "suero glucosado"),
+ (r"\b(\w+) infusion stopped\b", lambda m: _infusion_es(m, " suspendida")),
+ (r"\b(\w+) infusion\b", lambda m: _infusion_es(m, "")),
  (r"\bstart\b", "inicio"), (r"\bstop\b", "suspensión"), (r"\badjust\b", "ajuste"),
  (r"\bNasal cannula\b", "Naricera"), (r"\bnasal cannula\b", "naricera"),
  (r"\bNon-rebreather mask\b", "Mascarilla con reservorio"), (r"\bnon-rebreather mask\b", "mascarilla con reservorio"),
@@ -1116,13 +1524,13 @@ _RULES = _PHASE0_RULES + _WALL_MOTION_RULES + (
                            "the declared site": "del sitio declarado"}[m.group(1)]
             + ": la hemoglobina está bajando. Es el riesgo que conlleva el trombolítico, y se asumió en una persona "
               "que tenía un motivo para sangrar."),
- (r"The systolic pressure has stayed below 90 mmHg for 15 consecutive minutes: this is sustained hypotension from the obstruction\.",
+ (r"The systolic pressure has stayed below 90 mmHg for 15 consecutive minutes: this is (?:sustained hypotension from the obstruction|hipotensión sostenida por la obstrucción)\.",
   "La presión sistólica se ha mantenido bajo 90 mmHg por 15 minutos consecutivos: esto es hipotensión sostenida por la obstrucción."),
- (r"The systolic pressure has needed a vasopressor to stay at 90 mmHg or above, or stayed below it, for 15 consecutive minutes: this is sustained hypotension from the obstruction\.",
+ (r"The systolic pressure has needed a vasopressor to stay at 90 mmHg or above, or stayed below it, for 15 consecutive minutes: this is (?:sustained hypotension from the obstruction|hipotensión sostenida por la obstrucción)\.",
   "La presión sistólica ha necesitado un vasopresor para mantenerse en 90 mmHg o más, o se ha mantenido bajo ese valor, por 15 minutos consecutivos: esto es hipotensión sostenida por la obstrucción."),
  (r"Systemic thrombolysis given for sustained hypotension: the obstruction begins to fall within minutes and keeps falling for about half an hour\.",
   "Trombólisis sistémica administrada por hipotensión sostenida: la obstrucción empieza a ceder en minutos y sigue cediendo por media hora."),
- (r"The systolic pressure has stayed below 90 mmHg for 15 minutes: this is sustained hypotension from the obstruction\.",
+ (r"The systolic pressure has stayed below 90 mmHg for 15 minutes: this is (?:sustained hypotension from the obstruction|hipotensión sostenida por la obstrucción)\.",
   "La presión sistólica se ha mantenido bajo 90 mmHg por 15 minutos: esto es hipotensión sostenida por la obstrucción."),
  (r"The patient was brought back to the emergency department after being sent home: ",
   "El paciente volvió al servicio de urgencia después de ser enviado a casa: "),
@@ -1145,8 +1553,6 @@ _RULES = _PHASE0_RULES + _WALL_MOTION_RULES + (
 
  # --- more system messages, templated --------------------------------------
  (r"Please specify a supported route for ([\w-]+)\.", r"Indica una vía soportada para \1."),
- (r"Please specify or confirm the ([\w_]+) dose in milligrams\.",
-  r"Indica o confirma la dosis de \1 en miligramos."),
  (r"Specify the dose, the dose units and the route\.", "Indica la dosis, sus unidades y la vía."),
  (r"\bSpecify the ", "Indica "), (r"\bSpecify an? ", "Indica "), (r"\bSpecify one ", "Indica un solo "),
  (r"Requested study '([\w_]+)' is unavailable\.", r"El examen solicitado '\1' no está disponible."),
@@ -1271,7 +1677,84 @@ _RULES = _PHASE0_RULES + _WALL_MOTION_RULES + (
   r"\1 sobre \2: dos AINE son una sola clase. El segundo suma los riesgos y muy poco del efecto."),
  (r"(\w+) already given at minute (\d+); not repeated", r"\1 ya administrado en el minuto \2; no se repite"),
 )
-_COMPILED = tuple((re.compile(pattern), replacement) for pattern, replacement in _RULES)
+#: V-9 (XR-06, faculty, 2026-10-07): in an encounter presented in Spanish, every drug the room names
+#: is shown with its Spanish name; the canonical identifier stored stays as it is (X1-0, point 4).
+#: Keyed by the canonical names the reader recognises (``family_parser._AGENTS``, read, never changed)
+#: and the other names an order is written with.
+DRUG_NAMES_ES = {
+    # Vasoactive drugs and inotropes.
+    "norepinephrine": "noradrenalina", "epinephrine": "adrenalina", "dobutamine": "dobutamina",
+    "nitroglycerin": "nitroglicerina",
+    # Rate and rhythm.
+    "amiodarone": "amiodarona", "diltiazem": "diltiazem", "metoprolol": "metoprolol", "propranolol": "propranolol",
+    "atropine": "atropina",
+    # Antiplatelets, anticoagulants and thrombolytics.
+    "aspirin": "aspirina", "clopidogrel": "clopidogrel", "ticagrelor": "ticagrelor", "prasugrel": "prasugrel",
+    "heparin": "heparina", "enoxaparin": "enoxaparina", "tenecteplase": "tenecteplasa", "alteplase": "alteplasa",
+    "streptokinase": "estreptoquinasa",
+    # Haemostasis and blood.
+    "tranexamic acid": "ácido tranexámico", "packed red cells": "glóbulos rojos",
+    # Induction, sedation and blockade.
+    "etomidate": "etomidato", "ketamine": "ketamina", "midazolam": "midazolam", "propofol": "propofol",
+    "dexmedetomidine": "dexmedetomidina", "rocuronium": "rocuronio", "succinylcholine": "succinilcolina",
+    "vecuronium": "vecuronio", "cisatracurium": "cisatracurio",
+    # Analgesia and antipyretics.
+    "morphine": "morfina", "fentanyl": "fentanilo", "paracetamol": "paracetamol", "ibuprofen": "ibuprofeno",
+    "ketorolac": "ketorolaco", "metamizole": "metamizol",
+    # Respiratory.
+    "albuterol": "salbutamol", "ipratropium": "ipratropio", "magnesium sulfate": "sulfato de magnesio",
+    "prednisone": "prednisona", "methylprednisolone": "metilprednisolona", "hydrocortisone": "hidrocortisona",
+    "dexamethasone": "dexametasona",
+    # Antibiotics.
+    "ceftriaxone": "ceftriaxona", "azithromycin": "azitromicina", "piperacillin-tazobactam": "piperacilina-tazobactam",
+    "vancomycin": "vancomicina",
+    # Metabolic drugs and antidotes.
+    "dextrose": "glucosa", "dextrose infusion": "suero glucosado", "thiamine": "tiamina", "glucagon": "glucagón",
+    "naloxone": "naloxona", "calcium gluconate": "gluconato de calcio", "calcium chloride": "cloruro de calcio",
+    "octreotide": "octreotida",
+    # Digestive and diuretic.
+    "pantoprazole": "pantoprazol", "omeprazole": "omeprazol", "furosemide": "furosemida",
+    # Other names an order is written with.
+    "crystalloid": "cristaloide", "continuous nebulization": "nebulización continua", "sedation": "sedación",
+    "oral carbohydrate": "carbohidratos por vía oral",
+}
+#: The order kinds a label names in place of the drug (``family_parser.NEW_TREATMENT_ACTIONS``).
+_DRUG_KINDS_ES = {
+    "epinephrine_im": "adrenalina", "epinephrine_bolus": "adrenalina", "nitroglycerin_bolus": "nitroglicerina",
+    "dextrose_infusion": "suero glucosado", "naloxone_infusion": "naloxona", "tranexamic_acid": "ácido tranexámico",
+    "oral_carbohydrate": "carbohidratos por vía oral", "continuous_bronchodilator": "nebulización continua",
+    "sedation_infusion": "sedación",
+}
+
+
+def _cased(spanish, english):
+    """The Spanish name with the capital the English one was written with."""
+    return spanish[:1].upper() + spanish[1:] if english[:1].isupper() else spanish
+
+
+def drug(name, language=None):
+    """A drug the room names, as the reading language names it (V-9); anything else as it came.
+
+    Only for display: the stored canonical name never changes.
+    """
+    language = language or current()
+    text = str(name or "")
+    if language != "es" or not text.strip():
+        return text
+    key = text.strip().lower()
+    spanish = DRUG_NAMES_ES.get(key) or _DRUG_KINDS_ES.get(key) or DRUG_NAMES_ES.get(key.replace("_", " "))
+    return _cased(spanish, text.strip()) if spanish else text
+
+
+#: The same names inside the engine's sentences, said after every other rule: a whole sentence is
+#: said first, and the drug it names is then said in Spanish (K-5, K-6, K-13, K-14 with X1-0).
+_DRUG_RULES = (
+    (r"\b(" + "|".join(re.escape(name) for name in sorted(DRUG_NAMES_ES, key=len, reverse=True)) + r")\b",
+     lambda m: _cased(DRUG_NAMES_ES[m.group(1).lower()], m.group(1))),
+)
+_DRUG_PATTERN = re.compile(_DRUG_RULES[0][0], flags=re.IGNORECASE)
+_COMPILED = tuple((re.compile(pattern), replacement) for pattern, replacement in _RULES) + (
+    (_DRUG_PATTERN, _DRUG_RULES[0][1]),)
 
 
 #: The bank cases' narrative the faculty approved in another language
@@ -1372,6 +1855,92 @@ _EXAMINATION_SENTENCES_ES = {
 _SWEAT_ES = {"absent": "ausente", "mild": "leve", "marked": "marcada"}
 
 
+#: R-4, A-1 to A-18 (faculty, 2026-10-07; packet, block A), with A-2, A-6b, A-7-49m and A-8a in their
+#: final wording: the findings the engine composes, each said whole. Active since B-5, IG-5
+#: (2026-10-08); the drafts that proposed them stay in ``spanish_drafts`` as the record of the review.
+_SIDES_ES = {"right": "derecho", "left": "izquierdo"}
+_AIRFLOW_ES = {
+    "improved air entry with residual expiratory wheeze": "mejor entrada de aire, con sibilancias espiratorias residuales",
+    "reduced bilateral air entry with prolonged expiration and wheeze":
+        "entrada de aire disminuida en ambos lados, con espiración prolongada y sibilancias",
+    "air entry remains very poor bilaterally, with only faint wheeze":
+        "sigue muy disminuido en forma bilateral, con solo sibilancias tenues",
+}
+_IO_SITES_FINDING_ES = {"humeral": "humeral", "tibial": "tibial", "sternal": "esternal", "femoral": "femoral"}
+_PLACES_ES = {"cannula in the left forearm": "la cánula del antebrazo izquierdo",
+              "new cannula in the right forearm": "la cánula nueva del antebrazo derecho",
+              "intraosseous needle": "la aguja intraósea"}
+_ENGINE_FINDINGS_ES = tuple((re.compile(pattern), replacement) for pattern, replacement in (
+    # A-2 (final wording) and the drafts A-2 to A-6.
+    (r"Bilateral inspiratory crackles; respiratory effort is now shallow and ineffective, consistent with exhaustion\.",
+     "Crépitos inspiratorios bilaterales; el esfuerzo respiratorio ahora es superficial e ineficaz, compatible con "
+     "agotamiento."),
+    (r"Bilateral inspiratory crackles with increased respiratory effort\.",
+     "Crépitos inspiratorios bilaterales, con aumento del esfuerzo respiratorio."),
+    (r"Bilateral crackles remain, with reduced respiratory effort\.",
+     "Persisten crépitos bilaterales, con menor esfuerzo respiratorio."),
+    (r"New bibasal inspiratory crackles since the transfusion, with increased effort and no wheeze\.",
+     "Crépitos inspiratorios bibasales nuevos desde la transfusión, con aumento del esfuerzo y sin sibilancias."),
+    (r"Improved air entry with residual expiratory wheeze\.", "Mejor entrada de aire, con sibilancias espiratorias residuales."),
+    (r"Reduced bilateral air entry with prolonged expiration and wheeze\.",
+     "Entrada de aire disminuida en ambos lados, con espiración prolongada y sibilancias."),
+    # A-6b, A-7, A-7-49m, A-8 and A-8a, on the side the case writes.
+    (r"Endotracheal tube in place: air entry remains very poor bilaterally, with only faint wheeze\.",
+     "Tubo endotraqueal instalado: el murmullo pulmonar sigue muy disminuido en forma bilateral, con solo sibilancias "
+     "tenues."),
+    (r"Breath sounds absent over the (right|left) hemithorax, which is hyper-resonant; wheeze on the other side\.",
+     lambda m: f"Murmullo pulmonar abolido en el hemitórax {_SIDES_ES[m[1]]}, que está hipersonoro; sibilancias en el "
+               "otro lado."),
+    (r"Breath sounds absent over the (right|left) hemithorax, which is hyper-resonant; air entry on the (right|left) "
+     r"remains very poor, with only faint wheeze\.",
+     lambda m: f"Murmullo pulmonar abolido en el hemitórax {_SIDES_ES[m[1]]}, que está hipersonoro; en el lado "
+               f"{_SIDES_ES[m[2]]} el murmullo pulmonar sigue muy disminuido, con solo sibilancias tenues."),
+    (r"Breath sounds returning on the (right|left) after decompression; (improved air entry with residual expiratory "
+     r"wheeze|reduced bilateral air entry with prolonged expiration and wheeze|air entry remains very poor "
+     r"bilaterally, with only faint wheeze)\.",
+     lambda m: f"Reaparece el murmullo pulmonar en el hemitórax {_SIDES_ES[m[1]]} tras la descompresión; "
+               f"{_AIRFLOW_ES[m[2]]}."),
+    # A-9 to A-11.
+    (r"Respiratory rate (\d+)/min, provided by the assisted ventilation currently in progress\.",
+     r"Frecuencia respiratoria \1/min, dada por la ventilación asistida en curso."),
+    (r"Respiratory rate (\d+)/min; breaths remain shallow\.",
+     r"Frecuencia respiratoria \1/min; las respiraciones siguen siendo superficiales."),
+    (r"Respiratory rate (\d+)/min; spontaneous breaths have greater depth\.",
+     r"Frecuencia respiratoria \1/min; las respiraciones espontáneas son más profundas."),
+    # A-12 to A-18: the lines of the hypoglycaemia family (I-1).
+    (r"Peripheral cannula in the left forearm; the skin around its tip is slightly swollen and cool\.",
+     "Cánula periférica en el antebrazo izquierdo; la piel alrededor del extremo del catéter está levemente aumentada "
+     "de volumen y fría."),
+    (r"Peripheral cannula in the left forearm; the site is clean, without swelling or tenderness\.",
+     "Cánula periférica en el antebrazo izquierdo; el sitio está limpio, sin aumento de volumen ni dolor a la "
+     "palpación."),
+    (r"Peripheral cannula in the left forearm; the forearm around it is swollen, pale, cool and tender\.",
+     "Cánula periférica en el antebrazo izquierdo; el antebrazo a su alrededor está aumentado de volumen, pálido, frío "
+     "y doloroso a la palpación."),
+    (r"A second peripheral cannula in the right forearm; the site is clean\.",
+     "Una segunda cánula periférica en el antebrazo derecho; el sitio está limpio."),
+    (r"An intraosseous needle in place \((humeral|tibial|sternal|femoral)\)\.",
+     lambda m: f"Una aguja intraósea instalada ({_IO_SITES_FINDING_ES[m[1]]})."),
+    (r"An intraosseous needle in place; no site was recorded\.", "Una aguja intraósea instalada; no se registró el sitio."),
+    (r"Dextrose ([\d.]+)% runs at ([\d.]+) mL/h through the (cannula in the left forearm|new cannula in the right "
+     r"forearm|intraosseous needle)\.",
+     lambda m: f"El suero glucosado al {m[1]} % pasa a {m[2]} mL/h por {_PLACES_ES[m[3]]}."),
+))
+
+
+def _engine_finding_es(body):
+    """An engine-composed finding said whole (R-4), or None: one sentence, or every sentence of a list."""
+    for pattern, replacement in _ENGINE_FINDINGS_ES:
+        if pattern.fullmatch(body):
+            return pattern.sub(replacement, body)
+    sentences = re.split(r"(?<=\.) (?=[A-Z])", body)
+    if len(sentences) > 1:
+        said = [_engine_finding_es(sentence) for sentence in sentences]
+        if all(said):
+            return " ".join(said)
+    return None
+
+
 def _in_sentence(value, language):
     """An observed value inside a Spanish sentence: lower case, an acronym kept."""
     said = observed_value(str(value).strip(), language)
@@ -1451,6 +2020,9 @@ def examination(text, language=None, case=None):
     body = narrative(str(text), language, case).strip()
     if body in _EXAMINATION_SENTENCES_ES:
         return _EXAMINATION_SENTENCES_ES[body]
+    engine_finding = _engine_finding_es(body)
+    if engine_finding:
+        return engine_finding
     match = _re.fullmatch(r"Respiratory rate: ([\d.]+|—)/min\. Work of breathing: (.+)", body)
     if match:
         return f"Frecuencia respiratoria: {match[1]}/min. Trabajo respiratorio: {_in_sentence(match[2], language)}"

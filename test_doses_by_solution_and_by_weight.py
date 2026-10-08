@@ -22,7 +22,10 @@ APP = str(Path(__file__).with_name("app.py"))
 
 
 def widget(elements, label):
-    return next(item for item in elements if item.label == label)
+    # A room label is said in the encounter's language (X-1, B-5 IG-5): the English or its Spanish.
+    import report_language
+    wanted = {label, report_language.t(label, "es")}
+    return next(item for item in elements if item.label in wanted)
 
 
 def start(tmp_path, monkeypatch, variant, challenge, language=None):

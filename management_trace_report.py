@@ -261,7 +261,7 @@ class _Trend(Flowable):
         canvas.roundRect(0, 0, self.width, self.height, 8, stroke=0, fill=1)
         canvas.setFillColor(NAVY)
         canvas.setFont("TraceSans-Bold", 9)
-        canvas.drawString(12, self.height - 18, self.label)
+        canvas.drawString(12, self.height - 18, _say(self.label))
         canvas.setFillColor(MUTED)
         canvas.setFont("TraceSans", 7.5)
         canvas.drawRightString(self.width - 12, self.height - 18, self.unit)

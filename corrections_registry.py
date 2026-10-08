@@ -93,6 +93,11 @@ INSTRUCTION_2026_10_06_PHASE0_CLOSURE = ("Instrucción del 2026-10-06, cierre de
 INSTRUCTION_2026_09_28_CYCLE6 = ("Instrucción docente del 2026-09-28, ciclo 6 del AI Advisor (DF-22 por clase, 59O-03 y "
                                  "seguridad de la aclaración, L-F01, L-F04 y sólo las correcciones de DF-23 que "
                                  "cumplen las seis condiciones)")
+INSTRUCTION_2026_10_08_B5 = ("Instrucción del 2026-10-08 «FINAL FACULTY DECISIONS + LOCAL IMPLEMENTATION "
+                             "AUTHORIZATION» (B-5): implementar en local IG-0 a IG-7 con las decisiones docentes del "
+                             "2026-10-07 y 2026-10-08 (relatos 30/30, rúbrica 5/5, TD-84, TD-85, X-1 105/105); "
+                             "commits locales, sin push, sin recursos Neon ni Streamlit, sin despliegue, sin GO "
+                             "del piloto y sin Fase 1")
 
 CORRECTIONS = (
     {
@@ -3419,6 +3424,27 @@ CORRECTIONS = (
                   "test_phase0_spanish.py::test_the_resident_s_quoted_words_are_never_translated",
                   "test_phase0_spanish.py::test_the_room_says_each_receipt_through_the_reading_language"],
         "preservation": None,
+    },
+    {
+        "id": "C-2026-10-08-01",
+        "date": "2026-10-08",
+        "title": "XR-18: la aclaración de la vía oral con el paciente que no puede tragar, en inglés y en español",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("«until the airway is protected» podía sugerir que proteger la vía aérea basta para que la vía oral "
+                   "sea segura. Texto docente final, en los dos idiomas: «…until oral administration is safe.» · "
+                   "«…hasta que sea seguro administrar por vía oral.», con V-5 para el estado (somnoliento, "
+                   "obnubilado, sin respuesta). Sólo redacción: la lógica de la vía, los estados que la permiten "
+                   "(glucose_rescue.ORAL_SAFE_MENTAL) y el estado clínico no cambian. Es la única diferencia del "
+                   "guion oral_while_not_alert frente al registro de preservación, que no se regenera. Decisión docente "
+                   "del 2026-10-07 (X-1, XR-18 REVISE); IG-5."),
+        "authorised_by": INSTRUCTION_2026_10_08_B5,
+        "affects": {"modules": ["family_engine", "language"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_b5_x1_spanish.py::test_xr18_the_oral_route_question_in_both_languages",
+                  "test_hypoglycemia_preservation.py::test_every_trajectory_matches_the_record_except_declared_corrections"],
+        "preservation": {"variants": ["hypoglycemia_28m", "hypoglycemia_76f", "hypoglycemia_54m_thiamine"],
+                         "scripts": ["oral_while_not_alert"]},
     },
 )
 

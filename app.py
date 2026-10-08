@@ -1112,7 +1112,8 @@ def _trace_state_words(snapshot, language):
     """``_trace_state_text`` in another language (faculty, 2026-09-26).
 
     The same observations in the same order; names in the reader's language,
-    numbers, units, modes and drug names as recorded (decision 16), a report's
+    numbers, units and modes as recorded (decision 16), the drugs by their
+    Spanish names (V-9, X1-0; faculty, 2026-10-07), a report's
     structure and an approved case's findings as the room says them.
     """
     import language as languages
@@ -1156,14 +1157,16 @@ def _trace_state_words(snapshot, language):
                  "flow_lpm": tr.get("oxygen_flow_lpm", 0)}, language))
         else:
             parts.append("aire ambiente")
+    # The drugs by their Spanish names (V-9; X1-0, point 4): the record keeps its canonical ones.
     if tr.get("norepinephrine"):
-        parts.append(f'Norepinephrine {tr.get("norepinephrine_rate", 0):g} '
+        parts.append(f'{languages.drug("Norepinephrine", language)} {tr.get("norepinephrine_rate", 0):g} '
                      f'{tr.get("norepinephrine_units") or "mcg/kg/min"} en curso')
     if tr.get("dobutamine"):
-        parts.append(f'Dobutamine {tr.get("dobutamine_rate", 0):g} '
+        parts.append(f'{languages.drug("Dobutamine", language)} {tr.get("dobutamine_rate", 0):g} '
                      f'{tr.get("dobutamine_units") or "mcg/kg/min"} en curso')
     if tr.get("nitroglycerin"):
-        parts.append(f'Nitroglycerin {tr.get("nitroglycerin_rate_mcg_min", 0):g} mcg/min en curso')
+        parts.append(f'{languages.drug("Nitroglycerin", language)} {tr.get("nitroglycerin_rate_mcg_min", 0):g} '
+                     'mcg/min en curso')
     d = (snapshot or {}).get("diagnostics", {}) or {}
     lact = d.get("lactate")
     if lact and lact.get("value_mmol_l") is not None:
@@ -9715,7 +9718,27 @@ def execute_bundle(parsed):
         "elapsed_min": elapsed,
     }
 
-def _vitals_cells(snapshot):
+def _vitals_cells(snapshot, language="en"):
+    # I-2 (X-1): in Spanish each label and value is said whole, as the monitor's own words are.
+    if language == "es":
+        import language as _lang
+        cells = _vitals_cells(snapshot)
+        values = dict(cells)
+        pulse_present = bool(snapshot.get("pulse_present", True))
+        said = _lang.observed_value
+        bp = (f'{snapshot.get("sbp")}/{snapshot.get("dbp")} · PAM {snapshot.get("map")}' if pulse_present
+              else _lang.say("No measurable BP", "es"))
+        spo2 = (f'{snapshot.get("spo2")}% · {_lang.say(str(snapshot.get("respiratory_support")), "es")}'
+                if pulse_present else _lang.say("No reliable reading", "es"))
+        crt = ("No medido" if snapshot.get("crt") is None else f'{snapshot.get("crt")} s') if pulse_present \
+            else "No medible"
+        rr = snapshot.get("respiratory_rate")
+        wob = said(snapshot.get("work_of_breathing"), "es") if snapshot.get("work_of_breathing") else "—"
+        extremities = said(snapshot.get("extremities"), "es") if snapshot.get("extremities") else "—"
+        mental = said(snapshot.get("mental_status"), "es") if snapshot.get("mental_status") else "—"
+        spanish = {"BP · MAP": bp, "SpO₂ · SUPPORT": spo2, "RR · WORK OF BREATHING": f"{rr}/min · {wob}"
+                   if rr is not None else wob, "CRT · EXTREMITIES": f"{crt} · {extremities}", "MENTAL STATUS": mental}
+        return tuple((_lang.say(label, "es"), spanish.get(label, values[label])) for label, _ in cells)
     pulse_present = bool(snapshot.get("pulse_present", True))
     if pulse_present:
         bp = f'{snapshot.get("sbp")}/{snapshot.get("dbp")} · MAP {snapshot.get("map")}'
@@ -9872,7 +9895,7 @@ def _vitals_grid_html(snapshot, variant="live"):
         f'<div class="mrs-vital-label">{escape(str(label))}</div>'
         f'<div class="mrs-vital-value">{escape(str(value))}</div>'
         "</div>"
-        for label, value in _vitals_cells(snapshot)
+        for label, value in _vitals_cells(snapshot, language.current())
     )
     return f'<div class="mrs-vitals-grid mrs-vitals-grid--{escape(variant)}">{cells}</div>'
 
@@ -10056,6 +10079,8 @@ def format_clinical_update():
 _TRANSLATED_EVENTS = frozenset({
     "clinical_update", "clarification", "procedure", "diagnostic_result",
     "prototype", "reasoning_note", "reasoning_completion", "study_not_performed",
+    # I-6 (X-1): the cancelled and the discarded order, said in the reading language.
+    "order_cancelled",
 })
 
 
@@ -10080,6 +10105,9 @@ _EVENT_LABELS = {
     # A study asked for that produces no result, with the reason in the text
     # (2026-09-24): recorded, never answered with an invented result.
     "study_not_performed": "STUDY REQUESTED",
+    # L-17 and L-18 (faculty, 2026-10-07): the heading, never the internal key, in both languages.
+    "order_cancelled": "ORDER CANCELLED",
+    "diagnostic": "ECG",
 }
 
 
@@ -10100,11 +10128,25 @@ def _event_head(label, minute):
             + escape(_room_minutes(minute)) + '</span></strong></p>')
 
 
+def _room_you_words(text):
+    """A ``YOU`` entry the room writes in the resident's place, in the reading language (L-11).
+
+    What the resident typed is never translated; only the room's own «Examine: {region}».
+    """
+    import language
+    match = re.fullmatch(r"Examine: (.+)", str(text or ""))
+    if match and language.current() == "es":
+        return "Examen: " + language.region(match[1], "es")
+    return text
+
+
 def render_event(event):
     import language
     body = (language.say(event["text"]) if event["kind"] in _TRANSLATED_EVENTS
             else language.examination(event["text"]) if event["kind"] == "examination"
             else language.case_words(event["text"]) if event["kind"] in _NARRATIVE_EVENTS
+            else _room.ecg_words(event["text"]) if event["kind"] == "diagnostic"
+            else _room_you_words(event["text"]) if event["kind"] == "you"
             else event["text"])
     labels = _EVENT_LABELS
     if event["kind"] == "clinical_update":
@@ -10180,7 +10222,8 @@ _install_case_narrative()
 # encounter keep it.
 if not (st.session_state.get("started") and not st.session_state.get("encounter_ended")
         and st.session_state.get("_attempt_status") != "completed"):
-    st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
+    st.caption(_record_words("Management Reasoning Simulator · Clinical encounter v{version}",
+                             version=SIMULATOR_VERSION.split('-')[0]))
 if faculty_access():
     st.caption("AI language interpretation is active." if ai_language_interpretation_enabled() else "Local language interpretation is active.")
 
@@ -10274,7 +10317,7 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
                 st.write((responses.get(prompt["review_id"]) or {}).get(field, ""))
             model = models.get(prompt["review_id"]) or {}
             if model:
-                st.markdown("**Expert comparison · faculty-validation draft**")
+                st.markdown(_record_words("**Expert comparison · faculty-validation draft**"))
                 for field in ("framing", "priority", "action", "tradeoff", "reassessment"):
                     st.write(str(model.get(field) or ""))
                 for field, label in EXPERT_COMPARISON_FIELDS:
@@ -10291,7 +10334,7 @@ if ACCOUNT_CONTEXT and st.session_state.get("_attempt_status") == "completed":
     if st.button(_record_words("Next Encounter with This Adaptation Plan"), type="primary"):
         begin_repeat_encounter(plan, payload)
         rerun_app()
-    if st.button("Return to dashboard"):
+    if st.button(_record_words("Return to dashboard")):
         return_to_dashboard(ACCOUNT_CONTEXT, reset_session)
     st.stop()
 
@@ -10329,27 +10372,27 @@ def _render_carry_forward_plan():
     if attempt_number > 1 and any(
         str(carry_forward_plan.get(field) or "").strip() for field, _ in ADAPTATION_PLAN_FIELDS
     ):
-        st.markdown(f"### Attempt {attempt_number} · Carry-Forward Learning Goal")
-        st.caption(
+        st.markdown(_record_words("### Attempt {number} · Carry-Forward Learning Goal", number=attempt_number))
+        st.caption(_record_words(
             "This prospective plan came from the previous attempt. Use it as an intention for action and "
             "reassessment; the new Management Trace records only what you actually do now."
-        )
+        ))
         with st.container(border=True):
             cue_col, priority_col, target_col = st.columns(3)
             with cue_col:
-                st.markdown("**Clinical cue to watch**")
+                st.markdown("**" + _record_words("Clinical cue to watch") + "**")
                 st.write(carry_forward_plan.get("cue") or "—")
-                st.markdown("**Threshold for changing course**")
+                st.markdown("**" + _record_words("Threshold for changing course") + "**")
                 st.write(carry_forward_plan.get("threshold") or "—")
             with priority_col:
-                st.markdown("**Next management priority**")
+                st.markdown("**" + _record_words("Next management priority") + "**")
                 st.write(carry_forward_plan.get("next_priority") or "—")
-                st.markdown("**Alternative action**")
+                st.markdown("**" + _record_words("Alternative action") + "**")
                 st.write(carry_forward_plan.get("alternative_action") or "—")
             with target_col:
-                st.markdown("**Expected effect**")
+                st.markdown("**" + _record_words("Expected effect") + "**")
                 st.write(carry_forward_plan.get("expected_effect") or "—")
-                st.markdown("**Reassessment target and timing**")
+                st.markdown("**" + _record_words("Reassessment target and timing") + "**")
                 st.write(carry_forward_plan.get("reassessment_plan") or "—")
         prior_attempt_record = st.session_state.get("prior_attempt_record") or {}
         if prior_attempt_record:
@@ -10358,11 +10401,11 @@ def _render_carry_forward_plan():
             prior_case = str((prior_attempt_record.get("encounter", {}) or {}).get("case_id") or "encounter").lower()
             prior_info, prior_pdf, prior_md, prior_json = st.columns([1.9, 1, 1, 1])
             with prior_info:
-                st.markdown(f"**Previous attempt record · Attempt {prior_number}**")
-                st.caption("The completed prior trajectory remains separate and available for download.")
+                st.markdown(_record_words("**Previous attempt record · Attempt {number}**", number=prior_number))
+                st.caption(_record_words("The completed prior trajectory remains separate and available for download."))
             with prior_pdf:
                 st.download_button(
-                    "Previous PDF",
+                    _record_words("Previous PDF"),
                     data=_review_pdf(prior_attempt_record),
                     file_name=f"{prior_case}_attempt_{prior_number}_review_v0819.pdf",
                     mime="application/pdf",
@@ -10371,7 +10414,7 @@ def _render_carry_forward_plan():
                 )
             with prior_md:
                 st.download_button(
-                    "Previous Markdown",
+                    _record_words("Previous Markdown"),
                     data=_review_markdown(prior_attempt_record),
                     file_name=f"{prior_case}_attempt_{prior_number}_review_v0819.md",
                     mime="text/markdown",
@@ -10380,7 +10423,7 @@ def _render_carry_forward_plan():
                 )
             with prior_json:
                 st.download_button(
-                    "Previous JSON",
+                    _record_words("Previous JSON"),
                     data=_review_json(prior_attempt_record),
                     file_name=f"{prior_case}_attempt_{prior_number}_review_v0819.json",
                     mime="application/json",
@@ -10390,95 +10433,113 @@ def _render_carry_forward_plan():
 
 
 def _render_current_treatments():
-    """What is running and what has been given, from the treatment state, as the chart said it."""
+    """What is running and what has been given, from the treatment state, as the chart said it.
+
+    In Spanish (T-01 to T-13, faculty, 2026-10-07) each line is said whole, with the drugs' Spanish
+    names (V-9); the treatment state is read the same way in both languages.
+    """
+    import language as _lang
+    spanish = _lang.current() == "es"
+    drug = (lambda name: _lang.drug(name, "es")) if spanish else (lambda name: name)
+    timing = (lambda key: _lang.say(_treatment_timing_suffix(st.session_state.state, key), "es")) if spanish \
+        else (lambda key: _treatment_timing_suffix(st.session_state.state, key))
+    reading = "es" if spanish else "en"
     tr = st.session_state.state["treatments"]
     if st.session_state.state.get("engine_family"):
         if tr.get("packed_red_cells_units"):
             from family_reports import format_transfusion
             st.write(format_transfusion(tr["packed_red_cells_units"],
-                                        st.session_state.state.get("family_state", {}).get("pending_blood_units", 0)))
+                                        st.session_state.state.get("family_state", {}).get("pending_blood_units", 0),
+                                        reading))
         for medication in tr.get("administered_medications", []):
             from family_reports import format_administration
-            st.write(format_administration(medication))
+            st.write(format_administration(medication, reading))
         if tr.get("bag_mask"):
-            st.write("Bag-mask assisted ventilation")
-    st.write(f'Cumulative crystalloid: {float(tr["cumulative_crystalloid_ml"]):.0f} mL')
+            st.write(_record_words("Bag-mask assisted ventilation"))
+    st.write(_record_words("Cumulative crystalloid: {volume} mL",
+                           volume=f'{float(tr["cumulative_crystalloid_ml"]):.0f}'))
     remaining = st.session_state.state.get('family_state', {}).get('pending_fluid_ml', 0)
     timed_deliveries = (st.session_state.state.get('generated_state', {}).get('native_deliveries', [])
                         + st.session_state.state.get('family_state', {}).get('deliveries', []))
     for delivery in timed_deliveries:
         if delivery.get('key', [None])[0] == 'fluid':
-            st.write(f"Fluid order: {delivery['amount']:g} mL over {delivery['duration']:g} min; delivered {delivery['delivered']:.0f} mL.")
+            st.write(_record_words("Fluid order: {amount} mL over {duration} min; delivered {delivered} mL.",
+                                   amount=f"{delivery['amount']:g}", duration=f"{delivery['duration']:g}",
+                                   delivered=f"{delivery['delivered']:.0f}"))
     # Float residue from paced delivery (1e-13 mL) is not volume still to run.
     if remaining >= .5:
-        st.write(f'Crystalloid pending: {remaining:.0f} mL. Delivery continues as simulation time advances.')
+        st.write(_record_words("Crystalloid pending: {volume} mL. Delivery continues as simulation time advances.",
+                               volume=f"{remaining:.0f}"))
     if st.session_state.state.get('engine_family') == 'generated':
         st.caption('Orders and tests do not automatically wait for completion. Specify a reassessment interval to advance time.')
-    if tr["metoprolol_total_mg"] > 0:
-        st.write(f'Metoprolol: {tr["metoprolol_total_mg"]:g} mg total')
-    if tr["propranolol_total_mg"] > 0:
-        st.write(f'Propranolol: {tr["propranolol_total_mg"]:g} mg total')
-    if tr["diltiazem_total_mg"] > 0:
-        st.write(f'Diltiazem: {tr["diltiazem_total_mg"]:g} mg total')
-    if tr["amiodarone_total_mg"] > 0:
-        st.write(f'Amiodarone: {tr["amiodarone_total_mg"]:g} mg total')
+    for key, name in (("metoprolol_total_mg", "Metoprolol"), ("propranolol_total_mg", "Propranolol"),
+                      ("diltiazem_total_mg", "Diltiazem"), ("amiodarone_total_mg", "Amiodarone")):
+        if tr[key] > 0:
+            st.write(_record_words("{drug}: {dose} mg total", drug=drug(name), dose=f"{tr[key]:g}"))
     if tr.get("procedural_sedations", 0) > 0:
         sedatives = []
         if tr.get("etomidate_total_mg", 0) > 0:
-            sedatives.append(f'Etomidate {tr["etomidate_total_mg"]:g} mg total')
+            sedatives.append(_record_words("{drug} {dose} mg total", drug=drug("Etomidate").lower() if spanish
+                                           else "Etomidate", dose=f'{tr["etomidate_total_mg"]:g}'))
         if tr.get("midazolam_total_mg", 0) > 0:
-            sedatives.append(f'Midazolam {tr["midazolam_total_mg"]:g} mg total')
+            sedatives.append(_record_words("{drug} {dose} mg total", drug=drug("Midazolam").lower() if spanish
+                                           else "Midazolam", dose=f'{tr["midazolam_total_mg"]:g}'))
         st.write(
-            "Procedural sedation administered: "
+            _record_words("Procedural sedation administered: ")
             + " + ".join(sedatives)
-            + _treatment_timing_suffix(st.session_state.state, "procedural_sedation")
+            + timing("procedural_sedation")
         )
     if tr.get("norepinephrine"):
         st.write(
-            f'Norepinephrine: {tr["norepinephrine_rate"]:g} {tr["norepinephrine_units"]}'
-            + _treatment_timing_suffix(st.session_state.state, "norepinephrine")
+            f'{drug("Norepinephrine")}: {tr["norepinephrine_rate"]:g} {tr["norepinephrine_units"]}'
+            + timing("norepinephrine")
         )
     if tr.get("dobutamine"):
         st.write(
-            f'Dobutamine: {tr["dobutamine_rate"]:g} mcg/kg/min'
-            + _treatment_timing_suffix(st.session_state.state, "dobutamine")
+            f'{drug("Dobutamine")}: {tr["dobutamine_rate"]:g} mcg/kg/min'
+            + timing("dobutamine")
         )
     if tr.get("furosemide_total_mg", 0) > 0:
-        st.write(f'Furosemide administered: {tr["furosemide_total_mg"]:g} mg total')
+        st.write(_record_words("Furosemide administered: {dose} mg total", dose=f'{tr["furosemide_total_mg"]:g}'))
     if tr.get("oxygen"):
+        device = _lang.say(str(tr["oxygen_device"]), "es").lower() if spanish else tr["oxygen_device"]
         st.write(
-            f'Oxygen: {tr["oxygen_device"]} at {tr["oxygen_flow_lpm"]:g} L/min'
-            + _treatment_timing_suffix(st.session_state.state, "oxygen")
+            _record_words("Oxygen: {device} at {flow} L/min", device=device, flow=f'{tr["oxygen_flow_lpm"]:g}')
+            + timing("oxygen")
         )
     if tr.get("nitroglycerin"):
         st.write(
-            f'Nitroglycerin: {tr["nitroglycerin_rate_mcg_min"]:g} mcg/min'
-            + _treatment_timing_suffix(st.session_state.state, "nitroglycerin")
+            f'{drug("Nitroglycerin")}: {tr["nitroglycerin_rate_mcg_min"]:g} mcg/min'
+            + timing("nitroglycerin")
         )
     if tr.get("niv"):
         if tr.get("niv_mode") == "BiPAP" and tr.get("niv_ipap_cmh2o") is not None and tr.get("niv_epap_cmh2o") is not None:
             fio = f' · FiO₂ {tr.get("niv_fio2_percent"):g}%' if tr.get("niv_fio2_percent") is not None else ""
             st.write(
                 f'BiPAP: {tr["niv_ipap_cmh2o"]:g}/{tr["niv_epap_cmh2o"]:g} cm H2O{fio}'
-                + _treatment_timing_suffix(st.session_state.state, "niv")
+                + timing("niv")
             )
         else:
             fio = f' · FiO₂ {tr.get("niv_fio2_percent"):g}%' if tr.get("niv_fio2_percent") is not None else ""
             st.write(
                 f'{tr["niv_mode"]}: {tr["niv_pressure_cmh2o"]:g} cm H2O{fio}'
-                + _treatment_timing_suffix(st.session_state.state, "niv")
+                + timing("niv")
             )
     if tr.get("airway_prepared") and not tr.get("invasive_ventilation"):
-        st.write("Airway equipment and team prepared for intubation")
+        st.write(_record_words("Airway equipment and team prepared for intubation"))
     if tr.get("invasive_ventilation"):
-        st.write(
-            f'Invasive ventilation: {tr.get("ventilator_mode") or "VC/AC"} · '
-            f'FiO₂ {tr.get("ventilator_fio2_percent", 100):g}% · '
-            f'PEEP {tr.get("ventilator_peep_cmh2o", 8):g} cm H2O'
-            + _treatment_timing_suffix(st.session_state.state, "invasive_ventilation")
-        )
+        line = (f'Invasive ventilation: {tr.get("ventilator_mode") or "VC/AC"} · '
+                f'FiO₂ {tr.get("ventilator_fio2_percent", 100):g}% · '
+                f'PEEP {tr.get("ventilator_peep_cmh2o", 8):g} cm H2O')
+        # I-11: «Ventilación invasiva: …» already has its Spanish.
+        st.write((_lang.say(line, "es") if spanish else line) + timing("invasive_ventilation"))
     if tr.get("disposition"):
-        st.write(f'Disposition: {tr.get("disposition")}')
+        destination = tr.get("disposition")
+        if spanish:
+            # The destinations as the record names them in Spanish (report_presentation).
+            destination = {"home": "domicilio", "ED observation": "observación en urgencias"}.get(
+                str(destination)) or _lang._DESTINATIONS_ES.get(str(destination)) or _lang.say(str(destination), "es")
+        st.write(_record_words("Disposition: {destination}", destination=destination))
 
 
 def _render_latest_diagnostics():
@@ -10486,7 +10547,7 @@ def _render_latest_diagnostics():
     diagnostics = st.session_state.state.get("diagnostics", {}) or {}
     if st.session_state.state.get("engine_family") and diagnostics:
         from family_reports import TEST_LABELS, format_result
-        with st.expander("Diagnostics", expanded=False):
+        with st.expander(_record_words("Diagnostics"), expanded=False):
             for test_id, result in diagnostics.items():
                 if not isinstance(result, dict):
                     continue
@@ -10547,7 +10608,11 @@ def _render_order_words(minute, text):
     """An order as the resident wrote it, at its minute: their own words, never translated."""
     if not str(text or "").strip():
         return
-    said = _record_words("At minute {v0}: “{v1}”", v0=int(minute or 0), v1=str(text).strip())
+    words = str(text).strip()
+    if _record_reader() != "en":
+        # I-4: the room's own label for a later clarification; the resident's words as written.
+        words = words.replace("\n\nReasoning clarification: ", "\n\n" + _record_words("Reasoning clarification:") + " ")
+    said = _record_words("At minute {v0}: “{v1}”", v0=int(minute or 0), v1=words)
     st.markdown('<div class="enc-order enc-order--words">' + escape(said).replace("\n", "<br>") + "</div>",
                 unsafe_allow_html=True)
 
@@ -10644,7 +10709,8 @@ def _render_encounter_views(bedside=True):
         # Each entry in its colour (encounter_screen.CATEGORY); what it says is unchanged.
         with st.container(key=f"enc-ev-{screen.category(event)}-{where}-{position}"):
             if asked:
-                st.caption(asked)
+                # What the room wrote in the resident's place is said in the reading language (L-11).
+                st.caption(_room_you_words(asked))
             render_event(event)
             if ecg:
                 view_ecg(position, where)
@@ -10684,10 +10750,10 @@ def _render_encounter_views(bedside=True):
         _render_latest_diagnostics()
     with orders:
         _render_pending_orders()
-        support = _room.device_labels(state["treatments"])
+        support = _room.device_labels(state["treatments"], _lang.current())
         if support and bedside:
-            st.caption("Current support · " + " | ".join(support))
-        with st.expander("Current treatments", expanded=True):
+            st.caption(_record_words("Current support · ") + " | ".join(support))
+        with st.expander(_record_words("Current treatments"), expanded=True):
             _render_current_treatments()
         for index, row in enumerate(screen.order_rows(st.session_state.management_trace, events)):
             _render_order_row(row, index)
@@ -10704,9 +10770,10 @@ def _render_closed_bedside():
     state = st.session_state.state
     _room.ecg_recordings(state)
     _room.study_upgrade(state)
-    support = _room.device_labels(state["treatments"])
+    import language as _lang
+    support = _room.device_labels(state["treatments"], _lang.current())
     if support:
-        st.caption("Current support · " + " | ".join(support))
+        st.caption(_record_words("Current support · ") + " | ".join(support))
     _, latest, _, _ = encounter_sections(st.session_state.events)
     if latest:
         with st.expander("Latest response", expanded=True):
@@ -10881,7 +10948,9 @@ with st.container(key="encounter-console"):
                                     + escape(_title_lang.say("### Management").lstrip("# ").strip()) + "</div>",
                                     unsafe_allow_html=True)
             with modes_area:
-                encounter_mode = st.radio("Encounter", ["Talk", "Examine", "Tests", "Treat"], index=3, horizontal=True, label_visibility="collapsed")
+                # L-01, I-9: the modes in the reading language; the value the page reads stays English.
+                encounter_mode = st.radio(_record_words("Encounter"), ["Talk", "Examine", "Tests", "Treat"], index=3,
+                                          horizontal=True, label_visibility="collapsed", format_func=_record_words)
         if _in_room:
             _render_latest_response()
         orders_panel = st.container()
@@ -10892,19 +10961,21 @@ with st.container(key="encounter-console"):
             has_collateral = bool(history_source and str(history_source).strip().lower() not in {"patient", "the patient"})
             cannot_speak = str(st.session_state.state['observable'].get('mental_status', '')).lower() in {'unresponsive', 'obtunded', 'sedated'}
             if cannot_speak and not has_collateral:
-                st.info('The patient cannot provide a history at present. Review the history already obtained in the clinical chart.')
+                st.info(_record_words('The patient cannot provide a history at present. Review the history already obtained in the clinical chart.'))
             else:
                 if history_source:
                     # Whole in one language: Spanish once the case's translation is approved (case_text).
                     import language
                     st.caption(language.narrative("History source: " + str(history_source)))
                 if cannot_speak:
-                    st.info("The patient cannot answer at present. Questions are directed to the available collateral source.")
+                    st.info(_record_words("The patient cannot answer at present. Questions are directed to the available collateral source."))
                 presentation = next((e["text"] for e in st.session_state.events if e["kind"] == "presentation"), "")
                 facts = history_facts(presentation, st.session_state.state.get("case_id"), state=st.session_state.state)
                 with st.form("patient_conversation"):
-                    question = st.text_input("Ask the available history source" if cannot_speak else "Ask the patient", placeholder="What brought you in today?")
-                    ask_patient = st.form_submit_button("Ask")
+                    question = st.text_input(_record_words("Ask the available history source" if cannot_speak
+                                                           else "Ask the patient"),
+                                             placeholder=_record_words("What brought you in today?"))
+                    ask_patient = st.form_submit_button(_record_words("Ask"))
                 if ask_patient and question.strip():
                     answer = answer_history(question, facts, scene_setting("OPENAI_API_KEY"), state=st.session_state.state)
                     add_event("you", question)
@@ -10913,10 +10984,18 @@ with st.container(key="encounter-console"):
                     spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
                                         activity="history_question", request=question, response=answer)
                     rerun_app()
-                with st.expander("History topics"):
+                with st.expander(_record_words("History topics")):
                     case_topics = history_topics(st.session_state.state)
-                    topic = st.selectbox("Explore", case_topics or ["Presenting symptoms and onset", "Associated symptoms", "Previous health"])
-                    if st.button("Ask about this topic"):
+                    # I-5, L-08: each topic by its name in the reading language; the value stays English.
+                    from history_topics import HISTORY_TOPIC_LABELS, topic_label
+                    import language as _topic_lang
+                    _topic_keys = {label: key for key, label in HISTORY_TOPIC_LABELS.items()}
+                    topic = st.selectbox(
+                        _record_words("Explore"),
+                        case_topics or ["Presenting symptoms and onset", "Associated symptoms", "Previous health"],
+                        format_func=lambda label: (topic_label(_topic_keys[label], _topic_lang.current())
+                                                   if label in _topic_keys else _record_words(label)))
+                    if st.button(_record_words("Ask about this topic")):
                         if case_topics:
                             response = " ".join(history_topic_facts(st.session_state.state, topic))
                         elif topic == "Associated symptoms":
@@ -10940,8 +11019,13 @@ with st.container(key="encounter-console"):
             if st.session_state.state.get("engine_family"):
                 from family_engine import current_findings
                 family_findings = current_findings(st.session_state.state)
-            area = st.selectbox("Examine", list(dict.fromkeys(["General appearance", "Breathing", "Peripheral perfusion"] + list(family_findings))))
-            if st.button("Examine patient"):
+            import language as _region_lang
+            # L-11 and V-4: the regions by their names in the reading language; the value stays English.
+            area = st.selectbox(_record_words("Examine"),
+                                list(dict.fromkeys(["General appearance", "Breathing", "Peripheral perfusion"]
+                                                   + list(family_findings))),
+                                format_func=_region_lang.region)
+            if st.button(_record_words("Examine patient")):
                 observed = st.session_state.state["observable"]
                 if st.session_state.state.get("engine_family"):
                     from family_engine import examination_finding
@@ -10989,11 +11073,12 @@ with st.container(key="encounter-console"):
                         {},
                     )
                     gate_id = int(pending_reasoning.get("gate_id") or 1)
-                    st.warning(
+                    st.warning(_record_words(
                         "An understood order is being held. The patient state is unchanged; "
                         "complete the reasoning in your own words or use the guided fields."
-                    )
-                    st.markdown(f"**Held order:** {_reasoning_gate_action_summary(held_parsed)}")
+                    ))
+                    st.markdown(_record_words("**Held order:** {summary}",
+                                              summary=_lang.order_summary(_reasoning_gate_action_summary(held_parsed))))
                     import unexecuted_items
                     for line in unexecuted_items.held_messages(held_parsed):
                         st.info(_lang.say(line))
@@ -11051,7 +11136,7 @@ with st.container(key="encounter-console"):
                                 height=78,
                                 help=_lang.say(_questions.HELP["reassessment_target"]),
                                 key=f"reasoning_reassessment_{gate_id}",
-                                placeholder="e.g. HR and rhythm, BP/MAP, capillary refill, mental status",
+                                placeholder=_record_words("e.g. HR and rhythm, BP/MAP, capillary refill, mental status"),
                             )
                         guided_reassessment_delay = st.number_input(
                             _lang.say("I will check in… minutes"),
@@ -11070,7 +11155,7 @@ with st.container(key="encounter-console"):
                             key=f"reasoning_priority_{gate_id}",
                         )
                         guided_submitted = st.form_submit_button(
-                            "Complete reasoning & execute held order",
+                            _record_words("Complete reasoning & execute held order"),
                             type="primary",
                         )
 
@@ -11094,10 +11179,10 @@ with st.container(key="encounter-console"):
                             submission_text = guided_resolution.get("transcript") or "Guided reasoning completed."
                             submitted = True
 
-                    st.caption(
+                    st.caption(_record_words(
                         "Or answer naturally below. You only need to add what is missing; "
                         "you do not need to repeat the held order."
-                    )
+                    ))
 
                 from urgent_interventions import awaiting_explanation, record_retrospective
                 urgent_index = awaiting_explanation(st.session_state.get("management_trace") or [])
@@ -11105,16 +11190,16 @@ with st.container(key="encounter-console"):
                     urgent_entry = st.session_state.management_trace[urgent_index]
                     unstated = [field for field in (urgent_entry.get("reasoning_gate") or {}).get("noted") or []
                                 if field in REASONING_GATE_BLOCKING]
-                    with st.expander("Explain an urgent decision afterwards (optional, recorded as retrospective)"):
-                        st.caption("The intervention already ran. What you write here is recorded as written now, "
-                                   "after the decision, and never as reasoning shown when it was taken.")
+                    with st.expander(_record_words("Explain an urgent decision afterwards (optional, recorded as retrospective)")):
+                        st.caption(_record_words("The intervention already ran. What you write here is recorded as written now, "
+                                                 "after the decision, and never as reasoning shown when it was taken."))
                         with st.form(f"retrospective_{urgent_index}"):
                             retrospective_answers = {
                                 {"working_model": "problem_representation"}.get(field, field): st.text_area(
-                                    REASONING_GATE_FIELD_LABELS[field], key=f"retrospective_{urgent_index}_{field}",
+                                    _lang.say(REASONING_GATE_FIELD_LABELS[field]), key=f"retrospective_{urgent_index}_{field}",
                                     height=68)
                                 for field in unstated}
-                            if st.form_submit_button("Save retrospective explanation"):
+                            if st.form_submit_button(_record_words("Save retrospective explanation")):
                                 if record_retrospective(urgent_entry, retrospective_answers,
                                                         st.session_state.state.get("sim_time")):
                                     if ACCOUNT_CONTEXT:
@@ -11132,10 +11217,10 @@ with st.container(key="encounter-console"):
                     busy = _guard.waiting(st.session_state)
                     with st.form(f"learner_form_{form_id}", clear_on_submit=False):
                         st.text_area(
-                            "Enter your clinical reasoning and/or actions",
+                            _record_words("Enter your clinical reasoning and/or actions"),
                             height=100,
                             label_visibility="collapsed",
-                            placeholder=(
+                            placeholder=_record_words(
                                 "Describe your reasoning naturally. For example: I think...; "
                                 "I am addressing... first; I expect...; reassess ... in ... minutes."
                             ),
@@ -11151,7 +11236,7 @@ with st.container(key="encounter-console"):
                         submitted = True
 
                 if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action", "pending_bundle")):
-                    if st.button("Cancel pending orders", key="cancel_pending_orders"):
+                    if st.button(_record_words("Cancel pending orders"), key="cancel_pending_orders"):
                         cancel_pending_order()
                         rerun_app()
 
@@ -11621,7 +11706,7 @@ with st.container(key="encounter-console"):
                 # Available, and secondary to writing and Send (UX, second iteration, 2026-10-02).
                 with st.container(key="enc-close"):
                     complete = st.button(
-                        "Complete Encounter & Begin Review",
+                        _record_words("Complete Encounter & Begin Review"),
                         disabled=not bool(st.session_state.management_trace),
                     )
                 if complete:
@@ -11662,9 +11747,9 @@ with st.container(key="encounter-console"):
         # menu, with the account (2026-10-02, section 11); after the close, here.
         with (ENCOUNTER_MENU if _in_room and ENCOUNTER_MENU is not None else st.container()):
             if ACCOUNT_CONTEXT:
-                if st.button("Save & return to dashboard", type="secondary"):
+                if st.button(_record_words("Save & return to dashboard"), type="secondary"):
                     return_to_dashboard(ACCOUNT_CONTEXT, reset_session)
-                if st.button("End this attempt without completing review", type="secondary"):
+                if st.button(_record_words("End this attempt without completing review"), type="secondary"):
                     return_to_dashboard(ACCOUNT_CONTEXT, reset_session, abandon=True)
             else:
                 if st.button("Reset scenario", type="secondary"):
@@ -11678,6 +11763,7 @@ with st.container(key="encounter-console"):
         if ACCOUNT_CONTEXT:
             save_session(ACCOUNT_CONTEXT)
         if not _in_room:
-            st.caption(f"Management Reasoning Simulator · Clinical encounter v{SIMULATOR_VERSION.split('-')[0]}")
+            st.caption(_record_words("Management Reasoning Simulator · Clinical encounter v{version}",
+                                     version=SIMULATOR_VERSION.split('-')[0]))
 
         # Compatibility marker for v0.6.0.27 regression lineage.

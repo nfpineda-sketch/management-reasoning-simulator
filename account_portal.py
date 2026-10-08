@@ -388,7 +388,8 @@ def render_account_sidebar(context: dict[str, Any], area: Any = None) -> None:
     user = context["user"]
     area.caption(_t("Signed in"))
     area.write(str(user["username"]))
-    area.caption(str(user["role"]).capitalize())
+    # L-20 (faculty, 2026-10-07): the role in the reader's language.
+    area.caption(_t(str(user["role"]).capitalize()))
     if area.button(_t("Sign out"), key="_account_sign_out"):
         _sign_out(context)
     if st.session_state.get("_account_notice"):
