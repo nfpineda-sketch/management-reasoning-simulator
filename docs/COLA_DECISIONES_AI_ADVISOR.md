@@ -897,13 +897,54 @@ está implementado.**
 - **Siguiente:** la decisión docente sobre R4B, R5 y R6 (9 casos) y sobre TD-84.
 - **B-5: BLOCKED.**
 
+**Actualizado por trigésima primera vez el 2026-10-08: B-5 · plan de implementación, de promoción y de la Fase 1
+(sesión autónoma, sólo documentación).** Sin decisión docente nueva. **Nada está implementado, empujado ni
+desplegado.** Documentos nuevos:
+- `docs/revision/B5_IMPLEMENTATION_READINESS_MAP.md`:
+  - 21 ítems decididos sin implementar, con su mapa al código (archivo, función, actual, objetivo, tipo de cambio,
+    pruebas);
+  - la activación del relato y de la rúbrica (§4 y §5), con el diseño del exportador y sus pruebas;
+  - 8 grupos atómicos (IG-0 a IG-7) y su secuencia;
+  - la matriz de recertificación (A, B, C).
+- `docs/revision/PILOT_PROMOTION_DEPLOYMENT_RUNBOOK.md` (6A–6H): puerta de promoción, Git, Neon, Streamlit con la
+  matriz de configuración, prueba de humo de 25 pasos, después del despliegue, vuelta atrás y evidencia.
+- `docs/revision/PHASE_1_KICKOFF_PACKAGE.md` (Contratos v2; 11 paquetes WP0 a WP10) y
+  `docs/revision/PHASE_1_FIRST_PROMPT.md` (sólo WP0; **no ejecutado**).
+
+**Lo que se propone a decisión:**
+- **TD-85 (propuesta, sin decidir):** dos frases del motor llegan en inglés a la sala en español, sin borrador ni
+  inventario:
+  - el paro de la bradicardia (`bradycardia_toxicology.ARREST_TEXT`, los 4 casos de bradicardia);
+  - la reacción bifásica de la anafilaxia (`anaphylaxis_reaction.BIPHASIC_TEXT`, `anaphylaxis_29f`).
+  VERIFICADO con el motor. Con el español propuesto en el mapa (§3) y en el registro de deuda. Muestra que el
+  inventario de X-1 no era exhaustivo: el centinela del español es obligatorio.
+- **TD-84** sigue propuesta (trigésima actualización).
+
+**Lo que decide la persona responsable (no clínico):**
+- **Rama de la Fase 1:** el readiness (§16.3) dice que la Fase 1 sigue en `clinical-encounter-v0.13`; el encargo del
+  2026-10-08 propone `phase-1-contracts-v2`. Se recomienda `phase-1-contracts-v2`. Al autorizar la Fase 1, actualizar
+  la línea de la rama de CLAUDE.md.
+- **La propuesta de arquitectura** que cita el código («proposal §9.4», «Phase 4») no está en `docs/`. Se recomienda
+  agregarla antes de WP1.
+
+**Diferencias halladas, sin cambio de código:**
+- el preflight acepta una clave del proveedor presente pero retenida, y §16.11 exige ausencia: el runbook agrega la
+  comprobación manual;
+- `docs/RUNBOOK_PILOTO.md` está desactualizado frente a §16;
+- el ayudante `b1_target_check.py` no está en el repositorio: se recrea desde §18.6;
+- ninguna prueba comprueba `F0_11_FRASES_ES.md`.
+
+**Siguiente:** la decisión docente sobre R4B, R5 y R6 (9 casos), TD-84 y TD-85; después, la autorización de la ronda
+de implementación (mapa, §7).
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0, rúbrica, R1, R2, R3 y R4A aprobados, 21 de 30 casos; R4B, R5 y R6 en revisión); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0, rúbrica, R1, R2, R3 y R4A aprobados, 21 de 30 casos; R4B, R5 y R6 en revisión; plan de implementación en `docs/revision/B5_IMPLEMENTATION_READINESS_MAP.md`); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

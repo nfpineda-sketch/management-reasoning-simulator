@@ -358,6 +358,14 @@ preparados para su decisión (los 9 casos restantes, limpios, sin cambios de tex
 (`docs/revision/B5_RELATO_INTEGRIDAD_30.md`). Propuesta TD-84 (examen neurológico inglés de los opioides). Sin
 `approvals.json`. B-5 sigue bloqueado (Decision File, trigésima actualización).
 
+**Actualización del 2026-10-08 (B-5, plan, sesión autónoma):** sólo documentación, nada ejecutado. El mapa de
+implementación (`docs/revision/B5_IMPLEMENTATION_READINESS_MAP.md`) ordena lo decidido en 8 grupos atómicos y fija
+la matriz de recertificación. El runbook de promoción y despliegue (`docs/revision/PILOT_PROMOTION_DEPLOYMENT_RUNBOOK.md`)
+reúne en una secuencia el contrato (16.4), la topología, Neon, Streamlit, la prueba de humo (25 pasos) y la vuelta
+atrás. Propuesta TD-85 (dos frases del motor en inglés en la sala española). Contradicción a decidir: la Fase 1 en
+esta rama (16.3) o en `phase-1-contracts-v2` (`docs/revision/PHASE_1_KICKOFF_PACKAGE.md`, §1). B-5 sigue bloqueado
+(Decision File, trigésima primera actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

@@ -306,3 +306,7 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
 - **Integridad de los 30 casos (determinista, 2026-10-08):** `docs/revision/B5_RELATO_INTEGRIDAD_30.md`. 21 aprobados, 9 revisados pendientes, 0 sin
   revisar; las 30 versiones objetivo se reproducen; lote 0 47/527 sin diferencias; 18 pasajes fijos intactos;
   0 cifras distintas y 0 inglés en el español.
+- **Activación (diseño, 2026-10-08):** cómo el relato y la rúbrica aprobados llegan al candidato: el esquema y la
+  precedencia que el código lee, la herramienta de exportación (diseño), las pruebas por agregar y la reproducción de
+  las 5 versiones de la rúbrica, en `docs/revision/B5_IMPLEMENTATION_READINESS_MAP.md` (§4 y §5). Nada implementado;
+  los dos `approvals.json` se generan sólo con los 30 casos aprobados.
