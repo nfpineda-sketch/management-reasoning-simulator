@@ -10131,12 +10131,27 @@ def _event_head(label, minute):
 def _room_you_words(text):
     """A ``YOU`` entry the room writes in the resident's place, in the reading language (L-11).
 
-    What the resident typed is never translated; only the room's own «Examine: {region}».
+    What the resident typed is never translated; only the room's own «Examine: {region}» and
+    «Ask about {topic}» (ES-P2, faculty, 2026-10-08: «Preguntar por: {tema}», the topic by its
+    Spanish name, I-5).
     """
     import language
+    if language.current() != "es":
+        return text
     match = re.fullmatch(r"Examine: (.+)", str(text or ""))
-    if match and language.current() == "es":
+    if match:
         return "Examen: " + language.region(match[1], "es")
+    match = re.fullmatch(r"Ask about (.+)", str(text or ""))
+    if match:
+        from history_topics import HISTORY_TOPIC_LABELS, topic_label
+        topics = {label.lower(): key for key, label in HISTORY_TOPIC_LABELS.items()}
+        if match[1] in topics:
+            return "Preguntar por: " + topic_label(topics[match[1]], "es")
+        # The topics of a case without its own (the room's three), by the catalog's names.
+        named = {label.lower(): label for label in ("Presenting symptoms and onset", "Associated symptoms",
+                                                    "Previous health")}
+        if match[1] in named:
+            return "Preguntar por: " + _record_words(named[match[1]])
     return text
 
 
@@ -10189,7 +10204,7 @@ def _language_selector():
         format_func=lambda code: language.LANGUAGES[code], disabled=under_way,
         help=("Fijo durante el encuentro: es el idioma en que se inició. · Fixed during the encounter: "
               "the language it started in." if under_way else
-              "Presentation only. Orders are read in Spanish and English either way."),
+              _record_words("Presentation only. Orders are read in Spanish and English either way.")),
     )
 
 
@@ -10780,7 +10795,7 @@ def _render_closed_bedside():
         st.caption(_record_words("Current support · ") + " | ".join(support))
     _, latest, _, _ = encounter_sections(st.session_state.events)
     if latest:
-        with st.expander("Latest response", expanded=True):
+        with st.expander(_record_words("Latest response"), expanded=True):
             for event in latest:
                 if event.get("kind") != "you":
                     render_event(event)
@@ -10935,7 +10950,8 @@ with st.container(key="encounter-console"):
     # What was obtained, to consult: above the writing area in the room, and folded
     # away on the review that follows the close, as the chart was.
     with (st.container(key="enc-info") if _in_room
-          else st.expander("Clinical chart · examination · results · treatment record", expanded=False)):
+          else st.expander(_record_words("Clinical chart · examination · results · treatment record"),
+                           expanded=False)):
         if _in_room:
             _render_carry_forward_plan()
         _render_encounter_views(bedside=_in_room)

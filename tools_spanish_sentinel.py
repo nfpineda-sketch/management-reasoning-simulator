@@ -34,7 +34,10 @@ Left out, on purpose, and only these:
 A line the room shows in English because the faculty has not yet decided its
 Spanish is not an exception and is not left out: it is reported as pending
 (``PENDING_FACULTY_WORDING``, B-5 IG-5; ``docs/revision/B5_IG5_PENDIENTES_DOCENTES.md``),
-apart from any other line with English, which is unintended.
+apart from any other line with English, which is unintended. Texts the walk does not
+reach and that still wait for their Spanish are listed apart
+(``PENDING_OUTSIDE_THE_WALK``); the report names them, and the sentinel is not
+complete while one is open.
 
 Nothing is translated, approved or repaired here. Usage::
 
@@ -59,8 +62,6 @@ ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 APP = ROOT / "app.py"
-
-import history_topics  # noqa: E402 (data only; after the repository is on the path)
 
 #: English function words: never part of a Spanish sentence of the room (tools_engine_spanish). «has» is left
 #: out: it is also Spanish («No has registrado un destino»).
@@ -220,17 +221,21 @@ def spanish_vocabulary():
 #: ``docs/revision/B5_IG5_PENDIENTES_DOCENTES.md``). Not exceptions: decisions pending. Each entry is
 #: (item, pattern, English words it may carry): with ``None`` the pattern must match the whole line;
 #: otherwise it must occur in the line and the line's English must be only those words.
-PENDING_FACULTY_WORDING = (
-    ("ES-P1", re.compile(r"Presentation only\. Orders are read in Spanish and English either way\."), None),
-    ("ES-P2", re.compile("Ask about (?:" + "|".join(re.escape(label.lower()) for label in
-                                                   history_topics.HISTORY_TOPIC_LABELS.values()) + ")"), None),
-    ("ES-P3", re.compile(r"Latest response"), None),
-    ("ES-P4", re.compile(r"Clinical chart · examination · results · treatment record"), None),
-    ("ES-P5", re.compile(r"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated "
-                         r"\(hemoglobin [\d.]+ g/dL without blood running\); they will re-check every 15 minutes\."), None),
-    ("ES-P6", re.compile(r"\b[Hh]eparina \d+ units IV\b"), frozenset({"units"})),
-    ("ES-P7", re.compile(r"\bHemorrhage control\b|\bBlood\b"), frozenset({"hemorrhage", "control", "blood"})),
-)
+#: Empty since the faculty decided ES-P1 to ES-P7 (2026-10-08): every line with English the walk
+#: finds is now unintended.
+PENDING_FACULTY_WORDING = ()
+
+#: Texts the room can show in English, outside the walk, that wait for the faculty's Spanish
+#: (TD-86). The walk does not reach them; they are listed so that the sentinel never reads as
+#: complete while one is open (``test_spanish_sentinel.py``), and none is an exception.
+PENDING_OUTSIDE_THE_WALK = {
+    "ES-P8": "the frozen reader's clarifications about what is not active (active_order_context)",
+    "ES-P9": "the tranexamic acid dose basis when no dose was written",
+    "ES-P10": "ventricular fibrillation precipitated by a stress test or a long-closed artery",
+    "ES-P11": "the event label «endoscopy performed»",
+    "ES-P12": "a held order's last line, «Also recognized but not executable in this build: …»",
+    "ES-P13": "the gastroenterology deferral for a low systolic pressure (variants of ES-P5)",
+}
 
 
 def pending_item(line, english):
@@ -544,14 +549,17 @@ def main(argv=None):
         print(f"{case}: {len(result['english'])} lines with English ({unintended} unintended, "
               f"{len(result['english']) - unintended} pending faculty wording); stopped: {len(result['stopped'])}",
               flush=True)
-    report = {"seconds": round(time.monotonic() - started), "cases": results}
+    report = {"seconds": round(time.monotonic() - started), "cases": results,
+              "pending_outside_the_walk": PENDING_OUTSIDE_THE_WALK}
     (out / "sentinel.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
     total = sum(len(r["english"]) for r in results)
     unintended = sum(1 for r in results for row in r["english"] if not row["pending"])
     stopped = sum(len(r["stopped"]) for r in results)
     print(f"{len(results)} cases; {total} lines with English: {unintended} unintended, {total - unintended} pending "
           f"faculty wording; {stopped} stopped steps; {report['seconds']} s")
-    return 0 if not total and not stopped else 1
+    if PENDING_OUTSIDE_THE_WALK:
+        print("Pending faculty wording outside the walk: " + ", ".join(sorted(PENDING_OUTSIDE_THE_WALK)))
+    return 0 if not total and not stopped and not PENDING_OUTSIDE_THE_WALK else 1
 
 
 if __name__ == "__main__":

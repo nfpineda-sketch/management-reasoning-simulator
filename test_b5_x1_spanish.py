@@ -551,3 +551,59 @@ def test_what_the_resident_wrote_is_never_said_in_spanish(english, spanish):
     """V-9 and the word rules of IG-5 say the engine's words, never the resident's (H-2)."""
     assert language.say(english, "es") == spanish
     assert language.say("Executed now: **aspirin 300 mg PO**.", "es") == "Ejecutado ahora: **aspirina 300 mg PO**."
+
+
+# --- ES-P1 to ES-P7: the faculty's wording of 2026-10-08 (TD-86) --------------------------------------
+
+@pytest.mark.parametrize("english, spanish", [
+    ("Presentation only. Orders are read in Spanish and English either way.",                       # ES-P1
+     "Sólo cambia la presentación. Las órdenes se leen igual en español y en inglés."),
+    ("Latest response", "Última respuesta"),                                                         # ES-P3
+    ("Clinical chart · examination · results · treatment record",                                    # ES-P4
+     "Ficha clínica · examen · resultados · registro de tratamientos"),
+])
+def test_es_p1_p3_p4_the_selector_help_and_the_folds_after_the_close(english, spanish):
+    assert report_language.t(english, "es") == spanish
+    assert report_language.t(english, "en") == english
+
+
+def test_es_p2_the_history_topic_the_room_writes_for_the_resident(monkeypatch):
+    from test_curriculum_trajectories import load_engine
+    engine = load_engine()
+    monkeypatch.setattr(language, "current", lambda: "es")
+    assert engine["_room_you_words"]("Ask about presenting symptoms") == "Preguntar por: Motivo de consulta"
+    assert engine["_room_you_words"]("Ask about relevant exposures and risk factors") == \
+        "Preguntar por: Exposiciones y factores de riesgo relevantes"
+    assert engine["_room_you_words"]("Ask about presenting symptoms and onset") == \
+        "Preguntar por: Motivo de consulta e inicio"
+    assert engine["_room_you_words"]("Ask about the pain") == "Ask about the pain"  # what the resident wrote
+    monkeypatch.setattr(language, "current", lambda: "en")
+    assert engine["_room_you_words"]("Ask about presenting symptoms") == "Ask about presenting symptoms"
+
+
+def test_es_p5_the_gastroenterology_deferral_in_the_exact_approved_words():
+    english = ("Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated "
+               "(hemoglobin 6.8 g/dL without blood running); they will re-check every 15 minutes.")
+    assert language.say(english, "es") == (
+        "El equipo de Gastroenterología está a pie de cama, pero difiere la endoscopía hasta lograr una "
+        "reanimación adecuada (hemoglobina 6.8 g/dL sin transfusión en curso); reevaluará cada 15 minutos.")
+    assert language.say(english, "en") == english
+
+
+def test_es_p6_a_dose_in_units_says_unidades_never_ui():
+    heparin = {"type": "anticoagulation", "agent": "heparin", "dose": 4000, "units": "units", "route": "IV"}
+    assert report_presentation.action_phrase(heparin, "es") == "Heparina 4000 unidades IV"
+    assert report_presentation.action_phrase(heparin) == "Heparin 4000 units IV"
+    record = {"agent": "heparin", "dose": 4000, "units": "units", "route": "IV", "time_min": 16}
+    assert family_reports.format_administration(record, "es") == "heparina 4000 unidades IV · minuto 16"
+    assert family_reports.format_administration(record) == "heparin 4000 units IV · minute 16"
+    said = language.say("After aspirin 300 mg PO administered + heparin 4000 units IV administered, BP 138/84 mmHg.",
+                        "es")
+    assert "heparina 4000 unidades IV administrado" in said and "UI" not in said
+
+
+def test_es_p7_an_action_without_its_label_by_its_kind():
+    assert report_presentation.action_phrase({"type": "hemorrhage_control"}, "es") == "Control de la hemorragia"
+    assert report_presentation.action_phrase({"type": "blood", "units": 2}, "es") == "Glóbulos rojos"
+    assert report_presentation.action_phrase({"type": "hemorrhage_control"}) == "Hemorrhage control"
+    assert report_presentation.action_phrase({"type": "blood", "units": 2}) == "Blood"

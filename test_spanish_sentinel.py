@@ -51,14 +51,31 @@ def test_a_template_slot_is_not_a_spanish_word():
         sentinel.english_words("drug dose destination summary given ordered"))
 
 
-def test_a_pending_item_is_recognised_only_with_its_own_english():
-    assert sentinel.pending_item("Latest response", ["latest", "response"]) == "ES-P3"
-    assert sentinel.pending_item("Ask about presenting symptoms", ["ask", "about", "presenting", "symptoms"]) == "ES-P2"
-    assert sentinel.pending_item("Ask about this topic", ["ask", "about", "this", "topic"]) is None
-    assert sentinel.pending_item("Ask about the available history source and continue", ["ask"]) is None
-    assert sentinel.pending_item("heparina 4000 units IV · minuto 16", ["units"]) == "ES-P6"
-    assert sentinel.pending_item("heparina 4000 units IV given", ["units", "given"]) is None
+def test_a_pending_item_is_recognised_only_with_its_own_english(monkeypatch):
+    """The mechanism, on made-up items: a whole line, or a line whose only English is the item's own words."""
+    import re
+    monkeypatch.setattr(sentinel, "PENDING_FACULTY_WORDING", (
+        ("X-1", re.compile(r"Latest response"), None),
+        ("X-2", re.compile(r"\bheparina \d+ units IV\b"), frozenset({"units"}))))
+    assert sentinel.pending_item("Latest response", ["latest", "response"]) == "X-1"
     assert sentinel.pending_item("Latest response and more", ["latest", "response", "and", "more"]) is None
+    assert sentinel.pending_item("heparina 4000 units IV · minuto 16", ["units"]) == "X-2"
+    assert sentinel.pending_item("heparina 4000 units IV given", ["units", "given"]) is None
+
+
+def test_es_p1_to_p7_are_decided_and_no_line_of_the_walk_is_pending():
+    """The faculty decided ES-P1 to ES-P7 (2026-10-08): their English, if it came back, would be unintended."""
+    assert sentinel.PENDING_FACULTY_WORDING == ()
+    for line in ("Latest response", "Ask about presenting symptoms", "heparina 4000 units IV · minuto 16",
+                 "Hemorrhage control + Blood + Ácido tranexámico 1 g IV"):
+        assert sentinel.english_words(line) and sentinel.pending_item(line, sentinel.english_words(line)) is None
+
+
+def test_no_faculty_wording_is_still_pending_outside_the_walk():
+    """ES-P8 to ES-P13 wait for the faculty (TD-86). Not exceptions: the sentinel is not complete until then."""
+    assert set(sentinel.PENDING_OUTSIDE_THE_WALK) <= {f"ES-P{n}" for n in range(8, 14)}
+    if sentinel.PENDING_OUTSIDE_THE_WALK:
+        pytest.xfail("Faculty wording pending outside the walk: " + ", ".join(sorted(sentinel.PENDING_OUTSIDE_THE_WALK)))
 
 
 @pytest.mark.parametrize("variant", pilot_freeze.accepted_variants())

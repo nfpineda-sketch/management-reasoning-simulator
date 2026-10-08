@@ -970,6 +970,8 @@ _RULES = _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
  (r"\b(\d+(?:\.\d+)? (?:mg|g)) nebulized\b", r"\1 nebulizado"),
  (r"\bGlucose (\d+(?:\.\d+)? g IV\b)", r"Glucosa \1"),
  (r"\bNIV (?=inicio\b|suspensión\b|ajuste\b|start\b|stop\b|adjust\b)", "VMNI "),
+ # ES-P6 (TD-86; faculty, 2026-10-08): a dose in units says «unidades», never «UI»; amount and route as written.
+ (r"\b(\d+(?:\.\d+)?) units (?=IV\b|SC\b|IM\b)", r"\1 unidades "),
  (r"\bUnresponsive\b", "Sin respuesta"), (r"\bunresponsive\b", "sin respuesta"),
  (r"\bObtunded\b", "Obnubilado"), (r"\bobtunded\b", "obnubilado"),
  (r"\bDrowsy\b", "Somnoliento"), (r"\bdrowsy\b", "somnoliento"),
@@ -1490,6 +1492,11 @@ _RULES = _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
   "Hemodinamia contactada. Este ECG no muestra patrón de oclusión: no se requiere coronariografía inmediata, y el camino aquí es antiagregación y anticoagulación con cama monitorizada y reevaluación."),
  (r"The artery is open after percutaneous coronary intervention: the ST segment resolves on a repeated ECG and the discomfort settles\. The troponin climbs faster now, from washout, which is not a failed procedure; its peak comes hours later\. The affected wall recovers only partly\.",
   "La arteria está abierta tras la angioplastia: el segmento ST se resuelve en un ECG repetido y el dolor cede. La troponina sube más rápido ahora, por lavado, lo que no es un procedimiento fallido; su peak llega horas después. La pared afectada se recupera solo en parte."),
+ # ES-P5 (TD-86; faculty, 2026-10-08, exact wording): the deferral for a hemoglobin without blood running.
+ (r"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated \(hemoglobin ([\d.]+) "
+  r"g/dL without blood running\); they will re-check every (\d+) minutes\.",
+  r"El equipo de Gastroenterología está a pie de cama, pero difiere la endoscopía hasta lograr una reanimación "
+  r"adecuada (hemoglobina \1 g/dL sin transfusión en curso); reevaluará cada \2 minutos."),
  (r"Gastroenterology performed upper endoscopy: bleeding ulcer treated endoscopically; active bleeding controlled\. Rebleeding remains possible\.",
   "Gastroenterología realizó la endoscopía alta: úlcera sangrante tratada endoscópicamente; sangrado activo controlado. El resangrado sigue siendo posible."),
  (r"Systemic thrombolysis given in obstructive shock, a hypotension with signs of hypoperfusion: the obstruction begins to fall within minutes and keeps falling for about half an hour\.",

@@ -104,6 +104,8 @@ def format_administration(record, language="en"):
     amount = record.get("dose_g", record.get("dose_mg", record.get("dose")))
     unit = "g" if "dose_g" in record else "mg" if "dose_mg" in record else record.get("units", "")
     if spanish:
+        import report_presentation
+        unit = report_presentation._dose_unit(unit, spanish=True)  # ES-P6: «unidades»
         import language as languages
         name = languages.drug(record.get("agent"), "es") if record.get("agent") else words["medication"]
     else:

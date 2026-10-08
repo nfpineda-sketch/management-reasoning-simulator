@@ -162,6 +162,11 @@ _ROUTES_ES = {"nebulised": "nebulizado", "inhaled": "inhalado"}
 CONSULT_ES = "interconsulta "
 _OPERATION_ES = {"started": "iniciado", "stopped": "suspendido", "adjusted": "ajustado",
                  "continued unchanged": "sin cambios", "increased": "aumentado", "decreased": "disminuido"}
+#: ES-P6 (TD-86; faculty, 2026-10-08): a dose in units, in Spanish «unidades» (never «UI»).
+_DOSE_UNITS_ES = {"units": "unidades", "unit": "unidad"}
+#: ES-P7 (TD-86; faculty, 2026-10-08): an action with no label of its record, by its kind.
+_FALLBACK_NAMES_ES = {"hemorrhage_control": "control de la hemorragia", "blood": "glóbulos rojos"}
+
 _SUPPORT_NAMES_ES = {
     "vascular_access": "vía venosa periférica", "monitoring": "monitorización continua y oximetría de pulso",
     "urinary_catheter": "sonda vesical", "gastric_tube": "sonda nasogástrica", "npo": "régimen cero",
@@ -214,6 +219,12 @@ def _number(value):
 def _amount(value, unit):
     number = _number(value)
     return f"{number:g} {unit}" if number is not None else ""
+
+
+def _dose_unit(unit, spanish=False):
+    """A dose's unit as written; in Spanish, «units» is «unidades» (ES-P6)."""
+    unit = str(unit or "")
+    return _DOSE_UNITS_ES.get(unit, unit) if spanish else unit
 
 
 def _timing(action, language="en"):
@@ -343,7 +354,7 @@ def action_phrase(action, language="en"):
             agent = languages.drug(action.get("agent") or action.get("agent_name") or kind, "es").replace("_", " ")
         dose = (_amount(action.get("dose_g"), "g") if action.get("dose_g") is not None
                 else _amount(action.get("dose_mg"), "mg") if action.get("dose_mg") is not None
-                else _amount(action.get("dose"), str(action.get("units") or "")).strip())
+                else _amount(action.get("dose"), _dose_unit(action.get("units"), spanish)).strip())
         phrase = " ".join(bit for bit in (agent, dose, route) if bit)
     elif kind == "vascular_access" and action.get("access") == "intraosseous":
         # An intraosseous line is written as one, never as the peripheral IV
@@ -356,6 +367,8 @@ def action_phrase(action, language="en"):
             phrase = (f"{site} " if site else "") + "intraosseous access"
     elif kind in _SUPPORT_NAMES:
         phrase = _SUPPORT_NAMES_ES[kind] if spanish else _SUPPORT_NAMES[kind]
+    elif spanish and not action.get("label") and kind in _FALLBACK_NAMES_ES:
+        phrase = _FALLBACK_NAMES_ES[kind]
     else:
         phrase = str(action.get("label") or kind or "action").replace("_", " ")
         if spanish:

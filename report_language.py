@@ -2572,6 +2572,12 @@ ES = {
         '**Comparación con el experto · borrador pendiente de validación docente**',
     '### Attempt {number} · Carry-Forward Learning Goal':
         '### Intento {number} · Objetivo de aprendizaje del intento anterior',
+    # ES-P1, ES-P3 and ES-P4 (TD-86; faculty, 2026-10-08): the selector's help and the two folds after the close.
+    'Presentation only. Orders are read in Spanish and English either way.':
+        'Sólo cambia la presentación. Las órdenes se leen igual en español y en inglés.',
+    'Latest response': 'Última respuesta',
+    'Clinical chart · examination · results · treatment record':
+        'Ficha clínica · examen · resultados · registro de tratamientos',
     'This prospective plan came from the previous attempt. Use it as an intention for action and reassessment; the new Management Trace records only what you actually do now.':
         'Este plan prospectivo viene del intento anterior. Úsalo como una intención de acción y de reevaluación; el nuevo Management Trace registra sólo lo que haces ahora.',
     '**Previous attempt record · Attempt {number}**': '**Registro del intento anterior · Intento {number}**',

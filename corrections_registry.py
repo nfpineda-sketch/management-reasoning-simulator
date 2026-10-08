@@ -98,6 +98,10 @@ INSTRUCTION_2026_10_08_B5 = ("Instrucción del 2026-10-08 «FINAL FACULTY DECISI
                              "2026-10-07 y 2026-10-08 (relatos 30/30, rúbrica 5/5, TD-84, TD-85, X-1 105/105); "
                              "commits locales, sin push, sin recursos Neon ni Streamlit, sin despliegue, sin GO "
                              "del piloto y sin Fase 1")
+INSTRUCTION_2026_10_08_ESP = ("Instrucción del 2026-10-08 «FACULTY DECISIONS — ES-P1 TO ES-P7» (B-5): ES-P1 a "
+                              "ES-P4, ES-P6 y ES-P7 aprobados; ES-P5 revisado con su redacción docente exacta; "
+                              "ES-P8 a ES-P12 sin implementar hasta la decisión docente; sólo en local, sin push, "
+                              "sin despliegue y sin Fase 1")
 
 CORRECTIONS = (
     {
@@ -3581,6 +3585,34 @@ CORRECTIONS = (
                   "test_b5_x1_spanish.py::test_the_carry_forward_heading_in_both_languages",
                   "test_spanish_sentinel.py::test_a_template_slot_is_not_a_spanish_word",
                   "test_spanish_sentinel.py::test_a_pending_item_is_recognised_only_with_its_own_english"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-08-08",
+        "date": "2026-10-08",
+        "title": "TD-86: ES-P1 a ES-P7 en español, con la redacción que decidió la docencia",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("La docencia decidió el 2026-10-08 siete textos que la sala mostraba en inglés: la ayuda del "
+                   "selector de idioma (ES-P1), «Preguntar por: {tema}» con el nombre del tema en español (ES-P2), "
+                   "«Última respuesta» (ES-P3), «Ficha clínica · examen · resultados · registro de tratamientos» "
+                   "(ES-P4), la frase de gastroenterología con su redacción exacta (ES-P5), «unidades» y nunca «UI» "
+                   "en una dosis en unidades (ES-P6) y «Control de la hemorragia» y «Glóbulos rojos» como nombres "
+                   "de respaldo (ES-P7). Sólo cambia lo que se muestra en español: el inglés, el disparador, el "
+                   "momento, la hemoglobina, la interconsulta, el intervalo de reevaluación, la dosis y la vía no "
+                   "cambian. ES-P8 a ES-P12 esperan la decisión docente; las variantes de ES-P5 con la presión "
+                   "sistólica no estaban en la decisión y quedan en inglés (ES-P13)."),
+        "authorised_by": INSTRUCTION_2026_10_08_ESP,
+        "affects": {"modules": ["app", "language", "report_language", "report_presentation", "family_reports",
+                                "tools_spanish_sentinel"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_b5_x1_spanish.py::test_es_p1_p3_p4_the_selector_help_and_the_folds_after_the_close",
+                  "test_b5_x1_spanish.py::test_es_p2_the_history_topic_the_room_writes_for_the_resident",
+                  "test_b5_x1_spanish.py::test_es_p5_the_gastroenterology_deferral_in_the_exact_approved_words",
+                  "test_b5_x1_spanish.py::test_es_p6_a_dose_in_units_says_unidades_never_ui",
+                  "test_b5_x1_spanish.py::test_es_p7_an_action_without_its_label_by_its_kind",
+                  "test_spanish_sentinel.py::test_es_p1_to_p7_are_decided_and_no_line_of_the_walk_is_pending",
+                  "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english"],
         "preservation": None,
     },
 )
