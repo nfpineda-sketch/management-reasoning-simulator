@@ -113,9 +113,9 @@ Comparación con el registro del 2026-09-25 (commit d184845), antes de que exist
 
 | Variante | Caso | Declaración | Lanzamiento | Guiones distintos |
 |---|---|---|---|---|
-| `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `failed_line_then_new_line` |
-| `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `failed_line_then_new_line` |
-| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `failed_line_then_new_line` |
+| `hypoglycemia_28m` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `oral_while_not_alert`, `failed_line_then_new_line` |
+| `hypoglycemia_76f` | `/patient/body` | nueva versión (C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `oral_while_not_alert`, `failed_line_then_new_line` |
+| `hypoglycemia_54m_thiamine` | `/faculty/discriminating_findings`, `/faculty/management_focus`, `/faculty/review_questions`, `/patient/body` | nueva versión (C-2026-09-25-05, C-2026-09-28-01, C-2026-09-28-10, C-2026-09-28-17) | idéntico | `untreated`, `existing_line_dextrose`, `new_line_then_dextrose`, `glucagon_im`, `glucagon_iv_existing_line`, `double_ampoule`, `infusion_after_ampoule`, `infusion_existing_line`, `octreotide_sc`, `octreotide_iv_existing_line`, `thiamine_then_dextrose`, `intraosseous_dextrose`, `oral_after_recovery`, `early_discharge`, `admission`, `ed_observation`, `examinations`, `oral_while_not_alert`, `failed_line_then_new_line` |
 
 Cada diferencia está declarada en el registro de correcciones; la prueba `test_hypoglycemia_preservation` acepta esas y ninguna otra.
 
@@ -261,6 +261,13 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-10-06-12 | Cierre de la Fase 0: una orden cuyo nombre ningún vocabulario conoce no desaparece | general | technical_defect | clinical | — |
 | C-2026-10-06-13 | F0-12: la orden escrita después de la respuesta a una aclaración corre como orden propia | general | technical_defect | clinical | — |
 | C-2026-10-06-14 | F0-11: las frases nuevas de la Fase 0 en español, con las palabras citadas como se escribieron | general | text | cosmetic | — |
+| C-2026-10-08-01 | XR-18: la aclaración de la vía oral con el paciente que no puede tragar, en inglés y en español | general | text | cosmetic | — |
+| C-2026-10-08-02 | TD-81: el relato en español de los 30 casos del piloto, atado a las versiones que aprobó la docencia | general | text | cosmetic | — |
+| C-2026-10-08-03 | TD-81: la rúbrica en español (D1 a D5), atada a las versiones que aprobó la docencia | general | text | cosmetic | — |
+| C-2026-10-08-04 | TD-82 y TD-85: lo que dicen el paro y la recaída (K-18, K-E5, K-E6, K-E16) | general | clinical_decision_applied | clinical | — |
+| C-2026-10-08-05 | TD-83, TD-51, TD-52 y TD-84: el examen dice el estado del motor | general | clinical_decision_applied | clinical | — |
+| C-2026-10-08-06 | TD-79 y TD-80: X-1, la sala en español sin inglés no declarado ni claves internas | general | text | cosmetic | — |
+| C-2026-10-08-07 | TD-80 y TD-86: lo que halló la revisión adversarial de IG-3 a IG-5, y el encabezado del intento repetido | general | text | cosmetic | — |
 
 ## La batería, configuración por configuración
 

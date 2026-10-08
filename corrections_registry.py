@@ -3555,6 +3555,34 @@ CORRECTIONS = (
                   "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-10-08-07",
+        "date": "2026-10-08",
+        "title": "TD-80 y TD-86: lo que halló la revisión adversarial de IG-3 a IG-5, y el encabezado del intento repetido",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("La revisión adversarial del diff de IG-3 a IG-5 halló cuatro defectos, confirmados con sondas, y la "
+                   "regresión de v0.8.1 halló un quinto. H-1: la pregunta de la vía había tomado la redacción de XR-05 "
+                   "(b), que es de la pregunta de dosis (X1-C01), y en español salía entera en inglés con un fármaco de "
+                   "dos palabras; vuelve a nombrar lo que nombraba antes, con la clase por su etiqueta y no por su clave "
+                   "(V-1, TD-80), y en español se dice entera. H-2: los nombres de V-9 y las reglas de una palabra de "
+                   "IG-5 traducían dentro de lo que escribió el residente; esas palabras se apartan antes de las reglas, "
+                   "como ya se apartaba lo que va entre comillas. H-3: el centinela contaba como español los nombres de "
+                   "las ranuras de las plantillas ({given}, {drug}…). H-4: ES-P2 reconocía cualquier línea que empezara "
+                   "con «Ask about»; ahora sólo los temas de la historia. El encabezado inglés del intento repetido se "
+                   "escribe otra vez como en v0.8.1; en español sigue el catálogo (P-03). La última línea de una orden "
+                   "retenida («Also recognized but not executable in this build: …») no tiene español aprobado: queda "
+                   "como está, con la lista del residente intacta (TD-86, ES-P12)."),
+        "authorised_by": INSTRUCTION_2026_10_08_B5,
+        "affects": {"modules": ["language", "family_engine", "app", "tools_spanish_sentinel"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_b5_x1_spanish.py::test_the_route_question_keeps_its_own_wording",
+                  "test_b5_x1_spanish.py::test_what_the_resident_wrote_is_never_said_in_spanish",
+                  "test_b5_x1_spanish.py::test_the_carry_forward_heading_in_both_languages",
+                  "test_spanish_sentinel.py::test_a_template_slot_is_not_a_spanish_word",
+                  "test_spanish_sentinel.py::test_a_pending_item_is_recognised_only_with_its_own_english"],
+        "preservation": None,
+    },
 )
 
 

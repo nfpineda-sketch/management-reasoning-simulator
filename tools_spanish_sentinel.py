@@ -60,6 +60,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 APP = ROOT / "app.py"
 
+import history_topics  # noqa: E402 (data only; after the repository is on the path)
+
 #: English function words: never part of a Spanish sentence of the room (tools_engine_spanish). «has» is left
 #: out: it is also Spanish («No has registrado un destino»).
 FUNCTION_WORDS = frozenset("""
@@ -103,6 +105,15 @@ _WORD = re.compile(r"[^\W\d_]+", re.UNICODE)
 
 def _words(text):
     return {word.lower() for word in _WORD.findall(str(text or "")) if len(word) > 1}
+
+
+#: A template's slot ({drug}, {given}…): a name in the code, not a word the Spanish says.
+_SLOT = re.compile(r"\{\w*\}")
+
+
+def _spanish_words(text):
+    """The words of an approved Spanish text, without its templates' slots."""
+    return _words(_SLOT.sub(" ", str(text or "")))
 
 
 #: A literal that is a pattern (the bilingual reader's, among others), not a sentence anyone reads.
@@ -155,14 +166,14 @@ def _spanish_values(module, names_like=("_ES", "_es")):
     for name, value in vars(module).items():
         if name.endswith(names_like) and isinstance(value, dict):
             for item in value.values():
-                found |= _words(item if isinstance(item, str) else json.dumps(item, ensure_ascii=False))
+                found |= _spanish_words(item if isinstance(item, str) else json.dumps(item, ensure_ascii=False))
         elif name.endswith(names_like) and isinstance(value, str):
-            found |= _words(value)
+            found |= _spanish_words(value)
         elif name.endswith(names_like) and isinstance(value, (tuple, list)):
             # A table of (pattern, Spanish) pairs, such as the engine's findings: only the Spanish counts.
             for pair in value:
                 if isinstance(pair, (tuple, list)) and len(pair) == 2 and isinstance(pair[1], str):
-                    found |= _words(pair[1])
+                    found |= _spanish_words(pair[1])
     return found
 
 
@@ -184,24 +195,24 @@ def spanish_vocabulary():
     found = set()
     for rows in case_text.passages("es").values():
         for row in rows.values():
-            found |= _words(row.get("es"))
+            found |= _spanish_words(row.get("es"))
     for rows in rubric_text.drafts("es").values():
         for row in rows.values():
-            found |= _words(row.get("es"))
+            found |= _spanish_words(row.get("es"))
     for value in report_language.ES.values():
-        found |= _words(value)
+        found |= _spanish_words(value)
     for _, replacement in language._RULES:
         if isinstance(replacement, str):
-            found |= _words(replacement)
+            found |= _spanish_words(replacement)
     for value in language.MESSAGES.values():
-        found |= _words(value)
+        found |= _spanish_words(value)
     found |= _spanish_values(language)
     import importlib
     for name in _SPANISH_MODULES:
         found |= _spanish_values(importlib.import_module(name))
     for table in (getattr(language, "ENGINE_SENTENCES", {}).get("es", {}),):
         for value in table.values():
-            found |= _words(value)
+            found |= _spanish_words(value)
     return frozenset(found)
 
 
@@ -211,7 +222,8 @@ def spanish_vocabulary():
 #: otherwise it must occur in the line and the line's English must be only those words.
 PENDING_FACULTY_WORDING = (
     ("ES-P1", re.compile(r"Presentation only\. Orders are read in Spanish and English either way\."), None),
-    ("ES-P2", re.compile(r"Ask about [a-z ,/&-]+"), None),
+    ("ES-P2", re.compile("Ask about (?:" + "|".join(re.escape(label.lower()) for label in
+                                                   history_topics.HISTORY_TOPIC_LABELS.values()) + ")"), None),
     ("ES-P3", re.compile(r"Latest response"), None),
     ("ES-P4", re.compile(r"Clinical chart · examination · results · treatment record"), None),
     ("ES-P5", re.compile(r"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated "

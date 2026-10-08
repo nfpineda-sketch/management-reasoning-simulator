@@ -490,3 +490,64 @@ def test_the_room_writes_every_examination_entry_and_the_state_summary_in_spanis
     summary = engine["_trace_state_words"](snapshot, "es")
     assert "Noradrenalina 0.05 mcg/kg/min en curso" in summary and "Nitroglicerina 20 mcg/min en curso" in summary
     assert "Norepinephrine" not in summary and "Nitroglycerin" not in summary
+
+
+def test_the_carry_forward_heading_in_both_languages(monkeypatch):
+    """P-03 (XR-28): Spanish reads the catalog; English keeps the heading as v0.8.1 wrote it."""
+    from contextlib import nullcontext
+    from test_curriculum_trajectories import load_engine
+    engine = load_engine()
+    shown = []
+
+    class Page:
+        session_state = {"attempt_number": 2, "carry_forward_plan": {"cue": "MAP below 65"}}
+        markdown = caption = write = staticmethod(shown.append)
+        container = staticmethod(lambda **_: nullcontext())
+        columns = staticmethod(lambda count: [nullcontext() for _ in range(count)])
+
+    engine["st"] = Page
+    for reading, heading in (("en", "### Attempt 2 · Carry-Forward Learning Goal"),
+                             ("es", "### Intento 2 · Objetivo de aprendizaje del intento anterior")):
+        shown.clear()
+        monkeypatch.setattr(language, "current", lambda: reading)
+        engine["_render_carry_forward_plan"]()
+        assert shown[0] == heading
+        assert "MAP below 65" in shown
+
+
+# --- The adversarial review of 2026-10-08 (H-1, H-2) ---------------------------------------------------
+
+@pytest.mark.parametrize("case, order, english, spanish", [
+    ("asthma_49m", "Give magnesium sulfate 2 g.", "Please specify a supported route for magnesium.",
+     "Indica una vía soportada para magnesio."),
+    ("pneumonia_46f", "Give ceftriaxone 2 g.", "Please specify a supported route for antibiotic.",
+     "Indica una vía soportada para antibiótico."),
+    ("acs_54m_inferior", "Give clopidogrel 300 mg IM.", "Please specify a supported route for clopidogrel.",
+     "Indica una vía soportada para clopidogrel."),
+])
+def test_the_route_question_keeps_its_own_wording(case, order, english, spanish):
+    """XR-05 (b) is the dose question's (X1-C01): the route question names the class by its label (TD-80)."""
+    question = acceptance.Encounter(case).order(order)["clarification"]
+    assert question == english
+    assert language.say(question, "es") == spanish
+
+
+@pytest.mark.parametrize("english, spanish", [
+    ("Also in this order, advice to the patient: avoid aspirin and ibuprofen.",
+     "También en esta orden, una indicación al paciente: «avoid aspirin and ibuprofen»."),
+    ("Also in this order, a prescription for home: albuterol 5 mg nebulized.",
+     "También en esta orden, una receta para el domicilio: «albuterol 5 mg nebulized»."),
+    ("Prescription for home recorded: aspirin 100 mg PO daily. It is a prescription, not a dose given here.",
+     "Receta para el domicilio registrada: «aspirin 100 mg PO daily». Es una receta, no una dosis administrada aquí."),
+    ("Recognized but not executed in this build: albuterol inhaler at home, start ECMO. Any supported actions in "
+     "the same order continue separately.",
+     "Esta versión reconoce, pero no ejecuta: albuterol inhaler at home, start ECMO. Las acciones soportadas de la "
+     "misma orden siguen por separado."),
+    # Without Spanish yet (TD-86, ES-P12): as it is, with the resident's list as written.
+    ("Also recognized but not executable in this build: morphine PCA, heparin drip.",
+     "Also recognized but not executable in this build: morphine PCA, heparin drip."),
+])
+def test_what_the_resident_wrote_is_never_said_in_spanish(english, spanish):
+    """V-9 and the word rules of IG-5 say the engine's words, never the resident's (H-2)."""
+    assert language.say(english, "es") == spanish
+    assert language.say("Executed now: **aspirin 300 mg PO**.", "es") == "Ejecutado ahora: **aspirina 300 mg PO**."

@@ -657,7 +657,11 @@ def _validate(state, parsed):
                 return None, f"Please specify or confirm the {spoken} dose in {unit}."
             a["route"] = _ROUTES.get(str(a.get("route", "")).strip().lower())
             if a["route"] not in routes:
-                return None, f"Please specify a supported route for {spoken}."
+                # XR-05 (b) is the dose question's (X1-C01). The route question keeps what it named
+                # before: the drug only where the class has no everyday name, else the class by its
+                # label, never its internal key (TD-80).
+                route_named = named if kind in {"p2y12", "opioid_analgesia"} else ""
+                return None, f"Please specify a supported route for {route_named or _class_label(kind)}."
             if kind == "p2y12":
                 error = _second_antiplatelet_error(validation_state, a)
                 if error:

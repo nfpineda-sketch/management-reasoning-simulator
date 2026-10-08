@@ -44,8 +44,18 @@ def test_the_declared_exceptions_are_only_these():
     assert all("Idioma" in line or "Fijo durante" in line or line == "English" for line in sentinel.BILINGUAL)
 
 
+def test_a_template_slot_is_not_a_spanish_word():
+    """«{given}» in a Spanish template is a name in the code: «given» on screen is still English (H-3)."""
+    assert sentinel.english_words("Glucosa 25 g IV given") == ["given"]
+    assert {"drug", "dose", "destination", "summary", "given", "ordered"} <= set(
+        sentinel.english_words("drug dose destination summary given ordered"))
+
+
 def test_a_pending_item_is_recognised_only_with_its_own_english():
     assert sentinel.pending_item("Latest response", ["latest", "response"]) == "ES-P3"
+    assert sentinel.pending_item("Ask about presenting symptoms", ["ask", "about", "presenting", "symptoms"]) == "ES-P2"
+    assert sentinel.pending_item("Ask about this topic", ["ask", "about", "this", "topic"]) is None
+    assert sentinel.pending_item("Ask about the available history source and continue", ["ask"]) is None
     assert sentinel.pending_item("heparina 4000 units IV · minuto 16", ["units"]) == "ES-P6"
     assert sentinel.pending_item("heparina 4000 units IV given", ["units", "given"]) is None
     assert sentinel.pending_item("Latest response and more", ["latest", "response", "and", "more"]) is None

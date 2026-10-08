@@ -10372,7 +10372,11 @@ def _render_carry_forward_plan():
     if attempt_number > 1 and any(
         str(carry_forward_plan.get(field) or "").strip() for field, _ in ADAPTATION_PLAN_FIELDS
     ):
-        st.markdown(_record_words("### Attempt {number} · Carry-Forward Learning Goal", number=attempt_number))
+        # English keeps the heading as v0.8.1 wrote it; another reading language reads the catalog (X-1).
+        heading = f"### Attempt {attempt_number} · Carry-Forward Learning Goal"
+        if _record_reader() != "en":
+            heading = _record_words("### Attempt {number} · Carry-Forward Learning Goal", number=attempt_number)
+        st.markdown(heading)
         st.caption(_record_words(
             "This prospective plan came from the previous attempt. Use it as an intention for action and "
             "reassessment; the new Management Trace records only what you actually do now."

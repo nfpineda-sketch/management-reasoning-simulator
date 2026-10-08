@@ -500,16 +500,35 @@ _PHASE0_RULES = (
 _RESIDENT_WORDS = re.compile('([-])')
 
 
+#: The lists that are the resident's words without quotes: X1-C29's (B-5, XR-21) and a held order's
+#: last line (``unexecuted_items.held_messages``, still without Spanish: TD-86, ES-P12).
+_RESIDENT_LISTS = re.compile(r"(?<=Recognized but not executed in this build: )[^\n]{1,500}?(?=\. Any supported )"
+                             r"|(?<=Also recognized but not executable in this build: )[^\n]{1,500}?(?=\.(?:\n|$))")
+
+
 def _keep_resident_words(body):
-    """Set aside the resident's words a sentence quotes ("..."), to be put back as they were written."""
+    """Set aside the resident's words a sentence quotes ("...", «...») or lists, to be put back as written."""
     kept = []
 
+    def held(words):
+        kept.append(words)
+        return '' + chr(0xE300 + len(kept) - 1) + ''
+
     def keep(match):
+        return match.group(0) if len(kept) >= 0x100 else '"' + held(match.group(1)) + '"'
+
+    def keep_list(match):
+        return match.group(0) if len(kept) >= 0x100 else held(match.group(0))
+
+    def keep_quoted(match):
         if len(kept) >= 0x100:
             return match.group(0)
-        kept.append(match.group(1))
-        return '"' + chr(0xE300 + len(kept) - 1) + '"'
+        start, end = match.start(1) - match.start(0), match.end(1) - match.start(0)
+        return match.group(0)[:start] + held(match.group(1)) + match.group(0)[end:]
 
+    body = _RESIDENT_LISTS.sub(keep_list, body)
+    for sentence in _QUOTING_SENTENCES:
+        body = sentence.sub(keep_quoted, body)
     return re.sub(r'"([^"\n]{1,500})"', keep, body), kept
 
 
@@ -1552,7 +1571,7 @@ _RULES = _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
   "Convulsión tónico-clónica generalizada tras veinte minutos bajo 40 mg/dL. Cede sola y deja al paciente en estado postictal; el tratamiento es la glucosa, no un anticonvulsivante."),
 
  # --- more system messages, templated --------------------------------------
- (r"Please specify a supported route for ([\w-]+)\.", r"Indica una vía soportada para \1."),
+ (r"Please specify a supported route for (.+?)\.", lambda m: f"Indica una vía soportada para {_named_es(m[1])}."),
  (r"Specify the dose, the dose units and the route\.", "Indica la dosis, sus unidades y la vía."),
  (r"\bSpecify the ", "Indica "), (r"\bSpecify an? ", "Indica "), (r"\bSpecify one ", "Indica un solo "),
  (r"Requested study '([\w_]+)' is unavailable\.", r"El examen solicitado '\1' no está disponible."),
@@ -1753,6 +1772,11 @@ _DRUG_RULES = (
      lambda m: _cased(DRUG_NAMES_ES[m.group(1).lower()], m.group(1))),
 )
 _DRUG_PATTERN = re.compile(_DRUG_RULES[0][0], flags=re.IGNORECASE)
+#: The sentences that quote the resident's words («\1») from a list without quotation marks: those words
+#: are set aside before any rule runs (``_keep_resident_words``), so that no rule says them in Spanish.
+#: Words already between quotation marks ("...") are set aside with the quotation marks.
+_QUOTING_SENTENCES = tuple(re.compile(pattern) for pattern, replacement in _RULES
+                           if isinstance(replacement, str) and "«\\1»" in replacement and '"(' not in pattern)
 _COMPILED = tuple((re.compile(pattern), replacement) for pattern, replacement in _RULES) + (
     (_DRUG_PATTERN, _DRUG_RULES[0][1]),)
 
