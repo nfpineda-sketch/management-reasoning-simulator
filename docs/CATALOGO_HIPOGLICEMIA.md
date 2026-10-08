@@ -269,6 +269,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-10-08-06 | TD-79 y TD-80: X-1, la sala en español sin inglés no declarado ni claves internas | general | text | cosmetic | — |
 | C-2026-10-08-07 | TD-80 y TD-86: lo que halló la revisión adversarial de IG-3 a IG-5, y el encabezado del intento repetido | general | text | cosmetic | — |
 | C-2026-10-08-08 | TD-86: ES-P1 a ES-P7 en español, con la redacción que decidió la docencia | general | text | cosmetic | — |
+| C-2026-10-08-09 | TD-86: ES-P8 a ES-P13 en español, con la redacción que decidió la docencia | general | text | cosmetic | — |
 
 ## La batería, configuración por configuración
 

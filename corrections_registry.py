@@ -102,6 +102,11 @@ INSTRUCTION_2026_10_08_ESP = ("Instrucción del 2026-10-08 «FACULTY DECISIONS �
                               "ES-P4, ES-P6 y ES-P7 aprobados; ES-P5 revisado con su redacción docente exacta; "
                               "ES-P8 a ES-P12 sin implementar hasta la decisión docente; sólo en local, sin push, "
                               "sin despliegue y sin Fase 1")
+INSTRUCTION_2026_10_08_ESP8 = ("Instrucción del 2026-10-08 «Faculty now resolves ES-P8 through ES-P13» (B-5): las 15 "
+                               "aclaraciones del lector (ES-P8a a ES-P8o), ES-P9, ES-P10a, ES-P10b, ES-P12 y ES-P13 "
+                               "aprobadas con su redacción exacta; ES-P11 queda canónico, sin ruta de presentación "
+                               "nueva; sin tocar el lector congelado; sólo en local, sin push, sin despliegue y sin "
+                               "Fase 1")
 
 CORRECTIONS = (
     {
@@ -3612,6 +3617,46 @@ CORRECTIONS = (
                   "test_b5_x1_spanish.py::test_es_p6_a_dose_in_units_says_unidades_never_ui",
                   "test_b5_x1_spanish.py::test_es_p7_an_action_without_its_label_by_its_kind",
                   "test_spanish_sentinel.py::test_es_p1_to_p7_are_decided_and_no_line_of_the_walk_is_pending",
+                  "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-08-09",
+        "date": "2026-10-08",
+        "title": "TD-86: ES-P8 a ES-P13 en español, con la redacción que decidió la docencia",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("La docencia decidió el 2026-10-08 los textos que quedaban en inglés fuera del recorrido del "
+                   "centinela: las 15 aclaraciones del lector sobre lo que no está activo (ES-P8a a ES-P8o, con "
+                   "{fármaco} y la lista de infusiones en curso por su nombre V-9), la base de la dosis de ácido "
+                   "tranexámico sin dosis escrita (ES-P9), la fibrilación ventricular por una prueba de esfuerzo o "
+                   "por una arteria ocluida dos horas (ES-P10a y ES-P10b), la última línea de una orden retenida "
+                   "con la lista del residente tal como la escribió (ES-P12) y la frase de gastroenterología con "
+                   "la presión sistólica, sola o con la hemoglobina (ES-P13). Cada texto se dice entero en la capa "
+                   "de idioma: el lector congelado, sus disparadores y su ejecución no cambian, y tampoco la dosis "
+                   "de carga de 1 g, el momento y la fisiología del paro, la interrupción, la procedencia, el "
+                   "intervalo de 15 minutos ni la interconsulta. ES-P11 («endoscopy performed») queda canónico: "
+                   "ninguna pantalla del residente lo muestra y no se crea una ruta nueva. El mini-pase adversarial "
+                   "de la capa de idioma corrigió, dentro de lo aprobado: las palabras del residente se apartan antes "
+                   "de decir en español cualquier frase de la sala («Finish now» escrito por el residente queda como "
+                   "lo escribió), sin tope de largo para su lista o su cita, y «unidades» (ES-P6) también en una "
+                   "dosis por kilo («80 unidades/kg») y por boca."),
+        "authorised_by": INSTRUCTION_2026_10_08_ESP8,
+        "affects": {"modules": ["language", "tools_spanish_sentinel"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": ["test_b5_x1_spanish.py::test_es_p8_the_frozen_readers_clarifications_in_the_approved_words",
+                  "test_b5_x1_spanish.py::test_es_p8i_p8j_the_drug_slot_by_its_v9_name",
+                  "test_b5_x1_spanish.py::test_es_p8g_the_running_infusions_are_the_engines_names_said_by_v9",
+                  "test_b5_x1_spanish.py::test_es_p9_the_tranexamic_acid_dose_basis_keeps_its_1_g",
+                  "test_b5_x1_spanish.py::test_es_p10_ventricular_fibrillation_in_both_variants",
+                  "test_b5_x1_spanish.py::test_es_p11_endoscopy_performed_stays_canonical",
+                  "test_b5_x1_spanish.py::test_es_p12_the_held_orders_last_line_keeps_the_residents_list_as_written",
+                  "test_b5_x1_spanish.py::test_es_p13_the_gastroenterology_deferral_for_each_reason",
+                  "test_b5_x1_spanish.py::test_what_the_resident_wrote_is_never_said_in_spanish",
+                  "test_b5_x1_spanish.py::test_a_room_sentence_the_resident_wrote_stays_theirs",
+                  "test_b5_x1_spanish.py::test_a_long_list_the_resident_wrote_is_kept_whole",
+                  "test_b5_x1_spanish.py::test_es_p6_a_dose_in_units_says_unidades_never_ui",
+                  "test_spanish_sentinel.py::test_no_faculty_wording_is_still_pending_outside_the_walk",
                   "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english"],
         "preservation": None,
     },

@@ -21,6 +21,7 @@ import pilot_acceptance as acceptance
 import report_language
 import report_presentation
 import resuscitation_room
+import tools_spanish_sentinel as sentinel
 
 ROOT = Path(__file__).resolve().parent
 
@@ -543,9 +544,9 @@ def test_the_route_question_keeps_its_own_wording(case, order, english, spanish)
      "the same order continue separately.",
      "Esta versión reconoce, pero no ejecuta: albuterol inhaler at home, start ECMO. Las acciones soportadas de la "
      "misma orden siguen por separado."),
-    # Without Spanish yet (TD-86, ES-P12): as it is, with the resident's list as written.
+    # ES-P12 (faculty, 2026-10-08): the frame in Spanish, the resident's list as written.
     ("Also recognized but not executable in this build: morphine PCA, heparin drip.",
-     "Also recognized but not executable in this build: morphine PCA, heparin drip."),
+     "También se reconoció lo siguiente, pero no puede ejecutarse en esta versión: morphine PCA, heparin drip."),
 ])
 def test_what_the_resident_wrote_is_never_said_in_spanish(english, spanish):
     """V-9 and the word rules of IG-5 say the engine's words, never the resident's (H-2)."""
@@ -600,6 +601,12 @@ def test_es_p6_a_dose_in_units_says_unidades_never_ui():
     said = language.say("After aspirin 300 mg PO administered + heparin 4000 units IV administered, BP 138/84 mmHg.",
                         "es")
     assert "heparina 4000 unidades IV administrado" in said and "UI" not in said
+    # The same word in a dose per kilogram and by mouth (adversarial mini-pass, 2026-10-08).
+    per_kg = "heparin 4000 units IV administered (80 units/kg × 50 kg, actual body weight, measured at triage)"
+    assert language.say(per_kg, "es") == (
+        "heparina 4000 unidades IV administrado (80 unidades/kg × 50 kg, peso real, medido en el triage)")
+    assert language.say("heparin 5000 units PO administered", "es") == "heparina 5000 unidades PO administrado"
+    assert language.say(per_kg, "en") == per_kg
 
 
 def test_es_p7_an_action_without_its_label_by_its_kind():
@@ -607,3 +614,154 @@ def test_es_p7_an_action_without_its_label_by_its_kind():
     assert report_presentation.action_phrase({"type": "blood", "units": 2}, "es") == "Glóbulos rojos"
     assert report_presentation.action_phrase({"type": "hemorrhage_control"}) == "Hemorrhage control"
     assert report_presentation.action_phrase({"type": "blood", "units": 2}) == "Blood"
+
+
+# --- ES-P8 to ES-P13: the faculty's wording of 2026-10-08 (TD-86) -------------------------------------
+
+def _reader_source():
+    return (ROOT / "active_order_context.py").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("item, english, spanish", [
+    ("8a", "No matching administered treatment is recorded. Specify the treatment, dose and route.",
+     "No hay registro de un tratamiento administrado que coincida. Indica el tratamiento, la dosis y la vía."),
+    ("8b", "Which previous treatment should be repeated? Specify the drug or fluid.",
+     "¿Qué tratamiento anterior quieres repetir? Indica el fármaco o el fluido."),
+    ("8c", "Specify compatible units for the treatment being repeated.",
+     "Indica unidades compatibles con el tratamiento que se repite."),
+    ("8d", "The patient is not receiving invasive ventilation.", "El paciente no está con ventilación invasiva."),
+    ("8e", "Specify an airway transition; stopping a ventilator is not an extubation order.",
+     "Indica un cambio de la vía aérea; detener el ventilador no es una orden de extubación."),
+    ("8f", "No infusion is running. Name the drug and its starting rate.",
+     "No hay ninguna infusión en curso. Indica el fármaco y su velocidad inicial."),
+    ("8h", "Nitroglycerin is ordered in mcg/min in this encounter.",
+     "En este encuentro, la nitroglicerina se indica en mcg/min."),
+    ("8k", "Specify the rate in the new infusion units.", "Indica la velocidad en las nuevas unidades de la infusión."),
+    ("8l", "No active conventional oxygen is recorded. Specify the starting device and flow.",
+     "No hay registro de oxígeno convencional activo. Indica el dispositivo inicial y el flujo."),
+    ("8m", "Specify the flow for the new oxygen device.", "Indica el flujo para el nuevo dispositivo de oxígeno."),
+    ("8n", "No continuous nebulization is running. Specify the rate in mg/h to start it.",
+     "No hay nebulización continua en curso. Indica la velocidad en mg/h para iniciarla."),
+    ("8o", "No active NIV is recorded. Specify the starting mode, pressures and FiO2.",
+     "No hay registro de VMNI activa. Indica el modo inicial, las presiones y la FiO₂."),
+])
+def test_es_p8_the_frozen_readers_clarifications_in_the_approved_words(item, english, spanish):
+    """The reader is not touched: its English stays its own, and the room says the approved Spanish whole."""
+    assert f"'{english}'" in _reader_source(), item
+    assert language.say(english, "es") == spanish
+    assert language.say(english, "en") == english
+    assert sentinel.english_words(spanish) == []
+
+
+@pytest.mark.parametrize("kind, named", [
+    ("norepinephrine", "noradrenalina"), ("nitroglycerin", "nitroglicerina"), ("dobutamine", "dobutamina")])
+def test_es_p8i_p8j_the_drug_slot_by_its_v9_name(kind, named):
+    assert "f'Specify the new {kind} rate.'" in _reader_source()
+    assert "f'No active {kind} infusion is recorded. Specify a starting rate and units.'" in _reader_source()
+    assert language.say(f"Specify the new {kind} rate.", "es") == f"Indica la nueva velocidad de {named}."
+    assert language.say(f"No active {kind} infusion is recorded. Specify a starting rate and units.", "es") == (
+        f"No hay registro de una infusión activa de {named}. Indica la velocidad inicial y sus unidades.")
+
+
+@pytest.mark.parametrize("running, listed", [
+    ("dobutamine, norepinephrine", "dobutamina, noradrenalina"),
+    ("dobutamine, nitroglycerin, norepinephrine", "dobutamina, nitroglicerina, noradrenalina"),
+    ("nitroglycerin, norepinephrine", "nitroglicerina, noradrenalina"),
+])
+def test_es_p8g_the_running_infusions_are_the_engines_names_said_by_v9(running, listed):
+    """{lista} here is what the engine has running (sorted names), not the resident's writing."""
+    english = f"More than one infusion is running ({running}). Name the one to change."
+    assert language.say(english, "es") == f"Hay más de una infusión en curso ({listed}). Indica cuál quieres cambiar."
+    assert language.say(english, "en") == english
+
+
+def test_es_p9_the_tranexamic_acid_dose_basis_keeps_its_1_g():
+    import family_engine
+    basis = "no dose written; 1 g is the standard fixed loading dose the simulator applies"
+    assert f'a["dose_basis"] = "{basis}"' in Path(family_engine.__file__).read_text(encoding="utf-8")
+    english = f"After Tranexamic acid 1 g IV administered ({basis}), BP 138/84 mmHg · HR 76/min."
+    said = language.say(english, "es")
+    assert "(sin dosis escrita; 1 g es la dosis de carga fija estándar que aplica el simulador)" in said
+    assert said.startswith("Tras Ácido tranexámico 1 g IV administrado (")
+    assert sentinel.english_words(said) == []
+    assert language.say(english, "en") == english
+
+
+@pytest.mark.parametrize("cause, spanish", [
+    ("an exercise stress test on an unstable occlusion",                                             # ES-P10a
+     "Fibrilación ventricular desencadenada por una prueba de esfuerzo con una oclusión inestable. Se pierde el "
+     "pulso y se suspende la reevaluación organizada: este es el desenlace que esta vía clínica busca prevenir."),
+    ("an artery that has stayed closed for two hours",                                               # ES-P10b
+     "Fibrilación ventricular desencadenada por una arteria que ha permanecido ocluida durante dos horas. Se "
+     "pierde el pulso y se suspende la reevaluación organizada: este es el desenlace que esta vía clínica busca "
+     "prevenir."),
+])
+def test_es_p10_ventricular_fibrillation_in_both_variants(cause, spanish):
+    import acs_reperfusion
+    f = {"elapsed": 42}
+    english = acs_reperfusion.ventricular_fibrillation(f, cause)
+    assert f["vf_at"] == 42  # the arrest itself is the engine's, untouched
+    assert language.say(english, "es") == spanish
+    assert language.say(english, "en") == english
+
+
+def test_es_p11_endoscopy_performed_stays_canonical():
+    """ES-P11: the canonical event is data (provenance, screening, Trace); no room shows it to a resident."""
+    assert language.say("endoscopy performed", "en") == "endoscopy performed"
+    assert "endoscopy performed" in (ROOT / "event_provenance.py").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("written", [
+    "morphine PCA, heparin drip", "Start ECMO, aspirin 81 mg PO daily", "dar 0.9% saline AT HOME, tPA",
+])
+def test_es_p12_the_held_orders_last_line_keeps_the_residents_list_as_written(written):
+    import unexecuted_items
+    assert '"Also recognized but not executable in this build: "' in Path(unexecuted_items.__file__).read_text(
+        encoding="utf-8")
+    english = "Recognized but not executed in this build: x.\nAlso recognized but not executable in this build: " \
+              f"{written}."
+    said = language.say(english, "es").split("\n")[-1]
+    assert said == f"También se reconoció lo siguiente, pero no puede ejecutarse en esta versión: {written}."
+    assert sentinel.english_words(said.replace(written, "")) == []
+
+
+@pytest.mark.parametrize("reasons, spanish", [
+    ("SBP 84 mmHg", "presión sistólica de 84 mmHg"),                                                 # ES-P13 v1
+    ("SBP 78 mmHg, hemoglobin 6.4 g/dL without blood running",                                       # ES-P13 v2
+     "presión sistólica de 78 mmHg, hemoglobina 6.4 g/dL sin transfusión en curso"),
+    ("hemoglobin 6.8 g/dL without blood running", "hemoglobina 6.8 g/dL sin transfusión en curso"),  # ES-P5
+])
+def test_es_p13_the_gastroenterology_deferral_for_each_reason(reasons, spanish):
+    english = (f"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated "
+               f"({reasons}); they will re-check every 15 minutes.")
+    assert language.say(english, "es") == (
+        "El equipo de Gastroenterología está a pie de cama, pero difiere la endoscopía hasta lograr una "
+        f"reanimación adecuada ({spanish}); reevaluará cada 15 minutos.")
+    assert language.say(english, "en") == english
+
+
+
+@pytest.mark.parametrize("english, spanish", [
+    ("Also recognized but not executable in this build: Finish now, What will you check?.",
+     "También se reconoció lo siguiente, pero no puede ejecutarse en esta versión: Finish now, What will you check?."),
+    ("Also in this order, advice to the patient: Finish now.",
+     "También en esta orden, una indicación al paciente: «Finish now»."),
+    ('Not understood: "Finish now". Nothing was given or done for it. Write it again in other words if you still '
+     'want it.',
+     "No se entendió: «Finish now». No se administró ni se hizo nada por ello. Escríbelo de nuevo con otras palabras "
+     "si aún lo quieres."),
+])
+def test_a_room_sentence_the_resident_wrote_stays_theirs(english, spanish):
+    """The resident's words are set aside before any whole sentence of the room is said in Spanish."""
+    assert language.say(english, "es") == spanish
+    assert language.say("Finish now", "es") == "Finalizar ahora"  # the room's own button, still in Spanish
+
+
+def test_a_long_list_the_resident_wrote_is_kept_whole():
+    written = ", ".join(["morphine 4 mg IV every 4 hours as needed for pain"] * 11)
+    assert len(written) > 500
+    said = language.say(f"Also recognized but not executable in this build: {written}.", "es")
+    assert said == f"También se reconoció lo siguiente, pero no puede ejecutarse en esta versión: {written}."
+    quoted = "x" * 600
+    assert f"«{quoted}»" in language.say(f'Not understood: "{quoted}". Nothing was given or done for it. Write it '
+                                         f'again in other words if you still want it.', "es")

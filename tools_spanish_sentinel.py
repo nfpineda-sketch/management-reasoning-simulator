@@ -227,15 +227,11 @@ PENDING_FACULTY_WORDING = ()
 
 #: Texts the room can show in English, outside the walk, that wait for the faculty's Spanish
 #: (TD-86). The walk does not reach them; they are listed so that the sentinel never reads as
-#: complete while one is open (``test_spanish_sentinel.py``), and none is an exception.
-PENDING_OUTSIDE_THE_WALK = {
-    "ES-P8": "the frozen reader's clarifications about what is not active (active_order_context)",
-    "ES-P9": "the tranexamic acid dose basis when no dose was written",
-    "ES-P10": "ventricular fibrillation precipitated by a stress test or a long-closed artery",
-    "ES-P11": "the event label «endoscopy performed»",
-    "ES-P12": "a held order's last line, «Also recognized but not executable in this build: …»",
-    "ES-P13": "the gastroenterology deferral for a low systolic pressure (variants of ES-P5)",
-}
+#: complete while one is open (``test_spanish_sentinel.py``), and none is an exception. Empty
+#: since the faculty decided ES-P8 to ES-P13 (2026-10-08): ES-P8, ES-P9, ES-P10, ES-P12 and
+#: ES-P13 are said in Spanish, and ES-P11 («endoscopy performed») stays canonical data that no
+#: resident-facing room shows.
+PENDING_OUTSIDE_THE_WALK = {}
 
 
 def pending_item(line, english):

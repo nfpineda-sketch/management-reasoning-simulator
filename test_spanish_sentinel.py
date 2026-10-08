@@ -72,10 +72,8 @@ def test_es_p1_to_p7_are_decided_and_no_line_of_the_walk_is_pending():
 
 
 def test_no_faculty_wording_is_still_pending_outside_the_walk():
-    """ES-P8 to ES-P13 wait for the faculty (TD-86). Not exceptions: the sentinel is not complete until then."""
-    assert set(sentinel.PENDING_OUTSIDE_THE_WALK) <= {f"ES-P{n}" for n in range(8, 14)}
-    if sentinel.PENDING_OUTSIDE_THE_WALK:
-        pytest.xfail("Faculty wording pending outside the walk: " + ", ".join(sorted(sentinel.PENDING_OUTSIDE_THE_WALK)))
+    """ES-P8 to ES-P13 decided by the faculty (2026-10-08, TD-86): nothing is left waiting outside the walk."""
+    assert sentinel.PENDING_OUTSIDE_THE_WALK == {}
 
 
 @pytest.mark.parametrize("variant", pilot_freeze.accepted_variants())

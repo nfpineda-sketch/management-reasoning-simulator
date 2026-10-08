@@ -4,7 +4,9 @@ Para quien revisa encuentros durante el piloto. El detalle técnico está en
 `docs/revision/PILOT_PROMOTION_DEPLOYMENT_RUNBOOK.md` (que reemplaza a `docs/RUNBOOK_PILOTO.md` para el piloto) y
 en `docs/READINESS_PILOTO_FORMATIVO.md`.
 
-> **Estado (2026-10-08): actualizada al candidato local de B-5 (IG-6), para su firma (H-62); no está firmada.**
+> **Estado (2026-10-08): actualizada al candidato final local de B-5 (IG-6, con ES-P1 a ES-P13 decididos e
+> implementados), para su firma (H-62); no está firmada.** El SHA exacto del candidato queda en el informe de su
+> certificación.
 > Describe el funcionamiento comprobado al cierre del paquete prepiloto (D-1 a D-11), lo que cambió la Fase 0
 > (F0-1 a F0-12) y lo implementado en local el 2026-10-08 con las decisiones docentes de B-5 («El candidato de
 > B-5»), todavía no desplegado, con las etiquetas de la pantalla en español y, entre paréntesis, en inglés. Lo
@@ -32,8 +34,8 @@ en `docs/READINESS_PILOTO_FORMATIVO.md`.
   Los fármacos se nombran en español (V-9), también en los documentos que se descargan en español; dosis,
   unidades, vías y siglas se escriben igual. El registro, el Management Trace y el ledger se guardan en inglés;
   sus destinos y códigos (EXECUTED, UNRECOGNIZED, HELD_REASONING…) y los nombres canónicos de los fármacos no se
-  traducen. La rúbrica en español (D1 a D5) es la que usted aprobó. Lo que todavía se ve en inglés en un
-  encuentro en español está en «Limitaciones conocidas».
+  traducen. La rúbrica en español (D1 a D5) es la que usted aprobó. Lo único que se ve en inglés en la sala de
+  un encuentro en español es lo que escribió el residente, tal como lo escribió (véase «Limitaciones conocidas»).
 
 ## Revisar un encuentro
 
@@ -274,13 +276,17 @@ Son para el docente; **no se le dicen al residente como instrucciones**.
   No exija reevaluarlos.
 - **Relato y sala en español:** el relato en español de los 30 casos del piloto es el que usted aprobó, en su
   versión exacta (`case_text/es/approvals.json`); el caso del sandbox docente (`trauma_hemothorax_41m`) sigue en
-  inglés. Las frases del motor de R-4, el aviso de la foto y las preguntas de la sala se dicen en español. Siguen
-  en inglés, mientras usted decide su redacción (TD-86; `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`): la
-  ayuda del selector de idioma, «Ask about {tema}» al preguntar por un tema de la historia, los títulos «Latest
-  response» y «Clinical chart · examination · results · treatment record» al cerrar, la frase de
-  gastroenterología de la 72f, «units» en la dosis de heparina, los nombres de respaldo «Hemorrhage control» y
-  «Blood», y, en órdenes poco frecuentes, los avisos del lector sobre lo que no está activo, la base de la dosis
-  del ácido tranexámico sin dosis escrita, la fibrilación tras una prueba de esfuerzo y «endoscopy performed».
+  inglés. Las frases del motor de R-4, el aviso de la foto y las preguntas de la sala se dicen en español, y
+  también, desde el 2026-10-08, los textos que usted decidió fuera del inventario de X-1 (ES-P1 a ES-P13;
+  `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`): la ayuda del selector de idioma, «Preguntar por: {tema}», «Última
+  respuesta», «Ficha clínica · examen · resultados · registro de tratamientos», las frases de gastroenterología
+  (con la hemoglobina, con la presión sistólica o con ambas), «unidades» (nunca «UI»), «Control de la hemorragia»
+  y «Glóbulos rojos», las 15 aclaraciones del lector sobre lo que no está activo, la base de la dosis del ácido
+  tranexámico sin dosis escrita, las dos frases de la fibrilación ventricular y la última línea de una orden
+  retenida. Lo que escribió el residente se muestra tal como lo escribió, también dentro de esas frases (por
+  ejemplo, la lista de «También se reconoció lo siguiente, pero no puede ejecutarse en esta versión: …»). La
+  etiqueta canónica «endoscopy performed» queda en inglés en el registro y en el tamizaje: no se muestra en la
+  sala (ES-P11).
 - **TEP:** un segundo curso de trombolítico no tiene efecto propio en el simulador (simplificación
   declarada).
 

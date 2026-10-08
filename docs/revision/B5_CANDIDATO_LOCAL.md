@@ -1,7 +1,8 @@
 # B-5 · Candidato local del piloto (2026-10-08)
 
 > **Implementado en local, no empujado ni desplegado.** Autorización «FINAL FACULTY DECISIONS + LOCAL IMPLEMENTATION
-> AUTHORIZATION» (2026-10-08). Rama `clinical-encounter-v0.13`, commits locales. No se empujó ninguna rama, no se
+> AUTHORIZATION» (2026-10-08), y después «FACULTY DECISIONS — ES-P1 TO ES-P7» y «Faculty now resolves ES-P8 through
+> ES-P13» (2026-10-08). Rama `clinical-encounter-v0.13`, commits locales. No se empujó ninguna rama, no se
 > creó `pilot-residents-v1` ni `phase-1-contracts-v2`, ni ningún recurso en Neon o Streamlit; no hubo despliegue
 > ni GO; la Fase 1 no empezó.
 
@@ -19,17 +20,19 @@
 | IG-7 | Registro de correcciones (C-2026-10-08-02 a -06; -01 entró con IG-5), manifiesto de congelamiento regenerado (sin diferencias: la batería y las decisiones de congelamiento no cambian), este documento | `ef1051c` | ver §3 |
 | Recertificación 1 | Encabezado del intento repetido como en v0.8.1 (regresión v081); revisión adversarial H-1 a H-4 (la pregunta de la vía, las palabras del residente, las ranuras de plantilla en el centinela, ES-P2); C-2026-10-08-07; catálogo de hipoglicemia regenerado con su herramienta | `ba4e6c9` | ver §3 |
 | ES-P1 a ES-P7 | Redacción docente del 2026-10-08 (C-2026-10-08-08): ayuda del selector, «Preguntar por: {tema}», «Última respuesta», ficha clínica tras el cierre, frase de gastroenterología exacta, «unidades» y nombres de respaldo; ES-P8 a ES-P13 declarados pendientes fuera del recorrido | `1db80bb` | ver §3 |
+| ES-P8 a ES-P13 y candidato final | Redacción docente del 2026-10-08 (C-2026-10-08-09): las 15 aclaraciones del lector, la dosis del ácido tranexámico sin dosis escrita, las dos fibrilaciones, la última línea de una orden retenida y la frase de gastroenterología con la presión sistólica; ES-P11 canónico; mini-pase adversarial (las palabras del residente antes de cualquier frase de la sala, sin tope de largo; «unidades/kg» y «unidades PO» por ES-P6); guías H-62 e I-63 al candidato, sin firma; documentos | el candidato final (su SHA, en el informe de la certificación) | ver §3 |
 
-**Detenido para decisión docente:** los 12 textos de TD-86 (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`): ES-P1 a
-ES-P7, que el centinela ve en la sala, y ES-P8 a ES-P12, que la sala muestra sólo con ciertas órdenes.
+**Sin decisiones docentes de texto pendientes:** los 13 ítems de TD-86 (ES-P1 a ES-P13) están decididos e
+implementados (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`).
 
 ## 2. Candidato
 
-**No hay candidato final.** El HEAD de implementación es `1db80bb3229f6808b59ac0b7d576e740658ee1ed` (ES-P1 a ES-P7
-implementados); el candidato sigue moviéndose: falta la redacción docente de ES-P8 a ES-P13, y el centinela no se da
-por completo antes. Tras esa decisión: implementar, congelar el HEAD, y correr una sola vez sobre él la
-recertificación completa (pruebas focalizadas, centinela, relato y rúbrica, lector y corpus congelados, Fase 0,
-hipoglicemia, 56 regresiones, suite completa, preflight y SHA). El paquete de B-1 se prepara sobre ese SHA.
+**Candidato final local:** el commit que trae esta versión de este documento, sobre `189f47e`. Su SHA exacto no puede
+estar dentro de él: queda en el informe de su certificación, junto con la evidencia (scratchpad de la sesión, fuera
+del repositorio). Sobre ese SHA, y sin tocarlo después, se corre una sola vez la certificación completa: pruebas
+focalizadas, centinela estricto, relato 30/30, rúbrica 5/5, activación de las aprobaciones, lector y corpus
+congelados, Fase 0, hipoglicemia, 56 regresiones, suite completa y preflight local. Si algo cambia después de la
+suite, el SHA cambia y la suite se repite. El paquete de B-1 se prepara sobre ese SHA (PENDING EXTERNAL).
 
 ## 3. Recertificación local (en curso; nada de esto es la certificación final)
 
@@ -48,3 +51,9 @@ hipoglicemia, 56 regresiones, suite completa, preflight y SHA). El paquete de B-
 | Tras ES-P1 a ES-P7: centinela, 30 casos | código de `1db80bb` | 0 líneas en inglés, 0 pasos detenidos; ES-P8 a ES-P13 declarados pendientes fuera del recorrido |
 | Tras ES-P1 a ES-P7: pruebas focalizadas | `1db80bb` (árbol antes del commit) | IG-0 a IG-2: 59 y 1 xfail (pendientes fuera del recorrido); IG-3 e IG-4: 23; IG-5: 151; IG-7: 298; hipoglicemia: 17; pantallas y textos: 416; Fase 0: 968 |
 | Tras ES-P1 a ES-P7: 56 regresiones, lector y corpus | `1db80bb` (árbol antes del commit) | 56 de 56; lector congelado y `validation/` sin cambios |
+| Tras ES-P8 a ES-P13: centinela estricto, 30 casos | árbol antes del mini-pase (sobre `189f47e`) | 30 de 30; 0 líneas en inglés; 0 pasos detenidos; 0 pendientes dentro o fuera del recorrido; salida 0 en las tres tandas |
+| Mini-pase adversarial de la capa de idioma | árbol sobre `189f47e` | 4 hallazgos corregidos dentro del alcance aprobado, con prueba: 3 bloqueantes (una frase de la sala escrita por el residente se traducía dentro de su lista o su cita; tope de 500 caracteres para lo que escribió; «units/kg» en la dosis por kilo) y 1 menor («units PO»). 5 informativos sin cambio: «1 units» ya está así en inglés; el detector marcaría la lista del residente en ES-P12 si un recorrido llegara a ella; un ítem que termina en punto deja «..»; PAS no entera y más de 256 citas, inalcanzables |
+| Tras el mini-pase: pruebas que tocan el idioma (39 archivos) | árbol antes del commit | 1681 aprobadas, 0 fallidas |
+| Tras el mini-pase: 56 regresiones | árbol antes del commit | 56 de 56; 10 retiradas |
+| Certificación final única | el SHA del candidato | en el informe de la certificación (fuera del commit) |
+

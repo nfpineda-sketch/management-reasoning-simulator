@@ -501,9 +501,9 @@ _RESIDENT_WORDS = re.compile('([-])')
 
 
 #: The lists that are the resident's words without quotes: X1-C29's (B-5, XR-21) and a held order's
-#: last line (``unexecuted_items.held_messages``, still without Spanish: TD-86, ES-P12).
-_RESIDENT_LISTS = re.compile(r"(?<=Recognized but not executed in this build: )[^\n]{1,500}?(?=\. Any supported )"
-                             r"|(?<=Also recognized but not executable in this build: )[^\n]{1,500}?(?=\.(?:\n|$))")
+#: last line (``unexecuted_items.held_messages``; its frame in Spanish: TD-86, ES-P12). Whatever their length.
+_RESIDENT_LISTS = re.compile(r"(?<=Recognized but not executed in this build: )[^\n]+?(?=\. Any supported )"
+                             r"|(?<=Also recognized but not executable in this build: )[^\n]+?(?=\.(?:\n|$))")
 
 
 def _keep_resident_words(body):
@@ -529,7 +529,7 @@ def _keep_resident_words(body):
     body = _RESIDENT_LISTS.sub(keep_list, body)
     for sentence in _QUOTING_SENTENCES:
         body = sentence.sub(keep_quoted, body)
-    return re.sub(r'"([^"\n]{1,500})"', keep, body), kept
+    return re.sub(r'"([^"\n]+)"', keep, body), kept
 
 
 #: V-1 (XR-05, faculty, 2026-10-07): the classes the engine names when no drug was named, as the room
@@ -920,7 +920,56 @@ def _infusion_es(match, tail):
     return said[:1].upper() + said[1:] if not before or before.endswith((".", ":", "\n", "·", "+")) else said
 
 
-_RULES = _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
+#: TD-86 (faculty, 2026-10-08): whole sentences the room shows outside X-1's inventory, said before any other
+#: rule so that none of them is half translated. The frozen reader's English (active_order_context) does not change.
+_TD86_RULES = (
+ # ES-P8a to ES-P8o: the reader's clarifications about what is not active.
+ (r"No matching administered treatment is recorded\. Specify the treatment, dose and route\.",
+  "No hay registro de un tratamiento administrado que coincida. Indica el tratamiento, la dosis y la vía."),
+ (r"Which previous treatment should be repeated\? Specify the drug or fluid\.",
+  "¿Qué tratamiento anterior quieres repetir? Indica el fármaco o el fluido."),
+ (r"Specify compatible units for the treatment being repeated\.",
+  "Indica unidades compatibles con el tratamiento que se repite."),
+ (r"The patient is not receiving invasive ventilation\.", "El paciente no está con ventilación invasiva."),
+ (r"Specify an airway transition; stopping a ventilator is not an extubation order\.",
+  "Indica un cambio de la vía aérea; detener el ventilador no es una orden de extubación."),
+ (r"No infusion is running\. Name the drug and its starting rate\.",
+  "No hay ninguna infusión en curso. Indica el fármaco y su velocidad inicial."),
+ # The list is the engine's, of the infusions running: each by its V-9 name.
+ (r"More than one infusion is running \(([^()]+)\)\. Name the one to change\.",
+  lambda m: "Hay más de una infusión en curso (" + ", ".join(_named_es(name) for name in m[1].split(", "))
+            + "). Indica cuál quieres cambiar."),
+ (r"Nitroglycerin is ordered in mcg/min in this encounter\.",
+  "En este encuentro, la nitroglicerina se indica en mcg/min."),
+ (r"Specify the new (norepinephrine|nitroglycerin|dobutamine) rate\.",
+  lambda m: f"Indica la nueva velocidad de {_named_es(m[1])}."),
+ (r"No active (norepinephrine|nitroglycerin|dobutamine) infusion is recorded\. Specify a starting rate and units\.",
+  lambda m: f"No hay registro de una infusión activa de {_named_es(m[1])}. Indica la velocidad inicial y sus unidades."),
+ (r"Specify the rate in the new infusion units\.", "Indica la velocidad en las nuevas unidades de la infusión."),
+ (r"No active conventional oxygen is recorded\. Specify the starting device and flow\.",
+  "No hay registro de oxígeno convencional activo. Indica el dispositivo inicial y el flujo."),
+ (r"Specify the flow for the new oxygen device\.", "Indica el flujo para el nuevo dispositivo de oxígeno."),
+ (r"No continuous nebulization is running\. Specify the rate in mg/h to start it\.",
+  "No hay nebulización continua en curso. Indica la velocidad en mg/h para iniciarla."),
+ (r"No active NIV is recorded\. Specify the starting mode, pressures and FiO2\.",
+  "No hay registro de VMNI activa. Indica el modo inicial, las presiones y la FiO₂."),
+ # ES-P9: the dose the simulator applied when none was written; the dose itself does not change.
+ (r"\(no dose written; ([\d.]+ g) is the standard fixed loading dose the simulator applies\)",
+  r"(sin dosis escrita; \1 es la dosis de carga fija estándar que aplica el simulador)"),
+ # ES-P10a and ES-P10b (exact faculty wording).
+ (r"Ventricular fibrillation, precipitated by an exercise stress test on an unstable occlusion\. The pulse is lost "
+  r"and organized reassessment is paused: this is the outcome the pathway exists to prevent\.",
+  "Fibrilación ventricular desencadenada por una prueba de esfuerzo con una oclusión inestable. Se pierde el pulso "
+  "y se suspende la reevaluación organizada: este es el desenlace que esta vía clínica busca prevenir."),
+ (r"Ventricular fibrillation, precipitated by an artery that has stayed closed for two hours\. The pulse is lost "
+  r"and organized reassessment is paused: this is the outcome the pathway exists to prevent\.",
+  "Fibrilación ventricular desencadenada por una arteria que ha permanecido ocluida durante dos horas. Se pierde el "
+  "pulso y se suspende la reevaluación organizada: este es el desenlace que esta vía clínica busca prevenir."),
+ # ES-P12: a held order's last line; the list is the resident's words, set aside before the rules.
+ (r"Also recognized but not executable in this build: (.+?)\.(?=\n|$)",
+  r"También se reconoció lo siguiente, pero no puede ejecutarse en esta versión: \1."),
+)
+_RULES = _TD86_RULES + _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
  # A delivery time longer than this simulator runs (cycle 8); before the word rules below.
  (r"([\d.]+) mL at ([\d.]+) mL/h would run for ([\d.]+) h; this simulator runs a fluid order over at most 120 min\. "
   r"Restate it as a bolus or a shorter infusion\.",
@@ -971,7 +1020,7 @@ _RULES = _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
  (r"\bGlucose (\d+(?:\.\d+)? g IV\b)", r"Glucosa \1"),
  (r"\bNIV (?=inicio\b|suspensión\b|ajuste\b|start\b|stop\b|adjust\b)", "VMNI "),
  # ES-P6 (TD-86; faculty, 2026-10-08): a dose in units says «unidades», never «UI»; amount and route as written.
- (r"\b(\d+(?:\.\d+)?) units (?=IV\b|SC\b|IM\b)", r"\1 unidades "),
+ (r"\b(\d+(?:\.\d+)?) units(?= (?:IV|SC|IM|PO)\b|/kg\b)", r"\1 unidades"),
  (r"\bUnresponsive\b", "Sin respuesta"), (r"\bunresponsive\b", "sin respuesta"),
  (r"\bObtunded\b", "Obnubilado"), (r"\bobtunded\b", "obnubilado"),
  (r"\bDrowsy\b", "Somnoliento"), (r"\bdrowsy\b", "somnoliento"),
@@ -1456,7 +1505,7 @@ _RULES = _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
   r"calculated\. What weight should this dose use, in kg\? The whole order is kept; nothing has run\.",
   r" nombra el peso \1, pero la talla no está registrada y no se puede calcular. ¿Qué peso uso para esta dosis, "
   r"en kg? La orden completa queda en espera; nada se ha ejecutado."),
- (r"(\d(?:\.\d+)? (?:mg|mcg|mL|units|g)/kg(?:/\w+)?),? and (?=\w+ [\d.]+ )", r"\1 y "),
+ (r"(\d(?:\.\d+)? (?:mg|mcg|mL|units|unidades|g)/kg(?:/\w+)?),? and (?=\w+ [\d.]+ )", r"\1 y "),
  (r"\bactual ([\d.]+) kg\b", r"real \1 kg"), (r"\badjusted ([\d.]+) kg\b", r"ajustado \1 kg"),
  (r"\bactual body weight\b", "peso real"), (r"\bideal body weight\b", "peso ideal"),
  (r"\bpredicted body weight\b", "peso predicho"), (r"\badjusted body weight\b", "peso ajustado"),
@@ -1492,6 +1541,16 @@ _RULES = _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
   "Hemodinamia contactada. Este ECG no muestra patrón de oclusión: no se requiere coronariografía inmediata, y el camino aquí es antiagregación y anticoagulación con cama monitorizada y reevaluación."),
  (r"The artery is open after percutaneous coronary intervention: the ST segment resolves on a repeated ECG and the discomfort settles\. The troponin climbs faster now, from washout, which is not a failed procedure; its peak comes hours later\. The affected wall recovers only partly\.",
   "La arteria está abierta tras la angioplastia: el segmento ST se resuelve en un ECG repetido y el dolor cede. La troponina sube más rápido ahora, por lavado, lo que no es un procedimiento fallido; su peak llega horas después. La pared afectada se recupera solo en parte."),
+ # ES-P13 (TD-86; faculty, 2026-10-08, exact wording): the same deferral for a low systolic pressure, alone or with
+ # the hemoglobin; ES-P5, after them, for the hemoglobin alone.
+ (r"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated \(SBP (\d+) mmHg, "
+  r"hemoglobin ([\d.]+) g/dL without blood running\); they will re-check every (\d+) minutes\.",
+  r"El equipo de Gastroenterología está a pie de cama, pero difiere la endoscopía hasta lograr una reanimación "
+  r"adecuada (presión sistólica de \1 mmHg, hemoglobina \2 g/dL sin transfusión en curso); reevaluará cada \3 minutos."),
+ (r"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated \(SBP (\d+) mmHg\); "
+  r"they will re-check every (\d+) minutes\.",
+  r"El equipo de Gastroenterología está a pie de cama, pero difiere la endoscopía hasta lograr una reanimación "
+  r"adecuada (presión sistólica de \1 mmHg); reevaluará cada \2 minutos."),
  # ES-P5 (TD-86; faculty, 2026-10-08, exact wording): the deferral for a hemoglobin without blood running.
  (r"Gastroenterology is at the bedside but defers endoscopy until the patient is resuscitated \(hemoglobin ([\d.]+) "
   r"g/dL without blood running\); they will re-check every (\d+) minutes\.",
@@ -2145,10 +2204,11 @@ def say(text, language=None):
     if exact:
         return exact
     body, kept = _keep_case_findings(body)
+    # The resident's words first: a sentence of MESSAGES inside them ("Finish now") is theirs, not the room's.
+    body, quoted = _keep_resident_words(body)
     for sentence, translation in MESSAGES.items():
         if sentence in body:
             body = body.replace(sentence, translation)
-    body, quoted = _keep_resident_words(body)
     for pattern, replacement in _COMPILED:
         body = pattern.sub(replacement, body)
     if quoted:

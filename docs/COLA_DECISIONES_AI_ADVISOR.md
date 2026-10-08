@@ -5,8 +5,9 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-08, con las decisiones docentes de ES-P1 a ES-P7 y su implementación local (trigésima
-  tercera actualización de la sección «Preparación para el despliegue»); antes, el mismo día, con las decisiones docentes finales de B-5 y su implementación local (trigésima
+- **Actualizado:** 2026-10-08, con las decisiones docentes de ES-P8 a ES-P13, su implementación local y el candidato
+  final local (trigésima cuarta actualización de la sección «Preparación para el despliegue»); antes, el mismo día,
+  con las de ES-P1 a ES-P7 (trigésima tercera); antes, el mismo día, con las decisiones docentes finales de B-5 y su implementación local (trigésima
   segunda actualización). Antes, 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
@@ -991,13 +992,44 @@ ES-P7»).** Lo decidido e implementado en local (C-2026-10-08-08):
 - El candidato sigue moviéndose: sin suite completa final, sin push, sin despliegue y sin Fase 1.
 - **B-5: BLOCKED** (ES-P8 a ES-P13, firmas de las guías y B-1 sobre el SHA final).
 
+**Actualizado por trigésima cuarta vez el 2026-10-08: B-5 · ES-P8 a ES-P13 («Faculty now resolves ES-P8 through
+ES-P13») y candidato final local.** Lo decidido e implementado en local (C-2026-10-08-09), con la redacción exacta
+de `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md` (§2):
+
+| Ítem | Decisión docente | Cómo quedó |
+|---|---|---|
+| ES-P8 (8a a 8o) | APPROVE, las 15 | Frases enteras en `language.py`; el lector congelado, sus disparadores y su ejecución no cambian. {fármaco} por V-9 |
+| ES-P9 | APPROVE | «(sin dosis escrita; 1 g es la dosis de carga fija estándar que aplica el simulador)»; 1 g y la trayectoria no cambian |
+| ES-P10a, ES-P10b | Redacción exacta | Las dos frases de la fibrilación ventricular; disparador, momento, paro, interrupción y procedencia no cambian |
+| ES-P11 | Canónico | «endoscopy performed» queda en el registro y el tamizaje; ninguna pantalla localizada lo muestra, así que no se creó ruta |
+| ES-P12 | Redacción exacta | «También se reconoció lo siguiente, pero no puede ejecutarse en esta versión: {lista}.», con la lista del residente intacta |
+| ES-P13 v1, v2 | Redacción exacta | Las frases de gastroenterología con la presión sistólica, sola o con la hemoglobina; valores, 15 minutos e interconsulta no cambian |
+
+- **Interpretación para confirmar (ES-P8g):** la {lista} de 8g la arma el motor (las infusiones en curso), no el
+  residente; se dice con los nombres V-9, como {fármaco}.
+- **Mini-pase adversarial de la capa de idioma:** corrigió, dentro de lo aprobado, que una frase de la sala escrita
+  por el residente («Finish now») se tradujera dentro de su lista o su cita, el tope de 500 caracteres de lo que el
+  residente escribió y «units» en una dosis por kilo o por boca (vocabulario de ES-P6: «80 unidades/kg»). Nada
+  quedó para la docencia.
+- **Centinela estricto:** 30 de 30 casos, 0 líneas en inglés, 0 pasos detenidos, 0 pendientes dentro o fuera del
+  recorrido (`PENDING_OUTSIDE_THE_WALK` vacía). Se repite en la certificación del candidato.
+- **Candidato final local:** el commit que trae esta actualización; su SHA y su certificación única (pruebas
+  focalizadas, centinela, relato 30/30, rúbrica 5/5, lector y corpus congelados, Fase 0, hipoglicemia, 56
+  regresiones, suite completa y preflight local) quedan en el informe de la certificación, fuera del commit para no
+  moverlo.
+- Guías H-62 e I-63 actualizadas a este candidato, **sin firma**. B-1 sobre el SHA final: **PENDING EXTERNAL**, con
+  el paquete preparado; el B-1 anterior (sobre `8ff41a4`) no vale para este SHA.
+- **B-5: BLOCKED** sólo por las firmas de H-62 e I-63 y B-1 sobre el SHA final. No queda ninguna decisión docente de
+  texto pendiente. Nada se empujó, no se creó `pilot-residents-v1` ni `phase-1-contracts-v2`, ni ningún recurso en
+  Neon o Streamlit; no hubo despliegue ni GO, y la Fase 1 no empezó.
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Decididas el 2026-10-08 todas las piezas del candidato (relato 30/30, rúbrica 5/5, TD-84, TD-85, X-1 105/105) e implementadas en local (IG-0 a IG-7; trigésima segunda actualización). Quedan: la firma de H-62 e I-63 sobre el candidato (guías actualizadas, sin firmar); la redacción de ES-P8 a ES-P13, que siguen en inglés (TD-86; ES-P1 a ES-P7 decididos e implementados el 2026-10-08); B-1 sobre el SHA final | La firma de las dos guías; la redacción de ES-P8 a ES-P13 (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`); correr B-1 sobre el SHA final con el paquete preparado; las autorizaciones de push, Neon y Streamlit |
+| B-5 | **Bloqueado** | Decididas el 2026-10-08 todas las piezas del candidato (relato 30/30, rúbrica 5/5, TD-84, TD-85, X-1 105/105 y TD-86: ES-P1 a ES-P13) e implementadas en local (IG-0 a IG-7; trigésima segunda a cuarta actualización); candidato final local certificado aparte. Quedan: la firma de H-62 e I-63 sobre el candidato (guías actualizadas, sin firmar) y B-1 sobre el SHA final (PENDING EXTERNAL) | La firma de las dos guías; correr B-1 sobre el SHA final con el paquete preparado; las autorizaciones de push, Neon y Streamlit |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

@@ -1,7 +1,7 @@
 # Guía del residente · piloto formativo
 
-> **Estado (2026-10-08): actualizada al candidato local de B-5 (IG-6), para la firma docente (I-63); no está
-> firmada.** Describe la sala implementada en local el 2026-10-08, todavía no desplegada. Se entrega a los
+> **Estado (2026-10-08): actualizada al candidato final local de B-5 (IG-6, con ES-P1 a ES-P13), para la firma
+> docente (I-63); no está firmada.** Describe la sala implementada en local el 2026-10-08, todavía no desplegada. Se entrega a los
 > residentes sólo después de la firma. Las etiquetas van como las muestra la pantalla en español y, entre
 > paréntesis, en inglés.
 
@@ -20,10 +20,7 @@ posiciones, y ninguna inteligencia artificial lo evalúa. Un docente revisa cada
   el E-FAST), el examen, las preguntas sobre tus órdenes, el aviso de una orden retenida, los recibos, los
   rótulos y los documentos que descargas. Los fármacos se nombran en español («noradrenalina», «salbutamol»);
   las dosis, las unidades, las vías y las siglas se escriben igual (mg, mL/h, IV, FiO₂, CPAP). Lo que tú
-  escribiste se muestra tal como lo escribiste. Algunos textos todavía se ven en inglés mientras la docencia
-  decide su redacción: la ayuda del selector de idioma, «Ask about …» al preguntar por un tema de la historia,
-  «units» en la dosis de heparina, dos títulos que aparecen al cerrar el encuentro y unos pocos avisos de
-  órdenes poco frecuentes.
+  escribiste se muestra tal como lo escribiste, también cuando la sala lo cita dentro de una frase en español.
 - **Sin datos reales:** no escribas nombres ni datos de pacientes reales. Todo es simulado.
 
 ## El encuentro
