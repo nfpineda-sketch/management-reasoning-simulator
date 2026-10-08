@@ -634,7 +634,7 @@ diseñada en `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`.
 ## 5. Decisiones pendientes
 
 Actualizado el 2026-10-07, con las 100 decisiones docentes del paquete, los estados límite de la 49m, el alcance y
-X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigesimonovena actualizaciones).
+X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a trigésima actualizaciones).
 
 1. **Decidido:** el alcance de X-1, sin interfaz mezclada en el candidato final, y sus decisiones de base (X1-0,
    I-10, L-01, V-4, M-02, L-17). X1-0 rige también los documentos que se ofrecen al residente en español.
@@ -647,7 +647,8 @@ X-1 entera, el relato, la rúbrica y las guías (Decision File, octava a vigesim
    revisión. **Lote 0 aprobado el 2026-10-07** (`docs/revision/B5_RELATO_LOTE_0.md`): 47 de 47 frases comunes.
    **R1A y R1B aprobados** (`docs/revision/B5_RELATO_R1A.md` y `docs/revision/B5_RELATO_R1B.md`): el bloque de SCA entero. **R2A y R2B aprobados** (`docs/revision/B5_RELATO_R2A.md` y `docs/revision/B5_RELATO_R2B.md`): el bloque
    respiratorio entero, con P-1 en la 24f. **R3A y R3B aprobados** (`docs/revision/B5_RELATO_R3A.md` y `docs/revision/B5_RELATO_R3B.md`): el bloque
-   de TEP y bradicardias entero. Van 18 de 30 casos, cada uno en su versión objetivo. R4A en revisión (`docs/revision/B5_RELATO_R4A.md`).
+   de TEP y bradicardias entero. **R4A aprobado** (`docs/revision/B5_RELATO_R4A.md`). Van 21 de 30 casos, cada uno en su versión objetivo.
+   R4B, R5 y R6 en revisión (`docs/revision/B5_RELATO_R4B.md`, `docs/revision/B5_RELATO_R5.md` y `docs/revision/B5_RELATO_R6.md`); integridad de los 30 en `docs/revision/B5_RELATO_INTEGRIDAD_30.md`.
 4. **Decidido:** las 100 decisiones del paquete (3.11). Siguen sin firma, a propósito, H-62 e I-63, hasta el
    candidato final implementado.
 5. **Decidido:** las dos guías difieren su firma hasta que describan el candidato final (3.4).

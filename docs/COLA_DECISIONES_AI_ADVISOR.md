@@ -866,13 +866,44 @@ implementado.**
 - **Siguiente lote:** R4B (`opioid_35m` y `opioid_67f`), después de la decisión docente sobre R4A.
 - **B-5: BLOCKED.**
 
+**Actualizado por trigésima vez el 2026-10-08: B-5 · R4A aprobado (relato 21 de 30); R4B, R5 y R6 preparados (los 9
+casos que faltan); integridad de los 30; TD-84 propuesta.** Sesión autónoma de documentación, sin decisión docente
+nueva. Registrado también en `docs/revision/B5_RELATO_R4A.md`, `docs/revision/B5_RELATO_R4B.md`, `docs/revision/B5_RELATO_R5.md`, `docs/revision/B5_RELATO_R6.md`, `docs/revision/B5_RELATO_INTEGRIDAD_30.md`, en `docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md` (§8), en
+`docs/revision/B5_GUIAS_Y_BRECHA_BILINGUE.md`, en el paquete (1.5) y en el registro de deuda (TD-81, TD-84). **Nada
+está implementado.**
+
+| Caso | Decisión docente (estado del 2026-10-08) | Versión aprobada |
+|---|---|---|
+| `hypoglycemia_28m` | APPROVE WHOLE CASE, con T-3 («Somnoliento y confundido») | `65cae7edde83847fd6641ca77a94b034da1ced9e1228df8894f9cbe09ab61950` |
+| `hypoglycemia_76f` | APPROVE WHOLE CASE | `a7abad85dad8fdae2263696303b1a207b7f4d0580fe951cb3e47050d787df845` |
+| `hypoglycemia_54m_thiamine` | APPROVE WHOLE CASE | `cbd0c47926b04387966b539cad27acd7de9dbce5d3f2093d560dede738ed608a` |
+
+- **Fuente de esta decisión:** el estado docente del 2026-10-08 («R4A = 3/3 approved; TOTAL = 21/30»). No repitió los
+  hashes; por la regla de versión, ata las versiones presentadas en R4A. Si la docencia quiso otra cosa, se corrige aquí.
+- **Precisión posterior (sin cambio de decisión):** en la hipoglicemia, el bloque de llegada agrega una frase del motor
+  sobre la vía venosa (`language.ENGINE_SENTENCES`), que sigue al relato y no entra en el hash del caso.
+- **R4B, R5 y R6, preparados para la revisión docente (9 casos):**
+  - R4B (`opioid_35m`, `opioid_67f`), R5 (`gi_bleed_57m`, `gi_bleed_72f`, `anaphylaxis_29f`,
+    `anaphylaxis_63m_betablocked`) y R6 (`renal_colic_34m`, `obstructive_pyelonephritis_58f`,
+    `trauma_limb_hemorrhage_27m`), en el orden canónico del banco;
+  - 188 pasajes propios (31, 80 y 77) y 12 pasajes fijos del corpus (6 en R5, 6 en R6), sin cambios;
+  - los 9, categoría A: ningún cambio de texto; versión objetivo = la del repositorio; recomendación APPROVE;
+  - `trauma_hemothorax_41m`, excluido del piloto (F0-2), no se revisó ni cuenta.
+- **Integridad de los 30 (`docs/revision/B5_RELATO_INTEGRIDAD_30.md`):** 21 aprobados, 9 revisados pendientes, 0 sin revisar; ningún duplicado ni faltante;
+  las 30 versiones objetivo se reproducen; lote 0 sin diferencias; 18 pasajes fijos intactos; 0 cifras distintas; 0 inglés
+  en el español.
+- **Decisión docente nueva que se propone:** TD-84 (propuesta, sin decidir): en `opioid_35m` y `opioid_67f`, el examen neurológico que compone el motor pierde en inglés «small reactive» antes de «pupils» (`family_engine.py:3210–3218`); el español conserva «Pupilas pequeñas y reactivas». VERIFICADO con el motor, sólo lectura. No es del relato. Ver
+  `docs/revision/B5_IMPLEMENTATION_READINESS_MAP.md`.
+- **Siguiente:** la decisión docente sobre R4B, R5 y R6 (9 casos) y sobre TD-84.
+- **B-5: BLOCKED.**
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0, rúbrica, R1, R2 y R3 aprobados, 18 de 30 casos; R4A en revisión); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
+| B-5 | **Bloqueado** | Las firmas docentes. El 2026-10-07 quedaron decididos X-1, J, las 100 decisiones del paquete (niveles 1, 2 y 3) y la redacción de los estados límite de la 49m (A-6a, A-6b, A-7-49m y A-8a), sin implementar; H-62 e I-63, decididas DEFER, siguen sin firma a propósito hasta el candidato final implementado (2 firmas abiertas). El español de X-1, decidido entero el 2026-10-07 (105 de 105; `docs/revision/X1_ESPANOL_PROPUESTO.md`), sin implementar; L-09 resuelta con la opción (c) | Revisar el relato de los 30 casos y la rúbrica en español antes de congelar el candidato, con el diseño aprobado el 2026-10-07 (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`; lote 0, rúbrica, R1, R2, R3 y R4A aprobados, 21 de 30 casos; R4B, R5 y R6 en revisión); llevar las aprobaciones del relato al candidato en `case_text/es/approvals.json` (camino a) e identificar el mecanismo de la rúbrica; implementar lo decidido antes de construir el candidato final; actualizar y firmar las guías sobre ese candidato |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

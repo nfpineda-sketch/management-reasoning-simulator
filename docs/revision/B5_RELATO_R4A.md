@@ -1,6 +1,7 @@
 # B-5 · Relato en español · Lote R4A: hipoglicemia (casos 1 a 3)
 
-> **PARA REVISIÓN DOCENTE. Nada implementado.** Primera parte del lote R4 de la revisión del relato
+> **DECIDIDO por la docencia (estado comunicado el 2026-10-08): los 3 casos, APPROVE WHOLE CASE. Nada
+> implementado.** Primera parte del lote R4 de la revisión del relato
 > (`docs/revision/B5_REVISION_RELATO_Y_RUBRICA.md`). La docencia pidió los 3 primeros casos en el orden canónico del
 > banco (`clinical_cases.FAMILIES`: hipoglicemia, después opioides; el mismo del manifiesto, `pilot_freeze.CASES`):
 > - R4A: `hypoglycemia_28m`, `hypoglycemia_76f` y `hypoglycemia_54m_thiamine`;
@@ -14,6 +15,14 @@
 
 **En una mirada**
 
+- **Decidido (docente, estado del 2026-10-08):** «R4A = 3/3 approved; TOTAL = 21/30». La docencia no repitió los
+  hashes: rige la regla de versión, así que la aprobación ata las versiones presentadas aquí (la 28m, la objetivo con
+  T-3). El relato del piloto suma 21 de 30 casos.
+- **Precisión posterior a la decisión (2026-10-08, sin cambio de la decisión):** el relato aprobado (`case_text`) no
+  nombra la vía, pero el bloque de llegada de la sala sí agrega, en la hipoglicemia, una frase del motor que no es
+  del caso: «Peripheral IV in place in the left forearm.» → «Vía venosa periférica instalada en el antebrazo
+  izquierdo.» (`language.py`, `ENGINE_SENTENCES`). Sigue al relato (español si el caso está aprobado), no entra en
+  el hash del caso y nombra el mismo sitio que A-13. No hace falta decisión.
 - **Pasajes:** 3 casos y 99 pasajes. 51 están cubiertos por frases del lote 0, ya aprobadas; **48 son propios y se
   revisan** (16, 15 y 17).
 - **Corpus de la validación externa:** ninguno de los 3 casos está en él, así que no hay pasajes fijos en este lote.
@@ -66,7 +75,7 @@ Cubiertos por el lote 0: `/history/allergies/0` (L0-33), `/examination/Abdomen` 
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Se aplica T-3 en `/examination/Neurological`, ya aprobado: «Somnoliento y confuso» → «Somnoliento y confundido», como la presentación y la historia del mismo caso («quedó confundido»). Es el único pasaje del banco que T-3 cambia.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, estado del 2026-10-08; versión aprobada `65cae7edde83847fd6641ca77a94b034da1ced9e1228df8894f9cbe09ab61950`. Incluye T-3 («Somnoliento y confundido»).
 
 ## hypoglycemia_76f
 
@@ -96,7 +105,7 @@ Cubiertos por el lote 0: `/history/allergies/0` (L0-33), `/examination/Abdomen` 
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. Ningún término de T-1 a T-3 aparece en el caso.
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, estado del 2026-10-08; versión aprobada `a7abad85dad8fdae2263696303b1a207b7f4d0580fe951cb3e47050d787df845`.
 
 ## hypoglycemia_54m_thiamine
 
@@ -128,15 +137,15 @@ Cubiertos por el lote 0: `/history/allergies/0` (L0-33), `/investigations/pocus/
 
 - **Observaciones:** ninguna de sentido, clínica ni de terminología. «Habla de forma confusa» traduce «speech is muddled»: califica el habla, no el estado mental, y T-3 no lo toca; «La confusión» (`/history/onset/0`) es el sustantivo. «No ha recibido vitaminas» coincide con el motor, que no modela tratamientos prehospitalarios en la hipoglicemia (`hypoglycemia_battery.py`).
 - **Recomendación para el caso entero:** **APPROVE**.
-- **Decisión docente:** ☐ APPROVE WHOLE CASE · ☐ REVISE — Nota: ________
+- **Decisión docente:** ☒ **APPROVE WHOLE CASE** — docente, estado del 2026-10-08; versión aprobada `cbd0c47926b04387966b539cad27acd7de9dbce5d3f2093d560dede738ed608a`.
 
 ## Resumen del lote R4A
 
 | Caso | Propios | Cubiertos por el lote 0 | Fijos del corpus | Versión objetivo que se aprueba | Recomendación | Decisión docente |
 |---|---|---|---|---|---|---|
-| `hypoglycemia_28m` | 16 | 17 | 0 | `65cae7ed…` (con T-3) | APPROVE | ☐ |
-| `hypoglycemia_76f` | 15 | 18 | 0 | `a7abad85…` (sin cambios) | APPROVE | ☐ |
-| `hypoglycemia_54m_thiamine` | 17 | 16 | 0 | `cbd0c479…` (sin cambios) | APPROVE | ☐ |
+| `hypoglycemia_28m` | 16 | 17 | 0 | `65cae7ed…` (con T-3) | APPROVE | ☒ APPROVE |
+| `hypoglycemia_76f` | 15 | 18 | 0 | `a7abad85…` (sin cambios) | APPROVE | ☒ APPROVE |
+| `hypoglycemia_54m_thiamine` | 17 | 16 | 0 | `cbd0c479…` (sin cambios) | APPROVE | ☒ APPROVE |
 | **Total** | **48** | **51** | **0** | | | |
 
-Siguiente: R4B (`opioid_35m` y `opioid_67f`), después de la decisión docente sobre R4A.
+Siguiente: R4B (`opioid_35m` y `opioid_67f`), en `docs/revision/B5_RELATO_R4B.md`.

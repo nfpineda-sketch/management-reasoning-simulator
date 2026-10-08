@@ -353,6 +353,11 @@ uno en su versión exacta. El bloque de TEP y bradicardias queda entero y el rel
 (hipoglicemia) está en revisión. Sin `approvals.json`. B-5 sigue bloqueado (Decision File, vigesimonovena
 actualización).
 
+**Actualización del 2026-10-08 (B-5, sesión autónoma):** R4A aprobado por la docencia (21 de 30). R4B, R5 y R6
+preparados para su decisión (los 9 casos restantes, limpios, sin cambios de texto); integridad de los 30 comprobada
+(`docs/revision/B5_RELATO_INTEGRIDAD_30.md`). Propuesta TD-84 (examen neurológico inglés de los opioides). Sin
+`approvals.json`. B-5 sigue bloqueado (Decision File, trigésima actualización).
+
 **Orden:** una firma que cambie un texto activo cambia el código y, con él, el candidato, que habría que verificar de
 nuevo. Conviene firmar antes de construir el candidato final, no después de desplegarlo.
 

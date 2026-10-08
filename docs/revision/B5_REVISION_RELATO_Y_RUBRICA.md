@@ -296,3 +296,13 @@ candidato. El hash impreso ata cada aprobación a lo que se leyó.
 - **R4 en dos partes (docente, 2026-10-08), en el orden canónico del banco** (`clinical_cases.FAMILIES`:
   hipoglicemia, después opioides). R4A (`hypoglycemia_28m`, `hypoglycemia_76f` y `hypoglycemia_54m_thiamine`),
   entregado para revisión: `docs/revision/B5_RELATO_R4A.md`. R4B: `opioid_35m` y `opioid_67f`.
+- **R4A, decidido (estado docente del 2026-10-08: «R4A = 3/3 approved; TOTAL = 21/30»):** APPROVE WHOLE CASE en
+  `hypoglycemia_28m` (`65cae7ed…`, con T-3), `hypoglycemia_76f` (`a7abad85…`) y `hypoglycemia_54m_thiamine`
+  (`cbd0c479…`), las versiones presentadas en R4A (la docencia no repitió los hashes; rige la regla de versión).
+  Van 21 de 30 casos.
+- **R4B, R5 y R6, entregados para revisión (sesión autónoma del 2026-10-08, sin decisión docente):** `docs/revision/B5_RELATO_R4B.md`, `docs/revision/B5_RELATO_R5.md` y
+  `docs/revision/B5_RELATO_R6.md`. Los 9 casos, categoría A (limpios): ningún cambio de texto, versión objetivo = la del repositorio,
+  recomendación APPROVE. Hallazgo aparte, fuera del relato: TD-84 (propuesta, sin decidir): en `opioid_35m` y `opioid_67f`, el examen neurológico que compone el motor pierde en inglés «small reactive» antes de «pupils» (`family_engine.py:3210–3218`); el español conserva «Pupilas pequeñas y reactivas».
+- **Integridad de los 30 casos (determinista, 2026-10-08):** `docs/revision/B5_RELATO_INTEGRIDAD_30.md`. 21 aprobados, 9 revisados pendientes, 0 sin
+  revisar; las 30 versiones objetivo se reproducen; lote 0 47/527 sin diferencias; 18 pasajes fijos intactos;
+  0 cifras distintas y 0 inglés en el español.
