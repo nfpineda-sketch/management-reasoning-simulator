@@ -13,9 +13,12 @@ bloqueado, y por qué.
 > desplegar (`docs/revision/B5_CANDIDATO_LOCAL.md`). La promoción y el despliegue siguen
 > `docs/revision/PILOT_PROMOTION_DEPLOYMENT_RUNBOOK.md`, que reemplaza a `docs/RUNBOOK_PILOTO.md` para el piloto; la
 > prueba de humo corre en un destino descartable, nunca en la base del piloto. La redacción de TD-86 (ES-P1 a
-> ES-P13) quedó decidida e implementada en local el 2026-10-08; ya no queda ninguna decisión docente de texto
-> pendiente. Siguen pendientes la firma de las guías (H-62 e I-63), B-1 sobre el SHA final y las autorizaciones de
-> push, Neon, Streamlit, despliegue y GO. La respuesta de abajo no cambia: las condiciones A, B y C siguen sin
+> ES-P13) quedó decidida e implementada en local el 2026-10-08, y ES-P8g confirmada el mismo día (nombres V-9 en la
+> lista de infusiones que arma el motor); ya no queda ninguna decisión docente de texto pendiente. El candidato
+> local está congelado en `37c9afb1094327dd498857aa97a91820ddb4fe4c`. Siguen pendientes la firma de las guías
+> (H-62 e I-63; paquete en `docs/revision/B5_FIRMA_H62_I63.md`), B-1 sobre ese SHA (autorizado, PENDING
+> EXTERNAL: `docs/revision/PRE_DEPLOYMENT_READINESS_2026_10_06.md`, §21) y las autorizaciones de push, Streamlit,
+> despliegue y GO. La respuesta de abajo no cambia: las condiciones A, B y C siguen sin
 > cumplirse.
 
 **TECHNICALLY READY WITH CONDITIONS** (confirmado por el docente al cerrar el ciclo, 2026-09-29). Antes de

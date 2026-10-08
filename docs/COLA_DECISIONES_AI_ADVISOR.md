@@ -5,8 +5,10 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-08, con las decisiones docentes de ES-P8 a ES-P13, su implementación local y el candidato
-  final local (trigésima cuarta actualización de la sección «Preparación para el despliegue»); antes, el mismo día,
+- **Actualizado:** 2026-10-08, con la decisión docente de ES-P8g, el candidato local congelado `37c9afb`, el paquete
+  de firma de H-62 e I-63 y el intento autorizado de B-1 (trigésima quinta actualización de la sección «Preparación
+  para el despliegue»); antes, el mismo día, con las decisiones docentes de ES-P8 a ES-P13, su implementación local y
+  el candidato final local (trigésima cuarta); antes, el mismo día,
   con las de ES-P1 a ES-P7 (trigésima tercera); antes, el mismo día, con las decisiones docentes finales de B-5 y su implementación local (trigésima
   segunda actualización). Antes, 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
@@ -1023,9 +1025,33 @@ de `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md` (§2):
   texto pendiente. Nada se empujó, no se creó `pilot-residents-v1` ni `phase-1-contracts-v2`, ni ningún recurso en
   Neon o Streamlit; no hubo despliegue ni GO, y la Fase 1 no empezó.
 
+**Actualizado por trigésima quinta vez el 2026-10-08: candidato congelado, ES-P8g, guías y B-1.**
+
+- **Candidato local congelado:** `37c9afb1094327dd498857aa97a91820ddb4fe4c`. Certificado una vez sobre ese SHA
+  (`docs/revision/B5_CANDIDATO_LOCAL.md`, §3). Desde aquí no cambian el runtime, los textos de los casos, la rúbrica,
+  las cadenas de idioma, la conducta clínica, las aprobaciones ni las pruebas, salvo que B-1 demuestre un defecto
+  real del candidato; en ese caso se detiene todo y vuelve a la docencia. Los commits posteriores son sólo de
+  documentación.
+- **ES-P8g: APPROVE de la implementación** (docencia, 2026-10-08). «Hay más de una infusión en curso ({lista}).
+  Indica cuál quieres cambiar.»: la {lista} la arma el motor, no el residente, y en la sala en español se dice con los
+  nombres V-9 ya aprobados («dobutamina, noradrenalina»); los identificadores canónicos no cambian. No queda ninguna
+  decisión pendiente sobre ES-P8g.
+- **H-62 e I-63:** paquete de firma en `docs/revision/B5_FIRMA_H62_I63.md` (contenido final, cambios exactos desde la
+  versión revisada `f59b953`, temas por línea, lo que depende del candidato y el sha256 de cada guía). **Sin firmar.**
+  El paquete señala tres frases de H-62 que no cambiaron desde `f59b953` y ya no coinciden con lo decidido; la
+  docencia decide si las corrige antes de firmar.
+- **B-1 sobre `37c9afb`: autorizado y PENDING EXTERNAL.** La docencia autorizó una rama descartable
+  `pilot-b1-37c9afb` con la base `mrs_b1_37c9afb`. Desde el contenedor no se pudo crear ni usar: la política de red
+  rechaza `console.neon.tech`, no hay credenciales de Neon y la conexión PostgreSQL no atraviesa su proxy. No se creó
+  nada en Neon y no corrió ninguna prueba. El paquete (bundle y sumas verificadas, ocho comprobaciones de destino,
+  comando exacto de las 23 pruebas) queda listo para correrlo desde el Mac, como el B-1 anterior
+  (`docs/revision/PRE_DEPLOYMENT_READINESS_2026_10_06.md`, §21). El PASS sobre `8ff41a4` no vale para este SHA.
+- Nada se empujó; no se creó `pilot-residents-v1` ni `phase-1-contracts-v2`, ni una rama o base persistente del
+  piloto, ni una app de Streamlit; no hubo despliegue ni GO, y la Fase 1 no empezó.
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
-| B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
+| B-1 | **Resuelto para `8ff41a4`** (2026-10-07; informe, sección 20). **Para el candidato congelado `37c9afb`: PENDING EXTERNAL** (2026-10-08; informe, sección 21): autorizado, no ejecutado desde el contenedor (red y credenciales) | Correr el paquete de `37c9afb` sobre `pilot-b1-37c9afb` / `mrs_b1_37c9afb` y traer la evidencia | Ninguna nueva: la autorización ya está dada; falta ejecutarla desde un equipo con red a Neon |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |

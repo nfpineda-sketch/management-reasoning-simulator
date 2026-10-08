@@ -27,14 +27,16 @@ implementados (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`).
 
 ## 2. Candidato
 
-**Candidato final local:** el commit que trae esta versión de este documento. La primera certificación, sobre `2dc09e4`, halló en la suite completa una prueba que dependía del orden y que ya fallaba igual en `189f47e` (C-2026-10-08-10); se corrigió en la prueba, el SHA cambió y la certificación completa se repite sobre el commit nuevo. Su SHA exacto no puede
-estar dentro de él: queda en el informe de su certificación, junto con la evidencia (scratchpad de la sesión, fuera
-del repositorio). Sobre ese SHA, y sin tocarlo después, se corre una sola vez la certificación completa: pruebas
-focalizadas, centinela estricto, relato 30/30, rúbrica 5/5, activación de las aprobaciones, lector y corpus
-congelados, Fase 0, hipoglicemia, 56 regresiones, suite completa y preflight local. Si algo cambia después de la
-suite, el SHA cambia y la suite se repite. El paquete de B-1 se prepara sobre ese SHA (PENDING EXTERNAL).
+**Candidato local congelado: `37c9afb1094327dd498857aa97a91820ddb4fe4c`** (árbol
+`81e290c6d35773c0ddfc488194c0f691d3cf7774`). La primera certificación, sobre `2dc09e4`, halló en la suite completa
+una prueba que dependía del orden y que ya fallaba igual en `189f47e` (C-2026-10-08-10); se corrigió en la prueba,
+el SHA cambió y la certificación completa se repitió una sola vez sobre `37c9afb` (§3). Desde el 2026-10-08 el
+candidato está congelado: no cambian el runtime, los textos de los casos, la rúbrica, las cadenas de idioma, la
+conducta clínica, las aprobaciones ni las pruebas, salvo que B-1 demuestre un defecto real; los commits posteriores
+son sólo de documentación. B-1 sobre este SHA: autorizado y PENDING EXTERNAL
+(`docs/revision/PRE_DEPLOYMENT_READINESS_2026_10_06.md`, §21).
 
-## 3. Recertificación local (en curso; nada de esto es la certificación final)
+## 3. Recertificación local y certificación final
 
 | Verificación | Sobre | Resultado |
 |---|---|---|
@@ -56,5 +58,15 @@ suite, el SHA cambia y la suite se repite. El paquete de B-1 se prepara sobre es
 | Tras el mini-pase: pruebas que tocan el idioma (39 archivos) | árbol antes del commit | 1681 aprobadas, 0 fallidas |
 | Tras el mini-pase: 56 regresiones | árbol antes del commit | 56 de 56; 10 retiradas |
 | Primera certificación | `2dc09e4` | Pruebas focalizadas 1981, centinela 30/30 limpio, relato 30/30, rúbrica 5/5, lector y corpus congelados, 56/56 regresiones y preflight LISTA; la suite completa: 8023 pruebas, **1 falla** (dependía del orden; ya fallaba en `189f47e`; C-2026-10-08-10). Invalidada: el SHA cambió |
-| Certificación final única | el SHA del candidato | en el informe de la certificación (fuera del commit) |
+| **Certificación final única: SHA y árbol** | `37c9afb` | SHA exacto; árbol limpio (0 cambios) |
+| Certificación final: relato y rúbrica | `37c9afb` | 30 de 30 y 5 de 5 (`--check` y `--verify`, también `--rubric`): coinciden y se activan |
+| Certificación final: lector y corpus | `37c9afb` | 0 líneas de diferencia en los cinco archivos del lector desde `009aadb`; `validation/` sin cambios |
+| Certificación final: centinela estricto | `37c9afb` | 30 de 30 casos en 3 tandas; 0 líneas en inglés; 0 pasos detenidos; 0 pendientes dentro o fuera del recorrido; salida 0 |
+| Certificación final: pruebas focalizadas (40 archivos) | `37c9afb` | 1983 aprobadas, 0 fallidas |
+| Certificación final: 56 regresiones | `37c9afb` | 56 de 56; 10 retiradas |
+| Certificación final: suite completa | `37c9afb` | 8025 pruebas, 0 fallas, 0 errores, 93 omitidas, 1 xfail; huella igual al inicio y al final (válida) |
+| Certificación final: Fase 0 (de la suite) | `37c9afb` | 968 aprobadas; las 10 de PostgreSQL, omitidas sin URL |
+| Certificación final: hipoglicemia (de la suite) | `37c9afb` | 123 aprobadas (preservación 6, catálogo 28) y 1 xfail declarado (brecha conocida del lector) |
+| Certificación final: preflight local | `37c9afb` | «Configuración del piloto: LISTA», salida 0, sin `--connect` |
+| Paquete de B-1 | `37c9afb` | bundle y ayudantes con sus sumas verificadas; B-1 no ejecutado: PENDING EXTERNAL |
 

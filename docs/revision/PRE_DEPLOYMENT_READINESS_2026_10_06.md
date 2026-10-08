@@ -2232,3 +2232,47 @@ antes de implementarla (Decision File, décima y undécima actualizaciones; TD-8
 - TD-76: el respaldo en PostgreSQL 17, antes del primer respaldo con datos;
 - TD-77: el aislamiento de los Secrets en las pruebas;
 - TD-78: el primer encuentro sobre una base vacía.
+
+## 21. B-1 sobre el candidato congelado `37c9afb` (2026-10-08) — PENDING EXTERNAL
+
+**Autorización docente (2026-10-08):** una rama de Neon nueva y descartable, `pilot-b1-37c9afb`, en el proyecto
+`management-reasoning-simulator`, con una base nueva y vacía, `mrs_b1_37c9afb`; PostgreSQL 17, endpoint *pooled*,
+TLS y sin depender de `~/.streamlit/secrets.toml`. No es producción, ni `mrs_pilot`, ni la futura rama persistente
+del piloto, y no se copian datos.
+
+### 21.1 Candidato
+
+- SHA `37c9afb1094327dd498857aa97a91820ddb4fe4c`, árbol `81e290c6d35773c0ddfc488194c0f691d3cf7774`, certificado una
+  vez sobre ese SHA (`docs/revision/B5_CANDIDATO_LOCAL.md`, §3).
+- Paquete: `mrs-b1-candidate.bundle` (sha256 `b5e8b8ba1991e213dd575455e49747e8898c177894e4f8a682fb08c96c8098e6`),
+  `b1_target_check.py` (sha256 `66e8c557aac0407d5e8b5631d71b4c642253e4e0c030e06033192203a3070196`) y
+  `b1_copy_rows_check.py` (sha256 `6267ba5c877f38c4f695853c71283de5261408fd92a3237ac8eb08d7c94dfca5`). Las tres
+  sumas se verificaron el 2026-10-08 (`sha256sum -c`: OK); `git bundle verify`: OK, con la cabeza
+  `37c9afb1094327dd498857aa97a91820ddb4fe4c refs/heads/clinical-encounter-v0.13` y el requisito `009aadb`.
+- El paquete trae el procedimiento con la rama y la base nuevas y las ocho comprobaciones del destino que pidió la
+  docencia: proyecto, rama, base, versión mayor, TLS, endpoint *pooled*, destino descartable y que no es producción
+  ni `mrs_pilot`. Los dos ayudantes no cambiaron (sus sumas siguen iguales): el proyecto, lo descartable y la rama
+  por defecto se anotan desde la consola, y el endpoint *pooled* se comprueba con una línea que sólo imprime
+  verdadero o falso.
+
+### 21.2 Lo que pasó
+
+**No se ejecutó.** Desde el contenedor de la sesión:
+- la política de red del entorno rechazó `console.neon.tech` (el proxy respondió 403 al CONNECT);
+- no hay ninguna credencial de Neon configurada;
+- y la conexión PostgreSQL al puerto 5432 no atraviesa el proxy HTTP del contenedor.
+
+No se creó la rama ni la base, no se conectó a ninguna base y no corrió ninguna de las 23 pruebas. Tampoco se buscó
+un rodeo. No hay fallas que clasificar: la corrida no empezó.
+
+### 21.3 Estado
+
+- **B-1 para `37c9afb`: PENDING EXTERNAL.** El PASS de la sección 20 es de `8ff41a4` y no vale para este SHA.
+- **Siguiente paso:** correr el paquete desde el Mac, como el B-1 anterior: crear la rama y la base autorizadas,
+  hacer las ocho comprobaciones, una sola corrida de las 23 pruebas y traer la evidencia de
+  `~/mrs-b1-evidence/37c9afb/`. Si falla, no se corrige nada: se clasifica (A entorno o configuración, B arnés,
+  C defecto del candidato, D proveedor o base) y vuelve a la docencia.
+- La rama y la base, cuando existan, quedan hasta que la docencia revise la evidencia; no se borran sin
+  autorización.
+- Nada se empujó; no se creó `pilot-residents-v1` ni `phase-1-contracts-v2`, ni una rama o base persistente del
+  piloto, ni una app de Streamlit; no hubo despliegue ni GO, y la Fase 1 no empezó.

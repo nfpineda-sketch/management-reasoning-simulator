@@ -51,11 +51,10 @@ de cada ítem está en el historial de git de este archivo.
 {fármaco} (8i, 8j) sólo puede ser norepinephrine, nitroglycerin o dobutamine, y se dice con su nombre V-9
 (noradrenalina, nitroglicerina, dobutamina).
 
-**Interpretación para confirmar por la docencia (8g).** La {lista} de 8g no la escribe el residente: la arma el
-motor con los nombres ordenados de las infusiones en curso («dobutamine, norepinephrine»). Se dice con los nombres
-V-9 («dobutamina, noradrenalina»), igual que {fármaco}. La regla «no traducir lo que escribió el residente» se
-cumple, porque nada del residente entra en esa lista. Si la docencia quiere los nombres canónicos en inglés en esa
-lista, el cambio es de una línea.
+**8g, confirmado por la docencia el 2026-10-08 (APPROVE de la implementación).** La {lista} de 8g no la escribe el
+residente: la arma el motor con los nombres ordenados de las infusiones en curso. En la sala en español se dice con
+los nombres V-9 ya aprobados («dobutamina, noradrenalina»), igual que {fármaco}; los identificadores canónicos e
+internos de los fármacos no cambian. No queda ninguna decisión pendiente sobre 8g.
 
 ### ES-P9 a ES-P13
 
