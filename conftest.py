@@ -57,6 +57,37 @@ def _offline_suite():
         socket.socket.connect_ex = _real_connect_ex
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _no_machine_wide_streamlit_files(tmp_path_factory):
+    """``~/.streamlit`` never configures the app under test; a test's own settings do.
+
+    Streamlit reads ``~/.streamlit/secrets.toml`` before the project's file,
+    ``account_portal._setting`` prefers ``st.secrets`` to the environment, and
+    Streamlit also copies each value into ``os.environ``. A ``MRS_DATABASE_URL``
+    in that file therefore outranks the ``monkeypatch.setenv`` of a test that
+    sets no ``at.secrets``. In the B-1 rehearsal (2026-10-07) the Phase 0 test
+    on PostgreSQL created its account tables in the database that file named,
+    not in ``MRS_TEST_POSTGRES_URL``. For the whole session Streamlit's per-user
+    folder is an empty temporary one, so neither its config.toml nor its
+    secrets.toml is read. The project's own ``.streamlit`` still is, and
+    ``at.secrets`` still wins.
+    """
+    from streamlit import config, file_util
+    import streamlit as st
+
+    folder = tmp_path_factory.mktemp("streamlit-user-folder")
+
+    def forget_what_was_read():
+        st.secrets._reset()
+        config.get_config_options(force_reparse=True)
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(file_util, "get_streamlit_file_path", lambda *path: str(folder.joinpath(*path)))
+        forget_what_was_read()
+        yield folder
+    forget_what_was_read()
+
+
 _PROVIDER_SECRETS = ("OPENAI_API_KEY",)
 
 
