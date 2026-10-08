@@ -3660,6 +3660,27 @@ CORRECTIONS = (
                   "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english"],
         "preservation": None,
     },
+    {
+        "id": "C-2026-10-08-10",
+        "date": "2026-10-08",
+        "title": "La prueba del aspecto general que dependía del orden: «antes de aprobar» sin relato instalado",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("La suite completa sobre el primer candidato final (2dc09e4) falló en "
+                   "test_td59_general_appearance_keeps_the_case::test_each_line_reads_whole_in_one_language, sólo "
+                   "después del recorrido del centinela en el mismo proceso. Reproducida con el par, y también en "
+                   "189f47e: no la causó esta ronda. La sala instala para todo el proceso el relato aprobado "
+                   "(case_text.install), como debe; la prueba medía «antes de aprobar» sin quitarlo y leía en español "
+                   "la línea del caso. El estado compartido estaba en la prueba, no en la aplicación: la prueba fija "
+                   "su precondición (ningún relato instalado) y sigue protegiendo lo mismo. El código de la aplicación "
+                   "no cambia."),
+        "authorised_by": INSTRUCTION_2026_10_08_ESP8,
+        "affects": {"modules": ["test_td59_general_appearance_keeps_the_case"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_td59_general_appearance_keeps_the_case.py::test_each_line_reads_whole_in_one_language",
+                  "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english"],
+        "preservation": None,
+    },
 )
 
 

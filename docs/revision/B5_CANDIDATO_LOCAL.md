@@ -27,7 +27,7 @@ implementados (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`).
 
 ## 2. Candidato
 
-**Candidato final local:** el commit que trae esta versión de este documento, sobre `189f47e`. Su SHA exacto no puede
+**Candidato final local:** el commit que trae esta versión de este documento. La primera certificación, sobre `2dc09e4`, halló en la suite completa una prueba que dependía del orden y que ya fallaba igual en `189f47e` (C-2026-10-08-10); se corrigió en la prueba, el SHA cambió y la certificación completa se repite sobre el commit nuevo. Su SHA exacto no puede
 estar dentro de él: queda en el informe de su certificación, junto con la evidencia (scratchpad de la sesión, fuera
 del repositorio). Sobre ese SHA, y sin tocarlo después, se corre una sola vez la certificación completa: pruebas
 focalizadas, centinela estricto, relato 30/30, rúbrica 5/5, activación de las aprobaciones, lector y corpus
@@ -55,5 +55,6 @@ suite, el SHA cambia y la suite se repite. El paquete de B-1 se prepara sobre es
 | Mini-pase adversarial de la capa de idioma | árbol sobre `189f47e` | 4 hallazgos corregidos dentro del alcance aprobado, con prueba: 3 bloqueantes (una frase de la sala escrita por el residente se traducía dentro de su lista o su cita; tope de 500 caracteres para lo que escribió; «units/kg» en la dosis por kilo) y 1 menor («units PO»). 5 informativos sin cambio: «1 units» ya está así en inglés; el detector marcaría la lista del residente en ES-P12 si un recorrido llegara a ella; un ítem que termina en punto deja «..»; PAS no entera y más de 256 citas, inalcanzables |
 | Tras el mini-pase: pruebas que tocan el idioma (39 archivos) | árbol antes del commit | 1681 aprobadas, 0 fallidas |
 | Tras el mini-pase: 56 regresiones | árbol antes del commit | 56 de 56; 10 retiradas |
+| Primera certificación | `2dc09e4` | Pruebas focalizadas 1981, centinela 30/30 limpio, relato 30/30, rúbrica 5/5, lector y corpus congelados, 56/56 regresiones y preflight LISTA; la suite completa: 8023 pruebas, **1 falla** (dependía del orden; ya fallaba en `189f47e`; C-2026-10-08-10). Invalidada: el SHA cambió |
 | Certificación final única | el SHA del candidato | en el informe de la certificación (fuera del commit) |
 

@@ -106,6 +106,8 @@ def test_each_line_reads_whole_in_one_language(engine):
                          ("trauma_limb_hemorrhage_27m", ("Apply direct pressure to the thigh wound.",)),
                          ("anaphylaxis_29f", ())):
         text = appearance(engine, case, orders)
+        # "Before" means no approved passage installed: a room run earlier in the process installs them all.
+        language.set_narrative({}, "es")
         with language.narrating(case):
             before = language.examination(text, "es").split("\n")
             language.set_narrative({case: approved(case)}, "es")

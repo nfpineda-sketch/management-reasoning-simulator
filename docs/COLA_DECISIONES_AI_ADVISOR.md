@@ -1013,7 +1013,7 @@ de `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md` (§2):
   quedó para la docencia.
 - **Centinela estricto:** 30 de 30 casos, 0 líneas en inglés, 0 pasos detenidos, 0 pendientes dentro o fuera del
   recorrido (`PENDING_OUTSIDE_THE_WALK` vacía). Se repite en la certificación del candidato.
-- **Candidato final local:** el commit que trae esta actualización; su SHA y su certificación única (pruebas
+- **Candidato final local:** el commit que trae esta frase (la primera certificación, sobre `2dc09e4`, halló una prueba que dependía del orden, anterior a esta ronda, y se corrigió en la prueba: C-2026-10-08-10); su SHA y su certificación única (pruebas
   focalizadas, centinela, relato 30/30, rúbrica 5/5, lector y corpus congelados, Fase 0, hipoglicemia, 56
   regresiones, suite completa y preflight local) quedan en el informe de la certificación, fuera del commit para no
   moverlo.
