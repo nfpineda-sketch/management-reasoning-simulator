@@ -79,18 +79,18 @@ ENGINE = (
                 "aire, con sibilancias espiratorias residuales.",
      "note": "neumotórax descomprimido; «left» → «izquierdo», y la segunda parte es cualquiera de las dos del asma"},
     {"kind": "examination", "cases": ["opioid"], "seen": False,
-     "english": "Respiratory rate {n} /min; assisted ventilation is in progress.",
-     "example": "Respiratory rate 8 /min; assisted ventilation is in progress.",
+     "english": "Respiratory rate {n}/min, provided by the assisted ventilation currently in progress.",
+     "example": "Respiratory rate 12/min, provided by the assisted ventilation currently in progress.",
      "spanish": "Frecuencia respiratoria {n}/min, dada por la ventilación asistida en curso.",
      "note": "family_engine.current_findings, opioides"},
     {"kind": "examination", "cases": ["opioid"], "seen": False,
-     "english": "Respiratory rate {n} /min; breaths remain shallow.",
-     "example": "Respiratory rate 6 /min; breaths remain shallow.",
+     "english": "Respiratory rate {n}/min; breaths remain shallow.",
+     "example": "Respiratory rate 6/min; breaths remain shallow.",
      "spanish": "Frecuencia respiratoria {n}/min; las respiraciones siguen siendo superficiales.",
      "note": "family_engine.current_findings, opioides"},
     {"kind": "examination", "cases": ["opioid"], "seen": False,
-     "english": "Respiratory rate {n} /min; spontaneous breaths have greater depth.",
-     "example": "Respiratory rate 14 /min; spontaneous breaths have greater depth.",
+     "english": "Respiratory rate {n}/min; spontaneous breaths have greater depth.",
+     "example": "Respiratory rate 14/min; spontaneous breaths have greater depth.",
      "spanish": "Frecuencia respiratoria {n}/min; las respiraciones espontáneas son más profundas.",
      "note": "family_engine.current_findings, opioides"},
     # The access findings (glucose_rescue.access_finding): language already says them in
@@ -151,8 +151,8 @@ ENGINE_REVIEW = {
     "Bilateral inspiratory crackles with increased respiratory effort.": (
         "Edema pulmonar (75f) al examinar, antes de tratar",
         "Aprobar",
-        "Ninguna en el español. En el motor, esta frase puede seguir mostrándose con el paciente agotado "
-        "(pendiente registrado aparte)"),
+        "Ninguna en el español. Desde A-2 (2026-10-07; implementada el 2026-10-08), con el paciente agotado el "
+        "motor escribe la frase de la fila siguiente"),
     "Bilateral crackles remain, with reduced respiratory effort.": (
         "Edema pulmonar que mejora con el tratamiento",
         "Aprobar: el motor la escribe sólo con la congestión en mejoría, y nunca junto al agotamiento (lo verifica "
@@ -179,16 +179,16 @@ ENGINE_REVIEW = {
         "Neumotórax del asma después de la descompresión",
         "Aprobar la versión final: «Reaparece el murmullo pulmonar en el hemitórax derecho tras la descompresión; …»",
         "Ninguna"),
-    "Respiratory rate {n} /min; assisted ventilation is in progress.": (
+    "Respiratory rate {n}/min, provided by the assisted ventilation currently in progress.": (
         "Intoxicación por opioides durante la ventilación con bolsa y mascarilla o la intubación",
         "Aprobar la versión final: la frecuencia que muestra el motor durante la asistencia es la de la ventilación "
-        "asistida (fija en 12/min), no la espontánea; el español lo dice",
-        "El inglés no lo dice (pendiente registrado aparte)"),
-    "Respiratory rate {n} /min; breaths remain shallow.": (
+        "asistida (fija en 12/min), no la espontánea; el español lo dice, y desde A-9 (2026-10-07) también el inglés",
+        "Ninguna"),
+    "Respiratory rate {n}/min; breaths remain shallow.": (
         "Intoxicación por opioides con hipoventilación persistente",
         "Aprobar",
         "Ninguna"),
-    "Respiratory rate {n} /min; spontaneous breaths have greater depth.": (
+    "Respiratory rate {n}/min; spontaneous breaths have greater depth.": (
         "Intoxicación por opioides que responde a la naloxona",
         "Aprobar",
         "Ninguna; «más profundas» se lee respecto del examen anterior"),

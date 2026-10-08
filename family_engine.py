@@ -277,6 +277,11 @@ def _case(state):
     return state.get("encounter_spec", {}).get("clinical_case", {})
 
 
+def _case_id(state):
+    """The bank case being played (its variant id), or None for a case outside the bank."""
+    return (state.get("encounter_spec") or {}).get("variant_id") or _case(state).get("id")
+
+
 def weight_rules_apply(state):
     """Whether this encounter was launched under the weight rules of 2026-09-27 (patient_body)."""
     import patient_body
@@ -3194,6 +3199,26 @@ def available_regions(state):
     return list(dict.fromkeys(list(EXAMINATION_REGIONS) + list(current_findings(state))))
 
 
+#: The asthma case whose arrival examination the faculty kept while its obstruction has not improved (A-6,
+#: A-6a, A-6b, A-7-49m and A-8a, faculty, 2026-10-07; TD-83). Not improved means the engine's obstruction
+#: index has not fallen below the value every asthma case arrives with (``_initialize``).
+_SEVERE_ARRIVAL_ASTHMA = frozenset({"asthma_49m"})
+ARRIVAL_OBSTRUCTION = 1.0
+#: TD-84 (faculty, 2026-10-08): where the case wrote small reactive pupils, the English examination says so
+#: in its own sentence, as the Spanish already did; the rest of the clause is the case's own words.
+_SMALL_REACTIVE_PUPILS = re.compile(r"\bsmall,?\s+(?:and\s+)?reactive\s+pupils?\b(?P<rest>[^.!?;]*)", re.I)
+
+
+def _pupils_sentence(authored_neuro):
+    """The pupils the case wrote, as the examination says them, or None when it wrote none."""
+    small = _SMALL_REACTIVE_PUPILS.search(authored_neuro or "")
+    if small:
+        rest = re.sub(r"^(?:and|with)\s+", "", small.group("rest").strip(" ,"), flags=re.I)
+        return "Pupils are small and reactive." + (f" {rest[:1].upper()}{rest[1:]}." if rest else "")
+    found = " ".join(re.findall(r"\bpupils?[^.!?;]*[.!?]?", authored_neuro or "", flags=re.I)).strip()
+    return found or None
+
+
 def current_findings(state):
     """Current examination with authored case findings and evolving surfaces."""
     if state.get("engine_family") == "generated":
@@ -3208,8 +3233,7 @@ def current_findings(state):
     findings["General appearance"] = f"{o.get('mental_status', 'Not recorded')}. Respiratory effort: {o.get('work_of_breathing', 'Not recorded')}."
     findings["Peripheral perfusion"] = f"Capillary refill {o.get('crt', 'not measured')} s; extremities {str(o.get('extremities', 'not recorded')).lower()}."
     authored_neuro = findings.get("Neurological", "")
-    import re
-    pupils = " ".join(re.findall(r"\bpupils?[^.!?;]*[.!?]?", authored_neuro, flags=re.I)).strip()
+    pupils = _pupils_sentence(authored_neuro)
     lateralizing = " ".join(re.findall(r"\b(?:no (?:lateralizing|lateralising|focal motor|focal neurological|focal neurologic)|moving all limbs)[^.!?;]*[.!?]?", authored_neuro, flags=re.I)).strip()
     findings["Neurological"] = f"Current mental status: {o.get('mental_status', 'not recorded')}." + (" The patient engages in conversation and follows commands." if o.get("mental_status") == "Alert" else " Engagement is reduced; interpret alongside respiratory and circulatory findings.")
     if pupils:
@@ -3226,15 +3250,37 @@ def current_findings(state):
                                    "no wheeze.")
     if family == "asthma" and f:
         airflow = f["obstruction"] - f["bronchodilation"] - _airway_relaxation(f)
+        arrival_finding = findings.get("Respiratory")
         findings["Respiratory"] = "Improved air entry with residual expiratory wheeze." if airflow < .65 else "Reduced bilateral air entry with prolonged expiration and wheeze."
+        # A-6 (faculty, 2026-10-07): the 49m keeps its arrival severity while the obstruction has not improved,
+        # read on the engine's state at each examination -- never on the order that was executed, the
+        # intubation alone or the induction drug. NIV counts as breathing on his own.
+        severe = (_case_id(state) in _SEVERE_ARRIVAL_ASTHMA and airflow >= ARRIVAL_OBSTRUCTION)
+        if severe:
+            findings["Respiratory"] = (
+                "Endotracheal tube in place: air entry remains very poor bilaterally, with only faint wheeze."  # A-6b
+                if f.get("invasive") else arrival_finding)                                                       # A-6a
         if f.get("pneumothorax_at") is not None:
             side = f.get("pneumothorax_side", "right")
-            findings["Respiratory"] = (
-                f"Breath sounds returning on the {side} after decompression; " + findings["Respiratory"][0].lower() + findings["Respiratory"][1:]
-                if f.get("pneumothorax_decompressed_at") is not None else
-                f"Breath sounds absent over the {side} hemithorax, which is hyper-resonant; wheeze on the other side.")
+            other = "left" if side == "right" else "right"
+            if f.get("pneumothorax_decompressed_at") is not None:
+                findings["Respiratory"] = f"Breath sounds returning on the {side} after decompression; " + (
+                    "air entry remains very poor bilaterally, with only faint wheeze." if severe        # A-8a
+                    else findings["Respiratory"][0].lower() + findings["Respiratory"][1:])            # A-8
+            else:
+                findings["Respiratory"] = (
+                    f"Breath sounds absent over the {side} hemithorax, which is hyper-resonant; air entry on the "
+                    f"{other} remains very poor, with only faint wheeze." if severe                     # A-7-49m
+                    else f"Breath sounds absent over the {side} hemithorax, which is hyper-resonant; wheeze on the "
+                         f"other side.")                                                                # A-7
     elif family == "pulmonary_edema" and f:
-        findings["Respiratory"] = "Bilateral crackles remain, with reduced respiratory effort." if f["lung"] < .7 else "Bilateral inspiratory crackles with increased respiratory effort."
+        findings["Respiratory"] = (
+            "Bilateral crackles remain, with reduced respiratory effort." if f["lung"] < .7
+            # A-2 (faculty, 2026-10-07; TD-51): the same criterion that writes «Exhausted» in the work of
+            # breathing; the effort that fell is exhaustion, never compensation.
+            else "Bilateral inspiratory crackles; respiratory effort is now shallow and ineffective, consistent "
+                 "with exhaustion." if o.get("work_of_breathing") == work_of_breathing.EXHAUSTED
+            else "Bilateral inspiratory crackles with increased respiratory effort.")
     elif family == "hypoglycemia" and (glucose_rescue.line_model(f) or not f):
         # Discovery (DC2, 2026-09-29): the lines are there to be examined, outside
         # the reader, and they look how they look -- a verdict is the resident's.
@@ -3244,7 +3290,14 @@ def current_findings(state):
             _case(state).get("engine", {}).get("iv_access_failed"))}}
         findings["Vascular access"] = glucose_rescue.access_finding(lines)
     elif family == "opioid":
-        findings["Respiratory"] = f"Respiratory rate {o.get('respiratory_rate')} /min; " + ("assisted ventilation is in progress." if f.get("bag_mask") or f.get("invasive") else "breaths remain shallow." if o.get("respiratory_rate", 12) < 10 else "spontaneous breaths have greater depth.")
+        # A-9 (faculty, 2026-10-07): during assisted ventilation the rate is the ventilation's, and the English
+        # says so as the Spanish did; «{n}/min» in the three (A-10, A-11).
+        rate = o.get("respiratory_rate")
+        findings["Respiratory"] = (
+            f"Respiratory rate {rate}/min, provided by the assisted ventilation currently in progress."
+            if f.get("bag_mask") or f.get("invasive") else
+            f"Respiratory rate {rate}/min; " + ("breaths remain shallow." if o.get("respiratory_rate", 12) < 10
+                                                else "spontaneous breaths have greater depth."))
     elif family == "anaphylaxis" and f.get("invasive"):
         # TD-47 (2026-09-30): the room no longer hears stridor through a tube.
         findings["Respiratory"] = anaphylaxis_reaction.intubated_chest(findings.get("Respiratory"))

@@ -1404,9 +1404,14 @@ def _neurological_tail(tail, language, case):
         return ""
     installed = _NARRATIVE.get(language, {}).get(case or _CASE.get() or "")
     if installed:
+        fragments = [bit.strip(" .") for bit in _re.split(r"(?<=[.!?])\s+", tail) if bit.strip(" .")]
         for english, spanish in installed[1].items():
-            fragments = [bit.strip(" .") for bit in _re.split(r"(?<=[.!?])\s+", tail) if bit.strip(" .")]
-            if fragments and all(bit in english for bit in fragments):
+            # TD-84 (2026-10-08): the engine says the case's small reactive pupils in a sentence of its own;
+            # it quotes the same passage, whose approved Spanish already says them.
+            quoted = [bit for bit in fragments if bit != "Pupils are small and reactive"
+                      or _re.search(r"\bsmall,?\s+(?:and\s+)?reactive\s+pupils?\b", english, flags=_re.I)]
+            if fragments and len(quoted) == len(fragments) and all(
+                    bit.lower() in english.lower() or bit == "Pupils are small and reactive" for bit in fragments):
                 # The same kinds of finding the English quoted, and no more.
                 kinds = []
                 if _re.search(r"\bpupils?\b", tail, flags=_re.I):
