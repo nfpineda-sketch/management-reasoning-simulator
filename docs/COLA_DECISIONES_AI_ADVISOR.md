@@ -5,8 +5,9 @@ Es el archivo de la §3 de `docs/AI_ADVISOR_CHARTER.md`.
 - **Qué contiene:** lo que requiere una decisión del docente, más el estado de
   lo ya decidido.
 - **Formato:** el de la §40, con las clases de prioridad de la §3.
-- **Actualizado:** 2026-10-08, con las decisiones docentes finales de B-5 y su implementación local (trigésima
-  segunda actualización de la sección «Preparación para el despliegue»). Antes, 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
+- **Actualizado:** 2026-10-08, con las decisiones docentes de ES-P1 a ES-P7 y su implementación local (trigésima
+  tercera actualización de la sección «Preparación para el despliegue»); antes, el mismo día, con las decisiones docentes finales de B-5 y su implementación local (trigésima
+  segunda actualización). Antes, 2026-10-07, con la preparación para el despliegue (sección «Preparación para el despliegue», la
   vigente: NOT READY FOR DEPLOYMENT. De los seis bloqueos, B-3, B-4 y B-6 se resolvieron el 2026-10-06 y B-2 el
   2026-10-07, con los datos confirmados en los proveedores; B-1 se resolvió el 2026-10-07 con una
   corrida única 23/23 en Neon, y sigue B-5, bloqueado; X-1 quedó cerrada el 2026-10-07: el piloto corre en inglés y
@@ -970,13 +971,33 @@ de push, Neon y Streamlit. Nada se empujó, no se creó ningún recurso en Neon 
 GO, y la Fase 1 no empezó.
 - **B-5: BLOCKED** (firmas de las guías, TD-86 y B-1 sobre el SHA final).
 
+**Actualizado por trigésima tercera vez el 2026-10-08: B-5 · ES-P1 a ES-P7 («FACULTY DECISIONS — ES-P1 TO
+ES-P7»).** Lo decidido e implementado en local (C-2026-10-08-08):
+
+| Ítem | Decisión docente | Español aprobado |
+|---|---|---|
+| ES-P1 | APPROVE | Sólo cambia la presentación. Las órdenes se leen igual en español y en inglés. |
+| ES-P2 | APPROVE | Preguntar por: {tema en español}, con el nombre del tema que ya existe (I-5) |
+| ES-P3 | APPROVE | Última respuesta |
+| ES-P4 | APPROVE | Ficha clínica · examen · resultados · registro de tratamientos |
+| ES-P5 | REVISE, con redacción exacta | El equipo de Gastroenterología está a pie de cama, pero difiere la endoscopía hasta lograr una reanimación adecuada (hemoglobina {n} g/dL sin transfusión en curso); reevaluará cada 15 minutos. Sin cambiar disparador, momento, hemoglobina, interconsulta, intervalo ni fisiología |
+| ES-P6 | APPROVE | «unidades», nunca «UI»; la cantidad y la vía no cambian |
+| ES-P7 | APPROVE | Control de la hemorragia · Glóbulos rojos, con la misma estructura del resumen |
+
+- **ES-P8 a ES-P12: sin implementar.** La docencia no había visto su redacción exacta; la tabla de decisión, con
+  cada plantilla inglesa por separado, está en `docs/revision/B5_IG5_PENDIENTES_DOCENTES.md` (§2).
+- **Hallazgo al implementar ES-P5 (ES-P13):** la frase de gastroenterología tiene dos variantes más, con la presión
+  sistólica baja; la decisión no las cubría y quedan en inglés, a decisión docente.
+- El candidato sigue moviéndose: sin suite completa final, sin push, sin despliegue y sin Fase 1.
+- **B-5: BLOCKED** (ES-P8 a ES-P13, firmas de las guías y B-1 sobre el SHA final).
+
 | Bloqueo | Estado | Qué falta | Decisión que se necesita |
 |---|---|---|---|
 | B-1 | **Resuelto** (2026-10-07; informe, sección 20): corrida única en Neon (PostgreSQL 17.11, *pooled*, TLS), con 23 passed sobre `8ff41a4`. Antes, bloqueado (sección 19) | Nada | Ninguna. Si las firmas cambian el SHA final, el contrato de promoción vuelve a correrla (16.4, paso 5) |
 | B-2 | **Resuelto** (2026-10-07; informe, sección 16), con D-B2-1 a D-B2-4 decididas. Antes, bloqueado por datos de las cuentas | La app, la rama, la base y el Python del piloto no están identificados | Cuál app y cuál base; una rama propia fija en el commit aprobado; Python 3.11 |
 | B-3 | **Resuelto** (`87bbbe1`): el preflight falla cerrado ante cada exigencia del manifiesto, con la semántica de la app (TD-71) | El preflight puede decir «LISTA» fuera de la configuración congelada (TD-71); el manifiesto exige lo que el preflight sólo recomienda | Procedimiento (sin clave del proveedor, valores entre comillas, AVISO = FALLA) o corrección de la herramienta |
 | B-4 | **Resuelto** (`4d570a8`): `streamlit==1.64.0`; el Python de la app queda en B-2 (TD-72 a) | Dependencias sin fijar: hoy se instalaría Streamlit 1.65.0 (TD-72) | Fijar 1.64.0 o 1.65.0 |
-| B-5 | **Bloqueado** | Decididas el 2026-10-08 todas las piezas del candidato (relato 30/30, rúbrica 5/5, TD-84, TD-85, X-1 105/105) e implementadas en local (IG-0 a IG-7; trigésima segunda actualización). Quedan: la firma de H-62 e I-63 sobre el candidato (guías actualizadas, sin firmar); la redacción de los 11 textos fuera de X-1 que siguen en inglés (TD-86); B-1 sobre el SHA final | La firma de las dos guías; la redacción de ES-P1 a ES-P11 (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`); correr B-1 sobre el SHA final con el paquete preparado; las autorizaciones de push, Neon y Streamlit |
+| B-5 | **Bloqueado** | Decididas el 2026-10-08 todas las piezas del candidato (relato 30/30, rúbrica 5/5, TD-84, TD-85, X-1 105/105) e implementadas en local (IG-0 a IG-7; trigésima segunda actualización). Quedan: la firma de H-62 e I-63 sobre el candidato (guías actualizadas, sin firmar); la redacción de ES-P8 a ES-P13, que siguen en inglés (TD-86; ES-P1 a ES-P7 decididos e implementados el 2026-10-08); B-1 sobre el SHA final | La firma de las dos guías; la redacción de ES-P8 a ES-P13 (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`); correr B-1 sobre el SHA final con el paquete preparado; las autorizaciones de push, Neon y Streamlit |
 | B-6 | **Resuelto** (`e200ccc`): 56 de 56 (TD-73) | 2 de 56 regresiones activas fallan por texto que la Fase 0 cambió (TD-73) | Actualizar sus textos esperados con justificación o retirarlas con motivo |
 
 **Contradicciones informadas, sin resolver** (informe, 10.2): «31 casos» en `READINESS_PILOTO_FORMATIVO.md`,

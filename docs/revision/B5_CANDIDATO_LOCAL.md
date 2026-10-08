@@ -18,15 +18,16 @@
 | IG-6 | Guías H-62 e I-63 (sin firma), Decision File, deuda, readiness, runbook, F0-11, propuesta de arquitectura | `ba94fc9` | pruebas de documentos |
 | IG-7 | Registro de correcciones (C-2026-10-08-02 a -06; -01 entró con IG-5), manifiesto de congelamiento regenerado (sin diferencias: la batería y las decisiones de congelamiento no cambian), este documento | `ef1051c` | ver §3 |
 | Recertificación 1 | Encabezado del intento repetido como en v0.8.1 (regresión v081); revisión adversarial H-1 a H-4 (la pregunta de la vía, las palabras del residente, las ranuras de plantilla en el centinela, ES-P2); C-2026-10-08-07; catálogo de hipoglicemia regenerado con su herramienta | `ba4e6c9` | ver §3 |
+| ES-P1 a ES-P7 | Redacción docente del 2026-10-08 (C-2026-10-08-08): ayuda del selector, «Preguntar por: {tema}», «Última respuesta», ficha clínica tras el cierre, frase de gastroenterología exacta, «unidades» y nombres de respaldo; ES-P8 a ES-P13 declarados pendientes fuera del recorrido | `1db80bb` | ver §3 |
 
 **Detenido para decisión docente:** los 12 textos de TD-86 (`docs/revision/B5_IG5_PENDIENTES_DOCENTES.md`): ES-P1 a
 ES-P7, que el centinela ve en la sala, y ES-P8 a ES-P12, que la sala muestra sólo con ciertas órdenes.
 
 ## 2. Candidato
 
-**No hay candidato final.** El HEAD de implementación es `ba4e6c98bbeb86727919b3e223cba11bd5461dfa`; el candidato
-sigue moviéndose: falta aplicar la redacción docente de ES-P1 a ES-P7 (y de ES-P8 a ES-P12), y el centinela estricto
-no puede pasar antes. Tras esa decisión: implementar, congelar el HEAD, y correr una sola vez sobre él la
+**No hay candidato final.** El HEAD de implementación es `1db80bb3229f6808b59ac0b7d576e740658ee1ed` (ES-P1 a ES-P7
+implementados); el candidato sigue moviéndose: falta la redacción docente de ES-P8 a ES-P13, y el centinela no se da
+por completo antes. Tras esa decisión: implementar, congelar el HEAD, y correr una sola vez sobre él la
 recertificación completa (pruebas focalizadas, centinela, relato y rúbrica, lector y corpus congelados, Fase 0,
 hipoglicemia, 56 regresiones, suite completa, preflight y SHA). El paquete de B-1 se prepara sobre ese SHA.
 
@@ -43,3 +44,7 @@ hipoglicemia, 56 regresiones, suite completa, preflight y SHA). El paquete de B-
 | Pruebas focalizadas | `ba4e6c9` (árbol antes del commit) | IG-0 a IG-2: 58; IG-3 e IG-4: 23; IG-5: 144; IG-7: 296; Fase 0: 968; hipoglicemia (preservación y catálogo): 17. Todas aprobadas |
 | 56 regresiones | `ba4e6c9` (árbol antes del commit) | 56 de 56; 10 retiradas |
 | Lector congelado y corpus | `ba4e6c9` | 0 líneas de diferencia en los cinco archivos del lector desde `009aadb`; `validation/` sin cambios |
+| Tras ES-P1 a ES-P7: relato y rúbrica | `1db80bb` (árbol antes del commit) | 30 de 30 y 5 de 5, sin cambios |
+| Tras ES-P1 a ES-P7: centinela, 30 casos | código de `1db80bb` | 0 líneas en inglés, 0 pasos detenidos; ES-P8 a ES-P13 declarados pendientes fuera del recorrido |
+| Tras ES-P1 a ES-P7: pruebas focalizadas | `1db80bb` (árbol antes del commit) | IG-0 a IG-2: 59 y 1 xfail (pendientes fuera del recorrido); IG-3 e IG-4: 23; IG-5: 151; IG-7: 298; hipoglicemia: 17; pantallas y textos: 416; Fase 0: 968 |
+| Tras ES-P1 a ES-P7: 56 regresiones, lector y corpus | `1db80bb` (árbol antes del commit) | 56 de 56; lector congelado y `validation/` sin cambios |
