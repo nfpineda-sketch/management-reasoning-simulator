@@ -65,13 +65,17 @@ FLAG_EVENTS = {
         "why": "the blood loss reaches the arrest threshold while the source is still open; controlling it prevents it",
     },
     "arrested": {
-        "kind": "cardiac_arrest", "label": "circulatory arrest from untreated anaphylaxis",
+        # K-E5 (faculty, 2026-10-07): true whether no adrenaline was given or a dose did not control the
+        # reaction; «untreated» is not the general label. K-21 stays the truly untreated sentence.
+        "kind": "cardiac_arrest", "label": "circulatory arrest from anaphylaxis without effective adrenaline",
         "cause_class": "NATURAL_DISEASE", "preventability": "PREVENTABLE",
         "severity": "terminal", "interrupt": True, "terminal": True,
         "why": "25 minutes without effective adrenaline; adrenaline prevents it",
     },
     "bradycardia_arrest": {
-        "kind": "cardiac_arrest", "label": "loss of circulation from the falling rate",
+        # K-E6 (faculty, 2026-10-07): the same terminal event, named clearly; trigger, preventability and
+        # physiology unchanged.
+        "kind": "cardiac_arrest", "label": "circulatory arrest from profound bradycardia",
         "cause_class": "NATURAL_DISEASE", "preventability": "PREVENTABLE",
         "severity": "terminal", "interrupt": True, "terminal": True,
         "why": "the rate falls below what keeps an output; pacing or the antidote prevents it",
@@ -295,7 +299,8 @@ class Watch:
             if self.low_spo2 >= SPO2_FALL["minutes"] and "spo2" not in self.seen_vitals:
                 self.seen_vitals.add("spo2")
                 found.append(_event({
-                    "kind": "oxygenation_fall", "label": f"saturation {int(spo2)} % and falling",
+                    # K-E16 (faculty, 2026-10-07): «84%» as the rest of the English room writes it.
+                    "kind": "oxygenation_fall", "label": f"saturation {int(spo2)}% and falling",
                     "cause_class": "NATURAL_DISEASE", "preventability": "UNKNOWN", "severity": "critical",
                     "interrupt": True,
                     "why": "a fall the vital signs show for two minutes; the engine does not say its cause",

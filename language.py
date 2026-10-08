@@ -426,6 +426,11 @@ _PHASE0_RULES = (
  (r'\bventricular fibrillation, pulse lost\b', 'fibrilación ventricular, sin pulso'),
  (r'\bcardiac arrest, pulse lost\b', 'paro cardíaco, sin pulso'),
  (r'\bcardiac arrest from uncontrolled haemorrhage\b', 'paro cardíaco por hemorragia no controlada'),
+ # K-E5 and K-E6 (faculty, 2026-10-07).
+ (r'\bcirculatory arrest from anaphylaxis without effective adrenaline\b',
+  'paro circulatorio por anafilaxia sin adrenalina eficaz'),
+ (r'\bcirculatory arrest from profound bradycardia\b', 'paro circulatorio por bradicardia profunda'),
+ # The earlier labels, kept for encounters recorded before 2026-10-08.
  (r'\bcirculatory arrest from untreated anaphylaxis\b', 'paro circulatorio por anafilaxia no tratada'),
  (r'\bloss of circulation from the falling rate\b', 'pérdida de la circulación por la frecuencia que cae'),
  (r'\bgeneralized seizure\b', 'convulsión generalizada'),
@@ -437,7 +442,8 @@ _PHASE0_RULES = (
  (r'\bsustained hypotension from the obstruction\b', 'hipotensión sostenida por la obstrucción'),
  (r'\bbrought back after discharge\b', 'traído de vuelta tras el alta'),
  (r'\bsystolic pressure (\d+) mmHg and falling\b', r'presión sistólica de \1 mmHg y en descenso'),
- (r'\bsaturation (\d+) % and falling\b', r'saturación de \1 % y en descenso'),
+ # K-E16: «84%» since 2026-10-08, «84 %» before; the Spanish keeps its approved «84 %».
+ (r'\bsaturation (\d+) ?% and falling\b', r'saturación de \1 % y en descenso'),
  (r'\ba critical change\b', 'un cambio crítico'),
  # The arrest (0G): what the room says, what the examination finds and the monitor shows.
  (r'Cardiac arrest occurred at minute (\d+)\. Resuscitation management is not modelled in this pilot\. '
@@ -464,10 +470,24 @@ _PHASE0_RULES = (
   r'was missing; nothing else that was given acts on the reaction\.',
   'Paro circulatorio tras veinticinco minutos de anafilaxia no tratada. La adrenalina era el tratamiento que '
   'faltaba; nada más de lo administrado actúa sobre la reacción.'),
+ # K-18 (faculty, 2026-10-07).
+ (r'Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier did '
+  r'not keep the reaction under control\. Nothing else that was given acts on the reaction\.',
+  'Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes no logró '
+  'mantener la reacción bajo control. Nada más de lo administrado actúa sobre la reacción.'),
+ # The earlier wording, kept for encounters recorded before 2026-10-08.
  (r'Circulatory arrest after twenty-five minutes without effective adrenaline: the adrenaline given earlier had '
   r'worn off and the reaction had come back\. Nothing else that was given acts on the reaction\.',
   'Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes había '
   'perdido su efecto y la reacción había vuelto. Nada más de lo administrado actúa sobre la reacción.'),
+ # TD-85 (faculty, 2026-10-08): the two terminal and returning events the room writes as a sentence of
+ # their own, in the approved event terminology (K-E6, K-E8). The English stays as written.
+ (r'The rate has fallen away and the circulation with it\. Nothing given so far reached the cause, and the '
+  r'rate was the only thing holding the output up\.',
+  'Paro circulatorio por bradicardia profunda.'),
+ (r'The reaction returns: the wheeze and the flushing are back and the pressure is falling again, more than '
+  r'an hour after it first settled\. The adrenaline that treated the first reaction has long since worn off\.',
+  'La reacción anafiláctica vuelve.'),
 )
 _RESIDENT_WORDS = re.compile('([-])')
 

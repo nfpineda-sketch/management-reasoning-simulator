@@ -123,8 +123,9 @@ CASES = {
         "menos, y vuelve a esperar después si necesitas más tiempo."),
     "anaphylaxis_arrest_after_a_dose": (
         lambda: anaphylaxis_reaction.ARREST_AFTER_DOSE_TEXT,
-        "Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes había "
-        "perdido su efecto y la reacción había vuelto. Nada más de lo administrado actúa sobre la reacción."),
+        # K-18 (faculty, 2026-10-07; B-5, IG-3).
+        "Paro circulatorio tras veinticinco minutos sin adrenalina eficaz: la adrenalina administrada antes no logró "
+        "mantener la reacción bajo control. Nada más de lo administrado actúa sobre la reacción."),
     "default_flow": (
         lambda: next(f"{order['canonical']}: {order['default_applied']}."  # as ``settle`` writes it
                      for order in _turn("Start oxygen by non-rebreather mask.")["orders"]

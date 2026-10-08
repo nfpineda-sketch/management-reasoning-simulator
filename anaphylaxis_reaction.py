@@ -142,11 +142,13 @@ ARREST_TEXT = (
     "Adrenaline was the treatment that was missing; nothing else that was given "
     "acts on the reaction."
 )
-#: The same arrest when adrenaline had been given and had worn off (Phase 0, 0J): the
-#: words above told a resident who gave it that it was never given.
+#: The same arrest when adrenaline had been given (Phase 0, 0J): the words above told a
+#: resident who gave it that it was never given. K-18 (faculty, 2026-10-07): true whether
+#: the dose helped at first and then lost its effect or never controlled the reaction,
+#: as with the beta blocker.
 ARREST_AFTER_DOSE_TEXT = (
     "Circulatory arrest after twenty-five minutes without effective adrenaline: the "
-    "adrenaline given earlier had worn off and the reaction had come back. Nothing else "
+    "adrenaline given earlier did not keep the reaction under control. Nothing else "
     "that was given acts on the reaction."
 )
 
