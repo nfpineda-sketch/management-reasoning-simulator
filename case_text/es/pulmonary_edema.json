@@ -62,7 +62,7 @@
   },
   "/examination/Respiratory": {
    "en": "Severe respiratory effort with widespread bilateral crackles and some expiratory wheeze.",
-   "es": "Esfuerzo respiratorio severo, con crepitaciones bilaterales difusas y algunas sibilancias espiratorias."
+   "es": "Esfuerzo respiratorio severo, con crépitos bilaterales difusos y algunas sibilancias espiratorias."
   },
   "/examination/Abdomen": {
    "en": "Soft and non-tender.",
@@ -196,7 +196,7 @@
   },
   "/examination/Respiratory": {
    "en": "Marked respiratory effort with bilateral crackles extending to the mid-zones.",
-   "es": "Esfuerzo respiratorio marcado, con crepitaciones bilaterales que se extienden hasta los campos medios."
+   "es": "Esfuerzo respiratorio marcado, con crépitos bilaterales que se extienden hasta los campos medios."
   },
   "/examination/Abdomen": {
    "en": "Soft; no focal tenderness.",

@@ -5,6 +5,11 @@ recorded under their account, for the exact words they read, and speaks for
 that case only, even where another case says the same sentence; a later edit
 to either language takes the case back to pending; and a sentence is replaced
 whole or not at all, so no line mixes the two languages.
+
+The pilot candidate also carries the faculty's approvals of the 30 pilot cases
+(``case_text/es/approvals.json``, B-5, 2026-10-08; ``test_case_text_approvals``).
+The tests of what a review in the app does run without that file (``no_pack``),
+so that they still show a case before and after its approval.
 """
 import json
 import time
@@ -34,6 +39,12 @@ def cohort(tmp_path):
     return accounts, users
 
 
+@pytest.fixture
+def no_pack(monkeypatch):
+    """The app as it is with no approvals carried in the repository: only the reviews in its database."""
+    monkeypatch.setattr(case_text, "pack_approvals", lambda language="es": [])
+
+
 @pytest.fixture(autouse=True)
 def nothing_installed():
     language.set_narrative({})
@@ -52,12 +63,14 @@ def test_every_drafted_passage_translates_what_its_case_says_today():
     assert len(drafts) == 31
 
 
+@pytest.mark.usefixtures("no_pack")
 def test_nothing_is_spanish_until_a_faculty_member_approves_it(cohort):
     accounts, _ = cohort
     case_text.install(accounts, now=0)
     assert language.narrative(ANSWER, "es", case=VARIANT) == ANSWER
 
 
+@pytest.mark.usefixtures("no_pack")
 def test_an_approval_is_the_faculty_member_s_and_names_what_they_read(cohort):
     accounts, users = cohort
     reviews = case_text.CaseTextReviews(accounts)
@@ -95,6 +108,7 @@ def test_an_edit_after_the_approval_takes_the_case_back_to_pending(cohort):
     assert case_text.status(VARIANT, rows, reviews.latest(), []) == "outdated"
 
 
+@pytest.mark.usefixtures("no_pack")
 def test_the_room_s_arrival_line_is_whole_in_one_language(cohort):
     """The presentation event wraps the case's history source in fixed words (arrival_brief)."""
     import arrival_brief
@@ -202,6 +216,7 @@ render_case_text_review({'store': store, 'token': token, 'user': store.get_user(
 """
 
 
+@pytest.mark.usefixtures("no_pack")
 def test_the_review_page_records_the_approval_of_whoever_signs_it(cohort):
     from streamlit.testing.v1 import AppTest
     accounts, users = cohort

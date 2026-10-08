@@ -62,7 +62,7 @@
   },
   "/examination/Abdomen": {
    "en": "Soft, with no focal tenderness or guarding despite the reported discomfort.",
-   "es": "Blando, sin dolor focal a la palpación ni resistencia muscular, a pesar de la molestia referida."
+   "es": "Blando, sin dolor focal a la palpación ni defensa, a pesar de la molestia referida."
   },
   "/examination/Neurological": {
    "en": "Awake, oriented and moving all limbs normally.",
@@ -200,7 +200,7 @@
   },
   "/examination/Respiratory": {
    "en": "Mildly increased effort; no focal crackles or wheeze.",
-   "es": "Esfuerzo respiratorio levemente aumentado; sin crepitaciones focales ni sibilancias."
+   "es": "Esfuerzo respiratorio levemente aumentado; sin crépitos focales ni sibilancias."
   },
   "/examination/Abdomen": {
    "en": "Soft and non-tender.",
@@ -484,7 +484,7 @@
   },
   "/examination/Respiratory": {
    "en": "Mildly increased effort; no crackles or wheeze.",
-   "es": "Esfuerzo respiratorio levemente aumentado; sin crepitaciones ni sibilancias."
+   "es": "Esfuerzo respiratorio levemente aumentado; sin crépitos ni sibilancias."
   },
   "/examination/Abdomen": {
    "en": "Soft and non-tender.",
@@ -768,7 +768,7 @@
   },
   "/examination/Respiratory": {
    "en": "Mildly increased effort; scattered basal crackles.",
-   "es": "Esfuerzo respiratorio levemente aumentado; crepitaciones basales dispersas."
+   "es": "Esfuerzo respiratorio levemente aumentado; crépitos basales dispersos."
   },
   "/examination/Abdomen": {
    "en": "Soft and non-tender.",

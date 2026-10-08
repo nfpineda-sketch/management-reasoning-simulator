@@ -66,11 +66,11 @@
   },
   "/examination/Respiratory": {
    "en": "Increased respiratory effort; focal crackles and bronchial breathing at the right base.",
-   "es": "Esfuerzo respiratorio aumentado; crepitaciones focales y soplo tubario en la base derecha."
+   "es": "Esfuerzo respiratorio aumentado; crépitos focales y soplo tubario en la base derecha."
   },
   "/examination/Abdomen": {
    "en": "Soft; no focal tenderness or guarding.",
-   "es": "Blando; sin dolor focal a la palpación ni resistencia muscular."
+   "es": "Blando; sin dolor focal a la palpación ni defensa."
   },
   "/examination/Neurological": {
    "en": "Awake, oriented and moving all limbs symmetrically.",
@@ -204,7 +204,7 @@
   },
   "/examination/Respiratory": {
    "en": "Tachypnea with focal crackles and reduced air entry at the left base.",
-   "es": "Taquipnea con crepitaciones focales y murmullo pulmonar disminuido en la base izquierda."
+   "es": "Taquipnea con crépitos focales y murmullo pulmonar disminuido en la base izquierda."
   },
   "/examination/Abdomen": {
    "en": "Soft and non-tender; no suprapubic tenderness.",

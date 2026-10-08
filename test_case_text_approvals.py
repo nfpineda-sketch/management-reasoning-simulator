@@ -144,3 +144,38 @@ def test_the_rubric_runtime_shows_nothing_on_a_stale_or_unapproved_row(tmp_path,
             ([{"domain_id": domain, "version": now, "decision": "approved"}], "approved")):
         _write(pack_file, pack)
         assert rubric_text.status(domain, rows, {}, rubric_text.pack_approvals()) == expected, pack
+
+
+# --- the narrative pack the candidate carries (IG-1, 2026-10-08) -------------------------------------
+
+def test_the_committed_narrative_pack_is_what_the_faculty_approved():
+    assert approvals.verify_file("narrative") == []
+
+
+def test_with_an_empty_database_the_thirty_cases_read_in_spanish_and_the_sandbox_case_in_english():
+    """TD-81: a fresh pilot database holds no review; the carried approvals are enough, whole cases only."""
+    import language
+    language.set_narrative({})
+    case_text._INSTALLED.clear()
+    try:
+        case_text.install(None, now=0)
+        drafts = case_text.passages("es")
+        for case in pilot_freeze.accepted_variants():
+            for path, row in drafts[case].items():
+                # The history source is read only inside its frames, never as a bare word (case_text.FRAMES).
+                for english, spanish in case_text.FRAMES["es"].get(path, (("{}", "{}"),)):
+                    said = language.narrative(english.format(row["en"]), "es", case=case)
+                    assert said == spanish.format(row["es"]), (case, path, said)
+        sandbox = drafts["trauma_hemothorax_41m"]
+        presentation = sandbox["/presentation"]["en"]
+        assert language.narrative(presentation, "es", case="trauma_hemothorax_41m") == presentation
+    finally:
+        language.set_narrative({})
+        case_text._INSTALLED.clear()
+
+
+def test_the_faculty_panel_counts_thirty_approved_and_the_sandbox_case_pending():
+    pack = case_text.pack_approvals()
+    states = {case: case_text.status(case, rows, {}, pack) for case, rows in case_text.passages("es").items()}
+    assert sorted(case for case, state in states.items() if state != "approved") == ["trauma_hemothorax_41m"]
+    assert sum(state == "approved" for state in states.values()) == 30
