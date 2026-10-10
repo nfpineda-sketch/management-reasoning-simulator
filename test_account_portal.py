@@ -4,6 +4,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 from account_store import AccountStore, hash_password
+from account_portal import _configured_store
 
 
 APP = """
@@ -63,6 +64,17 @@ def register(app, username, invitation):
     widget(app, "text_input", "Confirm password").set_value(RESIDENT_PASSWORD)
     widget(app, "button", "Create account").click().run()
     assert not app.exception
+
+
+
+def test_configured_store_is_cached_across_reruns(tmp_path, admin_hash):
+    """The account store is initialized once per deployment configuration, not once per rerun."""
+    _configured_store.clear()
+    url = "sqlite:///" + str(tmp_path / "cached-accounts.sqlite3")
+    first = _configured_store(url, True, "admin", admin_hash)
+    second = _configured_store(url, True, "admin", admin_hash)
+    assert second is first
+    _configured_store.clear()
 
 
 def test_auth_modes_fail_closed():
