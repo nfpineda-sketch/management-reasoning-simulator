@@ -78,7 +78,6 @@ def _start_session(token: str, user: dict[str, Any]) -> None:
     st.rerun()
 
 
-@st.cache_resource(show_spinner=False)
 def _redacted(error: Exception, url: str) -> str:
     """The provider's own words, with anything that identifies the connection removed."""
     text = " ".join(str(error).split())[:300]
@@ -89,6 +88,7 @@ def _redacted(error: Exception, url: str) -> str:
     return text or "(no message)"
 
 
+@st.cache_resource(show_spinner=False)
 def _configured_store(url: str, allow_sqlite: bool, username: str, password_hash: str, schema_version: int = 2) -> AccountStore:
     """Cache connection configuration only; identities and permissions are never cached.
 
