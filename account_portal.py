@@ -9,6 +9,7 @@ for every rerun and administrative mutations also require authorization there.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from functools import lru_cache
 import logging
 import os
 from pathlib import Path
@@ -88,7 +89,7 @@ def _redacted(error: Exception, url: str) -> str:
     return text or "(no message)"
 
 
-@st.cache_resource(show_spinner=False)
+@lru_cache(maxsize=8)
 def _configured_store(url: str, allow_sqlite: bool, username: str, password_hash: str, schema_version: int = 2) -> AccountStore:
     """Cache connection configuration only; identities and permissions are never cached.
 
