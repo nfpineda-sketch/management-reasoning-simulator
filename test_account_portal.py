@@ -69,12 +69,12 @@ def register(app, username, invitation):
 
 def test_configured_store_is_cached_across_reruns(tmp_path, admin_hash):
     """The account store is initialized once per deployment configuration, not once per rerun."""
-    _configured_store.clear()
+    _configured_store.cache_clear()
     url = "sqlite:///" + str(tmp_path / "cached-accounts.sqlite3")
     first = _configured_store(url, True, "admin", admin_hash)
     second = _configured_store(url, True, "admin", admin_hash)
     assert second is first
-    _configured_store.clear()
+    _configured_store.cache_clear()
 
 
 def test_auth_modes_fail_closed():
