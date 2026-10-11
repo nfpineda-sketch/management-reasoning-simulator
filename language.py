@@ -1430,6 +1430,7 @@ _RULES = _TD86_RULES + _PHASE0_RULES + _X1_RULES + _WALL_MOTION_RULES + (
  (r"\b12-lead tracing available in ECG recordings at the bedside\.",
   "Trazado de 12 derivaciones disponible en los registros de ECG."),
  (r"\bBedside glucose\b", "Glicemia capilar"), (r"\bLaboratory results\b", "Resultados de laboratorio"),
+ (r"\bSerum magnesium\b", "Magnesio sérico"),
  (r"\bChest X-ray\b", "Radiografía de tórax"), (r"\bBlood cultures\b", "Hemocultivos"),
  (r"\bArterial blood gas\b", "Gases arteriales"), (r"\bVenous blood gas\b", "Gases venosos"),
  (r"\bTroponin\b", "Troponina"), (r"\bLactate\b", "Lactato"), (r"\bHemoglobin\b", "Hemoglobina"),
