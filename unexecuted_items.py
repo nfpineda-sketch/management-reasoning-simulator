@@ -57,6 +57,7 @@ CATEGORY_LABELS = {
     "massive_transfusion": "massive transfusion protocol activated; the activation gives no blood product by itself",
     "massive_transfusion_stop": "massive transfusion protocol stood down; no unit already given is taken back",
     "disposition_plan": "disposition plan; not carried out now",
+    "pacing_preparation": "transcutaneous pacing preparation recorded; pacing not started",
 }
 _CATEGORY_MESSAGES = {
     "blood_product": ("Blood product ordered and recorded as your decision: {items}. Its physiologic effect is not "
@@ -68,12 +69,15 @@ _CATEGORY_MESSAGES = {
                                  "No unit already given is taken back."),
     "disposition_plan": ("Recorded as a disposition plan, not carried out now: {items}. The patient stays in the "
                          "emergency department; a plan is not carried out on its own."),
+    "pacing_preparation": ("Transcutaneous pacing preparation recorded: {items}. The pads/equipment are prepared; "
+                           "pacing itself was not started."),
 }
 _CATEGORY_HELD = {
     "blood_product": "Also in this order, a blood product whose physiologic effect is not modelled: {items}.",
     "massive_transfusion": "Also in this order, the massive transfusion protocol's activation: {items}.",
     "massive_transfusion_stop": "Also in this order, the massive transfusion protocol stood down: {items}.",
     "disposition_plan": "Also in this order, a disposition plan: {items}.",
+    "pacing_preparation": "Also in this order, transcutaneous pacing preparation: {items}.",
 }
 
 
