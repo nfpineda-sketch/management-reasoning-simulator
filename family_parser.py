@@ -57,7 +57,7 @@ _AGENTS = {
     },
     "thiamine": {"thiamine": r"thiamine|tiamina|vitamin b1|vitamina b1"},
     "naloxone": {"naloxone": r"naloxone|naloxona|narcan"},
-    "atropine": {"atropine": r"atropine|atropina"},
+    "atropine": {"atropine": r"atropine|atropin|atropina"},
     # The ward's own analgesics and antipyretics (faculty decision 14, 2026-09-21).
     "antipyretic": {
         "paracetamol": r"paracetamol|acetaminophen|acetaminofen|tylenol|perfalgan",
@@ -306,6 +306,7 @@ _DIAGNOSTICS = {
     "cortisol": r"cortisol",
     "thyroid_function": r"thyroid function|thyroid tests|tsh|perfil tiroideo|funcion tiroidea",
     "ketones": r"ketones|beta[- ]hydroxybutyrate|cetonas|cetonemia|beta[- ]hidroxibutirato",
+    "serum_magnesium": r"(?:serum\s+)?magnesium(?:\s+level)?|magnesio(?:\s+(?:serico|plasmatico))?",
     "toxicology": r"toxicology|toxicology screen|toxicologia|screening toxicologico",
     # A qualified ultrasound is the study it names, not the emergency protocol:
     # "ecografia renal" used to return both (2026-09-23).
@@ -440,6 +441,11 @@ _MONITOR_ORDER = re.compile(
     r"(?:\s+(?:cardiac[oa]|continu[oa]|cardiorrespiratori[oa]|multiparametric[oa]|no\s+invasiv[oa]|"
     r"de\s+signos\s+vitales|ecg|ekg))?"
     r"|continuous\s+(?:cardiac\s+)?monitoring|cardiac\s+monitor(?:ing)?")
+_PACING_PREPARATION = re.compile(
+    r"\b(?:prepare|prep|set\s*up|get\s+ready|preparar|prepara|preparo|preparen|tener|have|keep)\b"
+    r".{0,80}\b(?:transcutaneous\s+)?(?:pacing|pacer|pacing\s+pads?|pacing\s+equipment|marcapas\w*)\b"
+    r"|\b(?:transcutaneous\s+)?(?:pacing|pacer|pacing\s+pads?|pacing\s+equipment|marcapas\w*)\b"
+    r".{0,80}\b(?:ready|standby|prepared|list[oa]s?|preparad[oa]s?)\b", re.I)
 # A set-up item written the way a chart lists it, with no verb, as one item of a
 # list: "Monitor, vía venosa y oxígeno…", "IV access, CBC and lactate", "vía
 # venosa y régimen cero". In a list it asks for the support; it was dropped in
@@ -2777,7 +2783,7 @@ def _parse_piece_core(piece, inherited=None):
     # Observing saturation is not administering oxygen. Keep this distinction
     # before diagnostic and treatment matching, including inherited list verbs.
     observational = verb in {"monitor", "assess", "vigilar", "monitorizar", "check", "recheck", "measure", "medir", "mido", "controlar", "control"} or bool(re.match(r"(?:monitor(?:ing)?|monitorizar|vigilar)\b", body))
-    vital = re.search(r"\b(?:blood pressure|bp|heart rate|hr|respiratory rate|rr|oxygen saturation|o2 saturation|spo2|saturation|sats|oxygen levels|presion arterial|saturacion|frecuencia cardiaca|frecuencia respiratoria|perfusion|breathing|respiratory effort|oxigeno|rhythm|mental status|capillary refill|crt|estado mental)\b", body)
+    vital = re.search(r"\b(?:blood pressure|bp|heart rate|hr|respiratory rate|rr|oxygen saturation|o2 saturation|spo2|saturation|sats|oxygen levels|presion arterial|saturacion|frecuencia cardiaca|frecuencia respiratoria|perfusion|breathing|respiratory effort|airway|signs? of shock|shock signs?|oxigeno|rhythm|mental status|capillary refill|crt|estado mental)\b", body)
     if vital and vital.group(0) == "oxigeno" and (
             re.search(_FLOW, body) or any(re.search(r"\b(?:" + pattern + r")\b", body)
                                           for name, pattern in _OXYGEN_DEVICES if name != "room air")):
@@ -4842,6 +4848,14 @@ def parse_family_actions(text) -> dict:
                 negated = False
             if _NON_ORDER.match(piece):
                 reasoning_head = True
+                inherited = None
+                continue
+            # Preparing pacing equipment is a management decision, not pacing the patient.
+            # Keep it visible in the record without delivering current or inventing a rate.
+            if _PACING_PREPARATION.search(piece):
+                keep(re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip()),
+                     "not_modelled", category="pacing_preparation")
+                members[-1][1] = []
                 inherited = None
                 continue
             # The massive transfusion protocol and the blood products the engine
