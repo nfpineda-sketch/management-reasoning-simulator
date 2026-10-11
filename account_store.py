@@ -8,6 +8,7 @@ store represents one teaching cohort; faculty may read that cohort's attempts.
 from __future__ import annotations
 
 from contextlib import contextmanager
+from functools import lru_cache
 import hashlib
 import hmac
 import json
@@ -43,6 +44,30 @@ _LOG = logging.getLogger(__name__)
 ROLES = frozenset({"resident", "faculty", "admin"})
 ATTEMPT_STATUSES = frozenset({"active", "completed", "abandoned"})
 _SCHEMA_LOCK = 731093218
+
+
+@lru_cache(maxsize=8)
+def _postgres_pool(url: str):
+    """One small process-wide pool per PostgreSQL URL.
+
+    Streamlit reruns perform several short account/encounter transactions. Reusing
+    client connections avoids paying TCP/TLS/authentication setup for every
+    transaction while preserving one transaction per store operation. Prepared
+    statements stay disabled because hosted deployments use transaction pooling.
+    """
+    try:
+        from psycopg.rows import dict_row
+        from psycopg_pool import ConnectionPool
+    except ImportError:
+        raise AccountError("The PostgreSQL connection pool is not installed.") from None
+    return ConnectionPool(
+        conninfo=url,
+        min_size=0,
+        max_size=8,
+        timeout=10,
+        open=True,
+        kwargs={"row_factory": dict_row, "connect_timeout": 10, "prepare_threshold": None},
+    )
 
 
 def _password_valid(password: str) -> bool:
@@ -236,34 +261,41 @@ class AccountStore:
         cls._SCHEMA_READY.clear()
 
     @contextmanager
-    def _transaction(self, write: bool = False):
-        connection = None
-        try:
+    def _borrow_connection(self):
+        """Borrow one connection for one store operation."""
+        if self._sqlite:
             connection = self._connect()
-            if self._sqlite:
-                connection.execute("BEGIN IMMEDIATE" if write else "BEGIN")
-            elif write:
-                # Serializes bootstrap, invite consumption and attempt creation
-                # across workers. The lock is released at transaction end.
-                self._execute(connection, "SELECT pg_advisory_xact_lock(?)", (_SCHEMA_LOCK,))
-            yield connection
-            connection.commit()
-        except AccountError:
-            if connection is not None:
-                connection.rollback()
-            raise
-        except Exception as error:
-            if connection is not None:
-                connection.rollback()
-            # Driver exceptions can contain hostnames, usernames or SQL data, so the page
-            # gets a generic message. The server log gets the error's class and where it
-            # was raised -- never its message -- so that a programming error is not
-            # mistaken for an outage and leaves a trace (I-F10, cycle 10).
-            _LOG.error("Account store transaction failed: %s at %s", type(error).__name__, _raised_at(error))
-            raise AccountError("The account database is temporarily unavailable. Please try again.") from None
-        finally:
-            if connection is not None:
+            try:
+                yield connection
+            finally:
                 connection.close()
+            return
+        with _postgres_pool(self._url).connection(timeout=10) as connection:
+            yield connection
+
+    @contextmanager
+    def _transaction(self, write: bool = False):
+        with self._borrow_connection() as connection:
+            try:
+                if self._sqlite:
+                    connection.execute("BEGIN IMMEDIATE" if write else "BEGIN")
+                elif write:
+                    # Serializes bootstrap, invite consumption and attempt creation
+                    # across workers. The lock is released at transaction end.
+                    self._execute(connection, "SELECT pg_advisory_xact_lock(?)", (_SCHEMA_LOCK,))
+                yield connection
+                connection.commit()
+            except AccountError:
+                connection.rollback()
+                raise
+            except Exception as error:
+                connection.rollback()
+                # Driver exceptions can contain hostnames, usernames or SQL data, so the page
+                # gets a generic message. The server log gets the error's class and where it
+                # was raised -- never its message -- so that a programming error is not
+                # mistaken for an outage and leaves a trace (I-F10, cycle 10).
+                _LOG.error("Account store transaction failed: %s at %s", type(error).__name__, _raised_at(error))
+                raise AccountError("The account database is temporarily unavailable. Please try again.") from None
 
     def _initialize(self):
         statements = [
