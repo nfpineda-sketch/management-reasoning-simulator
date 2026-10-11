@@ -4853,8 +4853,10 @@ def parse_family_actions(text) -> dict:
             # Preparing pacing equipment is a management decision, not pacing the patient.
             # Keep it visible in the record without delivering current or inventing a rate.
             if _PACING_PREPARATION.search(piece):
-                keep(re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip()),
-                     "not_modelled", category="pacing_preparation")
+                phrase = re.sub(r"^(?:then|luego|despues|and|y)\s+", "", piece.strip())
+                future.append(phrase)
+                details.append({"text": phrase, "kind": "not_modelled", "category": "pacing_preparation",
+                                "agent": "", "prescription": False})
                 members[-1][1] = []
                 inherited = None
                 continue
@@ -5184,7 +5186,9 @@ def parse_family_actions(text) -> dict:
             )
         ]
         if not any(d.get("category") == "pacing_preparation" for d in details):
-            keep(phrase, "not_modelled", category="pacing_preparation")
+            future.append(phrase)
+            details.append({"text": phrase, "kind": "not_modelled", "category": "pacing_preparation",
+                            "agent": "", "prescription": False})
     flush_trailing_advice()
     actions = _one_sample_each(actions)
     if held_until:
