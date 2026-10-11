@@ -66,6 +66,10 @@ def _postgres_pool(url: str):
         max_size=8,
         timeout=10,
         open=True,
+        # By default psycopg_pool does not validate an idle connection before
+        # checkout. Hosted connections can be closed underneath a warm Streamlit
+        # process; validate the connection before account/session work receives it.
+        check=ConnectionPool.check_connection,
         kwargs={"row_factory": dict_row, "connect_timeout": 10, "prepare_threshold": None},
     )
 
