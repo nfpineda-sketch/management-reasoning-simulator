@@ -194,6 +194,9 @@ _EXTRA = [
                         r"unidades?\s+de\s+sangre|units?\s+of\s+blood", "blood", ("blood",), cls="blood"),
     _entry("oxygen", r"oxygen|oxigeno|o2|non-?rebreather|nrb|nasal\s+cannula|canula\s+nasal|naricera|venturi|"
                      r"high[- ]flow|alto\s+flujo|hfnc", "support", ("oxygen", "niv"), cls="oxygen"),
+    _entry("monitoring", r"continuous\s+(?:cardiac\s+)?monitoring|cardiac\s+monitor(?:ing)?|"
+                         r"pulse\s+ox(?:imetry)?|oximetria", "support",
+           ("monitoring", "reassessment"), cls="monitoring"),
     _entry("non-invasive ventilation", r"bipap|cpap|niv|non-?invasive\s+ventilation|"
                                        r"ventilacion\s+(?:mecanica\s+)?no\s+invasiva|vmni",
            "support", ("niv",), cls="ventilation"),
