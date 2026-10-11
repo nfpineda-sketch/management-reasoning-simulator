@@ -2782,8 +2782,19 @@ def _parse_piece_core(piece, inherited=None):
         body = body[:boundary.start()].strip(" ,:")
     # Observing saturation is not administering oxygen. Keep this distinction
     # before diagnostic and treatment matching, including inherited list verbs.
-    observational = verb in {"monitor", "assess", "vigilar", "monitorizar", "check", "recheck", "measure", "medir", "mido", "controlar", "control"} or bool(re.match(r"(?:monitor(?:ing)?|monitorizar|vigilar)\b", body))
-    vital = re.search(r"\b(?:blood pressure|bp|heart rate|hr|respiratory rate|rr|oxygen saturation|o2 saturation|spo2|saturation|sats|oxygen levels|presion arterial|saturacion|frecuencia cardiaca|frecuencia respiratoria|perfusion|breathing|respiratory effort|airway|signs? of shock|shock signs?|oxigeno|rhythm|mental status|capillary refill|crt|estado mental)\b", body)
+    # A resident may use a terse bedside prompt for shock assessment without an
+    # explicit verb. Keep this vocabulary closed: "shock" alone can be a diagnosis
+    # or reasoning statement, while these phrases specifically ask to look for its
+    # bedside signs (pre-pilot smoke, 2026-10-11).
+    bare_shock_assessment = bool(re.fullmatch(
+        r"(?:signs?\s+of\s+shock|shock\s+signs?|signos?\s+de\s+(?:shock|choque))\s*[?.!]?",
+        body,
+        re.I,
+    ))
+    observational = (verb in {"monitor", "assess", "vigilar", "monitorizar", "check", "recheck", "measure", "medir", "mido", "controlar", "control"}
+                     or bool(re.match(r"(?:monitor(?:ing)?|monitorizar|vigilar)\b", body))
+                     or bare_shock_assessment)
+    vital = re.search(r"\b(?:blood pressure|bp|heart rate|hr|respiratory rate|rr|oxygen saturation|o2 saturation|spo2|saturation|sats|oxygen levels|presion arterial|saturacion|frecuencia cardiaca|frecuencia respiratoria|perfusion|breathing|respiratory effort|airway|signs? of shock|shock signs?|signos? de (?:shock|choque)|oxigeno|rhythm|mental status|capillary refill|crt|estado mental)\b", body)
     if vital and vital.group(0) == "oxigeno" and (
             re.search(_FLOW, body) or any(re.search(r"\b(?:" + pattern + r")\b", body)
                                           for name, pattern in _OXYGEN_DEVICES if name != "room air")):
