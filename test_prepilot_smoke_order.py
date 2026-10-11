@@ -25,6 +25,14 @@ def test_bedside_assessment_words_are_reassessment_not_unknown_orders():
     assert kinds and set(kinds) == {"reassessment"}
 
 
+def test_standalone_signs_of_shock_is_reassessment_not_clarification():
+    for text in ("signs of shock", "shock signs", "signos de shock", "signos de choque"):
+        parsed = parse_family_actions(text)
+        kinds = action_types(parsed)
+        assert kinds == ["reassessment"]
+        assert "clarification" not in kinds
+
+
 def test_preparing_pacing_does_not_start_pacing():
     parsed = parse_family_actions(
         "Prepare transcutaneous pacing pads and have pacing equipment ready if atropine is ineffective."
