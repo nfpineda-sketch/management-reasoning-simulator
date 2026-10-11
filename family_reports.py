@@ -1,7 +1,7 @@
 """Render only documented results; missing measurements are never normal values."""
 
 TEST_LABELS = {
-    "head_ct": "Head CT", "abdominal_ct": "Abdominal CT", "cortisol": "Cortisol",
+    "head_ct": "Head CT", "abdominal_ct": "Abdominal CT", "cortisol": "Cortisol", "serum_magnesium": "Serum magnesium",
     "thyroid_function": "Thyroid function", "ketones": "Ketones", "toxicology": "Toxicology",
     "pocus": "POCUS", "ecg": "ECG", "vbg": "Venous blood gas", "abg": "Arterial blood gas",
     "lactate": "Lactate", "basic_labs": "Laboratory results", "poc_glucose": "Bedside glucose",
