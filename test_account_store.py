@@ -54,6 +54,42 @@ class AccountStoreTests(unittest.TestCase):
             with self.assertRaises(AccountError):
                 reopened.list_generation_failures(token)
 
+    def test_postgres_transactions_borrow_pool_connections(self):
+        """Hosted transactions return pooled connections instead of closing a new socket each time."""
+        from contextlib import contextmanager
+        import account_store
+
+        class Connection:
+            def __init__(self):
+                self.commits = 0
+                self.rollbacks = 0
+            def commit(self):
+                self.commits += 1
+            def rollback(self):
+                self.rollbacks += 1
+
+        class Pool:
+            def __init__(self):
+                self.connection_object = Connection()
+                self.checkouts = 0
+            @contextmanager
+            def connection(self, timeout=None):
+                self.checkouts += 1
+                yield self.connection_object
+
+        store = object.__new__(AccountStore)
+        store._sqlite = False
+        store._url = "postgresql://synthetic.invalid/test"
+        pool = Pool()
+        with patch.object(account_store, "_postgres_pool", return_value=pool):
+            with store._transaction() as first:
+                self.assertIs(first, pool.connection_object)
+            with store._transaction() as second:
+                self.assertIs(second, pool.connection_object)
+        self.assertEqual(pool.checkouts, 2)
+        self.assertEqual(pool.connection_object.commits, 2)
+        self.assertEqual(pool.connection_object.rollbacks, 0)
+
     def test_sqlite_requires_explicit_local_mode(self):
         with self.assertRaisesRegex(AccountError, "local development"):
             AccountStore(self.url)
