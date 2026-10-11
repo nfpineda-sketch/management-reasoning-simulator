@@ -90,6 +90,20 @@ class AccountStoreTests(unittest.TestCase):
         self.assertEqual(pool.connection_object.commits, 2)
         self.assertEqual(pool.connection_object.rollbacks, 0)
 
+    def test_postgres_pool_checks_connection_health_on_checkout(self):
+        """Hosted pool validates a borrowed connection before account work uses it."""
+        import account_store
+
+        account_store._postgres_pool.cache_clear()
+        sentinel_check = object()
+        with patch("psycopg_pool.ConnectionPool") as pool_class:
+            pool_class.check_connection = sentinel_check
+            account_store._postgres_pool("postgresql://synthetic.invalid/test")
+            self.assertIs(pool_class.call_args.kwargs["check"], sentinel_check)
+            self.assertEqual(pool_class.call_args.kwargs["min_size"], 0)
+            self.assertEqual(pool_class.call_args.kwargs["max_size"], 8)
+        account_store._postgres_pool.cache_clear()
+
     def test_sqlite_requires_explicit_local_mode(self):
         with self.assertRaisesRegex(AccountError, "local development"):
             AccountStore(self.url)
