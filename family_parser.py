@@ -405,7 +405,7 @@ _SUPPORT_ORDERS = (
     # glucose check followed it (rehearsal of the twenty-scenario batch).
     ("monitoring", r"\bmonitor(?:izacion|izar|izado|eo)?\b|\boximetr[ií]a\b|\bpulse\s+ox(?:imetry)?\b|"
                    r"\bunder\s+observation\b|"
-                   r"\bcontinuous\s+monitoring\b|\bcardiac\s+monitor\b"),
+                   r"\bcontinuous\s+(?:cardiac\s+)?monitoring\b|\bcardiac\s+monitor(?:ing)?\b"),
 )
 
 
@@ -5167,6 +5167,24 @@ def parse_family_actions(text) -> dict:
             for index in reversed(bloods[1:]):
                 del actions[index]
         _share_trailing_route(members, sentence)
+    # Smoke-test wording: preparing pacing pads/equipment is a real management
+    # decision, but it must never start pacing. Some clause splits reach the generic
+    # unreadable-order path before the per-piece preparation check, so reconcile the
+    # explicit preparation phrase once, at the end, and remove only the clarification
+    # that quoted that same preparation as unreadable.
+    pacing_preparation = _PACING_PREPARATION.search(raw)
+    if pacing_preparation and not any(a.get("type") == "transcutaneous_pacing" for a in actions):
+        phrase = " ".join(pacing_preparation.group(0).split()).strip(" ,;:.")
+        actions = [
+            a for a in actions
+            if not (
+                a.get("type") == "clarification"
+                and re.search(r"\b(?:pacing|pacer|transcutaneous|marcapas\w*)\b",
+                              str(a.get("unrecognized_text") or a.get("message") or ""), re.I)
+            )
+        ]
+        if not any(d.get("category") == "pacing_preparation" for d in details):
+            keep(phrase, "not_modelled", category="pacing_preparation")
     flush_trailing_advice()
     actions = _one_sample_each(actions)
     if held_until:
