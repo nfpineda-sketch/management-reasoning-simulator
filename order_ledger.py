@@ -195,7 +195,8 @@ _EXTRA = [
     _entry("oxygen", r"oxygen|oxigeno|o2|non-?rebreather|nrb|nasal\s+cannula|canula\s+nasal|naricera|venturi|"
                      r"high[- ]flow|alto\s+flujo|hfnc", "support", ("oxygen", "niv"), cls="oxygen"),
     _entry("monitoring", r"continuous\s+(?:cardiac\s+)?monitoring|cardiac\s+monitor(?:ing)?|"
-                         r"pulse\s+ox(?:imetry)?|oximetria", "support",
+                         r"pulse\s+ox(?:imetry)?|oximetria|oxygen\s+saturation|o2\s+saturation|spo2|"
+                         r"saturacion(?:\s+de\s+oxigeno)?", "support",
            ("monitoring", "reassessment"), cls="monitoring"),
     _entry("non-invasive ventilation", r"bipap|cpap|niv|non-?invasive\s+ventilation|"
                                        r"ventilacion\s+(?:mecanica\s+)?no\s+invasiva|vmni",
