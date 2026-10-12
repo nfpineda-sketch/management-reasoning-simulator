@@ -247,6 +247,17 @@ def pending(session):
     return [entry for entry in _entries(session) if entry.get("status") == "received"]
 
 
+def fast_path(session):
+    """Whether this run can defer expensive bedside rendering until after the order runs.
+
+    The Send callback has already captured the submission, and write_ahead at the
+    top of the script has made it durable before this is consulted. Skipping the
+    monitor/chart on that processing run changes no clinical state and preserves the
+    final rerun that renders the completed result.
+    """
+    return bool(pending(session))
+
+
 def waiting(session):
     """True while a submission waits to run or is running: the Send button is disabled."""
     return any(entry.get("status") in ("received", "processing") for entry in _entries(session))
