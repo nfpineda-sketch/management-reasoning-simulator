@@ -54,3 +54,27 @@ def test_atropin_with_chilean_ev_route_is_atropine_iv():
     assert len(actions) == 1
     assert actions[0].get("route") == "IV"
     assert actions[0].get("dose_mg") == 1
+
+
+
+def test_oxygen_saturation_reassessment_has_no_false_unrecognized_receipt():
+    text = "Check oxygen saturation"
+    parsed = parse_family_actions(text)
+    assert action_types(parsed) == ["reassessment"]
+    turn = open_turn(text, parsed, submission_id="smoke-spo2", entry_point="free_text", minute=0, ledger=[])
+    assert not [o for o in turn["orders"] if o.get("canonical") == "unrecognized"]
+
+
+def test_durable_pending_submission_uses_render_fast_path():
+    import submission_guard
+
+    session = {}
+    submission_guard.log(session).append({
+        "id": "smoke-fast-path",
+        "form_id": "smoke-fast-path",
+        "raw_text": "Reassess",
+        "status": "received",
+    })
+    assert submission_guard.fast_path(session) is True
+    session["submission_log"][0]["status"] = "processed"
+    assert submission_guard.fast_path(session) is False
