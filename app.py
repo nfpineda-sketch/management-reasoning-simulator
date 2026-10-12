@@ -85,6 +85,9 @@ from curriculum_runtime import SESSION_FIELDS as _SESSION_FIELDS, write_session 
 _submission_guard.recover(st.session_state, _SESSION_FIELDS)
 if ACCOUNT_CONTEXT:
     _submission_guard.write_ahead(st.session_state, lambda: _write_session(ACCOUNT_CONTEXT))
+# The submission is already durable at this point. On the run whose only job is
+# to process it, defer the expensive bedside/chart render until the result rerun.
+_FAST_PENDING_SUBMISSION = _submission_guard.fast_path(st.session_state)
 
 
 def _encounter_menu():
@@ -10924,12 +10927,12 @@ def _render_staff_tools():
 
 
 _in_room = not st.session_state.encounter_ended
-if _in_room:
+if _in_room and not _FAST_PENDING_SUBMISSION:
     # The simulated time is said once on the screen, beside the information; the
     # monitor shows the patient now (2026-10-02, section 9).
     render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, "", ACCOUNT_CONTEXT)
 _ecg_acquired, _ecg_notice = False, None
-if _in_room:
+if _in_room and not _FAST_PENDING_SUBMISSION:
     # In the band above the information. The ECG is acquired before the views are
     # drawn, so that its notice is in them at once; what the room says otherwise, and
     # the save that follows an acquisition, are said in the console below.
@@ -10948,15 +10951,17 @@ with st.container(key="encounter-console"):
         _render_closed_bedside()
         _render_carry_forward_plan()
     # What was obtained, to consult: above the writing area in the room, and folded
-    # away on the review that follows the close, as the chart was.
-    with (st.container(key="enc-info") if _in_room
-          else st.expander(_record_words("Clinical chart · examination · results · treatment record"),
-                           expanded=False)):
-        if _in_room:
-            _render_carry_forward_plan()
-        _render_encounter_views(bedside=_in_room)
-        if _in_room and faculty_access():
-            _render_staff_tools()
+    # away on the review that follows the close, as the chart was. A durable pending
+    # submission skips this expensive pre-processing draw; the result rerun renders it once.
+    if not _FAST_PENDING_SUBMISSION:
+        with (st.container(key="enc-info") if _in_room
+              else st.expander(_record_words("Clinical chart · examination · results · treatment record"),
+                               expanded=False)):
+            if _in_room:
+                _render_carry_forward_plan()
+            _render_encounter_views(bedside=_in_room)
+            if _in_room and faculty_access():
+                _render_staff_tools()
     with st.container(key="enc-action"):
         with st.container(key="enc-modes"):
             modes_area = st.container()
@@ -10971,7 +10976,7 @@ with st.container(key="encounter-console"):
                 # L-01, I-9: the modes in the reading language; the value the page reads stays English.
                 encounter_mode = st.radio(_record_words("Encounter"), ["Talk", "Examine", "Tests", "Treat"], index=3,
                                           horizontal=True, label_visibility="collapsed", format_func=_record_words)
-        if _in_room:
+        if _in_room and not _FAST_PENDING_SUBMISSION:
             _render_latest_response()
         orders_panel = st.container()
         from clinical_scene import history_facts, answer_history, associated_symptoms, history_topics, history_topic_facts, setting as scene_setting
