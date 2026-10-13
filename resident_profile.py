@@ -20,9 +20,9 @@ personal data this application has ever stored, so it does not arrive quietly:
   leaves the agreement record, because the fact that someone agreed, and when,
   is what makes the storage accountable.
 
-The agreement text below is a **draft for the programme to replace**. It states
-what the software actually does, which is the part I can be sure of; what it
-cannot state is the institution's own retention, jurisdiction or contact.
+The agreement text below is the faculty-approved pilot text. It states what the
+software does and gives residents a programme contact for questions about data
+storage, retention or use.
 """
 
 import base64
@@ -33,7 +33,7 @@ import uuid
 from account_store import AccountError
 
 
-AGREEMENT_VERSION = "1.0-pilot"
+AGREEMENT_VERSION = "1.1-pilot"
 STAFF = frozenset({"faculty", "admin"})
 
 # Square, small, and large enough to recognise a face at the centre of a chart.
@@ -42,35 +42,68 @@ MAX_UPLOAD_BYTES = 4 * 1024 * 1024
 MAX_STORED_BYTES = 200 * 1024
 MAX_INITIALS = 4
 
-AGREEMENT = """\
-**Draft for the programme to complete before the pilot runs with real residents.**
+AGREEMENT_EN = """\
+**Optional photograph and initials**
 
-You are being asked to store a photograph of your face and your initials in this training
-simulator.
+You may choose to store a photograph of your face and your initials in this training simulator.
+This is optional and does not affect your participation, your encounters, or your assessment.
 
-**What is stored.** A photograph you choose, re-encoded by this application as a small square
-image, together with initials you type and the training year your programme recorded. The
-original file is not kept, and the information cameras attach to a photograph -- including the
-place and the moment it was taken -- is discarded in that re-encoding.
+**What is stored.** The photograph you choose is re-encoded as a small square image together
+with the initials you enter and your training year. The original file is not kept. Metadata
+associated with the photograph, including information about where and when it was taken, is
+removed during re-encoding.
 
-**Why.** Encounters in this programme are reviewed at a distance. A face beside your initials
-and your year helps a faculty member keep one encounter apart from another while reviewing it.
+**What it is used for.** The photograph and initials help faculty in this programme distinguish
+your encounters during review.
 
-**Who can see it.** You, and faculty of this programme. It appears in one place: the centre of
-your management reasoning profile chart, and on the assessment documents that carry that chart.
-No other resident can see your photograph, your initials, your encounters, your scores or your
-chart.
+**Who can see it.** You and faculty in this programme. No other resident can see your
+photograph, your initials, your encounters, your scores, or your profile.
 
-**What it is never used for.** It is not used to identify you to anyone outside this programme,
-it is not shared, it is not published, and it takes no part in any score or decision about you.
+**What it is not used for.** It takes no part in any score or assessment decision, is not
+published, and is not shared outside this programme.
 
-**Withdrawing.** You can delete the photograph and the initials at any time from your account,
-without giving a reason and without affecting your record or your standing in the programme.
+**You can remove it.** You can delete your photograph and initials at any time without giving
+a reason and without affecting your participation in the programme.
 
-**Not covered here.** How long your programme keeps your record, where its database is hosted,
-and who to contact about your data are the programme's to state, and this text does not state
-them.
+**Questions about your data.** For questions about the storage, retention, or use of your data
+within this pilot, contact **nicolas.pineda@uhhospitals.org**.
 """
+
+AGREEMENT_ES = """\
+**Fotografía e iniciales opcionales**
+
+Puedes elegir guardar una fotografía de tu rostro y tus iniciales en este simulador de
+entrenamiento. Esto es opcional y no afecta tu participación, tus encuentros ni tu evaluación.
+
+**Qué se guarda.** La fotografía que elijas se recodifica como una imagen cuadrada pequeña
+junto con las iniciales que ingreses y tu año de formación. El archivo original no se conserva.
+Los metadatos asociados a la fotografía, incluida información sobre dónde y cuándo fue tomada,
+se eliminan durante la recodificación.
+
+**Para qué se usa.** La fotografía y las iniciales ayudan a los docentes del programa a
+distinguir tus encuentros durante la revisión.
+
+**Quién puede verla.** Tú y los docentes de este programa. Ningún otro residente puede ver tu
+fotografía, tus iniciales, tus encuentros, tus puntajes ni tu perfil.
+
+**Para qué no se usa.** No participa en ningún puntaje ni decisión de evaluación, no se publica
+y no se comparte fuera de este programa.
+
+**Puedes retirarla.** Puedes eliminar tu fotografía y tus iniciales en cualquier momento sin
+dar una razón y sin afectar tu participación en el programa.
+
+**Preguntas sobre tus datos.** Para preguntas sobre el almacenamiento, conservación o uso de
+tus datos dentro de este piloto, contacta a **nicolas.pineda@uhhospitals.org**.
+"""
+
+AGREEMENTS = {"en": AGREEMENT_EN, "es": AGREEMENT_ES}
+# Backwards-compatible name for callers and tests that expect the English text.
+AGREEMENT = AGREEMENT_EN
+
+
+def agreement(language_code="en"):
+    """The approved agreement in the resident's selected presentation language."""
+    return AGREEMENTS["es"] if str(language_code or "").lower() == "es" else AGREEMENTS["en"]
 
 
 def initials_of(value):
