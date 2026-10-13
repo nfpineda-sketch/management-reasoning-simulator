@@ -50,11 +50,12 @@ def person(tmp_path):
     return store, token
 
 
-def page(person):
+def page(person, language="en"):
     store, token = person
     app = AppTest.from_string(APP, default_timeout=20)
     app.session_state["database_url"] = store._url
     app.session_state["test_token"] = token
+    app.session_state["presentation_language"] = language
     app.run()
     assert not app.exception
     return app
@@ -75,6 +76,20 @@ def test_the_agreement_is_the_first_thing_a_new_resident_sees(person):
 def test_the_agreement_text_is_on_that_screen(person):
     app = page(person)
     assert any("photograph of your face" in item.value for item in app.markdown)
+
+
+def test_the_agreement_is_final_bilingual_and_versioned(person):
+    assert resident_profile.AGREEMENT_VERSION == "1.1-pilot"
+    assert all("Draft for the programme" not in text
+               for text in resident_profile.AGREEMENTS.values())
+    assert all("nicolas.pineda@uhhospitals.org" in text
+               for text in resident_profile.AGREEMENTS.values())
+
+    app = page(person, language="es")
+    shown = " ".join(item.value for item in app.markdown)
+    assert "Fotografía e iniciales opcionales" in shown
+    assert "Preguntas sobre tus datos." in shown
+    assert "Draft for the programme" not in shown
 
 
 def test_agreeing_moves_on_to_the_photograph(person):
