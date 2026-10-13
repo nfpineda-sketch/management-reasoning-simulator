@@ -269,6 +269,7 @@ def render_photo_and_initials(context, *, heading=True):
     controls only appear after it. Removing is one button and asks for no
     reason (faculty decision, 2026-09-23).
     """
+    import language
     import resident_profile
     store = resident_profile.ProfileStore(context["store"])
     try:
@@ -286,7 +287,7 @@ def render_photo_and_initials(context, *, heading=True):
 
     if not accepted:
         with st.expander(_t("Read the agreement"), expanded=True):
-            st.markdown(resident_profile.AGREEMENT)
+            st.markdown(resident_profile.agreement(language.current()))
         if st.button(_t("I have read this and agree"), key="_resident_photo_agree"):
             try:
                 store.accept(context["token"])
@@ -297,7 +298,7 @@ def render_photo_and_initials(context, *, heading=True):
         return
 
     with st.expander(_t("The agreement you accepted")):
-        st.markdown(resident_profile.AGREEMENT)
+        st.markdown(resident_profile.agreement(language.current()))
         st.caption(_t("Accepted {date} · version {version}", date=_date(accepted),
                       version=resident_profile.AGREEMENT_VERSION))
 
@@ -359,6 +360,7 @@ def render_setup(context):
     make the consent worthless. So "Not now" is a real answer, recorded, and
     the controls stay available afterwards under My progress.
     """
+    import language
     import resident_profile
     store = resident_profile.ProfileStore(context["store"])
     st.subheader(_t("Set up your account"))
@@ -370,7 +372,7 @@ def render_setup(context):
                "apart from another. It appears in one place: the centre of your profile "
                "chart. No other resident can see it."))
     with st.expander(_t("Read the agreement"), expanded=True):
-        st.markdown(resident_profile.AGREEMENT)
+        st.markdown(resident_profile.agreement(language.current()))
 
     columns = st.columns(2)
     if columns[0].button(_t("I have read this and agree"), type="primary", key="_setup_agree"):
