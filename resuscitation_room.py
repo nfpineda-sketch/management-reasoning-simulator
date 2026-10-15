@@ -83,22 +83,38 @@ def monitor_html(o, time_label, profile='baseline', seed=0, language='en'):
             + wave + f'<div class="monitor-values">{cards}</div></div>')
 
 
-def render_room(state, events, ecg_svg, render_event, time_label, context=None):
-    """The room, drawn with the page; it also redraws itself every 2 s, but only while a
-    photograph is being prepared, so that the photograph appears when it is ready.
+def render_room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True):
+    """Draw the bedside fragment, or explicitly replace it with an empty fragment.
 
-    Every redraw fades the room while it runs, and on the deployment that lasted about a
-    second, every 2 s, even with no photograph to wait for (2026-10-05). Streamlit forgets
-    these redraws at every run of the page, so each run asks for the photograph first and
-    decides again.
+    While a photograph is being prepared the fragment redraws every 2 s so the photograph
+    appears without rerunning the whole app. A scheduled fragment rerun can arrive just after
+    navigation back to the dashboard; the inactive call and the guard in ``_room`` make that
+    stale rerun render nothing instead of painting the previous bedside over the dashboard.
     """
-    from clinical_scene import scene_image
-    st.session_state['_room_image'] = scene_image(state, events, context)
-    every = 2 if st.session_state.get('_scene_pending', False) else None
-    st.fragment(_room, run_every=every)(state, events, ecg_svg, render_event, time_label, context)
+    if active:
+        from clinical_scene import scene_image
+        st.session_state['_room_image'] = scene_image(state, events, context)
+        every = 2 if st.session_state.get('_scene_pending', False) else None
+    else:
+        st.session_state.pop('_room_image', None)
+        every = None
+    # Keep one fragment invocation so the dashboard's empty render replaces the bedside.
+    st.fragment(_room, run_every=every)(
+        state, events, ecg_svg, render_event, time_label, context, active=active)
 
 
-def _room(state, events, ecg_svg, render_event, time_label, context=None):
+def clear_room_fragment(context=None):
+    """Replace any bedside fragment left by the previous encounter with an empty one."""
+    render_room(None, None, None, None, "", context, active=False)
+
+def _room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True):
+    # A queued fragment rerun can outlive the encounter that scheduled it. Fail closed before
+    # touching its captured state: navigation must never repaint an old patient over the dashboard.
+    if (not active or not st.session_state.get('started')
+            or st.session_state.get('encounter_ended')
+            or st.session_state.get('_attempt_status') in {'abandoned', 'completed'}):
+        st.session_state.pop('_room_image', None)
+        return
     from clinical_scene import scene_image, scene_html
     from patient_appearance import appearance_signature, appearance_summary
     # The page has just asked for the photograph; a redraw of the room on its own asks again.
