@@ -10247,6 +10247,9 @@ if faculty_access():
 
 if not st.session_state.started:
     if ACCOUNT_CONTEXT:
+        # A bedside fragment rerun scheduled before navigation can arrive after the dashboard.
+        # Render that same fragment empty first so no previous patient remains over the page.
+        _room.clear_room_fragment(ACCOUNT_CONTEXT)
         render_dashboard(ACCOUNT_CONTEXT, INITIAL_STATE, reset_session)
         st.stop()
     st.subheader("Choose a clinical problem")
