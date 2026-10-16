@@ -97,8 +97,9 @@ Las afirmaciones de «actual» están VERIFICADAS EN EL CÓDIGO; las de «objeti
 7. **Inmutabilidad histórica:** un encuentro guardado se lee y se evalúa igual (L-F01). `mrs_attempt_v1` sigue
    legible.
 8. **El texto visible** en inglés y en español no cambia: centinela y pruebas de idioma en verde.
-9. **El lector congelado:** `git diff 3d942ee -- family_parser.py shared_order_language.py shared_order_quantities.py
-   active_order_context.py weight_based_doses.py` vacío.
+9. **El lector congelado:** desde el cierre pre-Fase 1 del 2026-10-15, el estado aceptado se verifica con
+   `test_prephase1_reader_freeze.py`. `family_parser.py` incorpora cuatro correcciones del 2026-10-11 posteriores
+   a V3; los otros cuatro archivos siguen byte a byte en V3. La Fase 1 no modifica ninguno de los cinco.
 10. **Scoring y metodología:** D1–D5, penalidades, conteos, radar y mappings, sin cambio.
 11. **Conducta del motor idéntica** en los 30 casos con la batería de aceptación, el dorado de la hipoglicemia y el
     arnés de WP0, salvo una corrección declarada en `corrections_registry`. En la Fase 1 no se espera ninguna.
@@ -178,8 +179,11 @@ La Fase 1 empieza sólo cuando **todas** se cumplen:
    la rama de CLAUDE.md está actualizada.
 3. La Fase 1 está autorizada expresamente, con su alcance (§7B).
 4. La propuesta de arquitectura en `docs/`: hecho el 2026-10-08 (`docs/CLINICAL_ENGINE_ARCHITECTURE_PROPOSAL.md`).
-5. La espera de la validación externa sigue vigente: el lector, el corpus, V3 y los baselines no se tocan.
+5. La espera de la validación externa sigue vigente: el lector congelado por
+   `test_prephase1_reader_freeze.py`, el corpus, V3 y los baselines no se tocan.
 
-**Hoy (2026-10-08) no se cumple ninguna de las tres primeras:** no hay `<SHA_FINAL>` promovido ni GO; la rama está
-decidida pero no autorizada su creación ni actualizada CLAUDE.md; la Fase 1 no está autorizada. **La Fase 1 no
-empezó.**
+**Estado 2026-10-15:** la Fase 1 sigue sin empezar. El piloto fue promovido a `9abe6e58`, pero una auditoría
+pre-Fase 1 confirmó dos defectos técnicos que deben cerrarse antes de fijar `<SHA_FINAL>`: el fast path de render
+puede dejar un monitor previo visible después de Send, y dos bordes de error del store pueden dejar escapar una
+excepción del driver. El cierre autorizado corre en `prephase1-closure-v1`. Sólo después de recertificar y promover
+ese cierre puede definirse `<SHA_FINAL>`, autorizar `phase-1-contracts-v2` y ejecutar WP0.
