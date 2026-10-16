@@ -56,7 +56,8 @@ de alcance, rige la fuente, no este resumen.
 - Baselines congelados, nunca reescritos retrospectivamente (hoy ES `939978a`; EN = V3 `3d942ee`):
   `validation/BASELINES.md`.
 - Validación externa en espera:
-  - no tocar el lector, el corpus de validación, V3 ni los baselines;
+  - no tocar el lector, el corpus de validación, V3 ni los baselines; el estado aceptado del lector para este cierre
+    es el fijado por `test_prephase1_reader_freeze.py`;
   - no abrir, buscar ni usar respuestas externas, aunque aparezcan en una carpeta: informar su presencia sin
     leerlas, hasta «BEGIN EXTERNAL VALIDATION INGESTION»;
   - ni respuestas crudas ni nombres de médicos en el repositorio.
