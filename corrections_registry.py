@@ -3684,7 +3684,7 @@ CORRECTIONS = (
         "tests": ["test_td59_general_appearance_keeps_the_case.py::test_each_line_reads_whole_in_one_language",
                   "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english"],
         "preservation": None,
-    },,
+    },
     {
         "id": "C-2026-10-15-01",
         "date": "2026-10-15",
