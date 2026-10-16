@@ -65,7 +65,7 @@ def test_oxygen_saturation_reassessment_has_no_false_unrecognized_receipt():
     assert not [o for o in turn["orders"] if o.get("canonical") == "unrecognized"]
 
 
-def test_durable_pending_submission_uses_render_fast_path():
+def test_durable_pending_submission_never_skips_the_bedside():
     import submission_guard
 
     session = {}
@@ -75,6 +75,9 @@ def test_durable_pending_submission_uses_render_fast_path():
         "raw_text": "Reassess",
         "status": "received",
     })
-    assert submission_guard.fast_path(session) is True
+    # Durability is provided by write-ahead; rendering stays current while the
+    # pending order is processed so an old monitor cannot remain on screen.
+    assert submission_guard.pending(session)
+    assert submission_guard.fast_path(session) is False
     session["submission_log"][0]["status"] = "processed"
     assert submission_guard.fast_path(session) is False
