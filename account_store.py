@@ -277,29 +277,58 @@ class AccountStore:
         with _postgres_pool(self._url).connection(timeout=10) as connection:
             yield connection
 
+    @staticmethod
+    def _rollback_quietly(connection) -> None:
+        """Best-effort rollback that never replaces the error shown to the caller."""
+        if connection is None:
+            return
+        try:
+            connection.rollback()
+        except Exception as rollback_error:
+            # A dropped PostgreSQL connection can fail again while rolling back.
+            # Log only the exception class and location; never the driver message,
+            # which can contain connection or SQL details.
+            _LOG.error("Account store rollback failed: %s at %s",
+                       type(rollback_error).__name__, _raised_at(rollback_error))
+
     @contextmanager
     def _transaction(self, write: bool = False):
-        with self._borrow_connection() as connection:
-            try:
-                if self._sqlite:
-                    connection.execute("BEGIN IMMEDIATE" if write else "BEGIN")
-                elif write:
-                    # Serializes bootstrap, invite consumption and attempt creation
-                    # across workers. The lock is released at transaction end.
-                    self._execute(connection, "SELECT pg_advisory_xact_lock(?)", (_SCHEMA_LOCK,))
-                yield connection
-                connection.commit()
-            except AccountError:
-                connection.rollback()
-                raise
-            except Exception as error:
-                connection.rollback()
-                # Driver exceptions can contain hostnames, usernames or SQL data, so the page
-                # gets a generic message. The server log gets the error's class and where it
-                # was raised -- never its message -- so that a programming error is not
-                # mistaken for an outage and leaves a trace (I-F10, cycle 10).
-                _LOG.error("Account store transaction failed: %s at %s", type(error).__name__, _raised_at(error))
-                raise AccountError("The account database is temporarily unavailable. Please try again.") from None
+        connection = None
+        try:
+            with self._borrow_connection() as connection:
+                try:
+                    if self._sqlite:
+                        connection.execute("BEGIN IMMEDIATE" if write else "BEGIN")
+                    elif write:
+                        # Serializes bootstrap, invite consumption and attempt creation
+                        # across workers. The lock is released at transaction end.
+                        self._execute(connection, "SELECT pg_advisory_xact_lock(?)", (_SCHEMA_LOCK,))
+                    yield connection
+                    connection.commit()
+                except AccountError:
+                    self._rollback_quietly(connection)
+                    raise
+                except Exception as error:
+                    self._rollback_quietly(connection)
+                    # Driver exceptions can contain hostnames, usernames or SQL data, so the page
+                    # gets a generic message. The server log gets the error's class and where it
+                    # was raised -- never its message -- so that a programming error is not
+                    # mistaken for an outage and leaves a trace (I-F10, cycle 10).
+                    _LOG.error("Account store transaction failed: %s at %s",
+                               type(error).__name__, _raised_at(error))
+                    raise AccountError(
+                        "The account database is temporarily unavailable. Please try again."
+                    ) from None
+        except AccountError:
+            raise
+        except Exception as error:
+            # Connection acquisition/release sits outside the inner transaction body.
+            # Sanitize failures here too, so pool/driver details never reach the page.
+            _LOG.error("Account store connection failed: %s at %s",
+                       type(error).__name__, _raised_at(error))
+            raise AccountError(
+                "The account database is temporarily unavailable. Please try again."
+            ) from None
 
     def _initialize(self):
         statements = [
