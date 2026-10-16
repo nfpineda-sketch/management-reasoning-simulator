@@ -107,6 +107,10 @@ INSTRUCTION_2026_10_08_ESP8 = ("Instrucción del 2026-10-08 «Faculty now resolv
                                "aprobadas con su redacción exacta; ES-P11 queda canónico, sin ruta de presentación "
                                "nueva; sin tocar el lector congelado; sólo en local, sin push, sin despliegue y sin "
                                "Fase 1")
+INSTRUCTION_2026_10_15_PREPHASE1 = ("Autorización del 2026-10-15 para crear prephase1-closure-v1 desde "
+                                           "9abe6e58, corregir E2b y E1 y cerrar la gobernanza del lector y de "
+                                           "los textos identificados, sin tocar pilot-residents-v1 hasta una "
+                                           "autorización posterior")
 
 CORRECTIONS = (
     {
@@ -3680,7 +3684,80 @@ CORRECTIONS = (
         "tests": ["test_td59_general_appearance_keeps_the_case.py::test_each_line_reads_whole_in_one_language",
                   "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english"],
         "preservation": None,
+    },,
+    {
+        "id": "C-2026-10-15-01",
+        "date": "2026-10-15",
+        "title": "E2b: un Send no deja visible un bedside anterior",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("En el piloto 9abe6e58 se reprodujo el defecto tras varios Reassess: la respuesta de 23 min "
+                   "mostraba FC 133 mientras el monitor visible conservaba 132 y aparecía ghosting. El atajo "
+                   "fast_path omitía el bedside durante el rerun que procesaba una entrega durable; se desactiva "
+                   "sólo ese atajo. Write-ahead, idempotencia, estado clínico y ejecución de la orden no cambian."),
+        "authorised_by": INSTRUCTION_2026_10_15_PREPHASE1,
+        "affects": {"modules": ["submission_guard"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": ["test_prepilot_smoke_order.py::test_durable_pending_submission_never_skips_the_bedside"],
+        "preservation": None,
     },
+    {
+        "id": "C-2026-10-15-02",
+        "date": "2026-10-15",
+        "title": "E1: los errores de conexión y rollback del store no llegan crudos a la pantalla",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("La adquisición/liberación de una conexión ocurría fuera del bloque que convertía errores del "
+                   "driver a AccountError; además un rollback sobre una conexión perdida podía fallar y sustituir "
+                   "el error sanitizado. Ambos bordes devuelven ahora el mismo mensaje genérico y el log conserva "
+                   "sólo clase y ubicación, nunca el mensaje potencialmente sensible del driver."),
+        "authorised_by": INSTRUCTION_2026_10_15_PREPHASE1,
+        "affects": {"modules": ["account_store"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": [
+            "test_prephase1_account_store_errors.py::test_connection_acquisition_failure_is_sanitized",
+            "test_prephase1_account_store_errors.py::test_rollback_failure_cannot_replace_the_sanitized_error",
+        ],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-15-03",
+        "date": "2026-10-15",
+        "title": "Nuevo reader freeze pre-Fase 1: se acepta el estado post-V3 ya desplegado",
+        "scope": {"level": "general"},
+        "kind": "policy",
+        "reason": ("La auditoría pre-Fase 1 comprobó que family_parser.py había recibido cuatro correcciones el "
+                   "2026-10-11 después del freeze V3, mientras los otros cuatro archivos del conjunto seguían "
+                   "idénticos. Esas correcciones ya forman parte del piloto probado y no se revierten. Se congelan "
+                   "los cinco blobs exactos en test_prephase1_reader_freeze.py; este cierre no modifica el lector "
+                   "ni abre la validación externa, el corpus, V3 o los baselines."),
+        "authorised_by": INSTRUCTION_2026_10_15_PREPHASE1,
+        "affects": {"modules": ["family_parser", "shared_order_language", "shared_order_quantities",
+                                "active_order_context", "weight_based_doses"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": ["test_prephase1_reader_freeze.py::test_prephase1_reader_freeze_is_exact"],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-15-04",
+        "date": "2026-10-15",
+        "title": "Gobernanza de presentación: pacing preparation y Magnesio sérico",
+        "scope": {"level": "general"},
+        "kind": "text",
+        "reason": ("Se registra como presentación aceptada la etiqueta Serum magnesium → Magnesio sérico, ya "
+                   "presente en la capa de idioma, y se agrega la presentación española del rótulo de "
+                   "pacing_preparation que alcanzaba el Management Trace en inglés: «preparación para marcapasos "
+                   "transcutáneo registrada; estimulación no iniciada». No cambia el texto escrito por el residente, "
+                   "el lector, la acción ejecutada, la fisiología ni el registro canónico en inglés."),
+        "authorised_by": INSTRUCTION_2026_10_15_PREPHASE1,
+        "affects": {"modules": ["language"], "versions": {}},
+        "clinical_relevance": "cosmetic",
+        "tests": [
+            "test_prephase1_language_governance.py::test_pacing_preparation_trace_label_has_spanish_presentation",
+            "test_prephase1_language_governance.py::test_serum_magnesium_keeps_the_approved_spanish_label",
+        ],
+        "preservation": None,
+    }
 )
 
 
