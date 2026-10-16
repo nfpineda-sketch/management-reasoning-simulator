@@ -248,14 +248,15 @@ def pending(session):
 
 
 def fast_path(session):
-    """Whether this run can defer expensive bedside rendering until after the order runs.
+    """Keep the bedside on screen while a durable submission is processed.
 
-    The Send callback has already captured the submission, and write_ahead at the
-    top of the script has made it durable before this is consulted. Skipping the
-    monitor/chart on that processing run changes no clinical state and preserves the
-    final rerun that renders the completed result.
+    The previous optimization skipped the bedside/chart on the processing rerun.
+    In Streamlit, the old fragment could remain visible while the new response was
+    already rendered, so the resident could briefly see stale vital signs and
+    duplicated monitor content. Durability and idempotence do not depend on this
+    rendering shortcut; keep the helper for compatibility, but disable the shortcut.
     """
-    return bool(pending(session))
+    return False
 
 
 def waiting(session):
