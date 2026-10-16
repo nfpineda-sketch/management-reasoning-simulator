@@ -81,6 +81,10 @@ MESSAGES = {
  "No pude relacionar esa pregunta con la historia registrada. Reformúlala o usa los temas de la anamnesis.",
  "Peripheral intravenous access already in place; not repeated":
  "Vía venosa periférica ya instalada; no se repite",
+ # Pre-Phase1 closure: this category was added after the V3 reader freeze and
+ # reached the Spanish Management Trace through its English category label.
+ "transcutaneous pacing preparation recorded; pacing not started":
+ "preparación para marcapasos transcutáneo registrada; estimulación no iniciada",
  # A pregnancy or last-period question on a case that documents none (DF-23 row 8).
  "Not documented.":
  "No documentado.",
