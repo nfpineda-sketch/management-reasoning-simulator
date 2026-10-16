@@ -107,7 +107,7 @@ INSTRUCTION_2026_10_08_ESP8 = ("Instrucción del 2026-10-08 «Faculty now resolv
                                "aprobadas con su redacción exacta; ES-P11 queda canónico, sin ruta de presentación "
                                "nueva; sin tocar el lector congelado; sólo en local, sin push, sin despliegue y sin "
                                "Fase 1")
-INSTRUCTION_2026_10_15_PREPHASE1 = ("Autorización del 2026-10-15 para crear prephase1-closure-v1 desde "
+INSTRUCTION_2026_10_15_PREPHASE1 = ("Instrucción del 2026-10-15 para crear prephase1-closure-v1 desde "
                                            "9abe6e58, corregir E2b y E1 y cerrar la gobernanza del lector y de "
                                            "los textos identificados, sin tocar pilot-residents-v1 hasta una "
                                            "autorización posterior")
