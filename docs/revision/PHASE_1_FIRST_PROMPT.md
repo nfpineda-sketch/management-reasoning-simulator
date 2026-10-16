@@ -25,10 +25,11 @@ pilot-frozen SHA <SHA_FINAL>. This prompt authorizes WP0 only. Read docs/revisio
    - The current branch is <PHASE1_BRANCH>, its merge-base with <SHA_FINAL> is <SHA_FINAL>, and the tree is clean.
      If the branch does not exist yet, create it locally from <SHA_FINAL> (git switch -c <PHASE1_BRANCH> <SHA_FINAL>).
      Do not push.
-   - CLAUDE.md names <PHASE1_BRANCH> as the authorized branch. If it still names clinical-encounter-v0.13, STOP:
+   - CLAUDE.md names <PHASE1_BRANCH> as the authorized branch. If it names any other branch, STOP:
      the two sources disagree, and the owner decides.
-   - The reader freeze holds: git diff 3d942ee -- family_parser.py shared_order_language.py
-     shared_order_quantities.py active_order_context.py weight_based_doses.py is empty.
+   - The accepted pre-Phase1 reader freeze holds:
+     python -m pytest -q test_prephase1_reader_freeze.py
+     must pass. Do not update its expected blobs inside WP0.
 
 1. GOAL (WP0). Build a deterministic harness that records the behavior of <SHA_FINAL>, and fails on the first
    difference in any later commit. For each of the 30 accepted pilot cases (pilot_freeze.accepted_variants()), in
