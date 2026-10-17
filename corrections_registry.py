@@ -111,6 +111,10 @@ INSTRUCTION_2026_10_15_PREPHASE1 = ("Instrucción del 2026-10-15 para crear prep
                                            "9abe6e58, corregir E2b y E1 y cerrar la gobernanza del lector y de "
                                            "los textos identificados, sin tocar pilot-residents-v1 hasta una "
                                            "autorización posterior")
+INSTRUCTION_2026_10_16_PREPHASE1_V3 = ("Instrucción del 2026-10-16 para abrir prephase1-closure-v3 desde "
+                                              "b21c345 y corregir la duplicación del árbol del encuentro procesando "
+                                              "cada Send durable antes de renderizar la interfaz; sin tocar "
+                                              "pilot-residents-v1 hasta nueva autorización")
 
 CORRECTIONS = (
     {
@@ -3755,6 +3759,29 @@ CORRECTIONS = (
         "tests": [
             "test_prephase1_language_governance.py::test_pacing_preparation_trace_label_has_spanish_presentation",
             "test_prephase1_language_governance.py::test_serum_magnesium_keeps_the_approved_spanish_label",
+        ],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-16-01",
+        "date": "2026-10-16",
+        "title": "Send durable: procesar antes de renderizar el árbol del encuentro",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("Los smokes hosted mostraron que el defecto no era sólo el monitor: tras Send podían quedar "
+                   "varias copias completas de Management, los modos y el formulario. El flujo anterior dibujaba "
+                   "parte del encuentro, procesaba la entrega durable y terminaba con st.rerun(), obligando al "
+                   "frontend a reconciliar un árbol parcial con el siguiente. El procesamiento de una entrada "
+                   "received se mueve ahora antes de cualquier bedside/chart/form del encuentro. Ese run muta y "
+                   "guarda el estado sin emitir el subárbol; el rerun siguiente dibuja una sola interfaz completa. "
+                   "La lógica clínica, write-ahead, idempotencia, ledger y Trace se conservan sin cambios."),
+        "authorised_by": INSTRUCTION_2026_10_16_PREPHASE1_V3,
+        "affects": {"modules": ["app"], "versions": {}},
+        "clinical_relevance": "none",
+        "tests": [
+            "test_prephase1_send_render_sequence.py::test_durable_send_is_processed_before_encounter_rendering",
+            "test_prephase1_send_render_sequence.py::test_form_path_delegates_to_the_same_submission_processor",
+            "test_prephase1_send_render_sequence.py::test_processing_helper_reruns_only_after_recording_the_response",
         ],
         "preservation": None,
     }
