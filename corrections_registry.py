@@ -3781,7 +3781,7 @@ CORRECTIONS = (
         "tests": [
             "test_resuscitation_room.py::test_room_uses_no_streamlit_fragment",
             "test_resuscitation_room.py::test_an_inactive_room_fragment_renders_nothing",
-            "test_resuscitation_room.py::test_dashboard_explicitly_replaces_the_bedside_fragment",
+            "test_resuscitation_room.py::test_dashboard_explicitly_clears_bedside_state_before_rendering",
         ],
         "preservation": None,
     }
