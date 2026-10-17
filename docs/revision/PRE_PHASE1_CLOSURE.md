@@ -77,11 +77,16 @@ st.fragment(_room, run_every=every)(...)
 dentro de `render_room` en cada rerun completo. En hosted, una instancia anterior podía seguir montada mientras
 la nueva respuesta ya estaba visible.
 
-`prephase1-closure-v2` usa una única función `@st.fragment` declarada a nivel de módulo
-(`_stable_room_fragment`). Todos los reruns de la página reutilizan esa identidad y `clear_room_fragment` vuelve
-a renderizar esa misma instancia como inactiva. Se elimina el polling automático de 2 s durante este cierre; una
-fotografía pendiente se actualiza en el siguiente rerun normal/interacción. No cambian la fisiología, el monitor
-calculado, el Trace, el ledger, la persistencia ni la ejecución de órdenes.
+El primer intento de `prephase1-closure-v2` usó una única función `@st.fragment` a nivel de módulo, pero el
+smoke posterior a la promoción mostró que, al ingresar una orden, el navegador podía volver a mostrar dos bedside
+durante la reconciliación. Por tanto, una identidad estable del fragmento no fue suficiente.
+
+La corrección final elimina **por completo** `st.fragment` del bedside. `render_room` dibuja la sala como salida
+normal del rerun completo y `clear_room_fragment` sólo limpia el estado transitorio de la imagen antes del
+dashboard. Sin un segundo ciclo de vida de fragmentos, un rerun no puede mantener montado el bedside anterior junto
+al nuevo. Se mantiene eliminado el polling automático de 2 s; una fotografía pendiente se actualiza en el siguiente
+rerun normal/interacción. No cambian la fisiología, el monitor calculado, el Trace, el ledger, la persistencia ni la
+ejecución de órdenes.
 
 ### Validación requerida para v2
 
