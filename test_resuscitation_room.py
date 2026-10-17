@@ -48,6 +48,18 @@ def test_an_inactive_room_fragment_renders_nothing(monkeypatch):
     assert '_room_image' not in fake.session_state
 
 
+def test_room_uses_one_module_level_fragment_identity():
+    """Repeated full reruns must not create new bedside fragment wrappers."""
+    source = Path('resuscitation_room.py').read_text(encoding='utf-8')
+    assert '@st.fragment\ndef _stable_room_fragment' in source
+    start = source.index('def render_room(')
+    stop = source.index('def clear_room_fragment', start)
+    block = source[start:stop]
+    assert 'st.fragment(' not in block
+    assert '_stable_room_fragment(' in block
+    assert 'run_every=' not in block
+
+
 def test_dashboard_explicitly_replaces_the_bedside_fragment():
     """The dashboard full rerun emits an empty instance of the bedside fragment first."""
     source = Path('app.py').read_text(encoding='utf-8')
