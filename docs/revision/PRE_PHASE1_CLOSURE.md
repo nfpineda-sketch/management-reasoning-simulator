@@ -62,6 +62,38 @@ lector, sin autorizar cambios adicionales ni abrir la validación externa.
 | `active_order_context.py` | `3c0432f5711cfbd3a919649e1bbe52cce3afbaeb` |
 | `weight_based_doses.py` | `cdf79e0e654e11f908a90eb91139c9812a2416e8` |
 
+## Cierre v2 · fragmento estable en hosted (2026-10-16)
+
+El smoke hosted de `prephase1-closure-v1` en `b21c345` fue **NO-GO**: tras cuatro `Reassess.` el monitor volvió
+a quedar superpuesto/stale y, después de `Menu → Save & return`, quedó una pantalla híbrida en vez del dashboard
+limpio. E2b había desactivado el fast path, por lo que ese atajo no explicaba el defecto residual.
+
+La ruta residual era la creación dinámica del wrapper:
+
+```python
+st.fragment(_room, run_every=every)(...)
+```
+
+dentro de `render_room` en cada rerun completo. En hosted, una instancia anterior podía seguir montada mientras
+la nueva respuesta ya estaba visible.
+
+`prephase1-closure-v2` usa una única función `@st.fragment` declarada a nivel de módulo
+(`_stable_room_fragment`). Todos los reruns de la página reutilizan esa identidad y `clear_room_fragment` vuelve
+a renderizar esa misma instancia como inactiva. Se elimina el polling automático de 2 s durante este cierre; una
+fotografía pendiente se actualiza en el siguiente rerun normal/interacción. No cambian la fisiología, el monitor
+calculado, el Trace, el ledger, la persistencia ni la ejecución de órdenes.
+
+### Validación requerida para v2
+
+1. Pruebas focalizadas: `test_resuscitation_room.py`, submission guard y registro de correcciones.
+2. Regresiones activas 56/56.
+3. Regenerar `docs/CATALOGO_HIPOGLICEMIA.md` después de la nueva entrada del registro y comprobar su test generado.
+4. Hosted, misma secuencia que falló en v1: `Wait 20 minutes.` y cuatro `Reassess.`; un solo monitor, sin
+   ghosting y con signos concordantes con la respuesta.
+5. `Menu → Save & return to dashboard`; esperar 15 s y exigir dashboard limpio.
+
+Hasta que 4 y 5 pasen, **NO-GO** para promover al piloto.
+
 ## Puerta de salida
 
 Antes de pedir promoción al piloto:
