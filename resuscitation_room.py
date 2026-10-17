@@ -83,38 +83,25 @@ def monitor_html(o, time_label, profile='baseline', seed=0, language='en'):
             + wave + f'<div class="monitor-values">{cards}</div></div>')
 
 
-@st.fragment
-def _stable_room_fragment(state, events, ecg_svg, render_event, time_label, context=None, *, active=True):
-    """One stable fragment identity for the bedside across full app reruns.
-
-    Creating a new decorated wrapper inside ``render_room`` on every rerun allowed older
-    fragment instances to remain mounted in Streamlit Cloud. After repeated Sends that could
-    leave a previous monitor visible beside the current response, and the stale fragment could
-    survive navigation back to the dashboard. A module-level fragment has one identity and is
-    explicitly rendered inactive when the encounter is left.
-    """
-    _room(state, events, ecg_svg, render_event, time_label, context, active=active)
-
-
 def render_room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True):
-    """Draw or clear the bedside through one stable fragment instance.
+    """Draw the bedside as part of the normal full app rerun.
 
-    Automatic 2-second polling is intentionally not used in this pilot closure: correctness of
-    the monitor and navigation takes precedence over background photograph refresh. A photograph
-    still refreshes on the next normal app rerun or user interaction.
+    The hosted smoke showed that even a module-level Streamlit fragment can coexist briefly
+    with its previous DOM after a Send, producing two bedside monitors until reconciliation.
+    This room no longer needs fragment polling, so rendering it as ordinary page output removes
+    that second lifecycle entirely: every full rerun replaces the previous bedside atomically.
     """
-    if active:
-        from clinical_scene import scene_image
-        st.session_state['_room_image'] = scene_image(state, events, context)
-    else:
+    if not active:
         st.session_state.pop('_room_image', None)
-    _stable_room_fragment(
-        state, events, ecg_svg, render_event, time_label, context, active=active)
+        return
+    from clinical_scene import scene_image
+    st.session_state['_room_image'] = scene_image(state, events, context)
+    _room(state, events, ecg_svg, render_event, time_label, context, active=True)
 
 
 def clear_room_fragment(context=None):
-    """Replace the bedside's stable fragment with an empty instance."""
-    render_room(None, None, None, None, "", context, active=False)
+    """Clear bedside-only transient state before the dashboard full rerun."""
+    st.session_state.pop('_room_image', None)
 
 def _room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True):
     # A queued fragment rerun can outlive the encounter that scheduled it. Fail closed before
