@@ -62,6 +62,34 @@ lector, sin autorizar cambios adicionales ni abrir la validación externa.
 | `active_order_context.py` | `3c0432f5711cfbd3a919649e1bbe52cce3afbaeb` |
 | `weight_based_doses.py` | `cdf79e0e654e11f908a90eb91139c9812a2416e8` |
 
+## Cierre v3 · Send antes del render (2026-10-16)
+
+Los intentos de cierre centrados en `st.fragment`, en la identidad del fragmento y en el slot del bedside no
+explicaron por completo el defecto hosted. La evidencia más reciente mostró varias copias de **todo el subárbol
+del encuentro** —Management, modos y formulario— después de un Send. Por tanto, el problema no se trata como un
+defecto del monitor: el flujo de rerun de la página estaba emitiendo una interfaz parcial antes de procesar la
+entrega y luego terminaba con `st.rerun()`.
+
+`prephase1-closure-v3` parte de `b21c345`, antes de esos intentos de render. La lógica que ya procesaba una
+submission se extrae a `_process_submission_before_render(...)`. En cada run:
+
+1. `capture` conserva el texto en el callback.
+2. `write_ahead` lo persiste al comienzo del run siguiente, como antes.
+3. Si existe una entrada `received`, se procesa **antes** de `_in_room` y antes de emitir bedside, chart,
+   Management o el formulario.
+4. El procesamiento conserva la misma lógica de parser, ledger, motor, Trace, eventos, `finish` y guardado.
+5. `rerun_app()` inicia el run de resultado, y recién ese run dibuja una interfaz completa con el estado actual.
+
+La ruta del formulario guiado delega en el mismo helper para no mantener dos implementaciones del procesamiento.
+No cambian fisiología, reader, scoring, textos clínicos, persistencia ni esquema.
+
+### Puerta hosted v3
+
+Primero se prueba una sola orden `Reassess.`. Durante el procesamiento puede permanecer visualmente la página
+anterior atenuada, pero al completar el run debe existir **una sola** interfaz del encuentro. No pueden aparecer
+dos o más bloques Management/form. Si pasa, se repite cuatro veces y luego `Save & return`; el dashboard debe
+quedar limpio.
+
 ## Puerta de salida
 
 Antes de pedir promoción al piloto:
