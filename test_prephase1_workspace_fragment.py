@@ -12,13 +12,15 @@ def test_active_encounter_is_one_named_fragment():
     assert source.rstrip().endswith("_clinical_encounter_workspace()")
 
 
-def test_send_callback_relies_on_the_fragment_widgets_native_rerun():
+def test_send_callback_only_captures_and_relies_on_native_fragment_rerun():
     source = _source()
     start = source.index("def _capture_submission(form_id):")
     stop = source.index("# Historical source markers", start)
     block = source[start:stop]
-    assert 'st.rerun("clinical-encounter")' not in block
-    assert 'st.session_state["_encounter_fragment_rerun"] = True' in block
+    code_lines = [line.strip() for line in block.splitlines() if not line.strip().startswith("#")]
+    assert not any(line.startswith("st.rerun(") for line in code_lines)
+    assert "_encounter_fragment_rerun" not in block
+    assert "submission_guard.capture(st.session_state, form_id)" in block
 
 
 def test_fragment_repeats_write_ahead_before_any_encounter_render():
@@ -42,13 +44,18 @@ def test_submission_processing_is_extracted_from_the_render_tree():
     assert "_process_encounter_submission(submission_text, _guard_entry, submission_parsed)" in snippet
 
 
-def test_send_result_rerun_stays_fragment_scoped():
+def test_ordinary_send_finishes_and_renders_in_the_same_fragment_run():
     source = _source()
-    start = source.index("def rerun_app():")
-    stop = source.index("def _capture_submission", start)
-    block = source[start:stop]
-    assert 'pop("_encounter_fragment_rerun", False)' in block
-    assert 'st.rerun(scope="fragment")' in block
+    start = source.index("def _process_encounter_submission(")
+    stop = source.index('@st.fragment(key="clinical-encounter")', start)
+    helper = source[start:stop]
+    cursor = 'recorded_trace_event["state_after"]["encounter_event_count"]'
+    assert cursor in helper
+    ordinary = helper[helper.index(cursor):]
+    assert "_guard.finish(st.session_state)" in ordinary
+    assert "save_session(ACCOUNT_CONTEXT)" in ordinary
+    assert "return" in ordinary
+    assert ordinary.index("return") < ordinary.rindex("rerun_app()")
 
 
 def test_bedside_has_no_nested_streamlit_fragment():
