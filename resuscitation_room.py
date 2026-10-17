@@ -84,28 +84,23 @@ def monitor_html(o, time_label, profile='baseline', seed=0, language='en'):
 
 
 def render_room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True):
-    """Draw the bedside fragment, or explicitly replace it with an empty fragment.
+    """Draw the bedside inside the encounter's single keyed workspace fragment.
 
-    While a photograph is being prepared the fragment redraws every 2 s so the photograph
-    appears without rerunning the whole app. A scheduled fragment rerun can arrive just after
-    navigation back to the dashboard; the inactive call and the guard in ``_room`` make that
-    stale rerun render nothing instead of painting the previous bedside over the dashboard.
+    The workspace fragment owns reruns for the whole encounter, so the bedside must not
+    create a nested fragment lifecycle of its own. A pending photograph refreshes on the
+    next workspace interaction instead of polling independently.
     """
-    if active:
-        from clinical_scene import scene_image
-        st.session_state['_room_image'] = scene_image(state, events, context)
-        every = 2 if st.session_state.get('_scene_pending', False) else None
-    else:
+    if not active:
         st.session_state.pop('_room_image', None)
-        every = None
-    # Keep one fragment invocation so the dashboard's empty render replaces the bedside.
-    st.fragment(_room, run_every=every)(
-        state, events, ecg_svg, render_event, time_label, context, active=active)
+        return
+    from clinical_scene import scene_image
+    st.session_state['_room_image'] = scene_image(state, events, context)
+    _room(state, events, ecg_svg, render_event, time_label, context, active=True)
 
 
 def clear_room_fragment(context=None):
-    """Replace any bedside fragment left by the previous encounter with an empty one."""
-    render_room(None, None, None, None, "", context, active=False)
+    """Clear bedside-only transient state before the dashboard is rendered."""
+    st.session_state.pop('_room_image', None)
 
 def _room(state, events, ecg_svg, render_event, time_label, context=None, *, active=True):
     # A queued fragment rerun can outlive the encounter that scheduled it. Fail closed before
