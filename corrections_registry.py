@@ -111,6 +111,9 @@ INSTRUCTION_2026_10_15_PREPHASE1 = ("Instrucción del 2026-10-15 para crear prep
                                            "9abe6e58, corregir E2b y E1 y cerrar la gobernanza del lector y de "
                                            "los textos identificados, sin tocar pilot-residents-v1 hasta una "
                                            "autorización posterior")
+INSTRUCTION_2026_10_16_PREPHASE1_V2 = ("Instrucción del 2026-10-16 para abrir prephase1-closure-v2 desde "
+                                              "b21c345, corregir el bedside stale/superpuesto observado en hosted "
+                                              "y revalidar, sin tocar pilot-residents-v1")
 
 CORRECTIONS = (
     {
@@ -3755,6 +3758,28 @@ CORRECTIONS = (
         "tests": [
             "test_prephase1_language_governance.py::test_pacing_preparation_trace_label_has_spanish_presentation",
             "test_prephase1_language_governance.py::test_serum_magnesium_keeps_the_approved_spanish_label",
+        ],
+        "preservation": None,
+    },
+    {
+        "id": "C-2026-10-16-01",
+        "date": "2026-10-16",
+        "title": "Hosted: una sola identidad estable para el fragmento del bedside",
+        "scope": {"level": "general"},
+        "kind": "technical_defect",
+        "reason": ("El smoke hosted de prephase1-closure-v1 siguió mostrando, tras varios Reassess, un monitor "
+                   "anterior/superpuesto y una pantalla híbrida después de Save & return. El fast path ya estaba "
+                   "desactivado, por lo que el defecto restante se localizó en crear el wrapper de st.fragment "
+                   "dentro de render_room en cada rerun. El bedside usa ahora una sola función fragment decorada "
+                   "a nivel de módulo y la misma instancia se renderiza inactiva al salir. Se retira el polling "
+                   "automático de 2 s en este cierre: la fotografía se refresca en el siguiente rerun normal."),
+        "authorised_by": INSTRUCTION_2026_10_16_PREPHASE1_V2,
+        "affects": {"modules": ["resuscitation_room"], "versions": {}},
+        "clinical_relevance": "clinical",
+        "tests": [
+            "test_resuscitation_room.py::test_room_uses_one_module_level_fragment_identity",
+            "test_resuscitation_room.py::test_an_inactive_room_fragment_renders_nothing",
+            "test_resuscitation_room.py::test_dashboard_explicitly_replaces_the_bedside_fragment",
         ],
         "preservation": None,
     }
