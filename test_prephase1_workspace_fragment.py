@@ -9,7 +9,8 @@ def test_active_encounter_is_one_named_fragment():
     source = _source()
     assert '@_encounter_fragment(key="clinical-encounter")' in source
     assert "def _encounter_fragment(*, key):" in source
-    assert "return st.fragment(key=key)" in source
+    assert 'getattr(streamlit_obj, "fragment", None)' in source
+    assert "return fragment(key=key)" in source
     assert "def _clinical_encounter_workspace():" in source
     assert source.rstrip().endswith("_clinical_encounter_workspace()")
 
@@ -48,6 +49,15 @@ def test_fragment_repeats_write_ahead_before_any_encounter_render():
     assert prefix.index("_submission_guard.write_ahead(") < prefix.index("_process_encounter_submission(")
 
 
+def test_fragment_restores_case_narrative_context_before_rendering():
+    source = _source()
+    start = source.index("def _clinical_encounter_workspace():")
+    render = source.index("_in_room = not st.session_state.encounter_ended", start)
+    prefix = source[start:render]
+    assert "_fragment_language.narrate(" in prefix
+    assert prefix.index("_fragment_language.narrate(") < prefix.index("_in_room = not st.session_state.encounter_ended") if "_in_room = not st.session_state.encounter_ended" in prefix else True
+
+
 def test_submission_processing_is_extracted_from_the_render_tree():
     source = _source()
     helper = source.index("def _process_encounter_submission(")
@@ -61,7 +71,7 @@ def test_submission_processing_is_extracted_from_the_render_tree():
 def test_ordinary_send_finishes_and_renders_in_the_same_fragment_run():
     source = _source()
     start = source.index("def _process_encounter_submission(")
-    stop = source.index('@st.fragment(key="clinical-encounter")', start)
+    stop = source.index('@_encounter_fragment(key="clinical-encounter")', start)
     helper = source[start:stop]
     cursor = 'recorded_trace_event["state_after"]["encounter_event_count"]'
     assert cursor in helper
