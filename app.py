@@ -125,9 +125,11 @@ def faculty_access():
 
 def _encounter_fragment(*, key):
     """Return Streamlit fragment decorator, or identity in AST-isolated regressions."""
-    if "st" not in globals():
+    streamlit_obj = globals().get("st")
+    fragment = getattr(streamlit_obj, "fragment", None)
+    if not callable(fragment):
         return lambda func: func
-    return st.fragment(key=key)
+    return fragment(key=key)
 
 
 def rerun_app():
