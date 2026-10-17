@@ -123,6 +123,13 @@ def faculty_access():
     return bool(context and context["user"]["role"] in {"faculty", "admin"})
 
 
+def _encounter_fragment(*, key):
+    """Return Streamlit fragment decorator, or identity in AST-isolated regressions."""
+    if "st" not in globals():
+        return lambda func: func
+    return st.fragment(key=key)
+
+
 def rerun_app():
     context = globals().get("ACCOUNT_CONTEXT")
     # The submission this run processed is done (Phase 0, 0D): it is saved as processed.
@@ -11382,7 +11389,7 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
 
 
 
-@st.fragment(key="clinical-encounter")
+@_encounter_fragment(key="clinical-encounter")
 def _clinical_encounter_workspace():
     # Fragment reruns do not execute the top of app.py, so repeat the Phase 0
     # recovery/write-ahead gate here before any encounter element is emitted.
