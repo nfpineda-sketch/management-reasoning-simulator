@@ -3770,16 +3770,17 @@ CORRECTIONS = (
         "kind": "technical_defect",
         "reason": ("La reproducción mínima en Streamlit Cloud toleró más de veinte Sends sin duplicar bedside, "
                    "Management ni formulario cuando todo el bloque interactivo vivía dentro de un único fragmento "
-                   "nombrado. El encuentro real adopta ese patrón: capture dirige el rerun a clinical-encounter, "
-                   "el fragmento repite recover/write-ahead antes de dibujar, procesa una submission received antes "
-                   "de emitir UI y mantiene el rerun de resultado en scope=fragment. El bedside deja de abrir un "
-                   "fragmento anidado. Parser, motor, ledger, Trace, scoring y persistencia no cambian."),
+                   "nombrado. El encuentro real adopta ese patrón. El callback conserva capture pero no solicita "
+                   "otro rerun: el evento del widget dentro del fragmento ya dispara el rerun de ese fragmento. "
+                   "El fragmento repite recover/write-ahead antes de dibujar, procesa una submission received antes "
+                   "de emitir UI y mantiene sólo el rerun de resultado en scope=fragment. El bedside deja de abrir "
+                   "un fragmento anidado. Parser, motor, ledger, Trace, scoring y persistencia no cambian."),
         "authorised_by": INSTRUCTION_2026_10_17_WORKSPACE_FRAGMENT,
         "affects": {"modules": ["app", "resuscitation_room"], "versions": {}},
         "clinical_relevance": "none",
         "tests": [
             "test_prephase1_workspace_fragment.py::test_active_encounter_is_one_named_fragment",
-            "test_prephase1_workspace_fragment.py::test_send_callback_targets_the_encounter_fragment",
+            "test_prephase1_workspace_fragment.py::test_send_callback_relies_on_the_fragment_widgets_native_rerun",
             "test_prephase1_workspace_fragment.py::test_fragment_repeats_write_ahead_before_any_encounter_render",
             "test_prephase1_workspace_fragment.py::test_submission_processing_is_extracted_from_the_render_tree",
             "test_prephase1_workspace_fragment.py::test_send_result_rerun_stays_fragment_scoped",
