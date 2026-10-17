@@ -28,6 +28,7 @@ import os
 import subprocess
 import sys
 import time
+import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -111,17 +112,30 @@ def main():
     archivos = sorted(repo.glob(a.patron))
     grupos = particionar(archivos, max(1, a.particiones))
     procesos = []
+    timeout_bin = shutil.which("timeout") or shutil.which("gtimeout")
+    started = time.monotonic()
     for i, grupo in enumerate(grupos):
         xml = salida / f"particion-{i}.xml"
         log = open(salida / f"particion-{i}.log", "w")
-        cmd = ["timeout", str(a.timeout), sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
-               f"--junitxml={xml}", *a.pytest_extra.split(), *[str(f.relative_to(repo)) for f in grupo]]
+        pytest_cmd = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
+                      f"--junitxml={xml}", *a.pytest_extra.split(),
+                      *[str(f.relative_to(repo)) for f in grupo]]
+        cmd = ([timeout_bin, str(a.timeout)] + pytest_cmd) if timeout_bin else pytest_cmd
         procesos.append((i, grupo, xml, log, subprocess.Popen(cmd, cwd=repo, stdout=log, stderr=subprocess.STDOUT)))
 
     total = {"pruebas": 0, "fallas": 0, "errores": 0, "omitidas": 0, "xfail": 0}
     detalle = []
     for i, grupo, xml, log, proceso in procesos:
-        codigo = proceso.wait()
+        try:
+            if timeout_bin:
+                codigo = proceso.wait()
+            else:
+                remaining = max(1, a.timeout - int(time.monotonic() - started))
+                codigo = proceso.wait(timeout=remaining)
+        except subprocess.TimeoutExpired:
+            proceso.kill()
+            proceso.wait()
+            codigo = 124
         log.close()
         cifras, problemas = resumen_junit(xml)
         for clave in total:
