@@ -1,7 +1,7 @@
-# Streamlit is pinned for the formative pilot (pre-deployment readiness, B-4, 2026-10-06): Phase 0 certified
-# the submission guard (write-ahead, one run per click, reload and recovery, fastReruns = false) on
-# Streamlit 1.64.0. A newer release is reviewed after the pilot, not installed by a rebuild.
-streamlit==1.64.0
+# Experimental pre-Phase1 runtime check: Streamlit 1.66.0 includes the upstream fix that skips stale
+# keyed blocks during reruns (#17456). No application/runtime logic is changed in this branch; the purpose is
+# to reproduce the hosted Send flow on the same code with only the framework version changed.
+streamlit==1.66.0
 reportlab>=4.2,<5
 pypdf>=5,<7
 openai>=2,<3
