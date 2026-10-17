@@ -8,8 +8,10 @@ textos de presentación. `pilot-residents-v1` no se modifica sin una autorizaci�
 
 Dentro de este cierre:
 
-1. **E2b · render durante Send.** Se desactiva el atajo que omitía el bedside/chart en el rerun que procesa una
-   entrega durable. La escritura previa, la idempotencia y la ejecución no cambian.
+1. **E2b · render durante Send.** Tras los smokes hosted, la solución final es doble: el bedside deja de usar
+   `st.fragment`, y el rerun intermedio que procesa una entrega durable vuelve a omitir el bedside/chart. Así el
+   estado previo no se vuelve a dibujar durante el procesamiento y el rerun de resultado dibuja una sola sala con
+   el estado actual. La escritura previa, la idempotencia y la ejecución no cambian.
 2. **E1 · errores del store.** Una falla al obtener/liberar una conexión y una segunda falla al hacer rollback
    quedan convertidas al mismo `AccountError` genérico que ya protege los errores del cuerpo de una transacción.
    El log conserva sólo clase y ubicación, nunca el mensaje del driver.
@@ -83,8 +85,9 @@ durante la reconciliación. Por tanto, una identidad estable del fragmento no fu
 
 La corrección final elimina **por completo** `st.fragment` del bedside. `render_room` dibuja la sala como salida
 normal del rerun completo y `clear_room_fragment` sólo limpia el estado transitorio de la imagen antes del
-dashboard. Sin un segundo ciclo de vida de fragmentos, un rerun no puede mantener montado el bedside anterior junto
-al nuevo. Se mantiene eliminado el polling automático de 2 s; una fotografía pendiente se actualiza en el siguiente
+dashboard. Además, cuando existe una entrega durable pendiente, `fast_path` vuelve a omitir el render intermedio:
+ese run procesa la orden sin volver a emitir la sala antigua y el rerun de resultado dibuja la sala actual una sola
+vez. Se mantiene eliminado el polling automático de 2 s; una fotografía pendiente se actualiza en el siguiente
 rerun normal/interacción. No cambian la fisiología, el monitor calculado, el Trace, el ledger, la persistencia ni la
 ejecución de órdenes.
 
