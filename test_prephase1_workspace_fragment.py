@@ -52,10 +52,9 @@ def test_fragment_repeats_write_ahead_before_any_encounter_render():
 def test_fragment_restores_case_narrative_context_before_rendering():
     source = _source()
     start = source.index("def _clinical_encounter_workspace():")
+    narrate = source.index("_fragment_language.narrate(", start)
     render = source.index("_in_room = not st.session_state.encounter_ended", start)
-    prefix = source[start:render]
-    assert "_fragment_language.narrate(" in prefix
-    assert prefix.index("_fragment_language.narrate(") < prefix.index("_in_room = not st.session_state.encounter_ended") if "_in_room = not st.session_state.encounter_ended" in prefix else True
+    assert start < narrate < render
 
 
 def test_submission_processing_is_extracted_from_the_render_tree():
