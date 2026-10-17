@@ -3775,7 +3775,9 @@ CORRECTIONS = (
                    "run el fragmento repite recover/write-ahead, procesa la submission antes de emitir UI, marca "
                    "la entrada procesada y guarda, y luego continúa para dibujar una sola interfaz actualizada. "
                    "No existe un segundo rerun para el Send ordinario. El bedside deja de abrir un fragmento "
-                   "anidado. Parser, motor, ledger, Trace, scoring y persistencia no cambian."),
+                   "anidado. Como el cuerpo del fragmento corre en su propio contexto, reinstala también el selector "
+                   "ContextVar de la narrativa del caso antes de dibujar, para conservar las traducciones aprobadas. "
+                   "Parser, motor, ledger, Trace, scoring y persistencia no cambian."),
         "authorised_by": INSTRUCTION_2026_10_17_WORKSPACE_FRAGMENT,
         "affects": {"modules": ["app", "resuscitation_room"], "versions": {}},
         "clinical_relevance": "none",
@@ -3783,6 +3785,8 @@ CORRECTIONS = (
             "test_prephase1_workspace_fragment.py::test_active_encounter_is_one_named_fragment",
             "test_prephase1_workspace_fragment.py::test_send_callback_only_captures_and_relies_on_native_fragment_rerun",
             "test_prephase1_workspace_fragment.py::test_fragment_repeats_write_ahead_before_any_encounter_render",
+            "test_prephase1_workspace_fragment.py::test_fragment_restores_case_narrative_context_before_rendering",
+            "test_spanish_sentinel.py::test_a_spanish_encounter_shows_no_english[acs_48m_wellens]",
             "test_prephase1_workspace_fragment.py::test_submission_processing_is_extracted_from_the_render_tree",
             "test_prephase1_workspace_fragment.py::test_ordinary_send_finishes_and_renders_in_the_same_fragment_run",
             "test_prephase1_workspace_fragment.py::test_bedside_has_no_nested_streamlit_fragment",
