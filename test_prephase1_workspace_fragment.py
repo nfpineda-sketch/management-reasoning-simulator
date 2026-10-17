@@ -7,9 +7,20 @@ def _source():
 
 def test_active_encounter_is_one_named_fragment():
     source = _source()
-    assert '@st.fragment(key="clinical-encounter")' in source
+    assert '@_encounter_fragment(key="clinical-encounter")' in source
+    assert "def _encounter_fragment(*, key):" in source
+    assert "return st.fragment(key=key)" in source
     assert "def _clinical_encounter_workspace():" in source
     assert source.rstrip().endswith("_clinical_encounter_workspace()")
+
+
+def test_fragment_decorator_is_safe_before_fake_st_is_injected():
+    source = _source()
+    start = source.index("def _encounter_fragment(*, key):")
+    stop = source.index("def rerun_app():", start)
+    block = source[start:stop]
+    assert 'if "st" not in globals():' in block
+    assert "return lambda func: func" in block
 
 
 def test_send_callback_only_captures_and_relies_on_native_fragment_rerun():
@@ -37,7 +48,7 @@ def test_fragment_repeats_write_ahead_before_any_encounter_render():
 def test_submission_processing_is_extracted_from_the_render_tree():
     source = _source()
     helper = source.index("def _process_encounter_submission(")
-    fragment = source.index('@st.fragment(key="clinical-encounter")')
+    fragment = source.index('@_encounter_fragment(key="clinical-encounter")')
     assert helper < fragment
     start = source.index("if submitted and submission_text.strip():", fragment)
     snippet = source[start:start + 360]
