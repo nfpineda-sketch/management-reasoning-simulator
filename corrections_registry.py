@@ -3771,13 +3771,15 @@ CORRECTIONS = (
                    "anterior/superpuesto y una pantalla híbrida después de Save & return. El fast path ya estaba "
                    "desactivado, por lo que el defecto restante se localizó en crear el wrapper de st.fragment "
                    "dentro de render_room en cada rerun. El bedside usa ahora una sola función fragment decorada "
-                   "a nivel de módulo y la misma instancia se renderiza inactiva al salir. Se retira el polling "
-                   "automático de 2 s en este cierre: la fotografía se refresca en el siguiente rerun normal."),
+                   "a nivel de módulo, pero el smoke posterior a la promoción mostró que aun así un fragmento viejo "
+                   "podía coexistir brevemente con el nuevo DOM después de una orden. La corrección final elimina "
+                   "por completo st.fragment del bedside: se renderiza como salida normal del rerun completo. Se "
+                   "mantiene retirado el polling de 2 s; la fotografía se refresca en el siguiente rerun normal."),
         "authorised_by": INSTRUCTION_2026_10_16_PREPHASE1_V2,
         "affects": {"modules": ["resuscitation_room"], "versions": {}},
         "clinical_relevance": "clinical",
         "tests": [
-            "test_resuscitation_room.py::test_room_uses_one_module_level_fragment_identity",
+            "test_resuscitation_room.py::test_room_uses_no_streamlit_fragment",
             "test_resuscitation_room.py::test_an_inactive_room_fragment_renders_nothing",
             "test_resuscitation_room.py::test_dashboard_explicitly_replaces_the_bedside_fragment",
         ],
