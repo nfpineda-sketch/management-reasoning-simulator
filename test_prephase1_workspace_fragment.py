@@ -14,13 +14,16 @@ def test_active_encounter_is_one_named_fragment():
     assert source.rstrip().endswith("_clinical_encounter_workspace()")
 
 
-def test_fragment_decorator_is_safe_before_fake_st_is_injected():
+def test_fragment_decorator_is_safe_with_missing_or_partial_fake_st():
     source = _source()
     start = source.index("def _encounter_fragment(*, key):")
     stop = source.index("def rerun_app():", start)
     block = source[start:stop]
-    assert 'if "st" not in globals():' in block
+    assert 'streamlit_obj = globals().get("st")' in block
+    assert 'getattr(streamlit_obj, "fragment", None)' in block
+    assert "if not callable(fragment):" in block
     assert "return lambda func: func" in block
+    assert "return fragment(key=key)" in block
 
 
 def test_send_callback_only_captures_and_relies_on_native_fragment_rerun():
