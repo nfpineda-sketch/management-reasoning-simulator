@@ -12,12 +12,12 @@ def test_active_encounter_is_one_named_fragment():
     assert source.rstrip().endswith("_clinical_encounter_workspace()")
 
 
-def test_send_callback_targets_the_encounter_fragment():
+def test_send_callback_relies_on_the_fragment_widgets_native_rerun():
     source = _source()
     start = source.index("def _capture_submission(form_id):")
     stop = source.index("# Historical source markers", start)
     block = source[start:stop]
-    assert 'st.rerun("clinical-encounter")' in block
+    assert 'st.rerun("clinical-encounter")' not in block
     assert 'st.session_state["_encounter_fragment_rerun"] = True' in block
 
 
