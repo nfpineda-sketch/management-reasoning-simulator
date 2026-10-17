@@ -11393,6 +11393,15 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
 
 @_encounter_fragment(key="clinical-encounter")
 def _clinical_encounter_workspace():
+    # Streamlit executes fragment bodies in their own rerun context. The case narrative
+    # selector is a ContextVar, so install it again here; otherwise a Spanish encounter
+    # can render approved case passages (including History source) in English.
+    import language as _fragment_language
+    _fragment_state = st.session_state.get("state") if isinstance(st.session_state.get("state"), dict) else {}
+    _fragment_spec = _fragment_state.get("encounter_spec") if isinstance(_fragment_state.get("encounter_spec"), dict) else {}
+    _fragment_case = _fragment_spec.get("clinical_case") if isinstance(_fragment_spec.get("clinical_case"), dict) else {}
+    _fragment_language.narrate(_fragment_case.get("id") if st.session_state.get("started") else None)
+
     # Fragment reruns do not execute the top of app.py, so repeat the Phase 0
     # recovery/write-ahead gate here before any encounter element is emitted.
     _submission_guard.recover(st.session_state, _SESSION_FIELDS)
