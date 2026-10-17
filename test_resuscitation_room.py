@@ -60,6 +60,18 @@ def test_room_uses_no_streamlit_fragment():
     assert '_room(' in block
 
 
+
+def test_app_keeps_bedside_in_a_stable_keyed_slot():
+    """The bedside keeps one Streamlit element path across processing and result reruns."""
+    source = Path('app.py').read_text(encoding='utf-8')
+    start = source.index('_in_room = not st.session_state.encounter_ended')
+    stop = source.index('_ecg_acquired, _ecg_notice = False, None', start)
+    block = source[start:stop]
+    assert 'st.container(key="enc-bedside-slot")' in block
+    assert 'if _in_room and not _FAST_PENDING_SUBMISSION:' in block
+    assert 'render_room(' in block
+    assert 'else:' in block and 'st.empty()' in block
+
 def test_dashboard_explicitly_clears_bedside_state_before_rendering():
     """The dashboard full rerun clears bedside transient state before rendering."""
     source = Path('app.py').read_text(encoding='utf-8')
