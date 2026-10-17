@@ -72,7 +72,7 @@ La rama `prephase1-workspace-fragment-v1` parte de `b21c345` y aplica únicament
 Streamlit 1.66.0 requerido para el fragmento con key:
 
 - `@st.fragment(key="clinical-encounter")` envuelve todo el workspace activo;
-- el callback de Send conserva `capture` y dirige el rerun sólo a `clinical-encounter`;
+- el callback de Send conserva `capture` y **no** llama `st.rerun`: el propio widget dentro del fragmento dispara un único rerun de `clinical-encounter`;
 - como un fragment rerun no ejecuta la cabecera de `app.py`, el fragmento repite `recover` y `write_ahead`
   antes de emitir cualquier elemento del encuentro;
 - una entrada `received` se procesa antes de bedside/chart/form;
