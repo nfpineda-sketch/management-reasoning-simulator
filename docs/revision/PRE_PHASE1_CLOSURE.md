@@ -62,6 +62,33 @@ lector, sin autorizar cambios adicionales ni abrir la validación externa.
 | `active_order_context.py` | `3c0432f5711cfbd3a919649e1bbe52cce3afbaeb` |
 | `weight_based_doses.py` | `cdf79e0e654e11f908a90eb91139c9812a2416e8` |
 
+## Cierre hosted · workspace fragment único (2026-10-17)
+
+La reproducción mínima aislada en Streamlit Cloud fue estable tras más de veinte envíos cuando **todo** el bloque
+interactivo —bedside, respuesta, Management y formulario— vivía dentro de un único fragmento nombrado. Esto
+distingue el patrón estable de los intentos anteriores, que combinaban reruns completos con fragmentos parciales.
+
+La rama `prephase1-workspace-fragment-v1` parte de `b21c345` y aplica únicamente ese patrón más el runtime
+Streamlit 1.66.0 requerido para el fragmento con key:
+
+- `@st.fragment(key="clinical-encounter")` envuelve todo el workspace activo;
+- el callback de Send conserva `capture` y dirige el rerun sólo a `clinical-encounter`;
+- como un fragment rerun no ejecuta la cabecera de `app.py`, el fragmento repite `recover` y `write_ahead`
+  antes de emitir cualquier elemento del encuentro;
+- una entrada `received` se procesa antes de bedside/chart/form;
+- el rerun posterior al procesamiento usa `scope="fragment"`;
+- `resuscitation_room` ya no crea un fragmento nested: el bedside forma parte del mismo workspace;
+- los demás controles pueden seguir solicitando un rerun completo cuando su flujo ya lo requería.
+
+No se modifican reader, fisiología, parser, orden de ejecución, ledger, Management Trace, scoring, D1–D5,
+persistencia ni esquema de base de datos.
+
+### Prueba hosted requerida
+
+Primero, un solo `Reassess.`: debe quedar una sola copia de bedside, Management, modos y formulario. Luego repetir
+al menos 20 Sends, como en la reproducción mínima. Finalmente `Save & return`: el dashboard debe quedar limpio.
+Cualquier duplicación del árbol completo mantiene el cierre en **NO-GO**.
+
 ## Puerta de salida
 
 Antes de pedir promoción al piloto:
