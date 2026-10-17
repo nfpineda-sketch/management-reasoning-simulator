@@ -139,17 +139,19 @@ def rerun_app():
 
 
 def _capture_submission(form_id):
-    """Capture one Send and rerun only the active encounter workspace.
+    """Capture one Send; let the fragment widget event trigger its own rerun.
 
-    The callback still writes the submission before execution. A keyed fragment rerun
-    replaces the widget interaction's default full-app rerun, so the clinical workspace
-    owns the entire capture → write-ahead → execute → result lifecycle.
+    The minimal hosted reproduction that remained stable across repeated Sends did not
+    call st.rerun() from the callback. A widget inside a fragment already reruns that
+    fragment after its callback. Calling st.rerun("clinical-encounter") here adds a second
+    rerun request for the same click and can race with the widget-triggered rerun.
     """
     import submission_guard
     entry = submission_guard.capture(st.session_state, form_id)
     if entry is not None:
+        # The processing helper ends with rerun_app(); keep that *result* rerun scoped
+        # to this fragment, but do not start an extra rerun from the callback itself.
         st.session_state["_encounter_fragment_rerun"] = True
-        st.rerun("clinical-encounter")
 
 # Historical source markers retained so the v0.8.21 regression lineage remains auditable.
 LEGACY_REGRESSION_VERSION_MARKER = 'SIMULATOR_VERSION = "0.8.21"'
