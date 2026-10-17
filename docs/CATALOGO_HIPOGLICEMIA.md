@@ -275,6 +275,7 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-10-15-02 | E1: los errores de conexión y rollback del store no llegan crudos a la pantalla | general | technical_defect | none | — |
 | C-2026-10-15-03 | Nuevo reader freeze pre-Fase 1: se acepta el estado post-V3 ya desplegado | general | policy | none | — |
 | C-2026-10-15-04 | Gobernanza de presentación: pacing preparation y Magnesio sérico | general | text | cosmetic | — |
+| C-2026-10-16-01 | Send durable: procesar antes de renderizar el árbol del encuentro | general | technical_defect | none | — |
 
 ## La batería, configuración por configuración
 
