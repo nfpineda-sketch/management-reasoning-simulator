@@ -3695,13 +3695,16 @@ CORRECTIONS = (
         "scope": {"level": "general"},
         "kind": "technical_defect",
         "reason": ("En el piloto 9abe6e58 se reprodujo el defecto tras varios Reassess: la respuesta de 23 min "
-                   "mostraba FC 133 mientras el monitor visible conservaba 132 y aparecía ghosting. El atajo "
-                   "fast_path omitía el bedside durante el rerun que procesaba una entrega durable; se desactiva "
-                   "sólo ese atajo. Write-ahead, idempotencia, estado clínico y ejecución de la orden no cambian."),
+                   "mostraba FC 133 mientras el monitor visible conservaba 132 y aparecía ghosting. La primera "
+                   "corrección desactivó fast_path, pero los smokes hosted demostraron que el problema era la "
+                   "combinación de un rerun intermedio que dibujaba el estado previo y el lifecycle de st.fragment. "
+                   "Con st.fragment retirado del bedside, fast_path vuelve a cumplir su función original: el rerun "
+                   "intermedio que procesa un Send no dibuja la sala; el rerun de resultado la dibuja una vez con "
+                   "estado y respuesta actuales. Write-ahead, idempotencia y ejecución no cambian."),
         "authorised_by": INSTRUCTION_2026_10_15_PREPHASE1,
         "affects": {"modules": ["submission_guard"], "versions": {}},
         "clinical_relevance": "clinical",
-        "tests": ["test_prepilot_smoke_order.py::test_durable_pending_submission_never_skips_the_bedside"],
+        "tests": ["test_prepilot_smoke_order.py::test_durable_pending_submission_skips_only_the_intermediate_render"],
         "preservation": None,
     },
     {
