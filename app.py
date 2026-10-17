@@ -10930,10 +10930,17 @@ def _render_staff_tools():
 
 
 _in_room = not st.session_state.encounter_ended
-if _in_room and not _FAST_PENDING_SUBMISSION:
-    # The simulated time is said once on the screen, beside the information; the
-    # monitor shows the patient now (2026-10-02, section 9).
-    render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, "", ACCOUNT_CONTEXT)
+# Keep a keyed bedside slot present on every rerun. During the durable Send-processing
+# rerun it is explicitly emptied, then the result rerun replaces the same slot with the
+# current bedside. This prevents Streamlit from reconciling an old bedside at one element
+# path while inserting the updated bedside at another.
+with st.container(key="enc-bedside-slot"):
+    if _in_room and not _FAST_PENDING_SUBMISSION:
+        # The simulated time is said once on the screen, beside the information; the
+        # monitor shows the patient now (2026-10-02, section 9).
+        render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, "", ACCOUNT_CONTEXT)
+    else:
+        st.empty()
 _ecg_acquired, _ecg_notice = False, None
 if _in_room and not _FAST_PENDING_SUBMISSION:
     # In the band above the information. The ECG is acquired before the views are
