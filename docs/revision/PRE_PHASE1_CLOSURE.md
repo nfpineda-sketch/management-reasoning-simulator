@@ -75,7 +75,7 @@ Streamlit 1.66.0 requerido para el fragmento con key:
 - el callback de Send conserva `capture` y **no** llama `st.rerun`: el propio widget dentro del fragmento dispara un único rerun de `clinical-encounter`;
 - como un fragment rerun no ejecuta la cabecera de `app.py`, el fragmento repite `recover` y `write_ahead`
   antes de emitir cualquier elemento del encuentro;
-- una entrada `received` se procesa antes de bedside/chart/form;
+- una entrada `received` se procesa antes de bedside/chart/form, se marca `processed` y se guarda; el mismo fragment run continúa y dibuja el resultado, sin un segundo rerun para el Send ordinario;
 - el rerun posterior al procesamiento usa `scope="fragment"`;
 - `resuscitation_room` ya no crea un fragmento nested: el bedside forma parte del mismo workspace;
 - los demás controles pueden seguir solicitando un rerun completo cuando su flujo ya lo requería.
