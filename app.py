@@ -130,18 +130,26 @@ def rerun_app():
     submission_guard.finish(st.session_state)
     if context:
         save_session(context)
+    # A Send callback targets the keyed encounter fragment. Its processing run stays
+    # inside that fragment, so the updated result replaces one workspace instead of
+    # forcing another full-app tree reconciliation.
+    if st.session_state.pop("_encounter_fragment_rerun", False):
+        st.rerun(scope="fragment")
     st.rerun()
 
 
 def _capture_submission(form_id):
-    """The Send button's callback: write the order down before anything runs (Phase 0, 0D).
+    """Capture one Send and rerun only the active encounter workspace.
 
-    It runs at the start of the next script run, before the page draws anything. The
-    encounter is saved with it at the top of that run (submission_guard.write_ahead), so a
-    double click or a reload cannot lose the text.
+    The callback still writes the submission before execution. A keyed fragment rerun
+    replaces the widget interaction's default full-app rerun, so the clinical workspace
+    owns the entire capture → write-ahead → execute → result lifecycle.
     """
     import submission_guard
-    submission_guard.capture(st.session_state, form_id)
+    entry = submission_guard.capture(st.session_state, form_id)
+    if entry is not None:
+        st.session_state["_encounter_fragment_rerun"] = True
+        st.rerun("clinical-encounter")
 
 # Historical source markers retained so the v0.8.21 regression lineage remains auditable.
 LEGACY_REGRESSION_VERSION_MARKER = 'SIMULATOR_VERSION = "0.8.21"'
@@ -10929,869 +10937,898 @@ def _render_staff_tools():
     _render_developer_record()
 
 
-_in_room = not st.session_state.encounter_ended
-if _in_room and not _FAST_PENDING_SUBMISSION:
-    # The simulated time is said once on the screen, beside the information; the
-    # monitor shows the patient now (2026-10-02, section 9).
-    render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, "", ACCOUNT_CONTEXT)
-_ecg_acquired, _ecg_notice = False, None
-if _in_room and not _FAST_PENDING_SUBMISSION:
-    # In the band above the information. The ECG is acquired before the views are
-    # drawn, so that its notice is in them at once; what the room says otherwise, and
-    # the save that follows an acquisition, are said in the console below.
-    with st.container(key="enc-status"):
-        _render_encounter_clock()
-    # Drawn beside the monitor, the bedside's own action (UX, second iteration, 2026-10-02).
-    with st.container(key="enc-ecg"):
-        _ecg_acquired, _ecg_notice = _room.acquire_ecg_button(st.session_state.state, st.session_state.events)
-with st.container(key="encounter-console"):
-    if _ecg_notice:
-        (st.error if _ecg_notice[0] == "error" else st.info)(_ecg_notice[1])
-    if _ecg_acquired and ACCOUNT_CONTEXT:
-        save_session(ACCOUNT_CONTEXT)
-    if not _in_room:
-        # The review that follows the close keeps what it showed above the chart.
-        _render_closed_bedside()
-        _render_carry_forward_plan()
-    # What was obtained, to consult: above the writing area in the room, and folded
-    # away on the review that follows the close, as the chart was. A durable pending
-    # submission skips this expensive pre-processing draw; the result rerun renders it once.
-    if not _FAST_PENDING_SUBMISSION:
-        with (st.container(key="enc-info") if _in_room
-              else st.expander(_record_words("Clinical chart · examination · results · treatment record"),
-                               expanded=False)):
-            if _in_room:
-                _render_carry_forward_plan()
-            _render_encounter_views(bedside=_in_room)
-            if _in_room and faculty_access():
-                _render_staff_tools()
-    with st.container(key="enc-action"):
-        with st.container(key="enc-modes"):
-            modes_area = st.container()
-            if _in_room:
-                import language as _title_lang
-                title_area, modes_area = st.columns([1.25, 3], vertical_alignment="center")
-                # One title for the writing area, whatever the mode (2026-10-02, section 4).
-                title_area.markdown('<div class="enc-title" role="heading" aria-level="2">'
-                                    + escape(_title_lang.say("### Management").lstrip("# ").strip()) + "</div>",
-                                    unsafe_allow_html=True)
-            with modes_area:
-                # L-01, I-9: the modes in the reading language; the value the page reads stays English.
-                encounter_mode = st.radio(_record_words("Encounter"), ["Talk", "Examine", "Tests", "Treat"], index=3,
-                                          horizontal=True, label_visibility="collapsed", format_func=_record_words)
-        if _in_room and not _FAST_PENDING_SUBMISSION:
-            _render_latest_response()
-        orders_panel = st.container()
-        from clinical_scene import history_facts, answer_history, associated_symptoms, history_topics, history_topic_facts, setting as scene_setting
-        if encounter_mode == "Talk" and not st.session_state.encounter_ended:
-            clinical_case = st.session_state.state.get("encounter_spec", {}).get("clinical_case", {})
-            history_source = clinical_case.get("history_source")
-            has_collateral = bool(history_source and str(history_source).strip().lower() not in {"patient", "the patient"})
-            cannot_speak = str(st.session_state.state['observable'].get('mental_status', '')).lower() in {'unresponsive', 'obtunded', 'sedated'}
-            if cannot_speak and not has_collateral:
-                st.info(_record_words('The patient cannot provide a history at present. Review the history already obtained in the clinical chart.'))
-            else:
-                if history_source:
-                    # Whole in one language: Spanish once the case's translation is approved (case_text).
-                    import language
-                    st.caption(language.narrative("History source: " + str(history_source)))
-                if cannot_speak:
-                    st.info(_record_words("The patient cannot answer at present. Questions are directed to the available collateral source."))
-                presentation = next((e["text"] for e in st.session_state.events if e["kind"] == "presentation"), "")
-                facts = history_facts(presentation, st.session_state.state.get("case_id"), state=st.session_state.state)
-                with st.form("patient_conversation"):
-                    question = st.text_input(_record_words("Ask the available history source" if cannot_speak
-                                                           else "Ask the patient"),
-                                             placeholder=_record_words("What brought you in today?"))
-                    ask_patient = st.form_submit_button(_record_words("Ask"))
-                if ask_patient and question.strip():
-                    answer = answer_history(question, facts, scene_setting("OPENAI_API_KEY"), state=st.session_state.state)
-                    add_event("you", question)
-                    add_event("patient_history", answer)
-                    import clinical_time as _clock
-                    spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
-                                        activity="history_question", request=question, response=answer)
-                    rerun_app()
-                with st.expander(_record_words("History topics")):
-                    case_topics = history_topics(st.session_state.state)
-                    # I-5, L-08: each topic by its name in the reading language; the value stays English.
-                    from history_topics import HISTORY_TOPIC_LABELS, topic_label
-                    import language as _topic_lang
-                    _topic_keys = {label: key for key, label in HISTORY_TOPIC_LABELS.items()}
-                    topic = st.selectbox(
-                        _record_words("Explore"),
-                        case_topics or ["Presenting symptoms and onset", "Associated symptoms", "Previous health"],
-                        format_func=lambda label: (topic_label(_topic_keys[label], _topic_lang.current())
-                                                   if label in _topic_keys else _record_words(label)))
-                    if st.button(_record_words("Ask about this topic")):
-                        if case_topics:
-                            response = " ".join(history_topic_facts(st.session_state.state, topic))
-                        elif topic == "Associated symptoms":
-                            response = associated_symptoms(facts)
-                        elif topic == "Previous health":
-                            response = "Hypertension." if st.session_state.state.get("case_id") == "PS002" else "Hypertension and type 2 diabetes."
-                        else:
-                            response = " ".join(f for f in facts if not f.startswith(("I ", "It has burned")))
-                        add_event("you", "Ask about " + topic.lower())
-                        add_event("patient_history", response)
-                        import clinical_time as _clock
-                        spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
-                                            activity="history_question",
-                                            request="Ask about " + topic.lower(), response=response)
-                        rerun_app()
-        # Like talking and treating, examining ends with the encounter: after the
-        # close it added a decision to the saved record and moved the clinical
-        # clock, and with it the closing minute the rubric's screening reads.
-        if encounter_mode == "Examine" and not st.session_state.encounter_ended:
-            family_findings = {}
-            if st.session_state.state.get("engine_family"):
-                from family_engine import current_findings
-                family_findings = current_findings(st.session_state.state)
-            import language as _region_lang
-            # L-11 and V-4: the regions by their names in the reading language; the value stays English.
-            area = st.selectbox(_record_words("Examine"),
-                                list(dict.fromkeys(["General appearance", "Breathing", "Peripheral perfusion"]
-                                                   + list(family_findings))),
-                                format_func=_region_lang.region)
-            if st.button(_record_words("Examine patient")):
-                observed = st.session_state.state["observable"]
-                if st.session_state.state.get("engine_family"):
-                    from family_engine import examination_finding
-                    finding = examination_finding(st.session_state.state, area)
-                elif area == "General appearance":
-                    from patient_appearance import appearance_summary
-                    finding = appearance_summary(st.session_state.state)
-                elif area in family_findings:
-                    finding = family_findings[area]
-                elif area == "Breathing":
-                    finding = "Respiratory rate: " + str(observed.get("respiratory_rate", "—")) + "/min. Work of breathing: " + str(observed.get("work_of_breathing", "Not documented"))
-                elif not observed.get("pulse_present", True):
-                    finding = "Pulse absent. Capillary refill is not measurable."
-                else:
-                    finding = "Capillary refill: " + str(observed.get("crt", "—")) + " s. Extremities: " + str(observed.get("extremities", "Not documented"))
-                add_event("you", "Examine: " + area)
-                add_event("examination", finding)
-                import clinical_time as _clock
-                spend_clinical_time(_clock.examination_minutes([area]),
-                                    activity="examination", request="Examine: " + area,
-                                    response=finding)
-                rerun_app()
+def _process_encounter_submission(submission_text, _guard_entry=None, submission_parsed=None):
+    """Run the existing order pipeline without drawing any encounter UI first."""
+    if not str(submission_text or "").strip():
+        return
+    if _guard_entry is not None:
+        # Claimed here, where nothing more is drawn until the page reruns: a run
+        # stopped before this line leaves the submission waiting, never lost, and
+        # one stopped after it is said, never repeated (Phase 0, 0D).
+        import submission_guard as _guard
+        _guard.begin(st.session_state, _guard_entry, fields=_SESSION_FIELDS,
+                     minute=int(st.session_state.state.get("sim_time", 0) or 0))
+    learner_input = submission_text.strip()
+    from pending_cancellation import is_cancellation
+    if is_cancellation(learner_input):
+        if not cancel_pending_order():
+            add_event("clarification", "There are no pending orders to cancel.")
+        rerun_app()
+    # An order written after the answer to a held order's question (F0-12) was shown
+    # with the answer; it is not shown again as a new message.
+    derived_entry = bool((_guard_entry or {}).get("derived_from"))
+    if not derived_entry:
+        add_event(
+            "reasoning_completion" if submission_parsed is not None else "you",
+            learner_input,
+        )
+    trace_state_before = management_state_snapshot(st.session_state.state)
+    processing_input = learner_input
+    interpretation_audit = {"mode": "guided-form"}
+    if submission_parsed is None:
+        processing_input, interpretation_audit = normalize_clinical_turn(learner_input)
 
-        submitted = False
-        submission_text = ""
-        _guard_entry = None  # the Send submission this run processes (Phase 0, 0D)
-        submission_parsed = None
-        with orders_panel:
-            if not st.session_state.encounter_ended and (encounter_mode in {"Tests", "Treat"} or st.session_state.get("pending_reasoning")):
-                import language as _lang
-                st.caption(_lang.say(
-                    "Write what you are doing in your own words: what you think is going on, "
-                    "what you are going to do, what you expect, and what you will check."
-                ))
-                pending_reasoning = st.session_state.get("pending_reasoning")
-                if pending_reasoning:
-                    pending_missing = pending_reasoning.get("missing", []) or []
-                    held_parsed = pending_reasoning.get("parsed", {}) or {}
-                    held_reasoning = held_parsed.get("reasoning", {}) or {}
-                    held_reassessment = next(
-                        (
-                            action for action in held_parsed.get("actions", [])
-                            if action.get("type") == "reassessment"
-                        ),
-                        {},
-                    )
-                    gate_id = int(pending_reasoning.get("gate_id") or 1)
-                    st.warning(_record_words(
-                        "An understood order is being held. The patient state is unchanged; "
-                        "complete the reasoning in your own words or use the guided fields."
-                    ))
-                    st.markdown(_record_words("**Held order:** {summary}",
-                                              summary=_lang.order_summary(_reasoning_gate_action_summary(held_parsed))))
-                    import unexecuted_items
-                    for line in unexecuted_items.held_messages(held_parsed):
-                        st.info(_lang.say(line))
-                    for observation in held_parsed.get("reasoning_observations", []) or []:
-                        st.info(observation)
-                    import reasoning_questions as _questions
-                    st.markdown(_lang.say("  \n".join(
-                        ("○ " if field in pending_missing else "✓ ") + question
-                        for field, question, _ in _questions.QUESTIONS
-                    )))
-
-                    st.markdown(_lang.say("#### Answer what is missing"))
-                    with st.form(f"reasoning_completion_form_{gate_id}"):
-                        left, right = st.columns(2)
-                        with left:
-                            guided_working_model = st.text_area(
-                                _lang.say(_questions.QUESTION["working_model"]),
-                                value=str(
-                                    held_reasoning.get("problem_representation")
-                                    or held_reasoning.get("rationale")
-                                    or ""
-                                ),
-                                height=78,
-                                help=_lang.say(_questions.HELP["working_model"]),
-                                key=f"reasoning_model_{gate_id}",
-                            )
-                            guided_expected_effect = st.text_area(
-                                _lang.say(_questions.QUESTION["expected_effect"]),
-                                value=str(held_reasoning.get("expected_effect")
-                                          or (held_parsed.get("plan_suggestion") or {}).get("expected_effect") or ""),
-                                height=78,
-                                help=_lang.say(_questions.HELP["expected_effect"]),
-                                key=f"reasoning_effect_{gate_id}",
-                            )
-                        with right:
-                            # The action is one of the four and the only one that is
-                            # never a field here. This form completes the reasoning
-                            # around an order the engine already read; a box that
-                            # could change it would let the follow-up administer a
-                            # drug, and it provably cannot (specification §4).
-                            st.text_area(
-                                _lang.say(_questions.QUESTION["action"]),
-                                value=_held_order_summary(held_parsed),
-                                height=78,
-                                disabled=True,
-                                help=_lang.say(
-                                    "This is what the engine understood. To change it, cancel "
-                                    "and write the order again below."),
-                                key=f"reasoning_action_{gate_id}",
-                            )
-                            guided_reassessment_target = st.text_area(
-                                _lang.say(_questions.QUESTION["reassessment_target"]),
-                                value=str(held_reasoning.get("reassessment_target")
-                                          or (held_parsed.get("plan_suggestion") or {}).get("reassessment_target") or ""),
-                                height=78,
-                                help=_lang.say(_questions.HELP["reassessment_target"]),
-                                key=f"reasoning_reassessment_{gate_id}",
-                                placeholder=_record_words("e.g. HR and rhythm, BP/MAP, capillary refill, mental status"),
-                            )
-                        guided_reassessment_delay = st.number_input(
-                            _lang.say("I will check in… minutes"),
-                            min_value=1,
-                            max_value=240,
-                            value=min(240, max(1, int(held_reassessment.get("delay_min") or 5))),
-                            step=1,
-                            key=f"reasoning_delay_{gate_id}",
-                        )
-                        # Recorded because it is useful to read, never because it
-                        # holds anything. It is asked last and says it is optional.
-                        guided_priority = st.text_area(
-                            _lang.say(REASONING_GATE_FIELD_STEMS["management_priority"]),
-                            value=str(held_reasoning.get("management_priority") or ""),
-                            height=68,
-                            key=f"reasoning_priority_{gate_id}",
-                        )
-                        guided_submitted = st.form_submit_button(
-                            _record_words("Complete reasoning & execute held order"),
-                            type="primary",
-                        )
-
-                    if guided_submitted:
-                        guided_resolution = complete_pending_reasoning_fields(
-                            guided_working_model,
-                            guided_priority,
-                            guided_expected_effect,
-                            guided_reassessment_target,
-                            guided_reassessment_delay,
-                        )
-                        if guided_resolution and guided_resolution.get("clarification"):
-                            active_pending = st.session_state.get("pending_reasoning") or {}
-                            upsert_reasoning_gate_clarification(
-                                active_pending.get("parsed", held_parsed),
-                                guided_resolution.get("missing", []),
-                            )
-                            rerun_app()
-                        if guided_resolution and guided_resolution.get("parsed"):
-                            submission_parsed = guided_resolution["parsed"]
-                            submission_text = guided_resolution.get("transcript") or "Guided reasoning completed."
-                            submitted = True
-
-                    st.caption(_record_words(
-                        "Or answer naturally below. You only need to add what is missing; "
-                        "you do not need to repeat the held order."
-                    ))
-
-                from urgent_interventions import awaiting_explanation, record_retrospective
-                urgent_index = awaiting_explanation(st.session_state.get("management_trace") or [])
-                if urgent_index is not None and not st.session_state.get("pending_reasoning"):
-                    urgent_entry = st.session_state.management_trace[urgent_index]
-                    unstated = [field for field in (urgent_entry.get("reasoning_gate") or {}).get("noted") or []
-                                if field in REASONING_GATE_BLOCKING]
-                    with st.expander(_record_words("Explain an urgent decision afterwards (optional, recorded as retrospective)")):
-                        st.caption(_record_words("The intervention already ran. What you write here is recorded as written now, "
-                                                 "after the decision, and never as reasoning shown when it was taken."))
-                        with st.form(f"retrospective_{urgent_index}"):
-                            retrospective_answers = {
-                                {"working_model": "problem_representation"}.get(field, field): st.text_area(
-                                    _lang.say(REASONING_GATE_FIELD_LABELS[field]), key=f"retrospective_{urgent_index}_{field}",
-                                    height=68)
-                                for field in unstated}
-                            if st.form_submit_button(_record_words("Save retrospective explanation")):
-                                if record_retrospective(urgent_entry, retrospective_answers,
-                                                        st.session_state.state.get("sim_time")):
-                                    if ACCOUNT_CONTEXT:
-                                        save_session(ACCOUNT_CONTEXT)
-                                    rerun_app()
-
-                if not submitted:
-                    # Phase 0 (0D): the text is written down by the Send callback before
-                    # anything runs, runs once, and is never lost to a double click or a
-                    # reload (submission_guard). A run that stopped part way is said.
-                    import submission_guard as _guard
-                    for lost in _guard.notices(st.session_state):
-                        add_event("prototype", _guard.interrupted_message(lost))
-                    form_id = _guard.nonce(st.session_state)
-                    busy = _guard.waiting(st.session_state)
-                    with st.form(f"learner_form_{form_id}", clear_on_submit=False):
-                        st.text_area(
-                            _record_words("Enter your clinical reasoning and/or actions"),
-                            height=100,
-                            label_visibility="collapsed",
-                            placeholder=_record_words(
-                                "Describe your reasoning naturally. For example: I think...; "
-                                "I am addressing... first; I expect...; reassess ... in ... minutes."
-                            ),
-                            key=_guard.text_key(form_id),
-                        )
-                        # Send, in the reading language (2026-10-02, section 4); Enter still adds a line.
-                        from screen_language import t as _send_words
-                        st.form_submit_button(_send_words("Send"), type="primary", key=_guard.send_key(form_id),
-                                              disabled=busy, on_click=_capture_submission, args=(form_id,))
-                    _guard_entry = next(iter(_guard.pending(st.session_state)), None)
-                    if _guard_entry is not None:
-                        submission_text = _guard_entry["raw_text"]
-                        submitted = True
-
-                if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action", "pending_bundle")):
-                    if st.button(_record_words("Cancel pending orders"), key="cancel_pending_orders"):
-                        cancel_pending_order()
-                        rerun_app()
-
-                if pending_reasoning and faculty_access():
-                    st.caption(
-                        f"Facilitator override: type `{REASONING_GATE_OVERRIDE}` in the natural-language box."
-                    )
-
-        if submitted and submission_text.strip():
-            if _guard_entry is not None:
-                # Claimed here, where nothing more is drawn until the page reruns: a run
-                # stopped before this line leaves the submission waiting, never lost, and
-                # one stopped after it is said, never repeated (Phase 0, 0D).
-                import submission_guard as _guard
-                _guard.begin(st.session_state, _guard_entry, fields=_SESSION_FIELDS,
-                             minute=int(st.session_state.state.get("sim_time", 0) or 0))
-            learner_input = submission_text.strip()
-            from pending_cancellation import is_cancellation
-            if is_cancellation(learner_input):
-                if not cancel_pending_order():
-                    add_event("clarification", "There are no pending orders to cancel.")
-                rerun_app()
-            # An order written after the answer to a held order's question (F0-12) was shown
-            # with the answer; it is not shown again as a new message.
-            derived_entry = bool((_guard_entry or {}).get("derived_from"))
-            if not derived_entry:
-                add_event(
-                    "reasoning_completion" if submission_parsed is not None else "you",
-                    learner_input,
-                )
-            trace_state_before = management_state_snapshot(st.session_state.state)
-            processing_input = learner_input
-            interpretation_audit = {"mode": "guided-form"}
-            if submission_parsed is None:
-                processing_input, interpretation_audit = normalize_clinical_turn(learner_input)
-
-            import order_ledger as _ledger
-            import order_pipeline as _order_pipeline
-            submission_id = (_guard_entry or {}).get("id") or _ledger.new_id()
-            entry_point = "guided_form" if submission_parsed is not None else "free_text"
-            if submission_parsed is not None:
-                parsed = submission_parsed
-            elif derived_entry:
-                # Read as a new order, never as an answer. Should a question be waiting again,
-                # the order is not run and its receipt says so (the protected behaviour).
-                if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action",
-                                                               "pending_bundle")):
-                    parsed = {"raw_text": processing_input, "reasoning": {}, "actions": []}
-                    entry_point = "clarification_answer"
-                else:
-                    parsed = clinical_interpreter(processing_input)
-                _restore_original_turn(parsed, processing_input, learner_input)
-                _attach_interpretation_audit(parsed, interpretation_audit)
-            else:
-                reasoning_resolution = resolve_pending_reasoning(processing_input)
-                if reasoning_resolution and reasoning_resolution.get("clarification"):
-                    active_pending = st.session_state.get("pending_reasoning") or {}
-                    # Whatever the answer added is held with the order, and recorded as held.
-                    _order_pipeline.ledger_hold_reasoning(st.session_state, active_pending.get("parsed") or {},
-                                                          processing_input, submission_id, add_event)
-                    upsert_reasoning_gate_clarification(
-                        active_pending.get("parsed", {}),
-                        reasoning_resolution.get("missing", []),
-                    )
-                    rerun_app()
-
-                if reasoning_resolution and reasoning_resolution.get("parsed"):
-                    parsed = reasoning_resolution["parsed"]
-                    entry_point = "reasoning_followup"
-                else:
-                    pending_resolution = try_resolve_pending_action(processing_input)
-                    if pending_resolution and pending_resolution.get("clarification"):
-                        add_event("clarification", pending_resolution["clarification"])
-                        rerun_app()
-
-                    if pending_resolution and pending_resolution.get("parsed"):
-                        parsed = merge_pending_bundle(pending_resolution["parsed"])
-                        entry_point = "clarification_answer"
-                        if pending_resolution.get("new_order_text") and _guard_entry is not None:
-                            # F0-12: the order written after the answer runs next as an order of
-                            # its own, and the resident is told so now.
-                            import submission_guard as _guard
-                            _guard.derive(st.session_state, _guard_entry, pending_resolution["new_order_text"],
-                                          minute=int(st.session_state.state.get("sim_time", 0) or 0))
-                            parsed["_answer_text"] = pending_resolution["answer_text"]
-                            add_event("prototype", "Also in your answer: \"" + pending_resolution["new_order_text"]
-                                      .strip().rstrip(".") + "\". The answer completes the held order only; this "
-                                      "order is read next, as an order of its own, with its own receipt.")
-                    else:
-                        # Parse the current turn in full before considering contextual
-                        # shorthand. Context resolution is a fallback only when this turn does
-                        # not already contain an explicit executable action.
-                        direct = clinical_interpreter(processing_input)
-                        direct_non_reassess = [
-                            a for a in direct.get("actions", []) if a.get("type") != "reassessment"
-                        ]
-                        if direct_non_reassess or st.session_state.state.get("engine_family"):
-                            parsed = direct
-                        else:
-                            contextual = parse_contextual_followup(processing_input)
-                            if contextual:
-                                contextual["reasoning"] = direct.get("reasoning", {})
-                                reassess = [a for a in direct.get("actions", []) if a.get("type") == "reassessment"]
-                                contextual["actions"] = [
-                                    a for a in contextual.get("actions", []) if a.get("type") != "reassessment"
-                                ] + reassess
-                                parsed = contextual
-                            else:
-                                parsed = direct
-
-                _restore_original_turn(parsed, processing_input, learner_input)
-                _attach_interpretation_audit(parsed, interpretation_audit)
-
-            # Phase 0 (0A-0B): every order of this turn gets an id and the text is checked
-            # against what the reader returned, whatever the entry point.
-            turn_minute = int(st.session_state.state.get("sim_time", 0) or 0)
-            ledger = st.session_state.setdefault("order_ledger", [])
-            turn = _order_pipeline.open_turn(
-                parsed.pop("_coverage_text", None) or processing_input, parsed,
-                coverage_parse=parsed.pop("_coverage_parse", None), submission_id=submission_id,
-                entry_point=entry_point, minute=turn_minute, ledger=ledger,
-                coverage_text=parsed.pop("_answer_text", None))
-            derived_from = (_guard_entry or {}).get("derived_from")
-            if derived_from:
-                # Written in the answer to a held order's question, at the minute of the answer,
-                # and run after it: the record keeps when it was written (F0-12, rule B of 0I).
-                turn["submission"]["derived_from"] = derived_from
-                for _order in turn["orders"]:
-                    _order["written_at_min"] = _guard_entry.get("received_at_min", turn_minute)
-                    _order["derived_from"] = derived_from
-                if entry_point == "clarification_answer":
-                    _order_pipeline.ledger_record(st.session_state, turn, add_event)
-                    rerun_app()
-            turn["orders"].extend(_order_pipeline.restated_orders(
-                parsed.pop("_followup_restated", None), submission_id=submission_id, minute=turn_minute,
-                text=processing_input))
-            written = next((entry for entry in st.session_state.get("submission_log") or []
-                            if entry.get("id") == submission_id), None)
-            if written:
-                # When the text was written down, whether it reached the database before
-                # anything ran, and how often a stopped run was undone (Phase 0, 0D).
-                turn["submission"]["received_at"] = written.get("received_at")
-                turn["submission"]["write_ahead"] = bool(written.get("saved_before_run"))
-                turn["submission"]["retried_after_interruption"] = int(written.get("retries", 0) or 0)
-
-            parsed["reasoning_observations"] = reasoning_state_observations(
-                parsed, st.session_state.state
-            )
-            gate_decided = parsed.pop("_gate_decided", False) and \
-                (parsed.get("reasoning_gate") or {}).get("status") in ("urgent_unheld", "complete", "overridden")
-            # After an arrest the simulator does not model, nothing is assessed: no order is held to
-            # ask for its reasoning, and the engine answers it with the arrest (Phase 0, 0G).
-            import observation_consistency as _arrest_now
-            arrested_now = _arrest_now.arrest_minute(st.session_state.state) is not None
-            missing_reasoning = [] if (gate_decided or arrested_now) else reasoning_still_missing(parsed)
-            gate_status = (parsed.get("reasoning_gate") or {}).get("status")
-            if missing_reasoning and gate_status != "overridden":
-                st.session_state.last_parse = _ledger.untagged(parsed)
-                hold_pending_reasoning(parsed, missing_reasoning)
-                upsert_reasoning_gate_clarification(parsed, missing_reasoning)
-                _order_pipeline.settle(turn, result={"executed": False}, run_actions=list(parsed.get("actions") or []),
-                                       minute_before=turn_minute, minute_after=turn_minute, held_for_reasoning=True)
-                _order_pipeline.ledger_record(st.session_state, turn, add_event)
-                rerun_app()
-            if gate_status is None and any(
-                action.get("type") in REASONING_GATE_ACTION_TYPES
-                for action in parsed.get("actions", [])
-            ):
-                from urgent_interventions import is_urgent, present_categories
-                if is_urgent(parsed):
-                    noted = reasoning_gate_noted(parsed)
-                    parsed["reasoning_gate"] = {"required": True, "status": "urgent_unheld", "missing": [],
-                                                "noted": noted, "present": present_categories(parsed)}
-                    gate_status = "urgent_unheld"
-                    # What was not stated is said once the engine has run it (below).
-                else:
-                    parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
-                                                "noted": reasoning_gate_noted(parsed)}
-                    gate_status = "complete"
-
-            recognize_cues_for(parsed)
-
-            for observation in parsed.get("reasoning_observations", []) or []:
-                add_event("reasoning_note", observation)
-
-            st.session_state.last_parse = _ledger.untagged(parsed)
-            st.session_state.history.append(_ledger.untagged(parsed))
-            trace_input = parsed.get("raw_text") or learner_input
-
-            result = execute_bundle(parsed)
-            split = result.pop("_split", None)
-            run_actions = result.pop("_run_actions", None)
-            if run_actions is None:
-                run_actions = list(parsed.get("actions") or [])
-            _order_pipeline.settle(
-                turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
-                minute_after=int(st.session_state.state.get("sim_time", 0) or 0),
-                terminal=bool(result.get("terminal_locked")))
-            if entry_point == "clarification_answer" or entry_point == "reasoning_followup":
-                _order_pipeline.ledger_resolve_held(st.session_state, run_actions, bool(result.get("executed")),
-                                                    turn_minute, add_event)
-            trace_state_after = management_state_snapshot(st.session_state.state)
-            recorded_trace_event = record_management_trace(
-                trace_input, parsed, result, trace_state_before, trace_state_after, turn=turn
-            )
-
-            ran = bool(result.get("executed")) and (not result.get("clarification") or bool(result.get("partial")))
-            # An urgent intervention is said to have run only once the engine ran
-            # it -- in this turn, or when the answer to a question about the same
-            # order completes it. A bundle the engine refused ran nothing, and the
-            # page used to say it had and offer to explain it (59O-03, 2026-09-28).
-            urgent_unstated = [field for field in (parsed.get("reasoning_gate") or {}).get("noted") or []
-                        if field in REASONING_GATE_BLOCKING]
-            if ran and gate_status == "urgent_unheld" and urgent_unstated:
-                add_event("prototype", "Urgent intervention executed without waiting for the reasoning. "
-                          "Not stated: " + ", ".join(REASONING_GATE_FIELD_LABELS[field].rstrip("?").lower()
-                                                     for field in urgent_unstated)
-                          + ". You can explain it afterwards; it is recorded as a retrospective explanation.")
-            if gate_status == "overridden":
-                add_event(
-                    "prototype",
-                    "Facilitator override accepted. The held order was executed with incomplete prospective reasoning."
-                    if ran else
-                    "Facilitator override accepted, but the order did not run: see the message below."
-                )
-
-            if parsed["recognized_future_actions"] and not result.get("terminal_locked"):
-                import unexecuted_items
-                said, unclassified = unexecuted_items.messages(parsed)
-                for line in said:
-                    add_event("prototype", line)
-                if unclassified:
-                    add_event(
-                        "prototype",
-                        "Recognized but not executed in this build: "
-                        + ", ".join(unclassified)
-                        + ". Any supported actions in the same order continue separately."
-                    )
-
-            if result.get("clarification") and not result.get("partial"):
-                add_event("clarification", result["clarification"])
-            else:
-                summaries = _summaries_in_learner_order(
-                    result.get("action_summaries", []), trace_input
-                )
-                if summaries:
-                    # All actions in one learner order are integrated into one longitudinal
-                    # patient state and produce one learner-facing update at the reassessment time.
-                    labels = []
-                    for s in summaries:
-                        # A call or admission request reads as part of "After ..., BP ...";
-                        # its stored label ("ICU contacted; definitive ...") does not.
-                        if s.get("type") == "procedure":
-                            continue
-                        # An examination is an observation: it carries its own entry,
-                        # exactly as the Examine control writes it.
-                        if s.get("type") == "examination":
-                            continue
-                        if s.get("type") in {"consult", "reperfusion_referral"}:
-                            service = s.get("service") or s.get("destination")
-                            if s.get("pathway_note"):
-                                labels.append(str(s["label"]))
-                            else:
-                                labels.append(f'{service} already contacted (not repeated)' if s.get("repeated")
-                                              else f'contacting {service} (no intervention yet)')
-                                continue
-                        elif s.get("type") == "disposition":
-                            # Going home is a discharge, not an admission to a place.
-                            home = s.get("destination") == "home"
-                            labels.append(
-                                ('discharge home already requested (not repeated)' if home else
-                                 f'admission to {s.get("destination")} already requested (not repeated)')
-                                if s.get("repeated") else
-                                ('discharging the patient home' if home else f'requesting admission to {s.get("destination")}'))
-                        elif "volume_ml" in s and s.get("fluid_type"):
-                            labels.append(_fluid_order_label(s, st.session_state.state["sim_time"]))
-                        elif s.get("label"):
-                            labels.append(str(s["label"]))
-                        elif "volume_ml" in s:
-                            labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')
-                        elif s.get("type") == "magnesium":
-                            labels.append(f'magnesium sulfate {s["dose_mg"] / 1000:g} g {s.get("route", "IV")}'
-                                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
-                        elif s.get("agent") == "furosemide":
-                            labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}'
-                                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
-                        elif "agent" in s:
-                            labels.append(f'{s["agent"]} {s["dose_mg"]:g} mg {s["route"]}'
-                                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
-                        elif s.get("support_type") == "procedural_sedation":
-                            labels.append(procedural_sedation_label(s))
-                        elif "energy_j" in s:
-                            labels.append(f'synchronized cardioversion {s["energy_j"]} J')
-                        elif s.get("support_type") == "oxygen":
-                            labels.append(f'{s["device"]} {s["flow_lpm"]:g} L/min')
-                        elif s.get("support_type") == "norepinephrine":
-                            if s.get("operation") == "stop":
-                                labels.append("norepinephrine stopped")
-                            else:
-                                labels.append(_norepinephrine_summary_label(s))
-                        elif s.get("support_type") == "dobutamine":
-                            if s.get("operation") == "stop":
-                                labels.append("dobutamine stopped")
-                            else:
-                                labels.append(f'dobutamine {s.get("rate", 5):g} mcg/kg/min')
-                        elif s.get("support_type") == "epinephrine":
-                            labels.append("epinephrine stopped" if s.get("operation") == "stop"
-                                          else f'epinephrine {s.get("rate", 0):g} {s.get("units", "mcg/min")}')
-                        elif s.get("support_type") == "nitroglycerin":
-                            if s.get("operation") == "stop":
-                                labels.append("nitroglycerin stopped")
-                            else:
-                                labels.append(f'nitroglycerin {s["rate_mcg_min"]:g} mcg/min')
-                        elif s.get("support_type") == "niv":
-                            if s.get("operation") == "stop":
-                                labels.append("noninvasive ventilation stopped")
-                            elif s.get("mode") == "BiPAP" and s.get("ipap_cmh2o") is not None and s.get("epap_cmh2o") is not None:
-                                fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
-                                labels.append(f'BiPAP {s.get("ipap_cmh2o"):g}/{s.get("epap_cmh2o"):g} cm H2O{fio}')
-                            else:
-                                fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
-                                labels.append(f'{s["mode"]} {s["pressure_cmh2o"]:g} cm H2O{fio}')
-                        elif s.get("support_type") == "airway_preparation":
-                            labels.append("airway preparation for intubation")
-                        elif s.get("support_type") == "invasive_ventilation":
-                            operation = s.get("operation", "start")
-                            prefix = {
-                                "continue": "continued",
-                                "adjust": "adjusted",
-                                "start": "intubation +",
-                            }.get(operation, "adjusted")
-                            labels.append(
-                                f'{prefix} {s.get("ventilator_mode", "VC/AC")} ventilation '
-                                f'at FiO2 {s.get("fio2_percent", 100):g}% and PEEP {s.get("peep_cmh2o", 8):g} cm H2O'
-                            )
-                        elif s.get("support_type") == "disposition":
-                            labels.append("discharge home" if s.get("destination") == "home"
-                                          else f'admission to {s.get("destination", "ICU")}')
-                        elif s.get("support_type") == "antibiotics":
-                            antibiotic = str(s.get("agent_name") or "broad-spectrum antibiotics")
-                            if antibiotic.lower() == "ceftriaxone + azithromycin":
-                                ceftriaxone = "ceftriaxone"
-                                if s.get("dose_g") is not None:
-                                    ceftriaxone += f' {s.get("dose_g"):g} g'
-                                if s.get("route"):
-                                    ceftriaxone += f' {s.get("route")}'
-                                antibiotic = ceftriaxone + " + azithromycin"
-                            else:
-                                if s.get("dose_g") is not None:
-                                    antibiotic += f' {s.get("dose_g"):g} g'
-                                if s.get("route"):
-                                    antibiotic += f' {s.get("route")}'
-                            if s.get("administration_duration_min"):
-                                antibiotic += f' over {s["administration_duration_min"]:g} min'
-                            labels.append(antibiotic)
-
-                    diagnostic_summaries = sorted(
-                        [x for x in summaries if x.get("diagnostic_type")],
-                        key=lambda x: (x.get("result") or {}).get("time_min", st.session_state.state["sim_time"]),
-                    )
-                    treatment_labels = [x for x in labels if x]
-                    # Diagnostic information becomes available during the interval and is
-                    # rendered before the scheduled reassessment update.
-                    # Results and any procedure the course produced (an endoscopy) are
-                    # reported in the order they happened.
-                    timed_events = [("diagnostic_result", format_diagnostic_summary(ds),
-                                     (ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"]))
-                                    for ds in diagnostic_summaries]
-                    timed_events += [("procedure", x["label"], x["time_min"]) for x in summaries if x.get("type") == "procedure"]
-                    timed_events += [("study_not_performed", x["label"], x["time_min"])
-                                     for x in summaries if x.get("type") == "study_not_performed"]
-                    timed_events += [("examination", x["label"], x.get("time_min", st.session_state.state["sim_time"]))
-                                     for x in summaries if x.get("type") == "examination"]
-                    # The reperfusion pathway is reported as its own entry, at the minute
-                    # the resident decided it.
-                    timed_events += [("procedure", str(x["pathway_note"]), st.session_state.state["sim_time"])
-                                     for x in summaries if x.get("pathway_note")]
-                    for kind, text, time in sorted(timed_events, key=lambda item: item[2]):
-                        add_event(kind, text, time=time)
-                    # What was given and when the values were taken: an immediate look is
-                    # never "after" a treatment still running, and a wait an event stopped
-                    # says so, at the event's minute (Phase 0, 0E/0F; time_semantics).
-                    import time_semantics as _time_words
-                    if treatment_labels or result.get("interrupted"):
-                        add_event("clinical_update",
-                                  _time_words.update_lead(result, parsed, treatment_labels) + format_clinical_update())
-                    elif (
-                        diagnostic_summaries
-                        # A reassessment the resident asked for is reported as such, even
-                        # when the results arrived before it.
-                        and result.get("reassess_delay") is None
-                        and int(result.get("elapsed_min", 0) or 0) > 0
-                        and observable_state_changed(trace_state_before, trace_state_after)
-                    ):
-                        elapsed = int(result.get("elapsed_min", 0) or 0)
-                        add_event(
-                            "clinical_update",
-                            f"While awaiting diagnostic results over {elapsed} minutes, "
-                            + format_clinical_update(),
-                        )
-                    elif result.get("reassess_delay") is not None:
-                        add_event("clinical_update",
-                                  _time_words.update_lead(result, parsed, []) + format_clinical_update())
-
-                # A reassessment-only order has no treatment/diagnostic summaries, so
-                # it needs its own learner-facing patient update.
-                if result.get("reassess_delay") is not None and not result.get("action_summaries"):
-                    import time_semantics as _time_words
-                    add_event("clinical_update",
-                              _time_words.update_lead(result, parsed, []) + format_clinical_update())
-
-                if result.get("terminal_locked") or any(
-                        event.get("terminal") for event in result.get("events") or []):
-                    # Said in the words the pilot agreed (Phase 0, 0G): the arrest, its minute, and
-                    # that nothing after it is assessed. No recovery is invented.
-                    import observation_consistency as _arrest
-                    add_event("prototype", _arrest.arrest_message(_arrest.arrest_minute(st.session_state.state)))
-
-                if not result.get("executed") and not parsed["recognized_future_actions"] and not result.get("terminal_locked"):
-                    add_event(
-                        "prototype",
-                        "I preserved your input, but this build does not yet execute that action."
-                    )
-
-            if result.get("partial") and result.get("clarification"):
-                # What ran was reported above; what waits, and the question, are said now.
-                add_event("clarification", result["clarification"])
-            # Every order that did not simply run is said, one line each (Phase 0, 0A).
-            _order_pipeline.ledger_record(st.session_state, turn, add_event)
-
-            # The events this order produced are appended above, after the decision
-            # was recorded, so the recorded response window used to end just before
-            # its own response. The Management Trace analysis is validated against
-            # that window, and was rejected for citing the very update it described
-            # (2026-09-22, preparing the learner report). The cursor is therefore
-            # advanced once the response is on the record.
-            recorded_trace_event["state_after"]["encounter_event_count"] = len(
-                st.session_state.get("events") or []
+    import order_ledger as _ledger
+    import order_pipeline as _order_pipeline
+    submission_id = (_guard_entry or {}).get("id") or _ledger.new_id()
+    entry_point = "guided_form" if submission_parsed is not None else "free_text"
+    if submission_parsed is not None:
+        parsed = submission_parsed
+    elif derived_entry:
+        # Read as a new order, never as an answer. Should a question be waiting again,
+        # the order is not run and its receipt says so (the protected behaviour).
+        if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action",
+                                                       "pending_bundle")):
+            parsed = {"raw_text": processing_input, "reasoning": {}, "actions": []}
+            entry_point = "clarification_answer"
+        else:
+            parsed = clinical_interpreter(processing_input)
+        _restore_original_turn(parsed, processing_input, learner_input)
+        _attach_interpretation_audit(parsed, interpretation_audit)
+    else:
+        reasoning_resolution = resolve_pending_reasoning(processing_input)
+        if reasoning_resolution and reasoning_resolution.get("clarification"):
+            active_pending = st.session_state.get("pending_reasoning") or {}
+            # Whatever the answer added is held with the order, and recorded as held.
+            _order_pipeline.ledger_hold_reasoning(st.session_state, active_pending.get("parsed") or {},
+                                                  processing_input, submission_id, add_event)
+            upsert_reasoning_gate_clarification(
+                active_pending.get("parsed", {}),
+                reasoning_resolution.get("missing", []),
             )
             rerun_app()
 
-        if not _in_room:
-            st.divider()
-
-        if not st.session_state.encounter_ended:
-            import encounter_close
-            import language as _close_lang
-            if st.session_state.get("close_pending"):
-                # A brief warning that never blocks (faculty decision 9, 2026-09-25):
-                # no destination is invented and nothing already recorded is erased.
-                st.warning(_close_lang.say(encounter_close.WARNING))
-                close_kind = st.radio(_close_lang.say("How is this encounter ending?"), encounter_close.KINDS,
-                                      format_func=lambda kind: _close_lang.say(encounter_close.LABELS[kind]),
-                                      key="close_kind")
-                keep_going, finish_now = st.columns(2)
-                if keep_going.button(_close_lang.say("Continue the encounter")):
-                    st.session_state.close_pending = False
-                    rerun_app()
-                if finish_now.button(_close_lang.say("Finish now"), type="primary"):
-                    st.session_state.close_pending = False
-                    st.session_state.encounter_close = encounter_close.record(
-                        close_kind, destination_recorded=False, warned=True,
-                        minute=st.session_state.state.get("sim_time"))
-                    begin_decision_review(st.session_state.management_trace, st.session_state.state)
-                    rerun_app()
-            else:
-                # Available, and secondary to writing and Send (UX, second iteration, 2026-10-02).
-                with st.container(key="enc-close"):
-                    complete = st.button(
-                        _record_words("Complete Encounter & Begin Review"),
-                        disabled=not bool(st.session_state.management_trace),
-                    )
-                if complete:
-                    if encounter_close.has_destination(st.session_state.management_trace, st.session_state.state):
-                        st.session_state.encounter_close = encounter_close.record(
-                            "clinical_close", destination_recorded=True, warned=False,
-                            minute=st.session_state.state.get("sim_time"))
-                        begin_decision_review(st.session_state.management_trace, st.session_state.state)
-                    else:
-                        st.session_state.close_pending = True
-                    rerun_app()
+        if reasoning_resolution and reasoning_resolution.get("parsed"):
+            parsed = reasoning_resolution["parsed"]
+            entry_point = "reasoning_followup"
         else:
-            frozen_trace = st.session_state.get("encounter_closed_trace")
-            if frozen_trace is None:
-                # Backward-compatible recovery for an in-memory session opened in an
-                # earlier build before encounter snapshots were introduced.
-                begin_decision_review(st.session_state.management_trace, st.session_state.state)
-                frozen_trace = st.session_state.encounter_closed_trace
-            frozen_state = st.session_state.get("encounter_closed_state") or management_state_snapshot(st.session_state.state)
-            render_learning_focus(ACCOUNT_CONTEXT)
-            # One short, optional question about help received, at the close and
-            # never before (faculty specification 2026-09-24, section 3).
-            if ACCOUNT_CONTEXT:
-                import language
-                from assistance_portal import render_closing_question
-                render_closing_question(ACCOUNT_CONTEXT, st.session_state.get("_attempt_id"),
-                                        frozen_trace, language=language.current())
-            with st.expander(_record_words("Original decision-by-decision record"), expanded=False):
-                st.caption(_record_words("Your original orders, stated reasoning and recorded responses remain unchanged."))
-                render_management_trace(frozen_trace)
-            if not st.session_state.get("expert_comparison_unlocked"):
-                st.caption(_record_words("Complete your independent reflection to receive an analyzed Management Trace with your clinical trajectory and key decisions."))
-            render_decision_review(frozen_trace, frozen_state)
+            pending_resolution = try_resolve_pending_action(processing_input)
+            if pending_resolution and pending_resolution.get("clarification"):
+                add_event("clarification", pending_resolution["clarification"])
+                rerun_app()
 
-        if not _in_room:
-            st.divider()
-        # Leaving the encounter is navigation: while it is under way it is in the room's
-        # menu, with the account (2026-10-02, section 11); after the close, here.
-        with (ENCOUNTER_MENU if _in_room and ENCOUNTER_MENU is not None else st.container()):
-            if ACCOUNT_CONTEXT:
-                if st.button(_record_words("Save & return to dashboard"), type="secondary"):
-                    return_to_dashboard(ACCOUNT_CONTEXT, reset_session)
-                if st.button(_record_words("End this attempt without completing review"), type="secondary"):
-                    return_to_dashboard(ACCOUNT_CONTEXT, reset_session, abandon=True)
+            if pending_resolution and pending_resolution.get("parsed"):
+                parsed = merge_pending_bundle(pending_resolution["parsed"])
+                entry_point = "clarification_answer"
+                if pending_resolution.get("new_order_text") and _guard_entry is not None:
+                    # F0-12: the order written after the answer runs next as an order of
+                    # its own, and the resident is told so now.
+                    import submission_guard as _guard
+                    _guard.derive(st.session_state, _guard_entry, pending_resolution["new_order_text"],
+                                  minute=int(st.session_state.state.get("sim_time", 0) or 0))
+                    parsed["_answer_text"] = pending_resolution["answer_text"]
+                    add_event("prototype", "Also in your answer: \"" + pending_resolution["new_order_text"]
+                              .strip().rstrip(".") + "\". The answer completes the held order only; this "
+                              "order is read next, as an order of its own, with its own receipt.")
             else:
-                if st.button("Reset scenario", type="secondary"):
-                    reset_session()
-                    rerun_app()
+                # Parse the current turn in full before considering contextual
+                # shorthand. Context resolution is a fallback only when this turn does
+                # not already contain an explicit executable action.
+                direct = clinical_interpreter(processing_input)
+                direct_non_reassess = [
+                    a for a in direct.get("actions", []) if a.get("type") != "reassessment"
+                ]
+                if direct_non_reassess or st.session_state.state.get("engine_family"):
+                    parsed = direct
+                else:
+                    contextual = parse_contextual_followup(processing_input)
+                    if contextual:
+                        contextual["reasoning"] = direct.get("reasoning", {})
+                        reassess = [a for a in direct.get("actions", []) if a.get("type") == "reassessment"]
+                        contextual["actions"] = [
+                            a for a in contextual.get("actions", []) if a.get("type") != "reassessment"
+                        ] + reassess
+                        parsed = contextual
+                    else:
+                        parsed = direct
 
-        # In the room they are with the information, for staff only; after the close, here.
-        if faculty_access() and not _in_room:
-            _render_staff_tools()
+        _restore_original_turn(parsed, processing_input, learner_input)
+        _attach_interpretation_audit(parsed, interpretation_audit)
 
-        if ACCOUNT_CONTEXT:
+    # Phase 0 (0A-0B): every order of this turn gets an id and the text is checked
+    # against what the reader returned, whatever the entry point.
+    turn_minute = int(st.session_state.state.get("sim_time", 0) or 0)
+    ledger = st.session_state.setdefault("order_ledger", [])
+    turn = _order_pipeline.open_turn(
+        parsed.pop("_coverage_text", None) or processing_input, parsed,
+        coverage_parse=parsed.pop("_coverage_parse", None), submission_id=submission_id,
+        entry_point=entry_point, minute=turn_minute, ledger=ledger,
+        coverage_text=parsed.pop("_answer_text", None))
+    derived_from = (_guard_entry or {}).get("derived_from")
+    if derived_from:
+        # Written in the answer to a held order's question, at the minute of the answer,
+        # and run after it: the record keeps when it was written (F0-12, rule B of 0I).
+        turn["submission"]["derived_from"] = derived_from
+        for _order in turn["orders"]:
+            _order["written_at_min"] = _guard_entry.get("received_at_min", turn_minute)
+            _order["derived_from"] = derived_from
+        if entry_point == "clarification_answer":
+            _order_pipeline.ledger_record(st.session_state, turn, add_event)
+            rerun_app()
+    turn["orders"].extend(_order_pipeline.restated_orders(
+        parsed.pop("_followup_restated", None), submission_id=submission_id, minute=turn_minute,
+        text=processing_input))
+    written = next((entry for entry in st.session_state.get("submission_log") or []
+                    if entry.get("id") == submission_id), None)
+    if written:
+        # When the text was written down, whether it reached the database before
+        # anything ran, and how often a stopped run was undone (Phase 0, 0D).
+        turn["submission"]["received_at"] = written.get("received_at")
+        turn["submission"]["write_ahead"] = bool(written.get("saved_before_run"))
+        turn["submission"]["retried_after_interruption"] = int(written.get("retries", 0) or 0)
+
+    parsed["reasoning_observations"] = reasoning_state_observations(
+        parsed, st.session_state.state
+    )
+    gate_decided = parsed.pop("_gate_decided", False) and \
+        (parsed.get("reasoning_gate") or {}).get("status") in ("urgent_unheld", "complete", "overridden")
+    # After an arrest the simulator does not model, nothing is assessed: no order is held to
+    # ask for its reasoning, and the engine answers it with the arrest (Phase 0, 0G).
+    import observation_consistency as _arrest_now
+    arrested_now = _arrest_now.arrest_minute(st.session_state.state) is not None
+    missing_reasoning = [] if (gate_decided or arrested_now) else reasoning_still_missing(parsed)
+    gate_status = (parsed.get("reasoning_gate") or {}).get("status")
+    if missing_reasoning and gate_status != "overridden":
+        st.session_state.last_parse = _ledger.untagged(parsed)
+        hold_pending_reasoning(parsed, missing_reasoning)
+        upsert_reasoning_gate_clarification(parsed, missing_reasoning)
+        _order_pipeline.settle(turn, result={"executed": False}, run_actions=list(parsed.get("actions") or []),
+                               minute_before=turn_minute, minute_after=turn_minute, held_for_reasoning=True)
+        _order_pipeline.ledger_record(st.session_state, turn, add_event)
+        rerun_app()
+    if gate_status is None and any(
+        action.get("type") in REASONING_GATE_ACTION_TYPES
+        for action in parsed.get("actions", [])
+    ):
+        from urgent_interventions import is_urgent, present_categories
+        if is_urgent(parsed):
+            noted = reasoning_gate_noted(parsed)
+            parsed["reasoning_gate"] = {"required": True, "status": "urgent_unheld", "missing": [],
+                                        "noted": noted, "present": present_categories(parsed)}
+            gate_status = "urgent_unheld"
+            # What was not stated is said once the engine has run it (below).
+        else:
+            parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
+                                        "noted": reasoning_gate_noted(parsed)}
+            gate_status = "complete"
+
+    recognize_cues_for(parsed)
+
+    for observation in parsed.get("reasoning_observations", []) or []:
+        add_event("reasoning_note", observation)
+
+    st.session_state.last_parse = _ledger.untagged(parsed)
+    st.session_state.history.append(_ledger.untagged(parsed))
+    trace_input = parsed.get("raw_text") or learner_input
+
+    result = execute_bundle(parsed)
+    split = result.pop("_split", None)
+    run_actions = result.pop("_run_actions", None)
+    if run_actions is None:
+        run_actions = list(parsed.get("actions") or [])
+    _order_pipeline.settle(
+        turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
+        minute_after=int(st.session_state.state.get("sim_time", 0) or 0),
+        terminal=bool(result.get("terminal_locked")))
+    if entry_point == "clarification_answer" or entry_point == "reasoning_followup":
+        _order_pipeline.ledger_resolve_held(st.session_state, run_actions, bool(result.get("executed")),
+                                            turn_minute, add_event)
+    trace_state_after = management_state_snapshot(st.session_state.state)
+    recorded_trace_event = record_management_trace(
+        trace_input, parsed, result, trace_state_before, trace_state_after, turn=turn
+    )
+
+    ran = bool(result.get("executed")) and (not result.get("clarification") or bool(result.get("partial")))
+    # An urgent intervention is said to have run only once the engine ran
+    # it -- in this turn, or when the answer to a question about the same
+    # order completes it. A bundle the engine refused ran nothing, and the
+    # page used to say it had and offer to explain it (59O-03, 2026-09-28).
+    urgent_unstated = [field for field in (parsed.get("reasoning_gate") or {}).get("noted") or []
+                if field in REASONING_GATE_BLOCKING]
+    if ran and gate_status == "urgent_unheld" and urgent_unstated:
+        add_event("prototype", "Urgent intervention executed without waiting for the reasoning. "
+                  "Not stated: " + ", ".join(REASONING_GATE_FIELD_LABELS[field].rstrip("?").lower()
+                                             for field in urgent_unstated)
+                  + ". You can explain it afterwards; it is recorded as a retrospective explanation.")
+    if gate_status == "overridden":
+        add_event(
+            "prototype",
+            "Facilitator override accepted. The held order was executed with incomplete prospective reasoning."
+            if ran else
+            "Facilitator override accepted, but the order did not run: see the message below."
+        )
+
+    if parsed["recognized_future_actions"] and not result.get("terminal_locked"):
+        import unexecuted_items
+        said, unclassified = unexecuted_items.messages(parsed)
+        for line in said:
+            add_event("prototype", line)
+        if unclassified:
+            add_event(
+                "prototype",
+                "Recognized but not executed in this build: "
+                + ", ".join(unclassified)
+                + ". Any supported actions in the same order continue separately."
+            )
+
+    if result.get("clarification") and not result.get("partial"):
+        add_event("clarification", result["clarification"])
+    else:
+        summaries = _summaries_in_learner_order(
+            result.get("action_summaries", []), trace_input
+        )
+        if summaries:
+            # All actions in one learner order are integrated into one longitudinal
+            # patient state and produce one learner-facing update at the reassessment time.
+            labels = []
+            for s in summaries:
+                # A call or admission request reads as part of "After ..., BP ...";
+                # its stored label ("ICU contacted; definitive ...") does not.
+                if s.get("type") == "procedure":
+                    continue
+                # An examination is an observation: it carries its own entry,
+                # exactly as the Examine control writes it.
+                if s.get("type") == "examination":
+                    continue
+                if s.get("type") in {"consult", "reperfusion_referral"}:
+                    service = s.get("service") or s.get("destination")
+                    if s.get("pathway_note"):
+                        labels.append(str(s["label"]))
+                    else:
+                        labels.append(f'{service} already contacted (not repeated)' if s.get("repeated")
+                                      else f'contacting {service} (no intervention yet)')
+                        continue
+                elif s.get("type") == "disposition":
+                    # Going home is a discharge, not an admission to a place.
+                    home = s.get("destination") == "home"
+                    labels.append(
+                        ('discharge home already requested (not repeated)' if home else
+                         f'admission to {s.get("destination")} already requested (not repeated)')
+                        if s.get("repeated") else
+                        ('discharging the patient home' if home else f'requesting admission to {s.get("destination")}'))
+                elif "volume_ml" in s and s.get("fluid_type"):
+                    labels.append(_fluid_order_label(s, st.session_state.state["sim_time"]))
+                elif s.get("label"):
+                    labels.append(str(s["label"]))
+                elif "volume_ml" in s:
+                    labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')
+                elif s.get("type") == "magnesium":
+                    labels.append(f'magnesium sulfate {s["dose_mg"] / 1000:g} g {s.get("route", "IV")}'
+                                  + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
+                elif s.get("agent") == "furosemide":
+                    labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}'
+                                  + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
+                elif "agent" in s:
+                    labels.append(f'{s["agent"]} {s["dose_mg"]:g} mg {s["route"]}'
+                                  + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
+                elif s.get("support_type") == "procedural_sedation":
+                    labels.append(procedural_sedation_label(s))
+                elif "energy_j" in s:
+                    labels.append(f'synchronized cardioversion {s["energy_j"]} J')
+                elif s.get("support_type") == "oxygen":
+                    labels.append(f'{s["device"]} {s["flow_lpm"]:g} L/min')
+                elif s.get("support_type") == "norepinephrine":
+                    if s.get("operation") == "stop":
+                        labels.append("norepinephrine stopped")
+                    else:
+                        labels.append(_norepinephrine_summary_label(s))
+                elif s.get("support_type") == "dobutamine":
+                    if s.get("operation") == "stop":
+                        labels.append("dobutamine stopped")
+                    else:
+                        labels.append(f'dobutamine {s.get("rate", 5):g} mcg/kg/min')
+                elif s.get("support_type") == "epinephrine":
+                    labels.append("epinephrine stopped" if s.get("operation") == "stop"
+                                  else f'epinephrine {s.get("rate", 0):g} {s.get("units", "mcg/min")}')
+                elif s.get("support_type") == "nitroglycerin":
+                    if s.get("operation") == "stop":
+                        labels.append("nitroglycerin stopped")
+                    else:
+                        labels.append(f'nitroglycerin {s["rate_mcg_min"]:g} mcg/min')
+                elif s.get("support_type") == "niv":
+                    if s.get("operation") == "stop":
+                        labels.append("noninvasive ventilation stopped")
+                    elif s.get("mode") == "BiPAP" and s.get("ipap_cmh2o") is not None and s.get("epap_cmh2o") is not None:
+                        fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
+                        labels.append(f'BiPAP {s.get("ipap_cmh2o"):g}/{s.get("epap_cmh2o"):g} cm H2O{fio}')
+                    else:
+                        fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
+                        labels.append(f'{s["mode"]} {s["pressure_cmh2o"]:g} cm H2O{fio}')
+                elif s.get("support_type") == "airway_preparation":
+                    labels.append("airway preparation for intubation")
+                elif s.get("support_type") == "invasive_ventilation":
+                    operation = s.get("operation", "start")
+                    prefix = {
+                        "continue": "continued",
+                        "adjust": "adjusted",
+                        "start": "intubation +",
+                    }.get(operation, "adjusted")
+                    labels.append(
+                        f'{prefix} {s.get("ventilator_mode", "VC/AC")} ventilation '
+                        f'at FiO2 {s.get("fio2_percent", 100):g}% and PEEP {s.get("peep_cmh2o", 8):g} cm H2O'
+                    )
+                elif s.get("support_type") == "disposition":
+                    labels.append("discharge home" if s.get("destination") == "home"
+                                  else f'admission to {s.get("destination", "ICU")}')
+                elif s.get("support_type") == "antibiotics":
+                    antibiotic = str(s.get("agent_name") or "broad-spectrum antibiotics")
+                    if antibiotic.lower() == "ceftriaxone + azithromycin":
+                        ceftriaxone = "ceftriaxone"
+                        if s.get("dose_g") is not None:
+                            ceftriaxone += f' {s.get("dose_g"):g} g'
+                        if s.get("route"):
+                            ceftriaxone += f' {s.get("route")}'
+                        antibiotic = ceftriaxone + " + azithromycin"
+                    else:
+                        if s.get("dose_g") is not None:
+                            antibiotic += f' {s.get("dose_g"):g} g'
+                        if s.get("route"):
+                            antibiotic += f' {s.get("route")}'
+                    if s.get("administration_duration_min"):
+                        antibiotic += f' over {s["administration_duration_min"]:g} min'
+                    labels.append(antibiotic)
+
+            diagnostic_summaries = sorted(
+                [x for x in summaries if x.get("diagnostic_type")],
+                key=lambda x: (x.get("result") or {}).get("time_min", st.session_state.state["sim_time"]),
+            )
+            treatment_labels = [x for x in labels if x]
+            # Diagnostic information becomes available during the interval and is
+            # rendered before the scheduled reassessment update.
+            # Results and any procedure the course produced (an endoscopy) are
+            # reported in the order they happened.
+            timed_events = [("diagnostic_result", format_diagnostic_summary(ds),
+                             (ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"]))
+                            for ds in diagnostic_summaries]
+            timed_events += [("procedure", x["label"], x["time_min"]) for x in summaries if x.get("type") == "procedure"]
+            timed_events += [("study_not_performed", x["label"], x["time_min"])
+                             for x in summaries if x.get("type") == "study_not_performed"]
+            timed_events += [("examination", x["label"], x.get("time_min", st.session_state.state["sim_time"]))
+                             for x in summaries if x.get("type") == "examination"]
+            # The reperfusion pathway is reported as its own entry, at the minute
+            # the resident decided it.
+            timed_events += [("procedure", str(x["pathway_note"]), st.session_state.state["sim_time"])
+                             for x in summaries if x.get("pathway_note")]
+            for kind, text, time in sorted(timed_events, key=lambda item: item[2]):
+                add_event(kind, text, time=time)
+            # What was given and when the values were taken: an immediate look is
+            # never "after" a treatment still running, and a wait an event stopped
+            # says so, at the event's minute (Phase 0, 0E/0F; time_semantics).
+            import time_semantics as _time_words
+            if treatment_labels or result.get("interrupted"):
+                add_event("clinical_update",
+                          _time_words.update_lead(result, parsed, treatment_labels) + format_clinical_update())
+            elif (
+                diagnostic_summaries
+                # A reassessment the resident asked for is reported as such, even
+                # when the results arrived before it.
+                and result.get("reassess_delay") is None
+                and int(result.get("elapsed_min", 0) or 0) > 0
+                and observable_state_changed(trace_state_before, trace_state_after)
+            ):
+                elapsed = int(result.get("elapsed_min", 0) or 0)
+                add_event(
+                    "clinical_update",
+                    f"While awaiting diagnostic results over {elapsed} minutes, "
+                    + format_clinical_update(),
+                )
+            elif result.get("reassess_delay") is not None:
+                add_event("clinical_update",
+                          _time_words.update_lead(result, parsed, []) + format_clinical_update())
+
+        # A reassessment-only order has no treatment/diagnostic summaries, so
+        # it needs its own learner-facing patient update.
+        if result.get("reassess_delay") is not None and not result.get("action_summaries"):
+            import time_semantics as _time_words
+            add_event("clinical_update",
+                      _time_words.update_lead(result, parsed, []) + format_clinical_update())
+
+        if result.get("terminal_locked") or any(
+                event.get("terminal") for event in result.get("events") or []):
+            # Said in the words the pilot agreed (Phase 0, 0G): the arrest, its minute, and
+            # that nothing after it is assessed. No recovery is invented.
+            import observation_consistency as _arrest
+            add_event("prototype", _arrest.arrest_message(_arrest.arrest_minute(st.session_state.state)))
+
+        if not result.get("executed") and not parsed["recognized_future_actions"] and not result.get("terminal_locked"):
+            add_event(
+                "prototype",
+                "I preserved your input, but this build does not yet execute that action."
+            )
+
+    if result.get("partial") and result.get("clarification"):
+        # What ran was reported above; what waits, and the question, are said now.
+        add_event("clarification", result["clarification"])
+    # Every order that did not simply run is said, one line each (Phase 0, 0A).
+    _order_pipeline.ledger_record(st.session_state, turn, add_event)
+
+    # The events this order produced are appended above, after the decision
+    # was recorded, so the recorded response window used to end just before
+    # its own response. The Management Trace analysis is validated against
+    # that window, and was rejected for citing the very update it described
+    # (2026-09-22, preparing the learner report). The cursor is therefore
+    # advanced once the response is on the record.
+    recorded_trace_event["state_after"]["encounter_event_count"] = len(
+        st.session_state.get("events") or []
+    )
+    rerun_app()
+
+
+
+@st.fragment(key="clinical-encounter")
+def _clinical_encounter_workspace():
+    # Fragment reruns do not execute the top of app.py, so repeat the Phase 0
+    # recovery/write-ahead gate here before any encounter element is emitted.
+    _submission_guard.recover(st.session_state, _SESSION_FIELDS)
+    if ACCOUNT_CONTEXT:
+        _submission_guard.write_ahead(
+            st.session_state, lambda: _write_session(ACCOUNT_CONTEXT)
+        )
+
+    # A free-text Send captured by the callback is processed before bedside, chart,
+    # modes or form are drawn. The processing path ends in a fragment-scoped rerun.
+    _pre_render_entry = next(iter(_submission_guard.pending(st.session_state)), None)
+    if _pre_render_entry is not None:
+        _process_encounter_submission(_pre_render_entry["raw_text"], _pre_render_entry, None)
+
+    _in_room = not st.session_state.encounter_ended
+    if _in_room and not _FAST_PENDING_SUBMISSION:
+        # The simulated time is said once on the screen, beside the information; the
+        # monitor shows the patient now (2026-10-02, section 9).
+        render_room(st.session_state.state, st.session_state.events, _ecg_strip_svg, render_event, "", ACCOUNT_CONTEXT)
+    _ecg_acquired, _ecg_notice = False, None
+    if _in_room and not _FAST_PENDING_SUBMISSION:
+        # In the band above the information. The ECG is acquired before the views are
+        # drawn, so that its notice is in them at once; what the room says otherwise, and
+        # the save that follows an acquisition, are said in the console below.
+        with st.container(key="enc-status"):
+            _render_encounter_clock()
+        # Drawn beside the monitor, the bedside's own action (UX, second iteration, 2026-10-02).
+        with st.container(key="enc-ecg"):
+            _ecg_acquired, _ecg_notice = _room.acquire_ecg_button(st.session_state.state, st.session_state.events)
+    with st.container(key="encounter-console"):
+        if _ecg_notice:
+            (st.error if _ecg_notice[0] == "error" else st.info)(_ecg_notice[1])
+        if _ecg_acquired and ACCOUNT_CONTEXT:
             save_session(ACCOUNT_CONTEXT)
         if not _in_room:
-            st.caption(_record_words("Management Reasoning Simulator · Clinical encounter v{version}",
-                                     version=SIMULATOR_VERSION.split('-')[0]))
+            # The review that follows the close keeps what it showed above the chart.
+            _render_closed_bedside()
+            _render_carry_forward_plan()
+        # What was obtained, to consult: above the writing area in the room, and folded
+        # away on the review that follows the close, as the chart was. A durable pending
+        # submission skips this expensive pre-processing draw; the result rerun renders it once.
+        if not _FAST_PENDING_SUBMISSION:
+            with (st.container(key="enc-info") if _in_room
+                  else st.expander(_record_words("Clinical chart · examination · results · treatment record"),
+                                   expanded=False)):
+                if _in_room:
+                    _render_carry_forward_plan()
+                _render_encounter_views(bedside=_in_room)
+                if _in_room and faculty_access():
+                    _render_staff_tools()
+        with st.container(key="enc-action"):
+            with st.container(key="enc-modes"):
+                modes_area = st.container()
+                if _in_room:
+                    import language as _title_lang
+                    title_area, modes_area = st.columns([1.25, 3], vertical_alignment="center")
+                    # One title for the writing area, whatever the mode (2026-10-02, section 4).
+                    title_area.markdown('<div class="enc-title" role="heading" aria-level="2">'
+                                        + escape(_title_lang.say("### Management").lstrip("# ").strip()) + "</div>",
+                                        unsafe_allow_html=True)
+                with modes_area:
+                    # L-01, I-9: the modes in the reading language; the value the page reads stays English.
+                    encounter_mode = st.radio(_record_words("Encounter"), ["Talk", "Examine", "Tests", "Treat"], index=3,
+                                              horizontal=True, label_visibility="collapsed", format_func=_record_words)
+            if _in_room and not _FAST_PENDING_SUBMISSION:
+                _render_latest_response()
+            orders_panel = st.container()
+            from clinical_scene import history_facts, answer_history, associated_symptoms, history_topics, history_topic_facts, setting as scene_setting
+            if encounter_mode == "Talk" and not st.session_state.encounter_ended:
+                clinical_case = st.session_state.state.get("encounter_spec", {}).get("clinical_case", {})
+                history_source = clinical_case.get("history_source")
+                has_collateral = bool(history_source and str(history_source).strip().lower() not in {"patient", "the patient"})
+                cannot_speak = str(st.session_state.state['observable'].get('mental_status', '')).lower() in {'unresponsive', 'obtunded', 'sedated'}
+                if cannot_speak and not has_collateral:
+                    st.info(_record_words('The patient cannot provide a history at present. Review the history already obtained in the clinical chart.'))
+                else:
+                    if history_source:
+                        # Whole in one language: Spanish once the case's translation is approved (case_text).
+                        import language
+                        st.caption(language.narrative("History source: " + str(history_source)))
+                    if cannot_speak:
+                        st.info(_record_words("The patient cannot answer at present. Questions are directed to the available collateral source."))
+                    presentation = next((e["text"] for e in st.session_state.events if e["kind"] == "presentation"), "")
+                    facts = history_facts(presentation, st.session_state.state.get("case_id"), state=st.session_state.state)
+                    with st.form("patient_conversation"):
+                        question = st.text_input(_record_words("Ask the available history source" if cannot_speak
+                                                               else "Ask the patient"),
+                                                 placeholder=_record_words("What brought you in today?"))
+                        ask_patient = st.form_submit_button(_record_words("Ask"))
+                    if ask_patient and question.strip():
+                        answer = answer_history(question, facts, scene_setting("OPENAI_API_KEY"), state=st.session_state.state)
+                        add_event("you", question)
+                        add_event("patient_history", answer)
+                        import clinical_time as _clock
+                        spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
+                                            activity="history_question", request=question, response=answer)
+                        rerun_app()
+                    with st.expander(_record_words("History topics")):
+                        case_topics = history_topics(st.session_state.state)
+                        # I-5, L-08: each topic by its name in the reading language; the value stays English.
+                        from history_topics import HISTORY_TOPIC_LABELS, topic_label
+                        import language as _topic_lang
+                        _topic_keys = {label: key for key, label in HISTORY_TOPIC_LABELS.items()}
+                        topic = st.selectbox(
+                            _record_words("Explore"),
+                            case_topics or ["Presenting symptoms and onset", "Associated symptoms", "Previous health"],
+                            format_func=lambda label: (topic_label(_topic_keys[label], _topic_lang.current())
+                                                       if label in _topic_keys else _record_words(label)))
+                        if st.button(_record_words("Ask about this topic")):
+                            if case_topics:
+                                response = " ".join(history_topic_facts(st.session_state.state, topic))
+                            elif topic == "Associated symptoms":
+                                response = associated_symptoms(facts)
+                            elif topic == "Previous health":
+                                response = "Hypertension." if st.session_state.state.get("case_id") == "PS002" else "Hypertension and type 2 diabetes."
+                            else:
+                                response = " ".join(f for f in facts if not f.startswith(("I ", "It has burned")))
+                            add_event("you", "Ask about " + topic.lower())
+                            add_event("patient_history", response)
+                            import clinical_time as _clock
+                            spend_clinical_time(_clock.ACTIVE_MINUTES["history_question"],
+                                                activity="history_question",
+                                                request="Ask about " + topic.lower(), response=response)
+                            rerun_app()
+            # Like talking and treating, examining ends with the encounter: after the
+            # close it added a decision to the saved record and moved the clinical
+            # clock, and with it the closing minute the rubric's screening reads.
+            if encounter_mode == "Examine" and not st.session_state.encounter_ended:
+                family_findings = {}
+                if st.session_state.state.get("engine_family"):
+                    from family_engine import current_findings
+                    family_findings = current_findings(st.session_state.state)
+                import language as _region_lang
+                # L-11 and V-4: the regions by their names in the reading language; the value stays English.
+                area = st.selectbox(_record_words("Examine"),
+                                    list(dict.fromkeys(["General appearance", "Breathing", "Peripheral perfusion"]
+                                                       + list(family_findings))),
+                                    format_func=_region_lang.region)
+                if st.button(_record_words("Examine patient")):
+                    observed = st.session_state.state["observable"]
+                    if st.session_state.state.get("engine_family"):
+                        from family_engine import examination_finding
+                        finding = examination_finding(st.session_state.state, area)
+                    elif area == "General appearance":
+                        from patient_appearance import appearance_summary
+                        finding = appearance_summary(st.session_state.state)
+                    elif area in family_findings:
+                        finding = family_findings[area]
+                    elif area == "Breathing":
+                        finding = "Respiratory rate: " + str(observed.get("respiratory_rate", "—")) + "/min. Work of breathing: " + str(observed.get("work_of_breathing", "Not documented"))
+                    elif not observed.get("pulse_present", True):
+                        finding = "Pulse absent. Capillary refill is not measurable."
+                    else:
+                        finding = "Capillary refill: " + str(observed.get("crt", "—")) + " s. Extremities: " + str(observed.get("extremities", "Not documented"))
+                    add_event("you", "Examine: " + area)
+                    add_event("examination", finding)
+                    import clinical_time as _clock
+                    spend_clinical_time(_clock.examination_minutes([area]),
+                                        activity="examination", request="Examine: " + area,
+                                        response=finding)
+                    rerun_app()
 
-        # Compatibility marker for v0.6.0.27 regression lineage.
+            submitted = False
+            submission_text = ""
+            _guard_entry = None  # the Send submission this run processes (Phase 0, 0D)
+            submission_parsed = None
+            with orders_panel:
+                if not st.session_state.encounter_ended and (encounter_mode in {"Tests", "Treat"} or st.session_state.get("pending_reasoning")):
+                    import language as _lang
+                    st.caption(_lang.say(
+                        "Write what you are doing in your own words: what you think is going on, "
+                        "what you are going to do, what you expect, and what you will check."
+                    ))
+                    pending_reasoning = st.session_state.get("pending_reasoning")
+                    if pending_reasoning:
+                        pending_missing = pending_reasoning.get("missing", []) or []
+                        held_parsed = pending_reasoning.get("parsed", {}) or {}
+                        held_reasoning = held_parsed.get("reasoning", {}) or {}
+                        held_reassessment = next(
+                            (
+                                action for action in held_parsed.get("actions", [])
+                                if action.get("type") == "reassessment"
+                            ),
+                            {},
+                        )
+                        gate_id = int(pending_reasoning.get("gate_id") or 1)
+                        st.warning(_record_words(
+                            "An understood order is being held. The patient state is unchanged; "
+                            "complete the reasoning in your own words or use the guided fields."
+                        ))
+                        st.markdown(_record_words("**Held order:** {summary}",
+                                                  summary=_lang.order_summary(_reasoning_gate_action_summary(held_parsed))))
+                        import unexecuted_items
+                        for line in unexecuted_items.held_messages(held_parsed):
+                            st.info(_lang.say(line))
+                        for observation in held_parsed.get("reasoning_observations", []) or []:
+                            st.info(observation)
+                        import reasoning_questions as _questions
+                        st.markdown(_lang.say("  \n".join(
+                            ("○ " if field in pending_missing else "✓ ") + question
+                            for field, question, _ in _questions.QUESTIONS
+                        )))
+
+                        st.markdown(_lang.say("#### Answer what is missing"))
+                        with st.form(f"reasoning_completion_form_{gate_id}"):
+                            left, right = st.columns(2)
+                            with left:
+                                guided_working_model = st.text_area(
+                                    _lang.say(_questions.QUESTION["working_model"]),
+                                    value=str(
+                                        held_reasoning.get("problem_representation")
+                                        or held_reasoning.get("rationale")
+                                        or ""
+                                    ),
+                                    height=78,
+                                    help=_lang.say(_questions.HELP["working_model"]),
+                                    key=f"reasoning_model_{gate_id}",
+                                )
+                                guided_expected_effect = st.text_area(
+                                    _lang.say(_questions.QUESTION["expected_effect"]),
+                                    value=str(held_reasoning.get("expected_effect")
+                                              or (held_parsed.get("plan_suggestion") or {}).get("expected_effect") or ""),
+                                    height=78,
+                                    help=_lang.say(_questions.HELP["expected_effect"]),
+                                    key=f"reasoning_effect_{gate_id}",
+                                )
+                            with right:
+                                # The action is one of the four and the only one that is
+                                # never a field here. This form completes the reasoning
+                                # around an order the engine already read; a box that
+                                # could change it would let the follow-up administer a
+                                # drug, and it provably cannot (specification §4).
+                                st.text_area(
+                                    _lang.say(_questions.QUESTION["action"]),
+                                    value=_held_order_summary(held_parsed),
+                                    height=78,
+                                    disabled=True,
+                                    help=_lang.say(
+                                        "This is what the engine understood. To change it, cancel "
+                                        "and write the order again below."),
+                                    key=f"reasoning_action_{gate_id}",
+                                )
+                                guided_reassessment_target = st.text_area(
+                                    _lang.say(_questions.QUESTION["reassessment_target"]),
+                                    value=str(held_reasoning.get("reassessment_target")
+                                              or (held_parsed.get("plan_suggestion") or {}).get("reassessment_target") or ""),
+                                    height=78,
+                                    help=_lang.say(_questions.HELP["reassessment_target"]),
+                                    key=f"reasoning_reassessment_{gate_id}",
+                                    placeholder=_record_words("e.g. HR and rhythm, BP/MAP, capillary refill, mental status"),
+                                )
+                            guided_reassessment_delay = st.number_input(
+                                _lang.say("I will check in… minutes"),
+                                min_value=1,
+                                max_value=240,
+                                value=min(240, max(1, int(held_reassessment.get("delay_min") or 5))),
+                                step=1,
+                                key=f"reasoning_delay_{gate_id}",
+                            )
+                            # Recorded because it is useful to read, never because it
+                            # holds anything. It is asked last and says it is optional.
+                            guided_priority = st.text_area(
+                                _lang.say(REASONING_GATE_FIELD_STEMS["management_priority"]),
+                                value=str(held_reasoning.get("management_priority") or ""),
+                                height=68,
+                                key=f"reasoning_priority_{gate_id}",
+                            )
+                            guided_submitted = st.form_submit_button(
+                                _record_words("Complete reasoning & execute held order"),
+                                type="primary",
+                            )
+
+                        if guided_submitted:
+                            guided_resolution = complete_pending_reasoning_fields(
+                                guided_working_model,
+                                guided_priority,
+                                guided_expected_effect,
+                                guided_reassessment_target,
+                                guided_reassessment_delay,
+                            )
+                            if guided_resolution and guided_resolution.get("clarification"):
+                                active_pending = st.session_state.get("pending_reasoning") or {}
+                                upsert_reasoning_gate_clarification(
+                                    active_pending.get("parsed", held_parsed),
+                                    guided_resolution.get("missing", []),
+                                )
+                                rerun_app()
+                            if guided_resolution and guided_resolution.get("parsed"):
+                                submission_parsed = guided_resolution["parsed"]
+                                submission_text = guided_resolution.get("transcript") or "Guided reasoning completed."
+                                submitted = True
+
+                        st.caption(_record_words(
+                            "Or answer naturally below. You only need to add what is missing; "
+                            "you do not need to repeat the held order."
+                        ))
+
+                    from urgent_interventions import awaiting_explanation, record_retrospective
+                    urgent_index = awaiting_explanation(st.session_state.get("management_trace") or [])
+                    if urgent_index is not None and not st.session_state.get("pending_reasoning"):
+                        urgent_entry = st.session_state.management_trace[urgent_index]
+                        unstated = [field for field in (urgent_entry.get("reasoning_gate") or {}).get("noted") or []
+                                    if field in REASONING_GATE_BLOCKING]
+                        with st.expander(_record_words("Explain an urgent decision afterwards (optional, recorded as retrospective)")):
+                            st.caption(_record_words("The intervention already ran. What you write here is recorded as written now, "
+                                                     "after the decision, and never as reasoning shown when it was taken."))
+                            with st.form(f"retrospective_{urgent_index}"):
+                                retrospective_answers = {
+                                    {"working_model": "problem_representation"}.get(field, field): st.text_area(
+                                        _lang.say(REASONING_GATE_FIELD_LABELS[field]), key=f"retrospective_{urgent_index}_{field}",
+                                        height=68)
+                                    for field in unstated}
+                                if st.form_submit_button(_record_words("Save retrospective explanation")):
+                                    if record_retrospective(urgent_entry, retrospective_answers,
+                                                            st.session_state.state.get("sim_time")):
+                                        if ACCOUNT_CONTEXT:
+                                            save_session(ACCOUNT_CONTEXT)
+                                        rerun_app()
+
+                    if not submitted:
+                        # Phase 0 (0D): the text is written down by the Send callback before
+                        # anything runs, runs once, and is never lost to a double click or a
+                        # reload (submission_guard). A run that stopped part way is said.
+                        import submission_guard as _guard
+                        for lost in _guard.notices(st.session_state):
+                            add_event("prototype", _guard.interrupted_message(lost))
+                        form_id = _guard.nonce(st.session_state)
+                        busy = _guard.waiting(st.session_state)
+                        with st.form(f"learner_form_{form_id}", clear_on_submit=False):
+                            st.text_area(
+                                _record_words("Enter your clinical reasoning and/or actions"),
+                                height=100,
+                                label_visibility="collapsed",
+                                placeholder=_record_words(
+                                    "Describe your reasoning naturally. For example: I think...; "
+                                    "I am addressing... first; I expect...; reassess ... in ... minutes."
+                                ),
+                                key=_guard.text_key(form_id),
+                            )
+                            # Send, in the reading language (2026-10-02, section 4); Enter still adds a line.
+                            from screen_language import t as _send_words
+                            st.form_submit_button(_send_words("Send"), type="primary", key=_guard.send_key(form_id),
+                                                  disabled=busy, on_click=_capture_submission, args=(form_id,))
+                        _guard_entry = next(iter(_guard.pending(st.session_state)), None)
+                        if _guard_entry is not None:
+                            submission_text = _guard_entry["raw_text"]
+                            submitted = True
+
+                    if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action", "pending_bundle")):
+                        if st.button(_record_words("Cancel pending orders"), key="cancel_pending_orders"):
+                            cancel_pending_order()
+                            rerun_app()
+
+                    if pending_reasoning and faculty_access():
+                        st.caption(
+                            f"Facilitator override: type `{REASONING_GATE_OVERRIDE}` in the natural-language box."
+                        )
+
+            if submitted and submission_text.strip():
+                # Guided reasoning submits inside the fragment too; keep its result rerun local.
+                st.session_state["_encounter_fragment_rerun"] = True
+                _process_encounter_submission(submission_text, _guard_entry, submission_parsed)
+
+            if not _in_room:
+                st.divider()
+
+            if not st.session_state.encounter_ended:
+                import encounter_close
+                import language as _close_lang
+                if st.session_state.get("close_pending"):
+                    # A brief warning that never blocks (faculty decision 9, 2026-09-25):
+                    # no destination is invented and nothing already recorded is erased.
+                    st.warning(_close_lang.say(encounter_close.WARNING))
+                    close_kind = st.radio(_close_lang.say("How is this encounter ending?"), encounter_close.KINDS,
+                                          format_func=lambda kind: _close_lang.say(encounter_close.LABELS[kind]),
+                                          key="close_kind")
+                    keep_going, finish_now = st.columns(2)
+                    if keep_going.button(_close_lang.say("Continue the encounter")):
+                        st.session_state.close_pending = False
+                        rerun_app()
+                    if finish_now.button(_close_lang.say("Finish now"), type="primary"):
+                        st.session_state.close_pending = False
+                        st.session_state.encounter_close = encounter_close.record(
+                            close_kind, destination_recorded=False, warned=True,
+                            minute=st.session_state.state.get("sim_time"))
+                        begin_decision_review(st.session_state.management_trace, st.session_state.state)
+                        rerun_app()
+                else:
+                    # Available, and secondary to writing and Send (UX, second iteration, 2026-10-02).
+                    with st.container(key="enc-close"):
+                        complete = st.button(
+                            _record_words("Complete Encounter & Begin Review"),
+                            disabled=not bool(st.session_state.management_trace),
+                        )
+                    if complete:
+                        if encounter_close.has_destination(st.session_state.management_trace, st.session_state.state):
+                            st.session_state.encounter_close = encounter_close.record(
+                                "clinical_close", destination_recorded=True, warned=False,
+                                minute=st.session_state.state.get("sim_time"))
+                            begin_decision_review(st.session_state.management_trace, st.session_state.state)
+                        else:
+                            st.session_state.close_pending = True
+                        rerun_app()
+            else:
+                frozen_trace = st.session_state.get("encounter_closed_trace")
+                if frozen_trace is None:
+                    # Backward-compatible recovery for an in-memory session opened in an
+                    # earlier build before encounter snapshots were introduced.
+                    begin_decision_review(st.session_state.management_trace, st.session_state.state)
+                    frozen_trace = st.session_state.encounter_closed_trace
+                frozen_state = st.session_state.get("encounter_closed_state") or management_state_snapshot(st.session_state.state)
+                render_learning_focus(ACCOUNT_CONTEXT)
+                # One short, optional question about help received, at the close and
+                # never before (faculty specification 2026-09-24, section 3).
+                if ACCOUNT_CONTEXT:
+                    import language
+                    from assistance_portal import render_closing_question
+                    render_closing_question(ACCOUNT_CONTEXT, st.session_state.get("_attempt_id"),
+                                            frozen_trace, language=language.current())
+                with st.expander(_record_words("Original decision-by-decision record"), expanded=False):
+                    st.caption(_record_words("Your original orders, stated reasoning and recorded responses remain unchanged."))
+                    render_management_trace(frozen_trace)
+                if not st.session_state.get("expert_comparison_unlocked"):
+                    st.caption(_record_words("Complete your independent reflection to receive an analyzed Management Trace with your clinical trajectory and key decisions."))
+                render_decision_review(frozen_trace, frozen_state)
+
+            if not _in_room:
+                st.divider()
+            # Leaving the encounter is navigation: while it is under way it is in the room's
+            # menu, with the account (2026-10-02, section 11); after the close, here.
+            with (ENCOUNTER_MENU if _in_room and ENCOUNTER_MENU is not None else st.container()):
+                if ACCOUNT_CONTEXT:
+                    if st.button(_record_words("Save & return to dashboard"), type="secondary"):
+                        return_to_dashboard(ACCOUNT_CONTEXT, reset_session)
+                    if st.button(_record_words("End this attempt without completing review"), type="secondary"):
+                        return_to_dashboard(ACCOUNT_CONTEXT, reset_session, abandon=True)
+                else:
+                    if st.button("Reset scenario", type="secondary"):
+                        reset_session()
+                        rerun_app()
+
+            # In the room they are with the information, for staff only; after the close, here.
+            if faculty_access() and not _in_room:
+                _render_staff_tools()
+
+            if ACCOUNT_CONTEXT:
+                save_session(ACCOUNT_CONTEXT)
+            if not _in_room:
+                st.caption(_record_words("Management Reasoning Simulator · Clinical encounter v{version}",
+                                         version=SIMULATOR_VERSION.split('-')[0]))
+
+            # Compatibility marker for v0.6.0.27 regression lineage.
+
+
+_clinical_encounter_workspace()
