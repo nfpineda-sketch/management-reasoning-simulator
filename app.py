@@ -130,28 +130,19 @@ def rerun_app():
     submission_guard.finish(st.session_state)
     if context:
         save_session(context)
-    # A Send callback targets the keyed encounter fragment. Its processing run stays
-    # inside that fragment, so the updated result replaces one workspace instead of
-    # forcing another full-app tree reconciliation.
-    if st.session_state.pop("_encounter_fragment_rerun", False):
-        st.rerun(scope="fragment")
     st.rerun()
 
 
 def _capture_submission(form_id):
-    """Capture one Send; let the fragment widget event trigger its own rerun.
+    """Capture one Send; the widget's native fragment rerun does the rest.
 
-    The minimal hosted reproduction that remained stable across repeated Sends did not
-    call st.rerun() from the callback. A widget inside a fragment already reruns that
-    fragment after its callback. Calling st.rerun("clinical-encounter") here adds a second
-    rerun request for the same click and can race with the widget-triggered rerun.
+    The callback only writes the durable submission. Because the Send widget lives
+    inside the clinical-encounter fragment, Streamlit reruns that fragment once after
+    the callback. That rerun performs write-ahead, processes the order before drawing,
+    and then renders the updated workspace in the same run.
     """
     import submission_guard
-    entry = submission_guard.capture(st.session_state, form_id)
-    if entry is not None:
-        # The processing helper ends with rerun_app(); keep that *result* rerun scoped
-        # to this fragment, but do not start an extra rerun from the callback itself.
-        st.session_state["_encounter_fragment_rerun"] = True
+    submission_guard.capture(st.session_state, form_id)
 
 # Historical source markers retained so the v0.8.21 regression lineage remains auditable.
 LEGACY_REGRESSION_VERSION_MARKER = 'SIMULATOR_VERSION = "0.8.21"'
@@ -11373,6 +11364,20 @@ def _process_encounter_submission(submission_text, _guard_entry=None, submission
     recorded_trace_event["state_after"]["encounter_event_count"] = len(
         st.session_state.get("events") or []
     )
+
+    # For an ordinary free-text Send this helper is called at the top of the
+    # fragment rerun, before any encounter element is emitted. Finish and save
+    # here, then continue the same fragment run so the updated workspace is drawn
+    # exactly once. No second rerun is requested.
+    if _guard_entry is not None:
+        import submission_guard as _guard
+        _guard.finish(st.session_state)
+        if ACCOUNT_CONTEXT:
+            save_session(ACCOUNT_CONTEXT)
+        return
+
+    # Guided-form submissions are discovered after part of the fragment has
+    # already rendered, so preserve their existing full-rerun behavior.
     rerun_app()
 
 
