@@ -271,6 +271,10 @@ Cada diferencia está declarada en el registro de correcciones; la prueba `test_
 | C-2026-10-08-08 | TD-86: ES-P1 a ES-P7 en español, con la redacción que decidió la docencia | general | text | cosmetic | — |
 | C-2026-10-08-09 | TD-86: ES-P8 a ES-P13 en español, con la redacción que decidió la docencia | general | text | cosmetic | — |
 | C-2026-10-08-10 | La prueba del aspecto general que dependía del orden: «antes de aprobar» sin relato instalado | general | technical_defect | none | — |
+| C-2026-10-15-01 | E2b: un Send no deja visible un bedside anterior | general | technical_defect | clinical | — |
+| C-2026-10-15-02 | E1: los errores de conexión y rollback del store no llegan crudos a la pantalla | general | technical_defect | none | — |
+| C-2026-10-15-03 | Nuevo reader freeze pre-Fase 1: se acepta el estado post-V3 ya desplegado | general | policy | none | — |
+| C-2026-10-15-04 | Gobernanza de presentación: pacing preparation y Magnesio sérico | general | text | cosmetic | — |
 
 ## La batería, configuración por configuración
 
