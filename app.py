@@ -10929,6 +10929,459 @@ def _render_staff_tools():
     _render_developer_record()
 
 
+def _process_submission_before_render(submission_text, _guard_entry=None, submission_parsed=None):
+    """Process one submitted clinical turn before the encounter UI is drawn.
+
+    A durable Send is captured and written ahead at the top of the script. Processing it
+    here means the run that mutates the encounter emits no bedside, chart, Management form
+    or other encounter subtree before it calls rerun_app(). The following rerun therefore
+    draws exactly one complete UI from the updated state instead of reconciling a partial
+    old tree with a new one.
+    """
+    if not str(submission_text or "").strip():
+        return
+    if _guard_entry is not None:
+        # Claimed here, where nothing more is drawn until the page reruns: a run
+        # stopped before this line leaves the submission waiting, never lost, and
+        # one stopped after it is said, never repeated (Phase 0, 0D).
+        import submission_guard as _guard
+        _guard.begin(st.session_state, _guard_entry, fields=_SESSION_FIELDS,
+                     minute=int(st.session_state.state.get("sim_time", 0) or 0))
+    learner_input = submission_text.strip()
+    from pending_cancellation import is_cancellation
+    if is_cancellation(learner_input):
+        if not cancel_pending_order():
+            add_event("clarification", "There are no pending orders to cancel.")
+        rerun_app()
+    # An order written after the answer to a held order's question (F0-12) was shown
+    # with the answer; it is not shown again as a new message.
+    derived_entry = bool((_guard_entry or {}).get("derived_from"))
+    if not derived_entry:
+        add_event(
+            "reasoning_completion" if submission_parsed is not None else "you",
+            learner_input,
+        )
+    trace_state_before = management_state_snapshot(st.session_state.state)
+    processing_input = learner_input
+    interpretation_audit = {"mode": "guided-form"}
+    if submission_parsed is None:
+        processing_input, interpretation_audit = normalize_clinical_turn(learner_input)
+
+    import order_ledger as _ledger
+    import order_pipeline as _order_pipeline
+    submission_id = (_guard_entry or {}).get("id") or _ledger.new_id()
+    entry_point = "guided_form" if submission_parsed is not None else "free_text"
+    if submission_parsed is not None:
+        parsed = submission_parsed
+    elif derived_entry:
+        # Read as a new order, never as an answer. Should a question be waiting again,
+        # the order is not run and its receipt says so (the protected behaviour).
+        if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action",
+                                                       "pending_bundle")):
+            parsed = {"raw_text": processing_input, "reasoning": {}, "actions": []}
+            entry_point = "clarification_answer"
+        else:
+            parsed = clinical_interpreter(processing_input)
+        _restore_original_turn(parsed, processing_input, learner_input)
+        _attach_interpretation_audit(parsed, interpretation_audit)
+    else:
+        reasoning_resolution = resolve_pending_reasoning(processing_input)
+        if reasoning_resolution and reasoning_resolution.get("clarification"):
+            active_pending = st.session_state.get("pending_reasoning") or {}
+            # Whatever the answer added is held with the order, and recorded as held.
+            _order_pipeline.ledger_hold_reasoning(st.session_state, active_pending.get("parsed") or {},
+                                                  processing_input, submission_id, add_event)
+            upsert_reasoning_gate_clarification(
+                active_pending.get("parsed", {}),
+                reasoning_resolution.get("missing", []),
+            )
+            rerun_app()
+
+        if reasoning_resolution and reasoning_resolution.get("parsed"):
+            parsed = reasoning_resolution["parsed"]
+            entry_point = "reasoning_followup"
+        else:
+            pending_resolution = try_resolve_pending_action(processing_input)
+            if pending_resolution and pending_resolution.get("clarification"):
+                add_event("clarification", pending_resolution["clarification"])
+                rerun_app()
+
+            if pending_resolution and pending_resolution.get("parsed"):
+                parsed = merge_pending_bundle(pending_resolution["parsed"])
+                entry_point = "clarification_answer"
+                if pending_resolution.get("new_order_text") and _guard_entry is not None:
+                    # F0-12: the order written after the answer runs next as an order of
+                    # its own, and the resident is told so now.
+                    import submission_guard as _guard
+                    _guard.derive(st.session_state, _guard_entry, pending_resolution["new_order_text"],
+                                  minute=int(st.session_state.state.get("sim_time", 0) or 0))
+                    parsed["_answer_text"] = pending_resolution["answer_text"]
+                    add_event("prototype", "Also in your answer: \"" + pending_resolution["new_order_text"]
+                              .strip().rstrip(".") + "\". The answer completes the held order only; this "
+                              "order is read next, as an order of its own, with its own receipt.")
+            else:
+                # Parse the current turn in full before considering contextual
+                # shorthand. Context resolution is a fallback only when this turn does
+                # not already contain an explicit executable action.
+                direct = clinical_interpreter(processing_input)
+                direct_non_reassess = [
+                    a for a in direct.get("actions", []) if a.get("type") != "reassessment"
+                ]
+                if direct_non_reassess or st.session_state.state.get("engine_family"):
+                    parsed = direct
+                else:
+                    contextual = parse_contextual_followup(processing_input)
+                    if contextual:
+                        contextual["reasoning"] = direct.get("reasoning", {})
+                        reassess = [a for a in direct.get("actions", []) if a.get("type") == "reassessment"]
+                        contextual["actions"] = [
+                            a for a in contextual.get("actions", []) if a.get("type") != "reassessment"
+                        ] + reassess
+                        parsed = contextual
+                    else:
+                        parsed = direct
+
+        _restore_original_turn(parsed, processing_input, learner_input)
+        _attach_interpretation_audit(parsed, interpretation_audit)
+
+    # Phase 0 (0A-0B): every order of this turn gets an id and the text is checked
+    # against what the reader returned, whatever the entry point.
+    turn_minute = int(st.session_state.state.get("sim_time", 0) or 0)
+    ledger = st.session_state.setdefault("order_ledger", [])
+    turn = _order_pipeline.open_turn(
+        parsed.pop("_coverage_text", None) or processing_input, parsed,
+        coverage_parse=parsed.pop("_coverage_parse", None), submission_id=submission_id,
+        entry_point=entry_point, minute=turn_minute, ledger=ledger,
+        coverage_text=parsed.pop("_answer_text", None))
+    derived_from = (_guard_entry or {}).get("derived_from")
+    if derived_from:
+        # Written in the answer to a held order's question, at the minute of the answer,
+        # and run after it: the record keeps when it was written (F0-12, rule B of 0I).
+        turn["submission"]["derived_from"] = derived_from
+        for _order in turn["orders"]:
+            _order["written_at_min"] = _guard_entry.get("received_at_min", turn_minute)
+            _order["derived_from"] = derived_from
+        if entry_point == "clarification_answer":
+            _order_pipeline.ledger_record(st.session_state, turn, add_event)
+            rerun_app()
+    turn["orders"].extend(_order_pipeline.restated_orders(
+        parsed.pop("_followup_restated", None), submission_id=submission_id, minute=turn_minute,
+        text=processing_input))
+    written = next((entry for entry in st.session_state.get("submission_log") or []
+                    if entry.get("id") == submission_id), None)
+    if written:
+        # When the text was written down, whether it reached the database before
+        # anything ran, and how often a stopped run was undone (Phase 0, 0D).
+        turn["submission"]["received_at"] = written.get("received_at")
+        turn["submission"]["write_ahead"] = bool(written.get("saved_before_run"))
+        turn["submission"]["retried_after_interruption"] = int(written.get("retries", 0) or 0)
+
+    parsed["reasoning_observations"] = reasoning_state_observations(
+        parsed, st.session_state.state
+    )
+    gate_decided = parsed.pop("_gate_decided", False) and \
+        (parsed.get("reasoning_gate") or {}).get("status") in ("urgent_unheld", "complete", "overridden")
+    # After an arrest the simulator does not model, nothing is assessed: no order is held to
+    # ask for its reasoning, and the engine answers it with the arrest (Phase 0, 0G).
+    import observation_consistency as _arrest_now
+    arrested_now = _arrest_now.arrest_minute(st.session_state.state) is not None
+    missing_reasoning = [] if (gate_decided or arrested_now) else reasoning_still_missing(parsed)
+    gate_status = (parsed.get("reasoning_gate") or {}).get("status")
+    if missing_reasoning and gate_status != "overridden":
+        st.session_state.last_parse = _ledger.untagged(parsed)
+        hold_pending_reasoning(parsed, missing_reasoning)
+        upsert_reasoning_gate_clarification(parsed, missing_reasoning)
+        _order_pipeline.settle(turn, result={"executed": False}, run_actions=list(parsed.get("actions") or []),
+                               minute_before=turn_minute, minute_after=turn_minute, held_for_reasoning=True)
+        _order_pipeline.ledger_record(st.session_state, turn, add_event)
+        rerun_app()
+    if gate_status is None and any(
+        action.get("type") in REASONING_GATE_ACTION_TYPES
+        for action in parsed.get("actions", [])
+    ):
+        from urgent_interventions import is_urgent, present_categories
+        if is_urgent(parsed):
+            noted = reasoning_gate_noted(parsed)
+            parsed["reasoning_gate"] = {"required": True, "status": "urgent_unheld", "missing": [],
+                                        "noted": noted, "present": present_categories(parsed)}
+            gate_status = "urgent_unheld"
+            # What was not stated is said once the engine has run it (below).
+        else:
+            parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
+                                        "noted": reasoning_gate_noted(parsed)}
+            gate_status = "complete"
+
+    recognize_cues_for(parsed)
+
+    for observation in parsed.get("reasoning_observations", []) or []:
+        add_event("reasoning_note", observation)
+
+    st.session_state.last_parse = _ledger.untagged(parsed)
+    st.session_state.history.append(_ledger.untagged(parsed))
+    trace_input = parsed.get("raw_text") or learner_input
+
+    result = execute_bundle(parsed)
+    split = result.pop("_split", None)
+    run_actions = result.pop("_run_actions", None)
+    if run_actions is None:
+        run_actions = list(parsed.get("actions") or [])
+    _order_pipeline.settle(
+        turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
+        minute_after=int(st.session_state.state.get("sim_time", 0) or 0),
+        terminal=bool(result.get("terminal_locked")))
+    if entry_point == "clarification_answer" or entry_point == "reasoning_followup":
+        _order_pipeline.ledger_resolve_held(st.session_state, run_actions, bool(result.get("executed")),
+                                            turn_minute, add_event)
+    trace_state_after = management_state_snapshot(st.session_state.state)
+    recorded_trace_event = record_management_trace(
+        trace_input, parsed, result, trace_state_before, trace_state_after, turn=turn
+    )
+
+    ran = bool(result.get("executed")) and (not result.get("clarification") or bool(result.get("partial")))
+    # An urgent intervention is said to have run only once the engine ran
+    # it -- in this turn, or when the answer to a question about the same
+    # order completes it. A bundle the engine refused ran nothing, and the
+    # page used to say it had and offer to explain it (59O-03, 2026-09-28).
+    urgent_unstated = [field for field in (parsed.get("reasoning_gate") or {}).get("noted") or []
+                if field in REASONING_GATE_BLOCKING]
+    if ran and gate_status == "urgent_unheld" and urgent_unstated:
+        add_event("prototype", "Urgent intervention executed without waiting for the reasoning. "
+                  "Not stated: " + ", ".join(REASONING_GATE_FIELD_LABELS[field].rstrip("?").lower()
+                                             for field in urgent_unstated)
+                  + ". You can explain it afterwards; it is recorded as a retrospective explanation.")
+    if gate_status == "overridden":
+        add_event(
+            "prototype",
+            "Facilitator override accepted. The held order was executed with incomplete prospective reasoning."
+            if ran else
+            "Facilitator override accepted, but the order did not run: see the message below."
+        )
+
+    if parsed["recognized_future_actions"] and not result.get("terminal_locked"):
+        import unexecuted_items
+        said, unclassified = unexecuted_items.messages(parsed)
+        for line in said:
+            add_event("prototype", line)
+        if unclassified:
+            add_event(
+                "prototype",
+                "Recognized but not executed in this build: "
+                + ", ".join(unclassified)
+                + ". Any supported actions in the same order continue separately."
+            )
+
+    if result.get("clarification") and not result.get("partial"):
+        add_event("clarification", result["clarification"])
+    else:
+        summaries = _summaries_in_learner_order(
+            result.get("action_summaries", []), trace_input
+        )
+        if summaries:
+            # All actions in one learner order are integrated into one longitudinal
+            # patient state and produce one learner-facing update at the reassessment time.
+            labels = []
+            for s in summaries:
+                # A call or admission request reads as part of "After ..., BP ...";
+                # its stored label ("ICU contacted; definitive ...") does not.
+                if s.get("type") == "procedure":
+                    continue
+                # An examination is an observation: it carries its own entry,
+                # exactly as the Examine control writes it.
+                if s.get("type") == "examination":
+                    continue
+                if s.get("type") in {"consult", "reperfusion_referral"}:
+                    service = s.get("service") or s.get("destination")
+                    if s.get("pathway_note"):
+                        labels.append(str(s["label"]))
+                    else:
+                        labels.append(f'{service} already contacted (not repeated)' if s.get("repeated")
+                                      else f'contacting {service} (no intervention yet)')
+                        continue
+                elif s.get("type") == "disposition":
+                    # Going home is a discharge, not an admission to a place.
+                    home = s.get("destination") == "home"
+                    labels.append(
+                        ('discharge home already requested (not repeated)' if home else
+                         f'admission to {s.get("destination")} already requested (not repeated)')
+                        if s.get("repeated") else
+                        ('discharging the patient home' if home else f'requesting admission to {s.get("destination")}'))
+                elif "volume_ml" in s and s.get("fluid_type"):
+                    labels.append(_fluid_order_label(s, st.session_state.state["sim_time"]))
+                elif s.get("label"):
+                    labels.append(str(s["label"]))
+                elif "volume_ml" in s:
+                    labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')
+                elif s.get("type") == "magnesium":
+                    labels.append(f'magnesium sulfate {s["dose_mg"] / 1000:g} g {s.get("route", "IV")}'
+                                  + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
+                elif s.get("agent") == "furosemide":
+                    labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}'
+                                  + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
+                elif "agent" in s:
+                    labels.append(f'{s["agent"]} {s["dose_mg"]:g} mg {s["route"]}'
+                                  + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
+                elif s.get("support_type") == "procedural_sedation":
+                    labels.append(procedural_sedation_label(s))
+                elif "energy_j" in s:
+                    labels.append(f'synchronized cardioversion {s["energy_j"]} J')
+                elif s.get("support_type") == "oxygen":
+                    labels.append(f'{s["device"]} {s["flow_lpm"]:g} L/min')
+                elif s.get("support_type") == "norepinephrine":
+                    if s.get("operation") == "stop":
+                        labels.append("norepinephrine stopped")
+                    else:
+                        labels.append(_norepinephrine_summary_label(s))
+                elif s.get("support_type") == "dobutamine":
+                    if s.get("operation") == "stop":
+                        labels.append("dobutamine stopped")
+                    else:
+                        labels.append(f'dobutamine {s.get("rate", 5):g} mcg/kg/min')
+                elif s.get("support_type") == "epinephrine":
+                    labels.append("epinephrine stopped" if s.get("operation") == "stop"
+                                  else f'epinephrine {s.get("rate", 0):g} {s.get("units", "mcg/min")}')
+                elif s.get("support_type") == "nitroglycerin":
+                    if s.get("operation") == "stop":
+                        labels.append("nitroglycerin stopped")
+                    else:
+                        labels.append(f'nitroglycerin {s["rate_mcg_min"]:g} mcg/min')
+                elif s.get("support_type") == "niv":
+                    if s.get("operation") == "stop":
+                        labels.append("noninvasive ventilation stopped")
+                    elif s.get("mode") == "BiPAP" and s.get("ipap_cmh2o") is not None and s.get("epap_cmh2o") is not None:
+                        fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
+                        labels.append(f'BiPAP {s.get("ipap_cmh2o"):g}/{s.get("epap_cmh2o"):g} cm H2O{fio}')
+                    else:
+                        fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
+                        labels.append(f'{s["mode"]} {s["pressure_cmh2o"]:g} cm H2O{fio}')
+                elif s.get("support_type") == "airway_preparation":
+                    labels.append("airway preparation for intubation")
+                elif s.get("support_type") == "invasive_ventilation":
+                    operation = s.get("operation", "start")
+                    prefix = {
+                        "continue": "continued",
+                        "adjust": "adjusted",
+                        "start": "intubation +",
+                    }.get(operation, "adjusted")
+                    labels.append(
+                        f'{prefix} {s.get("ventilator_mode", "VC/AC")} ventilation '
+                        f'at FiO2 {s.get("fio2_percent", 100):g}% and PEEP {s.get("peep_cmh2o", 8):g} cm H2O'
+                    )
+                elif s.get("support_type") == "disposition":
+                    labels.append("discharge home" if s.get("destination") == "home"
+                                  else f'admission to {s.get("destination", "ICU")}')
+                elif s.get("support_type") == "antibiotics":
+                    antibiotic = str(s.get("agent_name") or "broad-spectrum antibiotics")
+                    if antibiotic.lower() == "ceftriaxone + azithromycin":
+                        ceftriaxone = "ceftriaxone"
+                        if s.get("dose_g") is not None:
+                            ceftriaxone += f' {s.get("dose_g"):g} g'
+                        if s.get("route"):
+                            ceftriaxone += f' {s.get("route")}'
+                        antibiotic = ceftriaxone + " + azithromycin"
+                    else:
+                        if s.get("dose_g") is not None:
+                            antibiotic += f' {s.get("dose_g"):g} g'
+                        if s.get("route"):
+                            antibiotic += f' {s.get("route")}'
+                    if s.get("administration_duration_min"):
+                        antibiotic += f' over {s["administration_duration_min"]:g} min'
+                    labels.append(antibiotic)
+
+            diagnostic_summaries = sorted(
+                [x for x in summaries if x.get("diagnostic_type")],
+                key=lambda x: (x.get("result") or {}).get("time_min", st.session_state.state["sim_time"]),
+            )
+            treatment_labels = [x for x in labels if x]
+            # Diagnostic information becomes available during the interval and is
+            # rendered before the scheduled reassessment update.
+            # Results and any procedure the course produced (an endoscopy) are
+            # reported in the order they happened.
+            timed_events = [("diagnostic_result", format_diagnostic_summary(ds),
+                             (ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"]))
+                            for ds in diagnostic_summaries]
+            timed_events += [("procedure", x["label"], x["time_min"]) for x in summaries if x.get("type") == "procedure"]
+            timed_events += [("study_not_performed", x["label"], x["time_min"])
+                             for x in summaries if x.get("type") == "study_not_performed"]
+            timed_events += [("examination", x["label"], x.get("time_min", st.session_state.state["sim_time"]))
+                             for x in summaries if x.get("type") == "examination"]
+            # The reperfusion pathway is reported as its own entry, at the minute
+            # the resident decided it.
+            timed_events += [("procedure", str(x["pathway_note"]), st.session_state.state["sim_time"])
+                             for x in summaries if x.get("pathway_note")]
+            for kind, text, time in sorted(timed_events, key=lambda item: item[2]):
+                add_event(kind, text, time=time)
+            # What was given and when the values were taken: an immediate look is
+            # never "after" a treatment still running, and a wait an event stopped
+            # says so, at the event's minute (Phase 0, 0E/0F; time_semantics).
+            import time_semantics as _time_words
+            if treatment_labels or result.get("interrupted"):
+                add_event("clinical_update",
+                          _time_words.update_lead(result, parsed, treatment_labels) + format_clinical_update())
+            elif (
+                diagnostic_summaries
+                # A reassessment the resident asked for is reported as such, even
+                # when the results arrived before it.
+                and result.get("reassess_delay") is None
+                and int(result.get("elapsed_min", 0) or 0) > 0
+                and observable_state_changed(trace_state_before, trace_state_after)
+            ):
+                elapsed = int(result.get("elapsed_min", 0) or 0)
+                add_event(
+                    "clinical_update",
+                    f"While awaiting diagnostic results over {elapsed} minutes, "
+                    + format_clinical_update(),
+                )
+            elif result.get("reassess_delay") is not None:
+                add_event("clinical_update",
+                          _time_words.update_lead(result, parsed, []) + format_clinical_update())
+
+        # A reassessment-only order has no treatment/diagnostic summaries, so
+        # it needs its own learner-facing patient update.
+        if result.get("reassess_delay") is not None and not result.get("action_summaries"):
+            import time_semantics as _time_words
+            add_event("clinical_update",
+                      _time_words.update_lead(result, parsed, []) + format_clinical_update())
+
+        if result.get("terminal_locked") or any(
+                event.get("terminal") for event in result.get("events") or []):
+            # Said in the words the pilot agreed (Phase 0, 0G): the arrest, its minute, and
+            # that nothing after it is assessed. No recovery is invented.
+            import observation_consistency as _arrest
+            add_event("prototype", _arrest.arrest_message(_arrest.arrest_minute(st.session_state.state)))
+
+        if not result.get("executed") and not parsed["recognized_future_actions"] and not result.get("terminal_locked"):
+            add_event(
+                "prototype",
+                "I preserved your input, but this build does not yet execute that action."
+            )
+
+    if result.get("partial") and result.get("clarification"):
+        # What ran was reported above; what waits, and the question, are said now.
+        add_event("clarification", result["clarification"])
+    # Every order that did not simply run is said, one line each (Phase 0, 0A).
+    _order_pipeline.ledger_record(st.session_state, turn, add_event)
+
+    # The events this order produced are appended above, after the decision
+    # was recorded, so the recorded response window used to end just before
+    # its own response. The Management Trace analysis is validated against
+    # that window, and was rejected for citing the very update it described
+    # (2026-09-22, preparing the learner report). The cursor is therefore
+    # advanced once the response is on the record.
+    recorded_trace_event["state_after"]["encounter_event_count"] = len(
+        st.session_state.get("events") or []
+    )
+    rerun_app()
+
+
+
+# A durable free-text Send is processed before any encounter subtree is emitted.
+# write_ahead() has already persisted it at the top of this script run.
+_pre_render_guard_entry = next(iter(_submission_guard.pending(st.session_state)), None)
+if _pre_render_guard_entry is not None:
+    _process_submission_before_render(
+        _pre_render_guard_entry["raw_text"], _pre_render_guard_entry, None
+    )
+
 _in_room = not st.session_state.encounter_ended
 if _in_room and not _FAST_PENDING_SUBMISSION:
     # The simulated time is said once on the screen, beside the information; the
@@ -11274,437 +11727,7 @@ with st.container(key="encounter-console"):
                     )
 
         if submitted and submission_text.strip():
-            if _guard_entry is not None:
-                # Claimed here, where nothing more is drawn until the page reruns: a run
-                # stopped before this line leaves the submission waiting, never lost, and
-                # one stopped after it is said, never repeated (Phase 0, 0D).
-                import submission_guard as _guard
-                _guard.begin(st.session_state, _guard_entry, fields=_SESSION_FIELDS,
-                             minute=int(st.session_state.state.get("sim_time", 0) or 0))
-            learner_input = submission_text.strip()
-            from pending_cancellation import is_cancellation
-            if is_cancellation(learner_input):
-                if not cancel_pending_order():
-                    add_event("clarification", "There are no pending orders to cancel.")
-                rerun_app()
-            # An order written after the answer to a held order's question (F0-12) was shown
-            # with the answer; it is not shown again as a new message.
-            derived_entry = bool((_guard_entry or {}).get("derived_from"))
-            if not derived_entry:
-                add_event(
-                    "reasoning_completion" if submission_parsed is not None else "you",
-                    learner_input,
-                )
-            trace_state_before = management_state_snapshot(st.session_state.state)
-            processing_input = learner_input
-            interpretation_audit = {"mode": "guided-form"}
-            if submission_parsed is None:
-                processing_input, interpretation_audit = normalize_clinical_turn(learner_input)
-
-            import order_ledger as _ledger
-            import order_pipeline as _order_pipeline
-            submission_id = (_guard_entry or {}).get("id") or _ledger.new_id()
-            entry_point = "guided_form" if submission_parsed is not None else "free_text"
-            if submission_parsed is not None:
-                parsed = submission_parsed
-            elif derived_entry:
-                # Read as a new order, never as an answer. Should a question be waiting again,
-                # the order is not run and its receipt says so (the protected behaviour).
-                if any(st.session_state.get(key) for key in ("pending_reasoning", "pending_action",
-                                                               "pending_bundle")):
-                    parsed = {"raw_text": processing_input, "reasoning": {}, "actions": []}
-                    entry_point = "clarification_answer"
-                else:
-                    parsed = clinical_interpreter(processing_input)
-                _restore_original_turn(parsed, processing_input, learner_input)
-                _attach_interpretation_audit(parsed, interpretation_audit)
-            else:
-                reasoning_resolution = resolve_pending_reasoning(processing_input)
-                if reasoning_resolution and reasoning_resolution.get("clarification"):
-                    active_pending = st.session_state.get("pending_reasoning") or {}
-                    # Whatever the answer added is held with the order, and recorded as held.
-                    _order_pipeline.ledger_hold_reasoning(st.session_state, active_pending.get("parsed") or {},
-                                                          processing_input, submission_id, add_event)
-                    upsert_reasoning_gate_clarification(
-                        active_pending.get("parsed", {}),
-                        reasoning_resolution.get("missing", []),
-                    )
-                    rerun_app()
-
-                if reasoning_resolution and reasoning_resolution.get("parsed"):
-                    parsed = reasoning_resolution["parsed"]
-                    entry_point = "reasoning_followup"
-                else:
-                    pending_resolution = try_resolve_pending_action(processing_input)
-                    if pending_resolution and pending_resolution.get("clarification"):
-                        add_event("clarification", pending_resolution["clarification"])
-                        rerun_app()
-
-                    if pending_resolution and pending_resolution.get("parsed"):
-                        parsed = merge_pending_bundle(pending_resolution["parsed"])
-                        entry_point = "clarification_answer"
-                        if pending_resolution.get("new_order_text") and _guard_entry is not None:
-                            # F0-12: the order written after the answer runs next as an order of
-                            # its own, and the resident is told so now.
-                            import submission_guard as _guard
-                            _guard.derive(st.session_state, _guard_entry, pending_resolution["new_order_text"],
-                                          minute=int(st.session_state.state.get("sim_time", 0) or 0))
-                            parsed["_answer_text"] = pending_resolution["answer_text"]
-                            add_event("prototype", "Also in your answer: \"" + pending_resolution["new_order_text"]
-                                      .strip().rstrip(".") + "\". The answer completes the held order only; this "
-                                      "order is read next, as an order of its own, with its own receipt.")
-                    else:
-                        # Parse the current turn in full before considering contextual
-                        # shorthand. Context resolution is a fallback only when this turn does
-                        # not already contain an explicit executable action.
-                        direct = clinical_interpreter(processing_input)
-                        direct_non_reassess = [
-                            a for a in direct.get("actions", []) if a.get("type") != "reassessment"
-                        ]
-                        if direct_non_reassess or st.session_state.state.get("engine_family"):
-                            parsed = direct
-                        else:
-                            contextual = parse_contextual_followup(processing_input)
-                            if contextual:
-                                contextual["reasoning"] = direct.get("reasoning", {})
-                                reassess = [a for a in direct.get("actions", []) if a.get("type") == "reassessment"]
-                                contextual["actions"] = [
-                                    a for a in contextual.get("actions", []) if a.get("type") != "reassessment"
-                                ] + reassess
-                                parsed = contextual
-                            else:
-                                parsed = direct
-
-                _restore_original_turn(parsed, processing_input, learner_input)
-                _attach_interpretation_audit(parsed, interpretation_audit)
-
-            # Phase 0 (0A-0B): every order of this turn gets an id and the text is checked
-            # against what the reader returned, whatever the entry point.
-            turn_minute = int(st.session_state.state.get("sim_time", 0) or 0)
-            ledger = st.session_state.setdefault("order_ledger", [])
-            turn = _order_pipeline.open_turn(
-                parsed.pop("_coverage_text", None) or processing_input, parsed,
-                coverage_parse=parsed.pop("_coverage_parse", None), submission_id=submission_id,
-                entry_point=entry_point, minute=turn_minute, ledger=ledger,
-                coverage_text=parsed.pop("_answer_text", None))
-            derived_from = (_guard_entry or {}).get("derived_from")
-            if derived_from:
-                # Written in the answer to a held order's question, at the minute of the answer,
-                # and run after it: the record keeps when it was written (F0-12, rule B of 0I).
-                turn["submission"]["derived_from"] = derived_from
-                for _order in turn["orders"]:
-                    _order["written_at_min"] = _guard_entry.get("received_at_min", turn_minute)
-                    _order["derived_from"] = derived_from
-                if entry_point == "clarification_answer":
-                    _order_pipeline.ledger_record(st.session_state, turn, add_event)
-                    rerun_app()
-            turn["orders"].extend(_order_pipeline.restated_orders(
-                parsed.pop("_followup_restated", None), submission_id=submission_id, minute=turn_minute,
-                text=processing_input))
-            written = next((entry for entry in st.session_state.get("submission_log") or []
-                            if entry.get("id") == submission_id), None)
-            if written:
-                # When the text was written down, whether it reached the database before
-                # anything ran, and how often a stopped run was undone (Phase 0, 0D).
-                turn["submission"]["received_at"] = written.get("received_at")
-                turn["submission"]["write_ahead"] = bool(written.get("saved_before_run"))
-                turn["submission"]["retried_after_interruption"] = int(written.get("retries", 0) or 0)
-
-            parsed["reasoning_observations"] = reasoning_state_observations(
-                parsed, st.session_state.state
-            )
-            gate_decided = parsed.pop("_gate_decided", False) and \
-                (parsed.get("reasoning_gate") or {}).get("status") in ("urgent_unheld", "complete", "overridden")
-            # After an arrest the simulator does not model, nothing is assessed: no order is held to
-            # ask for its reasoning, and the engine answers it with the arrest (Phase 0, 0G).
-            import observation_consistency as _arrest_now
-            arrested_now = _arrest_now.arrest_minute(st.session_state.state) is not None
-            missing_reasoning = [] if (gate_decided or arrested_now) else reasoning_still_missing(parsed)
-            gate_status = (parsed.get("reasoning_gate") or {}).get("status")
-            if missing_reasoning and gate_status != "overridden":
-                st.session_state.last_parse = _ledger.untagged(parsed)
-                hold_pending_reasoning(parsed, missing_reasoning)
-                upsert_reasoning_gate_clarification(parsed, missing_reasoning)
-                _order_pipeline.settle(turn, result={"executed": False}, run_actions=list(parsed.get("actions") or []),
-                                       minute_before=turn_minute, minute_after=turn_minute, held_for_reasoning=True)
-                _order_pipeline.ledger_record(st.session_state, turn, add_event)
-                rerun_app()
-            if gate_status is None and any(
-                action.get("type") in REASONING_GATE_ACTION_TYPES
-                for action in parsed.get("actions", [])
-            ):
-                from urgent_interventions import is_urgent, present_categories
-                if is_urgent(parsed):
-                    noted = reasoning_gate_noted(parsed)
-                    parsed["reasoning_gate"] = {"required": True, "status": "urgent_unheld", "missing": [],
-                                                "noted": noted, "present": present_categories(parsed)}
-                    gate_status = "urgent_unheld"
-                    # What was not stated is said once the engine has run it (below).
-                else:
-                    parsed["reasoning_gate"] = {"required": True, "status": "complete", "missing": [],
-                                                "noted": reasoning_gate_noted(parsed)}
-                    gate_status = "complete"
-
-            recognize_cues_for(parsed)
-
-            for observation in parsed.get("reasoning_observations", []) or []:
-                add_event("reasoning_note", observation)
-
-            st.session_state.last_parse = _ledger.untagged(parsed)
-            st.session_state.history.append(_ledger.untagged(parsed))
-            trace_input = parsed.get("raw_text") or learner_input
-
-            result = execute_bundle(parsed)
-            split = result.pop("_split", None)
-            run_actions = result.pop("_run_actions", None)
-            if run_actions is None:
-                run_actions = list(parsed.get("actions") or [])
-            _order_pipeline.settle(
-                turn, result=result, run_actions=run_actions, split=split, minute_before=turn_minute,
-                minute_after=int(st.session_state.state.get("sim_time", 0) or 0),
-                terminal=bool(result.get("terminal_locked")))
-            if entry_point == "clarification_answer" or entry_point == "reasoning_followup":
-                _order_pipeline.ledger_resolve_held(st.session_state, run_actions, bool(result.get("executed")),
-                                                    turn_minute, add_event)
-            trace_state_after = management_state_snapshot(st.session_state.state)
-            recorded_trace_event = record_management_trace(
-                trace_input, parsed, result, trace_state_before, trace_state_after, turn=turn
-            )
-
-            ran = bool(result.get("executed")) and (not result.get("clarification") or bool(result.get("partial")))
-            # An urgent intervention is said to have run only once the engine ran
-            # it -- in this turn, or when the answer to a question about the same
-            # order completes it. A bundle the engine refused ran nothing, and the
-            # page used to say it had and offer to explain it (59O-03, 2026-09-28).
-            urgent_unstated = [field for field in (parsed.get("reasoning_gate") or {}).get("noted") or []
-                        if field in REASONING_GATE_BLOCKING]
-            if ran and gate_status == "urgent_unheld" and urgent_unstated:
-                add_event("prototype", "Urgent intervention executed without waiting for the reasoning. "
-                          "Not stated: " + ", ".join(REASONING_GATE_FIELD_LABELS[field].rstrip("?").lower()
-                                                     for field in urgent_unstated)
-                          + ". You can explain it afterwards; it is recorded as a retrospective explanation.")
-            if gate_status == "overridden":
-                add_event(
-                    "prototype",
-                    "Facilitator override accepted. The held order was executed with incomplete prospective reasoning."
-                    if ran else
-                    "Facilitator override accepted, but the order did not run: see the message below."
-                )
-
-            if parsed["recognized_future_actions"] and not result.get("terminal_locked"):
-                import unexecuted_items
-                said, unclassified = unexecuted_items.messages(parsed)
-                for line in said:
-                    add_event("prototype", line)
-                if unclassified:
-                    add_event(
-                        "prototype",
-                        "Recognized but not executed in this build: "
-                        + ", ".join(unclassified)
-                        + ". Any supported actions in the same order continue separately."
-                    )
-
-            if result.get("clarification") and not result.get("partial"):
-                add_event("clarification", result["clarification"])
-            else:
-                summaries = _summaries_in_learner_order(
-                    result.get("action_summaries", []), trace_input
-                )
-                if summaries:
-                    # All actions in one learner order are integrated into one longitudinal
-                    # patient state and produce one learner-facing update at the reassessment time.
-                    labels = []
-                    for s in summaries:
-                        # A call or admission request reads as part of "After ..., BP ...";
-                        # its stored label ("ICU contacted; definitive ...") does not.
-                        if s.get("type") == "procedure":
-                            continue
-                        # An examination is an observation: it carries its own entry,
-                        # exactly as the Examine control writes it.
-                        if s.get("type") == "examination":
-                            continue
-                        if s.get("type") in {"consult", "reperfusion_referral"}:
-                            service = s.get("service") or s.get("destination")
-                            if s.get("pathway_note"):
-                                labels.append(str(s["label"]))
-                            else:
-                                labels.append(f'{service} already contacted (not repeated)' if s.get("repeated")
-                                              else f'contacting {service} (no intervention yet)')
-                                continue
-                        elif s.get("type") == "disposition":
-                            # Going home is a discharge, not an admission to a place.
-                            home = s.get("destination") == "home"
-                            labels.append(
-                                ('discharge home already requested (not repeated)' if home else
-                                 f'admission to {s.get("destination")} already requested (not repeated)')
-                                if s.get("repeated") else
-                                ('discharging the patient home' if home else f'requesting admission to {s.get("destination")}'))
-                        elif "volume_ml" in s and s.get("fluid_type"):
-                            labels.append(_fluid_order_label(s, st.session_state.state["sim_time"]))
-                        elif s.get("label"):
-                            labels.append(str(s["label"]))
-                        elif "volume_ml" in s:
-                            labels.append(f'{s["volume_ml"]} mL {s["fluid_type"]}')
-                        elif s.get("type") == "magnesium":
-                            labels.append(f'magnesium sulfate {s["dose_mg"] / 1000:g} g {s.get("route", "IV")}'
-                                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
-                        elif s.get("agent") == "furosemide":
-                            labels.append(f'furosemide {s["dose_mg"]:g} mg {s["route"]}'
-                                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
-                        elif "agent" in s:
-                            labels.append(f'{s["agent"]} {s["dose_mg"]:g} mg {s["route"]}'
-                                          + (f' over {s["administration_duration_min"]:g} min' if s.get("administration_duration_min") else ""))
-                        elif s.get("support_type") == "procedural_sedation":
-                            labels.append(procedural_sedation_label(s))
-                        elif "energy_j" in s:
-                            labels.append(f'synchronized cardioversion {s["energy_j"]} J')
-                        elif s.get("support_type") == "oxygen":
-                            labels.append(f'{s["device"]} {s["flow_lpm"]:g} L/min')
-                        elif s.get("support_type") == "norepinephrine":
-                            if s.get("operation") == "stop":
-                                labels.append("norepinephrine stopped")
-                            else:
-                                labels.append(_norepinephrine_summary_label(s))
-                        elif s.get("support_type") == "dobutamine":
-                            if s.get("operation") == "stop":
-                                labels.append("dobutamine stopped")
-                            else:
-                                labels.append(f'dobutamine {s.get("rate", 5):g} mcg/kg/min')
-                        elif s.get("support_type") == "epinephrine":
-                            labels.append("epinephrine stopped" if s.get("operation") == "stop"
-                                          else f'epinephrine {s.get("rate", 0):g} {s.get("units", "mcg/min")}')
-                        elif s.get("support_type") == "nitroglycerin":
-                            if s.get("operation") == "stop":
-                                labels.append("nitroglycerin stopped")
-                            else:
-                                labels.append(f'nitroglycerin {s["rate_mcg_min"]:g} mcg/min')
-                        elif s.get("support_type") == "niv":
-                            if s.get("operation") == "stop":
-                                labels.append("noninvasive ventilation stopped")
-                            elif s.get("mode") == "BiPAP" and s.get("ipap_cmh2o") is not None and s.get("epap_cmh2o") is not None:
-                                fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
-                                labels.append(f'BiPAP {s.get("ipap_cmh2o"):g}/{s.get("epap_cmh2o"):g} cm H2O{fio}')
-                            else:
-                                fio = f' at FiO2 {s.get("fio2_percent"):g}%' if s.get("fio2_percent") is not None else ""
-                                labels.append(f'{s["mode"]} {s["pressure_cmh2o"]:g} cm H2O{fio}')
-                        elif s.get("support_type") == "airway_preparation":
-                            labels.append("airway preparation for intubation")
-                        elif s.get("support_type") == "invasive_ventilation":
-                            operation = s.get("operation", "start")
-                            prefix = {
-                                "continue": "continued",
-                                "adjust": "adjusted",
-                                "start": "intubation +",
-                            }.get(operation, "adjusted")
-                            labels.append(
-                                f'{prefix} {s.get("ventilator_mode", "VC/AC")} ventilation '
-                                f'at FiO2 {s.get("fio2_percent", 100):g}% and PEEP {s.get("peep_cmh2o", 8):g} cm H2O'
-                            )
-                        elif s.get("support_type") == "disposition":
-                            labels.append("discharge home" if s.get("destination") == "home"
-                                          else f'admission to {s.get("destination", "ICU")}')
-                        elif s.get("support_type") == "antibiotics":
-                            antibiotic = str(s.get("agent_name") or "broad-spectrum antibiotics")
-                            if antibiotic.lower() == "ceftriaxone + azithromycin":
-                                ceftriaxone = "ceftriaxone"
-                                if s.get("dose_g") is not None:
-                                    ceftriaxone += f' {s.get("dose_g"):g} g'
-                                if s.get("route"):
-                                    ceftriaxone += f' {s.get("route")}'
-                                antibiotic = ceftriaxone + " + azithromycin"
-                            else:
-                                if s.get("dose_g") is not None:
-                                    antibiotic += f' {s.get("dose_g"):g} g'
-                                if s.get("route"):
-                                    antibiotic += f' {s.get("route")}'
-                            if s.get("administration_duration_min"):
-                                antibiotic += f' over {s["administration_duration_min"]:g} min'
-                            labels.append(antibiotic)
-
-                    diagnostic_summaries = sorted(
-                        [x for x in summaries if x.get("diagnostic_type")],
-                        key=lambda x: (x.get("result") or {}).get("time_min", st.session_state.state["sim_time"]),
-                    )
-                    treatment_labels = [x for x in labels if x]
-                    # Diagnostic information becomes available during the interval and is
-                    # rendered before the scheduled reassessment update.
-                    # Results and any procedure the course produced (an endoscopy) are
-                    # reported in the order they happened.
-                    timed_events = [("diagnostic_result", format_diagnostic_summary(ds),
-                                     (ds.get("result") or {}).get("time_min", st.session_state.state["sim_time"]))
-                                    for ds in diagnostic_summaries]
-                    timed_events += [("procedure", x["label"], x["time_min"]) for x in summaries if x.get("type") == "procedure"]
-                    timed_events += [("study_not_performed", x["label"], x["time_min"])
-                                     for x in summaries if x.get("type") == "study_not_performed"]
-                    timed_events += [("examination", x["label"], x.get("time_min", st.session_state.state["sim_time"]))
-                                     for x in summaries if x.get("type") == "examination"]
-                    # The reperfusion pathway is reported as its own entry, at the minute
-                    # the resident decided it.
-                    timed_events += [("procedure", str(x["pathway_note"]), st.session_state.state["sim_time"])
-                                     for x in summaries if x.get("pathway_note")]
-                    for kind, text, time in sorted(timed_events, key=lambda item: item[2]):
-                        add_event(kind, text, time=time)
-                    # What was given and when the values were taken: an immediate look is
-                    # never "after" a treatment still running, and a wait an event stopped
-                    # says so, at the event's minute (Phase 0, 0E/0F; time_semantics).
-                    import time_semantics as _time_words
-                    if treatment_labels or result.get("interrupted"):
-                        add_event("clinical_update",
-                                  _time_words.update_lead(result, parsed, treatment_labels) + format_clinical_update())
-                    elif (
-                        diagnostic_summaries
-                        # A reassessment the resident asked for is reported as such, even
-                        # when the results arrived before it.
-                        and result.get("reassess_delay") is None
-                        and int(result.get("elapsed_min", 0) or 0) > 0
-                        and observable_state_changed(trace_state_before, trace_state_after)
-                    ):
-                        elapsed = int(result.get("elapsed_min", 0) or 0)
-                        add_event(
-                            "clinical_update",
-                            f"While awaiting diagnostic results over {elapsed} minutes, "
-                            + format_clinical_update(),
-                        )
-                    elif result.get("reassess_delay") is not None:
-                        add_event("clinical_update",
-                                  _time_words.update_lead(result, parsed, []) + format_clinical_update())
-
-                # A reassessment-only order has no treatment/diagnostic summaries, so
-                # it needs its own learner-facing patient update.
-                if result.get("reassess_delay") is not None and not result.get("action_summaries"):
-                    import time_semantics as _time_words
-                    add_event("clinical_update",
-                              _time_words.update_lead(result, parsed, []) + format_clinical_update())
-
-                if result.get("terminal_locked") or any(
-                        event.get("terminal") for event in result.get("events") or []):
-                    # Said in the words the pilot agreed (Phase 0, 0G): the arrest, its minute, and
-                    # that nothing after it is assessed. No recovery is invented.
-                    import observation_consistency as _arrest
-                    add_event("prototype", _arrest.arrest_message(_arrest.arrest_minute(st.session_state.state)))
-
-                if not result.get("executed") and not parsed["recognized_future_actions"] and not result.get("terminal_locked"):
-                    add_event(
-                        "prototype",
-                        "I preserved your input, but this build does not yet execute that action."
-                    )
-
-            if result.get("partial") and result.get("clarification"):
-                # What ran was reported above; what waits, and the question, are said now.
-                add_event("clarification", result["clarification"])
-            # Every order that did not simply run is said, one line each (Phase 0, 0A).
-            _order_pipeline.ledger_record(st.session_state, turn, add_event)
-
-            # The events this order produced are appended above, after the decision
-            # was recorded, so the recorded response window used to end just before
-            # its own response. The Management Trace analysis is validated against
-            # that window, and was rejected for citing the very update it described
-            # (2026-09-22, preparing the learner report). The cursor is therefore
-            # advanced once the response is on the record.
-            recorded_trace_event["state_after"]["encounter_event_count"] = len(
-                st.session_state.get("events") or []
-            )
-            rerun_app()
+            _process_submission_before_render(submission_text, _guard_entry, submission_parsed)
 
         if not _in_room:
             st.divider()
