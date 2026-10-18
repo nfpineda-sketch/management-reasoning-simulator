@@ -14,6 +14,27 @@ import pilot_freeze
 import tools_spanish_sentinel as sentinel
 
 
+@pytest.fixture(autouse=True)
+def _fresh_case_text_runtime():
+    """Each sentinel case starts with a fresh narrative cache and selector.
+
+    The suite exercises case_text with temporary stores and deliberately clears or
+    replaces the installed narrative in earlier tests. case_text caches installs for
+    120 seconds, so a later sentinel test could otherwise inherit a recent cache stamp
+    while the actual narrative table had been cleared. That makes the sentinel depend
+    on test order rather than on the candidate.
+    """
+    import case_text
+    import language
+    language.set_narrative({})
+    language.narrate(None)
+    case_text._INSTALLED.clear()
+    yield
+    language.set_narrative({})
+    language.narrate(None)
+    case_text._INSTALLED.clear()
+
+
 @pytest.mark.parametrize("line, english", [
     ("Examine patient", {"examine", "patient"}),
     ("Specify or confirm norepinephrine dose and units (mcg/min or mcg/kg/min).", {"specify", "norepinephrine"}),
