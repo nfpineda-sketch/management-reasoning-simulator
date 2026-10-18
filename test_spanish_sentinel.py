@@ -44,6 +44,17 @@ def test_the_declared_exceptions_are_only_these():
     assert all("Idioma" in line or "Fijo durante" in line or line == "English" for line in sentinel.BILINGUAL)
 
 
+def test_the_sentinel_resets_narrative_runtime_before_each_walk():
+    import case_text
+    import language
+    language.set_narrative({"sentinel-dirty": {"Dirty English": "Texto sucio"}})
+    language.narrate("sentinel-dirty")
+    case_text._INSTALLED["es"] = 1.0
+    sentinel._reset_case_text_runtime()
+    assert case_text._INSTALLED == {}
+    assert language.narrative("Dirty English", "es", case="sentinel-dirty") == "Dirty English"
+
+
 def test_a_template_slot_is_not_a_spanish_word():
     """«{given}» in a Spanish template is a name in the code: «given» on screen is still English (H-3)."""
     assert sentinel.english_words("Glucosa 25 g IV given") == ["given"]
