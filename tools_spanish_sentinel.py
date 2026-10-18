@@ -344,6 +344,15 @@ def _widget(elements, english):
     raise LookupError(f"no widget {english!r}; the page has {[item.label for item in elements]}")
 
 
+def _reset_case_text_runtime():
+    """Make every sentinel walk independent of prior tests or prior walks."""
+    import case_text
+    import language
+    language.set_narrative({})
+    language.narrate(None)
+    case_text._INSTALLED.clear()
+
+
 class Walk:
     """One pilot case on the page, in Spanish, recording what each step shows."""
 
@@ -359,6 +368,7 @@ class Walk:
         self._saved = {name: os.environ.get(name) for name in [*self._env, "OPENAI_API_KEY"]}
         os.environ.update(self._env)
         os.environ.pop("OPENAI_API_KEY", None)
+        _reset_case_text_runtime()
         import curriculum_runtime
         self._assign = curriculum_runtime.assign_challenge
         challenge = self._challenge
@@ -370,6 +380,7 @@ class Walk:
     def __exit__(self, *exc):
         import curriculum_runtime
         curriculum_runtime.assign_challenge = self._assign
+        _reset_case_text_runtime()
         for name, value in self._saved.items():
             if value is None:
                 os.environ.pop(name, None)
