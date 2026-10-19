@@ -1,9 +1,10 @@
 # Fase 1 · Paquete de arranque (Contratos v2)
 
-> **Plan preparado; la Fase 1 NO empezó.** Sesión autónoma del 2026-10-08, rama `clinical-encounter-v0.13`.
-> - No se creó ninguna rama ni se cambió código.
-> - El primer prompt está en `docs/revision/PHASE_1_FIRST_PROMPT.md`, sin ejecutar.
-> - Arrancar requiere la puerta de §7I y una autorización expresa.
+> **Fase 1 ABIERTA; WP0 CERRADO.** Autorización expresa del 2026-10-18; cierre de WP0 el 2026-10-19.
+> - Rama local de desarrollo: `phase-1-contracts-v2`, creada desde el piloto congelado
+>   `49ee2267c40550ef263fd8a99724eb991d29c5a6`.
+> - `pilot-residents-v1` permanece congelada en ese SHA; no recibe commits de Fase 1.
+> - WP0 está cerrado y WP1 **no está autorizado** por este cierre.
 >
 > **Etiquetas:** VERIFICADO EN EL CÓDIGO (archivo y línea leídos sobre el runtime `8ff41a4`) · PROPUESTO ·
 > SUPUESTO / POR DEFINIR.
@@ -46,8 +47,8 @@ Con cualquiera de las dos, hay que actualizar la línea «Trabajar sólo en la r
 
 | Elemento | Valor |
 |---|---|
-| SHA base | **El SHA final congelado del piloto** (`<SHA_FINAL>`, el promovido a `pilot-residents-v1` con GO). POR DEFINIR: hoy no existe; el último runtime certificado es `8ff41a4`, y la ronda de B-5 lo cambiará |
-| Rama propuesta | `phase-1-contracts-v2`, desde `<SHA_FINAL>` (§1 a) |
+| SHA base | **`49ee2267c40550ef263fd8a99724eb991d29c5a6`**, certificado, promovido y verificado en `pilot-residents-v1` |
+| Rama de desarrollo | `phase-1-contracts-v2`, creada localmente desde `49ee2267c40550ef263fd8a99724eb991d29c5a6` (§1 a); sin push |
 | Lo que hereda | Suite completa, 56 regresiones, batería de aceptación (31 × 19, semilla 17), centinela del español, dorado de la hipoglicemia, manifiesto del congelamiento: todos en verde en `<SHA_FINAL>` (matriz A del mapa) |
 | Lo que nunca recibe | `pilot-residents-v1` no recibe commits de la Fase 1 (§16.5) |
 
@@ -182,8 +183,49 @@ La Fase 1 empieza sólo cuando **todas** se cumplen:
 5. La espera de la validación externa sigue vigente: el lector congelado por
    `test_prephase1_reader_freeze.py`, el corpus, V3 y los baselines no se tocan.
 
-**Estado 2026-10-15:** la Fase 1 sigue sin empezar. El piloto fue promovido a `9abe6e58`, pero una auditoría
-pre-Fase 1 confirmó dos defectos técnicos que deben cerrarse antes de fijar `<SHA_FINAL>`: el fast path de render
-puede dejar un monitor previo visible después de Send, y dos bordes de error del store pueden dejar escapar una
-excepción del driver. El cierre autorizado corre en `prephase1-closure-v1`. Sólo después de recertificar y promover
-ese cierre puede definirse `<SHA_FINAL>`, autorizar `phase-1-contracts-v2` y ejecutar WP0.
+**Estado 2026-10-19:** la puerta de arranque quedó cumplida. El cierre pre-Fase 1 fue certificado y promovido;
+`pilot-residents-v1` apunta a `49ee2267c40550ef263fd8a99724eb991d29c5a6`. La Fase 1 fue autorizada expresamente,
+se creó localmente `phase-1-contracts-v2`, CLAUDE.md nombra esa rama como autorizada y el freeze del lector pasó.
+WP0 se ejecutó y cerró; WP1 queda pendiente de una autorización posterior.
+
+## 7J. Cierre de WP0 · 2026-10-19
+
+**Resultado:** CERRADO / 0 diferencias contra el piloto congelado.
+
+- **Baseline:** `test_data/contracts_baseline_49ee2267.json`
+- **Base:** `49ee2267c40550ef263fd8a99724eb991d29c5a6`
+- **Tamaño:** 6,976,935 bytes.
+- **SHA-256:** `cb8e100082e22e95d1732395f62577e1eed05bd4b0f3e9827affe0d7ae23ac05`.
+- **Determinismo:** dos escrituras independientes produjeron archivos byte-identical.
+- **Equivalencia:** `tools_contract_baseline.py --check` terminó en `MATCH`, 0 diferencias, 1161.8 s,
+  0 llamadas de IA de la app.
+- **Mutación sembrada:** una modificación temporal y aislada de un recibo en `order_pipeline.py` fue detectada en
+  `bradycardia_avb3_78f`, `turns[9].fates[0].receipt`; el arnés terminó con diferencia y la copia temporal se eliminó.
+- **Pruebas focalizadas:** 681 pasaron en 202.44 s:
+  `test_phase0_acceptance_battery.py`, `test_phase0_order_ledger.py`,
+  `test_phase0_time_and_events.py`, `test_phase0_observation_and_provenance.py`.
+- **Freeze del lector al abrir la fase:** `test_prephase1_reader_freeze.py`, 1/1 pasó.
+- **Runtime:** sin cambios. WP0 agrega sólo `tools_contract_baseline.py`, `test_contract_equivalence.py`,
+  el JSON dorado y estas actualizaciones documentales. No hubo push, PR, deploy, Neon ni cambios en
+  `pilot-residents-v1`.
+
+### Normalización declarada
+
+1. Las entregas de la batería de aceptación usan los ids deterministas `tN` de `pilot_acceptance`; no se registra
+   un id aleatorio de submission.
+2. El ensayo bilingüe usa `tools_order_reading.compact_entry`, que omite ids de cuenta/sesión/intento y timestamps
+   de reloj de pared.
+3. Se omite la duración de pared (`seconds`) de cada rehearsal.
+4. Las claves de objetos JSON se ordenan; el orden de las listas se conserva porque es conducta observable.
+
+### Huecos de WP0
+
+- La batería `pilot_acceptance` corre a nivel de motor y no construye el Management Trace completo de `app.py`.
+  WP0 registra sus campos equivalentes de Fase 0 por turno (órdenes, destinos, recibos, tiempo, eventos,
+  observaciones, limitaciones y versiones). El Trace real queda además cubierto por el rehearsal bilingüe de
+  `tools_order_reading` y por `test_phase0_acceptance_page.py`. No se cambió runtime sólo para exponer más estado.
+- Los scripts de manejo de la batería son entradas canónicas en inglés. La equivalencia bilingüe se mide por
+  separado con los 20 scripts ES + 20 EN ya existentes; WP0 no inventa un corpus nuevo de traducciones.
+
+**Decisión de salida:** WP0 satisface su función como red de equivalencia. Se detiene aquí. WP1 no empieza sin una
+autorización posterior.

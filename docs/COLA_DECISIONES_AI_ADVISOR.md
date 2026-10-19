@@ -3163,3 +3163,22 @@ de la vida.
 
 Se completó sólo con «residente.». Ningún otro bloque literal del charter
 cambió. El addendum A1 (§102–§109) se agregó después de la §101.
+
+## Fase 1 · Contratos v2 — apertura y WP0 (2026-10-18/19)
+
+- **Fase 1 abierta por autorización expresa.** Rama de desarrollo local:
+  `phase-1-contracts-v2`, creada desde el SHA final congelado del piloto
+  `49ee2267c40550ef263fd8a99724eb991d29c5a6`.
+- **Piloto intacto:** `pilot-residents-v1` permanece en `49ee2267c40550ef263fd8a99724eb991d29c5a6`.
+  Los commits de Fase 1 no se empujan al piloto.
+- **WP0 cerrado.** El arnés de equivalencia conserva acciones recibidas por el motor, destinos/recibos, tiempo,
+  eventos/procedencia, observaciones y campos de Trace/Phase 0, más el rehearsal bilingüe ES/EN.
+- **Baseline WP0:** `test_data/contracts_baseline_49ee2267.json`, 6,976,935 bytes,
+  SHA-256 `cb8e100082e22e95d1732395f62577e1eed05bd4b0f3e9827affe0d7ae23ac05`.
+- **Determinismo:** dos escrituras byte-identical. **Equivalencia:** 0 diferencias. **Mutación sembrada:** detectada
+  en `bradycardia_avb3_78f`, turno 10 del registro (`turns[9]`), `fates[0].receipt`.
+- **Pruebas focalizadas:** 681/681 pasaron; freeze del lector 1/1 pasó. 0 llamadas de IA de la app.
+- **Sin cambios de runtime:** no se tocaron lector, fisiología, scoring, D1–D5, textos visibles, persistencia,
+  corpus, V3 ni baselines de validación.
+- **Validación externa:** sigue en espera; no se abrió, leyó ni procesó ninguna respuesta externa.
+- **STOP:** WP1 no está autorizado por esta decisión. Requiere el siguiente encargo explícito.
