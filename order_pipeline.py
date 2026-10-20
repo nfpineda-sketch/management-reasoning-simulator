@@ -30,6 +30,7 @@ from copy import deepcopy
 
 import order_ledger as L
 from contracts_v2 import orders as order_contracts_v2
+from contracts_v2 import fates as fate_contracts_v2
 
 ENTRY_POINTS = ("free_text", "reasoning_followup", "clarification_answer", "guided_form", "pending_completion",
                 "recovered_submission")
@@ -595,6 +596,9 @@ def ledger_record(session, turn, add_event):
         turn.setdefault("limitations", []).append({"type": "engine_inconsistency", "detail": problems})
         add_event("prototype", "Part of this order could not be matched to what the simulator did: "
                   + "; ".join(problems) + ". Check the patient state before relying on it.")
+    if not problems:
+        # Phase 1 WP2: observe final Phase-0 fate/receipt state in shadow only.
+        fate_contracts_v2.shadow_from_legacy_orders(turn["orders"])
     for line in receipt_lines(turn):
         add_event("prototype", line)
     upsert(session.setdefault("order_ledger", []), turn["orders"])
