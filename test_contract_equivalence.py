@@ -27,3 +27,11 @@ def test_contract_equivalence():
     )
     assert contracts.check_baseline() == 0
 
+def test_contract_comparison_normalizes_only_the_commit_version():
+    left = {"versions": {"code_version": "aaaaaaaaaaaa", "ledger_schema": "order_ledger_v1"}}
+    right = {"versions": {"code_version": "bbbbbbbbbbbb", "ledger_schema": "order_ledger_v1"}}
+    assert contracts.contract_difference(left, right) is None
+    right["versions"]["ledger_schema"] = "changed"
+    diff = contracts.contract_difference(left, right)
+    assert diff and diff[0] == "$.versions.ledger_schema"
+

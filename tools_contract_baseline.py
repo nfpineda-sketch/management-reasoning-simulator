@@ -32,6 +32,7 @@ NORMALIZATION = [
     "Order-reading uses tools_order_reading.compact_entry, which omits account/session/attempt ids and wall-clock timestamps.",
     "Rehearsal wall-clock duration ('seconds') is omitted.",
     "JSON object keys are sorted; list order is preserved because it is behavioral.",
+    "Trace code_version is normalized at comparison time because every later Phase-1 commit has a new SHA.",
 ]
 
 GAPS = [
@@ -291,6 +292,21 @@ def build_snapshot():
     return payload, elapsed
 
 
+def _comparison_view(value):
+    if isinstance(value, dict):
+        return {
+            key: ("<normalized:code_version>" if key == "code_version" else _comparison_view(item))
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_comparison_view(item) for item in value]
+    return value
+
+
+def contract_difference(expected, actual, path="$"):
+    return first_difference(_comparison_view(expected), _comparison_view(actual), path)
+
+
 def first_difference(expected, actual, path="$"):
     if type(expected) is not type(actual):
         return path, expected, actual
@@ -356,14 +372,15 @@ def _acceptance_variant_snapshot(variant):
 def check_baseline(path=BASELINE):
     import pilot_freeze
 
-    mutation_probe = os.environ.get("MRS_WP0_MUTATION_PROBE") == "1"
-    _assert_runtime_clean(mutation_probe=mutation_probe)
+    changed = _runtime_diff()
+    if changed:
+        print("CHECKING CURRENT PHASE-1 RUNTIME DIFF: " + ", ".join(changed), flush=True)
     expected = load_baseline(path)
     started = time.monotonic()
 
     for index, variant in enumerate(pilot_freeze.accepted_variants(), 1):
         actual_case = _acceptance_variant_snapshot(variant)
-        diff = first_difference(
+        diff = contract_difference(
             expected["acceptance"][variant],
             actual_case,
             f"$.acceptance.{variant}",
@@ -374,7 +391,7 @@ def check_baseline(path=BASELINE):
         print(f"check acceptance {index:>2}/30 {variant}: MATCH", flush=True)
 
     actual_reading = order_reading_snapshot()
-    diff = first_difference(expected["order_reading"], actual_reading, "$.order_reading")
+    diff = contract_difference(expected["order_reading"], actual_reading, "$.order_reading")
     if diff:
         _report_difference(diff)
         return 1

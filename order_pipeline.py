@@ -29,6 +29,7 @@ import re
 from copy import deepcopy
 
 import order_ledger as L
+from contracts_v2 import orders as order_contracts_v2
 
 ENTRY_POINTS = ("free_text", "reasoning_followup", "clarification_answer", "guided_form", "pending_completion",
                 "recovered_submission")
@@ -118,6 +119,8 @@ def open_turn(text, parsed, *, submission_id, entry_point, minute, ledger=None, 
     parsed = parsed if isinstance(parsed, dict) else {}
     apply_safe_defaults(parsed, text)
     L.tag(parsed, submission_id, text, minute)
+    # Phase 1 WP1: build OrderAction v2 in shadow only; v1 still serves the engine.
+    order_contracts_v2.shadow_from_reader(parsed, submission_id=submission_id)
     if coverage_parse is not None:
         apply_safe_defaults(coverage_parse, text)
     cov = L.coverage(coverage_text or text, coverage_parse if coverage_parse is not None else parsed)
