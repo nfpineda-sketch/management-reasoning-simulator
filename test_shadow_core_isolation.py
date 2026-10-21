@@ -26,7 +26,8 @@ PACKAGE = ROOT / "clinical_core"
 #: What each core file may import besides the standard library and the package itself.
 LEGACY_READERS = {"legacy_adapter.py": {"family_engine", "family_parser", "cognitive_catalog", "cognitive_generator"},
                   "shadow.py": {"family_engine"},
-                  "contracts_input.py": {"contracts_v2"}}
+                  "contracts_input.py": {"contracts_v2"},
+                  "contracts_output.py": {"contracts_v2"}}
 #: The live runtime: the page, the engine, the reader, the submission guard and the order path.
 RUNTIME_ROOTS = ("app", "family_engine", "family_parser", "submission_guard", "order_pipeline")
 STDLIB = {"__future__", "argparse", "copy", "dataclasses", "enum", "hashlib", "json", "math", "pathlib", "typing"}
