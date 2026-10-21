@@ -33,6 +33,7 @@ from contracts_v2 import orders as order_contracts_v2
 from contracts_v2 import fates as fate_contracts_v2
 from contracts_v2 import timing as time_contracts_v2
 from contracts_v2 import events as event_contracts_v2
+from contracts_v2 import observations as observation_contracts_v2
 
 ENTRY_POINTS = ("free_text", "reasoning_followup", "clarification_answer", "guided_form", "pending_completion",
                 "recovered_submission")
@@ -605,6 +606,8 @@ def ledger_record(session, turn, add_event):
         time_contracts_v2.shadow_from_legacy_turn(turn)
         # Phase 1 WP4: observe final Phase-0 events/interruption in shadow only.
         event_contracts_v2.shadow_from_legacy_turn(turn)
+        # Phase 1 WP5: observe final Phase-0 observation snapshot in shadow only.
+        observation_contracts_v2.shadow_from_legacy_turn(turn)
     for line in receipt_lines(turn):
         add_event("prototype", line)
     upsert(session.setdefault("order_ledger", []), turn["orders"])
