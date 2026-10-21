@@ -987,6 +987,9 @@ def record_management_trace(learner_input, parsed, result, state_before, state_a
         event["limitations"] += [{"kind": "engine_inconsistency", "detail": f"order ledger: {problem}"}
                                  for problem in _ledger_check.check(turn)]
         event["versions"] = trace_phase0.versions(st.session_state.state)
+        # Phase 1 WP6: observe the complete Phase-0 trace turn in shadow only.
+        from contracts_v2 import trace as trace_contracts_v2
+        trace_contracts_v2.shadow_from_legacy_trace(event)
     st.session_state.management_trace.append(event)
     return event
 
