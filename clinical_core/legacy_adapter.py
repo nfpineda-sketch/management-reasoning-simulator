@@ -11,8 +11,10 @@ Nothing here writes to the family engine, its module constants, ``st.session_sta
 the Management Trace, receipts, events, observations or persistence. Every function
 works on deep copies of the state it is given.
 
-When Phase 1's ``OrderAction`` v2 is final, ``interventions_from_orders`` is the single
-function to replace: it is where a legacy parsed action becomes a core intervention.
+The route through the final Phase-1 Contracts v2 is ``contracts_legacy`` (the engine through
+the page's order path) and ``contracts_input`` (the interventions from the contracts). This
+adapter stays as the direct route the contract route is compared with; both share
+``delivery_contributors``.
 """
 from __future__ import annotations
 
@@ -117,15 +119,8 @@ class LegacyRun:
     final_state: dict
 
 
-def run_legacy(variant_id: str, orders: Mapping[int, str], minutes: int, *, state: Mapping | None = None) -> LegacyRun:
-    """Run the family engine one minute at a time; an order is executed at its minute.
-
-    Each order is sent with "Reassess in 1 minute." so the turn advances exactly one
-    minute; the run fails closed if the engine advanced any other amount, interrupted the
-    turn, or refused the order.
-    """
-    from family_parser import parse_family_actions
-    engine = _engine()
+def scenario_case(variant_id: str, orders: Mapping[int, str], minutes: int, state: Mapping | None = None) -> dict:
+    """The scenario's own copy of the case, after checking that every order will be reached."""
     for minute, text in orders.items():
         # An order the loop would never reach must not vanish from the comparison.
         if isinstance(minute, bool) or not isinstance(minute, int) or not 0 <= minute < minutes:
@@ -135,6 +130,19 @@ def run_legacy(variant_id: str, orders: Mapping[int, str], minutes: int, *, stat
     current = deepcopy(dict(state)) if state is not None else bank_case(variant_id)
     if current.get("engine_family") not in SUPPORTED_FAMILIES:
         raise UnsupportedScenario(f"family {current.get('engine_family')!r} is not in the shadow core yet")
+    return current
+
+
+def run_legacy(variant_id: str, orders: Mapping[int, str], minutes: int, *, state: Mapping | None = None) -> LegacyRun:
+    """Run the family engine one minute at a time; an order is executed at its minute.
+
+    Each order is sent with "Reassess in 1 minute." so the turn advances exactly one
+    minute; the run fails closed if the engine advanced any other amount, interrupted the
+    turn, or refused the order.
+    """
+    from family_parser import parse_family_actions
+    engine = _engine()
+    current = scenario_case(variant_id, orders, minutes, state)
     arrival = deepcopy(current)
     snapshots, executed = [snapshot(current)], []
     for minute in range(minutes):
