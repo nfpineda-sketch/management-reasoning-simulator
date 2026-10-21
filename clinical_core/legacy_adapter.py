@@ -209,7 +209,9 @@ def _summaries(order: LegacyOrder, kind: str) -> list:
 
 
 @dataclass(frozen=True)
-class _Delivery:
+class Delivery:
+    """One fluid or blood order on its way to the patient; ``position`` orders it among stops."""
+
     position: tuple
     kind: str
     order_id: str
@@ -244,8 +246,8 @@ def interventions_from_orders(orders, engine_gi_bleed: Mapping) -> tuple:
                 if operation is not None:
                     raise UnsupportedScenario(f"{kind} operation {operation!r} has no shadow-core equivalent yet")
                 begins = receipt.get("delivery_starts_at_min")
-                deliveries.append(_Delivery((order.minute, index), kind, order_id, order.minute, action,
-                                            order.minute if begins is None else float(begins)))
+                deliveries.append(Delivery((order.minute, index), kind, order_id, order.minute, action,
+                                           order.minute if begins is None else float(begins)))
             elif kind == "oxygen":
                 built.append(Oxygen(order_id, order.minute, order.fio2_after))
             elif kind == "ppi":
@@ -254,6 +256,16 @@ def interventions_from_orders(orders, engine_gi_bleed: Mapping) -> tuple:
                 continue
             else:
                 raise UnsupportedScenario(f"order type {kind!r} has no shadow-core intervention yet")
+    return tuple(built) + delivery_contributors(deliveries, stops, engine_gi_bleed)
+
+
+def delivery_contributors(deliveries, stops, engine_gi_bleed: Mapping) -> tuple:
+    """Fluid and blood deliveries, in order, as core interventions.
+
+    ``stops`` holds ``(position, order_id)`` for each "stop IV fluids": it closes every
+    crystalloid whose position comes before it. Untimed volume of one kind shares one
+    line: an untimed order queues behind what the earlier untimed orders still have to run.
+    """
     made = []
     for item in deliveries:
         stop = next(((position, order_id) for position, order_id in stops if position > item.position), None)
@@ -266,14 +278,14 @@ def interventions_from_orders(orders, engine_gi_bleed: Mapping) -> tuple:
                     ahead += contributor_amount(contributor) - delivered_by(item.minute, **contributor.delivery())
         contributor = _build(item, engine_gi_bleed, stop_minute, stopped_by, ahead)
         made.append((item, contributor))
-    return tuple(built + [contributor for _, contributor in made])
+    return tuple(contributor for _, contributor in made)
 
 
 def contributor_amount(contributor) -> float:
     return contributor.volume_ml if isinstance(contributor, Crystalloid) else contributor.units
 
 
-def _build(item: _Delivery, engine_gi_bleed: Mapping, stop_minute, stopped_by, ahead):
+def _build(item: Delivery, engine_gi_bleed: Mapping, stop_minute, stopped_by, ahead):
     if item.kind == "fluid":
         return Crystalloid(
             item.order_id, item.start, float(item.action["volume_ml"]), _duration(item.action),

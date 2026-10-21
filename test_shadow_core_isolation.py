@@ -3,7 +3,8 @@
 - No module the application runs imports ``clinical_core``.
 - ``clinical_core`` imports nothing that touches the session, the Trace, receipts,
   persistence or the page; only its legacy adapter reads the family engine, and only
-  through copies.
+  through copies. Its Contracts v2 adapters import ``contracts_v2``; the runtime, which also
+  imports ``contracts_v2``, still never reaches ``clinical_core``.
 - A legacy run is identical with and without the shadow run after it, and nothing the
   shadow is given is changed.
 """
@@ -24,7 +25,10 @@ ROOT = Path(__file__).resolve().parent
 PACKAGE = ROOT / "clinical_core"
 #: What each core file may import besides the standard library and the package itself.
 LEGACY_READERS = {"legacy_adapter.py": {"family_engine", "family_parser", "cognitive_catalog", "cognitive_generator"},
-                  "shadow.py": {"family_engine"}}
+                  "shadow.py": {"family_engine"},
+                  "contracts_input.py": {"contracts_v2"}}
+#: The live runtime: the page, the engine, the reader, the submission guard and the order path.
+RUNTIME_ROOTS = ("app", "family_engine", "family_parser", "submission_guard", "order_pipeline")
 STDLIB = {"__future__", "argparse", "copy", "dataclasses", "enum", "hashlib", "json", "math", "pathlib", "typing"}
 
 
@@ -52,6 +56,31 @@ def test_the_core_imports_only_what_a_shadow_needs():
         allowed = LEGACY_READERS.get(path.name, set())
         assert imported <= allowed, (path.relative_to(ROOT), imported - allowed)
     assert SHADOW_ONLY is True and AUTHORITATIVE_ENGINE == "family_engine"
+
+
+def _reachable(roots):
+    """Every repository module the roots import, directly or not, at any depth or place."""
+    modules = {path.stem: [path] for path in ROOT.glob("*.py")}
+    modules.update({path.name: list(path.rglob("*.py")) for path in ROOT.iterdir()
+                    if path.is_dir() and (path / "__init__.py").exists()})
+    seen, pending = set(), list(roots)
+    while pending:
+        name = pending.pop()
+        if name in seen or name not in modules:
+            continue
+        seen.add(name)
+        for path in modules[name]:
+            pending.extend(_imports(path) & set(modules))
+    return seen
+
+
+def test_contracts_v2_feeds_the_core_but_the_runtime_never_reaches_the_core():
+    reached = _reachable(RUNTIME_ROOTS)
+    assert {"app", "family_engine", "contracts_v2"} <= reached, "the runtime observes Contracts v2 in shadow"
+    assert "clinical_core" not in reached
+    assert "contracts_v2" in _imports(PACKAGE / "contracts_input.py")
+    for path in (ROOT / "contracts_v2").rglob("*.py"):
+        assert "clinical_core" not in _imports(path), path.name
 
 
 def test_the_legacy_run_is_the_same_with_and_without_the_shadow():
