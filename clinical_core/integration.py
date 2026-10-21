@@ -22,7 +22,7 @@ source key, so a trajectory is a pure function of (anchors, contributors, minute
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
 from .derived import ADOPTED, DEFAULT_PROFILE, PROVISIONAL, CoreProfile, Derived, derive
@@ -78,8 +78,13 @@ _REGISTRY: dict[str, type] = {}
 
 
 def register(cls):
-    """Make a contributor type reconstructible from its specification (replay)."""
-    if cls.type_name in _REGISTRY and _REGISTRY[cls.type_name] is not cls:
+    """Make a contributor type reconstructible from its specification (replay).
+
+    Registering the same class again (a module reload) replaces it; a *different* class
+    under a name already taken is refused.
+    """
+    known = _REGISTRY.get(cls.type_name)
+    if known is not None and (known.__module__, known.__qualname__) != (cls.__module__, cls.__qualname__):
         raise ValueError(f"contributor type {cls.type_name!r} registered twice")
     _REGISTRY[cls.type_name] = cls
     return cls
@@ -131,8 +136,13 @@ def _plain(value):
 
 
 def from_spec(spec: Mapping[str, Any]) -> Contributor:
+    # Every contributor type the package defines is registered here, whatever was imported before.
+    from . import interventions, logistics, modules  # noqa: F401
     data = dict(spec)
-    cls = _REGISTRY[data.pop("type")]
+    name = data.pop("type")
+    if name not in _REGISTRY:
+        raise ProvenanceError(f"no contributor type {name!r}")
+    cls = _REGISTRY[name]
     builder = getattr(cls, "from_spec_data", None)
     return builder(data) if builder else cls(**data)
 
@@ -162,7 +172,16 @@ def _check_owned(contributor: Contributor, contribution: Contribution, minute: i
         raise ProvenanceError("internal state is returned as a FrozenRecord")
 
 
+#: Source kinds only the integrator writes. A contributor claiming one is refused.
+RESERVED_KINDS = frozenset({SourceKind.CLAMP, SourceKind.CORE_COUPLING})
+
+
 def _ordered(contributors: Sequence[Contributor]) -> tuple[Contributor, ...]:
+    for item in contributors:
+        if not isinstance(item, Contributor) or not is_dataclass(item) or not item.__dataclass_params__.frozen:
+            raise ProvenanceError(f"{type(item).__name__} must be a frozen dataclass Contributor")
+        if item.source.kind in RESERVED_KINDS:
+            raise ProvenanceError(f"{item.source.key}: only the integrator writes {item.source.kind.value} changes")
     ordered = tuple(sorted(contributors, key=lambda item: (item.source.kind.value, item.source.id)))
     keys = [item.source.key for item in ordered]
     if len(set(keys)) != len(keys):
@@ -187,7 +206,9 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     deltas = [_oxygen_debt(state, anchors, profile, minute)]
     transitions, settings, events, internal = [], [], [], {}
     for contributor in ordered:
-        contribution = contributor.contribute(state, minute, signals, anchors, profile)
+        # A contributor sees only the signals it declares it responds to.
+        heard = tuple(signal for signal in signals if signal.name in contributor.responds_to)
+        contribution = contributor.contribute(state, minute, heard, anchors, profile)
         _check_owned(contributor, contribution, minute)
         deltas.extend(contribution.deltas)
         transitions.extend(contribution.transitions)

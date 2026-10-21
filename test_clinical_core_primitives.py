@@ -308,3 +308,99 @@ def test_internal_state_is_immutable_and_serializable():
 def test_signals_are_ordered_and_owned():
     signal = Signal("ppi", Source(SourceKind.INTERVENTION, "o1"), 3)
     assert signal.to_dict() == {"name": "ppi", "source": {"kind": "intervention", "id": "o1"}, "since_minute": 3}
+
+
+# Hardening found by the adversarial review of 2026-10-21 -----------------------------
+
+def test_only_frozen_contributors_with_their_own_kind_are_accepted():
+    from clinical_core.integration import RESERVED_KINDS
+
+    @dataclass(frozen=True)
+    class FakeClamp(Contributor):
+        kind = SourceKind.CLAMP
+        type_name = "test_fake_clamp"
+        id: str
+
+    @dataclass
+    class Mutable(Contributor):
+        kind = SourceKind.DISEASE_MODULE
+        type_name = "test_mutable"
+        id: str
+
+    assert SourceKind.CLAMP in RESERVED_KINDS and SourceKind.CORE_COUPLING in RESERVED_KINDS
+    for contributor in (FakeClamp("bounds:V"), Mutable("m")):
+        with pytest.raises(ProvenanceError):
+            run(anchors(), (contributor,), 1)
+
+
+def test_a_contributor_is_handed_only_the_signals_it_declares():
+    seen = []
+
+    @dataclass(frozen=True)
+    class Listener(Contributor):
+        kind = SourceKind.DISEASE_MODULE
+        type_name = "test_listener"
+        responds_to = frozenset({"wanted"})
+        id: str
+
+        def contribute(self, state, minute, signals, anchors, profile):
+            seen.append(tuple(signal.name for signal in signals))
+            return Contribution()
+
+    @dataclass(frozen=True)
+    class Talker(Contributor):
+        kind = SourceKind.INTERVENTION
+        type_name = "test_talker"
+        id: str
+
+        def signals(self, minute):
+            return (Signal("wanted", self.source, 0), Signal("other", self.source, 0))
+
+    run(anchors(), (Listener("l"), Talker("t")), 2)
+    assert seen == [("wanted",), ("wanted",)]
+
+
+def test_an_arrival_below_the_lactate_floor_is_still_a_fixed_point():
+    arrival = anchors(lactate=0.5)
+    derived = run(arrival, (), 30).derived()
+    assert derived[0].lactate == derived[-1].lactate == 0.5
+    assert derived[0].respiratory_rate == derived[-1].respiratory_rate == 26.0
+
+
+def test_nested_internal_state_serializes():
+    record = FrozenRecord({"queue": [{"a": 1}, {"b": [2, 3]}]})
+    assert json.loads(canonical_json(record.to_dict())) == {"queue": [{"a": 1}, {"b": [2, 3]}]}
+
+
+def test_a_scenario_rebuilds_in_a_fresh_process_without_prior_imports():
+    """from_spec must not depend on which contributor modules the caller happened to import."""
+    import subprocess
+    import sys
+    from pathlib import Path
+    from clinical_core.interventions import Crystalloid, Oxygen, PackedRedCells, ProtonPumpInhibitor
+    from clinical_core.logistics import EndoscopicHemostasis
+    from clinical_core.modules import GIHaemorrhage, ScriptedRhythmEvent
+    contributors = (GIHaemorrhage("bleed", 2.5, .009, .8, .1), Crystalloid("c", 0, 500.0, 20.0, 50.0, .125, .6, 30.0, .0006),
+                    PackedRedCells("b", 0, 1.0, None, 1 / 30, 300.0, .85), Oxygen("o", 1, .4),
+                    ProtonPumpInhibitor("p", 0), EndoscopicHemostasis("e", 30),
+                    ScriptedRhythmEvent("r", 40, RhythmState.asystole(), preventability="not preventable"))
+    stored = json.dumps(scenario_to_dict(anchors(), contributors, 45))
+    expected = run(anchors(), contributors, 45).digest()
+    code = ("import json, sys, clinical_core\n"
+            "from clinical_core.integration import run, scenario_from_dict\n"
+            "arrival, rebuilt, minutes, profile = scenario_from_dict(json.loads(sys.stdin.read()))\n"
+            "print(run(arrival, rebuilt, minutes, profile).digest())\n")
+    root = Path(__file__).resolve().parent
+    done = subprocess.run([sys.executable, "-c", code], cwd=root, input=stored, capture_output=True, text=True,
+                          timeout=120)
+    assert done.returncode == 0, done.stderr
+    assert done.stdout.strip() == expected
+
+
+def test_reloading_a_contributor_module_does_not_break_the_registry():
+    import importlib
+    import clinical_core.interventions.fluids as fluids
+    importlib.reload(fluids)
+    from clinical_core.integration import from_spec
+    spec = fluids.Crystalloid("x", 0, 100.0, None, 50.0, .125, .6, 30.0, .0006).to_spec()
+    assert from_spec(spec).to_spec() == spec

@@ -2,3 +2,4 @@
 
 PPI = "ppi"                                     # a proton-pump inhibitor is running
 ENDOSCOPIC_HEMOSTASIS = "endoscopic_hemostasis"  # the bleeding source was treated endoscopically
+OXYGEN = "oxygen"                               # a supplemental oxygen order is running

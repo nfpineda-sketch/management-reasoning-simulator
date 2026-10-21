@@ -205,9 +205,15 @@ class FrozenRecord(Mapping):
         return FrozenRecord(data)
 
     def to_dict(self) -> dict:
-        return {key: (value.to_dict() if isinstance(value, FrozenRecord) else
-                      list(value) if isinstance(value, tuple) else value)
-                for key, value in self._items}
+        return {key: _thaw(value) for key, value in self._items}
+
+
+def _thaw(value):
+    if isinstance(value, FrozenRecord):
+        return value.to_dict()
+    if isinstance(value, tuple):
+        return [_thaw(item) for item in value]
+    return value
 
 
 def _freeze(value):

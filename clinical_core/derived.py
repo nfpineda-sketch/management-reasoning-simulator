@@ -116,7 +116,9 @@ def _level(value: float, levels) -> int:
 
 def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> Derived:
     rhythm = state.R
-    lactate = max(profile.lactate_floor,
+    # The floor guards against a debt repaid below what any patient reads; it never moves an
+    # authored arrival that is already below it.
+    lactate = max(min(profile.lactate_floor, anchors.lactate),
                   anchors.lactate + profile.lactate_per_output_deficit / profile.debt_clearance_tau_min * state.D)
     if not rhythm.pulse_present:
         derived = Derived(minute=state.minute, pulse_present=False, rhythm=rhythm.code,

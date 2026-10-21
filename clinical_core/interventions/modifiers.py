@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from .. import signals as names
 from ..integration import Contributor, Signal, register
 from ..provenance import SourceKind
+from ..state import CoreInvariantError
 from .timing import check_window
 
 
@@ -25,7 +26,9 @@ class ProtonPumpInhibitor(Contributor):
     stop_minute: int | None = None
 
     def __post_init__(self):
-        check_window(self.start_minute, self.stop_minute)
+        check_window(self.start_minute, self.stop_minute, whole_start=True)
+        if self.stop_minute is not None and self.stop_minute <= self.start_minute:
+            raise CoreInvariantError("a proton-pump inhibitor stops after it starts")
 
     def signals(self, minute):
         if minute <= self.start_minute or (self.stop_minute is not None and minute > self.stop_minute):

@@ -19,9 +19,10 @@ ARRIVAL = Anchors(case_id="gi_bleed_72f", sbp=98.0, dbp=62.0, hr=112.0, spo2=96.
 BLEED = GIHaemorrhage("gi_haemorrhage", 2.5, 0.009, 0.8, 0.1)
 
 
-def saline(order_id="order-saline", start=0, volume=1000.0, duration=None, stop=None):
+def saline(order_id="order-saline", start=0, volume=1000.0, duration=None, stop=None, ahead=0.0):
     return Crystalloid(order_id, start, volume, duration, untimed_rate_ml_per_min=50.0, effective_ml_per_ml=0.125,
-                       transient_share=0.6, leak_tau_min=30.0, hb_dilution_g_dl_per_ml=0.0006, stop_minute=stop)
+                       transient_share=0.6, leak_tau_min=30.0, hb_dilution_g_dl_per_ml=0.0006, stop_minute=stop,
+                       stopped_by=None if stop is None else "order-stop", queued_ahead_ml=ahead)
 
 
 def blood(order_id="order-prbc", start=0, units=2.0, duration=None, stop=None):
@@ -132,8 +133,44 @@ def test_a_scenario_with_orders_replays_from_its_serialized_form():
 
 
 def test_impossible_orders_are_refused():
-    for build in (lambda: saline(volume=-1.0), lambda: saline(duration=0.0), lambda: saline(start=5, stop=4),
+    for build in (lambda: saline(volume=-1.0), lambda: saline(duration=0.0), lambda: saline(stop=-1),
+                  lambda: saline(ahead=-5.0), lambda: saline(duration=20.0, ahead=100.0),
+                  lambda: Crystalloid("x", 0, 500.0, None, 50.0, .125, .6, 30.0, .0006, stop_minute=4),
                   lambda: blood(units=0.0), lambda: Oxygen("o", 0, 0.1), lambda: Oxygen("o", -1, 0.4),
+                  lambda: Oxygen("o", 5, 0.4, stop_minute=5), lambda: Oxygen("o", 1.5, 0.4),
                   lambda: ProtonPumpInhibitor("p", 3, 2)):
         with pytest.raises(CoreInvariantError):
             build()
+
+
+def test_untimed_orders_share_one_line():
+    """A second untimed litre given at minute 5 waits for the 750 mL still running: 50 mL/min in all."""
+    first, second = saline("order-a"), saline("order-b", start=5, ahead=750.0)
+    trajectory = run(ARRIVAL, (first, second), 50)
+    total = [-(a + b) / 0.0006 for a, b in zip(from_order(trajectory, "order-a", Channel.HB),
+                                                 from_order(trajectory, "order-b", Channel.HB))]
+    assert all(value == pytest.approx(50.0) for value in total[:40]) and total[40:] == [0.0] * 10
+    assert from_order(trajectory, "order-b", Channel.HB)[:20] == [0.0] * 20
+
+
+def test_a_queued_bag_starts_where_its_receipt_says_even_mid_minute():
+    trajectory = run(ARRIVAL, (saline("order-q", start=7.5, duration=10.0),), 20)
+    hb = from_order(trajectory, "order-q", Channel.HB)
+    assert hb[:7] == [0.0] * 7 and hb[7] == pytest.approx(-0.0006 * 50.0) and hb[8] == pytest.approx(-0.0006 * 100.0)
+    assert delivered(trajectory, "order-q") == pytest.approx(1000.0)
+
+
+def test_a_stop_names_the_order_that_stopped_the_bag():
+    trajectory = run(ARRIVAL, (saline(start=0, duration=40.0, stop=10),), 20)
+    assert delivered(trajectory, "order-saline") == pytest.approx(250.0)
+    assert saline(stop=10).to_spec()["stopped_by"] == "order-stop"
+
+
+def test_oxygen_held_by_the_latest_order_and_a_stop_never_guesses():
+    two = run(ARRIVAL, (Oxygen("order-a", 0, 0.4), Oxygen("order-b", 10, 0.6)), 15)
+    assert [s.value for record in two.records for s in record.settings] == [0.4, 0.6]
+    assert two.states[-1].fio2 == 0.6
+    with pytest.raises(CoreInvariantError):
+        run(ARRIVAL, (Oxygen("order-a", 0, 0.4, stop_minute=20), Oxygen("order-b", 10, 0.6)), 25)
+    alone = run(ARRIVAL, (Oxygen("order-a", 0, 0.4, stop_minute=20),), 25)
+    assert alone.states[-1].fio2 == ARRIVAL.fio2
