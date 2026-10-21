@@ -85,6 +85,9 @@ from curriculum_runtime import SESSION_FIELDS as _SESSION_FIELDS, write_session 
 _submission_guard.recover(st.session_state, _SESSION_FIELDS)
 if ACCOUNT_CONTEXT:
     _submission_guard.write_ahead(st.session_state, lambda: _write_session(ACCOUNT_CONTEXT))
+# Phase 1 WP7: observe the Phase-0 submission log after recovery/write-ahead only.
+from contracts_v2 import submissions as submission_contracts_v2
+submission_contracts_v2.shadow_from_legacy_entries(_submission_guard._entries(st.session_state))
 # The submission is already durable at this point. On the run whose only job is
 # to process it, defer the expensive bedside/chart render until the result rerun.
 _FAST_PENDING_SUBMISSION = _submission_guard.fast_path(st.session_state)
@@ -137,6 +140,9 @@ def rerun_app():
     # The submission this run processed is done (Phase 0, 0D): it is saved as processed.
     import submission_guard
     submission_guard.finish(st.session_state)
+    # Phase 1 WP7: observe processed submission state before Phase-0 persistence.
+    from contracts_v2 import submissions as submission_contracts_v2
+    submission_contracts_v2.shadow_from_legacy_entries(submission_guard._entries(st.session_state))
     if context:
         save_session(context)
     st.rerun()
