@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| Rama | `phase-2-clinical-core-shadow` (local, sin push) |
+| Rama | `phase-2-clinical-core-shadow` |
 | Base | `6fad3103af531689af7995a4db3838418581f1c0` = `origin/phase-1-contracts-v2`, el SHA final de la Fase 1 |
-| HEAD del código de la Fase 2 | `3120e0cc343bed8fc6c7fe10922a62615ecba096`. Esta actualización del documento va en el commit siguiente |
+| HEAD del código de la Fase 2 | `467f047` (adaptadores de Contracts v2, §8). Esta actualización del documento va en el commit siguiente |
 | Fuente de la arquitectura | `docs/CLINICAL_ENGINE_ARCHITECTURE_PROPOSAL.md` §7–§14 |
 | Estado | **Sombra solamente.** `family_engine.py` sigue siendo la fuente de verdad de todo encuentro. Ningún módulo de la aplicación importa `clinical_core`; nada cambia para el residente. **No hay gancho en tiempo de ejecución** (§7). |
 
@@ -43,8 +43,12 @@ Paquete `clinical_core/`, sin dependencias de la aplicación salvo su adaptador 
 | `modules/rhythm_events.py` | Eventos guionados declarados sobre R y P (causa y prevenibilidad, §8.4) |
 | `logistics.py` | Finalización de la endoscopia como proceso logístico (§10.3) |
 | `interventions/` | Cristaloide, glóbulos rojos, oxígeno (FiO2 como ajuste) e IBP (modulador) |
-| `legacy_adapter.py` | Único puente con el motor de familias: lo ejecuta sobre copias y lee sus entradas relevantes |
+| `legacy_adapter.py` | Ruta directa al motor de familias: lo ejecuta sobre copias y lee sus entradas relevantes |
 | `comparison.py`, `shadow.py`, `golden/gi_bleed_shadow.json` | Comparación heredado/núcleo y el resumen dorado comprometido |
+| `contracts_legacy.py` | El motor de familias por el camino de órdenes de la página (Fase 0), con los Contracts v2 de cada turno (§8) |
+| `contracts_input.py` | Entradas del núcleo desde Contracts v2 solamente: `OrderAction`, `FateReceipt`, `TurnTime`, `EventInterruption` (§8) |
+| `contracts_output.py` | Salida del núcleo en forma de Contracts v2, siempre como sombra: `EventInterruption`, `ObservationSnapshot`, `TraceProvenance` (§8) |
+| `contracts_shadow.py` | La comparación dorada por Contracts v2 (§8) |
 
 ### Canales
 
@@ -206,18 +210,18 @@ bolsas encoladas y «stop» los ejercitan contra el motor de familias.
 
 ## 7. Puntos de conexión con la Fase 1 (SHA final `6fad310`)
 
-La rama ya parte de la Fase 1 final, pero el núcleo todavía **no importa** `contracts_v2`. La conexión es el paso
-siguiente y necesita autorización propia.
+Desde el paquete P2B (§8), el núcleo consume y emite Contracts v2 **fuera de línea**:
 
-| Contrato de la Fase 1 (`contracts_v2`) | Dónde se conecta | Qué reemplaza |
+| Contrato de la Fase 1 (`contracts_v2`) | Dónde se conecta | Estado |
 |---|---|---|
-| WP1 `orders.OrderAction` | `legacy_adapter.interventions_from_orders` | La traducción desde las acciones del lector |
-| WP2 `fates.FateReceipt` | `legacy_adapter.run_legacy` | La verificación de que cada turno corrió (`executed`, `elapsed_min`) |
-| WP3 `timing.OrderTiming` y `TurnTime` | `interventions.timing` y `logistics.EndoscopicHemostasis` | El inicio fraccionario tomado del recibo y `endoscopy_at` tomado del motor de familias |
-| WP4 `events.EventInterruption` | `provenance.CoreEvent` | Sólo mapeo; el núcleo no interrumpe turnos |
-| WP5 `observations.ObservationSnapshot` | `legacy_adapter.snapshot`; `comparison.VARIABLES` y `_display` | El diccionario `observable` y la convención de pantalla copiada |
-| WP6 `trace.TraceProvenance` | `provenance.MinuteRecord.to_dict` y `CoreEvent` | Ya tienen fuente, minuto, canal y causa; falta sólo el mapeo de nombres |
-| Modelo terminal de la Fase 1 | `state.RhythmCode` y `NON_PERFUSING` | Etiquetas propias |
+| WP1 `orders.OrderAction` | `contracts_input.adapt` | Hecho: cada intervención nace de una `OrderAction` |
+| WP2 `fates.FateReceipt` | `contracts_input.adapt` | Hecho: el destino decide si la orden actuó; el núcleo lo cita, nunca lo crea |
+| WP3 `timing.TurnTime` | `contracts_input.adapt` | Hecho: se contrasta `executed_at_min` y se rechaza un turno interrumpido |
+| WP4 `events.EventInterruption` | `contracts_input.logistics_from_events` (entrada); `contracts_output.shadow_events` (salida) | Hecho: la endoscopia viene de su evento logístico |
+| WP5 `observations.ObservationSnapshot` | `contracts_output.shadow_observation` | Hecho, en sombra; la comparación sigue leyendo `legacy_adapter.snapshot` |
+| WP6 `trace.TraceProvenance` | `contracts_output.shadow_trace` | Hecho, en sombra; no toca el Trace autoritativo |
+| WP7 `submissions` | Sólo la identidad de envío (`submission_id`) en `OrderAction` y `FateReceipt` | No se usa el registro de envíos: no hace falta para la identidad |
+| Modelo terminal de la Fase 1 | `state.RhythmCode` y `NON_PERFUSING` | Etiquetas propias; `shadow_observation` expone `arrested` y `arrest_minute` |
 
 **Sigue sin haber gancho en tiempo de ejecución.** No se agregó ninguno y la Fase 2 no lo necesita.
 - Si se autorizara uno, los únicos puntos de entrada del motor en la aplicación son, sobre `6fad310`:
@@ -225,3 +229,90 @@ siguiente y necesita autorización propia.
   - `app.py:870` (`advance_clinical_time`).
 - La recomendación es **no** tocarlos y correr la sombra fuera de línea, desde los encuentros persistidos (Trace v2
   más el ledger de órdenes). Así no hay riesgo para el residente.
+
+## 8. Adaptadores de Contracts v2 fuera de línea (P2B, 2026-10-21)
+
+Nada de esto corre en la aplicación:
+- `app.py`, `family_engine.py`, `family_parser.py` y `submission_guard.py` no importan `clinical_core`;
+- la prueba `test_contracts_v2_feeds_the_core_but_the_runtime_never_reaches_the_core` recorre el grafo de
+  importaciones del tiempo de ejecución: llega a `contracts_v2` pero nunca a `clinical_core`;
+- `contracts_v2` no importa `clinical_core`.
+
+### 8.1 Inventario (P2B-1)
+
+**Entrada: de Contracts v2 al núcleo**
+
+| Dato del núcleo | Contrato | Campo | Transformación | ¿Sin pérdida? |
+|---|---|---|---|---|
+| Id de la intervención | `OrderAction` | `order_id` | Ninguna | Sí |
+| Envío en que se escribió | `OrderAction`, `FateReceipt` | `submission_id` | Ninguna; se conserva al arrastrarse a otro turno | Sí |
+| Qué se ordenó | `OrderAction` | `fields` (lo que recibió el motor) | Lista blanca de campos por clase; cualquier otro campo se rechaza | Sí, para las clases admitidas |
+| Si actuó | `FateReceipt` | `fate`, `limitation` | `EXECUTED` actúa; `RECORDED_NOT_MODELLED`, `UNRECOGNIZED`, `DUPLICATE_IGNORED` y `TERMINAL_NOT_EXECUTABLE` quedan ligadas sin efecto; el resto se rechaza | Sí |
+| Minuto de inicio | `FateReceipt` (y `TurnTime`, que debe coincidir) | `executed_at_min` | Ninguna | Sí |
+| Inicio de una bolsa en cola | **Ninguno** | — | Regla de cola del motor (`queued_start`), verificada contra el resumen del motor | **No lo lleva el contrato** |
+| FiO2 de un dispositivo | **Ninguno** (`OrderAction` lleva `device` y `flow_lpm`) | — | Tabla del motor (`OXYGEN_FIO2`), verificada contra la FiO2 que fijó el motor | **No lo lleva el contrato** |
+| Fin de la endoscopia | `EventInterruption` | evento `endoscopy`, `cause_class` `LOGISTIC`, `minute` | Ninguna | Sí |
+| Llegada del caso (anclas) y tasa de sangrado | **Ninguno** | — | Del estado del caso y de `GI_BLEED`, como antes (`legacy_adapter`) | No es un dato de turno |
+
+**Salida: del núcleo a Contracts v2, siempre en sombra**
+
+| Contrato | Qué lleva | Qué no lleva nunca |
+|---|---|---|
+| `EventInterruption` | Los `CoreEvent` del núcleo, con fuente, minuto, severidad, causa y prevenibilidad; `interrupted` siempre `None` | Ningún evento del motor de familias |
+| `ObservationSnapshot` | Canales, ritmo, FiO2, valores derivados crudos, `arrested` y `arrest_minute` | `visible`, etiquetas o valores redondeados para pantalla |
+| `TraceProvenance` | Vínculos orden → fuente del núcleo (con el destino citado como `cited_fate`), eventos, observación final, limitaciones, versiones y procedencia minuto a minuto | `FateReceipt`, recibos, texto para el residente |
+| `FateReceipt` | **No se emite**: los destinos son del ledger de la Fase 0 | — |
+
+Toda salida lleva `namespace: clinical_core_shadow` y `authoritative: false`. `check_shadow_payload` la rechaza si
+parece autoritativa, si no es JSON plano o si trae una clave visible para el residente.
+
+### 8.2 Lo que se rechaza explícitamente (`UnsupportedContract`)
+
+- Una orden con destino pendiente o condicional (`HELD_CLARIFICATION`, `HELD_REASONING`, `SCHEDULED`): nunca se lee
+  como dada ahora.
+- Una orden con `limitation` o con destino `CANCELLED`, `DUPLICATE_CONFIRMED` o desconocido.
+- Una `OrderAction` sin `FateReceipt`, y una orden ejecutada sin `OrderAction`.
+- Una clase sin equivalente en el núcleo (por ejemplo, vasopresores) o un campo fuera de la lista blanca (por
+  ejemplo, `after_result`).
+- Un líquido que no sea cristaloide, una vía distinta de IV o IO, una operación distinta de «stop», o un `rate_ml_h`
+  que no coincide con la duración.
+- Un dispositivo de oxígeno que el motor no nombra, y una cánula nasal sin flujo.
+- Un turno interrumpido.
+- Un evento logístico distinto de la endoscopia, un evento `SCRIPTED_NATURAL_HISTORY` y una endoscopia repetida.
+
+`ContractInputError` cubre las contradicciones entre contratos:
+- una identidad que cambia al arrastrarse;
+- un `executed_at_min` distinto entre `TurnTime` y `FateReceipt`;
+- un minuto que no es entero.
+
+Los eventos del motor que no son entradas (por ejemplo, de fisiología) quedan listados como «no consumidos» en las
+limitaciones del Trace en sombra.
+
+### 8.3 Comparación dorada por Contracts v2 (P2B-4)
+
+`python -m clinical_core.contracts_shadow` corre los 10 × 2 escenarios así:
+1. el motor de familias por el camino de órdenes de la página (`pilot_acceptance.Encounter` sin Streamlit), un
+   minuto por turno;
+2. las intervenciones del núcleo desde los contratos de esos turnos.
+
+Resultado:
+- El informe dorado es **idéntico al comprometido**. La única transformación es escribir cada `order_id` del ledger
+  en el nombre del adaptador heredado (`m<minuto>-<índice>-<tipo>`).
+- Las coincidencias exactas no cambiaron, y KD-S1 a KD-S4 tampoco, con las mismas magnitudes.
+- El curso del núcleo es idéntico, minuto a minuto, al de la ruta directa en todos los canales, el ritmo, la FiO2 y
+  los valores derivados.
+- El curso del motor por el camino de la página es idéntico al de la ruta directa.
+- No se ajustó nada.
+
+### 8.4 Lo que se pierde y lo que falta
+
+- **Sin pérdida** para lo que el núcleo modela hoy: identidad, envío, momento, qué se ordenó y si actuó.
+- **Dos datos que Contracts v2 no lleva** y que se reconstruyen por regla:
+  - el inicio de una bolsa en cola;
+  - la FiO2 de un dispositivo.
+
+  La comparación los verifica contra el motor y falla cerrada si difieren. **Decisión pendiente:** si una versión
+  futura del contrato debe llevarlos.
+- **Fuera de los contratos de turno:** las anclas de llegada y los parámetros de la hemorragia (`GI_BLEED`). Siguen
+  leyéndose del caso.
+- El registro de envíos (WP7) no se usa: la identidad de envío ya viaja en `OrderAction` y `FateReceipt`.
