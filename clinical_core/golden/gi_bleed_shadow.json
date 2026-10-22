@@ -16,7 +16,7 @@
    -10.0,
    10.0,
    "provisional",
-   "guard only; only the core's preload congestion writes L yet"
+   "guard only; only the core's congestion and clearance write L yet"
   ],
   "N": [
    -10.0,
@@ -191,6 +191,10 @@
    "adopted",
    "family_engine._diagnostic: lactate + (circulation - 1) * 2, reached here as the steady state of D and of lactate kinetics; the D -> lactate production gain it implies is provisional (KD-S1)"
   ],
+  "lung_water_clearance_tau_min": [
+   "provisional",
+   "slow clearance of lung water above arrival: TBD (P2D-6)"
+  ],
   "oxygen_levels": [
    "adopted",
    "family_engine._OXYGEN_LEVELS, same reservation"
@@ -202,6 +206,10 @@
   "pressure_levels": [
    "adopted",
    "family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery margin, which belong to the observation layer"
+  ],
+  "pump_preload_coupling": [
+   "provisional",
+   "how far a depressed pump shrinks the preload curve: scale x P^c, so it lowers and flattens the usable curve (c = 0: P only scales output): TBD (P2D-5)"
   ],
   "room_air_fio2": [
    "adopted",

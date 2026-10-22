@@ -233,3 +233,151 @@ def test_p2d3_no_golden_run_puts_a_sinus_rate_below_its_intrinsic_rate():
     for variant in VARIANTS:
         for scenario in SCENARIOS:
             assert all(rate >= intrinsic for rate, intrinsic in _sinus_rates(run_shadow(variant, scenario).core))
+
+
+# P2D-4 -- D and lactate: comparative monotonicity -----------------------------------------------
+
+@dataclass(frozen=True)
+class Window(Contributor):
+    """Volume lost at a constant rate within (start, stop], Hb untouched (test only)."""
+
+    kind = SourceKind.DISEASE_MODULE
+    type_name = "test_window_loss"
+    id: str
+    per_minute: float
+    start: int
+    stop: int
+
+    def contribute(self, state, minute, signals, anchors, profile):
+        if not self.start < minute <= self.stop:
+            return Contribution()
+        return Contribution(deltas=(ChannelDelta(Channel.V, -self.per_minute, self.source, minute, "volume loss"),))
+
+
+@dataclass(frozen=True)
+class Refill(Contributor):
+    """Sets V back to a level at one minute (an idealised resuscitation, test only)."""
+
+    kind = SourceKind.SCRIPTED_EVENT
+    type_name = "test_refill"
+    id: str
+    at_minute: int
+    level_ml: float = 0.0
+
+    def contribute(self, state, minute, signals, anchors, profile):
+        if minute != self.at_minute:
+            return Contribution()
+        return Contribution(deltas=(ChannelDelta(Channel.V, self.level_ml - state.V, self.source, minute,
+                                                 "volume set back"),))
+
+
+def _excess(trajectory):
+    return [state.aux.lactate_excess_mmol_l for state in trajectory.states]
+
+
+def test_p2d4_a_greater_debt_never_gives_less_lactate():
+    less = run(BLEEDING, (Window("loss", 2.0, 0, 60), Refill("back", 61)), 240)
+    more = run(BLEEDING, (Window("loss", 3.0, 0, 60), Refill("back", 61)), 240)
+    assert all(m.D >= l.D for m, l in zip(more.states, less.states))
+    assert all(m >= l for m, l in zip(_excess(more), _excess(less)))
+    assert _excess(more)[60] > _excess(less)[60]
+
+
+def test_p2d4_sustained_severe_debt_takes_lactate_above_arrival():
+    trajectory = run(BLEEDING, (Window("loss", 15.0, 0, 30),), 240)        # V held at -450 mL-eq
+    lactate = [d.lactate for d in trajectory.derived()]
+    assert lactate[-1] > BLEEDING.lactate and lactate[-1] > lactate[60] > lactate[30]
+
+
+def test_p2d4_restored_delivery_starts_clearance_but_does_not_erase_the_lactate_at_once():
+    trajectory = run(BLEEDING, (Window("loss", 5.0, 0, 60), Refill("back", 61)), 400)
+    excess = _excess(trajectory)
+    assert excess[61] > 0 and excess[62] > 0, "not erased by restoring flow"
+    peak = max(range(len(excess)), key=excess.__getitem__)
+    assert peak >= 61 and excess[-1] < excess[peak], "clearance follows, with a lag"
+
+
+def test_p2d4_a_transient_improvement_does_not_erase_prior_debt():
+    """Same course from minute 61 on; only one of them was in shock before."""
+    later = (Refill("brief_refill", 61), Window("again", 5.0, 66, 120))
+    shocked = run(BLEEDING, (Window("first", 5.0, 0, 60),) + later, 200)
+    fresh = run(BLEEDING, later, 200)
+    for minute in range(66, 201):
+        assert shocked.states[minute].D > fresh.states[minute].D
+        assert _excess(shocked)[minute] > _excess(fresh)[minute]
+
+
+# P2D-5 -- the pump shapes the preload response ---------------------------------------------------
+
+PUMPS = (1.0, 0.7, 0.4)
+GRID = [-300.0 + 100.0 * step for step in range(34)]     # -300 .. +3000 mL-eq
+
+
+def _output(V, P):
+    return _at(BLEEDING, V, P).output_rel
+
+
+def _at(anchors, V, P=1.0):
+    return derive(run(anchors, (), 0).states[0].evolve(V=float(V), P=float(P)), anchors)
+
+
+def test_p2d5_a_weaker_pump_gives_less_output_at_the_same_volume():
+    for V in GRID:
+        outputs = [_output(V, P) for P in PUMPS]
+        assert outputs[0] > outputs[1] > outputs[2], V
+
+
+def test_p2d5_a_depressed_pump_never_gains_more_per_ml_than_a_normal_one():
+    for P in PUMPS[1:]:
+        for V, W in zip(GRID, GRID[1:]):
+            assert _output(W, P) - _output(V, P) <= _output(W, 1.0) - _output(V, 1.0), (P, V)
+
+
+def test_p2d5_a_modest_bolus_does_not_make_a_depressed_pump_whole():
+    assert _output(500.0, 0.7) < 1.0, "moderate depression: 500 mL does not restore arrival output"
+    assert max(_output(V, 0.4) for V in GRID) < 1.0, "severe depression: no volume within bounds does"
+
+
+def test_p2d5_severe_depression_lowers_and_flattens_the_usable_curve():
+    ceilings = [_output(3000.0, P) for P in PUMPS]
+    gains = [_output(500.0, P) - _output(0.0, P) for P in PUMPS]
+    relative = [gain / _output(0.0, P) for gain, P in zip(gains, PUMPS)]
+    assert ceilings[0] > ceilings[1] > ceilings[2]
+    assert gains[0] > gains[1] > gains[2] and relative[0] > relative[1] > relative[2]
+
+
+def test_p2d5_p_keeps_meaning_the_output_at_arrival_filling():
+    for P in (0.4, 0.7, 1.0, 1.3):
+        assert _output(0.0, P) == pytest.approx(P)
+
+
+# P2D-6 -- lung water clears slowly without a source ---------------------------------------------
+
+LIMITED = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "pump_reserve": 0.3})
+
+
+def _lung_water(contributors, minutes, anchors=LIMITED):
+    return [state.L for state in run(anchors, contributors, minutes).states]
+
+
+def test_p2d6_no_source_no_rise():
+    assert set(_lung_water((), 300)) == {0.0}
+
+
+def test_p2d6_removing_the_source_lets_lung_water_recover_slowly_and_monotonically():
+    L = _lung_water((Refill("fill", 1, 2000.0), Refill("drain", 60, 0.0)), 400)
+    assert L[59] > 0
+    after = L[60:]
+    assert all(later < earlier for earlier, later in zip(after, after[1:])), "monotonic recovery"
+    assert after[1] > 0 and min(after) > 0, "slow: not erased at once, never below arrival"
+    from clinical_core.derived import LUNG_WATER_CLEARANCE
+    trajectory = run(LIMITED, (Refill("fill", 1, 2000.0), Refill("drain", 60, 0.0)), 80)
+    clearing = [d for record in trajectory.records[60:] for d in record.deltas if d.channel is Channel.L]
+    assert clearing and all(d.source == LUNG_WATER_CLEARANCE and d.amount < 0 for d in clearing)
+
+
+def test_p2d6_a_persisting_source_keeps_lung_water_up_and_more_overload_makes_it_worse():
+    persisting = _lung_water((Refill("fill", 1, 2000.0),), 300)
+    worse = _lung_water((Refill("fill", 1, 2000.0), Refill("more", 30, 2800.0)), 300)
+    assert all(later >= earlier for earlier, later in zip(persisting[1:], persisting[2:]))
+    assert all(w >= p for w, p in zip(worse, persisting)) and worse[-1] > persisting[-1]

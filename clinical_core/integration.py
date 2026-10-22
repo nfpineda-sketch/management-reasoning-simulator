@@ -27,8 +27,9 @@ import math
 from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
-from .derived import (ADOPTED, AUXILIARY_SOURCES, DEFAULT_PROFILE, PRELOAD_CONGESTION, PROVISIONAL, CoreProfile,
-                      Derived, congestion_rate, derive, lactate_after_minute, sympathetic_after_minute)
+from .derived import (ADOPTED, AUXILIARY_SOURCES, DEFAULT_PROFILE, LUNG_WATER_CLEARANCE, PRELOAD_CONGESTION,
+                      PROVISIONAL, CoreProfile, Derived, congestion_rate, derive, lactate_after_minute,
+                      lung_water_clearance, sympathetic_after_minute)
 from .provenance import (AuxiliaryChange, ChannelDelta, CoreEvent, MinuteRecord, ProvenanceError, RhythmTransition,
                          SettingChange, Source, SourceKind)
 from .state import (AUXILIARY_FIELDS, Anchors, AuxiliaryState, Channel, CoreInvariantError, CoreState, FrozenRecord,
@@ -41,7 +42,7 @@ CHANNEL_BOUNDS: Mapping[Channel, tuple[float, float, str, str]] = {
                                               "is deliberately not adopted"),
     Channel.T: (0.1, 3.0, PROVISIONAL, "guard only"),
     Channel.P: (0.1, 3.0, PROVISIONAL, "guard only"),
-    Channel.L: (-10.0, 10.0, PROVISIONAL, "guard only; only the core's preload congestion writes L yet"),
+    Channel.L: (-10.0, 10.0, PROVISIONAL, "guard only; only the core's congestion and clearance write L yet"),
     Channel.G: (-10.0, 10.0, PROVISIONAL, "guard only; no module writes G yet"),
     Channel.W: (-10.0, 10.0, PROVISIONAL, "guard only; no module writes W yet"),
     Channel.D: (-10000.0, 10000.0, PROVISIONAL, "guard only"),
@@ -211,6 +212,10 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     if congestion:
         deltas.append(ChannelDelta(Channel.L, congestion, PRELOAD_CONGESTION, minute,
                                    "excess preload on a pump without reserve"))
+    clearance = lung_water_clearance(state, profile)
+    if clearance:
+        deltas.append(ChannelDelta(Channel.L, -clearance, LUNG_WATER_CLEARANCE, minute,
+                                   "lung water above arrival clearing slowly"))
     transitions, settings, events = [], [], []
     internal = {}
     for contributor in ordered:
