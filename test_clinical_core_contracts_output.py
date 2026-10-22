@@ -145,3 +145,14 @@ def test_the_authoritative_records_are_not_changed(shadow):
     after = ([a.as_record() for a in shadow["acts"]], [r.as_record() for r in shadow["rec"]],
              shadow["logistic"].as_record())
     assert after == shadow["before"]
+
+
+def test_a_shadow_record_out_of_the_trace_travels_in_a_namespaced_envelope(shadow):
+    """EventInterruption v2 has no field for a namespace: empty, it would look like an authoritative record."""
+    from clinical_core.contracts_output import envelope
+    empty = shadow_events(shadow["trajectory"], minutes=[])
+    sealed = envelope(empty)
+    assert sealed["namespace"] == SHADOW_NAMESPACE and sealed["authoritative"] is False
+    assert sealed["contract"] == empty.as_record() and sealed["contract"]["schema"] == "event_interruption_v2"
+    check_shadow_payload(sealed)
+    assert envelope(shadow_observation(shadow["trajectory"], 0))["contract"]["schema"] == "observation_contract_v2"

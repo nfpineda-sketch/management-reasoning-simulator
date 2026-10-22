@@ -266,6 +266,10 @@ Nada de esto corre en la aplicación:
 Toda salida lleva `namespace: clinical_core_shadow` y `authoritative: false`. `check_shadow_payload` la rechaza si
 parece autoritativa, si no es JSON plano o si trae una clave visible para el residente.
 
+`EventInterruption` v2 no tiene un campo para el espacio de nombres en el contenedor: sin eventos, su registro
+sería igual a uno autoritativo. Fuera del Trace en sombra, todo registro viaja dentro de `envelope()`, que sí lo
+lleva.
+
 ### 8.2 Lo que se rechaza explícitamente (`UnsupportedContract`)
 
 - Una orden con destino pendiente o condicional (`HELD_CLARIFICATION`, `HELD_REASONING`, `SCHEDULED`): nunca se lee
@@ -283,7 +287,14 @@ parece autoritativa, si no es JSON plano o si trae una clave visible para el res
 `ContractInputError` cubre las contradicciones entre contratos:
 - una identidad que cambia al arrastrarse;
 - un `executed_at_min` distinto entre `TurnTime` y `FateReceipt`;
+- una orden ya ejecutada que un recibo posterior informa de otro modo;
 - un minuto que no es entero.
+
+Una orden arrastrada desde un turno anterior entra en la línea y en la cola en el orden en que el motor la ejecutó
+(minuto de ejecución y lugar en ese turno), no en el orden en que se escribió por primera vez.
+
+Las reevaluaciones con campos de espera u objetivo (`wait`, `immediate`, `target`) también se rechazan. Es más
+restrictivo de lo necesario, porque no cambian la fisiología, pero falla cerrado.
 
 Los eventos del motor que no son entradas (por ejemplo, de fisiología) quedan listados como «no consumidos» en las
 limitaciones del Trace en sombra.
@@ -303,6 +314,12 @@ Resultado:
   los valores derivados.
 - El curso del motor por el camino de la página es idéntico al de la ruta directa.
 - No se ajustó nada.
+
+Una revisión adversarial de sólo lectura encontró tres defectos, todos corregidos y cada uno con una prueba que
+falla sin la corrección. Ninguno afectaba los escenarios dorados:
+- el orden de ejecución de una orden arrastrada;
+- un recibo posterior que contradecía una orden ya ejecutada;
+- el registro de eventos vacío sin espacio de nombres.
 
 ### 8.4 Lo que se pierde y lo que falta
 

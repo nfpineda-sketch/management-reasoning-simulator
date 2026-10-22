@@ -189,3 +189,41 @@ def test_the_contracts_given_are_not_changed():
     before = ([a.as_record() for a in acts], [r.as_record() for r in rec])
     adapt(acts, rec, **TABLES)
     assert ([a.as_record() for a in acts], [r.as_record() for r in rec]) == before
+
+
+# Hardening found by the adversarial review of the P2B adapters ------------------------
+
+def test_a_carried_forward_order_queues_where_it_actually_ran():
+    """t0:0 is held, t0:1 runs at minute 0, t0:0 runs at minute 3: the bag that ran first is first in line."""
+    timed = {**SALINE, "administration_duration_min": 30.0}
+    acts = [action("t0:0", "t0", **timed), action("t0:1", "t0", **timed), action("t0:0", "t0", **timed)]
+    rec = [receipt("t0:0", "t0", "fluid", fate="HELD_REASONING"), receipt("t0:1", "t0", "fluid"),
+           receipt("t0:0", "t0", "fluid", minute=3)]
+    starts = {c.id: c.start_minute for c in adapt(acts, rec, **TABLES).contributors}
+    assert starts == {"t0:1": 0.0, "t0:0": 30.0}
+
+
+def test_a_carried_forward_untimed_order_shares_the_line_in_execution_order():
+    acts = [action("t0:0", "t0", **SALINE), action("t0:1", "t0", **SALINE), action("t0:0", "t0", **SALINE)]
+    rec = [receipt("t0:0", "t0", "fluid", fate="HELD_REASONING"), receipt("t0:1", "t0", "fluid"),
+           receipt("t0:0", "t0", "fluid", minute=2)]
+    ahead = {c.id: c.queued_ahead_ml for c in adapt(acts, rec, **TABLES).contributors}
+    assert ahead == {"t0:1": 0.0, "t0:0": 900.0}
+
+
+@pytest.mark.parametrize("later", [
+    {"fate": "EXECUTED", "minute": 5},
+    {"fate": "DUPLICATE_IGNORED"},
+    {"fate": "HELD_REASONING"},
+])
+def test_an_executed_order_cannot_be_reported_again_as_something_else(later):
+    acts = [action("t0:0", "t0", **SALINE)]
+    rec = [receipt("t0:0", "t0", "fluid"), receipt("t0:0", "t0", "fluid", **later)]
+    with pytest.raises(ContractInputError):
+        adapt(acts, rec, **TABLES)
+
+
+def test_the_same_executed_receipt_seen_twice_is_one_order():
+    acts = [action("t0:0", "t0", **SALINE)]
+    rec = [receipt("t0:0", "t0", "fluid"), receipt("t0:0", "t0", "fluid")]
+    assert [c.id for c in adapt(acts, rec, **TABLES).contributors] == ["t0:0"]

@@ -12,6 +12,9 @@ What it never does:
 - write to the Phase-0/Phase-1 Trace, the session, receipts or persistence;
 - interrupt a turn: the core has no turns, so ``interrupted`` is always ``None`` and the
   trace says so in ``limitations``.
+
+Out of the shadow trace, a shadow record travels in ``envelope``, which carries the namespace
+even where the contract has no field for it.
 """
 from __future__ import annotations
 
@@ -120,6 +123,18 @@ def shadow_trace(trajectory: Trajectory, adapted) -> TraceProvenance:
     }
     check_shadow_payload(payload)
     return TraceProvenance(payload=payload)
+
+
+def envelope(contract) -> dict:
+    """A shadow contract record ready to leave the trace, sealed in the shadow namespace.
+
+    ``EventInterruption`` v2 has no field for a namespace at its top level: with no events, its
+    record is the same as an authoritative "nothing happened". Out of the shadow trace, every
+    shadow record travels inside this envelope.
+    """
+    sealed = {**header(), "contract": contract.as_record()}
+    check_shadow_payload(sealed)
+    return sealed
 
 
 def check_shadow_payload(payload: Mapping) -> None:

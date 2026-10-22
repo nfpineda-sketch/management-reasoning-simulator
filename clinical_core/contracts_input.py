@@ -135,6 +135,8 @@ def adapt(actions: Iterable[OrderAction], fates: Iterable[FateReceipt], times: I
         if not isinstance(item, FateReceipt):
             raise ContractInputError(f"not a FateReceipt v2: {type(item).__name__}")
     by_id = _actions_by_id(actions)
+    # An order carried forward appears again in the turn that ran it; its last place is where it ran.
+    ran_at = {action.order_id: index for index, action in enumerate(actions)}
     final = _final_fates(fates)
     _check_times(tuple(times), final)
     for order_id in by_id:
@@ -174,12 +176,16 @@ def adapt(actions: Iterable[OrderAction], fates: Iterable[FateReceipt], times: I
             built.append(contributor)
             bindings.append(_binding(fate, "core_contributor", contributor.source.key, minute))
         elif kind == "fluid" and fields.get("operation") == "stop":
-            stops.append(((minute, position), order_id))
+            stops.append(((minute, ran_at[order_id]), order_id))
             bindings.append(_binding(fate, "core_stop"))
         else:
             _check_delivery(order_id, kind, fields)
-            deliveries.append(Delivery((minute, position), kind, order_id, minute, dict(fields), minute))
+            deliveries.append(Delivery((minute, ran_at[order_id]), kind, order_id, minute, dict(fields), minute))
             bindings.append(None)
+    # The line and the queue follow the order in which the engine ran the orders, not the order
+    # in which they were first written.
+    deliveries.sort(key=lambda item: item.position)
+    stops.sort()
     deliveries = queued_start(deliveries, stops)
     made = delivery_contributors(deliveries, stops, gi_bleed)
     by_order = {contributor.id: contributor for contributor in made}
@@ -269,11 +275,16 @@ def _actions_by_id(actions) -> dict:
 
 
 def _final_fates(fates) -> dict:
+    """The last receipt of each order. A held order may run later; an order that ran stays as it ran."""
     final = {}
     for fate in fates:
         known = final.get(fate.order_id)
         if known is not None and (known.submission_id, known.action_class) != (fate.submission_id, fate.action_class):
             raise ContractInputError(f"order {fate.order_id} changes its submission or class between receipts")
+        if known is not None and known.fate == "EXECUTED" and (fate.fate, fate.executed_at_min) != (
+                known.fate, known.executed_at_min):
+            raise ContractInputError(f"order {fate.order_id} ran at minute {known.executed_at_min} and is later "
+                                     f"reported as {fate.fate} at {fate.executed_at_min}")
         final[fate.order_id] = fate
     return final
 
