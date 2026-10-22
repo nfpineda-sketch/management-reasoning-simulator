@@ -57,10 +57,11 @@ SCENARIOS = {
 #: difference not listed here and on any entry here that no longer occurs. Nothing in
 #: either engine was changed to make a difference disappear.
 DIFFERENCES = {
-    "KD-S1": ("lactate and respiratory rate: the core accumulates an oxygen-delivery debt D with first-order "
-              "repayment (tau provisional, 60 min), counts haemoglobin and saturation in delivery, and derives RR "
-              "from lactate (proposal §7.3); the family engine sets both instantly from circulation, with an RR "
-              "floor of 14 in this family", "faculty: tau of D, RR gain, whether RR follows lactate (Appendix A9)"),
+    "KD-S1": ("lactate and respiratory rate (approved revision, P2C-1): the core accumulates an oxygen-delivery "
+              "debt D (tau provisional), produces lactate from D and clears it with its own memory, and reads RR as "
+              "ventilation (W) plus a saturating metabolic drive anchored to arrival, so clearing lactate never "
+              "causes bradypnoea; the family engine sets both instantly from circulation, with an RR floor of 14 "
+              "in this family", "TBD: tau_D, D->lactate gain, lactate clearance, metabolic drive gain, RR bounds"),
     "KD-S2": ("heart rate after hemostasis: the family engine subtracts 20 bpm x hemostasis_relief from the displayed "
               "HR (a module writing an observable, which §8.1 rules out); the core has no channel through which "
               "recovery from controlled bleeding lowers the rate", "faculty: which channel carries that recovery"),

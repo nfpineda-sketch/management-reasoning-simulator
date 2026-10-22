@@ -15,6 +15,7 @@ import math
 from dataclasses import dataclass, fields
 from typing import Mapping
 
+from .provenance import Source, SourceKind
 from .state import Anchors, CoreInvariantError, CoreState, RhythmCode
 
 ADOPTED = "adopted"
@@ -24,6 +25,10 @@ PROVISIONAL = "provisional"
 #: the family engine's circulation variable by 0.36 (family_engine._minute): one unit of
 #: that variable is therefore 300 / 0.36 mL-equivalent of intravascular volume.
 LEGACY_ML_PER_CIRCULATION_UNIT = 300.0 / 0.36
+
+#: The core's own memory of lactate (KD-S1): the excess over arrival that D produces and the
+#: liver clears. Written only by the integrator, under this key of ``CoreState.internal``.
+LACTATE_KINETICS = Source(SourceKind.CORE_COUPLING, "lactate_kinetics")
 
 
 @dataclass(frozen=True)
@@ -40,7 +45,12 @@ class CoreProfile:
     lactate_per_output_deficit: float = 2.0
     lactate_floor: float = 0.8
     debt_clearance_tau_min: float = 60.0
+    lactate_clearance_tau_min: float = 60.0
     rr_per_lactate: float = 7.5
+    lactate_drive_threshold_mmol_l: float = 2.0
+    rr_metabolic_max: float = 25.0
+    rr_ventilatory_floor: float = 12.0
+    rr_max: float = 60.0
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
 
@@ -51,8 +61,9 @@ class CoreProfile:
                 continue
             if not math.isfinite(value) or value < 0:
                 raise CoreInvariantError(f"profile gain {item.name} must be finite and non-negative")
-        if self.volume_per_output_unit_ml <= 0 or self.debt_clearance_tau_min <= 0:
-            raise CoreInvariantError("volume scale and debt clearance time are positive")
+        if min(self.volume_per_output_unit_ml, self.debt_clearance_tau_min, self.lactate_clearance_tau_min,
+               self.rr_metabolic_max, self.rr_max) <= 0:
+            raise CoreInvariantError("volume scale, time constants and RR bounds are positive")
 
     def to_dict(self) -> dict:
         return {item.name: (list(map(list, getattr(self, item.name))) if isinstance(getattr(self, item.name), tuple)
@@ -72,11 +83,17 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "spo2_per_fio2": (ADOPTED, "family_engine._surface: oxygen_gain = (FiO2 - 0.21) * 30"),
     "room_air_fio2": (ADOPTED, "family_engine._initialize: oxygen_fio2 = .21"),
     "lactate_per_output_deficit": (ADOPTED, "family_engine._diagnostic: lactate + (circulation - 1) * 2, "
-                                            "reached here as the steady state of the debt D"),
+                                            "reached here as the steady state of D and of lactate kinetics; the "
+                                            "D -> lactate production gain it implies is provisional (KD-S1)"),
     "lactate_floor": (ADOPTED, "family_engine._diagnostic: max(.8, ...)"),
-    "debt_clearance_tau_min": (PROVISIONAL, "no faculty value; the family engine's lactate has no kinetics"),
-    "rr_per_lactate": (PROVISIONAL, "legacy GI RR gain 15 per circulation unit / lactate 2 per unit; the "
-                                    "structure (RR from lactate) is proposal §7.3, the value is not reviewed"),
+    "debt_clearance_tau_min": (PROVISIONAL, "tau_D_recovery: TBD (KD-S1); 60 min is not approved"),
+    "lactate_clearance_tau_min": (PROVISIONAL, "lactate clearance: TBD (KD-S1)"),
+    "rr_per_lactate": (PROVISIONAL, "metabolic drive -> RR gain at the threshold: TBD (KD-S1); the value is the "
+                                    "legacy GI RR gain 15 per circulation unit / lactate 2 per unit"),
+    "lactate_drive_threshold_mmol_l": (PROVISIONAL, "lactate above which acidaemia drives breathing: TBD (KD-S1)"),
+    "rr_metabolic_max": (PROVISIONAL, "largest metabolic addition to RR (saturation): TBD (KD-S1)"),
+    "rr_ventilatory_floor": (PROVISIONAL, "RR below which the arrival RR is never read as metabolic: TBD (KD-S1)"),
+    "rr_max": (PROVISIONAL, "safety bound on RR, not physiology: TBD (KD-S1)"),
     "pressure_levels": (ADOPTED, "family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery "
                                  "margin, which belong to the observation layer"),
     "oxygen_levels": (ADOPTED, "family_engine._OXYGEN_LEVELS, same reservation"),
@@ -114,12 +131,60 @@ def _level(value: float, levels) -> int:
     return max((level for threshold, level in levels if value < threshold), default=0)
 
 
+def lactate_excess(state: CoreState) -> float:
+    """The lactate the core holds above arrival (mmol/L): its own memory, not a function of D."""
+    return float(state.internal_for(LACTATE_KINETICS.key).get("excess_mmol_l", 0.0))
+
+
+def lactate_after_minute(state: CoreState, profile: CoreProfile) -> float:
+    """One minute of lactate kinetics (KD-S1): production from the debt D, first-order clearance.
+
+    dX = k * D - X / tau_lactate, with k = gain / (tau_D * tau_lactate). At a steady delivery
+    shortfall s, D settles at tau_D * s and X at gain * s, the family engine's lactate; on
+    the way, lactate lags D, and after perfusion is restored it clears more slowly than D.
+    """
+    excess = lactate_excess(state)
+    production = profile.lactate_per_output_deficit / (profile.debt_clearance_tau_min
+                                                       * profile.lactate_clearance_tau_min) * state.D
+    return excess + production - excess / profile.lactate_clearance_tau_min
+
+
+def _metabolic_drive(lactate: float, profile: CoreProfile) -> float:
+    """Breaths/min that acidaemia adds: zero below the threshold, saturating above it."""
+    excess = max(0.0, lactate - profile.lactate_drive_threshold_mmol_l)
+    cap = profile.rr_metabolic_max
+    return cap * (1.0 - math.exp(-profile.rr_per_lactate * excess / cap))
+
+
+def respiratory_rate(state: CoreState, anchors: Anchors, profile: CoreProfile, lactate: float) -> float:
+    """RR = ventilatory RR (from W) + metabolic drive (from lactate), anchored to arrival (KD-S1).
+
+    The arrival RR is split into two parts:
+    - a ventilatory part, never below ``rr_ventilatory_floor``;
+    - the metabolic part that the arrival lactate explains.
+
+    Lactate clearing can remove at most the metabolic part, so it cannot by itself cause
+    bradypnoea.
+
+    W (proposal C7) is read in two directions, a provisional structure:
+    - above 0 (load or drive from respiratory disease), it adds to the ventilatory part, and
+      the metabolic drive is added on top, so neither overwrites the other;
+    - below 0 (depressed drive: opioid, CNS), it blunts both parts. That explicit mechanism
+      is the only route to bradypnoea.
+    """
+    arrival_metabolic = _metabolic_drive(anchors.lactate, profile)
+    share = min(arrival_metabolic, max(0.0, anchors.respiratory_rate - profile.rr_ventilatory_floor))
+    scale = share / arrival_metabolic if arrival_metabolic > 0 else 1.0
+    ventilatory = (anchors.respiratory_rate - share) * (1.0 + max(0.0, state.W))
+    drive = max(0.0, 1.0 + min(0.0, state.W))
+    return min(profile.rr_max, drive * (ventilatory + scale * _metabolic_drive(lactate, profile)))
+
+
 def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> Derived:
     rhythm = state.R
     # The floor guards against a debt repaid below what any patient reads; it never moves an
     # authored arrival that is already below it.
-    lactate = max(min(profile.lactate_floor, anchors.lactate),
-                  anchors.lactate + profile.lactate_per_output_deficit / profile.debt_clearance_tau_min * state.D)
+    lactate = max(min(profile.lactate_floor, anchors.lactate), anchors.lactate + lactate_excess(state))
     if not rhythm.pulse_present:
         derived = Derived(minute=state.minute, pulse_present=False, rhythm=rhythm.code,
                           monitor_rate_bpm=rhythm.rate_bpm, pulse_rate_bpm=None, output_rel=0.0,
@@ -143,7 +208,7 @@ def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PR
     spo2 = min(100.0, max(0.0, anchors.spo2 + profile.spo2_per_fio2 * oxygen))
     crt = max(0.0, anchors.crt_s + profile.crt_per_output_deficit_s * (1.0 - output_rel))
     delivery_rel = output_rel * (state.hb / anchors.hb) * (spo2 / anchors.spo2)
-    rr = max(0.0, anchors.respiratory_rate + profile.rr_per_lactate * (lactate - anchors.lactate))
+    rr = respiratory_rate(state, anchors, profile, lactate)
     level = max(anchors.consciousness_level, _level(sbp, profile.pressure_levels), _level(spo2, profile.oxygen_levels))
     derived = Derived(minute=state.minute, pulse_present=True, rhythm=rhythm.code,
                       monitor_rate_bpm=pulse_rate, pulse_rate_bpm=pulse_rate, output_rel=output_rel,

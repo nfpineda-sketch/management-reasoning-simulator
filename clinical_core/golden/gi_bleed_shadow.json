@@ -70,8 +70,8 @@
  "core_version": "0.1.0-shadow",
  "differences": {
   "KD-S1": [
-   "lactate and respiratory rate: the core accumulates an oxygen-delivery debt D with first-order repayment (tau provisional, 60 min), counts haemoglobin and saturation in delivery, and derives RR from lactate (proposal \u00a77.3); the family engine sets both instantly from circulation, with an RR floor of 14 in this family",
-   "faculty: tau of D, RR gain, whether RR follows lactate (Appendix A9)"
+   "lactate and respiratory rate (approved revision, P2C-1): the core accumulates an oxygen-delivery debt D (tau provisional), produces lactate from D and clears it with its own memory, and reads RR as ventilation (W) plus a saturating metabolic drive anchored to arrival, so clearing lactate never causes bradypnoea; the family engine sets both instantly from circulation, with an RR floor of 14 in this family",
+   "TBD: tau_D, D->lactate gain, lactate clearance, metabolic drive gain, RR bounds"
   ],
   "KD-S2": [
    "heart rate after hemostasis: the family engine subtracts 20 bpm x hemostasis_relief from the displayed HR (a module writing an observable, which \u00a78.1 rules out); the core has no channel through which recovery from controlled bleeding lowers the rate",
@@ -127,11 +127,19 @@
   ],
   "debt_clearance_tau_min": [
    "provisional",
-   "no faculty value; the family engine's lactate has no kinetics"
+   "tau_D_recovery: TBD (KD-S1); 60 min is not approved"
   ],
   "hr_per_pressure_deficit": [
    "adopted",
    "family_engine._surface: hr + (circulation - 1) * 25"
+  ],
+  "lactate_clearance_tau_min": [
+   "provisional",
+   "lactate clearance: TBD (KD-S1)"
+  ],
+  "lactate_drive_threshold_mmol_l": [
+   "provisional",
+   "lactate above which acidaemia drives breathing: TBD (KD-S1)"
   ],
   "lactate_floor": [
    "adopted",
@@ -139,7 +147,7 @@
   ],
   "lactate_per_output_deficit": [
    "adopted",
-   "family_engine._diagnostic: lactate + (circulation - 1) * 2, reached here as the steady state of the debt D"
+   "family_engine._diagnostic: lactate + (circulation - 1) * 2, reached here as the steady state of D and of lactate kinetics; the D -> lactate production gain it implies is provisional (KD-S1)"
   ],
   "oxygen_levels": [
    "adopted",
@@ -153,9 +161,21 @@
    "adopted",
    "family_engine._initialize: oxygen_fio2 = .21"
   ],
+  "rr_max": [
+   "provisional",
+   "safety bound on RR, not physiology: TBD (KD-S1)"
+  ],
+  "rr_metabolic_max": [
+   "provisional",
+   "largest metabolic addition to RR (saturation): TBD (KD-S1)"
+  ],
   "rr_per_lactate": [
    "provisional",
-   "legacy GI RR gain 15 per circulation unit / lactate 2 per unit; the structure (RR from lactate) is proposal \u00a77.3, the value is not reviewed"
+   "metabolic drive -> RR gain at the threshold: TBD (KD-S1); the value is the legacy GI RR gain 15 per circulation unit / lactate 2 per unit"
+  ],
+  "rr_ventilatory_floor": [
+   "provisional",
+   "RR below which the arrival RR is never read as metabolic: TBD (KD-S1)"
   ],
   "sbp_per_pressure_deficit": [
    "adopted",
@@ -1012,8 +1032,8 @@
      "compared": 91,
      "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.2,
-     "mismatched": 88,
+     "max_abs_diff": 1.5,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -1030,19 +1050,19 @@
       ],
       "15": [
        3.5,
-       4.3
+       4.4
       ],
       "20": [
        3.2,
-       4.2
+       4.4
       ],
       "30": [
        2.9,
-       4.0
+       4.3
       ],
       "45": [
        2.9,
-       3.6
+       4.2
       ],
       "5": [
        4.1,
@@ -1050,15 +1070,15 @@
       ],
       "60": [
        2.9,
-       3.0
+       4.0
       ],
       "75": [
        3.0,
-       2.4
+       3.7
       ],
       "90": [
        3.1,
-       2.1
+       3.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -1180,8 +1200,8 @@
      "compared": 91,
      "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 9.0,
-     "mismatched": 85,
+     "max_abs_diff": 11.0,
+     "mismatched": 89,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -1198,19 +1218,19 @@
       ],
       "15": [
        19,
-       25
+       26
       ],
       "20": [
        17,
-       25
+       26
       ],
       "30": [
        15,
-       23
+       26
       ],
       "45": [
        15,
-       20
+       25
       ],
       "5": [
        24,
@@ -1218,15 +1238,15 @@
       ],
       "60": [
        15,
-       15
+       25
       ],
       "75": [
        16,
-       11
+       23
       ],
       "90": [
        16,
-       8
+       22
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -2404,8 +2424,8 @@
      "compared": 121,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 0.6,
-     "mismatched": 109,
+     "max_abs_diff": 1.0,
+     "mismatched": 118,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -2422,11 +2442,11 @@
       ],
       "105": [
        3.3,
-       3.2
+       3.8
       ],
       "120": [
        3.3,
-       3.1
+       3.7
       ],
       "15": [
        4.1,
@@ -2434,15 +2454,15 @@
       ],
       "20": [
        4.0,
-       4.3
+       4.4
       ],
       "30": [
        3.8,
-       4.2
+       4.4
       ],
       "45": [
        3.5,
-       4.0
+       4.3
       ],
       "5": [
        4.3,
@@ -2450,15 +2470,15 @@
       ],
       "60": [
        3.2,
-       3.8
+       4.2
       ],
       "75": [
        3.3,
-       3.5
+       4.1
       ],
       "90": [
        3.3,
-       3.3
+       4.0
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -2596,8 +2616,8 @@
      "compared": 121,
      "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 116,
+     "max_abs_diff": 8.0,
+     "mismatched": 117,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -2614,11 +2634,11 @@
       ],
       "105": [
        18,
-       17
+       24
       ],
       "120": [
        18,
-       16
+       23
       ],
       "15": [
        24,
@@ -2626,15 +2646,15 @@
       ],
       "20": [
        23,
-       25
+       26
       ],
       "30": [
        22,
-       25
+       26
       ],
       "45": [
        20,
-       23
+       26
       ],
       "5": [
        25,
@@ -2642,15 +2662,15 @@
       ],
       "60": [
        17,
-       21
+       25
       ],
       "75": [
        17,
-       19
+       25
       ],
       "90": [
        17,
-       18
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -4563,8 +4583,8 @@
      "compared": 91,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 0.5,
-     "mismatched": 79,
+     "max_abs_diff": 1.0,
+     "mismatched": 88,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -4585,15 +4605,15 @@
       ],
       "20": [
        4.0,
-       4.3
+       4.4
       ],
       "30": [
        3.9,
-       4.2
+       4.4
       ],
       "45": [
        3.6,
-       4.1
+       4.3
       ],
       "5": [
        4.3,
@@ -4601,15 +4621,15 @@
       ],
       "60": [
        3.3,
-       3.8
+       4.2
       ],
       "75": [
        3.4,
-       3.6
+       4.1
       ],
       "90": [
        3.5,
-       3.5
+       4.0
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -4731,8 +4751,8 @@
      "compared": 91,
      "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 80,
+     "max_abs_diff": 8.0,
+     "mismatched": 87,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -4753,15 +4773,15 @@
       ],
       "20": [
        23,
-       25
+       26
       ],
       "30": [
        22,
-       25
+       26
       ],
       "45": [
        20,
-       23
+       26
       ],
       "5": [
        25,
@@ -4769,15 +4789,15 @@
       ],
       "60": [
        18,
-       22
+       25
       ],
       "75": [
        19,
-       20
+       25
       ],
       "90": [
        19,
-       19
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -5709,7 +5729,7 @@
       ],
       "45": [
        4.3,
-       4.5
+       4.4
       ],
       "5": [
        4.3,
@@ -5841,7 +5861,7 @@
       ],
       "45": [
        25,
-       27
+       26
       ],
       "5": [
        26,
@@ -6741,7 +6761,7 @@
      "first_mismatch_minute": 3,
      "kind": "display",
      "max_abs_diff": 0.4,
-     "mismatched": 58,
+     "mismatched": 47,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -6770,7 +6790,7 @@
       ],
       "45": [
        4.3,
-       4.5
+       4.4
       ],
       "5": [
        4.3,
@@ -6778,7 +6798,7 @@
       ],
       "60": [
        4.5,
-       4.6
+       4.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -6885,7 +6905,7 @@
      "first_mismatch_minute": 3,
      "kind": "display",
      "max_abs_diff": 3.0,
-     "mismatched": 58,
+     "mismatched": 44,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -6914,7 +6934,7 @@
       ],
       "45": [
        25,
-       27
+       26
       ],
       "5": [
        25,
@@ -6922,7 +6942,7 @@
       ],
       "60": [
        26,
-       27
+       26
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -8076,7 +8096,7 @@
      "compared": 121,
      "first_mismatch_minute": 7,
      "kind": "display",
-     "max_abs_diff": 0.8,
+     "max_abs_diff": 1.0,
      "mismatched": 111,
      "rounding_tie_minutes": [],
      "samples": {
@@ -8094,11 +8114,11 @@
       ],
       "105": [
        3.4,
-       3.8
+       4.2
       ],
       "120": [
        3.4,
-       3.7
+       4.1
       ],
       "15": [
        4.3,
@@ -8126,11 +8146,11 @@
       ],
       "75": [
        3.6,
-       4.2
+       4.4
       ],
       "90": [
        3.3,
-       4.0
+       4.3
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -8268,7 +8288,7 @@
      "compared": 121,
      "first_mismatch_minute": 9,
      "kind": "display",
-     "max_abs_diff": 6.0,
+     "max_abs_diff": 8.0,
      "mismatched": 106,
      "rounding_tie_minutes": [],
      "samples": {
@@ -8286,11 +8306,11 @@
       ],
       "105": [
        18,
-       22
+       25
       ],
       "120": [
        19,
-       21
+       25
       ],
       "15": [
        25,
@@ -8318,11 +8338,11 @@
       ],
       "75": [
        20,
-       25
+       26
       ],
       "90": [
        18,
-       23
+       26
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -9314,7 +9334,7 @@
      "first_mismatch_minute": 3,
      "kind": "display",
      "max_abs_diff": 0.3,
-     "mismatched": 57,
+     "mismatched": 47,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -9343,7 +9363,7 @@
       ],
       "45": [
        4.4,
-       4.5
+       4.4
       ],
       "5": [
        4.3,
@@ -9351,7 +9371,7 @@
       ],
       "60": [
        4.5,
-       4.6
+       4.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -9458,7 +9478,7 @@
      "first_mismatch_minute": 4,
      "kind": "display",
      "max_abs_diff": 2.0,
-     "mismatched": 52,
+     "mismatched": 42,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -9487,7 +9507,7 @@
       ],
       "45": [
        26,
-       27
+       26
       ],
       "5": [
        25,
@@ -9495,7 +9515,7 @@
       ],
       "60": [
        27,
-       27
+       26
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -10560,7 +10580,7 @@
      "compared": 91,
      "first_mismatch_minute": 7,
      "kind": "display",
-     "max_abs_diff": 0.9,
+     "max_abs_diff": 1.2,
      "mismatched": 84,
      "rounding_tie_minutes": [],
      "samples": {
@@ -10586,11 +10606,11 @@
       ],
       "30": [
        3.8,
-       4.3
+       4.4
       ],
       "45": [
        3.4,
-       4.2
+       4.4
       ],
       "5": [
        4.4,
@@ -10598,15 +10618,15 @@
       ],
       "60": [
        3.2,
-       4.1
+       4.3
       ],
       "75": [
        3.1,
-       3.9
+       4.3
       ],
       "90": [
        3.2,
-       3.8
+       4.2
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -10728,7 +10748,7 @@
      "compared": 91,
      "first_mismatch_minute": 9,
      "kind": "display",
-     "max_abs_diff": 7.0,
+     "max_abs_diff": 10.0,
      "mismatched": 82,
      "rounding_tie_minutes": [],
      "samples": {
@@ -10758,7 +10778,7 @@
       ],
       "45": [
        19,
-       25
+       26
       ],
       "5": [
        26,
@@ -10766,15 +10786,15 @@
       ],
       "60": [
        17,
-       24
+       26
       ],
       "75": [
        16,
-       22
+       25
       ],
       "90": [
        17,
-       21
+       25
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -11705,7 +11725,7 @@
      "compared": 61,
      "first_mismatch_minute": 9,
      "kind": "display",
-     "max_abs_diff": 0.2,
+     "max_abs_diff": 0.4,
      "mismatched": 52,
      "rounding_tie_minutes": [],
      "samples": {
@@ -11731,11 +11751,11 @@
       ],
       "30": [
        4.6,
-       4.5
+       4.4
       ],
       "45": [
        4.7,
-       4.5
+       4.4
       ],
       "5": [
        4.4,
@@ -11743,7 +11763,7 @@
       ],
       "60": [
        4.8,
-       4.6
+       4.5
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -11851,7 +11871,7 @@
      "compared": 61,
      "first_mismatch_minute": 12,
      "kind": "display",
-     "max_abs_diff": 2.0,
+     "max_abs_diff": 3.0,
      "mismatched": 49,
      "rounding_tie_minutes": [],
      "samples": {
@@ -11881,7 +11901,7 @@
       ],
       "45": [
        28,
-       27
+       26
       ],
       "5": [
        26,
@@ -11889,7 +11909,7 @@
       ],
       "60": [
        29,
-       27
+       26
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -12929,8 +12949,8 @@
      "compared": 91,
      "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 1.2,
-     "mismatched": 87,
+     "max_abs_diff": 1.5,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -12947,19 +12967,19 @@
       ],
       "15": [
        2.5,
-       3.3
+       3.4
       ],
       "20": [
        2.2,
-       3.2
+       3.4
       ],
       "30": [
        1.9,
-       3.0
+       3.3
       ],
       "45": [
        1.9,
-       2.6
+       3.2
       ],
       "5": [
        3.1,
@@ -12967,15 +12987,15 @@
       ],
       "60": [
        1.9,
-       2.0
+       3.0
       ],
       "75": [
        2.0,
-       1.4
+       2.7
       ],
       "90": [
        2.1,
-       1.0
+       2.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -13097,8 +13117,8 @@
      "compared": 91,
      "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 8.0,
-     "mismatched": 86,
+     "max_abs_diff": 10.0,
+     "mismatched": 89,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13115,19 +13135,19 @@
       ],
       "15": [
        17,
-       23
+       24
       ],
       "20": [
        15,
-       23
+       24
       ],
       "30": [
        14,
-       21
+       24
       ],
       "45": [
        14,
-       18
+       23
       ],
       "5": [
        22,
@@ -13135,15 +13155,15 @@
       ],
       "60": [
        14,
-       13
+       22
       ],
       "75": [
        14,
-       9
+       20
       ],
       "90": [
        14,
-       6
+       18
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -14319,8 +14339,8 @@
      "compared": 121,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 0.6,
-     "mismatched": 109,
+     "max_abs_diff": 1.0,
+     "mismatched": 118,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -14337,11 +14357,11 @@
       ],
       "105": [
        2.3,
-       2.2
+       2.8
       ],
       "120": [
        2.3,
-       2.1
+       2.6
       ],
       "15": [
        3.1,
@@ -14349,15 +14369,15 @@
       ],
       "20": [
        3.0,
-       3.3
+       3.4
       ],
       "30": [
        2.8,
-       3.2
+       3.4
       ],
       "45": [
        2.5,
-       3.0
+       3.3
       ],
       "5": [
        3.3,
@@ -14365,15 +14385,15 @@
       ],
       "60": [
        2.2,
-       2.8
+       3.2
       ],
       "75": [
        2.3,
-       2.5
+       3.1
       ],
       "90": [
        2.3,
-       2.3
+       2.9
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -14511,8 +14531,8 @@
      "compared": 121,
      "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 114,
+     "max_abs_diff": 8.0,
+     "mismatched": 117,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -14529,11 +14549,11 @@
       ],
       "105": [
        16,
-       15
+       21
       ],
       "120": [
        16,
-       14
+       20
       ],
       "15": [
        22,
@@ -14541,15 +14561,15 @@
       ],
       "20": [
        21,
-       23
+       24
       ],
       "30": [
        20,
-       23
+       24
       ],
       "45": [
        18,
-       21
+       24
       ],
       "5": [
        23,
@@ -14557,15 +14577,15 @@
       ],
       "60": [
        15,
-       19
+       23
       ],
       "75": [
        15,
-       17
+       22
       ],
       "90": [
        15,
-       16
+       22
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -16474,8 +16494,8 @@
      "compared": 91,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 0.5,
-     "mismatched": 79,
+     "max_abs_diff": 1.0,
+     "mismatched": 88,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -16496,15 +16516,15 @@
       ],
       "20": [
        3.0,
-       3.3
+       3.4
       ],
       "30": [
        2.9,
-       3.2
+       3.4
       ],
       "45": [
        2.6,
-       3.1
+       3.3
       ],
       "5": [
        3.3,
@@ -16512,15 +16532,15 @@
       ],
       "60": [
        2.3,
-       2.8
+       3.2
       ],
       "75": [
        2.4,
-       2.6
+       3.1
       ],
       "90": [
        2.5,
-       2.5
+       3.0
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -16642,8 +16662,8 @@
      "compared": 91,
      "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 79,
+     "max_abs_diff": 7.0,
+     "mismatched": 87,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -16664,15 +16684,15 @@
       ],
       "20": [
        21,
-       23
+       24
       ],
       "30": [
        20,
-       23
+       24
       ],
       "45": [
        18,
-       21
+       24
       ],
       "5": [
        23,
@@ -16680,15 +16700,15 @@
       ],
       "60": [
        16,
-       20
+       23
       ],
       "75": [
        17,
-       18
+       23
       ],
       "90": [
        17,
-       17
+       22
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -17620,7 +17640,7 @@
       ],
       "45": [
        3.3,
-       3.5
+       3.4
       ],
       "5": [
        3.3,
@@ -17752,7 +17772,7 @@
       ],
       "45": [
        23,
-       25
+       24
       ],
       "5": [
        24,
@@ -18652,7 +18672,7 @@
      "first_mismatch_minute": 3,
      "kind": "display",
      "max_abs_diff": 0.4,
-     "mismatched": 58,
+     "mismatched": 47,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -18681,7 +18701,7 @@
       ],
       "45": [
        3.3,
-       3.5
+       3.4
       ],
       "5": [
        3.3,
@@ -18689,7 +18709,7 @@
       ],
       "60": [
        3.5,
-       3.6
+       3.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -18796,7 +18816,7 @@
      "first_mismatch_minute": 3,
      "kind": "display",
      "max_abs_diff": 3.0,
-     "mismatched": 58,
+     "mismatched": 44,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -18825,7 +18845,7 @@
       ],
       "45": [
        23,
-       25
+       24
       ],
       "5": [
        23,
@@ -18833,7 +18853,7 @@
       ],
       "60": [
        24,
-       26
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -19987,7 +20007,7 @@
      "compared": 121,
      "first_mismatch_minute": 7,
      "kind": "display",
-     "max_abs_diff": 0.8,
+     "max_abs_diff": 1.0,
      "mismatched": 111,
      "rounding_tie_minutes": [],
      "samples": {
@@ -20005,11 +20025,11 @@
       ],
       "105": [
        2.4,
-       2.8
+       3.3
       ],
       "120": [
        2.4,
-       2.7
+       3.1
       ],
       "15": [
        3.3,
@@ -20025,7 +20045,7 @@
       ],
       "45": [
        3.1,
-       3.5
+       3.4
       ],
       "5": [
        3.4,
@@ -20037,11 +20057,11 @@
       ],
       "75": [
        2.6,
-       3.2
+       3.4
       ],
       "90": [
        2.3,
-       3.0
+       3.3
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -20179,7 +20199,7 @@
      "compared": 121,
      "first_mismatch_minute": 9,
      "kind": "display",
-     "max_abs_diff": 6.0,
+     "max_abs_diff": 8.0,
      "mismatched": 106,
      "rounding_tie_minutes": [],
      "samples": {
@@ -20197,11 +20217,11 @@
       ],
       "105": [
        16,
-       20
+       23
       ],
       "120": [
        17,
-       19
+       23
       ],
       "15": [
        23,
@@ -20229,11 +20249,11 @@
       ],
       "75": [
        18,
-       23
+       24
       ],
       "90": [
        16,
-       21
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -21225,7 +21245,7 @@
      "first_mismatch_minute": 3,
      "kind": "display",
      "max_abs_diff": 0.3,
-     "mismatched": 58,
+     "mismatched": 47,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21254,7 +21274,7 @@
       ],
       "45": [
        3.4,
-       3.5
+       3.4
       ],
       "5": [
        3.3,
@@ -21262,7 +21282,7 @@
       ],
       "60": [
        3.5,
-       3.6
+       3.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -21369,7 +21389,7 @@
      "first_mismatch_minute": 4,
      "kind": "display",
      "max_abs_diff": 2.0,
-     "mismatched": 52,
+     "mismatched": 42,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21398,7 +21418,7 @@
       ],
       "45": [
        24,
-       25
+       24
       ],
       "5": [
        23,
@@ -21406,7 +21426,7 @@
       ],
       "60": [
        25,
-       25
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -22471,7 +22491,7 @@
      "compared": 91,
      "first_mismatch_minute": 7,
      "kind": "display",
-     "max_abs_diff": 0.9,
+     "max_abs_diff": 1.2,
      "mismatched": 84,
      "rounding_tie_minutes": [],
      "samples": {
@@ -22501,7 +22521,7 @@
       ],
       "45": [
        2.4,
-       3.2
+       3.4
       ],
       "5": [
        3.4,
@@ -22509,15 +22529,15 @@
       ],
       "60": [
        2.2,
-       3.1
+       3.3
       ],
       "75": [
        2.1,
-       2.9
+       3.3
       ],
       "90": [
        2.2,
-       2.8
+       3.2
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -22639,7 +22659,7 @@
      "compared": 91,
      "first_mismatch_minute": 9,
      "kind": "display",
-     "max_abs_diff": 7.0,
+     "max_abs_diff": 10.0,
      "mismatched": 82,
      "rounding_tie_minutes": [],
      "samples": {
@@ -22669,7 +22689,7 @@
       ],
       "45": [
        17,
-       23
+       24
       ],
       "5": [
        24,
@@ -22677,15 +22697,15 @@
       ],
       "60": [
        15,
-       22
+       24
       ],
       "75": [
        14,
-       20
+       23
       ],
       "90": [
        15,
-       19
+       23
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -23615,7 +23635,7 @@
      "compared": 61,
      "first_mismatch_minute": 9,
      "kind": "display",
-     "max_abs_diff": 0.2,
+     "max_abs_diff": 0.4,
      "mismatched": 52,
      "rounding_tie_minutes": [],
      "samples": {
@@ -23641,11 +23661,11 @@
       ],
       "30": [
        3.6,
-       3.5
+       3.4
       ],
       "45": [
        3.7,
-       3.5
+       3.4
       ],
       "5": [
        3.4,
@@ -23653,7 +23673,7 @@
       ],
       "60": [
        3.8,
-       3.6
+       3.5
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -23759,7 +23779,7 @@
      "compared": 61,
      "first_mismatch_minute": 12,
      "kind": "display",
-     "max_abs_diff": 2.0,
+     "max_abs_diff": 3.0,
      "mismatched": 49,
      "rounding_tie_minutes": [],
      "samples": {
@@ -23789,7 +23809,7 @@
       ],
       "45": [
        26,
-       25
+       24
       ],
       "5": [
        24,
@@ -23797,7 +23817,7 @@
       ],
       "60": [
        27,
-       25
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",

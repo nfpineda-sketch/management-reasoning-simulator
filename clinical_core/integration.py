@@ -9,7 +9,7 @@ One ``step`` integrates one minute:
    the minute, plus those signals -- so the order in which contributors are listed can
    never change the result (proposal §14.1, T3);
 3. the core adds its own coupling (the oxygen-delivery debt, from flow, haemoglobin and
-   saturation);
+   saturation) and updates its own memory (lactate kinetics, from that debt);
 4. the deltas are summed per channel, the declared bounds are enforced and every clipped
    amount is recorded as a clamp delta, rhythm transitions and setting changes are
    applied, and the new state is checked: the change in every channel must equal the sum
@@ -25,7 +25,8 @@ import math
 from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
-from .derived import ADOPTED, DEFAULT_PROFILE, PROVISIONAL, CoreProfile, Derived, derive
+from .derived import (ADOPTED, DEFAULT_PROFILE, LACTATE_KINETICS, PROVISIONAL, CoreProfile, Derived, derive,
+                      lactate_after_minute)
 from .provenance import (ChannelDelta, CoreEvent, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
                          Source, SourceKind)
 from .state import (Anchors, Channel, CoreInvariantError, CoreState, FrozenRecord, SCALAR_CHANNELS, digest,
@@ -204,7 +205,8 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
             signals.append(signal)
     signals = tuple(sorted(signals))
     deltas = [_oxygen_debt(state, anchors, profile, minute)]
-    transitions, settings, events, internal = [], [], [], {}
+    transitions, settings, events = [], [], []
+    internal = {LACTATE_KINETICS.key: FrozenRecord({"excess_mmol_l": lactate_after_minute(state, profile)})}
     for contributor in ordered:
         # A contributor sees only the signals it declares it responds to.
         heard = tuple(signal for signal in signals if signal.name in contributor.responds_to)

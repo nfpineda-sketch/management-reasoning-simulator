@@ -159,7 +159,9 @@ def test_nothing_the_integrator_is_given_is_changed():
 def test_a_contributor_remembers_only_through_the_state():
     trajectory = run(anchors(), (Counter("clock"),), 12)
     assert trajectory.states[-1].internal_for("scripted_event:clock")["minutes"] == 12
-    assert trajectory.records[-1].internal_updates == ("scripted_event:clock",)
+    # Besides the core's own memory (core_coupling:*), only the contributor's key is updated.
+    assert [key for key in trajectory.records[-1].internal_updates
+            if not key.startswith("core_coupling:")] == ["scripted_event:clock"]
 
 
 def test_a_serialized_scenario_replays_identically():
