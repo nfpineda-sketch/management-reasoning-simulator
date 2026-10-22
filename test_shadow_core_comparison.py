@@ -15,7 +15,7 @@ from clinical_core.integration import run
 from clinical_core.legacy_adapter import (anchors_from_legacy, bank_case, contributors_from_legacy, run_legacy)
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.shadow import (DECISIONS, DIFFERENCES, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS,
-                                  classify, golden_report, run_shadow)
+                                  classify, consciousness_attribution, golden_report, run_shadow)
 
 EXACT = [variable.name for variable in VARIABLES if variable.kind == "exact"]
 
@@ -34,7 +34,7 @@ def test_the_committed_golden_report_is_the_one_the_engines_produce(results):
 def test_every_difference_is_explained_and_every_explanation_still_applies(results):
     for key, result in results.items():
         assert set(mismatching(result.summary)) == set(EXPECTED_DIFFERENCES[key]), key
-    used = {reason for expected in EXPECTED_DIFFERENCES.values() for reason in expected.values()}
+    used = {cause for expected in EXPECTED_DIFFERENCES.values() for causes in expected.values() for cause in causes}
     assert used == set(DIFFERENCES)
 
 
@@ -139,22 +139,59 @@ def test_an_order_the_run_would_never_reach_is_refused(orders):
 
 
 def test_every_compared_variable_is_classified_and_none_is_left_unresolved(results):
-    """Level 3 of P2C: each difference is a MATCH or has an approved physiological reason."""
+    """Level 3 (P2D-9): MATCH, or a difference whose direction is approved and whose size is TBD."""
     assert set(DECISIONS) == set(DIFFERENCES)
     for key, result in results.items():
-        classes = classify(key, result.summary)
+        classes = classify(key, result.summary, consciousness_attribution(result))
         compared = {name for name, entry in result.summary.items() if entry["compared"]}
+        different = set(mismatching(result.summary))
         assert set(classes) == compared, key
-        assert {n for n, c in classes.items() if c == "APPROVED DIFFERENCE"} == set(mismatching(result.summary)), key
-        assert {n for n, c in classes.items() if c == "MATCH"} == compared - set(mismatching(result.summary)), key
-        assert "UNRESOLVED DIFFERENCE" not in classes.values(), key
+        assert {n for n, c in classes.items() if c["classification"] == "APPROVED_DIRECTION_MAGNITUDE_TBD"} \
+            == different, key
+        assert {n for n, c in classes.items() if c["classification"] == "MATCH"} == compared - different, key
+        assert all(c["candidate_causes"] for n, c in classes.items() if n in different), key
+        assert all(not c["candidate_causes"] for n, c in classes.items() if n not in different), key
+
+
+def test_no_class_claims_an_approved_magnitude():
+    golden = json.loads(GOLDEN.read_text(encoding="utf-8"))
+    labels = {item["classification"] for entry in golden["scenarios"].values()
+              for item in entry["classification"].values()}
+    assert labels <= {"MATCH", "APPROVED_DIRECTION_MAGNITUDE_TBD", "UNRESOLVED"}
+    assert "APPROVED DIFFERENCE" not in GOLDEN.read_text(encoding="utf-8")
 
 
 def test_a_difference_without_an_approved_decision_stays_unresolved(results):
     result = results["gi_bleed_57m/untreated_60"]
     summary = {name: dict(entry) for name, entry in result.summary.items()}
     summary["spo2"]["mismatched"] = 1              # a difference no decision explains
-    assert classify(result.key, summary)["spo2"] == "UNRESOLVED DIFFERENCE"
+    summary["V_ml_eq"]["mismatched"] = 1           # an expected variable elsewhere, but not in this run
+    classes = classify(result.key, summary)
+    assert classes["spo2"] == {"classification": "UNRESOLVED", "candidate_causes": []}
+    assert classes["V_ml_eq"]["classification"] == "UNRESOLVED"
+
+
+def test_the_mental_status_difference_is_attributed_minute_by_minute(results):
+    """57m untreated, minutes 55-60: the raw reading (KD-S3) and the lower pressure (KD-S4)."""
+    rows = {row["minute"]: row for row in consciousness_attribution(results["gi_bleed_57m/untreated_60"])}
+    assert sorted(rows) == [55, 56, 57, 58, 59, 60]
+    assert {m: rows[m]["mode"] for m in rows} == {55: "jointly_necessary", 56: "jointly_necessary",
+                                                 57: "jointly_necessary", 58: "sufficient_alone",
+                                                 59: "sufficient_alone", 60: "each_sufficient"}
+    assert rows[58]["candidate_causes"] == rows[59]["candidate_causes"] == ["KD-S4"]
+    assert all(rows[m]["candidate_causes"] == ["KD-S3", "KD-S4"] for m in (55, 56, 57, 60))
+    entry = classify("gi_bleed_57m/untreated_60", results["gi_bleed_57m/untreated_60"].summary,
+                     list(rows.values()))["consciousness_level"]
+    assert entry["candidate_causes"] == ["KD-S3", "KD-S4"] and len(entry["by_minute"]) == 6
+
+
+def test_the_engine_raw_pressure_the_attribution_uses_rounds_to_what_the_engine_shows(results):
+    for key, result in results.items():
+        arrival = result.legacy.snapshots[0]
+        for snap in result.legacy.snapshots:
+            raw = result.core.anchors.sbp - 45.0 * (snap["circulation"] - arrival["circulation"])
+            if snap["pulse_present"] and 50 < raw < 240 and key.endswith("untreated_60"):
+                assert abs(raw - snap["sbp"]) <= 0.5 + 1e-9, (key, snap["minute"])
 
 
 def test_a_rounding_tie_needs_both_sides_on_the_same_boundary(results):

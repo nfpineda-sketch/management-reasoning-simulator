@@ -427,3 +427,25 @@ def test_p2d8_a_family_without_a_rule_cannot_be_migrated():
     case["engine_family"] = "pulmonary_oedema"
     with pytest.raises(UnsupportedScenario, match="no case mapping or approved default rule"):
         anchors_from_legacy(case)
+
+
+# P2D-7 -- sepsis / afterload: a diagnostic, not a fix ---------------------------------------------
+
+def test_p2d7_lower_afterload_may_raise_output_but_does_not_normalize_pressure():
+    from clinical_core import bands
+    rows = bands.probe("vasodilation")
+    arrival, late = rows[0], rows[-1]
+    assert late["output_rel"] > arrival["output_rel"], "a rise in output from lower afterload is allowed"
+    assert late["map"] < arrival["map"], "it does not normalize MAP"
+    # Delivery follows flow; D, measured against arrival delivery (no demand state), falls.
+    assert late["delivery_rel"] > arrival["delivery_rel"] and late["D"] < 0
+    assert bands.DIAGNOSTICS["vasodilation"]["classification"] == \
+        "PHYSIOLOGICALLY_PLAUSIBLE_PENDING_MULTI_FAMILY_CALIBRATION"
+
+
+def test_p2d7_a_rise_in_output_is_not_automatic_in_sepsis_with_preload_loss():
+    from clinical_core import bands
+    rows = bands.probe("vasodilation_with_preload_loss")
+    arrival, late = rows[0], rows[-1]
+    assert late["output_rel"] < arrival["output_rel"] and late["delivery_rel"] < arrival["delivery_rel"]
+    assert late["map"] < bands.probe("vasodilation")[-1]["map"] and late["D"] > 0 and late["crt_s"] > arrival["crt_s"]

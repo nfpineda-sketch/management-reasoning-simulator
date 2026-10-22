@@ -286,24 +286,97 @@
     }
    },
    "classification": {
-    "V_ml_eq": "APPROVED DIFFERENCE",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -344,14 +417,33 @@
    ],
    "minutes": 90,
    "mismatching": {
-    "V_ml_eq": "KD-S4",
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S4",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "V_ml_eq": [
+     "KD-S4"
+    ],
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Transfuse 4 units packed red blood cells over 60 minutes. Give 2000 mL normal saline IV over 30 minutes."
@@ -1613,24 +1705,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -1667,13 +1830,30 @@
    ],
    "minutes": 120,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Transfuse 2 units packed red blood cells over 60 minutes. Give pantoprazole 80 mg IV. Consult gastroenterology for urgent endoscopy."
@@ -3111,24 +3291,93 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "MATCH",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -3149,12 +3398,27 @@
    ],
    "minutes": 20,
    "mismatching": {
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give oxygen 15 L/min via non-rebreather mask."
@@ -3976,24 +4240,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -4019,13 +4354,30 @@
    ],
    "minutes": 90,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Transfuse 2 units packed red blood cells over 60 minutes."
@@ -5287,24 +5639,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -5348,13 +5771,30 @@
    ],
    "minutes": 45,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 1000 mL normal saline IV over 15 minutes. Give 1000 mL normal saline IV over 15 minutes."
@@ -6352,24 +6792,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -6398,13 +6909,30 @@
    ],
    "minutes": 60,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 2000 mL normal saline IV over 20 minutes."
@@ -7490,24 +8018,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -7554,13 +8153,30 @@
    ],
    "minutes": 120,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 1000 mL normal saline IV.",
@@ -8999,24 +9615,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -9060,13 +9747,30 @@
    ],
    "minutes": 60,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 2000 mL normal saline IV over 60 minutes. Give 1000 mL normal saline IV.",
@@ -10153,24 +10857,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -10238,13 +11013,30 @@
    ],
    "minutes": 90,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 1000 mL normal saline IV.",
@@ -11509,24 +12301,182 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "APPROVED DIFFERENCE",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "by_minute": [
+      {
+       "candidate_causes": [
+        "KD-S3",
+        "KD-S4"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 80,
+       "core_raw_sbp": 79.927,
+       "legacy": 0,
+       "legacy_displayed_sbp": 81,
+       "legacy_raw_sbp": 80.575,
+       "minute": 55,
+       "mode": "jointly_necessary"
+      },
+      {
+       "candidate_causes": [
+        "KD-S3",
+        "KD-S4"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 80,
+       "core_raw_sbp": 79.768,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 80.44,
+       "minute": 56,
+       "mode": "jointly_necessary"
+      },
+      {
+       "candidate_causes": [
+        "KD-S3",
+        "KD-S4"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 80,
+       "core_raw_sbp": 79.608,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 80.305,
+       "minute": 57,
+       "mode": "jointly_necessary"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 79,
+       "core_raw_sbp": 79.447,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 80.17,
+       "minute": 58,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S4"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 79,
+       "core_raw_sbp": 79.287,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 80.035,
+       "minute": 59,
+       "mode": "sufficient_alone"
+      },
+      {
+       "candidate_causes": [
+        "KD-S3",
+        "KD-S4"
+       ],
+       "core": 1,
+       "core_displayed_sbp": 79,
+       "core_raw_sbp": 79.125,
+       "legacy": 0,
+       "legacy_displayed_sbp": 80,
+       "legacy_raw_sbp": 79.9,
+       "minute": 60,
+       "mode": "each_sufficient"
+      }
+     ],
+     "candidate_causes": [
+      "KD-S3",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -11540,14 +12490,34 @@
    ],
    "minutes": 60,
    "mismatching": {
-    "consciousness_level": "KD-S3",
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "consciousness_level": [
+     "KD-S3",
+     "KD-S4"
+    ],
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {},
    "variables": {
@@ -12631,24 +13601,97 @@
     }
    },
    "classification": {
-    "V_ml_eq": "APPROVED DIFFERENCE",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -12689,14 +13732,33 @@
    ],
    "minutes": 90,
    "mismatching": {
-    "V_ml_eq": "KD-S4",
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S4",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "V_ml_eq": [
+     "KD-S4"
+    ],
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Transfuse 4 units packed red blood cells over 60 minutes. Give 2000 mL normal saline IV over 30 minutes."
@@ -13958,24 +15020,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -14012,13 +15145,30 @@
    ],
    "minutes": 120,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Transfuse 2 units packed red blood cells over 60 minutes. Give pantoprazole 80 mg IV. Consult gastroenterology for urgent endoscopy."
@@ -15456,24 +16606,91 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "MATCH",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "MATCH",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -15494,11 +16711,24 @@
    ],
    "minutes": 20,
    "mismatching": {
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give oxygen 15 L/min via non-rebreather mask."
@@ -16320,24 +17550,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -16363,13 +17664,30 @@
    ],
    "minutes": 90,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Transfuse 2 units packed red blood cells over 60 minutes."
@@ -17631,24 +18949,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -17692,13 +19081,30 @@
    ],
    "minutes": 45,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 1000 mL normal saline IV over 15 minutes. Give 1000 mL normal saline IV over 15 minutes."
@@ -18696,24 +20102,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -18742,13 +20219,30 @@
    ],
    "minutes": 60,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 2000 mL normal saline IV over 20 minutes."
@@ -19834,24 +21328,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -19898,13 +21463,30 @@
    ],
    "minutes": 120,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 1000 mL normal saline IV.",
@@ -21343,24 +22925,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -21404,13 +23057,30 @@
    ],
    "minutes": 60,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 2000 mL normal saline IV over 60 minutes. Give 1000 mL normal saline IV.",
@@ -22497,24 +24167,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -22582,13 +24323,30 @@
    ],
    "minutes": 90,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {
     "0": "Give 1000 mL normal saline IV.",
@@ -23853,24 +25611,95 @@
     }
    },
    "classification": {
-    "V_ml_eq": "MATCH",
-    "blood_delivered_units": "MATCH",
-    "consciousness_level": "MATCH",
-    "crt_s": "APPROVED DIFFERENCE",
-    "dbp": "APPROVED DIFFERENCE",
-    "fio2": "MATCH",
-    "fluid_delivered_ml": "MATCH",
-    "glucose_mg_dl": "MATCH",
-    "hb_g_dl": "MATCH",
-    "hr": "APPROVED DIFFERENCE",
-    "k_mmol_l": "MATCH",
-    "lactate_mmol_l": "APPROVED DIFFERENCE",
-    "map": "APPROVED DIFFERENCE",
-    "pulse_present": "MATCH",
-    "respiratory_rate": "APPROVED DIFFERENCE",
-    "rhythm": "MATCH",
-    "sbp": "APPROVED DIFFERENCE",
-    "spo2": "MATCH"
+    "V_ml_eq": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "blood_delivered_units": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "consciousness_level": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "crt_s": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "dbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "fio2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "fluid_delivered_ml": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "glucose_mg_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hb_g_dl": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "hr": {
+     "candidate_causes": [
+      "KD-S2",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "k_mmol_l": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "lactate_mmol_l": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "map": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "pulse_present": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "respiratory_rate": {
+     "candidate_causes": [
+      "KD-S1",
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "rhythm": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    },
+    "sbp": {
+     "candidate_causes": [
+      "KD-S4"
+     ],
+     "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
+    },
+    "spo2": {
+     "candidate_causes": [],
+     "classification": "MATCH"
+    }
    },
    "core_inputs": [
     {
@@ -23884,13 +25713,30 @@
    ],
    "minutes": 60,
    "mismatching": {
-    "crt_s": "KD-S4",
-    "dbp": "KD-S4",
-    "hr": "KD-S2",
-    "lactate_mmol_l": "KD-S1",
-    "map": "KD-S4",
-    "respiratory_rate": "KD-S1",
-    "sbp": "KD-S4"
+    "crt_s": [
+     "KD-S4"
+    ],
+    "dbp": [
+     "KD-S4"
+    ],
+    "hr": [
+     "KD-S2",
+     "KD-S4"
+    ],
+    "lactate_mmol_l": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "map": [
+     "KD-S4"
+    ],
+    "respiratory_rate": [
+     "KD-S1",
+     "KD-S4"
+    ],
+    "sbp": [
+     "KD-S4"
+    ]
    },
    "orders": {},
    "variables": {

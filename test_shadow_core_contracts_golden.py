@@ -35,7 +35,7 @@ def test_the_golden_through_contracts_v2_is_the_committed_golden(results):
 def test_the_known_differences_are_the_same_and_all_still_occur(results):
     for key, result in results.items():
         assert set(mismatching(result.summary)) == set(EXPECTED_DIFFERENCES[key]), key
-    used = {reason for expected in EXPECTED_DIFFERENCES.values() for reason in expected.values()}
+    used = {cause for expected in EXPECTED_DIFFERENCES.values() for causes in expected.values() for cause in causes}
     assert used == set(DIFFERENCES) == {"KD-S1", "KD-S2", "KD-S3", "KD-S4"}
 
 

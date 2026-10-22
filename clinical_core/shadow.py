@@ -16,8 +16,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import CORE_VERSION
-from .comparison import compare, mismatching, summarize
-from .derived import PARAMETERS, case_parameter_provenance
+from .comparison import _display, compare, mismatching, summarize
+from .derived import PARAMETERS, _level, case_parameter_provenance
 from .integration import CHANNEL_BOUNDS, Trajectory, run
 from .legacy_adapter import (FAMILY_CASE_PARAMETER_RULES, LEGACY_LITERALS, LegacyRun, anchors_from_legacy,
                              contributors_from_legacy, run_legacy)
@@ -83,8 +83,18 @@ DIFFERENCES = {
               "TBD: curve form and scale, arrival position, P sensitivity, afterload sensitivity, congestion knee "
               "and gain"),
 }
-_STRUCTURAL = {"lactate_mmol_l": "KD-S1", "respiratory_rate": "KD-S1", "hr": "KD-S2", "sbp": "KD-S4", "dbp": "KD-S4",
-               "map": "KD-S4", "crt_s": "KD-S4"}
+#: Candidate causes of each expected difference (P2D-9): the decided mechanisms on the variable's
+#: causal path in that run. They are candidates, not a measure of how much each contributes;
+#: where more than one mechanism lies on the path, all are listed:
+#: - lactate and RR: KD-S1 kinetics, and KD-S4 through output and so through D;
+#: - HR: the KD-S2 drive, and KD-S4 through the pressure deficit and D;
+#: - SBP, DBP, MAP and CRT: KD-S4 (output and pressure from the preload curve);
+#: - V: KD-S4 (no clamp on volume);
+#: - consciousness: KD-S3 and/or KD-S4, minute by minute (``consciousness_attribution``).
+#: Every run bleeds, so V leaves arrival and KD-S4 lies on every path through output.
+_STRUCTURAL = {"lactate_mmol_l": ("KD-S1", "KD-S4"), "respiratory_rate": ("KD-S1", "KD-S4"),
+               "hr": ("KD-S2", "KD-S4"), "sbp": ("KD-S4",), "dbp": ("KD-S4",), "map": ("KD-S4",),
+               "crt_s": ("KD-S4",)}
 EXPECTED_DIFFERENCES = {
     f"{variant}/{scenario}": dict(_STRUCTURAL) for variant in VARIANTS for scenario in SCENARIOS}
 # The oxygen runs last 20 minutes and V moves only with the bleeding, so the curve changes the
@@ -93,19 +103,15 @@ del EXPECTED_DIFFERENCES["gi_bleed_57m/oxygen_non_rebreather"]["crt_s"]
 for _name in ("map", "crt_s"):
     del EXPECTED_DIFFERENCES["gi_bleed_72f/oxygen_non_rebreather"][_name]
 for _variant in VARIANTS:
-    # Past the engine's circulation clamp, the rate follows the core's pressure (KD-S4) as well as
-    # its sympathetic memory (KD-S2); it is listed under the larger cause.
-    EXPECTED_DIFFERENCES[f"{_variant}/aggressive_volume"].update(
-        {name: "KD-S4" for name in ("V_ml_eq", "hr")})
-# The core reads the 80 mmHg threshold on its raw SBP (KD-S3, unchanged in P2C). Since the preload
-# curve (KD-S4) lowers that SBP by under 1 mmHg, the crossing comes at minute 55 instead of 60.
-# In minutes 55-57 the core's displayed SBP is 80 (the engine shows 81, 80, 80), which does not
-# cross the threshold: the crossing there is the raw reading. In 58-60 the core displays 79.
-EXPECTED_DIFFERENCES["gi_bleed_57m/untreated_60"]["consciousness_level"] = "KD-S3"
+    # Past the engine's circulation clamp the core's V keeps rising (KD-S4).
+    EXPECTED_DIFFERENCES[f"{_variant}/aggressive_volume"]["V_ml_eq"] = ("KD-S4",)
+# The 80 mmHg threshold, read on the core's raw SBP (KD-S3, unchanged) and on a pressure that the
+# preload curve lowers by under 1 mmHg (KD-S4): see consciousness_attribution, minute by minute.
+EXPECTED_DIFFERENCES["gi_bleed_57m/untreated_60"]["consciousness_level"] = ("KD-S3", "KD-S4")
 
-#: The decision behind each known difference (P2C, 2026-10-22). A difference whose decision is
-#: approved is an APPROVED DIFFERENCE: the physiology that produces it was approved, while its
-#: size still rests on the provisional (TBD) parameters.
+#: The decision behind each known difference. "approved" means its physiological direction is
+#: approved (P2C); its magnitude is not, until the Level-2 bands and the Appendix A9 tolerances
+#: are approved. Hence APPROVED_DIRECTION_MAGNITUDE_TBD, never an approved size (P2D-9).
 DECISIONS = {
     "KD-S1": ("approved", "REVISE CORE: D with memory produces lactate; RR from W plus a saturating metabolic drive"),
     "KD-S2": ("approved", "ADOPT CORE DIRECTION: HR from R plus one common sympathetic drive plus modulators"),
@@ -113,29 +119,80 @@ DECISIONS = {
                           "read Observation v2"),
     "KD-S4": ("approved", "REVISE CORE: one smooth, saturating preload curve; no clamp"),
 }
-MATCH, APPROVED_DIFFERENCE, UNRESOLVED_DIFFERENCE = "MATCH", "APPROVED DIFFERENCE", "UNRESOLVED DIFFERENCE"
+MATCH, APPROVED_DIRECTION, UNRESOLVED = "MATCH", "APPROVED_DIRECTION_MAGNITUDE_TBD", "UNRESOLVED"
 
 
-def classify(key: str, summary: dict) -> dict:
-    """Level 3: MATCH, APPROVED DIFFERENCE or UNRESOLVED DIFFERENCE for every compared variable of a run.
+def consciousness_attribution(result) -> list[dict]:
+    """Minute by minute, which decision can produce each consciousness difference (P2D-9).
 
-    The class follows the expected reason for each variable (``EXPECTED_DIFFERENCES``), not
-    the cause or the size of each difference; the committed golden freezes the sizes, so any
-    change to them fails the golden test and has to be reviewed. A rounding tie with no
-    mismatch (the same raw value on a .5 boundary) is a MATCH of the physiology; the summary
-    still lists its minutes apart and never counts them as matches.
+    Two counterfactual readings of the same minute, against the family engine's level:
+    - KD-S3 alone: the family engine's own pressure (its circulation change since arrival,
+      through the adopted relation) read raw, as the core reads it;
+    - KD-S4 alone: the core's pressure read on its displayed (rounded) value, as the engine
+      reads it.
+    Each that still differs from the engine's level is sufficient alone. When neither does,
+    both are needed together (the core's lower pressure, read raw).
+    """
+    anchors, profile = result.core.anchors, result.core.profile
+    derived = result.core.derived()
+
+    def level(sbp, spo2):
+        return max(anchors.consciousness_level, _level(sbp, profile.pressure_levels),
+                   _level(spo2, profile.oxygen_levels))
+
+    rows = []
+    for row in result.rows["consciousness_level"]:
+        if row["status"] != "mismatch":
+            continue
+        minute, values = row["minute"], derived[row["minute"]]
+        # The engine's circulation grows with the deficit (V = (1 - circulation) x 833 mL-eq).
+        deficit = result.legacy.snapshots[minute]["circulation"] - result.legacy.snapshots[0]["circulation"]
+        engine_raw_sbp = anchors.sbp - profile.sbp_per_pressure_deficit * deficit
+        shown = _display(values)
+        s3_alone = level(engine_raw_sbp, values.spo2) != row["legacy"]
+        s4_alone = level(shown["sbp"], shown["spo2"]) != row["legacy"]
+        if s3_alone and s4_alone:
+            causes, mode = ["KD-S3", "KD-S4"], "each_sufficient"
+        elif s3_alone or s4_alone:
+            causes, mode = ["KD-S3" if s3_alone else "KD-S4"], "sufficient_alone"
+        else:
+            causes, mode = ["KD-S3", "KD-S4"], "jointly_necessary"
+        rows.append({"minute": minute, "legacy": row["legacy"], "core": row["core"],
+                     "core_raw_sbp": round(values.sbp, 3), "core_displayed_sbp": shown["sbp"],
+                     "legacy_displayed_sbp": result.legacy.snapshots[minute]["sbp"],
+                     "legacy_raw_sbp": round(engine_raw_sbp, 3), "candidate_causes": causes, "mode": mode})
+    return rows
+
+
+def classify(key: str, summary: dict, attribution: list | None = None) -> dict:
+    """Level 3 (P2D-9): for every compared variable of a run, its class and its candidate causes.
+
+    - MATCH: no difference. A rounding tie with no mismatch (the same raw value on a .5
+      boundary) is a MATCH of the physiology; the summary still lists its minutes apart and
+      never counts them as matches.
+    - APPROVED_DIRECTION_MAGNITUDE_TBD: every candidate cause has an approved direction; the size
+      of the difference is not approved.
+    - UNRESOLVED: no approved decision explains it.
+
+    The candidates follow ``EXPECTED_DIFFERENCES`` (the causal path), and for consciousness the
+    minute-by-minute ``attribution`` when given. The committed golden freezes the sizes, so any
+    change to them fails the golden test and has to be reviewed.
     """
     classes = {}
     for name, entry in summary.items():
         if not entry["compared"]:
             continue
-        reason = EXPECTED_DIFFERENCES[key].get(name)
         if not entry["mismatched"]:
-            classes[name] = MATCH
-        elif reason in DECISIONS and DECISIONS[reason][0] == "approved":
-            classes[name] = APPROVED_DIFFERENCE
-        else:
-            classes[name] = UNRESOLVED_DIFFERENCE
+            classes[name] = {"classification": MATCH, "candidate_causes": []}
+            continue
+        causes = list(EXPECTED_DIFFERENCES[key].get(name, ()))
+        item = {}
+        if name == "consciousness_level" and attribution:
+            causes = sorted({cause for row in attribution for cause in row["candidate_causes"]})
+            item["by_minute"] = attribution
+        approved = bool(causes) and all(DECISIONS.get(cause, ("",))[0] == "approved" for cause in causes)
+        classes[name] = {"classification": APPROVED_DIRECTION if approved else UNRESOLVED,
+                         "candidate_causes": causes, **item}
     return classes
 
 
@@ -178,9 +235,10 @@ def golden_report(results=None) -> dict:
         "scenarios": {result.key: {"minutes": SCENARIOS[result.scenario]["minutes"],
                                    "orders": {str(m): t for m, t in SCENARIOS[result.scenario]["orders"].items()},
                                    "core_inputs": [item.to_spec() for item in result.core.contributors],
-                                   "mismatching": {name: EXPECTED_DIFFERENCES[result.key].get(name, "UNEXPLAINED")
-                                                   for name in mismatching(result.summary)},
-                                   "classification": classify(result.key, result.summary),
+                                   "mismatching": {name: list(EXPECTED_DIFFERENCES[result.key].get(name, ()))
+                                                   or "UNEXPLAINED" for name in mismatching(result.summary)},
+                                   "classification": classify(result.key, result.summary,
+                                                              consciousness_attribution(result)),
                                    "case_parameters": case_parameter_provenance(result.core.anchors,
                                                                                 result.core.profile),
                                    "variables": result.summary}

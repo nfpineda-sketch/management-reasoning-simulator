@@ -7,7 +7,7 @@ driven by declared channel changes and the case declarations the core holds. The
 shows what the core reads at the provisional parameters, so that faculty can set the
 plausible band each probe must fall in. Each family probes the chain the decisions name:
 - GI bleed / trauma: V, D and Hb;
-- sepsis: D and T (metabolic demand has no channel yet);
+- sepsis: D and T (metabolic demand has no channel yet; see ``DIAGNOSTICS``);
 - ACS, RV and PE: preload and P;
 - pulmonary oedema: overload and L;
 - asthma and opioids: W and RR.
@@ -62,6 +62,9 @@ PROBES = {
                     (Drift("bleed_v", "V", 0, 60, -10.0), Drift("bleed_hb", "hb", 0, 60, -0.02)), (0, 30, 60)),
     "vasodilation": ("sepsis", "T -0.01/min for 40 min (to 0.6)", {},
                      (Drift("tone", "T", 0, 40, -0.01),), (0, 20, 40, 60)),
+    "vasodilation_with_preload_loss": ("sepsis", "T -0.01/min and V -5 mL/min for 40 min (venous pooling, leak)",
+                                       {}, (Drift("tone", "T", 0, 40, -0.01), Drift("leak", "V", 0, 40, -5.0)),
+                                       (0, 20, 40, 60)),
     "pump_failure_then_bolus": ("ACS", "P -0.01/min for 30 min (to 0.7), then 500 mL at minute 40", {},
                                 (Drift("pump", "P", 0, 30, -0.01), _bolus("bolus", 40, 500.0)), (0, 30, 40, 60)),
     "preload_dependent": ("RV infarct / PE", "preload position 0.25: 200 mL lost at minute 1, 250 mL given at 20",
@@ -77,7 +80,27 @@ PROBES = {
 #: The plausible band for each probe: set by faculty, never here (Level 2, prepared only).
 BANDS = {name: None for name in PROBES}
 
-COLUMNS = ("map", "pulse_rate_bpm", "respiratory_rate", "lactate", "crt_s", "output_rel")
+#: P2D-7: what a probe shows that is not a defect to fix, and why. Lower afterload may raise
+#: output; it must not by itself normalize pressure, delivery or D. The core lets output rise
+#: with vasodilation and keeps MAP low; delivery rises with output (DO2 = flow x content), and
+#: D, which measures delivery against arrival rather than against demand, then falls: oxygen
+#: demand and extraction have no state in the core. Not forced either way; to be calibrated
+#: across families.
+DIAGNOSTICS = {
+    "vasodilation": {
+        "classification": "PHYSIOLOGICALLY_PLAUSIBLE_PENDING_MULTI_FAMILY_CALIBRATION",
+        "shows": "output up with lower afterload; MAP down and not normalized; delivery up and D below arrival",
+        "gap": "no state for oxygen demand or extraction, so D cannot rise from a septic demand",
+    },
+    "vasodilation_with_preload_loss": {
+        "classification": "PHYSIOLOGICALLY_PLAUSIBLE_PENDING_MULTI_FAMILY_CALIBRATION",
+        "shows": "with venous pooling or leak, output, delivery and MAP fall and D rises: a rise in output is "
+                 "not automatic",
+        "gap": "the same: no demand state",
+    },
+}
+
+COLUMNS = ("map", "pulse_rate_bpm", "respiratory_rate", "lactate", "crt_s", "output_rel", "delivery_rel")
 
 
 def probe(name: str) -> list[dict]:
@@ -103,18 +126,18 @@ def probe(name: str) -> list[dict]:
 
 
 def report() -> str:
-    lines = ["| Probe | Family | Drives | Min | MAP | HR | RR | Lactate | CRT | Output | D | L | Band |",
-             "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    lines = ["| Probe | Family | Drives | Min | MAP | HR | RR | Lactate | CRT | Output | DO2 | D | L | Band |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for name, (family, drives, _, _, _) in PROBES.items():
         for index, row in enumerate(probe(name)):
             head = (name, family, drives) if index == 0 else ("", "", "")
             if "stopped" in row:
-                lines.append("| " + " | ".join(head + (str(row["minute"]),) + ("",) * 8
+                lines.append("| " + " | ".join(head + (str(row["minute"]),) + ("",) * 9
                                                + ("stopped: unresolved boundary (P2D-2)",)) + " |")
                 continue
             values = [f"{row['minute']}", f"{row['map']:.0f}", f"{row['pulse_rate_bpm']:.0f}",
                       f"{row['respiratory_rate']:.0f}", f"{row['lactate']:.1f}", f"{row['crt_s']:.1f}",
-                      f"{row['output_rel']:.2f}", f"{row['D']:.2f}", f"{row['L']:.2f}",
+                      f"{row['output_rel']:.2f}", f"{row['delivery_rel']:.2f}", f"{row['D']:.2f}", f"{row['L']:.2f}",
                       "TBD" if BANDS[name] is None else str(BANDS[name])]
             lines.append("| " + " | ".join(head + tuple(values)) + " |")
     return "\n".join(lines)

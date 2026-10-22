@@ -4,7 +4,7 @@
 |---|---|
 | Rama | `phase-2-clinical-core-shadow` |
 | Base | `6fad3103af531689af7995a4db3838418581f1c0` = `origin/phase-1-contracts-v2`, el SHA final de la Fase 1 |
-| HEAD del código de la Fase 2 | P2C (§9): `2f5778b` KD-S1, `e685031` KD-S2, `f75da42` KD-S4 y el commit de clasificación que trae esta actualización. Antes: `04283c4` (P2B, §8) |
+| HEAD del código de la Fase 2 | P2D (§10): `bd21780`, `c052c75`, `d3b498e`, `fc46711` y el commit de clasificación causal que trae esta actualización. Antes: `d543cd9` (P2C, §9) y `04283c4` (P2B, §8) |
 | Fuente de la arquitectura | `docs/CLINICAL_ENGINE_ARCHITECTURE_PROPOSAL.md` §7–§14 |
 | Estado | **Sombra solamente.** `family_engine.py` sigue siendo la fuente de verdad de todo encuentro. Ningún módulo de la aplicación importa `clinical_core`; nada cambia para el residente. **No hay gancho en tiempo de ejecución** (§7). |
 
@@ -342,6 +342,15 @@ falla sin la corrección. Ninguno afectaba los escenarios dorados:
 
 ## 9. P2C · Restricciones de calibración fisiológica (KD-S1, KD-S2, KD-S4; 2026-10-22)
 
+> **Estado de P2C.** P2D (§10) cambia, entre otras cosas:
+> - la clasificación: ya no hay «APPROVED DIFFERENCE», ahora es APPROVED_DIRECTION_MAGNITUDE_TBD;
+> - el piso del impulso simpático y su consecuencia en la FC;
+> - la curva de precarga, que ahora depende de P;
+> - el aclaramiento de L;
+> - la sonda de hemorragia, que ahora se detiene en un límite sin resolver.
+>
+> Donde §9 y §10 difieran, rige §10.
+
 - Base: `04283c4` (P2B cerrado).
 - Commits: `2f5778b` KD-S1, `e685031` KD-S2, `f75da42` KD-S4 y el de clasificación y documentación que trae esta
   sección.
@@ -529,7 +538,8 @@ Siguen adoptadas del motor heredado, sin cambio de valor:
 - La FR mínima del núcleo en los escenarios pasó de 6–8/min a 20/min.
 
 **Clasificación** (`shadow.classify`, guardada en el golden por escenario):
-- 220 MATCH, 140 APPROVED DIFFERENCE y 0 UNRESOLVED DIFFERENCE.
+- 220 MATCH, 140 APPROVED DIFFERENCE y 0 UNRESOLVED DIFFERENCE. (Desde P2D, «APPROVED DIFFERENCE» se llama
+  APPROVED_DIRECTION_MAGNITUDE_TBD: lo aprobado es la dirección, no la magnitud; §10.9.)
 - Cada diferencia aprobada lo es por su **dirección**. Su magnitud depende de parámetros TBD (§9.4) y de las
   tolerancias del Apéndice A9, que siguen sin fijar.
 
@@ -639,3 +649,214 @@ adoptadas:
 - **M2:** pulso estrecho;
 - **L1:** retirada simpática absoluta;
 - **L4:** clasificación por mapeo.
+
+## 10. P2D · Invariantes estructurales antes de la calibración de Nivel 2 (2026-10-22)
+
+- Base: `d543cd9` (P2C aceptado en dirección).
+- Commits:
+
+  | Commit | Contenido |
+  |---|---|
+  | `bd21780` | P2D-1 |
+  | `c052c75` | P2D-2/3 |
+  | `d3b498e` | P2D-4/5/6 |
+  | `fc46711` | P2D-8 |
+  | commit de esta sección | P2D-7/9 y documentación |
+
+- Sigue todo en sombra y fuera de línea, sin gancho en tiempo de ejecución ni cambio visible para el residente.
+- P2D es estructural: no fija ningún número de Nivel 2 ni ajusta nada para acercarse al motor heredado.
+
+### 10.1 Estado dinámico auxiliar explícito (P2D-1)
+
+Tres capas:
+
+| Capa | Qué es | Dónde vive |
+|---|---|---|
+| **Estado de canales del núcleo** | V, T, P, R, L, G, W, D, N, Hb, glucosa, K | Campos de `CoreState`; sólo cambian por deltas con procedencia |
+| **Estado dinámico auxiliar** | Memoria que el núcleo necesita para derivar observables o respuestas en el tiempo: el exceso de lactato (KD-S1) y el impulso simpático (KD-S2) | `CoreState.aux`, un `AuxiliaryState` tipado, inmutable y serializable |
+| **Observable derivado** | Función pura del estado de canales más el auxiliar: presión, FC, FR, lactato, TLC, conciencia | `derive()`; no se guarda |
+
+- No es un canal nuevo (no hay C13 ni C14) ni un registro de un contribuyente. Sólo el integrador lo cambia.
+- **Procedencia.** Cada cambio es un `AuxiliaryChange` (antes, después, fuente `core_coupling:*`, minuto) dentro del
+  `MinuteRecord`. La verificación de conservación rechaza un cambio sin registro.
+- **Serialización determinista.** `CoreState.to_dict`/`from_dict` y el digest lo incluyen.
+- **Reproducción.** Una corrida retomada desde un estado serializado es la misma corrida, prueba con digest minuto a
+  minuto.
+- **Copia profunda.** `deepcopy` y `pickle` del estado fallaban por `FrozenRecord`; ahora funcionan.
+- **Traza en sombra.** La `TraceProvenance` lo lleva como estado interno no autoritativo (`core_auxiliary_state`), y
+  cada minuto con sus cambios. Nunca se muestra al residente.
+- **Contradicción con la propuesta, resuelta.** Esto responde a la contradicción con la propuesta §7.3 señalada en
+  §9.7: la memoria es explícita, tipada y separada de lo derivado.
+
+### 10.2 Gasto cero, pulso y presión (P2D-2)
+
+- Un pulso con gasto efectivo nulo, y una presión medible sin gasto, son estados prohibidos.
+- `derive` lanza `UnresolvedBoundary` cuando el gasto llega al cero numérico (`OUTPUT_EPSILON` = 1e-9, una guarda
+  numérica, no un umbral clínico) con pulso presente.
+  - No hay una regla aprobada de transición terminal que aplique ahí: el umbral y la permanencia del paro siguen TBD.
+  - Por eso la corrida falla cerrada en ese minuto, con un mensaje que nombra el límite, en vez de inventar un paro.
+- `check()` rechaza:
+  - un pulso sin gasto;
+  - cualquier presión sin gasto.
+- En un estado sin pulso:
+  - PA, SpO2, TLC y frecuencia de pulso no son medibles;
+  - una AESP conserva su frecuencia de monitor.
+- Un evento de ritmo declarado (paro antes del límite) sí se usa: la corrida sigue sin pulso.
+- La sonda de hemorragia de Nivel 2 se detiene en el minuto 58 y lo dice.
+- **Queda sin resolver:** la franja entre el cero numérico y un umbral clínico de paro. Con la relación lineal
+  adoptada, un gasto muy bajo todavía muestra una PAS cercana a llegada − 45.
+
+### 10.3 El impulso simpático nunca es negativo (P2D-3)
+
+- **Regla.** FC sinusal = frecuencia intrínseca de R + 25 × (1 − betabloqueo) × S, con S ≥ 0. Concretamente:
+  - el objetivo del impulso tiene piso en 0;
+  - desaparece el límite de retirada;
+  - `AuxiliaryState` rechaza un S negativo.
+- **Qué permite y qué no:**
+  - El betabloqueo atenúa la parte positiva; nunca convierte la retirada en negativa.
+  - Una FC menor que la intrínseca exige una fuente explícita que cambie R, por ejemplo un evento o un fármaco
+    cronotrópico negativo declarado.
+- **Consecuencia que requiere decisión.**
+  - Como la llegada está anclada, la frecuencia intrínseca efectiva es la FC de llegada.
+  - Tras reanimar, la FC ya no baja de la llegada, aunque esa taquicardia fuera compensadora.
+  - En el golden sólo cambia la FC: 16 corridas, con máximos de diferencia que suben de 12 a 29 lpm (manejo
+    definitivo).
+  - Falta decidir si un caso puede declarar qué parte de su FC de llegada es tono simpático. No se inventó ese
+    valor.
+
+### 10.4 D y lactato: monotonía comparativa (P2D-4)
+
+Sólo pruebas comparativas, sin un número objetivo:
+- Con trayectorias iguales en todo lo demás, más deuda nunca da menos lactato.
+- Una deuda grave sostenida lleva el lactato sobre la llegada.
+- Restaurar la entrega inicia el aclaramiento sin borrar el lactato.
+- Una mejoría transitoria no borra la deuda previa.
+
+Las cinéticas lineales de D y del lactato garantizan el orden punto a punto. τ y la ganancia siguen TBD.
+
+### 10.5 La bomba da forma a la respuesta a precarga (P2D-5)
+
+- La escala de la curva es `preload_curve_scale_ml × P^c` (c provisional = 1).
+  - Se lee respecto del llenado de llegada sobre la curva de la bomba actual, así que P sigue significando el gasto
+    al llenado de llegada.
+  - La congestión lee la misma curva.
+- Gasto relativo con la llegada GI por defecto:
+
+| P | V = 0 | +500 mL | +1000 mL | +3000 mL | Ganancia por 500 mL |
+|---|---|---|---|---|---|
+| 1,0 | 1,00 | 1,45 | 1,70 | 1,97 | 0,45 |
+| 0,7 | 0,70 | 0,94 | 1,04 | 1,11 | 0,24 |
+| 0,4 | 0,40 | 0,47 | 0,48 | 0,49 | 0,07 |
+
+- Una bomba más débil:
+  - da menos gasto a cualquier V;
+  - nunca gana más por mL;
+  - tiene techo más bajo y curva más plana.
+- 500 mL no normalizan una bomba al 70 %; ningún volumen dentro de las cotas normaliza una al 40 %.
+- La magnitud del acoplamiento sigue TBD.
+
+### 10.6 El agua pulmonar se aclara (P2D-6)
+
+- **Mecanismo.**
+  - L sobre la llegada se aclara en primer orden (τ provisional = 240 min) con su propia fuente
+    `core_coupling:lung_water_clearance`.
+  - Nunca agrega L.
+- **Comportamiento:**
+  - sin fuente, no sube;
+  - quitada la fuente, se recupera de forma monótona y lenta, sin bajar de la llegada;
+  - con fuente que persiste, se mantiene o empeora;
+  - con sobrecarga adicional, empeora.
+- Los diuréticos y la VNI no se modelan aquí.
+
+### 10.7 Sepsis y poscarga: diagnóstico, no corrección (P2D-7)
+
+| Sonda | Gasto | PAM | DO2 | D | TLC |
+|---|---|---|---|---|---|
+| `vasodilation` (T a 0,6) | 1,00 → 1,14 | 90 → 80 | 1,00 → 1,14 | 0 → −3,8 | 2,0 → 1,5 |
+| `vasodilation_with_preload_loss` (T a 0,6 y −200 mL) | 1,00 → 0,83 | 90 → 74 | 1,00 → 0,83 | 0 → +4,7 | 2,0 → 2,7 |
+
+- **Clasificación:** PHYSIOLOGICALLY_PLAUSIBLE_PENDING_MULTI_FAMILY_CALIBRATION.
+- **Qué muestra:**
+  - El aumento de gasto por menor poscarga no normaliza la PAM.
+  - Con pérdida de precarga, el gasto no sube: no es automático.
+- **Brecha estructural, a decidir.** El oxígeno que se demanda y se extrae no tiene estado, así que D mide la entrega
+  contra la de llegada y no contra la demanda. Con vasodilatación sola, la DO2 sube con el flujo y D cae por debajo
+  de la llegada. No se forzó ningún cambio.
+
+### 10.8 Procedencia de los parámetros de caso (P2D-8)
+
+- **Declaración.** `Anchors.declared` nombra la fuente de cada parámetro declarado: `explicit_case` o
+  `synthetic_probe`. Uno no declarado es `default`. Los parámetros son `beta_blockade`, `preload_fraction` y
+  `pump_reserve`.
+- **Sin inferencia silenciosa.** Un valor distinto del neutro sin fuente se rechaza.
+- **Registro.** `case_parameter_provenance` informa, por parámetro, el valor, la fuente, si está calibrado (siempre
+  no) y una nota. Lo llevan el golden y la traza en sombra.
+- **Regla por familia.** `legacy_adapter.FAMILY_CASE_PARAMETER_RULES` guarda la regla de cada familia.
+  - `gi_bleed`: valores neutros, sin mapeo desde el banco y sin calibrar.
+  - Una familia sin regla se rechaza antes de migrarla: necesita mapeo explícito por caso o una regla por familia
+    aprobada.
+- No se tocó `clinical_cases.py`. Las pruebas y las sondas declaran sus valores como `synthetic_probe`.
+
+### 10.9 Clasificación causal del golden (P2D-9)
+
+- **Las cifras numéricas del golden no cambian por la clasificación.** De todo P2D, sólo P2D-3 movió la FC (§10.3).
+- **Clases:**
+  - **MATCH**;
+  - **APPROVED_DIRECTION_MAGNITUDE_TBD:** cada causa candidata tiene una dirección aprobada, y la magnitud no está
+    aprobada hasta las bandas de Nivel 2 y las tolerancias A9;
+  - **UNRESOLVED.**
+- **Recuento:** 220 MATCH, 140 APPROVED_DIRECTION_MAGNITUDE_TBD y 0 UNRESOLVED.
+- **Causas candidatas** (`candidate_causes`): los mecanismos decididos que están en la vía causal de la variable en
+  esa corrida. Son candidatas, no una medida de cuánto aporta cada una.
+
+  | Variables | Causas candidatas | Diferencias |
+  |---|---|---|
+  | PAS, PAD, PAM, TLC, V | KD-S4 | 79 |
+  | Lactato y FR | KD-S1 + KD-S4 (KD-S4 a través del gasto y D) | 40 |
+  | FC | KD-S2 + KD-S4 | 20 |
+  | Conciencia | KD-S3 + KD-S4 | 1 |
+
+**Conciencia en 57m sin tratamiento, minuto a minuto** (`shadow.consciousness_attribution`). Se usan dos lecturas
+contrafactuales contra el nivel del motor heredado:
+- **KD-S3 sola:** la presión del propio motor leída cruda.
+- **KD-S4 sola:** la presión del núcleo leída en su valor mostrado.
+
+| Minuto | PAS núcleo cruda / mostrada | PAS motor cruda / mostrada | Causas | Modo |
+|---|---|---|---|---|
+| 55 | 79,93 / 80 | 80,58 / 81 | KD-S3 + KD-S4 | ambas necesarias juntas |
+| 56 | 79,77 / 80 | 80,44 / 80 | KD-S3 + KD-S4 | ambas necesarias juntas |
+| 57 | 79,61 / 80 | 80,31 / 80 | KD-S3 + KD-S4 | ambas necesarias juntas |
+| 58 | 79,45 / 79 | 80,17 / 80 | KD-S4 | suficiente sola |
+| 59 | 79,29 / 79 | 80,04 / 80 | KD-S4 | suficiente sola |
+| 60 | 79,13 / 79 | 79,90 / 80 | KD-S3 o KD-S4 | cada una suficiente |
+
+- La PAS cruda del motor se reconstruye con su circulación y la relación adoptada. Redondea a lo que el motor
+  muestra en cada minuto (prueba).
+- La frase de §9.5 («minutos 55–57: el cruce viene de la lectura cruda») queda precisada así: en 55–57 hacen falta
+  las dos cosas.
+
+### 10.10 Parámetros que siguen TBD
+
+Todos los de §9.4, menos `sympathetic_withdrawal_limit`, que se eliminó. Además:
+- `pump_preload_coupling`: acoplamiento bomba/precarga, c = 1;
+- `lung_water_clearance_tau_min`: τ de aclaramiento de L, 240 min;
+- el umbral clínico de gasto y la permanencia antes del paro (P2D-2).
+
+`OUTPUT_EPSILON` es una guarda numérica, no un parámetro clínico.
+
+### 10.11 Limitaciones y decisiones pendientes
+
+- **Tono simpático de llegada** (§10.3): qué parte de la FC de llegada es simpática, para que la taquicardia
+  compensadora pueda resolverse por debajo de la llegada.
+- **Paro:** el umbral de gasto y la permanencia (§10.2).
+- **Demanda y extracción de oxígeno** en sepsis (§10.7).
+- **Mapeo de los parámetros de caso** antes de migrar otra familia (§10.8).
+- **La clasificación:** sigue el mapeo de vías causales; el golden congela las magnitudes.
+- Siguen vigentes las limitaciones de §9.8 que P2D no tocó:
+  - pulso estrecho, que falla cerrado;
+  - lactato bajo en shock profundo;
+  - entradas simpáticas sin estado.
+
+### 10.12 Gancho en tiempo de ejecución
+
+No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`: `test_shadow_core_isolation.py` lo comprueba.
