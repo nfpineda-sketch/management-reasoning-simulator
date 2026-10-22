@@ -246,9 +246,12 @@ EMPTY = FrozenRecord()
 
 #: The case parameters (P2C) and their neutral values: what the core assumes when a case does
 #: not declare one (``None``: the profile's provisional default).
-CASE_PARAMETERS: Mapping[str, Any] = {"beta_blockade": 0.0, "preload_fraction": None, "pump_reserve": 1.0}
-#: Where a declared case parameter comes from (P2D-8). One that is not declared is "default".
-DECLARED_SOURCES = frozenset({"explicit_case", "synthetic_probe"})
+CASE_PARAMETERS: Mapping[str, Any] = {"beta_blockade": 0.0, "preload_fraction": None, "pump_reserve": 1.0,
+                                       "intrinsic_sinus_rate": None}
+#: Where a declared case parameter comes from (P2D-8, P2E-6). One that is not declared is
+#: "default_unmapped".
+DECLARED_SOURCES = frozenset({"explicit_case", "approved_family_default", "synthetic_probe"})
+UNMAPPED = "default_unmapped"
 
 
 @dataclass(frozen=True)
@@ -265,7 +268,10 @@ class Anchors:
       output preload alone could reach (0 empty, 1 the plateau); ``None`` takes the profile's
       provisional default (KD-S4). A low value is a preload-dependent patient;
     - ``pump_reserve`` (0 none, 1 normal) is how much excess preload the pump can take before
-      it congests the lungs (KD-S4).
+      it congests the lungs (KD-S4);
+    - ``intrinsic_sinus_rate`` (bpm) is the sinus rate without sympathetic drive (P2E-1). The
+      observed arrival HR is that rate plus the arrival sympathetic contribution. ``None``
+      reads the arrival HR as intrinsic (no sympathetic share at arrival).
 
     ``declared`` names the source of every case parameter that is declared (P2D-8):
     ``explicit_case`` (the case states it) or ``synthetic_probe`` (a test or a Level-2 probe).
@@ -289,6 +295,7 @@ class Anchors:
     beta_blockade: float = 0.0
     preload_fraction: float | None = None
     pump_reserve: float = 1.0
+    intrinsic_sinus_rate: float | None = None
     declared: FrozenRecord = field(default=EMPTY)
 
     def __post_init__(self):
@@ -298,7 +305,7 @@ class Anchors:
             object.__setattr__(self, "declared", FrozenRecord(self.declared))
         for item in fields(self):
             if item.name not in {"case_id", "rhythm", "consciousness_level", "declared"} \
-                    and not (item.name == "preload_fraction" and self.preload_fraction is None):
+                    and not (CASE_PARAMETERS.get(item.name, 0.0) is None and getattr(self, item.name) is None):
                 _finite(getattr(self, item.name), item.name)
         for name, source in self.declared.items():
             if name not in CASE_PARAMETERS or source not in DECLARED_SOURCES:
@@ -310,13 +317,23 @@ class Anchors:
         for name, neutral in CASE_PARAMETERS.items():
             if getattr(self, name) != neutral and name not in self.declared:
                 raise CoreInvariantError(f"case parameter {name} = {getattr(self, name)!r} is not the neutral value "
-                                         "and names no source (explicit_case or synthetic_probe)")
+                                         "and names no source (explicit_case, approved_family_default or "
+                                         "synthetic_probe)")
         if not 0.0 <= self.beta_blockade <= 1.0:
             raise CoreInvariantError("beta-blockade is between 0 (none) and 1 (complete)")
         if self.preload_fraction is not None and not 0.0 < self.preload_fraction < 1.0:
             raise CoreInvariantError("the arrival preload fraction is strictly between 0 and 1")
         if not 0.0 <= self.pump_reserve <= 1.0:
             raise CoreInvariantError("pump reserve is between 0 (none) and 1 (normal)")
+        if self.intrinsic_sinus_rate is not None:
+            if self.rhythm.code is not RhythmCode.SINUS or self.rhythm.rate_bpm != self.hr:
+                raise CoreInvariantError("an intrinsic sinus rate needs a sinus arrival at the observed HR")
+            if not 0.0 < self.intrinsic_sinus_rate <= self.hr:
+                raise CoreInvariantError("the intrinsic sinus rate is positive and not above the observed arrival "
+                                         "HR: the sympathetic contribution is never negative")
+            if self.beta_blockade >= 1.0 and self.intrinsic_sinus_rate < self.hr:
+                raise CoreInvariantError("under complete beta-blockade no sympathetic contribution can raise the "
+                                         "rate above its intrinsic value")
         if not isinstance(self.rhythm, RhythmState):
             raise CoreInvariantError("the arrival rhythm is a RhythmState")
         if not self.rhythm.pulse_present:

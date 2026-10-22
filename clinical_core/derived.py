@@ -16,7 +16,10 @@ from dataclasses import dataclass, fields
 from typing import Mapping
 
 from .provenance import Source, SourceKind
-from .state import CASE_PARAMETERS, Anchors, CoreInvariantError, CoreState, RhythmCode, UnresolvedBoundary
+from dataclasses import replace
+
+from .state import (CASE_PARAMETERS, UNMAPPED, Anchors, AuxiliaryState, CoreInvariantError, CoreState, RhythmCode,
+                    UnresolvedBoundary, initial_state)
 
 ADOPTED = "adopted"
 PROVISIONAL = "provisional"
@@ -245,16 +248,58 @@ def case_parameter_provenance(anchors: Anchors, profile: CoreProfile = DEFAULT_P
     ``default``. No case parameter is calibrated or approved yet: none is mapped from the bank
     cases, and the defaults are neutral (or, for the preload position, provisional).
     """
-    notes = {"default": "not declared: neutral value", "explicit_case": "declared by the case; not calibrated",
+    notes = {UNMAPPED: "not declared: neutral value", "explicit_case": "declared by the case; not calibrated",
+             "approved_family_default": "the family's approved default; not calibrated",
              "synthetic_probe": "synthetic probe value; not a case"}
+    unmapped_values = {"preload_fraction": (profile.arrival_preload_fraction,
+                                            "not declared: provisional profile default (TBD)"),
+                       "intrinsic_sinus_rate": (anchors.hr, "not declared: the arrival HR is read as intrinsic, with "
+                                                            "no sympathetic share at arrival")}
     provenance = {}
     for name in CASE_PARAMETERS:
-        source = anchors.declared.get(name, "default")
+        source = anchors.declared.get(name, UNMAPPED)
         value, note = getattr(anchors, name), notes[source]
-        if name == "preload_fraction" and value is None:
-            value, note = profile.arrival_preload_fraction, "not declared: provisional profile default (TBD)"
+        if value is None and name in unmapped_values:
+            value, note = unmapped_values[name]
         provenance[name] = {"value": value, "source": source, "calibrated": False, "note": note}
     return provenance
+
+
+def intrinsic_sinus_rate(anchors: Anchors) -> float:
+    """The arrival sinus rate without sympathetic drive (P2E-1): declared, or the observed arrival HR."""
+    return anchors.intrinsic_sinus_rate if anchors.intrinsic_sinus_rate is not None else anchors.hr
+
+
+def arrival_sympathetic_drive(anchors: Anchors, profile: CoreProfile) -> float:
+    """The sympathetic drive that, on top of the intrinsic rate, gives the observed arrival HR (P2E-1)."""
+    share = anchors.hr - intrinsic_sinus_rate(anchors)
+    if share <= 0.0:
+        return 0.0
+    response = profile.hr_per_sympathetic_drive * (1.0 - anchors.beta_blockade)
+    if response <= 0.0:
+        raise CoreInvariantError("an arrival sympathetic share needs a positive chronotropic response")
+    return share / response
+
+
+def heart_rate_decomposition(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> dict:
+    """The observed arrival HR split into intrinsic rate and sympathetic contribution, with its source."""
+    return {"observed_arrival_hr": anchors.hr, "intrinsic_sinus_rate": intrinsic_sinus_rate(anchors),
+            "arrival_sympathetic_bpm": anchors.hr - intrinsic_sinus_rate(anchors),
+            "arrival_sympathetic_drive": arrival_sympathetic_drive(anchors, profile),
+            "source": anchors.declared.get("intrinsic_sinus_rate", UNMAPPED)}
+
+
+def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> CoreState:
+    """Arrival, with the reference states the case declares (P2E).
+
+    R holds the intrinsic sinus rate and the auxiliary state holds the arrival sympathetic
+    drive, so the derived arrival HR is the observed one. Undeclared, they are the anchored
+    defaults (intrinsic = observed HR, no drive).
+    """
+    state = initial_state(anchors)
+    if state.R.code is RhythmCode.SINUS:
+        state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
+    return state.evolve(aux=AuxiliaryState(sympathetic_drive=arrival_sympathetic_drive(anchors, profile)))
 
 
 def arrival_preload(anchors: Anchors, profile: CoreProfile) -> float:
@@ -355,13 +400,15 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
                   - max(0.0, profile.hypoxaemia_threshold_spo2 - anchors.spo2))
     hypoglycaemia = (max(0.0, profile.hypoglycaemia_threshold_mg_dl - state.glucose)
                      - max(0.0, profile.hypoglycaemia_threshold_mg_dl - anchors.glucose))
-    target = (profile.sympathetic_per_pressure_deficit * (1.0 - pressure_rel)
+    # Absolute drive (P2E-1): the arrival drive plus the stimuli's deviations from arrival.
+    target = (arrival_sympathetic_drive(anchors, profile)
+              + profile.sympathetic_per_pressure_deficit * (1.0 - pressure_rel)
               + profile.sympathetic_per_debt * state.D / profile.debt_clearance_tau_min
               + profile.sympathetic_per_hypoxaemia_point * hypoxaemia
               + profile.sympathetic_per_hypoglycaemia_mg_dl * hypoglycaemia)
     # P2D-3: the drive is never negative. As its stimuli resolve, the rate falls back to the
-    # intrinsic rate of R and no further; a lower rate needs an explicit chronotropic source
-    # that changes R.
+    # intrinsic rate of R (below the observed arrival HR when arrival carried a sympathetic
+    # share, P2E-1) and no further; a lower rate needs an explicit source that changes R.
     return max(0.0, target)
 
 

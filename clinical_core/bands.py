@@ -21,10 +21,10 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 
-from .derived import derive
+from .derived import arrival_state, derive
 from .integration import Contribution, Contributor, register, step
 from .provenance import ChannelDelta, SourceKind
-from .state import Anchors, Channel, RhythmState, UnresolvedBoundary, initial_state
+from .state import Anchors, Channel, RhythmState, UnresolvedBoundary
 
 #: A neutral synthetic arrival shared by every probe, so that each probe's effect stands alone.
 ARRIVAL = dict(case_id="band_probe", sbp=120.0, dbp=75.0, hr=80.0, spo2=97.0, respiratory_rate=16.0, crt_s=2.0,
@@ -109,7 +109,7 @@ def probe(name: str) -> list[dict]:
     stops there, and its last row says so instead of carrying an impossible state forward."""
     family, drives, declared, contributors, minutes = PROBES[name]
     anchors = Anchors(**{**ARRIVAL, **declared, "declared": {name: "synthetic_probe" for name in declared}})
-    states, stopped = [initial_state(anchors)], None
+    states, stopped = [arrival_state(anchors)], None
     for _ in range(max(minutes)):
         try:
             states.append(step(states[-1], contributors, anchors)[0])

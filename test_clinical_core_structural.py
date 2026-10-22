@@ -400,7 +400,8 @@ def test_p2d8_provenance_says_value_source_and_calibration():
     from clinical_core.derived import case_parameter_provenance
     plain = case_parameter_provenance(BLEEDING)
     assert {name: entry["source"] for name, entry in plain.items()} == {
-        "beta_blockade": "default", "preload_fraction": "default", "pump_reserve": "default"}
+        "beta_blockade": "default_unmapped", "preload_fraction": "default_unmapped", "pump_reserve": "default_unmapped",
+        "intrinsic_sinus_rate": "default_unmapped"}
     assert plain["preload_fraction"]["value"] == DEFAULT_PROFILE.arrival_preload_fraction
     assert not any(entry["calibrated"] for entry in plain.values())
     declared = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 0.4,
@@ -418,7 +419,7 @@ def test_p2d8_the_gi_golden_uses_the_neutral_defaults_and_says_so():
     golden = json_module.loads(GOLDEN.read_text(encoding="utf-8"))
     assert set(golden["case_parameter_rules"]) == {"gi_bleed"}
     for entry in golden["scenarios"].values():
-        assert {item["source"] for item in entry["case_parameters"].values()} == {"default"}
+        assert {item["source"] for item in entry["case_parameters"].values()} == {"default_unmapped"}
 
 
 def test_p2d8_a_family_without_a_rule_cannot_be_migrated():

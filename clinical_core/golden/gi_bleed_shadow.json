@@ -269,19 +269,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -1688,19 +1694,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -3274,19 +3286,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -4223,19 +4241,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -5622,19 +5646,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -6775,19 +6805,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -8001,19 +8037,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -9598,19 +9640,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -10840,19 +10888,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -12284,19 +12338,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 124.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -13584,19 +13644,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -15003,19 +15069,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -16589,19 +16661,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -17533,19 +17611,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -18932,19 +19016,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -20085,19 +20175,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -21311,19 +21407,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -22908,19 +23010,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -24150,19 +24258,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
@@ -25594,19 +25708,25 @@
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.0
+    },
+    "intrinsic_sinus_rate": {
+     "calibrated": false,
+     "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
+     "source": "default_unmapped",
+     "value": 112.0
     },
     "preload_fraction": {
      "calibrated": false,
      "note": "not declared: provisional profile default (TBD)",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 0.5
     },
     "pump_reserve": {
      "calibrated": false,
      "note": "not declared: neutral value",
-     "source": "default",
+     "source": "default_unmapped",
      "value": 1.0
     }
    },
