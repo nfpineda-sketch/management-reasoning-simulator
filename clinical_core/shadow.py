@@ -72,20 +72,31 @@ DIFFERENCES = {
               "thresholds, sympathetic decay time, withdrawal limit"),
     "KD-S3": ("consciousness at the 80 mmHg threshold: the family engine compares the rounded SBP (80), the core the "
               "raw value (79.9)", "Observation v2 (Phase 1): thresholds on raw state or on the displayed value"),
-    "KD-S4": ("volume beyond the family engine's circulation clamp [.25, 1.9] (+625 mL-eq): the engine stops "
-              "the gain there; the core has no preload saturation yet, so pressure and rate keep moving (§7.3 asks "
-              "for bounded gains)", "faculty: shape and value of the volume-to-output plateau"),
+    "KD-S4": ("volume, pressure and refill (approved revision, P2C-3): the core reads output from one smooth, "
+              "saturating preload curve (V -> effective preload -> stroke volume -> output -> pressure), concave "
+              "everywhere, with arrival placed on it by a case position (provisional default 0.5, where its slope "
+              "equals the family engine's linear gain) and output lowered by tone above arrival; the family engine "
+              "is linear in volume and clamps circulation to [.25, 1.9] (+625 mL-eq). So pressure, refill and the "
+              "rate differ wherever V leaves arrival: a little below it (the curve is steeper there), more above it "
+              "(the curve saturates), and past the clamp the core's V keeps rising while its output barely moves",
+              "TBD: curve form and scale, arrival position, P sensitivity, afterload sensitivity, congestion knee "
+              "and gain"),
 }
-_STRUCTURAL = {"lactate_mmol_l": "KD-S1", "respiratory_rate": "KD-S1", "hr": "KD-S2"}
+_STRUCTURAL = {"lactate_mmol_l": "KD-S1", "respiratory_rate": "KD-S1", "hr": "KD-S2", "sbp": "KD-S4", "dbp": "KD-S4",
+               "map": "KD-S4", "crt_s": "KD-S4"}
 EXPECTED_DIFFERENCES = {
     f"{variant}/{scenario}": dict(_STRUCTURAL) for variant in VARIANTS for scenario in SCENARIOS}
+# The oxygen runs last 20 minutes and V moves only with the bleeding, so the curve changes the
+# pressures by one display step at most, and not every one of them.
+del EXPECTED_DIFFERENCES["gi_bleed_57m/oxygen_non_rebreather"]["crt_s"]
+for _name in ("map", "crt_s"):
+    del EXPECTED_DIFFERENCES["gi_bleed_72f/oxygen_non_rebreather"][_name]
 for _variant in VARIANTS:
     # Past the engine's circulation clamp, the rate follows the core's pressure (KD-S4) as well as
     # its sympathetic memory (KD-S2); it is listed under the larger cause.
     EXPECTED_DIFFERENCES[f"{_variant}/aggressive_volume"].update(
-        {name: "KD-S4" for name in ("V_ml_eq", "sbp", "dbp", "map", "hr")})
+        {name: "KD-S4" for name in ("V_ml_eq", "hr")})
 EXPECTED_DIFFERENCES["gi_bleed_57m/untreated_60"]["consciousness_level"] = "KD-S3"
-EXPECTED_DIFFERENCES["gi_bleed_57m/aggressive_volume"]["crt_s"] = "KD-S4"
 
 
 @dataclass(frozen=True)

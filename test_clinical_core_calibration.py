@@ -12,7 +12,8 @@ import pytest
 
 from clinical_core import (Anchors, Channel, ChannelDelta, Contribution, Contributor, RhythmCode, RhythmState,
                            SourceKind, run)
-from clinical_core.derived import SYMPATHETIC_DRIVE, lactate_excess, sympathetic_drive
+from clinical_core.derived import (DEFAULT_PROFILE, PRELOAD_CONGESTION, SYMPATHETIC_DRIVE, derive, lactate_excess,
+                                   preload_position, sympathetic_drive)
 from clinical_core.logistics import EndoscopicHemostasis
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.provenance import SettingChange
@@ -272,3 +273,123 @@ def test_kd_s2_a_rate_the_rhythm_owns_does_not_answer_to_the_drive():
     """A paced or blocked rhythm holds its own rate; the drive acts on the sinus rate only."""
     paced = Anchors(**{**BLEEDING.to_dict(), "rhythm": RhythmState(RhythmCode.PACED, 70.0, 1.0, True), "hr": 70.0})
     assert {item.pulse_rate_bpm for item in run(paced, (BLEED,), 60).derived()} == {70.0}
+
+
+# KD-S4 -- one smooth, saturating preload curve --------------------------------------------
+
+@dataclass(frozen=True)
+class Infuse(Contributor):
+    """Volume given at a constant rate until it stops (test only)."""
+
+    kind = SourceKind.INTERVENTION
+    type_name = "test_infuse"
+    id: str
+    per_minute: float
+    stop_minute: int
+
+    def contribute(self, state, minute, signals, anchors, profile):
+        if minute > self.stop_minute:
+            return Contribution()
+        return Contribution(deltas=(ChannelDelta(Channel.V, self.per_minute, self.source, minute, "volume given"),))
+
+
+def _case(**declared):
+    return Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, **declared})
+
+
+def _at(anchors, V=0.0, P=1.0, T=1.0):
+    state = run(anchors, (), 0).states[0].evolve(V=float(V), P=float(P), T=float(T))
+    return derive(state, anchors)
+
+
+def _gain(anchors, V, bolus=250.0, **channels):
+    return _at(anchors, V + bolus, **channels).output_rel - _at(anchors, V, **channels).output_rel
+
+
+VOLUMES = [-500.0 + 250.0 * step for step in range(17)]   # -500 .. +3500 mL-eq
+
+
+@pytest.mark.parametrize("position", [0.25, 0.5, 0.8])
+@pytest.mark.parametrize("pump,tone", [(1.0, 1.0), (0.5, 1.0), (1.0, 1.8)])
+def test_kd_s4_each_ml_helps_less_than_the_one_before(position, pump, tone):
+    """d(output)/dV falls as V rises, on every curve: any arrival position, pump or tone."""
+    anchors = _case(preload_fraction=position)
+    outputs = [_at(anchors, V, P=pump, T=tone).output_rel for V in VOLUMES]
+    assert all(0.0 <= item for item in outputs) and max(outputs) < pump / position, "never below 0, below the plateau"
+    # Below the empty point the ventricle gives nothing at all; above it, every step helps less.
+    filling = [item for item in outputs if item > 0]
+    gains = [later - earlier for earlier, later in zip(filling, filling[1:])]
+    assert len(filling) >= 14 and all(gain > 0 for gain in gains), "more preload never lowers output"
+    assert all(later < earlier for earlier, later in zip(gains, gains[1:])), "the curve is concave"
+
+
+def test_kd_s4_1_and_2_the_first_bolus_helps_and_the_second_helps_less():
+    deficit = -400.0
+    first, second = _gain(BLEEDING, deficit), _gain(BLEEDING, deficit + 250.0)
+    assert first > 0.25, "a marked deficit with a normal pump: meaningful improvement"
+    assert 0 < second < first
+
+
+def test_kd_s4_3_near_euvolaemia_more_volume_adds_little_output_or_pressure():
+    first, late = _gain(BLEEDING, -400.0), _gain(BLEEDING, 2500.0)
+    assert late < first / 10
+    assert _at(BLEEDING, 2750.0).map - _at(BLEEDING, 2500.0).map < 1.0
+
+
+def test_kd_s4_4_a_weaker_pump_gains_less_from_the_same_fluid_and_cannot_be_made_whole():
+    for V in (-400.0, 0.0, 1000.0):
+        assert _gain(BLEEDING, V, P=0.5) < _gain(BLEEDING, V)
+    cardiogenic = _case(preload_fraction=0.8)          # a failing pump sits high on its curve
+    assert max(_at(cardiogenic, V, P=0.6).output_rel for V in VOLUMES + [10000.0]) < 0.6 / 0.8 < 1.0
+
+
+def test_kd_s4_5_a_preload_dependent_patient_is_more_sensitive_early_and_still_saturates():
+    dependent = _case(preload_fraction=0.25)
+    assert _gain(dependent, 0.0) > _gain(BLEEDING, 0.0)
+    assert _gain(dependent, 3000.0) < _gain(dependent, 0.0) / 5
+
+
+def test_kd_s4_6_high_tone_the_same_volume_does_not_give_the_same_output():
+    for V in (-400.0, 0.0, 1000.0):
+        constricted, normal = _at(BLEEDING, V, T=1.8), _at(BLEEDING, V)
+        assert constricted.output_rel < normal.output_rel, "afterload lowers output"
+        assert constricted.map > normal.map, "while tone still raises pressure"
+        assert _gain(BLEEDING, V, T=1.8) < _gain(BLEEDING, V)
+
+
+def test_kd_s4_7_overload_volume_rises_output_barely_and_lungs_congest_only_without_pump_reserve():
+    infusion = (Infuse("overload", 8.0, 120),)          # about 1 L over two hours, from an already full circulation
+    arrival_slope = 0.36 / 300.0                          # output per mL near arrival (see the last test)
+    limited, normal = _case(pump_reserve=0.3), _case()
+    for anchors in (limited, normal):
+        trajectory = run(anchors, (Restore("filled", 1, surplus_ml=2000.0),) + infusion, 120)
+        derived, states = trajectory.derived(), trajectory.states
+        added = states[-1].V - states[1].V
+        assert added > 900, "V rises substantially"
+        assert derived[-1].output_rel - derived[1].output_rel < 0.1 * arrival_slope * added, "output barely moves"
+        assert derived[-1].map - derived[1].map < 3.0, "nor does pressure"
+        congestion = [d for record in trajectory.records for d in record.deltas if d.source == PRELOAD_CONGESTION]
+        if anchors is limited:
+            assert states[-1].L > 0 and all(d.channel is Channel.L and d.amount > 0 for d in congestion)
+            assert all(later.L >= earlier.L for earlier, later in zip(states, states[1:]))
+        else:
+            assert states[-1].L == 0 and not congestion, "a pump with full reserve does not congest from preload"
+
+
+def test_kd_s4_a_failing_pump_congests_from_excess_preload_even_with_a_normal_reserve():
+    trajectory = run(_case(), (Restore("filled", 1, surplus_ml=3000.0), Step("ischaemia", "P", 2, -0.5)), 30)
+    assert trajectory.states[-1].L > 0
+
+
+def test_kd_s4_no_congestion_below_the_knee_and_none_in_shock():
+    knee = DEFAULT_PROFILE.congestion_preload_knee
+    limited = _case(pump_reserve=0.0)
+    below = run(limited, (Restore("filled", 1, surplus_ml=600.0),), 60).states
+    assert preload_position(below[-1], limited, DEFAULT_PROFILE) < knee and below[-1].L == 0
+    assert run(limited, (BRISK,), 60).states[-1].L == 0
+
+
+def test_kd_s4_the_curve_keeps_the_family_engine_s_slope_at_the_default_arrival_position():
+    """The one adopted anchor of the curve: near arrival, 1/833.33 of output per mL (300 mL / 0.36)."""
+    slope = (_at(BLEEDING, 0.5).output_rel - _at(BLEEDING, -0.5).output_rel) / 1.0
+    assert slope == pytest.approx(0.36 / 300.0, rel=1e-6)

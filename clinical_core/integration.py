@@ -9,8 +9,9 @@ One ``step`` integrates one minute:
    the minute, plus those signals -- so the order in which contributors are listed can
    never change the result (proposal §14.1, T3);
 3. the core adds its own coupling (the oxygen-delivery debt, from flow, haemoglobin and
-   saturation) and updates its own memory: lactate kinetics, from that debt, and the common
-   sympathetic drive, from the state the minute ends in;
+   saturation; KD-S1), lung water from excess preload on a pump without reserve (KD-S4), and
+   updates its own memory: lactate kinetics, from that debt, and the common sympathetic
+   drive, from the state the minute ends in (KD-S2);
 4. the deltas are summed per channel, the declared bounds are enforced and every clipped
    amount is recorded as a clamp delta, rhythm transitions and setting changes are
    applied, and the new state is checked: the change in every channel must equal the sum
@@ -26,8 +27,9 @@ import math
 from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
-from .derived import (ADOPTED, DEFAULT_PROFILE, LACTATE_KINETICS, PROVISIONAL, SYMPATHETIC_DRIVE, CoreProfile,
-                      Derived, derive, lactate_after_minute, sympathetic_after_minute)
+from .derived import (ADOPTED, DEFAULT_PROFILE, LACTATE_KINETICS, PRELOAD_CONGESTION, PROVISIONAL,
+                      SYMPATHETIC_DRIVE, CoreProfile, Derived, congestion_rate, derive, lactate_after_minute,
+                      sympathetic_after_minute)
 from .provenance import (ChannelDelta, CoreEvent, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
                          Source, SourceKind)
 from .state import (Anchors, Channel, CoreInvariantError, CoreState, FrozenRecord, SCALAR_CHANNELS, digest,
@@ -40,7 +42,7 @@ CHANNEL_BOUNDS: Mapping[Channel, tuple[float, float, str, str]] = {
                                               "is deliberately not adopted"),
     Channel.T: (0.1, 3.0, PROVISIONAL, "guard only"),
     Channel.P: (0.1, 3.0, PROVISIONAL, "guard only"),
-    Channel.L: (-10.0, 10.0, PROVISIONAL, "guard only; no module writes L yet"),
+    Channel.L: (-10.0, 10.0, PROVISIONAL, "guard only; only the core's preload congestion writes L yet"),
     Channel.G: (-10.0, 10.0, PROVISIONAL, "guard only; no module writes G yet"),
     Channel.W: (-10.0, 10.0, PROVISIONAL, "guard only; no module writes W yet"),
     Channel.D: (-10000.0, 10000.0, PROVISIONAL, "guard only"),
@@ -206,6 +208,10 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
             signals.append(signal)
     signals = tuple(sorted(signals))
     deltas = [_oxygen_debt(state, anchors, profile, minute)]
+    congestion = congestion_rate(state, anchors, profile)
+    if congestion:
+        deltas.append(ChannelDelta(Channel.L, congestion, PRELOAD_CONGESTION, minute,
+                                   "excess preload on a pump without reserve"))
     transitions, settings, events = [], [], []
     internal = {LACTATE_KINETICS.key: FrozenRecord({"excess_mmol_l": lactate_after_minute(state, profile)})}
     for contributor in ordered:

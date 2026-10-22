@@ -139,15 +139,21 @@ def test_an_order_the_run_would_never_reach_is_refused(orders):
 
 
 def test_a_rounding_tie_needs_both_sides_on_the_same_boundary(results):
-    """Any tie the runs produce (which variable and minute follows the physiology) stops being one 2 units away."""
-    result, name, row = next((result, name, row) for result in results.values()
-                             for name, rows in result.rows.items() for row in rows
-                             if row["status"] == "rounding_tie")
-    minute = row["minute"]
+    """A raw value on a .5 boundary ties with either neighbour, and with nothing further away.
+
+    Whether the runs produce a tie follows the physiology, so the tie is placed here by hand:
+    the core's diastolic at minute 20 is set to 52.5.
+    """
+    from dataclasses import replace
+    result = results["gi_bleed_57m/untreated_60"]
+    derived = list(result.core.derived())
+    derived[20] = replace(derived[20], dbp=52.5)
     snapshots = [dict(snap) for snap in result.legacy.snapshots]
-    snapshots[minute][name] = row["legacy"] + 2     # x.5 cannot round to two units away
-    rows = compare(snapshots, result.core.states, result.core.derived())
-    assert rows[name][minute]["status"] == "mismatch"
+    statuses = {}
+    for legacy in (52, 53, 54):
+        snapshots[20]["dbp"] = legacy
+        statuses[legacy] = compare(snapshots, result.core.states, derived)["dbp"][20]["status"]
+    assert statuses == {52: "match", 53: "rounding_tie", 54: "mismatch"}
 
 
 def test_an_unknown_legacy_label_is_a_mismatch_not_silence(results):

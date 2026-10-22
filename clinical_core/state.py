@@ -241,8 +241,13 @@ class Anchors:
     existing ladder: 0 alert, 1 drowsy, 2 obtunded, 3 unresponsive.
 
     The case declarations after them default to neutral, meaning "not declared":
-    ``beta_blockade`` (0 none, 1 complete) blunts the chronotropic response to sympathetic
-    drive (proposal §7.3: "modulated by beta-blockade, a case parameter").
+    - ``beta_blockade`` (0 none, 1 complete) blunts the chronotropic response to sympathetic
+      drive (proposal §7.3: "modulated by beta-blockade, a case parameter");
+    - ``preload_fraction`` is where arrival sits on the preload curve, as a share of the
+      output preload alone could reach (0 empty, 1 the plateau); ``None`` takes the profile's
+      provisional default (KD-S4). A low value is a preload-dependent patient;
+    - ``pump_reserve`` (0 none, 1 normal) is how much excess preload the pump can take before
+      it congests the lungs (KD-S4).
     """
 
     case_id: str
@@ -260,15 +265,22 @@ class Anchors:
     rhythm: RhythmState
     consciousness_level: int
     beta_blockade: float = 0.0
+    preload_fraction: float | None = None
+    pump_reserve: float = 1.0
 
     def __post_init__(self):
         if not self.case_id:
             raise CoreInvariantError("anchors name their case")
+        for item in fields(self):
+            if item.name not in {"case_id", "rhythm", "consciousness_level"} \
+                    and not (item.name == "preload_fraction" and self.preload_fraction is None):
+                _finite(getattr(self, item.name), item.name)
         if not 0.0 <= self.beta_blockade <= 1.0:
             raise CoreInvariantError("beta-blockade is between 0 (none) and 1 (complete)")
-        for item in fields(self):
-            if item.name not in {"case_id", "rhythm", "consciousness_level"}:
-                _finite(getattr(self, item.name), item.name)
+        if self.preload_fraction is not None and not 0.0 < self.preload_fraction < 1.0:
+            raise CoreInvariantError("the arrival preload fraction is strictly between 0 and 1")
+        if not 0.0 <= self.pump_reserve <= 1.0:
+            raise CoreInvariantError("pump reserve is between 0 (none) and 1 (normal)")
         if not isinstance(self.rhythm, RhythmState):
             raise CoreInvariantError("the arrival rhythm is a RhythmState")
         if not self.rhythm.pulse_present:

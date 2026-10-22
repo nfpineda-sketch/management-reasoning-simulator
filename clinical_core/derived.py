@@ -32,13 +32,19 @@ LACTATE_KINETICS = Source(SourceKind.CORE_COUPLING, "lactate_kinetics")
 #: The core's own memory of sympathetic drive (KD-S2): it rises at once and decays with a time
 #: constant. Written only by the integrator, under this key of ``CoreState.internal``.
 SYMPATHETIC_DRIVE = Source(SourceKind.CORE_COUPLING, "sympathetic_drive")
+#: The core's coupling from excess preload on a pump without reserve to lung water L (KD-S4).
+PRELOAD_CONGESTION = Source(SourceKind.CORE_COUPLING, "preload_congestion")
 
 
 @dataclass(frozen=True)
 class CoreProfile:
     """The derivation gains. Defaults are the declared values in ``PARAMETERS``."""
 
-    volume_per_output_unit_ml: float = LEGACY_ML_PER_CIRCULATION_UNIT
+    preload_curve_scale_ml: float = LEGACY_ML_PER_CIRCULATION_UNIT
+    arrival_preload_fraction: float = 0.5
+    afterload_sensitivity: float = 0.3
+    congestion_preload_knee: float = 0.85
+    congestion_per_excess_preload: float = 0.05
     sbp_per_pressure_deficit: float = 45.0
     dbp_per_pressure_deficit: float = 25.0
     hr_per_sympathetic_drive: float = 25.0
@@ -72,9 +78,13 @@ class CoreProfile:
                 continue
             if not math.isfinite(value) or value < 0:
                 raise CoreInvariantError(f"profile gain {item.name} must be finite and non-negative")
-        if min(self.volume_per_output_unit_ml, self.debt_clearance_tau_min, self.lactate_clearance_tau_min,
+        if min(self.preload_curve_scale_ml, self.debt_clearance_tau_min, self.lactate_clearance_tau_min,
                self.rr_metabolic_max, self.rr_max, self.sympathetic_decay_tau_min) <= 0:
             raise CoreInvariantError("volume scale, time constants and RR bounds are positive")
+        if not 0.0 < self.arrival_preload_fraction < 1.0 or not 0.0 < self.congestion_preload_knee < 1.0:
+            raise CoreInvariantError("positions on the preload curve are strictly between 0 and 1")
+        if self.afterload_sensitivity >= 1.0:
+            raise CoreInvariantError("afterload sensitivity is below 1, so output stays positive at any tone")
 
     def to_dict(self) -> dict:
         return {item.name: (list(map(list, getattr(self, item.name))) if isinstance(getattr(self, item.name), tuple)
@@ -85,8 +95,17 @@ DEFAULT_PROFILE = CoreProfile()
 
 #: name -> (status, where the value comes from). Read by the comparison report and the docs.
 PARAMETERS: Mapping[str, tuple[str, str]] = {
-    "volume_per_output_unit_ml": (ADOPTED, "300 mL per red-cell unit / 0.36 circulation per unit "
-                                           "(family_engine.TRANSFUSION note; family_engine._minute)"),
+    "preload_curve_scale_ml": (PROVISIONAL, "scale of the saturating preload curve 1 - exp(-x / scale): TBD "
+                                            "(KD-S4). Its value keeps, at the default arrival position 0.5, the "
+                                            "family engine's slope at arrival: 300 mL per red-cell unit / 0.36 "
+                                            "circulation per unit (family_engine.TRANSFUSION note; _minute)"),
+    "arrival_preload_fraction": (PROVISIONAL, "where arrival sits on the preload curve when the case does not "
+                                              "declare it (0 empty, 1 plateau): TBD (KD-S4)"),
+    "afterload_sensitivity": (PROVISIONAL, "how much tone above arrival lowers output, 1 / (1 + a (T - 1)): TBD "
+                                           "(KD-S4)"),
+    "congestion_preload_knee": (PROVISIONAL, "position on the preload curve above which excess preload congests "
+                                             "a pump without reserve: TBD (KD-S4)"),
+    "congestion_per_excess_preload": (PROVISIONAL, "L per minute at full excess and no pump reserve: TBD (KD-S4)"),
     "sbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: sbp - (circulation - 1) * 45"),
     "dbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: dbp - (circulation - 1) * 25"),
     "hr_per_sympathetic_drive": (ADOPTED, "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm "
@@ -200,15 +219,57 @@ def respiratory_rate(state: CoreState, anchors: Anchors, profile: CoreProfile, l
     return min(profile.rr_max, drive * (ventilatory + scale * _metabolic_drive(lactate, profile)))
 
 
+def arrival_preload(anchors: Anchors, profile: CoreProfile) -> float:
+    """Where arrival sits on the preload curve: the case's declaration, or the profile's default."""
+    return anchors.preload_fraction if anchors.preload_fraction is not None else profile.arrival_preload_fraction
+
+
+def preload_position(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """Where the state sits on the preload curve, 0 (empty) to 1 (the plateau) (KD-S4).
+
+    One smooth, saturating curve, 1 - exp(-x / scale), in mL-equivalent of effective preload
+    x. Arrival is placed on it by its position, and V moves along it. Every added mL helps
+    less than the one before (the curve is concave everywhere), and the curve never quite
+    reaches its plateau; there is no clamp. Form and scale are provisional.
+    """
+    scale = profile.preload_curve_scale_ml
+    arrival = -scale * math.log(1.0 - arrival_preload(anchors, profile))
+    return 1.0 - math.exp(-max(0.0, arrival + state.V) / scale)
+
+
 def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tuple[float, float, float, float]:
-    """(output_rel, pressure_rel, spo2, delivery_rel) of a perfusing state."""
-    preload_rel = max(0.0, 1.0 + state.V / profile.volume_per_output_unit_ml)
-    output_rel = state.P * (state.R.output_factor / anchors.rhythm.output_factor) * preload_rel
+    """(output_rel, pressure_rel, spo2, delivery_rel) of a perfusing state.
+
+    V -> effective preload -> stroke volume -> output -> pressure (KD-S4):
+    - output is the pump (P) times the rhythm's share times the preload response, lowered by
+      tone above arrival (afterload);
+    - pressure is output times tone.
+    """
+    preload_rel = preload_position(state, anchors, profile) / arrival_preload(anchors, profile)
+    afterload = 1.0 / (1.0 + profile.afterload_sensitivity * (state.T - 1.0))
+    output_rel = state.P * (state.R.output_factor / anchors.rhythm.output_factor) * preload_rel * afterload
     pressure_rel = output_rel * state.T
     oxygen = (max(0.0, state.fio2 - profile.room_air_fio2) - max(0.0, anchors.fio2 - profile.room_air_fio2))
     spo2 = min(100.0, max(0.0, anchors.spo2 + profile.spo2_per_fio2 * oxygen))
     delivery_rel = output_rel * (state.hb / anchors.hb) * (spo2 / anchors.spo2)
     return output_rel, pressure_rel, spo2, delivery_rel
+
+
+def congestion_rate(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """Lung water added this minute by excess preload on a pump without reserve (KD-S4).
+
+    Nothing below the knee of the curve. Above it, the share of the remaining curve used,
+    times how far the pump falls short of normal reserve (the case's reserve times the
+    current pump P). A pump with full reserve never congests from preload alone. This
+    coupling only adds L; clearing lung water belongs to the mechanisms that act on L, which
+    the shadow core does not model yet.
+    """
+    if not state.R.pulse_present:
+        return 0.0
+    knee = profile.congestion_preload_knee
+    excess = max(0.0, (preload_position(state, anchors, profile) - knee) / (1.0 - knee))
+    shortfall = max(0.0, 1.0 - anchors.pump_reserve * state.P)
+    return profile.congestion_per_excess_preload * excess * shortfall
 
 
 def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
