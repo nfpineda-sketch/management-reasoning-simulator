@@ -98,3 +98,10 @@ def test_the_golden_reports_every_gi_run_as_blocked():
     for scenario in golden["scenarios"].values():
         assert scenario["migration_gate"]["migratable"] is False
         assert set(scenario["migration_gate"]["blocked"]) == set(VALUES) | set(GI.family_parameters)
+
+
+@pytest.mark.parametrize("entry", [(None, "explicit_case"), (float("nan"), "explicit_case"), ("lots", "explicit_case"),
+                                   (True, "explicit_case"), 2.5, (2.5,), (2.5, "explicit_case", "extra")])
+def test_review_f2_a_family_parameter_needs_a_finite_value_and_a_source(entry):
+    with pytest.raises(MigrationBlocked):
+        migration_gate("gi_bleed", declared(), {**FAMILY, "volume_loss_ml_per_min": entry})

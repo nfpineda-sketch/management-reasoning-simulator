@@ -907,7 +907,8 @@ No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`: `test
   | `1dad6df` | P2E-1 |
   | `2e71cc2` | P2E-2 |
   | `c91feb9` | P2E-3/4/5 |
-  | commit de esta sección | P2E-6/7 y documentación |
+  | `9b5ce58` | P2E-6/7 y documentación |
+  | commit de §11.10 | correcciones de la revisión adversarial |
 
 - Sigue todo en sombra y fuera de línea, sin gancho en tiempo de ejecución ni cambio visible para el residente.
 - P2E es estructural. No fija ningún número de Nivel 2, no migra ninguna familia real y no ajusta nada para acercarse
@@ -948,10 +949,13 @@ No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`: `test
   - `aux.oxygen_demand`, con su fuente `core_coupling:oxygen_demand`;
   - cada factor es un `DemandModifier` (factor > 0, tipo `disease` o `transient`, fuente, minuto, descripción),
     registrado en el `MinuteRecord`;
-  - el delta de D nombra en `modulated_by` las fuentes que lo modificaron;
+  - el delta de D nombra en `modulated_by` las fuentes de los factores sólo cuando cambiaron su tamaño, es decir,
+    cuando el déficit contra la demanda modificada difiere del déficit contra la basal del caso;
   - un contribuyente sólo declara factores a su nombre y para su minuto.
-- **Sin crédito.** La entrega por encima de la demanda no repaga más de lo acumulado. D nunca baja de 0: la cota
-  inferior de D es 0 y queda registrada si actúa.
+- **Sin crédito.** La entrega por encima de la demanda no repaga más de lo acumulado. D nunca baja de 0:
+  - la cota inferior de D es 0 y queda registrada si actúa;
+  - `CoreState` rechaza una D negativa y `AuxiliaryState`, un exceso de lactato negativo;
+  - τ_D y τ del lactato son de al menos un minuto, el paso del integrador.
 - **Referencias de llegada nuevas, declarables y neutras por defecto:**
   - `metabolic_demand_baseline` (1): por encima de 1, el paciente llega ya en déficit y D crece desde la llegada;
   - `arrival_lactate_excess` (0): la parte del lactato de llegada que puede aclararse. Sin declarar, el lactato no
@@ -985,6 +989,7 @@ Respuesta de D a las sondas (llegada neutra sintética; τ_D provisional = 60 mi
   - La AESP conserva el ritmo organizado: el monitor sigue contando la frecuencia que tenía, sin pulso.
   - Si un contribuyente mueve el ritmo en ese mismo minuto, la transición espera un minuto y parte del ritmo nuevo.
 - **Apagada por defecto.** Umbral y límite valen `None` en el perfil. Sólo las pruebas usan valores sintéticos.
+  - El umbral declarado debe quedar bajo el gasto de llegada (< 1), para que la llegada siga siendo un punto fijo.
   - Si el gasto llega a cero antes de cumplir el criterio, la corrida sigue deteniéndose en el límite de P2D-2.
   - No se agregó ningún evento terminal al GI.
 
@@ -1008,7 +1013,10 @@ Sondas con umbral sintético 0,4 y límite 10:
   - continuidad;
   - monotonía con el gasto;
   - cero sin gasto, sin piso heredado;
-  - PAS ≥ PAD.
+  - PAS ≥ PAD bajo la rodilla, siempre que se cumpla en la rodilla.
+- **Pulso estrecho.** Una presión de pulso de llegada menor que (45 − 25) × (1 − rodilla), 10 mmHg con los valores
+  por defecto, todavía llega a PAS < PAD sobre la rodilla. Pasaba igual antes de P2E, y el minuto falla cerrado
+  (§9.8).
 - **Presión no es perfusión.** El tono sigue sosteniendo PAD y PAM, mientras que gasto, entrega, D y TLC leen el
   gasto.
 - **Primera versión descartada.** Igualar la pendiente de la PAM en la rodilla dejaba unos 60 mmHg de PAS con el
@@ -1130,10 +1138,31 @@ Todos los de §10.10, y además:
 - **Ritmo terminal.** Es un parámetro del perfil, `pea` o `asystole`, no una regla de selección.
 - **Estados guardados de P2D.** Un estado serializado sin los campos auxiliares nuevos se rechaza al reanudarlo
   (falla cerrada).
+- **Llegada con referencias declaradas.** Se construye sólo con `arrival_state(anchors, profile)`:
+  - `initial_state` la rechaza;
+  - `run(initial=...)` rechaza un estado de minuto 0 distinto de esa llegada.
 
 ### 11.10 Revisión adversarial de P2E
 
-Pendiente al escribir esta sección; se completa con el resultado.
+Una revisión independiente, en sólo lectura, de `7daf894..9b5ce58` encontró 2 hallazgos medios y 5 bajos. Confirmé
+cada uno con una sonda propia y lo corregí con una prueba que lo cubre:
+- **Medio, llegada.** `initial_state`, y un estado de minuto 0 reanudado sin `aux`, arrancaban en los valores
+  anclados aunque el caso declarara referencias. Con una intrínseca de 90 la FC saltaba de 124 a 158. Ahora
+  `initial_state` rechaza esos casos y `run(initial=...)` exige que un minuto 0 sea `arrival_state`.
+- **Medio, puerta.** Un parámetro de familia `explicit_case` sin valor, con NaN o con texto pasaba la puerta, y una
+  entrada que no era una tupla rompía con `TypeError`. Ahora se exige una tupla (valor finito, fuente) y, si no, se
+  lanza `MigrationBlocked`.
+- **Bajo, texto.** La garantía PAS ≥ PAD era falsa con pulso estrecho. Se corrigió el texto (§11.4); el
+  comportamiento es el de antes.
+- **Bajo, umbral.** Un umbral de colapso ≥ 1 paraba a un paciente sin cambios. Ahora se rechaza.
+- **Bajo, signos.** Con τ < 1 minuto, Euler explícito volvía negativo el exceso de lactato; además, se podía
+  reanudar con D negativa. Ahora hay invariantes de signo y τ ≥ 1.
+- **Bajo, demanda mal formada.** Una demanda que no fuera una tupla de `DemandModifier` daba `AttributeError`. Ahora
+  da `ProvenanceError`.
+- **Bajo, procedencia.** `modulated_by` nombraba factores que no habían cambiado D. Ahora sólo nombra los que la
+  cambiaron.
+
+Las correcciones no cambian el golden. El golden por Contracts v2 sigue IDÉNTICO.
 
 ### 11.11 Gancho en tiempo de ejecución
 

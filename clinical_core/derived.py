@@ -19,7 +19,7 @@ from .provenance import Source, SourceKind
 from dataclasses import replace
 
 from .state import (CASE_PARAMETERS, UNMAPPED, Anchors, AuxiliaryState, CoreInvariantError, CoreState, RhythmCode,
-                    RhythmState, UnresolvedBoundary, initial_state)
+                    RhythmState, UnresolvedBoundary, anchored_state)
 
 ADOPTED = "adopted"
 PROVISIONAL = "provisional"
@@ -115,6 +115,10 @@ class CoreProfile:
             raise CoreInvariantError("the pump/preload coupling c is between 0 and 1")
         if self.afterload_sensitivity >= 1.0:
             raise CoreInvariantError("afterload sensitivity is below 1, so output stays positive at any tone")
+        if min(self.debt_clearance_tau_min, self.lactate_clearance_tau_min) < 1.0:
+            # D and lactate are integrated one minute at a time; a shorter time constant would
+            # overshoot and take them negative.
+            raise CoreInvariantError("the debt and lactate time constants are at least one minute (the step)")
         if not 0.0 < self.low_output_pressure_knee < 1.0:
             raise CoreInvariantError("the low-output pressure knee is strictly between 0 and 1")
         if (self.collapse_output_threshold is None) != (self.collapse_burden_limit is None):
@@ -123,6 +127,9 @@ class CoreProfile:
         for name in ("collapse_output_threshold", "collapse_burden_limit", "collapse_repayment_tau_min"):
             if getattr(self, name) is not None and not getattr(self, name) > 0:
                 raise CoreInvariantError(f"{name} is positive when declared")
+        if self.collapse_output_threshold is not None and self.collapse_output_threshold >= 1.0:
+            # At or above arrival output, arrival itself would accrue burden: no longer a fixed point.
+            raise CoreInvariantError("the collapse output threshold is below arrival output (under 1)")
         if self.collapse_repayment_tau_min is not None and self.collapse_output_threshold is None:
             raise CoreInvariantError("a collapse repayment needs a collapse rule")
         if self.collapse_terminal_rhythm not in TERMINAL_RHYTHMS:
@@ -371,7 +378,7 @@ def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> C
     Undeclared, they are the anchored defaults: intrinsic = observed HR and no drive; demand
     met by arrival delivery; no clearable lactate.
     """
-    state = initial_state(anchors)
+    state = anchored_state(anchors)
     if state.R.code is RhythmCode.SINUS:
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
     return state.evolve(aux=AuxiliaryState(lactate_excess_mmol_l=anchors.arrival_lactate_excess,
@@ -435,8 +442,13 @@ def arterial_pressures(pressure_rel: float, anchors: Anchors, profile: CoreProfi
       gain times (1 - pressure_rel), never below 0.
     - Below it: both are the knee's values times pressure_rel / knee, so they fall together,
       continuously and monotonically, to 0 as pressure_rel (and so output, at any tone) goes to
-      0: pressure proportional to flow times resistance. Sharing the scale keeps SBP above DBP.
-      The slope changes at the knee; the value does not.
+      0: pressure proportional to flow times resistance. Sharing the scale keeps SBP above DBP
+      below the knee whenever it is above it at the knee. The slope changes at the knee; the
+      value does not.
+
+    An arrival pulse pressure narrower than (sbp gain - dbp gain) x (1 - knee), 10 mmHg at the
+    defaults, still reaches SBP < DBP above the knee, as before P2E; ``check`` then fails the
+    minute closed (§9.8).
 
     No legacy floor: without output there is no pressure. Tone still lifts DBP and MAP through
     pressure_rel, so a vasoconstricted patient can hold a pressure that does not mean

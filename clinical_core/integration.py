@@ -165,18 +165,24 @@ def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minut
     repays what it accrued, and never falls below 0. With the neutral demand baseline and no
     modifier, demand is 1, so arrival does not move; at a steady deficit s the debt settles
     at tau * s, which the lactate derivation reads (proposal C8). The sources that modified
-    demand are named as modulators of the debt they changed.
+    demand are named as modulators of the debt only when they changed it: when the deficit
+    against the modified demand differs from the deficit against the case's baseline.
     """
     before = derive(state, anchors, profile)
-    amount = delivery_deficit(demand, before.delivery_rel) - state.D / profile.debt_clearance_tau_min
+    deficit = delivery_deficit(demand, before.delivery_rel)
+    changed = deficit != delivery_deficit(anchors.metabolic_demand_baseline, before.delivery_rel)
+    amount = deficit - state.D / profile.debt_clearance_tau_min
     return ChannelDelta(Channel.D, amount, OXYGEN_DEBT, minute,
                         "oxygen-delivery deficit below metabolic demand, less first-order repayment",
-                        modulated_by=modulators)
+                        modulated_by=modulators if changed else ())
 
 
 def _check_owned(contributor: Contributor, contribution: Contribution, minute: int) -> None:
     if not isinstance(contribution, Contribution):
         raise ProvenanceError(f"{contributor.source.key} must return a Contribution")
+    if not isinstance(contribution.demand, tuple) or any(not isinstance(item, DemandModifier)
+                                                         for item in contribution.demand):
+        raise ProvenanceError(f"{contributor.source.key}: demand is modified only by a tuple of DemandModifier records")
     for item in (contribution.deltas + contribution.transitions + contribution.settings + contribution.events
                  + contribution.demand):
         if item.source != contributor.source:
@@ -185,8 +191,6 @@ def _check_owned(contributor: Contributor, contribution: Contribution, minute: i
             raise ProvenanceError(f"{contributor.source.key} wrote a change for minute {item.minute} in minute {minute}")
     if contribution.internal is not None and not isinstance(contribution.internal, FrozenRecord):
         raise ProvenanceError("internal state is returned as a FrozenRecord")
-    if any(not isinstance(item, DemandModifier) for item in contribution.demand):
-        raise ProvenanceError("demand is modified only by DemandModifier records")
 
 
 #: Source kinds only the integrator writes. A contributor claiming one is refused.
@@ -358,7 +362,11 @@ def run(anchors: Anchors, contributors: Sequence[Contributor], minutes: int,
     """Integrate ``minutes`` minutes from arrival (or from ``initial``)."""
     if isinstance(minutes, bool) or not isinstance(minutes, int) or minutes < 0:
         raise ValueError("minutes is a non-negative integer")
-    state = arrival_state(anchors, profile) if initial is None else initial
+    arrival = arrival_state(anchors, profile)
+    if initial is not None and initial.minute == 0 and initial != arrival:
+        raise CoreInvariantError("a minute-0 initial state is the case's arrival (derived.arrival_state); this one "
+                                 "is not, so the run would start from a different patient")
+    state = arrival if initial is None else initial
     derive(state, anchors, profile)
     ordered = _ordered(tuple(contributors))
     states, records = [state], []

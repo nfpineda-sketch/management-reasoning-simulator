@@ -15,6 +15,7 @@ The GI-bleed golden is a shadow baseline, not a migration: it runs every case pa
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Mapping
 
@@ -81,9 +82,15 @@ def migration_gate(family: str, anchors: Anchors, family_parameters: Mapping[str
     for name in gate.case_parameters:
         rows[name] = _row(name, case[name]["value"], case[name]["source"], approved)
     for name in gate.family_parameters:
-        value, source = given.get(name, (None, UNMAPPED))
+        entry = given.get(name, (None, UNMAPPED))
+        if not isinstance(entry, tuple) or len(entry) != 2:
+            raise MigrationBlocked(f"{family}: {name} is declared as (value, source), not {entry!r}")
+        value, source = entry
         if source != UNMAPPED and source not in DECLARED_SOURCES:
             raise MigrationBlocked(f"{family}: {name} from unknown source {source!r}")
+        if source != UNMAPPED and (isinstance(value, bool) or not isinstance(value, (int, float))
+                                   or not math.isfinite(value)):
+            raise MigrationBlocked(f"{family}: {name} declared from {source} needs a finite number, not {value!r}")
         rows[name] = _row(name, value, source, approved)
     return rows
 

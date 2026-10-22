@@ -116,6 +116,8 @@ def test_a_contributor_moving_the_rhythm_defers_the_collapse_by_one_minute():
                                      {"collapse_repayment_tau_min": 30.0},
                                      {"collapse_output_threshold": 0.4, "collapse_burden_limit": 5.0,
                                       "collapse_terminal_rhythm": "vf"},
+                                     {"collapse_output_threshold": 1.0, "collapse_burden_limit": 5.0},
+                                     {"collapse_output_threshold": 1.2, "collapse_burden_limit": 5.0},
                                      {"low_output_pressure_knee": 0.0}, {"low_output_pressure_knee": 1.0}])
 def test_an_incomplete_or_impossible_rule_is_refused(changes):
     with pytest.raises(CoreInvariantError):

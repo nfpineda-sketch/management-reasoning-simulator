@@ -122,3 +122,22 @@ def test_p2e1_the_gi_golden_keeps_the_unmapped_decomposition():
     golden = json.loads(GOLDEN.read_text(encoding="utf-8"))
     for entry in golden["scenarios"].values():
         assert entry["case_parameters"]["intrinsic_sinus_rate"]["source"] == "default_unmapped"
+
+
+# After the adversarial review of P2E ------------------------------------------------------------
+
+def test_review_f1_a_case_with_reference_states_cannot_start_from_the_anchored_defaults():
+    """initial_state and a minute-0 initial= would skip the declared intrinsic rate (and P2E-2 references)."""
+    from clinical_core import initial_state
+    from clinical_core.derived import arrival_state
+    from clinical_core.state import CoreState, CoreInvariantError
+    declared = case(intrinsic_sinus_rate=90.0)
+    with pytest.raises(CoreInvariantError, match="arrival_state"):
+        initial_state(declared)
+    arrival = arrival_state(declared)
+    assert run(declared, (), 2, initial=arrival).digest() == run(declared, (), 2).digest()
+    stale = CoreState.from_dict({key: value for key, value in arrival.to_dict().items() if key != "aux"})
+    with pytest.raises(CoreInvariantError, match="minute-0 initial state"):
+        run(declared, (), 2, initial=stale)
+    plain = Anchors(**BASE)
+    assert initial_state(plain) == arrival_state(plain), "without references the two are the same arrival"

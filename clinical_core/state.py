@@ -409,6 +409,9 @@ class AuxiliaryState:
             raise CoreInvariantError("oxygen demand is positive")
         if self.collapse_burden < 0:
             raise CoreInvariantError("the collapse burden is never negative")
+        if self.lactate_excess_mmol_l < 0:
+            # P2E-2: D is never negative, so nothing takes lactate below its clearance baseline.
+            raise CoreInvariantError("the lactate above its clearance baseline is never negative")
 
     def to_dict(self) -> dict:
         return {name: getattr(self, name) for name in AUXILIARY_FIELDS}
@@ -464,6 +467,8 @@ class CoreState:
             raise CoreInvariantError("FiO2 is between 0.21 and 1.0")
         if self.T <= 0 or self.P <= 0:
             raise CoreInvariantError("tone and pump multipliers stay positive")
+        if self.D < 0:
+            raise CoreInvariantError("the oxygen-delivery debt is never negative (P2E-2)")
         if (self.terminal_since is None) != self.R.pulse_present:
             raise CoreInvariantError("terminal_since is set exactly when there is no pulse")
         if self.terminal_since is not None and not 0 <= self.terminal_since <= self.minute:
@@ -518,10 +523,31 @@ def _attribute(channel: Channel) -> str:
     return channel.value
 
 
-def initial_state(anchors: Anchors) -> CoreState:
-    """Arrival: every deviation channel at 0, both multipliers at 1, chemistry as authored."""
+def declares_arrival_references(anchors: Anchors) -> bool:
+    """Whether the case declares a reference state that moves arrival off the anchored defaults (P2E).
+
+    Such an arrival is built only by ``derived.arrival_state``, which needs the profile.
+    """
+    return ((anchors.intrinsic_sinus_rate is not None and anchors.intrinsic_sinus_rate != anchors.hr)
+            or anchors.metabolic_demand_baseline != 1.0 or anchors.arrival_lactate_excess != 0.0)
+
+
+def anchored_state(anchors: Anchors) -> CoreState:
+    """The anchored defaults: every deviation channel at 0, both multipliers at 1, chemistry as authored."""
     return CoreState(minute=0, V=0.0, T=1.0, P=1.0, R=anchors.rhythm, L=0.0, G=0.0, W=0.0, D=0.0,
                      N=0.0, hb=anchors.hb, glucose=anchors.glucose, k=anchors.k, fio2=anchors.fio2)
+
+
+def initial_state(anchors: Anchors) -> CoreState:
+    """Arrival for a case that declares no reference state: the anchored defaults.
+
+    A case that declares an intrinsic sinus rate, a demand baseline or a clearable arrival
+    lactate (P2E) is refused here: its arrival is ``derived.arrival_state(anchors, profile)``.
+    """
+    if declares_arrival_references(anchors):
+        raise CoreInvariantError(f"{anchors.case_id}: the case declares arrival reference states; its arrival is "
+                                 "derived.arrival_state(anchors, profile), not initial_state")
+    return anchored_state(anchors)
 
 
 def canonical_json(data: Any) -> str:

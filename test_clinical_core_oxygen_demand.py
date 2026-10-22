@@ -215,3 +215,49 @@ def test_the_gi_golden_declares_neither_reference():
         for name in ("metabolic_demand_baseline", "arrival_lactate_excess"):
             assert scenario["case_parameters"][name]["source"] == "default_unmapped"
             assert scenario["case_parameters"][name]["calibrated"] is False
+
+
+# After the adversarial review of P2E ------------------------------------------------------------
+
+@dataclass(frozen=True)
+class LooseDemand(Contributor):
+    """Returns something other than a tuple of DemandModifier records as its demand (test only)."""
+
+    kind = SourceKind.DISEASE_MODULE
+    type_name = "test_loose_demand"
+    id: str
+    as_list: bool = False
+
+    def contribute(self, state, minute, signals, anchors, profile):
+        if self.as_list:
+            return Contribution(demand=[DemandModifier(1.2, "disease", self.source, minute, "a list, not a tuple")])
+        return Contribution(demand=(1.3,))
+
+
+@pytest.mark.parametrize("as_list", [False, True])
+def test_review_f6_malformed_demand_fails_as_a_provenance_error(as_list):
+    with pytest.raises(ProvenanceError, match="DemandModifier"):
+        run(NEUTRAL, (LooseDemand("loose", as_list),), 1)
+
+
+def test_review_f7_a_factor_is_named_on_the_debt_only_when_it_changed_the_debt():
+    def modulators(trajectory):
+        return [next(d for d in record.deltas if d.source == OXYGEN_DEBT).modulated_by for record in trajectory.records]
+    calm = Demand("calm", 0, 5, 0.8)
+    assert modulators(run(NEUTRAL, (calm,), 5)) == [()] * 5, "no deficit either way: the factor changed nothing"
+    # With delivery at 0.9 of arrival, baseline demand would leave a deficit; the factor 0.8 removes it.
+    anaemic = (Drift("hb", "hb", 0, 1, -0.1 * NEUTRAL.hb), Demand("calm", 1, 6, 0.8))
+    named = modulators(run(NEUTRAL, anaemic, 6))
+    assert named[0] == () and all(item == (calm.source,) for item in named[2:])
+
+
+def test_review_f5_debt_and_cleared_lactate_are_never_negative_and_time_constants_cover_the_step():
+    from dataclasses import replace as _replace
+    from clinical_core.state import AuxiliaryState
+    with pytest.raises(CoreInvariantError):
+        AuxiliaryState(lactate_excess_mmol_l=-0.1)
+    with pytest.raises(CoreInvariantError):
+        arrival_state(NEUTRAL).evolve(D=-1.0)
+    for name in ("lactate_clearance_tau_min", "debt_clearance_tau_min"):
+        with pytest.raises(CoreInvariantError, match="one minute"):
+            _replace(DEFAULT_PROFILE, **{name: 0.5})
