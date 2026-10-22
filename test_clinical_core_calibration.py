@@ -6,6 +6,7 @@ assert only what the decisions approve -- directionality, monotonicity, memory,
 saturation, no impossible state -- on GI bleeding and on synthetic states of other
 families, so that nothing here is tuned to the GI-bleed golden.
 """
+import math
 from dataclasses import dataclass
 
 import pytest
@@ -17,6 +18,7 @@ from clinical_core.derived import (DEFAULT_PROFILE, PRELOAD_CONGESTION, SYMPATHE
 from clinical_core.logistics import EndoscopicHemostasis
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.provenance import SettingChange
+from clinical_core.state import UnresolvedBoundary
 
 BLEEDING = Anchors(case_id="synthetic_gi", sbp=88.0, dbp=54.0, hr=124.0, spo2=97.0, respiratory_rate=26.0,
                    crt_s=5.0, lactate=4.4, hb=6.7, glucose=118.0, k=4.1, fio2=0.21,
@@ -209,7 +211,8 @@ def test_kd_s2_a_hemostasis_without_resuscitation_leaves_the_rate_up():
 
 
 def test_kd_s2_b_volume_without_hemostasis_lowers_the_rate_for_a_while_then_it_climbs_again():
-    rates = _rates(run(BLEEDING, (BRISK, Restore("bolus", 30)), 120))
+    # 80 minutes: the bleeding goes on, short of emptying the ventricle (P2D-2 stops a run there).
+    rates = _rates(run(BLEEDING, (BRISK, Restore("bolus", 30)), 80))
     rise = rates[29] - BLEEDING.hr
     assert rise > 5
     low = min(rates[30:45])
@@ -259,7 +262,7 @@ def test_kd_s2_other_families_drive_the_same_rate_hypoglycaemia():
 
 
 def test_kd_s2_the_drive_rises_at_once_and_falls_with_its_own_memory():
-    drop, back = Step("drop", "V", 5, -600.0), Step("back", "V", 15, 600.0)
+    drop, back = Step("drop", "V", 5, -400.0), Step("back", "V", 15, 400.0)
     trajectory = run(BLEEDING, (drop, back), 60)
     rates = _rates(trajectory)
     assert rates[5] - rates[4] > 0.9 * (max(rates) - rates[4]), "the rise is immediate"
@@ -316,10 +319,13 @@ VOLUMES = [-500.0 + 250.0 * step for step in range(17)]   # -500 .. +3500 mL-eq
 def test_kd_s4_each_ml_helps_less_than_the_one_before(position, pump, tone):
     """d(output)/dV falls as V rises, on every curve: any arrival position, pump or tone."""
     anchors = _case(preload_fraction=position)
-    outputs = [_at(anchors, V, P=pump, T=tone).output_rel for V in VOLUMES]
-    assert all(0.0 <= item for item in outputs) and max(outputs) < pump / position, "never below 0, below the plateau"
-    # Below the empty point the ventricle gives nothing at all; above it, every step helps less.
-    filling = [item for item in outputs if item > 0]
+    # Below the empty point the ventricle gives nothing, and a pulse without output is refused
+    # (P2D-2); above it, every step helps less.
+    empty = DEFAULT_PROFILE.preload_curve_scale_ml * math.log1p(-position)      # V at the empty point
+    with pytest.raises(UnresolvedBoundary):
+        _at(anchors, empty - 1.0, P=pump, T=tone)
+    filling = [_at(anchors, V, P=pump, T=tone).output_rel for V in VOLUMES if V > empty]
+    assert all(0.0 < item < pump / position for item in filling), "above 0, below the plateau"
     gains = [later - earlier for earlier, later in zip(filling, filling[1:])]
     assert len(filling) >= 14 and all(gain > 0 for gain in gains), "more preload never lowers output"
     assert all(later < earlier for earlier, later in zip(gains, gains[1:])), "the curve is concave"
@@ -388,7 +394,7 @@ def test_kd_s4_no_congestion_below_the_knee_and_none_in_shock():
     limited = _case(pump_reserve=0.0)
     below = run(limited, (Restore("filled", 1, surplus_ml=600.0),), 60).states
     assert preload_position(below[-1], limited, DEFAULT_PROFILE) < knee and below[-1].L == 0
-    assert run(limited, (BRISK,), 60).states[-1].L == 0
+    assert run(limited, (BRISK,), 50).states[-1].L == 0
 
 
 def test_kd_s4_the_curve_keeps_the_family_engine_s_slope_at_the_default_arrival_position():
@@ -411,8 +417,9 @@ def test_level_2_every_band_is_left_to_faculty_and_the_probes_are_deterministic(
 def test_level_2_probes_move_the_way_the_decisions_say():
     from clinical_core import bands
     haemorrhage = bands.probe("haemorrhage")
-    assert haemorrhage[-1]["map"] < haemorrhage[0]["map"] and haemorrhage[-1]["D"] > 0
-    assert haemorrhage[-1]["output_rel"] >= 0.0, "never a negative output"
+    assert haemorrhage[-2]["map"] < haemorrhage[0]["map"] and haemorrhage[-2]["D"] > 0
+    # Before 60 minutes the ventricle empties: the probe stops there (P2D-2) and says so.
+    assert haemorrhage[-1]["minute"] <= 60 and "effective output reached zero" in haemorrhage[-1]["stopped"]
     overload = bands.probe("overload")
     assert overload[-1]["L"] > 0 and overload[-1]["output_rel"] - overload[1]["output_rel"] < 0.2
     assert bands.probe("opioid")[-1]["respiratory_rate"] < 10 < bands.probe("bronchospasm")[-1]["respiratory_rate"]

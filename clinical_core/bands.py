@@ -22,9 +22,9 @@ import argparse
 from dataclasses import dataclass
 
 from .derived import derive
-from .integration import Contribution, Contributor, run
+from .integration import Contribution, Contributor, step
 from .provenance import ChannelDelta, SourceKind
-from .state import Anchors, Channel, RhythmState
+from .state import Anchors, Channel, RhythmState, UnresolvedBoundary, initial_state
 
 #: A neutral synthetic arrival shared by every probe, so that each probe's effect stands alone.
 ARRIVAL = dict(case_id="band_probe", sbp=120.0, dbp=75.0, hr=80.0, spo2=97.0, respiratory_rate=16.0, crt_s=2.0,
@@ -81,16 +81,25 @@ COLUMNS = ("map", "pulse_rate_bpm", "respiratory_rate", "lactate", "crt_s", "out
 
 
 def probe(name: str) -> list[dict]:
+    """The readings at the probe's minutes. A probe that reaches an unresolved boundary (P2D-2)
+    stops there, and its last row says so instead of carrying an impossible state forward."""
     family, drives, declared, contributors, minutes = PROBES[name]
     anchors = Anchors(**{**ARRIVAL, **declared})
-    trajectory = run(anchors, contributors, max(minutes))
+    states, stopped = [initial_state(anchors)], None
+    for _ in range(max(minutes)):
+        try:
+            states.append(step(states[-1], contributors, anchors)[0])
+        except UnresolvedBoundary as boundary:
+            stopped = {"minute": states[-1].minute + 1, "stopped": str(boundary)}
+            break
     rows = []
     for minute in minutes:
-        state = trajectory.states[minute]
-        derived = derive(state, anchors, trajectory.profile)
-        rows.append({"minute": minute, **{column: getattr(derived, column) for column in COLUMNS},
-                     "D": state.D, "L": state.L, "V": state.V})
-    return rows
+        if minute < len(states):
+            state = states[minute]
+            derived = derive(state, anchors)
+            rows.append({"minute": minute, **{column: getattr(derived, column) for column in COLUMNS},
+                         "D": state.D, "L": state.L, "V": state.V})
+    return rows + ([stopped] if stopped else [])
 
 
 def report() -> str:
@@ -99,6 +108,10 @@ def report() -> str:
     for name, (family, drives, _, _, _) in PROBES.items():
         for index, row in enumerate(probe(name)):
             head = (name, family, drives) if index == 0 else ("", "", "")
+            if "stopped" in row:
+                lines.append("| " + " | ".join(head + (str(row["minute"]),) + ("",) * 8
+                                               + ("stopped: unresolved boundary (P2D-2)",)) + " |")
+                continue
             values = [f"{row['minute']}", f"{row['map']:.0f}", f"{row['pulse_rate_bpm']:.0f}",
                       f"{row['respiratory_rate']:.0f}", f"{row['lactate']:.1f}", f"{row['crt_s']:.1f}",
                       f"{row['output_rel']:.2f}", f"{row['D']:.2f}", f"{row['L']:.2f}",

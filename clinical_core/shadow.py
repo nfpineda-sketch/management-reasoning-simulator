@@ -69,7 +69,7 @@ DIFFERENCES = {
               "through recovered pressure and repaid debt; the family engine sets HR instantly from circulation and "
               "subtracts 20 bpm x hemostasis_relief from the displayed HR (a module writing an observable, which "
               "§8.1 rules out)", "TBD: pressure/output deficit and D gains, hypoxaemia and hypoglycaemia gains and "
-              "thresholds, sympathetic decay time, withdrawal limit"),
+              "thresholds, sympathetic decay time"),
     "KD-S3": ("consciousness at the 80 mmHg threshold: the family engine compares the rounded SBP (80), the core the "
               "raw value (79.9)", "Observation v2 (Phase 1): thresholds on raw state or on the displayed value"),
     "KD-S4": ("volume, pressure and refill (approved revision, P2C-3): the core reads output from one smooth, "

@@ -24,6 +24,13 @@ class CoreInvariantError(ValueError):
     """A state that cannot exist. The core fails closed instead of carrying it forward."""
 
 
+class UnresolvedBoundary(CoreInvariantError):
+    """The model reached a boundary whose rule is not yet decided (e.g. the arrest threshold).
+
+    No rule is invented: the run stops here, and the message names the boundary (P2D-2).
+    """
+
+
 class Channel(str, Enum):
     """The nine physiological channels and the three chemistry values (proposal §7.2)."""
 
@@ -330,6 +337,9 @@ class AuxiliaryState:
     def __post_init__(self):
         for name in AUXILIARY_FIELDS:
             _finite(getattr(self, name), name)
+        if self.sympathetic_drive < 0:
+            # P2D-3: withdrawal of drive lets the rate fall back to the intrinsic rate, never below.
+            raise CoreInvariantError("the sympathetic drive is never negative")
 
     def to_dict(self) -> dict:
         return {name: getattr(self, name) for name in AUXILIARY_FIELDS}

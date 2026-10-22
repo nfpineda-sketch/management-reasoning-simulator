@@ -16,10 +16,14 @@ from dataclasses import dataclass, fields
 from typing import Mapping
 
 from .provenance import Source, SourceKind
-from .state import Anchors, CoreInvariantError, CoreState, RhythmCode
+from .state import Anchors, CoreInvariantError, CoreState, RhythmCode, UnresolvedBoundary
 
 ADOPTED = "adopted"
 PROVISIONAL = "provisional"
+
+#: Numerical zero for effective output (P2D-2). Not a clinical arrest threshold: that threshold,
+#: and how long output must stay low before arrest, are TBD.
+OUTPUT_EPSILON = 1e-9
 
 #: One unit of packed red cells is about 300 mL (family_engine TRANSFUSION note) and moves
 #: the family engine's circulation variable by 0.36 (family_engine._minute): one unit of
@@ -55,7 +59,6 @@ class CoreProfile:
     sympathetic_per_hypoglycaemia_mg_dl: float = 0.01
     hypoglycaemia_threshold_mg_dl: float = 70.0
     sympathetic_decay_tau_min: float = 5.0
-    sympathetic_withdrawal_limit: float = 1.0
     crt_per_output_deficit_s: float = 4.0
     spo2_per_fio2: float = 30.0
     room_air_fio2: float = 0.21
@@ -117,7 +120,6 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "sympathetic_per_hypoglycaemia_mg_dl": (PROVISIONAL, "drive per mg/dL below the threshold: TBD (KD-S2)"),
     "hypoglycaemia_threshold_mg_dl": (PROVISIONAL, "glucose below which it drives the rate: TBD (KD-S2)"),
     "sympathetic_decay_tau_min": (PROVISIONAL, "sympathetic decay time: TBD (KD-S2); the drive rises at once"),
-    "sympathetic_withdrawal_limit": (PROVISIONAL, "largest withdrawal of drive below arrival: TBD (KD-S2)"),
     "crt_per_output_deficit_s": (ADOPTED, "family_engine._surface: crt + (circulation - 1) * 4"),
     "spo2_per_fio2": (ADOPTED, "family_engine._surface: oxygen_gain = (FiO2 - 0.21) * 30"),
     "room_air_fio2": (ADOPTED, "family_engine._initialize: oxygen_fio2 = .21"),
@@ -304,7 +306,10 @@ def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile)
               + profile.sympathetic_per_debt * state.D / profile.debt_clearance_tau_min
               + profile.sympathetic_per_hypoxaemia_point * hypoxaemia
               + profile.sympathetic_per_hypoglycaemia_mg_dl * hypoglycaemia)
-    return max(-profile.sympathetic_withdrawal_limit, target)
+    # P2D-3: the drive is never negative. As its stimuli resolve, the rate falls back to the
+    # intrinsic rate of R and no further; a lower rate needs an explicit chronotropic source
+    # that changes R.
+    return max(0.0, target)
 
 
 def sympathetic_drive(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
@@ -340,6 +345,13 @@ def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PR
         check(derived)
         return derived
     output_rel, pressure_rel, spo2, delivery_rel = _perfusion(state, anchors, profile)
+    if output_rel <= OUTPUT_EPSILON:
+        # P2D-2: a pulse and a measurable pressure without output cannot exist. No approved rule
+        # moves the rhythm to arrest here (threshold and dwell are TBD), so the run stops.
+        raise UnresolvedBoundary(
+            f"minute {state.minute}: effective output reached zero while a pulse is present; no approved "
+            "terminal transition applies (arrest threshold and dwell TBD), so the run stops instead of showing "
+            "a pulse and a blood pressure without output")
     deficit = 1.0 - pressure_rel
     sbp = max(0.0, anchors.sbp - profile.sbp_per_pressure_deficit * deficit)
     dbp = max(0.0, anchors.dbp - profile.dbp_per_pressure_deficit * deficit)
@@ -374,12 +386,17 @@ def check(derived: Derived) -> None:
         if derived.respiratory_rate != 0.0 or derived.output_rel != 0.0:
             raise CoreInvariantError("without a pulse there is no output and no breathing")
     else:
+        if derived.output_rel <= OUTPUT_EPSILON:
+            raise CoreInvariantError("a pulse requires effective output above zero")
         if any(value is None or not math.isfinite(value) for value in measured):
             raise CoreInvariantError("with a pulse, every vital sign has a finite value")
         if derived.pulse_rate_bpm <= 0:
             raise CoreInvariantError("a perfusing rhythm has a positive rate")
         if derived.sbp < derived.dbp:
             raise CoreInvariantError(f"systolic {derived.sbp:.1f} below diastolic {derived.dbp:.1f}")
+    if derived.output_rel <= OUTPUT_EPSILON and any(value is not None for value in (derived.sbp, derived.dbp,
+                                                                                     derived.map)):
+        raise CoreInvariantError("a blood pressure is not measurable without output")
     if derived.monitor_rate_bpm == 0 and derived.rhythm is not RhythmCode.ASYSTOLE:
         raise CoreInvariantError("a monitor rate of 0 is asystole")
     if derived.rhythm is RhythmCode.ASYSTOLE and derived.monitor_rate_bpm != 0:

@@ -93,7 +93,7 @@
   ],
   "KD-S2": [
    "heart rate (adopted direction, P2C-2): the core reads sinus rate as the intrinsic rate plus the chronotropic response to one common sympathetic drive, blunted by beta-blockade; the drive answers to the pressure deficit, the oxygen-delivery debt D, hypoxaemia and hypoglycaemia, rises at once and decays with its own memory, and no disease module writes it, so hemostasis lowers the rate only through recovered pressure and repaid debt; the family engine sets HR instantly from circulation and subtracts 20 bpm x hemostasis_relief from the displayed HR (a module writing an observable, which \u00a78.1 rules out)",
-   "TBD: pressure/output deficit and D gains, hypoxaemia and hypoglycaemia gains and thresholds, sympathetic decay time, withdrawal limit"
+   "TBD: pressure/output deficit and D gains, hypoxaemia and hypoglycaemia gains and thresholds, sympathetic decay time"
   ],
   "KD-S3": [
    "consciousness at the 80 mmHg threshold: the family engine compares the rounded SBP (80), the core the raw value (79.9)",
@@ -250,10 +250,6 @@
   "sympathetic_per_pressure_deficit": [
    "provisional",
    "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2)"
-  ],
-  "sympathetic_withdrawal_limit": [
-   "provisional",
-   "largest withdrawal of drive below arrival: TBD (KD-S2)"
   ]
  },
  "scenarios": {
@@ -1006,8 +1002,8 @@
      "compared": 91,
      "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 9.0,
-     "mismatched": 87,
+     "max_abs_diff": 19.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -1020,39 +1016,39 @@
       ],
       "10": [
        116,
-       120
+       124
       ],
       "15": [
        113,
-       117
+       124
       ],
       "20": [
        109,
-       114
+       124
       ],
       "30": [
        105,
-       110
+       124
       ],
       "45": [
        105,
-       105
+       124
       ],
       "5": [
        120,
-       122
+       124
       ],
       "60": [
        105,
-       101
+       124
       ],
       "75": [
        107,
-       99
+       124
       ],
       "90": [
        108,
-       99
+       124
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -2404,8 +2400,8 @@
      "compared": 121,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 12.0,
-     "mismatched": 116,
+     "max_abs_diff": 29.0,
+     "mismatched": 118,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -2418,47 +2414,47 @@
       ],
       "10": [
        122,
-       123
+       124
       ],
       "105": [
        97,
-       107
+       124
       ],
       "120": [
        95,
-       107
+       124
       ],
       "15": [
        120,
-       121
+       124
       ],
       "20": [
        119,
-       120
+       124
       ],
       "30": [
        117,
-       118
+       124
       ],
       "45": [
        113,
-       114
+       124
       ],
       "5": [
        123,
-       123
+       124
       ],
       "60": [
        109,
-       111
+       124
       ],
       "75": [
        104,
-       109
+       124
       ],
       "90": [
        100,
-       108
+       124
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -4620,8 +4616,8 @@
      "compared": 91,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 3.0,
-     "mismatched": 75,
+     "max_abs_diff": 14.0,
+     "mismatched": 88,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -4634,23 +4630,23 @@
       ],
       "10": [
        122,
-       123
+       124
       ],
       "15": [
        121,
-       122
+       124
       ],
       "20": [
        120,
-       120
+       124
       ],
       "30": [
        117,
-       118
+       124
       ],
       "45": [
        114,
-       115
+       124
       ],
       "5": [
        123,
@@ -4658,15 +4654,15 @@
       ],
       "60": [
        110,
-       111
+       124
       ],
       "75": [
        112,
-       110
+       124
       ],
       "90": [
        113,
-       110
+       124
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -5785,8 +5781,8 @@
      "compared": 46,
      "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 24,
+     "max_abs_diff": 4.0,
+     "mismatched": 42,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -5799,23 +5795,23 @@
       ],
       "10": [
        122,
-       123
+       124
       ],
       "15": [
        122,
-       123
+       124
       ],
       "20": [
        121,
-       122
+       124
       ],
       "30": [
        120,
-       121
+       124
       ],
       "45": [
        123,
-       123
+       124
       ],
       "5": [
        123,
@@ -6863,8 +6859,8 @@
      "compared": 61,
      "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 2.0,
-     "mismatched": 45,
+     "max_abs_diff": 5.0,
+     "mismatched": 58,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -6877,19 +6873,19 @@
       ],
       "10": [
        121,
-       122
+       124
       ],
       "15": [
        120,
-       121
+       124
       ],
       "20": [
        119,
-       121
+       124
       ],
       "30": [
        121,
-       121
+       124
       ],
       "45": [
        123,
@@ -6897,7 +6893,7 @@
       ],
       "5": [
        123,
-       123
+       124
       ],
       "60": [
        125,
@@ -8192,8 +8188,8 @@
      "compared": 121,
      "first_mismatch_minute": 5,
      "kind": "display",
-     "max_abs_diff": 3.0,
-     "mismatched": 86,
+     "max_abs_diff": 14.0,
+     "mismatched": 115,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -8206,23 +8202,23 @@
       ],
       "10": [
        123,
-       123
+       124
       ],
       "105": [
        111,
-       111
+       124
       ],
       "120": [
        112,
-       111
+       124
       ],
       "15": [
        123,
-       123
+       124
       ],
       "20": [
        122,
-       123
+       124
       ],
       "30": [
        124,
@@ -8230,7 +8226,7 @@
       ],
       "45": [
        120,
-       122
+       124
       ],
       "5": [
        123,
@@ -8238,15 +8234,15 @@
       ],
       "60": [
        117,
-       119
+       124
       ],
       "75": [
        114,
-       116
+       124
       ],
       "90": [
        110,
-       113
+       124
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -9486,8 +9482,8 @@
      "compared": 61,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 39,
+     "max_abs_diff": 4.0,
+     "mismatched": 54,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -9500,19 +9496,19 @@
       ],
       "10": [
        122,
-       123
+       124
       ],
       "15": [
        121,
-       122
+       124
       ],
       "20": [
        120,
-       121
+       124
       ],
       "30": [
        122,
-       122
+       124
       ],
       "45": [
        124,
@@ -10742,8 +10738,8 @@
      "compared": 91,
      "first_mismatch_minute": 5,
      "kind": "display",
-     "max_abs_diff": 3.0,
-     "mismatched": 83,
+     "max_abs_diff": 17.0,
+     "mismatched": 86,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -10756,23 +10752,23 @@
       ],
       "10": [
        123,
-       123
+       124
       ],
       "15": [
        121,
-       122
+       124
       ],
       "20": [
        119,
-       121
+       124
       ],
       "30": [
        116,
-       118
+       124
       ],
       "45": [
        112,
-       114
+       124
       ],
       "5": [
        123,
@@ -10780,15 +10776,15 @@
       ],
       "60": [
        109,
-       112
+       124
       ],
       "75": [
        108,
-       110
+       124
       ],
       "90": [
        109,
-       110
+       124
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -13151,8 +13147,8 @@
      "compared": 91,
      "first_mismatch_minute": 1,
      "kind": "display",
-     "max_abs_diff": 9.0,
-     "mismatched": 87,
+     "max_abs_diff": 19.0,
+     "mismatched": 90,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -13165,39 +13161,39 @@
       ],
       "10": [
        104,
-       108
+       112
       ],
       "15": [
        101,
-       105
+       112
       ],
       "20": [
        97,
-       102
+       112
       ],
       "30": [
        93,
-       98
+       112
       ],
       "45": [
        93,
-       93
+       112
       ],
       "5": [
        108,
-       110
+       112
       ],
       "60": [
        93,
-       89
+       112
       ],
       "75": [
        95,
-       87
+       112
       ],
       "90": [
        96,
-       87
+       112
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -14549,8 +14545,8 @@
      "compared": 121,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 12.0,
-     "mismatched": 116,
+     "max_abs_diff": 29.0,
+     "mismatched": 118,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -14563,47 +14559,47 @@
       ],
       "10": [
        110,
-       111
+       112
       ],
       "105": [
        85,
-       95
+       112
       ],
       "120": [
        83,
-       95
+       112
       ],
       "15": [
        108,
-       109
+       112
       ],
       "20": [
        107,
-       108
+       112
       ],
       "30": [
        105,
-       106
+       112
       ],
       "45": [
        101,
-       102
+       112
       ],
       "5": [
        111,
-       111
+       112
       ],
       "60": [
        97,
-       99
+       112
       ],
       "75": [
        92,
-       97
+       112
       ],
       "90": [
        88,
-       96
+       112
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -16764,8 +16760,8 @@
      "compared": 91,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 3.0,
-     "mismatched": 76,
+     "max_abs_diff": 14.0,
+     "mismatched": 88,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -16778,23 +16774,23 @@
       ],
       "10": [
        110,
-       111
+       112
       ],
       "15": [
        109,
-       110
+       112
       ],
       "20": [
        108,
-       108
+       112
       ],
       "30": [
        105,
-       106
+       112
       ],
       "45": [
        102,
-       103
+       112
       ],
       "5": [
        111,
@@ -16802,15 +16798,15 @@
       ],
       "60": [
        98,
-       99
+       112
       ],
       "75": [
        100,
-       98
+       112
       ],
       "90": [
        101,
-       98
+       112
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -17929,8 +17925,8 @@
      "compared": 46,
      "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 1.0,
-     "mismatched": 25,
+     "max_abs_diff": 4.0,
+     "mismatched": 42,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -17943,23 +17939,23 @@
       ],
       "10": [
        110,
-       111
+       112
       ],
       "15": [
        110,
-       111
+       112
       ],
       "20": [
        109,
-       110
+       112
       ],
       "30": [
        108,
-       109
+       112
       ],
       "45": [
        111,
-       111
+       112
       ],
       "5": [
        111,
@@ -19007,8 +19003,8 @@
      "compared": 61,
      "first_mismatch_minute": 2,
      "kind": "display",
-     "max_abs_diff": 2.0,
-     "mismatched": 46,
+     "max_abs_diff": 5.0,
+     "mismatched": 58,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -19021,19 +19017,19 @@
       ],
       "10": [
        109,
-       110
+       112
       ],
       "15": [
        108,
-       109
+       112
       ],
       "20": [
        107,
-       109
+       112
       ],
       "30": [
        109,
-       109
+       112
       ],
       "45": [
        111,
@@ -19041,7 +19037,7 @@
       ],
       "5": [
        111,
-       111
+       112
       ],
       "60": [
        113,
@@ -20336,8 +20332,8 @@
      "compared": 121,
      "first_mismatch_minute": 5,
      "kind": "display",
-     "max_abs_diff": 3.0,
-     "mismatched": 86,
+     "max_abs_diff": 14.0,
+     "mismatched": 115,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -20350,23 +20346,23 @@
       ],
       "10": [
        111,
-       111
+       112
       ],
       "105": [
        99,
-       99
+       112
       ],
       "120": [
        100,
-       99
+       112
       ],
       "15": [
        111,
-       111
+       112
       ],
       "20": [
        110,
-       111
+       112
       ],
       "30": [
        112,
@@ -20374,7 +20370,7 @@
       ],
       "45": [
        108,
-       110
+       112
       ],
       "5": [
        111,
@@ -20382,15 +20378,15 @@
       ],
       "60": [
        105,
-       107
+       112
       ],
       "75": [
        102,
-       104
+       112
       ],
       "90": [
        98,
-       101
+       112
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -21630,8 +21626,8 @@
      "compared": 61,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 2.0,
-     "mismatched": 42,
+     "max_abs_diff": 4.0,
+     "mismatched": 56,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -21644,19 +21640,19 @@
       ],
       "10": [
        110,
-       111
+       112
       ],
       "15": [
        109,
-       110
+       112
       ],
       "20": [
        108,
-       109
+       112
       ],
       "30": [
        110,
-       110
+       112
       ],
       "45": [
        112,
@@ -22886,8 +22882,8 @@
      "compared": 91,
      "first_mismatch_minute": 5,
      "kind": "display",
-     "max_abs_diff": 4.0,
-     "mismatched": 83,
+     "max_abs_diff": 17.0,
+     "mismatched": 86,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -22900,23 +22896,23 @@
       ],
       "10": [
        111,
-       111
+       112
       ],
       "15": [
        109,
-       110
+       112
       ],
       "20": [
        107,
-       109
+       112
       ],
       "30": [
        104,
-       106
+       112
       ],
       "45": [
        100,
-       102
+       112
       ],
       "5": [
        111,
@@ -22924,15 +22920,15 @@
       ],
       "60": [
        97,
-       100
+       112
       ],
       "75": [
        96,
-       98
+       112
       ],
       "90": [
        97,
-       98
+       112
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
