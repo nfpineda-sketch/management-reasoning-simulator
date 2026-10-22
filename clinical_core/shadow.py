@@ -21,6 +21,7 @@ from .derived import PARAMETERS, _level, case_parameter_provenance
 from .integration import CHANNEL_BOUNDS, Trajectory, run
 from .legacy_adapter import (FAMILY_CASE_PARAMETER_RULES, LEGACY_LITERALS, LegacyRun, anchors_from_legacy,
                              contributors_from_legacy, run_legacy)
+from .migration import gate_summary
 from .state import digest
 
 GOLDEN = Path(__file__).with_name("golden") / "gi_bleed_shadow.json"
@@ -297,6 +298,8 @@ def golden_report(results=None) -> dict:
                                                               acting_mechanisms(result.core)),
                                    "case_parameters": case_parameter_provenance(result.core.anchors,
                                                                                 result.core.profile),
+                                   # P2E-6: a shadow baseline, not a migration; the gate says why.
+                                   "migration_gate": gate_summary("gi_bleed", result.core.anchors),
                                    "variables": result.summary}
                       for result in results},
     }

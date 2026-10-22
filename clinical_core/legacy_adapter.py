@@ -32,11 +32,13 @@ from .state import Anchors, RhythmCode, RhythmState
 #: The family engine's mental-status ladder (family_engine._LEVEL_OF).
 LEVEL_OF = {"Alert": 0, "Drowsy": 1, "Obtunded": 2, "Unresponsive": 3}
 SUPPORTED_FAMILIES = frozenset({"gi_bleed"})
-#: How each family's case parameters (beta_blockade, preload_fraction, pump_reserve) are set
-#: (P2D-8). A family with no rule here cannot be migrated: it first needs an explicit case
-#: mapping or an approved family default rule. Nothing is inferred from the case text.
+#: How each family's case parameters (``state.CASE_PARAMETERS``) are set for the shadow comparison
+#: (P2D-8). A family with no rule here is not compared. Nothing is inferred from the case text.
+#: A shadow comparison is not a migration: migrating a family needs every required parameter
+#: declared, which ``migration.check_migration_gate`` enforces (P2E-6).
 FAMILY_CASE_PARAMETER_RULES = {
-    "gi_bleed": "neutral defaults, as in P2C: not mapped from the bank cases and not calibrated",
+    "gi_bleed": "neutral defaults, as in P2C: not mapped from the bank cases and not calibrated; a shadow baseline, "
+                "which the migration gate (P2E-6) blocks",
 }
 #: Parsed action types that carry no physiology in the core: they are recorded, not dropped.
 NOT_PHYSIOLOGICAL = frozenset({"reassessment", "consult", "diagnostic"})

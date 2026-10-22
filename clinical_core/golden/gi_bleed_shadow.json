@@ -1,6 +1,6 @@
 {
  "case_parameter_rules": {
-  "gi_bleed": "neutral defaults, as in P2C: not mapped from the bank cases and not calibrated"
+  "gi_bleed": "neutral defaults, as in P2C: not mapped from the bank cases and not calibrated; a shadow baseline, which the migration gate (P2E-6) blocks"
  },
  "channel_bounds": {
   "D": [
@@ -467,6 +467,21 @@
      "volume_ml": 2000.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 90,
    "mismatching": {
     "V_ml_eq": [
@@ -1907,6 +1922,21 @@
      "type": "endoscopic_hemostasis"
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 120,
    "mismatching": {
     "crt_s": [
@@ -3502,6 +3532,21 @@
      "type": "oxygen"
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 20,
    "mismatching": {
     "dbp": [
@@ -4485,6 +4530,21 @@
      "volume_ml_per_unit": 300.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 90,
    "mismatching": {
     "crt_s": [
@@ -5924,6 +5984,21 @@
      "volume_ml": 1000.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 45,
    "mismatching": {
     "crt_s": [
@@ -7086,6 +7161,21 @@
      "volume_ml": 2000.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 60,
    "mismatching": {
     "crt_s": [
@@ -8357,6 +8447,21 @@
      "type": "proton_pump_inhibitor"
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 120,
    "mismatching": {
     "crt_s": [
@@ -9978,6 +10083,21 @@
      "volume_ml": 1000.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 60,
    "mismatching": {
     "crt_s": [
@@ -11271,6 +11391,21 @@
      "volume_ml_per_unit": 300.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 90,
    "mismatching": {
     "crt_s": [
@@ -12770,6 +12905,21 @@
      "volume_loss_ml_per_min": 2.5
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 60,
    "mismatching": {
     "consciousness_level": [
@@ -14036,6 +14186,21 @@
      "volume_ml": 2000.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 90,
    "mismatching": {
     "V_ml_eq": [
@@ -15476,6 +15641,21 @@
      "type": "endoscopic_hemostasis"
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 120,
    "mismatching": {
     "crt_s": [
@@ -17069,6 +17249,21 @@
      "type": "oxygen"
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 20,
    "mismatching": {
     "dbp": [
@@ -18049,6 +18244,21 @@
      "volume_ml_per_unit": 300.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 90,
    "mismatching": {
     "crt_s": [
@@ -19488,6 +19698,21 @@
      "volume_ml": 1000.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 45,
    "mismatching": {
     "crt_s": [
@@ -20650,6 +20875,21 @@
      "volume_ml": 2000.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 60,
    "mismatching": {
     "crt_s": [
@@ -21921,6 +22161,21 @@
      "type": "proton_pump_inhibitor"
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 120,
    "mismatching": {
     "crt_s": [
@@ -23537,6 +23792,21 @@
      "volume_ml": 1000.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 60,
    "mismatching": {
     "crt_s": [
@@ -24827,6 +25097,21 @@
      "volume_ml_per_unit": 300.0
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 90,
    "mismatching": {
     "crt_s": [
@@ -26239,6 +26524,21 @@
      "volume_loss_ml_per_min": 2.5
     }
    ],
+   "migration_gate": {
+    "blocked": [
+     "arrival_lactate_excess",
+     "beta_blockade",
+     "fraction_after_hemostasis",
+     "fraction_with_ppi",
+     "hb_loss_g_dl_per_min",
+     "intrinsic_sinus_rate",
+     "metabolic_demand_baseline",
+     "preload_fraction",
+     "pump_reserve",
+     "volume_loss_ml_per_min"
+    ],
+    "migratable": false
+   },
    "minutes": 60,
    "mismatching": {
     "crt_s": [

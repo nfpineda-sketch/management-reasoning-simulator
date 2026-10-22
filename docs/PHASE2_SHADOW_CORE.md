@@ -896,3 +896,246 @@ Las correcciones no cambian el golden. El golden por Contracts v2 sigue IDÉNTIC
 ### 10.13 Gancho en tiempo de ejecución
 
 No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`: `test_shadow_core_isolation.py` lo comprueba.
+
+## 11. P2E · Estados de referencia, demanda de oxígeno y colapso terminal (2026-10-22)
+
+- Base: `7daf894` (P2D aceptado y cerrado).
+- Commits:
+
+  | Commit | Contenido |
+  |---|---|
+  | `1dad6df` | P2E-1 |
+  | `2e71cc2` | P2E-2 |
+  | `c91feb9` | P2E-3/4/5 |
+  | commit de esta sección | P2E-6/7 y documentación |
+
+- Sigue todo en sombra y fuera de línea, sin gancho en tiempo de ejecución ni cambio visible para el residente.
+- P2E es estructural. No fija ningún número de Nivel 2, no migra ninguna familia real y no ajusta nada para acercarse
+  al motor heredado. Todo valor de las pruebas es una sonda sintética.
+
+### 11.1 La FC de llegada no es la FC intrínseca (P2E-1)
+
+- **Regla.** FC sinusal observada = frecuencia intrínseca de R + 25 × (1 − betabloqueo) × S, con S ≥ 0.
+- **Declaración.**
+  - El caso puede declarar `intrinsic_sinus_rate`.
+  - `arrival_state` pone esa frecuencia en R y el impulso de llegada S0 = (FC − intrínseca) / (25 (1 − β)) en
+    `aux.sympathetic_drive`, de modo que la FC derivada en la llegada es la del caso.
+  - `heart_rate_decomposition` muestra por separado las dos partes y la fuente.
+- **Objetivo del impulso.** Pasa a ser absoluto: S0 más las desviaciones de los estímulos desde la llegada, con piso
+  en 0.
+- **Comportamiento:**
+  - la FC puede bajar de la llegada a medida que se resuelven los estímulos, pero no de la intrínseca;
+  - sólo una fuente cronotrópica negativa explícita que cambie R la baja más;
+  - el betabloqueo atenúa la ganancia, no la frecuencia intrínseca.
+- **Validación.** Se rechazan:
+  - una intrínseca sin llegada sinusal a la FC observada;
+  - una intrínseca mayor que la FC observada;
+  - una parte simpática con betabloqueo completo.
+- **Fuentes.** `explicit_case`, `approved_family_default` (nueva), `default_unmapped` (antes `default`) y
+  `synthetic_probe`.
+- **Ejemplo sintético.** FC 124 con intrínseca 90: parte simpática 34 lpm, S0 = 1,36. Sin declarar, la intrínseca
+  es 124 y S0 = 0.
+- **El GI no infiere ninguna intrínseca.** Queda `default_unmapped` y sus cifras no cambian.
+
+### 11.2 Demanda metabólica de oxígeno (P2E-2)
+
+- **Estructura:**
+  - entrega = f(gasto, Hb, SaO2), relativa a la de llegada;
+  - demanda = basal del caso × factores declarados para el minuto;
+  - déficit = max(0, demanda − entrega);
+  - dD = déficit − D / τ_D.
+- **Sin canal nuevo.** No hay C13. La demanda es entrada auxiliar tipada:
+  - `aux.oxygen_demand`, con su fuente `core_coupling:oxygen_demand`;
+  - cada factor es un `DemandModifier` (factor > 0, tipo `disease` o `transient`, fuente, minuto, descripción),
+    registrado en el `MinuteRecord`;
+  - el delta de D nombra en `modulated_by` las fuentes que lo modificaron;
+  - un contribuyente sólo declara factores a su nombre y para su minuto.
+- **Sin crédito.** La entrega por encima de la demanda no repaga más de lo acumulado. D nunca baja de 0: la cota
+  inferior de D es 0 y queda registrada si actúa.
+- **Referencias de llegada nuevas, declarables y neutras por defecto:**
+  - `metabolic_demand_baseline` (1): por encima de 1, el paciente llega ya en déficit y D crece desde la llegada;
+  - `arrival_lactate_excess` (0): la parte del lactato de llegada que puede aclararse. Sin declarar, el lactato no
+    baja de la llegada.
+- **No se migró la sepsis.** Los multiplicadores de sepsis, fiebre y convulsión siguen TBD. La sonda nueva usa un
+  factor sintético de 1,3.
+
+Respuesta de D a las sondas (llegada neutra sintética; τ_D provisional = 60 min):
+
+| Sonda | D a 30 min | D a 60 min |
+|---|---|---|
+| Demanda × 0,8 o × 1,0, misma entrega | 0 | 0 |
+| Demanda × 1,2, misma entrega | 4,75 | 7,62 |
+| Demanda × 1,5, misma entrega | 11,88 | 19,06 |
+| Demanda × 1,3; Hb +0 / +1 / +2 g/dL (entrega 1,00 / 1,08 / 1,15) | — | 11,43 / 8,53 / 5,63 |
+| Demanda × 1,3 durante 30 min y luego basal | 7,13 | 4,31 (2,60 a 90 min) |
+
+- `vasodilation_with_demand` (sepsis sintética): el gasto sube a 1,14 y aun así D llega a 7,61 a los 60 min; quitado
+  el factor, D baja a 2,77 a los 120 min.
+- `vasodilation` sola: D queda en 0, ya no por debajo de la llegada (§10.7).
+
+### 11.3 Carga de colapso y transición terminal (P2E-3)
+
+- **Estado.** `aux.collapse_burden` (≥ 0), con fuente `core_coupling:collapse`.
+- **Acumulación.** Cada minuto se suma la fracción en que el gasto cae bajo el umbral declarado: 0 en el umbral, 1
+  sin gasto. Más profundo o más largo acumula más.
+- **Recuperación.** Con el gasto de nuevo en el umbral o por encima, la carga se mantiene, o se repaga en primer
+  orden si se declara un τ.
+- **Transición.** Cuando la carga alcanza el límite declarado, el núcleo mueve R a AESP o asistolia con una
+  `RhythmTransition` y un evento `terminal_collapse` (crítico; prevenibilidad «not assessed»).
+  - La AESP conserva el ritmo organizado: el monitor sigue contando la frecuencia que tenía, sin pulso.
+  - Si un contribuyente mueve el ritmo en ese mismo minuto, la transición espera un minuto y parte del ritmo nuevo.
+- **Apagada por defecto.** Umbral y límite valen `None` en el perfil. Sólo las pruebas usan valores sintéticos.
+  - Si el gasto llega a cero antes de cumplir el criterio, la corrida sigue deteniéndose en el límite de P2D-2.
+  - No se agregó ningún evento terminal al GI.
+
+Sondas con umbral sintético 0,4 y límite 10:
+
+| Sonda | Carga máxima | Resultado |
+|---|---|---|
+| P a 0,35 durante 5 min | 0,63 | sin paro; la carga se mantiene |
+| P a 0,3 / 0,2 durante 5 min | 1,25 / 2,50 | sin paro (más profundo, más carga) |
+| P a 0,3 durante 4 / 8 min | 1,00 / 2,00 | sin paro (más largo, más carga) |
+| P a 0,1 durante 8 min y recuperación | 6,0 | sin paro; con τ 30 min la carga baja a 1,1 a los 60 min |
+| P a 0,1 sostenido | 10,5 | AESP en el minuto 15, a 104,7 lpm; nada medible después |
+
+### 11.4 Presión con gasto bajo (P2E-4)
+
+- **Por encima de la rodilla** (`low_output_pressure_knee`, provisional 0,5 de `pressure_rel`): la relación lineal
+  adoptada, sin cambios.
+- **Por debajo:** PAS y PAD son los valores de la rodilla × `pressure_rel` / rodilla. Es decir, presión proporcional
+  a flujo × resistencia.
+- **Qué garantiza:**
+  - continuidad;
+  - monotonía con el gasto;
+  - cero sin gasto, sin piso heredado;
+  - PAS ≥ PAD.
+- **Presión no es perfusión.** El tono sigue sosteniendo PAD y PAM, mientras que gasto, entrega, D y TLC leen el
+  gasto.
+- **Primera versión descartada.** Igualar la pendiente de la PAM en la rodilla dejaba unos 60 mmHg de PAS con el
+  5 % del gasto, así que se descartó.
+
+| `pressure_rel` | 1,0 | 0,8 | 0,5 | 0,3 | 0,1 | 0,05 | 0 |
+|---|---|---|---|---|---|---|---|
+| PAS/PAD antes | 120/75 | 111/70 | 97,5/62,5 | 88,5/57,5 | 79,5/52,5 | 77,2/51,2 | 75/50 |
+| PAS/PAD ahora | 120/75 | 111/70 | 97,5/62,5 | 58,5/37,5 | 19,5/12,5 | 9,8/6,2 | 0/0 |
+
+- El golden no baja nunca de 0,80, así que sus presiones no cambian (prueba).
+- Cambia una sonda de Nivel 2: `preload_dependent`, minuto 1, con gasto 0,19. Su PAM pasa de 64 a 28.
+
+### 11.5 Falla de bomba y congestión (P2E-5)
+
+- **Sin código nuevo.** Se conserva la regla de P2D de «V agregada». Las pruebas nuevas son:
+  - P baja con V baja no crea L;
+  - la misma precarga agregada (+1500 mL) congestiona más con menos reserva: L a 60 min de 0 / 0,47 / 0,82 con
+    reserva 1,0 / 0,6 / 0,3;
+  - una bomba que falla tolera menos precarga agregada: con reserva 0,5, la congestión empieza con +1003 mL si
+    P = 1,0 y con +529 mL si P = 0,7;
+  - las fuentes de L se distinguen por procedencia: una fuga capilar declarada (módulo de enfermedad), la congestión
+    por precarga y el aclaramiento suman exactamente la L final.
+- **Pruebas que ya cubrían el resto:** aclaramiento lento al quitar la fuente (§10.6) y ausencia de congestión de una
+  bomba deprimida sin volumen (§10.12, M1).
+
+### 11.6 Puerta de migración de parámetros de caso (P2E-6)
+
+- **Módulo.** `clinical_core/migration.py`. `FAMILY_GATES` dice qué declara cada familia antes de migrar.
+- **`gi_bleed` exige:**
+  - los seis parámetros de caso: betabloqueo, `preload_fraction`, reserva de bomba, frecuencia intrínseca, demanda
+    basal y lactato aclarable;
+  - los cuatro de su fuente: pérdida de volumen y de Hb por minuto, fracción con IBP y tras hemostasia.
+- **Cierre por defecto.** `check_migration_gate` lanza `MigrationBlocked` si un parámetro requerido:
+  - es `default_unmapped`;
+  - es `synthetic_probe`;
+  - dice `approved_family_default` sin una entrada con ese valor en `APPROVED_FAMILY_DEFAULTS`, que hoy está vacío.
+
+  El error nombra todos los que bloquean.
+- **También se rechazan:** una familia sin puerta, un parámetro de familia desconocido y una fuente desconocida.
+- **El golden informa la puerta por corrida.** Las 20 corridas GI están bloqueadas en los 10 parámetros: el GI es una
+  línea base en sombra, no una migración.
+- No se tocó el banco de casos. El mapeo de la próxima familia es otro paquete.
+
+### 11.7 Golden antes y después (P2E-7)
+
+- **Clases sin cambios:** 220 MATCH, 140 APPROVED_DIRECTION_MAGNITUDE_TBD y 0 UNRESOLVED.
+- **Golden por Contracts v2:** IDÉNTICO.
+- **P2E-2 como causa candidata.** Es un mecanismo que depende de la corrida (`shadow.RUN_DEPENDENT`): figura como
+  causa candidata de lactato, FR y FC sólo en las corridas donde algún minuto entregó más que su demanda, que son 15
+  de 20 (`acting_mechanisms` por corrida).
+- **Causas:**
+
+  | Causas candidatas | Diferencias |
+  |---|---|
+  | KD-S4 | 79 |
+  | KD-S1 + KD-S4 + P2E-2 | 30 |
+  | KD-S1 + KD-S4 | 10 |
+  | KD-S2 + KD-S4 + P2E-2 | 15 |
+  | KD-S2 + KD-S4 | 5 |
+  | KD-S3 + KD-S4 | 1 |
+
+- **Qué cambió por paquete:**
+  - P2E-1, P2E-3, P2E-4 y P2E-6: sólo etiquetas (procedencia de parámetros, parámetros nuevos y la puerta). Ningún
+    valor de trayectoria.
+  - P2E-2: los cambios de la tabla siguiente.
+
+**Mecanismo.** En cada una de esas corridas la entrega subió sobre la llegada (sangre, volumen u oxígeno):
+- **Antes:** D se volvía negativa, el exceso de lactato también, y el lactato y la FR bajaban de la llegada.
+- **Ahora:** D tiene piso en 0 y no hay lactato aclarable declarado, así que el lactato vuelve a la llegada y no
+  baja de ella, y la FR lo sigue.
+- **Motor heredado:** baja el lactato bajo la llegada en cuanto mejora la circulación. La diferencia con él crece y
+  se clasifica, no se corrige.
+
+| Corrida | Lactato mostrado: minutos cambiados; último minuto antes → ahora (motor) | FR mostrada: minutos cambiados; último minuto antes → ahora (motor) |
+|---|---|---|
+| 57m `aggressive_volume` | 60 (31–90); 3,8 → 4,4 (3,1) | 45 (46–90); 23 → 26 (16) |
+| 57m `definitive_management` | 81 (40–120); 3,8 → 4,4 (3,3) | 63 (58–120); 24 → 26 (18) |
+| 57m `prbc_2u_over_60` | 50 (41–90); 4,1 → 4,4 (3,5) | 31 (60–90); 25 → 26 (19) |
+| 57m `saline_then_blood` | 30 (91–120); 4,2 → 4,4 (3,4) | 13 (108–120); 25 → 26 (19) |
+| 57m `untimed_shared_line` | 32 (59–90); 4,2 → 4,4 (3,2) | 10 (81–90); 25 → 26 (17) |
+| 72f `aggressive_volume` | 60 (31–90); 2,7 → 3,4 (2,1) | 50 (41–90); 20 → 24 (14) |
+| 72f `definitive_management` | 81 (40–120); 2,8 → 3,4 (2,3) | 69 (52–120); 21 → 24 (16) |
+| 72f `prbc_2u_over_60` | 50 (41–90); 3,0 → 3,4 (2,5) | 38 (53–90); 22 → 24 (17) |
+| 72f `saline_then_blood` | 29 (92–120); 3,2 → 3,4 (2,4) | 19 (102–120); 23 → 24 (17) |
+| 72f `untimed_shared_line` | 32 (59–90); 3,2 → 3,4 (2,2) | 17 (74–90); 23 → 24 (15) |
+
+- **FC, un minuto:** 72f `oxygen_non_rebreather`, minuto 19.
+  - Pasa de 113 a 114; el motor muestra 113.
+  - El oxígeno subió la entrega al principio. Sin crédito, D a los 19 min es 0,195 y no 0,063, así que el impulso
+    pasa de 0,0592 a 0,0603 y la FC cruda cruza el redondeo: 113,48 → 113,51.
+  - La FC de esa corrida pasa de 1 a 2 minutos distintos del motor y sigue en APPROVED_DIRECTION_MAGNITUDE_TBD.
+- **Sólo D, sin valor mostrado distinto** (D no se compara con el motor): 57m `oxygen_non_rebreather`,
+  `saline_2l_over_20` y `stop_fluids`, y 72f `saline_2l_over_20`.
+- **Sin ningún cambio:** `untreated_60` y `queued_timed_bags` de ambas variantes, y 72f `stop_fluids`.
+
+### 11.8 Parámetros que siguen TBD
+
+Todos los de §10.10, y además:
+- frecuencia intrínseca por defecto y fracción simpática de llegada;
+- demanda basal, multiplicadores de sepsis, fiebre y convulsión, y la normalización de la entrega;
+- lactato aclarable de llegada;
+- umbral de gasto del colapso, límite y permanencia, repago de la carga, y la regla de selección del ritmo
+  terminal;
+- rodilla y forma de la presión con gasto bajo;
+- todas las tolerancias A9.
+
+### 11.9 Limitaciones y decisiones pendientes
+
+- **Respuesta a §10.11.** P2E deja estructura para los cuatro primeros puntos: tono simpático de llegada, paro,
+  demanda y mapeo. No pone ningún número.
+- **Consecuencia en el GI sin mapear.** Con lactato aclarable `default_unmapped`, el lactato no baja de la llegada al
+  reanimar. Para que baje hay que declarar el lactato aclarable de la familia, una decisión clínica.
+- **Llegada en déficit.** Una demanda basal > 1 hace que D crezca desde la llegada. Pero D y el lactato no empiezan
+  en un estado estacionario coherente con ese déficit: falta decidir si la llegada debe declararlo.
+- **Normalización.** Umbral de colapso, demanda y entrega se leen relativos a la llegada, y su normalización es TBD.
+  Un paciente que llega en shock tiene gasto relativo 1 en la llegada.
+- **Gasto cero antes del criterio.** Detiene la corrida (P2D-2), aun con la regla de colapso declarada.
+- **Ritmo terminal.** Es un parámetro del perfil, `pea` o `asystole`, no una regla de selección.
+- **Estados guardados de P2D.** Un estado serializado sin los campos auxiliares nuevos se rechaza al reanudarlo
+  (falla cerrada).
+
+### 11.10 Revisión adversarial de P2E
+
+Pendiente al escribir esta sección; se completa con el resultado.
+
+### 11.11 Gancho en tiempo de ejecución
+
+No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`, incluido `clinical_core.migration`:
+`test_shadow_core_isolation.py` lo comprueba.
