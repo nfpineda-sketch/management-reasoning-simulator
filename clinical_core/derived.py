@@ -91,6 +91,9 @@ class CoreProfile:
             raise CoreInvariantError("volume scale, time constants and RR bounds are positive")
         if not 0.0 < self.arrival_preload_fraction < 1.0 or not 0.0 < self.congestion_preload_knee < 1.0:
             raise CoreInvariantError("positions on the preload curve are strictly between 0 and 1")
+        if not 0.0 <= self.pump_preload_coupling <= 1.0:
+            # P2D-5: lower P gives less output and never more per mL only for c in [0, 1].
+            raise CoreInvariantError("the pump/preload coupling c is between 0 and 1")
         if self.afterload_sensitivity >= 1.0:
             raise CoreInvariantError("afterload sensitivity is below 1, so output stays positive at any tone")
 
@@ -307,16 +310,17 @@ def congestion_rate(state: CoreState, anchors: Anchors, profile: CoreProfile) ->
     """Lung water added this minute by excess preload on a pump without reserve (KD-S4).
 
     Only preload added above arrival congests ("additional V", KD-S4), and only above the
-    knee of the curve, so arrival stays a fixed point like every other coupling. The excess is
-    the share of the curve left above max(knee, arrival position) that is now used, times how
-    far the pump falls short of normal reserve (the case's reserve times the current pump P).
-    A pump with full reserve never congests from preload alone. This coupling only adds L;
-    clearing lung water belongs to the mechanisms that act on L, which the shadow core does
-    not model yet.
+    knee of the curve, so arrival stays a fixed point like every other coupling. Both
+    positions are read on the current pump's curve (P2D-5): a depressed pump without added
+    volume does not congest from this coupling (whether it should is a pending decision). The
+    excess is the share of the curve left above max(knee, arrival filling's position) that is
+    now used, times how far the pump falls short of normal reserve (the case's reserve times
+    the current pump P). A pump with full reserve never congests from preload alone. This
+    coupling only adds L; the slow clearance of lung water is ``lung_water_clearance`` (P2D-6).
     """
     if not state.R.pulse_present:
         return 0.0
-    start = max(profile.congestion_preload_knee, arrival_preload(anchors, profile))
+    start = max(profile.congestion_preload_knee, preload_position(state, anchors, profile, volume=0.0))
     excess = max(0.0, (preload_position(state, anchors, profile) - start) / (1.0 - start))
     shortfall = max(0.0, 1.0 - anchors.pump_reserve * state.P)
     return profile.congestion_per_excess_preload * excess * shortfall

@@ -449,3 +449,91 @@ def test_p2d7_a_rise_in_output_is_not_automatic_in_sepsis_with_preload_loss():
     arrival, late = rows[0], rows[-1]
     assert late["output_rel"] < arrival["output_rel"] and late["delivery_rel"] < arrival["delivery_rel"]
     assert late["map"] < bands.probe("vasodilation")[-1]["map"] and late["D"] > 0 and late["crt_s"] > arrival["crt_s"]
+
+
+# After the adversarial review of P2D -------------------------------------------------------------
+
+def test_review_m1_a_depressed_pump_without_added_volume_does_not_congest():
+    from clinical_core.bands import ARRIVAL, Drift
+    neutral = Anchors(**ARRIVAL)
+    for drop in (-0.7, -0.8):
+        assert run(neutral, (Drift("pump", "P", 0, 1, drop),), 200).states[-1].L == 0.0
+        bleeding = run(neutral, (Drift("pump", "P", 0, 1, drop), Window("loss", 5.0, 0, 40)), 120)
+        assert bleeding.states[-1].L == 0.0
+    weak = run(LIMITED, (Step("pump", "P", 1, -0.5), Refill("fill", 2, 3000.0)), 60)
+    assert weak.states[-1].L > 0, "added volume on a failing pump still congests"
+
+
+def test_review_m2_the_mental_status_attribution_survives_a_pulseless_minute_and_never_overreaches():
+    from clinical_core.comparison import compare
+    from clinical_core.modules import ScriptedRhythmEvent
+    from clinical_core.shadow import EXPECTED_DIFFERENCES, classify, consciousness_attribution, run_shadow
+    result = run_shadow("gi_bleed_57m", "untreated_60")
+    arrest = ScriptedRhythmEvent("pea", 50, RhythmState.pea(40.0), "probe")
+    core = run(result.core.anchors, tuple(result.core.contributors) + (arrest,), 60)
+    probe = replace(result, core=core, rows=compare(result.legacy.snapshots, core.states, core.derived()))
+    rows = consciousness_attribution(probe)
+    pulseless = [row for row in rows if row["minute"] >= 50]
+    assert pulseless and all(row["candidate_causes"] == [] for row in pulseless)
+    summary = {name: dict(entry) for name, entry in result.summary.items()}
+    summary["consciousness_level"]["mismatched"] = 1
+    assert classify(result.key, summary, rows)["consciousness_level"]["classification"] == "UNRESOLVED"
+    other = run_shadow("gi_bleed_72f", "untreated_60")
+    assert "consciousness_level" not in EXPECTED_DIFFERENCES[other.key]
+    fake = [{"minute": 1, "legacy": 0, "core": 1, "candidate_causes": ["KD-S3", "KD-S4"], "mode": "each_sufficient"}]
+    summary = {name: dict(entry) for name, entry in other.summary.items()}
+    summary["consciousness_level"]["mismatched"] = 1
+    assert classify(other.key, summary, fake)["consciousness_level"]["classification"] == "UNRESOLVED", \
+        "an attribution never approves a difference the run was not expected to have"
+
+
+def test_review_m2_a_difference_the_pressure_does_not_explain_is_not_attributed_to_it():
+    from clinical_core.shadow import consciousness_attribution, run_shadow
+    result = run_shadow("gi_bleed_57m", "untreated_60")
+    snapshots = [dict(snap) for snap in result.legacy.snapshots]
+    snapshots[55]["spo2"] = 80          # the engines no longer read the same oxygen level
+    probe = replace(result, legacy=replace(result.legacy, snapshots=tuple(snapshots)))
+    row = next(r for r in consciousness_attribution(probe) if r["minute"] == 55)
+    assert row["candidate_causes"] == [] and row["mode"] == "not explained by the pressure threshold"
+
+
+@pytest.mark.parametrize("coupling", [0.0, 0.5, 1.0])
+def test_review_l1_the_pump_guarantees_hold_for_every_allowed_coupling(coupling):
+    from clinical_core.derived import CoreProfile
+    profile = CoreProfile(pump_preload_coupling=coupling)
+    base = run(BLEEDING, (), 0, profile=profile).states[0]
+    empty = profile.preload_curve_scale_ml * __import__("math").log1p(-profile.arrival_preload_fraction)
+    volumes = [empty + 1.0, empty + 20.0, -300.0, 0.0, 500.0, 3000.0]
+    out = lambda V, P: derive(base.evolve(V=V, P=P), BLEEDING, profile).output_rel
+    for V, W in zip(volumes, volumes[1:]):
+        for P in (0.1, 0.4, 0.7):
+            assert out(V, P) < out(V, 1.0) and out(W, P) - out(V, P) <= out(W, 1.0) - out(V, 1.0) + 1e-12
+    with pytest.raises(CoreInvariantError):
+        CoreProfile(pump_preload_coupling=2.0)
+
+
+def test_review_l2_a_declared_case_parameter_has_a_value():
+    with pytest.raises(CoreInvariantError, match="declared but has no value"):
+        Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "declared": {"preload_fraction": "explicit_case"}})
+
+
+def test_review_l3_a_state_from_before_p2d1_is_not_resumed_silently():
+    data = run(BLEEDING, (BLEED,), 3).states[-1].to_dict()
+    with_old_memory = {**data, "internal": {**data["internal"], "core_coupling:sympathetic_drive": {"drive": 0.4}}}
+    without_aux = {key: value for key, value in data.items() if key != "aux"}
+    partial = {**data, "aux": {"lactate_excess_mmol_l": 0.1}}
+    for bad in (with_old_memory, without_aux, partial):
+        with pytest.raises(CoreInvariantError):
+            CoreState.from_dict(bad)
+    arrival = run(BLEEDING, (), 0).states[0].to_dict()
+    arrival.pop("aux")
+    assert CoreState.from_dict(arrival).aux == AuxiliaryState()
+
+
+def test_review_the_level_2_probes_replay_from_their_specification():
+    from clinical_core import bands
+    from clinical_core.integration import scenario_from_dict, scenario_to_dict
+    family, drives, declared, contributors, minutes = bands.PROBES["vasodilation"]
+    anchors = Anchors(**{**bands.ARRIVAL})
+    again = scenario_from_dict(json.loads(json.dumps(scenario_to_dict(anchors, contributors, max(minutes)))))
+    assert run(*again[:3]).states[-1] == run(anchors, contributors, max(minutes)).states[-1]

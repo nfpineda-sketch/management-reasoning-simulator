@@ -304,6 +304,9 @@ class Anchors:
             if name not in CASE_PARAMETERS or source not in DECLARED_SOURCES:
                 raise CoreInvariantError(f"case parameter {name!r} declared from {source!r}: expected one of "
                                          f"{sorted(CASE_PARAMETERS)} from one of {sorted(DECLARED_SOURCES)}")
+        for name in self.declared:
+            if getattr(self, name) is None:
+                raise CoreInvariantError(f"case parameter {name} is declared but has no value")
         for name, neutral in CASE_PARAMETERS.items():
             if getattr(self, name) != neutral and name not in self.declared:
                 raise CoreInvariantError(f"case parameter {name} = {getattr(self, name)!r} is not the neutral value "
@@ -370,10 +373,9 @@ class AuxiliaryState:
 
     @classmethod
     def from_dict(cls, data: Mapping) -> "AuxiliaryState":
-        unknown = set(data) - set(AUXILIARY_FIELDS)
-        if unknown:
-            raise CoreInvariantError(f"unknown auxiliary state {sorted(unknown)}")
-        return cls(**{name: data[name] for name in AUXILIARY_FIELDS if name in data})
+        if set(data) != set(AUXILIARY_FIELDS):
+            raise CoreInvariantError(f"auxiliary state names exactly {sorted(AUXILIARY_FIELDS)}, not {sorted(data)}")
+        return cls(**{name: data[name] for name in AUXILIARY_FIELDS})
 
 
 ARRIVAL_AUXILIARY = AuxiliaryState()
@@ -428,6 +430,9 @@ class CoreState:
             raise CoreInvariantError("internal state is a FrozenRecord")
         if not isinstance(self.aux, AuxiliaryState):
             raise CoreInvariantError("the core's auxiliary state is an AuxiliaryState")
+        if any(key.startswith("core_coupling:") for key in self.internal):
+            # Before P2D-1 the core kept its memory here; it now lives only in ``aux``.
+            raise CoreInvariantError("internal holds contributors' records only; the core's memory is aux")
 
     def value(self, channel: Channel) -> float:
         if channel is Channel.R:
@@ -454,7 +459,13 @@ class CoreState:
         values = dict(data)
         values["R"] = RhythmState.from_dict(values["R"])
         values["internal"] = FrozenRecord(values.get("internal") or {})
-        values["aux"] = AuxiliaryState.from_dict(values.get("aux") or {})
+        if "aux" not in values:
+            if values.get("minute") != 0:
+                raise CoreInvariantError("a state after arrival carries its auxiliary state (P2D-1); this one "
+                                         "does not, so it cannot be resumed")
+            values["aux"] = ARRIVAL_AUXILIARY
+        else:
+            values["aux"] = AuxiliaryState.from_dict(values["aux"])
         return cls(**values)
 
     def digest(self) -> str:

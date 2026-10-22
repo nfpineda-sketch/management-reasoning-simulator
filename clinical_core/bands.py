@@ -22,7 +22,7 @@ import argparse
 from dataclasses import dataclass
 
 from .derived import derive
-from .integration import Contribution, Contributor, step
+from .integration import Contribution, Contributor, register, step
 from .provenance import ChannelDelta, SourceKind
 from .state import Anchors, Channel, RhythmState, UnresolvedBoundary, initial_state
 
@@ -32,6 +32,7 @@ ARRIVAL = dict(case_id="band_probe", sbp=120.0, dbp=75.0, hr=80.0, spo2=97.0, re
                consciousness_level=0)
 
 
+@register
 @dataclass(frozen=True)
 class Drift(Contributor):
     """A declared change of one channel per minute over an interval (probe only)."""

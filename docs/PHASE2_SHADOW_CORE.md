@@ -739,7 +739,10 @@ Las cinéticas lineales de D y del lactato garantizan el orden punto a punto. τ
 - La escala de la curva es `preload_curve_scale_ml × P^c` (c provisional = 1).
   - Se lee respecto del llenado de llegada sobre la curva de la bomba actual, así que P sigue significando el gasto
     al llenado de llegada.
-  - La congestión lee la misma curva.
+  - La congestión lee la misma curva, y también mide ahí la llegada. Sólo congestiona la V agregada sobre la
+    llegada: una bomba deprimida sin volumen agregado no congestiona por este acoplamiento. Si debe hacerlo, es una
+    decisión pendiente (§10.11).
+  - c se valida en [0, 1]: sólo ahí valen las garantías de esta sección, comprobadas con c = 0, 0,5 y 1.
 - Gasto relativo con la llegada GI por defecto:
 
 | P | V = 0 | +500 mL | +1000 mL | +3000 mL | Ganancia por 500 mL |
@@ -788,7 +791,8 @@ Las cinéticas lineales de D y del lactato garantizan el orden punto a punto. τ
 - **Declaración.** `Anchors.declared` nombra la fuente de cada parámetro declarado: `explicit_case` o
   `synthetic_probe`. Uno no declarado es `default`. Los parámetros son `beta_blockade`, `preload_fraction` y
   `pump_reserve`.
-- **Sin inferencia silenciosa.** Un valor distinto del neutro sin fuente se rechaza.
+- **Sin inferencia silenciosa.** Un valor distinto del neutro sin fuente se rechaza. Un parámetro declarado debe
+  tener valor, así que el valor por defecto del perfil nunca se atribuye al caso.
 - **Registro.** `case_parameter_provenance` informa, por parámetro, el valor, la fuente, si está calibrado (siempre
   no) y una nota. Lo llevan el golden y la traza en sombra.
 - **Regla por familia.** `legacy_adapter.FAMILY_CASE_PARAMETER_RULES` guarda la regla de cada familia.
@@ -832,6 +836,10 @@ contrafactuales contra el nivel del motor heredado:
 
 - La PAS cruda del motor se reconstruye con su circulación y la relación adoptada. Redondea a lo que el motor
   muestra en cada minuto (prueba).
+- Sólo se atribuye a la presión una diferencia que la presión explica: ambos motores leen el mismo nivel de
+  oxígeno, y con la SpO2 del motor la PAS cruda del núcleo sigue dando otro nivel.
+- Un minuto sin pulso, o uno que la presión no explica, queda sin causa. Entonces la variable es UNRESOLVED.
+- Una diferencia que la corrida no esperaba nunca se aprueba por la atribución.
 - La frase de §9.5 («minutos 55–57: el cruce viene de la lectura cruda») queda precisada así: en 55–57 hacen falta
   las dos cosas.
 
@@ -851,12 +859,40 @@ Todos los de §9.4, menos `sympathetic_withdrawal_limit`, que se eliminó. Adem�
 - **Paro:** el umbral de gasto y la permanencia (§10.2).
 - **Demanda y extracción de oxígeno** en sepsis (§10.7).
 - **Mapeo de los parámetros de caso** antes de migrar otra familia (§10.8).
+- **Congestión por bomba deprimida sin volumen agregado:** si una bomba que falla debe congestionar por sí sola.
+  Hoy no lo hace, para respetar la regla aprobada de «V adicional».
 - **La clasificación:** sigue el mapeo de vías causales; el golden congela las magnitudes.
 - Siguen vigentes las limitaciones de §9.8 que P2D no tocó:
   - pulso estrecho, que falla cerrado;
   - lactato bajo en shock profundo;
   - entradas simpáticas sin estado.
 
-### 10.12 Gancho en tiempo de ejecución
+### 10.12 Revisión adversarial de P2D
+
+Una revisión independiente, en sólo lectura, de `d543cd9..2d0f957` no encontró defectos altos. Confirmé cada hallazgo
+con una sonda y lo corregí con una prueba que falla sin la corrección:
+- **M1, congestión.** Una bomba deprimida (P ≤ 0,39) sin volumen agregado, o incluso sangrando, congestionaba: la
+  llegada se medía en la curva de P = 1. Ahora se mide en la curva actual.
+- **M2, atribución de conciencia.** Tenía tres fallas:
+  - se rompía con un minuto sin pulso;
+  - atribuía a la presión diferencias que podían venir del oxígeno;
+  - podía aprobar una diferencia que la corrida no esperaba.
+
+  Ahora no se rompe, exige el mismo nivel de oxígeno y no aprueba lo inesperado.
+- **L1, acoplamiento.** Las garantías de la bomba fallaban con c > 1. Ahora c se valida en [0, 1] y se prueba en
+  0, 0,5 y 1.
+- **L2, procedencia.** Un `preload_fraction` declarado sin valor atribuía al caso el valor por defecto del perfil.
+  Ahora se rechaza.
+- **L3, reanudación.**
+  - Se reanudaba en silencio un estado anterior a P2D-1: sin `aux`, o con memoria del núcleo en `internal`.
+  - Un `aux` parcial se completaba con ceros.
+
+  Ahora los tres se rechazan.
+- **L4, texto.** Un docstring de la congestión estaba desactualizado; quedó corregido.
+- **Fuera de P2D:** las sondas de Nivel 2 no se podían reproducir desde su especificación. `Drift` quedó registrado.
+
+Las correcciones no cambian el golden. El golden por Contracts v2 sigue IDÉNTICO.
+
+### 10.13 Gancho en tiempo de ejecución
 
 No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`: `test_shadow_core_isolation.py` lo comprueba.

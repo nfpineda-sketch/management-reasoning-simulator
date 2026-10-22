@@ -125,13 +125,17 @@ MATCH, APPROVED_DIRECTION, UNRESOLVED = "MATCH", "APPROVED_DIRECTION_MAGNITUDE_T
 def consciousness_attribution(result) -> list[dict]:
     """Minute by minute, which decision can produce each consciousness difference (P2D-9).
 
-    Two counterfactual readings of the same minute, against the family engine's level:
-    - KD-S3 alone: the family engine's own pressure (its circulation change since arrival,
-      through the adopted relation) read raw, as the core reads it;
+    Only a difference the pressure threshold explains is attributed: both engines read the same
+    oxygen level, and with the engine's own SpO2 the core's raw pressure still gives a level
+    other than the engine's. Then two
+    counterfactual readings of the same minute, against the engine's level:
+    - KD-S3 alone: the engine's own pressure (its circulation change since arrival, through
+      the adopted relation) read raw, as the core reads it;
     - KD-S4 alone: the core's pressure read on its displayed (rounded) value, as the engine
       reads it.
-    Each that still differs from the engine's level is sufficient alone. When neither does,
-    both are needed together (the core's lower pressure, read raw).
+    Each that still differs from the engine's level is sufficient alone; when neither does,
+    both are needed together. A minute without a pulse on either side, or one the pressure
+    does not explain, gets no candidate cause: it stays unresolved.
     """
     anchors, profile = result.core.anchors, result.core.profile
     derived = result.core.derived()
@@ -145,22 +149,31 @@ def consciousness_attribution(result) -> list[dict]:
         if row["status"] != "mismatch":
             continue
         minute, values = row["minute"], derived[row["minute"]]
+        snap = result.legacy.snapshots[minute]
+        entry = {"minute": minute, "legacy": row["legacy"], "core": row["core"]}
+        if not values.pulse_present or not snap["pulse_present"] or snap["spo2"] is None:
+            rows.append({**entry, "candidate_causes": [], "mode": "pulseless: not attributed"})
+            continue
+        engine_spo2 = float(snap["spo2"])
         # The engine's circulation grows with the deficit (V = (1 - circulation) x 833 mL-eq).
-        deficit = result.legacy.snapshots[minute]["circulation"] - result.legacy.snapshots[0]["circulation"]
+        deficit = snap["circulation"] - result.legacy.snapshots[0]["circulation"]
         engine_raw_sbp = anchors.sbp - profile.sbp_per_pressure_deficit * deficit
         shown = _display(values)
-        s3_alone = level(engine_raw_sbp, values.spo2) != row["legacy"]
-        s4_alone = level(shown["sbp"], shown["spo2"]) != row["legacy"]
+        entry.update({"core_raw_sbp": round(values.sbp, 3), "core_displayed_sbp": shown["sbp"],
+                      "legacy_displayed_sbp": snap["sbp"], "legacy_raw_sbp": round(engine_raw_sbp, 3)})
+        if _level(values.spo2, profile.oxygen_levels) != _level(engine_spo2, profile.oxygen_levels) \
+                or level(values.sbp, engine_spo2) == row["legacy"]:
+            rows.append({**entry, "candidate_causes": [], "mode": "not explained by the pressure threshold"})
+            continue
+        s3_alone = level(engine_raw_sbp, engine_spo2) != row["legacy"]
+        s4_alone = level(shown["sbp"], engine_spo2) != row["legacy"]
         if s3_alone and s4_alone:
             causes, mode = ["KD-S3", "KD-S4"], "each_sufficient"
         elif s3_alone or s4_alone:
             causes, mode = ["KD-S3" if s3_alone else "KD-S4"], "sufficient_alone"
         else:
             causes, mode = ["KD-S3", "KD-S4"], "jointly_necessary"
-        rows.append({"minute": minute, "legacy": row["legacy"], "core": row["core"],
-                     "core_raw_sbp": round(values.sbp, 3), "core_displayed_sbp": shown["sbp"],
-                     "legacy_displayed_sbp": result.legacy.snapshots[minute]["sbp"],
-                     "legacy_raw_sbp": round(engine_raw_sbp, 3), "candidate_causes": causes, "mode": mode})
+        rows.append({**entry, "candidate_causes": causes, "mode": mode})
     return rows
 
 
@@ -185,12 +198,17 @@ def classify(key: str, summary: dict, attribution: list | None = None) -> dict:
         if not entry["mismatched"]:
             classes[name] = {"classification": MATCH, "candidate_causes": []}
             continue
-        causes = list(EXPECTED_DIFFERENCES[key].get(name, ()))
-        item = {}
+        expected = list(EXPECTED_DIFFERENCES[key].get(name, ()))
+        causes, item, explained = expected, {}, True
         if name == "consciousness_level" and attribution:
+            # Minute by minute; any minute left without a cause leaves the variable unresolved,
+            # and so does a difference the run was not expected to have.
             causes = sorted({cause for row in attribution for cause in row["candidate_causes"]})
             item["by_minute"] = attribution
-        approved = bool(causes) and all(DECISIONS.get(cause, ("",))[0] == "approved" for cause in causes)
+            explained = bool(expected) and all(row["candidate_causes"] for row in attribution) \
+                and set(causes) <= set(expected)
+        approved = explained and bool(causes) and all(DECISIONS.get(cause, ("",))[0] == "approved"
+                                                      for cause in causes)
         classes[name] = {"classification": APPROVED_DIRECTION if approved else UNRESOLVED,
                          "candidate_causes": causes, **item}
     return classes
