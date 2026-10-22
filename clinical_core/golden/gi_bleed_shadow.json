@@ -154,6 +154,22 @@
    "provisional",
    "where arrival sits on the preload curve when the case does not declare it (0 empty, 1 plateau): TBD (KD-S4)"
   ],
+  "collapse_burden_limit": [
+   "provisional",
+   "burden (fraction below the threshold x minutes) at which R moves to a pulseless rhythm (P2E-3): TBD; off by default"
+  ],
+  "collapse_output_threshold": [
+   "provisional",
+   "output_rel below which the collapse burden accrues (P2E-3): TBD; off (None) by default, synthetic values in tests only"
+  ],
+  "collapse_repayment_tau_min": [
+   "provisional",
+   "repayment of the burden once output recovers (P2E-3): TBD; None holds the burden"
+  ],
+  "collapse_terminal_rhythm": [
+   "provisional",
+   "the pulseless rhythm the collapse rule ends in (P2E-3): the selection rule is TBD"
+  ],
   "congestion_per_excess_preload": [
    "provisional",
    "L per minute at full excess and no pump reserve: TBD (KD-S4)"
@@ -201,6 +217,10 @@
   "lactate_per_output_deficit": [
    "adopted",
    "family_engine._diagnostic: lactate + (circulation - 1) * 2, reached here as the steady state of D and of lactate kinetics; the D -> lactate production gain it implies is provisional (KD-S1)"
+  ],
+  "low_output_pressure_knee": [
+   "provisional",
+   "pressure_rel below which SBP and DBP leave the adopted linear relation and fall continuously to 0 with output (P2E-4): TBD"
   ],
   "lung_water_clearance_tau_min": [
    "provisional",

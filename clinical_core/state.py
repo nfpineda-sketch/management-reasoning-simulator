@@ -385,6 +385,8 @@ AUXILIARY_FIELDS: Mapping[str, str] = {
     "sympathetic_drive": "the common sympathetic drive the core holds (KD-S2)",
     "oxygen_demand": "metabolic oxygen demand over the last minute, in units of arrival oxygen delivery: the case's "
                      "baseline times the modifiers the sources declared for that minute (P2E-2)",
+    "collapse_burden": "severity x duration of critically low output accumulated toward the terminal-collapse "
+                       "criterion (P2E-3); 0 while the collapse rule is off",
 }
 
 
@@ -395,6 +397,7 @@ class AuxiliaryState:
     lactate_excess_mmol_l: float = 0.0
     sympathetic_drive: float = 0.0
     oxygen_demand: float = 1.0
+    collapse_burden: float = 0.0
 
     def __post_init__(self):
         for name in AUXILIARY_FIELDS:
@@ -404,6 +407,8 @@ class AuxiliaryState:
             raise CoreInvariantError("the sympathetic drive is never negative")
         if self.oxygen_demand <= 0:
             raise CoreInvariantError("oxygen demand is positive")
+        if self.collapse_burden < 0:
+            raise CoreInvariantError("the collapse burden is never negative")
 
     def to_dict(self) -> dict:
         return {name: getattr(self, name) for name in AUXILIARY_FIELDS}

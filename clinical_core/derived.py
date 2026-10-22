@@ -19,7 +19,7 @@ from .provenance import Source, SourceKind
 from dataclasses import replace
 
 from .state import (CASE_PARAMETERS, UNMAPPED, Anchors, AuxiliaryState, CoreInvariantError, CoreState, RhythmCode,
-                    UnresolvedBoundary, initial_state)
+                    RhythmState, UnresolvedBoundary, initial_state)
 
 ADOPTED = "adopted"
 PROVISIONAL = "provisional"
@@ -46,6 +46,12 @@ AUXILIARY_SOURCES = {"lactate_excess_mmol_l": LACTATE_KINETICS, "sympathetic_dri
 PRELOAD_CONGESTION = Source(SourceKind.CORE_COUPLING, "preload_congestion")
 #: The core's slow clearance of lung water above arrival (P2D-6).
 LUNG_WATER_CLEARANCE = Source(SourceKind.CORE_COUPLING, "lung_water_clearance")
+#: The core's terminal collapse from sustained critically low output (P2E-3): it accumulates the
+#: burden and, when the rule is on and the criterion is met, moves R to a pulseless rhythm.
+COLLAPSE = Source(SourceKind.CORE_COUPLING, "collapse")
+AUXILIARY_SOURCES["collapse_burden"] = COLLAPSE
+#: The rhythms the collapse rule may end in (P2E-3). Which one, and when, is TBD.
+TERMINAL_RHYTHMS = ("pea", "asystole")
 
 
 @dataclass(frozen=True)
@@ -61,6 +67,7 @@ class CoreProfile:
     congestion_per_excess_preload: float = 0.05
     sbp_per_pressure_deficit: float = 45.0
     dbp_per_pressure_deficit: float = 25.0
+    low_output_pressure_knee: float = 0.5
     hr_per_sympathetic_drive: float = 25.0
     sympathetic_per_pressure_deficit: float = 1.0
     sympathetic_per_debt: float = 0.5
@@ -83,11 +90,17 @@ class CoreProfile:
     rr_max: float = 60.0
     pressure_levels: tuple[tuple[float, int], ...] = ((80.0, 1), (65.0, 2))
     oxygen_levels: tuple[tuple[float, int], ...] = ((87.0, 1), (80.0, 2))
+    # P2E-3: the collapse rule is off (None) unless a profile declares it. No clinical threshold,
+    # dwell or repayment is chosen: only tests and probes set synthetic values.
+    collapse_output_threshold: float | None = None
+    collapse_burden_limit: float | None = None
+    collapse_repayment_tau_min: float | None = None
+    collapse_terminal_rhythm: str = "pea"
 
     def __post_init__(self):
         for item in fields(self):
             value = getattr(self, item.name)
-            if isinstance(value, tuple):
+            if isinstance(value, (tuple, str)) or value is None:
                 continue
             if not math.isfinite(value) or value < 0:
                 raise CoreInvariantError(f"profile gain {item.name} must be finite and non-negative")
@@ -102,6 +115,18 @@ class CoreProfile:
             raise CoreInvariantError("the pump/preload coupling c is between 0 and 1")
         if self.afterload_sensitivity >= 1.0:
             raise CoreInvariantError("afterload sensitivity is below 1, so output stays positive at any tone")
+        if not 0.0 < self.low_output_pressure_knee < 1.0:
+            raise CoreInvariantError("the low-output pressure knee is strictly between 0 and 1")
+        if (self.collapse_output_threshold is None) != (self.collapse_burden_limit is None):
+            raise CoreInvariantError("the collapse rule declares both its output threshold and its burden limit, "
+                                     "or neither")
+        for name in ("collapse_output_threshold", "collapse_burden_limit", "collapse_repayment_tau_min"):
+            if getattr(self, name) is not None and not getattr(self, name) > 0:
+                raise CoreInvariantError(f"{name} is positive when declared")
+        if self.collapse_repayment_tau_min is not None and self.collapse_output_threshold is None:
+            raise CoreInvariantError("a collapse repayment needs a collapse rule")
+        if self.collapse_terminal_rhythm not in TERMINAL_RHYTHMS:
+            raise CoreInvariantError(f"the collapse rule ends in one of {TERMINAL_RHYTHMS}")
 
     def to_dict(self) -> dict:
         return {item.name: (list(map(list, getattr(self, item.name))) if isinstance(getattr(self, item.name), tuple)
@@ -129,6 +154,8 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "congestion_per_excess_preload": (PROVISIONAL, "L per minute at full excess and no pump reserve: TBD (KD-S4)"),
     "sbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: sbp - (circulation - 1) * 45"),
     "dbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: dbp - (circulation - 1) * 25"),
+    "low_output_pressure_knee": (PROVISIONAL, "pressure_rel below which SBP and DBP leave the adopted linear "
+                                              "relation and fall continuously to 0 with output (P2E-4): TBD"),
     "hr_per_sympathetic_drive": (ADOPTED, "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm "
                                           "per unit of sympathetic drive"),
     "sympathetic_per_pressure_deficit": (PROVISIONAL, "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2)"),
@@ -158,6 +185,14 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
     "pressure_levels": (ADOPTED, "family_engine._PRESSURE_LEVELS, without the DC1 anchoring or the recovery "
                                  "margin, which belong to the observation layer"),
     "oxygen_levels": (ADOPTED, "family_engine._OXYGEN_LEVELS, same reservation"),
+    "collapse_output_threshold": (PROVISIONAL, "output_rel below which the collapse burden accrues (P2E-3): TBD; off "
+                                               "(None) by default, synthetic values in tests only"),
+    "collapse_burden_limit": (PROVISIONAL, "burden (fraction below the threshold x minutes) at which R moves to a "
+                                           "pulseless rhythm (P2E-3): TBD; off by default"),
+    "collapse_repayment_tau_min": (PROVISIONAL, "repayment of the burden once output recovers (P2E-3): TBD; None "
+                                                "holds the burden"),
+    "collapse_terminal_rhythm": (PROVISIONAL, "the pulseless rhythm the collapse rule ends in (P2E-3): the selection "
+                                              "rule is TBD"),
 }
 
 
@@ -393,6 +428,70 @@ def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tupl
     return output_rel, pressure_rel, spo2, delivery_rel
 
 
+def arterial_pressures(pressure_rel: float, anchors: Anchors, profile: CoreProfile) -> tuple[float, float]:
+    """SBP and DBP from the pressure the state produces, pressure_rel = output x tone (KD-S4, P2E-4).
+
+    - At and above ``low_output_pressure_knee``: the adopted linear relation, arrival less the
+      gain times (1 - pressure_rel), never below 0.
+    - Below it: both are the knee's values times pressure_rel / knee, so they fall together,
+      continuously and monotonically, to 0 as pressure_rel (and so output, at any tone) goes to
+      0: pressure proportional to flow times resistance. Sharing the scale keeps SBP above DBP.
+      The slope changes at the knee; the value does not.
+
+    No legacy floor: without output there is no pressure. Tone still lifts DBP and MAP through
+    pressure_rel, so a vasoconstricted patient can hold a pressure that does not mean
+    perfusion: output, delivery, D and CRT read output, not pressure. Knee and form are TBD.
+    """
+    def linear(rel):
+        return (max(0.0, anchors.sbp - profile.sbp_per_pressure_deficit * (1.0 - rel)),
+                max(0.0, anchors.dbp - profile.dbp_per_pressure_deficit * (1.0 - rel)))
+
+    knee = profile.low_output_pressure_knee
+    if pressure_rel >= knee:
+        return linear(pressure_rel)
+    sbp_knee, dbp_knee = linear(knee)
+    scale = max(0.0, pressure_rel) / knee
+    return sbp_knee * scale, dbp_knee * scale
+
+
+def collapse_burden_after_minute(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """One minute of the collapse burden (P2E-3), read on the output at the start of the minute.
+
+    Severity is the share by which output_rel falls below ``collapse_output_threshold`` (0 at
+    it, 1 at no output), and the burden adds it every minute: a deeper or a longer fall accrues
+    more. With output back at or above the threshold the burden is held, or repaid first order
+    with ``collapse_repayment_tau_min`` when declared. The rule is off (None) by default, and
+    without a pulse the burden no longer changes. Threshold, limit and repayment are TBD.
+    """
+    burden = state.aux.collapse_burden
+    threshold = profile.collapse_output_threshold
+    if threshold is None or not state.R.pulse_present:
+        return burden
+    severity = max(0.0, threshold - _perfusion(state, anchors, profile)[0]) / threshold
+    if severity > 0.0:
+        return burden + severity
+    if profile.collapse_repayment_tau_min is None:
+        return burden
+    return burden * math.exp(-1.0 / profile.collapse_repayment_tau_min)
+
+
+def collapse_reached(state: CoreState, burden: float, profile: CoreProfile) -> bool:
+    """Whether the declared collapse criterion is met this minute by a patient who still has a pulse."""
+    return (profile.collapse_burden_limit is not None and state.R.pulse_present
+            and burden >= profile.collapse_burden_limit)
+
+
+def terminal_rhythm(state: CoreState, anchors: Anchors, profile: CoreProfile) -> RhythmState:
+    """The pulseless rhythm the collapse rule ends in (P2E-3); the selection rule is TBD.
+
+    PEA keeps the organized rhythm: the monitor still counts the rate it had, without a pulse.
+    Asystole has none.
+    """
+    if profile.collapse_terminal_rhythm == "asystole":
+        return RhythmState.asystole()
+    return RhythmState.pea(min(300.0, derive(state, anchors, profile).monitor_rate_bpm))
+
+
 def congestion_rate(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
     """Lung water added this minute by excess preload on a pump without reserve (KD-S4).
 
@@ -488,15 +587,14 @@ def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PR
         return derived
     output_rel, pressure_rel, spo2, delivery_rel = _perfusion(state, anchors, profile)
     if output_rel <= OUTPUT_EPSILON:
-        # P2D-2: a pulse and a measurable pressure without output cannot exist. No approved rule
-        # moves the rhythm to arrest here (threshold and dwell are TBD), so the run stops.
+        # P2D-2: a pulse and a measurable pressure without output cannot exist. The collapse rule
+        # (P2E-3), when declared, moves R to arrest once its burden criterion is met; output that
+        # reaches zero before that, or with no rule declared, stops the run.
         raise UnresolvedBoundary(
-            f"minute {state.minute}: effective output reached zero while a pulse is present; no approved "
-            "terminal transition applies (arrest threshold and dwell TBD), so the run stops instead of showing "
-            "a pulse and a blood pressure without output")
-    deficit = 1.0 - pressure_rel
-    sbp = max(0.0, anchors.sbp - profile.sbp_per_pressure_deficit * deficit)
-    dbp = max(0.0, anchors.dbp - profile.dbp_per_pressure_deficit * deficit)
+            f"minute {state.minute}: effective output reached zero while a pulse is present and no declared "
+            "terminal transition applied (the collapse rule is off or its criterion is not met; threshold and "
+            "dwell are TBD), so the run stops instead of showing a pulse and a blood pressure without output")
+    sbp, dbp = arterial_pressures(pressure_rel, anchors, profile)
     if rhythm.code is RhythmCode.SINUS:
         # Sinus rate = intrinsic rate + chronotropic response to the common sympathetic drive,
         # blunted by beta-blockade (KD-S2); a block, an escape or a paced rhythm keeps the rate

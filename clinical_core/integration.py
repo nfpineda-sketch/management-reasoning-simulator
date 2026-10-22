@@ -12,8 +12,9 @@ One ``step`` integrates one minute:
    (flow, haemoglobin and saturation) below the metabolic demand that the case's baseline and
    the minute's declared modifiers give (KD-S1, P2E-2); lung water from excess preload on a
    pump without reserve (KD-S4); and it updates its own memory: lactate kinetics, from that
-   debt, the common sympathetic drive, from the state the minute ends in (KD-S2), and the
-   demand of the minute;
+   debt, the common sympathetic drive, from the state the minute ends in (KD-S2), the
+   demand of the minute and the collapse burden; when a declared collapse criterion is met,
+   it moves the rhythm to a pulseless one (P2E-3);
 4. the deltas are summed per channel, the declared bounds are enforced and every clipped
    amount is recorded as a clamp delta, rhythm transitions and setting changes are
    applied, and the new state is checked: the change in every channel must equal the sum
@@ -29,9 +30,10 @@ import math
 from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
-from .derived import (ADOPTED, AUXILIARY_SOURCES, DEFAULT_PROFILE, LUNG_WATER_CLEARANCE, PRELOAD_CONGESTION,
-                      PROVISIONAL, CoreProfile, Derived, arrival_state, congestion_rate, delivery_deficit, derive,
-                      lactate_after_minute, lung_water_clearance, oxygen_demand, sympathetic_after_minute)
+from .derived import (ADOPTED, AUXILIARY_SOURCES, COLLAPSE, DEFAULT_PROFILE, LUNG_WATER_CLEARANCE, PRELOAD_CONGESTION,
+                      PROVISIONAL, CoreProfile, Derived, arrival_state, collapse_burden_after_minute, collapse_reached,
+                      congestion_rate, delivery_deficit, derive, lactate_after_minute, lung_water_clearance,
+                      oxygen_demand, sympathetic_after_minute, terminal_rhythm)
 from .provenance import (AuxiliaryChange, ChannelDelta, CoreEvent, DemandModifier, MinuteRecord, ProvenanceError,
                          RhythmTransition, SettingChange, Source, SourceKind)
 from .state import (AUXILIARY_FIELDS, Anchors, AuxiliaryState, Channel, CoreInvariantError, CoreState, FrozenRecord,
@@ -246,6 +248,18 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     demand = oxygen_demand(anchors, modifiers)
     modulators = tuple(sorted({item.source for item in modifiers}))
     deltas.insert(0, _oxygen_debt(state, anchors, profile, minute, demand, modulators))
+    # Terminal collapse (P2E-3): when the declared criterion is met, the core moves R to a
+    # pulseless rhythm, unless a contributor already moves the rhythm this minute (then the
+    # criterion, still met, applies to the rhythm it leaves, the next minute).
+    burden = collapse_burden_after_minute(state, anchors, profile)
+    if not transitions and collapse_reached(state, burden, profile):
+        target = terminal_rhythm(state, anchors, profile)
+        transitions.append(RhythmTransition(state.R, target, COLLAPSE, minute,
+                                            f"sustained critically low output met the declared collapse criterion: "
+                                            f"{target.code.value}"))
+        events.append(CoreEvent("terminal_collapse", COLLAPSE, minute, "critical", "physiological_collapse",
+                                "not assessed", f"terminal collapse from sustained critically low output: "
+                                                f"{target.code.value}"))
     values = {}
     for channel in SCALAR_CHANNELS:
         before = state.value(channel)
@@ -267,7 +281,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     # the same minute and only its decay is lagged.
     aux = AuxiliaryState(lactate_excess_mmol_l=lactate_after_minute(state, profile),
                          sympathetic_drive=sympathetic_after_minute(state, new_state, anchors, profile),
-                         oxygen_demand=demand)
+                         oxygen_demand=demand, collapse_burden=burden)
     new_state = new_state.evolve(aux=aux)
     changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],
                                     minute, AUXILIARY_FIELDS[name])
