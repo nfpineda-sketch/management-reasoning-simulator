@@ -14,8 +14,8 @@ from clinical_core.comparison import TBD, VARIABLES, compare, mismatching, summa
 from clinical_core.integration import run
 from clinical_core.legacy_adapter import (anchors_from_legacy, bank_case, contributors_from_legacy, run_legacy)
 from clinical_core.modules import GIHaemorrhage
-from clinical_core.shadow import (DIFFERENCES, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS, golden_report,
-                                  run_shadow)
+from clinical_core.shadow import (DECISIONS, DIFFERENCES, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS,
+                                  classify, golden_report, run_shadow)
 
 EXACT = [variable.name for variable in VARIABLES if variable.kind == "exact"]
 
@@ -136,6 +136,25 @@ def test_an_order_the_run_would_never_reach_is_refused(orders):
     from clinical_core.legacy_adapter import UnsupportedScenario
     with pytest.raises(UnsupportedScenario):
         run_legacy("gi_bleed_57m", orders, 30)
+
+
+def test_every_compared_variable_is_classified_and_none_is_left_unresolved(results):
+    """Level 3 of P2C: each difference is a MATCH or has an approved physiological reason."""
+    assert set(DECISIONS) == set(DIFFERENCES)
+    for key, result in results.items():
+        classes = classify(key, result.summary)
+        compared = {name for name, entry in result.summary.items() if entry["compared"]}
+        assert set(classes) == compared, key
+        assert {n for n, c in classes.items() if c == "APPROVED DIFFERENCE"} == set(mismatching(result.summary)), key
+        assert {n for n, c in classes.items() if c == "MATCH"} == compared - set(mismatching(result.summary)), key
+        assert "UNRESOLVED DIFFERENCE" not in classes.values(), key
+
+
+def test_a_difference_without_an_approved_decision_stays_unresolved(results):
+    result = results["gi_bleed_57m/untreated_60"]
+    summary = {name: dict(entry) for name, entry in result.summary.items()}
+    summary["spo2"]["mismatched"] = 1              # a difference no decision explains
+    assert classify(result.key, summary)["spo2"] == "UNRESOLVED DIFFERENCE"
 
 
 def test_a_rounding_tie_needs_both_sides_on_the_same_boundary(results):

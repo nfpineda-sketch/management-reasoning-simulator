@@ -96,7 +96,42 @@ for _variant in VARIANTS:
     # its sympathetic memory (KD-S2); it is listed under the larger cause.
     EXPECTED_DIFFERENCES[f"{_variant}/aggressive_volume"].update(
         {name: "KD-S4" for name in ("V_ml_eq", "hr")})
+# The core reads the 80 mmHg threshold on its raw SBP (KD-S3, unchanged in P2C). Since the preload
+# curve (KD-S4) lowers that SBP by under 1 mmHg, the crossing comes at minute 55 instead of 60:
+# minutes 55-57 are the raw-versus-rounded reading alone, 58-60 also a lower displayed SBP.
 EXPECTED_DIFFERENCES["gi_bleed_57m/untreated_60"]["consciousness_level"] = "KD-S3"
+
+#: The decision behind each known difference (P2C, 2026-10-22). A difference whose decision is
+#: approved is an APPROVED DIFFERENCE: the physiology that produces it was approved, while its
+#: size still rests on the provisional (TBD) parameters.
+DECISIONS = {
+    "KD-S1": ("approved", "REVISE CORE: D with memory produces lactate; RR from W plus a saturating metabolic drive"),
+    "KD-S2": ("approved", "ADOPT CORE DIRECTION: HR from R plus one common sympathetic drive plus modulators"),
+    "KD-S3": ("approved", "RESOLVED, not changed in P2C: physiology reads the unrounded state; display and gating "
+                          "read Observation v2"),
+    "KD-S4": ("approved", "REVISE CORE: one smooth, saturating preload curve; no clamp"),
+}
+MATCH, APPROVED_DIFFERENCE, UNRESOLVED_DIFFERENCE = "MATCH", "APPROVED DIFFERENCE", "UNRESOLVED DIFFERENCE"
+
+
+def classify(key: str, summary: dict) -> dict:
+    """Level 3: MATCH, APPROVED DIFFERENCE or UNRESOLVED DIFFERENCE for every compared variable of a run.
+
+    A rounding tie (the same raw value on a .5 boundary) is a MATCH of the physiology; its
+    minutes stay listed in the summary.
+    """
+    classes = {}
+    for name, entry in summary.items():
+        if not entry["compared"]:
+            continue
+        reason = EXPECTED_DIFFERENCES[key].get(name)
+        if not entry["mismatched"]:
+            classes[name] = MATCH
+        elif reason in DECISIONS and DECISIONS[reason][0] == "approved":
+            classes[name] = APPROVED_DIFFERENCE
+        else:
+            classes[name] = UNRESOLVED_DIFFERENCE
+    return classes
 
 
 @dataclass(frozen=True)
@@ -133,11 +168,13 @@ def golden_report(results=None) -> dict:
         "legacy_literals": {name: list(value) for name, value in LEGACY_LITERALS.items()},
         "channel_bounds": {channel.value: list(bounds) for channel, bounds in CHANNEL_BOUNDS.items()},
         "differences": {key: list(value) for key, value in DIFFERENCES.items()},
+        "decisions": {key: list(value) for key, value in DECISIONS.items()},
         "scenarios": {result.key: {"minutes": SCENARIOS[result.scenario]["minutes"],
                                    "orders": {str(m): t for m, t in SCENARIOS[result.scenario]["orders"].items()},
                                    "core_inputs": [item.to_spec() for item in result.core.contributors],
                                    "mismatching": {name: EXPECTED_DIFFERENCES[result.key].get(name, "UNEXPLAINED")
                                                    for name in mismatching(result.summary)},
+                                   "classification": classify(result.key, result.summary),
                                    "variables": result.summary}
                       for result in results},
     }

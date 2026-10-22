@@ -393,3 +393,24 @@ def test_kd_s4_the_curve_keeps_the_family_engine_s_slope_at_the_default_arrival_
     """The one adopted anchor of the curve: near arrival, 1/833.33 of output per mL (300 mL / 0.36)."""
     slope = (_at(BLEEDING, 0.5).output_rel - _at(BLEEDING, -0.5).output_rel) / 1.0
     assert slope == pytest.approx(0.36 / 300.0, rel=1e-6)
+
+
+# Level 2 -- probes across families, prepared for faculty bands ----------------------------
+
+def test_level_2_every_band_is_left_to_faculty_and_the_probes_are_deterministic():
+    from clinical_core import bands
+    assert set(bands.BANDS) == set(bands.PROBES) and all(band is None for band in bands.BANDS.values())
+    assert bands.report() == bands.report()
+    assert {family for family, *_ in bands.PROBES.values()} >= {"GI bleed / trauma", "sepsis", "ACS",
+                                                               "RV infarct / PE", "pulmonary oedema", "asthma",
+                                                               "opioid"}
+
+
+def test_level_2_probes_move_the_way_the_decisions_say():
+    from clinical_core import bands
+    haemorrhage = bands.probe("haemorrhage")
+    assert haemorrhage[-1]["map"] < haemorrhage[0]["map"] and haemorrhage[-1]["D"] > 0
+    assert haemorrhage[-1]["output_rel"] >= 0.0, "never a negative output"
+    overload = bands.probe("overload")
+    assert overload[-1]["L"] > 0 and overload[-1]["output_rel"] - overload[1]["output_rel"] < 0.2
+    assert bands.probe("opioid")[-1]["respiratory_rate"] < 10 < bands.probe("bronchospasm")[-1]["respiratory_rate"]

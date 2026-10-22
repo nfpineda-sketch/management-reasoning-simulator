@@ -4,7 +4,7 @@
 |---|---|
 | Rama | `phase-2-clinical-core-shadow` |
 | Base | `6fad3103af531689af7995a4db3838418581f1c0` = `origin/phase-1-contracts-v2`, el SHA final de la Fase 1 |
-| HEAD del código de la Fase 2 | `467f047` (adaptadores de Contracts v2, §8). Esta actualización del documento va en el commit siguiente |
+| HEAD del código de la Fase 2 | P2C (§9): `2f5778b` KD-S1, `e685031` KD-S2, `f75da42` KD-S4 y el commit de clasificación que trae esta actualización. Antes: `04283c4` (P2B, §8) |
 | Fuente de la arquitectura | `docs/CLINICAL_ENGINE_ARCHITECTURE_PROPOSAL.md` §7–§14 |
 | Estado | **Sombra solamente.** `family_engine.py` sigue siendo la fuente de verdad de todo encuentro. Ningún módulo de la aplicación importa `clinical_core`; nada cambia para el residente. **No hay gancho en tiempo de ejecución** (§7). |
 
@@ -114,6 +114,10 @@ El motor de familias corre primero y solo. El núcleo corre después, con las mi
     cuentan como coincidencia.
 - **Categóricas** (pulso, familia de ritmo, conciencia): iguales salvo KD-S3.
 
+> **Estado previo a P2C.** Esta tabla y las dos que la siguen describen las diferencias antes de las decisiones del
+> 2026-10-22. Desde P2C las cuatro tienen decisión; el estado vigente, la clasificación y las magnitudes nuevas
+> están en §9.
+
 | Id | Diferencia | Magnitud máxima | Decisión pendiente |
 |---|---|---|---|
 | KD-S1 | Lactato y FR. El núcleo acumula D con pago de primer orden (τ provisional 60 min), incluye Hb y SaO2 en la entrega y deriva la FR del lactato (§7.3). El motor de familias los fija al instante desde la circulación, con un piso de FR de 14 en esta familia. **Brecha del núcleo:** la FR no tiene cota inferior fisiológica; en el volumen agresivo baja a 8/min (57m) y 6/min (72f) a los 90 min | Lactato 0,9 mmol/L (1,2 en volumen agresivo); FR 7/min (9 en volumen agresivo) | Docencia: τ de D, ganancia de la FR y si la FR sigue al lactato |
@@ -147,7 +151,7 @@ Ninguna variable visualizada tiene tolerancia acordada. En `comparison.VARIABLES
 La prueba `test_no_displayed_quantity_is_given_an_invented_tolerance` impide inventar una. Hasta que la docencia
 fije las bandas, toda diferencia visualizada se informa.
 
-Empates de redondeo informados aparte:
+Empates de redondeo informados aparte (antes de P2C; después de P2C no queda ninguno, §9.5):
 - PAD y FC en el minuto 20 (sin tratamiento y oxígeno, ambos casos), y también PAM en 57m;
 - PAD en el minuto 20 (2 U de GR, 57m);
 - TLC en el minuto 112 (manejo definitivo, 57m).
@@ -161,6 +165,7 @@ Cada ganancia está en `clinical_core.derived.PARAMETERS`, con su estado y su or
   mL-equivalente: 1 U = 300 mL = 0,36 de circulación. No se ajustó ninguna a una trayectoria.
 - **Provisionales:** τ de D (60 min), FR por lactato (7,5/min por mmol/L) y todas las cotas de canal salvo Hb y
   glucosa.
+- Desde P2C, la lista completa de parámetros provisionales y la decisión de la que depende cada uno están en §9.4.
 
 Los literales del motor que no están en una tabla quedan copiados, con su lugar, en
 `legacy_adapter.LEGACY_LITERALS`.
@@ -177,10 +182,11 @@ Los literales del motor que no están en una tabla quedan copiados, con su lugar
   - una operación de fluidos distinta de «stop»;
   - una orden retenida hasta un resultado, que el motor libera más tarde;
   - la exposición a anticoagulante.
-- No se modelan:
-  - la sobrecarga transfusional (L);
-  - la recuperación de la FC tras la hemostasia (KD-S2);
-  - la meseta de precarga (KD-S4).
+- No se modelaban antes de P2C (desde P2C, ver §9):
+  - la sobrecarga transfusional (L): ahora hay congestión por exceso de precarga sin reserva de bomba, sin
+    aclaramiento;
+  - la recuperación de la FC tras la hemostasia (KD-S2): ahora sale del impulso simpático común;
+  - la meseta de precarga (KD-S4): ahora es una curva saturable continua.
 - Sin escenario todavía: el *clamp* superior de circulación del motor de familias (1,9, o −750 mL-eq). Se alcanza
   hacia los 300 min sin tratamiento, por fuera de los escenarios actuales, y produciría una diferencia como KD-S4.
 - Ni el ritmo ni la bomba de una familia real están migrados. Sólo los primitivos y sus pruebas sintéticas: el SCA
@@ -333,3 +339,244 @@ falla sin la corrección. Ninguno afectaba los escenarios dorados:
 - **Fuera de los contratos de turno:** las anclas de llegada y los parámetros de la hemorragia (`GI_BLEED`). Siguen
   leyéndose del caso.
 - El registro de envíos (WP7) no se usa: la identidad de envío ya viaja en `OrderAction` y `FateReceipt`.
+
+## 9. P2C · Restricciones de calibración fisiológica (KD-S1, KD-S2, KD-S4; 2026-10-22)
+
+- Base: `04283c4` (P2B cerrado).
+- Commits: `2f5778b` KD-S1, `e685031` KD-S2, `f75da42` KD-S4 y el de clasificación y documentación que trae esta
+  sección.
+- Sigue todo en sombra y fuera de línea, sin gancho en tiempo de ejecución ni cambio visible para el residente.
+  `family_engine` sigue siendo la fuente de verdad.
+- Ningún parámetro se eligió para acercar el núcleo al golden. Los valores nuevos son provisionales (§9.4).
+
+### 9.1 Decisiones y lo implementado
+
+**KD-S1 · REVISE CORE.** D, lactato y FR.
+- D no cambia: `dD = (1 − entrega_rel) − D/τ_D`. Acumula memoria y se paga de forma gradual.
+- **Lactato.** El núcleo guarda el exceso X sobre la llegada en su propia memoria
+  (`core_coupling:lactate_kinetics`).
+  - Dinámica: `dX = k·D − X/τ_lac`, con `k = ganancia/(τ_D·τ_lac)`.
+  - En estado estable conserva la ganancia adoptada: 2 mmol/L por unidad de déficit de entrega.
+  - Lectura: lactato = llegada + X. El piso de 0,8 no mueve una llegada que ya está por debajo.
+- **FR.** `FR = impulso × (parte ventilatoria × (1 + max(0, W)) + escala × M(lactato))`, con tope `rr_max`.
+  - `impulso = max(0, 1 + min(0, W))`: una W deprimida (opioide) reduce las dos partes.
+  - M es un impulso metabólico saturable por encima de un umbral (2 mmol/L), con máximo `rr_metabolic_max`.
+  - La FR de llegada se reparte entre una parte ventilatoria, nunca menor que el piso de 12, y una metabólica. Al
+    aclararse el lactato sólo baja la parte metabólica.
+  - Una W aumentada suma sólo a la parte ventilatoria.
+- Resultado: aclarar el lactato nunca causa bradipnea. Sólo un mecanismo explícito de W la causa.
+
+**KD-S2 · ADOPT CORE DIRECTION.** FC.
+- La FC sinusal es la frecuencia intrínseca de R más `respuesta × (1 − betabloqueo) × S`.
+- S es un único impulso simpático común, guardado en la memoria del núcleo (`core_coupling:sympathetic_drive`).
+  - Sube de inmediato al objetivo y baja con una constante de tiempo τ_S.
+  - El objetivo suma, respecto de la llegada:
+    - el déficit de presión;
+    - D/τ_D;
+    - la hipoxemia;
+    - la hipoglucemia.
+  - Tiene un piso de retirada.
+- **Hipercapnia, dolor o agitación, fiebre y abstinencia** quedan declarados como entradas del mismo impulso. No se
+  modelan: ningún estado del núcleo los lleva todavía.
+- `GIHaemorrhage` sólo escribe V y Hb, y no hay regla de FC propia de ninguna familia. La hemostasia baja la FC sólo
+  a través de la presión recuperada y la deuda pagada.
+- Un ritmo no sinusal (bloqueo, escape, marcapasos) conserva la frecuencia que tiene.
+- Declaración nueva del caso: `Anchors.beta_blockade`, de 0 a 1. El valor por defecto, 0, significa «no declarado».
+
+**KD-S3 · RESUELTA, sin cambios.**
+- La fisiología usa el estado sin redondear; la pantalla y la habilitación de oportunidades usan Observation v2.
+- No se tocó el código del umbral de conciencia (`_level`, `pressure_levels`, `oxygen_levels`).
+- Sí cambió dónde aparece la diferencia, por KD-S4; ver §9.5.
+
+**KD-S4 · REVISE CORE.** Precarga y rendimientos decrecientes.
+- **Posición en la curva:** `p(V) = 1 − exp(−max(0, x0 + V)/λ)`, con `x0 = −λ·ln(1 − p0)`. La curva es cóncava en
+  todo su rango, sin *clamp*, y su meseta `P/p0` nunca se alcanza.
+- **Gasto:** `gasto = P × factor de ritmo × p(V)/p0 × 1/(1 + a·(T − 1))`. La presión es `gasto × T`.
+- **p0, la posición de llegada:** `Anchors.preload_fraction`; si no se declara, 0,5 (provisional).
+  - Con λ = 833,33 mL-eq y p0 = 0,5, la pendiente en la llegada es 1/833,33 por mL: la del motor heredado (300 mL
+    por 0,36 de circulación). Es la única ancla adoptada de la curva.
+  - Un p0 bajo describe un paciente dependiente de precarga; uno alto, un corazón cerca de su meseta.
+- **Congestión.** El acoplamiento del núcleo `core_coupling:preload_congestion` escribe L:
+  `dL = g × max(0, (p − rodilla)/(1 − rodilla)) × max(0, 1 − reserva × P)`.
+  - Una bomba con reserva plena y P normal nunca congestiona sólo por precarga.
+  - No hay aclaramiento de L (§9.8).
+- Declaración nueva del caso: `Anchors.pump_reserve`, de 0 a 1. El valor por defecto es 1.
+
+### 9.2 Nivel 1 · Restricciones cualitativas
+
+`test_clinical_core_calibration.py`, 38 pruebas. Todas comprueban dirección, monotonía, memoria, saturación y
+ausencia de estados imposibles, nunca un número del golden.
+
+- **KD-S1:**
+  - los escenarios de aceptación 1 a 4;
+  - ninguna FR < 10 por aclaramiento, con cuatro llegadas parametrizadas;
+  - la bradipnea sólo por W.
+- **KD-S2:**
+  - las trayectorias A a E;
+  - una reproducción sin módulo de hemorragia: los mismos V y Hb dan la misma FC en cada minuto;
+  - una hipoglucemia de otra familia;
+  - la memoria del impulso;
+  - un ritmo con frecuencia propia.
+- **KD-S4:**
+  - concavidad en nueve curvas: posición 0,25, 0,5 y 0,8, cada una con bomba normal, bomba al 50 % y tono 1,8;
+  - los escenarios de aceptación 1 a 7;
+  - congestión sólo sin reserva o con una bomba que falla;
+  - nada bajo la rodilla ni en shock;
+  - la pendiente adoptada.
+- **Nivel 2:** las bandas siguen TBD y las sondas son deterministas.
+
+Pruebas adaptadas, que protegen lo mismo que antes:
+- `test_a_rounding_tie_needs_both_sides_on_the_same_boundary` pone el empate a mano (PAD 52,5), porque las
+  corridas ya no producen ninguno.
+- `test_clinical_core_primitives` ignora las claves `core_coupling:*` en `internal_updates` (P2C-1).
+
+### 9.3 Nivel 2 · Sondas por familia (preparado, no finalizado)
+
+`python -m clinical_core.bands` corre sondas sintéticas sobre una llegada neutra común (PA 120/75, FC 80, FR 16, Hb
+13). No son casos del banco. Cada sonda mueve sólo los canales declarados.
+
+**Ninguna banda está fijada (`BANDS` = TBD). Las fija la docencia: la IA no fija bandas clínicas.** Lecturas con
+los parámetros provisionales:
+
+| Sonda | Familia | Qué mueve | Lectura del núcleo |
+|---|---|---|---|
+| `haemorrhage` | Hemorragia / trauma | V −10 mL/min y Hb −0,02/min durante 60 min | min 30: PAM 76, FC 92, gasto 0,57; min 60: PAM 58, FC 109, lactato 1,2, gasto 0,00 |
+| `vasodilation` | Sepsis | T −0,01/min durante 40 min (hasta 0,6) | min 40: PAM 80, FC 88, gasto 1,14, D −2,1, lactato 1,0 |
+| `pump_failure_then_bolus` | SCA | P hasta 0,7 en 30 min; 500 mL en el min 40 | min 30: PAM 80, gasto 0,70; tras 500 mL: PAM 91, gasto 1,02 |
+| `preload_dependent` | VD / TEP | p0 0,25; −200 mL en el min 1; +250 mL en el min 20 | min 1: PAM 64, gasto 0,19; min 20: PAM 96, gasto 1,17 |
+| `overload` | Edema pulmonar | p0 0,8, reserva 0,3, P −0,3; +20 mL/min durante 100 min | gasto 0,70 → 0,86 con 2 L; L 0 → 1,98 |
+| `bronchospasm` | Asma | W +0,5 | FR 16 → 24 |
+| `opioid` | Opioide | W −0,7 | FR 16 → 5 (bradipnea por W) |
+
+Hallazgos para la docencia. No se corrigieron, porque eso sería ajustar parámetros TBD:
+1. **Gasto 0 con pulso presente.**
+   - Con unos 600 mL-eq bajo la llegada (p0 = 0,5), el gasto llega a 0. El pulso sigue presente y la PAM es 58,
+     porque la presión se lee del gasto con la ganancia lineal adoptada.
+   - El núcleo no tiene transición a paro por gasto nulo. El motor heredado lo oculta con su piso de circulación de
+     0,25.
+   - En el golden no ocurre: el V mínimo es −150 mL-eq y el gasto mínimo 0,80.
+2. **Lactato bajo en shock profundo.** La ganancia adoptada (2 mmol/L por déficit pleno) y τ_lac = 60 dan 1,2 mmol/L
+   a los 60 min de un shock con gasto nulo.
+3. **Sepsis sin demanda.** La vasodilatación sola mejora el gasto por menor poscarga, y D queda negativa. La demanda
+   metabólica no tiene canal.
+4. **P sólo escala la curva.** Una bomba al 70 % sobre una llegada en p0 = 0,5 se compensa del todo con 500 mL
+   (Frank–Starling).
+   - No se puede compensar sólo si P < p0.
+   - Queda por decidir si P también aplana la curva: es la «sensibilidad a P», TBD.
+5. **Respuesta de FC acotada por la ganancia adoptada.** Son 25 lpm por unidad de impulso: con gasto nulo, la FC
+   sube unos 29 lpm.
+
+### 9.4 Parámetros que siguen TBD (ninguno se declara aprobado)
+
+| Parámetro del encargo | En `derived.PARAMETERS` | Valor provisional |
+|---|---|---|
+| τ de recuperación de D | `debt_clearance_tau_min` | 60 min |
+| déficit de entrega → D | integral directa de `1 − entrega_rel` (ganancia 1) | 1 |
+| D → lactato | `lactate_per_output_deficit` (estado estable; adoptada del heredado) | 2 mmol/L |
+| aclaramiento de lactato | `lactate_clearance_tau_min` | 60 min |
+| impulso metabólico → FR | `rr_per_lactate`, `lactate_drive_threshold_mmol_l`, `rr_metabolic_max` | 7,5/min por mmol/L; 2 mmol/L; 25/min |
+| cotas fisiológicas de FR | `rr_ventilatory_floor`, `rr_max` (cota de seguridad) | 12; 60 |
+| déficit de PAM/gasto → impulso simpático | `sympathetic_per_pressure_deficit`, `sympathetic_per_debt` | 1; 0,5 |
+| otras entradas del impulso | `sympathetic_per_hypoxaemia_point`, `hypoxaemia_threshold_spo2`, `sympathetic_per_hypoglycaemia_mg_dl`, `hypoglycaemia_threshold_mg_dl`, `sympathetic_withdrawal_limit` | 0,02; 94 %; 0,01; 70 mg/dL; 1 |
+| tiempo de decaimiento simpático | `sympathetic_decay_tau_min` | 5 min |
+| forma de la curva precarga → VS | exponencial saturable `1 − exp(−x/λ)` | — |
+| punto medio / semisaturación | `preload_curve_scale_ml`, `arrival_preload_fraction` | 833,33 mL-eq; 0,5 |
+| sensibilidad a P | P multiplica el gasto (exponente 1, sin parámetro propio) | 1 |
+| sensibilidad a T / poscarga | `afterload_sensitivity` | 0,3 |
+| umbral y ganancia V/precarga → L | `congestion_preload_knee`, `congestion_per_excess_preload` | 0,85; 0,05/min |
+
+Siguen adoptadas del motor heredado, sin cambio de valor:
+- `sbp_per_pressure_deficit`, `dbp_per_pressure_deficit`;
+- `hr_per_sympathetic_drive` (25, antes `hr_per_pressure_deficit`);
+- `crt_per_output_deficit_s`, `spo2_per_fio2`;
+- `lactate_floor` y los umbrales de conciencia.
+
+### 9.5 Nivel 3 · Golden antes y después, y clasificación
+
+| Variable | Corridas antes (`04283c4`) | Máx. antes | Corridas después | Máx. después | Razón |
+|---|---|---|---|---|---|
+| Lactato | 20 | 1,2 mmol/L | 20 | 1,5 mmol/L | KD-S1 |
+| FR | 20 | 9/min | 20 | 11/min | KD-S1 |
+| FC | 4 | 17 lpm | 20 | 12 lpm | KD-S2 (18 corridas); KD-S4 en volumen agresivo (2) |
+| PAS | 2 | 31 mmHg | 20 | 10 mmHg | KD-S4 |
+| PAD | 2 | 17 mmHg | 20 | 6 mmHg | KD-S4 |
+| PAM | 2 | 22 mmHg | 19 | 7 mmHg | KD-S4 |
+| TLC | 1 | 0,5 s | 18 | 0,9 s | KD-S4 |
+| V (mL-eq) | 2 | 559 | 2 | 559 | KD-S4 |
+| Conciencia | 1 (1 min) | 1 nivel | 1 (6 min) | 1 nivel | KD-S3 (ver abajo) |
+
+**Lectura de la tabla:**
+- Pares (corrida, variable) con diferencia: 54 → 140.
+- Las diferencias se generalizan, porque cada mecanismo aprobado ahora actúa en todas las corridas. A la vez
+  bajan las magnitudes máximas de presión y FC.
+- La FR mínima del núcleo en los escenarios pasó de 6–8/min a 20/min.
+
+**Clasificación** (`shadow.classify`, guardada en el golden por escenario):
+- 220 MATCH, 140 APPROVED DIFFERENCE y 0 UNRESOLVED DIFFERENCE.
+- Cada diferencia aprobada lo es por su **dirección**. Su magnitud depende de parámetros TBD (§9.4) y de las
+  tolerancias del Apéndice A9, que siguen sin fijar.
+
+APPROVED DIFFERENCE, por decisión:
+- **KD-S1:** lactato y FR en las 20 corridas.
+- **KD-S2:** FC en 18 corridas: todas salvo el volumen agresivo.
+- **KD-S3:** conciencia en 57m sin tratamiento.
+- **KD-S4:**
+  - PAS y PAD en 20 corridas;
+  - PAM en 19 (no en oxígeno 72f);
+  - TLC en 18 (no en los dos escenarios de oxígeno);
+  - V y FC en volumen agresivo, en ambos casos.
+
+Atribuciones mixtas, ambas aprobadas:
+- **FC en volumen agresivo.** Va bajo KD-S4, la causa mayor, pero el impulso de KD-S2 también contribuye.
+- **Conciencia en 57m sin tratamiento.**
+  - El núcleo lee el umbral de 80 mmHg sobre la PAS cruda (KD-S3, sin cambios).
+  - La curva de KD-S4 baja esa PAS menos de 1 mmHg, así que el cruce llega en el minuto 55 y no en el 60.
+  - Minutos 55–57: la PAS mostrada coincide (80) y sólo difiere la lectura cruda (KD-S3).
+  - Minutos 58–60: la PAS mostrada del núcleo ya es 79 (KD-S4).
+
+UNRESOLVED DIFFERENCE: ninguna en el golden.
+- La prueba `test_a_difference_without_an_approved_decision_stays_unresolved` asegura que una diferencia nueva sin
+  decisión aprobada quede como UNRESOLVED.
+- Lo que sigue sin resolver son magnitudes, tolerancias y los hallazgos de §9.3 y §9.8.
+
+**Golden por Contracts v2:** sigue IDÉNTICO al comprometido (`python -m clinical_core.contracts_shadow`).
+
+### 9.6 Brechas de contrato de P2B (registradas, sin rediseñar)
+
+- **P2B-01.** Contracts v2 no lleva explícito el `actual_start_min` de una entrega en cola.
+- **P2B-02.** Contracts v2 no lleva explícita la FiO2 efectivamente aplicada.
+- **Mitigación vigente:**
+  1. reconstrucción determinista;
+  2. comparación con el motor autoritativo;
+  3. falla cerrada si difieren (`check_rebuilt_against_engine`).
+- **Objetivo futuro:** un contrato de ejecución o entrega (*Execution/Delivery*).
+- En P2C no se modificaron `OrderAction` v2 ni `FateReceipt` v2.
+
+### 9.7 Contradicción señalada (decisión pendiente)
+
+- La propuesta (§7.3) dice que las cantidades derivadas «no se guardan».
+- Pero KD-S1 pide un lactato «con producción y aclaramiento», y KD-S2 un tiempo de decaimiento simpático. Las dos
+  cosas implican memoria.
+- Se implementó como memoria del propio núcleo en `CoreState.internal`, bajo claves `core_coupling:*` que sólo
+  escribe el integrador:
+  - no es un canal nuevo;
+  - ningún módulo puede escribirla;
+  - se repite de forma determinista.
+- Falta decidir si esa memoria debe ser un canal declarado de la propuesta.
+
+### 9.8 Limitaciones
+
+- Los hallazgos 1 a 5 de §9.3.
+- **L no se aclara:** ningún mecanismo del núcleo reduce el agua pulmonar todavía.
+- **Cota del canal V** en ±3000 mL-eq: es una guarda, no fisiología.
+- **Declaraciones del caso sin mapear.** El adaptador heredado no traduce betabloqueo, posición de precarga ni
+  reserva de bomba desde los casos del banco, y los casos GI quedan con los valores por defecto. El motor heredado
+  tampoco los modela en esta familia.
+- **Entradas simpáticas sin estado.** La hipercapnia, el dolor, la fiebre y la abstinencia no tienen estado en el
+  núcleo.
+
+### 9.9 Gancho en tiempo de ejecución
+
+No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`: `test_shadow_core_isolation.py` lo
+comprueba, incluido el cierre de importaciones desde `app`, `family_engine`, `family_parser`, `submission_guard` y
+`order_pipeline`.

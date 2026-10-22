@@ -68,6 +68,24 @@
   ]
  },
  "core_version": "0.1.0-shadow",
+ "decisions": {
+  "KD-S1": [
+   "approved",
+   "REVISE CORE: D with memory produces lactate; RR from W plus a saturating metabolic drive"
+  ],
+  "KD-S2": [
+   "approved",
+   "ADOPT CORE DIRECTION: HR from R plus one common sympathetic drive plus modulators"
+  ],
+  "KD-S3": [
+   "approved",
+   "RESOLVED, not changed in P2C: physiology reads the unrounded state; display and gating read Observation v2"
+  ],
+  "KD-S4": [
+   "approved",
+   "REVISE CORE: one smooth, saturating preload curve; no clamp"
+  ]
+ },
  "differences": {
   "KD-S1": [
    "lactate and respiratory rate (approved revision, P2C-1): the core accumulates an oxygen-delivery debt D (tau provisional), produces lactate from D and clears it with its own memory, and reads RR as ventilation (W) plus a saturating metabolic drive anchored to arrival, so clearing lactate never causes bradypnoea; the family engine sets both instantly from circulation, with an RR floor of 14 in this family",
@@ -240,6 +258,26 @@
  },
  "scenarios": {
   "gi_bleed_57m/aggressive_volume": {
+   "classification": {
+    "V_ml_eq": "APPROVED DIFFERENCE",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -1527,6 +1565,26 @@
    }
   },
   "gi_bleed_57m/definitive_management": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -2985,6 +3043,26 @@
    }
   },
   "gi_bleed_57m/oxygen_non_rebreather": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "MATCH",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -3810,6 +3888,26 @@
    }
   },
   "gi_bleed_57m/prbc_2u_over_60": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -5081,6 +5179,26 @@
    }
   },
   "gi_bleed_57m/queued_timed_bags": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -6106,6 +6224,26 @@
    }
   },
   "gi_bleed_57m/saline_2l_over_20": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -7204,6 +7342,26 @@
    }
   },
   "gi_bleed_57m/saline_then_blood": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -8673,6 +8831,26 @@
    }
   },
   "gi_bleed_57m/stop_fluids": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -9787,6 +9965,26 @@
    }
   },
   "gi_bleed_57m/untimed_shared_line": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -11103,6 +11301,26 @@
    }
   },
   "gi_bleed_57m/untreated_60": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "APPROVED DIFFERENCE",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -12185,6 +12403,26 @@
    }
   },
   "gi_bleed_72f/aggressive_volume": {
+   "classification": {
+    "V_ml_eq": "APPROVED DIFFERENCE",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -13472,6 +13710,26 @@
    }
   },
   "gi_bleed_72f/definitive_management": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -14930,6 +15188,26 @@
    }
   },
   "gi_bleed_72f/oxygen_non_rebreather": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "MATCH",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "MATCH",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -15754,6 +16032,26 @@
    }
   },
   "gi_bleed_72f/prbc_2u_over_60": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -17025,6 +17323,26 @@
    }
   },
   "gi_bleed_72f/queued_timed_bags": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -18050,6 +18368,26 @@
    }
   },
   "gi_bleed_72f/saline_2l_over_20": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -19148,6 +19486,26 @@
    }
   },
   "gi_bleed_72f/saline_then_blood": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -20617,6 +20975,26 @@
    }
   },
   "gi_bleed_72f/stop_fluids": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -21731,6 +22109,26 @@
    }
   },
   "gi_bleed_72f/untimed_shared_line": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
@@ -23047,6 +23445,26 @@
    }
   },
   "gi_bleed_72f/untreated_60": {
+   "classification": {
+    "V_ml_eq": "MATCH",
+    "blood_delivered_units": "MATCH",
+    "consciousness_level": "MATCH",
+    "crt_s": "APPROVED DIFFERENCE",
+    "dbp": "APPROVED DIFFERENCE",
+    "fio2": "MATCH",
+    "fluid_delivered_ml": "MATCH",
+    "glucose_mg_dl": "MATCH",
+    "hb_g_dl": "MATCH",
+    "hr": "APPROVED DIFFERENCE",
+    "k_mmol_l": "MATCH",
+    "lactate_mmol_l": "APPROVED DIFFERENCE",
+    "map": "APPROVED DIFFERENCE",
+    "pulse_present": "MATCH",
+    "respiratory_rate": "APPROVED DIFFERENCE",
+    "rhythm": "MATCH",
+    "sbp": "APPROVED DIFFERENCE",
+    "spo2": "MATCH"
+   },
    "core_inputs": [
     {
      "fraction_after_hemostasis": 0.1,
