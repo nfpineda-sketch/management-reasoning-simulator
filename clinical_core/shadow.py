@@ -82,6 +82,12 @@ DIFFERENCES = {
               "(the curve saturates), and past the clamp the core's V keeps rising while its output barely moves",
               "TBD: curve form and scale, arrival position, P sensitivity, afterload sensitivity, congestion knee "
               "and gain"),
+    "P2E-2": ("oxygen debt against demand (structure approved, P2E-2): D integrates max(0, demand - delivery), so "
+              "delivery above demand is no credit and D repays only what it accrued. With the GI defaults unmapped "
+              "(demand baseline 1, no clearable arrival lactate), a run whose delivery rises above arrival keeps "
+              "lactate at arrival instead of clearing it below, and RR and the drive follow; the family engine "
+              "lowers lactate below arrival as soon as circulation improves", "TBD: demand baseline and modifiers, "
+              "oxygen-delivery normalization, the GI family's arrival references (P2E-6 migration gate)"),
 }
 #: Candidate causes of each expected difference (P2D-9): the decided mechanisms on the variable's
 #: causal path in that run. They are candidates, not a measure of how much each contributes;
@@ -118,7 +124,33 @@ DECISIONS = {
     "KD-S3": ("approved", "RESOLVED, not changed in P2C: physiology reads the unrounded state; display and gating "
                           "read Observation v2"),
     "KD-S4": ("approved", "REVISE CORE: one smooth, saturating preload curve; no clamp"),
+    "P2E-2": ("approved", "STRUCTURE: D integrates the delivery deficit below metabolic demand, never a credit; demand "
+                          "multipliers and the arrival references are TBD"),
 }
+
+#: Mechanisms on a variable's causal path only in the runs where they act (P2E). P2E-2: in a run
+#: where the delivery of some minute exceeded that minute's demand, the debt was not credited;
+#: that lies on the path of lactate and RR (through D and lactate kinetics) and of HR (through D
+#: and the sympathetic drive). In a run where delivery never exceeded demand it changes nothing.
+RUN_DEPENDENT = {"P2E-2": ("lactate_mmol_l", "respiratory_rate", "hr")}
+
+
+def acting_mechanisms(core: Trajectory) -> tuple[str, ...]:
+    """The run-dependent mechanisms that acted in this run (``RUN_DEPENDENT``)."""
+    derived = core.derived()
+    # The debt of minute m reads the delivery at the start of the minute and the demand of the minute.
+    clipped = any(derived[minute - 1].delivery_rel > core.states[minute].aux.oxygen_demand
+                  for minute in range(1, len(core.states)))
+    return ("P2E-2",) if clipped else ()
+
+
+def expected_causes(key: str, acting=()) -> dict[str, tuple[str, ...]]:
+    """The candidate causes of each variable of a run: the structural path plus the mechanisms that acted."""
+    expected = {name: tuple(causes) for name, causes in EXPECTED_DIFFERENCES[key].items()}
+    for mechanism in acting:
+        for name in RUN_DEPENDENT[mechanism]:
+            expected[name] = expected.get(name, ()) + (mechanism,)
+    return expected
 MATCH, APPROVED_DIRECTION, UNRESOLVED = "MATCH", "APPROVED_DIRECTION_MAGNITUDE_TBD", "UNRESOLVED"
 
 
@@ -177,7 +209,7 @@ def consciousness_attribution(result) -> list[dict]:
     return rows
 
 
-def classify(key: str, summary: dict, attribution: list | None = None) -> dict:
+def classify(key: str, summary: dict, attribution: list | None = None, acting=()) -> dict:
     """Level 3 (P2D-9): for every compared variable of a run, its class and its candidate causes.
 
     - MATCH: no difference. A rounding tie with no mismatch (the same raw value on a .5
@@ -187,10 +219,12 @@ def classify(key: str, summary: dict, attribution: list | None = None) -> dict:
       of the difference is not approved.
     - UNRESOLVED: no approved decision explains it.
 
-    The candidates follow ``EXPECTED_DIFFERENCES`` (the causal path), and for consciousness the
-    minute-by-minute ``attribution`` when given. The committed golden freezes the sizes, so any
-    change to them fails the golden test and has to be reviewed.
+    The candidates follow ``EXPECTED_DIFFERENCES`` (the causal path) plus the run-dependent
+    mechanisms that acted (``acting``, P2E), and for consciousness the minute-by-minute
+    ``attribution`` when given. The committed golden freezes the sizes, so any change to them
+    fails the golden test and has to be reviewed.
     """
+    path = expected_causes(key, acting)
     classes = {}
     for name, entry in summary.items():
         if not entry["compared"]:
@@ -198,7 +232,7 @@ def classify(key: str, summary: dict, attribution: list | None = None) -> dict:
         if not entry["mismatched"]:
             classes[name] = {"classification": MATCH, "candidate_causes": []}
             continue
-        expected = list(EXPECTED_DIFFERENCES[key].get(name, ()))
+        expected = list(path.get(name, ()))
         causes, item, explained = expected, {}, True
         if name == "consciousness_level" and attribution:
             # Minute by minute; any minute left without a cause leaves the variable unresolved,
@@ -253,10 +287,14 @@ def golden_report(results=None) -> dict:
         "scenarios": {result.key: {"minutes": SCENARIOS[result.scenario]["minutes"],
                                    "orders": {str(m): t for m, t in SCENARIOS[result.scenario]["orders"].items()},
                                    "core_inputs": [item.to_spec() for item in result.core.contributors],
-                                   "mismatching": {name: list(EXPECTED_DIFFERENCES[result.key].get(name, ()))
-                                                   or "UNEXPLAINED" for name in mismatching(result.summary)},
+                                   "mismatching": {name: list(expected_causes(result.key,
+                                                                              acting_mechanisms(result.core))
+                                                              .get(name, ())) or "UNEXPLAINED"
+                                                   for name in mismatching(result.summary)},
+                                   "acting_mechanisms": list(acting_mechanisms(result.core)),
                                    "classification": classify(result.key, result.summary,
-                                                              consciousness_attribution(result)),
+                                                              consciousness_attribution(result),
+                                                              acting_mechanisms(result.core)),
                                    "case_parameters": case_parameter_provenance(result.core.anchors,
                                                                                 result.core.profile),
                                    "variables": result.summary}

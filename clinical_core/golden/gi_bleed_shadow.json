@@ -4,10 +4,10 @@
  },
  "channel_bounds": {
   "D": [
-   -10000.0,
+   0.0,
    10000.0,
    "provisional",
-   "guard only"
+   "guard only; a debt is never negative (P2E-2)"
   ],
   "G": [
    -10.0,
@@ -87,6 +87,10 @@
   "KD-S4": [
    "approved",
    "REVISE CORE: one smooth, saturating preload curve; no clamp"
+  ],
+  "P2E-2": [
+   "approved",
+   "STRUCTURE: D integrates the delivery deficit below metabolic demand, never a credit; demand multipliers and the arrival references are TBD"
   ]
  },
  "differences": {
@@ -105,6 +109,10 @@
   "KD-S4": [
    "volume, pressure and refill (approved revision, P2C-3): the core reads output from one smooth, saturating preload curve (V -> effective preload -> stroke volume -> output -> pressure), concave everywhere, with arrival placed on it by a case position (provisional default 0.5, where its slope equals the family engine's linear gain) and output lowered by tone above arrival; the family engine is linear in volume and clamps circulation to [.25, 1.9] (+625 mL-eq). So pressure, refill and the rate differ wherever V leaves arrival: a little below it (the curve is steeper there), more above it (the curve saturates), and past the clamp the core's V keeps rising while its output barely moves",
    "TBD: curve form and scale, arrival position, P sensitivity, afterload sensitivity, congestion knee and gain"
+  ],
+  "P2E-2": [
+   "oxygen debt against demand (structure approved, P2E-2): D integrates max(0, demand - delivery), so delivery above demand is no credit and D repays only what it accrued. With the GI defaults unmapped (demand baseline 1, no clearable arrival lactate), a run whose delivery rises above arrival keeps lactate at arrival instead of clearing it below, and RR and the drive follow; the family engine lowers lactate below arrival as soon as circulation improves",
+   "TBD: demand baseline and modifiers, oxygen-delivery normalization, the GI family's arrival references (P2E-6 migration gate)"
   ]
  },
  "legacy": {
@@ -164,7 +172,7 @@
   ],
   "debt_clearance_tau_min": [
    "provisional",
-   "tau_D_recovery: TBD (KD-S1); 60 min is not approved"
+   "tau_D_recovery: TBD (KD-S1); 60 min is not approved. D repays only what it accrued: the deficit against demand is never a credit (P2E-2)"
   ],
   "hr_per_sympathetic_drive": [
    "adopted",
@@ -265,7 +273,16 @@
  },
  "scenarios": {
   "gi_bleed_57m/aggressive_volume": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -277,6 +294,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -337,7 +360,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -348,7 +372,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -365,7 +390,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -434,18 +460,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -473,39 +502,39 @@
       ],
       "10": [
        null,
-       -1.245436
+       0.0
       ],
       "15": [
        null,
-       -2.688456
+       0.0
       ],
       "20": [
        null,
-       -4.510974
+       0.0
       ],
       "30": [
        null,
-       -8.935356
+       0.0
       ],
       "45": [
        null,
-       -17.233986
+       0.0
       ],
       "5": [
        null,
-       -0.29991
+       0.0
       ],
       "60": [
        null,
-       -27.451654
+       0.0
       ],
       "75": [
        null,
-       -36.947058
+       0.0
       ],
       "90": [
        null,
-       -43.613601
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -1273,7 +1302,7 @@
       ],
       "45": [
        2.9,
-       4.3
+       4.4
       ],
       "5": [
        4.1,
@@ -1281,15 +1310,15 @@
       ],
       "60": [
        2.9,
-       4.1
+       4.4
       ],
       "75": [
        3.0,
-       4.0
+       4.4
       ],
       "90": [
        3.1,
-       3.8
+       4.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -1449,15 +1478,15 @@
       ],
       "60": [
        15,
-       25
+       26
       ],
       "75": [
        16,
-       24
+       26
       ],
       "90": [
        16,
-       23
+       26
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -1690,7 +1719,16 @@
    }
   },
   "gi_bleed_57m/definitive_management": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -1702,6 +1740,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -1760,7 +1804,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -1771,7 +1816,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -1788,7 +1834,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -1850,18 +1897,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -1889,47 +1939,47 @@
       ],
       "10": [
        null,
-       -0.544803
+       0.0
       ],
       "105": [
        null,
-       -29.833895
+       0.0
       ],
       "120": [
        null,
-       -32.439638
+       0.0
       ],
       "15": [
        null,
-       -1.231944
+       0.0
       ],
       "20": [
        null,
-       -2.161064
+       0.0
       ],
       "30": [
        null,
-       -4.654127
+       0.0
       ],
       "45": [
        null,
-       -9.68614
+       0.0
       ],
       "5": [
        null,
-       -0.124966
+       0.0
       ],
       "60": [
        null,
-       -15.880105
+       0.0
       ],
       "75": [
        null,
-       -21.832367
+       0.0
       ],
       "90": [
        null,
-       -26.379254
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -2771,7 +2821,7 @@
      "compared": 121,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 1.1,
+     "max_abs_diff": 1.2,
      "mismatched": 118,
      "rounding_tie_minutes": [],
      "samples": {
@@ -2789,11 +2839,11 @@
       ],
       "105": [
        3.3,
-       3.9
+       4.4
       ],
       "120": [
        3.3,
-       3.8
+       4.4
       ],
       "15": [
        4.1,
@@ -2809,7 +2859,7 @@
       ],
       "45": [
        3.5,
-       4.3
+       4.4
       ],
       "5": [
        4.3,
@@ -2817,15 +2867,15 @@
       ],
       "60": [
        3.2,
-       4.3
+       4.4
       ],
       "75": [
        3.3,
-       4.1
+       4.4
       ],
       "90": [
        3.3,
-       4.0
+       4.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -2963,7 +3013,7 @@
      "compared": 121,
      "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 8.0,
+     "max_abs_diff": 9.0,
      "mismatched": 117,
      "rounding_tie_minutes": [],
      "samples": {
@@ -2981,11 +3031,11 @@
       ],
       "105": [
        18,
-       24
+       26
       ],
       "120": [
        18,
-       24
+       26
       ],
       "15": [
        24,
@@ -3009,15 +3059,15 @@
       ],
       "60": [
        17,
-       25
+       26
       ],
       "75": [
        17,
-       25
+       26
       ],
       "90": [
        17,
-       25
+       26
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -3282,7 +3332,16 @@
    }
   },
   "gi_bleed_57m/oxygen_non_rebreather": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -3294,6 +3353,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -3350,7 +3415,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -3361,7 +3427,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -3378,7 +3445,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -3421,18 +3489,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -3460,19 +3531,19 @@
       ],
       "10": [
        null,
-       -0.067574
+       0.014674
       ],
       "15": [
        null,
-       0.04921
+       0.124829
       ],
       "20": [
        null,
-       0.265167
+       0.33469
       ],
       "5": [
        null,
-       -0.076603
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -4237,7 +4308,16 @@
    }
   },
   "gi_bleed_57m/prbc_2u_over_60": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -4249,6 +4329,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -4307,7 +4393,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -4318,7 +4405,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -4335,7 +4423,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -4386,18 +4475,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -4425,39 +4517,39 @@
       ],
       "10": [
        null,
-       -0.507756
+       0.0
       ],
       "15": [
        null,
-       -1.148251
+       0.0
       ],
       "20": [
        null,
-       -2.014403
+       0.0
       ],
       "30": [
        null,
-       -4.338991
+       0.0
       ],
       "45": [
        null,
-       -9.032823
+       0.0
       ],
       "5": [
        null,
-       -0.116461
+       0.0
       ],
       "60": [
        null,
-       -14.813635
+       0.0
       ],
       "75": [
        null,
-       -19.984708
+       0.0
       ],
       "90": [
        null,
-       -23.206085
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -5195,7 +5287,7 @@
      "compared": 91,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 1.0,
+     "max_abs_diff": 1.1,
      "mismatched": 88,
      "rounding_tie_minutes": [],
      "samples": {
@@ -5225,7 +5317,7 @@
       ],
       "45": [
        3.6,
-       4.3
+       4.4
       ],
       "5": [
        4.3,
@@ -5233,15 +5325,15 @@
       ],
       "60": [
        3.3,
-       4.3
+       4.4
       ],
       "75": [
        3.4,
-       4.2
+       4.4
       ],
       "90": [
        3.5,
-       4.1
+       4.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -5401,15 +5493,15 @@
       ],
       "60": [
        18,
-       25
+       26
       ],
       "75": [
        19,
-       25
+       26
       ],
       "90": [
        19,
-       25
+       26
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -5642,7 +5734,14 @@
    }
   },
   "gi_bleed_57m/queued_timed_bags": {
+   "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -5654,6 +5753,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -6801,7 +6906,16 @@
    }
   },
   "gi_bleed_57m/saline_2l_over_20": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -6813,6 +6927,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -6871,7 +6991,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6882,7 +7003,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6899,7 +7021,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -6953,18 +7076,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -6992,31 +7118,31 @@
       ],
       "10": [
        null,
-       0.016579
+       0.021857
       ],
       "15": [
        null,
-       0.122909
+       0.127762
       ],
       "20": [
        null,
-       0.352427
+       0.356888
       ],
       "30": [
        null,
-       1.203937
+       1.207708
       ],
       "45": [
        null,
-       3.196151
+       3.199082
       ],
       "5": [
        null,
-       -0.005741
+       0.0
       ],
       "60": [
        null,
-       5.743344
+       5.745622
       ]
      },
      "tolerance": "not compared",
@@ -8033,7 +8159,16 @@
    }
   },
   "gi_bleed_57m/saline_then_blood": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -8045,6 +8180,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -8103,7 +8244,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -8114,7 +8256,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -8131,7 +8274,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -8203,18 +8347,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -8247,11 +8394,11 @@
       ],
       "105": [
        null,
-       -13.369852
+       0.553686
       ],
       "120": [
        null,
-       -16.273012
+       0.430304
       ],
       "15": [
        null,
@@ -8267,7 +8414,7 @@
       ],
       "45": [
        null,
-       1.464155
+       1.517813
       ],
       "5": [
        null,
@@ -8275,15 +8422,15 @@
       ],
       "60": [
        null,
-       -0.410757
+       1.179586
       ],
       "75": [
        null,
-       -3.977257
+       0.916729
       ],
       "90": [
        null,
-       -8.838128
+       0.712447
       ]
      },
      "tolerance": "not compared",
@@ -9143,11 +9290,11 @@
       ],
       "105": [
        3.4,
-       4.3
+       4.4
       ],
       "120": [
        3.4,
-       4.2
+       4.4
       ],
       "15": [
        4.3,
@@ -9339,7 +9486,7 @@
       ],
       "120": [
        19,
-       25
+       26
       ],
       "15": [
        25,
@@ -9636,7 +9783,16 @@
    }
   },
   "gi_bleed_57m/stop_fluids": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -9648,6 +9804,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -9706,7 +9868,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -9717,7 +9880,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -9734,7 +9898,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -9803,18 +9968,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -9843,31 +10011,31 @@
       ],
       "10": [
        null,
-       0.037032
+       0.03747
       ],
       "15": [
        null,
-       0.147482
+       0.147885
       ],
       "20": [
        null,
-       0.361254
+       0.361624
       ],
       "30": [
        null,
-       1.14866
+       1.148973
       ],
       "45": [
        null,
-       3.045852
+       3.046095
       ],
       "5": [
        null,
-       0.001409
+       0.001885
       ],
       "60": [
        null,
-       5.512203
+       5.512392
       ]
      },
      "tolerance": "not compared",
@@ -10884,7 +11052,16 @@
    }
   },
   "gi_bleed_57m/untimed_shared_line": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -10896,6 +11073,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -10954,7 +11137,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -10965,7 +11149,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -10982,7 +11167,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -11075,18 +11261,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -11121,19 +11310,19 @@
       ],
       "15": [
        null,
-       0.079472
+       0.113092
       ],
       "20": [
        null,
-       -0.185378
+       0.103977
       ],
       "30": [
        null,
-       -1.277682
+       0.087891
       ],
       "45": [
        null,
-       -3.772452
+       0.068306
       ],
       "5": [
        null,
@@ -11141,15 +11330,15 @@
       ],
       "60": [
        null,
-       -7.149069
+       0.053085
       ],
       "75": [
        null,
-       -11.257547
+       0.041255
       ],
       "90": [
        null,
-       -14.204204
+       0.032062
       ]
      },
      "tolerance": "not compared",
@@ -11887,7 +12076,7 @@
      "compared": 91,
      "first_mismatch_minute": 7,
      "kind": "display",
-     "max_abs_diff": 1.2,
+     "max_abs_diff": 1.3,
      "mismatched": 84,
      "rounding_tie_minutes": [],
      "samples": {
@@ -11925,15 +12114,15 @@
       ],
       "60": [
        3.2,
-       4.3
+       4.4
       ],
       "75": [
        3.1,
-       4.3
+       4.4
       ],
       "90": [
        3.2,
-       4.2
+       4.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -12101,7 +12290,7 @@
       ],
       "90": [
        17,
-       25
+       26
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -12334,7 +12523,14 @@
    }
   },
   "gi_bleed_57m/untreated_60": {
+   "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -12346,6 +12542,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 124.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -13640,7 +13842,16 @@
    }
   },
   "gi_bleed_72f/aggressive_volume": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -13652,6 +13863,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -13712,7 +13929,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13723,7 +13941,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13740,7 +13959,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -13809,18 +14029,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -13848,39 +14071,39 @@
       ],
       "10": [
        null,
-       -1.248149
+       0.0
       ],
       "15": [
        null,
-       -2.695023
+       0.0
       ],
       "20": [
        null,
-       -4.523181
+       0.0
       ],
       "30": [
        null,
-       -8.964243
+       0.0
       ],
       "45": [
        null,
-       -17.345113
+       0.0
       ],
       "5": [
        null,
-       -0.300484
+       0.0
       ],
       "60": [
        null,
-       -27.74646
+       0.0
       ],
       "75": [
        null,
-       -37.437307
+       0.0
       ],
       "90": [
        null,
-       -44.231606
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -14648,7 +14871,7 @@
       ],
       "45": [
        1.9,
-       3.3
+       3.4
       ],
       "5": [
        3.1,
@@ -14656,15 +14879,15 @@
       ],
       "60": [
        1.9,
-       3.1
+       3.4
       ],
       "75": [
        2.0,
-       2.9
+       3.4
       ],
       "90": [
        2.1,
-       2.7
+       3.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -14816,7 +15039,7 @@
       ],
       "45": [
        14,
-       23
+       24
       ],
       "5": [
        22,
@@ -14824,15 +15047,15 @@
       ],
       "60": [
        14,
-       23
+       24
       ],
       "75": [
        14,
-       22
+       24
       ],
       "90": [
        14,
-       20
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -15065,7 +15288,16 @@
    }
   },
   "gi_bleed_72f/definitive_management": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -15077,6 +15309,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -15135,7 +15373,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -15146,7 +15385,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -15163,7 +15403,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -15225,18 +15466,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -15264,47 +15508,47 @@
       ],
       "10": [
        null,
-       -0.551548
+       0.0
       ],
       "105": [
        null,
-       -30.355349
+       0.0
       ],
       "120": [
        null,
-       -33.00907
+       0.0
       ],
       "15": [
        null,
-       -1.2477
+       0.0
       ],
       "20": [
        null,
-       -2.189578
+       0.0
       ],
       "30": [
        null,
-       -4.719243
+       0.0
       ],
       "45": [
        null,
-       -9.83292
+       0.0
       ],
       "5": [
        null,
-       -0.126461
+       0.0
       ],
       "60": [
        null,
-       -16.138583
+       0.0
       ],
       "75": [
        null,
-       -22.203748
+       0.0
       ],
       "90": [
        null,
-       -26.836267
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -16146,7 +16390,7 @@
      "compared": 121,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 1.0,
+     "max_abs_diff": 1.2,
      "mismatched": 118,
      "rounding_tie_minutes": [],
      "samples": {
@@ -16164,11 +16408,11 @@
       ],
       "105": [
        2.3,
-       2.9
+       3.4
       ],
       "120": [
        2.3,
-       2.8
+       3.4
       ],
       "15": [
        3.1,
@@ -16184,7 +16428,7 @@
       ],
       "45": [
        2.5,
-       3.3
+       3.4
       ],
       "5": [
        3.3,
@@ -16192,15 +16436,15 @@
       ],
       "60": [
        2.2,
-       3.2
+       3.4
       ],
       "75": [
        2.3,
-       3.1
+       3.4
       ],
       "90": [
        2.3,
-       3.0
+       3.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -16338,7 +16582,7 @@
      "compared": 121,
      "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 8.0,
+     "max_abs_diff": 9.0,
      "mismatched": 117,
      "rounding_tie_minutes": [],
      "samples": {
@@ -16356,11 +16600,11 @@
       ],
       "105": [
        16,
-       21
+       24
       ],
       "120": [
        16,
-       21
+       24
       ],
       "15": [
        22,
@@ -16384,15 +16628,15 @@
       ],
       "60": [
        15,
-       23
+       24
       ],
       "75": [
        15,
-       23
+       24
       ],
       "90": [
        15,
-       22
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -16657,7 +16901,16 @@
    }
   },
   "gi_bleed_72f/oxygen_non_rebreather": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -16669,6 +16922,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -16725,7 +16984,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -16736,7 +16996,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -16751,7 +17012,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -16794,15 +17056,18 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -16830,19 +17095,19 @@
       ],
       "10": [
        null,
-       -0.153245
+       0.0
       ],
       "15": [
        null,
-       -0.075098
+       0.065796
       ],
       "20": [
        null,
-       0.107911
+       0.237448
       ],
       "5": [
        null,
-       -0.117398
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -17246,10 +17511,10 @@
     },
     "hr": {
      "compared": 21,
-     "first_mismatch_minute": 20,
+     "first_mismatch_minute": 19,
      "kind": "display",
      "max_abs_diff": 1.0,
-     "mismatched": 1,
+     "mismatched": 2,
      "rounding_tie_minutes": [],
      "samples": {
       "0": [
@@ -17607,7 +17872,16 @@
    }
   },
   "gi_bleed_72f/prbc_2u_over_60": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -17619,6 +17893,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -17677,7 +17957,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -17688,7 +17969,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -17705,7 +17987,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -17756,18 +18039,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -17795,39 +18081,39 @@
       ],
       "10": [
        null,
-       -0.513906
+       0.0
       ],
       "15": [
        null,
-       -1.162595
+       0.0
       ],
       "20": [
        null,
-       -2.040325
+       0.0
       ],
       "30": [
        null,
-       -4.398057
+       0.0
       ],
       "45": [
        null,
-       -9.165637
+       0.0
       ],
       "5": [
        null,
-       -0.117826
+       0.0
       ],
       "60": [
        null,
-       -15.047131
+       0.0
       ],
       "75": [
        null,
-       -20.309931
+       0.0
       ],
       "90": [
        null,
-       -23.582402
+       0.0
       ]
      },
      "tolerance": "not compared",
@@ -18565,7 +18851,7 @@
      "compared": 91,
      "first_mismatch_minute": 3,
      "kind": "display",
-     "max_abs_diff": 1.0,
+     "max_abs_diff": 1.1,
      "mismatched": 88,
      "rounding_tie_minutes": [],
      "samples": {
@@ -18595,7 +18881,7 @@
       ],
       "45": [
        2.6,
-       3.3
+       3.4
       ],
       "5": [
        3.3,
@@ -18603,15 +18889,15 @@
       ],
       "60": [
        2.3,
-       3.3
+       3.4
       ],
       "75": [
        2.4,
-       3.2
+       3.4
       ],
       "90": [
        2.5,
-       3.0
+       3.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -18733,7 +19019,7 @@
      "compared": 91,
      "first_mismatch_minute": 4,
      "kind": "display",
-     "max_abs_diff": 7.0,
+     "max_abs_diff": 8.0,
      "mismatched": 87,
      "rounding_tie_minutes": [],
      "samples": {
@@ -18771,15 +19057,15 @@
       ],
       "60": [
        16,
-       23
+       24
       ],
       "75": [
        17,
-       23
+       24
       ],
       "90": [
        17,
-       22
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -19012,7 +19298,14 @@
    }
   },
   "gi_bleed_72f/queued_timed_bags": {
+   "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -19024,6 +19317,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -20171,7 +20470,16 @@
    }
   },
   "gi_bleed_72f/saline_2l_over_20": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -20183,6 +20491,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -20241,7 +20555,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -20252,7 +20567,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -20269,7 +20585,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -20323,18 +20640,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -20362,31 +20682,31 @@
       ],
       "10": [
        null,
-       0.038761
+       0.040343
       ],
       "15": [
        null,
-       0.174698
+       0.176153
       ],
       "20": [
        null,
-       0.445919
+       0.447257
       ],
       "30": [
        null,
-       1.388692
+       1.389822
       ],
       "45": [
        null,
-       3.494511
+       3.49539
       ],
       "5": [
        null,
-       -0.000833
+       0.000888
       ],
       "60": [
        null,
-       6.132582
+       6.133265
       ]
      },
      "tolerance": "not compared",
@@ -21403,7 +21723,16 @@
    }
   },
   "gi_bleed_72f/saline_then_blood": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -21415,6 +21744,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -21473,7 +21808,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -21484,7 +21820,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -21501,7 +21838,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -21573,18 +21911,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -21617,11 +21958,11 @@
       ],
       "105": [
        null,
-       -13.359315
+       0.602298
       ],
       "120": [
        null,
-       -16.295718
+       0.468083
       ],
       "15": [
        null,
@@ -21637,7 +21978,7 @@
       ],
       "45": [
        null,
-       1.611136
+       1.651072
       ],
       "5": [
        null,
@@ -21645,15 +21986,15 @@
       ],
       "60": [
        null,
-       -0.252594
+       1.28315
       ],
       "75": [
        null,
-       -3.844759
+       0.997215
       ],
       "90": [
        null,
-       -8.765796
+       0.774997
       ]
      },
      "tolerance": "not compared",
@@ -22513,11 +22854,11 @@
       ],
       "105": [
        2.4,
-       3.3
+       3.4
       ],
       "120": [
        2.4,
-       3.2
+       3.4
       ],
       "15": [
        3.3,
@@ -22705,11 +23046,11 @@
       ],
       "105": [
        16,
-       23
+       24
       ],
       "120": [
        17,
-       23
+       24
       ],
       "15": [
        23,
@@ -23006,7 +23347,14 @@
    }
   },
   "gi_bleed_72f/stop_fluids": {
+   "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -23018,6 +23366,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -24254,7 +24608,16 @@
    }
   },
   "gi_bleed_72f/untimed_shared_line": {
+   "acting_mechanisms": [
+    "P2E-2"
+   ],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -24266,6 +24629,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,
@@ -24324,7 +24693,8 @@
     "hr": {
      "candidate_causes": [
       "KD-S2",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24335,7 +24705,8 @@
     "lactate_mmol_l": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24352,7 +24723,8 @@
     "respiratory_rate": {
      "candidate_causes": [
       "KD-S1",
-      "KD-S4"
+      "KD-S4",
+      "P2E-2"
      ],
      "classification": "APPROVED_DIRECTION_MAGNITUDE_TBD"
     },
@@ -24445,18 +24817,21 @@
     ],
     "hr": [
      "KD-S2",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "lactate_mmol_l": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "map": [
      "KD-S4"
     ],
     "respiratory_rate": [
      "KD-S1",
-     "KD-S4"
+     "KD-S4",
+     "P2E-2"
     ],
     "sbp": [
      "KD-S4"
@@ -24491,19 +24866,19 @@
       ],
       "15": [
        null,
-       0.105397
+       0.132471
       ],
       "20": [
        null,
-       -0.143722
+       0.121794
       ],
       "30": [
        null,
-       -1.199124
+       0.102952
       ],
       "45": [
        null,
-       -3.628708
+       0.08001
       ],
       "5": [
        null,
@@ -24511,15 +24886,15 @@
       ],
       "60": [
        null,
-       -6.975029
+       0.062181
       ],
       "75": [
        null,
-       -11.094462
+       0.048324
       ],
       "90": [
        null,
-       -14.044593
+       0.037556
       ]
      },
      "tolerance": "not compared",
@@ -25257,7 +25632,7 @@
      "compared": 91,
      "first_mismatch_minute": 7,
      "kind": "display",
-     "max_abs_diff": 1.2,
+     "max_abs_diff": 1.3,
      "mismatched": 84,
      "rounding_tie_minutes": [],
      "samples": {
@@ -25295,15 +25670,15 @@
       ],
       "60": [
        2.2,
-       3.3
+       3.4
       ],
       "75": [
        2.1,
-       3.3
+       3.4
       ],
       "90": [
        2.2,
-       3.2
+       3.4
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -25467,11 +25842,11 @@
       ],
       "75": [
        14,
-       23
+       24
       ],
       "90": [
        15,
-       23
+       24
       ]
      },
      "tolerance": "TBD (no agreed tolerance; proposal Appendix A9)",
@@ -25704,7 +26079,14 @@
    }
   },
   "gi_bleed_72f/untreated_60": {
+   "acting_mechanisms": [],
    "case_parameters": {
+    "arrival_lactate_excess": {
+     "calibrated": false,
+     "note": "not declared: the arrival lactate is the clearance baseline, so lactate does not fall below arrival",
+     "source": "default_unmapped",
+     "value": 0.0
+    },
     "beta_blockade": {
      "calibrated": false,
      "note": "not declared: neutral value",
@@ -25716,6 +26098,12 @@
      "note": "not declared: the arrival HR is read as intrinsic, with no sympathetic share at arrival",
      "source": "default_unmapped",
      "value": 112.0
+    },
+    "metabolic_demand_baseline": {
+     "calibrated": false,
+     "note": "not declared: arrival delivery read as meeting arrival demand",
+     "source": "default_unmapped",
+     "value": 1.0
     },
     "preload_fraction": {
      "calibrated": false,

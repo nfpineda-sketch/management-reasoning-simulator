@@ -401,7 +401,8 @@ def test_p2d8_provenance_says_value_source_and_calibration():
     plain = case_parameter_provenance(BLEEDING)
     assert {name: entry["source"] for name, entry in plain.items()} == {
         "beta_blockade": "default_unmapped", "preload_fraction": "default_unmapped", "pump_reserve": "default_unmapped",
-        "intrinsic_sinus_rate": "default_unmapped"}
+        "intrinsic_sinus_rate": "default_unmapped", "metabolic_demand_baseline": "default_unmapped",
+        "arrival_lactate_excess": "default_unmapped"}
     assert plain["preload_fraction"]["value"] == DEFAULT_PROFILE.arrival_preload_fraction
     assert not any(entry["calibrated"] for entry in plain.values())
     declared = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 0.4,
@@ -438,8 +439,8 @@ def test_p2d7_lower_afterload_may_raise_output_but_does_not_normalize_pressure()
     arrival, late = rows[0], rows[-1]
     assert late["output_rel"] > arrival["output_rel"], "a rise in output from lower afterload is allowed"
     assert late["map"] < arrival["map"], "it does not normalize MAP"
-    # Delivery follows flow; D, measured against arrival delivery (no demand state), falls.
-    assert late["delivery_rel"] > arrival["delivery_rel"] and late["D"] < 0
+    # Delivery follows flow; D, measured against demand at its baseline, is not credited (P2E-2).
+    assert late["delivery_rel"] > arrival["delivery_rel"] and late["D"] == 0.0
     assert bands.DIAGNOSTICS["vasodilation"]["classification"] == \
         "PHYSIOLOGICALLY_PLAUSIBLE_PENDING_MULTI_FAMILY_CALIBRATION"
 

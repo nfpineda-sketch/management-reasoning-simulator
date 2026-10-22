@@ -38,7 +38,10 @@ LEGACY_ML_PER_CIRCULATION_UNIT = 300.0 / 0.36
 #: writes them; each change is an ``AuxiliaryChange`` in the minute's record.
 LACTATE_KINETICS = Source(SourceKind.CORE_COUPLING, "lactate_kinetics")
 SYMPATHETIC_DRIVE = Source(SourceKind.CORE_COUPLING, "sympathetic_drive")
-AUXILIARY_SOURCES = {"lactate_excess_mmol_l": LACTATE_KINETICS, "sympathetic_drive": SYMPATHETIC_DRIVE}
+#: The core's product of the case's demand baseline and the declared demand modifiers (P2E-2).
+OXYGEN_DEMAND = Source(SourceKind.CORE_COUPLING, "oxygen_demand")
+AUXILIARY_SOURCES = {"lactate_excess_mmol_l": LACTATE_KINETICS, "sympathetic_drive": SYMPATHETIC_DRIVE,
+                     "oxygen_demand": OXYGEN_DEMAND}
 #: The core's coupling from excess preload on a pump without reserve to lung water L (KD-S4).
 PRELOAD_CONGESTION = Source(SourceKind.CORE_COUPLING, "preload_congestion")
 #: The core's slow clearance of lung water above arrival (P2D-6).
@@ -142,7 +145,9 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                             "reached here as the steady state of D and of lactate kinetics; the "
                                             "D -> lactate production gain it implies is provisional (KD-S1)"),
     "lactate_floor": (ADOPTED, "family_engine._diagnostic: max(.8, ...)"),
-    "debt_clearance_tau_min": (PROVISIONAL, "tau_D_recovery: TBD (KD-S1); 60 min is not approved"),
+    "debt_clearance_tau_min": (PROVISIONAL, "tau_D_recovery: TBD (KD-S1); 60 min is not approved. D repays "
+                                            "only what it accrued: the deficit against demand is never a credit "
+                                            "(P2E-2)"),
     "lactate_clearance_tau_min": (PROVISIONAL, "lactate clearance: TBD (KD-S1)"),
     "rr_per_lactate": (PROVISIONAL, "metabolic drive -> RR gain at the threshold: TBD (KD-S1); the value is the "
                                     "legacy GI RR gain 15 per circulation unit / lactate 2 per unit"),
@@ -188,8 +193,17 @@ def _level(value: float, levels) -> int:
 
 
 def lactate_excess(state: CoreState) -> float:
-    """The lactate the core holds above arrival (mmol/L): auxiliary state, not a function of D."""
+    """The lactate the core holds above its clearance baseline (mmol/L): auxiliary state, not a function of D."""
     return state.aux.lactate_excess_mmol_l
+
+
+def lactate_baseline(anchors: Anchors) -> float:
+    """The lactate clearance tends to (P2E-2): the arrival lactate less the share the case declares can clear.
+
+    Undeclared, it is the arrival lactate itself: D is never negative, so without a declared
+    arrival excess nothing takes lactate below arrival.
+    """
+    return anchors.lactate - anchors.arrival_lactate_excess
 
 
 def lactate_after_minute(state: CoreState, profile: CoreProfile) -> float:
@@ -198,6 +212,8 @@ def lactate_after_minute(state: CoreState, profile: CoreProfile) -> float:
     dX = k * D - X / tau_lactate, with k = gain / (tau_D * tau_lactate). At a steady delivery
     shortfall s, D settles at tau_D * s and X at gain * s, the family engine's lactate; on
     the way, lactate lags D, and after perfusion is restored it clears more slowly than D.
+    X starts at the arrival excess the case declares (0 undeclared) and is read above the
+    clearance baseline (``lactate_baseline``).
     """
     excess = lactate_excess(state)
     production = profile.lactate_per_output_deficit / (profile.debt_clearance_tau_min
@@ -244,9 +260,10 @@ def respiratory_rate(state: CoreState, anchors: Anchors, profile: CoreProfile, l
 def case_parameter_provenance(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> dict:
     """Each case parameter's value, where it comes from and whether it is calibrated (P2D-8).
 
-    ``source`` is ``explicit_case`` or ``synthetic_probe`` when the anchors declare it, else
-    ``default``. No case parameter is calibrated or approved yet: none is mapped from the bank
-    cases, and the defaults are neutral (or, for the preload position, provisional).
+    ``source`` is the declared one (``explicit_case``, ``approved_family_default`` or
+    ``synthetic_probe``), else ``default_unmapped``. No case parameter is calibrated yet: none
+    is mapped from the bank cases, and the defaults are neutral (or, for the preload position,
+    provisional).
     """
     notes = {UNMAPPED: "not declared: neutral value", "explicit_case": "declared by the case; not calibrated",
              "approved_family_default": "the family's approved default; not calibrated",
@@ -255,12 +272,17 @@ def case_parameter_provenance(anchors: Anchors, profile: CoreProfile = DEFAULT_P
                                             "not declared: provisional profile default (TBD)"),
                        "intrinsic_sinus_rate": (anchors.hr, "not declared: the arrival HR is read as intrinsic, with "
                                                             "no sympathetic share at arrival")}
+    unmapped_notes = {"metabolic_demand_baseline": "not declared: arrival delivery read as meeting arrival demand",
+                      "arrival_lactate_excess": "not declared: the arrival lactate is the clearance baseline, so "
+                                                "lactate does not fall below arrival"}
     provenance = {}
     for name in CASE_PARAMETERS:
         source = anchors.declared.get(name, UNMAPPED)
         value, note = getattr(anchors, name), notes[source]
         if value is None and name in unmapped_values:
             value, note = unmapped_values[name]
+        elif source == UNMAPPED and name in unmapped_notes:
+            note = unmapped_notes[name]
         provenance[name] = {"value": value, "source": source, "calibrated": False, "note": note}
     return provenance
 
@@ -289,17 +311,37 @@ def heart_rate_decomposition(anchors: Anchors, profile: CoreProfile = DEFAULT_PR
             "source": anchors.declared.get("intrinsic_sinus_rate", UNMAPPED)}
 
 
+def oxygen_demand(anchors: Anchors, modifiers) -> float:
+    """Metabolic oxygen demand for a minute, in units of arrival oxygen delivery (P2E-2).
+
+    The case's baseline times every factor declared for the minute (disease or module, and
+    transient). No factor declared: the baseline. The factors and the normalization against
+    delivery are TBD; nothing here is a calibrated multiplier.
+    """
+    return anchors.metabolic_demand_baseline * math.prod(item.factor for item in modifiers)
+
+
+def delivery_deficit(demand: float, delivery_rel: float) -> float:
+    """The oxygen delivery that falls short of demand (P2E-2): max(0, demand - delivery), never a credit."""
+    return max(0.0, demand - delivery_rel)
+
+
 def arrival_state(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> CoreState:
     """Arrival, with the reference states the case declares (P2E).
 
-    R holds the intrinsic sinus rate and the auxiliary state holds the arrival sympathetic
-    drive, so the derived arrival HR is the observed one. Undeclared, they are the anchored
-    defaults (intrinsic = observed HR, no drive).
+    - R holds the intrinsic sinus rate and the auxiliary state the arrival sympathetic drive,
+      so the derived arrival HR is the observed one (P2E-1);
+    - the auxiliary state holds the arrival oxygen demand (the case's baseline) and the
+      clearable arrival lactate, so the derived arrival lactate is the authored one (P2E-2).
+    Undeclared, they are the anchored defaults: intrinsic = observed HR and no drive; demand
+    met by arrival delivery; no clearable lactate.
     """
     state = initial_state(anchors)
     if state.R.code is RhythmCode.SINUS:
         state = state.evolve(R=replace(state.R, rate_bpm=intrinsic_sinus_rate(anchors)))
-    return state.evolve(aux=AuxiliaryState(sympathetic_drive=arrival_sympathetic_drive(anchors, profile)))
+    return state.evolve(aux=AuxiliaryState(lactate_excess_mmol_l=anchors.arrival_lactate_excess,
+                                           sympathetic_drive=arrival_sympathetic_drive(anchors, profile),
+                                           oxygen_demand=anchors.metabolic_demand_baseline))
 
 
 def arrival_preload(anchors: Anchors, profile: CoreProfile) -> float:
@@ -434,9 +476,9 @@ def sympathetic_after_minute(before: CoreState, after: CoreState, anchors: Ancho
 
 def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> Derived:
     rhythm = state.R
-    # The floor guards against a debt repaid below what any patient reads; it never moves an
-    # authored arrival that is already below it.
-    lactate = max(min(profile.lactate_floor, anchors.lactate), anchors.lactate + lactate_excess(state))
+    # The floor guards against a declared baseline below what any patient reads; it never moves
+    # an authored arrival that is already below it.
+    lactate = max(min(profile.lactate_floor, anchors.lactate), lactate_baseline(anchors) + lactate_excess(state))
     if not rhythm.pulse_present:
         derived = Derived(minute=state.minute, pulse_present=False, rhythm=rhythm.code,
                           monitor_rate_bpm=rhythm.rate_bpm, pulse_rate_bpm=None, output_rel=0.0,

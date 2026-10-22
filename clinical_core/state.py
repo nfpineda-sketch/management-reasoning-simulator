@@ -247,7 +247,8 @@ EMPTY = FrozenRecord()
 #: The case parameters (P2C) and their neutral values: what the core assumes when a case does
 #: not declare one (``None``: the profile's provisional default).
 CASE_PARAMETERS: Mapping[str, Any] = {"beta_blockade": 0.0, "preload_fraction": None, "pump_reserve": 1.0,
-                                       "intrinsic_sinus_rate": None}
+                                       "intrinsic_sinus_rate": None, "metabolic_demand_baseline": 1.0,
+                                       "arrival_lactate_excess": 0.0}
 #: Where a declared case parameter comes from (P2D-8, P2E-6). One that is not declared is
 #: "default_unmapped".
 DECLARED_SOURCES = frozenset({"explicit_case", "approved_family_default", "synthetic_probe"})
@@ -272,9 +273,16 @@ class Anchors:
     - ``intrinsic_sinus_rate`` (bpm) is the sinus rate without sympathetic drive (P2E-1). The
       observed arrival HR is that rate plus the arrival sympathetic contribution. ``None``
       reads the arrival HR as intrinsic (no sympathetic share at arrival).
+    - ``metabolic_demand_baseline`` is the arrival oxygen demand in units of the arrival oxygen
+      delivery (P2E-2). 1, the neutral value, reads arrival delivery as meeting arrival demand;
+      above 1 the patient arrives already in deficit, and D accrues from arrival.
+    - ``arrival_lactate_excess`` (mmol/L) is the share of the arrival lactate that can clear:
+      the arrival lactate less its clearance baseline (P2E-2). 0, the neutral value, reads the
+      arrival lactate as the baseline, so the core never clears lactate below arrival.
 
     ``declared`` names the source of every case parameter that is declared (P2D-8):
-    ``explicit_case`` (the case states it) or ``synthetic_probe`` (a test or a Level-2 probe).
+    ``explicit_case`` (the case states it), ``approved_family_default`` (the family's approved
+    default) or ``synthetic_probe`` (a test or a Level-2 probe).
     A value other than the neutral one must be declared: none is ever inferred silently.
     """
 
@@ -296,6 +304,8 @@ class Anchors:
     preload_fraction: float | None = None
     pump_reserve: float = 1.0
     intrinsic_sinus_rate: float | None = None
+    metabolic_demand_baseline: float = 1.0
+    arrival_lactate_excess: float = 0.0
     declared: FrozenRecord = field(default=EMPTY)
 
     def __post_init__(self):
@@ -334,6 +344,10 @@ class Anchors:
             if self.beta_blockade >= 1.0 and self.intrinsic_sinus_rate < self.hr:
                 raise CoreInvariantError("under complete beta-blockade no sympathetic contribution can raise the "
                                          "rate above its intrinsic value")
+        if not self.metabolic_demand_baseline > 0.0:
+            raise CoreInvariantError("the arrival metabolic demand is positive")
+        if not 0.0 <= self.arrival_lactate_excess <= self.lactate:
+            raise CoreInvariantError("the clearable arrival lactate is between 0 and the arrival lactate")
         if not isinstance(self.rhythm, RhythmState):
             raise CoreInvariantError("the arrival rhythm is a RhythmState")
         if not self.rhythm.pulse_present:
@@ -366,8 +380,11 @@ class Anchors:
 #: observables and responses over time. Only the integrator changes it, each change recorded with
 #: its source (``provenance.AuxiliaryChange``). It is never shown to a resident.
 AUXILIARY_FIELDS: Mapping[str, str] = {
-    "lactate_excess_mmol_l": "lactate above arrival that D has produced and clearance has not yet removed (KD-S1)",
+    "lactate_excess_mmol_l": "lactate above its clearance baseline that D has produced, or the case declares at "
+                             "arrival, and clearance has not yet removed (KD-S1, P2E-2)",
     "sympathetic_drive": "the common sympathetic drive the core holds (KD-S2)",
+    "oxygen_demand": "metabolic oxygen demand over the last minute, in units of arrival oxygen delivery: the case's "
+                     "baseline times the modifiers the sources declared for that minute (P2E-2)",
 }
 
 
@@ -377,6 +394,7 @@ class AuxiliaryState:
 
     lactate_excess_mmol_l: float = 0.0
     sympathetic_drive: float = 0.0
+    oxygen_demand: float = 1.0
 
     def __post_init__(self):
         for name in AUXILIARY_FIELDS:
@@ -384,6 +402,8 @@ class AuxiliaryState:
         if self.sympathetic_drive < 0:
             # P2D-3: withdrawal of drive lets the rate fall back to the intrinsic rate, never below.
             raise CoreInvariantError("the sympathetic drive is never negative")
+        if self.oxygen_demand <= 0:
+            raise CoreInvariantError("oxygen demand is positive")
 
     def to_dict(self) -> dict:
         return {name: getattr(self, name) for name in AUXILIARY_FIELDS}

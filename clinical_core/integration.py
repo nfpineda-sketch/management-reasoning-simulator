@@ -8,10 +8,12 @@ One ``step`` integrates one minute:
 2. every contributor computes its contribution from the *same* state at the start of
    the minute, plus those signals -- so the order in which contributors are listed can
    never change the result (proposal §14.1, T3);
-3. the core adds its own coupling (the oxygen-delivery debt, from flow, haemoglobin and
-   saturation; KD-S1), lung water from excess preload on a pump without reserve (KD-S4), and
-   updates its own memory: lactate kinetics, from that debt, and the common sympathetic
-   drive, from the state the minute ends in (KD-S2);
+3. the core adds its own coupling: the oxygen-delivery debt, from the deficit of delivery
+   (flow, haemoglobin and saturation) below the metabolic demand that the case's baseline and
+   the minute's declared modifiers give (KD-S1, P2E-2); lung water from excess preload on a
+   pump without reserve (KD-S4); and it updates its own memory: lactate kinetics, from that
+   debt, the common sympathetic drive, from the state the minute ends in (KD-S2), and the
+   demand of the minute;
 4. the deltas are summed per channel, the declared bounds are enforced and every clipped
    amount is recorded as a clamp delta, rhythm transitions and setting changes are
    applied, and the new state is checked: the change in every channel must equal the sum
@@ -28,10 +30,10 @@ from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
 from .derived import (ADOPTED, AUXILIARY_SOURCES, DEFAULT_PROFILE, LUNG_WATER_CLEARANCE, PRELOAD_CONGESTION,
-                      PROVISIONAL, CoreProfile, Derived, arrival_state, congestion_rate, derive, lactate_after_minute,
-                      lung_water_clearance, sympathetic_after_minute)
-from .provenance import (AuxiliaryChange, ChannelDelta, CoreEvent, MinuteRecord, ProvenanceError, RhythmTransition,
-                         SettingChange, Source, SourceKind)
+                      PROVISIONAL, CoreProfile, Derived, arrival_state, congestion_rate, delivery_deficit, derive,
+                      lactate_after_minute, lung_water_clearance, oxygen_demand, sympathetic_after_minute)
+from .provenance import (AuxiliaryChange, ChannelDelta, CoreEvent, DemandModifier, MinuteRecord, ProvenanceError,
+                         RhythmTransition, SettingChange, Source, SourceKind)
 from .state import (AUXILIARY_FIELDS, Anchors, AuxiliaryState, Channel, CoreInvariantError, CoreState, FrozenRecord,
                     SCALAR_CHANNELS, digest, initial_state)
 
@@ -45,7 +47,7 @@ CHANNEL_BOUNDS: Mapping[Channel, tuple[float, float, str, str]] = {
     Channel.L: (-10.0, 10.0, PROVISIONAL, "guard only; only the core's congestion and clearance write L yet"),
     Channel.G: (-10.0, 10.0, PROVISIONAL, "guard only; no module writes G yet"),
     Channel.W: (-10.0, 10.0, PROVISIONAL, "guard only; no module writes W yet"),
-    Channel.D: (-10000.0, 10000.0, PROVISIONAL, "guard only"),
+    Channel.D: (0.0, 10000.0, PROVISIONAL, "guard only; a debt is never negative (P2E-2)"),
     Channel.N: (-10.0, 10.0, PROVISIONAL, "guard only; no module writes N yet"),
     Channel.HB: (3.0, 18.0, ADOPTED, "family_engine._minute clamp"),
     Channel.GLUCOSE: (15.0, 350.0, ADOPTED, "family_engine._minute clamp"),
@@ -75,6 +77,7 @@ class Contribution:
     settings: tuple[SettingChange, ...] = ()
     events: tuple[CoreEvent, ...] = ()
     internal: FrozenRecord | None = None     # the contributor's own internal state after this minute
+    demand: tuple[DemandModifier, ...] = ()  # factors on metabolic oxygen demand for this minute (P2E-2)
 
 
 NOTHING = Contribution()
@@ -151,29 +154,37 @@ def from_spec(spec: Mapping[str, Any]) -> Contributor:
     return builder(data) if builder else cls(**data)
 
 
-def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minute: int) -> ChannelDelta:
-    """D accumulates the shortfall of oxygen delivery against arrival and repays it slowly.
+def _oxygen_debt(state: CoreState, anchors: Anchors, profile: CoreProfile, minute: int, demand: float,
+                 modulators: tuple[Source, ...]) -> ChannelDelta:
+    """D accumulates the deficit of oxygen delivery below demand and repays it slowly (P2E-2).
 
-    dD = (1 - delivery_rel) - D / tau. At arrival delivery_rel is 1 and D is 0, so nothing
-    moves; at a steady delivery the debt settles at tau * (1 - delivery_rel), which the
-    lactate derivation reads (proposal C8).
+    dD = max(0, demand - delivery_rel) - D / tau, with delivery read at the start of the
+    minute and demand the one declared for it. Delivery above demand is no credit: D only
+    repays what it accrued, and never falls below 0. With the neutral demand baseline and no
+    modifier, demand is 1, so arrival does not move; at a steady deficit s the debt settles
+    at tau * s, which the lactate derivation reads (proposal C8). The sources that modified
+    demand are named as modulators of the debt they changed.
     """
     before = derive(state, anchors, profile)
-    amount = (1.0 - before.delivery_rel) - state.D / profile.debt_clearance_tau_min
+    amount = delivery_deficit(demand, before.delivery_rel) - state.D / profile.debt_clearance_tau_min
     return ChannelDelta(Channel.D, amount, OXYGEN_DEBT, minute,
-                        "oxygen-delivery shortfall against arrival, less first-order repayment")
+                        "oxygen-delivery deficit below metabolic demand, less first-order repayment",
+                        modulated_by=modulators)
 
 
 def _check_owned(contributor: Contributor, contribution: Contribution, minute: int) -> None:
     if not isinstance(contribution, Contribution):
         raise ProvenanceError(f"{contributor.source.key} must return a Contribution")
-    for item in contribution.deltas + contribution.transitions + contribution.settings + contribution.events:
+    for item in (contribution.deltas + contribution.transitions + contribution.settings + contribution.events
+                 + contribution.demand):
         if item.source != contributor.source:
             raise ProvenanceError(f"{contributor.source.key} wrote a change attributed to {item.source.key}")
         if item.minute != minute:
             raise ProvenanceError(f"{contributor.source.key} wrote a change for minute {item.minute} in minute {minute}")
     if contribution.internal is not None and not isinstance(contribution.internal, FrozenRecord):
         raise ProvenanceError("internal state is returned as a FrozenRecord")
+    if any(not isinstance(item, DemandModifier) for item in contribution.demand):
+        raise ProvenanceError("demand is modified only by DemandModifier records")
 
 
 #: Source kinds only the integrator writes. A contributor claiming one is refused.
@@ -207,7 +218,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
                 raise ProvenanceError(f"{contributor.source.key} published a signal for {signal.source.key}")
             signals.append(signal)
     signals = tuple(sorted(signals))
-    deltas = [_oxygen_debt(state, anchors, profile, minute)]
+    deltas = []
     congestion = congestion_rate(state, anchors, profile)
     if congestion:
         deltas.append(ChannelDelta(Channel.L, congestion, PRELOAD_CONGESTION, minute,
@@ -216,7 +227,7 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     if clearance:
         deltas.append(ChannelDelta(Channel.L, -clearance, LUNG_WATER_CLEARANCE, minute,
                                    "lung water above arrival clearing slowly"))
-    transitions, settings, events = [], [], []
+    transitions, settings, events, modifiers = [], [], [], []
     internal = {}
     for contributor in ordered:
         # A contributor sees only the signals it declares it responds to.
@@ -227,8 +238,14 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
         transitions.extend(contribution.transitions)
         settings.extend(contribution.settings)
         events.extend(contribution.events)
+        modifiers.extend(contribution.demand)
         if contribution.internal is not None:
             internal[contributor.source.key] = contribution.internal
+    # The minute's demand: the case's baseline times every declared factor (P2E-2). The debt
+    # stays the first delta of the minute, as it was before demand had a state.
+    demand = oxygen_demand(anchors, modifiers)
+    modulators = tuple(sorted({item.source for item in modifiers}))
+    deltas.insert(0, _oxygen_debt(state, anchors, profile, minute, demand, modulators))
     values = {}
     for channel in SCALAR_CHANNELS:
         before = state.value(channel)
@@ -249,14 +266,15 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     # drive answers to the state the minute ends in, so a fall in pressure raises the rate in
     # the same minute and only its decay is lagged.
     aux = AuxiliaryState(lactate_excess_mmol_l=lactate_after_minute(state, profile),
-                         sympathetic_drive=sympathetic_after_minute(state, new_state, anchors, profile))
+                         sympathetic_drive=sympathetic_after_minute(state, new_state, anchors, profile),
+                         oxygen_demand=demand)
     new_state = new_state.evolve(aux=aux)
     changes = tuple(AuxiliaryChange(name, getattr(state.aux, name), getattr(aux, name), AUXILIARY_SOURCES[name],
                                     minute, AUXILIARY_FIELDS[name])
                     for name in AUXILIARY_FIELDS if getattr(aux, name) != getattr(state.aux, name))
     record = MinuteRecord(minute=minute, deltas=tuple(deltas), transitions=tuple(transitions),
                           settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)),
-                          auxiliary=changes)
+                          auxiliary=changes, demand=tuple(modifiers))
     _check_conservation(state, new_state, record)
     derive(new_state, anchors, profile)   # the observation invariants hold, or this minute fails
     return new_state, record

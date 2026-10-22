@@ -190,6 +190,44 @@ class CoreEvent:
                 "preventability": self.preventability, "description": self.description}
 
 
+#: What a demand modifier stands for (P2E-2): a disease or module that raises or lowers demand
+#: while it acts (sepsis, fever), or a transient state (a seizure, agitation, pain).
+DEMAND_KINDS = ("disease", "transient")
+
+
+@dataclass(frozen=True)
+class DemandModifier:
+    """A factor on metabolic oxygen demand that one source declares for one minute (P2E-2).
+
+    Demand is the case's baseline times every factor declared for the minute; a source that
+    stops declaring its factor stops modifying demand. A modifier does not write D: the core
+    integrates the delivery deficit against demand, and names the modifying sources on its
+    debt delta. The factors themselves (sepsis, fever, seizure) are TBD.
+    """
+
+    factor: float
+    kind: str
+    source: Source
+    minute: int
+    description: str
+
+    def __post_init__(self):
+        if isinstance(self.factor, bool) or not isinstance(self.factor, (int, float)) \
+                or not math.isfinite(self.factor) or self.factor <= 0:
+            raise ProvenanceError(f"a demand factor is a finite positive number, not {self.factor!r}")
+        object.__setattr__(self, "factor", float(self.factor))
+        if self.kind not in DEMAND_KINDS:
+            raise ProvenanceError(f"a demand modifier is one of {DEMAND_KINDS}")
+        if not isinstance(self.source, Source):
+            raise ProvenanceError("every demand modifier names its Source")
+        _minute(self.minute)
+        _description(self.description)
+
+    def to_dict(self) -> dict:
+        return {"type": "demand", "factor": self.factor, "kind": self.kind, "source": self.source.to_dict(),
+                "minute": self.minute, "description": self.description}
+
+
 @dataclass(frozen=True)
 class AuxiliaryChange:
     """One change of the core's auxiliary dynamic state in one minute (P2D-1).
@@ -234,10 +272,11 @@ class MinuteRecord:
     events: tuple[CoreEvent, ...] = ()
     internal_updates: tuple[str, ...] = field(default=())
     auxiliary: tuple[AuxiliaryChange, ...] = field(default=())
+    demand: tuple[DemandModifier, ...] = field(default=())
 
     def __post_init__(self):
         _minute(self.minute)
-        for item in self.deltas + self.transitions + self.settings + self.events + self.auxiliary:
+        for item in self.deltas + self.transitions + self.settings + self.events + self.auxiliary + self.demand:
             if item.minute != self.minute:
                 raise ProvenanceError("a record holds only changes applied in its own minute")
 
@@ -257,7 +296,8 @@ class MinuteRecord:
                 "settings": [item.to_dict() for item in self.settings],
                 "events": [item.to_dict() for item in self.events],
                 "internal_updates": list(self.internal_updates),
-                "auxiliary": [item.to_dict() for item in self.auxiliary]}
+                "auxiliary": [item.to_dict() for item in self.auxiliary],
+                "demand": [item.to_dict() for item in self.demand]}
 
 
 def attribution(records: Iterable[MinuteRecord], channel: Channel) -> dict[str, float]:

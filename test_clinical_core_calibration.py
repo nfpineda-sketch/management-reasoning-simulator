@@ -139,21 +139,42 @@ def test_kd_s1_abrupt_restoration_leaves_the_debt_and_the_lactate_to_clear_gradu
     assert derived[at + 10].lactate > BLEEDING.lactate, "lactate does not normalise at once"
 
 
+#: The same arrival with part of its lactate declared clearable (P2E-2), a synthetic value.
+CLEARABLE = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "arrival_lactate_excess": 2.4,
+                       "declared": {"arrival_lactate_excess": "synthetic_probe"}})
+
+
 def test_kd_s1_residual_lactate_keeps_rr_up_for_a_while_and_clearing_it_never_causes_bradypnoea():
-    """Corrected perfusion, even beyond arrival: RR trends down and never below the ventilatory part."""
-    trajectory = run(BLEEDING, (Loss("loss", 2.5, 60), Restore("restore", 61, surplus_ml=600.0)), 600)
+    """Corrected perfusion, even beyond arrival: RR trends down and never below the ventilatory part.
+
+    Since P2E-2 delivery above demand is no credit, so lactate clears below arrival only to the
+    baseline the case declares (here 4.4 - 2.4 mmol/L, a synthetic value).
+    """
+    trajectory = run(CLEARABLE, (Loss("loss", 2.5, 60), Restore("restore", 61, surplus_ml=600.0)), 600)
     derived = trajectory.derived()
     after = [item.respiratory_rate for item in derived[61:]]
     assert after[0] > after[-1], "RR is transiently higher while lactate is still elevated"
-    assert derived[-1].lactate < BLEEDING.lactate, "the debt is repaid beyond arrival"
-    floor = min(BLEEDING.respiratory_rate, trajectory.profile.rr_ventilatory_floor)
+    assert derived[-1].lactate < CLEARABLE.lactate, "the declared arrival excess clears"
+    assert min(item.lactate for item in derived) >= CLEARABLE.lactate - CLEARABLE.arrival_lactate_excess
+    floor = min(CLEARABLE.respiratory_rate, trajectory.profile.rr_ventilatory_floor)
     assert min(item.respiratory_rate for item in derived) >= floor >= 10
+
+
+def test_kd_s1_without_a_declared_arrival_excess_lactate_never_falls_below_arrival():
+    """P2E-2: the debt repays only what it accrued; undeclared, the arrival lactate is the baseline."""
+    trajectory = run(BLEEDING, (Loss("loss", 2.5, 60), Restore("restore", 61, surplus_ml=600.0)), 600)
+    derived = trajectory.derived()
+    assert min(state.D for state in trajectory.states) >= 0.0
+    assert min(item.lactate for item in derived) >= BLEEDING.lactate
+    assert derived[-1].lactate == pytest.approx(BLEEDING.lactate, abs=1e-3), "back to arrival, not below"
 
 
 @pytest.mark.parametrize("arrival_rr,arrival_lactate", [(14.0, 9.0), (26.0, 4.4), (30.0, 12.0), (18.0, 1.0)])
 def test_kd_s1_no_lactate_clearance_ever_takes_rr_below_ten(arrival_rr, arrival_lactate):
+    # The whole arrival lactate declared clearable (P2E-2), so clearing goes as far as the floor.
     arrival = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "respiratory_rate": arrival_rr,
-                         "lactate": arrival_lactate})
+                         "lactate": arrival_lactate, "arrival_lactate_excess": arrival_lactate,
+                         "declared": {"arrival_lactate_excess": "synthetic_probe"}})
     derived = run(arrival, (Restore("restore", 1, surplus_ml=900.0),), 720).derived()
     assert derived[0].respiratory_rate == arrival_rr, "anchored to arrival"
     assert min(item.respiratory_rate for item in derived) >= min(arrival_rr, 10.0)

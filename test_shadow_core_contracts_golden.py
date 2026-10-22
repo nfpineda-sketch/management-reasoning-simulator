@@ -18,7 +18,8 @@ from clinical_core.contracts_output import check_shadow_payload
 from clinical_core.contracts_shadow import (check_rebuilt_against_engine, contract_golden_report, legacy_names,
                                             run_contract_shadow)
 from clinical_core.legacy_adapter import UnsupportedScenario, bank_case, run_legacy
-from clinical_core.shadow import DIFFERENCES, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS, run_shadow
+from clinical_core.shadow import (DIFFERENCES, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS, acting_mechanisms,
+                                  expected_causes, run_shadow)
 from clinical_core.state import SCALAR_CHANNELS
 
 
@@ -35,8 +36,10 @@ def test_the_golden_through_contracts_v2_is_the_committed_golden(results):
 def test_the_known_differences_are_the_same_and_all_still_occur(results):
     for key, result in results.items():
         assert set(mismatching(result.summary)) == set(EXPECTED_DIFFERENCES[key]), key
-    used = {cause for expected in EXPECTED_DIFFERENCES.values() for causes in expected.values() for cause in causes}
-    assert used == set(DIFFERENCES) == {"KD-S1", "KD-S2", "KD-S3", "KD-S4"}
+    # Run-dependent mechanisms (P2E-2) count where they acted.
+    used = {cause for key, result in results.items()
+            for causes in expected_causes(key, acting_mechanisms(result.core)).values() for cause in causes}
+    assert used == set(DIFFERENCES) == {"KD-S1", "KD-S2", "KD-S3", "KD-S4", "P2E-2"}
 
 
 def test_the_core_runs_the_same_patient_from_the_contracts_as_from_the_engine(results):

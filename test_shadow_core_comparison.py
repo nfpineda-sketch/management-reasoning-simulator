@@ -15,7 +15,8 @@ from clinical_core.integration import run
 from clinical_core.legacy_adapter import (anchors_from_legacy, bank_case, contributors_from_legacy, run_legacy)
 from clinical_core.modules import GIHaemorrhage
 from clinical_core.shadow import (DECISIONS, DIFFERENCES, EXPECTED_DIFFERENCES, GOLDEN, SCENARIOS, VARIANTS,
-                                  classify, consciousness_attribution, golden_report, run_shadow)
+                                  acting_mechanisms, classify, consciousness_attribution, expected_causes,
+                                  golden_report, run_shadow)
 
 EXACT = [variable.name for variable in VARIABLES if variable.kind == "exact"]
 
@@ -34,7 +35,9 @@ def test_the_committed_golden_report_is_the_one_the_engines_produce(results):
 def test_every_difference_is_explained_and_every_explanation_still_applies(results):
     for key, result in results.items():
         assert set(mismatching(result.summary)) == set(EXPECTED_DIFFERENCES[key]), key
-    used = {cause for expected in EXPECTED_DIFFERENCES.values() for causes in expected.values() for cause in causes}
+    # Run-dependent mechanisms (P2E-2) count where they acted.
+    used = {cause for key, result in results.items()
+            for causes in expected_causes(key, acting_mechanisms(result.core)).values() for cause in causes}
     assert used == set(DIFFERENCES)
 
 
@@ -142,7 +145,7 @@ def test_every_compared_variable_is_classified_and_none_is_left_unresolved(resul
     """Level 3 (P2D-9): MATCH, or a difference whose direction is approved and whose size is TBD."""
     assert set(DECISIONS) == set(DIFFERENCES)
     for key, result in results.items():
-        classes = classify(key, result.summary, consciousness_attribution(result))
+        classes = classify(key, result.summary, consciousness_attribution(result), acting_mechanisms(result.core))
         compared = {name for name, entry in result.summary.items() if entry["compared"]}
         different = set(mismatching(result.summary))
         assert set(classes) == compared, key
