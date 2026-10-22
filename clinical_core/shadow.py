@@ -97,8 +97,9 @@ for _variant in VARIANTS:
     EXPECTED_DIFFERENCES[f"{_variant}/aggressive_volume"].update(
         {name: "KD-S4" for name in ("V_ml_eq", "hr")})
 # The core reads the 80 mmHg threshold on its raw SBP (KD-S3, unchanged in P2C). Since the preload
-# curve (KD-S4) lowers that SBP by under 1 mmHg, the crossing comes at minute 55 instead of 60:
-# minutes 55-57 are the raw-versus-rounded reading alone, 58-60 also a lower displayed SBP.
+# curve (KD-S4) lowers that SBP by under 1 mmHg, the crossing comes at minute 55 instead of 60.
+# In minutes 55-57 the core's displayed SBP is 80 (the engine shows 81, 80, 80), which does not
+# cross the threshold: the crossing there is the raw reading. In 58-60 the core displays 79.
 EXPECTED_DIFFERENCES["gi_bleed_57m/untreated_60"]["consciousness_level"] = "KD-S3"
 
 #: The decision behind each known difference (P2C, 2026-10-22). A difference whose decision is
@@ -117,8 +118,11 @@ MATCH, APPROVED_DIFFERENCE, UNRESOLVED_DIFFERENCE = "MATCH", "APPROVED DIFFERENC
 def classify(key: str, summary: dict) -> dict:
     """Level 3: MATCH, APPROVED DIFFERENCE or UNRESOLVED DIFFERENCE for every compared variable of a run.
 
-    A rounding tie (the same raw value on a .5 boundary) is a MATCH of the physiology; its
-    minutes stay listed in the summary.
+    The class follows the expected reason for each variable (``EXPECTED_DIFFERENCES``), not
+    the cause or the size of each difference; the committed golden freezes the sizes, so any
+    change to them fails the golden test and has to be reviewed. A rounding tie with no
+    mismatch (the same raw value on a .5 boundary) is a MATCH of the physiology; the summary
+    still lists its minutes apart and never counts them as matches.
     """
     classes = {}
     for name, entry in summary.items():

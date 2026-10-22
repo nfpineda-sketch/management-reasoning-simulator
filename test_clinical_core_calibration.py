@@ -414,3 +414,55 @@ def test_level_2_probes_move_the_way_the_decisions_say():
     overload = bands.probe("overload")
     assert overload[-1]["L"] > 0 and overload[-1]["output_rel"] - overload[1]["output_rel"] < 0.2
     assert bands.probe("opioid")[-1]["respiratory_rate"] < 10 < bands.probe("bronchospasm")[-1]["respiratory_rate"]
+
+
+# After the adversarial review of P2C ------------------------------------------------------
+
+def _neutral(**values):
+    base = dict(case_id="synthetic", sbp=110.0, dbp=70.0, hr=90.0, spo2=97.0, respiratory_rate=16.0, crt_s=2.0,
+                lactate=1.0, hb=13.0, glucose=100.0, k=4.0, fio2=0.21, rhythm=RhythmState.sinus(90.0),
+                consciousness_level=0)
+    return Anchors(**{**base, **values})
+
+
+def _rr(anchors, lactate):
+    from clinical_core.derived import respiratory_rate
+    return respiratory_rate(run(anchors, (), 0).states[0], anchors, DEFAULT_PROFILE, lactate)
+
+
+@pytest.mark.parametrize("arrival_rr", [10.0, 12.0, 16.0])
+def test_kd_s1_the_metabolic_response_is_continuous_in_the_arrival_lactate(arrival_rr):
+    """Arrival lactate just at or just above the drive threshold gives the same response."""
+    at, above = _neutral(respiratory_rate=arrival_rr, lactate=2.0), _neutral(respiratory_rate=arrival_rr,
+                                                                             lactate=2.001)
+    for lactate in (4.0, 6.0, 10.0):
+        assert _rr(above, lactate) == pytest.approx(_rr(at, lactate), abs=0.05)
+        assert _rr(above, lactate) > arrival_rr + 5
+
+
+def test_kd_s1_a_rise_above_arrival_gets_the_whole_metabolic_drive_whatever_the_arrival():
+    from clinical_core.derived import _metabolic_drive
+    acidotic = _neutral(respiratory_rate=16.0, lactate=8.0)
+    rise = _rr(acidotic, 10.0) - _rr(acidotic, 8.0)
+    assert rise == pytest.approx(_metabolic_drive(10.0, DEFAULT_PROFILE) - _metabolic_drive(8.0, DEFAULT_PROFILE))
+    assert _rr(acidotic, 8.0) == 16.0 and _rr(acidotic, 1.0) >= DEFAULT_PROFILE.rr_ventilatory_floor
+
+
+def test_kd_s4_a_tiny_arrival_position_still_reproduces_arrival():
+    anchors = _neutral(preload_fraction=1e-17)
+    assert derive(run(anchors, (), 0).states[0], anchors).output_rel == pytest.approx(1.0)
+
+
+def test_kd_s4_arrival_is_a_fixed_point_and_only_added_preload_congests():
+    congested = _neutral(preload_fraction=0.9, pump_reserve=0.5)
+    assert run(congested, (), 60).states[-1].L == 0.0, "no input, no change"
+    assert run(congested, (Restore("more", 1, surplus_ml=500.0),), 60).states[-1].L > 0
+
+
+def test_kd_s2_without_a_pulse_no_drive_is_kept():
+    from clinical_core.derived import sympathetic_after_minute
+    trajectory = run(BLEEDING, (BRISK,), 20)
+    before = trajectory.states[-1]
+    assert sympathetic_drive(before, BLEEDING, DEFAULT_PROFILE) > 0
+    arrested = before.evolve(minute=21, R=RhythmState.vf(), terminal_since=21)
+    assert sympathetic_after_minute(before, arrested, BLEEDING, DEFAULT_PROFILE) == 0.0

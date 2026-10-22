@@ -202,8 +202,9 @@ def respiratory_rate(state: CoreState, anchors: Anchors, profile: CoreProfile, l
     - a ventilatory part, never below ``rr_ventilatory_floor``;
     - the metabolic part that the arrival lactate explains.
 
-    Lactate clearing can remove at most the metabolic part, so it cannot by itself cause
-    bradypnoea.
+    A rise of lactate above arrival adds its whole metabolic drive. A fall below arrival takes
+    away at most the metabolic part, so clearing lactate cannot by itself cause bradypnoea.
+    The response is continuous in both the current and the arrival lactate.
 
     W (proposal C7) is read in two directions, a provisional structure:
     - above 0 (load or drive from respiratory disease), it adds to the ventilatory part, and
@@ -213,10 +214,14 @@ def respiratory_rate(state: CoreState, anchors: Anchors, profile: CoreProfile, l
     """
     arrival_metabolic = _metabolic_drive(anchors.lactate, profile)
     share = min(arrival_metabolic, max(0.0, anchors.respiratory_rate - profile.rr_ventilatory_floor))
-    scale = share / arrival_metabolic if arrival_metabolic > 0 else 1.0
     ventilatory = (anchors.respiratory_rate - share) * (1.0 + max(0.0, state.W))
+    now = _metabolic_drive(lactate, profile)
+    if now >= arrival_metabolic:
+        metabolic = share + (now - arrival_metabolic)
+    else:                                   # arrival_metabolic > now >= 0
+        metabolic = share * now / arrival_metabolic
     drive = max(0.0, 1.0 + min(0.0, state.W))
-    return min(profile.rr_max, drive * (ventilatory + scale * _metabolic_drive(lactate, profile)))
+    return min(profile.rr_max, drive * (ventilatory + metabolic))
 
 
 def arrival_preload(anchors: Anchors, profile: CoreProfile) -> float:
@@ -228,13 +233,15 @@ def preload_position(state: CoreState, anchors: Anchors, profile: CoreProfile) -
     """Where the state sits on the preload curve, 0 (empty) to 1 (the plateau) (KD-S4).
 
     One smooth, saturating curve, 1 - exp(-x / scale), in mL-equivalent of effective preload
-    x. Arrival is placed on it by its position, and V moves along it. Every added mL helps
-    less than the one before (the curve is concave everywhere), and the curve never quite
-    reaches its plateau; there is no clamp. Form and scale are provisional.
+    x. Arrival is placed on it by its position, and V moves along it. While the ventricle
+    fills (x > 0) every added mL helps less than the one before, and the curve never quite
+    reaches its plateau: there is no upper clamp. Below the empty point (x <= 0) the position
+    is 0: no curve that never goes negative can be concave for every V. Form and scale are
+    provisional.
     """
     scale = profile.preload_curve_scale_ml
-    arrival = -scale * math.log(1.0 - arrival_preload(anchors, profile))
-    return 1.0 - math.exp(-max(0.0, arrival + state.V) / scale)
+    arrival = -scale * math.log1p(-arrival_preload(anchors, profile))
+    return -math.expm1(-max(0.0, arrival + state.V) / scale)
 
 
 def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tuple[float, float, float, float]:
@@ -258,16 +265,18 @@ def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tupl
 def congestion_rate(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
     """Lung water added this minute by excess preload on a pump without reserve (KD-S4).
 
-    Nothing below the knee of the curve. Above it, the share of the remaining curve used,
-    times how far the pump falls short of normal reserve (the case's reserve times the
-    current pump P). A pump with full reserve never congests from preload alone. This
-    coupling only adds L; clearing lung water belongs to the mechanisms that act on L, which
-    the shadow core does not model yet.
+    Only preload added above arrival congests ("additional V", KD-S4), and only above the
+    knee of the curve, so arrival stays a fixed point like every other coupling. The excess is
+    the share of the curve left above max(knee, arrival position) that is now used, times how
+    far the pump falls short of normal reserve (the case's reserve times the current pump P).
+    A pump with full reserve never congests from preload alone. This coupling only adds L;
+    clearing lung water belongs to the mechanisms that act on L, which the shadow core does
+    not model yet.
     """
     if not state.R.pulse_present:
         return 0.0
-    knee = profile.congestion_preload_knee
-    excess = max(0.0, (preload_position(state, anchors, profile) - knee) / (1.0 - knee))
+    start = max(profile.congestion_preload_knee, arrival_preload(anchors, profile))
+    excess = max(0.0, (preload_position(state, anchors, profile) - start) / (1.0 - start))
     shortfall = max(0.0, 1.0 - anchors.pump_reserve * state.P)
     return profile.congestion_per_excess_preload * excess * shortfall
 
@@ -305,9 +314,13 @@ def sympathetic_drive(state: CoreState, anchors: Anchors, profile: CoreProfile) 
 
 
 def sympathetic_after_minute(before: CoreState, after: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
-    """The drive at the end of a minute: it rises at once, and decays with ``sympathetic_decay_tau_min``."""
+    """The drive at the end of a minute: it rises at once, and decays with ``sympathetic_decay_tau_min``.
+
+    Without a pulse there is no rate to drive and nothing is kept; when a pulse returns, the
+    drive starts from what the state calls for.
+    """
     if not after.R.pulse_present:
-        return sympathetic_drive(before, anchors, profile) if before.R.pulse_present else 0.0
+        return 0.0
     target = sympathetic_target(after, anchors, profile)
     held = sympathetic_drive(before, anchors, profile) if before.R.pulse_present else target
     if target >= held:

@@ -358,11 +358,14 @@ falla sin la corrección. Ninguno afectaba los escenarios dorados:
   - Dinámica: `dX = k·D − X/τ_lac`, con `k = ganancia/(τ_D·τ_lac)`.
   - En estado estable conserva la ganancia adoptada: 2 mmol/L por unidad de déficit de entrega.
   - Lectura: lactato = llegada + X. El piso de 0,8 no mueve una llegada que ya está por debajo.
-- **FR.** `FR = impulso × (parte ventilatoria × (1 + max(0, W)) + escala × M(lactato))`, con tope `rr_max`.
+- **FR.** `FR = impulso × (parte ventilatoria × (1 + max(0, W)) + parte metabólica)`, con tope `rr_max`.
   - `impulso = max(0, 1 + min(0, W))`: una W deprimida (opioide) reduce las dos partes.
   - M es un impulso metabólico saturable por encima de un umbral (2 mmol/L), con máximo `rr_metabolic_max`.
-  - La FR de llegada se reparte entre una parte ventilatoria, nunca menor que el piso de 12, y una metabólica. Al
-    aclararse el lactato sólo baja la parte metabólica.
+  - La FR de llegada se reparte entre una parte ventilatoria, nunca menor que el piso de 12, y la parte metabólica
+    que explica el lactato de llegada.
+  - Un lactato que sube sobre la llegada suma todo su aumento de M.
+  - Un lactato que baja quita, como mucho, la parte metabólica de llegada.
+  - La respuesta es continua en el lactato actual y en el de llegada.
   - Una W aumentada suma sólo a la parte ventilatoria.
 - Resultado: aclarar el lactato nunca causa bradipnea. Sólo un mecanismo explícito de W la causa.
 
@@ -381,6 +384,7 @@ falla sin la corrección. Ninguno afectaba los escenarios dorados:
 - `GIHaemorrhage` sólo escribe V y Hb, y no hay regla de FC propia de ninguna familia. La hemostasia baja la FC sólo
   a través de la presión recuperada y la deuda pagada.
 - Un ritmo no sinusal (bloqueo, escape, marcapasos) conserva la frecuencia que tiene.
+- Sin pulso no se guarda impulso. Si el pulso vuelve, el impulso parte de lo que pide el estado.
 - Declaración nueva del caso: `Anchors.beta_blockade`, de 0 a 1. El valor por defecto, 0, significa «no declarado».
 
 **KD-S3 · RESUELTA, sin cambios.**
@@ -389,22 +393,29 @@ falla sin la corrección. Ninguno afectaba los escenarios dorados:
 - Sí cambió dónde aparece la diferencia, por KD-S4; ver §9.5.
 
 **KD-S4 · REVISE CORE.** Precarga y rendimientos decrecientes.
-- **Posición en la curva:** `p(V) = 1 − exp(−max(0, x0 + V)/λ)`, con `x0 = −λ·ln(1 − p0)`. La curva es cóncava en
-  todo su rango, sin *clamp*, y su meseta `P/p0` nunca se alcanza.
+- **Posición en la curva:** `p(V) = 1 − exp(−max(0, x0 + V)/λ)`, con `x0 = −λ·ln(1 − p0)` (calculado con
+  `log1p`/`expm1`).
+  - Mientras el ventrículo se llena (gasto > 0), la curva es cóncava y no tiene *clamp* superior. Su meseta `P/p0`
+    nunca se alcanza.
+  - Bajo el punto vacío el gasto es 0: es un piso, con quiebre.
+  - Ninguna curva que nunca sea negativa puede ser cóncava para todo V. La regla «d(gasto)/dV decrece» rige
+    donde el ventrículo se llena.
 - **Gasto:** `gasto = P × factor de ritmo × p(V)/p0 × 1/(1 + a·(T − 1))`. La presión es `gasto × T`.
 - **p0, la posición de llegada:** `Anchors.preload_fraction`; si no se declara, 0,5 (provisional).
   - Con λ = 833,33 mL-eq y p0 = 0,5, la pendiente en la llegada es 1/833,33 por mL: la del motor heredado (300 mL
     por 0,36 de circulación). Es la única ancla adoptada de la curva.
   - Un p0 bajo describe un paciente dependiente de precarga; uno alto, un corazón cerca de su meseta.
 - **Congestión.** El acoplamiento del núcleo `core_coupling:preload_congestion` escribe L:
-  `dL = g × max(0, (p − rodilla)/(1 − rodilla)) × max(0, 1 − reserva × P)`.
+  `dL = g × max(0, (p − s)/(1 − s)) × max(0, 1 − reserva × P)`, con `s = max(rodilla, p0)`.
+  - Sólo congestiona la precarga agregada sobre la llegada y sobre la rodilla: la «V adicional» de KD-S4. La
+    llegada queda como punto fijo, igual que en los demás acoplamientos.
   - Una bomba con reserva plena y P normal nunca congestiona sólo por precarga.
   - No hay aclaramiento de L (§9.8).
 - Declaración nueva del caso: `Anchors.pump_reserve`, de 0 a 1. El valor por defecto es 1.
 
 ### 9.2 Nivel 1 · Restricciones cualitativas
 
-`test_clinical_core_calibration.py`, 38 pruebas. Todas comprueban dirección, monotonía, memoria, saturación y
+`test_clinical_core_calibration.py`, 45 pruebas. Todas comprueban dirección, monotonía, memoria, saturación y
 ausencia de estados imposibles, nunca un número del golden.
 
 - **KD-S1:**
@@ -424,6 +435,12 @@ ausencia de estados imposibles, nunca un número del golden.
   - nada bajo la rodilla ni en shock;
   - la pendiente adoptada.
 - **Nivel 2:** las bandas siguen TBD y las sondas son deterministas.
+- **Tras la revisión adversarial (§9.10):**
+  - la continuidad de la FR en el lactato de llegada;
+  - el aumento metabólico completo sobre una llegada acidótica;
+  - una posición de llegada mínima que reproduce la llegada;
+  - la llegada como punto fijo de la congestión;
+  - ningún impulso guardado sin pulso.
 
 Pruebas adaptadas, que protegen lo mismo que antes:
 - `test_a_rounding_tie_needs_both_sides_on_the_same_boundary` pone el empate a mano (PAD 52,5), porque las
@@ -531,7 +548,8 @@ Atribuciones mixtas, ambas aprobadas:
 - **Conciencia en 57m sin tratamiento.**
   - El núcleo lee el umbral de 80 mmHg sobre la PAS cruda (KD-S3, sin cambios).
   - La curva de KD-S4 baja esa PAS menos de 1 mmHg, así que el cruce llega en el minuto 55 y no en el 60.
-  - Minutos 55–57: la PAS mostrada coincide (80) y sólo difiere la lectura cruda (KD-S3).
+  - Minutos 55–57: la PAS mostrada del núcleo es 80 (el heredado muestra 81, 80 y 80). Ese 80 no cruza el umbral:
+    el cruce viene de la lectura cruda (KD-S3).
   - Minutos 58–60: la PAS mostrada del núcleo ya es 79 (KD-S4).
 
 UNRESOLVED DIFFERENCE: ninguna en el golden.
@@ -574,9 +592,50 @@ UNRESOLVED DIFFERENCE: ninguna en el golden.
   tampoco los modela en esta familia.
 - **Entradas simpáticas sin estado.** La hipercapnia, el dolor, la fiebre y la abstinencia no tienen estado en el
   núcleo.
+- **Pulso estrecho: la corrida falla cerrada.**
+  - La caída de la PAS (45 por unidad de déficit) es mayor que la de la PAD (25), ambas adoptadas del heredado.
+  - Con una presión de pulso de llegada PP, un déficit mayor que PP/20 rompe el invariante PAS > PAD, y `step`
+    lanza `CoreInvariantError`.
+  - Con la curva nueva ocurre antes. Llegada de 86/70 con sangrado de 10 mL/min: minuto 49, frente al 67 en
+    `04283c4`.
+  - El motor heredado lo evita con su piso de circulación de 0,25. En los casos GI del golden (PP 34) no ocurre.
+- **Retirada simpática absoluta.** El piso de retirada (−25 lpm) no es relativo a la frecuencia intrínseca:
+  - un sinusal de 40 puede bajar a 15 lpm;
+  - uno de ≤ 25 con mucha retirada falla cerrado («a perfusing rhythm has a positive rate»).
+  - Antes de P2C la bajada no tenía cota.
+- **La clasificación sigue el mapeo variable → decisión, no la causa de cada diferencia.**
+  - Una diferencia futura en una variable ya mapeada saldría APPROVED.
+  - La protege el golden comprometido: cualquier cambio de magnitud hace fallar la prueba del golden y obliga a
+    revisarlo.
+  - Un empate de redondeo sin desajuste se clasifica MATCH, porque el valor crudo es el mismo. El resumen lo sigue
+    informando aparte y nunca lo cuenta como coincidencia.
 
 ### 9.9 Gancho en tiempo de ejecución
 
 No hay ninguno. Ningún módulo de la aplicación importa `clinical_core`: `test_shadow_core_isolation.py` lo
 comprueba, incluido el cierre de importaciones desde `app`, `family_engine`, `family_parser`, `submission_guard` y
 `order_pipeline`.
+
+### 9.10 Revisión adversarial de P2C
+
+Una revisión independiente, en sólo lectura, de `04283c4..9abc19a` no encontró defectos altos. Cada hallazgo se
+confirmó con una sonda antes de tocarlo.
+
+Corregidos, cada uno con una prueba que falla sin la corrección:
+- **M1, FR.** La respuesta de la FR al lactato era discontinua en el lactato de llegada: con FR de llegada ≤ 12,
+  pasar de 2,000 a 2,001 mmol/L la apagaba (29,5 → 12,0/min a lactato 6). Ahora es continua, y un aumento sobre la
+  llegada recibe todo el impulso metabólico.
+- **L2, precisión.** Una posición de llegada mínima perdía precisión (`log`/`exp`). Ahora se calcula con
+  `log1p`/`expm1`.
+- **L3, congestión.** Subía desde la llegada sin ninguna entrada cuando p0 superaba la rodilla. Ahora es la llegada
+  como punto fijo.
+- **L5, texto.** Faltaba precisión sobre los minutos de la conciencia, aquí y en `shadow.py`.
+- **L6, impulso sin pulso.** El impulso se guardaba un minuto tras la pérdida de pulso. Ahora es 0 sin pulso.
+
+Las correcciones no cambian el golden ni la tabla de sondas de §9.3. El golden por Contracts v2 sigue IDÉNTICO.
+
+Quedan documentados (§9.8), no corregidos, porque arreglarlos inventaría fisiología o cambiaría ganancias
+adoptadas:
+- **M2:** pulso estrecho;
+- **L1:** retirada simpática absoluta;
+- **L4:** clasificación por mapeo.
