@@ -84,7 +84,7 @@ def probe(name: str) -> list[dict]:
     """The readings at the probe's minutes. A probe that reaches an unresolved boundary (P2D-2)
     stops there, and its last row says so instead of carrying an impossible state forward."""
     family, drives, declared, contributors, minutes = PROBES[name]
-    anchors = Anchors(**{**ARRIVAL, **declared})
+    anchors = Anchors(**{**ARRIVAL, **declared, "declared": {name: "synthetic_probe" for name in declared}})
     states, stopped = [initial_state(anchors)], None
     for _ in range(max(minutes)):
         try:

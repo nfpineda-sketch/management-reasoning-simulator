@@ -16,7 +16,7 @@ from dataclasses import dataclass, fields
 from typing import Mapping
 
 from .provenance import Source, SourceKind
-from .state import Anchors, CoreInvariantError, CoreState, RhythmCode, UnresolvedBoundary
+from .state import CASE_PARAMETERS, Anchors, CoreInvariantError, CoreState, RhythmCode, UnresolvedBoundary
 
 ADOPTED = "adopted"
 PROVISIONAL = "provisional"
@@ -233,6 +233,25 @@ def respiratory_rate(state: CoreState, anchors: Anchors, profile: CoreProfile, l
         metabolic = share * now / arrival_metabolic
     drive = max(0.0, 1.0 + min(0.0, state.W))
     return min(profile.rr_max, drive * (ventilatory + metabolic))
+
+
+def case_parameter_provenance(anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> dict:
+    """Each case parameter's value, where it comes from and whether it is calibrated (P2D-8).
+
+    ``source`` is ``explicit_case`` or ``synthetic_probe`` when the anchors declare it, else
+    ``default``. No case parameter is calibrated or approved yet: none is mapped from the bank
+    cases, and the defaults are neutral (or, for the preload position, provisional).
+    """
+    notes = {"default": "not declared: neutral value", "explicit_case": "declared by the case; not calibrated",
+             "synthetic_probe": "synthetic probe value; not a case"}
+    provenance = {}
+    for name in CASE_PARAMETERS:
+        source = anchors.declared.get(name, "default")
+        value, note = getattr(anchors, name), notes[source]
+        if name == "preload_fraction" and value is None:
+            value, note = profile.arrival_preload_fraction, "not declared: provisional profile default (TBD)"
+        provenance[name] = {"value": value, "source": source, "calibrated": False, "note": note}
+    return provenance
 
 
 def arrival_preload(anchors: Anchors, profile: CoreProfile) -> float:

@@ -33,7 +33,7 @@ from contracts_v2.observations import ObservationSnapshot
 from contracts_v2.trace import TraceProvenance
 
 from . import AUTHORITATIVE_ENGINE, CORE_VERSION
-from .derived import derive
+from .derived import case_parameter_provenance, derive
 from .integration import Trajectory
 from .state import AUXILIARY_FIELDS, SCALAR_CHANNELS, digest
 
@@ -122,6 +122,7 @@ def shadow_trace(trajectory: Trajectory, adapted) -> TraceProvenance:
         "minutes": [record.to_dict() for record in trajectory.records],
         # The core's auxiliary dynamic state (P2D-1): its own memory, not a channel, not an
         # observable, never authoritative. Each minute's changes are in "minutes" above.
+        "case_parameters": case_parameter_provenance(trajectory.anchors, trajectory.profile),
         "core_auxiliary_state": {"layer": "core_internal_state", "authoritative": False,
                                  "quantities": dict(AUXILIARY_FIELDS),
                                  "arrival": trajectory.states[0].aux.to_dict(),

@@ -32,6 +32,12 @@ from .state import Anchors, RhythmCode, RhythmState
 #: The family engine's mental-status ladder (family_engine._LEVEL_OF).
 LEVEL_OF = {"Alert": 0, "Drowsy": 1, "Obtunded": 2, "Unresponsive": 3}
 SUPPORTED_FAMILIES = frozenset({"gi_bleed"})
+#: How each family's case parameters (beta_blockade, preload_fraction, pump_reserve) are set
+#: (P2D-8). A family with no rule here cannot be migrated: it first needs an explicit case
+#: mapping or an approved family default rule. Nothing is inferred from the case text.
+FAMILY_CASE_PARAMETER_RULES = {
+    "gi_bleed": "neutral defaults, as in P2C: not mapped from the bank cases and not calibrated",
+}
 #: Parsed action types that carry no physiology in the core: they are recorded, not dropped.
 NOT_PHYSIOLOGICAL = frozenset({"reassessment", "consult", "diagnostic"})
 
@@ -164,6 +170,10 @@ def run_legacy(variant_id: str, orders: Mapping[int, str], minutes: int, *, stat
 
 
 def anchors_from_legacy(state: Mapping) -> Anchors:
+    family = state.get("engine_family")
+    if family not in FAMILY_CASE_PARAMETER_RULES:
+        raise UnsupportedScenario(f"family {family!r} has no case mapping or approved default rule for its case "
+                                  "parameters (P2D-8)")
     source = _initialized(state)
     f = source["family_state"]
     base = f["baseline"]

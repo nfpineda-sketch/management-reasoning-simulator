@@ -234,14 +234,16 @@ def test_kd_s2_c_hemostasis_and_resuscitation_bring_the_rate_down_gradually_thro
 
 
 def test_kd_s2_d_beta_blockade_blunts_the_chronotropic_response_to_the_same_physiology():
-    blocked_anchors = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 0.6})
+    blocked_anchors = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 0.6,
+                                 "declared": {"beta_blockade": "synthetic_probe"}})
     free, blocked = run(BLEEDING, (BLEED,), 90), run(blocked_anchors, (BLEED,), 90)
     assert [s.V for s in free.states] == [s.V for s in blocked.states], "the same physiology"
     for one, other in zip(free.derived()[1:], blocked.derived()[1:]):
         assert other.pulse_rate_bpm - BLEEDING.hr == pytest.approx(0.4 * (one.pulse_rate_bpm - BLEEDING.hr))
         assert (other.sbp, other.map) == (one.sbp, one.map)
     with pytest.raises(Exception):
-        Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 1.5})
+        Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 1.5,
+                   "declared": {"beta_blockade": "synthetic_probe"}})
 
 
 def test_kd_s2_e_persistent_hypoxaemia_after_hemostasis_keeps_the_rate_up():
@@ -299,7 +301,8 @@ class Infuse(Contributor):
 
 
 def _case(**declared):
-    return Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, **declared})
+    return Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, **declared,
+                      "declared": {name: "synthetic_probe" for name in declared}})
 
 
 def _at(anchors, V=0.0, P=1.0, T=1.0):
@@ -431,7 +434,9 @@ def _neutral(**values):
     base = dict(case_id="synthetic", sbp=110.0, dbp=70.0, hr=90.0, spo2=97.0, respiratory_rate=16.0, crt_s=2.0,
                 lactate=1.0, hb=13.0, glucose=100.0, k=4.0, fio2=0.21, rhythm=RhythmState.sinus(90.0),
                 consciousness_level=0)
-    return Anchors(**{**base, **values})
+    case = {name: "synthetic_probe" for name in values if name in ("beta_blockade", "preload_fraction",
+                                                                       "pump_reserve")}
+    return Anchors(**{**base, **values, "declared": case})
 
 
 def _rr(anchors, lactate):

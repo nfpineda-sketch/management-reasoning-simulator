@@ -244,6 +244,13 @@ def _freeze(value):
 EMPTY = FrozenRecord()
 
 
+#: The case parameters (P2C) and their neutral values: what the core assumes when a case does
+#: not declare one (``None``: the profile's provisional default).
+CASE_PARAMETERS: Mapping[str, Any] = {"beta_blockade": 0.0, "preload_fraction": None, "pump_reserve": 1.0}
+#: Where a declared case parameter comes from (P2D-8). One that is not declared is "default".
+DECLARED_SOURCES = frozenset({"explicit_case", "synthetic_probe"})
+
+
 @dataclass(frozen=True)
 class Anchors:
     """The authored arrival state a case gives the core (§7.4).
@@ -259,6 +266,10 @@ class Anchors:
       provisional default (KD-S4). A low value is a preload-dependent patient;
     - ``pump_reserve`` (0 none, 1 normal) is how much excess preload the pump can take before
       it congests the lungs (KD-S4).
+
+    ``declared`` names the source of every case parameter that is declared (P2D-8):
+    ``explicit_case`` (the case states it) or ``synthetic_probe`` (a test or a Level-2 probe).
+    A value other than the neutral one must be declared: none is ever inferred silently.
     """
 
     case_id: str
@@ -278,14 +289,25 @@ class Anchors:
     beta_blockade: float = 0.0
     preload_fraction: float | None = None
     pump_reserve: float = 1.0
+    declared: FrozenRecord = field(default=EMPTY)
 
     def __post_init__(self):
         if not self.case_id:
             raise CoreInvariantError("anchors name their case")
+        if not isinstance(self.declared, FrozenRecord):
+            object.__setattr__(self, "declared", FrozenRecord(self.declared))
         for item in fields(self):
-            if item.name not in {"case_id", "rhythm", "consciousness_level"} \
+            if item.name not in {"case_id", "rhythm", "consciousness_level", "declared"} \
                     and not (item.name == "preload_fraction" and self.preload_fraction is None):
                 _finite(getattr(self, item.name), item.name)
+        for name, source in self.declared.items():
+            if name not in CASE_PARAMETERS or source not in DECLARED_SOURCES:
+                raise CoreInvariantError(f"case parameter {name!r} declared from {source!r}: expected one of "
+                                         f"{sorted(CASE_PARAMETERS)} from one of {sorted(DECLARED_SOURCES)}")
+        for name, neutral in CASE_PARAMETERS.items():
+            if getattr(self, name) != neutral and name not in self.declared:
+                raise CoreInvariantError(f"case parameter {name} = {getattr(self, name)!r} is not the neutral value "
+                                         "and names no source (explicit_case or synthetic_probe)")
         if not 0.0 <= self.beta_blockade <= 1.0:
             raise CoreInvariantError("beta-blockade is between 0 (none) and 1 (complete)")
         if self.preload_fraction is not None and not 0.0 < self.preload_fraction < 1.0:
@@ -308,12 +330,14 @@ class Anchors:
     def to_dict(self) -> dict:
         data = {item.name: getattr(self, item.name) for item in fields(self)}
         data["rhythm"] = self.rhythm.to_dict()
+        data["declared"] = self.declared.to_dict()
         return data
 
     @classmethod
     def from_dict(cls, data: Mapping) -> "Anchors":
         values = dict(data)
         values["rhythm"] = RhythmState.from_dict(values["rhythm"])
+        values["declared"] = FrozenRecord(values.get("declared") or {})
         return cls(**values)
 
 

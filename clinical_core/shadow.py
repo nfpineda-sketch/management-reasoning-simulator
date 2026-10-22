@@ -17,9 +17,10 @@ from pathlib import Path
 
 from . import CORE_VERSION
 from .comparison import compare, mismatching, summarize
-from .derived import PARAMETERS
+from .derived import PARAMETERS, case_parameter_provenance
 from .integration import CHANNEL_BOUNDS, Trajectory, run
-from .legacy_adapter import LEGACY_LITERALS, LegacyRun, anchors_from_legacy, contributors_from_legacy, run_legacy
+from .legacy_adapter import (FAMILY_CASE_PARAMETER_RULES, LEGACY_LITERALS, LegacyRun, anchors_from_legacy,
+                             contributors_from_legacy, run_legacy)
 from .state import digest
 
 GOLDEN = Path(__file__).with_name("golden") / "gi_bleed_shadow.json"
@@ -173,12 +174,15 @@ def golden_report(results=None) -> dict:
         "channel_bounds": {channel.value: list(bounds) for channel, bounds in CHANNEL_BOUNDS.items()},
         "differences": {key: list(value) for key, value in DIFFERENCES.items()},
         "decisions": {key: list(value) for key, value in DECISIONS.items()},
+        "case_parameter_rules": dict(FAMILY_CASE_PARAMETER_RULES),
         "scenarios": {result.key: {"minutes": SCENARIOS[result.scenario]["minutes"],
                                    "orders": {str(m): t for m, t in SCENARIOS[result.scenario]["orders"].items()},
                                    "core_inputs": [item.to_spec() for item in result.core.contributors],
                                    "mismatching": {name: EXPECTED_DIFFERENCES[result.key].get(name, "UNEXPLAINED")
                                                    for name in mismatching(result.summary)},
                                    "classification": classify(result.key, result.summary),
+                                   "case_parameters": case_parameter_provenance(result.core.anchors,
+                                                                                result.core.profile),
                                    "variables": result.summary}
                       for result in results},
     }

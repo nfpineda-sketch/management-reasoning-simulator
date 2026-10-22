@@ -209,7 +209,8 @@ def test_p2d3_no_drive_means_the_intrinsic_rate():
 
 
 def test_p2d3_beta_blockade_reduces_the_gain_and_never_turns_withdrawal_negative():
-    blocked = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 0.5})
+    blocked = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 0.5,
+                         "declared": {"beta_blockade": "synthetic_probe"}})
     free, beta = run(BLEEDING, (BLEED,), 60).derived(), run(blocked, (BLEED,), 60).derived()
     for one, other in zip(free[1:], beta[1:]):
         assert other.pulse_rate_bpm - BLEEDING.hr == pytest.approx(0.5 * (one.pulse_rate_bpm - BLEEDING.hr))
@@ -353,7 +354,8 @@ def test_p2d5_p_keeps_meaning_the_output_at_arrival_filling():
 
 # P2D-6 -- lung water clears slowly without a source ---------------------------------------------
 
-LIMITED = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "pump_reserve": 0.3})
+LIMITED = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "pump_reserve": 0.3,
+                     "declared": {"pump_reserve": "synthetic_probe"}})
 
 
 def _lung_water(contributors, minutes, anchors=LIMITED):
@@ -381,3 +383,47 @@ def test_p2d6_a_persisting_source_keeps_lung_water_up_and_more_overload_makes_it
     worse = _lung_water((Refill("fill", 1, 2000.0), Refill("more", 30, 2800.0)), 300)
     assert all(later >= earlier for earlier, later in zip(persisting[1:], persisting[2:]))
     assert all(w >= p for w, p in zip(worse, persisting)) and worse[-1] > persisting[-1]
+
+
+
+# P2D-8 -- case-parameter provenance ------------------------------------------------------------
+
+def test_p2d8_a_non_neutral_case_parameter_must_name_its_source():
+    with pytest.raises(CoreInvariantError, match="names no source"):
+        Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "pump_reserve": 0.5, "declared": {}})
+    for declared in ({"pump_reserve": "inferred_from_text"}, {"heart_failure": "explicit_case"}):
+        with pytest.raises(CoreInvariantError):
+            Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "pump_reserve": 0.5, "declared": declared})
+
+
+def test_p2d8_provenance_says_value_source_and_calibration():
+    from clinical_core.derived import case_parameter_provenance
+    plain = case_parameter_provenance(BLEEDING)
+    assert {name: entry["source"] for name, entry in plain.items()} == {
+        "beta_blockade": "default", "preload_fraction": "default", "pump_reserve": "default"}
+    assert plain["preload_fraction"]["value"] == DEFAULT_PROFILE.arrival_preload_fraction
+    assert not any(entry["calibrated"] for entry in plain.values())
+    declared = Anchors(**{**BLEEDING.to_dict(), "rhythm": BLEEDING.rhythm, "beta_blockade": 0.4,
+                          "declared": {"beta_blockade": "explicit_case", "pump_reserve": "explicit_case"}})
+    provenance = case_parameter_provenance(declared)
+    assert provenance["beta_blockade"] == {"value": 0.4, "source": "explicit_case", "calibrated": False,
+                                           "note": "declared by the case; not calibrated"}
+    assert provenance["pump_reserve"]["source"] == "explicit_case", "a declared neutral value keeps its source"
+    assert Anchors.from_dict(json.loads(json.dumps(declared.to_dict()))) == declared
+
+
+def test_p2d8_the_gi_golden_uses_the_neutral_defaults_and_says_so():
+    import json as json_module
+    from clinical_core.shadow import GOLDEN
+    golden = json_module.loads(GOLDEN.read_text(encoding="utf-8"))
+    assert set(golden["case_parameter_rules"]) == {"gi_bleed"}
+    for entry in golden["scenarios"].values():
+        assert {item["source"] for item in entry["case_parameters"].values()} == {"default"}
+
+
+def test_p2d8_a_family_without_a_rule_cannot_be_migrated():
+    from clinical_core.legacy_adapter import UnsupportedScenario, anchors_from_legacy, bank_case
+    case = bank_case("gi_bleed_57m")
+    case["engine_family"] = "pulmonary_oedema"
+    with pytest.raises(UnsupportedScenario, match="no case mapping or approved default rule"):
+        anchors_from_legacy(case)

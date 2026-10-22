@@ -1,4 +1,7 @@
 {
+ "case_parameter_rules": {
+  "gi_bleed": "neutral defaults, as in P2C: not mapped from the bank cases and not calibrated"
+ },
  "channel_bounds": {
   "D": [
    -10000.0,
@@ -262,6 +265,26 @@
  },
  "scenarios": {
   "gi_bleed_57m/aggressive_volume": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "APPROVED DIFFERENCE",
     "blood_delivered_units": "MATCH",
@@ -1569,6 +1592,26 @@
    }
   },
   "gi_bleed_57m/definitive_management": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -3047,6 +3090,26 @@
    }
   },
   "gi_bleed_57m/oxygen_non_rebreather": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -3892,6 +3955,26 @@
    }
   },
   "gi_bleed_57m/prbc_2u_over_60": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -5183,6 +5266,26 @@
    }
   },
   "gi_bleed_57m/queued_timed_bags": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -6228,6 +6331,26 @@
    }
   },
   "gi_bleed_57m/saline_2l_over_20": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -7346,6 +7469,26 @@
    }
   },
   "gi_bleed_57m/saline_then_blood": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -8835,6 +8978,26 @@
    }
   },
   "gi_bleed_57m/stop_fluids": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -9969,6 +10132,26 @@
    }
   },
   "gi_bleed_57m/untimed_shared_line": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -11305,6 +11488,26 @@
    }
   },
   "gi_bleed_57m/untreated_60": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -12407,6 +12610,26 @@
    }
   },
   "gi_bleed_72f/aggressive_volume": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "APPROVED DIFFERENCE",
     "blood_delivered_units": "MATCH",
@@ -13714,6 +13937,26 @@
    }
   },
   "gi_bleed_72f/definitive_management": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -15192,6 +15435,26 @@
    }
   },
   "gi_bleed_72f/oxygen_non_rebreather": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -16036,6 +16299,26 @@
    }
   },
   "gi_bleed_72f/prbc_2u_over_60": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -17327,6 +17610,26 @@
    }
   },
   "gi_bleed_72f/queued_timed_bags": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -18372,6 +18675,26 @@
    }
   },
   "gi_bleed_72f/saline_2l_over_20": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -19490,6 +19813,26 @@
    }
   },
   "gi_bleed_72f/saline_then_blood": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -20979,6 +21322,26 @@
    }
   },
   "gi_bleed_72f/stop_fluids": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -22113,6 +22476,26 @@
    }
   },
   "gi_bleed_72f/untimed_shared_line": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
@@ -23449,6 +23832,26 @@
    }
   },
   "gi_bleed_72f/untreated_60": {
+   "case_parameters": {
+    "beta_blockade": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 0.0
+    },
+    "preload_fraction": {
+     "calibrated": false,
+     "note": "not declared: provisional profile default (TBD)",
+     "source": "default",
+     "value": 0.5
+    },
+    "pump_reserve": {
+     "calibrated": false,
+     "note": "not declared: neutral value",
+     "source": "default",
+     "value": 1.0
+    }
+   },
    "classification": {
     "V_ml_eq": "MATCH",
     "blood_delivered_units": "MATCH",
