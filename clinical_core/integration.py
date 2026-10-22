@@ -9,7 +9,8 @@ One ``step`` integrates one minute:
    the minute, plus those signals -- so the order in which contributors are listed can
    never change the result (proposal §14.1, T3);
 3. the core adds its own coupling (the oxygen-delivery debt, from flow, haemoglobin and
-   saturation) and updates its own memory (lactate kinetics, from that debt);
+   saturation) and updates its own memory: lactate kinetics, from that debt, and the common
+   sympathetic drive, from the state the minute ends in;
 4. the deltas are summed per channel, the declared bounds are enforced and every clipped
    amount is recorded as a clamp delta, rhythm transitions and setting changes are
    applied, and the new state is checked: the change in every channel must equal the sum
@@ -25,8 +26,8 @@ import math
 from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, ClassVar, Iterable, Mapping, Sequence
 
-from .derived import (ADOPTED, DEFAULT_PROFILE, LACTATE_KINETICS, PROVISIONAL, CoreProfile, Derived, derive,
-                      lactate_after_minute)
+from .derived import (ADOPTED, DEFAULT_PROFILE, LACTATE_KINETICS, PROVISIONAL, SYMPATHETIC_DRIVE, CoreProfile,
+                      Derived, derive, lactate_after_minute, sympathetic_after_minute)
 from .provenance import (ChannelDelta, CoreEvent, MinuteRecord, ProvenanceError, RhythmTransition, SettingChange,
                          Source, SourceKind)
 from .state import (Anchors, Channel, CoreInvariantError, CoreState, FrozenRecord, SCALAR_CHANNELS, digest,
@@ -234,6 +235,11 @@ def step(state: CoreState, contributors: Sequence[Contributor], anchors: Anchors
     new_internal = state.internal.updated(**internal) if internal else state.internal
     new_state = state.evolve(minute=minute, R=rhythm, fio2=fio2, terminal_since=terminal, internal=new_internal,
                              **values)
+    # The drive answers to the state the minute ends in, so a fall in pressure raises the rate in
+    # the same minute; only its decay is lagged.
+    internal[SYMPATHETIC_DRIVE.key] = FrozenRecord(
+        {"drive": sympathetic_after_minute(state, new_state, anchors, profile)})
+    new_state = new_state.evolve(internal=state.internal.updated(**internal))
     record = MinuteRecord(minute=minute, deltas=tuple(deltas), transitions=tuple(transitions),
                           settings=tuple(settings), events=tuple(events), internal_updates=tuple(sorted(internal)))
     _check_conservation(state, new_state, record)

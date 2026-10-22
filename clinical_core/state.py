@@ -235,10 +235,14 @@ EMPTY = FrozenRecord()
 
 @dataclass(frozen=True)
 class Anchors:
-    """The authored arrival state a case gives the core (§7.4). Nothing here has a default.
+    """The authored arrival state a case gives the core (§7.4).
 
-    ``consciousness_level`` uses the engine's existing ladder: 0 alert, 1 drowsy,
-    2 obtunded, 3 unresponsive.
+    The authored arrival values have no default. ``consciousness_level`` uses the engine's
+    existing ladder: 0 alert, 1 drowsy, 2 obtunded, 3 unresponsive.
+
+    The case declarations after them default to neutral, meaning "not declared":
+    ``beta_blockade`` (0 none, 1 complete) blunts the chronotropic response to sympathetic
+    drive (proposal §7.3: "modulated by beta-blockade, a case parameter").
     """
 
     case_id: str
@@ -255,10 +259,13 @@ class Anchors:
     fio2: float
     rhythm: RhythmState
     consciousness_level: int
+    beta_blockade: float = 0.0
 
     def __post_init__(self):
         if not self.case_id:
             raise CoreInvariantError("anchors name their case")
+        if not 0.0 <= self.beta_blockade <= 1.0:
+            raise CoreInvariantError("beta-blockade is between 0 (none) and 1 (complete)")
         for item in fields(self):
             if item.name not in {"case_id", "rhythm", "consciousness_level"}:
                 _finite(getattr(self, item.name), item.name)

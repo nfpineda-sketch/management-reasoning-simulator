@@ -62,20 +62,26 @@ DIFFERENCES = {
               "ventilation (W) plus a saturating metabolic drive anchored to arrival, so clearing lactate never "
               "causes bradypnoea; the family engine sets both instantly from circulation, with an RR floor of 14 "
               "in this family", "TBD: tau_D, D->lactate gain, lactate clearance, metabolic drive gain, RR bounds"),
-    "KD-S2": ("heart rate after hemostasis: the family engine subtracts 20 bpm x hemostasis_relief from the displayed "
-              "HR (a module writing an observable, which §8.1 rules out); the core has no channel through which "
-              "recovery from controlled bleeding lowers the rate", "faculty: which channel carries that recovery"),
+    "KD-S2": ("heart rate (adopted direction, P2C-2): the core reads sinus rate as the intrinsic rate plus the "
+              "chronotropic response to one common sympathetic drive, blunted by beta-blockade; the drive answers "
+              "to the pressure deficit, the oxygen-delivery debt D, hypoxaemia and hypoglycaemia, rises at once and "
+              "decays with its own memory, and no disease module writes it, so hemostasis lowers the rate only "
+              "through recovered pressure and repaid debt; the family engine sets HR instantly from circulation and "
+              "subtracts 20 bpm x hemostasis_relief from the displayed HR (a module writing an observable, which "
+              "§8.1 rules out)", "TBD: pressure/output deficit and D gains, hypoxaemia and hypoglycaemia gains and "
+              "thresholds, sympathetic decay time, withdrawal limit"),
     "KD-S3": ("consciousness at the 80 mmHg threshold: the family engine compares the rounded SBP (80), the core the "
               "raw value (79.9)", "Observation v2 (Phase 1): thresholds on raw state or on the displayed value"),
     "KD-S4": ("volume beyond the family engine's circulation clamp [.25, 1.9] (+625 mL-eq): the engine stops "
               "the gain there; the core has no preload saturation yet, so pressure and rate keep moving (§7.3 asks "
               "for bounded gains)", "faculty: shape and value of the volume-to-output plateau"),
 }
-_STRUCTURAL = {"lactate_mmol_l": "KD-S1", "respiratory_rate": "KD-S1"}
+_STRUCTURAL = {"lactate_mmol_l": "KD-S1", "respiratory_rate": "KD-S1", "hr": "KD-S2"}
 EXPECTED_DIFFERENCES = {
     f"{variant}/{scenario}": dict(_STRUCTURAL) for variant in VARIANTS for scenario in SCENARIOS}
 for _variant in VARIANTS:
-    EXPECTED_DIFFERENCES[f"{_variant}/definitive_management"]["hr"] = "KD-S2"
+    # Past the engine's circulation clamp, the rate follows the core's pressure (KD-S4) as well as
+    # its sympathetic memory (KD-S2); it is listed under the larger cause.
     EXPECTED_DIFFERENCES[f"{_variant}/aggressive_volume"].update(
         {name: "KD-S4" for name in ("V_ml_eq", "sbp", "dbp", "map", "hr")})
 EXPECTED_DIFFERENCES["gi_bleed_57m/untreated_60"]["consciousness_level"] = "KD-S3"

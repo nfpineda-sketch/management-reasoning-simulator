@@ -29,6 +29,9 @@ LEGACY_ML_PER_CIRCULATION_UNIT = 300.0 / 0.36
 #: The core's own memory of lactate (KD-S1): the excess over arrival that D produces and the
 #: liver clears. Written only by the integrator, under this key of ``CoreState.internal``.
 LACTATE_KINETICS = Source(SourceKind.CORE_COUPLING, "lactate_kinetics")
+#: The core's own memory of sympathetic drive (KD-S2): it rises at once and decays with a time
+#: constant. Written only by the integrator, under this key of ``CoreState.internal``.
+SYMPATHETIC_DRIVE = Source(SourceKind.CORE_COUPLING, "sympathetic_drive")
 
 
 @dataclass(frozen=True)
@@ -38,7 +41,15 @@ class CoreProfile:
     volume_per_output_unit_ml: float = LEGACY_ML_PER_CIRCULATION_UNIT
     sbp_per_pressure_deficit: float = 45.0
     dbp_per_pressure_deficit: float = 25.0
-    hr_per_pressure_deficit: float = 25.0
+    hr_per_sympathetic_drive: float = 25.0
+    sympathetic_per_pressure_deficit: float = 1.0
+    sympathetic_per_debt: float = 0.5
+    sympathetic_per_hypoxaemia_point: float = 0.02
+    hypoxaemia_threshold_spo2: float = 94.0
+    sympathetic_per_hypoglycaemia_mg_dl: float = 0.01
+    hypoglycaemia_threshold_mg_dl: float = 70.0
+    sympathetic_decay_tau_min: float = 5.0
+    sympathetic_withdrawal_limit: float = 1.0
     crt_per_output_deficit_s: float = 4.0
     spo2_per_fio2: float = 30.0
     room_air_fio2: float = 0.21
@@ -62,7 +73,7 @@ class CoreProfile:
             if not math.isfinite(value) or value < 0:
                 raise CoreInvariantError(f"profile gain {item.name} must be finite and non-negative")
         if min(self.volume_per_output_unit_ml, self.debt_clearance_tau_min, self.lactate_clearance_tau_min,
-               self.rr_metabolic_max, self.rr_max) <= 0:
+               self.rr_metabolic_max, self.rr_max, self.sympathetic_decay_tau_min) <= 0:
             raise CoreInvariantError("volume scale, time constants and RR bounds are positive")
 
     def to_dict(self) -> dict:
@@ -78,7 +89,16 @@ PARAMETERS: Mapping[str, tuple[str, str]] = {
                                            "(family_engine.TRANSFUSION note; family_engine._minute)"),
     "sbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: sbp - (circulation - 1) * 45"),
     "dbp_per_pressure_deficit": (ADOPTED, "family_engine._surface: dbp - (circulation - 1) * 25"),
-    "hr_per_pressure_deficit": (ADOPTED, "family_engine._surface: hr + (circulation - 1) * 25"),
+    "hr_per_sympathetic_drive": (ADOPTED, "family_engine._surface: hr + (circulation - 1) * 25, read here as bpm "
+                                          "per unit of sympathetic drive"),
+    "sympathetic_per_pressure_deficit": (PROVISIONAL, "MAP/output deficit -> sympathetic drive gain: TBD (KD-S2)"),
+    "sympathetic_per_debt": (PROVISIONAL, "oxygen-delivery debt (D / tau_D) -> sympathetic drive gain: TBD (KD-S2)"),
+    "sympathetic_per_hypoxaemia_point": (PROVISIONAL, "drive per SpO2 point below the threshold: TBD (KD-S2)"),
+    "hypoxaemia_threshold_spo2": (PROVISIONAL, "SpO2 below which hypoxaemia drives the rate: TBD (KD-S2)"),
+    "sympathetic_per_hypoglycaemia_mg_dl": (PROVISIONAL, "drive per mg/dL below the threshold: TBD (KD-S2)"),
+    "hypoglycaemia_threshold_mg_dl": (PROVISIONAL, "glucose below which it drives the rate: TBD (KD-S2)"),
+    "sympathetic_decay_tau_min": (PROVISIONAL, "sympathetic decay time: TBD (KD-S2); the drive rises at once"),
+    "sympathetic_withdrawal_limit": (PROVISIONAL, "largest withdrawal of drive below arrival: TBD (KD-S2)"),
     "crt_per_output_deficit_s": (ADOPTED, "family_engine._surface: crt + (circulation - 1) * 4"),
     "spo2_per_fio2": (ADOPTED, "family_engine._surface: oxygen_gain = (FiO2 - 0.21) * 30"),
     "room_air_fio2": (ADOPTED, "family_engine._initialize: oxygen_fio2 = .21"),
@@ -180,6 +200,60 @@ def respiratory_rate(state: CoreState, anchors: Anchors, profile: CoreProfile, l
     return min(profile.rr_max, drive * (ventilatory + scale * _metabolic_drive(lactate, profile)))
 
 
+def _perfusion(state: CoreState, anchors: Anchors, profile: CoreProfile) -> tuple[float, float, float, float]:
+    """(output_rel, pressure_rel, spo2, delivery_rel) of a perfusing state."""
+    preload_rel = max(0.0, 1.0 + state.V / profile.volume_per_output_unit_ml)
+    output_rel = state.P * (state.R.output_factor / anchors.rhythm.output_factor) * preload_rel
+    pressure_rel = output_rel * state.T
+    oxygen = (max(0.0, state.fio2 - profile.room_air_fio2) - max(0.0, anchors.fio2 - profile.room_air_fio2))
+    spo2 = min(100.0, max(0.0, anchors.spo2 + profile.spo2_per_fio2 * oxygen))
+    delivery_rel = output_rel * (state.hb / anchors.hb) * (spo2 / anchors.spo2)
+    return output_rel, pressure_rel, spo2, delivery_rel
+
+
+def sympathetic_target(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """The drive the state calls for now, relative to arrival (KD-S2; proposal §7.3).
+
+    It sums the stimuli the core holds state for, each as a deviation from arrival:
+    - the pressure deficit;
+    - the oxygen-delivery debt D;
+    - hypoxaemia;
+    - hypoglycaemia.
+
+    Hypercapnia, pain or agitation, fever and withdrawal are declared inputs of the same
+    drive, but no core state carries them yet (no CO2, pain, temperature or withdrawal
+    module). Hemostasis, or any disease module, never writes it: it moves only through
+    these stimuli.
+    """
+    _, pressure_rel, spo2, _ = _perfusion(state, anchors, profile)
+    hypoxaemia = (max(0.0, profile.hypoxaemia_threshold_spo2 - spo2)
+                  - max(0.0, profile.hypoxaemia_threshold_spo2 - anchors.spo2))
+    hypoglycaemia = (max(0.0, profile.hypoglycaemia_threshold_mg_dl - state.glucose)
+                     - max(0.0, profile.hypoglycaemia_threshold_mg_dl - anchors.glucose))
+    target = (profile.sympathetic_per_pressure_deficit * (1.0 - pressure_rel)
+              + profile.sympathetic_per_debt * state.D / profile.debt_clearance_tau_min
+              + profile.sympathetic_per_hypoxaemia_point * hypoxaemia
+              + profile.sympathetic_per_hypoglycaemia_mg_dl * hypoglycaemia)
+    return max(-profile.sympathetic_withdrawal_limit, target)
+
+
+def sympathetic_drive(state: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """The drive the core holds (its memory), or the drive the state calls for if none is held yet."""
+    held = state.internal_for(SYMPATHETIC_DRIVE.key).get("drive")
+    return float(held) if held is not None else sympathetic_target(state, anchors, profile)
+
+
+def sympathetic_after_minute(before: CoreState, after: CoreState, anchors: Anchors, profile: CoreProfile) -> float:
+    """The drive at the end of a minute: it rises at once, and decays with ``sympathetic_decay_tau_min``."""
+    if not after.R.pulse_present:
+        return sympathetic_drive(before, anchors, profile) if before.R.pulse_present else 0.0
+    target = sympathetic_target(after, anchors, profile)
+    held = sympathetic_drive(before, anchors, profile) if before.R.pulse_present else target
+    if target >= held:
+        return target
+    return target + (held - target) * math.exp(-1.0 / profile.sympathetic_decay_tau_min)
+
+
 def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PROFILE) -> Derived:
     rhythm = state.R
     # The floor guards against a debt repaid below what any patient reads; it never moves an
@@ -192,22 +266,19 @@ def derive(state: CoreState, anchors: Anchors, profile: CoreProfile = DEFAULT_PR
                           respiratory_rate=0.0, crt_s=None, lactate=lactate, consciousness_level=3)
         check(derived)
         return derived
-    preload_rel = max(0.0, 1.0 + state.V / profile.volume_per_output_unit_ml)
-    output_rel = state.P * (rhythm.output_factor / anchors.rhythm.output_factor) * preload_rel
-    pressure_rel = output_rel * state.T
+    output_rel, pressure_rel, spo2, delivery_rel = _perfusion(state, anchors, profile)
     deficit = 1.0 - pressure_rel
     sbp = max(0.0, anchors.sbp - profile.sbp_per_pressure_deficit * deficit)
     dbp = max(0.0, anchors.dbp - profile.dbp_per_pressure_deficit * deficit)
     if rhythm.code is RhythmCode.SINUS:
-        # Sinus rate answers to the pressure deficit (sympathetic compensation); a block,
-        # an escape or a paced rhythm keeps the rate the rhythm state holds.
-        pulse_rate = rhythm.rate_bpm + profile.hr_per_pressure_deficit * deficit
+        # Sinus rate = intrinsic rate + chronotropic response to the common sympathetic drive,
+        # blunted by beta-blockade (KD-S2); a block, an escape or a paced rhythm keeps the rate
+        # the rhythm state holds.
+        response = profile.hr_per_sympathetic_drive * (1.0 - anchors.beta_blockade)
+        pulse_rate = rhythm.rate_bpm + response * sympathetic_drive(state, anchors, profile)
     else:
         pulse_rate = rhythm.rate_bpm
-    oxygen = (max(0.0, state.fio2 - profile.room_air_fio2) - max(0.0, anchors.fio2 - profile.room_air_fio2))
-    spo2 = min(100.0, max(0.0, anchors.spo2 + profile.spo2_per_fio2 * oxygen))
     crt = max(0.0, anchors.crt_s + profile.crt_per_output_deficit_s * (1.0 - output_rel))
-    delivery_rel = output_rel * (state.hb / anchors.hb) * (spo2 / anchors.spo2)
     rr = respiratory_rate(state, anchors, profile, lactate)
     level = max(anchors.consciousness_level, _level(sbp, profile.pressure_levels), _level(spo2, profile.oxygen_levels))
     derived = Derived(minute=state.minute, pulse_present=True, rhythm=rhythm.code,

@@ -139,12 +139,15 @@ def test_an_order_the_run_would_never_reach_is_refused(orders):
 
 
 def test_a_rounding_tie_needs_both_sides_on_the_same_boundary(results):
-    result = results["gi_bleed_57m/untreated_60"]
-    assert result.rows["hr"][20]["status"] == "rounding_tie"
+    """Any tie the runs produce (which variable and minute follows the physiology) stops being one 2 units away."""
+    result, name, row = next((result, name, row) for result in results.values()
+                             for name, rows in result.rows.items() for row in rows
+                             if row["status"] == "rounding_tie")
+    minute = row["minute"]
     snapshots = [dict(snap) for snap in result.legacy.snapshots]
-    snapshots[20]["hr"] = 127          # 125.5 cannot round to 127
+    snapshots[minute][name] = row["legacy"] + 2     # x.5 cannot round to two units away
     rows = compare(snapshots, result.core.states, result.core.derived())
-    assert rows["hr"][20]["status"] == "mismatch"
+    assert rows[name][minute]["status"] == "mismatch"
 
 
 def test_an_unknown_legacy_label_is_a_mismatch_not_silence(results):
